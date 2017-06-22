@@ -1,0 +1,18 @@
+# Parameter set for type
+type	1
+name	primaryroot
+lb	1	0
+la	1.2	0
+ln	0.8	0
+lmax	33.4	3.3
+r	4	0
+a	0.05	00
+color	0.431373	0.392157	0.196078
+tropism	1	1	0
+dx	1
+successors	0
+successorP	0
+theta	0	0
+rlt	1e+09	0
+gf	1
+
