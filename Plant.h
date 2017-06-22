@@ -11,6 +11,8 @@
 #include "ModelParameter.h"
 #include "Organ.h"
 #include "soil.h"
+#include "RootTropism.h"
+#include "RootGrowth.h"
 
 class Organ;
 class TropismFunction;
@@ -18,10 +20,10 @@ class TropismFunction;
 
 
 /**
- * RootSystem
+ * Plant
  *
  * This class manages all model parameter and the simulation,
- * stores the base roots of the root system,
+ * stores the seed of the plant,
  * and offers utility functions for post processing
  */
 class Plant
@@ -31,20 +33,27 @@ class Plant
 
 public:
 
-  enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism
-  enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
+  enum OrganTypes { ot_seed, ot_roots, ot_stem, ot_leafe, ot_all, ot_shoot };
+
   enum ScalarTypes { st_type = 0, st_radius = 1, st_order = 2, st_time = 3, st_length = 4, st_surface = 5, st_one = 6,
     st_userdata1 = 7, st_userdata2 = 8, st_userdata3 = 9, st_parenttype = 10,
     st_lb = 11, st_la = 12, st_nob = 13, st_r = 14, st_theta = 15, st_rlt = 16,
     st_meanln = 17, st_stdln = 18}; ///< @see RootSystem::getScalar
   static const std::vector<std::string> scalarTypeNames; ///< the corresponding names
 
+  enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism ... move to Root...
+
+  enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
+
+
   Plant() { initRTP(); };
   virtual ~Plant();
 
   // Parameter input output
-  void setRootTypeParameter(RootTypeParameter p) { rtparam.at(p.type-1) = p; } ///< set the root type parameter to the index type-1
-  RootTypeParameter* getRootTypeParameter(int type) { return &rtparam.at(type-1); } ///< Returns the i-th root parameter set (i=1..n)
+  void setOrganTypeParameter(RootTypeParameter p) { rtparam.at(p.type-1) = p; } ///< set the root type parameter to the index type-1
+
+  OrganTypeParameter* getOrganTypeParameter(int otype) { return nullptr; } ///< Returns the i-th root parameter set (i=1..n)
+
   void setRootSystemParameter(const RootSystemParameter& rsp) { rsparam = rsp; } ///< sets the root system parameters
   RootSystemParameter* getRootSystemParameter() { return &rsparam; } ///< gets the root system parameters
 
@@ -72,7 +81,8 @@ public:
   // Analysis of simulation results
   int getNumberOfNodes() const { return nid+1; } ///< Number of nodes of the root system
   int getNumberOfSegments() const { return nid+1-baseRoots.size(); } ///< Number of segments of the root system (the number of nodes-1 for tap root systems)
-  std::vector<Organ*> getRoots() const; ///< Represents the root system as sequential vector of roots and buffers the result
+  std::vector<Organ*> getOrgans(int otype) const; ///< Represents the root system as sequential vector of roots and buffers the result
+
   std::vector<Organ*> getBaseRoots() const { return baseRoots; } ///< Base roots are tap root, basal roots, and shoot borne roots
   std::vector<Vector3d> getNodes() const; ///< Copies all root system nodes into a vector
   std::vector<std::vector<Vector3d>> getPolylines() const; ///< Copies the nodes of each root into a vector return all resulting vectors
@@ -84,14 +94,6 @@ public:
   std::vector<int> getRootTips() const; ///< Node indices of the root tips
   std::vector<int> getRootBases() const; ///< Node indices of the root bases
 
-  // Dynamic information what happened last time step
-  int getNumberOfNewNodes() { return getNumberOfNodes()-old_non; } ///< returns the number of new nodes, which is exactly the same number as new segments
-  int getNumberOfNewRoots() { return getRoots().size() -old_nor; }  ///< returns the number of new roots
-  std::vector<int> getNodeUpdateIndices(); // todo test and comment
-  std::vector<Vector3d> getUpdatedNodes(); // to replace to the old node vector
-  std::vector<Vector3d> getNewNodes(); // to dynamically add to the old node vector
-  std::vector<Vector2i> getNewSegments(); // to dynamically add to the list of segments
-  // restore(); ///< restore old time step
 
   // Output Simulation results
   void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
@@ -124,7 +126,7 @@ private:
 
   int old_non=0;
   int old_nor=0;
-  mutable std::vector<Organ*> roots = std::vector<Organ*>(); // buffer for getRoots()
+  mutable std::vector<Organ*> organs = std::vector<Organ*>(); // buffer for getRoots()
 
   const int maxtypes = 100;
   void initRTP(); // default values for rtparam vector
@@ -132,7 +134,7 @@ private:
   void writeRSMLMeta(std::ostream & os) const;
   void writeRSMLPlant(std::ostream & os) const;
 
-  int getRootIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
+  int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
 
   std::mt19937 gen = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());

@@ -58,7 +58,7 @@ void RootTypeParameter::set(int type, double lb, double lbs, double la, double l
  *
  * \return Specific root parameters derived from the root type parameters
  */
-RootParameter RootTypeParameter::realize() {
+OrganParameter* RootTypeParameter::realize() const {
 	// type does not change
 	double lb_ = std::max(lb + randn()*lbs,double(0)); // length of basal zone
 	double la_ = std::max(la + randn()*las,double(0)); // length of apical zone
@@ -72,7 +72,7 @@ RootParameter RootTypeParameter::realize() {
 	double a_ = std::max(a + randn()*as,double(0)); // radius
 	double theta_ = std::max(theta + randn()*thetas,double(0)); // initial elongation
 	double rlt_ = std::max(rlt + randn()*rlts,double(0)); // root life time
-	RootParameter p(type,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
+	RootParameter* p =  new RootParameter(type,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
 	return p;
 }
 
