@@ -1,5 +1,5 @@
-#ifndef ROOTSYSTEM_H_
-#define ROOTSYSTEM_H_
+#ifndef PLANT_H_
+#define PLANT_H_
 
 #include <iostream>
 #include <fstream>
