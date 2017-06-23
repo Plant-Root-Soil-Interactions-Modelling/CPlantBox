@@ -1,8 +1,5 @@
 #include "Plant.h"
 
-const std::vector<std::string> Plant::scalarTypeNames = {"type","radius","order","time","length","surface","1","userdata 1", "userdata 2", "userdata 3", "parent type",
-    "basal length", "apical length", "number of branches", "initial growth rate", "insertion angle", "root life time", "mean inter nodal distance", "standard deviation of inter nodal distance"};
-
 /**
  * Destructor
  */
@@ -19,15 +16,15 @@ void Plant::reset()
   for(auto b :baseRoots) {
       delete b;
   }
-  for(auto f:gf) {
-      delete f;
-  }
-  for(auto f:tf) {
-      delete f;
-  }
+  //  for(auto f:gf) {
+  //      delete f;
+  //  }
+  //  for(auto f:tf) {
+  //      delete f;
+  //  }
   baseRoots.clear();
-  gf.clear();
-  tf.clear();
+  //  gf.clear();
+  //  tf.clear();
   simtime=0;
   rid = -1;
   nid = -1;
@@ -38,9 +35,9 @@ void Plant::reset()
  */
 void Plant::initRTP()
 {
-  rtparam = std::vector<RootTypeParameter> (maxtypes);
-  for (auto& rtp:rtparam) {
-      rtp = RootTypeParameter();
+  organParam = std::vector<std::vector<OrganTypeParameter*>>(maxorgans);
+  for (auto& otp:organParam) {
+      otp = std::vector<OrganTypeParameter*>(maxtypes);
   }
 }
 
@@ -93,9 +90,9 @@ int Plant::readParameters(std::istream& cin)
   initRTP();
   int c = 0;
   while (cin.good()) {
-      RootTypeParameter p;
-      p.read(cin);
-      setRootTypeParameter(p); // sets the param to the index (p.type-1)
+      RootTypeParameter* p  = new RootTypeParameter();
+      p->read(cin);
+      setOrganTypeParameter(p); // sets the param to the index (p.type-1)
       c++;
   }
   return c;
@@ -109,11 +106,13 @@ int Plant::readParameters(std::istream& cin)
 void Plant::writeParameters(std::ostream& os) const
 {
   int t = 0;
-  for (auto const& rp:rtparam) {
-      t++;
-      if (rp.type>0) {
-          assert(rp.type==t); // check if index is really type-1
-          rp.write(os); // only write if defined
+  for (auto const& otp_:organParam) {
+      for (auto const& otp : otp_) {
+          if (otp->type>0) {
+              assert(otp->type==t); // check if index is really type-1
+              otp->write(os); // only write if defined
+          }
+          t++;
       }
   }
 }
@@ -187,19 +186,19 @@ void Plant::initialize(int basaltype, int shootbornetype)
       }
   }
 
-  // Create tropisms and growth functions per root type
-  for (size_t i=0; i<rtparam.size(); i++) {
-      int type = rtparam.at(i).tropismT;
-      double N = rtparam.at(i).tropismN;
-      double sigma = rtparam.at(i).tropismS;
-      TropismFunction* tropism = this->createTropismFunction(type,N,sigma);
-      // std::cout << "#" << i << ": type " << type << ", N " << N << ", sigma " << sigma << "\n";
-      tf.push_back(new ConfinedTropism(tropism, geometry)); // wrap confinedTropism around baseTropism
-      int gft = rtparam.at(i).gf;
-      GrowthFunction* gf_ = this->createGrowthFunction(gft);
-      gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
-      gf.push_back(gf_);
-  }
+//  // Create tropisms and growth functions per root type
+//  for (size_t i=0; i<rtparam.size(); i++) {
+//      int type = rtparam.at(i).tropismT;
+//      double N = rtparam.at(i).tropismN;
+//      double sigma = rtparam.at(i).tropismS;
+//      TropismFunction* tropism = this->createTropismFunction(type,N,sigma);
+//      // std::cout << "#" << i << ": type " << type << ", N " << N << ", sigma " << sigma << "\n";
+//      tf.push_back(new ConfinedTropism(tropism, geometry)); // wrap confinedTropism around baseTropism
+//      int gft = rtparam.at(i).gf;
+//      GrowthFunction* gf_ = this->createGrowthFunction(gft);
+//      gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
+//      gf.push_back(gf_);
+//  }
 
 }
 
@@ -215,7 +214,7 @@ void Plant::simulate(double dt, bool silence)
       std::cout << "RootSystem.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
   }
   old_non = getNumberOfNodes();
-  old_nor = getOrgans().size();
+  old_nor = getOrgans(Plant::ot_all).size();
   for (auto const& r: baseRoots) {
       r->simulate(dt, silence);
   }
@@ -238,17 +237,17 @@ void Plant::simulate()
  *
  * @param seed      random number generator seed
  */
-void Plant::setSeed(double seed) {
-  std::cout << "Setting random seed "<< seed <<"\n";
-  gen.seed(1./seed);
-  for (auto t : tf) {
-      double s  = rand();
-      t->setSeed(1./s);
-  }
-  for (auto rp : rtparam) {
-      double s  = rand();
-      rp.setSeed(1./s);
-  }
+void Plant::setSeed(double seed) const {
+  //  std::cout << "Setting random seed "<< seed <<"\n";
+  //  gen.seed(1./seed);
+  //  for (auto t : tf) {
+  //      double s  = rand();
+  //      t->setSeed(1./s);
+  //  }
+  //  for (auto rp : rtparam) {
+  //      double s  = rand();
+  //      rp.setSeed(1./s);
+  //  }
 }
 
 /**
@@ -267,36 +266,36 @@ Organ* Plant::createRoot(int lt, Vector3d  h, double delay, Organ* parent, doubl
   // return new Organ(this,lt,h,delay,parent);
 }
 
-/**
- * Creates a specific tropsim,
- * the function must be extended or overwritten to add more tropisms
- */
-TropismFunction* Plant::createTropismFunction(int tt, double N, double sigma) {
-  switch (tt) {
-    case tt_plagio: return new Plagiotropism(N,sigma);
-    case tt_gravi: return new Gravitropism(N,sigma);
-    case tt_exo: return new Exotropism(N,sigma);
-    case tt_hydro: {
-      TropismFunction* gt =  new Gravitropism(N,sigma);
-      TropismFunction* ht= new Hydrotropism(N,sigma,soil);
-      TropismFunction* cht = new CombinedTropism(N,sigma,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
-      return cht;
-    }
-    default: throw std::invalid_argument( "RootSystem::createTropismFunction() tropism type not implemented" );
-  }
-}
-
-/**
- * Creates the possible growth functions
- * the function must bee extended or overwritten to add more growth function
- */
-GrowthFunction* Plant::createGrowthFunction(int gft) {
-  switch (gft) {
-    case gft_negexp: return new ExponentialGrowth();
-    case gft_linear: return new LinearGrowth();
-    default: throw std::invalid_argument( "RootSystem::createGrowthFunction() growth function type not implemented" );
-  }
-}
+///**
+// * Creates a specific tropsim,
+// * the function must be extended or overwritten to add more tropisms
+// */
+//TropismFunction* Plant::createTropismFunction(int tt, double N, double sigma) {
+//  switch (tt) {
+//    case tt_plagio: return new Plagiotropism(N,sigma);
+//    case tt_gravi: return new Gravitropism(N,sigma);
+//    case tt_exo: return new Exotropism(N,sigma);
+//    case tt_hydro: {
+//      TropismFunction* gt =  new Gravitropism(N,sigma);
+//      TropismFunction* ht= new Hydrotropism(N,sigma,soil);
+//      TropismFunction* cht = new CombinedTropism(N,sigma,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
+//      return cht;
+//    }
+//    default: throw std::invalid_argument( "RootSystem::createTropismFunction() tropism type not implemented" );
+//  }
+//}
+//
+///**
+// * Creates the possible growth functions
+// * the function must bee extended or overwritten to add more growth function
+// */
+//GrowthFunction* Plant::createGrowthFunction(int gft) {
+//  switch (gft) {
+//    case gft_negexp: return new ExponentialGrowth();
+//    case gft_linear: return new LinearGrowth();
+//    default: throw std::invalid_argument( "RootSystem::createGrowthFunction() growth function type not implemented" );
+//  }
+//}
 
 /**
  * Represents the root system as sequential vector of roots,
@@ -307,10 +306,11 @@ GrowthFunction* Plant::createGrowthFunction(int gft) {
  */
 std::vector<Organ*> Plant::getOrgans(int otype) const
 {
-  if (organs.empty()) { // create buffer
+  if (organs_type==otype) { // create buffer
       for (auto const& br:this->baseRoots) {
           br->getOrgans(otype, organs);
       }
+      organs_type = otype;
       return organs;
   } else { // return buffer
       return organs;
@@ -322,10 +322,11 @@ std::vector<Organ*> Plant::getOrgans(int otype) const
  */
 std::vector<int> Plant::getRootTips() const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(Plant::ot_roots); // update roots (if necessary)
   std::vector<int> tips;
   for (auto& r : organs) {
-      tips.push_back(r->getNodeId(r->getNumberOfNodes()-1));
+      Root* r2 = (Root*)r;
+      tips.push_back(r2->getNodeID(r2->getNumberOfNodes()-1));
   }
   return tips;
 }
@@ -335,10 +336,11 @@ std::vector<int> Plant::getRootTips() const
  */
 std::vector<int> Plant::getRootBases() const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(Plant::ot_roots); // update roots (if necessary)  std::vector<int> bases;
   std::vector<int> bases;
   for (auto& r : organs) {
-      bases.push_back(r->getNodeId(0));
+      Root* r2 = (Root*)r;
+      bases.push_back(r2->getNodeID(0));
   }
   return bases;
 }
@@ -349,12 +351,12 @@ std::vector<int> Plant::getRootBases() const
  */
 std::vector<Vector3d> Plant::getNodes() const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(Plant::ot_all); // update roots (if necessary)
   int non = getNumberOfNodes();
   std::vector<Vector3d> nv = std::vector<Vector3d>(non); // reserve big enough vector
   for (auto const& r: organs) {
       for (size_t i=0; i<r->getNumberOfNodes(); i++) { // loop over all nodes of all roots
-          nv.at(r->getNodeId(i)) = r->getNode(i); // pray that ids are correct
+          nv.at(r->getNodeID(i)) = r->getNode(i); // pray that ids are correct
       }
   }
   return nv;
@@ -363,9 +365,9 @@ std::vector<Vector3d> Plant::getNodes() const
 /**
  * Returns the root system as polylines, i.e. each root is represented by its nodes
  */
-std::vector<std::vector<Vector3d>> Plant::getPolylines() const
+std::vector<std::vector<Vector3d>> Plant::getPolylines(int otype) const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(otype); // update roots (if necessary)
   std::vector<std::vector<Vector3d>> nodes = std::vector<std::vector<Vector3d>>(organs.size()); // reserve big enough vector
   for (size_t j=0; j<organs.size(); j++) {
       std::vector<Vector3d>  rn = std::vector<Vector3d>(organs[j]->getNumberOfNodes());
@@ -380,15 +382,15 @@ std::vector<std::vector<Vector3d>> Plant::getPolylines() const
 /**
  * Return the segments of the root system at the current simulation time
  */
-std::vector<Vector2i> Plant::getSegments() const
+std::vector<Vector2i> Plant::getSegments(int otype) const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(otype); // update roots (if necessary)
   int nos=getNumberOfSegments();
   std::vector<Vector2i> s(nos);
   int c=0;
   for (auto const& r:organs) {
       for (size_t i=0; i<r->getNumberOfNodes()-1; i++) {
-          Vector2i v(r->getNodeId(i),r->getNodeId(i+1));
+          Vector2i v(r->getNodeID(i),r->getNodeID(i+1));
           s.at(c) = v;
           c++;
       }
@@ -399,9 +401,9 @@ std::vector<Vector2i> Plant::getSegments() const
 /**
  * Returns pointers of the roots corresponding to each segment
  */
-std::vector<Organ*> Plant::getSegmentsOrigin() const
+std::vector<Organ*> Plant::getSegmentsOrigin(int otype) const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(otype); // update roots (if necessary)
   int nos=getNumberOfSegments();
   std::vector<Organ*> s(nos);
   int c=0;
@@ -420,13 +422,13 @@ std::vector<Organ*> Plant::getSegmentsOrigin() const
  */
 std::vector<double> Plant::getNETimes() const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(Plant::ot_all); // update roots (if necessary)
   int nos=getNumberOfSegments();
   std::vector<double> netv = std::vector<double>(nos); // reserve big enough vector
   int c=0;
   for (auto const& r: organs) {
       for (size_t i=1; i<r->getNumberOfNodes(); i++) { // loop over all nodes of all roots
-          netv.at(c) = r->getNodeETime(i); // pray that ids are correct
+          netv.at(c) = r->getNodeET(i); // pray that ids are correct
           c++;
       }
   }
@@ -436,14 +438,14 @@ std::vector<double> Plant::getNETimes() const
 /**
  *  Returns the node emergence times to the corresponding polylines, see also RootSystem::getPolylines
  */
-std::vector<std::vector<double>> Plant::getPolylinesNET() const
+std::vector<std::vector<double>> Plant::getPolylinesNET(int otype) const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(otype); // update roots (if necessary)
   std::vector<std::vector<double>> times = std::vector<std::vector<double>>(organs.size()); // reserve big enough vector
   for (size_t j=0; j<organs.size(); j++) {
       std::vector<double>  rt = std::vector<double>(organs[j]->getNumberOfNodes());
       for (size_t i=0; i<organs[j]->getNumberOfNodes(); i++) {
-          rt[i] = organs[j]->getNodeETime(i);
+          rt[i] = organs[j]->getNodeET(i);
       }
       times[j] = rt;
   }
@@ -452,86 +454,87 @@ std::vector<std::vector<double>> Plant::getPolylinesNET() const
 
 
 /**
- * Copies a scalar that is constant per root to a sequential vector (one scalar per root).
+ * Copies a scalar that is constant per organ to a sequential vector (one scalar per organ).
  *
  * @param stype     a scalar type (@see RootSystem::ScalarTypes). st_time is the emergence time of the root
  */
-std::vector<double> Plant::getScalar(int stype) const
+std::vector<double> Plant::getScalar(int otype, int stype) const
 {
-  this->getRoots(); // update roots (if necessary)
+  this->getOrgans(otype); // update roots (if necessary)
   std::vector<double> scalars(organs.size());
   for (size_t i=0; i<organs.size(); i++) {
-      double value=0;
-      switch(stype) {
-        case st_type:  // type
-          value = organs[i]->param.type;
-          break;
-        case st_radius: // root radius
-          value = organs[i]->param.a;
-          break;
-        case st_order: { // root order (calculate)
-          value = 0;
-          Organ* r_ = organs[i];
-          while (r_->parent!=nullptr) {
-              value++;
-              r_=r_->parent;
-          }
-          break;
-        }
-        case st_time: // emergence time of the root
-          value = organs[i]->getNodeETime(0);
-          break;
-        case st_length:
-          value = organs[i]->length;
-          break;
-        case st_surface:
-          value =  organs[i]->length*2.*M_PI*organs[i]->param.a;
-          break;
-        case st_one:
-          value =  1;
-          break;
-        case st_parenttype: {
-          Organ* r_ = organs[i];
-          if (r_->parent!=nullptr) {
-              value = r_->parent->param.type;
-          } else {
-              value = 0;
-          }
-          break;
-        }
-        case st_lb:
-          value = organs[i]->param.lb;
-          break;
-        case st_la:
-          value = organs[i]->param.la;
-          break;
-        case st_nob:
-          value = organs[i]->param.nob;
-          break;
-        case st_r:
-          value = organs[i]->param.r;
-          break;
-        case st_theta:
-          value = organs[i]->param.theta;
-          break;
-        case st_rlt:
-          value = organs[i]->param.rlt;
-          break;
-        case st_meanln: {
-          const std::vector<double>& v_ = organs[i]->param.ln;
-          value = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
-          break;
-        }
-        case st_stdln: {
-          const std::vector<double>& v_ = organs[i]->param.ln;
-          double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
-          double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
-          value = std::sqrt(sq_sum / v_.size() - mean * mean);
-          break;
-        }
-        default:
-          throw std::invalid_argument( "RootSystem::getScalar type not implemented" );
-      }
+      const auto& o = organs[i];
+      double value = o->getScalar(stype);
+//      switch(stype) {
+//        case st_type:  // type
+//          value = organs[i]->param.type;
+//          break;
+//        case st_radius: // root radius
+//          value = organs[i]->param.a;
+//          break;
+//        case st_order: { // root order (calculate)
+//          value = 0;
+//          Organ* r_ = organs[i];
+//          while (r_->parent!=nullptr) {
+//              value++;
+//              r_=r_->parent;
+//          }
+//          break;
+//        }
+//        case st_time: // emergence time of the root
+//          value = organs[i]->getNodeETime(0);
+//          break;
+//        case st_length:
+//          value = organs[i]->length;
+//          break;
+//        case st_surface:
+//          value =  organs[i]->length*2.*M_PI*organs[i]->param.a;
+//          break;
+//        case st_one:
+//          value =  1;
+//          break;
+//        case st_parenttype: {
+//          Organ* r_ = organs[i];
+//          if (r_->parent!=nullptr) {
+//              value = r_->parent->param.type;
+//          } else {
+//              value = 0;
+//          }
+//          break;
+//        }
+//        case st_lb:
+//          value = organs[i]->param.lb;
+//          break;
+//        case st_la:
+//          value = organs[i]->param.la;
+//          break;
+//        case st_nob:
+//          value = organs[i]->param.nob;
+//          break;
+//        case st_r:
+//          value = organs[i]->param.r;
+//          break;
+//        case st_theta:
+//          value = organs[i]->param.theta;
+//          break;
+//        case st_rlt:
+//          value = organs[i]->param.rlt;
+//          break;
+//        case st_meanln: {
+//          const std::vector<double>& v_ = organs[i]->param.ln;
+//          value = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
+//          break;
+//        }
+//        case st_stdln: {
+//          const std::vector<double>& v_ = organs[i]->param.ln;
+//          double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
+//          double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
+//          value = std::sqrt(sq_sum / v_.size() - mean * mean);
+//          break;
+//        }
+//        default:
+//          throw std::invalid_argument( "RootSystem::getScalar type not implemented" );
+//      }
       scalars[i]=value;
   }
   return scalars;
@@ -552,7 +555,7 @@ std::string Plant::toString() const
  *
  * @param name      file name e.g. output.vtp
  */
-void Plant::write(std::string name) const
+void Plant::write(std::string name, int otype) const
 {
   std::ofstream fos;
   fos.open(name.c_str());
@@ -562,7 +565,7 @@ void Plant::write(std::string name) const
       writeRSML(fos);
   } else if (ext.compare("vtp")==0) {
       std::cout << "writing VTP... "<< name.c_str() <<"\n";
-      writeVTP(fos);
+      writeVTP(otype, fos);
   } else if (ext.compare(".py")==0)  {
       std::cout << "writing Geometry ... "<< name.c_str() <<"\n";
       writeGeometry(fos);
@@ -632,11 +635,11 @@ void Plant::writeRSMLPlant(std::ostream & os) const
  *
  * @param os      typically a file out stream
  */
-void Plant::writeVTP(std::ostream & os) const
+void Plant::writeVTP(int otype, std::ostream & os) const
 {
-  this->getRoots(); // update roots (if necessary)
-  const auto& nodes = getPolylines();
-  const auto& times = getPolylinesNET();
+  this->getOrgans(otype); // update roots (if necessary)
+  const auto& nodes = getPolylines(otype);
+  const auto& times = getPolylinesNET(otype);
 
   os << "<?xml version=\"1.0\"?>";
   os << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
@@ -661,8 +664,9 @@ void Plant::writeVTP(std::ostream & os) const
   os << "<CellData Scalars=\" CellData\">\n";
   const size_t N = 3; // SCALARS
   int types[N] = { st_type, st_order, st_radius };
+  std::vector<std::string> sTypeNames = { "type", "order", "radius"};
   for (size_t i=0; i<N; i++) {
-      os << "<DataArray type=\"Float32\" Name=\"" << scalarTypeNames[types[i]] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
+      os << "<DataArray type=\"Float32\" Name=\"" << sTypeNames[types[i]] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
       auto scalars = getScalar(types[i]);
       for (auto s : scalars) {
           os << s<< " ";

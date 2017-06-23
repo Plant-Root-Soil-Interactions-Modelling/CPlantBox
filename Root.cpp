@@ -14,36 +14,31 @@
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Root::Root(Plant* rs, int type, Vector3d pheading, double delay,  Organ* parent, double pbl, int pni)
+Root::Root(Plant* plant, Organ* parent, int type, double delay, Matrix3d heading ,int pni, double pbl)
+:Organ(plant,parent,type,delay), r_initialHeading(heading)
 {
 	//std::cout << "Root constructor \n";
-	rootsystem=rs; // remember
-	param = rs->getRootTypeParameter(type)->realize(); // throw the dice
-	double beta = 2*M_PI*rs->rand(); // initial rotation
-	Matrix3d ons = Matrix3d::ons(pheading);
+        RootTypeParameter* rtp = (RootTypeParameter*) plant->getOrganTypeParameter(Plant::ot_roots, type);
+        param = rtp->realize(); // throw the dice
+        RootParameter* p = (RootParameter*) param;
+        double beta = 2*M_PI*plant->rand(); // initial rotation
+	Matrix3d ons = Matrix3d::ons(r_initialHeading.column(0));
 	ons.times(Matrix3d::rotX(beta));
-	double theta = param.theta;
+	double theta = p->theta;
 	if (parent!=nullptr) { // scale if not a baseRoot
-		double scale = rs->getRootTypeParameter(type)->sa->getValue(parent->getNode(pni),this);
+		double scale = rtp->sa->getValue(parent->getNode(pni),this);
 		theta*=scale;
 	}
 	ons.times(Matrix3d::rotZ(theta));
-	this->iheading = ons.column(0);  // new initial heading
-	//
-	age = -delay; // the root starts growing when age>0
-	alive = 1; // alive per default
-	id = rs->getRootIndex(); // root id
-	this->parent = parent;
 	parent_base_length=pbl;
 	parent_ni=pni;
-	length = 0;
 	// initial node
 	if (parent!=nullptr) { // the first node of the base roots must be created in RootSystem::initialize()
 		// otherwise, don't use addNode for the first node of the root,
 		// since this node exists already and does not need a new identifier
 		nodes.push_back(parent->getNode(pni));
-		nodeIds.push_back(parent->getNodeId(pni));
-		netimes.push_back(parent->getNodeETime(pni)+delay);
+		nodeIds.push_back(parent->getNodeID(pni));
+		netimes.push_back(parent->getNodeET(pni)+delay);
 	}
 }
 

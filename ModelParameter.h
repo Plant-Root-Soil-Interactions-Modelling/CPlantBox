@@ -48,9 +48,16 @@ public:
 
   virtual ~OrganTypeParameter() { }
 
+  int organType = -1;
+  int type = -1;
+
   virtual OrganParameter* realize() const {
     return new OrganParameter();
   }
+
+  virtual void read(std::istream & in);
+  virtual void write(std::ostream & out) const;
+  virtual std::string toString() const { std::stringstream ss; write(ss); return ss.str(); }
 
 };
 
@@ -76,9 +83,9 @@ public:
   double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal root length [cm]
 
   // IO
-  void read(std::istream & cin); ///< reads a single root parameter set
-  void write(std::ostream & cout) const; ///< writes a single root parameter set
-  std::string toString() const { std::stringstream ss; write(ss); return ss.str(); } ///< writes parameter to a string
+  virtual void read(std::istream & in); ///< reads a single root parameter set
+  virtual void write(std::ostream & out) const; ///< writes a single root parameter set
+  virtual std::string toString() const { std::stringstream ss; write(ss); return ss.str(); } ///< writes parameter to a string
 
   // random numbers
   void setSeed(double seed) const { gen.seed(seed); } ///< Sets the seed of the random number generator

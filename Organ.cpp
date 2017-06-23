@@ -6,7 +6,7 @@
 Organ::Organ(Plant* plant, Organ* parent, int type, double delay) :plant(plant), parent(parent), age(delay)
 {
   id = plant->getOrganIndex();
-  param = plant->getOrganTypeParameter(type)->realize(); // creates specific parameter set e.g. from mean and std
+
 }
 
 /**
@@ -25,7 +25,7 @@ Organ::~Organ()
  */
 OrganTypeParameter* Organ::getOrganTypeParameter() const
 {
-  return plant->getOrganTypeParameter(param->type);
+  return plant->getOrganTypeParameter(param->organType, param->type);
 };
 
 /**
@@ -67,6 +67,20 @@ Matrix3d Organ::getAbsoluteInitialHeading() {
  */
 double Organ::getScalar(int stype) {
   switch(stype) {
+    case Plant::st_id:
+      return id;
+    case Plant::st_otype:
+      return param->organType;
+    case Plant::st_type:
+      return param->type;
+    case Plant::st_alive:
+      return alive;
+    case Plant::st_active:
+      return active;
+    case Plant::st_age:
+      return age;
+    case Plant::st_length:
+      return length;
     default:
       throw std::invalid_argument( "Organ::getScalar: unknown scalar type" );
   }

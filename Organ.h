@@ -9,8 +9,6 @@
 #include "sdf.h"
 #include "ModelParameter.h"
 
-#include "Plant.h"
-
 class Plant;
 
 /**
@@ -27,22 +25,21 @@ public:
     Organ(Plant* plant, Organ* parent, int type, double delay);
     virtual ~Organ();
 
-    void setRelativeOrigin(Vector3d o) { r_origin = o; };
-    void setRelativeInitialHeading(Matrix3d m) { r_initialHeading = m; };
+    virtual void setRelativeOrigin(Vector3d o) { r_origin = o; };
+    virtual void setRelativeInitialHeading(Matrix3d m) { r_initialHeading = m; };
     Vector3d getAbsoluteOrigin();
     Matrix3d getAbsoluteInitialHeading();
 
     virtual void simulate(double dt, bool silence = false) { age+=dt; }; ///< growth for a time span of \param dt
-
     virtual double getScalar(int stype);
 
-    virtual OrganTypeParameter* getOrganTypeParameter() const;  ///< returns the root type parameter of the root
-    virtual std::vector<Organ*> getOrgans(int otype); ///< return the organ including successors
-    virtual void getOrgans(int otype, std::vector<Organ*>& v); ///< returns the plant as sequential vector
+    OrganTypeParameter* getOrganTypeParameter() const;  ///< returns the root type parameter of the root
+    std::vector<Organ*> getOrgans(int otype); ///< return the organ including successors
+    void getOrgans(int otype, std::vector<Organ*>& v); ///< returns the plant as sequential vector
 
     /* IO */
-    void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
-    std::string toString() const;
+    virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
+    virtual std::string toString() const;
 
     /* up and down the organ tree */
     Plant* plant; ///< the plant of which this organ is part of
@@ -50,6 +47,7 @@ public:
     std::vector<Organ*> children; ///< the successive organs
 
     /* getter for the node data */
+    size_t getNumberOfNodes() const {return r_nodes.size(); }  ///< return the number of the nodes of the root
     std::vector<Vector3d> getRelativeNodes() { return r_nodes; }
     std::vector<int> getNodeIDs() { return nodeIDs; }
     std::vector<double> getNodeETs() { return nctimes; }
@@ -66,7 +64,7 @@ public:
 
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
-    OrganParameter* param; ///< the parameters of this root
+    OrganParameter* param = nullptr; ///< the parameters of this root
 
     /* Parameters that may change with time */
     bool alive = 1; ///< true: alive, false: dead
@@ -75,5 +73,7 @@ public:
     double length = 0; ///< actual length [cm] of the root. might differ from getLength(age) in case of impeded root growth
 
 };
+
+#include "Plant.h" // why?
 
 #endif /* ORGAN_H_ */
