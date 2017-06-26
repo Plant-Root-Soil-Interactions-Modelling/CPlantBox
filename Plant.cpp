@@ -13,18 +13,19 @@ Plant::~Plant()
  */
 void Plant::reset()
 {
-  for(auto b :baseRoots) {
-      delete b;
-  }
-  //  for(auto f:gf) {
-  //      delete f;
-  //  }
-  //  for(auto f:tf) {
-  //      delete f;
-  //  }
-  baseRoots.clear();
-  //  gf.clear();
-  //  tf.clear();
+//	seed->initialize();
+//  for(auto b :baseRoots) {
+//      delete b;
+//  }
+//  //  for(auto f:gf) {
+//  //      delete f;
+//  //  }
+//  //  for(auto f:tf) {
+//  //      delete f;
+//  //  }
+//  baseRoots.clear();
+//  //  gf.clear();
+//  //  tf.clear();
   simtime=0;
   rid = -1;
   nid = -1;
@@ -214,10 +215,8 @@ void Plant::simulate(double dt, bool silence)
       std::cout << "RootSystem.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
   }
   old_non = getNumberOfNodes();
-  old_nor = getOrgans(Plant::ot_all).size();
-  for (auto const& r: baseRoots) {
-      r->simulate(dt, silence);
-  }
+  old_nor = getOrgans(Plant::ot_organ).size();
+  seed->simulate(dt);
   simtime+=dt;
   organs.clear(); // empty buffer
 }
@@ -248,22 +247,6 @@ void Plant::setSeed(double seed) const {
   //      double s  = rand();
   //      rp.setSeed(1./s);
   //  }
-}
-
-/**
- * Creates a new lateral root (called by Root:createLateral)
- *
- * @param lt       lateral root type
- * @param h        initial heading of the new root
- * @param delay    time until the root starts to grow
- * @param parent   parent root
- * @param pbl      parent base length
- * @param pni      parent node index
- *
- */
-Organ* Plant::createRoot(int lt, Vector3d  h, double delay, Organ* parent, double pbl, int pni) {
-  // call Root* lateral = rootsystem->createRoot(lt,  h, delay,  this, length, nodes.size()-1);
-  // return new Organ(this,lt,h,delay,parent);
 }
 
 ///**
@@ -298,23 +281,11 @@ Organ* Plant::createRoot(int lt, Vector3d  h, double delay, Organ* parent, doubl
 //}
 
 /**
- * Represents the root system as sequential vector of roots,
- * copies the root only, if it has more than 1 node.
- * buffers the result, until next call of simulate(dt)
- *
- * \return sequential vector of roots with more than 1 node
+ * todo
  */
 std::vector<Organ*> Plant::getOrgans(int otype) const
 {
-  if (organs_type==otype) { // create buffer
-      for (auto const& br:this->baseRoots) {
-          br->getOrgans(otype, organs);
-      }
-      organs_type = otype;
-      return organs;
-  } else { // return buffer
-      return organs;
-  }
+	return seed->getOrgans(otype);
 }
 
 /**
@@ -322,7 +293,7 @@ std::vector<Organ*> Plant::getOrgans(int otype) const
  */
 std::vector<int> Plant::getRootTips() const
 {
-  this->getOrgans(Plant::ot_roots); // update roots (if necessary)
+  this->getOrgans(Plant::ot_root); // update roots (if necessary)
   std::vector<int> tips;
   for (auto& r : organs) {
       Root* r2 = (Root*)r;
@@ -336,7 +307,7 @@ std::vector<int> Plant::getRootTips() const
  */
 std::vector<int> Plant::getRootBases() const
 {
-  this->getOrgans(Plant::ot_roots); // update roots (if necessary)  std::vector<int> bases;
+  this->getOrgans(Plant::ot_root); // update roots (if necessary)  std::vector<int> bases;
   std::vector<int> bases;
   for (auto& r : organs) {
       Root* r2 = (Root*)r;
@@ -351,7 +322,7 @@ std::vector<int> Plant::getRootBases() const
  */
 std::vector<Vector3d> Plant::getNodes() const
 {
-  this->getOrgans(Plant::ot_all); // update roots (if necessary)
+  this->getOrgans(Plant::ot_organ); // update roots (if necessary)
   int non = getNumberOfNodes();
   std::vector<Vector3d> nv = std::vector<Vector3d>(non); // reserve big enough vector
   for (auto const& r: organs) {
@@ -422,13 +393,13 @@ std::vector<Organ*> Plant::getSegmentsOrigin(int otype) const
  */
 std::vector<double> Plant::getNETimes() const
 {
-  this->getOrgans(Plant::ot_all); // update roots (if necessary)
+  this->getOrgans(Plant::ot_organ); // update roots (if necessary)
   int nos=getNumberOfSegments();
   std::vector<double> netv = std::vector<double>(nos); // reserve big enough vector
   int c=0;
   for (auto const& r: organs) {
       for (size_t i=1; i<r->getNumberOfNodes(); i++) { // loop over all nodes of all roots
-          netv.at(c) = r->getNodeET(i); // pray that ids are correct
+          netv.at(c) = r->getNodeCT(i); // pray that ids are correct
           c++;
       }
   }
@@ -445,7 +416,7 @@ std::vector<std::vector<double>> Plant::getPolylinesNET(int otype) const
   for (size_t j=0; j<organs.size(); j++) {
       std::vector<double>  rt = std::vector<double>(organs[j]->getNumberOfNodes());
       for (size_t i=0; i<organs[j]->getNumberOfNodes(); i++) {
-          rt[i] = organs[j]->getNodeET(i);
+          rt[i] = organs[j]->getNodeCT(i);
       }
       times[j] = rt;
   }
@@ -620,9 +591,7 @@ void Plant::writeRSMLMeta(std::ostream & os) const
 void Plant::writeRSMLPlant(std::ostream & os) const
 {
   os << "<plant>\n";
-  for (auto const& root :baseRoots) {
-      root->writeRSML(os,"");
-  }
+  seed->writeRSML(os,"");
   os << "</plant>\n";
 }
 

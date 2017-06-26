@@ -4,13 +4,10 @@
 #include <chrono>
 #include <random>
 
-#include "Organ.h"
 #include "soil.h"
 
-class Organ;
 class SoilProperty;
-
-
+class Organ;
 
 /**
  * Base class for all tropism functions, e.g. Gravitropism, Plagiotropism, Exotropism...
@@ -203,6 +200,8 @@ private:
     std::vector<double> weights;
 };
 
+
+#include "Organ.h"
 
 
 #endif

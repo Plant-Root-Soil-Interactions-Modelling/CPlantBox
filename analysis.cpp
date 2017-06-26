@@ -75,12 +75,12 @@ std::vector<double> SegmentAnalyser::getScalar(int st) const
 	for (size_t i=0; i<segO.size(); i++) {
 		const auto& r = segO.at(i);
 		switch (st) {
-		case Plant::st_type:
-			v=r->param.type;
-			break;
-		case Plant::st_radius:
-			v=r->param.a;
-			break;
+//		case Plant::st_type:
+//			v=r->param->type;
+//			break;
+//		case Plant::st_radius:
+//			v=r->param.a;
+//			break;
 		case Plant::st_order: {
 			Organ* r_ = r;
 			while (r_->parent!=nullptr) { // find root order
@@ -93,22 +93,22 @@ std::vector<double> SegmentAnalyser::getScalar(int st) const
 			v = getSegmentLength(i);
 		}
 		break;
-		case Plant::st_surface: { // compute segment surface
-			v = getSegmentLength(i)*2*M_PI*r->param.a;
-		}
-		break;
+//		case Plant::st_surface: { // compute segment surface
+//			v = getSegmentLength(i)*2*M_PI*r->param.a;
+//		}
+//		break;
 		case Plant::st_one: { // e.g. for counting segments
 			v = 1;
 		}
 		break;
-		case Plant::st_parenttype: {
-			if (r->parent!=nullptr) {
-				v = r->parent->param.type;
-			} else {
-				v = 0;
-			}
-			break;
-		}
+//		case Plant::st_parenttype: {
+//			if (r->parent!=nullptr) {
+//				v = r->parent->param.type;
+//			} else {
+//				v = 0;
+//			}
+//			break;
+//		}
 		default:
 			throw std::invalid_argument( "SegmentAnalyser::getScalar: Type not implemented" );
 		}
@@ -583,16 +583,16 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<int> types) const
 	os << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
 	os << "<PolyData>\n";
 	os << "<Piece NumberOfLines=\""<< segments.size() << "\" NumberOfPoints=\""<< nodes.size()<< "\">\n";
-	// data (CellData)
-	os << "<CellData Scalars=\" CellData\">\n";
-	for (auto i : types) {
-		std::vector<double> data = getScalar(i);
-		os << "<DataArray type=\"Float32\" Name=\"" << Plant::scalarTypeNames.at(i) << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-		for (auto const& t : data) {
-			os << t << " ";
-		}
-		os << "\n</DataArray>\n";
-	}
+//	// data (CellData)
+//	os << "<CellData Scalars=\" CellData\">\n";
+//	for (auto i : types) {
+//		std::vector<double> data = getScalar(i);
+//		os << "<DataArray type=\"Float32\" Name=\"" << Plant::scalarTypeNames.at(i) << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
+//		for (auto const& t : data) {
+//			os << t << " ";
+//		}
+//		os << "\n</DataArray>\n";
+//	}
 	// write user data
 	for (size_t i=0; i<userData.size(); i++) {
 		const auto& data = userData.at(i);
@@ -640,12 +640,12 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 		Vector3d n1 = nodes.at(s.x);
 		Vector3d n2 = nodes.at(s.y);
 		Organ* r = segO.at(i);
-		double radius = r->param.a;
-		double red = r->getRootTypeParameter()->colorR;
-		double green = r->getRootTypeParameter()->colorG;
-		double blue = r->getRootTypeParameter()->colorB;
+		double radius = ((Root*)r)->tParam()->a;
+		double red = ((Root*)r)->tParam()->colorR; // TODO
+		double green = ((Root*)r)->tParam()->colorG;
+		double blue = ((Root*)r)->tParam()->colorB;
 		double time = ctimes.at(i);
-		double type = r->param.type;
+		double type = r->param->type;
 		os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
 				radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " \n";
 	}
@@ -675,11 +675,11 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 		Vector3d n2 = nodes.at(s.y);
 		Organ* r = segO.at(i);
 		int branchnumber = r->id;
-		double radius = r->param.a;
+		double radius = 0; // r->param.a; // TODO
 		double length = sqrt((n1.x-n2.x)*(n1.x-n2.x)+(n1.y-n2.y)*(n1.y-n2.y)+(n1.z-n2.z)*(n1.z-n2.z));
 		double surface = 2*radius*M_PI*length;
 		double time = ctimes.at(i);
-		double type = r->param.type;
+		double type = 0; // r->param.type; // TODO
 		os << s.x << " " << s.y << " " << type << " " << branchnumber << " " << surface/10000 << " " << length/100 <<" " << radius/100 << " " << "0.00" << " " << "0.0001" << " "<< "0.00001" << " " << time*3600*24 << " \n";
 	}
 

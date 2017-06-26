@@ -7,7 +7,7 @@
  * OrganParameter
  *
  * RootTypeParameter            parameters for a root type
- * RootParameters     		parameter values for a specific root
+ * RootParameters     			parameter values for a specific root
  *
  * PlantParameter               parameters for single plant
  */
@@ -22,8 +22,10 @@
 #include "mymath.h"
 #include "soil.h"
 
+// forward declarations
 class RootParameter;
-
+class GrowthFunction;
+class TropismFunction;
 
 /**
  *
@@ -55,8 +57,8 @@ public:
     return new OrganParameter();
   }
 
-  virtual void read(std::istream & in);
-  virtual void write(std::ostream & out) const;
+  virtual void read(std::istream & in) { };
+  virtual void write(std::ostream & out) const { };
   virtual std::string toString() const { std::stringstream ss; write(ss); return ss.str(); }
 
 };
@@ -123,6 +125,9 @@ public:
   std::string name;	///< Root type name
   std::vector<int> successor;			///< Lateral types [1]
   std::vector<double> successorP; 	///< Probabiltities of lateral type to emerge (sum of values == 1) [1]
+
+  GrowthFunction* growth;
+  TropismFunction* tropism;
 
   SoilProperty* se = new SoilProperty(); ///< scale elongation function
   SoilProperty* sa = new SoilProperty(); ///< scale angle function

@@ -14,7 +14,7 @@ class Plant;
 /**
  * Organ
  *
- * Abstract base class of root, shoot or leaf
+ * Base class of seed, root, shoot and leaf
  *
  */
 class Organ
@@ -25,11 +25,14 @@ public:
     Organ(Plant* plant, Organ* parent, int type, double delay);
     virtual ~Organ();
 
+    virtual int organType();///< overwrite for each organ
+
     virtual void setRelativeOrigin(Vector3d o) { r_origin = o; };
     virtual void setRelativeInitialHeading(Matrix3d m) { r_initialHeading = m; };
     Vector3d getAbsoluteOrigin();
     Matrix3d getAbsoluteInitialHeading();
 
+    virtual void initialize() { }; ///< create call backs from the parameters set TODO
     virtual void simulate(double dt, bool silence = false) { age+=dt; }; ///< growth for a time span of \param dt
     virtual double getScalar(int stype);
 
@@ -38,8 +41,8 @@ public:
     void getOrgans(int otype, std::vector<Organ*>& v); ///< returns the plant as sequential vector
 
     /* IO */
-    virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
     virtual std::string toString() const;
+    virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
 
     /* up and down the organ tree */
     Plant* plant; ///< the plant of which this organ is part of
@@ -53,14 +56,7 @@ public:
     std::vector<double> getNodeETs() { return nctimes; }
     Vector3d getNode(int i) const { return r_nodes.at(i); } ///< i-th node of the root
     int getNodeID(int i) const {return nodeIDs.at(i); } ///< unique identifier of i-th node
-    double getNodeET(int i) const { return nctimes.at(i); } ///< emergence time of i-th node
-
-    /* node data (todo private?) */
-    Vector3d r_origin; // relative origin
-    Matrix3d r_initialHeading; // relative initialHeading
-    std::vector<Vector3d> r_nodes; ///< relative nodes of the root
-    std::vector<int> nodeIDs; ///< unique node identifier
-    std::vector<double> nctimes; ///< node creation times [days]
+    double getNodeCT(int i) const { return nctimes.at(i); } ///< emergence time of i-th node
 
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
@@ -71,6 +67,13 @@ public:
     bool active = 1; ///< true: active, false: root stopped growing
     double age = 0; ///< current age [days]
     double length = 0; ///< actual length [cm] of the root. might differ from getLength(age) in case of impeded root growth
+
+    /* node data (todo private?) */
+    Vector3d r_origin =Vector3d(); // relative origin
+    Matrix3d r_initialHeading = Matrix3d(); // relative initialHeading
+    std::vector<Vector3d> r_nodes; ///< relative nodes of the root
+    std::vector<int> nodeIDs; ///< unique node identifier
+    std::vector<double> nctimes; ///< node creation times [days]
 
 };
 

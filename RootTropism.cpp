@@ -134,7 +134,7 @@ double Exotropism::tropismObjective(const Vector3d& pos, Matrix3d old, double a,
 {
     old.times(Matrix3d::rotX(b));
     old.times(Matrix3d::rotZ(a));
-    Vector3d iheading = root->iheading;
+    Vector3d iheading = root->r_initialHeading.column(0);
     double s = iheading.times(old.column(0));
     s*=(1./iheading.length()); // iheading should be normed anyway?
     s*=(1./old.column(0).length());

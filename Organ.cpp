@@ -21,6 +21,14 @@ Organ::~Organ()
 }
 
 /**
+ * returns the type of the organ
+ */
+int Organ::organType() {
+	return Plant::ot_organ;
+}
+
+
+/**
  * todo
  */
 OrganTypeParameter* Organ::getOrganTypeParameter() const
@@ -110,7 +118,7 @@ void Organ::getOrgans(int otype, std::vector<Organ*>& v)
   if (this->r_nodes.size()>1) {
       int ot = this->param->organType;
       switch(otype) {
-        case Plant::ot_all:
+        case Plant::ot_organ:
           v.push_back(this);
           break;
         case Plant::ot_seed:
@@ -118,8 +126,8 @@ void Organ::getOrgans(int otype, std::vector<Organ*>& v)
               v.push_back(this);
           }
           break;
-        case Plant::ot_roots:
-          if (ot==Plant::ot_roots) {
+        case Plant::ot_root:
+          if (ot==Plant::ot_root) {
               v.push_back(this);
           }
           break;

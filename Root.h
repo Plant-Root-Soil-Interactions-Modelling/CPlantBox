@@ -26,8 +26,11 @@ class Root : public Organ
 public:
 
     Root(Plant* plant, Organ* parent, int type, double delay, Matrix3d heading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
-    virtual ~Root();
+    virtual ~Root() { }; // base class constructor is called automatically in c++
 
+    virtual int organType();
+
+    virtual void initialize() { }; ///< create call backs from the parameters set TODO
     void simulate(double dt, bool silence = false); ///< root growth for a time span of \param dt
 
     /* exact from analytical equations */
@@ -35,12 +38,13 @@ public:
     double getLength(double age); ///< analytical length of the root
     double getAge(double length); ///< analytical age of the root
 
+    /* abbreviations */
+    RootParameter* rParam() const { return (RootParameter*)param;  } ///< type cast
+    RootTypeParameter* tParam() const; // type cast
     double dx() const { return ((RootTypeParameter*)getOrganTypeParameter())->dx; } ///< returns the axial resolution
+    Vector3d heading() const; /// current heading of the root tip
 
-    std::vector<Organ*> getRoots(); ///< return the root including laterals as sequential vector
-    void getRoots(std::vector<Organ*>& v); ///< return the root system as sequential vector
-
-    /* Nodes of the root */
+    /* nodes */
     void addNode(Vector3d n,double t); //< adds a node to the root
 
     /* IO */
@@ -48,8 +52,8 @@ public:
     std::string toString() const;
 
     /* parameters that are given per root that are constant*/
-    double parent_base_length; ///< length [cm]
-    int parent_ni; ///< parent node index
+    int pni; ///< parent node index
+    double pbl; ///< length [cm]
 
     const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
 
@@ -58,6 +62,7 @@ protected:
     void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
     void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
 
+    int old_non = 0;
 };
 
 #endif /* ROOT_H_ */

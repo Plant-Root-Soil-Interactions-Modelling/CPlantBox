@@ -1,8 +1,6 @@
 #ifndef GROWTH_H
 #define GROWTH_H
 
-#include "Organ.h"
-
 class Organ;
 
 /**
