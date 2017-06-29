@@ -27,8 +27,8 @@ public:
 
     virtual int organType() const;///< overwrite for each organ
 
-    Vector3d getRelativeOrigin(Vector3d o) const { return r_origin; };
-    void setRelativeOrigin(Vector3d o) { r_origin = o; };
+    virtual Vector3d getRelativeOrigin() const { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
+    virtual void setRelativeOrigin(Vector3d o) { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
     virtual Matrix3d getRelativeInitialHeading() const { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
     virtual void setRelativeInitialHeading(Matrix3d m) { throw std::invalid_argument("Organ::setRelativeInitialHeading not implemented");  };
     Vector3d getAbsoluteOrigin() const;
@@ -69,9 +69,6 @@ public:
     bool active = 1; ///< true: active, false: root stopped growing
     double age = 0; ///< current age [days]
     double length = 0; ///< actual length [cm] of the root. might differ from getLength(age) in case of impeded root growth
-
-    /* node data (todo private?) */
-    Vector3d r_origin =Vector3d(); // relative origin
 
     std::vector<Vector3d> r_nodes; ///< relative nodes of the root
     std::vector<int> nodeIDs; ///< unique node identifier

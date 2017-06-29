@@ -45,9 +45,9 @@ Vector3d Organ::getAbsoluteOrigin() const {
   while (p->organType() != Plant::ot_seed) {
       Vector3d o;
       if (p->parent!=0) {
-          o = parent->getRelativeInitialHeading().times(p->r_origin);
+          o = parent->getRelativeInitialHeading().times(p->getRelativeOrigin());
       } else {
-          o = p->r_origin;
+          o = p->getRelativeOrigin();
       }
       o0.plus(o);
       p = p->parent;
