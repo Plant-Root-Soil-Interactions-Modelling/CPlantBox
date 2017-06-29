@@ -14,16 +14,15 @@
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Root::Root(Plant* plant, Organ* parent, int type, double delay, Matrix3d heading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
+Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
-	r_initialHeading=heading;
+	initialHeading=iheading;
 	//std::cout << "Root constructor \n";
 	RootTypeParameter* rtp = (RootTypeParameter*) plant->getOrganTypeParameter(Plant::ot_root, type);
 	param = rtp->realize(); // throw the dice
 	RootParameter* p = (RootParameter*) param;
 	double beta = 2*M_PI*plant->rand(); // initial rotation
-	Vector3d h = r_initialHeading.column(0);
-	Matrix3d ons = Matrix3d::ons(h);
+	Matrix3d ons = Matrix3d::ons(initialHeading);
 	ons.times(Matrix3d::rotX(beta));
 	double theta = p->theta;
 	if (parent!=nullptr) { // scale if not a baseRoot
@@ -217,7 +216,7 @@ void Root::createLateral(bool silence)
 		double ageLG = this->getAge(length+rp->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Root* lateral = new Root(plant, this, lt, delay, Matrix3d::ons(h),  length, r_nodes.size()-1);
+		Root* lateral = new Root(plant, this, lt, delay, h,  length, r_nodes.size()-1);
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
@@ -251,7 +250,7 @@ void Root::createSegments(double l, bool silence)
 					h = n2.minus(r_nodes.at(nn-3));
 					h.normalize();
 				} else {
-					h = r_initialHeading.column(0);
+					h = initialHeading;
 				}
 				double sdx = std::min(dx()-olddx,l);
 
@@ -325,7 +324,7 @@ Vector3d Root::heading() const {
 	if (r_nodes.size()>1) {
 		h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2)); // getHeading(b-a)
 	} else {
-		h= r_initialHeading.column(0);
+		h = initialHeading;
 	}
 	return h;
 }

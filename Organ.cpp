@@ -23,7 +23,7 @@ Organ::~Organ()
 /**
  * returns the type of the organ
  */
-int Organ::organType() {
+int Organ::organType() const {
 	return Plant::ot_organ;
 }
 
@@ -39,13 +39,13 @@ OrganTypeParameter* Organ::getOrganTypeParameter() const
 /**
  * todo test...
  */
-Vector3d Organ::getAbsoluteOrigin() {
-  Organ* p = this;
+Vector3d Organ::getAbsoluteOrigin() const {
+  const Organ* p = this;
   Vector3d o0 = Vector3d();
-  while (p != nullptr) {
+  while (p->organType() != Plant::ot_seed) {
       Vector3d o;
       if (p->parent!=0) {
-          o = parent->r_initialHeading.times(p->r_origin);
+          o = parent->getRelativeInitialHeading().times(p->r_origin);
       } else {
           o = p->r_origin;
       }
@@ -58,11 +58,11 @@ Vector3d Organ::getAbsoluteOrigin() {
 /**
  * todo test, multiplication from left?
  */
-Matrix3d Organ::getAbsoluteInitialHeading() {
-  Organ* p = this;
+Matrix3d Organ::getAbsoluteInitialHeading() const {
+  const Organ* p = this;
   Matrix3d ah = Matrix3d();
-  while (p != nullptr) {
-      Matrix3d iH = p->r_initialHeading;
+  while (p->organType() != Plant::ot_seed) {
+      Matrix3d iH = p->getRelativeInitialHeading();
       iH.times(ah);
       ah = iH;
       p = p->parent;

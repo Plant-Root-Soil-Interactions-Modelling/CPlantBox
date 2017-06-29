@@ -25,12 +25,14 @@ public:
     Organ(Plant* plant, Organ* parent, int type, double delay);
     virtual ~Organ();
 
-    virtual int organType();///< overwrite for each organ
+    virtual int organType() const;///< overwrite for each organ
 
-    virtual void setRelativeOrigin(Vector3d o) { r_origin = o; };
-    virtual void setRelativeInitialHeading(Matrix3d m) { r_initialHeading = m; };
-    Vector3d getAbsoluteOrigin();
-    Matrix3d getAbsoluteInitialHeading();
+    Vector3d getRelativeOrigin(Vector3d o) const { return r_origin; };
+    void setRelativeOrigin(Vector3d o) { r_origin = o; };
+    virtual Matrix3d getRelativeInitialHeading() const { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
+    virtual void setRelativeInitialHeading(Matrix3d m) { throw std::invalid_argument("Organ::setRelativeInitialHeading not implemented");  };
+    Vector3d getAbsoluteOrigin() const;
+    Matrix3d getAbsoluteInitialHeading() const;
 
     virtual void initialize() { }; ///< create call backs from the parameters set TODO
     virtual void simulate(double dt, bool silence = false) { age+=dt; }; ///< growth for a time span of \param dt
@@ -70,7 +72,7 @@ public:
 
     /* node data (todo private?) */
     Vector3d r_origin =Vector3d(); // relative origin
-    Matrix3d r_initialHeading = Matrix3d(); // relative initialHeading
+
     std::vector<Vector3d> r_nodes; ///< relative nodes of the root
     std::vector<int> nodeIDs; ///< unique node identifier
     std::vector<double> nctimes; ///< node creation times [days]

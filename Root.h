@@ -25,7 +25,7 @@ class Root : public Organ
 
 public:
 
-    Root(Plant* plant, Organ* parent, int type, double delay, Matrix3d heading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
+    Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
     virtual ~Root() { }; // base class constructor is called automatically in c++
 
     virtual int organType();
@@ -57,12 +57,15 @@ public:
 
     const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
 
+    Vector3d initialHeading;
+
 protected:
 
     void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
     void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
 
     int old_non = 0;
+
 };
 
 #endif /* ROOT_H_ */
