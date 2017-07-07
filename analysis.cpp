@@ -71,48 +71,8 @@ std::vector<double> SegmentAnalyser::getScalar(int st) const
 		return data;
 	}
 
-	double v = 0; // value
 	for (size_t i=0; i<segO.size(); i++) {
-		const auto& r = segO.at(i);
-		switch (st) {
-//		case Plant::st_type:
-//			v=r->param->type;
-//			break;
-//		case Plant::st_radius:
-//			v=r->param.a;
-//			break;
-		case Plant::st_order: {
-			Organ* r_ = r;
-			while (r_->parent!=nullptr) { // find root order
-				v++;
-				r_=r_->parent;
-			}
-		}
-		break;
-		case Plant::st_length: { // compute segment length
-			v = getSegmentLength(i);
-		}
-		break;
-//		case Plant::st_surface: { // compute segment surface
-//			v = getSegmentLength(i)*2*M_PI*r->param.a;
-//		}
-//		break;
-		case Plant::st_one: { // e.g. for counting segments
-			v = 1;
-		}
-		break;
-//		case Plant::st_parenttype: {
-//			if (r->parent!=nullptr) {
-//				v = r->parent->param.type;
-//			} else {
-//				v = 0;
-//			}
-//			break;
-//		}
-		default:
-			throw std::invalid_argument( "SegmentAnalyser::getScalar: Type not implemented" );
-		}
-		data.at(i) = v;
+		data.at(i) = segO.at(i)->getScalar(st);
 	}
 	return data;
 }
@@ -555,13 +515,13 @@ void SegmentAnalyser::write(std::string name)
 	std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
 	if (ext.compare("vtp")==0) {
 		std::cout << "writing VTP: " << name << "\n";
-		this->writeVTP(fos,{ Plant::st_radius, Plant::st_type, Plant::st_time });
+		this->writeVTP(fos,{ Plant::st_radius, Plant::st_subtype, Plant::st_time });
 	} else if (ext.compare("txt")==0)  {
 		std::cout << "writing text file for Matlab import: "<< name << "\n";
-		writeRBSegments(fos);
+		this->writeRBSegments(fos);
 	} else if (ext.compare("dgf")==0)  {
 		std::cout << "writing dgf file: "<< name << "\n";
-		writeDGF(fos);
+		this->writeDGF(fos);
 	} else {
 		throw std::invalid_argument("SegmentAnalyser::write: Unknown file type");
 	}
@@ -583,16 +543,16 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<int> types) const
 	os << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
 	os << "<PolyData>\n";
 	os << "<Piece NumberOfLines=\""<< segments.size() << "\" NumberOfPoints=\""<< nodes.size()<< "\">\n";
-//	// data (CellData)
-//	os << "<CellData Scalars=\" CellData\">\n";
-//	for (auto i : types) {
-//		std::vector<double> data = getScalar(i);
-//		os << "<DataArray type=\"Float32\" Name=\"" << Plant::scalarTypeNames.at(i) << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-//		for (auto const& t : data) {
-//			os << t << " ";
-//		}
-//		os << "\n</DataArray>\n";
-//	}
+	// data (CellData)
+	os << "<CellData Scalars=\" CellData\">\n";
+	for (auto i : types) {
+		std::vector<double> data = getScalar(i);
+		os << "<DataArray type=\"Float32\" Name=\"" << Plant::scalarTypeNames.at(i) << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
+		for (auto const& t : data) {
+			os << t << " ";
+		}
+		os << "\n</DataArray>\n";
+	}
 	// write user data
 	for (size_t i=0; i<userData.size(); i++) {
 		const auto& data = userData.at(i);
@@ -640,15 +600,19 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 		Vector3d n1 = nodes.at(s.x);
 		Vector3d n2 = nodes.at(s.y);
 		Organ* r = segO.at(i);
-		double radius = ((Root*)r)->tParam()->a;
-		double red = ((Root*)r)->tParam()->colorR; // TODO
-		double green = ((Root*)r)->tParam()->colorG;
-		double blue = ((Root*)r)->tParam()->colorB;
-		double time = ctimes.at(i);
-		double type = r->param->type;
-		os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
-				radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " \n";
+		// std::cout << "#" << i <<": organ " << r->organType() << " (" << s.x<< ", "<< s.y << ")  \n";
+		if (r->organType()==Plant::ot_root) {
+			double radius = ((Root*)r)->tParam()->a;
+			double red = ((Root*)r)->tParam()->colorR;
+			double green = ((Root*)r)->tParam()->colorG;
+			double blue = ((Root*)r)->tParam()->colorB;
+			double time = ctimes.at(i);
+			double type = r->param->subType;
+			os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
+					radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " \n";
+		}
 	}
+	//std::cout << "fin\n";
 }
 
 /**

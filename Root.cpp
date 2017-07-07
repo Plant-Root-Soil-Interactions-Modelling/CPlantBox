@@ -25,13 +25,13 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
 	Matrix3d ons = Matrix3d::ons(initialHeading);
 	ons.times(Matrix3d::rotX(beta));
 	double theta = p->theta;
-	if (parent!=nullptr) { // scale if not a baseRoot
+	if (parent->organType()!=Plant::ot_seed) { // scale if not a base root
 		double scale = rtp->sa->getValue(parent->getNode(pni),this);
 		theta*=scale;
 	}
 	ons.times(Matrix3d::rotZ(theta));
 	// initial node
-	if (parent!=nullptr) { // the first node of the base roots must be created in RootSystem::initialize()
+	if (parent->organType()!=Plant::ot_seed) { // the first node of the base roots must be created in Seed::initialize()
 		// otherwise, don't use addNode for the first node of the root,
 		// since this node exists already and does not need a new identifier
 		r_nodes.push_back(parent->getNode(pni));
@@ -40,7 +40,7 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
 	}
 }
 
-int Root::organType()
+int Root::organType() const
 {
 	return Plant::ot_root;
 }
@@ -96,7 +96,7 @@ void Root::simulate(double dt, bool silence)
 				double dl = std::max(scale*e, double(0)); // length increment, dt is not used anymore
 
 				// create geometry
-				if (rp->nob>0) { // root has laterals
+				if (rp->ln.size()>0) { // root has laterals
 					// basal zone
 					if ((dl>0)&&(length<rp->lb)) { // length is the current length of the root
 						if (length+dl<=rp->lb) {
@@ -155,6 +155,41 @@ void Root::simulate(double dt, bool silence)
 }
 
 /**
+ *
+ */
+double Root::getScalar(int stype) const {
+	switch(stype) {
+	// st_rlt, st_meanln, st_stdln , st_nob, st_surface, , // root level
+	case Plant::st_lb:
+		return rParam()->lb;
+	case Plant::st_la:
+		return rParam()->la;
+	case Plant::st_r:
+		return rParam()->r;
+	case Plant::st_radius:
+		return rParam()->a;
+	case Plant::st_theta:
+		return rParam()->theta;
+	case Plant::st_rlt:
+		return rParam()->rlt;
+	case Plant::st_meanln:
+		return std::accumulate(rParam()->ln.begin(), rParam()->ln.end(), 0.0) / rParam()->ln.size();
+	case Plant::st_stdln: {
+		const std::vector<double>& v_ = rParam()->ln;
+		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
+		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
+		return std::sqrt(sq_sum / v_.size() - mean * mean);
+	}
+	case Plant::st_surface:
+		return rParam()->a*rParam()->a*M_PI*length;
+	case Plant::st_nob:
+		return rParam()->ln.size();
+	default:
+		return  Organ::getScalar(stype);
+	}
+}
+
+/**
  * Analytical creation (=emergence) time of a node at a length along the root
  *
  * @param length   length of the root [cm]
@@ -164,7 +199,7 @@ double Root::getCreationTime(double length)
 	assert(length>=0);
 	double rootage = getAge(length);
 	assert(rootage>=0);
-	if (parent!=nullptr) {
+	if (parent->organType()!=Plant::ot_seed) {
 		if (parent->organType()==Plant::ot_root) {
 			double pl = pbl+((Root*)parent)->rParam()->la; // parent length, when this root was created
 			double pAge=((Root*)parent)->getCreationTime(pl);
@@ -200,6 +235,21 @@ double Root::getAge(double length)
 }
 
 /**
+ *
+ */
+RootTypeParameter* Root::tParam() const {
+	return (RootTypeParameter*)getOrganTypeParameter();
+}
+
+/**
+ *
+ */
+double Root::dx() const
+{
+	return ((RootTypeParameter*)getOrganTypeParameter())->dx;
+}
+
+/**
  * Creates a new lateral by calling RootSystem::createNewRoot().
  *
  * Overwrite this method to implement more sezialized root classes.
@@ -208,15 +258,15 @@ void Root::createLateral(bool silence)
 {
 	const RootParameter* rp = rParam(); // rename
 	int lt = tParam()->getLateralType(r_nodes.back());
-	// std::cout << "createLateral()\n";
-	// std::cout << "lateral type " << lt << "\n";
+	//	std::cout << "createLateral()\n";
+	//	std::cout << "lateral type " << lt << "\n";
 
 	if (lt>0) {
 		double ageLN = this->getAge(length); // age of root when lateral node is created
 		double ageLG = this->getAge(length+rp->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Root* lateral = new Root(plant, this, lt, delay, h,  length, r_nodes.size()-1);
+		Root* lateral = new Root(plant, this, lt, delay, h,  r_nodes.size()-1, length);
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
@@ -309,14 +359,11 @@ void Root::createSegments(double l, bool silence)
 		Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
 		double ct = this->getCreationTime(length+sl);
 		ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+		// std::cout<<"add node "<<newnode.toString()<<"\n";
 		addNode(newnode,ct);
 
 	} // for
 
-}
-
-RootTypeParameter* Root::tParam() const {
-	return (RootTypeParameter*)plant->getOrganTypeParameter(Plant::ot_root, param->type);
 }
 
 Vector3d Root::heading() const {
@@ -407,7 +454,7 @@ void Root::writeRSML(std::ostream & cout, std::string indent) const
 std::string Root::toString() const
 {
 	std::stringstream str;
-	str << "Root #"<< id <<": type "<<param->type << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
+	str << "Root #"<< id <<": type "<<param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
 	return str.str();
 }
 

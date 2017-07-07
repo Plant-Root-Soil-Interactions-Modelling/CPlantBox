@@ -18,6 +18,7 @@
 #include "RootGrowth.h"
 
 class Seed;
+class SeedParameter;
 
 /**
  * Plant
@@ -33,25 +34,24 @@ public:
 
   enum OrganTypes { ot_organ, ot_seed, ot_root, ot_stem, ot_leafe, ot_shoot };
 
-  enum ScalarTypes { st_id, st_otype, st_type, st_alive, st_active, st_age, st_length,  // organ level
-    st_radius, st_order, st_time , st_surface, st_one , st_userdata1, st_userdata2, st_userdata3,
-    st_lb, st_la, st_nob, st_r, st_theta, st_rlt, st_parenttype,
-    st_meanln, st_stdln}; ///< @see RootSystem::getScalar
+  enum ScalarTypes { st_id, st_otype, st_subtype, st_alive, st_active, st_age, st_length, st_one, st_order, st_parenttype, st_time, // organ level
+	 st_lb, st_la, st_r, st_radius, st_theta, st_rlt, st_meanln, st_stdln , st_nob, st_surface, // root level
+	 st_userdata1, st_userdata2, st_userdata3 // analyser
+  }; ///< @see RootSystem::getScalar
+  static const std::vector<std::string> scalarTypeNames; ///< the corresponding names
 
-  Plant() { initRTP(); };
+  Plant();
   virtual ~Plant();
 
   /* Parameter input output */
-  void setOrganTypeParameter(OrganTypeParameter* p) { organParam.at(p->organType).at(p->type) = p; } ///< set the organ type parameter
-  OrganTypeParameter* getOrganTypeParameter(int otype, int type) { return organParam.at(otype).at(type); } ///< Returns the i-th root parameter set (i=1..n)
-  void setRootSystemParameter(const RootSystemParameter& rsp) { rsparam = rsp; } ///< sets the root system parameters
-  RootSystemParameter* getRootSystemParameter() { return &rsparam; } ///< gets the root system parameters
+  void setOrganTypeParameter(OrganTypeParameter* p);///< set the organ type parameter
+  OrganTypeParameter* getOrganTypeParameter(int otype, int subtype) const;
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
   int readParameters(std::istream & cin); ///< Reads root parameters from an input stream
   void writeParameters(std::ostream & os) const; ///< Writes root parameters
 
   /* Simulation */
-  void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
+  void setGeometry(SignedDistanceFunction* geom); ///< optionally, sets a confining geometry (call before RootSystem::initialize())
   void reset(); ///< resets the root class, keeps the root type parameters
   void initialize(int basal=4, int shootborne=5); ///< creates the base roots, call before simulation and after setting the plant and root parameters
   void simulate(double dt, bool silence = false); ///< simulates root system growth for time span dt
@@ -61,7 +61,14 @@ public:
   /* Analysis of simulation results */
   // Organs
   int getNumberOfNodes() const { return nid+1; } ///< Number of nodes of the root system
-  int getNumberOfSegments() const { return nid+1-0; } ///< todo -baseRoots.size() Number of segments of the root system (the number of nodes-1 for tap root systems)
+  int getNumberOfSegments() const {
+	  getOrgans(Plant::ot_organ);
+	  int c = 0;
+	  for (const auto& o : organs) {
+		  c += (o->r_nodes.size()-1);
+	  }
+	  return c;
+  } ///< todo -baseRoots.size() Number of segments of the root system (the number of nodes-1 for tap root systems)
   std::vector<Organ*> getOrgans(int otype) const; ///< Represents the root system as sequential vector of roots and buffers the result
   std::vector<Vector3d> getNodes() const; ///< Copies all root system nodes into a vector
   std::vector<std::vector<Vector3d>> getPolylines(int otype=Plant::ot_organ) const; ///< Copies the nodes of each root into a vector return all resulting vectors
@@ -71,11 +78,9 @@ public:
   std::vector<std::vector<double>> getPolylinesNET(int otype=Plant::ot_organ) const; ///< Copies the node emergence times of each root into a vector and returns all resulting vectors
   std::vector<double> getScalar(int otype=Plant::ot_organ, int stype=Plant::st_length) const; ///< Copies a scalar root parameter that is constant per root to a vector
 
-
   // std::vector<Organ*> getBaseRoots() const { return baseRoots; } ///< Base roots are tap root, basal roots, and shoot borne roots
   std::vector<int> getRootTips() const; ///< Node indices of the root tips
   std::vector<int> getRootBases() const; ///< Node indices of the root bases
-
 
   // Output Simulation results
   void write(std::string name, int otype = Plant::ot_organ) const; /// writes simulation results (type is determined from file extension in name)
@@ -96,8 +101,6 @@ public:
 
 protected:
 
-  RootSystemParameter rsparam; ///< Plant parameter
-
   std::vector<std::vector<OrganTypeParameter*>> organParam; ///< Parameter set for each root type
 
   Seed* seed;
@@ -113,9 +116,9 @@ protected:
   mutable int organs_type = -1; // type of buffered organs
   mutable std::vector<Organ*> organs = std::vector<Organ*>(); // buffer
 
-  const int maxtypes = 100;
+  const int maxtypes = 20;
   const int maxorgans = 10;
-  void initRTP(); // default values for rtparam vector
+  void initOTP(); // default values for rtparam vector
 
   void writeRSMLMeta(std::ostream & os) const;
   void writeRSMLPlant(std::ostream & os) const;

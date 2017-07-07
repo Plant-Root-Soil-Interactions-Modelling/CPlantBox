@@ -9,10 +9,10 @@ class Plant;
 class Root;
 
 /**
- * Root
+ * Seed
  *
- * Describes a single root, by a vector of nodes representing the root.
- * The method simulate() creates new nodes of this root, and lateral roots in the root's branching zone.
+ * the main organ of the plant,
+ * simulate calls the simulate method of the stem, and base roots
  *
  */
 class Seed : public Organ
@@ -21,18 +21,16 @@ class Seed : public Organ
 public:
 
 	Seed(Plant* plant);
+	virtual ~Seed() { };
 
-	virtual int organType();
+	virtual int organType() const override;
 
-	virtual void initialize() { }; ///< create call backs from the parameters set TODO
-	virtual void simulate(double dt, bool silence = false);
+	virtual void initialize();
+	virtual void simulate(double dt, bool silence = false) override;
 
-	virtual std::string toString() const;
+	virtual std::string toString() const override;
 
-	std::vector<Root*> roots; // tap root, and basal roots
-
-	Organ* shoot = nullptr; // todo will be of type shoot
-
+	const int basalType = 4;
 };
 
 

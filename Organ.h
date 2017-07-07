@@ -10,6 +10,8 @@
 #include "ModelParameter.h"
 
 class Plant;
+class OrganTypeParameter;
+class OrganParameter;
 
 /**
  * Organ
@@ -22,43 +24,48 @@ class Organ
 
 public:
 
-    Organ(Plant* plant, Organ* parent, int type, double delay);
+    Organ(Plant* plant, Organ* parent, int subtype, double delay);
     virtual ~Organ();
 
     virtual int organType() const;///< overwrite for each organ
 
+    /* scene graph for upper plant parts */
     virtual Vector3d getRelativeOrigin() const { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
     virtual void setRelativeOrigin(Vector3d o) { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
     virtual Matrix3d getRelativeInitialHeading() const { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
     virtual void setRelativeInitialHeading(Matrix3d m) { throw std::invalid_argument("Organ::setRelativeInitialHeading not implemented");  };
-    Vector3d getAbsoluteOrigin() const;
-    Matrix3d getAbsoluteInitialHeading() const;
+    Vector3d getAbsoluteOrigin() const; ///< the absolute origin coordinates
+    Matrix3d getAbsoluteInitialHeading() const; ///<  the absolute heading coordinates
 
-    virtual void initialize() { }; ///< create call backs from the parameters set TODO
+    /* parameters */
+    OrganTypeParameter* getOrganTypeParameter() const;  ///< organ type parameter
+
+    /* simulation */
     virtual void simulate(double dt, bool silence = false) { age+=dt; }; ///< growth for a time span of \param dt
-    virtual double getScalar(int stype);
 
-    OrganTypeParameter* getOrganTypeParameter() const;  ///< returns the root type parameter of the root
-    std::vector<Organ*> getOrgans(int otype); ///< return the organ including successors
-    void getOrgans(int otype, std::vector<Organ*>& v); ///< returns the plant as sequential vector
+    /* post processing */
+    std::vector<Organ*> getOrgans(int otype); ///< the organ including successors in a sequential vector
+    void getOrgans(int otype, std::vector<Organ*>& v); ///< the organ including successors in a sequential vector
+
+    virtual double getScalar(int stype) const; ///< returns an organ parameter of Plant::ScalarType
 
     /* IO */
     virtual std::string toString() const;
     virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
-
-    /* up and down the organ tree */
-    Plant* plant; ///< the plant of which this organ is part of
-    Organ* parent; ///< pointer to the parent organ (equals nullptr if it has no parent)
-    std::vector<Organ*> children; ///< the successive organs
 
     /* getter for the node data */
     size_t getNumberOfNodes() const {return r_nodes.size(); }  ///< return the number of the nodes of the root
     std::vector<Vector3d> getRelativeNodes() { return r_nodes; }
     std::vector<int> getNodeIDs() { return nodeIDs; }
     std::vector<double> getNodeETs() { return nctimes; }
-    Vector3d getNode(int i) const { return r_nodes.at(i); } ///< i-th node of the root
+    Vector3d getNode(int i) const { return r_nodes.at(i); } ///< i-th node of the root TODO
     int getNodeID(int i) const {return nodeIDs.at(i); } ///< unique identifier of i-th node
     double getNodeCT(int i) const { return nctimes.at(i); } ///< emergence time of i-th node
+
+    /* up and down the organ tree */
+    Plant* plant; ///< the plant of which this organ is part of
+    Organ* parent; ///< pointer to the parent organ (equals nullptr if it has no parent)
+    std::vector<Organ*> children; ///< the successive organs
 
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
@@ -70,6 +77,7 @@ public:
     double age = 0; ///< current age [days]
     double length = 0; ///< actual length [cm] of the root. might differ from getLength(age) in case of impeded root growth
 
+    /* node data */
     std::vector<Vector3d> r_nodes; ///< relative nodes of the root
     std::vector<int> nodeIDs; ///< unique node identifier
     std::vector<double> nctimes; ///< node creation times [days]

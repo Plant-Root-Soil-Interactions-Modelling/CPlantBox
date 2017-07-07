@@ -12,6 +12,8 @@
 #include "ModelParameter.h"
 
 class Plant;
+class RootParameter;
+class RootTypeParameter;
 
 /**
  * Root
@@ -28,10 +30,13 @@ public:
     Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
     virtual ~Root() { }; // base class constructor is called automatically in c++
 
-    virtual int organType();
+    virtual int organType() const override;
 
-    virtual void initialize() { }; ///< create call backs from the parameters set TODO
-    void simulate(double dt, bool silence = false); ///< root growth for a time span of \param dt
+    /* simulation */
+    virtual void simulate(double dt, bool silence = false) override; ///< root growth for a time span of \param dt
+
+    /* get results */
+    virtual double getScalar(int stype) const override; ///< returns an organ parameter of Plant::ScalarType
 
     /* exact from analytical equations */
     double getCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
@@ -41,15 +46,15 @@ public:
     /* abbreviations */
     RootParameter* rParam() const { return (RootParameter*)param;  } ///< type cast
     RootTypeParameter* tParam() const; // type cast
-    double dx() const { return ((RootTypeParameter*)getOrganTypeParameter())->dx; } ///< returns the axial resolution
+    double dx() const; ///< returns the axial resolution
     Vector3d heading() const; /// current heading of the root tip
-
-    /* nodes */
-    void addNode(Vector3d n,double t); //< adds a node to the root
 
     /* IO */
     void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
     std::string toString() const;
+
+    /* nodes */
+    void addNode(Vector3d n, double t); //< adds a node to the root
 
     /* parameters that are given per root that are constant*/
     int pni; ///< parent node index
