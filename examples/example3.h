@@ -24,7 +24,7 @@ void example3()
           Plant* rs = new Plant();
           allRS.push_back(rs);
           rs->openFile(name);
-          rs->getRootSystemParameter()->seedPos = Vector3d(dist*i,dist*j,-3); // set position of seed [cm]
+        //  rs->getRootSystemParameter()->seedPos = Vector3d(dist*i,dist*j,-3); // set position of seed [cm] TODO
       }
   }
 

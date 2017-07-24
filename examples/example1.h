@@ -12,22 +12,21 @@ using namespace std;
 
 void example1()
 {
-    Plant rootsystem;
+    Plant plant;
 
     string name = "Anagallis_femina_Leitner_2010";
-
 
     /*
      * Open plant and root parameter from a file
      */
-    rootsystem.openFile(name);
-    rootsystem.writeParameters(std::cout);
+    plant.openFile(name);
+    // plant.writeParameters(std::cout);
 
     /*
      * Initialize
      */
-    rootsystem.initialize();
-
+    plant.initialize();
+    std::cout << "finished initialize\n";
     /*
      * Simulate
      */
@@ -36,38 +35,36 @@ void example1()
     int N = round(simtime/dt);
 
     for (int i=0; i<N; i++) {
-        rootsystem.simulate(dt);
+        plant.simulate(dt);
     }
-    cout << "fin\n";
+    cout << "fin (with " << plant.getNumberOfNodes() << " nodes) \n";
+    auto o_ = plant.getOrgans(Plant::ot_organ);
+    cout << o_.size() << " organs \n";
 
     /*
      * Export final result (as vtp)
      */
-    rootsystem.write("rootsystem.vtp");
+    plant.write("rootsystem.vtp");
 
-    /*
-     * Export segments in RSML format
-     */
-    rootsystem.write("rootsystem.rsml");
 
     /*
      * Export segments for Matlab analysis
      */
-    SegmentAnalyser analysis(rootsystem);
+    SegmentAnalyser analysis(plant);
     analysis.write("rootsystem.txt");
+    analysis.write("rootsystem2.vtp");
 
     /*
      * Export dgf file
      */
-    SegmentAnalyser analysis_dgf(rootsystem);
-    analysis_dgf.write(name+".dgf");
+    // analysis.write("rootsystem.dgf");
 
     /*
       Total length and surface
      */
-    double l = analysis.getSummed(Plant::st_length);
-    std::cout << "Root system length " << l << " cm \n";
+//    double l = analysis.getSummed(Plant::st_length);
+//    std::cout << "Root system length " << l << " cm \n";
 
-    cout << "Finished with a total of " << rootsystem.getNumberOfNodes()<< " nodes\n";
+    cout << "Finished with a total of " << plant.getNumberOfNodes()<< " nodes\n";
 
 }
