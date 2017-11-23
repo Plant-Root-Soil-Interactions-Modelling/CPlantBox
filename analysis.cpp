@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 #include "analysis.h"
 #include <iostream>
 #include <iomanip>
@@ -515,7 +518,7 @@ void SegmentAnalyser::write(std::string name)
 	std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
 	if (ext.compare("vtp")==0) {
 		std::cout << "writing VTP: " << name << "\n";
-		this->writeVTP(fos,{ Plant::st_radius, Plant::st_subtype, Plant::st_time });
+		this->writeVTP(fos,{ Plant::st_radius, Plant::st_subtype, Plant::st_time, Plant::st_otype });
 	} else if (ext.compare("txt")==0)  {
 		std::cout << "writing text file for Matlab import: "<< name << "\n";
 		this->writeRBSegments(fos);
@@ -594,22 +597,45 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<int> types) const
  */
 void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
-	os << "x1 y1 z1 x2 y2 z2 radius R G B time type \n";
+         double radius ;
+                double red ;
+                double green;
+                double blue ;
+                double time ;
+                double type ;
+                double organ;
+
+	os << "x1 y1 z1 x2 y2 z2 radius R G B time type organ \n";
 	for (size_t i=0; i<segments.size(); i++) {
 		Vector2i s = segments.at(i);
 		Vector3d n1 = nodes.at(s.x);
 		Vector3d n2 = nodes.at(s.y);
 		Organ* r = segO.at(i);
+		organ=r->organType();
 		// std::cout << "#" << i <<": organ " << r->organType() << " (" << s.x<< ", "<< s.y << ")  \n";
-		if (r->organType()==Plant::ot_root) {
-			double radius = ((Root*)r)->tParam()->a;
-			double red = ((Root*)r)->tParam()->colorR;
-			double green = ((Root*)r)->tParam()->colorG;
-			double blue = ((Root*)r)->tParam()->colorB;
-			double time = ctimes.at(i);
-			double type = r->param->subType;
-			os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
-					radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " \n";
+		switch (r->organType()){
+
+            case Plant::ot_root :
+                 radius = ((Root*)r)->tParam()->a;
+                red = ((Root*)r)->tParam()->colorR;
+                green = ((Root*)r)->tParam()->colorG;
+                blue = ((Root*)r)->tParam()->colorB;
+                time = ctimes.at(i);
+                type = r->root_param->subType;
+
+                os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
+                        radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ <<" \n";
+break;
+            case Plant::ot_stem :
+                radius = ((Stem*)r)->stParam()->a;
+                red = ((Stem*)r)->stParam()->colorR;
+                green = ((Stem*)r)->stParam()->colorG;
+                blue = ((Stem*)r)->stParam()->colorB;
+                time = ctimes.at(i);
+                type = r->stem_param->subType;
+                os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
+                        radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ << " \n";
+                        break;
 		}
 	}
 	//std::cout << "fin\n";

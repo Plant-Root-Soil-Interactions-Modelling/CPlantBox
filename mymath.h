@@ -1,3 +1,7 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <cassert>
+#include <vector>
+// *** END ***
 #ifndef MYMATH_H_
 #define MYMATH_H_
 

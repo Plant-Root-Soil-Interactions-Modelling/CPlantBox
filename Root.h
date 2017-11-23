@@ -1,3 +1,7 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <cassert>
+#include <istream>
+// *** END ***
 #ifndef ROOT_H_
 #define ROOT_H_
 
@@ -44,7 +48,7 @@ public:
     double getAge(double length); ///< analytical age of the root
 
     /* abbreviations */
-    RootParameter* rParam() const { return (RootParameter*)param;  } ///< type cast
+    RootParameter* rParam() const { return (RootParameter*)root_param;  } ///< type cast
     RootTypeParameter* tParam() const; // type cast
     double dx() const; ///< returns the axial resolution
     Vector3d heading() const; /// current heading of the root tip

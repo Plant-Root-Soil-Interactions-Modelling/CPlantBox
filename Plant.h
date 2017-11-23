@@ -1,3 +1,6 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 #ifndef PLANT_H_
 #define PLANT_H_
 
@@ -12,10 +15,15 @@
 #include "Organ.h"
 #include "Root.h"
 #include "Seed.h"
+#include "Stem.h"
 
 #include "soil.h"
 #include "RootTropism.h"
 #include "RootGrowth.h"
+#include "StemGrowth.h"
+#include "StemTropism.h"
+
+
 
 class Seed;
 class SeedParameter;
@@ -44,10 +52,11 @@ public:
   virtual ~Plant();
 
   /* Parameter input output */
-  void setOrganTypeParameter(OrganTypeParameter* p);///< set the organ type parameter
+  void setOrganTypeParameter(OrganTypeParameter*  p );///< set the organ type parameter TODO change p
   OrganTypeParameter* getOrganTypeParameter(int otype, int subtype) const;
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
-  int readParameters(std::istream & cin); ///< Reads root parameters from an input stream
+  int readRootParameters(std::istream & cin); ///< Reads root parameters from an input stream
+  int readStemParameters(std::istream & cin); ///< Reads stem parameters from an input stream
   void writeParameters(std::ostream & os) const; ///< Writes root parameters
 
   /* Simulation */
@@ -71,11 +80,11 @@ public:
   } ///< todo -baseRoots.size() Number of segments of the root system (the number of nodes-1 for tap root systems)
   std::vector<Organ*> getOrgans(int otype) const; ///< Represents the root system as sequential vector of roots and buffers the result
   std::vector<Vector3d> getNodes() const; ///< Copies all root system nodes into a vector
-  std::vector<std::vector<Vector3d>> getPolylines(int otype=Plant::ot_organ) const; ///< Copies the nodes of each root into a vector return all resulting vectors
+  std::vector<std::vector<Vector3d> > getPolylines(int otype=Plant::ot_organ) const; ///< Copies the nodes of each root into a vector return all resulting vectors
   std::vector<Vector2i> getSegments(int otype=Plant::ot_organ) const; ///< Copies all segments indices into a vector
   std::vector<Organ*> getSegmentsOrigin(int otype=Plant::ot_organ) const; ///< Copies a pointer to the root containing the segment
   std::vector<double> getNETimes() const; ///< Copies all node emergence times into a vector
-  std::vector<std::vector<double>> getPolylinesNET(int otype=Plant::ot_organ) const; ///< Copies the node emergence times of each root into a vector and returns all resulting vectors
+  std::vector<std::vector<double> > getPolylinesNET(int otype=Plant::ot_organ) const; ///< Copies the node emergence times of each root into a vector and returns all resulting vectors
   std::vector<double> getScalar(int otype=Plant::ot_organ, int stype=Plant::st_length) const; ///< Copies a scalar root parameter that is constant per root to a vector
 
   // std::vector<Organ*> getBaseRoots() const { return baseRoots; } ///< Base roots are tap root, basal roots, and shoot borne roots
@@ -101,7 +110,7 @@ public:
 
 protected:
 
-  std::vector<std::vector<OrganTypeParameter*>> organParam; ///< Parameter set for each root type
+  std::vector <std::vector<OrganTypeParameter*> > organParam; ///< Parameter set for each root type
 
   Seed* seed;
 
@@ -128,5 +137,38 @@ protected:
   mutable std::normal_distribution<double> ND = std::normal_distribution<double>(0,1);
 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif /* ROOTSYSTEM_H_ */

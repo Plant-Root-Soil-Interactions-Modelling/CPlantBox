@@ -32,7 +32,7 @@ Vector3d TropismFunction::getPosition(const Vector3d& pos, Matrix3d old, double 
  */
 Vector2d TropismFunction::getHeading(const Vector3d& pos, Matrix3d old, double dx,const Organ* root)
 {
-    //std::cout<<"TropismFunction::getHeading()\n";
+//    std::cout<<"TropismFunction::getHeading()\n";
     double a = sigma*randn()*sqrt(dx);
     double b = rand()*2*M_PI;
     double v;

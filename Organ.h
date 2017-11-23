@@ -1,3 +1,7 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <cassert>
+#include <istream>
+// *** END ***
 #ifndef ORGAN_H_
 #define ORGAN_H_
 
@@ -30,10 +34,22 @@ public:
     virtual int organType() const;///< overwrite for each organ
 
     /* scene graph for upper plant parts */
-    virtual Vector3d getRelativeOrigin() const { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
-    virtual void setRelativeOrigin(Vector3d o) { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
-    virtual Matrix3d getRelativeInitialHeading() const { throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented"); };
-    virtual void setRelativeInitialHeading(Matrix3d m) { throw std::invalid_argument("Organ::setRelativeInitialHeading not implemented");  };
+    virtual Vector3d getRelativeOrigin() const
+    {
+        throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented");
+    };
+    virtual void setRelativeOrigin(Vector3d o)
+    {
+        throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented");
+    };
+    virtual Matrix3d getRelativeInitialHeading() const
+    {
+        throw std::invalid_argument("Organ::getRelativeInitialHeading not implemented");
+    };
+    virtual void setRelativeInitialHeading(Matrix3d m)
+    {
+        throw std::invalid_argument("Organ::setRelativeInitialHeading not implemented");
+    };
     Vector3d getAbsoluteOrigin() const; ///< the absolute origin coordinates
     Matrix3d getAbsoluteInitialHeading() const; ///<  the absolute heading coordinates
 
@@ -41,7 +57,10 @@ public:
     OrganTypeParameter* getOrganTypeParameter() const;  ///< organ type parameter
 
     /* simulation */
-    virtual void simulate(double dt, bool silence = false) { age+=dt; }; ///< growth for a time span of \param dt
+    virtual void simulate(double dt, bool silence = false)
+    {
+        age+=dt;
+    }; ///< growth for a time span of \param dt
 
     /* post processing */
     std::vector<Organ*> getOrgans(int otype); ///< the organ including successors in a sequential vector
@@ -54,13 +73,34 @@ public:
     virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
 
     /* getter for the node data */
-    size_t getNumberOfNodes() const {return r_nodes.size(); }  ///< return the number of the nodes of the root
-    std::vector<Vector3d> getRelativeNodes() { return r_nodes; }
-    std::vector<int> getNodeIDs() { return nodeIDs; }
-    std::vector<double> getNodeETs() { return nctimes; }
-    Vector3d getNode(int i) const { return r_nodes.at(i); } ///< i-th node of the root TODO
-    int getNodeID(int i) const {return nodeIDs.at(i); } ///< unique identifier of i-th node
-    double getNodeCT(int i) const { return nctimes.at(i); } ///< emergence time of i-th node
+    size_t getNumberOfNodes() const
+    {
+        return r_nodes.size();    ///< return the number of the nodes of the root
+    }
+    std::vector<Vector3d> getRelativeNodes()
+    {
+        return r_nodes;
+    }
+    std::vector<int> getNodeIDs()
+    {
+        return nodeIDs;
+    }
+    std::vector<double> getNodeETs()
+    {
+        return nctimes;
+    }
+    Vector3d getNode(int i) const
+    {
+        return r_nodes.at(i);    ///< i-th node of the root TODO
+    }
+    int getNodeID(int i) const
+    {
+        return nodeIDs.at(i);    ///< unique identifier of i-th node
+    }
+    double getNodeCT(int i) const
+    {
+        return nctimes.at(i);    ///< emergence time of i-th node
+    }
 
     /* up and down the organ tree */
     Plant* plant; ///< the plant of which this organ is part of
@@ -69,7 +109,8 @@ public:
 
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
-    OrganParameter* param = nullptr; ///< the parameters of this root
+    OrganParameter* root_param = nullptr; ///< the parameters of this root
+    OrganParameter* stem_param = nullptr; ///< the parameters of this root
 
     /* Parameters that may change with time */
     bool alive = 1; ///< true: alive, false: dead

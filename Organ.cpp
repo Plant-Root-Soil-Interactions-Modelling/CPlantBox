@@ -17,8 +17,10 @@ Organ::~Organ()
 	for(auto c : children) {
 		delete c;
 	}
-	delete param;
+    delete stem_param;
+	delete root_param;
 }
+
 
 /**
  * returns the type of the organ
@@ -30,10 +32,22 @@ int Organ::organType() const {
 
 /**
  * todo
+ 1. get declaration of the parameters and
+ 2. future can use cast override to increase efficiency
  */
-OrganTypeParameter* Organ::getOrganTypeParameter() const
+ OrganTypeParameter* Organ::getOrganTypeParameter() const
 {
-	return plant->getOrganTypeParameter(this->organType(), param->subType);
+    switch (organType()) {//check the type of the organ
+//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
+	//used to debug and check organType and reference
+	case Plant::ot_seed :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Plant::ot_root :return plant->getOrganTypeParameter(this->organType(), root_param->subType);
+	case Plant::ot_stem :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Plant::ot_leafe :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Plant::ot_shoot :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+
+
+    }
 };
 
 /**
@@ -82,7 +96,16 @@ double Organ::getScalar(int stype) const {
 	case Plant::st_otype:
 		return this->organType();
 	case Plant::st_subtype:
-		return param->subType;
+		   switch (organType()) {//check the type of the organ
+//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param->subType<<std::endl;
+	//used to debug and check organType and reference
+	case Plant::ot_seed :return stem_param->subType;
+	case Plant::ot_root :return root_param->subType;
+	case Plant::ot_stem :return stem_param->subType;
+	case Plant::ot_leafe :return stem_param->subType;
+	case Plant::ot_shoot :return stem_param->subType;
+		   }
+
 	case Plant::st_alive:
 		return alive;
 	case Plant::st_active:
@@ -236,14 +259,16 @@ void Organ::writeRSML(std::ostream & cout, std::string indent) const
 }
 
 /**
- * Quick info about the object for debugging
+ * Quick info about the object for debugging TODO change param to stem_param or root_param
  */
 std::string Organ::toString() const
 {
 	std::stringstream str;
-	str << "Organ #"<< id <<": type "<< param->subType << ", length: "<< length << ", age: " << age
+	str << "Organ #"<< id <<": type "<< root_param->subType << ", length: "<< length << ", age: " << age
 			<<" with "<< children.size() << " successors\n";
 	return str.str();
 }
+
+///Organ Type Parameter read function
 
 

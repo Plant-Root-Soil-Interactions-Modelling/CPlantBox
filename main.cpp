@@ -1,4 +1,8 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <istream>
+// *** END ***
 // Copyright (C) 2016 Daniel Leitner and Andrea Schnepf. See //license.txt for details.
+///This is an under developed version with a simple stem growth.
 
 #include "Plant.h"
 #include "analysis.h"

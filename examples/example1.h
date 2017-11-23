@@ -14,7 +14,7 @@ void example1()
 {
     Plant plant;
 
-    string name = "Anagallis_femina_Leitner_2010";
+    string name = "CPlantBox_test_Xiaoran";
 
     /*
      * Open plant and root parameter from a file
@@ -44,7 +44,7 @@ void example1()
     /*
      * Export final result (as vtp)
      */
-    plant.write("rootsystem.vtp");
+    plant.write("plant_write_rootsystem.vtp");
 
 
     /*
@@ -52,7 +52,7 @@ void example1()
      */
     SegmentAnalyser analysis(plant);
     analysis.write("rootsystem.txt");
-    analysis.write("rootsystem2.vtp");
+    analysis.write("analysis_write_rootsystem.vtp");
 
     /*
      * Export dgf file

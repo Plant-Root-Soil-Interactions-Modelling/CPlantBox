@@ -63,6 +63,9 @@ public:
     std::vector<double> ctimes; ///< creation times of the segments
     std::vector<Organ*> segO; ///< to look up things
 
+
+
+
 protected:
 
     std::vector<std::vector<double>> userData; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.

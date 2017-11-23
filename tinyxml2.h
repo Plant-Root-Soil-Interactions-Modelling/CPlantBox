@@ -1,3 +1,8 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <cassert>
+#include <locale>
+#include <string>
+// *** END ***
 /*
 Original code by Lee Thomason (www.grinninglizard.com)
 

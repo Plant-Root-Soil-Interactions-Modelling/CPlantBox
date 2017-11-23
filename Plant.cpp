@@ -26,16 +26,47 @@ Plant::~Plant()
 /**
  *	Deletes the old parameter, sets the new one
  */
-void Plant::setOrganTypeParameter(OrganTypeParameter* p)
+void Plant::setOrganTypeParameter(OrganTypeParameter*  p)
 {
-	// std::cout << "Plant::setOrganTypeParameter " << p->organType << ", " << p->subType <<"\n";
-	delete organParam.at(p->organType).at(p->subType);
-	organParam.at(p->organType).at(p->subType) = p;
+//	 std::cout << "Plant::setOrganTypeParameter " << stem_p->organType << ", " << stem_p->subType <<"\n";
+
+//	switch (OrganTypes()) {//check the type of the organ
+//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
+	//used to debug and check organType and reference
+//	case 1 :delete organParam.at(stem_p->organType).at(stem_p->subType);
+//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+
+//	case 2 :
+	    delete organParam.at(p->organType).at(p->subType);
+                            organParam.at(p->organType).at(p->subType) = p;
+//	case 3 :delete organParam.at(stem_p->organType).at(stem_p->subType);
+//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+//	case 4 :delete organParam.at(stem_p->organType).at(stem_p->subType);
+//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+//	case 5 :delete organParam.at(stem_p->organType).at(stem_p->subType);
+//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+
+//    }
+
+
+
 }
+
+
+//
+//void Plant::setOrganTypeParameter(OrganTypeParameter* p)
+//{
+//	 std::cout << "Plant::setOrganTypeParameter " << p->organType << ", " << p->subType <<"\n";
+//	delete organParam.at(p->organType).at(p->subType);
+//	organParam.at(p->organType).at(p->subType) = p;
+//}
+
+
+
 
 OrganTypeParameter* Plant::getOrganTypeParameter(int otype, int subtype) const
 {
-	// std::cout << "Plant::getOrganTypeParameter " << otype << ", " << subtype <<"\n";
+//	std::cout << "Plant::getOrganTypeParameter " << otype << ", " << subtype <<"\n";
 	return organParam.at(otype).at(subtype);
 }
 
@@ -97,7 +128,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	fis.open(rp_name.c_str());
 	int c = 0;
 	if (fis.good()) { // did it work?
-		c = readParameters(fis);
+		c = readRootParameters(fis);
 		fis.close();
 	} else {
 		std::string s = "RootSystem::openFile() could not open root parameter file ";
@@ -115,10 +146,30 @@ void Plant::openFile(std::string name, std::string subdir)
 		stp->read(fis);
 		fis.close();
 	} else { // create a tap root system
-		std::cout << "No root system parameters found, using default tap root system \n";
+		std::cout << "No seed system parameters found, using default tap root system \n";
 		delete stp;
 		setOrganTypeParameter(new SeedTypeParameter());
 	}
+
+
+// open stem parameter
+
+	std::string stp_name = subdir;
+	stp_name.append(name);
+	stp_name.append(".stparam");
+	fis.open(stp_name.c_str());
+	int stem_c = 0;
+	if (fis.good()) { // did it work?
+		stem_c = readStemParameters(fis);
+		fis.close();
+	} else {
+		std::string s = "stemSystem::openFile() could not open root parameter file ";
+		throw std::invalid_argument(s.append(stp_name));
+	}
+	std::cout << "Read " << stem_c << " stem type parameters \n"; // debug
+
+
+
 }
 
 /**
@@ -126,17 +177,38 @@ void Plant::openFile(std::string name, std::string subdir)
  *
  * @param cin  in stream
  */
-int Plant::readParameters(std::istream& cin)
+int Plant::readRootParameters(std::istream& cin)
 {
 	// initOTP();
 	int c = 0;
 	while (cin.good()) {
 		RootTypeParameter* p  = new RootTypeParameter();
+//		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
 		p->read(cin);
+//		stem_p->read(cin);
 		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+//		setOrganTypeParameter(stem_p);
 		c++;
 	}
 	return c;
+
+}
+
+int Plant::readStemParameters(std::istream& cin)
+{
+	// initOTP();
+	int stem_c = 0;
+	while (cin.good()) {
+//		RootTypeParameter* p  = new RootTypeParameter();
+		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
+//		p->read(cin);
+		stem_p->read(cin);
+//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+		setOrganTypeParameter(stem_p);
+		stem_c++;
+	}
+	return stem_c;
+
 }
 
 /**
@@ -203,7 +275,7 @@ void Plant::initialize(int basaltype, int shootbornetype)
 void Plant::simulate(double dt, bool silence)
 {
 	if (!silence) {
-		std::cout << "RootSystem.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
+		std::cout << "Plant.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
 	}
 	getOrgans(Plant::ot_organ);
 	old_non = getNumberOfNodes();

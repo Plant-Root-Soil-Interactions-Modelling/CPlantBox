@@ -19,12 +19,12 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
 	initialHeading=iheading;
 	//std::cout << "Root constructor \n";
 	RootTypeParameter* rtp = (RootTypeParameter*) plant->getOrganTypeParameter(Plant::ot_root, type);
-	param = rtp->realize(); // throw the dice
-	RootParameter* p = (RootParameter*) param;
+	root_param = rtp->realize(); // throw the dice
+	RootParameter* root_p = (RootParameter*) root_param;
 	double beta = 2*M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialHeading);
 	ons.times(Matrix3d::rotX(beta));
-	double theta = p->theta;
+	double theta = root_p->theta;
 	if (parent->organType()!=Plant::ot_seed) { // scale if not a base root
 		double scale = rtp->sa->getValue(parent->getNode(pni),this);
 		theta*=scale;
@@ -69,11 +69,11 @@ void Root::simulate(double dt, bool silence)
 
 		// probabilistic branching model (todo test)
 		if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
-			double P = tp->sbp->getValue(r_nodes.back(),this);
-			if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
-				double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
-				std::cout <<P<<", "<<p<< "\n";
-				if (plant->rand()>p) { // not rand()<p
+			double root_P = tp->sbp->getValue(r_nodes.back(),this);
+			if (root_P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
+				double root_p = 1.-std::pow((1.-root_P), dt); //probability of emergence in this time step
+				std::cout <<root_P<<", "<<root_p<< "\n";
+				if (plant->rand()>root_p) { // not rand()<p
 					age -= dt; // the root does not emerge in this time step
 				}
 			}
@@ -454,7 +454,7 @@ void Root::writeRSML(std::ostream & cout, std::string indent) const
 std::string Root::toString() const
 {
 	std::stringstream str;
-	str << "Root #"<< id <<": type "<<param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
+	str << "Root #"<< id <<": type "<<root_param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
 	return str.str();
 }
 
