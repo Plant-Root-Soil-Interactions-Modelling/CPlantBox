@@ -3,4 +3,8 @@
 .pydevproject
 .settings/
 Debug/
+*.vtp
+*.txt
+a.out
+CPlantBox_Codeblocks_project/
 
