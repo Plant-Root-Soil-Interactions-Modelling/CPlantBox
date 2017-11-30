@@ -16,12 +16,15 @@
 #include "Root.h"
 #include "Seed.h"
 #include "Stem.h"
+#include "Leaf.h"
 
 #include "soil.h"
 #include "RootTropism.h"
 #include "RootGrowth.h"
 #include "StemGrowth.h"
 #include "StemTropism.h"
+#include "LeafGrowth.h"
+#include "LeafTropism.h"
 
 
 
@@ -57,6 +60,7 @@ public:
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
   int readRootParameters(std::istream & cin); ///< Reads root parameters from an input stream
   int readStemParameters(std::istream & cin); ///< Reads stem parameters from an input stream
+  int readLeafParameters(std::istream & cin);
   void writeParameters(std::ostream & os) const; ///< Writes root parameters
 
   /* Simulation */

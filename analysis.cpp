@@ -636,6 +636,17 @@ break;
                 os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
                         radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ << " \n";
                         break;
+                        ///evil copy paste which will be removed later
+                        case Plant::ot_leafe :
+                radius = ((Leaf*)r)->ltParam()->a;
+                red = ((Leaf*)r)->ltParam()->colorR;
+                green = ((Leaf*)r)->ltParam()->colorG;
+                blue = ((Leaf*)r)->ltParam()->colorB;
+                time = ctimes.at(i);
+                type = r->leaf_param->subType;
+                os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
+                        radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ << " \n";
+                        break;
 		}
 	}
 	//std::cout << "fin\n";

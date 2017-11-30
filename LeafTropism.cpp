@@ -1,4 +1,4 @@
-#include "StemTropism.h"
+#include "LeafTropism.h"
 
 
 
@@ -13,7 +13,7 @@
 *
 * \return             position
 */
-Vector3d StemTropismFunction::getPosition(const Vector3d& pos, Matrix3d old, double a, double b, double dx)
+Vector3d LeafTropismFunction::getPosition(const Vector3d& pos, Matrix3d old, double a, double b, double dx)
 {
   old.times(Matrix3d::rotX(b)); // TODO not nice, there should be a better way, but no easy
   old.times(Matrix3d::rotZ(a));
@@ -33,9 +33,9 @@ Vector3d StemTropismFunction::getPosition(const Vector3d& pos, Matrix3d old, dou
 
 
 ///---------------------------------------------------------------Tropism Modified and Used--------------------------------------------------------------///
-Vector2d StemTropismFunction::getHeading(const Vector3d& pos, Matrix3d old, double dx,const Organ* stem)
+Vector2d LeafTropismFunction::getHeading(const Vector3d& pos, Matrix3d old, double dx,const Organ* leaf)
 {
-  //std::cout<<"StemTropismFunction::getHeading()\n";
+  //std::cout<<"LeafTropismFunction::getHeading()\n";
   double a = 0;//sigma*randn()*sqrt(dx);
   double b = 0;//rand()*2*M_PI;
   double v;
@@ -50,11 +50,11 @@ Vector2d StemTropismFunction::getHeading(const Vector3d& pos, Matrix3d old, doub
     }
     double bestA = a;
     double bestB = b;
-    double bestV = this->stemtropismObjective(pos,old,a,b,dx,stem);
+    double bestV = this->leaftropismObjective(pos,old,a,b,dx,leaf);
     for (int i=0; i<n_; i++) {
       b = 2*rand()*M_PI;///rand()*2*M_PI;
       a = sigma*randn()*sqrt(dx);///sigma*randn()*sqrt(dx);
-      v = this->stemtropismObjective(pos,old,a,b,dx,stem);
+      v = this->leaftropismObjective(pos,old,a,b,dx,leaf);
       if (v<bestV) {
         bestV=v;
         bestA=a;
@@ -81,11 +81,11 @@ Vector2d StemTropismFunction::getHeading(const Vector3d& pos, Matrix3d old, doub
 *
 * \return           the rotations alpha and beta
 */
-Vector2d ConfinedStemTropism::getHeading(const Vector3d& pos, Matrix3d old, double dx, const Organ* stem)
+Vector2d ConfinedLeafTropism::getHeading(const Vector3d& pos, Matrix3d old, double dx, const Organ* leaf)
 {
-  std::cout<<"ConfinedStemTropism::getHeading()\n";
+  std::cout<<"ConfinedLeafTropism::getHeading()\n";
 
-  Vector2d h = stemtropism->getHeading(pos, old, dx, stem);
+  Vector2d h = leaftropism->getHeading(pos, old, dx, leaf);
 
   double a = h.x;
   double b = h.y;
@@ -133,13 +133,13 @@ Vector2d ConfinedStemTropism::getHeading(const Vector3d& pos, Matrix3d old, doub
 /**
 * getHeading() minimizes this function, @see TropismFunction::tropismObjective
 */
-double StemExotropism::stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem)
+double LeafExotropism::leaftropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* leaf)
 {
   old.times(Matrix3d::rotX(b));
   old.times(Matrix3d::rotZ(a));
-  Vector3d isheading = ((Stem*)stem)->initialstemHeading;
-  double s = isheading.times(old.column(0));
-  s*=(1./isheading.length()); // iheading should be normed anyway?
+  Vector3d ilheading = ((Leaf*)leaf)->initialLeafHeading;
+  double s = ilheading.times(old.column(0));
+  s*=(1./ilheading.length()); // iheading should be normed anyway?
   s*=(1./old.column(0).length());
   return acos(s)/M_PI; // 0..1
 }
@@ -149,11 +149,11 @@ double StemExotropism::stemtropismObjective(const Vector3d& pos, Matrix3d old, d
 /**
 * getHeading() minimizes this function, @see TropismFunction::tropismObjective
 */
-double StemPhototropism::stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem)
+double LeafPhototropism::leaftropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* leaf)
 {
   assert(soil!=nullptr);
   Vector3d newpos = this->getPosition(pos,old,a,b,dx);
-  double v = soil->getValue(newpos,stem);
+  double v = soil->getValue(newpos,leaf);
 //   std::cout << "\n" << newpos.getString() << ", = "<< v;
   return -v; ///< (-1) because we want to maximize the soil property
 }
@@ -171,7 +171,7 @@ double StemPhototropism::stemtropismObjective(const Vector3d& pos, Matrix3d old,
 * @param t2            first tropism
 * @param w2            first weight
 */
-CombinedStemTropism::CombinedStemTropism(double n, double sigma,StemTropismFunction* t1, double w1, StemTropismFunction* t2, double w2): StemTropismFunction(n,sigma)
+CombinedLeafTropism::CombinedLeafTropism(double n, double sigma,LeafTropismFunction* t1, double w1, LeafTropismFunction* t2, double w2): LeafTropismFunction(n,sigma)
 {
   tropisms.push_back(t1);
   tropisms.push_back(t2);
@@ -182,12 +182,12 @@ CombinedStemTropism::CombinedStemTropism(double n, double sigma,StemTropismFunct
 /**
  * getHeading() minimizes this function, @see TropismFunction::tropismObjective
  */
-double CombinedStemTropism::stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem)
+double CombinedLeafTropism::leaftropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* leaf)
 {
   //std::cout << "CombinedTropsim::tropismObjective\n";
-  double v = tropisms[0]->stemtropismObjective(pos,old,a,b,dx,stem)*weights[0];
+  double v = tropisms[0]->leaftropismObjective(pos,old,a,b,dx,leaf)*weights[0];
   for (size_t i = 1; i< tropisms.size(); i++) {
-    v += tropisms[i]->stemtropismObjective(pos,old,a,b,dx,stem)*weights[i];
+    v += tropisms[i]->leaftropismObjective(pos,old,a,b,dx,leaf)*weights[i];
   }
   return v;
 }

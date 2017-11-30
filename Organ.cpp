@@ -98,7 +98,7 @@ double Organ::getScalar(int stype) const {
 	case Plant::st_subtype:
 		   switch (organType()) {//check the type of the organ
 //    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param->subType<<std::endl;
-	//used to debug and check organType and reference
+	//used to debug and check organType and reference TODO make a function to decide the organ type
 	case Plant::ot_seed :return stem_param->subType;
 	case Plant::ot_root :return root_param->subType;
 	case Plant::ot_stem :return stem_param->subType;

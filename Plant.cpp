@@ -25,6 +25,7 @@ Plant::~Plant()
 
 /**
  *	Deletes the old parameter, sets the new one
+ ************************************************not sure what to do******************************TODO*****
  */
 void Plant::setOrganTypeParameter(OrganTypeParameter*  p)
 {
@@ -39,8 +40,9 @@ void Plant::setOrganTypeParameter(OrganTypeParameter*  p)
 //	case 2 :
 	    delete organParam.at(p->organType).at(p->subType);
                             organParam.at(p->organType).at(p->subType) = p;
-//	case 3 :delete organParam.at(stem_p->organType).at(stem_p->subType);
-//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+//	case 3 :
+//delete organParam.at(stem_p->organType).at(stem_p->subType);
+ //                           organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
 //	case 4 :delete organParam.at(stem_p->organType).at(stem_p->subType);
 //                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
 //	case 5 :delete organParam.at(stem_p->organType).at(stem_p->subType);
@@ -52,14 +54,6 @@ void Plant::setOrganTypeParameter(OrganTypeParameter*  p)
 
 }
 
-
-//
-//void Plant::setOrganTypeParameter(OrganTypeParameter* p)
-//{
-//	 std::cout << "Plant::setOrganTypeParameter " << p->organType << ", " << p->subType <<"\n";
-//	delete organParam.at(p->organType).at(p->subType);
-//	organParam.at(p->organType).at(p->subType) = p;
-//}
 
 
 
@@ -168,6 +162,19 @@ void Plant::openFile(std::string name, std::string subdir)
 	}
 	std::cout << "Read " << stem_c << " stem type parameters \n"; // debug
 
+std::string lp_name = subdir;
+	lp_name.append(name);
+	lp_name.append(".leparam");
+	fis.open(stp_name.c_str());
+	int leaf_c = 0;
+	if (fis.good()) { // did it work?
+		leaf_c = readLeafParameters(fis);
+		fis.close();
+	} else {
+		std::string s = "stemSystem::openFile() could not open leaf parameter file ";
+		throw std::invalid_argument(s.append(lp_name));
+	}
+	std::cout << "Read " << leaf_c << " stem type parameters \n"; // debug
 
 
 }
@@ -211,6 +218,23 @@ int Plant::readStemParameters(std::istream& cin)
 
 }
 
+
+int Plant::readLeafParameters(std::istream& cin)
+{
+	// initOTP();
+	int leaf_c = 0;
+	while (cin.good()) {
+//		RootTypeParameter* p  = new RootTypeParameter();
+		LeafTypeParameter* leaf_p  = new LeafTypeParameter();///added copypaste
+//		p->read(cin);
+		leaf_p->read(cin);
+//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+		setOrganTypeParameter(leaf_p);
+		leaf_c++;
+	}
+	return leaf_c;
+
+}
 /**
  * Writes root parameters (for debugging) TODO
  *
