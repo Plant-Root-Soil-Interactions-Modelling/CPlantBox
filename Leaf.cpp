@@ -20,7 +20,7 @@
 Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
   initialLeafHeading=ilheading;
-  std::cout << "pni = "<< pni<< std::endl;
+  std::cout << "Leaf pni = "<< pni<< std::endl;
 //  std::cout << "Leaf constructor \n";
   LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getOrganTypeParameter(Plant::ot_leafe, type);
 
@@ -32,13 +32,13 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   Matrix3d ons = Matrix3d::ons(initialLeafHeading);
   ons.times(Matrix3d::rotX(beta));
   double theta = leaf_p->theta;
-  if (parent->organType()!=Plant::ot_stem) { // scale if not a base leaf
+  if (parent->organType()!=Plant::ot_seed) { // scale if not a base leaf
     double scale = ltp->sa->getValue(parent->getNode(pni),this);
     theta*=scale;
   }
   ons.times(Matrix3d::rotZ(theta));
   // initial node
-  if (parent->organType()!=Plant::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
+  if (parent->organType()!=Plant::ot_seed) { // the first node of the base leafs must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the leaf,
     // since this node exists already and does not need a new identifier
     r_nodes.push_back(parent->getNode(pni));

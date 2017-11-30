@@ -165,7 +165,7 @@ void Plant::openFile(std::string name, std::string subdir)
 std::string lp_name = subdir;
 	lp_name.append(name);
 	lp_name.append(".leparam");
-	fis.open(stp_name.c_str());
+	fis.open(lp_name.c_str());
 	int leaf_c = 0;
 	if (fis.good()) { // did it work?
 		leaf_c = readLeafParameters(fis);
@@ -174,7 +174,7 @@ std::string lp_name = subdir;
 		std::string s = "stemSystem::openFile() could not open leaf parameter file ";
 		throw std::invalid_argument(s.append(lp_name));
 	}
-	std::cout << "Read " << leaf_c << " stem type parameters \n"; // debug
+	std::cout << "Read " << leaf_c << " leaf type parameters \n"; // debug
 
 
 }

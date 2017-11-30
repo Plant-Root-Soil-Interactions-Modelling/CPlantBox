@@ -17,6 +17,7 @@
 Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
 	initialHeading=iheading;
+	std::cout << "Root pni = "<< pni<< std::endl;
 	//std::cout << "Root constructor \n";
 	RootTypeParameter* rtp = (RootTypeParameter*) plant->getOrganTypeParameter(Plant::ot_root, type);
 	root_param = rtp->realize(); // throw the dice

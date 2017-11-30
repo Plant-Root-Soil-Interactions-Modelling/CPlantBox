@@ -43,7 +43,7 @@ int Organ::organType() const {
 	case Plant::ot_seed :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
 	case Plant::ot_root :return plant->getOrganTypeParameter(this->organType(), root_param->subType);
 	case Plant::ot_stem :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Plant::ot_leafe :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Plant::ot_leafe :return plant->getOrganTypeParameter(this->organType(), leaf_param->subType);
 	case Plant::ot_shoot :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
 
 
@@ -102,7 +102,7 @@ double Organ::getScalar(int stype) const {
 	case Plant::ot_seed :return stem_param->subType;
 	case Plant::ot_root :return root_param->subType;
 	case Plant::ot_stem :return stem_param->subType;
-	case Plant::ot_leafe :return stem_param->subType;
+	case Plant::ot_leafe :return leaf_param->subType;
 	case Plant::ot_shoot :return stem_param->subType;
 		   }
 
