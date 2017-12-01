@@ -69,12 +69,12 @@ public:
 
   /* parameters that are given per stem that are constant*/
   int pni; ///< parent node index
-  double pbl; ///< length [cm]
+  double pbl; ///< parent base length [cm]
 
   const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
-  Vector3d initialHeading;/// a heading downward
-  Vector3d initialstemHeading;/// heading upward
-  Vector3d initialLeafHeading;
+  Vector3d initialHeading;///< a heading downward
+  Vector3d initialstemHeading;///< a heading upward
+  Vector3d initialLeafHeading;///< leave heading direction
 
 protected:
 
