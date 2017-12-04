@@ -31,14 +31,10 @@ class Stem : public Organ
 
 public:
 
-
-
-
-
   Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
   virtual ~Stem() { }; // base class constructor is called automatically in c++
 
-  virtual int organType() const override;
+  virtual int organType() const override { return Organ::ot_stem; };
 
   /* simulation */
   virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt

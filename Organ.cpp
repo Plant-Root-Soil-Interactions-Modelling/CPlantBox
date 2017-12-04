@@ -6,7 +6,6 @@
 Organ::Organ(Plant* plant, Organ* parent, int subtype, double delay) :plant(plant), parent(parent), age(delay)
 {
 	id = plant->getOrganIndex();
-
 }
 
 /**
@@ -17,16 +16,8 @@ Organ::~Organ()
 	for(auto c : children) {
 		delete c;
 	}
-    delete stem_param;
+	delete stem_param;
 	delete root_param;
-}
-
-
-/**
- * returns the type of the organ
- */
-int Organ::organType() const {
-	return Plant::ot_organ;
 }
 
 
@@ -35,19 +26,19 @@ int Organ::organType() const {
  1. get declaration of the parameters and
  2. future can use cast override to increase efficiency
  */
- OrganTypeParameter* Organ::getOrganTypeParameter() const
+OrganTypeParameter* Organ::getOrganTypeParameter() const
 {
-    switch (organType()) {//check the type of the organ
-//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
+	switch (organType()) {//check the type of the organ
+	//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
 	//used to debug and check organType and reference
-	case Plant::ot_seed :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Plant::ot_root :return plant->getOrganTypeParameter(this->organType(), root_param->subType);
-	case Plant::ot_stem :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Plant::ot_leafe :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Plant::ot_shoot :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Organ::ot_seed :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Organ::ot_root :return plant->getOrganTypeParameter(this->organType(), root_param->subType);
+	case Organ::ot_stem :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Organ::ot_leafe :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Organ::ot_shoot :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
 
 
-    }
+	}
 };
 
 /**
@@ -56,7 +47,7 @@ int Organ::organType() const {
 Vector3d Organ::getAbsoluteOrigin() const {
 	const Organ* p = this;
 	Vector3d o0 = Vector3d();
-	while (p->organType() != Plant::ot_seed) {
+	while (p->organType() != Organ::ot_seed) {
 		Vector3d o;
 		if (p->parent!=0) {
 			o = parent->getRelativeInitialHeading().times(p->getRelativeOrigin());
@@ -75,7 +66,7 @@ Vector3d Organ::getAbsoluteOrigin() const {
 Matrix3d Organ::getAbsoluteInitialHeading() const {
 	const Organ* p = this;
 	Matrix3d ah = Matrix3d();
-	while (p->organType() != Plant::ot_seed) {
+	while (p->organType() != Organ::ot_seed) {
 		Matrix3d iH = p->getRelativeInitialHeading();
 		iH.times(ah);
 		ah = iH;
@@ -96,48 +87,47 @@ double Organ::getScalar(int stype) const {
 	case Plant::st_otype:
 		return this->organType();
 	case Plant::st_subtype:
-		   switch (organType()) {//check the type of the organ
-//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param->subType<<std::endl;
-	//used to debug and check organType and reference
-	case Plant::ot_seed :return stem_param->subType;
-	case Plant::ot_root :return root_param->subType;
-	case Plant::ot_stem :return stem_param->subType;
-	case Plant::ot_leafe :return stem_param->subType;
-	case Plant::ot_shoot :return stem_param->subType;
-		   }
-
-	case Plant::st_alive:
-		return alive;
-	case Plant::st_active:
-		return active;
-	case Plant::st_age:
-		return age;
-	case Plant::st_length:
-		return length;
-	case Plant::st_order: {
-		int c=0;
-		const Organ* p = this;
-		while (p->organType()!=Plant::ot_seed) {
-			c++;
-			p = p->parent; // up organ tree
+		switch (organType()) {//check the type of the organ
+		//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param->subType<<std::endl;
+		//used to debug and check organType and reference
+		case Organ::ot_seed :return stem_param->subType;
+		case Organ::ot_root :return root_param->subType;
+		case Organ::ot_stem :return stem_param->subType;
+		case Organ::ot_leafe :return stem_param->subType;
+		case Organ::ot_shoot :return stem_param->subType;
 		}
-		return c;
-	}
-	case Plant::st_parenttype:
-		if (this->parent!=nullptr) {
-			return this->parent->organType();
-		} else {
+		case Plant::st_alive:
+			return alive;
+		case Plant::st_active:
+			return active;
+		case Plant::st_age:
+			return age;
+		case Plant::st_length:
+			return length;
+		case Plant::st_order: {
+			int c=0;
+			const Organ* p = this;
+			while (p->organType()!=Organ::ot_seed) {
+				c++;
+				p = p->parent; // up organ tree
+			}
+			return c;
+		}
+		case Plant::st_parenttype:
+			if (this->parent!=nullptr) {
+				return this->parent->organType();
+			} else {
+				return std::nan("");
+			}
+		case Plant::st_time: {
+			if (nctimes.size()>0) {
+				return nctimes.at(0);
+			} else {
+				return std::nan("");
+			}
+		}
+		default:
 			return std::nan("");
-		}
-	case Plant::st_time: {
-		if (nctimes.size()>0) {
-			return nctimes.at(0);
-		} else {
-			return std::nan("");
-		}
-	}
-	default:
-		return std::nan("");
 	}
 }
 
@@ -147,7 +137,7 @@ double Organ::getScalar(int stype) const {
  *
  * \return sequential list of organs
  */
-std::vector<Organ*> Organ::getOrgans(int otype)
+std::vector<Organ*> Organ::getOrgans(unsigned int otype)
 {
 	std::vector<Organ*> v = std::vector<Organ*>();
 	this->getOrgans(otype, v);
@@ -160,39 +150,39 @@ std::vector<Organ*> Organ::getOrgans(int otype)
  *
  * @param v     adds the organ sub tree to this vector
  */
-void Organ::getOrgans(int otype, std::vector<Organ*>& v)
+void Organ::getOrgans(unsigned int otype, std::vector<Organ*>& v)
 {
 	if (this->r_nodes.size()>1) {
-		int ot = this->organType();
+		unsigned int ot = this->organType();
 		switch(otype) {
-		case Plant::ot_organ:
+		case Organ::ot_organ:
 			v.push_back(this);
-			break;
-		case Plant::ot_seed:
-			if (ot==Plant::ot_seed) {
+		break;
+		case Organ::ot_seed:
+			if (ot==Organ::ot_seed) {
 				v.push_back(this);
 			}
 			break;
-		case Plant::ot_root:
-			if (ot==Plant::ot_root) {
+		case Organ::ot_root:
+			if (ot==Organ::ot_root) {
 				v.push_back(this);
 			}
 			break;
-		case Plant::ot_stem:
-			if (ot==Plant::ot_stem) {
+		case Organ::ot_stem:
+			if (ot==Organ::ot_stem) {
 				v.push_back(this);
 			}
 			break;
-		case Plant::ot_leafe:
-			if (ot==Plant::ot_leafe) {
+		case Organ::ot_leafe:
+			if (ot==Organ::ot_leafe) {
 				v.push_back(this);
 			}
 			break;
-		case Plant::ot_shoot:
-			if ((ot==Plant::ot_leafe)||(ot==Plant::ot_stem)) {
+		case Organ::ot_shoot:
+			if ((ot==Organ::ot_leafe)||(ot==Organ::ot_stem)) {
 				v.push_back(this);
 			}
-			break;
+		break;
 		default:
 			throw std::invalid_argument( "Organ::getOrgans: unknown organ type" );
 		}

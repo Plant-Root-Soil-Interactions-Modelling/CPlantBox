@@ -18,20 +18,20 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
 {
 	initialHeading=iheading;
 	//std::cout << "Root constructor \n";
-	RootTypeParameter* rtp = (RootTypeParameter*) plant->getOrganTypeParameter(Plant::ot_root, type);
+	RootTypeParameter* rtp = (RootTypeParameter*) plant->getOrganTypeParameter(Organ::ot_root, type);
 	root_param = rtp->realize(); // throw the dice
 	RootParameter* root_p = (RootParameter*) root_param;
 	double beta = 2*M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialHeading);
 	ons.times(Matrix3d::rotX(beta));
 	double theta = root_p->theta;
-	if (parent->organType()!=Plant::ot_seed) { // scale if not a base root
+	if (parent->organType()!=Organ::ot_seed) { // scale if not a base root
 		double scale = rtp->sa->getValue(parent->getNode(pni),this);
 		theta*=scale;
 	}
 	ons.times(Matrix3d::rotZ(theta));
 	// initial node
-	if (parent->organType()!=Plant::ot_seed) { // the first node of the base roots must be created in Seed::initialize()
+	if (parent->organType()!=Organ::ot_seed) { // the first node of the base roots must be created in Seed::initialize()
 		// otherwise, don't use addNode for the first node of the root,
 		// since this node exists already and does not need a new identifier
 		r_nodes.push_back(parent->getNode(pni));
@@ -40,10 +40,6 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
 	}
 }
 
-int Root::organType() const
-{
-	return Plant::ot_root;
-}
 
 /**
  * Simulates growth of this root for a time span dt
@@ -199,8 +195,8 @@ double Root::getCreationTime(double length)
 	assert(length>=0);
 	double rootage = getAge(length);
 	assert(rootage>=0);
-	if (parent->organType()!=Plant::ot_seed) {
-		if (parent->organType()==Plant::ot_root) {
+	if (parent->organType()!=Organ::ot_seed) {
+		if (parent->organType()==Organ::ot_root) {
 			double pl = pbl+((Root*)parent)->rParam()->la; // parent length, when this root was created
 			double pAge=((Root*)parent)->getCreationTime(pl);
 			return rootage+pAge;

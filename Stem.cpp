@@ -21,7 +21,7 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   initialstemHeading=isheading;
   std::cout << "pni = "<< pni<< std::endl;
 //  std::cout << "Stem constructor \n";
-  StemTypeParameter* sttp = (StemTypeParameter*) plant->getOrganTypeParameter(Plant::ot_stem, type);
+  StemTypeParameter* sttp = (StemTypeParameter*) plant->getOrganTypeParameter(Organ::ot_stem, type);
 
 
   stem_param = sttp->realize(); // throw the dice
@@ -31,24 +31,19 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   Matrix3d ons = Matrix3d::ons(initialstemHeading);
   ons.times(Matrix3d::rotX(beta));
   double theta = stem_p->theta;
-  if (parent->organType()!=Plant::ot_seed) { // scale if not a base stem
+  if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
     double scale = sttp->sa->getValue(parent->getNode(pni),this);
     theta*=scale;
   }
   ons.times(Matrix3d::rotZ(theta));
   // initial node
-  if (parent->organType()!=Plant::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
+  if (parent->organType()!=Organ::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the stem,
     // since this node exists already and does not need a new identifier
     r_nodes.push_back(parent->getNode(pni));
     nodeIDs.push_back(parent->getNodeID(pni));
     nctimes.push_back(parent->getNodeCT(pni)+delay);
   }
-}
-
-int Stem::organType() const
-{
-  return Plant::ot_stem;
 }
 
 /**
@@ -205,8 +200,8 @@ double Stem::getCreationTime(double length)
   assert(length>=0);
   double stemage = StemgetAge(length);
   assert(stemage>=0);
-  if (parent->organType()!=Plant::ot_seed) {
-    if (parent->organType()==Plant::ot_shoot) {
+  if (parent->organType()!=Organ::ot_seed) {
+    if (parent->organType()==Organ::ot_shoot) {
       double pl = pbl+((Stem*)parent)->stParam()->la; // parent length, when this stem was created
       double pAge=((Stem*)parent)->getCreationTime(pl);
       return stemage+pAge;

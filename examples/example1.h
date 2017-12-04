@@ -38,7 +38,7 @@ void example1()
         plant.simulate(dt);
     }
     cout << "fin (with " << plant.getNumberOfNodes() << " nodes) \n";
-    auto o_ = plant.getOrgans(Plant::ot_organ);
+    auto o_ = plant.getOrgans(Organ::ot_organ);
     cout << o_.size() << " organs \n";
 
     /*

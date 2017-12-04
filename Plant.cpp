@@ -78,7 +78,7 @@ void Plant::setGeometry(SignedDistanceFunction* geom)
 	delete geometry;
 	geometry = geom;
 	for (int i=0; i<maxtypes; i++) {
-		RootTypeParameter* rtp = (RootTypeParameter*) getOrganTypeParameter(Plant::ot_root,i);
+		RootTypeParameter* rtp = (RootTypeParameter*) getOrganTypeParameter(Organ::ot_root,i);
 		if (rtp->subType>=0) { // defined
 			delete rtp->tropism;
 			rtp->createTropism(geom);
@@ -137,7 +137,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	std::cout << "Read " << c << " root type parameters \n"; // debug
 
 	// open seed parameter
-	SeedTypeParameter* stp = (SeedTypeParameter*)getOrganTypeParameter(Plant::ot_seed,0);
+	SeedTypeParameter* stp = (SeedTypeParameter*)getOrganTypeParameter(Organ::ot_seed,0);
 	std::string pp_name = subdir;
 	pp_name.append(name);
 	pp_name.append(".pparam");
@@ -277,7 +277,7 @@ void Plant::simulate(double dt, bool silence)
 	if (!silence) {
 		std::cout << "Plant.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
 	}
-	getOrgans(Plant::ot_organ);
+	getOrgans(Organ::ot_organ);
 	old_non = getNumberOfNodes();
 	old_nor = organs.size();
 	seed->simulate(dt);
@@ -301,26 +301,18 @@ void Plant::simulate()
  *
  * @param seed      random number generator seed
  */
-void Plant::setSeed(double seed) const {
-	//  std::cout << "Setting random seed "<< seed <<"\n";
-	//  gen.seed(1./seed);
-	//  for (auto t : tf) {
-	//      double s  = rand();
-	//      t->setSeed(1./s);
-	//  }
-	//  for (auto rp : rtparam) {
-	//      double s  = rand();
-	//      rp.setSeed(1./s);
-	//  }
+void Plant::setSeed(unsigned int seed) const {
+	//  TODO
 }
 
 /**
  *
  */
-std::vector<Organ*> Plant::getOrgans(int otype) const
+std::vector<Organ*> Plant::getOrgans(unsigned int otype) const
 {
 	if (organs_type!=otype) { // create buffer
 		organs = seed->getOrgans(otype);
+		organs_type = otype;
 		return organs;
 	} else { // return buffer
 		return organs;
@@ -332,7 +324,7 @@ std::vector<Organ*> Plant::getOrgans(int otype) const
  */
 std::vector<int> Plant::getRootTips() const
 {
-	this->getOrgans(Plant::ot_root); // update roots (if necessary)
+	this->getOrgans(Organ::ot_root); // update roots (if necessary)
 	std::vector<int> tips;
 	for (auto& r : organs) {
 		Root* r2 = (Root*)r;
@@ -346,7 +338,7 @@ std::vector<int> Plant::getRootTips() const
  */
 std::vector<int> Plant::getRootBases() const
 {
-	this->getOrgans(Plant::ot_root); // update roots (if necessary)  std::vector<int> bases;
+	this->getOrgans(Organ::ot_root); // update roots (if necessary)  std::vector<int> bases;
 	std::vector<int> bases;
 	for (auto& r : organs) {
 		Root* r2 = (Root*)r;
@@ -361,7 +353,7 @@ std::vector<int> Plant::getRootBases() const
  */
 std::vector<Vector3d> Plant::getNodes() const
 {
-	this->getOrgans(Plant::ot_organ); // update roots (if necessary)
+	this->getOrgans(Organ::ot_organ); // update roots (if necessary)
 	int non = getNumberOfNodes();
 	std::vector<Vector3d> nv = std::vector<Vector3d>(non); // reserve big enough vector
 	for (auto const& r: organs) {
@@ -375,7 +367,7 @@ std::vector<Vector3d> Plant::getNodes() const
 /**
  * Returns the root system as polylines, i.e. each root is represented by its nodes
  */
-std::vector<std::vector<Vector3d>> Plant::getPolylines(int otype) const
+std::vector<std::vector<Vector3d>> Plant::getPolylines(unsigned int otype) const
 {
 	this->getOrgans(otype); // update roots (if necessary)
 	std::vector<std::vector<Vector3d>> nodes = std::vector<std::vector<Vector3d>>(organs.size()); // reserve big enough vector
@@ -392,7 +384,7 @@ std::vector<std::vector<Vector3d>> Plant::getPolylines(int otype) const
 /**
  * Return the segments of the root system at the current simulation time
  */
-std::vector<Vector2i> Plant::getSegments(int otype) const
+std::vector<Vector2i> Plant::getSegments(unsigned int otype) const
 {
 	this->getOrgans(otype); // update roots (if necessary)
 	int nos=getNumberOfSegments();
@@ -411,7 +403,7 @@ std::vector<Vector2i> Plant::getSegments(int otype) const
 /**
  * Returns pointers to the organs corresponding to each segment
  */
-std::vector<Organ*> Plant::getSegmentsOrigin(int otype) const
+std::vector<Organ*> Plant::getSegmentsOrigin(unsigned int otype) const
 {
 	this->getOrgans(otype); // update (if necessary)
 	int nos=getNumberOfSegments();
@@ -432,7 +424,7 @@ std::vector<Organ*> Plant::getSegmentsOrigin(int otype) const
  */
 std::vector<double> Plant::getNETimes() const
 {
-	this->getOrgans(Plant::ot_organ); // update roots (if necessary)
+	this->getOrgans(Organ::ot_organ); // update roots (if necessary)
 	int nos=getNumberOfSegments();
 	std::vector<double> netv = std::vector<double>(nos); // reserve big enough vector
 	int c=0;
@@ -448,7 +440,7 @@ std::vector<double> Plant::getNETimes() const
 /**
  *  Returns the node emergence times to the corresponding polylines, see also RootSystem::getPolylines
  */
-std::vector<std::vector<double>> Plant::getPolylinesNET(int otype) const
+std::vector<std::vector<double>> Plant::getPolylinesNET(unsigned int otype) const
 {
 	this->getOrgans(otype); // update roots (if necessary)
 	std::vector<std::vector<double>> times = std::vector<std::vector<double>>(organs.size()); // reserve big enough vector
@@ -468,7 +460,7 @@ std::vector<std::vector<double>> Plant::getPolylinesNET(int otype) const
  *
  * @param stype     a scalar type (@see RootSystem::ScalarTypes). st_time is the emergence time of the root
  */
-std::vector<double> Plant::getScalar(int otype, int stype) const
+std::vector<double> Plant::getScalar(unsigned int otype, int stype) const
 {
 	this->getOrgans(otype); // update roots (if necessary)
 	std::vector<double> scalars(organs.size());
