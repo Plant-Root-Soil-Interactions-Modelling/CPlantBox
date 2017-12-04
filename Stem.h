@@ -38,7 +38,7 @@ public:
 //new class declaration of the shoot borne roots
 	const int shootbornerootType = 5;
     int maxB = 8; //max shoot borne root number
-const double maxT = 365.;
+    const double maxT = 365.;
 
 void  createShootborneroot(bool silence);
 //end of the new classes
@@ -81,6 +81,9 @@ void  createShootborneroot(bool silence);
   const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
   Vector3d initialHeading;/// a heading downward
   Vector3d initialstemHeading;/// heading upward
+
+  int LeafID = 0; //declare leaf id.
+
 
 protected:
 

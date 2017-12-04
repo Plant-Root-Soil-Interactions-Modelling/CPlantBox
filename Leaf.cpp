@@ -26,7 +26,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
 
   leaf_param = ltp->realize(); // throw the dice
   LeafParameter* leaf_p = (LeafParameter*) leaf_param;
-  std::cout <<", "<<(LeafParameter*) leaf_param<< "\n";
+//  std::cout <<", "<<(LeafParameter*) leaf_param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
   Matrix3d ons = Matrix3d::ons(initialLeafHeading);
   ons.times(Matrix3d::rotX(beta));

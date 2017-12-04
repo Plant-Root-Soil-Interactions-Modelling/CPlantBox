@@ -66,60 +66,6 @@ void Seed::initialize()
 
 
 	}
-//std::cout<< "createsbroot"<<taproot->nodeIDs.at(0);
-//
-//	if (sparam->maxB>0) {
-//		if (plant->getOrganTypeParameter(Plant::ot_root,basalType)->subType<1) { // if the type is not defined, copy tap root
-//			std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
-//			RootTypeParameter* tapParam = (RootTypeParameter*)plant->getOrganTypeParameter(Plant::ot_root, 0);
-//			RootTypeParameter* brtp = new RootTypeParameter(*tapParam);
-//			brtp->subType = basalType;
-//			plant->setOrganTypeParameter(brtp);
-//		}
-//		int maxB = sparam->maxB;
-//		if (sparam->delayB>0) {
-//			maxB = std::min(maxB,int(std::ceil((maxT-sparam->firstB)/sparam->delayB))); // maximal for simtime maxT
-//		}
-//		double delay = sparam->firstB;
-//		for (int i=0; i<maxB; i++) {
-//			Root* sbroot = new Root(plant, this, basalType, delay, iheading ,0., 0.);
-//			sbroot->r_nodes.push_back(mainstem->r_nodes.at(0)); // node
-//			sbroot->nodeIDs.push_back(taproot->nodeIDs.at(0)); // tap root ID
-//			sbroot->nctimes.push_back(delay); // exact creation time
-//			children.push_back(sbroot);
-//			delay += sparam->delayB;
-//		}
-//
-//
-//	}
-
-
-
-//	if (sparam->maxB>0) {
-//		if (plant->getOrganTypeParameter(Plant::ot_root,basalType)->subType<1) { // if the type is not defined, copy tap root
-//			std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
-//			RootTypeParameter* tapParam = (RootTypeParameter*)plant->getOrganTypeParameter(Plant::ot_root, 0);
-//			RootTypeParameter* brtp = new RootTypeParameter(*tapParam);
-//			brtp->subType = basalType;
-//			plant->setOrganTypeParameter(brtp);
-//		}
-//		int maxB = sparam->maxB;
-//		if (sparam->delayB>0) {
-//			maxB = std::min(maxB,int(std::ceil((maxT-sparam->firstB)/sparam->delayB))); // maximal for simtime maxT
-//		}
-//		double delay = sparam->firstB;
-//		for (int i=0; i<maxB; i++) {
-//			Root* sbroot = new Root(plant, this, basalType, delay, iheading ,0., 0.);
-//			sbroot->r_nodes.push_back(seedPoss); // node
-//			sbroot->nodeIDs.push_back(taproot->nodeIDs.at(2)); // tap root ID
-//			sbroot->nctimes.push_back(delay); // exact creation time
-//			children.push_back(sbroot);
-//			delay += sparam->delayB;
-//		}
-//
-//
-//	}
-//
 
 
 }

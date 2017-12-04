@@ -66,7 +66,7 @@ void Stem::simulate(double dt, bool silence)
   Vector3d ilheading(0,0,1);
 
 
-  Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,r_nodes.size()-1, 20.);
+  Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,r_nodes.size(), length);
 
 //    Vector3d ilheading(0,0,1);//Initial Stem heading
 //	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
@@ -138,8 +138,9 @@ void Stem::simulate(double dt, bool silence)
               s+=sp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
-LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), 10.);
+LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), length);
                children.push_back(LeafGrow);
+                 LeafGrow->simulate(length,silence);
 //                 createLateral(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
@@ -156,8 +157,8 @@ LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), 10.);
             }
             if (dl>0) {
               if (sp->ln.size()==children.size()) { // new lateral (the last one)
-LeafGrow->addNode(Stem::getNode(children.size()), 10.);
-                 children.push_back(LeafGrow);
+//LeafGrow->addNode(Stem::getNode(children.size()), 10.);
+//                 children.push_back(LeafGrow);
 
 //                LeafGrow->createLateral(silence);
 //children.push_back(LeafGrow);
@@ -303,6 +304,30 @@ void Stem::createLateral(bool silence)
 
 
 }
+
+
+
+//void Stem::LeafGrow(bool silence)
+//{
+//  const StemParameter* sp = sParam(); // rename
+//  int lt = stParam()->getLateralType(r_nodes.back());
+//  	std::cout << "Stem createLateral()\n";
+//  	std::cout << "Stem lateral type " << lt << "\n";
+//
+//  if (lt>0) {
+//    double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
+//    double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+//    double delay = ageLG-ageLN; // time the lateral has to wait
+//    Vector3d h = heading(); // current heading
+//    Stem* lateral = new Stem(plant, this, lt, delay, h,  r_nodes.size()-1, length);
+//    children.push_back(lateral);
+//    lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+//    }
+//
+//
+//}
+
+
 
 
 
