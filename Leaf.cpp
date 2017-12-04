@@ -1,4 +1,3 @@
-
 #include "Leaf.h"
 
 /**
@@ -21,7 +20,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
 {
   initialLeafHeading=ilheading;
   std::cout << "Leaf pni = "<< pni<< std::endl;
-//  std::cout << "Leaf constructor \n";
+  std::cout << "Plant* plant ="<< plant <<" "<< parent<<std::endl;
   LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getOrganTypeParameter(Plant::ot_leafe, type);
 
 
@@ -32,13 +31,13 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   Matrix3d ons = Matrix3d::ons(initialLeafHeading);
   ons.times(Matrix3d::rotX(beta));
   double theta = leaf_p->theta;
-  if (parent->organType()!=Plant::ot_seed) { // scale if not a base leaf
+  if (parent->organType()!=Plant::ot_stem) { // scale if not a base leaf
     double scale = ltp->sa->getValue(parent->getNode(pni),this);
     theta*=scale;
   }
   ons.times(Matrix3d::rotZ(theta));
   // initial node
-  if (parent->organType()!=Plant::ot_seed) { // the first node of the base leafs must be created in Seed::initialize()
+  if (parent->organType()!=Plant::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the leaf,
     // since this node exists already and does not need a new identifier
     r_nodes.push_back(parent->getNode(pni));
@@ -73,7 +72,6 @@ void Leaf::simulate(double dt, bool silence)
   age+=dt;
 
   if (alive) { // dead leaf wont grow
-//createShootborneroot(silence);
     // probabilistic branching model (todo test)
     if ((age>0) && (age-dt<=0)) { // the leaf emerges in this time step
       double leaf_P = ltp->sbp->getValue(r_nodes.back(),this);
@@ -269,16 +267,17 @@ double Leaf::dx() const
 void Leaf::createLateral(bool silence)
 {
   const LeafParameter* lp = lParam(); // rename
-  int lt = ltParam()->getLateralType(r_nodes.back());
-  	std::cout << "createLateral()\n";
-  	std::cout << "lateral type " << lt << "\n";
+  int lt = 2; //ltParam()->getLateralType(r_nodes.back());
+  	std::cout << "Leaf createLateral()\n";
+  	std::cout << "Leaf lateral type " << lt << "\n";
 
   if (lt>0) {
     double ageLN = this->LeafgetAge(length); // age of leaf when lateral node is created
     double ageLG = this->LeafgetAge(length+lp->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
     double delay = ageLG-ageLN; // time the lateral has to wait
     Vector3d h = heading(); // current heading
-    Leaf* lateral = new Leaf(plant, this, lt, delay, h,  r_nodes.size()-1, length);
+    Vector3d ilheading(0,0,1);
+    Leaf* lateral = new Leaf(plant, this , 2, 0., ilheading ,0., 20.);
     children.push_back(lateral);
     lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
     }
@@ -298,7 +297,7 @@ void Leaf::createLateral(bool silence)
 */
 void Leaf::createSegments(double l, bool silence)
 {
-  // std::cout << "createSegments("<< l << ")\n";
+   std::cout << "create Leaf Segments("<< l << ")\n";
   assert(l>0);
   double sl=0; // summed length of created segment
 
@@ -359,7 +358,7 @@ void Leaf::createSegments(double l, bool silence)
       sdx = l-n*dx();
       if (sdx<smallDx) {
         if (!silence) {
-          std::cout << "skipped small segment (<"<< smallDx << ") \n";
+          std::cout << "skipped small segment (<"<< i << ") \n";
         }
         return;
       }
@@ -375,7 +374,7 @@ void Leaf::createSegments(double l, bool silence)
     Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
     double ct = this->getCreationTime(length+sl);
     ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-    // std::cout<<"add node "<<newnode.toString()<<"\n";
+     std::cout<<"add node "<<newnode.toString()<<"\n";
     addNode(newnode,ct);
 
   } // for
@@ -473,5 +472,7 @@ std::string Leaf::toString() const
   str << "Root #"<< id <<": type "<<leaf_param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
   return str.str();
 }
+
+
 
 

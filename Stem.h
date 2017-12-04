@@ -29,6 +29,9 @@ class StemTypeParameter;
 */
 class Stem : public Organ
 {
+friend class Leaf;
+
+
 
 public:
 

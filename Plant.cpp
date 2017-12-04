@@ -190,11 +190,8 @@ int Plant::readRootParameters(std::istream& cin)
 	int c = 0;
 	while (cin.good()) {
 		RootTypeParameter* p  = new RootTypeParameter();
-//		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
 		p->read(cin);
-//		stem_p->read(cin);
 		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
-//		setOrganTypeParameter(stem_p);
 		c++;
 	}
 	return c;
@@ -206,11 +203,8 @@ int Plant::readStemParameters(std::istream& cin)
 	// initOTP();
 	int stem_c = 0;
 	while (cin.good()) {
-//		RootTypeParameter* p  = new RootTypeParameter();
 		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
-//		p->read(cin);
 		stem_p->read(cin);
-//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
 		setOrganTypeParameter(stem_p);
 		stem_c++;
 	}
@@ -224,11 +218,8 @@ int Plant::readLeafParameters(std::istream& cin)
 	// initOTP();
 	int leaf_c = 0;
 	while (cin.good()) {
-//		RootTypeParameter* p  = new RootTypeParameter();
 		LeafTypeParameter* leaf_p  = new LeafTypeParameter();///added copypaste
-//		p->read(cin);
 		leaf_p->read(cin);
-//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
 		setOrganTypeParameter(leaf_p);
 		leaf_c++;
 	}

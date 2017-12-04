@@ -1,5 +1,5 @@
 #include "Stem.h"
-
+#include "Leaf.h"
 /**
 * Constructor
 * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .stparam file) tropism, growth function, txt and vtp writing system.
@@ -18,15 +18,16 @@
 */
 Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
+
   initialstemHeading=isheading;
-  std::cout << "pni = "<< pni<< std::endl;
+  std::cout << "stem pni = "<< pni<< std::endl;
 //  std::cout << "Stem constructor \n";
   StemTypeParameter* sttp = (StemTypeParameter*) plant->getOrganTypeParameter(Plant::ot_stem, type);
 
 
   stem_param = sttp->realize(); // throw the dice
   StemParameter* stem_p = (StemParameter*) stem_param;
-  std::cout <<", "<<(StemParameter*) stem_param<< "\n";
+//  std::cout <<", "<<(StemParameter*) stem_param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
   Matrix3d ons = Matrix3d::ons(initialstemHeading);
   ons.times(Matrix3d::rotX(beta));
@@ -59,7 +60,18 @@ int Stem::organType() const
 */
 void Stem::simulate(double dt, bool silence)
 {
+
   old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
+  Vector3d ilheading(0,0,1);
+  Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,0., 20.);
+
+//    Vector3d ilheading(0,0,1);//Initial Stem heading
+//	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
+//	mainleaf->addNode(sparam->seedPos,0);
+//	children.push_back(mainleaf);
+
+
+
 
   const StemParameter* sp = sParam(); // rename
   const StemTypeParameter* sttp = stParam();
@@ -123,8 +135,8 @@ void Stem::simulate(double dt, bool silence)
               s+=sp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
-                  createLateral(silence);
-
+                 LeafGrow->createLateral(silence);
+                 createLateral(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
                   createSegments(dl,silence);
@@ -140,7 +152,7 @@ void Stem::simulate(double dt, bool silence)
             }
             if (dl>0) {
               if (sp->ln.size()==children.size()) { // new lateral (the last one)
-                createLateral(silence);
+                LeafGrow->createLateral(silence);
 
               }
             }
@@ -269,8 +281,8 @@ void Stem::createLateral(bool silence)
 {
   const StemParameter* sp = sParam(); // rename
   int lt = stParam()->getLateralType(r_nodes.back());
-  	std::cout << "createLateral()\n";
-  	std::cout << "lateral type " << lt << "\n";
+  	std::cout << "Stem createLateral()\n";
+  	std::cout << "Stem lateral type " << lt << "\n";
 
   if (lt>0) {
     double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
@@ -297,7 +309,7 @@ void Stem::createLateral(bool silence)
 */
 void Stem::createSegments(double l, bool silence)
 {
-  // std::cout << "createSegments("<< l << ")\n";
+   std::cout << "create Stem Segments("<< l << ")\n";
   assert(l>0);
   double sl=0; // summed length of created segment
 
@@ -342,7 +354,7 @@ void Stem::createSegments(double l, bool silence)
 
   if (l<smallDx) {
     if (!silence) {
-      std::cout << "skipped small segment (<"<< smallDx << ") \n";
+      std::cout << "skipped small segment l<Dx (<"<< smallDx << ") \n";
     }
     return;
   }
@@ -358,7 +370,7 @@ void Stem::createSegments(double l, bool silence)
       sdx = l-n*dx();
       if (sdx<smallDx) {
         if (!silence) {
-          std::cout << "skipped small segment (<"<< smallDx << ") \n";
+          std::cout << "skipped small segment i<n (<"<< smallDx << ") \n";
         }
         return;
       }
@@ -374,7 +386,7 @@ void Stem::createSegments(double l, bool silence)
     Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
     double ct = this->getCreationTime(length+sl);
     ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-    // std::cout<<"add node "<<newnode.toString()<<"\n";
+     std::cout<<"add node "<<newnode.toString()<<"\n";
     addNode(newnode,ct);
 
   } // for

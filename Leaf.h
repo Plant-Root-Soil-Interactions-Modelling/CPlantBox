@@ -76,10 +76,12 @@ public:
   Vector3d initialstemHeading;///< a heading upward
   Vector3d initialLeafHeading;///< leave heading direction
 
+
+  void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
+
 protected:
 
   void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
-  void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 
   int old_non = 0;
 
