@@ -58,7 +58,7 @@ public:
   LeafParameter* lParam() const { return (LeafParameter*)leaf_param;  } ///< type cast
   LeafTypeParameter* ltParam() const; // type cast
   double dx() const; ///< returns the axial resolution
-  Vector3d heading() const; /// current heading of the stem tip
+  Vector3d heading() const; /// current heading of the Leaf tip
 
   /* IO */
   void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag

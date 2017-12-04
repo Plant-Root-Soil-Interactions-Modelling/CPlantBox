@@ -1,5 +1,6 @@
 #include "Stem.h"
 #include "Leaf.h"
+#include "Root.h"
 /**
 * Constructor
 * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .stparam file) tropism, growth function, txt and vtp writing system.
@@ -63,7 +64,9 @@ void Stem::simulate(double dt, bool silence)
 
   old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
   Vector3d ilheading(0,0,1);
-  Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,0., 20.);
+
+
+  Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,r_nodes.size()-1, 20.);
 
 //    Vector3d ilheading(0,0,1);//Initial Stem heading
 //	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
@@ -135,8 +138,9 @@ void Stem::simulate(double dt, bool silence)
               s+=sp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
-                 LeafGrow->createLateral(silence);
-                 createLateral(silence);
+LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), 10.);
+               children.push_back(LeafGrow);
+//                 createLateral(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
                   createSegments(dl,silence);
@@ -152,8 +156,11 @@ void Stem::simulate(double dt, bool silence)
             }
             if (dl>0) {
               if (sp->ln.size()==children.size()) { // new lateral (the last one)
-                LeafGrow->createLateral(silence);
+LeafGrow->addNode(Stem::getNode(children.size()), 10.);
+                 children.push_back(LeafGrow);
 
+//                LeafGrow->createLateral(silence);
+//children.push_back(LeafGrow);
               }
             }
           }
