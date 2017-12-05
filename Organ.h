@@ -28,10 +28,12 @@ class Organ
 
 public:
 
+	enum OrganTypes { ot_seed = 1, ot_root = 2, ot_stem = 4, ot_leafe = 8, ot_shoot = ot_stem | ot_leafe, ot_organ = ot_seed | ot_root | ot_stem | ot_leafe}; ///< organ types bit wise
+
     Organ(Plant* plant, Organ* parent, int subtype, double delay);
     virtual ~Organ();
 
-    virtual int organType() const;///< overwrite for each organ
+    virtual int organType() const { return Organ::ot_organ; }  ///< returns the organs type, overwrite for each organ
 
     /* scene graph for upper plant parts */
     virtual Vector3d getRelativeOrigin() const
@@ -63,8 +65,8 @@ public:
     }; ///< growth for a time span of \param dt
 
     /* post processing */
-    std::vector<Organ*> getOrgans(int otype); ///< the organ including successors in a sequential vector
-    void getOrgans(int otype, std::vector<Organ*>& v); ///< the organ including successors in a sequential vector
+    std::vector<Organ*> getOrgans(unsigned int otype); ///< the organ including successors in a sequential vector
+    void getOrgans(unsigned int otype, std::vector<Organ*>& v); ///< the organ including successors in a sequential vector
 
     virtual double getScalar(int stype) const; ///< returns an organ parameter of Plant::ScalarType
 

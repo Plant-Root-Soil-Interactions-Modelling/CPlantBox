@@ -25,7 +25,7 @@ public:
 	Seed(Plant* plant);
 	virtual ~Seed() { };
 
-	virtual int organType() const override;
+	virtual int organType() const override { return Organ::ot_seed; };
 
 	virtual void initialize();
 	virtual void simulate(double dt, bool silence = false) override;

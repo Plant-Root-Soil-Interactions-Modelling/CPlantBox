@@ -23,7 +23,7 @@ void readXMLvs(tinyxml2::XMLElement* el_, std::string name, double* v, double* s
 
 OrganTypeParameter::OrganTypeParameter()
 {
-	organType = Plant::ot_organ;
+	organType = Organ::ot_organ;
 	subType = -1; // means undefined
 }
 
@@ -52,7 +52,7 @@ void RootParameter::write(std::ostream & cout) const
 
 RootTypeParameter::RootTypeParameter()
 {
-	organType = Plant::ot_root;
+	organType = Organ::ot_root;
 	subType = -1; // means undefined
 	tropism = new TropismFunction(0,0);
 	growth = new GrowthFunction();
@@ -303,7 +303,7 @@ std::string RootTypeParameter::writeXML(FILE* fp) const
 
 
 SeedTypeParameter::SeedTypeParameter() {
-	organType = Plant::ot_seed;
+	organType = Organ::ot_seed;
 	subType = 0; // there is currently only one type
 }
 
@@ -447,7 +447,7 @@ void StemParameter::write(std::ostream & cout) const
 
 StemTypeParameter::StemTypeParameter()
 {
-	organType = Plant::ot_stem;
+	organType = Organ::ot_stem;
 	subType = -1; // means undefined
 	tropism = new StemTropismFunction(0,0);
 	growth = new StemGrowthFunction();

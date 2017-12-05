@@ -615,7 +615,7 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 		// std::cout << "#" << i <<": organ " << r->organType() << " (" << s.x<< ", "<< s.y << ")  \n";
 		switch (r->organType()){
 
-            case Plant::ot_root :
+            case Organ::ot_root :
                  radius = ((Root*)r)->tParam()->a;
                 red = ((Root*)r)->tParam()->colorR;
                 green = ((Root*)r)->tParam()->colorG;
@@ -626,7 +626,7 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
                 os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
                         radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ <<" \n";
 break;
-            case Plant::ot_stem :
+            case Organ::ot_stem :
                 radius = ((Stem*)r)->stParam()->a;
                 red = ((Stem*)r)->stParam()->colorR;
                 green = ((Stem*)r)->stParam()->colorG;
