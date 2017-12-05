@@ -35,19 +35,7 @@ friend class Leaf;
 
 public:
 
-<<<<<<< HEAD
-//new class declaration of the shoot borne roots
-	const int shootbornerootType = 5;
-    int maxB = 8; //max shoot borne root number
-    const double maxT = 365.;
 
-void  createShootborneroot(bool silence);
-//end of the new classes
-
-
-
-=======
->>>>>>> master
   Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
   virtual ~Stem() { }; // base class constructor is called automatically in c++
 

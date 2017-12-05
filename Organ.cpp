@@ -95,32 +95,7 @@ double Organ::getScalar(int stype) const {
 	case Plant::st_otype:
 		return this->organType();
 	case Plant::st_subtype:
-<<<<<<< HEAD
-		   switch (organType()) {//check the type of the organ
-//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param->subType<<std::endl;
-	//used to debug and check organType and reference TODO make a function to decide the organ type
-	case Plant::ot_seed :return stem_param->subType;
-	case Plant::ot_root :return root_param->subType;
-	case Plant::ot_stem :return stem_param->subType;
-	case Plant::ot_leafe :return leaf_param->subType;
-	case Plant::ot_shoot :return stem_param->subType;
-		   }
 
-	case Plant::st_alive:
-		return alive;
-	case Plant::st_active:
-		return active;
-	case Plant::st_age:
-		return age;
-	case Plant::st_length:
-		return length;
-	case Plant::st_order: {
-		int c=0;
-		const Organ* p = this;
-		while (p->organType()!=Plant::ot_seed) {
-			c++;
-			p = p->parent; // up organ tree
-=======
 		switch (organType()) {//check the type of the organ
 		//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param->subType<<std::endl;
 		//used to debug and check organType and reference
@@ -129,7 +104,7 @@ double Organ::getScalar(int stype) const {
 		case Organ::ot_stem :return stem_param->subType;
 		case Organ::ot_leafe :return stem_param->subType;
 		case Organ::ot_shoot :return stem_param->subType;
->>>>>>> master
+
 		}
 		case Plant::st_alive:
 			return alive;
