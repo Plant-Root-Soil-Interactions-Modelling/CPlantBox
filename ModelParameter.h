@@ -40,7 +40,7 @@ class OrganParameter
 {
 public:
 
-	int subType = -1;
+	unsigned int subType = -1;
 
 };
 
@@ -55,8 +55,8 @@ public:
 	virtual ~OrganTypeParameter() { }
 
 	std::string name = "Unnamed organ";
-	int organType;
-	int subType;
+	unsigned int organType;
+	unsigned int subType;
 
 	virtual OrganParameter* realize() const { return new OrganParameter(); }
 

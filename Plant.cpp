@@ -2,8 +2,8 @@
 
 const std::vector<std::string> Plant::scalarTypeNames =
 {"id", "organ type", "sub type", "alive", "active", "age", "length", "1", "order", "parent type","creation time",
- "basal length", "apical length", "initial growth rate", "radius", "insertion angle", "root life time", "mean inter nodal distance", "standard deviation of inter nodal distance", "number of branches",
- "userdata 1", "userdata 2", "userdata 3"};
+		"basal length", "apical length", "initial growth rate", "radius", "insertion angle", "root life time", "mean inter nodal distance", "standard deviation of inter nodal distance", "number of branches",
+		"userdata 1", "userdata 2", "userdata 3"};
 
 Plant::Plant()
 {
@@ -26,49 +26,32 @@ Plant::~Plant()
 /**
  *	Deletes the old parameter, sets the new one
  */
-void Plant::setOrganTypeParameter(OrganTypeParameter*  p)
+void Plant::setOrganTypeParameter(OrganTypeParameter*  otp)
 {
-//	 std::cout << "Plant::setOrganTypeParameter " << stem_p->organType << ", " << stem_p->subType <<"\n";
-
-//	switch (OrganTypes()) {//check the type of the organ
-//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
-	//used to debug and check organType and reference
-//	case 1 :delete organParam.at(stem_p->organType).at(stem_p->subType);
-//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
-
-//	case 2 :
-	    delete organParam.at(p->organType).at(p->subType);
-                            organParam.at(p->organType).at(p->subType) = p;
-//	case 3 :delete organParam.at(stem_p->organType).at(stem_p->subType);
-//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
-//	case 4 :delete organParam.at(stem_p->organType).at(stem_p->subType);
-//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
-//	case 5 :delete organParam.at(stem_p->organType).at(stem_p->subType);
-//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
-
-//    }
-
-
-
+	unsigned int ot = otp->organType;
+	unsigned int i = ot2index(ot);
+	delete organParam.at(i).at(otp->subType);
+	organParam.at(i).at(otp->subType) = otp;
 }
-
-
-//
-//void Plant::setOrganTypeParameter(OrganTypeParameter* p)
-//{
-//	 std::cout << "Plant::setOrganTypeParameter " << p->organType << ", " << p->subType <<"\n";
-//	delete organParam.at(p->organType).at(p->subType);
-//	organParam.at(p->organType).at(p->subType) = p;
-//}
-
-
-
 
 OrganTypeParameter* Plant::getOrganTypeParameter(int otype, int subtype) const
 {
-//	std::cout << "Plant::getOrganTypeParameter " << otype << ", " << subtype <<"\n";
-	return organParam.at(otype).at(subtype);
+	return organParam.at(ot2index(otype)).at(subtype);
 }
+
+unsigned int Plant::ot2index(unsigned int ot) {
+	switch (ot) { //check the type of the organ
+	case Organ::ot_seed: return 0;
+	case Organ::ot_root: return 1;
+	case Organ::ot_stem: return 2;
+	case Organ::ot_leafe: return 3;
+	default:
+		throw std::invalid_argument("Plant::setOrganTypeParameter: pure organ type expected");
+	}
+}
+
+
+
 
 /**
  * Deletes the old geometry, sets the new one, passes it to the tropisms
@@ -152,7 +135,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	}
 
 
-// open stem parameter
+	// open stem parameter
 
 	std::string stp_name = subdir;
 	stp_name.append(name);
@@ -183,11 +166,11 @@ int Plant::readRootParameters(std::istream& cin)
 	int c = 0;
 	while (cin.good()) {
 		RootTypeParameter* p  = new RootTypeParameter();
-//		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
+		//		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
 		p->read(cin);
-//		stem_p->read(cin);
+		//		stem_p->read(cin);
 		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
-//		setOrganTypeParameter(stem_p);
+		//		setOrganTypeParameter(stem_p);
 		c++;
 	}
 	return c;
@@ -199,11 +182,11 @@ int Plant::readStemParameters(std::istream& cin)
 	// initOTP();
 	int stem_c = 0;
 	while (cin.good()) {
-//		RootTypeParameter* p  = new RootTypeParameter();
+		//		RootTypeParameter* p  = new RootTypeParameter();
 		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
-//		p->read(cin);
+		//		p->read(cin);
 		stem_p->read(cin);
-//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+		//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
 		setOrganTypeParameter(stem_p);
 		stem_c++;
 	}
@@ -233,7 +216,7 @@ void Plant::writeParameters(std::ostream& os) const
 /**
  * Sets up the plant according to the given parameters
  */
-void Plant::initialize(int basaltype, int shootbornetype)
+void Plant::initialize()
 {
 	reset(); // deletes the old seed, makes a new one
 	seed->initialize();
@@ -295,17 +278,6 @@ void Plant::simulate()
 }
 
 /**
- * Sets the seed of the root systems random number generator,
- * and all subclasses using random number generators:
- * @see TropismFunction, @see RootParameter
- *
- * @param seed      random number generator seed
- */
-void Plant::setSeed(unsigned int seed) const {
-	//  TODO
-}
-
-/**
  *
  */
 std::vector<Organ*> Plant::getOrgans(unsigned int otype) const
@@ -319,33 +291,33 @@ std::vector<Organ*> Plant::getOrgans(unsigned int otype) const
 	}
 }
 
-/**
- * Returns the node indices of the root tips
- */
-std::vector<int> Plant::getRootTips() const
-{
-	this->getOrgans(Organ::ot_root); // update roots (if necessary)
-	std::vector<int> tips;
-	for (auto& r : organs) {
-		Root* r2 = (Root*)r;
-		tips.push_back(r2->getNodeID(r2->getNumberOfNodes()-1));
-	}
-	return tips;
-}
-
-/**
- * Returns the positions of the root bases
- */
-std::vector<int> Plant::getRootBases() const
-{
-	this->getOrgans(Organ::ot_root); // update roots (if necessary)  std::vector<int> bases;
-	std::vector<int> bases;
-	for (auto& r : organs) {
-		Root* r2 = (Root*)r;
-		bases.push_back(r2->getNodeID(0));
-	}
-	return bases;
-}
+///**
+// * Returns the node indices of the root tips
+// */
+//std::vector<int> Plant::getRootTips() const
+//{
+//	this->getOrgans(Organ::ot_root); // update roots (if necessary)
+//	std::vector<int> tips;
+//	for (auto& r : organs) {
+//		Root* r2 = (Root*)r;
+//		tips.push_back(r2->getNodeID(r2->getNumberOfNodes()-1));
+//	}
+//	return tips;
+//}
+//
+///**
+// * Returns the positions of the root bases
+// */
+//std::vector<int> Plant::getRootBases() const
+//{
+//	this->getOrgans(Organ::ot_root); // update roots (if necessary)  std::vector<int> bases;
+//	std::vector<int> bases;
+//	for (auto& r : organs) {
+//		Root* r2 = (Root*)r;
+//		bases.push_back(r2->getNodeID(0));
+//	}
+//	return bases;
+//}
 
 /**
  * Copies the nodes of the root systems into a sequential vector,

@@ -44,22 +44,26 @@ public:
 	 st_userdata1, st_userdata2, st_userdata3 // analyser
   }; ///< @see RootSystem::getScalar
   static const std::vector<std::string> scalarTypeNames; ///< the corresponding names
+  /* todo: maybe it would be simple to pass strings as parameter names */
 
   Plant();
   virtual ~Plant();
 
-  /* Parameter input output */
-  void setOrganTypeParameter(OrganTypeParameter*  p );///< set the organ type parameter TODO change p
+  /* Parameter */
+  void setOrganTypeParameter(OrganTypeParameter*  otp);///< set the organ type parameter TODO change p
   OrganTypeParameter* getOrganTypeParameter(int otype, int subtype) const;
+
+  /* input output */
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
   int readRootParameters(std::istream & cin); ///< Reads root parameters from an input stream
   int readStemParameters(std::istream & cin); ///< Reads stem parameters from an input stream
   void writeParameters(std::ostream & os) const; ///< Writes root parameters
+  /* todo: lets put it in one xml, and parse the specific tags with the respective organ sub-classes */
 
   /* Simulation */
-  void setGeometry(SignedDistanceFunction* geom); ///< optionally, sets a confining geometry (call before RootSystem::initialize())
-  void reset(); ///< resets the root class, keeps the root type parameters
-  void initialize(int basal=4, int shootborne=5); ///< creates the base roots, call before simulation and after setting the plant and root parameters
+  void setGeometry(SignedDistanceFunction* geom); ///< optionally, sets a confining geometry (call before Plant::initialize())
+  void reset(); ///< resets the plant class, keeps the organ type parameters
+  void initialize(); ///< creates the base roots, call before simulation and after setting the plant and root parameters
   void simulate(double dt, bool silence = false); ///< simulates root system growth for time span dt
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
   double getSimTime() const { return simtime; } ///< returns the current simulation time
@@ -84,9 +88,9 @@ public:
   std::vector<std::vector<double> > getPolylinesNET(unsigned int otype=Organ::ot_organ) const; ///< Copies the node emergence times of each root into a vector and returns all resulting vectors
   std::vector<double> getScalar(unsigned int otype=Organ::ot_organ, int stype=Plant::st_length) const; ///< Copies a scalar root parameter that is constant per root to a vector
 
-  // std::vector<Organ*> getBaseRoots() const { return baseRoots; } ///< Base roots are tap root, basal roots, and shoot borne roots
-  std::vector<int> getRootTips() const; ///< Node indices of the root tips
-  std::vector<int> getRootBases() const; ///< Node indices of the root bases
+//  // std::vector<Organ*> getBaseRoots() const { return baseRoots; } ///< Base roots are tap root, basal roots, and shoot borne roots
+//  std::vector<int> getRootTips() const; ///< Node indices of the root tips
+//  std::vector<int> getRootBases() const; ///< Node indices of the root bases
 
   // Output Simulation results
   void write(std::string name, int otype = Organ::ot_organ) const; /// writes simulation results (type is determined from file extension in name)
@@ -97,15 +101,18 @@ public:
   std::string toString() const; ///< infos about current root system state (for debugging)
 
   // random stuff
-  void setSeed(unsigned int seed) const ; ///< help fate (sets the seed of all random generators)
+  void setSeed(unsigned int seed) const  { /* todo */ }; ///< Sets the seed of the random number generator
   double rand() const { return UD(gen); } ///< Uniformly distributed random number (0,1)
   double randn() const { return ND(gen); } ///< Normally distributed random number (0,1)
 
+  /* they should be private or protected */
   int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
-  int rsmlReduction = 5; ///< only each n-th node is written to the rsml file (to coarsely adjust axial resolution for output)
+
 
 protected:
+
+  int rsmlReduction = 5; ///< only each n-th node is written to the rsml file (to coarsely adjust axial resolution for output)
 
   std::vector <std::vector<OrganTypeParameter*> > organParam; ///< Parameter set for each root type
 
@@ -132,6 +139,8 @@ protected:
   mutable std::mt19937 gen = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
   mutable std::uniform_real_distribution<double> UD = std::uniform_real_distribution<double>(0,1);
   mutable std::normal_distribution<double> ND = std::normal_distribution<double>(0,1);
+
+  static unsigned int ot2index(unsigned int ot);
 
 };
 
