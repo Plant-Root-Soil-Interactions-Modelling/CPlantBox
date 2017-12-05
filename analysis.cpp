@@ -637,7 +637,7 @@ break;
                         radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ << " \n";
                         break;
                         ///evil copy paste which will be removed later
-                        case Plant::ot_leafe :
+                        case Organ::ot_leafe :
                 radius = ((Leaf*)r)->ltParam()->a;
                 red = ((Leaf*)r)->ltParam()->colorR;
                 green = ((Leaf*)r)->ltParam()->colorG;

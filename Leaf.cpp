@@ -21,7 +21,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   initialLeafHeading=ilheading;
   std::cout << "Leaf pni = "<< pni<< std::endl;
   std::cout << "Plant* plant ="<< plant <<" "<< parent<<std::endl;
-  LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getOrganTypeParameter(Plant::ot_leafe, type);
+  LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getOrganTypeParameter(Organ::ot_leafe, type);
 
 
   leaf_param = ltp->realize(); // throw the dice
@@ -31,13 +31,13 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   Matrix3d ons = Matrix3d::ons(initialLeafHeading);
   ons.times(Matrix3d::rotX(beta));
   double theta = leaf_p->theta;
-  if (parent->organType()!=Plant::ot_stem) { // scale if not a base leaf
+  if (parent->organType()!=Organ::ot_stem) { // scale if not a base leaf
     double scale = ltp->sa->getValue(parent->getNode(pni),this);
     theta*=scale;
   }
   ons.times(Matrix3d::rotZ(theta));
   // initial node
-  if (parent->organType()!=Plant::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
+  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the leaf,
     // since this node exists already and does not need a new identifier
     r_nodes.push_back(parent->getNode(pni));
@@ -48,7 +48,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
 
 int Leaf::organType() const
 {
-  return Plant::ot_leafe;
+  return Organ::ot_leafe;
 }
 
 /**
@@ -209,8 +209,8 @@ double Leaf::getCreationTime(double length)
   assert(length>=0);
   double leafage = LeafgetAge(length);
   assert(leafage>=0);
-  if (parent->organType()!=Plant::ot_stem) {
-    if (parent->organType()==Plant::ot_shoot) {
+  if (parent->organType()!=Organ::ot_stem) {
+    if (parent->organType()==Organ::ot_shoot) {
       double pl = pbl+((Leaf*)parent)->ltParam()->la; // parent length, when this leaf was created
       double pAge=((Leaf*)parent)->getCreationTime(pl);
       return leafage+pAge;

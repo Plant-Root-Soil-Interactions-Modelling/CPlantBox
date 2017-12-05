@@ -721,7 +721,7 @@ void LeafParameter::write(std::ostream & cout) const
 
 LeafTypeParameter::LeafTypeParameter()
 {
-	organType = Plant::ot_leafe;
+	organType = Organ::ot_leafe;
 	subType = -1; // means undefined
 	tropism = new LeafTropismFunction(0,0);
 	growth = new LeafGrowthFunction();

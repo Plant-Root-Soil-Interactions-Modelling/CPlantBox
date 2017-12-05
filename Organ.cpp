@@ -31,19 +31,13 @@ OrganTypeParameter* Organ::getOrganTypeParameter() const
 	switch (organType()) {//check the type of the organ
 	//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
 	//used to debug and check organType and reference
-<<<<<<< HEAD
-	case Plant::ot_seed :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Plant::ot_root :return plant->getOrganTypeParameter(this->organType(), root_param->subType);
-	case Plant::ot_stem :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Plant::ot_leafe :return plant->getOrganTypeParameter(this->organType(), leaf_param->subType);
-	case Plant::ot_shoot :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-=======
+
 	case Organ::ot_seed :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
 	case Organ::ot_root :return plant->getOrganTypeParameter(this->organType(), root_param->subType);
 	case Organ::ot_stem :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Organ::ot_leafe :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
+	case Organ::ot_leafe :return plant->getOrganTypeParameter(this->organType(), leaf_param->subType);
 	case Organ::ot_shoot :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
->>>>>>> master
+
 
 
 	}
