@@ -96,7 +96,7 @@ double Organ::getScalar(int stype) const {
 		case Organ::ot_seed :return stem_param->subType;
 		case Organ::ot_root :return root_param->subType;
 		case Organ::ot_stem :return stem_param->subType;
-		case Organ::ot_leafe :return stem_param->subType;
+		case Organ::ot_leafe :return leaf_param->subType;
 		case Organ::ot_shoot :return stem_param->subType;
 
 		}
@@ -214,7 +214,7 @@ void Organ::writeRSML(std::ostream & cout, std::string indent) const
 		cout << indent << "\t\t\t" << "<point ";
 		Vector3d v = this->getNode(0);
 		cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-		int n = this->plant->rsmlReduction;
+		int n = 1; //this->plant->rsmlReduction;
 		for (size_t i = 1; i<r_nodes.size()-1; i+=n) {
 			cout << indent << "\t\t\t" << "<point ";
 			Vector3d v = this->getNode(i);

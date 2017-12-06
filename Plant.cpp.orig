@@ -25,13 +25,40 @@ Plant::~Plant()
 
 /**
  *	Deletes the old parameter, sets the new one
+ ************************************************not sure what to do******************************TODO*****
  */
 void Plant::setOrganTypeParameter(OrganTypeParameter*  otp)
 {
-    unsigned int ot = otp->organType;
+<<<<<<< HEAD
+//	 std::cout << "Plant::setOrganTypeParameter " << stem_p->organType << ", " << stem_p->subType <<"\n";
+
+//	switch (OrganTypes()) {//check the type of the organ
+//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
+	//used to debug and check organType and reference
+//	case 1 :delete organParam.at(stem_p->organType).at(stem_p->subType);
+//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+
+//	case 2 :
+	    delete organParam.at(p->organType).at(p->subType);
+                            organParam.at(p->organType).at(p->subType) = p;
+//	case 3 :
+//delete organParam.at(stem_p->organType).at(stem_p->subType);
+ //                           organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+//	case 4 :delete organParam.at(stem_p->organType).at(stem_p->subType);
+//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+//	case 5 :delete organParam.at(stem_p->organType).at(stem_p->subType);
+//                            organParam.at(stem_p->organType).at(stem_p->subType) = stem_p;
+
+//    }
+
+
+
+=======
+	unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
 	delete organParam.at(i).at(otp->subType);
 	organParam.at(i).at(otp->subType) = otp;
+>>>>>>> master
 }
 
 OrganTypeParameter* Plant::getOrganTypeParameter(int otype, int subtype) const
@@ -39,6 +66,8 @@ OrganTypeParameter* Plant::getOrganTypeParameter(int otype, int subtype) const
 	return organParam.at(ot2index(otype)).at(subtype);
 }
 
+<<<<<<< HEAD
+=======
 unsigned int Plant::ot2index(unsigned int ot) {
 	switch (ot) { //check the type of the organ
 	case Organ::ot_seed: return 0;
@@ -49,7 +78,7 @@ unsigned int Plant::ot2index(unsigned int ot) {
 		throw std::invalid_argument("Plant::setOrganTypeParameter: pure organ type expected");
 	}
 }
-
+>>>>>>> master
 
 
 
@@ -180,10 +209,16 @@ int Plant::readRootParameters(std::istream& cin)
 	int c = 0;
 	while (cin.good()) {
 		RootTypeParameter* p  = new RootTypeParameter();
-
+<<<<<<< HEAD
 		p->read(cin);
 		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
-
+=======
+		//		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
+		p->read(cin);
+		//		stem_p->read(cin);
+		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+		//		setOrganTypeParameter(stem_p);
+>>>>>>> master
 		c++;
 	}
 	return c;
@@ -195,10 +230,16 @@ int Plant::readStemParameters(std::istream& cin)
 	// initOTP();
 	int stem_c = 0;
 	while (cin.good()) {
-
+<<<<<<< HEAD
 		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
 		stem_p->read(cin);
-
+=======
+		//		RootTypeParameter* p  = new RootTypeParameter();
+		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
+		//		p->read(cin);
+		stem_p->read(cin);
+		//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+>>>>>>> master
 		setOrganTypeParameter(stem_p);
 		stem_c++;
 	}

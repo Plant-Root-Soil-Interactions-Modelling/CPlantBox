@@ -35,7 +35,7 @@ void example3()
   for (auto rs : allRS) { // simulate all
       double s = UD(gen);
       rs->setSeed(s); // randomly select a seed
-      rs->initialize(4,5);
+      rs->initialize();
       rs->simulate(simtime);
       cout << "Finished with a total of " << rs->getNumberOfNodes()<< " nodes\n";
   }

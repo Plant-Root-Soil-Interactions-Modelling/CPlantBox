@@ -425,7 +425,7 @@ void Leaf::writeRSML(std::ostream & cout, std::string indent) const
       cout << indent << "\t\t\t" << "<point ";
       Vector3d v = r_nodes.at(0);
       cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-      int n = this->plant->rsmlReduction;
+      int n = 1; //this->plant->rsmlReduction;
       for (size_t i = 1; i<r_nodes.size()-1; i+=n) {
         cout << indent << "\t\t\t" << "<point ";
         Vector3d v = r_nodes.at(i);
