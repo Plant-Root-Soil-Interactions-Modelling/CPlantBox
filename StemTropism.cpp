@@ -137,7 +137,7 @@ double StemExotropism::stemtropismObjective(const Vector3d& pos, Matrix3d old, d
 {
   old.times(Matrix3d::rotX(b));
   old.times(Matrix3d::rotZ(a));
-  Vector3d isheading = ((Stem*)stem)->initialstemHeading;
+  Vector3d isheading = ((Stem*)stem)->initialStemHeading;
   double s = isheading.times(old.column(0));
   s*=(1./isheading.length()); // iheading should be normed anyway?
   s*=(1./old.column(0).length());

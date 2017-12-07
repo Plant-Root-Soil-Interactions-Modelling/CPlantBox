@@ -71,7 +71,7 @@ public:
 
   const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
   Vector3d initialHeading;/// a heading downward
-  Vector3d initialstemHeading;/// heading upward
+  Vector3d initialStemHeading;/// heading upward
 
   int LeafID = 0; //declare leaf id.
 
@@ -80,6 +80,8 @@ protected:
 
   void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
   void createLateral(bool silence); ///< creates a new lateral, called by Stem::simulate()
+  void LeafGrow(bool silence);
+
 
   int old_non = 0;
 

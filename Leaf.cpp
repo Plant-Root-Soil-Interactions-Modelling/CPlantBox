@@ -122,7 +122,7 @@ void Leaf::simulate(double dt, bool silence)
               s+=lp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
-                  createLateral(silence);
+//                  createLateral(silence);
 
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
@@ -139,7 +139,7 @@ void Leaf::simulate(double dt, bool silence)
             }
             if (dl>0) {
               if (lp->ln.size()==children.size()) { // new lateral (the last one)
-                createLateral(silence);
+//                createLateral(silence);
 
               }
             }
@@ -207,18 +207,18 @@ double Leaf::getScalar(int stype) const {
 double Leaf::getCreationTime(double length)
 {
   assert(length>=0);
-  double leafage = LeafgetAge(length);
-  assert(leafage>=0);
+  double age = LeafgetAge(length);
+  assert(age>=0);
   if (parent->organType()!=Organ::ot_stem) {
     if (parent->organType()==Organ::ot_shoot) {
       double pl = pbl+((Leaf*)parent)->ltParam()->la; // parent length, when this leaf was created
       double pAge=((Leaf*)parent)->getCreationTime(pl);
-      return leafage+pAge;
+      return age+pAge;
     } else { // organ type is seed
-      return leafage;
+      return age;
     }
   } else {
-    return leafage;
+    return age;
   }
 }
 

@@ -73,7 +73,7 @@ public:
 
   const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
   Vector3d initialHeading;///< a heading downward
-  Vector3d initialstemHeading;///< a heading upward
+  Vector3d initialStemHeading;///< a heading upward
   Vector3d initialLeafHeading;///< leave heading direction
 
 

@@ -20,7 +20,7 @@
 Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
 
-  initialstemHeading=isheading;
+  initialStemHeading=isheading;
   std::cout << "stem pni = "<< pni<< std::endl;
 //  std::cout << "Stem constructor \n";
   StemTypeParameter* sttp = (StemTypeParameter*) plant->getOrganTypeParameter(Organ::ot_stem, type);
@@ -30,7 +30,7 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   StemParameter* stem_p = (StemParameter*) stem_param;
 //  std::cout <<", "<<(StemParameter*) stem_param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
-  Matrix3d ons = Matrix3d::ons(initialstemHeading);
+  Matrix3d ons = Matrix3d::ons(initialStemHeading);
   ons.times(Matrix3d::rotX(beta));
   double theta = stem_p->theta;
   if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
@@ -58,10 +58,9 @@ void Stem::simulate(double dt, bool silence)
 {
 
   old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
-  Vector3d ilheading(0,0,1);
 
 
-  Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,r_nodes.size(), length);
+
 
 //    Vector3d ilheading(0,0,1);//Initial Stem heading
 //	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
@@ -133,9 +132,8 @@ void Stem::simulate(double dt, bool silence)
               s+=sp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
-LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), length);
-               children.push_back(LeafGrow);
-                 LeafGrow->simulate(length,silence);
+                        LeafGrow(silence);
+
 //                 createLateral(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
@@ -223,18 +221,18 @@ double Stem::getScalar(int stype) const {
 double Stem::getCreationTime(double length)
 {
   assert(length>=0);
-  double stemage = StemgetAge(length);
-  assert(stemage>=0);
+  double age = StemgetAge(length);
+  assert(age>=0);
   if (parent->organType()!=Organ::ot_seed) {
     if (parent->organType()==Organ::ot_shoot) {
       double pl = pbl+((Stem*)parent)->stParam()->la; // parent length, when this stem was created
       double pAge=((Stem*)parent)->getCreationTime(pl);
-      return stemage+pAge;
+      return age+pAge;
     } else { // organ type is seed
-      return stemage;
+      return age;
     }
   } else {
-    return stemage;
+    return age;
   }
 }
 
@@ -302,25 +300,28 @@ void Stem::createLateral(bool silence)
 
 
 
-//void Stem::LeafGrow(bool silence)
-//{
-//  const StemParameter* sp = sParam(); // rename
-//  int lt = stParam()->getLateralType(r_nodes.back());
-//  	std::cout << "Stem createLateral()\n";
-//  	std::cout << "Stem lateral type " << lt << "\n";
-//
-//  if (lt>0) {
-//    double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
-//    double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-//    double delay = ageLG-ageLN; // time the lateral has to wait
-//    Vector3d h = heading(); // current heading
-//    Stem* lateral = new Stem(plant, this, lt, delay, h,  r_nodes.size()-1, length);
-//    children.push_back(lateral);
-//    lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-//    }
-//
-//
-//}
+void Stem::LeafGrow(bool silence)
+{
+
+  const StemParameter* sp = sParam(); // rename
+  int lt = stParam()->getLateralType(r_nodes.back());
+  	std::cout << "Stem createLateral()\n";
+  	std::cout << "Stem lateral type " << lt << "\n";
+
+  if (lt>0) {
+    double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
+    double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+    double delay = ageLG-ageLN; // time the lateral has to wait
+    Vector3d h = heading(); // current heading
+  Vector3d ilheading(0,0,1);
+    Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,r_nodes.size(), length);
+    LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), length);
+               children.push_back(LeafGrow);
+                 LeafGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current age)
+    }
+
+
+}
 
 
 
@@ -354,7 +355,7 @@ void Stem::createSegments(double l, bool silence)
           h = n2.minus(r_nodes.at(nn-3));
           h.normalize();
         } else {
-          h = initialstemHeading;
+          h = initialStemHeading;
         }
         double sdx = std::min(dx()-olddx,l);
 
@@ -423,7 +424,7 @@ void Stem::createSegments(double l, bool silence)
 Vector3d Stem::heading() const {
   Vector3d h;
   if ((stem_param->subType == 1) || (this->r_nodes.size()<=1) ) {// Make heading upward if it is main stem and
-    h = initialstemHeading;// getHeading(b-a)
+    h = initialStemHeading;// getHeading(b-a)
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
   }
