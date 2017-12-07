@@ -109,11 +109,11 @@ public:
   int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
 
+ int rsmlReduction = 5; ///< only each n-th node is written to the rsml file (to coarsely adjust axial resolution for output) changed to unprotected
 
 protected:
 
-  int rsmlReduction = 5; ///< only each n-th node is written to the rsml file (to coarsely adjust axial resolution for output)
-
+ 
   std::vector <std::vector<OrganTypeParameter*> > organParam; ///< Parameter set for each root type
 
   Seed* seed;
