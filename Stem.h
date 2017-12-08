@@ -81,7 +81,7 @@ protected:
   void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
   void createLateral(bool silence); ///< creates a new lateral, called by Stem::simulate()
   void LeafGrow(bool silence);
-
+  void ShootBorneRootGrow(bool silence);
 
   int old_non = 0;
 

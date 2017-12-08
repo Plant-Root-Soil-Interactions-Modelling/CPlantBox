@@ -133,7 +133,7 @@ void Stem::simulate(double dt, bool silence)
               if (length<s) {
                 if (i==children.size()) { // new lateral
                         LeafGrow(silence);
-
+                        ShootBorneRootGrow(silence);
 //                 createLateral(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
@@ -152,7 +152,7 @@ void Stem::simulate(double dt, bool silence)
               if (sp->ln.size()==children.size()) { // new lateral (the last one)
 //LeafGrow->addNode(Stem::getNode(children.size()), 10.);
 //                 children.push_back(LeafGrow);
-
+///< last lateral before the apical zone
 //                LeafGrow->createLateral(silence);
 //children.push_back(LeafGrow);
               }
@@ -305,8 +305,8 @@ void Stem::LeafGrow(bool silence)
 
   const StemParameter* sp = sParam(); // rename
   int lt = stParam()->getLateralType(r_nodes.back());
-  	std::cout << "Stem createLateral()\n";
-  	std::cout << "Stem lateral type " << lt << "\n";
+  	std::cout << "LeafGrow createLateral()\n";
+  	std::cout << "LeafGrow type " << lt << "\n";
 
   if (lt>0) {
     double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
@@ -324,7 +324,30 @@ void Stem::LeafGrow(bool silence)
 }
 
 
+void Stem::ShootBorneRootGrow(bool silence)
+{
 
+  const StemParameter* sp = sParam(); // rename
+  int lt = stParam()->getLateralType(r_nodes.back());
+  	std::cout << "ShootBorneRootGrow createLateral()\n";
+  	std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
+
+  if (lt>0) {
+    double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
+    double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+    double delay = ageLG-ageLN; // time the lateral has to wait
+    int NodeToGrowShotBorneRoot = 2 ;
+    Vector3d sbrheading(1,1,0); //just a test heading
+    Root* ShootBorneRootGrow = new Root(plant, this , 5, 0., sbrheading ,NodeToGrowShotBorneRoot, length);
+if (r_nodes.size() > NodeToGrowShotBorneRoot ) {
+                            ShootBorneRootGrow->addNode(Stem::getNode(NodeToGrowShotBorneRoot), length);
+                            children.push_back(ShootBorneRootGrow);
+                            ShootBorneRootGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current age)
+                         }
+    }
+
+
+}
 
 
 /**
