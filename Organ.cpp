@@ -31,15 +31,15 @@ OrganTypeParameter* Organ::getOrganTypeParameter() const
 	switch (organType()) {//check the type of the organ
 	//    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param<<std::endl;
 	//used to debug and check organType and reference
-	case Organ::ot_seed :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Organ::ot_root :return plant->getOrganTypeParameter(this->organType(), root_param->subType);
-	case Organ::ot_stem :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Organ::ot_leafe :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-	case Organ::ot_shoot :return plant->getOrganTypeParameter(this->organType(), stem_param->subType);
-
-
+	case Organ::ot_seed :return plant->getParameter(this->organType(), stem_param->subType);
+	case Organ::ot_root :return plant->getParameter(this->organType(), root_param->subType);
+	case Organ::ot_stem :return plant->getParameter(this->organType(), stem_param->subType);
+	case Organ::ot_leafe :return plant->getParameter(this->organType(), stem_param->subType);
+	case Organ::ot_shoot :return plant->getParameter(this->organType(), stem_param->subType);
+	default:
+		 throw std::invalid_argument("Organ::getOrganTypeParameter(): get parameter");
 	}
-};
+}
 
 /**
  * todo test...
@@ -157,7 +157,7 @@ void Organ::getOrgans(unsigned int otype, std::vector<Organ*>& v)
 		switch(otype) {
 		case Organ::ot_organ:
 			v.push_back(this);
-		break;
+			break;
 		case Organ::ot_seed:
 			if (ot==Organ::ot_seed) {
 				v.push_back(this);
@@ -182,7 +182,7 @@ void Organ::getOrgans(unsigned int otype, std::vector<Organ*>& v)
 			if ((ot==Organ::ot_leafe)||(ot==Organ::ot_stem)) {
 				v.push_back(this);
 			}
-		break;
+			break;
 		default:
 			throw std::invalid_argument( "Organ::getOrgans: unknown organ type" );
 		}
