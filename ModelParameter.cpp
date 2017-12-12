@@ -328,7 +328,6 @@ void SeedTypeParameter::write(std::ostream & cout) const {
 void SeedTypeParameter::readXML(FILE* fp) {
 	tinyxml2::XMLDocument doc( fp );
 	tinyxml2::XMLElement* seed = doc.FirstChildElement( "Seed" );
-
 	seedPos = Vector3d(0,0,-3);
 	seedPoss = Vector3d();
 	tinyxml2::XMLElement* pos = seed->FirstChildElement("Location");

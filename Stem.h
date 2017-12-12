@@ -48,7 +48,7 @@ public:
   double StemgetAge(double length); ///< analytical age of the stem
 
   /* abbreviations */
-  StemParameter* sParam() const { return (StemParameter*)stem_param;  } ///< type cast
+  StemParameter* sParam() const { return (StemParameter*)param;  } ///< type cast
   StemTypeParameter* stParam() const; // type cast
   double dx() const; ///< returns the axial resolution
   Vector3d heading() const; /// current heading of the stem tip

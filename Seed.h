@@ -22,17 +22,24 @@ class Seed : public Organ
 
 public:
 
-	Seed(Plant* plant);
-	virtual ~Seed() { };
+  Seed(Plant* plant);
+  virtual ~Seed() { };
 
-	virtual int organType() const override { return Organ::ot_seed; };
+  virtual int organType() const override { return Organ::ot_seed; };
 
-	virtual void initialize();
-	virtual void simulate(double dt, bool silence = false) override;
+  virtual Vector3d getRelativeOrigin() const override { return seed_pos; };
+  ///< the relative position within the parent organ
 
-	virtual std::string toString() const override;
+  virtual void setRelativeOrigin(const Vector3d& o) override { seed_pos = o; };
+  ///< the relative position within the parent organ
 
-	const int basalType = 4;
+
+  virtual void initialize();
+
+  virtual std::string toString() const override;
+
+  const int basalType = 4;
+  Vector3d seed_pos;
 };
 
 
