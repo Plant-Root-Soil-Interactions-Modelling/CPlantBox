@@ -21,9 +21,16 @@ Organ::~Organ()
 
 /**
  * The organ origin in absolute coordinates
+ *pabs = A0(p1+A1(p2+A2(p3+... A(n-1)(pn ) )))), where A are the relative headings, p are the relative origins
  */
 Vector3d Organ::getOrigin() const {
-  const Organ* o = this;
+
+  if (this->organType() != Organ::ot_seed) {
+      return parent->getOrigin()+parent->getHeading().times(getRelativeOrigin());
+  } else {
+      return this->getRelativeOrigin()();
+  }
+/*  const Organ* o = this;
   Vector3d p = o->getRelativeOrigin();
   o = o->parent;
   while (o->organType() != Organ::ot_seed) {
@@ -33,14 +40,22 @@ Vector3d Organ::getOrigin() const {
       o = o->parent;
   }
   p.plus(o->getRelativeOrigin());
-  return p;
+  return p; */
 }
 
 /**
  * Absolute organ heading
+ * Hn =(A0*A1*..An), where H is the absolute Heading, and A are the relative headings
  */
 Matrix3d Organ::getHeading() const {
-  const Organ* o = this;
+  if (this->organType() != Organ::ot_seed) {
+      auto a = parent->getHeading();
+      a.times(getRelativeHeading());
+      return a;
+  } else {
+      return this->getRelativeOrigin()();
+  }
+/*  const Organ* o = this;
   Matrix3d ah = Matrix3d();
   while (o->organType() != Organ::ot_seed) {
       Matrix3d iH = o->getRelativeHeading();
@@ -48,15 +63,29 @@ Matrix3d Organ::getHeading() const {
       ah = iH;
       o = o->parent;
   }
-  return ah;
+  return ah; */
 }
 
 /**
- * Computes the absolute node coordinates
+ * Computes the absolute node coordinate (A*x+o)
  */
 Vector3d Organ::getNode(int i) const
 {
   return (getHeading().times(r_nodes.at(i))).plus(getOrigin());
+}
+
+/**
+ * Computes the absolute node coordinates for all relative coordinates (A*x_i+o)
+ */
+std::vector<Vector3d> Organ::getNodes() const
+{
+  std::vector<Vector3d> nodes(r_nodes.size());
+  auto A = getHeading();
+  auto p0 = getOrigin();
+  for (size_t i=0; i<r_nodes.size(); i++) {
+      nodes.at(i) = A.times(r_nodes.at(i)).plus(p0);
+  }
+  return nodes;
 }
 
 /**
@@ -80,8 +109,6 @@ void Organ::simulate(double dt, bool silence)
       }
   }
 }
-
-
 
 /**
  * todo
@@ -160,37 +187,8 @@ void Organ::getOrgans(unsigned int otype, std::vector<Organ*>& v)
 {
   if (this->r_nodes.size()>1) {
       unsigned int ot = this->organType();
-      switch(otype) {
-        case Organ::ot_organ:
+      if ((otype & ot) > 0) {
           v.push_back(this);
-          break;
-        case Organ::ot_seed:
-          if (ot==Organ::ot_seed) {
-              v.push_back(this);
-          }
-          break;
-        case Organ::ot_root:
-          if (ot==Organ::ot_root) {
-              v.push_back(this);
-          }
-          break;
-        case Organ::ot_stem:
-          if (ot==Organ::ot_stem) {
-              v.push_back(this);
-          }
-          break;
-        case Organ::ot_leafe:
-          if (ot==Organ::ot_leafe) {
-              v.push_back(this);
-          }
-          break;
-        case Organ::ot_shoot:
-          if ((ot==Organ::ot_leafe)||(ot==Organ::ot_stem)) {
-              v.push_back(this);
-          }
-          break;
-        default:
-          throw std::invalid_argument( "Organ::getOrgans: unknown organ type" );
       }
   }
   for (auto const& c:this->children) {

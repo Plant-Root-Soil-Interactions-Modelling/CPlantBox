@@ -47,8 +47,8 @@ public:
 
     Vector3d getOrigin() const; ///< absolute coordinates of the organ origin
     Matrix3d getHeading() const; ///< absolute heading of the organ
-
     Vector3d getNode(int i) const;  ///< i-th node of the organ in absolute coordinates
+    std::vector<Vector3d> getNodes() const; /// converts all relative nodes to absolute coordinates
 
     /* parameters */
     OrganTypeParameter* getOrganTypeParameter() const;  ///< organ type parameter
