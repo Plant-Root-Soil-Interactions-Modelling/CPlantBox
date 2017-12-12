@@ -13,17 +13,10 @@ Organ::Organ(Plant* plant, Organ* parent, int subtype, double delay) :plant(plan
  */
 Organ::~Organ()
 {
-<<<<<<< HEAD
   for(auto c : children) {
       delete c;
   }
   delete param;
-=======
-	for(auto c : children) {
-		delete c;
-	}
-	delete param;
->>>>>>> a9d4d48e7c81fb74bf6193a5996bc9cbdeb7fb96
 }
 
 /**
@@ -63,19 +56,8 @@ Matrix3d Organ::getHeading() const {
  */
 Vector3d Organ::getNode(int i) const
 {
-<<<<<<< HEAD
   return (getHeading().times(r_nodes.at(i))).plus(getOrigin());
 }
-=======
-	//check the type of the organ
-	//    std::cout<<"organtype "<<organType()<<" , subtype "<<param<<std::endl;
-	//used to debug and check organType and reference
-
-    return plant->getParameter(this->organType(), param->subType);
-
-};
-
->>>>>>> a9d4d48e7c81fb74bf6193a5996bc9cbdeb7fb96
 
 /**
  * Asks the plant for the organ type parameter
@@ -105,58 +87,6 @@ void Organ::simulate(double dt, bool silence)
  * todo
  */
 double Organ::getScalar(int stype) const {
-<<<<<<< HEAD
-  switch(stype) {
-    case Plant::st_one:
-      return 1;
-    case Plant::st_id:
-      return id;
-    case Plant::st_otype:
-      return this->organType();
-    case Plant::st_subtype:
-      switch (organType()) {//check the type of the organ
-        //    std::cout<<"organtype "<<organType()<<" , subtype "<<stem_param->subType<<std::endl;
-        //used to debug and check organType and reference
-        case Organ::ot_seed :return param->subType;
-        case Organ::ot_root :return param->subType;
-        case Organ::ot_stem :return param->subType;
-        case Organ::ot_leafe :return param->subType;
-        case Organ::ot_shoot :return param->subType;
-      }
-        case Plant::st_alive:
-          return alive;
-        case Plant::st_active:
-          return active;
-        case Plant::st_age:
-          return age;
-        case Plant::st_length:
-          return length;
-        case Plant::st_order: {
-          int c=0;
-          const Organ* p = this;
-          while (p->organType()!=Organ::ot_seed) {
-              c++;
-              p = p->parent; // up organ tree
-          }
-          return c;
-        }
-        case Plant::st_parenttype:
-          if (this->parent!=nullptr) {
-              return this->parent->organType();
-          } else {
-              return std::nan("");
-          }
-        case Plant::st_time: {
-          if (nctimes.size()>0) {
-              return nctimes.at(0);
-          } else {
-              return std::nan("");
-          }
-        }
-        default:
-          return std::nan("");
-  }
-=======
 	switch(stype) {
 	case Plant::st_one:
 		return 1;
@@ -203,9 +133,8 @@ double Organ::getScalar(int stype) const {
 			}
 		}
 		default:
-			return std::nan("");
+		  return std::nan("");
 	}
->>>>>>> a9d4d48e7c81fb74bf6193a5996bc9cbdeb7fb96
 }
 
 /**
@@ -330,17 +259,10 @@ void Organ::writeRSML(std::ostream & cout, std::string indent) const
  */
 std::string Organ::toString() const
 {
-<<<<<<< HEAD
   std::stringstream str;
   str << "Organ #"<< id <<": type "<< param->subType << ", length: "<< length << ", age: " << age
       <<" with "<< children.size() << " successors\n";
   return str.str();
-=======
-	std::stringstream str;
-	str << "Organ #"<< id <<": type "<< param->subType << ", length: "<< length << ", age: " << age
-			<<" with "<< children.size() << " successors\n";
-	return str.str();
->>>>>>> a9d4d48e7c81fb74bf6193a5996bc9cbdeb7fb96
 }
 
 ///Organ Type Parameter read function

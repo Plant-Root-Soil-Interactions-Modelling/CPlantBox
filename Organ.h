@@ -34,23 +34,18 @@ public:
 
     virtual int organType() const { return Organ::ot_organ; }  ///< returns the organs type, overwrite for each organ
 
-    /*
-     * scene graph for upper plant parts
-     */
+    /* scene graph for upper plant parts */
 
     virtual Vector3d getRelativeOrigin() const { return Vector3d(); };
     ///< the relative position within the parent organ
-
     virtual void setRelativeOrigin(const Vector3d& o) { throw std::invalid_argument("Organ::setRelativeOrigin not implemented"); };
     ///< the relative position within the parent organ
-
     virtual Matrix3d getRelativeHeading() const { return Matrix3d(); };
-    ///< the position in the parent organ
-
+    ///< the heading in the parent organ
     virtual void setRelativeHeading(const Matrix3d& m) { throw std::invalid_argument("Organ::getRelativeHeading not implemented"); };
+    ///< the heading in the parent organ
 
     Vector3d getOrigin() const; ///< absolute coordinates of the organ origin
-
     Matrix3d getHeading() const; ///< absolute heading of the organ
 
     Vector3d getNode(int i) const;  ///< i-th node of the organ in absolute coordinates
