@@ -8,3 +8,6 @@ Debug/
 a.out
 CPlantBox_Codeblocks_project/
 
+*.ipch
+*.db
+.vs/cpb/v15/.suo

@@ -2,7 +2,9 @@
 
 Seed::Seed(Plant* plant) :Organ(plant, nullptr, 0, 0)
 {
-	root_param = (SeedParameter*)plant->getParameter(Organ::ot_seed,0)->realize();
+
+	param = (SeedParameter*)plant->getParameter(Organ::ot_seed,0)->realize();
+
 }
 
 /**
@@ -12,19 +14,26 @@ void Seed::initialize()
 {
 	// Create root system
 	const double maxT = 365.; // maximal simulation time
-	SeedParameter* sparam = (SeedParameter*)root_param;  // rename
+	SeedParameter* sparam = (SeedParameter*)param;  // rename
 
 	// Taproot
 	Vector3d iheading(0,0,-1);
 	Root* taproot = new Root(plant, this, 1, 0., iheading ,0., 0.); // tap root has subtype 1
 	taproot->addNode(sparam->seedPos,0);
 	children.push_back(taproot);
-
+    //main stem initialation
 	Vector3d isheading(0,0,1);//Initial Stem heading
-
 	Stem* mainstem = new Stem(plant, this, 1, 0., isheading ,0., 0.); // tap root has subtype 1
 	mainstem->addNode(sparam->seedPos,0);
 	children.push_back(mainstem);
+
+
+
+//  Vector3d ilheading(0,0,1);//Initial Stem heading
+//	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
+//	mainleaf->addNode(sparam->seedPos,0);
+//	children.push_back(mainleaf);
+
 
 //	 Basal roots
 	if (sparam->maxB>0) {
@@ -53,8 +62,6 @@ void Seed::initialize()
 	}
 
 
-
-
 }
 
 /**
@@ -74,6 +81,6 @@ void Seed::simulate(double dt, bool silence)
 std::string Seed::toString() const
 {
 	std::stringstream str;
-	str << "Seed #"<< id <<": type "<< root_param->subType << ", length: "<< length << ", age: " << age;
+	str << "Seed #"<< id <<": type "<< param->subType << ", length: "<< length << ", age: " << age;
 	return str.str();
 }

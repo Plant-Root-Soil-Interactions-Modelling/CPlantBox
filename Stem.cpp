@@ -1,5 +1,6 @@
 #include "Stem.h"
-
+#include "Leaf.h"
+#include "Root.h"
 /**
 * Constructor
 * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .stparam file) tropism, growth function, txt and vtp writing system.
@@ -18,17 +19,18 @@
 */
 Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
-  initialstemHeading=isheading;
-  std::cout << "pni = "<< pni<< std::endl;
+
+  initialStemHeading=isheading;
+  std::cout << "stem pni = "<< pni<< std::endl;
 //  std::cout << "Stem constructor \n";
   StemTypeParameter* sttp = (StemTypeParameter*) plant->getParameter(Organ::ot_stem, type);
 
 
-  stem_param = sttp->realize(); // throw the dice
-  StemParameter* stem_p = (StemParameter*) stem_param;
-  std::cout <<", "<<(StemParameter*) stem_param<< "\n";
+  param = sttp->realize(); // throw the dice
+  StemParameter* stem_p = (StemParameter*) param;
+//  std::cout <<", "<<(StemParameter*) param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
-  Matrix3d ons = Matrix3d::ons(initialstemHeading);
+  Matrix3d ons = Matrix3d::ons(initialStemHeading);
   ons.times(Matrix3d::rotX(beta));
   double theta = stem_p->theta;
   if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
@@ -54,7 +56,19 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
 */
 void Stem::simulate(double dt, bool silence)
 {
+
   old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
+
+
+
+
+//    Vector3d ilheading(0,0,1);//Initial Stem heading
+//	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
+//	mainleaf->addNode(sparam->seedPos,0);
+//	children.push_back(mainleaf);
+
+
+
 
   const StemParameter* sp = sParam(); // rename
   const StemTypeParameter* sttp = stParam();
@@ -67,7 +81,7 @@ void Stem::simulate(double dt, bool silence)
   age+=dt;
 
   if (alive) { // dead stem wont grow
-
+//createShootborneroot(silence);
     // probabilistic branching model (todo test)
     if ((age>0) && (age-dt<=0)) { // the stem emerges in this time step
       double stem_P = sttp->sbp->getValue(r_nodes.back(),this);
@@ -111,14 +125,16 @@ void Stem::simulate(double dt, bool silence)
               length=sp->lb;
             }
           }
-          // branching zone
+          // branching zone Condition will be changed later
           if ((dl>0)&&(length>=sp->lb)) {
             double s = sp->lb; // summed length
             for (size_t i=0; ((i<sp->ln.size()) && (dl>0)); i++) {
               s+=sp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
-                  createLateral(silence);
+                        LeafGrow(silence);
+                        ShootBorneRootGrow(silence);
+//                 createLateral(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
                   createSegments(dl,silence);
@@ -134,7 +150,11 @@ void Stem::simulate(double dt, bool silence)
             }
             if (dl>0) {
               if (sp->ln.size()==children.size()) { // new lateral (the last one)
-                createLateral(silence);
+//LeafGrow->addNode(Stem::getNode(children.size()), 10.);
+//                 children.push_back(LeafGrow);
+///< last lateral before the apical zone
+//                LeafGrow->createLateral(silence);
+//children.push_back(LeafGrow);
               }
             }
           }
@@ -153,6 +173,9 @@ void Stem::simulate(double dt, bool silence)
       active = StemgetLength(std::max(age,0.))<(sp->getK()-dx()/10); // become inactive, if final length is nearly reached
     }
   } // if alive
+
+
+
 }
 
 /**
@@ -198,18 +221,18 @@ double Stem::getScalar(int stype) const {
 double Stem::getCreationTime(double length)
 {
   assert(length>=0);
-  double stemage = StemgetAge(length);
-  assert(stemage>=0);
+  double age = StemgetAge(length);
+  assert(age>=0);
   if (parent->organType()!=Organ::ot_seed) {
     if (parent->organType()==Organ::ot_shoot) {
       double pl = pbl+((Stem*)parent)->stParam()->la; // parent length, when this stem was created
       double pAge=((Stem*)parent)->getCreationTime(pl);
-      return stemage+pAge;
+      return age+pAge;
     } else { // organ type is seed
-      return stemage;
+      return age;
     }
   } else {
-    return stemage;
+    return age;
   }
 }
 
@@ -259,8 +282,8 @@ void Stem::createLateral(bool silence)
 {
   const StemParameter* sp = sParam(); // rename
   int lt = stParam()->getLateralType(r_nodes.back());
-  	std::cout << "createLateral()\n";
-  	std::cout << "lateral type " << lt << "\n";
+  	std::cout << "Stem createLateral()\n";
+  	std::cout << "Stem lateral type " << lt << "\n";
 
   if (lt>0) {
     double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
@@ -275,6 +298,58 @@ void Stem::createLateral(bool silence)
 
 }
 
+
+
+void Stem::LeafGrow(bool silence)
+{
+
+  const StemParameter* sp = sParam(); // rename
+  int lt = stParam()->getLateralType(r_nodes.back());
+  	std::cout << "LeafGrow createLateral()\n";
+  	std::cout << "LeafGrow type " << lt << "\n";
+
+  if (lt>0) {
+    double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
+    double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+    double delay = ageLG-ageLN; // time the lateral has to wait
+    Vector3d h = heading(); // current heading
+  Vector3d ilheading(0,0,1);
+    Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,r_nodes.size(), length);
+    LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), length);
+               children.push_back(LeafGrow);
+                 LeafGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current age)
+    }
+
+
+}
+
+
+void Stem::ShootBorneRootGrow(bool silence)
+{
+
+  const StemParameter* sp = sParam(); // rename
+  int lt = stParam()->getLateralType(r_nodes.back());
+  	std::cout << "ShootBorneRootGrow createLateral()\n";
+  	std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
+
+  if (lt>0) {
+    double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
+    double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+    double delay = ageLG-ageLN; // time the lateral has to wait
+    int NodeToGrowShotBorneRoot = 2 ;
+    Vector3d sbrheading(1,1,0); //just a test heading
+    Root* ShootBorneRootGrow = new Root(plant, this , 5, 0., sbrheading ,NodeToGrowShotBorneRoot, length);
+if (r_nodes.size() > NodeToGrowShotBorneRoot ) {
+                            ShootBorneRootGrow->addNode(Stem::getNode(NodeToGrowShotBorneRoot), length);
+                            children.push_back(ShootBorneRootGrow);
+                            ShootBorneRootGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current age)
+                         }
+    }
+
+
+}
+
+
 /**
 *  Creates nodes and node emergence times for length l,
 *  and updates the stem heading
@@ -285,7 +360,7 @@ void Stem::createLateral(bool silence)
 */
 void Stem::createSegments(double l, bool silence)
 {
-  // std::cout << "createSegments("<< l << ")\n";
+   std::cout << "create Stem Segments("<< l << ")\n";
   assert(l>0);
   double sl=0; // summed length of created segment
 
@@ -303,7 +378,7 @@ void Stem::createSegments(double l, bool silence)
           h = n2.minus(r_nodes.at(nn-3));
           h.normalize();
         } else {
-          h = initialstemHeading;
+          h = initialStemHeading;
         }
         double sdx = std::min(dx()-olddx,l);
 
@@ -330,7 +405,7 @@ void Stem::createSegments(double l, bool silence)
 
   if (l<smallDx) {
     if (!silence) {
-      std::cout << "skipped small segment (<"<< smallDx << ") \n";
+      std::cout << "skipped small segment l<Dx (<"<< smallDx << ") \n";
     }
     return;
   }
@@ -346,7 +421,7 @@ void Stem::createSegments(double l, bool silence)
       sdx = l-n*dx();
       if (sdx<smallDx) {
         if (!silence) {
-          std::cout << "skipped small segment (<"<< smallDx << ") \n";
+          std::cout << "skipped small segment i<n (<"<< smallDx << ") \n";
         }
         return;
       }
@@ -362,7 +437,7 @@ void Stem::createSegments(double l, bool silence)
     Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
     double ct = this->getCreationTime(length+sl);
     ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-    // std::cout<<"add node "<<newnode.toString()<<"\n";
+     std::cout<<"add node "<<newnode.toString()<<"\n";
     addNode(newnode,ct);
 
   } // for
@@ -371,8 +446,8 @@ void Stem::createSegments(double l, bool silence)
 //***********************stem heading*****************************
 Vector3d Stem::heading() const {
   Vector3d h;
-  if (stem_param->subType == 1 || this->r_nodes.size()<=1 ) {// Make heading upward if it is main stem and
-    h = initialstemHeading;// getHeading(b-a)
+  if ((param->subType == 1) || (this->r_nodes.size()<=1) ) {// Make heading upward if it is main stem and
+    h = initialStemHeading;// getHeading(b-a)
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
   }
@@ -457,7 +532,7 @@ void Stem::writeRSML(std::ostream & cout, std::string indent) const
 std::string Stem::toString() const
 {
   std::stringstream str;
-  str << "Root #"<< id <<": type "<<stem_param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
+  str << "Root #"<< id <<": type "<<param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
   return str.str();
 }
 

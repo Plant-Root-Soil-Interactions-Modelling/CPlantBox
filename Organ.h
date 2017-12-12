@@ -111,8 +111,8 @@ public:
 
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
-    OrganParameter* root_param = nullptr; ///< the parameters of this root
-    OrganParameter* stem_param = nullptr; ///< the parameters of this root
+    OrganParameter* param = nullptr; ///< the parameters of this root
+
 
     /* Parameters that may change with time */
     bool alive = 1; ///< true: alive, false: dead

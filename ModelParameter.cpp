@@ -678,7 +678,7 @@ void StemTypeParameter::read(std::istream & is)
 	is >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
 	createTropism();
 	createGrowth();
-	std::cout << "StemTypeParameter::read is deprecated, use RootTypeParameter::readXML instead\n";
+	std::cout << "StemTypeParameter::read is deprecated, use StemTypeParameter::readXML instead\n";
 }
 
 void StemTypeParameter::readXML(FILE* fp)
@@ -688,6 +688,280 @@ void StemTypeParameter::readXML(FILE* fp)
 
 
 std::string StemTypeParameter::writeXML(FILE* fp) const
+{
+
+	// return std::string(printer.CStr());
+	return "";
+
+}
+
+
+///**********************************************************Another COPY PASTE to create leaf******************************************************************************************
+
+double LeafParameter::getK() const
+{
+	double l = 0;
+	for (auto const& dl : ln) {
+		l += dl;
+	}
+	return l+la+lb;
+}
+
+void LeafParameter::write(std::ostream & cout) const
+{
+	cout << "# Root Parameters \n";
+	cout << "type\t" << subType << "\n"  << "lb\t"<< lb <<"\n" << "la\t"<< la <<"\n" << "ln\t";
+	for (size_t i=0; i<ln.size(); i++) {
+		cout << ln[i] << "\t";
+	}
+	cout << "\n" << "nob\t"<< ln.size() <<"\n" << "r\t"<< r <<"\n" << "a\t" << a << "\n" << "theta\t" << theta << "\n" << "rlt\t" << rlt << "\n";
+}
+
+
+
+LeafTypeParameter::LeafTypeParameter()
+{
+	organType = Organ::ot_leafe;
+	subType = -1; // means undefined
+	tropism = new LeafTropismFunction(0,0);
+	growth = new LeafGrowthFunction();
+	se = new SoilProperty();
+	sa = new SoilProperty();
+	sbp = new SoilProperty();
+	set(-1, 0., 0., 10., 0., 1., 0., 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
+			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
+}
+
+LeafTypeParameter::~LeafTypeParameter()
+{
+	delete tropism;
+	delete growth;
+	delete se;
+	delete sa;
+	delete sbp;
+}
+
+/**
+ * todo comment
+ */
+void LeafTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
+		double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropismS,
+		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
+		int gf, const std::string& name)
+{
+	this->subType = type;
+	this->lb = lb;
+	this->lbs = lbs;
+	this->la = la;
+	this->las = las;
+	this->ln = ln;
+	this->lns = lns;
+	this->nob = nob;
+	this->nobs = nobs;
+	this->r = r;
+	this->rs = rs;
+	this->a = a;
+	this->as = as;
+	this->colorR = colorR;
+	this->colorG = colorG;
+	this->colorB = colorB;
+	this->tropismT = tropismT;
+	this->tropismN = tropismN;
+	this->tropismS = tropismS;
+	this->dx=dx;
+	this->successor = successor; // vector
+	this->successorP = successorP; // vector
+	assert(successor.size()==successorP.size());
+	this->theta = theta;
+	this->thetas = thetas;
+	this->rlt = rlt;
+	this->rlts = rlts;
+	this->gf = gf;
+	this->name = name; // string
+
+	createTropism();
+	createGrowth();
+}
+
+void LeafTypeParameter::createTropism(SignedDistanceFunction* geom, SoilProperty* soil)
+{
+	delete tropism;
+	LeafTropismFunction* t;
+	switch (tropismT) {
+	case tt_plagio: {
+		t = new LeafPlagiotropism(tropismN,tropismS);
+		break;
+	}
+	case tt_gravi: {
+		t = new LeafGravitropism(tropismN,tropismS);
+		break;
+	}
+	case tt_exo: {
+		t = new LeafExotropism(tropismN,tropismS);
+		break;
+	}
+	case tt_hydro: {
+		LeafTropismFunction* gt =  new LeafGravitropism(tropismN,tropismS);
+		LeafTropismFunction* ht = new LeafPhototropism(tropismN,tropismS,soil);
+		t = new CombinedLeafTropism(tropismN,tropismS,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
+		break;
+	}
+	default: throw std::invalid_argument( "LeafSystem::createTropismFunction() tropism type not implemented" );
+	}
+
+	if (geom!=nullptr) {
+		tropism = new ConfinedLeafTropism(t,geom);
+	} else {
+		tropism = t;
+	}
+
+}
+
+void LeafTypeParameter::createGrowth()
+{
+	switch (gf) {
+	case gft_negexp: {
+		growth = new LeafExponentialGrowth();
+		break;
+	}
+	case gft_linear: {
+		growth =  new LeafLinearGrowth();
+		break;
+	}
+	default: throw std::invalid_argument( "Plant::createGrowthFunction() growth function type not implemented" );
+	}
+}
+
+/**
+ * Creates a specific root from the root type parameters.
+ * The unique root id is not set, but must be set from outside.
+ * (called by Root::Root())
+ *
+ * minimal ln distance is 1.e-9
+ *
+ * \return Specific root parameters derived from the root type parameters
+ */
+OrganParameter* LeafTypeParameter::realize() const
+{
+	// type does not change
+	double lb_ = std::max(lb + randn()*lbs,double(0)); // length of basal zone
+	double la_ = std::max(la + randn()*las,double(0)); // length of apical zone
+	std::vector<double> ln_; // stores the inter-distances
+	int nob_ = std::max(round(nob + randn()*nobs),double(0)); // maximal number of branches
+	for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+		double d = std::max(ln + randn()*lns,1e-9);
+		ln_.push_back(d);
+	}
+	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
+	double a_ = std::max(a + randn()*as,double(0)); // radius
+	double theta_ = std::max(theta + randn()*thetas,double(0)); // initial elongation
+	double rlt_ = std::max(rlt + randn()*rlts,double(0)); // root life time
+	LeafParameter* leaf_p =  new LeafParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
+	return leaf_p;
+}
+
+/**
+ * Choose (dice) lateral type based on root parameter set,
+ * (since there can be more than one lateral type)
+ *
+ * @param pos       spatial position (for coupling to a soil model)
+ */
+int LeafTypeParameter::getLateralType(const Vector3d& pos)
+{
+	assert(successor.size()==successorP.size());
+	double scale = sbp->getValue(pos);  //the current model makes not a lot of sense, we may come up with something more clever
+	if (successorP.size()>0) { // at least 1 successor type
+		if (successorP.size()>1) { // if there are more than one lateral we have to dice
+			double d = rand();
+			int i=0;
+			double leaf_p=successorP.at(i)*scale;
+			while (leaf_p<=d) {
+				i++;
+				leaf_p+=successorP.at(i)*scale;
+			}
+			return successor.at(i);
+		} else {
+			return successor.front();
+		}
+	} else { // no successors
+		return -1;
+	}
+}
+
+void LeafTypeParameter::write(std::ostream & os) const
+{
+	os << "# Root type parameter for " << name << "\n";
+	os << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
+			<< "ln\t" << ln << "\t" << lns << "\n" << "nob\t"<< nob <<"\t"<< nobs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
+			"a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
+			<< "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successor.size() << "\t";
+	for (size_t i=0; i<successor.size(); i++) {
+		os << successor[i] << "\t";
+	}
+	os << "\n" << "successorP\t" << successorP.size() <<"\t";
+	for (size_t i=0; i<successorP.size(); i++) {
+		os << successorP[i] << "\t";
+	}
+	os << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";
+	std::cout << "RootTypeParameter::write is deprecated, use RootTypeParameter::writeXML instead\n";
+}
+
+void LeafTypeParameter::read(std::istream & is)
+{
+	char ch[256]; // dummy
+	is.getline(ch,256);
+	std::string s; // dummy
+	double k;
+	double ks;
+	is >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
+	is >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
+	if (ln > 0) {
+		nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
+		nob = std::max(nob,0.);
+		nobs = (ks/k - lns/ln)*k/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+		nobs = std::max(nobs,0.);
+		if (std::isnan(nobs)) {
+			std::cout << "LeafTypeParameter::read() nobs is nan \n";
+			nobs =0;
+		}
+	} else {
+		nob=0;
+		nobs = 0;
+	}
+	int n;
+	is  >> s >> n;
+	successor.clear();
+	int is_;
+	for (int i=0; i<n; i++) {
+		is >> is_;
+		successor.push_back(is_);
+	}
+	is >> s >> n;
+	successorP.clear();
+	double ds;
+	for (int i=0; i<n; i++) {
+		is >> ds;
+		successorP.push_back(ds);
+	}
+	is >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
+	createTropism();
+	createGrowth();
+	std::cout << "LeafTypeParameter::read is deprecated, use LeafTypeParameter::readXML instead\n";
+}
+
+void LeafTypeParameter::readXML(FILE* fp)
+{
+
+}
+
+
+std::string LeafTypeParameter::writeXML(FILE* fp) const
 {
 
 	// return std::string(printer.CStr());

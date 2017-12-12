@@ -14,12 +14,15 @@
 #include "Root.h"
 #include "Seed.h"
 #include "Stem.h"
+#include "Leaf.h"
 
 #include "soil.h"
 #include "RootTropism.h"
 #include "RootGrowth.h"
 #include "StemGrowth.h"
 #include "StemTropism.h"
+#include "LeafGrowth.h"
+#include "LeafTropism.h"
 
 class Seed;
 class SeedParameter;
@@ -55,6 +58,7 @@ public:
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
   int readRootParameters(std::istream & cin); ///< Reads root parameters from an input stream
   int readStemParameters(std::istream & cin); ///< Reads stem parameters from an input stream
+  int readLeafParameters(std::istream & cin);
   void writeParameters(std::ostream & os) const; ///< Writes root parameters
   /* todo: lets put it in one xml, and parse the specific tags with the respective organ sub-classes */
 
@@ -96,7 +100,10 @@ public:
   int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
 
+
+
 protected:
+
 
   std::vector <std::vector<OrganTypeParameter*> > organParam; ///< Parameter set for each root type
   Seed* seed;
