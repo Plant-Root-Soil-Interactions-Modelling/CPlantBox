@@ -24,9 +24,9 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getOrganTypeParameter(Organ::ot_leafe, type);
 
 
-  leaf_param = ltp->realize(); // throw the dice
-  LeafParameter* leaf_p = (LeafParameter*) leaf_param;
-//  std::cout <<", "<<(LeafParameter*) leaf_param<< "\n";
+  param = ltp->realize(); // throw the dice
+  LeafParameter* leaf_p = (LeafParameter*) param;
+//  std::cout <<", "<<(LeafParameter*) param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
   Matrix3d ons = Matrix3d::ons(initialLeafHeading);
   ons.times(Matrix3d::rotX(beta));
@@ -383,7 +383,7 @@ void Leaf::createSegments(double l, bool silence)
 //***********************leaf heading*****************************
 Vector3d Leaf::heading() const {
   Vector3d h;
-  if ((leaf_param->subType == 1) || (this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
+  if ((param->subType == 1) || (this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
     h = initialLeafHeading;// getHeading(b-a)
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
@@ -469,7 +469,7 @@ void Leaf::writeRSML(std::ostream & cout, std::string indent) const
 std::string Leaf::toString() const
 {
   std::stringstream str;
-  str << "Root #"<< id <<": type "<<leaf_param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
+  str << "Root #"<< id <<": type "<<param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
   return str.str();
 }
 

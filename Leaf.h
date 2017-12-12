@@ -55,7 +55,7 @@ public:
   double LeafgetAge(double length); ///< analytical age of the stem
 
   /* abbreviations */
-  LeafParameter* lParam() const { return (LeafParameter*)leaf_param;  } ///< type cast
+  LeafParameter* lParam() const { return (LeafParameter*)param;  } ///< type cast
   LeafTypeParameter* ltParam() const; // type cast
   double dx() const; ///< returns the axial resolution
   Vector3d heading() const; /// current heading of the Leaf tip

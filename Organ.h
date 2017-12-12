@@ -111,9 +111,7 @@ public:
 
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
-    OrganParameter* root_param = nullptr; ///< the parameters of this root
-    OrganParameter* stem_param = nullptr; ///< the parameters of this stem
-    OrganParameter* leaf_param = nullptr;///< the parameters of this leaf
+    OrganParameter* param = nullptr; ///< the parameters of this root
 
 
     /* Parameters that may change with time */

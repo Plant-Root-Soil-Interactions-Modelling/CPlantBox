@@ -2,7 +2,7 @@
 
 Seed::Seed(Plant* plant) :Organ(plant, nullptr, 0, 0)
 {
-	root_param = (SeedParameter*)plant->getOrganTypeParameter(Organ::ot_seed,0)->realize();
+	param = (SeedParameter*)plant->getOrganTypeParameter(Organ::ot_seed,0)->realize();
 }
 
 /**
@@ -12,7 +12,7 @@ void Seed::initialize()
 {
 	// Create root system
 	const double maxT = 365.; // maximal simulation time
-	SeedParameter* sparam = (SeedParameter*)root_param;  // rename
+	SeedParameter* sparam = (SeedParameter*)param;  // rename
 
 	// Taproot
 	Vector3d iheading(0,0,-1);
@@ -79,6 +79,6 @@ void Seed::simulate(double dt, bool silence)
 std::string Seed::toString() const
 {
 	std::stringstream str;
-	str << "Seed #"<< id <<": type "<< root_param->subType << ", length: "<< length << ", age: " << age;
+	str << "Seed #"<< id <<": type "<< param->subType << ", length: "<< length << ", age: " << age;
 	return str.str();
 }

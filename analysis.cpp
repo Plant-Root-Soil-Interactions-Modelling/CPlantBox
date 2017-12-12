@@ -621,7 +621,7 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
                 green = ((Root*)r)->tParam()->colorG;
                 blue = ((Root*)r)->tParam()->colorB;
                 time = ctimes.at(i);
-                type = r->root_param->subType;
+                type = r->param->subType;
 
                 os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
                         radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ <<" \n";
@@ -632,7 +632,7 @@ break;
                 green = ((Stem*)r)->stParam()->colorG;
                 blue = ((Stem*)r)->stParam()->colorB;
                 time = ctimes.at(i);
-                type = r->stem_param->subType;
+                type = r->param->subType;
                 os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
                         radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ << " \n";
                         break;
@@ -643,7 +643,7 @@ break;
                 green = ((Leaf*)r)->ltParam()->colorG;
                 blue = ((Leaf*)r)->ltParam()->colorB;
                 time = ctimes.at(i);
-                type = r->leaf_param->subType;
+                type = r->param->subType;
                 os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
                         radius << " " << red << " " << green << " " << blue << " " << time<< " " << type << " " << organ << " \n";
                         break;
