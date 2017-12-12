@@ -1,9 +1,10 @@
+
 // *** ADDED BY HEADER FIXUP ***
 #include <cassert>
 #include <istream>
 // *** END ***
-#ifndef STEM_H_
-#define STEM_H_
+#ifndef LEAF_H_
+#define LEAF_H_
 
 #include <iostream>
 #include <assert.h>
@@ -11,14 +12,15 @@
 #include "Organ.h"
 #include "mymath.h"
 #include "sdf.h"
-#include "StemTropism.h"
-#include "StemGrowth.h"
+#include "LeafTropism.h"
+#include "LeafGrowth.h"
 #include "ModelParameter.h"
 
 
+
 class Plant;
-class StemParameter;
-class StemTypeParameter;
+class LeafParameter;
+class LeafTypeParameter;
 
 /**
 * stem
@@ -27,19 +29,19 @@ class StemTypeParameter;
 * The method simulate() creates new nodes of this stem, and lateral stems in the stem's branching zone.
 *
 */
-class Stem : public Organ
+class Leaf : public Organ
 {
-friend class Leaf;
-
-
 
 public:
 
 
-  Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
-  virtual ~Stem() { }; // base class constructor is called automatically in c++
 
-  virtual int organType() const override { return Organ::ot_stem; };
+
+
+  Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
+  virtual ~Leaf() { }; // base class constructor is called automatically in c++
+
+  virtual int organType() const override;
 
   /* simulation */
   virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
@@ -49,14 +51,14 @@ public:
 
   /* exact from analytical equations */
   double getCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
-  double StemgetLength(double age); ///< analytical length of the stem
-  double StemgetAge(double length); ///< analytical age of the stem
+  double LeafgetLength(double age); ///< analytical length of the stem
+  double LeafgetAge(double length); ///< analytical age of the stem
 
   /* abbreviations */
-  StemParameter* sParam() const { return (StemParameter*)param;  } ///< type cast
-  StemTypeParameter* stParam() const; // type cast
+  LeafParameter* lParam() const { return (LeafParameter*)param;  } ///< type cast
+  LeafTypeParameter* ltParam() const; // type cast
   double dx() const; ///< returns the axial resolution
-  Vector3d heading() const; /// current heading of the stem tip
+  Vector3d heading() const; /// current heading of the Leaf tip
 
   /* IO */
   void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
@@ -67,21 +69,19 @@ public:
 
   /* parameters that are given per stem that are constant*/
   int pni; ///< parent node index
-  double pbl; ///< length [cm]
+  double pbl; ///< parent base length [cm]
 
   const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
-  Vector3d initialHeading;/// a heading downward
-  Vector3d initialStemHeading;/// heading upward
+  Vector3d initialHeading;///< a heading downward
+  Vector3d initialStemHeading;///< a heading upward
+  Vector3d initialLeafHeading;///< leave heading direction
 
-  int LeafID = 0; //declare leaf id.
 
+  void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 
 protected:
 
   void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
-  void createLateral(bool silence); ///< creates a new lateral, called by Stem::simulate()
-  void LeafGrow(bool silence);
-  void ShootBorneRootGrow(bool silence);
 
   int old_non = 0;
 
