@@ -23,7 +23,7 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   initialStemHeading=isheading;
   std::cout << "stem pni = "<< pni<< std::endl;
 //  std::cout << "Stem constructor \n";
-  StemTypeParameter* sttp = (StemTypeParameter*) plant->getOrganTypeParameter(Organ::ot_stem, type);
+  StemTypeParameter* sttp = (StemTypeParameter*) plant->getParameter(Organ::ot_stem, type);
 
 
   param = sttp->realize(); // throw the dice

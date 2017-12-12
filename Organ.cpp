@@ -30,9 +30,11 @@ OrganTypeParameter* Organ::getOrganTypeParameter() const
 	//check the type of the organ
 	//    std::cout<<"organtype "<<organType()<<" , subtype "<<param<<std::endl;
 	//used to debug and check organType and reference
-    return plant->getOrganTypeParameter(this->organType(), param->subType);
+
+    return plant->getParameter(this->organType(), param->subType);
 
 };
+
 
 /**
  * todo test...
@@ -148,7 +150,7 @@ void Organ::getOrgans(unsigned int otype, std::vector<Organ*>& v)
 		switch(otype) {
 		case Organ::ot_organ:
 			v.push_back(this);
-		break;
+			break;
 		case Organ::ot_seed:
 			if (ot==Organ::ot_seed) {
 				v.push_back(this);
@@ -173,7 +175,7 @@ void Organ::getOrgans(unsigned int otype, std::vector<Organ*>& v)
 			if ((ot==Organ::ot_leafe)||(ot==Organ::ot_stem)) {
 				v.push_back(this);
 			}
-		break;
+			break;
 		default:
 			throw std::invalid_argument( "Organ::getOrgans: unknown organ type" );
 		}

@@ -21,7 +21,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   initialLeafHeading=ilheading;
   std::cout << "Leaf pni = "<< pni<< std::endl;
   std::cout << "Plant* plant ="<< plant <<" "<< parent<<std::endl;
-  LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getOrganTypeParameter(Organ::ot_leafe, type);
+  LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getParameter(Organ::ot_leafe, type);
 
 
   param = ltp->realize(); // throw the dice

@@ -1,6 +1,3 @@
-// *** ADDED BY HEADER FIXUP ***
-#include <istream>
-// *** END ***
 #ifndef PLANT_H_
 #define PLANT_H_
 
@@ -10,6 +7,7 @@
 #include <chrono>
 #include <random>
 #include <numeric>
+#include <istream>
 
 #include "ModelParameter.h"
 #include "Organ.h"
@@ -32,8 +30,8 @@ class SeedParameter;
 /**
  * Plant
  *
- * This class manages all model parameter and the simulation,
- * stores the seed of the plant,
+ * This class manages all model parameter, the simulation,
+ * and stores the seed of the plant,
  * and offers utility functions for post processing
  *
  */
@@ -53,8 +51,8 @@ public:
   virtual ~Plant();
 
   /* Parameter */
-  void setOrganTypeParameter(OrganTypeParameter*  otp);///< set the organ type parameter TODO change p
-  OrganTypeParameter* getOrganTypeParameter(int otype, int subtype) const;
+  void setParameter(OrganTypeParameter*  otp);///< set the organ type parameter
+  OrganTypeParameter* getParameter(int otype, int subtype) const;
 
   /* input output */
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
@@ -75,14 +73,7 @@ public:
   /* Analysis of simulation results */
   // Organs
   int getNumberOfNodes() const { return nid+1; } ///< Number of nodes of the root system
-  int getNumberOfSegments() const {
-	  getOrgans(Organ::ot_organ);
-	  int c = 0;
-	  for (const auto& o : organs) {
-		  c += (o->r_nodes.size()-1);
-	  }
-	  return c;
-  } ///< todo -baseRoots.size() Number of segments of the root system (the number of nodes-1 for tap root systems)
+  int getNumberOfSegments() const; ///< todo -baseRoots.size() Number of segments of the root system (the number of nodes-1 for tap root systems)
   std::vector<Organ*> getOrgans(unsigned int otype) const; ///< Represents the root system as sequential vector of roots and buffers the result
   std::vector<Vector3d> getNodes() const; ///< Copies all root system nodes into a vector
   std::vector<std::vector<Vector3d> > getPolylines(unsigned int otype=Organ::ot_organ) const; ///< Copies the nodes of each root into a vector return all resulting vectors
@@ -91,10 +82,6 @@ public:
   std::vector<double> getNETimes() const; ///< Copies all node emergence times into a vector
   std::vector<std::vector<double> > getPolylinesNET(unsigned int otype=Organ::ot_organ) const; ///< Copies the node emergence times of each root into a vector and returns all resulting vectors
   std::vector<double> getScalar(unsigned int otype=Organ::ot_organ, int stype=Plant::st_length) const; ///< Copies a scalar root parameter that is constant per root to a vector
-
-//  // std::vector<Organ*> getBaseRoots() const { return baseRoots; } ///< Base roots are tap root, basal roots, and shoot borne roots
-//  std::vector<int> getRootTips() const; ///< Node indices of the root tips
-//  std::vector<int> getRootBases() const; ///< Node indices of the root bases
 
   // Output Simulation results
   void write(std::string name, int otype = Organ::ot_organ) const; /// writes simulation results (type is determined from file extension in name)
@@ -113,13 +100,12 @@ public:
   int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
 
-  int rsmlReduction = 5; ///< only each n-th node is written to the rsml file (to coarsely adjust axial resolution for output)
+
 
 protected:
 
 
   std::vector <std::vector<OrganTypeParameter*> > organParam; ///< Parameter set for each root type
-
   Seed* seed;
 
   SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
@@ -147,34 +133,6 @@ protected:
   static unsigned int ot2index(unsigned int ot);
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

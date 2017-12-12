@@ -8,7 +8,7 @@ const std::vector<std::string> Plant::scalarTypeNames =
 Plant::Plant()
 {
 	initOTP();
-	setOrganTypeParameter(new SeedTypeParameter());
+	setParameter(new SeedTypeParameter());
 	seed = new Seed(this);
 }
 
@@ -26,7 +26,7 @@ Plant::~Plant()
 /**
  *	Deletes the old parameter, sets the new one
  */
-void Plant::setOrganTypeParameter(OrganTypeParameter*  otp)
+void Plant::setParameter(OrganTypeParameter*  otp)
 {
     unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
@@ -34,7 +34,7 @@ void Plant::setOrganTypeParameter(OrganTypeParameter*  otp)
 	organParam.at(i).at(otp->subType) = otp;
 }
 
-OrganTypeParameter* Plant::getOrganTypeParameter(int otype, int subtype) const
+OrganTypeParameter* Plant::getParameter(int otype, int subtype) const
 {
 	return organParam.at(ot2index(otype)).at(subtype);
 }
@@ -62,7 +62,7 @@ void Plant::setGeometry(SignedDistanceFunction* geom)
 	delete geometry;
 	geometry = geom;
 	for (int i=0; i<maxtypes; i++) {
-		RootTypeParameter* rtp = (RootTypeParameter*) getOrganTypeParameter(Organ::ot_root,i);
+		RootTypeParameter* rtp = (RootTypeParameter*) getParameter(Organ::ot_root,i);
 		if (rtp->subType>=0) { // defined
 			delete rtp->tropism;
 			rtp->createTropism(geom);
@@ -121,7 +121,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	std::cout << "Read " << c << " root type parameters \n"; // debug
 
 	// open seed parameter
-	SeedTypeParameter* stp = (SeedTypeParameter*)getOrganTypeParameter(Organ::ot_seed,0);
+	SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
 	std::string pp_name = subdir;
 	pp_name.append(name);
 	pp_name.append(".pparam");
@@ -132,7 +132,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	} else { // create a tap root system
 		std::cout << "No seed system parameters found, using default tap root system \n";
 		delete stp;
-		setOrganTypeParameter(new SeedTypeParameter());
+		setParameter(new SeedTypeParameter());
 	}
 
 
@@ -182,12 +182,13 @@ int Plant::readRootParameters(std::istream& cin)
 		RootTypeParameter* p  = new RootTypeParameter();
 
 		p->read(cin);
-		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+
+
+		setParameter(p); // sets the param to the index (p.type-1) TODO
 
 		c++;
 	}
 	return c;
-
 }
 
 int Plant::readStemParameters(std::istream& cin)
@@ -199,11 +200,12 @@ int Plant::readStemParameters(std::istream& cin)
 		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
 		stem_p->read(cin);
 
-		setOrganTypeParameter(stem_p);
+		//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+		setParameter(stem_p);
+
 		stem_c++;
 	}
 	return stem_c;
-
 }
 
 
@@ -214,7 +216,7 @@ int Plant::readLeafParameters(std::istream& cin)
 	while (cin.good()) {
 		LeafTypeParameter* leaf_p  = new LeafTypeParameter();///added copypaste
 		leaf_p->read(cin);
-		setOrganTypeParameter(leaf_p);
+		setParameter(leaf_p);
 		leaf_c++;
 	}
 	return leaf_c;
@@ -303,6 +305,18 @@ void Plant::simulate()
 	// this->simulate(seedParam->simtime); TODO
 }
 
+
+int Plant::getNumberOfSegments() const
+{
+	  getOrgans(Organ::ot_organ);
+	  int c = 0;
+	  for (const auto& o : organs) {
+		  c += (o->r_nodes.size()-1);
+	  }
+	  return c;
+ }
+
+
 /**
  *
  */
@@ -316,34 +330,6 @@ std::vector<Organ*> Plant::getOrgans(unsigned int otype) const
 		return organs;
 	}
 }
-
-///**
-// * Returns the node indices of the root tips
-// */
-//std::vector<int> Plant::getRootTips() const
-//{
-//	this->getOrgans(Organ::ot_root); // update roots (if necessary)
-//	std::vector<int> tips;
-//	for (auto& r : organs) {
-//		Root* r2 = (Root*)r;
-//		tips.push_back(r2->getNodeID(r2->getNumberOfNodes()-1));
-//	}
-//	return tips;
-//}
-//
-///**
-// * Returns the positions of the root bases
-// */
-//std::vector<int> Plant::getRootBases() const
-//{
-//	this->getOrgans(Organ::ot_root); // update roots (if necessary)  std::vector<int> bases;
-//	std::vector<int> bases;
-//	for (auto& r : organs) {
-//		Root* r2 = (Root*)r;
-//		bases.push_back(r2->getNodeID(0));
-//	}
-//	return bases;
-//}
 
 /**
  * Copies the nodes of the root systems into a sequential vector,
@@ -451,7 +437,6 @@ std::vector<std::vector<double>> Plant::getPolylinesNET(unsigned int otype) cons
 	}
 	return times;
 }
-
 
 /**
  * Copies a scalar that is constant per organ to a sequential vector (one scalar per organ).

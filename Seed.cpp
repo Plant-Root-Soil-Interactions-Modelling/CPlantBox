@@ -2,7 +2,9 @@
 
 Seed::Seed(Plant* plant) :Organ(plant, nullptr, 0, 0)
 {
-	param = (SeedParameter*)plant->getOrganTypeParameter(Organ::ot_seed,0)->realize();
+
+	param = (SeedParameter*)plant->getParameter(Organ::ot_seed,0)->realize();
+
 }
 
 /**
@@ -35,12 +37,12 @@ void Seed::initialize()
 
 //	 Basal roots
 	if (sparam->maxB>0) {
-		if (plant->getOrganTypeParameter(Organ::ot_root,basalType)->subType<1) { // if the type is not defined, copy tap root
+		if (plant->getParameter(Organ::ot_root,basalType)->subType<1) { // if the type is not defined, copy tap root
 			std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
-			RootTypeParameter* tapParam = (RootTypeParameter*)plant->getOrganTypeParameter(Organ::ot_root, 0);
+			RootTypeParameter* tapParam = (RootTypeParameter*)plant->getParameter(Organ::ot_root, 0);
 			RootTypeParameter* brtp = new RootTypeParameter(*tapParam);
 			brtp->subType = basalType;
-			plant->setOrganTypeParameter(brtp);
+			plant->setParameter(brtp);
 		}
 		int maxB = sparam->maxB;
 		if (sparam->delayB>0) {
