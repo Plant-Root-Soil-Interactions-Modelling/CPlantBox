@@ -21,16 +21,17 @@ Organ::~Organ()
 
 /**
  * The organ origin in absolute coordinates
- *pabs = A0(p1+A1(p2+A2(p3+... A(n-1)(pn ) )))), where A are the relative headings, p are the relative origins
+ * p_abs = A0(p1+A1(p2+A2(p3+... A(n-1)(pn ) )))), where A are the relative headings, p are the relative origins
  */
 Vector3d Organ::getOrigin() const {
-
+  // recursive
   if (this->organType() != Organ::ot_seed) {
       return parent->getOrigin()+parent->getHeading().times(getRelativeOrigin());
   } else {
       return this->getRelativeOrigin()();
   }
-/*  const Organ* o = this;
+/*// sequentiell
+  const Organ* o = this;
   Vector3d p = o->getRelativeOrigin();
   o = o->parent;
   while (o->organType() != Organ::ot_seed) {
@@ -48,6 +49,7 @@ Vector3d Organ::getOrigin() const {
  * Hn =(A0*A1*..An), where H is the absolute Heading, and A are the relative headings
  */
 Matrix3d Organ::getHeading() const {
+  // recursive
   if (this->organType() != Organ::ot_seed) {
       auto a = parent->getHeading();
       a.times(getRelativeHeading());
@@ -55,7 +57,8 @@ Matrix3d Organ::getHeading() const {
   } else {
       return this->getRelativeOrigin()();
   }
-/*  const Organ* o = this;
+/*// sequentiell
+  const Organ* o = this;
   Matrix3d ah = Matrix3d();
   while (o->organType() != Organ::ot_seed) {
       Matrix3d iH = o->getRelativeHeading();
@@ -262,7 +265,5 @@ std::string Organ::toString() const
       <<" with "<< children.size() << " successors\n";
   return str.str();
 }
-
-///Organ Type Parameter read function
 
 
