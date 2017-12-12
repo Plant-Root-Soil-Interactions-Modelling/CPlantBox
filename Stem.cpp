@@ -446,13 +446,8 @@ void Stem::createSegments(double l, bool silence)
 //***********************stem heading*****************************
 Vector3d Stem::heading() const {
   Vector3d h;
-<<<<<<< HEAD
   if (param->subType == 1 || this->r_nodes.size()<=1 ) {// Make heading upward if it is main stem and
-    h = initialstemHeading;// getHeading(b-a)
-=======
-  if ((param->subType == 1) || (this->r_nodes.size()<=1) ) {// Make heading upward if it is main stem and
     h = initialStemHeading;// getHeading(b-a)
->>>>>>> a9d4d48e7c81fb74bf6193a5996bc9cbdeb7fb96
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
   }

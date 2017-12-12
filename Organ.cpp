@@ -26,9 +26,9 @@ Organ::~Organ()
 Vector3d Organ::getOrigin() const {
   // recursive
   if (this->organType() != Organ::ot_seed) {
-      return parent->getOrigin()+parent->getHeading().times(getRelativeOrigin());
+      return parent->getOrigin().plus(parent->getHeading().times(getRelativeOrigin()));
   } else {
-      return this->getRelativeOrigin()();
+      return this->getRelativeOrigin();
   }
 /*// sequentiell
   const Organ* o = this;
@@ -55,7 +55,7 @@ Matrix3d Organ::getHeading() const {
       a.times(getRelativeHeading());
       return a;
   } else {
-      return this->getRelativeOrigin()();
+      return Matrix3d();
   }
 /*// sequentiell
   const Organ* o = this;
