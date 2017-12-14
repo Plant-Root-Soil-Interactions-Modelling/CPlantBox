@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 //#include <unistd.h>
-
+#include "tinyxml2.h"
 
 
 #include "examples/example1.h"
@@ -24,7 +24,7 @@
  */
 int main(int argc, char* argv[])
 {
-    string name="";
+     string name = "CPlantBox_test_Xiaoran";
 
     if (argc>1) {
         name= argv[1];
@@ -34,6 +34,16 @@ int main(int argc, char* argv[])
     // example2(); // like example 1, but with put geometry
     // example3(); // more than 1 plant
 
+
+
+    /*
+     * Open plant and root parameter from a file
+     */
+
+
+
+//    dxml.Parse(c); // only write if defined
+//    dxml.SaveFile("xmltest.xml");
 
 
     return(0);

@@ -59,7 +59,8 @@ public:
   int readRootParameters(std::istream & cin); ///< Reads root parameters from an input stream
   int readStemParameters(std::istream & cin); ///< Reads stem parameters from an input stream
   int readLeafParameters(std::istream & cin);
-  void writeParameters(std::ostream & os) const; ///< Writes root parameters
+  void writeParameters(std::ostream & os) const; ///< Writes root parameters to screen
+  void writeAlltoXML(std::string filename, std::string subdir="modelparameter/");
   /* todo: lets put it in one xml, and parse the specific tags with the respective organ sub-classes */
 
   /* Simulation */

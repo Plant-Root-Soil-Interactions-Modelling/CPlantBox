@@ -1,4 +1,6 @@
 #include "Plant.h"
+#include "tinyxml2.h"
+#include <iostream>
 
 const std::vector<std::string> Plant::scalarTypeNames =
 {"id", "organ type", "sub type", "alive", "active", "age", "length", "1", "order", "parent type","creation time",
@@ -229,18 +231,45 @@ int Plant::readLeafParameters(std::istream& cin)
  */
 void Plant::writeParameters(std::ostream& os) const
 {
+    const char* declaration ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>";
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLDocument dxml;
+
 	for (auto const& otp_:organParam) {
 		int t = 0;
 		for (auto const& otp : otp_) {
-			if (otp->organType>=0 && (otp->subType>=0)) {
-				assert(otp->subType==t); // check if index really equals subType-1
-				os << otp->writeXML(0); // only write if defined
+			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t)) {
+//				assert((otp->subType)==t); // check if index really equals subType-1
+				os << otp->writeXML(0);
 			}
 			t++;
 		}
 	}
+
+
+
 }
 
+void Plant::writeAlltoXML(std::string name, std::string subdir){
+ std::string xmlname = subdir;
+	xmlname.append(name);
+	xmlname.append(".xml");
+    std::ofstream xmloutput;
+ xmloutput.open( xmlname.c_str());
+	for (auto const& otp_:organParam) {
+		int t = 0;
+		for (auto const& otp : otp_) {
+			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t) ) {
+//				assert((otp->subType)==t); // check if index really equals subType-1
+				xmloutput<<otp->writeXML(0);
+			}
+
+			t++;
+
+		}
+	}
+xmloutput.close();
+}
 /**
  * Sets up the plant according to the given parameters
  */

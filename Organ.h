@@ -66,6 +66,7 @@ public:
     virtual std::string toString() const;
     virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
 
+
     size_t getNumberOfNodes() const { return r_nodes.size(); } ///< number of nodes of the organ
     int getNodeID(int i) const { return nodeIDs.at(i); } ///< unique identifier of i-th node
     double getNodeCT(int i) const { return nctimes.at(i); } ///< creation time of i-th node

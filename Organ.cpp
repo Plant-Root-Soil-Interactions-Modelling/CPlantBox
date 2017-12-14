@@ -253,8 +253,8 @@ void Organ::writeRSML(std::ostream & cout, std::string indent) const
 
       cout << indent << "</root>\n"; // close root
   }
-}
 
+}
 /**
  * Quick info about the object for debugging TODO change param to param or param
  */

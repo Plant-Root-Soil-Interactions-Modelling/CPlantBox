@@ -294,9 +294,69 @@ void RootTypeParameter::readXML(FILE* fp)
 
 std::string RootTypeParameter::writeXML(FILE* fp) const
 {
+tinyxml2::XMLPrinter printer( fp );
 
-	// return std::string(printer.CStr());
-	return "";
+
+	    switch (subType) {
+	case 1 : printer.OpenElement("taproot"); // See
+	break;
+    case 2 : printer.OpenElement("lateral1"); // See
+	break;
+    case 3 : printer.OpenElement("lateral2"); // See
+	break;
+	case 4 : printer.OpenElement("nodalroot"); // See
+	break;
+    case 5 : printer.OpenElement("shootborneroot"); // See
+	break;
+    }
+
+    printer.OpenElement("Basal zone [cm]"); printer.PushText(lb);  printer.CloseElement(" Basal zone [cm]");	 	///< Basal zone [cm]
+	printer.OpenElement("Standard deviation basal zone [cm]"); printer.PushText(lbs);  printer.CloseElement("Standard deviation basal zone [cm]"); 	///< Standard deviation basal zone [cm]
+	printer.OpenElement("Apical zone [cm];"); printer.PushText(la);  printer.CloseElement("Apical zone [cm];");	///< Apical zone [cm];
+	printer.OpenElement("Standard deviation apical zone [cm];"); printer.PushText(las);  printer.CloseElement("Standard deviation apical zone [cm];");		///< Standard deviation apical zone [cm];
+	printer.OpenElement("Inter-lateral distance [cm]"); printer.PushText(ln);  printer.CloseElement("Inter-lateral distance [cm]");		///< Inter-lateral distance [cm]
+	printer.OpenElement("Standard deviation inter-lateral distance [cm]"); printer.PushText(lns);  printer.CloseElement("Standard deviation inter-lateral distance [cm]"); 	///< Standard deviation inter-lateral distance [cm]
+	printer.OpenElement(" Number of branches [1]"); printer.PushText(nob);  printer.CloseElement(" Number of branches [1]");	///< Number of branches [1]
+	printer.OpenElement("Standard deviation number of branches [1]"); printer.PushText(nobs);  printer.CloseElement("Standard deviation number of branches [1]");	///< Standard deviation number of branches [1]
+	printer.OpenElement("Initial growth rate [cm day-1]"); printer.PushText(r);  printer.CloseElement("Initial growth rate [cm day-1]");		///< Initial growth rate [cm day-1]
+	printer.OpenElement("Standard deviation initial growth rate [cm day-1]"); printer.PushText(rs);  printer.CloseElement("Standard deviation initial growth rate [cm day-1]");		///< Standard deviation initial growth rate [cm day-1]
+	printer.OpenElement("Root radius [cm]"); printer.PushText(a);  printer.CloseElement("Root radius [cm]");		///< Root radius [cm]
+	printer.OpenElement("Standard deviation root radius [cm]"); printer.PushText(as);  printer.CloseElement("Standard deviation root radius [cm]");		///< Standard deviation root radius [cm]
+	printer.OpenElement("Root color (red)"); printer.PushText(colorR);  printer.CloseElement("Root color (red)");	///< Root color (red)
+	printer.OpenElement("Root color (green)"); printer.PushText(colorG);  printer.CloseElement("Root color (green)");	///< Root color (green)
+	printer.OpenElement("Root color (blue)"); printer.PushText(colorB);  printer.CloseElement("Root color (blue)");	///< Root color (blue)
+	printer.OpenElement("Root tropism parameter (Type)"); printer.PushText(tropismT);  printer.CloseElement("Root tropism parameter (Type)");	///< Root tropism parameter (Type)
+	printer.OpenElement("Root tropism parameter (number of trials)"); printer.PushText(tropismN);  printer.CloseElement("Root tropism parameter (number of trials)");
+	printer.OpenElement("Root tropism parameter (mean value of expected changeg) [1/cm]"); printer.PushText(tropismS);  printer.CloseElement("Root tropism parameter (mean value of expected changeg) [1/cm]");///< Root tropism parameter (mean value of expected changeg) [1/cm]
+	printer.OpenElement("Maximal segment size"); printer.PushText(dx);  printer.CloseElement("Maximal segment size");		///< Maximal segment size [cm]
+	printer.OpenElement("Angle between root and parent root"); printer.PushText(theta);  printer.CloseElement("Angle between root and parent root");	///< Angle between root and parent root (rad)
+	printer.OpenElement("Standard deviation angle between root and parent root"); printer.PushText(thetas);  printer.CloseElement("Standard deviation angle between root and parent root");	///< Standard deviation angle between root and parent root (rad)
+	printer.OpenElement("Root life time"); printer.PushText(rlt);  printer.CloseElement("Root life time");	///< Root life time (days)
+	printer.OpenElement("Standard deviation root life time"); printer.PushText(rlts);  printer.CloseElement("Standard deviation root life time");	///< Standard deviation root life time (days)
+	printer.OpenElement("Growth function"); printer.PushText(gf);  printer.CloseElement("Growth function");		///< Growth function (1=negative exponential, 2=linear)
+
+
+	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
+        printer.OpenElement("successor"); printer.PushText(successor[successorCount]);  printer.CloseElement("successor");
+        printer.OpenElement("successorP"); printer.PushText(successorP[successorCount]);  printer.CloseElement("successorP");
+//
+    }
+
+
+    switch (subType) {
+	case 1 : printer.CloseElement("taproot"); // See
+	break;
+    case 2 : printer.CloseElement("lateral1"); // See
+	break;
+    case 3 : printer.CloseElement("lateral2"); // See
+	break;
+	case 4 : printer.CloseElement("nodalroot"); // See
+	break;
+    case 5 : printer.CloseElement("shootborneroot"); // See
+	break;
+    }
+	return std::string(printer.CStr());
+
 
 }
 
@@ -354,6 +414,7 @@ void SeedTypeParameter::readXML(FILE* fp) {
 }
 
 std::string SeedTypeParameter::writeXML(FILE* fp) const {
+
 	tinyxml2::XMLPrinter printer( fp );
 	printer.OpenElement("Seed");
 
@@ -689,8 +750,71 @@ void StemTypeParameter::readXML(FILE* fp)
 std::string StemTypeParameter::writeXML(FILE* fp) const
 {
 
-	// return std::string(printer.CStr());
-	return "";
+
+	tinyxml2::XMLPrinter printer( fp );
+
+
+	    switch (subType) {
+	case 1 : printer.OpenElement("taproot"); // See
+	break;
+    case 2 : printer.OpenElement("lateral1"); // See
+	break;
+    case 3 : printer.OpenElement("lateral2"); // See
+	break;
+	case 4 : printer.OpenElement("nodalroot"); // See
+	break;
+    case 5 : printer.OpenElement("shootborneroot"); // See
+	break;
+    }
+
+    printer.OpenElement("Basal zone [cm]"); printer.PushText(lb);  printer.CloseElement(" Basal zone [cm]");	 	///< Basal zone [cm]
+	printer.OpenElement("Standard deviation basal zone [cm]"); printer.PushText(lbs);  printer.CloseElement("Standard deviation basal zone [cm]"); 	///< Standard deviation basal zone [cm]
+	printer.OpenElement("Apical zone [cm];"); printer.PushText(la);  printer.CloseElement("Apical zone [cm];");	///< Apical zone [cm];
+	printer.OpenElement("Standard deviation apical zone [cm];"); printer.PushText(las);  printer.CloseElement("Standard deviation apical zone [cm];");		///< Standard deviation apical zone [cm];
+	printer.OpenElement("Inter-lateral distance [cm]"); printer.PushText(ln);  printer.CloseElement("Inter-lateral distance [cm]");		///< Inter-lateral distance [cm]
+	printer.OpenElement("Standard deviation inter-lateral distance [cm]"); printer.PushText(lns);  printer.CloseElement("Standard deviation inter-lateral distance [cm]"); 	///< Standard deviation inter-lateral distance [cm]
+	printer.OpenElement(" Number of branches [1]"); printer.PushText(nob);  printer.CloseElement(" Number of branches [1]");	///< Number of branches [1]
+	printer.OpenElement("Standard deviation number of branches [1]"); printer.PushText(nobs);  printer.CloseElement("Standard deviation number of branches [1]");	///< Standard deviation number of branches [1]
+	printer.OpenElement("Initial growth rate [cm day-1]"); printer.PushText(r);  printer.CloseElement("Initial growth rate [cm day-1]");		///< Initial growth rate [cm day-1]
+	printer.OpenElement("Standard deviation initial growth rate [cm day-1]"); printer.PushText(rs);  printer.CloseElement("Standard deviation initial growth rate [cm day-1]");		///< Standard deviation initial growth rate [cm day-1]
+	printer.OpenElement("Root radius [cm]"); printer.PushText(a);  printer.CloseElement("Root radius [cm]");		///< Root radius [cm]
+	printer.OpenElement("Standard deviation root radius [cm]"); printer.PushText(as);  printer.CloseElement("Standard deviation root radius [cm]");		///< Standard deviation root radius [cm]
+	printer.OpenElement("Root color (red)"); printer.PushText(colorR);  printer.CloseElement("Root color (red)");	///< Root color (red)
+	printer.OpenElement("Root color (green)"); printer.PushText(colorG);  printer.CloseElement("Root color (green)");	///< Root color (green)
+	printer.OpenElement("Root color (blue)"); printer.PushText(colorB);  printer.CloseElement("Root color (blue)");	///< Root color (blue)
+	printer.OpenElement("Root tropism parameter (Type)"); printer.PushText(tropismT);  printer.CloseElement("Root tropism parameter (Type)");	///< Root tropism parameter (Type)
+	printer.OpenElement("Root tropism parameter (number of trials)"); printer.PushText(tropismN);  printer.CloseElement("Root tropism parameter (number of trials)");
+	printer.OpenElement("Root tropism parameter (mean value of expected changeg) [1/cm]"); printer.PushText(tropismS);  printer.CloseElement("Root tropism parameter (mean value of expected changeg) [1/cm]");///< Root tropism parameter (mean value of expected changeg) [1/cm]
+	printer.OpenElement("Maximal segment size"); printer.PushText(dx);  printer.CloseElement("Maximal segment size");		///< Maximal segment size [cm]
+	printer.OpenElement("Angle between root and parent root"); printer.PushText(theta);  printer.CloseElement("Angle between root and parent root");	///< Angle between root and parent root (rad)
+	printer.OpenElement("Standard deviation angle between root and parent root"); printer.PushText(thetas);  printer.CloseElement("Standard deviation angle between root and parent root");	///< Standard deviation angle between root and parent root (rad)
+	printer.OpenElement("Root life time"); printer.PushText(rlt);  printer.CloseElement("Root life time");	///< Root life time (days)
+	printer.OpenElement("Standard deviation root life time"); printer.PushText(rlts);  printer.CloseElement("Standard deviation root life time");	///< Standard deviation root life time (days)
+	printer.OpenElement("Growth function"); printer.PushText(gf);  printer.CloseElement("Growth function");		///< Growth function (1=negative exponential, 2=linear)
+
+
+	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
+        printer.OpenElement("successor"); printer.PushText(successor[successorCount]);  printer.CloseElement("successor");
+        printer.OpenElement("successorP"); printer.PushText(successorP[successorCount]);  printer.CloseElement("successorP");
+//
+    }
+
+
+    switch (subType) {
+	case 1 : printer.CloseElement("taproot"); // See
+	break;
+    case 2 : printer.CloseElement("lateral1"); // See
+	break;
+    case 3 : printer.CloseElement("lateral2"); // See
+	break;
+	case 4 : printer.CloseElement("nodalroot"); // See
+	break;
+    case 5 : printer.CloseElement("shootborneroot"); // See
+	break;
+    }
+	return std::string(printer.CStr());
+
+
 
 }
 
@@ -963,8 +1087,74 @@ void LeafTypeParameter::readXML(FILE* fp)
 std::string LeafTypeParameter::writeXML(FILE* fp) const
 {
 
-	// return std::string(printer.CStr());
-	return "";
+tinyxml2::XMLDocument doc;
+	 tinyxml2::XMLPrinter printer (fp);
+//	 doc.Print( &printer );
+
+
+
+	    switch (subType) {
+	case 1 : printer.OpenElement("taproot"); // See
+	break;
+    case 2 : printer.OpenElement("lateral1"); // See
+	break;
+    case 3 : printer.OpenElement("lateral2"); // See
+	break;
+	case 4 : printer.OpenElement("nodalroot"); // See
+	break;
+    case 5 : printer.OpenElement("shootborneroot"); // See
+	break;
+    }
+
+    printer.OpenElement("Basal zone [cm]"); printer.PushText(lb);  printer.CloseElement(" Basal zone [cm]");	 	///< Basal zone [cm]
+	printer.OpenElement("Standard deviation basal zone [cm]"); printer.PushText(lbs);  printer.CloseElement("Standard deviation basal zone [cm]"); 	///< Standard deviation basal zone [cm]
+	printer.OpenElement("Apical zone [cm];"); printer.PushText(la);  printer.CloseElement("Apical zone [cm];");	///< Apical zone [cm];
+	printer.OpenElement("Standard deviation apical zone [cm];"); printer.PushText(las);  printer.CloseElement("Standard deviation apical zone [cm];");		///< Standard deviation apical zone [cm];
+	printer.OpenElement("Inter-lateral distance [cm]"); printer.PushText(ln);  printer.CloseElement("Inter-lateral distance [cm]");		///< Inter-lateral distance [cm]
+	printer.OpenElement("Standard deviation inter-lateral distance [cm]"); printer.PushText(lns);  printer.CloseElement("Standard deviation inter-lateral distance [cm]"); 	///< Standard deviation inter-lateral distance [cm]
+	printer.OpenElement(" Number of branches [1]"); printer.PushText(nob);  printer.CloseElement(" Number of branches [1]");	///< Number of branches [1]
+	printer.OpenElement("Standard deviation number of branches [1]"); printer.PushText(nobs);  printer.CloseElement("Standard deviation number of branches [1]");	///< Standard deviation number of branches [1]
+	printer.OpenElement("Initial growth rate [cm day-1]"); printer.PushText(r);  printer.CloseElement("Initial growth rate [cm day-1]");		///< Initial growth rate [cm day-1]
+	printer.OpenElement("Standard deviation initial growth rate [cm day-1]"); printer.PushText(rs);  printer.CloseElement("Standard deviation initial growth rate [cm day-1]");		///< Standard deviation initial growth rate [cm day-1]
+	printer.OpenElement("Root radius [cm]"); printer.PushText(a);  printer.CloseElement("Root radius [cm]");		///< Root radius [cm]
+	printer.OpenElement("Standard deviation root radius [cm]"); printer.PushText(as);  printer.CloseElement("Standard deviation root radius [cm]");		///< Standard deviation root radius [cm]
+	printer.OpenElement("Root color (red)"); printer.PushText(colorR);  printer.CloseElement("Root color (red)");	///< Root color (red)
+	printer.OpenElement("Root color (green)"); printer.PushText(colorG);  printer.CloseElement("Root color (green)");	///< Root color (green)
+	printer.OpenElement("Root color (blue)"); printer.PushText(colorB);  printer.CloseElement("Root color (blue)");	///< Root color (blue)
+	printer.OpenElement("Root tropism parameter (Type)"); printer.PushText(tropismT);  printer.CloseElement("Root tropism parameter (Type)");	///< Root tropism parameter (Type)
+	printer.OpenElement("Root tropism parameter (number of trials)"); printer.PushText(tropismN);  printer.CloseElement("Root tropism parameter (number of trials)");
+	printer.OpenElement("Root tropism parameter (mean value of expected changeg) [1/cm]"); printer.PushText(tropismS);  printer.CloseElement("Root tropism parameter (mean value of expected changeg) [1/cm]");///< Root tropism parameter (mean value of expected changeg) [1/cm]
+	printer.OpenElement("Maximal segment size"); printer.PushText(dx);  printer.CloseElement("Maximal segment size");		///< Maximal segment size [cm]
+	printer.OpenElement("Angle between root and parent root"); printer.PushText(theta);  printer.CloseElement("Angle between root and parent root");	///< Angle between root and parent root (rad)
+	printer.OpenElement("Standard deviation angle between root and parent root"); printer.PushText(thetas);  printer.CloseElement("Standard deviation angle between root and parent root");	///< Standard deviation angle between root and parent root (rad)
+	printer.OpenElement("Root life time"); printer.PushText(rlt);  printer.CloseElement("Root life time");	///< Root life time (days)
+	printer.OpenElement("Standard deviation root life time"); printer.PushText(rlts);  printer.CloseElement("Standard deviation root life time");	///< Standard deviation root life time (days)
+	printer.OpenElement("Growth function"); printer.PushText(gf);  printer.CloseElement("Growth function");		///< Growth function (1=negative exponential, 2=linear)
+
+
+	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
+        printer.OpenElement("successor"); printer.PushText(successor[successorCount]);  printer.CloseElement("successor");
+        printer.OpenElement("successorP"); printer.PushText(successorP[successorCount]);  printer.CloseElement("successorP");
+//
+    }
+
+
+    switch (subType) {
+	case 1 : printer.CloseElement("taproot"); // See
+	break;
+    case 2 : printer.CloseElement("lateral1"); // See
+	break;
+    case 3 : printer.CloseElement("lateral2"); // See
+	break;
+	case 4 : printer.CloseElement("nodalroot"); // See
+	break;
+    case 5 : printer.CloseElement("shootborneroot"); // See
+	break;
+    }
+
+	return std::string(printer.CStr());
+
+
 
 }
 

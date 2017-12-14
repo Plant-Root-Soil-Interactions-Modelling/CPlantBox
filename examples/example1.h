@@ -20,7 +20,8 @@ void example1()
      * Open plant and root parameter from a file
      */
     plant.openFile(name);
-    // plant.writeParameters(std::cout);
+    plant.writeAlltoXML(name);
+//     plant.writeParameters(std::cout);
 
     /*
      * Initialize

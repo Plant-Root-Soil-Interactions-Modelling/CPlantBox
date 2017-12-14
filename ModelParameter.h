@@ -58,6 +58,9 @@ public:
 	unsigned int organType;
 	unsigned int subType;
 
+
+
+
 	virtual OrganParameter* realize() const { return new OrganParameter(); }
 
 	virtual void readXML(FILE* fp) { };
