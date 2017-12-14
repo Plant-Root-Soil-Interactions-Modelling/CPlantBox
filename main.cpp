@@ -34,18 +34,6 @@ int main(int argc, char* argv[])
     // example2(); // like example 1, but with put geometry
     // example3(); // more than 1 plant
 
-
-
-    /*
-     * Open plant and root parameter from a file
-     */
-
-
-
-//    dxml.Parse(c); // only write if defined
-//    dxml.SaveFile("xmltest.xml");
-
-
     return(0);
 
 }
