@@ -16,21 +16,12 @@ void Seed::initialize()
 
 	// Taproot
 	Vector3d iheading(0,0,-1);
+	if (Plant::noParamFile[1] == 1) {
+            std::cout<<"no root param"<<std::endl;
+    } else {
 	Root* taproot = new Root(plant, this, 1, 0., iheading ,0., 0.); // tap root has subtype 1
 	taproot->addNode(sparam->seedPos,0);
 	children.push_back(taproot);
-    //main stem initialation
-	Vector3d isheading(0,0,1);//Initial Stem heading
-	Stem* mainstem = new Stem(plant, this, 1, 0., isheading ,0., 0.); // tap root has subtype 1
-	mainstem->addNode(sparam->seedPos,0);
-	children.push_back(mainstem);
-
-//  Vector3d ilheading(0,0,1);//Initial Stem heading
-//	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
-//	mainleaf->addNode(sparam->seedPos,0);
-//	children.push_back(mainleaf);
-
-//	 Basal roots
 	if (sparam->maxB>0) {
 		if (plant->getParameter(Organ::ot_root,basalType)->subType<1) { // if the type is not defined, copy tap root
 			std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
@@ -56,6 +47,26 @@ void Seed::initialize()
 }
 
 
+    //main stem initialation
+
+if (Plant::noParamFile[2] == 1) {
+            std::cout<<"no root param"<<std::endl;
+    } else {
+	Vector3d isheading(0,0,1);//Initial Stem heading
+	Stem* mainstem = new Stem(plant, this, 1, 0., isheading ,0., 0.); // tap root has subtype 1
+	mainstem->addNode(sparam->seedPos,0);
+	children.push_back(mainstem);
+    }
+
+//  Vector3d ilheading(0,0,1);//Initial Stem heading
+//	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
+//	mainleaf->addNode(sparam->seedPos,0);
+//	children.push_back(mainleaf);
+
+//	 Basal roots
+
+
+	}
 
 /**
  * Quick info about the object for debugging

@@ -97,7 +97,7 @@ void Plant::initOTP()
 		}
 	}
 }
-
+unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0};
 /**
  * Reads the root parameter from a file. Opens plant parameters with the same filename if available,
  * othterwise assumes a tap root system at position (0,0,-3).
@@ -107,6 +107,7 @@ void Plant::initOTP()
  */
 void Plant::openFile(std::string name, std::string subdir)
 {
+
 	std::ifstream fis;
 	std::string rp_name = subdir;
 	rp_name.append(name);
@@ -116,11 +117,12 @@ void Plant::openFile(std::string name, std::string subdir)
 	if (fis.good()) { // did it work?
 		c = readRootParameters(fis);
 		fis.close();
+	std::cout << "Read " << c << " root type parameters \n";
 	} else {
-		std::string s = "RootSystem::openFile() could not open root parameter file ";
-		throw std::invalid_argument(s.append(rp_name));
+		std::cout << "No root system parameters found, using default tap root system \n";
+		Plant::noParamFile [1] = 1;
 	}
-	std::cout << "Read " << c << " root type parameters \n"; // debug
+	 // debug
 
 	// open seed parameter
 	SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
@@ -149,8 +151,8 @@ void Plant::openFile(std::string name, std::string subdir)
 		stem_c = readStemParameters(fis);
 		fis.close();
 	} else {
-		std::string s = "stemSystem::openFile() could not open root parameter file ";
-		throw std::invalid_argument(s.append(stp_name));
+		std::cout << "No leaf parameters found, skipping leaf  \n";
+		Plant::noParamFile [2] = 1;
 	}
 	std::cout << "Read " << stem_c << " stem type parameters \n"; // debug
 
@@ -163,8 +165,10 @@ std::string lp_name = subdir;
 		leaf_c = readLeafParameters(fis);
 		fis.close();
 	} else {
-		std::string s = "stemSystem::openFile() could not open leaf parameter file ";
-		throw std::invalid_argument(s.append(lp_name));
+		std::cout << "No leaf parameters found, skipping leaf  \n";
+		Plant::noParamFile [3] = 1;
+
+
 	}
 	std::cout << "Read " << leaf_c << " leaf type parameters \n"; // debug
 

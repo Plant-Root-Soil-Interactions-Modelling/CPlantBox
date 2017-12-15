@@ -70,6 +70,7 @@ public:
   void simulate(double dt, bool silence = false); ///< simulates root system growth for time span dt
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
   double getSimTime() const { return simtime; } ///< returns the current simulation time
+  static unsigned int noParamFile[5] ;
 
   /* Analysis of simulation results */
   // Organs
