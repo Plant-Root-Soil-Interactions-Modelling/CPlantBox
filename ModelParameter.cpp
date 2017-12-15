@@ -1087,9 +1087,9 @@ void LeafTypeParameter::readXML(FILE* fp)
 std::string LeafTypeParameter::writeXML(FILE* fp) const
 {
 
-tinyxml2::XMLDocument doc;
+
 	 tinyxml2::XMLPrinter printer (fp);
-//	 doc.Print( &printer );
+
 
 
 
