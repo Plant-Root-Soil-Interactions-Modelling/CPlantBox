@@ -50,7 +50,7 @@ void Seed::initialize()
     //main stem initialation
 
 if (Plant::noParamFile[2] == 1) {
-            std::cout<<"no root param"<<std::endl;
+            std::cout<<"no stem parameter file, no stem to grow"<<std::endl;
     } else {
 	Vector3d isheading(0,0,1);//Initial Stem heading
 	Stem* mainstem = new Stem(plant, this, 1, 0., isheading ,0., 0.); // tap root has subtype 1

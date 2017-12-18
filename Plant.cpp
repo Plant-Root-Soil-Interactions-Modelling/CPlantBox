@@ -129,8 +129,8 @@ void Plant::openXML(std::string name, std::string subdir)
 //    tinyxml2::XMLText* seedLocationX = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->FirstChild()->ToText();
 //    seedx = seedLocationX->Value();
 //        std::cout<<"Seed location x is \n"<<seedx<<std::endl;
-    const char* title = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->GetText();
-    printf( "Name of play (1): %s\n", title );
+    const char* seedLocationX = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->GetText();
+    printf( "Seed Location from XML file is %s\n", seedLocationX );
 }
 
 
@@ -150,7 +150,7 @@ void Plant::openFile(std::string name, std::string subdir)
 		fis.close();
 	std::cout << "Read " << c << " root type parameters \n";
 	} else {
-		std::cout << "No root system parameters found, using default tap root system \n";
+		std::cout << "No root system parameter file found \n";
 		Plant::noParamFile [1] = 1;
 	}
 	 // debug
@@ -165,7 +165,7 @@ void Plant::openFile(std::string name, std::string subdir)
 		stp->read(fis);
 		fis.close();
 	} else { // create a tap root system
-		std::cout << "No seed system parameters found, using default tap root system \n";
+		std::cout << "No seed system parameter file found, using default tap root system \n";
 		delete stp;
 		setParameter(new SeedTypeParameter());
 	}
@@ -182,7 +182,7 @@ void Plant::openFile(std::string name, std::string subdir)
 		stem_c = readStemParameters(fis);
 		fis.close();
 	} else {
-		std::cout << "No leaf parameters found, skipping leaf  \n";
+		std::cout << "No stem parameter file found, skipping leaf  \n";
 		Plant::noParamFile [2] = 1;
 	}
 	std::cout << "Read " << stem_c << " stem type parameters \n"; // debug
