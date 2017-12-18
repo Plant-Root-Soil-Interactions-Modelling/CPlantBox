@@ -439,7 +439,7 @@ std::string SeedTypeParameter::writeXML(FILE* fp) const {
 	printer.CloseElement();
 	printer.CloseElement(); // Location
 
-	printer.OpenElement("Basal Roots");
+	printer.OpenElement("Basal");
 	printer.OpenElement("First");
 	printer.PushText(firstB);
 	if (firstBs!=0) {

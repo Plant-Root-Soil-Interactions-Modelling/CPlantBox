@@ -56,6 +56,8 @@ public:
 
   /* input output */
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
+  void openXML(std::string filename, std::string subdir="modelparameter/");
+
   int readRootParameters(std::istream & cin); ///< Reads root parameters from an input stream
   int readStemParameters(std::istream & cin); ///< Reads stem parameters from an input stream
   int readLeafParameters(std::istream & cin);

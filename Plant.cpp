@@ -2,6 +2,8 @@
 #include "tinyxml2.h"
 #include <iostream>
 
+
+unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
 const std::vector<std::string> Plant::scalarTypeNames =
 {"id", "organ type", "sub type", "alive", "active", "age", "length", "1", "order", "parent type","creation time",
 		"basal length", "apical length", "initial growth rate", "radius", "insertion angle", "root life time", "mean inter nodal distance", "standard deviation of inter nodal distance", "number of branches",
@@ -97,7 +99,7 @@ void Plant::initOTP()
 		}
 	}
 }
-unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0};
+
 /**
  * Reads the root parameter from a file. Opens plant parameters with the same filename if available,
  * othterwise assumes a tap root system at position (0,0,-3).
@@ -105,6 +107,35 @@ unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0};
  * @param name          filename without file extension
  * @param subdir        directory ("modelparameter/" by default)
  */
+void Plant::openXML(std::string name, std::string subdir)
+{
+
+
+
+    std::string XMLname = subdir;
+    XMLname.append(name);
+	XMLname.append(".xml");
+    tinyxml2::XMLDocument xmlParamFile;
+    xmlParamFile.LoadFile(XMLname.c_str());
+//    XMLCheckResult(eResult);
+//    tinyxml2::XMLNode * pRoot = xmlParamFile.FirstChild();
+//    if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
+//    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("taproot");
+//    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
+//    int iOutInt;
+//    eResult = pElement->QueryIntText(&iOutInt);
+//    tinyxml2::XMLCheckResult(eResult);
+//    const char* seedx;
+//    tinyxml2::XMLText* seedLocationX = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->FirstChild()->ToText();
+//    seedx = seedLocationX->Value();
+//        std::cout<<"Seed location x is \n"<<seedx<<std::endl;
+    const char* title = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->GetText();
+    printf( "Name of play (1): %s\n", title );
+}
+
+
+
+
 void Plant::openFile(std::string name, std::string subdir)
 {
 
@@ -186,12 +217,8 @@ int Plant::readRootParameters(std::istream& cin)
 	int c = 0;
 	while (cin.good()) {
 		RootTypeParameter* p  = new RootTypeParameter();
-
 		p->read(cin);
-
-
 		setParameter(p); // sets the param to the index (p.type-1) TODO
-
 		c++;
 	}
 	return c;

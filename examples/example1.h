@@ -21,6 +21,7 @@ void example1()
      */
     plant.openFile(name);
     plant.writeAlltoXML(name);
+    plant.openXML(name);
 //     plant.writeParameters(std::cout);
 
     /*
