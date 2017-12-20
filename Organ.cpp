@@ -26,7 +26,7 @@ Organ::~Organ()
 Vector3d Organ::getOrigin() const {
   // recursive
   if (this->organType() != Organ::ot_seed) {
-      return parent->getOrigin().plus(parent->getHeading().times(getRelativeOrigin()));
+      return parent->getOrigin().plus(parent->getHeading().times(this->getRelativeOrigin()));
   } else {
       return this->getRelativeOrigin();
   }
@@ -52,7 +52,7 @@ Matrix3d Organ::getHeading() const {
   // recursive
   if (this->organType() != Organ::ot_seed) {
       auto a = parent->getHeading();
-      a.times(getRelativeHeading());
+      a.times(this->getRelativeHeading());
       return a;
   } else {
       return Matrix3d();
@@ -74,7 +74,7 @@ Matrix3d Organ::getHeading() const {
  */
 Vector3d Organ::getNode(int i) const
 {
-  return (getHeading().times(r_nodes.at(i))).plus(getOrigin());
+  return (this->getHeading().times(r_nodes.at(i))).plus(this->getOrigin());
 }
 
 /**
@@ -83,8 +83,8 @@ Vector3d Organ::getNode(int i) const
 std::vector<Vector3d> Organ::getNodes() const
 {
   std::vector<Vector3d> nodes(r_nodes.size());
-  auto A = getHeading();
-  auto p0 = getOrigin();
+  auto A = this->getHeading();
+  auto p0 = this->getOrigin();
   for (size_t i=0; i<r_nodes.size(); i++) {
       nodes.at(i) = A.times(r_nodes.at(i)).plus(p0);
   }
@@ -105,7 +105,6 @@ OrganTypeParameter* Organ::getOrganTypeParameter() const
 void Organ::simulate(double dt, bool silence)
 {
   age+=dt;
-
   if (age>0) {
       for (auto& c : children)  {
           c->simulate(dt);
@@ -114,57 +113,30 @@ void Organ::simulate(double dt, bool silence)
 }
 
 /**
- * todo
+ * Returns the parameter name
  */
-double Organ::getScalar(int stype) const {
-	switch(stype) {
-	case Plant::st_one:
-		return 1;
-	case Plant::st_id:
-		return id;
-	case Plant::st_otype:
-		return this->organType();
-	case Plant::st_subtype:
-
-		//check the type of the organ
-		//    std::cout<<"organtype "<<organType()<<" , subtype "<<param->subType<<std::endl;
-		//used to debug and check organType and reference
-         return param->subType;
-
-
-		case Plant::st_alive:
-			return alive;
-		case Plant::st_active:
-			return active;
-		case Plant::st_age:
-			return age;
-		case Plant::st_length:
-			return length;
-		case Plant::st_order: {
-			int c=0;
-			const Organ* p = this;
-			while (p->organType()!=Organ::ot_seed) {
-				c++;
-				p = p->parent; // up organ tree
-			}
-			return c;
+double Organ::getScalar(std::string name) const {
+	double r = std::numeric_limits<double>::quiet_NaN(); // default if name is unknown
+	if (name=="one") { r = 1; }
+	if (name=="id") { r = id; }
+	if (name=="organtype") { r = this->organType(); }
+	if (name=="subtype") { r = this->param->subType; }
+	if (name=="alive") { r = alive; }
+	if (name=="active") { r = active; }
+	if (name=="age") { r = age; }
+	if (name=="length") { r = length; }
+	if (name=="order") {
+		r = 0;
+		const Organ* p = this;
+		while (p->organType()!=Organ::ot_seed) {
+			r++;
+			p = p->parent; // up the organ tree
 		}
-		case Plant::st_parenttype:
-			if (this->parent!=nullptr) {
-				return this->parent->organType();
-			} else {
-				return std::nan("");
-			}
-		case Plant::st_time: {
-			if (nctimes.size()>0) {
-				return nctimes.at(0);
-			} else {
-				return std::nan("");
-			}
-		}
-		default:
-		  return std::nan("");
 	}
+	if ((name=="parenttype") && (this->parent!=nullptr)) { r = this->parent->organType(); }
+	if ((name=="creationtime") && (nctimes.size()>0)) { return nctimes.at(0); }
+	if ((name=="emergencetime") && (nctimes.size()>1)) { return nctimes.at(1); }
+	return r;
 }
 
 /**

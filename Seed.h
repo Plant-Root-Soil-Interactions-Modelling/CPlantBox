@@ -33,7 +33,6 @@ public:
   virtual void setRelativeOrigin(const Vector3d& o) override { seed_pos = o; };
   ///< the relative position within the parent organ
 
-
   virtual void initialize();
 
   virtual std::string toString() const override;

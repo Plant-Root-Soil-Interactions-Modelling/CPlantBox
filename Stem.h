@@ -45,7 +45,7 @@ public:
   virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 
   /* get results */
-  virtual double getScalar(int stype) const override; ///< returns an organ parameter of Plant::ScalarType
+  virtual double getScalar(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
 
   /* exact from analytical equations */
   double getCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length

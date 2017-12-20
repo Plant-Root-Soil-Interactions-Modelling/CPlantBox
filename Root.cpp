@@ -155,36 +155,39 @@ void Root::simulate(double dt, bool silence)
 /**
  *
  */
-double Root::getScalar(int stype) const {
-	switch(stype) {
-	// st_rlt, st_meanln, st_stdln , st_nob, st_surface, , // root level
-	case Plant::st_lb:
-		return rParam()->lb;
-	case Plant::st_la:
-		return rParam()->la;
-	case Plant::st_r:
-		return rParam()->r;
-	case Plant::st_radius:
-		return rParam()->a;
-	case Plant::st_theta:
-		return rParam()->theta;
-	case Plant::st_rlt:
-		return rParam()->rlt;
-	case Plant::st_meanln:
-		return std::accumulate(rParam()->ln.begin(), rParam()->ln.end(), 0.0) / rParam()->ln.size();
-	case Plant::st_stdln: {
-		const std::vector<double>& v_ = rParam()->ln;
-		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
-		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
-		return std::sqrt(sq_sum / v_.size() - mean * mean);
-	}
-	case Plant::st_surface:
-		return rParam()->a*rParam()->a*M_PI*length;
-	case Plant::st_nob:
-		return rParam()->ln.size();
-	default:
-		return  Organ::getScalar(stype);
-	}
+double Root::getScalar(std::string name) const {
+	double r = Organ::getScalar(name);
+	if (name=="basalzone") { r = rParam()->lb; } // todo and so on
+//	switch(stype) {
+//	// st_rlt, st_meanln, st_stdln , st_nob, st_surface, , // root level
+//	case Plant::st_lb:
+//		return rParam()->lb;
+//	case Plant::st_la:
+//		return rParam()->la;
+//	case Plant::st_r:
+//		return rParam()->r;
+//	case Plant::st_radius:
+//		return rParam()->a;
+//	case Plant::st_theta:
+//		return rParam()->theta;
+//	case Plant::st_rlt:
+//		return rParam()->rlt;
+//	case Plant::st_meanln:
+//		return std::accumulate(rParam()->ln.begin(), rParam()->ln.end(), 0.0) / rParam()->ln.size();
+//	case Plant::st_stdln: {
+//		const std::vector<double>& v_ = rParam()->ln;
+//		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
+//		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
+//		return std::sqrt(sq_sum / v_.size() - mean * mean);
+//	}
+//	case Plant::st_surface:
+//		return rParam()->a*rParam()->a*M_PI*length;
+//	case Plant::st_nob:
+//		return rParam()->ln.size();
+//	default:
+//		return  Organ::getScalar(stype);
+//	}
+	return r;
 }
 
 /**

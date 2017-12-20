@@ -53,30 +53,30 @@ void SegmentAnalyser::addSegments(const SegmentAnalyser& a)
  * @param st    parameter type @see RootSystem::ScalarType per segment
  * \return      vector containing parameter value per segment
  */
-std::vector<double> SegmentAnalyser::getScalar(int st) const
+std::vector<double> SegmentAnalyser::getScalar(std::string name) const
 {
 	std::vector<double> data(segO.size());
 
-	if (st==Plant::st_time) {
-		data = ctimes;
-		return data;
-	}
-	if (st==Plant::st_userdata1) {
-		data = userData.at(0);
-		return data;
-	}
-	if (st==Plant::st_userdata2) {
-		data = userData.at(1);
-		return data;
-	}
-	if (st==Plant::st_userdata3) {
-		data = userData.at(2);
-		return data;
-	}
-
-	for (size_t i=0; i<segO.size(); i++) {
-		data.at(i) = segO.at(i)->getScalar(st);
-	}
+//	if (st==Plant::st_time) {
+//		data = ctimes;
+//		return data;
+//	}
+//	if (st==Plant::st_userdata1) {
+//		data = userData.at(0);
+//		return data;
+//	}
+//	if (st==Plant::st_userdata2) {
+//		data = userData.at(1);
+//		return data;
+//	}
+//	if (st==Plant::st_userdata3) {
+//		data = userData.at(2);
+//		return data;
+//	}
+//
+//	for (size_t i=0; i<segO.size(); i++) {
+//		data.at(i) = segO.at(i)->getScalar(st);
+//	}
 	return data;
 }
 
@@ -156,9 +156,9 @@ void SegmentAnalyser::crop(SignedDistanceFunction* geometry)
  * @param min   minimal value
  * @param max   maximal value
  */
-void SegmentAnalyser::filter(int st, double min, double max)
+void SegmentAnalyser::filter(std::string pname, double min, double max)
 {
-	std::vector<double> data = getScalar(st);
+	std::vector<double> data = getScalar(pname);
 	std::vector<Vector2i> seg;
 	std::vector<Organ*> sO;
 	std::vector<double> ntimes;
@@ -181,9 +181,9 @@ void SegmentAnalyser::filter(int st, double min, double max)
  * @param st        parameter type @see RootSystem::ScalarType
  * @param value     parameter value of the segments that are kept
  */
-void SegmentAnalyser::filter(int st, double value)
+void SegmentAnalyser::filter(std::string pname, double value)
 {
-	std::vector<double> data = getScalar(st);
+	std::vector<double> data = getScalar(pname);
 	std::vector<Vector2i> seg;
 	std::vector<Organ*> sO;
 	std::vector<double> ntimes;
@@ -250,8 +250,8 @@ Vector3d SegmentAnalyser::cut(Vector3d in, Vector3d out, SignedDistanceFunction*
 /**
  * \return The summed parameter of type @param st (@see RootSystem::ScalarType)
  */
-double SegmentAnalyser::getSummed(int st) const {
-	std::vector<double> v_ = getScalar(st);
+double SegmentAnalyser::getSummed(std::string pname) const {
+	std::vector<double> v_ = getScalar(pname);
 	return std::accumulate(v_.begin(), v_.end(), 0.0);
 }
 
@@ -260,8 +260,8 @@ double SegmentAnalyser::getSummed(int st) const {
  * that is within geometry @param g based on the segment mid point (i.e. not exact).
  * To sum exactly, first crop to the geometry, then run SegmentAnalyser::getSummed(st).
  */
-double SegmentAnalyser::getSummed(int st, SignedDistanceFunction* g) const {
-	std::vector<double> data = getScalar(st);
+double SegmentAnalyser::getSummed(std::string pname, SignedDistanceFunction* g) const {
+	std::vector<double> data = getScalar(pname);
 	double v = 0;
 	for (size_t i=0; i<segments.size(); i++) {
 		double d = data.at(i);
@@ -372,7 +372,7 @@ SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
  * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
  * \return Vector of size @param n containing the summed parameter in this layer
  */
-std::vector<double> SegmentAnalyser::distribution(int st, double top, double bot, int n, bool exact) const
+std::vector<double> SegmentAnalyser::distribution(std::string pname, double top, double bot, int n, bool exact) const
 {
 	std::vector<double> d(n);
 	double dz = (bot-top)/double(n);
@@ -383,9 +383,9 @@ std::vector<double> SegmentAnalyser::distribution(int st, double top, double bot
 		if (exact) {
 			SegmentAnalyser a(*this); // copy everything
 			a.crop(&g); // crop exactly
-			d.at(i) = a.getSummed(st);
+			d.at(i) = a.getSummed(pname);
 		} else {
-			d.at(i) = this->getSummed(st, &g);
+			d.at(i) = this->getSummed(pname, &g);
 		}
 	}
 	delete layer;
@@ -429,7 +429,7 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
  * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
  * \return Vector of size @param n containing the summed parameter in this layer
  */
-std::vector<std::vector<double>> SegmentAnalyser::distribution2(int st, double top, double bot, double left, double right, int n, int m, bool exact) const
+std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string pname, double top, double bot, double left, double right, int n, int m, bool exact) const
 {
 	std::vector<std::vector<double>> d(n);
 	double dz = (bot-top)/double(n);
@@ -447,9 +447,9 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(int st, double t
 			if (exact) {
 				SegmentAnalyser a(*this); // copy everything
 				a.crop(&g); // crop exactly
-				row.at(j) = a.getSummed(st);
+				row.at(j) = a.getSummed(pname);
 			} else {
-				row.at(j) = this->getSummed(st, &g);
+				row.at(j) = this->getSummed(pname, &g);
 			}
 
 		}
@@ -518,7 +518,7 @@ void SegmentAnalyser::write(std::string name)
 	std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
 	if (ext.compare("vtp")==0) {
 		std::cout << "writing VTP: " << name << "\n";
-		this->writeVTP(fos,{ Plant::st_radius, Plant::st_subtype, Plant::st_time, Plant::st_otype });
+		this->writeVTP(fos,{ /* todo */ }); // depricated Plant::st_radius, Plant::st_subtype, Plant::st_time, Plant::st_otype
 	} else if (ext.compare("txt")==0)  {
 		std::cout << "writing text file for Matlab import: "<< name << "\n";
 		this->writeRBSegments(fos);
@@ -538,7 +538,7 @@ void SegmentAnalyser::write(std::string name)
  * @param types     multiple parameter types (@see RootSystem::ScalarType) that are saved in the VTP file,
  * 					additionally, all userdata is saved per default
  */
-void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<int> types) const
+void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> typeNames) const
 {
 	assert(segments.size() == segO.size());
 	assert(segments.size() == ctimes.size());
@@ -548,9 +548,9 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<int> types) const
 	os << "<Piece NumberOfLines=\""<< segments.size() << "\" NumberOfPoints=\""<< nodes.size()<< "\">\n";
 	// data (CellData)
 	os << "<CellData Scalars=\" CellData\">\n";
-	for (auto i : types) {
-		std::vector<double> data = getScalar(i);
-		os << "<DataArray type=\"Float32\" Name=\"" << Plant::scalarTypeNames.at(i) << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
+	for (auto n : typeNames) {
+		std::vector<double> data = getScalar(n);
+		os << "<DataArray type=\"Float32\" Name=\"" << n << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
 		for (auto const& t : data) {
 			os << t << " ";
 		}

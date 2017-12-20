@@ -23,18 +23,18 @@ public:
 
     // reduce number of segments
     void crop(SignedDistanceFunction* geometry); ///< crops the data to a geometry
-    void filter(int st, double min, double max); ///< filters the segments to the data @see AnalysisSDF::getScalar
-    void filter(int st, double value); ///< filters the segments to the data @see AnalysisSDF::getScalar
+    void filter(std::string pname, double min, double max); ///< filters the segments to the data @see AnalysisSDF::getScalar
+    void filter(std::string name, double value); ///< filters the segments to the data @see AnalysisSDF::getScalar
     void pack(); ///< sorts the nodes and deletes unused nodes
 
     // some things we might want to know
-    std::vector<double> getScalar(int st) const; ///< Returns a specific parameter per segment @see RootSystem::ScalarType
+    std::vector<double> getScalar(std::string name) const; ///< Returns a specific parameter per segment @see RootSystem::ScalarType
     double getSegmentLength(int i) const; ///< returns the length of a segment
-    double getSummed(int st) const; ///< Sums up the parameter
-    double getSummed(int st, SignedDistanceFunction* geometry) const; ///< Sums up the parameter within the geometry
-    std::vector<double> distribution(int st, double top, double bot, int n, bool exact=false) const; ///< vertical distribution of a parameter
+    double getSummed(std::string pname) const; ///< Sums up the parameter
+    double getSummed(std::string pname, SignedDistanceFunction* geometry) const; ///< Sums up the parameter within the geometry
+    std::vector<double> distribution(std::string pname, double top, double bot, int n, bool exact=false) const; ///< vertical distribution of a parameter
     std::vector<SegmentAnalyser> distribution(double top, double bot, int n) const; ///< vertical distribution of a parameter
-    std::vector<std::vector<double>> distribution2(int st, double top, double bot, double left, double right, int n, int m, bool exact=false) const; ///< 2d distribution (x,z) of a parameter
+    std::vector<std::vector<double>> distribution2(std::string pname, double top, double bot, double left, double right, int n, int m, bool exact=false) const; ///< 2d distribution (x,z) of a parameter
     std::vector<std::vector<SegmentAnalyser>> distribution2(double top, double bot, double left, double right, int n, int m) const; ///< 2d distribution (x,z) of a parameter
     // todo distribution3
 
@@ -51,7 +51,7 @@ public:
 
     // some exports
     void write(std::string name); ///< writes simulation results (type is determined from file extension in name)
-    void writeVTP(std::ostream & os, std::vector<int> types = {Plant::st_radius}) const; ///< writes a VTP file
+    void writeVTP(std::ostream & os, std::vector<std::string> typeNames = {"radius"}) const; ///< writes a VTP file
     void writeRBSegments(std::ostream & os) const; ///< Writes the segments of the root system, mimics the Matlab script getSegments()
     void writeDGF(std::ostream & os) const; ///< Writes the segments of the root system in DGF format used by DuMux
 

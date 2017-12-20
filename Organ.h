@@ -36,14 +36,10 @@ public:
 
     /* scene graph for upper plant parts */
 
-    virtual Vector3d getRelativeOrigin() const { return Vector3d(); };
-    ///< the relative position within the parent organ
-    virtual void setRelativeOrigin(const Vector3d& o) { throw std::invalid_argument("Organ::setRelativeOrigin not implemented"); };
-    ///< the relative position within the parent organ
-    virtual Matrix3d getRelativeHeading() const { return Matrix3d(); };
-    ///< the heading in the parent organ
-    virtual void setRelativeHeading(const Matrix3d& m) { throw std::invalid_argument("Organ::getRelativeHeading not implemented"); };
-    ///< the heading in the parent organ
+    virtual Vector3d getRelativeOrigin() const { return Vector3d(); }; ///< the relative position within the parent organ
+    virtual void setRelativeOrigin(const Vector3d& o) { throw std::invalid_argument("Organ::setRelativeOrigin not implemented"); }; ///< the relative position within the parent organ
+    virtual Matrix3d getRelativeHeading() const { return Matrix3d(); }; ///< the heading in the parent organ
+    virtual void setRelativeHeading(const Matrix3d& m) { throw std::invalid_argument("Organ::getRelativeHeading not implemented"); }; ///< the heading in the parent organ
 
     Vector3d getOrigin() const; ///< absolute coordinates of the organ origin
     Matrix3d getHeading() const; ///< absolute heading of the organ
@@ -60,12 +56,11 @@ public:
     std::vector<Organ*> getOrgans(unsigned int otype); ///< the organ including successors in a sequential vector
     void getOrgans(unsigned int otype, std::vector<Organ*>& v); ///< the organ including successors in a sequential vector
 
-    virtual double getScalar(int stype) const; ///< returns an organ parameter of Plant::ScalarType
+    virtual double getScalar(std::string name) const; ///< returns an organ parameter of Plant::ScalarType
 
     /* IO */
     virtual std::string toString() const;
     virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
-
 
     size_t getNumberOfNodes() const { return r_nodes.size(); } ///< number of nodes of the organ
     int getNodeID(int i) const { return nodeIDs.at(i); } ///< unique identifier of i-th node

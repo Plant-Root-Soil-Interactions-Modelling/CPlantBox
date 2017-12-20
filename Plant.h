@@ -40,13 +40,6 @@ class Plant
 
 public:
 
-  enum ScalarTypes { st_id, st_otype, st_subtype, st_alive, st_active, st_age, st_length, st_one, st_order, st_parenttype, st_time, // organ level
-	 st_lb, st_la, st_r, st_radius, st_theta, st_rlt, st_meanln, st_stdln , st_nob, st_surface, // root level
-	 st_userdata1, st_userdata2, st_userdata3 // analyser
-  }; ///< @see RootSystem::getScalar
-  static const std::vector<std::string> scalarTypeNames; ///< the corresponding names
-  /* todo: maybe it would be simple to pass strings as parameter names */
-
   Plant();
   virtual ~Plant();
 
@@ -78,19 +71,20 @@ public:
   // Organs
   int getNumberOfNodes() const { return nid+1; } ///< Number of nodes of the root system
   int getNumberOfSegments() const; ///< todo -baseRoots.size() Number of segments of the root system (the number of nodes-1 for tap root systems)
-  std::vector<Organ*> getOrgans(unsigned int otype) const; ///< Represents the root system as sequential vector of roots and buffers the result
+  std::vector<Organ*>& getOrgans(unsigned int otype) const; ///< Represents the root system as sequential vector of roots and buffers the result
   std::vector<Vector3d> getNodes() const; ///< Copies all root system nodes into a vector
   std::vector<std::vector<Vector3d> > getPolylines(unsigned int otype=Organ::ot_organ) const; ///< Copies the nodes of each root into a vector return all resulting vectors
   std::vector<Vector2i> getSegments(unsigned int otype=Organ::ot_organ) const; ///< Copies all segments indices into a vector
   std::vector<Organ*> getSegmentsOrigin(unsigned int otype=Organ::ot_organ) const; ///< Copies a pointer to the root containing the segment
   std::vector<double> getNETimes() const; ///< Copies all node emergence times into a vector
   std::vector<std::vector<double> > getPolylinesNET(unsigned int otype=Organ::ot_organ) const; ///< Copies the node emergence times of each root into a vector and returns all resulting vectors
-  std::vector<double> getScalar(unsigned int otype=Organ::ot_organ, int stype=Plant::st_length) const; ///< Copies a scalar root parameter that is constant per root to a vector
+  std::vector<double> getScalar(unsigned int otype=Organ::ot_organ, std::string name = "otype") const; ///< Copies a scalar root parameter that is constant per root to a vector
 
   // Output Simulation results
   void write(std::string name, int otype = Organ::ot_organ) const; /// writes simulation results (type is determined from file extension in name)
   void writeRSML(std::ostream & os) const; ///< writes current simulation results as RSML
   void writeVTP(int otype, std::ostream & os) const; ///< writes current simulation results as VTP (VTK polydata file)
+  static void writeVTP(std::ostream & os);
   void writeGeometry(std::ostream & os) const; ///< writes the current confining geometry (e.g. a plant container) as paraview python script
 
   std::string toString() const; ///< infos about current root system state (for debugging)
@@ -104,13 +98,11 @@ public:
   int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
 
-
+  Seed* seed;
 
 protected:
 
-
   std::vector <std::vector<OrganTypeParameter*> > organParam; ///< Parameter set for each root type
-  Seed* seed;
 
   SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
 

@@ -5,6 +5,7 @@
 ///This is an under developed version with a simple stem growth.
 
 #include "Plant.h"
+#include "Organ.h"
 #include "analysis.h"
 
 #include <iostream>
@@ -16,7 +17,7 @@
 #include "examples/example1.h"
 #include "examples/example2.h"
 #include "examples/example3.h"
-
+#include "examples/example_scenegraph.h"
 
 
 /**
@@ -30,9 +31,11 @@ int main(int argc, char* argv[])
         name= argv[1];
     }
 
-    example1(); // open parameter file, and output VTP
+    //example1(); // open parameter file, and output VTP
     // example2(); // like example 1, but with put geometry
     // example3(); // more than 1 plant
+
+    example_scenegraph();
 
     return(0);
 

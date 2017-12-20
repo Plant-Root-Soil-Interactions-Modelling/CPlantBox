@@ -2,12 +2,7 @@
 #include "tinyxml2.h"
 #include <iostream>
 
-
 unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
-const std::vector<std::string> Plant::scalarTypeNames =
-{"id", "organ type", "sub type", "alive", "active", "age", "length", "1", "order", "parent type","creation time",
-		"basal length", "apical length", "initial growth rate", "radius", "insertion angle", "root life time", "mean inter nodal distance", "standard deviation of inter nodal distance", "number of branches",
-		"userdata 1", "userdata 2", "userdata 3"};
 
 Plant::Plant()
 {
@@ -53,10 +48,6 @@ unsigned int Plant::ot2index(unsigned int ot) {
 		throw std::invalid_argument("Plant::setOrganTypeParameter: pure organ type expected");
 	}
 }
-
-
-
-
 
 /**
  * Deletes the old geometry, sets the new one, passes it to the tropisms
@@ -138,7 +129,6 @@ void Plant::openXML(std::string name, std::string subdir)
 
 void Plant::openFile(std::string name, std::string subdir)
 {
-
 	std::ifstream fis;
 	std::string rp_name = subdir;
 	rp_name.append(name);
@@ -187,7 +177,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	}
 	std::cout << "Read " << stem_c << " stem type parameters \n"; // debug
 
-std::string lp_name = subdir;
+	std::string lp_name = subdir;
 	lp_name.append(name);
 	lp_name.append(".leparam");
 	fis.open(lp_name.c_str());
@@ -267,7 +257,7 @@ void Plant::writeParameters(std::ostream& os) const
     tinyxml2::XMLDocument dxml;
 
 	for (auto const& otp_:organParam) {
-		int t = 0;
+		unsigned int t = 0;
 		for (auto const& otp : otp_) {
 			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t)) {
 //				assert((otp->subType)==t); // check if index really equals subType-1
@@ -288,7 +278,7 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
     std::ofstream xmloutput;
  xmloutput.open( xmlname.c_str());
 	for (auto const& otp_:organParam) {
-		int t = 0;
+		unsigned int t = 0;
 		for (auto const& otp : otp_) {
 			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t) ) {
 //				assert((otp->subType)==t); // check if index really equals subType-1
@@ -348,7 +338,6 @@ void Plant::simulate(double dt, bool silence)
 	if (!silence) {
 		std::cout << "Plant.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
 	}
-	getOrgans(Organ::ot_organ);
 	old_non = getNumberOfNodes();
 	old_nor = organs.size();
 	seed->simulate(dt);
@@ -376,11 +365,13 @@ int Plant::getNumberOfSegments() const
 	  return c;
  }
 
-
 /**
+ * Returns a reference to the sequential list of organs,
+ * and updates the list if necessary.
  *
+ * @param otype 	organ type
  */
-std::vector<Organ*> Plant::getOrgans(unsigned int otype) const
+std::vector<Organ*>& Plant::getOrgans(unsigned int otype) const
 {
 	if (organs_type!=otype) { // create buffer
 		organs = seed->getOrgans(otype);
@@ -503,82 +494,23 @@ std::vector<std::vector<double>> Plant::getPolylinesNET(unsigned int otype) cons
  *
  * @param stype     a scalar type (@see RootSystem::ScalarTypes). st_time is the emergence time of the root
  */
-std::vector<double> Plant::getScalar(unsigned int otype, int stype) const
+std::vector<double> Plant::getScalar(unsigned int otype, std::string name) const
 {
 	this->getOrgans(otype); // update roots (if necessary)
 	std::vector<double> scalars(organs.size());
 	for (size_t i=0; i<organs.size(); i++) {
-		const auto& o = organs[i];
-		double value = o->getScalar(stype);
-		//      switch(stype) {
-		//        case st_type:  // type
-		//          value = organs[i]->param.type;
-		//          break;
-		//        case st_radius: // root radius
-		//          value = organs[i]->param.a;
-		//          break;
-		//        case st_order: { // root order (calculate)
-		//          value = 0;
-		//          Organ* r_ = organs[i];
-		//          while (r_->parent!=nullptr) {
-		//              value++;
-		//              r_=r_->parent;
-		//          }
-		//          break;
-		//        }
-		//        case st_time: // emergence time of the root
-		//          value = organs[i]->getNodeETime(0);
-		//          break;
-		//        case st_length:
-		//          value = organs[i]->length;
-		//          break;
-		//        case st_surface:
-		//          value =  organs[i]->length*2.*M_PI*organs[i]->param.a;
-		//          break;
-		//        case st_one:
-		//          value =  1;
-		//          break;
-		//        case st_parenttype: {
-		//          Organ* r_ = organs[i];
-		//          if (r_->parent!=nullptr) {
-		//              value = r_->parent->param.type;
-		//          } else {
-		//              value = 0;
-		//          }
-		//          break;
-		//        }
-		//        case st_lb:
-		//          value = organs[i]->param.lb;
-		//          break;
-		//        case st_la:
-		//          value = organs[i]->param.la;
-		//          break;
-		//        case st_nob:
-		//          value = organs[i]->param.nob;
-		//          break;
-		//        case st_r:
-		//          value = organs[i]->param.r;
-		//          break;
-		//        case st_theta:
-		//          value = organs[i]->param.theta;
-		//          break;
-		//        case st_rlt:
-		//          value = organs[i]->param.rlt;
-		//          break;
-
-		scalars[i]=value;
+		scalars.at(i) = organs[i]->getScalar(name);
 	}
 	return scalars;
 }
 
 /**
- * todo
+ * todo most important debug informations
  */
 std::string Plant::toString() const
 {
 	return "todo";
 }
-
 
 /**
  * Exports the simulation results with the type from the extension in name
@@ -639,7 +571,7 @@ void Plant::writeRSMLMeta(std::ostream & os) const
 	//    auto tm = *std::localtime(&t);
 	//    os << std::put_time(&tm, "%d-%m-%Y"); // %H-%M-%S" would do the job for gcc 5.0
 	//    os << "</last-modified>\n";
-	os << "\t<software>CRootBox</software>\n";
+	os << "\t<software>CPlantBox</software>\n";
 	os << "</metadata>\n";
 }
 
@@ -664,7 +596,7 @@ void Plant::writeRSMLPlant(std::ostream & os) const
  *
  * @param os      typically a file out stream
  */
-void Plant::writeVTP(int otype, std::ostream & os) const
+void Plant::writeVTP(int otype, std::ostream & os) const // todo we could use tiny xml to create the file
 {
 	this->getOrgans(otype); // update roots (if necessary)
 	const auto& nodes = getPolylines(otype);
@@ -691,14 +623,12 @@ void Plant::writeVTP(int otype, std::ostream & os) const
 
 	// CELLDATA (live on the polylines)
 	os << "<CellData Scalars=\" CellData\">\n";
-	const size_t N = 3; // SCALARS
-	int types[N] = { st_subtype, st_order, st_radius };
-	std::vector<std::string> sTypeNames = { "type", "order", "radius"};
-	for (size_t i=0; i<N; i++) {
+	std::vector<std::string> sTypeNames = { "organtype", "id"}; //  , "order", "radius"
+	for (size_t i=0; i<sTypeNames.size(); i++) {
 		os << "<DataArray type=\"Float32\" Name=\"" << sTypeNames[i] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-		auto scalars = getScalar(otype, types[i]);
-		for (auto s : scalars) {
-			os << s<< " ";
+		std::vector<double> scalars = getScalar(otype, sTypeNames[i]);
+		for (double s : scalars) {
+			os << s << " ";
 		}
 		os << "\n</DataArray>\n";
 	}
@@ -736,8 +666,8 @@ void Plant::writeVTP(int otype, std::ostream & os) const
 }
 
 /**
- * Writes the current confining geometry (e.g. a plant container) as paraview python script
- * Just adds the initial lines, before calling the method of the sdf.
+ * Writes the current confining geometry (e.g. a plant container) as Paraview Python script
+ * Just adds the initial lines, before calling the method of the SDF.
  *
  * @param os      typically a file out stream
  */
