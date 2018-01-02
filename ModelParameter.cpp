@@ -353,7 +353,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
             std::string s = std::to_string(successorCount);
             char const *schar = s.c_str();
-        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successor[successorCount]);    printer.CloseElement();
+        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("location",successor[successorCount]);    printer.CloseElement();
         printer.OpenElement("successorP"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
 //
     }
@@ -813,7 +813,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
             std::string s = std::to_string(successorCount);
             char const *schar = s.c_str();
-        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successor[successorCount]);    printer.CloseElement();
+        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("location",successor[successorCount]);    printer.CloseElement();
         printer.OpenElement("successorP"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
 //
     }
@@ -1152,7 +1152,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
             std::string s = std::to_string(successorCount);
             char const *schar = s.c_str();
-        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successor[successorCount]);    printer.CloseElement();
+        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("location",successor[successorCount]);    printer.CloseElement();
         printer.OpenElement("successorP"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
 //
     }
