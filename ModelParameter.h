@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #include "mymath.h"
-
+#include "tinyxml2.h"
 /*
  * The model parameters consist of
  *
@@ -460,14 +460,23 @@ public:
 
 };
 
+/**
+ * override the PrintSpace function
+ */
 
+//void tinyxml2::XMLPrinter::PrintSpace( const char * indent, int depth ) //print space TODO
+//{
+//    if (indent == "") indent = " ";
+//    if (depth == 0) depth = 4;  // 0 means default
+//    for ( int i=0; i<depth; ++i ) {
+//        Print( indent );  // depth here goes in single spaces
+//    }
+//}
 
 /**
  * Parameters of a specific seed
  */
 
 
-/**
- * Seed specific parameters like planting depth, and emergence times of basal roots
- */
+
 #endif

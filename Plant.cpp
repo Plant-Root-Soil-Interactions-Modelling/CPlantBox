@@ -276,13 +276,15 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
 	xmlname.append(name);
 	xmlname.append(".xml");
     std::ofstream xmloutput;
- xmloutput.open( xmlname.c_str());
+    xmloutput.open( xmlname.c_str());
+    xmloutput<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	for (auto const& otp_:organParam) {
 		unsigned int t = 0;
 		for (auto const& otp : otp_) {
 			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t) ) {
 //				assert((otp->subType)==t); // check if index really equals subType-1
 				xmloutput<<otp->writeXML(0);
+				xmloutput<<std::endl;
 			}
 
 			t++;

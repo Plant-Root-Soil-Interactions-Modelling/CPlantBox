@@ -31,11 +31,11 @@ int main(int argc, char* argv[])
         name= argv[1];
     }
 
-    //example1(); // open parameter file, and output VTP
+  example1(); // open parameter file, and output VTP
     // example2(); // like example 1, but with put geometry
     // example3(); // more than 1 plant
 
-    example_scenegraph();
+//    example_scenegraph();
 
     return(0);
 
