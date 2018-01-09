@@ -45,10 +45,10 @@ void example_scenegraph()
 	MyOrgan* branch3 = new MyOrgan(plant, nullptr, 0, 0); // at top of branch 1
 
 	base->setRelativeOrigin(Vector3d(0.,0.,0.));
-	base->setRelativeHeading(Matrix3d());
+	base->setRelativeHeading(Matrix3d::rotX(30./180.*3.1415)); // rotated 30 degrees
 
 	branch1->setRelativeOrigin(Vector3d(0.,0.,1.)); // at top
-	branch1->setRelativeHeading(Matrix3d()); // rotated 30 degrees
+	branch1->setRelativeHeading(Matrix3d::rotX(30./180.*3.1415)); // rotated 30 degrees
 
 	branch2->setRelativeOrigin(Vector3d(0.,0.,0.5)); // half way
 	branch2->setRelativeHeading(Matrix3d::rotX(30./180.*3.1415)); // X rotated 30 degrees

@@ -60,16 +60,6 @@ void Stem::simulate(double dt, bool silence)
   old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
 
 
-
-
-//    Vector3d ilheading(0,0,1);//Initial Stem heading
-//	Leaf* mainleaf = new Leaf(plant, this, 1, 0., ilheading ,0., 0.); // tap root has subtype 1
-//	mainleaf->addNode(sparam->seedPos,0);
-//	children.push_back(mainleaf);
-
-
-
-
   const StemParameter* sp = sParam(); // rename
   const StemTypeParameter* sttp = stParam();
 
@@ -81,7 +71,6 @@ void Stem::simulate(double dt, bool silence)
   age+=dt;
 
   if (alive) { // dead stem wont grow
-//createShootborneroot(silence);
     // probabilistic branching model (todo test)
     if ((age>0) && (age-dt<=0)) { // the stem emerges in this time step
       double stem_P = sttp->sbp->getValue(r_nodes.back(),this);
@@ -131,10 +120,9 @@ void Stem::simulate(double dt, bool silence)
             for (size_t i=0; ((i<sp->ln.size()) && (dl>0)); i++) {
               s+=sp->ln.at(i);
               if (length<s) {
-                if (i==children.size()) { // new lateral
+                if (i==children.size()) { // new internode leaf and shootBorneRoot
                         LeafGrow(silence);
                         ShootBorneRootGrow(silence);
-//                 createLateral(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
                   createSegments(dl,silence);

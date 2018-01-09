@@ -84,6 +84,8 @@ public:
   void write(std::string name, int otype = Organ::ot_organ) const; /// writes simulation results (type is determined from file extension in name)
   void writeRSML(std::ostream & os) const; ///< writes current simulation results as RSML
   void writeVTP(int otype, std::ostream & os) const; ///< writes current simulation results as VTP (VTK polydata file)
+
+  void TiXMLwriteVTP(int otype, std::ostream & os) const; ///< writes current simulation results as VTP (VTK polydata file)
   static void writeVTP(std::ostream & os);
   void writeGeometry(std::ostream & os) const; ///< writes the current confining geometry (e.g. a plant container) as paraview python script
 

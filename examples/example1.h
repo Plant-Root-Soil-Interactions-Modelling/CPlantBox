@@ -46,7 +46,13 @@ void example1()
     /*
      * Export final result (as vtp)
      */
+    auto t1 = std::chrono::high_resolution_clock::now();
     plant.write("plant_write_rootsystem.vtp");
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "test function took "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+              << " milliseconds\n";
+
 
 
     /*
