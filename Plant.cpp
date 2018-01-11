@@ -501,7 +501,7 @@ std::vector<double> Plant::getScalar(unsigned int otype, std::string name) const
 	this->getOrgans(otype); // update roots (if necessary)
 	std::vector<double> scalars(organs.size());
 	for (size_t i=0; i<organs.size(); i++) {
-		scalars.at(i) = organs[i]->getScalar(name);
+		scalars.at(i) = organs[i]->Organ::getScalar(name);
 	}
 	return scalars;
 }
@@ -702,8 +702,8 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
                 printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData");
                 std::vector<std::string> sTypeNames = { "organtype", "id"}; //  , "order", "radius"
                     for (size_t i=0; i<sTypeNames.size(); i++) {
-                    std::string s = sTypeNames[i];
-                    char const *schar = s.c_str();
+                    std::string sType = sTypeNames[i];
+                    char const *schar = sType.c_str();
                         printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
                             std::vector<double> scalars = getScalar(otype, sTypeNames[i]);
 
