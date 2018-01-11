@@ -338,14 +338,84 @@ public:
 	SoilProperty* sa; ///< scale angle function
 	SoilProperty* sbp; ///< scale branching probability function
 
-};
-
-
-
-/**
- * Parameters of a specific seed
+ /**
+ * Parameters from Graal model
  */
+    ///General parameters
+    double deltat = 80 ; ///Simulation duration (d)
+    double a_lPAR = -0.10 ; ///Parameters for daily average PAR decrease during the vegetative period
+    double b_lPAR = 0.005 ; ///Parameters for daily average PAR decrease during the vegetative period
+    double a_hPAR = -0.14 ; ///Parameters for daily average PAR decrease during the vegetative period
+    double b_hPAR = 0.003 ; ///Parameters for daily average PAR decrease during the vegetative period
+    double g_organ_growth_effi = 0.73 ; ///Organ growth efficiency (dl)
+    double m_organ_mainte_effi = 0.0032 ; ///Organ maintenance respiration rate (g CO2 g -1 DM)
+    double M_si = 0.29 ; /// Seed initial dry mass (g DM)
+    double Q_10 = 2 ; /// Temperature coefficient (dl)
+    double R_r = 0.05 ; /// Reserve supply rate (d^-1)
+	double R_s = 0.15 ; /// Seed supply rate (d^-1)
+	double T_ref = 20 ; /// Reference temperature for maintenance respiration
 
+	///Shoot development
+	double a_B_i = 2.3 ; ///Parameters for final internode diameter (cm)
+	double b_B_i = 3.3 ; ///Parameters for final internode diameter (cm)
+	double c_B_i = -0.17 ; ///Parameters for final internode diameter (cm)
+	double n_B_i = 7 ; ///Parameters for final internode diameter (dl)
+
+	double a_Die = -5.16 ; ///Parameters for the time between primordia initiation and beginning of leaf elongation
+	double b_Die = 1.94 ; ///Parameters for the time between primordia initiation and beginning of leaf elongation
+	double n_Die = 3.65 ; ///Parameters for the time between primordia initiation and beginning of leaf elongation
+
+	double a_L_i = 0.202 ; ///Parameters for final internode length (cm)
+	double b_L_i = 1.233 ; ///Parameters for final internode length (cm)
+	double c_L_i = -0.040 ; ///Parameters for final internode length (cm)
+
+    double a_L_S = 3.077 ; ///Parameters for final sheath length (cm)
+    double b_L_S = 2.048 ; ///Parameters for final sheath length (cm)
+    double c_L_S = -0.569 ; ///Parameters for final sheath length (cm)
+    double n_L_S = 6 ; ///Parameters for final sheath length (dl)
+
+    double a_ls = 0.8 ; ///Parameters for lamina shape (dl)
+    double b_ls = 1.3 ; ///Parameters for lamina shape (dl)
+    double c_ls = -2.1 ; ///Parameters for lamina shape (dl)
+
+    double a_n_M = 5.93 ; ///parameters for final lamina length (dl)
+    double b_n_M = 0.33 ; ///parameters for final lamina length (dl)
+    double a_ala = -10.61 ; ///parameters for final lamina length (dl)
+    double b_ala = 0.25 ; ///parameters for final lamina length (dl)
+    double a_bla = -5.99 ; ///parameters for final lamina length (dl)
+    double b_bla = 0.27 ; ///parameters for final lamina length (dl)
+
+    double a_pp = -1.06 ; ///Parameters for the phyllochron number-plastochron number relationship
+    double b_pp = 0.54 ; ///Parameters for the phyllochron number-plastochron number relationship
+
+    double a_R_p = -0.00065 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
+    double b_R_p = -0.0138 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
+    double c_R_p = 0.00372 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
+    double d_R_p = -0.000072 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
+
+    double alpha = 0.04 ; ///Photosynthetic efficiency (miu mol CO_2 miu mol^-1)
+    double b_LSI = 0.0003; ///Lamina and sheath dry mass per unit area increment
+    double IMV_max = 0.140; ///Maximal internode dry mass per unit volume (g DM cm^-2)
+    double IMV_min = 0.005; ///Minimal internode dry mass per unit volume (g DM cm^-2)
+    double k_A = 0.75; ///Allometry coefficient for final lamina area (dl)
+    double k_W = 0.106; ///Allometry coefficient for final lamina area (dl)
+    double L_lm = 90 ; /// Minimal length of the longest internode (cm)
+    double L_im = 23 ; ///Final length of the longest internode (cm)
+    double LMA_max = 0.0075 ; ///Minimal lamina dry mass per unit area for lamina N_p (g DM cm^-2)
+    double LMA_min = 0.0010 ; ///Minimal lamina and sheath dry mass perunit area (g DM cm^-2)
+    double N_p = 16 ;///Total number of phytomers
+    double n_0 = 5 ; /// last internode that does not elongate
+    double P_max = 30 ; ///Photosynthetic rate at saturating light (miu mol CO_2 m^-2 s^-1)
+    double SMA_max = 0.0075 ; ///Maximal sheath dry mass per unit area for sheath N_p (g DM cm^-2)
+    double SMA_min = 0.0010 ; ///Minimal lamina and sheath dry mass per unit area (g DM cm^-2)
+    double T_base = 8 ; /// Base temperature (°C)
+    double T_max = 50 ; /// Maximal temperature (°C)
+    double T_opt = 31 ; /// Optimal temperature (°C)
+    double vstar_c = 0.41 ; /// Multiplicative factor for standard internode elongation rate (dl)
+    double vstar_1 = 0.564 ; ///standard leaf (lamina and sheath) elongation rate (cm°C d^-1)
+
+
+};
 
 /**
  * Seed specific parameters like planting depth, and emergence times of basal roots
@@ -358,9 +428,6 @@ class LeafTropismFunction;
 /**
  *	Parameter base class for specific organs
  */
-
-
-
 
 
 /**
