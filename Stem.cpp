@@ -303,8 +303,8 @@ void Stem::LeafGrow(bool silence)
     double delay = ageLG-ageLN; // time the lateral has to wait
     Vector3d h = heading(); // current heading
   Vector3d ilheading(0,0,1);
-    Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading ,r_nodes.size(), length);
-    LeafGrow->addNode(Stem::getNode(r_nodes.size()-1), length);
+    Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading, r_nodes.size()-1, length);
+    LeafGrow->addNode(getNode(r_nodes.size()-1), length);
                children.push_back(LeafGrow);
                  LeafGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current age)
     }
@@ -316,23 +316,23 @@ void Stem::LeafGrow(bool silence)
 void Stem::ShootBorneRootGrow(bool silence)
 {
 
-  const StemParameter* sp = sParam(); // rename
-  int lt = stParam()->getLateralType(r_nodes.back());
-  	std::cout << "ShootBorneRootGrow createLateral()\n";
-  	std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
+    const StemParameter* sp = sParam(); // rename
+    int lt = stParam()->getLateralType(r_nodes.back());
+    std::cout << "ShootBorneRootGrow createLateral()\n";
+    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
 
-  if (lt>0) {
-    double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
-    double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-    double delay = ageLG-ageLN; // time the lateral has to wait
-    int NodeToGrowShotBorneRoot = 2 ;
-    Vector3d sbrheading(1,1,0); //just a test heading
-    Root* ShootBorneRootGrow = new Root(plant, this , 5, 0., sbrheading ,NodeToGrowShotBorneRoot, length);
-if (r_nodes.size() > NodeToGrowShotBorneRoot ) {
-                            ShootBorneRootGrow->addNode(Stem::getNode(NodeToGrowShotBorneRoot), length);
-                            children.push_back(ShootBorneRootGrow);
-                            ShootBorneRootGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current age)
-                         }
+    if (lt>0) {
+        double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
+        double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+        double delay = ageLG-ageLN; // time the lateral has to wait
+        int NodeToGrowShotBorneRoot = 2 ;
+        Vector3d sbrheading(1,1,0); //just a test heading
+        Root* ShootBorneRootGrow = new Root(plant, this , 5, 0., sbrheading ,NodeToGrowShotBorneRoot, length);
+            if (r_nodes.size() > NodeToGrowShotBorneRoot ) {
+                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
+                                children.push_back(ShootBorneRootGrow);
+                                ShootBorneRootGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current age)
+                             }
     }
 
 
