@@ -379,83 +379,94 @@ void SeedTypeParameter::write(std::ostream & cout) const {
 }
 
 void SeedTypeParameter::readXML(FILE* fp) {
-	tinyxml2::XMLDocument doc( fp );
-	tinyxml2::XMLElement* seed = doc.FirstChildElement( "Seed" );
-	seedPos = Vector3d(0,0,-3);
-	seedPoss = Vector3d();
-	tinyxml2::XMLElement* pos = seed->FirstChildElement("Location");
-	if (pos!=0) {
-		readXMLvs(pos,"x",&seedPos.x,&seedPoss.x);
-		readXMLvs(pos,"y",&seedPos.y,&seedPoss.y);
-		readXMLvs(pos,"z",&seedPos.z,&seedPoss.z);
-	}
-
-	firstB = 1.e9;
-	firstBs = 0.;
-	delayB = 1.e9;
-	delayBs =0.;
-	maxB = 0;
-	maxBs = 0;
-	tinyxml2::XMLElement* basal = seed->FirstChildElement("Basal roots");
-	if (basal!=0) {
-		readXMLvs(basal,"First",&firstB,&firstBs);
-		readXMLvs(basal,"Delay",&delayB,&delayBs);
-		double dmB=0;
-		readXMLvs(basal,"Maximum",&dmB,&maxBs);
-		maxB = int(dmB);
-	}
+//	tinyxml2::XMLDocument doc( fp );
+//	tinyxml2::XMLElement* seed = doc.FirstChildElement( "Seed" );
+//	seedPos = Vector3d(0,0,-3);
+//	seedPoss = Vector3d();
+//	tinyxml2::XMLElement* pos = seed->FirstChildElement("Location");
+//	if (pos!=0) {
+//		readXMLvs(pos,"x",&seedPos.x,&seedPoss.x);
+//		readXMLvs(pos,"y",&seedPos.y,&seedPoss.y);
+//		readXMLvs(pos,"z",&seedPos.z,&seedPoss.z);
+//	}
+//
+//	firstB = 1.e9;
+//	firstBs = 0.;
+//	delayB = 1.e9;
+//	delayBs =0.;
+//	maxB = 0;
+//	maxBs = 0;
+//	tinyxml2::XMLElement* basal = seed->FirstChildElement("Basal roots");
+//	if (basal!=0) {
+//		readXMLvs(basal,"First",&firstB,&firstBs);
+//		readXMLvs(basal,"Delay",&delayB,&delayBs);
+//		double dmB=0;
+//		readXMLvs(basal,"Maximum",&dmB,&maxBs);
+//		maxB = int(dmB);
+//	}
 }
 
 std::string SeedTypeParameter::writeXML(FILE* fp) const {
 
-	tinyxml2::XMLPrinter printer( fp );
-	printer.OpenElement("Seed");
-
-	printer.OpenElement("Location");
-	printer.OpenElement("x");
-	printer.PushText(seedPos.x);
-	if (seedPoss.x!=0) {
-		printer.OpenElement("sd"); printer.PushText(seedPoss.x); printer.CloseElement();
-	}
-	printer.CloseElement();
-	printer.OpenElement("y");
-	printer.PushText(seedPos.y);
-	if (seedPoss.y!=0) {
-		printer.OpenElement("sd"); printer.PushText(seedPoss.y); printer.CloseElement();
-	}
-	printer.CloseElement();
-	printer.OpenElement("z");
-	printer.PushText(seedPos.z);
-	if (seedPoss.y!=0) {
-		printer.OpenElement("sd"); printer.PushText(seedPoss.z); printer.CloseElement();
-	}
-	printer.CloseElement();
-	printer.CloseElement(); // Location
-
-	printer.OpenElement("Basal");
-	printer.OpenElement("First");
-	printer.PushText(firstB);
-	if (firstBs!=0) {
-		printer.OpenElement("sd"); printer.PushText(firstBs); printer.CloseElement();
-	}
-	printer.CloseElement();
-	printer.OpenElement("Delay");
-	printer.PushText(delayB);
-	if (delayBs!=0) {
-		printer.OpenElement("sd"); printer.PushText(delayBs); printer.CloseElement();
-	}
-	printer.CloseElement();
-	printer.OpenElement("Maximum");
-	printer.PushText(maxB);
-	if (maxBs!=0) {
-		printer.OpenElement("sd"); printer.PushText(maxBs); printer.CloseElement();
-	}
-	printer.CloseElement();
-	printer.CloseElement(); // Basal Roots
-
-	printer.CloseElement(); // Seed
+tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
+    printer.OpenElement("organ", false); //compact mode false
+    printer.PushAttribute("type","seed");
+        printer.OpenElement("parameter");
+        printer.PushAttribute("location_x", "0");
+        printer.PushAttribute("location_y", "0");
+        printer.PushAttribute("location_z", "0");
+    printer.CloseElement(false); // close element compact mode false
+    printer.CloseElement(false); // close element compact mode false
 
 	return std::string(printer.CStr());
+//    tinyxml2::XMLPrinter printer( fp );
+//	printer.OpenElement("Seed");
+//
+//	printer.OpenElement("Location");
+//	printer.OpenElement("x");
+//	printer.PushText(seedPos.x);
+//	if (seedPoss.x!=0) {
+//		printer.OpenElement("sd"); printer.PushText(seedPoss.x); printer.CloseElement();
+//	}
+//	printer.CloseElement();
+//	printer.OpenElement("y");
+//	printer.PushText(seedPos.y);
+//	if (seedPoss.y!=0) {
+//		printer.OpenElement("sd"); printer.PushText(seedPoss.y); printer.CloseElement();
+//	}
+//	printer.CloseElement();
+//	printer.OpenElement("z");
+//	printer.PushText(seedPos.z);
+//	if (seedPoss.y!=0) {
+//		printer.OpenElement("sd"); printer.PushText(seedPoss.z); printer.CloseElement();
+//	}
+//	printer.CloseElement();
+//	printer.CloseElement(); // Location
+//
+//	printer.OpenElement("Basal");
+//	printer.OpenElement("First");
+//	printer.PushText(firstB);
+//	if (firstBs!=0) {
+//		printer.OpenElement("sd"); printer.PushText(firstBs); printer.CloseElement();
+//	}
+//	printer.CloseElement();
+//	printer.OpenElement("Delay");
+//	printer.PushText(delayB);
+//	if (delayBs!=0) {
+//		printer.OpenElement("sd"); printer.PushText(delayBs); printer.CloseElement();
+//	}
+//	printer.CloseElement();
+//	printer.OpenElement("Maximum");
+//	printer.PushText(maxB);
+//	if (maxBs!=0) {
+//		printer.OpenElement("sd"); printer.PushText(maxBs); printer.CloseElement();
+//	}
+//	printer.CloseElement();
+//	printer.CloseElement(); // Basal Roots
+//
+//	printer.CloseElement(); // Seed
+//
+//	return std::string(printer.CStr());
 }
 
 /**

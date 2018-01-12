@@ -120,7 +120,8 @@ void Plant::openXML(std::string name, std::string subdir)
 //    tinyxml2::XMLText* seedLocationX = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->FirstChild()->ToText();
 //    seedx = seedLocationX->Value();
 //        std::cout<<"Seed location x is \n"<<seedx<<std::endl;
-    const char* seedLocationX = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->GetText();
+    const char* seedLocationX = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->FirstChildElement( "parameter" )->Attribute("location_x");;
+
     printf( "Seed Location from XML file is %s\n", seedLocationX );
 }
 
@@ -278,6 +279,7 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
     std::ofstream xmloutput;
     xmloutput.open( xmlname.c_str());
     xmloutput<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    xmloutput<<"\n<Plant name=\"maize\" filetype=\"parameters\">\n";
 	for (auto const& otp_:organParam) {
 		unsigned int t = 0;
 		for (auto const& otp : otp_) {
@@ -291,6 +293,7 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
 
 		}
 	}
+	xmloutput<<"\n</Plant>\n";
 xmloutput.close();
 }
 /**
