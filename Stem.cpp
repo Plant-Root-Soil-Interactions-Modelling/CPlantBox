@@ -20,17 +20,15 @@
 Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
 
-  initialStemHeading=isheading;
+  initialStemHeading = isheading;
   std::cout << "stem pni = "<< pni<< std::endl;
 //  std::cout << "Stem constructor \n";
   StemTypeParameter* sttp = (StemTypeParameter*) plant->getParameter(Organ::ot_stem, type);
-
-
   param = sttp->realize(); // throw the dice
   StemParameter* stem_p = (StemParameter*) param;
-  std::cout <<", "<<(StemParameter*) param<< "\n";
+//  std::cout <<", "<<(StemParameter*) param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
-  Matrix3d ons = Matrix3d::ons(initialStemHeading);
+  Matrix3d ons = Matrix3d::ons(iheading);
   ons.times(Matrix3d::rotX(beta));
   double theta = stem_p->theta;
   if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
@@ -38,6 +36,7 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
     theta*=scale;
   }
   ons.times(Matrix3d::rotZ(theta));
+  this->initialStemHeading= ons.column(0);
   // initial node
   if (parent->organType()!=Organ::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the stem,
@@ -434,13 +433,13 @@ void Stem::createSegments(double l, bool silence)
 }
 //***********************stem heading*****************************
 Vector3d Stem::heading() const {
-  Vector3d h;
-  if (param->subType == 1 || this->r_nodes.size()<=1 ) {// Make heading upward if it is main stem and
-    h = initialStemHeading;// getHeading(b-a)
-  } else {
-     h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
-  }
-  return h;
+Vector3d h;
+	if (r_nodes.size()>1) {
+		h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2)); // getHeading(b-a)
+	} else {
+		h = initialStemHeading;
+	}
+	return h;
 }
 
 /**

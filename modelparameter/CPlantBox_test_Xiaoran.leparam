@@ -1,6 +1,6 @@
 # Parameter set for type (by Rootbox) Copy paste from Zea_mays_3_Postma_2011.rparam changed lmax of
 type	1
-name	mainstem
+name	leaf
 lb	1	0
 la	3	0
 ln	10	1e-05

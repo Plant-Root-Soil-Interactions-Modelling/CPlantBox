@@ -28,7 +28,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   LeafParameter* leaf_p = (LeafParameter*) param;
 //  std::cout <<", "<<(LeafParameter*) param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
-  Matrix3d ons = Matrix3d::ons(initialLeafHeading);
+  Matrix3d ons = Matrix3d::ons(iheading);
   ons.times(Matrix3d::rotX(beta));
   double theta = leaf_p->theta;
   if (parent->organType()!=Organ::ot_stem) { // scale if not a base leaf
@@ -36,6 +36,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
     theta*=scale;
   }
   ons.times(Matrix3d::rotZ(theta));
+  this->initialStemHeading= ons.column(0);
   // initial node
   if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the leaf,

@@ -16,7 +16,7 @@
  */
 Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
-	initialHeading=iheading;
+	initialHeading = iheading;
 //	std::cout << "Root pni = "<< pni<< std::endl;
 	//std::cout << "Root constructor \n";
 
@@ -24,7 +24,7 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
 	param = rtp->realize(); // throw the dice
 	RootParameter* root_p = (RootParameter*) param;
 	double beta = 2*M_PI*plant->rand(); // initial rotation
-	Matrix3d ons = Matrix3d::ons(initialHeading);
+	Matrix3d ons = Matrix3d::ons(iheading);
 	ons.times(Matrix3d::rotX(beta));
 	double theta = root_p->theta;
 	if (parent->organType()!=Organ::ot_seed) { // scale if not a base root
@@ -32,6 +32,7 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
 		theta*=scale;
 	}
 	ons.times(Matrix3d::rotZ(theta));
+	this->initialHeading= ons.column(0);
 	// initial node
 	if (parent->organType()!=Organ::ot_seed) { // the first node of the base roots must be created in Seed::initialize()
 		// otherwise, don't use addNode for the first node of the root,

@@ -25,7 +25,7 @@ Organ::~Organ()
  */
 Vector3d Organ::getOrigin() const {
   // recursive
-  if (this->organType() != Organ::ot_seed) {
+  if (parent->organType() != Organ::ot_seed) {
       return parent->getOrigin().plus(parent->getHeading().times(this->getRelativeOrigin()));
   } else {
       return this->getRelativeOrigin();

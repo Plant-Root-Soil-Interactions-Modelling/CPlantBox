@@ -628,7 +628,7 @@ void Plant::writeVTP(int otype, std::ostream & os) const // currently not using,
 
 	// CELLDATA (live on the polylines)
 	os << "<CellData Scalars=\" CellData\">\n";
-	std::vector<std::string> sTypeNames = { "organtype", "id"}; //  , "order", "radius"
+	std::vector<std::string> sTypeNames = { "organtype", "id", "subtype"}; //  , "order", "radius"
 	for (size_t i=0; i<sTypeNames.size(); i++) {
 		os << "<DataArray type=\"Float32\" Name=\"" << sTypeNames[i] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
 		std::vector<double> scalars = getScalar(otype, sTypeNames[i]);
@@ -702,8 +702,8 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
                 printer.CloseElement();
 
             // CELLDATA (live on the polylines)
-                printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData");
-                std::vector<std::string> sTypeNames = { "organtype", "id"}; //  , "order", "radius"
+                printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
+                std::vector<std::string> sTypeNames = { "organtype", "id", "subtype"}; //  , "order", "radius"
                     for (size_t i=0; i<sTypeNames.size(); i++) {
                     std::string sType = sTypeNames[i];
                     char const *schar = sType.c_str();

@@ -34,10 +34,6 @@ class Leaf : public Organ
 
 public:
 
-
-
-
-
   Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
   virtual ~Leaf() { }; // base class constructor is called automatically in c++
 
@@ -78,6 +74,8 @@ public:
 
 
   void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
+
+
 
 protected:
 

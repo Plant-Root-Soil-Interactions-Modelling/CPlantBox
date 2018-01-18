@@ -37,7 +37,7 @@ void Seed::initialize()
 		double delay = sparam->firstB;
 		for (int i=0; i<maxB; i++) {
 			Root* basalroot = new Root(plant, this, basalType, delay, iheading ,0., 0.);
-			basalroot->r_nodes.push_back(sparam->seedPos); // node
+			basalroot->r_nodes.push_back(taproot->r_nodes.at(0)); // node
 			basalroot->nodeIDs.push_back(taproot->nodeIDs.at(0)); // tap root ID
 			basalroot->nctimes.push_back(delay); // exact creation time
 			children.push_back(basalroot);
