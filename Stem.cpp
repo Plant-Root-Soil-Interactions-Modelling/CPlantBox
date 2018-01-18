@@ -28,7 +28,7 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   StemParameter* stem_p = (StemParameter*) param;
 //  std::cout <<", "<<(StemParameter*) param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
-  Matrix3d ons = Matrix3d::ons(iheading);
+  Matrix3d ons = Matrix3d::ons(isheading);
   ons.times(Matrix3d::rotX(beta));
   double theta = stem_p->theta;
   if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
