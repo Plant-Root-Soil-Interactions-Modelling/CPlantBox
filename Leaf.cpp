@@ -19,8 +19,8 @@
 Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
   initialLeafHeading=ilheading;
-  std::cout << "Leaf pni = "<< pni<< std::endl;
-  std::cout << "Plant* plant ="<< plant <<" "<< parent<<std::endl;
+//  std::cout << "Leaf pni = "<< pni<< std::endl;
+//  std::cout << "Plant* plant ="<< plant <<" "<< parent<<std::endl;
   LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getParameter(Organ::ot_leafe, type);
 
 
@@ -30,6 +30,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   double beta = 2*M_PI*plant->rand(); // initial rotation
   Matrix3d ons = Matrix3d::ons(ilheading);
   ons.times(Matrix3d::rotX(beta));
+  std::cout <<", "<<pni<< "\n";
   double theta = leaf_p->theta;
   if (parent->organType()!=Organ::ot_stem) { // scale if not a base leaf
     double scale = ltp->sa->getValue(parent->getNode(pni),this);
@@ -270,8 +271,8 @@ void Leaf::createLateral(bool silence)
 {
   const LeafParameter* lp = lParam(); // rename
   int lt = 2; //ltParam()->getLateralType(r_nodes.back());
-  	std::cout << "Leaf createLateral()\n";
-  	std::cout << "Leaf lateral type " << lt << "\n";
+//  	std::cout << "Leaf createLateral()\n";
+//  	std::cout << "Leaf lateral type " << lt << "\n";
 
   if (lt>0) {
     double ageLN = this->LeafgetAge(length); // age of leaf when lateral node is created
@@ -299,7 +300,7 @@ void Leaf::createLateral(bool silence)
 */
 void Leaf::createSegments(double l, bool silence)
 {
-   std::cout << "create Leaf Segments("<< l << ")\n";
+//   std::cout << "create Leaf Segments("<< l << ")\n";
   assert(l>0);
   double sl=0; // summed length of created segment
 
@@ -344,7 +345,7 @@ void Leaf::createSegments(double l, bool silence)
 
   if (l<smallDx) {
     if (!silence) {
-      std::cout << "skipped small segment (<"<< smallDx << ") \n";
+//      std::cout << "skipped small segment (<"<< smallDx << ") \n";
     }
     return;
   }
@@ -360,7 +361,7 @@ void Leaf::createSegments(double l, bool silence)
       sdx = l-n*dx();
       if (sdx<smallDx) {
         if (!silence) {
-          std::cout << "skipped small segment (<"<< i << ") \n";
+//          std::cout << "skipped small segment (<"<< i << ") \n";
         }
         return;
       }
@@ -376,7 +377,7 @@ void Leaf::createSegments(double l, bool silence)
     Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
     double ct = this->getCreationTime(length+sl);
     ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-     std::cout<<"add node "<<newnode.toString()<<"\n";
+//     std::cout<<"add node "<<newnode.toString()<<"\n";
     addNode(newnode,ct);
 
   } // for

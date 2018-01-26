@@ -52,6 +52,8 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
  */
 void Root::simulate(double dt, bool silence)
 {
+
+
 	old_non = 0; // is set in Root:createSegments, the zero indicates the first call to createSegments
 
 	const RootParameter* rp = rParam(); // rename
@@ -116,6 +118,7 @@ void Root::simulate(double dt, bool silence)
 							s+=rp->ln.at(i);
 							if (length<s) {
 								if (i==children.size()) { // new lateral
+
 									createLateral(silence);
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
@@ -151,6 +154,8 @@ void Root::simulate(double dt, bool silence)
 			active = getLength(std::max(age,0.))<(rp->getK()-dx()/10); // become inactive, if final length is nearly reached
 		}
 	} // if alive
+
+
 }
 
 /**

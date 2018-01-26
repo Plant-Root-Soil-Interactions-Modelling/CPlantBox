@@ -318,8 +318,6 @@ void Stem::LeafGrow(bool silence)
     LeafGrow->addNode(getNode(r_nodes.size()-1), length);
                children.push_back(LeafGrow);
                  LeafGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current
-      n1 = n1 + 1;
-  std::cout<<n1<<std::endl;
     }
 
 
