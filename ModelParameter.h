@@ -278,7 +278,7 @@ class StemTypeParameter : public OrganTypeParameter
 {
 public:
 
-	enum StemTropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< stem tropism
+	enum StemTropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4 };  ///< stem tropism
 	enum StemGrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
 	StemTypeParameter(); ///< default constructor

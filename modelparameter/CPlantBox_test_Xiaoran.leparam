@@ -18,18 +18,18 @@ gf	1
 # Parameter set for type (by Rootbox)
 type	2
 name	sheath
-lb	15.0	0
+lb	1.0	0
 la	1.76	0
 ln	10	0
-lmax	15	0
+lmax	40	0
 r	2	0.035
 a	0.3	0.001250
 color	1	1	0
-tropism	1	1	0.523599
+tropism	1	3	0.1
 dx	0.25
 successors	0
 successorP	0
-theta	30	0.109956
+theta	0.4	0
 rlt	1e+09	0
 gf	1
 # Parameter set for type (by Rootbox)

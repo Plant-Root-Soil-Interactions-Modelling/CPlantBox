@@ -1,4 +1,4 @@
-# Parameter set for type (by Rootbox) Copy paste from Zea_mays_3_Postma_2011.rparam
+# Parameter set for type (by Rootbox)
 type	1
 name	taproot
 lb	2	0
@@ -63,7 +63,7 @@ tropism	1	1	0.05
 dx	0.25
 successors	2	2	3
 successorP	2	0.5	0.5
-theta	1.5708	0.15708
+theta	0.8	0.15708
 rlt	1e+09	0
 gf	1
 # Parameter set for type (by Rootbox)

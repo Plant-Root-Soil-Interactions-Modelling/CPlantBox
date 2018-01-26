@@ -599,6 +599,10 @@ void StemTypeParameter::createTropism(SignedDistanceFunction* geom, SoilProperty
 		t = new CombinedStemTropism(tropismN,tropismS,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
 		break;
 	}
+		case tt_antigravi: {
+		t = new StemAntiGravitropism(tropismN,tropismS);
+		break;
+    }
 	default: throw std::invalid_argument( "StemSystem::createTropismFunction() tropism type not implemented" );
 	}
 

@@ -119,6 +119,24 @@ public:
 };
 
 
+class StemAntiGravitropism : public StemTropismFunction
+{
+
+public:
+
+  StemAntiGravitropism(double n, double sigma) : StemTropismFunction(n,sigma) { } ///< @see TropismFunction
+
+  virtual double stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem) override {
+    old.times(Matrix3d::rotX(b));
+    old.times(Matrix3d::rotZ(a));
+    return -0.5*(old.column(0).z+1.); // negative values point downwards, tranformed to 0..1
+  }
+  ///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
+
+};
+
+
+
 
 /**
 * Plagiotropism: the tendency to stay in a horicontal layer

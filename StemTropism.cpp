@@ -159,7 +159,6 @@ double StemPhototropism::stemtropismObjective(const Vector3d& pos, Matrix3d old,
 }
 
 
-
 /**
 * Constructs a combined tropism with two tropsims,
 * the new objective funciton is (t1->tropismObjective()*w1)+(t2->tropismObjective()*w2)

@@ -28,7 +28,7 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   StemParameter* stem_p = (StemParameter*) param;
 //  std::cout <<", "<<(StemParameter*) param<< "\n";
   double beta = 2*M_PI*plant->rand(); // initial rotation
-  Matrix3d ons = Matrix3d::ons(isheading);
+  Matrix3d ons = Matrix3d::ons(initialStemHeading);
   ons.times(Matrix3d::rotX(beta));
   double theta = stem_p->theta;
   if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
@@ -446,7 +446,7 @@ void Stem::createSegments(double l, bool silence)
 //***********************stem heading*****************************
 Vector3d Stem::heading() const {
   Vector3d h;
-  if ((param->subType == 1) || (this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
+  if ((this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
     h = initialStemHeading;// getHeading(b-a)
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
