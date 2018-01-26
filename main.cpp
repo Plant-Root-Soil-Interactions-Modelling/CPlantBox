@@ -1,9 +1,6 @@
-// *** ADDED BY HEADER FIXUP ***
-#include <istream>
-// *** END ***
 // Copyright (C) 2016 Daniel Leitner and Andrea Schnepf. See //license.txt for details.
 ///This is an under developed version with a simple stem growth.
-
+#include <istream>
 #include "Plant.h"
 #include "Organ.h"
 #include "analysis.h"
@@ -17,7 +14,7 @@
 #include "examples/example1.h"
 #include "examples/example2.h"
 #include "examples/example3.h"
-#include "examples/example_scenegraph.h"
+//#include "examples/example_scenegraph.h"
 
 
 /**
@@ -31,11 +28,11 @@ int main(int argc, char* argv[])
         name= argv[1];
     }
 
-//  example1(); // open parameter file, and output VTP
+  example1(); // open parameter file, and output VTP
     // example2(); // like example 1, but with put geometry
     // example3(); // more than 1 plant
 
-    example_scenegraph();
+//    example_scenegraph();
 
     return(0);
 

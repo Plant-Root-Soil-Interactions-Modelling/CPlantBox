@@ -194,7 +194,6 @@ void Plant::openFile(std::string name, std::string subdir)
 	}
 	std::cout << "Read " << leaf_c << " leaf type parameters \n"; // debug
 
-
 }
 
 /**

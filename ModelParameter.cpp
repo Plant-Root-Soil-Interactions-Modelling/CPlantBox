@@ -312,11 +312,14 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	break;
     }
 
-    printer.OpenElement("parameter");//    printer.PushComment("Basal zone [cm]");
+    printer.OpenElement("parameter");
+        printer.PushComment("Basal zone [cm]");
         printer.PushAttribute("name","lb"); printer.PushAttribute("value",lb); printer.PushAttribute("dev",lbs);  printer.CloseElement();	 	///< Basal zone [cm]
-	printer.OpenElement("parameter");//	printer.PushComment("Apical zone [cm];");
+	printer.OpenElement("parameter");
+		printer.PushComment("Apical zone [cm];");
         printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement();	///< Apical zone [cm];
-	printer.OpenElement("parameter");//	printer.PushComment("Inter-lateral distance [cm];");
+	printer.OpenElement("parameter");
+		printer.PushComment("Inter-lateral distance [cm];");
         printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();		///< Inter-lateral distance [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
         printer.PushAttribute("name","nob"); printer.PushAttribute("value",nob); printer.PushAttribute("dev",nobs);  printer.CloseElement();		///< Standard deviation apical zone [cm];
@@ -639,7 +642,7 @@ OrganParameter* StemTypeParameter::realize() const
 	std::vector<double> ln_; // stores the inter-distances
 	int nob_ = std::max(round(nob + randn()*nobs),double(0)); // maximal number of branches
 	for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-		double d = std::max(ln + randn()*lns,1e-9);
+		double d =  ln*(1+i) + randn()*lns; //std::max(  );//ln + randn()*lns,1e-9);
 		ln_.push_back(d);
 	}
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
@@ -648,6 +651,13 @@ OrganParameter* StemTypeParameter::realize() const
 	double rlt_ = std::max(rlt + randn()*rlts,double(0)); // root life time
 	StemParameter* stem_p =  new StemParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 	return stem_p;
+
+
+    for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+		double d = 1 +2*i; //std::max(  );//ln + randn()*lns,1e-9);
+		ln_.push_back(d);
+	}
+
 }
 
 /**
