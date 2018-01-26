@@ -27,10 +27,10 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   param = ltp->realize(); // throw the dice
   LeafParameter* leaf_p = (LeafParameter*) param;
 //  std::cout <<", "<<(LeafParameter*) param<< "\n";
-  double beta = 2*M_PI*plant->rand(); // initial rotation
+  double beta = (plant->getOrganIndex())/3*M_PI + 0.2*M_PI*plant->rand(); // initial rotation
   Matrix3d ons = Matrix3d::ons(ilheading);
   ons.times(Matrix3d::rotX(beta));
-  std::cout <<", "<<pni<< "\n";
+  std::cout <<"node id "<<(plant->getOrganIndex())<<", "<<  "\n";
   double theta = leaf_p->theta;
   if (parent->organType()!=Organ::ot_stem) { // scale if not a base leaf
     double scale = ltp->sa->getValue(parent->getNode(pni),this);

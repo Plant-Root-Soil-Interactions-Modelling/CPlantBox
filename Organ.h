@@ -66,6 +66,7 @@ public:
     int getNodeID(int i) const { return nodeIDs.at(i); } ///< unique identifier of i-th node
     double getNodeCT(int i) const { return nctimes.at(i); } ///< creation time of i-th node
 
+
     /* up and down the organ tree */
     Plant* plant; ///< the plant of which this organ is part of
     Organ* parent; ///< pointer to the parent organ (equals nullptr if it has no parent)
