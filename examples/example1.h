@@ -14,7 +14,7 @@ void example1()
 {
     Plant plant;
 
-    string name = "CPlantBox_test_Xiaoran";
+    string name = "CPlantBox_test_leaf_tree";
 
     /*
      * Open plant and root parameter from a file
