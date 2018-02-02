@@ -124,7 +124,9 @@ void Leaf::simulate(double dt, bool silence)
               s+=lp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
-//                  createLateral(silence);
+
+
+                  createLateral(silence);
 
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
@@ -141,7 +143,7 @@ void Leaf::simulate(double dt, bool silence)
             }
             if (dl>0) {
               if (lp->ln.size()==children.size()) { // new lateral (the last one)
-//                createLateral(silence);
+                createLateral(silence);
 
               }
             }
@@ -270,7 +272,7 @@ double Leaf::dx() const
 void Leaf::createLateral(bool silence)
 {
   const LeafParameter* lp = lParam(); // rename
-  int lt = 2; //ltParam()->getLateralType(r_nodes.back());
+  int lt = ltParam()->getLateralType(r_nodes.back());
 //  	std::cout << "Leaf createLateral()\n";
 //  	std::cout << "Leaf lateral type " << lt << "\n";
 
@@ -280,7 +282,7 @@ void Leaf::createLateral(bool silence)
     double delay = ageLG-ageLN; // time the lateral has to wait
     Vector3d h = heading(); // current heading
     Vector3d ilheading(0,0,1);
-    Leaf* lateral = new Leaf(plant, this , 2, 0., ilheading ,0., 20.);
+    Leaf* lateral = new Leaf(plant, this, lt, delay, h,  r_nodes.size()-1, length);
     children.push_back(lateral);
     lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
     }
@@ -386,7 +388,7 @@ void Leaf::createSegments(double l, bool silence)
 //***********************leaf heading*****************************
 Vector3d Leaf::heading() const {
   Vector3d h;
-  if ((param->subType == 1) || (this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
+  if ( (this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
     h = initialLeafHeading;// getHeading(b-a)
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));

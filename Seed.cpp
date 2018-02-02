@@ -19,11 +19,11 @@ void Seed::initialize()
 	if (Plant::noParamFile[1] == 1) {
             std::cout<<"no root param"<<std::endl;
     } else {
-	Root* taproot = new Root(plant, this, 1, 0., iheading ,0., 0.); // tap root has subtype 1
+	Root* taproot = new Root(plant, this, 1, 50, iheading ,0., 0.); // tap root has subtype 1
 	taproot->addNode(sparam->seedPos,0);
 	children.push_back(taproot);
 	if (sparam->maxB>0) {
-		if (plant->getParameter(Organ::ot_root,basalType)->subType<1) { // if the type is not defined, copy tap root
+		if (plant->getParameter(Organ::ot_root, basalType)->subType<1) { // if the type is not defined, copy tap root
 			std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
 			RootTypeParameter* tapParam = (RootTypeParameter*)plant->getParameter(Organ::ot_root, 0);
 			RootTypeParameter* brtp = new RootTypeParameter(*tapParam);
@@ -56,6 +56,17 @@ if (Plant::noParamFile[2] == 1) {
 	Stem* mainstem = new Stem(plant, this, 1, 0., isheading ,0., 0.); // tap root has subtype 1
 	mainstem->addNode(sparam->seedPos,0);
 	children.push_back(mainstem);
+
+//	Stem* tiller1 = new Stem(plant, this, 1, 2, isheading ,0., 0.); // tap root has subtype 1
+//	tiller1->addNode(sparam->seedPos,0);
+//	children.push_back(tiller1);
+//
+//	Stem* tiller2 = new Stem(plant, this, 1, 4 , isheading ,0., 0.); // tap root has subtype 1
+//	tiller2->addNode(sparam->seedPos,0);
+//	children.push_back(tiller2);
+//	Stem* tiller3 = new Stem(plant, this, 1, 5, isheading ,0., 0.); // tap root has subtype 1
+//	tiller3->addNode(sparam->seedPos,0);
+//	children.push_back(tiller3);
     }
 
 //  Vector3d ilheading(0,0,1);//Initial Stem heading

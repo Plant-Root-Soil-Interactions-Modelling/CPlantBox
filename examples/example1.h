@@ -21,7 +21,7 @@ void example1()
      */
     plant.openFile(name);
     plant.writeAlltoXML(name);
-    plant.openXML(name);
+ //   plant.openXML(name);
 //     plant.writeParameters(std::cout);
 
     /*
@@ -54,13 +54,12 @@ void example1()
               << " milliseconds\n";
 
 
-
     /*
      * Export segments for Matlab analysis
      */
     SegmentAnalyser analysis(plant);
     analysis.write("rootsystem.txt");
-    analysis.write("analysis_write_rootsystem.vtp");
+//    analysis.write("analysis_write_rootsystem.vtp");
 
     /*
      * Export dgf file

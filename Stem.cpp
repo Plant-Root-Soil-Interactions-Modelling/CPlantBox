@@ -27,9 +27,16 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   param = sttp->realize(); // throw the dice
   StemParameter* stem_p = (StemParameter*) param;
 //  std::cout <<", "<<(StemParameter*) param<< "\n";
+
   double beta = 2*M_PI*plant->rand(); // initial rotation
+   if (this->organType()==ot_leafe) {
+    double beta = (plant->getOrganIndex())/3*M_PI + 0.1*M_PI*plant->rand();
+   }
   Matrix3d ons = Matrix3d::ons(initialStemHeading);
   ons.times(Matrix3d::rotX(beta));
+//  if (this->organType()==ot_leafe) {
+//    ons.times(Matrix3d::rotZ(beta));
+//   }
   double theta = stem_p->theta;
   if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
     double scale = sttp->sa->getValue(parent->getNode(pni),this);
@@ -131,8 +138,11 @@ void Stem::simulate(double dt, bool silence)
               s+=sp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new internode leaf and shootBorneRoot
+                      if (sp->subType==3) {
                         LeafGrow(silence);
-//                        createLateral(silence);
+                      } else {
+                        createLateral(silence);
+                        }
 //                        ShootBorneRootGrow(silence);
                 }
                 if (length+dl<=s) { // finish within inter-lateral distance i
@@ -150,7 +160,11 @@ void Stem::simulate(double dt, bool silence)
             if (dl>0) {
               if (sp->ln.size()==children.size()) { // new lateral (the last one)
 
+                       if (sp->subType==3) {
+                        LeafGrow(silence);
+                      } else {
                         createLateral(silence);
+                        }
 
 
               }
@@ -313,7 +327,7 @@ void Stem::LeafGrow(bool silence)
     double delay = ageLG-ageLN; // time the lateral has to wait
     Vector3d h = heading(); // current heading
   Vector3d ilheading(0,0,1);
-    Leaf* LeafGrow = new Leaf(plant, this , 2, 0., ilheading, r_nodes.size()-1, length);
+    Leaf* LeafGrow = new Leaf(plant, this , 2, 0., h, r_nodes.size()-1, length);
     LeafGrow->addNode(getNode(r_nodes.size()-1), length);
                children.push_back(LeafGrow);
                  LeafGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current

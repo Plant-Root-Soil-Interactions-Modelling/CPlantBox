@@ -599,7 +599,7 @@ void StemTypeParameter::createTropism(SignedDistanceFunction* geom, SoilProperty
 		t = new CombinedStemTropism(tropismN,tropismS,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
 		break;
 	}
-		case tt_antigravi: {
+    case tt_antigravi: {
 		t = new StemAntiGravitropism(tropismN,tropismS);
 		break;
     }
@@ -949,6 +949,10 @@ void LeafTypeParameter::createTropism(SignedDistanceFunction* geom, SoilProperty
 		t = new CombinedLeafTropism(tropismN,tropismS,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
 		break;
 	}
+	case tt_antigravi: {
+		t = new LeafAntiGravitropism(tropismN,tropismS);
+		break;
+    }
 	default: throw std::invalid_argument( "LeafSystem::createTropismFunction() tropism type not implemented" );
 	}
 
