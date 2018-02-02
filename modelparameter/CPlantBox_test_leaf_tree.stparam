@@ -3,9 +3,9 @@ type	1
 name	mainstem
 lb	30	0
 la	0	0
-ln	2	1e-05
-lmax	70	0
-r	4.5	0.45
+ln	1	1e-05
+lmax	120	0
+r	5	0.45
 a	0.2	0.020
 color	1	0	0
 tropism	0	1	0
@@ -22,14 +22,14 @@ lb	13	0
 la	1	0
 ln	3	0
 lmax	70	8
-r	40	0.035
+r	2	0.035
 a	0.3	0.001250
 color	1	1	0
-tropism	4	1	0.2
+tropism	4	4	0.05
 dx	0.25
 successors	1 3
 successorP	1 1
-theta	1.5	0.2
+theta	1.2	0
 rlt	1e+09	0
 gf	1
 # Parameter set for type (by Rootbox)
@@ -39,7 +39,7 @@ lb	5	0
 la	1	0
 ln	0.5	0
 lmax	23	3
-r	2	0.035
+r	3	0.035
 a	0.3	0.001250
 color	1	1	0
 tropism	1	2	0.1
