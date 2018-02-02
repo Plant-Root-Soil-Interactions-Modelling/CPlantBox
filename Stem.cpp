@@ -28,10 +28,8 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   StemParameter* stem_p = (StemParameter*) param;
 //  std::cout <<", "<<(StemParameter*) param<< "\n";
 
-  double beta = 2*M_PI*plant->rand(); // initial rotation
-   if (this->organType()==ot_leafe) {
-    double beta = (plant->getOrganIndex())/3*M_PI + 0.1*M_PI*plant->rand();
-   }
+  double beta = 2*M_PI*plant->randn(); //+ 0.3*M_PI*plant->randn(); // initial rotation
+
   Matrix3d ons = Matrix3d::ons(initialStemHeading);
   ons.times(Matrix3d::rotX(beta));
 //  if (this->organType()==ot_leafe) {

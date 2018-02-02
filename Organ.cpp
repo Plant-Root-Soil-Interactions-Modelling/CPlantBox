@@ -123,7 +123,7 @@ double Organ::getScalar(std::string name) const {
 	if (name=="subtype") { r = this->param->subType; }
 	if (name=="alive") { r = alive; }
 	if (name=="active") { r = active; }
-	if (name=="age") { r = age; }
+	if (name=="age") { r = 60-age; }
 	if (name=="length") { r = length; }
 	if (name=="order") {
 		r = 0;

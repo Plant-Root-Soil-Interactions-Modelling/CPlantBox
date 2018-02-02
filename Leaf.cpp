@@ -27,10 +27,10 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   param = ltp->realize(); // throw the dice
   LeafParameter* leaf_p = (LeafParameter*) param;
 //  std::cout <<", "<<(LeafParameter*) param<< "\n";
-  double beta = (plant->getOrganIndex())/3*M_PI + 0.2*M_PI*plant->rand(); // initial rotation
+  double beta = (plant->getOrganIndex())/2*M_PI + 0.2*M_PI*plant->rand(); // initial rotation
   Matrix3d ons = Matrix3d::ons(ilheading);
   ons.times(Matrix3d::rotX(beta));
-  std::cout <<"node id "<<(plant->getOrganIndex())<<", "<<  "\n";
+//  std::cout <<"node id "<<(plant->getOrganIndex())<<", "<<  "\n";
   double theta = leaf_p->theta;
   if (parent->organType()!=Organ::ot_stem) { // scale if not a base leaf
     double scale = ltp->sa->getValue(parent->getNode(pni),this);
@@ -39,13 +39,13 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   ons.times(Matrix3d::rotZ(theta));
   this->initialLeafHeading= ons.column(0);
   // initial node
-  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
+//  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the leaf,
     // since this node exists already and does not need a new identifier
     r_nodes.push_back(parent->getNode(pni));
     nodeIDs.push_back(parent->getNodeID(pni));
     nctimes.push_back(parent->getNodeCT(pni)+delay);
-  }
+//  }
 }
 
 int Leaf::organType() const

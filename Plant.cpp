@@ -702,7 +702,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 
             // CELLDATA (live on the polylines)
                 printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
-                std::vector<std::string> sTypeNames = { "organtype", "id", "subtype"}; //  , "order", "radius"
+                std::vector<std::string> sTypeNames = { "organtype", "id", "subtype" , "emergencetime", "creationtime", "age"}; //  , "order", "radius"
                     for (size_t i=0; i<sTypeNames.size(); i++) {
                     std::string sType = sTypeNames[i];
                     char const *schar = sType.c_str();
