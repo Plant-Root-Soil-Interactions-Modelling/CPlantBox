@@ -235,7 +235,7 @@ double Stem::getCreationTime(double length)
   double age = StemgetAge(length);
   assert(age>=0);
   if (parent->organType()!=Organ::ot_seed) {
-    if (parent->organType()==Organ::ot_shoot) {
+    if (parent->organType()==Organ::ot_stem) {
       double pl = pbl+((Stem*)parent)->stParam()->la; // parent length, when this stem was created
       double pAge=((Stem*)parent)->getCreationTime(pl);
       return age+pAge;

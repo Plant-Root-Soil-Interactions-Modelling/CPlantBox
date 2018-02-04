@@ -39,13 +39,13 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   ons.times(Matrix3d::rotZ(theta));
   this->initialLeafHeading= ons.column(0);
   // initial node
-//  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
+  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the leaf,
     // since this node exists already and does not need a new identifier
     r_nodes.push_back(parent->getNode(pni));
     nodeIDs.push_back(parent->getNodeID(pni));
     nctimes.push_back(parent->getNodeCT(pni)+delay);
-//  }
+  }
 }
 
 int Leaf::organType() const
@@ -215,7 +215,7 @@ double Leaf::getCreationTime(double length)
   double age = LeafgetAge(length);
   assert(age>=0);
   if (parent->organType()!=Organ::ot_stem) {
-    if (parent->organType()==Organ::ot_shoot) {
+    if (parent->organType()==Organ::ot_leafe) {
       double pl = pbl+((Leaf*)parent)->ltParam()->la; // parent length, when this leaf was created
       double pAge=((Leaf*)parent)->getCreationTime(pl);
       return age+pAge;
