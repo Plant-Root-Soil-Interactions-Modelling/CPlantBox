@@ -8,7 +8,7 @@
 *
 * Typically called by the Plant::Plant(), or Stem::createNewStem().
 * For stem the initial node and node emergence time (netime) must be set from outside
-*
+*F
 * @param rs 			points to Stem
 * @param type 		    type of stem that is created
 * @param pheading		heading of parent stem at emergence
@@ -325,7 +325,7 @@ void Stem::LeafGrow(bool silence)
     double delay = ageLG-ageLN; // time the lateral has to wait
     Vector3d h = heading(); // current heading
   Vector3d ilheading(0,0,1);
-    Leaf* LeafGrow = new Leaf(plant, this , 2, 0., h, r_nodes.size()-1, length);
+    Leaf* LeafGrow = new Leaf(plant, this , 2, delay, h, r_nodes.size()-1, length);
     LeafGrow->addNode(getNode(r_nodes.size()-1), length);
                children.push_back(LeafGrow);
                  LeafGrow->simulate(length,silence);// pass time overhead (age we want to achieve minus current

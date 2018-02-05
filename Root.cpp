@@ -204,18 +204,18 @@ double Root::getScalar(std::string name) const {
 double Root::getCreationTime(double length)
 {
 	assert(length>=0);
-	double rootage = getAge(length);
-	assert(rootage>=0);
+	double age = getAge(length);
+	assert(age>=0);
 	if (parent->organType()!=Organ::ot_seed) {
 		if (parent->organType()==Organ::ot_root) {
 			double pl = pbl+((Root*)parent)->rParam()->la; // parent length, when this root was created
 			double pAge=((Root*)parent)->getCreationTime(pl);
-			return rootage+pAge;
+			return age+pAge;
 		} else { // organ type is seed
-			return rootage;
+			return age;
 		}
 	} else {
-		return rootage;
+		return age;
 	}
 }
 

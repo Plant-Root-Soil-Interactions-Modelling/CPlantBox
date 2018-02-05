@@ -123,7 +123,7 @@ double Organ::getScalar(std::string name) const {
 	if (name=="subtype") { r = this->param->subType; }
 	if (name=="alive") { r = alive; }
 	if (name=="active") { r = active; }
-	if (name=="age") { r = 60-age; }
+	if (name=="age") { r = age; }
 	if (name=="length") { r = length; }
 	if (name=="order") {
 		r = 0;
@@ -136,6 +136,7 @@ double Organ::getScalar(std::string name) const {
 	if ((name=="parenttype") && (this->parent!=nullptr)) { r = this->parent->organType(); }
 	if ((name=="creationtime") && (nctimes.size()>0)) { return nctimes.at(0); }
 	if ((name=="emergencetime") && (nctimes.size()>1)) { return nctimes.at(1); }
+//	if ((name=="radius") && (nctimes.size()>1)) { return r = age; }
 	return r;
 }
 
