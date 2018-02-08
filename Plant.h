@@ -99,6 +99,7 @@ public:
   /* they should be private or protected */
   int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
+  int getSTPIndex() { stpid++; return stpid; } ///< returns next unique node id, called by Root::addNode()
 
   Seed* seed;
 
@@ -111,6 +112,7 @@ protected:
   double simtime = 0;
   int rid = -1; // unique root id counter
   int nid = -1; // unique root id counter
+  int stpid = -1; // unique root id counter
 
   int old_non=0;
   int old_nor=0;
