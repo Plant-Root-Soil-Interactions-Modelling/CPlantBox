@@ -23,6 +23,7 @@
 #include "StemTropism.h"
 #include "LeafGrowth.h"
 #include "LeafTropism.h"
+#include "tinyxml2.h"
 
 class Seed;
 class SeedParameter;
@@ -100,6 +101,7 @@ public:
   int getOrganIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
   int getNodeIndex() { nid++; return nid; } ///< returns next unique node id, called by Root::addNode()
   int getSTPIndex() { stpid++; return stpid; } ///< returns next unique node id, called by Root::addNode()
+  int getSLPIndex() { slpid++; return slpid; } ///< returns next unique node id, called by Root::addNode()
 
   Seed* seed;
 
@@ -113,6 +115,7 @@ protected:
   int rid = -1; // unique root id counter
   int nid = -1; // unique root id counter
   int stpid = -1; // unique root id counter
+  int slpid = -1; // unique root id counter
 
   int old_non=0;
   int old_nor=0;

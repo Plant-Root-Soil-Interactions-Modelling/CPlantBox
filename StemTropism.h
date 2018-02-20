@@ -6,7 +6,7 @@
 
 #include "soil.h"
 
-class SoilProperty;
+class SoilLookUp;
 class Organ;
 
 /**
@@ -183,13 +183,13 @@ class StemPhototropism : public StemTropismFunction
 
 public:
 
-  StemPhototropism(double n, double sigma, SoilProperty* soil) : StemTropismFunction(n,sigma), soil(soil) { } ///< @see TropismFunction
+  StemPhototropism(double n, double sigma, SoilLookUp* soil) : StemTropismFunction(n,sigma), soil(soil) { } ///< @see TropismFunction
 
   virtual double stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem) override;
   ///< getHeading() minimizes this function, @see TropismFunction
 
 private:
-  SoilProperty* soil;
+  SoilLookUp* soil;
 };
 
 

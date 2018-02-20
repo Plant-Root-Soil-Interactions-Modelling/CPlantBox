@@ -11,3 +11,5 @@ CPlantBox_Codeblocks_project/
 *.ipch
 *.db
 .vs/cpb/v15/.suo
+examples/PSP_infiltrationRedistribution1D/*
+examples/Exudation/*

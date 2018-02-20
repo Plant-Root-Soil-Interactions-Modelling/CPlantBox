@@ -56,9 +56,9 @@ RootTypeParameter::RootTypeParameter()
 	subType = -1; // means undefined
 	tropism = new TropismFunction(0,0);
 	growth = new GrowthFunction();
-	se = new SoilProperty();
-	sa = new SoilProperty();
-	sbp = new SoilProperty();
+	se = new SoilLookUp();
+	sa = new SoilLookUp();
+	sbp = new SoilLookUp();
 	set(-1, 0., 0., 10., 0., 1., 0., 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
 }
@@ -114,7 +114,7 @@ void RootTypeParameter::set(int type, double lb, double lbs, double la, double l
 	createGrowth();
 }
 
-void RootTypeParameter::createTropism(SignedDistanceFunction* geom, SoilProperty* soil)
+void RootTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
 {
 	delete tropism;
 	TropismFunction* t;
@@ -518,9 +518,9 @@ StemTypeParameter::StemTypeParameter()
 	subType = -1; // means undefined
 	tropism = new StemTropismFunction(0,0);
 	growth = new StemGrowthFunction();
-	se = new SoilProperty();
-	sa = new SoilProperty();
-	sbp = new SoilProperty();
+	se = new SoilLookUp();
+	sa = new SoilLookUp();
+	sbp = new SoilLookUp();
 	set(-1, 0., 0., 10., 0., 1., 0., 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
 }
@@ -576,7 +576,7 @@ void StemTypeParameter::set(int type, double lb, double lbs, double la, double l
 	createGrowth();
 }
 
-void StemTypeParameter::createTropism(SignedDistanceFunction* geom, SoilProperty* soil)
+void StemTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
 {
 	delete tropism;
 	StemTropismFunction* t;
@@ -868,9 +868,9 @@ LeafTypeParameter::LeafTypeParameter()
 	subType = -1; // means undefined
 	tropism = new LeafTropismFunction(0,0);
 	growth = new LeafGrowthFunction();
-	se = new SoilProperty();
-	sa = new SoilProperty();
-	sbp = new SoilProperty();
+	se = new SoilLookUp();
+	sa = new SoilLookUp();
+	sbp = new SoilLookUp();
 	set(-1, 0., 0., 10., 0., 1., 0., 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
 }
@@ -926,7 +926,7 @@ void LeafTypeParameter::set(int type, double lb, double lbs, double la, double l
 	createGrowth();
 }
 
-void LeafTypeParameter::createTropism(SignedDistanceFunction* geom, SoilProperty* soil)
+void LeafTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
 {
 	delete tropism;
 	LeafTropismFunction* t;
@@ -994,11 +994,12 @@ OrganParameter* LeafTypeParameter::realize() const
 	double lb_ = std::max(lb + randn()*lbs,double(0)); // length of basal zone
 	double la_ = std::max(la + randn()*las,double(0)); // length of apical zone
 	std::vector<double> ln_; // stores the inter-distances
+
 	int nob_ = std::max(round(nob + randn()*nobs),double(0)); // maximal number of branches
-//	for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-//		double d = std::max(ln + randn()*lns,1e-9);
-//		ln_.push_back(d);
-//	}
+	for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+		double d = std::max(ln + randn()*lns,1e-9);
+		ln_.push_back(d);
+	}
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
 	double a_ = std::max(a + randn()*as,double(0)); // radius
 	double theta_ = std::max(theta + randn()*thetas,double(0)); // initial elongation
@@ -1006,10 +1007,10 @@ OrganParameter* LeafTypeParameter::realize() const
 	LeafParameter* leaf_p =  new LeafParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 	return leaf_p;
 
-for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-		double d = 1 +2*i; //std::max(  );//ln + randn()*lns,1e-9);
-		ln_.push_back(d);
-	}
+//for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+//		double d = 0.01*2*i; //std::max(  );//ln + randn()*lns,1e-9);
+//		ln_.push_back(d);
+//	}
 
 }
 

@@ -2,9 +2,11 @@
 #define PY_ROOTBOX_H_
 
 // copy paste for daniel
-// 1. export LD_LIBRARY_PATH=~/boost_1_62_0/stage/lib
-// 2.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonRootSystem.cpp -I/usr/include/python3.5 -lboost_python-py35 Debug/ModelParameter.o Debug/Root.o Debug/RootSystem.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
-// 2b  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonRootSystem.cpp -I/usr/include/python3.5 -lboost_python-py35 Debug/examples/Exudation/gauss_legendre.o
+// 1.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -L/home/daniel/boost_1_62_0/stage/lib -lboost_python Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
+// 2.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
+// 3.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.6 -lboost_python-py36 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
+// 4   For CPlantBox g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35  Debug/Plant.o Debug/tinyxml2.o Debug/sdf.o Debug/Organ.o Debug/Root.o Debug/Stem.o Debug/Leaf.o Debug/LeafTropism.o Debug/RootTropism.o Debug/StemTropism.o Debug/analysis.o Debug/ModelParameter.o Debug/Seed.o
+
 
 /**
  *  A Python module for CRootbox based on boost.python
@@ -12,7 +14,7 @@
  *  build a shared library from this file
  *  put comment to line 16 to ignore this file
  */
-// #define PYTHON_WRAPPER // UNCOMMENT TO BUILD SHARED LIBRARY
+//#define PYTHON_WRAPPER // UNCOMMENT TO BUILD SHARED LIBRARY
 
 #ifdef PYTHON_WRAPPER
 
@@ -26,11 +28,16 @@
 
 #include "mymath.h"
 #include "sdf.h"
-#include "Plant.h"
+#include "Organ.h"
 #include "analysis.h"
-#include "examples/Exudation/example_exudation.h"
+#include "ModelParameter.h"
+#include "Plant.h"
+#include "tinyxml2.h"
+//#include "examples/Exudation/example_exudation.h"
 
 using namespace boost::python;
+
+
 
 /*
  * Functions overloading (by hand, there are also macros available)
@@ -50,75 +57,71 @@ Vector3d (Matrix3d::*times4)(const Vector3d&) const = &Matrix3d::times;
 
 std::string (SignedDistanceFunction::*writePVPScript)() const = &SignedDistanceFunction::writePVPScript; // because of default value
 
-void (RootSystem::*simulate1)(double dt, bool silence) = &RootSystem::simulate;
-void (RootSystem::*simulate2)() = &RootSystem::simulate;
+void (Plant::*simulate1)(double dt, bool silence) = &Plant::simulate;
+void (Plant::*simulate2)() = &Plant::simulate;
+//void (Plant::*simulate3)(double dt, double maxinc, ProportionalElongation* se, bool silence) = &Plant::simulate;
 
-void (SegmentAnalyser::*addSegments1)(const RootSystem& rs) = &SegmentAnalyser::addSegments;
+
+
+void (SegmentAnalyser::*addSegments1)(const Plant& rs) = &SegmentAnalyser::addSegments;
 void (SegmentAnalyser::*addSegments2)(const SegmentAnalyser& a) = &SegmentAnalyser::addSegments;
-void (SegmentAnalyser::*filter1)(int st, double min, double max) = &SegmentAnalyser::filter;
-void (SegmentAnalyser::*filter2)(int st, double value) = &SegmentAnalyser::filter;
-double (SegmentAnalyser::*getSummed1)(int st) const = &SegmentAnalyser::getSummed;
-double (SegmentAnalyser::*getSummed2)(int st, SignedDistanceFunction* geometry) const = &SegmentAnalyser::getSummed;
-std::vector<double> (SegmentAnalyser::*distribution_1)(int st, double top, double bot, int n, bool exact) const = &SegmentAnalyser::distribution;
+void (SegmentAnalyser::*filter1)(std::string pname, double min, double max) = &SegmentAnalyser::filter;
+void (SegmentAnalyser::*filter2)(std::string pname, double value) = &SegmentAnalyser::filter;
+double (SegmentAnalyser::*getSummed1)(std::string pname) const = &SegmentAnalyser::getSummed;
+double (SegmentAnalyser::*getSummed2)(std::string pname, SignedDistanceFunction* geometry) const = &SegmentAnalyser::getSummed;
+std::vector<double> (SegmentAnalyser::*distribution_1)(std::string pname, double top, double bot, int n, bool exact) const = &SegmentAnalyser::distribution;
 std::vector<SegmentAnalyser> (SegmentAnalyser::*distribution_2)(double top, double bot, int n) const = &SegmentAnalyser::distribution;
-std::vector<std::vector<double>> (SegmentAnalyser::*distribution2_1)(int st, double top, double bot, double left, double right, int n, int m, bool exact) const = &SegmentAnalyser::distribution2;
+std::vector<std::vector<double>> (SegmentAnalyser::*distribution2_1)(std::string pname, double top, double bot, double left, double right, int n, int m, bool exact) const = &SegmentAnalyser::distribution2;
 std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*distribution2_2)(double top, double bot, double left, double right, int n, int m) const = &SegmentAnalyser::distribution2;
 SegmentAnalyser (SegmentAnalyser::*cut1)(const SDF_HalfPlane& plane) const = &SegmentAnalyser::cut;
-// static Vector3d (SegmentAnalyser::*cut2)(Vector3d in, Vector3d out, SignedDistanceFunction* geometry) = &SegmentAnalyser::cut; // not working, dont know why, problem with static?
+
 
 
 /**
- * Default arguments: no idea how to do it by hand,  magic everywhere...
+ * Default arguments: no idea how to do it by hand, magic everywhere...
  */
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(initialize_overloads,initialize,0,2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(openFile_overloads,openFile,1,2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(simulate1_overloads,simulate,1,2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(simulate3_overloads,simulate,3,4);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(getValue_overloads,getValue,1,2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(tropismObjective_overloads,tropismObjective(),5,6);
+
+
 
 /**
- * Virtual functions (not sure if needed, or only if we derive classes from it in python?), not working...
- *
- * it seems a bit tricky to make polymorphism work, we have to wrap the classes
- *
- * Tutorial example:
- * struct BaseWrap : Base, wrapper<Base>
- * {
- *    int f()
- *    {
- *        if (override f = this->get_override("f"))
- *            return f(); // *note*
- *        return Base::f();
- *    }
- *
- *    int default_f() { return this->Base::f(); }
- * };
+ * Virtual functions
  */
-//struct SignedDistanceFunction_Wrap : SignedDistanceFunction, wrapper<SignedDistanceFunction>
-//{
-//	double getDist(const Vector3d& v) const {
-//		if (override getDist = this->get_override("getDist"))
-//			return getDist(v);
-//		return SignedDistanceFunction::getDist(v);
-//	}
-//	double default_getDist(const Vector3d& v) { return this->SignedDistanceFunction::getDist(v); }
-//};
-//	class_<SignedDistanceFunction_Wrap, boost::noncopyable>("SignedDistanceFunction")
-//	    .def("getDist", &SignedDistanceFunction_Wrap::getDist, &SignedDistanceFunction_Wrap::default_getDist)
-//	; // TODO how does polymorphism work... (everything works fine, dont ask why)
-// tricky booom boom (?)
+class SoilLookUp_Wrap : public SoilLookUp, public wrapper<SoilLookUp> {
+public:
 
-
-struct SoilProperty_Wrap : SoilProperty, wrapper<SoilProperty> {
-
-    double getValue(const Vector3d& pos, const Root* root = nullptr) const {
-
+    virtual double getValue(const Vector3d& pos, const Organ* root ) const override {
     	return this->get_override("getValue")(pos, root);
     }
 
-    std::string toString() const {
+    virtual std::string toString() const override {
     	return this->get_override("toString")();
     }
 
 };
+
+class Tropism_Wrap : public TropismFunction, public wrapper<TropismFunction> {
+public:
+
+//	Tropism_Wrap(): Tropism() { }
+//	Tropism_Wrap(double n,double sigma): Tropism(n,sigma) { } // todo cant get it working with constructors other than ()
+
+    virtual double tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* root) override {
+    	return this->get_override("tropismObjective")(pos, old, a, b, dx, root);
+    }
+
+    virtual TropismFunction* copy() override {
+    	return this->get_override("copy")();
+    }
+
+};
+
+
 
 /**
  * Expose classes to Python module
@@ -244,217 +247,306 @@ BOOST_PYTHON_MODULE(py_rootbox)
 			.def_readwrite("p2", &SDF_HalfPlane::p2)
 			.def("__str__",&SDF_HalfPlane::toString)
 	;
-	/*
-	 * soil.h
-	 */
-	class_<SoilProperty_Wrap,boost::noncopyable>("SoilProperty",init<>())
-			.def("getValue",pure_virtual(&SoilProperty::getValue))
-			.def("__str__",pure_virtual(&SoilProperty::toString))
-	;
-	class_<SoilPropertySDF, bases<SoilProperty>>("SoilPropertySDF",init<>())
-			.def(init<SignedDistanceFunction*, double, double, double>())
-			.def_readwrite("sdf", &SoilPropertySDF::sdf)
-			.def_readwrite("fmax", &SoilPropertySDF::fmax)
-			.def_readwrite("fmin", &SoilPropertySDF::fmin)
-			.def_readwrite("slope", &SoilPropertySDF::slope)
-			.def("__str__",&SoilPropertySDF::toString)
-	;
-	/*
-	 * ModelParameter.h
-	 */
-	class_<RootTypeParameter>("RootTypeParameter", init<>())
-			.def(init<RootTypeParameter&>())
-			.def("realize",&RootTypeParameter::realize)
-			.def("getLateralType",&RootTypeParameter::getLateralType)
-			.def("getK",&RootTypeParameter::getK)
-			.def_readwrite("type", &RootTypeParameter::type)
-			.def_readwrite("lb", &RootTypeParameter::lb)
-			.def_readwrite("lbs", &RootTypeParameter::lbs)
-			.def_readwrite("la", &RootTypeParameter::la)
-			.def_readwrite("las", &RootTypeParameter::las)
-			.def_readwrite("ln", &RootTypeParameter::ln)
-			.def_readwrite("lns", &RootTypeParameter::lns)
-			.def_readwrite("nob", &RootTypeParameter::nob)
-			.def_readwrite("nobs", &RootTypeParameter::nobs)
-			.def_readwrite("r", &RootTypeParameter::r)
-			.def_readwrite("rs", &RootTypeParameter::rs)
-			.def_readwrite("a", &RootTypeParameter::a)
-			.def_readwrite("a_s", &RootTypeParameter::as) // as is a keyword in python
-			.def_readwrite("colorR", &RootTypeParameter::colorR)
-			.def_readwrite("colorG", &RootTypeParameter::colorG)
-			.def_readwrite("colorB", &RootTypeParameter::colorB)
-			.def_readwrite("tropismT", &RootTypeParameter::tropismT)
-			.def_readwrite("tropismN", &RootTypeParameter::tropismN)
-			.def_readwrite("tropismS", &RootTypeParameter::tropismS)
-			.def_readwrite("dx", &RootTypeParameter::dx)
-			.def_readwrite("theta", &RootTypeParameter::theta)
-			.def_readwrite("thetas", &RootTypeParameter::thetas)
-			.def_readwrite("rlt", &RootTypeParameter::rlt)
-			.def_readwrite("rlts", &RootTypeParameter::rlts)
-			.def_readwrite("gf", &RootTypeParameter::gf)
-			.def_readwrite("name", &RootTypeParameter::name)
-			.def_readwrite("successor", &RootTypeParameter::successor)
-			.def_readwrite("successorP", &RootTypeParameter::successorP)
-			.def_readwrite("se", &RootTypeParameter::se)
-			.def_readwrite("sa", &RootTypeParameter::sa)
-			.def_readwrite("sbp", &RootTypeParameter::sbp)
-			.def("__str__",&RootTypeParameter::toString)
-	;
-	class_<RootParameter>("RootParameter", init<>())
-			.def(init<int , double, double, const std::vector<double>&, int, double, double, double, double>())
-			.def("set",&RootParameter::set)
-			.def_readwrite("type", &RootParameter::type)
-			.def_readwrite("lb", &RootParameter::lb)
-			.def_readwrite("la", &RootParameter::la)
-			.def_readwrite("ln", &RootParameter::ln)
-			.def_readwrite("nob", &RootParameter::nob)
-			.def_readwrite("r", &RootParameter::r)
-			.def_readwrite("a", &RootParameter::a)
-			.def_readwrite("theta", &RootParameter::theta)
-			.def_readwrite("rlt", &RootParameter::rlt)
-			.def("getK",&RootParameter::toString)
-			.def("__str__",&RootParameter::toString)
-	;
-	class_<RootSystemParameter>("RootSystemParameter", init<>())
-			.def("set",&RootSystemParameter::set)
-			.def_readwrite("seedPos", &RootSystemParameter::seedPos)
-			.def_readwrite("firstB", &RootSystemParameter::firstB)
-			.def_readwrite("delayB", &RootSystemParameter::delayB)
-			.def_readwrite("maxB", &RootSystemParameter::maxB)
-			.def_readwrite("nC", &RootSystemParameter::nC)
-			.def_readwrite("firstSB", &RootSystemParameter::firstSB)
-			.def_readwrite("delaySB", &RootSystemParameter::delaySB)
-			.def_readwrite("delayRC", &RootSystemParameter::delayRC)
-			.def_readwrite("nz", &RootSystemParameter::nz)
-			.def("__str__",&RootSystemParameter::toString)
-	;
-	/**
-	 * Root.h (no members, just data)
-	 */
-    class_<Root, Root*>("Root", init<RootSystem*, int, Vector3d, double, Root*, double, int>())
-		.def("__str__",&Root::toString)
-	    .def_readwrite("rootsystem", &Root::rootsystem)
-	    .def_readwrite("param", &Root::param)
-	    .def_readwrite("id", &Root::id)
-	    .def_readwrite("parent_base_length", &Root::parent_base_length)
-	    .def_readwrite("parent_ni", &Root::parent_ni)
-	    .def_readwrite("alive", &Root::alive)
-	    .def_readwrite("active", &Root::active)
-	    .def_readwrite("age", &Root::age)
-	    .def_readwrite("length", &Root::length)
-	    .def_readwrite("parent", &Root::parent)
-	    .def_readwrite("laterals", &Root::laterals)
-    ;
-    class_<std::vector<Root*>>("std_vector_Root_")
-        .def(vector_indexing_suite<std::vector<Root*>>() )
-	;
-    class_<std::vector<std::vector<Vector3d>>>("std_vector_vector_Vector3d_")
-		.def(vector_indexing_suite<std::vector<std::vector<Vector3d>>>() )
-	;
-    class_<std::vector<std::vector<double>>>("std_vector_vector_double_")
-		.def(vector_indexing_suite<std::vector<std::vector<double>>>() )
-	;
-	/*
-	 * RootSystem.h
-	 */
-    class_<RootSystem>("RootSystem")
-		.def("setRootTypeParameter", &RootSystem::setRootTypeParameter)
-		.def("getRootTypeParameter", &RootSystem::getRootTypeParameter, return_value_policy<reference_existing_object>())
-		.def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
-		.def("getRootSystemParameter", &RootSystem::getRootSystemParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
-		.def("openFile", &RootSystem::openFile, openFile_overloads())
-		.def("setGeometry", &RootSystem::setGeometry)
-		.def("setSoil", &RootSystem::setSoil)
-		.def("reset", &RootSystem::reset)
-		.def("initialize", &RootSystem::initialize, initialize_overloads())
+//	/*
+//	 * soil.h
+//	 */
+//	class_<SoilLookUp_Wrap, SoilLookUp_Wrap*, boost::noncopyable>("SoilLookUp",init<>())
+//			.def("getValue",&SoilLookUp_Wrap::getValue)
+//			.def("__str__",&SoilLookUp_Wrap::toString)
+//	;
+//	class_<SoilLookUpSDF, SoilLookUpSDF*, bases<SoilLookUp>>("SoilLookUpSDF",init<>())
+//			.def(init<SignedDistanceFunction*, double, double, double>())
+//			.def_readwrite("sdf", &SoilLookUpSDF::sdf)
+//			.def_readwrite("fmax", &SoilLookUpSDF::fmax)
+//			.def_readwrite("fmin", &SoilLookUpSDF::fmin)
+//			.def_readwrite("slope", &SoilLookUpSDF::slope)
+//			.def("__str__",&SoilLookUpSDF::toString)
+//	;
+//	class_<ProportionalElongation, ProportionalElongation*, bases<SoilLookUp>>("ProportionalElongation",init<>())
+//			.def("getValue", &ProportionalElongation::getValue, getValue_overloads())
+//			.def("setScale", &ProportionalElongation::setScale)
+//			.def("setBaseLookUp", &ProportionalElongation::setBaseLookUp)
+//			.def("__str__",&ProportionalElongation::toString)
+//	;
+//	class_<Grid1D, Grid1D*, bases<SoilLookUp>>("Grid1D",init<>())
+//			.def(init<size_t, std::vector<double>, std::vector<double>>())
+//			.def("getValue", &Grid1D::getValue, getValue_overloads())
+//			.def("__str__",&Grid1D::toString)
+//			.def("map",&Grid1D::map)
+//			.def_readwrite("n", &Grid1D::n)
+//			.def_readwrite("grid", &Grid1D::grid)
+//			.def_readwrite("data", &Grid1D::data)
+//	;
+//	class_<EquidistantGrid1D, EquidistantGrid1D*, bases<Grid1D>>("EquidistantGrid1D",init<double, double, size_t>())
+//			.def(init<double, double, std::vector<double>>())
+//			.def("getValue", &EquidistantGrid1D::getValue, getValue_overloads())
+//			.def("__str__",&EquidistantGrid1D::toString)
+//			.def("map",&EquidistantGrid1D::map)
+//			.def_readwrite("n", &EquidistantGrid1D::n)
+//			.def_readwrite("grid", &EquidistantGrid1D::grid)
+//			.def_readwrite("data", &EquidistantGrid1D::data)
+//	;
+//	/**
+//	 * tropism.h
+//	 */
+//	class_<Tropism_Wrap, Tropism_Wrap*, boost::noncopyable>("TropismFunction",init<>())
+//			.def("getHeading",&Tropism_Wrap::getHeading)
+////			.def("tropismObjective",&Tropism_Wrap::tropismObjective, tropismObjective_overloads())
+//			.def("copy",&Tropism_Wrap::copy, return_value_policy<reference_existing_object>())
+//			.def("setTropismParameter",&Tropism_Wrap::setTropismParameter)
+//			.def("setSeed",&Tropism_Wrap::setSeed)
+//			.def("setGeometry",&Tropism_Wrap::setGeometry)
+//			.def("rand",&Tropism_Wrap::rand)
+//			.def("randn",&Tropism_Wrap::randn)
+//	;
+//	class_<TropismFunction, TropismFunction*>("TropismBase",init<>()) // Base class for the following tropisms
+//			.def("getHeading",&TropismFunction::getHeading)
+////            .def("tropismObjective",&CombinedTropism::tropismObjective, tropismObjective_overloads())
+//			.def("copy",&TropismFunction::copy, return_value_policy<reference_existing_object>())
+//			.def("setTropismParameter",&TropismFunction::setTropismParameter)
+//			.def("setSeed",&TropismFunction::setSeed)
+//			.def("setGeometry",&TropismFunction::setGeometry)
+//			.def("rand",&TropismFunction::rand)
+//			.def("randn",&TropismFunction::randn)
+//	;
+//	class_<Gravitropism, Gravitropism*, bases<TropismFunction>>("Gravitropism",init<double, double>())
+//	;
+//	class_<Plagiotropism, Plagiotropism*, bases<TropismFunction>>("Plagiotropism",init<double, double>())
+//	;
+//	class_<Exotropism, Exotropism*, bases<TropismFunction>>("Exotropism",init<double, double>())
+//	;
+//	class_<Hydrotropism, Hydrotropism*, bases<TropismFunction>>("Hydrotropism",init<double, double, SoilLookUp*>())
+//
+//
+//// comment to here
+//	;
+////	class_<CombinedTropism, CombinedTropism*, bases<Tropism>>("CombinedTropism",init<>()) // Todo needs some extra work
+////	;
+//	/*
+//	 * ModelParameter.h
+//	 */
+//	class_<RootTypeParameter>("RootTypeParameter", init<>())
+////			.def(init<OrganTypeParameter&>())
+//			.def(init<RootTypeParameter&>())
+//			.def("realize",&OrganTypeParameter::realize, return_value_policy<reference_existing_object>())
+//			.def("getLateralType",&RootTypeParameter::getLateralType)
+//			.def("getK",&RootTypeParameter::getK)
+//			.def_readwrite("type", &RootTypeParameter::subType)
+//			.def_readwrite("lb", &RootTypeParameter::lb)
+//			.def_readwrite("lbs", &RootTypeParameter::lbs)
+//			.def_readwrite("la", &RootTypeParameter::la)
+//			.def_readwrite("las", &RootTypeParameter::las)
+//			.def_readwrite("ln", &RootTypeParameter::ln)
+//			.def_readwrite("lns", &RootTypeParameter::lns)
+//			.def_readwrite("nob", &RootTypeParameter::nob)
+//			.def_readwrite("nobs", &RootTypeParameter::nobs)
+//			.def_readwrite("r", &RootTypeParameter::r)
+//			.def_readwrite("rs", &RootTypeParameter::rs)
+//			.def_readwrite("a", &RootTypeParameter::a)
+//			.def_readwrite("a_s", &RootTypeParameter::as) // as is a keyword in python
+//			.def_readwrite("colorR", &RootTypeParameter::colorR)
+//			.def_readwrite("colorG", &RootTypeParameter::colorG)
+//			.def_readwrite("colorB", &RootTypeParameter::colorB)
+//			.def_readwrite("tropismT", &RootTypeParameter::tropismT)
+//			.def_readwrite("tropismN", &RootTypeParameter::tropismN)
+//			.def_readwrite("tropismS", &RootTypeParameter::tropismS)
+//			.def_readwrite("dx", &RootTypeParameter::dx)
+//			.def_readwrite("theta", &RootTypeParameter::theta)
+//			.def_readwrite("thetas", &RootTypeParameter::thetas)
+//			.def_readwrite("rlt", &RootTypeParameter::rlt)
+//			.def_readwrite("rlts", &RootTypeParameter::rlts)
+//			.def_readwrite("gf", &RootTypeParameter::gf)
+//			.def_readwrite("name", &RootTypeParameter::name)
+//			.def_readwrite("successor", &RootTypeParameter::successor)
+//			.def_readwrite("successorP", &RootTypeParameter::successorP)
+//			.def_readwrite("se", &RootTypeParameter::se)
+//			.def_readwrite("sa", &RootTypeParameter::sa)
+//			.def_readwrite("sbp", &RootTypeParameter::sbp)
+//			.def("__str__",&RootTypeParameter::toString)
+//	;
+//	class_<RootParameter>("RootParameter", init<>())
+//			.def(init<int, double, double, std::vector<double>,double, double, double, double >())
+////			.def("set",&RootParameter::set)
+//			.def_readwrite("type", &RootParameter::subType)
+//			.def_readwrite("lb", &RootParameter::lb)
+//			.def_readwrite("la", &RootParameter::la)
+//			.def_readwrite("ln", &RootParameter::ln)
+////			.def_readwrite("nob", &RootParameter::nob)
+//			.def_readwrite("r", &RootParameter::r)
+//			.def_readwrite("a", &RootParameter::a)
+//			.def_readwrite("theta", &RootParameter::theta)
+//			.def_readwrite("rlt", &RootParameter::rlt)
+//			.def("getK",&RootParameter::toString)
+//			.def("__str__",&RootParameter::toString)
+//	;
+////	class_<OrganParameter>("OrganParameter", init<>())
+////			.def("set",&OrganParameter::set)
+////			.def_readwrite("seedPos", &RootParameter::seedPos)
+////			.def_readwrite("firstB", &OrganParameter::firstB)
+////			.def_readwrite("delayB", &OrganParameter::delayB)
+////			.def_readwrite("maxB", &OrganParameter::maxB)
+////			.def_readwrite("nC", &OrganParameter::nC)
+////			.def_readwrite("firstSB", &OrganParameter::firstSB)
+////			.def_readwrite("delaySB", &OrganParameter::delaySB)
+////			.def_readwrite("delayRC", &OrganParameter::delayRC)
+////			.def_readwrite("nz", &OrganParameter::nz)
+////			.def("__str__",&OrganParameter::toString)
+////	;
+//	/**
+//	 * Root.h (no members, just data)
+//	 */
+//class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, double>())
+//		.def(init<Root&>())
+//		.def("__str__",&Root::toString)
+//	    .def_readwrite("plant", &Root::plant)
+//	    .def_readwrite("param", &Root::param)
+//	    .def_readwrite("id", &Root::id)
+//	    .def_readwrite("parent_base_length", &Root::pbl)
+//	    .def_readwrite("parent_ni", &Root::pni)
+//	    .def_readwrite("alive", &Root::alive)
+//	    .def_readwrite("active", &Root::active)
+//	    .def_readwrite("age", &Root::age)
+//	    .def_readwrite("length", &Root::length)
+//	    .def_readwrite("parent", &Root::parent)
+//	    .def_readwrite("laterals", &Root::children)
+//    ;
+//    class_<std::vector<Root*>>("std_vector_Root_")
+//        .def(vector_indexing_suite<std::vector<Root*>>() )
+//	;
+//    class_<std::vector<std::vector<Vector3d>>>("std_vector_vector_Vector3d_")
+//		.def(vector_indexing_suite<std::vector<std::vector<Vector3d>>>() )
+//	;
+//    class_<std::vector<std::vector<double>>>("std_vector_vector_double_")
+//		.def(vector_indexing_suite<std::vector<std::vector<double>>>() )
+//	;
+
+
+
+
+
+//	/*
+//	 * Plant.h
+//	 */
+    class_<Plant, Plant* >("Plant",init<>())
+		.def(init<Plant&>())
+		.def("setOrganTypeParameter", &Plant::setParameter)
+		.def("getOrganTypeParameter", &Plant::getParameter, return_value_policy<reference_existing_object>())
+////		.def("setOrganParameter", &Organ::setOrganParameter)
+////		.def("getOrganParameter", &Organ::getOrganParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
+		.def("openFile", &Plant::openFile, openFile_overloads())
+//		.def("setGeometry", &Plant::setGeometry)
+////		.def("setSoil", &Plant::setSoil)
+//		.def("reset", &Plant::reset)
+		.def("initialize", &Plant::initialize)
 		.def("simulate",simulate1, simulate1_overloads())
 		.def("simulate",simulate2)
-		.def("getSimTime", &RootSystem::getSimTime)
-		.def("getNumberOfNodes", &RootSystem::getNumberOfNodes)
-		.def("getNumberOfSegments", &RootSystem::getNumberOfSegments)
-		.def("getRoots", &RootSystem::getRoots)
-		.def("getBaseRoots", &RootSystem::getBaseRoots)
-		.def("getNodes", &RootSystem::getNodes)
-		.def("getPolylines", &RootSystem::getPolylines)
-		.def("getSegments", &RootSystem::getSegments)
-		.def("getSegmentsOrigin", &RootSystem::getSegmentsOrigin)
-		.def("getNETimes", &RootSystem::getNETimes)
-		.def("getScalar", &RootSystem::getScalar)
-		.def("getRootTips", &RootSystem::getRootTips)
-		.def("getRootBases", &RootSystem::getRootBases)
-		.def("write", &RootSystem::write)
-		.def("setSeed",&RootSystem::setSeed)
+//		.def("getSimTime", &Plant::getSimTime)
+//		.def("getNumberOfNodes", &Plant::getNumberOfNodes)
+//		.def("getNumberOfSegments", &Plant::getNumberOfSegments)
+//		.def("getRoots", &Plant::getOrgans, return_value_policy<reference_existing_object>())
+////		.def("getBaseRoots", &Plant::get)
+//		.def("getNodes", &Plant::getNodes)
+//		.def("getPolylines", &Plant::getPolylines)
+//		.def("getSegments", &Plant::getSegments)
+//		.def("getSegmentsOrigin", &Plant::getSegmentsOrigin)
+//		.def("getNETimes", &Plant::getNETimes)
+//		.def("getScalar", &Plant::getScalar)
+////		.def("getRootTips", &Plant::getRootTips)
+////		.def("getRootBases", &Plant::getRootBases)
+		.def("write", &Plant::write)
+//		.def("setSeed",&Plant::setSeed)
 	;
-    enum_<RootSystem::TropismTypes>("TropismType")
-    	.value("plagio", RootSystem::TropismTypes::tt_plagio)
-		.value("gravi", RootSystem::TropismTypes::tt_gravi)
-    	.value("exo", RootSystem::TropismTypes::tt_exo)
-    	.value("hydro", RootSystem::TropismTypes::tt_hydro)
-    ;
-    enum_<RootSystem::GrowthFunctionTypes>("GrowthFunctionType")
-    	.value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
-		.value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
-    ;
-	enum_<RootSystem::ScalarTypes>("ScalarType")
-	    .value("type", RootSystem::ScalarTypes::st_type)
-	    .value("radius", RootSystem::ScalarTypes::st_radius)
-	    .value("order", RootSystem::ScalarTypes::st_order)
-	    .value("time", RootSystem::ScalarTypes::st_time)
-	    .value("length", RootSystem::ScalarTypes::st_length)
-	    .value("surface", RootSystem::ScalarTypes::st_surface)
-		.value("one", RootSystem::ScalarTypes::st_one)
-		.value("userdata1", RootSystem::ScalarTypes::st_userdata1)
-		.value("userdata2", RootSystem::ScalarTypes::st_userdata2)
-		.value("userdata3", RootSystem::ScalarTypes::st_userdata3)
-		.value("parenttype", RootSystem::ScalarTypes::st_parenttype)
-	;
-    /*
-     * analysis.h
-     */
-    class_<SegmentAnalyser>("SegmentAnalyser")
-    .def(init<RootSystem&>())
-    .def(init<SegmentAnalyser&>())
-	.def("addSegments",addSegments1)
-	.def("addSegments",addSegments2)
-	.def("crop", &SegmentAnalyser::crop)
-	.def("filter", filter1)
-	.def("filter", filter2)
-	.def("pack", &SegmentAnalyser::pack)
-	.def("getScalar", &SegmentAnalyser::getScalar)
-	.def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
-	.def("getSummed", getSummed1)
-	.def("getSummed", getSummed2)
-	.def("distribution", distribution_1)
-	.def("distribution", distribution_2)
-	.def("distribution2", distribution2_1)
-	.def("distribution2", distribution2_2)
-    .def("getRoots", &SegmentAnalyser::getRoots)
-	.def("getNumberOfRoots", &SegmentAnalyser::getNumberOfRoots)
-	.def("cut", cut1)
-	.def("addUserData", &SegmentAnalyser::addUserData)
-	.def("clearUserData", &SegmentAnalyser::clearUserData)
-	.def("write", &SegmentAnalyser::write)
-	// .def("cut", cut2) // not working, see top definition of cut2
-    ;
-    class_<std::vector<SegmentAnalyser>>("std_vector_SegmentAnalyser_")
-        .def(vector_indexing_suite<std::vector<SegmentAnalyser>>() )
-	;
-    /*
-     * example_exudation.h (rather specific for Cheng)
-     */
-    class_<ExudationParameters>("ExudationParameters")
-		.def_readwrite("M", &ExudationParameters::M)
-		.def_readwrite("Dt", &ExudationParameters::Dt)
-		.def_readwrite("Dl", &ExudationParameters::Dl)
-		.def_readwrite("theta", &ExudationParameters::theta)
-		.def_readwrite("R", &ExudationParameters::R)
-		.def_readwrite("lambda_", &ExudationParameters::lambda_)
-		.def_readwrite("age_r", &ExudationParameters::age_r)
-		.def_readwrite("tip", &ExudationParameters::tip)
-		.def_readwrite("v", &ExudationParameters::v)
-		.def_readwrite("pos", &ExudationParameters::pos)
-		;
-     def("getExudateConcentration", getExudateConcentration);
+//	/*
+//	 * Organ.
+//	 */
+//	class_<Organ>("Organ",init<Plant*, Organ*, int, double >())
+////	    .def()
+////	    .def
+//    ;
+//
+//    enum_<Organ::TropismTypes>("TropismType")
+//    	.value("plagio", Organ::TropismTypes::tt_plagio)
+//		.value("gravi", Organ::TropismTypes::tt_gravi)
+//    	.value("exo", Organ::TropismTypes::tt_exo)
+//    	.value("hydro", Organ::TropismTypes::tt_hydro)
+//    ;
+//    enum_<Organ::GrowthFunctionTypes>("GrowthFunctionType")
+//     	.value("negexp", Organ::GrowthFunctionTypes::gft_negexp)
+//		.value("linear", Organ::GrowthFunctionTypes::gft_linear)
+//    ;
+//	enum_<Organ::ScalarTypes>("ScalarType")
+//	    .value("type", Organ::ScalarTypes::st_type)
+//	    .value("radius", Organ::ScalarTypes::st_radius)
+//	    .value("order", Organ::ScalarTypes::st_order)
+//	    .value("time", Organ::ScalarTypes::st_time)
+//	    .value("length", Organ::ScalarTypes::st_length)
+//	    .value("surface", Organ::ScalarTypes::st_surface)
+//		.value("one", Organ::ScalarTypes::st_one)
+//		.value("userdata1", Organ::ScalarTypes::st_userdata1)
+//		.value("userdata2", Organ::ScalarTypes::st_userdata2)
+//		.value("userdata3", Organ::ScalarTypes::st_userdata3)
+//		.value("parenttype", Organ::ScalarTypes::st_parenttype)
+//	;
+//    /*
+//     * analysis.h
+//     */
+//    class_<SegmentAnalyser>("Organ")
+//    .def(init<Plant&>())
+//    .def(init<SegmentAnalyser&>())
+//	.def("addSegments",addSegments1)
+//	.def("addSegments",addSegments2)
+//	.def("crop", &SegmentAnalyser::crop)
+//	.def("filter", filter1)
+//	.def("filter", filter2)
+//	.def("pack", &SegmentAnalyser::pack)
+//	.def("getScalar", &SegmentAnalyser::getScalar)
+//	.def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
+//	.def("getSummed", getSummed1)
+//	.def("getSummed", getSummed2)
+//	.def("distribution", distribution_1)
+//	.def("distribution", distribution_2)
+//	.def("distribution2", distribution2_1)
+//	.def("distribution2", distribution2_2)
+//    .def("getRoots", &SegmentAnalyser::getRoots)
+//	.def("getNumberOfRoots", &SegmentAnalyser::getNumberOfRoots)
+//	.def("cut", cut1)
+//	.def("addUserData", &SegmentAnalyser::addUserData)
+//	.def("clearUserData", &SegmentAnalyser::clearUserData)
+//	.def("write", &SegmentAnalyser::write)
+//	// .def("cut", cut2) // not working, see top definition of cut2
+//    ;
+//    class_<std::vector<SegmentAnalyser>>("std_vector_SegmentAnalyser_")
+//        .def(vector_indexing_suite<std::vector<SegmentAnalyser> >() )
+//	;
+//    /*
+//     * example_exudation.h (rather specific for Cheng)
+//     */
+////    class_<ExudationParameters>("ExudationParameters")
+////		.def_readwrite("M", &ExudationParameters::M)
+////		.def_readwrite("Dt", &ExudationParameters::Dt)
+////		.def_readwrite("Dl", &ExudationParameters::Dl)
+////		.def_readwrite("theta", &ExudationParameters::theta)
+////		.def_readwrite("R", &ExudationParameters::R)
+////		.def_readwrite("lambda_", &ExudationParameters::lambda_)
+////		.def_readwrite("age_r", &ExudationParameters::age_r)
+////		.def_readwrite("tip", &ExudationParameters::tip)
+////		.def_readwrite("v", &ExudationParameters::v)
+////		.def_readwrite("pos", &ExudationParameters::pos)
+////		;
+////     def("getExudateConcentration", getExudateConcentration);
+   /*
+	* TinyXML.h
+    */
+//    scope tinyxml2
+//    = class_<XMLprinter>
+//    class_<XMLprinter>("XMLprinter", init<>())
+//    .def("XMLprinter", tinyxml2::XMLPrinter)
+//    ;
+
+
+
+
+
 }
 
 /*

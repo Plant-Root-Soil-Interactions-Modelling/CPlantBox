@@ -27,7 +27,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   param = ltp->realize(); // throw the dice
   LeafParameter* leaf_p = (LeafParameter*) param;
 //  std::cout <<", "<<(LeafParameter*) param<< "\n";
-  double beta = (plant->getSTPIndex())*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
+  double beta = (plant->getSLPIndex()+0.5)*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
   Matrix3d ons = Matrix3d::ons(ilheading);
   ons.times(Matrix3d::rotX(beta));
 //  std::cout <<"node id "<<(plant->getOrganIndex())<<", "<<  "\n";
@@ -121,7 +121,7 @@ void Leaf::simulate(double dt, bool silence)
           if ((dl>0)&&(length>=lp->lb)) {
             double s = lp->lb; // summed length
             for (size_t i=0; ((i<lp->ln.size()) && (dl>0)); i++) {
-              s=lp->ln.at(i);
+              s+=lp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new lateral
 
@@ -474,7 +474,7 @@ void Leaf::writeRSML(std::ostream & cout, std::string indent) const
 std::string Leaf::toString() const
 {
   std::stringstream str;
-  str << "Root #"<< id <<": type "<<param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
+  str << "Leaf #"<< id <<": type "<<param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
   return str.str();
 }
 

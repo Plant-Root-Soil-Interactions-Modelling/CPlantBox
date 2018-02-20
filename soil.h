@@ -12,10 +12,10 @@ class Organ;
 /**
  * Look up method for a scalar soil property
  */
-class SoilProperty
+class SoilLookUp
 {
 public:
-    virtual ~SoilProperty() {};
+    virtual ~SoilLookUp() {};
 
 
     /**
@@ -28,7 +28,7 @@ public:
      */
     virtual double getValue(const Vector3d& pos, const Organ* root = nullptr) const { return 1.; } ///< Returns a scalar property of the soil, 1. per default
 
-    virtual std::string toString() const { return "SoilProperty base class"; } ///< Quick info about the object for debugging
+    virtual std::string toString() const { return "SoilLookUp base class"; } ///< Quick info about the object for debugging
 
 };
 
@@ -37,10 +37,10 @@ public:
 /**
  * A static soil property that is defined by a signed distance function
  */
-class SoilPropertySDF : public SoilProperty
+class SoilLookUpSDF : public SoilLookUp
 {
 public:
-    SoilPropertySDF(): SoilPropertySDF(nullptr) { } ///< Default constructor
+    SoilLookUpSDF(): SoilLookUpSDF(nullptr) { } ///< Default constructor
 
     /**
      * Creaets the soil property from a signed distance function,
@@ -51,7 +51,7 @@ public:
      * @param min_      the minimal value of the soil property
      * @param slope_    scales the linear gradient of the sdf (note that |grad(sdf)|= 1)
      */
-    SoilPropertySDF(SignedDistanceFunction* sdf_, double max_=1, double min_=0, double slope_=1) {
+    SoilLookUpSDF(SignedDistanceFunction* sdf_, double max_=1, double min_=0, double slope_=1) {
         this->sdf=sdf_;
         fmax = max_;
         fmin = min_;
@@ -64,7 +64,7 @@ public:
         return std::max(std::min(c,fmax),fmin);
     } ///< returns fmin outside of the domain and fmax inside, and a linear ascend according slope
 
-    virtual std::string toString() const { return "SoilPropertySDF"; } ///< Quick info about the object for debugging
+    virtual std::string toString() const { return "SoilLookUpSDF"; } ///< Quick info about the object for debugging
 
     SignedDistanceFunction* sdf; ///< signed distance function representing the geometry
     double fmax; ///< maximum is reached within the geometry at the distance slope
@@ -75,17 +75,17 @@ public:
 
 
 /**
- * SoilPropertySDF scaled from 0..1
+ * SoilLookUpSDF scaled from 0..1
  */
-class ScaledSoilPropertySDF : public SoilPropertySDF
+class ScaledSoilLookUpSDF : public SoilLookUpSDF
 {
 public:
 	virtual double getValue(const Vector3d& pos, const Organ* root = nullptr) const override {
-		double v = SoilPropertySDF::getValue(pos, root);
+		double v = SoilLookUpSDF::getValue(pos, root);
 		return (v-fmin)/(fmax-fmin);
-	} ///< SoilPropertySDF::getValue() but scaled from 0 to 1
+	} ///< SoilLookUpSDF::getValue() but scaled from 0 to 1
 
-	virtual std::string toString() const { return "ScaledSoilPropertySDF"; } ///< Quick info about the object for debugging
+	virtual std::string toString() const { return "ScaledSoilLookUpSDF"; } ///< Quick info about the object for debugging
 
 };
 
@@ -93,11 +93,11 @@ public:
 /**
  *  1D linear look up
  */
-class SoilProperty1Dlinear : public SoilProperty
+class SoilLookUp1Dlinear : public SoilLookUp
 {
 public:
 
-	SoilProperty1Dlinear(double a, double b, size_t n): a(a), b(b), n(n), data(n) { };
+	SoilLookUp1Dlinear(double a, double b, size_t n): a(a), b(b), n(n), data(n) { };
 	void setData(std::vector<double>& data_) { assert(data.size()==n); data=data_; }
 
 	double mapIZ(size_t i) const { return a + (i+0.5)*(b-a)/(n-1); }
@@ -110,7 +110,7 @@ public:
 		return data[i];
 	}
 
-    virtual std::string toString() const { return "SoilProperty1Dlinear"; } ///< Quick info about the object for debugging
+    virtual std::string toString() const { return "SoilLookUp1Dlinear"; } ///< Quick info about the object for debugging
 
     double a;
 	double b;

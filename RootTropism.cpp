@@ -33,38 +33,85 @@ Vector3d TropismFunction::getPosition(const Vector3d& pos, Matrix3d old, double 
 Vector2d TropismFunction::getHeading(const Vector3d& pos, Matrix3d old, double dx,const Organ* root)
 {
 //    std::cout<<"TropismFunction::getHeading()\n";
-    double a = sigma*randn()*sqrt(dx);
-    double b = rand()*2*M_PI;
-    double v;
+Vector2d h = this->getUCHeading(pos, old, dx, root);
+	double a = h.x;
+	double b = h.y;
 
-    double n_=n*sqrt(dx);
-    if (n_>0) {
-        double dn = n_-floor(n_);
-        if (rand()<dn) {
-            n_ = ceil(n_);
-        } else {
-            n_ = floor(n_);
-        }
-        double bestA = a;
-        double bestB = b;
-        double bestV = this->tropismObjective(pos,old,a,b,dx,root);
-        for (int i=0; i<n_; i++) {
-            b = rand()*2*M_PI;
-            a = sigma*randn()*sqrt(dx);
-            v = this->tropismObjective(pos,old,a,b,dx,root);
-            if (v<bestV) {
-                bestV=v;
-                bestA=a;
-                bestB=b;
-            }
-        }
-        a = bestA;
-        b = bestB;
-    }
+	if (geometry!=nullptr) {
+		double d = geometry->getDist(this->getPosition(pos,old,a,b,dx));
+		double dmin = d;
 
-    return Vector2d(a,b);
+		double bestA = a;
+		double bestB = b;
+		int i=0; // counts change in alpha
+		int j=0;    // counts change in beta
+
+		while (d>0) { // not valid
+
+			i++;
+			j=0;
+			while ((d>0) && j<betaN) { // change beta
+
+				b = 2*M_PI*rand(); // dice
+				d = geometry->getDist(this->getPosition(pos,old,a,b,dx));
+				if (d<dmin) {
+					dmin = d;
+					bestA = a;
+					bestB = b;
+				}
+				j++;
+			}
+
+			if (d>0) {
+				a = a + M_PI/2./double(alphaN);
+			}
+
+			if (i>alphaN) {
+				std::cout << "Could not respect geometry boundaries \n";
+				a = bestA;
+				b = bestB;
+				break;
+			}
+
+		}
+	}
+	return Vector2d(a,b);
 }
 
+
+Vector2d TropismFunction::getUCHeading(const Vector3d& pos, Matrix3d old, double dx,const Organ* root)
+{
+	double a = sigma*randn()*sqrt(dx);
+	double b = rand()*2*M_PI;
+	double v;
+
+	double n_=n*sqrt(dx);
+	if (n_>0) {
+		double dn = n_-floor(n_);
+		if (rand()<dn) {
+			n_ = ceil(n_);
+		} else {
+			n_ = floor(n_);
+		}
+		double bestA = a;
+		double bestB = b;
+		double bestV = this->tropismObjective(pos,old,a,b,dx,root);
+		for (int i=0; i<n_; i++) {
+			b = rand()*2*M_PI;
+			a = sigma*randn()*sqrt(dx);
+			v = this->tropismObjective(pos,old,a,b,dx,root);
+			if (v<bestV) {
+				bestV=v;
+				bestA=a;
+				bestB=b;
+			}
+		}
+		a = bestA;
+		b = bestB;
+	}
+
+	return Vector2d(a,b);
+}
 
 
 /**

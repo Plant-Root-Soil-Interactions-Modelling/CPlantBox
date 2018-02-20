@@ -28,7 +28,7 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   StemParameter* stem_p = (StemParameter*) param;
 //  std::cout <<", "<<(StemParameter*) param<< "\n";
 
-  double beta = 0; //+ ; //0.1*M_PI*plant->randn() M_PI*plant->getSTPIndex() +  initial rotation
+  double beta = M_PI*plant->getSTPIndex()  + 0.25*M_PI*plant->randn();//  +  initial rotation
 
   Matrix3d ons = Matrix3d::ons(initialStemHeading);
   ons.times(Matrix3d::rotX(beta));
@@ -136,9 +136,9 @@ void Stem::simulate(double dt, bool silence)
               s+=sp->ln.at(i);
               if (length<s) {
                 if (i==children.size()) { // new internode leaf and shootBorneRoot
-                      if (sp->subType==1) {
+                      if (sp->subType==3) { //this decide which successor grow the leaf (TODO) adding it to parameterfile
                         LeafGrow(silence);
-                        ShootBorneRootGrow(silence);
+//                        ShootBorneRootGrow(silence);
                       } else {
                         createLateral(silence);
                         }
@@ -159,7 +159,7 @@ void Stem::simulate(double dt, bool silence)
             if (dl>0) {
               if (sp->ln.size()==children.size()) { // new lateral (the last one)
 
-                       if (sp->subType==1) {
+                       if (sp->subType==3) {//this decide which successor grow the leaf (TODO) adding it to parameterfile
                         LeafGrow(silence);
                       } else {
                         createLateral(silence);

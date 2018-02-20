@@ -6,7 +6,7 @@
 
 #include "soil.h"
 
-class SoilProperty;
+class SoilLookUp;
 class Organ;
 
 /**
@@ -182,13 +182,13 @@ class LeafPhototropism : public LeafTropismFunction
 
 public:
 
-  LeafPhototropism(double n, double sigma, SoilProperty* soil) : LeafTropismFunction(n,sigma), soil(soil) { } ///< @see TropismFunction
+  LeafPhototropism(double n, double sigma, SoilLookUp* soil) : LeafTropismFunction(n,sigma), soil(soil) { } ///< @see TropismFunction
 
   virtual double leaftropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* leaf) override;
   ///< getHeading() minimizes this function, @see TropismFunction
 
 private:
-  SoilProperty* soil;
+  SoilLookUp* soil;
 };
 
 

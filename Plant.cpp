@@ -1,5 +1,5 @@
 #include "Plant.h"
-#include "tinyxml2.h"
+
 #include <iostream>
 
 unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter

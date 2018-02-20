@@ -334,7 +334,7 @@ void Root::createSegments(double l, bool silence)
 
 	if (l<smallDx) {
 		if (!silence) {
-			std::cout << "skipped small segment (<"<< smallDx << ") \n";
+//			std::cout << "skipped small segment (<"<< smallDx << ") \n";
 		}
 		return;
 	}
@@ -350,7 +350,7 @@ void Root::createSegments(double l, bool silence)
 			sdx = l-n*dx();
 			if (sdx<smallDx) {
 				if (!silence) {
-					std::cout << "skipped small segment (<"<< smallDx << ") \n";
+//					std::cout << "skipped small segment (<"<< smallDx << ") \n";
 				}
 				return;
 			}
