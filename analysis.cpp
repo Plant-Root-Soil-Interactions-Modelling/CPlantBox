@@ -18,6 +18,7 @@ SegmentAnalyser::SegmentAnalyser(const Plant& rs)
 	segO = rs.getSegmentsOrigin();
 	assert(segments.size()==ctimes.size());
 	assert(segments.size()==segO.size());
+    this->rs = &rs; //needed for dgf writer, only
 }
 
 /**
@@ -57,10 +58,10 @@ std::vector<double> SegmentAnalyser::getScalar(std::string name) const
 {
 	std::vector<double> data(segO.size());
 
-//	if (st==Plant::st_time) {
-//		data = ctimes;
-//		return data;
-//	}
+	if (name=="st_time") {
+		data = ctimes;
+		return data;
+	}
 //	if (st==Plant::st_userdata1) {
 //		data = userData.at(0);
 //		return data;
@@ -74,9 +75,9 @@ std::vector<double> SegmentAnalyser::getScalar(std::string name) const
 //		return data;
 //	}
 //
-//	for (size_t i=0; i<segO.size(); i++) {
-//		data.at(i) = segO.at(i)->getScalar(st);
-//	}
+	for (size_t i=0; i<segO.size(); i++) {
+		data.at(i) = segO.at(i)->getScalar(name);
+	}
 	return data;
 }
 
