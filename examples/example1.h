@@ -47,7 +47,7 @@ void example1()
      * Export final result (as vtp)
      */
 //    auto t1 = std::chrono::high_resolution_clock::now();
-////    plant.write("plant_write_rootsystem.vtp");
+    plant.write("plant_write_rootsystem.vtp");
 //    auto t2 = std::chrono::high_resolution_clock::now();
 //    std::cout << "test function took "
 //              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
@@ -57,9 +57,9 @@ void example1()
     /*
      * Export segments for Matlab analysis
      */
-    SegmentAnalyser analysis(plant);
+//    SegmentAnalyser analysis(plant);
 //    analysis.write("rootsystem.txt");
-    analysis.write("analysis_write_rootsystem.vtp");
+//    analysis.write("analysis_write_rootsystem.vtp");
 
     /*
      * Export dgf file

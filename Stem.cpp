@@ -394,7 +394,7 @@ void Stem::createSegments(double l, bool silence)
           h = n2.minus(r_nodes.at(nn-3));
           h.normalize();
         } else {
-          h = A.column(0);
+          h = A.column(2);
         }
         double sdx = std::min(dx()-olddx,l);
 
@@ -463,7 +463,7 @@ void Stem::createSegments(double l, bool silence)
 Vector3d Stem::heading() const {
   Vector3d h;
   if ((this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
-    h = A.column(0);// the relative heading
+    h = A.column(2);// the relative heading
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
   }
