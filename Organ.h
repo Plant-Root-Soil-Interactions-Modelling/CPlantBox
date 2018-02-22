@@ -47,6 +47,8 @@ public:
     virtual Vector3d getRelativeOrigin() const { return Vector3d(); }; ///< the relative position within the parent organ
     virtual void setRelativeOrigin(const Vector3d& o) { throw std::invalid_argument("Organ::setRelativeOrigin not implemented"); }; ///< the relative position within the parent organ
     virtual Matrix3d getRelativeHeading() const { return Matrix3d(); }; ///< the heading in the parent organ
+
+
     virtual void setRelativeHeading(const Matrix3d& m) { throw std::invalid_argument("Organ::getRelativeHeading not implemented"); }; ///< the heading in the parent organ
 
     Vector3d getOrigin() const; ///< absolute coordinates of the organ origin

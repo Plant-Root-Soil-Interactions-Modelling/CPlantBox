@@ -55,6 +55,8 @@ if (Plant::noParamFile[2] == 1) {
 	Vector3d isheading(0,0,1);//Initial Stem heading
 	Stem* mainstem = new Stem(plant, this, 1, 0., isheading ,0., 0.); // tap root has subtype 1
 	mainstem->addNode(sparam->seedPos,0);
+//	mainstem->setRelativeHeading(Matrix3d::rotY(M_PI/2.));
+
 	children.push_back(mainstem);
 
 //	Stem* tiller1 = new Stem(plant, this, 1, 2, isheading ,0., 0.); // tap root has subtype 1

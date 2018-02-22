@@ -20,7 +20,7 @@
 Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
 
-  initialStemHeading = isheading;
+//  initialStemHeading = isheading;
 //  std::cout << "stem pni = "<< pni<< std::endl;
 //  std::cout << "Stem constructor \n";
   StemTypeParameter* sttp = (StemTypeParameter*) plant->getParameter(Organ::ot_stem, type);
@@ -30,8 +30,8 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
 
   double beta = M_PI*plant->getSTPIndex()  + 0.25*M_PI*plant->randn();//  +  initial rotation
 
-  Matrix3d ons = Matrix3d::ons(initialStemHeading);
-  ons.times(Matrix3d::rotX(beta));
+  Matrix3d heading = Matrix3d::ons(isheading);
+  heading.times(Matrix3d::rotX(beta));
 //  if (this->organType()==ot_leafe) {
 //    ons.times(Matrix3d::rotZ(beta));
 //   }
@@ -40,13 +40,15 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
     double scale = sttp->sa->getValue(parent->getNode(pni),this);
     theta*=scale;
   }
-  ons.times(Matrix3d::rotZ(theta));
-  this->initialStemHeading = ons.column(0);
+  heading.times(Matrix3d::rotZ(theta));
+  setRelativeHeading(heading);
+  //  this->initialStemHeading = ons.column(0);
+
   // initial node
   if (parent->organType()!=Organ::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the stem,
     // since this node exists already and does not need a new identifier
-    r_nodes.push_back(parent->getNode(pni));
+    r_nodes.push_back(Vector3d());
     nodeIDs.push_back(parent->getNodeID(pni));
     nctimes.push_back(parent->getNodeCT(pni)+delay);
   }
@@ -301,8 +303,9 @@ void Stem::createLateral(bool silence)
     double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
     double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
     double delay = ageLG-ageLN; // time the lateral has to wait
-    Vector3d h = heading(); // current heading
+    Vector3d h = Vector3d(1,0,0) ;//heading(); // current heading
     Stem* lateral = new Stem(plant, this, lt, delay, h,  r_nodes.size()-1, length);
+    lateral->setRelativeOrigin(r_nodes.back());
     children.push_back(lateral);
     lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
     }
@@ -391,7 +394,7 @@ void Stem::createSegments(double l, bool silence)
           h = n2.minus(r_nodes.at(nn-3));
           h.normalize();
         } else {
-          h = initialStemHeading;
+          h = A.column(0);
         }
         double sdx = std::min(dx()-olddx,l);
 
@@ -460,7 +463,7 @@ void Stem::createSegments(double l, bool silence)
 Vector3d Stem::heading() const {
   Vector3d h;
   if ((this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
-    h = initialStemHeading;// getHeading(b-a)
+    h = A.column(0);// the relative heading
   } else {
      h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
   }

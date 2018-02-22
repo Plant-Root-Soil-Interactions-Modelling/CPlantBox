@@ -33,12 +33,14 @@ public:
   virtual void setRelativeOrigin(const Vector3d& o) override { seed_pos = o; };
   ///< the relative position within the parent organ
 
+//virtual Matrix3d getRelativeHeading() const { return Matrix3d(0,0,1,1,0,0,0,1,0); }; ///< the heading in the parent organ
   virtual void initialize();
 
   virtual std::string toString() const override;
 
   const int basalType = 4;
   Vector3d seed_pos;
+
 };
 
 

@@ -70,10 +70,17 @@ public:
   double pbl; ///< length [cm]
 
   const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
-  Vector3d initialHeading;/// a heading downward
-  Vector3d initialStemHeading;/// heading upward
+//////  Vector3d inXitialHeading;/// a heading downward
+//  Vector3d initialStemHeading;/// heading upward
 
   int LeafID = 0; //declare leaf id.
+  	virtual void setRelativeOrigin(const Vector3d& o) override { this->o = o; }
+    virtual Vector3d getRelativeOrigin() const override { return o;  }
+	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
+    virtual Matrix3d getRelativeHeading() const override { return A; }
+
+    Vector3d o;
+  Matrix3d A; // relative heading
 
 
 protected:
@@ -83,7 +90,7 @@ protected:
   void LeafGrow(bool silence);
   void ShootBorneRootGrow(bool silence);
 
-  int old_non = 0;
+  int old_non = 0; // relative origin
 
 };
 
