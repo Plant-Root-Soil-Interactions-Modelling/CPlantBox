@@ -28,21 +28,21 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   StemParameter* stem_p = (StemParameter*) param;
 //  std::cout <<", "<<(StemParameter*) param<< "\n";
 
-  double beta = M_PI*plant->getSTPIndex()  + 0.25*M_PI*plant->randn();//  +  initial rotation
+  double beta = M_PI*plant->getSTPIndex() +0.5*M_PI ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
 
   Matrix3d heading = Matrix3d::ons(isheading);
-  heading.times(Matrix3d::rotX(beta));
+//  heading.times(Matrix3d::rotX(beta));
 //  if (this->organType()==ot_leafe) {
 //    ons.times(Matrix3d::rotZ(beta));
 //   }
-  double theta = stem_p->theta;
-  if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
-    double scale = sttp->sa->getValue(parent->getNode(pni),this);
-    theta*=scale;
-  }
-  heading.times(Matrix3d::rotZ(theta));
+  double theta = 0.1*M_PI;//stem_p->theta;
+//  if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
+//    double scale = sttp->sa->getValue(parent->getNode(pni),this);
+//    theta*=scale;
+//  }
+//  heading.times(Matrix3d::rotZ(theta));
+//  heading.times(Matrix3d::rotX(M_PI*0.5));
   setRelativeHeading(heading);
-  //  this->initialStemHeading = ons.column(0);
 
   // initial node
   if (parent->organType()!=Organ::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
@@ -303,11 +303,16 @@ void Stem::createLateral(bool silence)
     double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
     double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
     double delay = ageLG-ageLN; // time the lateral has to wait
-    Vector3d h = Vector3d(1,0,0) ;//heading(); // current heading
-    Stem* lateral = new Stem(plant, this, lt, delay, h,  r_nodes.size()-1, length);
+    Vector3d ish = Vector3d(0,0,1);//heading(); // current heading
+
+    Stem* lateral = new Stem(plant, this, lt, delay, ish,  r_nodes.size()-1, length);
+//    lateral->setRelativeHeading(Matrix3d::rotZ(M_PI/2));
+//    lateral->setRelativeHeading(Matrix3d::rotY(M_PI*0.2));
     lateral->setRelativeOrigin(r_nodes.back());
     children.push_back(lateral);
     lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+
+
     }
 
 
@@ -394,15 +399,15 @@ void Stem::createSegments(double l, bool silence)
           h = n2.minus(r_nodes.at(nn-3));
           h.normalize();
         } else {
-          h = A.column(2);
+          h = heading();
         }
         double sdx = std::min(dx()-olddx,l);
 
-        Matrix3d ons = Matrix3d::ons(h);
-        Vector2d ab = stParam()->tropism->getHeading(r_nodes.at(nn-2),ons,olddx+sdx,this);
-        ons.times(Matrix3d::rotX(ab.y));
-        ons.times(Matrix3d::rotZ(ab.x));
-        Vector3d newdx = Vector3d(ons.column(0).times(olddx+sdx));
+        Matrix3d heading = Matrix3d::ons(h);
+        Vector2d ab = stParam()->tropism->getHeading(r_nodes.at(nn-2),heading,olddx+sdx,this);
+        heading.times(Matrix3d::rotX(ab.y));
+        heading.times(Matrix3d::rotZ(ab.x));
+        Vector3d newdx = Vector3d(heading.column(0).times(olddx+sdx));
 
         Vector3d newnode = Vector3d(r_nodes.at(nn-2).plus(newdx));
         sl = sdx;
@@ -445,11 +450,11 @@ void Stem::createSegments(double l, bool silence)
     sl+=sdx;
 
     Vector3d h= heading();
-    Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = stParam()->tropism->getHeading(r_nodes.back(),ons,sdx,this);
-    ons.times(Matrix3d::rotX(ab.y));
-    ons.times(Matrix3d::rotZ(ab.x));
-    Vector3d newdx = Vector3d(ons.column(0).times(sdx));
+    Matrix3d heading = Matrix3d::ons(h);
+    Vector2d ab = stParam()->tropism->getHeading(r_nodes.back(),heading,sdx,this);
+    heading.times(Matrix3d::rotX(ab.y));
+    heading.times(Matrix3d::rotZ(ab.x));
+    Vector3d newdx = Vector3d(heading.column(0).times(sdx));
     Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
     double ct = this->getCreationTime(length+sl);
     ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
@@ -462,11 +467,13 @@ void Stem::createSegments(double l, bool silence)
 //***********************stem heading*****************************
 Vector3d Stem::heading() const {
   Vector3d h;
-  if ((this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
-    h = A.column(2);// the relative heading
-  } else {
-     h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
-  }
+//  if ((this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
+
+    h = getRelativeHeading().column(0);
+                        // the relative heading
+//  } else {
+//     h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
+//  }
   return h;
 }
 
