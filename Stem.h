@@ -73,14 +73,14 @@ public:
 //////  Vector3d inXitialHeading;/// a heading downward
 //  Vector3d initialStemHeading;/// heading upward
 
-  int LeafID = 0; //declare leaf id.
+  int StemID = 0; //declare Stem id.
   	virtual void setRelativeOrigin(const Vector3d& o) override { this->o = o; }
     virtual Vector3d getRelativeOrigin() const override { return o;  }
 	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
     virtual Matrix3d getRelativeHeading() const override { return A; }
 
     Vector3d o;
-  Matrix3d A; // relative heading
+    Matrix3d A; // relative heading
 
 
 protected:

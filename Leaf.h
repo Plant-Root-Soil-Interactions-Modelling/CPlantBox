@@ -69,9 +69,14 @@ public:
 
   const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
   Vector3d initialHeading;///< a heading downward
-  Vector3d initialStemHeading;///< a heading upward
-  Vector3d initialLeafHeading;///< leave heading direction
 
+    virtual void setRelativeOrigin(const Vector3d& o) override { this->o = o; }
+    virtual Vector3d getRelativeOrigin() const override { return o;  }
+	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
+    virtual Matrix3d getRelativeHeading() const override { return A; }
+
+    Vector3d o;
+    Matrix3d A; // relative heading
 
   void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 

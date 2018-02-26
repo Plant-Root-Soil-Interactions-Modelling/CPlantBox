@@ -28,19 +28,19 @@ Stem::Stem(Plant* plant, Organ* parent, int type, double delay, Vector3d isheadi
   StemParameter* stem_p = (StemParameter*) param;
 //  std::cout <<", "<<(StemParameter*) param<< "\n";
 
-  double beta = M_PI*plant->getSTPIndex() +0.5*M_PI ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
+  double beta = M_PI*plant->getSTPIndex()*0.2 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
 
   Matrix3d heading = Matrix3d::ons(isheading);
-//  heading.times(Matrix3d::rotX(beta));
+  heading.times(Matrix3d::rotX(beta));
 //  if (this->organType()==ot_leafe) {
 //    ons.times(Matrix3d::rotZ(beta));
 //   }
-  double theta = 0.1*M_PI;//stem_p->theta;
+  double theta = 0.1*M_PI*stem_p->theta;
 //  if (parent->organType()!=Organ::ot_seed) { // scale if not a base stem
 //    double scale = sttp->sa->getValue(parent->getNode(pni),this);
 //    theta*=scale;
 //  }
-//  heading.times(Matrix3d::rotZ(theta));
+  heading.times(Matrix3d::rotZ(theta));
 //  heading.times(Matrix3d::rotX(M_PI*0.5));
   setRelativeHeading(heading);
 
@@ -303,9 +303,9 @@ void Stem::createLateral(bool silence)
     double ageLN = this->StemgetAge(length); // age of stem when lateral node is created
     double ageLG = this->StemgetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
     double delay = ageLG-ageLN; // time the lateral has to wait
-    Vector3d ish = Vector3d(0,0,1);//heading(); // current heading
-
-    Stem* lateral = new Stem(plant, this, lt, delay, ish,  r_nodes.size()-1, length);
+    Vector3d h = heading(); // current heading
+    Vector3d isheading(0,0,1);
+    Stem* lateral = new Stem(plant, this, lt, delay, h,  r_nodes.size()-1, length);
 //    lateral->setRelativeHeading(Matrix3d::rotZ(M_PI/2));
 //    lateral->setRelativeHeading(Matrix3d::rotY(M_PI*0.2));
     lateral->setRelativeOrigin(r_nodes.back());
@@ -467,7 +467,7 @@ void Stem::createSegments(double l, bool silence)
 //***********************stem heading*****************************
 Vector3d Stem::heading() const {
   Vector3d h;
-//  if ((this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
+//  if ((this->r_nodes.size()<=1) ) {// Make heading upward if it is main stem and
 
     h = getRelativeHeading().column(0);
                         // the relative heading

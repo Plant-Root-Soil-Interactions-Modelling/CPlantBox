@@ -18,7 +18,7 @@
 */
 Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
 {
-  initialLeafHeading=ilheading;
+//  initialLeafHeading=ilheading;
 //  std::cout << "Leaf pni = "<< pni<< std::endl;
 //  std::cout << "Plant* plant ="<< plant <<" "<< parent<<std::endl;
   LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getParameter(Organ::ot_leafe, type);
@@ -27,22 +27,22 @@ Leaf::Leaf(Plant* plant, Organ* parent, int type, double delay, Vector3d ilheadi
   param = ltp->realize(); // throw the dice
   LeafParameter* leaf_p = (LeafParameter*) param;
 //  std::cout <<", "<<(LeafParameter*) param<< "\n";
-  double beta = (plant->getSLPIndex()+0.5)*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
-  Matrix3d ons = Matrix3d::ons(ilheading);
-  ons.times(Matrix3d::rotX(beta));
+  double beta = (plant->getSLPIndex()*0.5+0.5)*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
+  Matrix3d heading = Matrix3d::ons(ilheading);
+  heading.times(Matrix3d::rotX(beta));
 //  std::cout <<"node id "<<(plant->getOrganIndex())<<", "<<  "\n";
   double theta = leaf_p->theta;
-  if (parent->organType()!=Organ::ot_stem) { // scale if not a base leaf
-    double scale = ltp->sa->getValue(parent->getNode(pni),this);
-    theta*=scale;
-  }
-  ons.times(Matrix3d::rotZ(theta));
-  this->initialLeafHeading= ons.column(0);
+//  if (parent->organType()!=Organ::ot_stem) { // scale if not a base leaf
+//    double scale = ltp->sa->getValue(parent->getNode(pni),this);
+//    theta*=scale;
+//  }
+  heading.times(Matrix3d::rotZ(theta));
+  setRelativeHeading(heading);
   // initial node
 //  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
     // otherwise, don't use addNode for the first node of the leaf,
     // since this node exists already and does not need a new identifier
-    r_nodes.push_back(parent->getNode(pni));
+    r_nodes.push_back(Vector3d());
     nodeIDs.push_back(parent->getNodeID(pni));
     nctimes.push_back(parent->getNodeCT(pni)+delay);
 //  }
@@ -283,6 +283,7 @@ void Leaf::createLateral(bool silence)
     Vector3d h = heading(); // current heading
     Vector3d ilheading(0,0,1);
     Leaf* lateral = new Leaf(plant, this, lt, delay, h,  r_nodes.size()-1, length);
+     lateral->setRelativeOrigin(r_nodes.back());
     children.push_back(lateral);
     lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
     }
@@ -320,15 +321,15 @@ void Leaf::createSegments(double l, bool silence)
           h = n2.minus(r_nodes.at(nn-3));
           h.normalize();
         } else {
-          h = initialLeafHeading;
+          h = heading();
         }
         double sdx = std::min(dx()-olddx,l);
 
-        Matrix3d ons = Matrix3d::ons(h);
-        Vector2d ab = ltParam()->tropism->getHeading(r_nodes.at(nn-2),ons,olddx+sdx,this);
-        ons.times(Matrix3d::rotX(ab.y));
-        ons.times(Matrix3d::rotZ(ab.x));
-        Vector3d newdx = Vector3d(ons.column(0).times(olddx+sdx));
+        Matrix3d heading = Matrix3d::ons(h);
+        Vector2d ab = ltParam()->tropism->getHeading(r_nodes.at(nn-2),heading,olddx+sdx,this);
+        heading.times(Matrix3d::rotX(ab.y));
+        heading.times(Matrix3d::rotZ(ab.x));
+        Vector3d newdx = Vector3d(heading.column(0).times(olddx+sdx));
 
         Vector3d newnode = Vector3d(r_nodes.at(nn-2).plus(newdx));
         sl = sdx;
@@ -371,11 +372,11 @@ void Leaf::createSegments(double l, bool silence)
     sl+=sdx;
 
     Vector3d h= heading();
-    Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = ltParam()->tropism->getHeading(r_nodes.back(),ons,sdx,this);
-    ons.times(Matrix3d::rotX(ab.y));
-    ons.times(Matrix3d::rotZ(ab.x));
-    Vector3d newdx = Vector3d(ons.column(0).times(sdx));
+    Matrix3d heading = Matrix3d::ons(h);
+    Vector2d ab = ltParam()->tropism->getHeading(r_nodes.back(),heading,sdx,this);
+    heading.times(Matrix3d::rotX(ab.y));
+    heading.times(Matrix3d::rotZ(ab.x));
+    Vector3d newdx = Vector3d(heading.column(0).times(sdx));
     Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
     double ct = this->getCreationTime(length+sl);
     ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
@@ -388,11 +389,11 @@ void Leaf::createSegments(double l, bool silence)
 //***********************leaf heading*****************************
 Vector3d Leaf::heading() const {
   Vector3d h;
-  if ( (this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
-    h = initialLeafHeading;// getHeading(b-a)
-  } else {
-     h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
-  }
+//  if ( (this->r_nodes.size()<=1) ) {// Make heading upward if it is main leaf and
+    h = getRelativeHeading().column(0);
+//  } else {
+//     h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2));
+//  }
   return h;
 }
 

@@ -53,7 +53,8 @@ if (Plant::noParamFile[2] == 1) {
             std::cout<<"no stem parameter file, no stem to grow"<<std::endl;
     } else {
 //	Vector3d isheading(0,0,1);//Initial Stem heading
-    Vector3d ish = Vector3d(0,0,1);
+//    Vector3d h = heading(); // current heading
+    Vector3d ish(0,0,1);
 	Stem* mainstem = new Stem(plant, this, 1, 0., ish ,0., 0.); // tap root has subtype 1
 	mainstem->addNode(sparam->seedPos,0);
 //	mainstem->setRelativeOrigin(r_nodes.back());
