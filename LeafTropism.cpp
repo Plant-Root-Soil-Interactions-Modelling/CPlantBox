@@ -137,7 +137,7 @@ double LeafExotropism::leaftropismObjective(const Vector3d& pos, Matrix3d old, d
 {
   old.times(Matrix3d::rotX(b));
   old.times(Matrix3d::rotZ(a));
-  Vector3d ilheading = ((Leaf*)leaf)->initialLeafHeading;
+  Vector3d ilheading = ((Leaf*)leaf)->A.column(0);
   double s = ilheading.times(old.column(0));
   s*=(1./ilheading.length()); // iheading should be normed anyway?
   s*=(1./old.column(0).length());

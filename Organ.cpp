@@ -50,13 +50,13 @@ Vector3d Organ::getOrigin() const {
  */
 Matrix3d Organ::getHeading() const {
   // recursive
-  if (this->organType() != Organ::ot_seed && this->organType()!= Organ::ot_stem && this->organType()!= Organ::ot_leafe ) {
-      auto a = parent->getHeading();
-      a.times(this->getRelativeHeading());
-      return a;
-  } else {
+//  if (parent->organType() != Organ::ot_seed  ) { // only use this for root
+//      auto a = parent->getHeading();
+//      a.times(this->getRelativeHeading());
+//      return a;
+//  } else {
       return Matrix3d();
-  }
+//  }
 /*// sequentiell
   const Organ* o = this;
   Matrix3d ah = Matrix3d();
@@ -238,5 +238,8 @@ std::string Organ::toString() const
       <<" with "<< children.size() << " successors\n";
   return str.str();
 }
+
+
+
 
 

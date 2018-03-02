@@ -82,7 +82,7 @@ void Plant::reset()
  */
 void Plant::initOTP()
 {
-	organParam = std::vector<std::vector<OrganTypeParameter*>>(maxorgans);
+	organParam = std::vector<std::vector<OrganTypeParameter*> >(maxorgans);
 	for (auto& otp:organParam) {
 		otp = std::vector<OrganTypeParameter*>(maxtypes);
 		for (size_t i=0; i<otp.size(); i++) {
@@ -102,27 +102,56 @@ void Plant::openXML(std::string name, std::string subdir)
 {
 
 
-
+std::ifstream fis;
     std::string XMLname = subdir;
     XMLname.append(name);
 	XMLname.append(".xml");
-    tinyxml2::XMLDocument xmlParamFile;
-    xmlParamFile.LoadFile(XMLname.c_str());
-//    XMLCheckResult(eResult);
-//    tinyxml2::XMLNode * pRoot = xmlParamFile.FirstChild();
-//    if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
-//    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("taproot");
-//    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
-//    int iOutInt;
-//    eResult = pElement->QueryIntText(&iOutInt);
-//    tinyxml2::XMLCheckResult(eResult);
-//    const char* seedx;
-//    tinyxml2::XMLText* seedLocationX = xmlParamFile.FirstChildElement( "Seed" )->FirstChildElement( "Location" )->FirstChildElement( "x" )->FirstChild()->ToText();
-//    seedx = seedLocationX->Value();
-//        std::cout<<"Seed location x is \n"<<seedx<<std::endl;
-    const char* seedLocationX = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->FirstChildElement( "parameter" )->Attribute("location_x");;
+    fis.open(XMLname.c_str());
+	if (fis.good()){
+            tinyxml2::XMLDocument xmlParamFile;
+            xmlParamFile.LoadFile(XMLname.c_str());
 
-    printf( "Seed Location from XML file is %s\n", seedLocationX );
+        //    XMLCheckResult(eResult);
+        //    tinyxml2::XMLNode * pRoot = xmlParamFile.FirstChild();
+        //    if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
+        //    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("taproot");
+        //    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
+        //    int iOutInt;
+        //    eResult = pElement->QueryIntText(&iOutInt);
+        //    tinyxml2::XMLCheckResult(eResult);
+//        const tinyxml2::XMLElement* plant_parameter = xmlParamFile.FirstChildElement("Plant");
+        const tinyxml2::XMLElement* root_element = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ");
+            int c = 0;
+            for (root_element; root_element->Attribute("type" , "root"); root_element = root_element->NextSiblingElement("organ") )  { // did it work?
+                RootTypeParameter* p  = new RootTypeParameter();
+		        p->readXML(root_element);
+//                root_element = root_element->NextSiblingElement("organ") ;
+                c++;
+                std::cout << " Read from XML " << c << " root type parameters \n";
+            }
+
+
+
+//        xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->FirstChildElement( "parameter" )->QueryDoubleAttribute("location_z", &seedz);
+
+
+
+
+//            if (root_p->Attribute("type" , "root" ) && root_p->Attribute("name", "taproot") )
+//            {
+//              const  tinyxml2::XMLElement* taproot_p  = root_p->FirstChildElement("parameter");
+//            }
+//            const char* aa = "xx";
+//            double cc = 0;
+//            double lbs = 0;
+//           cc = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ")->FirstChildElement("parameter")->DoubleAttribute("value");
+//            taproot_p->QueryStringAttribute("name", &aa);
+//
+
+
+	} else{ openFile(name, subdir);
+            writeAlltoXML(name);
+	}
 }
 
 
@@ -213,6 +242,19 @@ int Plant::readRootParameters(std::istream& cin)
 	}
 	return c;
 }
+
+//int Plant::readXMLRootParameters(tinyxml2::XMLElement* ele)
+//{
+//	// initOTP();
+//	int c = 0;
+//	while (ele->Attribute( "" )Error) {
+//		RootTypeParameter* p  = new RootTypeParameter();
+//		p->readXML(ele);
+//		setParameter(p); // sets the param to the index (p.type-1) TODO
+//		c++;
+//	}
+//	return c;
+//}
 
 int Plant::readStemParameters(std::istream& cin)
 {

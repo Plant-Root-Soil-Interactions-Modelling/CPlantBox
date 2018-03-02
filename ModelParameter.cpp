@@ -27,6 +27,13 @@ OrganTypeParameter::OrganTypeParameter()
 	subType = -1; // means undefined
 }
 
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele, const char* attr_name, const char* para_name, double &attr, double &deviation )  {
+        for (; ele->Attribute("name" , attr_name); ele = ele->NextSiblingElement(para_name) )  { // did it work?
+                    ele->QueryDoubleAttribute("value" , &attr);
+                    ele->QueryDoubleAttribute("dev" , &deviation);
+             }
+}
+
 
 
 double RootParameter::getK() const
@@ -237,6 +244,8 @@ void RootTypeParameter::write(std::ostream & os) const
 	std::cout << "RootTypeParameter::write is deprecated, use RootTypeParameter::writeXML instead\n";
 }
 
+
+
 void RootTypeParameter::read(std::istream & is)
 {
 	char ch[256]; // dummy
@@ -286,8 +295,30 @@ void RootTypeParameter::read(std::istream & is)
 	std::cout << "RootTypeParameter::read is deprecated, use RootTypeParameter::readXML instead\n";
 }
 
-void RootTypeParameter::readXML(FILE* fp)
+void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele)
 {
+   const tinyxml2::XMLElement* para = ele->FirstChildElement("parameter");
+//   const tinyxml2::XMLElement* para = ele->FirstChildElement("parameter");
+   const char* name;
+   ele->QueryUnsignedAttribute("subType", &subType);
+   ele->QueryStringAttribute("name", &name);
+//   para->QueryAttribute()
+
+   getAttribute(para, "lb", "parameter", lb, lbs);
+   std::cout << " lb " << lb << "\n";
+
+
+
+
+
+
+
+
+
+
+
+
+   std::cout<<"subType "<<subType<<"\n";
 
 }
 
@@ -299,28 +330,28 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("type","root");
 
 	    switch (subType) {
-	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("id","id to discuss");// See
+	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("subType",subType);// See
 
 	break;
-    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("id","id to discuss"); // See
+    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("id","id to discuss");// See
+    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("subType",subType);// See
 	break;
-	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("id","id to discuss"); // See
+	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("id","id to discuss"); // See
+    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("subType",subType); // See
 	break;
     }
 
     printer.OpenElement("parameter");
-        printer.PushComment("Basal zone [cm]");
-        printer.PushAttribute("name","lb"); printer.PushAttribute("value",lb); printer.PushAttribute("dev",lbs);  printer.CloseElement();	 	///< Basal zone [cm]
+
+        printer.PushAttribute("name","lb"); printer.PushAttribute("value",lb); printer.PushAttribute("dev",lbs);  printer.CloseElement(); printer.PushComment("Basal zone [cm]");	//		 	///< Basal zone [cm]
 	printer.OpenElement("parameter");
-		printer.PushComment("Apical zone [cm];");
-        printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement();	///< Apical zone [cm];
+
+        printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement(); printer.PushComment("Apical zone [cm];");	///< Apical zone [cm];
 	printer.OpenElement("parameter");
-		printer.PushComment("Inter-lateral distance [cm];");
-        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();		///< Inter-lateral distance [cm];
+
+        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
         printer.PushAttribute("name","nob"); printer.PushAttribute("value",nob); printer.PushAttribute("dev",nobs);  printer.CloseElement();		///< Standard deviation apical zone [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Initial growth rate [cm day-1]");
@@ -381,7 +412,7 @@ void SeedTypeParameter::write(std::ostream & cout) const {
 	std::cout << "SeedTypeParamter::write is deprecated, use SeedTypeParamter::writeXML instead\n";
 }
 
-void SeedTypeParameter::readXML(FILE* fp) {
+//void SeedTypeParameter::readXML(FILE* fp) {
 //	tinyxml2::XMLDocument doc( fp );
 //	tinyxml2::XMLElement* seed = doc.FirstChildElement( "Seed" );
 //	seedPos = Vector3d(0,0,-3);
@@ -407,7 +438,7 @@ void SeedTypeParameter::readXML(FILE* fp) {
 //		readXMLvs(basal,"Maximum",&dmB,&maxBs);
 //		maxB = int(dmB);
 //	}
-}
+//}
 
 std::string SeedTypeParameter::writeXML(FILE* fp) const {
 
@@ -415,9 +446,9 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
     printer.OpenElement("organ", false); //compact mode false
     printer.PushAttribute("type","seed");
         printer.OpenElement("parameter");
-        printer.PushAttribute("location_x", "0");
-        printer.PushAttribute("location_y", "0");
-        printer.PushAttribute("location_z", "0");
+        printer.PushAttribute("location_x", seedPos.x);
+        printer.PushAttribute("location_y", seedPos.y);
+        printer.PushAttribute("location_z", seedPos.z);
     printer.CloseElement(false); // close element compact mode false
     printer.CloseElement(false); // close element compact mode false
 
@@ -759,10 +790,10 @@ void StemTypeParameter::read(std::istream & is)
 	std::cout << "StemTypeParameter::read is deprecated, use StemTypeParameter::readXML instead\n";
 }
 
-void StemTypeParameter::readXML(FILE* fp)
-{
-
-}
+//void StemTypeParameter::readXML(FILE* fp)
+//{
+//
+//}
 
 
 std::string StemTypeParameter::writeXML(FILE* fp) const
@@ -1109,10 +1140,10 @@ void LeafTypeParameter::read(std::istream & is)
 	std::cout << "LeafTypeParameter::read is deprecated, use LeafTypeParameter::readXML instead\n";
 }
 
-void LeafTypeParameter::readXML(FILE* fp)
-{
-
-}
+//void LeafTypeParameter::readXML(FILE* fp)
+//{
+//
+//}
 
 
 std::string LeafTypeParameter::writeXML(FILE* fp) const

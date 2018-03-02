@@ -63,10 +63,10 @@ public:
 
 	virtual OrganParameter* realize() const { return new OrganParameter(); }
 
-	virtual void readXML(FILE* fp) { };
+	virtual void readXML(const tinyxml2::XMLElement* ele) { };
 	virtual std::string writeXML(FILE* fp) const { return ""; };
 	virtual std::string toString() const { return "OrganTypeParameter base class\n";}
-
+     void getAttribute(const tinyxml2::XMLElement* ele,const char* attr_name, const char* para_name, double &attr, double &deviation );
 	/* random numbers */
 	void setSeed(double seed) const { gen.seed(seed); } ///< Sets the seed of the random number generator
 	double rand() const { return UD(gen); } ///< Uniformly distributed random number (0,1)
@@ -132,7 +132,7 @@ public:
 	/* IO */
 	virtual void read(std::istream & in); ///< reads a single root parameter set
 	virtual void write(std::ostream & out) const; ///< writes a single root parameter set
-	virtual void readXML(FILE* fp) override; ///< reads a single root parameter set
+	virtual void readXML(const tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
 
@@ -209,7 +209,7 @@ public:
 
 	virtual void read(std::istream & cin); ///< Read plant parameters
 	virtual void write(std::ostream & cout) const; ///< Write plant parameters
-	virtual void readXML(FILE* fp); ///< Read plant parameters
+//	virtual void readXML(const tinyxml2::XMLElement* ele); ///< Read plant parameters
 	virtual std::string writeXML(FILE* fp) const; ///< Write plant parameters
 	virtual std::string toString() const { std::stringstream ss; write(ss); return ss.str(); } ///< writes parameter to a string
 
@@ -296,7 +296,7 @@ public:
 	/* IO */
 	virtual void read(std::istream & in); ///< reads a single root parameter set
 	virtual void write(std::ostream & out) const; ///< writes a single root parameter set
-	virtual void readXML(FILE* fp) override; ///< reads a single root parameter set
+//	virtual void readXML(tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
 
@@ -483,7 +483,7 @@ public:
 	/* IO */
 	virtual void read(std::istream & in); ///< reads a single root parameter set
 	virtual void write(std::ostream & out) const; ///< writes a single root parameter set
-	virtual void readXML(FILE* fp) override; ///< reads a single root parameter set
+//	virtual void readXML(tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
 
