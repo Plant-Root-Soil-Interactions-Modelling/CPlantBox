@@ -27,10 +27,48 @@ OrganTypeParameter::OrganTypeParameter()
 	subType = -1; // means undefined
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele, const char* attr_name, const char* para_name, double &attr, double &deviation )  {
-        for (; ele->Attribute("name" , attr_name); ele = ele->NextSiblingElement(para_name) )  { // did it work?
-                    ele->QueryDoubleAttribute("value" , &attr);
-                    ele->QueryDoubleAttribute("dev" , &deviation);
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, double &attr, double &deviation )  { //parse through different subtype
+
+        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+        {   if (param->Attribute("name" , attr_name)) {
+                    param->QueryDoubleAttribute("value" , &attr);
+                    param->QueryDoubleAttribute("dev" , &deviation);
+                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<" dev is " << deviation << "\n";
+        }
+             }
+}
+
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, double &attr)  { //parse through different subtype
+
+        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+        {   if (param->Attribute("name" , attr_name)) {
+                    param->QueryDoubleAttribute("value" , &attr);
+                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
+        }
+             }
+}
+
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, int &attr)  { //parse through different subtype
+
+        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+        {   if (param->Attribute("name" , attr_name)) {
+                    param->QueryIntAttribute("value" , &attr);
+                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
+        }
+             }
+}
+
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP )  { //parse through different subtype
+        int n = 0;
+        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+        {   if (param->Attribute("name" , attr_name)) {
+                    param->QueryIntAttribute("number", &n);
+                    successor.push_back(0);
+                    successorP.push_back(0);
+                    param->QueryIntAttribute("type" , &successor.at(n));
+                    param->QueryDoubleAttribute("percentage" , &successorP.at(n));
+                       std::cout << attr_name<<" number " << successor.at(n) <<" percentage " << successorP.at(n)<<"\n";
+        }
              }
 }
 
@@ -251,8 +289,7 @@ void RootTypeParameter::read(std::istream & is)
 	char ch[256]; // dummy
 	is.getline(ch,256);
 	std::string s; // dummy
-	double k;
-	double ks;
+
 	is >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
 	is >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
 	if (ln > 0) {
@@ -295,29 +332,52 @@ void RootTypeParameter::read(std::istream & is)
 	std::cout << "RootTypeParameter::read is deprecated, use RootTypeParameter::readXML instead\n";
 }
 
-void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele)
+void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
-   const tinyxml2::XMLElement* para = ele->FirstChildElement("parameter");
-//   const tinyxml2::XMLElement* para = ele->FirstChildElement("parameter");
+   const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
+
    const char* name;
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
-//   para->QueryAttribute()
-
-   getAttribute(para, "lb", "parameter", lb, lbs);
-   std::cout << " lb " << lb << "\n";
-
-
-
-
-
-
-
-
-
-
-
-
+	double k;
+	double ks;
+   getAttribute(ele_param, "lb", "parameter", lb, lbs);
+   getAttribute(ele_param, "la", "parameter", la, las);
+   getAttribute(ele_param, "ln", "parameter", ln, lns);
+   getAttribute(ele_param, "lmax", "parameter", k, ks);
+   getAttribute(ele_param, "nob", "parameter", nob, nobs);
+   	if (ln > 0) {
+		nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
+		nob = std::max(nob,0.);
+		nobs = (ks/k - lns/ln)*k/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+		nobs = std::max(nobs,0.);
+		if (std::isnan(nobs)) {
+			std::cout << "RootTypeParameter::read() nobs is nan \n";
+			nobs =0;
+		}
+	} else {
+		nob=0;
+		nobs = 0;
+	}
+   getAttribute(ele_param, "r", "parameter", r, rs);
+   getAttribute(ele_param, "a", "parameter", a, as);
+   getAttribute(ele_param, "colorR", "parameter", colorR);
+   getAttribute(ele_param, "colorG", "parameter", colorR);
+   getAttribute(ele_param, "colorB", "parameter", colorR);
+   getAttribute(ele_param, "tropismN", "parameter", tropismN);
+   getAttribute(ele_param, "tropismT", "parameter", tropismT);
+   getAttribute(ele_param, "tropismS", "parameter", tropismS);
+      getAttribute(ele_param, "dx", "parameter", dx);
+   getAttribute(ele_param, "theta", "parameter", theta, thetas);
+   getAttribute(ele_param, "rlt", "parameter", rlt, rlts);
+   getAttribute(ele_param, "gf", "parameter", gf);
+   getAttribute(ele_param, "successor", "parameter", successor, successorP);
    std::cout<<"subType "<<subType<<"\n";
 
 }
@@ -353,15 +413,30 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 
         printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
+
+	printer.PushAttribute("name","lmax"); printer.PushAttribute("value",k); printer.PushAttribute("dev",ks);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
+
         printer.PushAttribute("name","nob"); printer.PushAttribute("value",nob); printer.PushAttribute("dev",nobs);  printer.CloseElement();		///< Standard deviation apical zone [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Initial growth rate [cm day-1]");
         printer.PushAttribute("name","r"); printer.PushAttribute("value",r); printer.PushAttribute("dev",rs); printer.CloseElement();		///< Initial growth rate [cm day-1]
 	printer.OpenElement("parameter");//	printer.PushComment("Root radius [cm]");
         printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
-	printer.OpenElement("parameter");//	printer.PushComment("Root color (red, green, blue)");
-        printer.PushAttribute("colorR",colorR); printer.PushAttribute("colorG",colorG); printer.PushAttribute("colorB",colorB); printer.CloseElement();	///< Root color (red)
+
+	printer.OpenElement("parameter");//
+        printer.PushAttribute("name","colorR");  printer.PushAttribute("value",colorR); printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","colorG");  printer.PushAttribute("value",colorG); printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","colorB");  printer.PushAttribute("value",colorB); printer.CloseElement();	///< Root color (red)
+
 	printer.OpenElement("parameter");//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
-        printer.PushAttribute("tropismT",tropismT); printer.PushAttribute("tropismN",tropismN); printer.PushAttribute("tropismS",tropismS);  printer.CloseElement();	///< Root tropism parameter (Type)
+        printer.PushAttribute("name","tropismT");  printer.PushAttribute("value",tropismT);  printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","tropismN");  printer.PushAttribute("value",tropismN);  printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","tropismS");  printer.PushAttribute("value",tropismS);  printer.CloseElement();	///< Root tropism parameter (Type)
+
 	printer.OpenElement("parameter");//	printer.PushComment("Maximal segment size");
         printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx);  printer.CloseElement();		///< Maximal segment size [cm]
 	printer.OpenElement("parameter");//	printer.PushComment("Angle between root and parent root");
@@ -369,14 +444,14 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	printer.OpenElement("parameter");//	printer.PushComment("Root life time");
         printer.PushAttribute("name","rlt"); printer.PushAttribute("value",rlt); printer.PushAttribute("dev",rlts);  printer.CloseElement();	///< Root life time (days)
 	printer.OpenElement("parameter");//	printer.PushComment("Growth function");
-        printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx); printer.CloseElement();		///< Growth function (1=negative exponential, 2=linear)
+        printer.PushAttribute("name","gf"); printer.PushAttribute("value",gf); printer.CloseElement();		///< Growth function (1=negative exponential, 2=linear)
 
 
 	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
             std::string s = std::to_string(successorCount);
             char const *schar = s.c_str();
-        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("location",successor[successorCount]);    printer.CloseElement();
-        printer.OpenElement("successorP"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
+        printer.OpenElement("parameter"); printer.PushAttribute("name","successor"); printer.PushAttribute("number",schar); printer.PushAttribute("type",successor[successorCount]); printer.PushAttribute("percentage",successorP[successorCount]);    printer.CloseElement();
+//        printer.OpenElement("parameter"); printer.PushAttribute("name","successorP"); printer.PushAttribute("number",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
 //
     }
 //    printer.PrintSpace();
@@ -790,10 +865,55 @@ void StemTypeParameter::read(std::istream & is)
 	std::cout << "StemTypeParameter::read is deprecated, use StemTypeParameter::readXML instead\n";
 }
 
-//void StemTypeParameter::readXML(FILE* fp)
-//{
-//
-//}
+void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
+{
+   const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
+
+   const char* name;
+   ele->QueryUnsignedAttribute("subType", &subType);
+   ele->QueryStringAttribute("name", &name);
+	double k;
+	double ks;
+   getAttribute(ele_param, "lb", "parameter", lb, lbs);
+   getAttribute(ele_param, "la", "parameter", la, las);
+   getAttribute(ele_param, "ln", "parameter", ln, lns);
+   getAttribute(ele_param, "lmax", "parameter", k, ks);
+   getAttribute(ele_param, "nob", "parameter", nob, nobs);
+   	if (ln > 0) {
+		nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
+		nob = std::max(nob,0.);
+		nobs = (ks/k - lns/ln)*k/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+		nobs = std::max(nobs,0.);
+		if (std::isnan(nobs)) {
+			std::cout << "RootTypeParameter::read() nobs is nan \n";
+			nobs =0;
+		}
+	} else {
+		nob=0;
+		nobs = 0;
+	}
+   getAttribute(ele_param, "r", "parameter", r, rs);
+   getAttribute(ele_param, "a", "parameter", a, as);
+   getAttribute(ele_param, "colorR", "parameter", colorR);
+   getAttribute(ele_param, "colorG", "parameter", colorR);
+   getAttribute(ele_param, "colorB", "parameter", colorR);
+   getAttribute(ele_param, "tropismN", "parameter", tropismN);
+   getAttribute(ele_param, "tropismT", "parameter", tropismT);
+   getAttribute(ele_param, "tropismS", "parameter", tropismS);
+      getAttribute(ele_param, "dx", "parameter", dx);
+   getAttribute(ele_param, "theta", "parameter", theta, thetas);
+   getAttribute(ele_param, "rlt", "parameter", rlt, rlts);
+   getAttribute(ele_param, "gf", "parameter", gf);
+   getAttribute(ele_param, "successor", "parameter", successor, successorP);
+   std::cout<<"subType "<<subType<<"\n";
+
+}
 
 
 std::string StemTypeParameter::writeXML(FILE* fp) const
@@ -803,62 +923,68 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("type","stem");
 
 	    switch (subType) {
-	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("id","id to discuss");// See
+	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("subType",subType);// See
 
 	break;
-    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("id","id to discuss"); // See
+    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("id","id to discuss");// See
+    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("subType",subType);// See
 	break;
-	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("id","id to discuss"); // See
+	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("id","id to discuss"); // See
+    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("subType",subType); // See
 	break;
     }
 
     printer.OpenElement("parameter");
-//    printer.PushComment("Basal zone [cm]");
-    printer.PushAttribute("name","lb"); printer.PushAttribute("value",lb); printer.PushAttribute("dev",lbs);  printer.CloseElement();	 	///< Basal zone [cm]
+
+        printer.PushAttribute("name","lb"); printer.PushAttribute("value",lb); printer.PushAttribute("dev",lbs);  printer.CloseElement(); printer.PushComment("Basal zone [cm]");	//		 	///< Basal zone [cm]
 	printer.OpenElement("parameter");
-//	printer.PushComment("Apical zone [cm];");
-	printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement();	///< Apical zone [cm];
+
+        printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement(); printer.PushComment("Apical zone [cm];");	///< Apical zone [cm];
 	printer.OpenElement("parameter");
-//	printer.PushComment("Inter-lateral distance [cm];");
-	printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();		///< Inter-lateral distance [cm];
-	printer.OpenElement("parameter");
-//	printer.PushComment("Number of branches [1];");
-	printer.PushAttribute("name","nob"); printer.PushAttribute("value",nob); printer.PushAttribute("dev",nobs);  printer.CloseElement();		///< Standard deviation apical zone [cm];
-	printer.OpenElement("parameter");
-//	printer.PushComment("Initial growth rate [cm day-1]");
-	printer.PushAttribute("name","r"); printer.PushAttribute("value",r); printer.PushAttribute("dev",rs); printer.CloseElement();		///< Initial growth rate [cm day-1]
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root radius [cm]");
-	printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root color (red, green, blue)");
-	printer.PushAttribute("colorR",colorR); printer.PushAttribute("colorG",colorG); printer.PushAttribute("colorB",colorB); printer.CloseElement();	///< Root color (red)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
-	printer.PushAttribute("tropismT",tropismT); printer.PushAttribute("tropismN",tropismN); printer.PushAttribute("tropismS",tropismS);  printer.CloseElement();	///< Root tropism parameter (Type)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Maximal segment size");
-	printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx);  printer.CloseElement();		///< Maximal segment size [cm]
-	printer.OpenElement("parameter");
-//	printer.PushComment("Angle between root and parent root");
-	printer.PushAttribute("name","theta"); printer.PushAttribute("value",theta); printer.PushAttribute("dev",thetas); printer.CloseElement();	///< Angle between root and parent root (rad)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root life time");
-	printer.PushAttribute("name","rlt"); printer.PushAttribute("value",rlt); printer.PushAttribute("dev",rlts);  printer.CloseElement();	///< Root life time (days)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Growth function");
-	printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx); printer.CloseElement();		///< Growth function (1=negative exponential, 2=linear)
+
+        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
+
+	printer.PushAttribute("name","lmax"); printer.PushAttribute("value",k); printer.PushAttribute("dev",ks);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
+
+        printer.PushAttribute("name","nob"); printer.PushAttribute("value",nob); printer.PushAttribute("dev",nobs);  printer.CloseElement();		///< Standard deviation apical zone [cm];
+	printer.OpenElement("parameter");//	printer.PushComment("Initial growth rate [cm day-1]");
+        printer.PushAttribute("name","r"); printer.PushAttribute("value",r); printer.PushAttribute("dev",rs); printer.CloseElement();		///< Initial growth rate [cm day-1]
+	printer.OpenElement("parameter");//	printer.PushComment("Root radius [cm]");
+        printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
+
+	printer.OpenElement("parameter");//
+        printer.PushAttribute("name","colorR");  printer.PushAttribute("value",colorR); printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","colorG");  printer.PushAttribute("value",colorG); printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","colorB");  printer.PushAttribute("value",colorB); printer.CloseElement();	///< Root color (red)
+
+	printer.OpenElement("parameter");//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
+        printer.PushAttribute("name","tropismT");  printer.PushAttribute("value",tropismT);  printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","tropismN");  printer.PushAttribute("value",tropismN);  printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","tropismS");  printer.PushAttribute("value",tropismS);  printer.CloseElement();	///< Root tropism parameter (Type)
+
+	printer.OpenElement("parameter");//	printer.PushComment("Maximal segment size");
+        printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx);  printer.CloseElement();		///< Maximal segment size [cm]
+	printer.OpenElement("parameter");//	printer.PushComment("Angle between root and parent root");
+        printer.PushAttribute("name","theta"); printer.PushAttribute("value",theta); printer.PushAttribute("dev",thetas); printer.CloseElement();	///< Angle between root and parent root (rad)
+	printer.OpenElement("parameter");//	printer.PushComment("Root life time");
+        printer.PushAttribute("name","rlt"); printer.PushAttribute("value",rlt); printer.PushAttribute("dev",rlts);  printer.CloseElement();	///< Root life time (days)
+	printer.OpenElement("parameter");//	printer.PushComment("Growth function");
+        printer.PushAttribute("name","gf"); printer.PushAttribute("value",gf); printer.CloseElement();		///< Growth function (1=negative exponential, 2=linear)
 
 
 	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
             std::string s = std::to_string(successorCount);
             char const *schar = s.c_str();
-        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("location",successor[successorCount]);    printer.CloseElement();
-        printer.OpenElement("successorP"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
+        printer.OpenElement("parameter"); printer.PushAttribute("name","successor"); printer.PushAttribute("number",schar); printer.PushAttribute("type",successor[successorCount]); printer.PushAttribute("percentage",successorP[successorCount]);    printer.CloseElement();
+//        printer.OpenElement("parameter"); printer.PushAttribute("name","successorP"); printer.PushAttribute("number",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
 //
     }
 //    printer.PrintSpace();
@@ -868,6 +994,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 
 
 }
+
 
 
 ///**********************************************************Another COPY PASTE to create leaf******************************************************************************************
@@ -1140,10 +1267,55 @@ void LeafTypeParameter::read(std::istream & is)
 	std::cout << "LeafTypeParameter::read is deprecated, use LeafTypeParameter::readXML instead\n";
 }
 
-//void LeafTypeParameter::readXML(FILE* fp)
-//{
-//
-//}
+void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
+{
+   const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
+
+   const char* name;
+   ele->QueryUnsignedAttribute("subType", &subType);
+   ele->QueryStringAttribute("name", &name);
+	double k;
+	double ks;
+   getAttribute(ele_param, "lb", "parameter", lb, lbs);
+   getAttribute(ele_param, "la", "parameter", la, las);
+   getAttribute(ele_param, "ln", "parameter", ln, lns);
+   getAttribute(ele_param, "lmax", "parameter", k, ks);
+   getAttribute(ele_param, "nob", "parameter", nob, nobs);
+   	if (ln > 0) {
+		nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
+		nob = std::max(nob,0.);
+		nobs = (ks/k - lns/ln)*k/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+		nobs = std::max(nobs,0.);
+		if (std::isnan(nobs)) {
+			std::cout << "RootTypeParameter::read() nobs is nan \n";
+			nobs =0;
+		}
+	} else {
+		nob=0;
+		nobs = 0;
+	}
+   getAttribute(ele_param, "r", "parameter", r, rs);
+   getAttribute(ele_param, "a", "parameter", a, as);
+   getAttribute(ele_param, "colorR", "parameter", colorR);
+   getAttribute(ele_param, "colorG", "parameter", colorR);
+   getAttribute(ele_param, "colorB", "parameter", colorR);
+   getAttribute(ele_param, "tropismN", "parameter", tropismN);
+   getAttribute(ele_param, "tropismT", "parameter", tropismT);
+   getAttribute(ele_param, "tropismS", "parameter", tropismS);
+      getAttribute(ele_param, "dx", "parameter", dx);
+   getAttribute(ele_param, "theta", "parameter", theta, thetas);
+   getAttribute(ele_param, "rlt", "parameter", rlt, rlts);
+   getAttribute(ele_param, "gf", "parameter", gf);
+   getAttribute(ele_param, "successor", "parameter", successor, successorP);
+   std::cout<<"subType "<<subType<<"\n";
+
+}
 
 
 std::string LeafTypeParameter::writeXML(FILE* fp) const
@@ -1153,62 +1325,68 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("type","leaf");
 
 	    switch (subType) {
-	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("id","id to discuss");// See
+	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("subType",subType);// See
 
 	break;
-    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("id","id to discuss"); // See
+    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("id","id to discuss");// See
+    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("subType",subType);// See
 	break;
-	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("id","id to discuss"); // See
+	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("id","id to discuss"); // See
+    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("subType",subType); // See
 	break;
     }
 
     printer.OpenElement("parameter");
-//    printer.PushComment("Basal zone [cm]");
-    printer.PushAttribute("name","lb"); printer.PushAttribute("value",lb); printer.PushAttribute("dev",lbs);  printer.CloseElement();	 	///< Basal zone [cm]
+
+        printer.PushAttribute("name","lb"); printer.PushAttribute("value",lb); printer.PushAttribute("dev",lbs);  printer.CloseElement(); printer.PushComment("Basal zone [cm]");	//		 	///< Basal zone [cm]
 	printer.OpenElement("parameter");
-//	printer.PushComment("Apical zone [cm];");
-	printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement();	///< Apical zone [cm];
+
+        printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement(); printer.PushComment("Apical zone [cm];");	///< Apical zone [cm];
 	printer.OpenElement("parameter");
-//	printer.PushComment("Inter-lateral distance [cm];");
-	printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();		///< Inter-lateral distance [cm];
-	printer.OpenElement("parameter");
-//	printer.PushComment("Number of branches [1];");
-	printer.PushAttribute("name","nob"); printer.PushAttribute("value",nob); printer.PushAttribute("dev",nobs);  printer.CloseElement();		///< Standard deviation apical zone [cm];
-	printer.OpenElement("parameter");
-//	printer.PushComment("Initial growth rate [cm day-1]");
-	printer.PushAttribute("name","r"); printer.PushAttribute("value",r); printer.PushAttribute("dev",rs); printer.CloseElement();		///< Initial growth rate [cm day-1]
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root radius [cm]");
-	printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root color (red, green, blue)");
-	printer.PushAttribute("colorR",colorR); printer.PushAttribute("colorG",colorG); printer.PushAttribute("colorB",colorB); printer.CloseElement();	///< Root color (red)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
-	printer.PushAttribute("tropismT",tropismT); printer.PushAttribute("tropismN",tropismN); printer.PushAttribute("tropismS",tropismS);  printer.CloseElement();	///< Root tropism parameter (Type)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Maximal segment size");
-	printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx);  printer.CloseElement();		///< Maximal segment size [cm]
-	printer.OpenElement("parameter");
-//	printer.PushComment("Angle between root and parent root");
-	printer.PushAttribute("name","theta"); printer.PushAttribute("value",theta); printer.PushAttribute("dev",thetas); printer.CloseElement();	///< Angle between root and parent root (rad)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Root life time");
-	printer.PushAttribute("name","rlt"); printer.PushAttribute("value",rlt); printer.PushAttribute("dev",rlts);  printer.CloseElement();	///< Root life time (days)
-	printer.OpenElement("parameter");
-//	printer.PushComment("Growth function");
-	printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx); printer.CloseElement();		///< Growth function (1=negative exponential, 2=linear)
+
+        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
+
+	printer.PushAttribute("name","lmax"); printer.PushAttribute("value",k); printer.PushAttribute("dev",ks);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
+
+        printer.PushAttribute("name","nob"); printer.PushAttribute("value",nob); printer.PushAttribute("dev",nobs);  printer.CloseElement();		///< Standard deviation apical zone [cm];
+	printer.OpenElement("parameter");//	printer.PushComment("Initial growth rate [cm day-1]");
+        printer.PushAttribute("name","r"); printer.PushAttribute("value",r); printer.PushAttribute("dev",rs); printer.CloseElement();		///< Initial growth rate [cm day-1]
+	printer.OpenElement("parameter");//	printer.PushComment("Root radius [cm]");
+        printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
+
+	printer.OpenElement("parameter");//
+        printer.PushAttribute("name","colorR");  printer.PushAttribute("value",colorR); printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","colorG");  printer.PushAttribute("value",colorG); printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","colorB");  printer.PushAttribute("value",colorB); printer.CloseElement();	///< Root color (red)
+
+	printer.OpenElement("parameter");//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
+        printer.PushAttribute("name","tropismT");  printer.PushAttribute("value",tropismT);  printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","tropismN");  printer.PushAttribute("value",tropismN);  printer.CloseElement();
+    printer.OpenElement("parameter");
+        printer.PushAttribute("name","tropismS");  printer.PushAttribute("value",tropismS);  printer.CloseElement();	///< Root tropism parameter (Type)
+
+	printer.OpenElement("parameter");//	printer.PushComment("Maximal segment size");
+        printer.PushAttribute("name","dx"); printer.PushAttribute("value",dx);  printer.CloseElement();		///< Maximal segment size [cm]
+	printer.OpenElement("parameter");//	printer.PushComment("Angle between root and parent root");
+        printer.PushAttribute("name","theta"); printer.PushAttribute("value",theta); printer.PushAttribute("dev",thetas); printer.CloseElement();	///< Angle between root and parent root (rad)
+	printer.OpenElement("parameter");//	printer.PushComment("Root life time");
+        printer.PushAttribute("name","rlt"); printer.PushAttribute("value",rlt); printer.PushAttribute("dev",rlts);  printer.CloseElement();	///< Root life time (days)
+	printer.OpenElement("parameter");//	printer.PushComment("Growth function");
+        printer.PushAttribute("name","gf"); printer.PushAttribute("value",gf); printer.CloseElement();		///< Growth function (1=negative exponential, 2=linear)
 
 
 	for (int successorCount = 0; successorCount < successor.size(); successorCount ++ ){
             std::string s = std::to_string(successorCount);
             char const *schar = s.c_str();
-        printer.OpenElement("successor"); printer.PushAttribute("name",schar); printer.PushAttribute("location",successor[successorCount]);    printer.CloseElement();
-        printer.OpenElement("successorP"); printer.PushAttribute("name",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
+        printer.OpenElement("parameter"); printer.PushAttribute("name","successor"); printer.PushAttribute("number",schar); printer.PushAttribute("type",successor[successorCount]); printer.PushAttribute("percentage",successorP[successorCount]);    printer.CloseElement();
+//        printer.OpenElement("parameter"); printer.PushAttribute("name","successorP"); printer.PushAttribute("number",schar); printer.PushAttribute("percentage",successorP[successorCount]);   printer.CloseElement();
 //
     }
 //    printer.PrintSpace();
@@ -1218,4 +1396,5 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 
 
 }
+
 

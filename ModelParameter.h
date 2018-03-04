@@ -66,7 +66,10 @@ public:
 	virtual void readXML(const tinyxml2::XMLElement* ele) { };
 	virtual std::string writeXML(FILE* fp) const { return ""; };
 	virtual std::string toString() const { return "OrganTypeParameter base class\n";}
-     void getAttribute(const tinyxml2::XMLElement* ele,const char* attr_name, const char* para_name, double &attr, double &deviation );
+     void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, double &attr, double &deviation );
+     void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP );
+     void getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, double &attr) ;
+     void getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, int &attr) ;
 	/* random numbers */
 	void setSeed(double seed) const { gen.seed(seed); } ///< Sets the seed of the random number generator
 	double rand() const { return UD(gen); } ///< Uniformly distributed random number (0,1)
@@ -143,6 +146,8 @@ public:
 	double las;		///< Standard deviation apical zone [cm];
 	double ln; 		///< Inter-lateral distance [cm]
 	double lns;  	///< Standard deviation inter-lateral distance [cm]
+		double k;
+	double ks;
 	double nob; 	///< Number of branches [1]
 	double nobs; 	///< Standard deviation number of branches [1]
 	double r;		///< Initial growth rate [cm day-1]
@@ -296,7 +301,7 @@ public:
 	/* IO */
 	virtual void read(std::istream & in); ///< reads a single root parameter set
 	virtual void write(std::ostream & out) const; ///< writes a single root parameter set
-//	virtual void readXML(tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
+	virtual void readXML(const tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
 
@@ -307,6 +312,8 @@ public:
 	double las;		///< Standard deviation apical zone [cm];
 	double ln; 		///< Inter-lateral distance [cm]
 	double lns;  	///< Standard deviation inter-lateral distance [cm]
+			double k;
+	double ks;
 	double nob; 	///< Number of branches [1]
 	double nobs; 	///< Standard deviation number of branches [1]
 	double r;		///< Initial growth rate [cm day-1]
@@ -483,7 +490,7 @@ public:
 	/* IO */
 	virtual void read(std::istream & in); ///< reads a single root parameter set
 	virtual void write(std::ostream & out) const; ///< writes a single root parameter set
-//	virtual void readXML(tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
+	virtual void readXML(const tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
 
@@ -494,6 +501,8 @@ public:
 	double las;		///< Standard deviation apical zone [cm];
 	double ln; 		///< Inter-lateral distance [cm]
 	double lns;  	///< Standard deviation inter-lateral distance [cm]
+			double k;
+	double ks;
 	double nob; 	///< Number of branches [1]
 	double nobs; 	///< Standard deviation number of branches [1]
 	double r;		///< Initial growth rate [cm day-1]

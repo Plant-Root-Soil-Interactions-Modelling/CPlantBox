@@ -100,8 +100,8 @@ void Plant::initOTP()
  */
 void Plant::openXML(std::string name, std::string subdir)
 {
-
-
+openFile(name, subdir);
+            writeAlltoXML(name);
 std::ifstream fis;
     std::string XMLname = subdir;
     XMLname.append(name);
@@ -110,7 +110,6 @@ std::ifstream fis;
 	if (fis.good()){
             tinyxml2::XMLDocument xmlParamFile;
             xmlParamFile.LoadFile(XMLname.c_str());
-
         //    XMLCheckResult(eResult);
         //    tinyxml2::XMLNode * pRoot = xmlParamFile.FirstChild();
         //    if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
@@ -120,14 +119,32 @@ std::ifstream fis;
         //    eResult = pElement->QueryIntText(&iOutInt);
         //    tinyxml2::XMLCheckResult(eResult);
 //        const tinyxml2::XMLElement* plant_parameter = xmlParamFile.FirstChildElement("Plant");
-        const tinyxml2::XMLElement* root_element = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ");
+//        const tinyxml2::XMLElement* root_element = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ");
             int c = 0;
-            for (root_element; root_element->Attribute("type" , "root"); root_element = root_element->NextSiblingElement("organ") )  { // did it work?
-                RootTypeParameter* p  = new RootTypeParameter();
-		        p->readXML(root_element);
-//                root_element = root_element->NextSiblingElement("organ") ;
-                c++;
-                std::cout << " Read from XML " << c << " root type parameters \n";
+            for (const tinyxml2::XMLElement* organ_param = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" ); organ_param != 0 ; organ_param = organ_param->NextSiblingElement("organ") )
+                {
+                    if (organ_param->Attribute("type", "root")) {
+                    RootTypeParameter* p  = new RootTypeParameter();
+                    p->readXML(organ_param);
+    //                root_element = root_element->NextSiblingElement("organ") ;
+                    c++;
+                    std::cout << " Read from XML " << c << " root type parameters \n";
+                    }
+
+                    if (organ_param->Attribute("type", "stem")) {
+                    c = 0;
+                    StemTypeParameter* stem_p  = new StemTypeParameter();
+                    stem_p->readXML(organ_param);
+                    c++;
+                    std::cout << " Read from XML " << c << " stem type parameters \n";
+                    }
+                    if (organ_param->Attribute("type", "leaf")) {
+                    c = 0;
+                    StemTypeParameter* stem_p  = new StemTypeParameter();
+                    stem_p->readXML(organ_param);
+                    c++;
+                    std::cout << " Read from XML " << c << " leaf type parameters \n";
+                    }
             }
 
 
