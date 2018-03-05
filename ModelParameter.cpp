@@ -348,8 +348,6 @@ void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    const char* name;
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
-	double k;
-	double ks;
    getAttribute(ele_param, "lb", "parameter", lb, lbs);
    getAttribute(ele_param, "la", "parameter", la, las);
    getAttribute(ele_param, "ln", "parameter", ln, lns);
@@ -812,8 +810,6 @@ void StemTypeParameter::read(std::istream & is)
 	char ch[256]; // dummy
 	is.getline(ch,256);
 	std::string s; // dummy
-	double k;
-	double ks;
 	is >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
 	is >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
 	if (ln > 0) {
@@ -862,8 +858,6 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    const char* name;
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
-	double k;
-	double ks;
    getAttribute(ele_param, "lb", "parameter", lb, lbs);
    getAttribute(ele_param, "la", "parameter", la, las);
    getAttribute(ele_param, "ln", "parameter", ln, lns);
@@ -1214,8 +1208,6 @@ void LeafTypeParameter::read(std::istream & is)
 	char ch[256]; // dummy
 	is.getline(ch,256);
 	std::string s; // dummy
-	double k;
-	double ks;
 	is >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
 	is >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
 	if (ln > 0) {
@@ -1264,8 +1256,6 @@ void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    const char* name;
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
-	double k;
-	double ks;
    getAttribute(ele_param, "lb", "parameter", lb, lbs);
    getAttribute(ele_param, "la", "parameter", la, las);
    getAttribute(ele_param, "ln", "parameter", ln, lns);
