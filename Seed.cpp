@@ -12,15 +12,16 @@ void Seed::initialize()
 {
 	// Create root system
 	const double maxT = 365.; // maximal simulation time
-	SeedParameter* sparam = (SeedParameter*)param;  // rename
+SeedTypeParameter* stp = (SeedTypeParameter*) plant->getParameter(Organ::ot_seed, 0);
+  param = stp->realize(); // throw the dice
+  SeedParameter* sparam = (SeedParameter*) param;
 
-	// Taproot
 	Vector3d iheading(0,0,-1);
 	if (Plant::noParamFile[1] == 1) {
             std::cout<<"no root param"<<std::endl;
     } else {
 	Root* taproot = new Root(plant, this, 1, 50, iheading ,0., 0.); // tap root has subtype 1
-	taproot->addNode(sparam->seedPos,0);
+	taproot->addNode(seed_pos,0);
 	children.push_back(taproot);
 	if (sparam->maxB>0) {
 		if (plant->getParameter(Organ::ot_root, basalType)->subType<1) { // if the type is not defined, copy tap root
@@ -56,7 +57,7 @@ if (Plant::noParamFile[2] == 1) {
 //    Vector3d h = heading(); // current heading
     Vector3d ish(0,0,1);
 	Stem* mainstem = new Stem(plant, this, 1, 0., ish ,0., 0.); // tap root has subtype 1
-	mainstem->addNode(sparam->seedPos,0);
+	mainstem->addNode(seed_pos,0);
 //	mainstem->setRelativeOrigin(r_nodes.back());
 //	mainstem->setRelativeHeading(Matrix3d::rotZ(M_PI/2));
 //    mainstem->setRelativeHeading(Matrix3d::rotZ(M_PI*plant->getSTPIndex()*0.1));

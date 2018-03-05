@@ -49,7 +49,7 @@ Vector3d Organ::getOrigin() const {
  * Hn =(A0*A1*..An), where H is the absolute Heading, and A are the relative headings
  */
 Matrix3d Organ::getHeading() const {
-  // recursive
+//   recursive
 //  if (parent->organType() != Organ::ot_seed  ) { // only use this for root
 //      auto a = parent->getHeading();
 //      a.times(this->getRelativeHeading());

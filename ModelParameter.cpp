@@ -27,9 +27,9 @@ OrganTypeParameter::OrganTypeParameter()
 	subType = -1; // means undefined
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, double &attr, double &deviation )  { //parse through different subtype
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr, double &deviation )  { //parse through different subtype
 
-        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+        for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryDoubleAttribute("value" , &attr);
                     param->QueryDoubleAttribute("dev" , &deviation);
@@ -37,10 +37,20 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const ch
         }
              }
 }
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, int &attr, double &deviation )  { //parse through different subtype
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, double &attr)  { //parse through different subtype
+        for (; param != 0; param = param->NextSiblingElement(para_name) )
+        {   if (param->Attribute("name" , attr_name)) {
+                    param->QueryIntAttribute("value" , &attr);
+                    param->QueryDoubleAttribute("dev" , &deviation);
+                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<" dev is " << deviation << "\n";
+        }
+             }
+}
 
-        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr)  { //parse through different subtype
+
+        for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryDoubleAttribute("value" , &attr);
                        std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
@@ -48,9 +58,9 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const ch
              }
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, int &attr)  { //parse through different subtype
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, int &attr)  { //parse through different subtype
 
-        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+        for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryIntAttribute("value" , &attr);
                        std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
@@ -58,9 +68,9 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2, const ch
              }
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP )  { //parse through different subtype
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP )  { //parse through different subtype
         int n = 0;
-        for (const tinyxml2::XMLElement* param = ele2->NextSiblingElement(); param != 0; param = param->NextSiblingElement(para_name) )
+        for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryIntAttribute("number", &n);
                     successor.push_back(0);
@@ -335,7 +345,6 @@ void RootTypeParameter::read(std::istream & is)
 void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
-
    const char* name;
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
@@ -378,6 +387,8 @@ void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "rlt", "parameter", rlt, rlts);
    getAttribute(ele_param, "gf", "parameter", gf);
    getAttribute(ele_param, "successor", "parameter", successor, successorP);
+   	createTropism();
+	createGrowth();
    std::cout<<"subType "<<subType<<"\n";
 
 }
@@ -470,7 +481,7 @@ SeedTypeParameter::SeedTypeParameter() {
 }
 
 void SeedTypeParameter::read(std::istream & is) {
-	double plantingdepth;
+
 	std::string s; // dummy
 	is  >>  s >> plantingdepth;
 	is >> s >> firstB >> s >> delayB >> s >> maxB >> s >> s >> s >> s >> s >> s >> s >> s >> s >> s >> s >> s;
@@ -514,68 +525,48 @@ void SeedTypeParameter::write(std::ostream & cout) const {
 //		maxB = int(dmB);
 //	}
 //}
+void SeedTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
+{
+   const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
+   const char* name;
+   ele->QueryUnsignedAttribute("subType", &subType);
+   ele->QueryStringAttribute("name", &name);
+
+   getAttribute(ele_param, "seedPos.x", "parameter", seedPos.x);
+   getAttribute(ele_param, "seedPos.y", "parameter", seedPos.y);
+   getAttribute(ele_param, "seedPos.z", "parameter", seedPos.z);
+   getAttribute(ele_param, "plantingdepth", "parameter", plantingdepth);
+   getAttribute(ele_param, "firstB", "parameter", firstB, firstBs);
+   getAttribute(ele_param, "firstB", "parameter", delayB, delayBs);
+   getAttribute(ele_param, "nC", "parameter", nC);
+   getAttribute(ele_param, "nz", "parameter", nz);
+   getAttribute(ele_param, "maxB", "parameter", maxB, maxBs);
+   getAttribute(ele_param, "simulationTime", "parameter", simtime);
+   std::cout<<"subType "<<subType<<"\n";
+
+}
+
 
 std::string SeedTypeParameter::writeXML(FILE* fp) const {
 
 tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
     printer.OpenElement("organ", false); //compact mode false
-    printer.PushAttribute("type","seed");
-        printer.OpenElement("parameter");
-        printer.PushAttribute("location_x", seedPos.x);
-        printer.PushAttribute("location_y", seedPos.y);
-        printer.PushAttribute("location_z", seedPos.z);
-    printer.CloseElement(false); // close element compact mode false
+    printer.PushAttribute("type","seed"); printer.PushAttribute("subType",subType);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "seedPos.x");    printer.PushAttribute("value", seedPos.x);  printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "seedPos.y");    printer.PushAttribute("value", seedPos.y);  printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "seedPos.z");    printer.PushAttribute("value", seedPos.z);  printer.CloseElement(false);
+
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "plantingdepth");    printer.PushAttribute("value", plantingdepth);  printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "firstB");    printer.PushAttribute("value", firstB);  printer.PushAttribute("dev", firstBs); printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "delayB");    printer.PushAttribute("value", delayB);  printer.PushAttribute("dev", delayBs); printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "nC");    printer.PushAttribute("value", nC);  printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "nz");    printer.PushAttribute("value", nz);  printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "maxB");    printer.PushAttribute("value", maxB);  printer.PushAttribute("dev", maxBs); printer.CloseElement(false);
+        printer.OpenElement("parameter");    printer.PushAttribute("name", "simulationTime");    printer.PushAttribute("value", simtime);  printer.PushAttribute("dev", maxBs); printer.CloseElement(false);
     printer.CloseElement(false); // close element compact mode false
 
 	return std::string(printer.CStr());
-//    tinyxml2::XMLPrinter printer( fp );
-//	printer.OpenElement("Seed");
-//
-//	printer.OpenElement("Location");
-//	printer.OpenElement("x");
-//	printer.PushText(seedPos.x);
-//	if (seedPoss.x!=0) {
-//		printer.OpenElement("sd"); printer.PushText(seedPoss.x); printer.CloseElement();
-//	}
-//	printer.CloseElement();
-//	printer.OpenElement("y");
-//	printer.PushText(seedPos.y);
-//	if (seedPoss.y!=0) {
-//		printer.OpenElement("sd"); printer.PushText(seedPoss.y); printer.CloseElement();
-//	}
-//	printer.CloseElement();
-//	printer.OpenElement("z");
-//	printer.PushText(seedPos.z);
-//	if (seedPoss.y!=0) {
-//		printer.OpenElement("sd"); printer.PushText(seedPoss.z); printer.CloseElement();
-//	}
-//	printer.CloseElement();
-//	printer.CloseElement(); // Location
-//
-//	printer.OpenElement("Basal");
-//	printer.OpenElement("First");
-//	printer.PushText(firstB);
-//	if (firstBs!=0) {
-//		printer.OpenElement("sd"); printer.PushText(firstBs); printer.CloseElement();
-//	}
-//	printer.CloseElement();
-//	printer.OpenElement("Delay");
-//	printer.PushText(delayB);
-//	if (delayBs!=0) {
-//		printer.OpenElement("sd"); printer.PushText(delayBs); printer.CloseElement();
-//	}
-//	printer.CloseElement();
-//	printer.OpenElement("Maximum");
-//	printer.PushText(maxB);
-//	if (maxBs!=0) {
-//		printer.OpenElement("sd"); printer.PushText(maxBs); printer.CloseElement();
-//	}
-//	printer.CloseElement();
-//	printer.CloseElement(); // Basal Roots
-//
-//	printer.CloseElement(); // Seed
-//
-//	return std::string(printer.CStr());
+
 }
 
 /**
@@ -868,7 +859,6 @@ void StemTypeParameter::read(std::istream & is)
 void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
-
    const char* name;
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
@@ -912,7 +902,8 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "gf", "parameter", gf);
    getAttribute(ele_param, "successor", "parameter", successor, successorP);
    std::cout<<"subType "<<subType<<"\n";
-
+   	createTropism();
+	createGrowth();
 }
 
 
@@ -1270,7 +1261,6 @@ void LeafTypeParameter::read(std::istream & is)
 void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
-
    const char* name;
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
@@ -1314,7 +1304,8 @@ void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "gf", "parameter", gf);
    getAttribute(ele_param, "successor", "parameter", successor, successorP);
    std::cout<<"subType "<<subType<<"\n";
-
+   	createTropism();
+	createGrowth();
 }
 
 

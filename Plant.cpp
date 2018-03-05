@@ -100,8 +100,7 @@ void Plant::initOTP()
  */
 void Plant::openXML(std::string name, std::string subdir)
 {
-openFile(name, subdir);
-            writeAlltoXML(name);
+
 std::ifstream fis;
     std::string XMLname = subdir;
     XMLname.append(name);
@@ -123,25 +122,36 @@ std::ifstream fis;
             int c = 0;
             for (const tinyxml2::XMLElement* organ_param = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" ); organ_param != 0 ; organ_param = organ_param->NextSiblingElement("organ") )
                 {
+                    if (organ_param->Attribute("type", "seed")) {
+                            SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
+                            stp->readXML(organ_param);
+                            c++;
+                            std::cout << " Read from XML " << c << " root type parameters \n";
+                            }
+
+
                     if (organ_param->Attribute("type", "root")) {
                     RootTypeParameter* p  = new RootTypeParameter();
                     p->readXML(organ_param);
+                    setParameter(p);
     //                root_element = root_element->NextSiblingElement("organ") ;
                     c++;
                     std::cout << " Read from XML " << c << " root type parameters \n";
                     }
 
                     if (organ_param->Attribute("type", "stem")) {
-                    c = 0;
+
                     StemTypeParameter* stem_p  = new StemTypeParameter();
                     stem_p->readXML(organ_param);
+                    setParameter(stem_p);
                     c++;
                     std::cout << " Read from XML " << c << " stem type parameters \n";
                     }
                     if (organ_param->Attribute("type", "leaf")) {
-                    c = 0;
-                    StemTypeParameter* stem_p  = new StemTypeParameter();
-                    stem_p->readXML(organ_param);
+
+                    LeafTypeParameter* leaf_p  = new LeafTypeParameter();
+                    leaf_p->readXML(organ_param);
+                    setParameter(leaf_p);
                     c++;
                     std::cout << " Read from XML " << c << " leaf type parameters \n";
                     }
@@ -259,19 +269,6 @@ int Plant::readRootParameters(std::istream& cin)
 	}
 	return c;
 }
-
-//int Plant::readXMLRootParameters(tinyxml2::XMLElement* ele)
-//{
-//	// initOTP();
-//	int c = 0;
-//	while (ele->Attribute( "" )Error) {
-//		RootTypeParameter* p  = new RootTypeParameter();
-//		p->readXML(ele);
-//		setParameter(p); // sets the param to the index (p.type-1) TODO
-//		c++;
-//	}
-//	return c;
-//}
 
 int Plant::readStemParameters(std::istream& cin)
 {

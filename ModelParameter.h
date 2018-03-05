@@ -66,7 +66,8 @@ public:
 	virtual void readXML(const tinyxml2::XMLElement* ele) { };
 	virtual std::string writeXML(FILE* fp) const { return ""; };
 	virtual std::string toString() const { return "OrganTypeParameter base class\n";}
-     void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, double &attr, double &deviation );
+     void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, double &attr, double &deviation ); //alot of overloading, try template later..
+     void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, int &attr, double &deviation );
      void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP );
      void getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, double &attr) ;
      void getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, int &attr) ;
@@ -212,16 +213,16 @@ public:
 
 	virtual OrganParameter* realize() const;
 
+	virtual void readXML(const tinyxml2::XMLElement* ele) override;
 	virtual void read(std::istream & cin); ///< Read plant parameters
 	virtual void write(std::ostream & cout) const; ///< Write plant parameters
-//	virtual void readXML(const tinyxml2::XMLElement* ele); ///< Read plant parameters
 	virtual std::string writeXML(FILE* fp) const; ///< Write plant parameters
 	virtual std::string toString() const { std::stringstream ss; write(ss); return ss.str(); } ///< writes parameter to a string
 
 	/* Plant parameters */
 	Vector3d seedPos = Vector3d(0,0,-3);   ///< Position of the seed [cm]
 	Vector3d seedPoss = Vector3d();
-
+    double plantingdepth = -seedPos.z;
 	/* Basal roots */
 	double firstB = 1.e9; 	///< Emergence of first basal root [day]
 	double firstBs = 0.;
@@ -229,6 +230,9 @@ public:
 	double delayBs =0.;
 	int maxB = 0; 	    ///< Maximal number of basal roots [1]
 	double maxBs = 0;
+	double nC = 0;
+	double nz = 0;
+	double simtime = 60;
 
 };
 
