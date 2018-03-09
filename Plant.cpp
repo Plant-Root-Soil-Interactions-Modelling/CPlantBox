@@ -98,7 +98,7 @@ void Plant::initOTP()
  * @param name          filename without file extension
  * @param subdir        directory ("modelparameter/" by default)
  */
-void Plant::openXML(std::string name, std::string subdir)
+void Plant::openXML(std::string name, std::string subdir) //The first run will convert the rparam file to the XML, and then use the XML later on.
 {
 
 std::ifstream fis;
@@ -126,7 +126,7 @@ std::ifstream fis;
                             SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
                             stp->readXML(organ_param);
                             c++;
-                            std::cout << " Read from XML " << c << " root type parameters \n";
+//                            std::cout << " Read from XML " << c << " seed type parameters \n";
                             }
 
 
@@ -136,7 +136,7 @@ std::ifstream fis;
                     setParameter(p);
     //                root_element = root_element->NextSiblingElement("organ") ;
                     c++;
-                    std::cout << " Read from XML " << c << " root type parameters \n";
+//                    std::cout << " Read from XML " << c << " root type parameters \n";
                     }
 
                     if (organ_param->Attribute("type", "stem")) {
@@ -145,7 +145,7 @@ std::ifstream fis;
                     stem_p->readXML(organ_param);
                     setParameter(stem_p);
                     c++;
-                    std::cout << " Read from XML " << c << " stem type parameters \n";
+//                    std::cout << " Read from XML " << c << " stem type parameters \n";
                     }
                     if (organ_param->Attribute("type", "leaf")) {
 
@@ -153,7 +153,7 @@ std::ifstream fis;
                     leaf_p->readXML(organ_param);
                     setParameter(leaf_p);
                     c++;
-                    std::cout << " Read from XML " << c << " leaf type parameters \n";
+//                    std::cout << " Read from XML " << c << " leaf type parameters \n";
                     }
             }
 
