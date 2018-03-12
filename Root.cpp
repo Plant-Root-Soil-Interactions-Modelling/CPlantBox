@@ -177,7 +177,7 @@ double Root::getScalar(std::string name) const {
 		r = std::sqrt(sq_sum / v_.size() - mean * mean);
 	}
 	if (name=="surface") { r = rParam()->a*rParam()->a*M_PI*length; }
-	if (name=="number of branches") { r = rParam()->ln +1; }
+	if (name=="number of branches") { r = rParam()->ln.size() +1; }
 	return r;
 }
 
