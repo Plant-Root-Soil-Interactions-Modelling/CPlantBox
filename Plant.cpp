@@ -98,7 +98,7 @@ void Plant::initOTP()
  * @param name          filename without file extension
  * @param subdir        directory ("modelparameter/" by default)
  */
-void Plant::openXML(std::string name, std::string subdir)
+void Plant::openXML(std::string name, std::string subdir) //The first run will convert the rparam file to the XML, and then use the XML later on.
 {
 
 	std::ifstream fis;
@@ -107,6 +107,7 @@ void Plant::openXML(std::string name, std::string subdir)
 	XMLname.append(".xml");
 	fis.open(XMLname.c_str());
 	if (fis.good()){
+
 		tinyxml2::XMLDocument xmlParamFile;
 		xmlParamFile.LoadFile(XMLname.c_str());
 		//    XMLCheckResult(eResult);
@@ -157,12 +158,7 @@ void Plant::openXML(std::string name, std::string subdir)
 			}
 		}
 
-
-
 		//        xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->FirstChildElement( "parameter" )->QueryDoubleAttribute("location_z", &seedz);
-
-
-
 
 		//            if (root_p->Attribute("type" , "root" ) && root_p->Attribute("name", "taproot") )
 		//            {
@@ -174,6 +170,7 @@ void Plant::openXML(std::string name, std::string subdir)
 		//           cc = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ")->FirstChildElement("parameter")->DoubleAttribute("value");
 		//            taproot_p->QueryStringAttribute("name", &aa);
 		//
+
 
 
 	} else{ openFile(name, subdir);
