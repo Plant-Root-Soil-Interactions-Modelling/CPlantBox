@@ -24,24 +24,11 @@ Organ::~Organ()
  * p_abs = A0(p1+A1(p2+A2(p3+... A(n-1)(pn ) )))), where A are the relative headings, p are the relative origins
  */
 Vector3d Organ::getOrigin() const {
-	// recursive
 	if (organType() != Organ::ot_seed) {
 		return parent->getOrigin().plus(parent->getHeading().times(this->getRelativeOrigin()));
 	} else {
 		return this->getRelativeOrigin();
 	}
-	/*// sequentiell
-  const Organ* o = this;
-  Vector3d p = o->getRelativeOrigin();
-  o = o->parent;
-  while (o->organType() != Organ::ot_seed) {
-      Vector3d rp = o->getRelativeOrigin();
-      Matrix3d A = o->getRelativeHeading();
-      p = rp.plus(A.times(p));
-      o = o->parent;
-  }
-  p.plus(o->getRelativeOrigin());
-  return p; */
 }
 
 /**
@@ -49,7 +36,6 @@ Vector3d Organ::getOrigin() const {
  * Hn =(A0*A1*..An), where H is the absolute Heading, and A are the relative headings
  */
 Matrix3d Organ::getHeading() const {
-	//   recursive
 	if (organType() != Organ::ot_seed  ) { // only use this for root
 		auto a = parent->getHeading();
 		a.times(this->getRelativeHeading());
@@ -57,16 +43,6 @@ Matrix3d Organ::getHeading() const {
 	} else {
 		return Matrix3d();
 	}
-	/*// sequentiell
-  const Organ* o = this;
-  Matrix3d ah = Matrix3d();
-  while (o->organType() != Organ::ot_seed) {
-      Matrix3d iH = o->getRelativeHeading();
-      iH.times(ah);
-      ah = iH;
-      o = o->parent;
-  }
-  return ah; */
 }
 
 /**
@@ -121,7 +97,7 @@ void Organ::simulate(double dt, bool silence)
 }
 
 /**
- * Returns the parameter name
+ * Returns the parameter called @param name
  */
 double Organ::getScalar(std::string name) const {
 	double r = std::numeric_limits<double>::quiet_NaN(); // default if name is unknown
@@ -144,7 +120,6 @@ double Organ::getScalar(std::string name) const {
 	if ((name=="parenttype") && (this->parent!=nullptr)) { r = this->parent->organType(); }
 	if ((name=="creationtime") && (nctimes.size()>0)) { return nctimes.at(0); }
 	if ((name=="emergencetime") && (nctimes.size()>1)) { return nctimes.at(1); }
-	//	if ((name=="radius") && (nctimes.size()>1)) { return r = age; }
 	return r;
 }
 
