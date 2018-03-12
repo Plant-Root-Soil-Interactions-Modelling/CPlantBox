@@ -29,6 +29,7 @@ public:
 
 	Vector3d o;
 	Matrix3d A;
+
 };
 
 
@@ -43,6 +44,8 @@ void example_scenegraph()
 	MyOrgan* branch1 = new MyOrgan(plant, nullptr, 0, 0); // at top of base
 	MyOrgan* branch2 = new MyOrgan(plant, nullptr, 0, 0); // half way base
 	MyOrgan* branch3 = new MyOrgan(plant, nullptr, 0, 0); // at top of branch 1
+
+	seed->setRelativeOrigin(Vector3d(0.,0.,2));
 
 	base->setRelativeOrigin(Vector3d(0.,0.,0.));
 	base->setRelativeHeading(Matrix3d::rotX(30./180.*3.1415)); // rotated 30 degrees

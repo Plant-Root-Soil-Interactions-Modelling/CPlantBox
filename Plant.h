@@ -87,8 +87,8 @@ public:
   void writeRSML(std::ostream & os) const; ///< writes current simulation results as RSML
   void writeVTP(int otype, std::ostream & os) const; ///< writes current simulation results as VTP (VTK polydata file)
 
+  // static void writeVTP(std::ostream & os);
   void TiXMLwriteVTP(int otype, std::ostream & os) const; ///< writes current simulation results as VTP (VTK polydata file)
-  static void writeVTP(std::ostream & os);
   void writeGeometry(std::ostream & os) const; ///< writes the current confining geometry (e.g. a plant container) as paraview python script
 
   std::string toString() const; ///< infos about current root system state (for debugging)

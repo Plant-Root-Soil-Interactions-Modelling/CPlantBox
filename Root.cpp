@@ -14,13 +14,13 @@
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheading ,int pni, double pbl) :Organ(plant,parent,type,delay), pni(pni), pbl(pbl)
+Root::Root(Plant* plant, Organ* parent, int subtype, double delay, Vector3d iheading ,int pni, double pbl) :Organ(plant,parent,subtype,delay), pni(pni), pbl(pbl)
 {
 	initialHeading = iheading;
 //	std::cout << "Root pni = "<< pni<< std::endl;
 	//std::cout << "Root constructor \n";
 
-	RootTypeParameter* rtp = (RootTypeParameter*) plant->getParameter(Organ::ot_root, type);
+	RootTypeParameter* rtp = (RootTypeParameter*) plant->getParameter(Organ::ot_root, subtype);
 	param = rtp->realize(); // throw the dice
 	RootParameter* root_p = (RootParameter*) param;
 	double beta = 2*M_PI*plant->rand(); // initial rotation
@@ -52,8 +52,6 @@ Root::Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheadin
  */
 void Root::simulate(double dt, bool silence)
 {
-
-
 	old_non = 0; // is set in Root:createSegments, the zero indicates the first call to createSegments
 
 	const RootParameter* rp = rParam(); // rename
@@ -265,9 +263,6 @@ void Root::createLateral(bool silence)
 {
 	const RootParameter* rp = rParam(); // rename
 	int lt = tParam()->getLateralType(r_nodes.back());
-	//	std::cout << "createLateral()\n";
-	//	std::cout << "lateral type " << lt << "\n";
-
 	if (lt>0) {
 		double ageLN = this->getAge(length); // age of root when lateral node is created
 		double ageLG = this->getAge(length+rp->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)

@@ -4,11 +4,7 @@
 
 #include "Organ.h"
 
-
-
-
 class Plant;
-
 
 /**
  * Seed
@@ -22,24 +18,23 @@ class Seed : public Organ
 
 public:
 
-  Seed(Plant* plant);
-  virtual ~Seed() { };
+	Seed(Plant* plant);
+	virtual ~Seed() { };
 
-  virtual int organType() const override { return Organ::ot_seed; };
+	virtual int organType() const override { return Organ::ot_seed; };
 
-  virtual Vector3d getRelativeOrigin() const override { return seed_pos; };
-  ///< the relative position within the parent organ
+	virtual Vector3d getRelativeOrigin() const override { return seed_pos; };
+	///< the relative position within the parent organ
 
-  virtual void setRelativeOrigin(const Vector3d& o) override { seed_pos = o; };
-  ///< the relative position within the parent organ
+	virtual void setRelativeOrigin(const Vector3d& o) override { seed_pos = o; };
+	///< the relative position within the parent organ
 
- virtual Matrix3d getRelativeHeading() const { return Matrix3d(0,0,1,1,0,0,0,1,0); }; ///< the heading in the parent organ
-  virtual void initialize();
+	virtual void initialize();
 
-  virtual std::string toString() const override;
+	virtual std::string toString() const override;
 
-  const int basalType = 4;
-  Vector3d seed_pos;
+	const int basalType = 4;
+	Vector3d seed_pos;
 
 };
 

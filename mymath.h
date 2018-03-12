@@ -156,7 +156,7 @@ public:
 	 *
 	 * \return            three orthonormal column vectors
 	 */
-	static Matrix3d ons(Vector3d& v) {
+	static Matrix3d ons(Vector3d& v, int vec_pos = 0) {
 		// strange enough, but too lazy to change the original model
 		Vector3d v2;
 		Vector3d v3;
@@ -173,7 +173,12 @@ public:
 		v.normalize();
 		v2.normalize();
 		v3.normalize();
-		return Matrix3d(v,v2,v3);
+		switch (vec_pos) {
+		case 0: return Matrix3d(v,v2,v3);
+		case 1: return Matrix3d(v2,v,v3);
+		case 2: return Matrix3d(v2,v3,v);
+		}
+		throw 0;
 	} ///< Creates an orthonormal system (ONS) around the vector v
 
 	double det() const {

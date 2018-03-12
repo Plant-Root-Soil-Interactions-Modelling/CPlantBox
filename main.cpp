@@ -14,7 +14,7 @@
 #include "examples/example1.h"
 #include "examples/example2.h"
 #include "examples/example3.h"
-//#include "examples/example_scenegraph.h"
+#include "examples/example_scenegraph.h"
 
 
 /**
@@ -22,19 +22,19 @@
  */
 int main(int argc, char* argv[])
 {
-     string name = "CPlantBox_test_Xiaoran";
+	string name = "CPlantBox_test_Xiaoran";
 
-    if (argc>1) {
-        name= argv[1];
-    }
+	if (argc>1) {
+		name= argv[1];
+	}
 
-  example1(); // open parameter file, and output VTP
-    // example2(); // like example 1, but with put geometry
-    // example3(); // more than 1 plant
+	example1(); // open parameter file, and output VTP
+	// example2(); // like example 1, but with put geometry
+	// example3(); // more than 1 plant
 
-//    example_scenegraph();
+	// example_scenegraph();
 
-    return(0);
+	return(0);
 
 }
 

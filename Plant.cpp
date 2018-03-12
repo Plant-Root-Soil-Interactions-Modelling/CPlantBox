@@ -27,7 +27,7 @@ Plant::~Plant()
  */
 void Plant::setParameter(OrganTypeParameter*  otp)
 {
-    unsigned int ot = otp->organType;
+	unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
 	delete organParam.at(i).at(otp->subType);
 	organParam.at(i).at(otp->subType) = otp;
@@ -101,83 +101,83 @@ void Plant::initOTP()
 void Plant::openXML(std::string name, std::string subdir)
 {
 
-std::ifstream fis;
-    std::string XMLname = subdir;
-    XMLname.append(name);
+	std::ifstream fis;
+	std::string XMLname = subdir;
+	XMLname.append(name);
 	XMLname.append(".xml");
-    fis.open(XMLname.c_str());
+	fis.open(XMLname.c_str());
 	if (fis.good()){
-            tinyxml2::XMLDocument xmlParamFile;
-            xmlParamFile.LoadFile(XMLname.c_str());
-        //    XMLCheckResult(eResult);
-        //    tinyxml2::XMLNode * pRoot = xmlParamFile.FirstChild();
-        //    if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
-        //    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("taproot");
-        //    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
-        //    int iOutInt;
-        //    eResult = pElement->QueryIntText(&iOutInt);
-        //    tinyxml2::XMLCheckResult(eResult);
-//        const tinyxml2::XMLElement* plant_parameter = xmlParamFile.FirstChildElement("Plant");
-//        const tinyxml2::XMLElement* root_element = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ");
-            int c = 0;
-            for (const tinyxml2::XMLElement* organ_param = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" ); organ_param != 0 ; organ_param = organ_param->NextSiblingElement("organ") )
-                {
-                    if (organ_param->Attribute("type", "seed")) {
-                            SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
-                            stp->readXML(organ_param);
-                            c++;
-                            std::cout << " Read from XML " << c << " root type parameters \n";
-                            }
+		tinyxml2::XMLDocument xmlParamFile;
+		xmlParamFile.LoadFile(XMLname.c_str());
+		//    XMLCheckResult(eResult);
+		//    tinyxml2::XMLNode * pRoot = xmlParamFile.FirstChild();
+		//    if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
+		//    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("taproot");
+		//    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
+		//    int iOutInt;
+		//    eResult = pElement->QueryIntText(&iOutInt);
+		//    tinyxml2::XMLCheckResult(eResult);
+		//        const tinyxml2::XMLElement* plant_parameter = xmlParamFile.FirstChildElement("Plant");
+		//        const tinyxml2::XMLElement* root_element = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ");
+		int c = 0;
+		for (const tinyxml2::XMLElement* organ_param = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" ); organ_param != 0 ; organ_param = organ_param->NextSiblingElement("organ") )
+		{
+			if (organ_param->Attribute("type", "seed")) {
+				SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
+				stp->readXML(organ_param);
+				c++;
+				std::cout << " Read from XML " << c << " root type parameters \n";
+			}
 
 
-                    if (organ_param->Attribute("type", "root")) {
-                    RootTypeParameter* p  = new RootTypeParameter();
-                    p->readXML(organ_param);
-                    setParameter(p);
-    //                root_element = root_element->NextSiblingElement("organ") ;
-                    c++;
-                    std::cout << " Read from XML " << c << " root type parameters \n";
-                    }
+			if (organ_param->Attribute("type", "root")) {
+				RootTypeParameter* p  = new RootTypeParameter();
+				p->readXML(organ_param);
+				setParameter(p);
+				//                root_element = root_element->NextSiblingElement("organ") ;
+				c++;
+				std::cout << " Read from XML " << c << " root type parameters \n";
+			}
 
-                    if (organ_param->Attribute("type", "stem")) {
+			if (organ_param->Attribute("type", "stem")) {
 
-                    StemTypeParameter* stem_p  = new StemTypeParameter();
-                    stem_p->readXML(organ_param);
-                    setParameter(stem_p);
-                    c++;
-                    std::cout << " Read from XML " << c << " stem type parameters \n";
-                    }
-                    if (organ_param->Attribute("type", "leaf")) {
+				StemTypeParameter* stem_p  = new StemTypeParameter();
+				stem_p->readXML(organ_param);
+				setParameter(stem_p);
+				c++;
+				std::cout << " Read from XML " << c << " stem type parameters \n";
+			}
+			if (organ_param->Attribute("type", "leaf")) {
 
-                    LeafTypeParameter* leaf_p  = new LeafTypeParameter();
-                    leaf_p->readXML(organ_param);
-                    setParameter(leaf_p);
-                    c++;
-                    std::cout << " Read from XML " << c << " leaf type parameters \n";
-                    }
-            }
-
-
-
-//        xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->FirstChildElement( "parameter" )->QueryDoubleAttribute("location_z", &seedz);
+				LeafTypeParameter* leaf_p  = new LeafTypeParameter();
+				leaf_p->readXML(organ_param);
+				setParameter(leaf_p);
+				c++;
+				std::cout << " Read from XML " << c << " leaf type parameters \n";
+			}
+		}
 
 
 
+		//        xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->FirstChildElement( "parameter" )->QueryDoubleAttribute("location_z", &seedz);
 
-//            if (root_p->Attribute("type" , "root" ) && root_p->Attribute("name", "taproot") )
-//            {
-//              const  tinyxml2::XMLElement* taproot_p  = root_p->FirstChildElement("parameter");
-//            }
-//            const char* aa = "xx";
-//            double cc = 0;
-//            double lbs = 0;
-//           cc = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ")->FirstChildElement("parameter")->DoubleAttribute("value");
-//            taproot_p->QueryStringAttribute("name", &aa);
-//
+
+
+
+		//            if (root_p->Attribute("type" , "root" ) && root_p->Attribute("name", "taproot") )
+		//            {
+		//              const  tinyxml2::XMLElement* taproot_p  = root_p->FirstChildElement("parameter");
+		//            }
+		//            const char* aa = "xx";
+		//            double cc = 0;
+		//            double lbs = 0;
+		//           cc = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ")->FirstChildElement("parameter")->DoubleAttribute("value");
+		//            taproot_p->QueryStringAttribute("name", &aa);
+		//
 
 
 	} else{ openFile(name, subdir);
-            writeAlltoXML(name);
+	writeAlltoXML(name);
 	}
 }
 
@@ -195,12 +195,12 @@ void Plant::openFile(std::string name, std::string subdir)
 	if (fis.good()) { // did it work?
 		c = readRootParameters(fis);
 		fis.close();
-	std::cout << "Read " << c << " root type parameters \n";
+		std::cout << "Read " << c << " root type parameters \n";
 	} else {
 		std::cout << "No root system parameter file found \n";
 		Plant::noParamFile [1] = 1;
 	}
-	 // debug
+	// debug
 
 	// open seed parameter
 	SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
@@ -308,15 +308,15 @@ int Plant::readLeafParameters(std::istream& cin)
  */
 void Plant::writeParameters(std::ostream& os) const
 {
-    const char* declaration ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>";
-    tinyxml2::XMLDocument doc;
-    tinyxml2::XMLDocument dxml;
+	const char* declaration ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>";
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLDocument dxml;
 
 	for (auto const& otp_:organParam) {
 		unsigned int t = 0;
 		for (auto const& otp : otp_) {
 			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t)) {
-//				assert((otp->subType)==t); // check if index really equals subType-1
+				//				assert((otp->subType)==t); // check if index really equals subType-1
 				os << otp->writeXML(0);
 			}
 			t++;
@@ -328,18 +328,18 @@ void Plant::writeParameters(std::ostream& os) const
 }
 
 void Plant::writeAlltoXML(std::string name, std::string subdir){
- std::string xmlname = subdir;
+	std::string xmlname = subdir;
 	xmlname.append(name);
 	xmlname.append(".xml");
-    std::ofstream xmloutput;
-    xmloutput.open( xmlname.c_str());
-    xmloutput<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-    xmloutput<<"\n<Plant name=\"maize\" filetype=\"parameters\">\n";
+	std::ofstream xmloutput;
+	xmloutput.open( xmlname.c_str());
+	xmloutput<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+	xmloutput<<"\n<Plant name=\"maize\" filetype=\"parameters\">\n";
 	for (auto const& otp_:organParam) {
 		unsigned int t = 0;
 		for (auto const& otp : otp_) {
 			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t) ) {
-//				assert((otp->subType)==t); // check if index really equals subType-1
+				//				assert((otp->subType)==t); // check if index really equals subType-1
 				xmloutput<<otp->writeXML(0);
 				xmloutput<<std::endl;
 			}
@@ -349,7 +349,7 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
 		}
 	}
 	xmloutput<<"\n</Plant>\n";
-xmloutput.close();
+	xmloutput.close();
 }
 /**
  * Sets up the plant according to the given parameters
@@ -417,13 +417,13 @@ void Plant::simulate()
 
 int Plant::getNumberOfSegments() const
 {
-	  getOrgans(Organ::ot_organ);
-	  int c = 0;
-	  for (const auto& o : organs) {
-		  c += (o->r_nodes.size()-1);
-	  }
-	  return c;
- }
+	getOrgans(Organ::ot_organ);
+	int c = 0;
+	for (const auto& o : organs) {
+		c += (o->r_nodes.size()-1);
+	}
+	return c;
+}
 
 /**
  * Returns a reference to the sequential list of organs,
@@ -727,86 +727,85 @@ void Plant::writeVTP(int otype, std::ostream & os) const // currently not using,
 
 /**
 write VTP using tinyXML
-**/
+ **/
 void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file by using TinyXML2 performance slowed by 0.5 seconds but precision increased
 {
-    tinyxml2::XMLPrinter printer( 0, false, 0 );
+	tinyxml2::XMLPrinter printer( 0, false, 0 );
 
 	this->getOrgans(otype); // update roots (if necessary)
-	const auto& nodes = getPolylines(otype);
-	const auto& times = getPolylinesNET(otype);
+	auto nodes = getPolylines(otype);
+	auto times = getPolylinesNET(otype);
 
 	os << "<?xml version=\"1.0\"?>";
 	printer.OpenElement("VTKFile"); printer.PushAttribute("type", "PolyData"); printer.PushAttribute("version", "0.1"); printer.PushAttribute("byte_order", "LittleEndian");
-        printer.OpenElement("PolyData");
-            int non = 0; // number of nodes
-            for (auto const& r : organs) {
-                non += r->getNumberOfNodes();
-            }
-            int nol=organs.size(); // number of lines
-            printer.OpenElement("Piece"); printer.PushAttribute("NumberOfLines",  nol); printer.PushAttribute("NumberOfPoints", non);
-            // POINTDATA
-                printer.OpenElement("PointData"); printer.PushAttribute("Scalars", "Pointdata");
-                    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "time"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-                        for (const auto& r: times) {
-                            for (const auto& t : r) {
-                            printer.PushText(t); printer.PushText(" ");
-                            }
-                        }
-                    printer.CloseElement();
-                printer.CloseElement();
+	printer.OpenElement("PolyData");
+	int non = 0; // number of nodes
+	for (auto const& r : organs) {
+		non += r->getNumberOfNodes();
+	}
+	int nol=organs.size(); // number of lines
+	printer.OpenElement("Piece"); printer.PushAttribute("NumberOfLines",  nol); printer.PushAttribute("NumberOfPoints", non);
 
-            // CELLDATA (live on the polylines)
-                printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
-                std::vector<std::string> sTypeNames = { "organtype", "id", "subtype" , "emergencetime", "creationtime", "age"}; //  , "order", "radius"
-                    for (size_t i=0; i<sTypeNames.size(); i++) {
-                    std::string sType = sTypeNames[i];
-                    char const *schar = sType.c_str();
-                        printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-                            std::vector<double> scalars = getScalar(otype, sTypeNames[i]);
+	// POINTDATA
+	printer.OpenElement("PointData"); printer.PushAttribute("Scalars", "Pointdata");
+	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "time"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+	for (std::vector<double> r: times) {
+		for (double t : r) {
+			printer.PushText(t); printer.PushText(" ");
+		}
+	}
+	printer.CloseElement();
+	printer.CloseElement();
 
-                            for (double s : scalars) {
-                                printer.PushText(s); printer.PushText(" ");
-                            }
-                        printer.CloseElement();
-                    }
+	// CELLDATA (live on the polylines)
+	printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
+	std::vector<std::string> sTypeNames = { "organtype", "id",  "emergencetime", "creationtime", "age"}; //  , "order", "radius", "subtype" ,
+	for (size_t i=0; i<sTypeNames.size(); i++) {
+		std::string sType = sTypeNames[i];
+		char const *schar = sType.c_str();
+		printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+		std::vector<double> scalars = getScalar(otype, sTypeNames[i]);
+		for (double s : scalars) {
+			printer.PushText(s); printer.PushText(" ");
+		}
+		printer.CloseElement();
+	}
+	printer.CloseElement();
 
-                printer.CloseElement();
+	// POINTS (=nodes)
+	printer.OpenElement("Points");
+	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "Coordinates"); printer.PushAttribute("NumberOfComponents", "3"); printer.PushAttribute("format", "ascii" );
+	for (auto const& r:nodes) {
+		for (auto const& n : r) {
+			printer.PushText(n.x); printer.PushText(" "); printer.PushText(n.y); printer.PushText(" "); printer.PushText(n.z); printer.PushText(" ");
+		}
+	}
+	printer.CloseElement();
+	printer.CloseElement();
 
-            // POINTS (=nodes)
-                printer.OpenElement("Points");
-                    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "Coordinates"); printer.PushAttribute("NumberOfComponents", "3"); printer.PushAttribute("format", "ascii" );
-                        for (auto const& r:nodes) {
-                            for (auto const& n : r) {
-                                printer.PushText(n.x); printer.PushText(" "); printer.PushText(n.y); printer.PushText(" "); printer.PushText(n.z); printer.PushText(" ");
-                            }
-                        }
-                    printer.CloseElement();
-                printer.CloseElement();
+	// LINES (polylines)
+	printer.OpenElement("Lines");
+	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "connectivity"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+	int c=0;
+	for (auto const& r:organs) {
+		for (size_t i=0; i<r->getNumberOfNodes(); i++) {
+			printer.PushText(c); printer.PushText(" ");
+			c++;
+		}
+	}
+	printer.CloseElement();
 
-            // LINES (polylines)
-                printer.OpenElement("Lines");
-                    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "connectivity"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-                        int c=0;
-                        for (auto const& r:organs) {
-                            for (size_t i=0; i<r->getNumberOfNodes(); i++) {
-                                printer.PushText(c); printer.PushText(" ");
-                                c++;
-                            }
-                        }
-                    printer.CloseElement();
-
-                    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "offsets"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-                        c = 0;
-                        for (auto const& r:organs) {
-                            c += r->getNumberOfNodes();
-                            printer.PushText(c); printer.PushText(" ");
-                        }
-                    printer.CloseElement();
-                printer.CloseElement();
-            printer.CloseElement();
-        printer.CloseElement();
-    printer.CloseElement();
+	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "offsets"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+	c = 0;
+	for (auto const& r:organs) {
+		c += r->getNumberOfNodes();
+		printer.PushText(c); printer.PushText(" ");
+	}
+	printer.CloseElement();
+	printer.CloseElement();
+	printer.CloseElement();
+	printer.CloseElement();
+	printer.CloseElement();
 	os << std::string(printer.CStr());
 }
 

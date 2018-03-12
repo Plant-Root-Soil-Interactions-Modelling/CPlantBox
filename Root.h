@@ -31,7 +31,7 @@ class Root : public Organ
 
 public:
 
-    Root(Plant* plant, Organ* parent, int type, double delay, Vector3d iheading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
+    Root(Plant* plant, Organ* parent, int subtype, double delay, Vector3d iheading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
     virtual ~Root() { }; // base class constructor is called automatically in c++
 
     virtual int organType() const override { return Organ::ot_root; };
