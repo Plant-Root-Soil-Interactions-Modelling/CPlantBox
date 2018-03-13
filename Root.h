@@ -25,6 +25,9 @@ class RootTypeParameter;
  * Describes a single root, by a vector of nodes representing the root.
  * The method simulate() creates new nodes of this root, and lateral roots in the root's branching zone.
  *
+ * Since roots in soil cannot move the roots nodes are represented by absolute coordinates, in contrast to
+ * other organs like Leaf or Stem.
+ *
  */
 class Root : public Organ
 {

@@ -6,18 +6,18 @@
  * Typically called by the RootSystem::RootSystem(), or Root::createNewRoot().
  * For base roots the initial node and node emergence time (netime) must be set from outside
  *
- * @param rs 			points to RootSystem
- * @param type 		    type of root that is created
- * @param pheading		heading of parent root at emergence
- * @param delay 		to give apical zone of parent time to develop
- * @param parent		parent root
+ * @param plant 		points to the plant
+ * @param parent 		points to the parent organ
+ * @param subtype		root type
+ * @param delay 		delay in order to give the apical zone to develop
+ * @param iheading		relative heading (within parent organ)
  * @param pni			parent node index
  * @param pbl			parent base length
  */
 Root::Root(Plant* plant, Organ* parent, int subtype, double delay, Vector3d iheading ,int pni, double pbl) :Organ(plant,parent,subtype,delay), pni(pni), pbl(pbl)
 {
 	initialHeading = iheading;
-//	std::cout << "Root pni = "<< pni<< std::endl;
+	//	std::cout << "Root pni = "<< pni<< std::endl;
 	//std::cout << "Root constructor \n";
 
 	RootTypeParameter* rtp = (RootTypeParameter*) plant->getParameter(Organ::ot_root, subtype);
@@ -157,40 +157,27 @@ void Root::simulate(double dt, bool silence)
 }
 
 /**
- *
+ * Returns the parameter called @param name
  */
 double Root::getScalar(std::string name) const {
 	double r = Organ::getScalar(name);
-	if (name=="basalzone") { r = rParam()->lb; } // todo and so on
-//	switch(stype) {
-//	// st_rlt, st_meanln, st_stdln , st_nob, st_surface, , // root level
-//	case Plant::st_lb:
-//		return rParam()->lb;
-//	case Plant::st_la:
-//		return rParam()->la;
-//	case Plant::st_r:
-//		return rParam()->r;
-//	case Plant::st_radius:
-//		return rParam()->a;
-//	case Plant::st_theta:
-//		return rParam()->theta;
-//	case Plant::st_rlt:
-//		return rParam()->rlt;
-//	case Plant::st_meanln:
-//		return std::accumulate(rParam()->ln.begin(), rParam()->ln.end(), 0.0) / rParam()->ln.size();
-//	case Plant::st_stdln: {
-//		const std::vector<double>& v_ = rParam()->ln;
-//		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
-//		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
-//		return std::sqrt(sq_sum / v_.size() - mean * mean);
-//	}
-//	case Plant::st_surface:
-//		return rParam()->a*rParam()->a*M_PI*length;
-//	case Plant::st_nob:
-//		return rParam()->ln.size();
-//	default:
-//		return  Organ::getScalar(stype);
-//	}
+	if (name=="basal zone") { r = rParam()->lb; }
+	if (name=="apical zone") { r = rParam()->la; }
+	if (name=="initial growth rate") { r = rParam()->r; }
+	if (name=="radius") { r = rParam()->a; }
+	if (name=="insertion angle") { r = rParam()->theta; }
+	if (name=="root life time") { r = rParam()->rlt; }
+	if (name=="mean internodal distance") {
+		r = std::accumulate(rParam()->ln.begin(), rParam()->ln.end(), 0.0) / rParam()->ln.size();
+	}
+	if (name=="sd internodal distance") {
+		const std::vector<double>& v_ = rParam()->ln;
+		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
+		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
+		r = std::sqrt(sq_sum / v_.size() - mean * mean);
+	}
+	if (name=="surface") { r = rParam()->a*rParam()->a*M_PI*length; }
+	if (name=="number of branches") { r = rParam()->ln.size() +1; }
 	return r;
 }
 
@@ -240,14 +227,14 @@ double Root::getAge(double length)
 }
 
 /**
- *
+ * Shortcut for the OrganTypeParameter (@see also rParam() )
  */
 RootTypeParameter* Root::tParam() const {
 	return (RootTypeParameter*)getOrganTypeParameter();
 }
 
 /**
- *
+ * Axial resolution
  */
 double Root::dx() const
 {
@@ -329,7 +316,7 @@ void Root::createSegments(double l, bool silence)
 
 	if (l<smallDx) {
 		if (!silence) {
-//			std::cout << "skipped small segment (<"<< smallDx << ") \n";
+			//			std::cout << "skipped small segment (<"<< smallDx << ") \n";
 		}
 		return;
 	}
@@ -345,7 +332,7 @@ void Root::createSegments(double l, bool silence)
 			sdx = l-n*dx();
 			if (sdx<smallDx) {
 				if (!silence) {
-//					std::cout << "skipped small segment (<"<< smallDx << ") \n";
+					//					std::cout << "skipped small segment (<"<< smallDx << ") \n";
 				}
 				return;
 			}
