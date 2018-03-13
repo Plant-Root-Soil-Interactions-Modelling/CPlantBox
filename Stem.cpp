@@ -30,10 +30,10 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rhea
 
 	Matrix3d heading = Matrix3d::ons(rheading,2); // isheading is the z direction, i.e. column 2 in the matrix
 
-	double beta = M_PI*plant->getSTPIndex()*0.2 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
-	Matrix3d rotZ = Matrix3d::rotX(beta);
-	double theta = 0.1*M_PI*stem_p->theta;
-	Matrix3d rotX = Matrix3d::rotZ(theta);
+	double beta = M_PI*plant->getSTPIndex()*0.3333 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
+	Matrix3d rotZ = Matrix3d::rotZ(beta);
+	double theta =  0.3*M_PI*stem_p->theta;
+	Matrix3d rotX = Matrix3d::rotX(theta);
 
 	rotZ.times(heading);
 	rotX.times(rotZ);

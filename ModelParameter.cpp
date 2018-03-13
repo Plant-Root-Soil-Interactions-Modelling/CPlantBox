@@ -33,7 +33,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryDoubleAttribute("value" , &attr);
                     param->QueryDoubleAttribute("dev" , &deviation);
-                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<" dev is " << deviation << "\n";
+//                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<" dev is " << deviation << "\n";
         }
              }
 }
@@ -43,7 +43,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryIntAttribute("value" , &attr);
                     param->QueryDoubleAttribute("dev" , &deviation);
-                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<" dev is " << deviation << "\n";
+//                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<" dev is " << deviation << "\n";
         }
              }
 }
@@ -53,7 +53,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryDoubleAttribute("value" , &attr);
-                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
+//                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
         }
              }
 }
@@ -63,7 +63,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
                     param->QueryIntAttribute("value" , &attr);
-                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
+//                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<"\n";
         }
              }
 }
@@ -77,7 +77,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param,const ch
                     successorP.push_back(0);
                     param->QueryIntAttribute("type" , &successor.at(n));
                     param->QueryDoubleAttribute("percentage" , &successorP.at(n));
-                       std::cout << attr_name<<" number " << successor.at(n) <<" percentage " << successorP.at(n)<<"\n";
+//                       std::cout << attr_name<<" number " << successor.at(n) <<" percentage " << successorP.at(n)<<"\n";
         }
              }
 }

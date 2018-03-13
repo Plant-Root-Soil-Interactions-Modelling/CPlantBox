@@ -127,7 +127,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
 				stp->readXML(organ_param);
 				c++;
-				std::cout << " Read from XML " << c << " root type parameters \n";
+//				std::cout << " Read from XML " << c << " seed type parameters \n";
 			}
 
 
@@ -137,7 +137,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				setParameter(p);
 				//                root_element = root_element->NextSiblingElement("organ") ;
 				c++;
-				std::cout << " Read from XML " << c << " root type parameters \n";
+//				std::cout << " Read from XML " << c << " root type parameters \n";
 			}
 
 			if (organ_param->Attribute("type", "stem")) {
@@ -146,7 +146,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				stem_p->readXML(organ_param);
 				setParameter(stem_p);
 				c++;
-				std::cout << " Read from XML " << c << " stem type parameters \n";
+//				std::cout << " Read from XML " << c << " stem type parameters \n";
 			}
 			if (organ_param->Attribute("type", "leaf")) {
 
@@ -154,7 +154,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				leaf_p->readXML(organ_param);
 				setParameter(leaf_p);
 				c++;
-				std::cout << " Read from XML " << c << " leaf type parameters \n";
+//				std::cout << " Read from XML " << c << " leaf type parameters \n";
 			}
 		}
 
@@ -393,7 +393,7 @@ void Plant::initialize()
 void Plant::simulate(double dt, bool silence)
 {
 	if (!silence) {
-		std::cout << "Plant.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
+//		std::cout << "Plant.simulate(dt) from "<< simtime << " to " << simtime+dt << " days \n";
 	}
 	old_non = getNumberOfNodes();
 	old_nor = organs.size();
@@ -756,7 +756,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 
 	// CELLDATA (live on the polylines)
 	printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
-	std::vector<std::string> sTypeNames = { "organtype", "id",  "emergencetime", "creationtime", "age"}; //  , "order", "radius", "subtype" ,
+	std::vector<std::string> sTypeNames = { "organtype", "id",  "emergencetime", "creationtime", "age", "subtype"}; //  , "order", "radius", "subtype" ,
 	for (size_t i=0; i<sTypeNames.size(); i++) {
 		std::string sType = sTypeNames[i];
 		char const *schar = sType.c_str();

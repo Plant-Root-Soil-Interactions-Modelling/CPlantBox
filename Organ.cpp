@@ -50,7 +50,7 @@ Vector3d Organ::getOrigin() const {
  */
 Matrix3d Organ::getHeading() const {
 	//   recursive
-	if (organType() != Organ::ot_seed  ) { // only use this for root
+	if (organType() != Organ::ot_seed  ) {
 		auto a = parent->getHeading();
 		a.times(this->getRelativeHeading());
 		return a;

@@ -31,6 +31,8 @@ public:
 
 	virtual void initialize();
 
+	Vector3d relHeading() const; //< relative heading of the stem tip
+
 	virtual std::string toString() const override;
 
 	const int basalType = 4;
