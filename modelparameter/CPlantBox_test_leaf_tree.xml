@@ -206,7 +206,7 @@
     <parameter name="colorB" value="0.2"/>
     <parameter name="tropismT" value="4"/>
     <parameter name="tropismN" value="2"/>
-    <parameter name="tropismS" value="0.2"/>
+    <parameter name="tropismS" value="0"/>
     <parameter name="dx" value="0.25"/>
     <parameter name="theta" value="3" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
