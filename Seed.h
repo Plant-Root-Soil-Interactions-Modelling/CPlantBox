@@ -30,14 +30,12 @@ public:
 	///< the relative position within the parent organ
 
 	virtual void initialize();
-
-	Vector3d relHeading() const; //< relative heading of the stem tip
-
+    	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; };
 	virtual std::string toString() const override;
 
 	const int basalType = 4;
 	Vector3d seed_pos;
-
+     	Matrix3d A; // relative heading
 };
 
 

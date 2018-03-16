@@ -16,4 +16,9 @@ plant.initialize()
 plant.simulate(60, True)
 
 # Export final result (as vtp)
+#2 = root
+#4 = stem
+#8 = leaf
+#15 = all
+
 plant.write("results/example_1a.vtp", 15)

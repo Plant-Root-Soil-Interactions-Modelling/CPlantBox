@@ -20,7 +20,7 @@ void Seed::initialize()
 	if (Plant::noParamFile[1] == 1) {
 		std::cout<<"no root param"<<std::endl;
 	} else {
-		Root* taproot = new Root(plant, this, 1, 50, iheading ,0., 0.); // tap root has subtype 1
+		Root* taproot = new Root(plant, this, 1, 0, iheading ,0., 0.); // tap root has subtype 1
 		taproot->addNode(seed_pos,0);
 		children.push_back(taproot);
 		if (sparam->maxB>0) {
@@ -56,9 +56,9 @@ void Seed::initialize()
 		//	Vector3d isheading(0,0,1);//Initial Stem heading
 		//    Vector3d h = heading(); // current heading
 		Vector3d ish(0,0,1);
-		Stem* mainstem = new Stem(plant, this, 1, 0., ish ,0., 0.); // tap root has subtype 1
+		Stem* mainstem = new Stem(plant, this, 1, 0, ish ,0., 0.); // tap root has subtype 1
 		mainstem->addNode(Vector3d(),0); // <- relative position, i.e. seed_pos should come from the seed
-//			mainstem->setRelativeOrigin(r_nodes.back());
+		//	mainstem->setRelativeOrigin(r_nodes.back());
 		//	mainstem->setRelativeHeading(Matrix3d::rotZ(M_PI/2));
 		//    mainstem->setRelativeHeading(Matrix3d::rotZ(M_PI*plant->getSTPIndex()*0.1));
 		children.push_back(mainstem);

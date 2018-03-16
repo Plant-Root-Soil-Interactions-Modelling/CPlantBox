@@ -27,15 +27,16 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rhea
 	param = sttp->realize(); // throw the dice
 	StemParameter* stem_p = (StemParameter*) param;
 	//  std::cout <<", "<<(StemParameter*) param<< "\n";
-
+          std::cout<<"theta "<<stem_p->theta<<"\n";
 	Matrix3d heading = Matrix3d::ons(rheading,2); // isheading is the z direction, i.e. column 2 in the matrix
 
-	double beta = M_PI*plant->getSTPIndex()*0.3333 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
+	double beta = M_PI*plant->getSTPIndex()*0.2 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
 	Matrix3d rotZ = Matrix3d::rotZ(beta);
-	double theta =  0.3*M_PI*stem_p->theta;
+	double theta = 0.1*M_PI*stem_p->theta;
 	Matrix3d rotX = Matrix3d::rotX(theta);
 
 	rotZ.times(heading);
+	parent->setRelativeHeading(rotZ);
 	rotX.times(rotZ);
 	setRelativeHeading(rotX);
 

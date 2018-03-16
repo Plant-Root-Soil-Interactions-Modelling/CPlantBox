@@ -389,6 +389,7 @@ void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 	createGrowth();
    std::cout<<"subType "<<subType<<"\n";
 
+
 }
 
 
@@ -896,6 +897,7 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "gf", "parameter", gf);
    getAttribute(ele_param, "successor", "parameter", successor, successorP);
    std::cout<<"subType "<<subType<<"\n";
+      std::cout<<"theta "<<theta<<"\n";
    	createTropism();
 	createGrowth();
 }
@@ -908,12 +910,12 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("type","stem");
 
 	    switch (subType) {
-	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("subType",subType);// See
+	case 1 :  printer.PushAttribute("name","mainstem"); printer.PushAttribute("subType",subType);// See
 
 	break;
-    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("subType",subType); // See
+    case 2 :  printer.PushAttribute("name","1stbranch"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("subType",subType);// See
+    case 3 :  printer.PushAttribute("name","2ndbranch"); printer.PushAttribute("subType",subType);// See
 	break;
 	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("subType",subType); // See
 	break;
