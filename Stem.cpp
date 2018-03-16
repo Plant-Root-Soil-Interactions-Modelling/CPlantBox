@@ -36,7 +36,7 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rhea
 	Matrix3d rotX = Matrix3d::rotX(theta);
 
 	rotZ.times(heading);
-	parent->setRelativeHeading(rotZ);
+	parent->setRelativeHeading(rotZ); // now the parent is rotating, so the beta is working as before
 	rotX.times(rotZ);
 	setRelativeHeading(rotX);
 
