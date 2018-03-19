@@ -9,15 +9,15 @@ import xylem_flux
 # Simulate a root system
 name = "Sorghum_bicolor_NA_NA"
 dt = 30 # days
-rs = rb.RootSystem()
-rs.openFile(name)
-rs.initialize() 
-rs.simulate(dt) 
+plant = rb.Plant()
+plant.openFile(name)
+plant.initialize() 
+plant.simulate(dt, True) 
 
 # Create graph
-nodes = vv2a(rs.getNodes())/100 # convert from cm to m 
-rseg = seg2a(rs.getSegments()) # root system segments
-sseg = seg2a(rs.getShootSegments()) # additional shoot segments
+nodes = vv2a(plant.getNodes())/100 # convert from cm to m 
+rseg = seg2a(plant.getSegments()) # root system segments
+#sseg = seg2a(plant.getShootSegments()) # additional shoot segments
 seg = np.vstack((sseg,rseg))
 
 print(sseg)

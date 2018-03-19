@@ -917,9 +917,9 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	break;
     case 3 :  printer.PushAttribute("name","2ndbranch"); printer.PushAttribute("subType",subType);// See
 	break;
-	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("subType",subType); // See
+	case 4 :  printer.PushAttribute("name","otherbranch1"); printer.PushAttribute("subType",subType); // See
 	break;
-    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("subType",subType); // See
+    case 5 :  printer.PushAttribute("name","otherbranch2"); printer.PushAttribute("subType",subType); // See
 	break;
     }
 

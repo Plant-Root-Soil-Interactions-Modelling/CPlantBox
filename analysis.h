@@ -68,7 +68,7 @@ public:
 
 protected:
 
-    std::vector<std::vector<double>> userData; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.
+    std::vector<std::vector<double> > userData; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.
     std::vector<std::string> userDataNames; ///< names of the data added, e.g. "Flux", "Pressure", etc.
     const Plant* rs = nullptr;
 
