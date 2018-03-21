@@ -13,3 +13,14 @@ CPlantBox_Codeblocks_project/
 .vs/cpb/v15/.suo
 examples/PSP_infiltrationRedistribution1D/*
 examples/Exudation/*
+/.vs
+/__pycache__/xylem_flux.cpython-35.pyc
+/__pycache__/rb_tools.cpython-36.pyc
+/__pycache__/rb_tools.cpython-35.pyc
+/__pycache__
+/CPlantBoxVS.vcxproj.user
+/CPlantBoxVS.vcxproj.filters
+/CPlantBoxVS.vcxproj
+/CPlantBoxVS.sln
+/py_plantbox.so
+/Report20180320-1455.diagsession

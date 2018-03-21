@@ -1,13 +1,13 @@
-import py_rootbox as rb
+import py_plantbox as pb
 from rb_tools import *
 
 
 
-plant = rb.Plant()
+plant = pb.Plant()
 
 # Open  and root parameter from a file
 name = "CPlantBox_test_leaf_tree" # "Anagallis_femina_Leitner_2010"
-plant.openFile(name)
+plant.openXML(name)
 
 # Initialize
 plant.initialize()

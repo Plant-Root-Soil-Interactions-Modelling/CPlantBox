@@ -1,12 +1,14 @@
-#ifndef PY_ROOTBOX_H_
-#define PY_ROOTBOX_H_
+#ifndef PY_PLANTBOX_H_
+#define PY_PLANTBOX_H_
+#define BOOST_LIB_NAME boost_python3
+#define BOOST_PYTHON_STATIC_LIB
+
 
 // copy paste for daniel
 // 1.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -L/home/daniel/boost_1_62_0/stage/lib -lboost_python Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
 // 2.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
 // 3.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.6 -lboost_python-py36 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
-// 4   For CPlantBox g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35  Debug/Plant.o Debug/tinyxml2.o Debug/sdf.o Debug/Organ.o Debug/Root.o Debug/Stem.o Debug/Leaf.o Debug/LeafTropism.o Debug/RootTropism.o Debug/StemTropism.o Debug/analysis.o Debug/ModelParameter.o Debug/Seed.o
-
+// 4   For CPlantBox g++ -std=c++11 -O3 -fpic -shared -o py_plantbox.so -Wl,-soname,"py_plantbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35  Debug/Plant.o Debug/tinyxml2.o Debug/sdf.o Debug/Organ.o Debug/Root.o Debug/Stem.o Debug/Leaf.o Debug/LeafTropism.o Debug/RootTropism.o Debug/StemTropism.o Debug/analysis.o Debug/ModelParameter.o Debug/Seed.o
 
 /**
  *  A Python module for CRootbox based on boost.python
@@ -14,7 +16,7 @@
  *  build a shared library from this file
  *  put comment to line 16 to ignore this file
  */
-//#define PYTHON_WRAPPER // UNCOMMENT TO BUILD SHARED LIBRARY
+#define PYTHON_WRAPPER // UNCOMMENT TO BUILD SHARED LIBRARY
 
 #ifdef PYTHON_WRAPPER
 
@@ -82,6 +84,7 @@ SegmentAnalyser (SegmentAnalyser::*cut1)(const SDF_HalfPlane& plane) const = &Se
  */
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(initialize_overloads,initialize,0,2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(openFile_overloads,openFile,1,2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(openXML_overloads,openXML,1,2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(simulate1_overloads,simulate,1,2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(simulate3_overloads,simulate,3,4);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(getValue_overloads,getValue,1,2);
@@ -126,7 +129,7 @@ public:
 /**
  * Expose classes to Python module
  */
-BOOST_PYTHON_MODULE(py_rootbox)
+BOOST_PYTHON_MODULE(py_plantbox)
 {
     /*
      * general
@@ -430,10 +433,11 @@ BOOST_PYTHON_MODULE(py_rootbox)
     class_<Plant, Plant* >("Plant",init<>())
 		.def(init<Plant&>())
 		.def("setOrganTypeParameter", &Plant::setParameter)
-		.def("getOrganTypeParameter", &Plant::getParameter, return_value_policy<reference_existing_object>())
+		.def("getOrganTypeParameter", &Plant::getParameter,  return_value_policy<reference_existing_object>())
 ////		.def("setOrganParameter", &Organ::setOrganParameter)
 ////		.def("getOrganParameter", &Organ::getOrganParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
 		.def("openFile", &Plant::openFile, openFile_overloads())
+		.def("openXML", &Plant::openXML, openXML_overloads())
 //		.def("setGeometry", &Plant::setGeometry)
 ////		.def("setSoil", &Plant::setSoil)
 //		.def("reset", &Plant::reset)
@@ -441,7 +445,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
 		.def("simulate",simulate1, simulate1_overloads())
 		.def("simulate",simulate2)
 //		.def("getSimTime", &Plant::getSimTime)
-//		.def("getNumberOfNodes", &Plant::getNumberOfNodes)
+		.def("getNumberOfNodes", &Plant::getNumberOfNodes)
 //		.def("getNumberOfSegments", &Plant::getNumberOfSegments)
 //		.def("getRoots", &Plant::getOrgans, return_value_policy<reference_existing_object>())
 ////		.def("getBaseRoots", &Plant::get)
@@ -462,7 +466,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
 	class_<Organ>("Organ",init<Plant*, Organ*, int, double >())
 ////	    .def()
 ////	    .def
-//    ;
+    ;
 //
 //    enum_<Organ::TropismTypes>("TropismType")
 //    	.value("plagio", Organ::TropismTypes::tt_plagio)
@@ -490,7 +494,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
 //    /*
 //     * analysis.h
 //     */
-    class_<SegmentAnalyser>("Organ")
+    class_<SegmentAnalyser>("SegmentAnalyser")
     .def(init<Plant&>())
     .def(init<SegmentAnalyser&>())
 	.def("addSegments",addSegments1)
@@ -512,7 +516,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
 //	.def("cut", cut1)
 	.def("addUserData", &SegmentAnalyser::addUserData)
 	.def("clearUserData", &SegmentAnalyser::clearUserData)
-//	.def("write", &SegmentAnalyser::write)
+	.def("write", &SegmentAnalyser::write)
 //	// .def("cut", cut2) // not working, see top definition of cut2
     ;
 //    class_<std::vector<SegmentAnalyser>>("std_vector_SegmentAnalyser_")
@@ -563,5 +567,5 @@ BOOST_PYTHON_MODULE(py_rootbox)
 
 #endif /* PYTHON_WRAPPER */
 
-#endif /* PY_ROOTBOX_H_ */
+#endif /* PY_PLANTBOX_H_ */
 

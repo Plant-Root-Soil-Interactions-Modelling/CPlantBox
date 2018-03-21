@@ -2,7 +2,7 @@
 
 /**
  * Constructor
- * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .stparam file) tropism, growth function, txt and vtp writing syleaf.
+ * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .lParam file) tropism, growth function, txt and vtp writing syleaf.
  * All of those can be modified to fit the real growth of the Plant.
  *
  * Typically called by the Plant::Plant(), or Leaf::createNewLeaf().
@@ -171,45 +171,26 @@ void Leaf::simulate(double dt, bool silence)
  *
  */
 double Leaf::getScalar(std::string name) const {
+double r = Organ::getScalar(name);
+	if (name=="basal zone") { r = lParam()->lb; }
+	if (name=="apical zone") { r = lParam()->la; }
+	if (name=="initial growth rate") { r = lParam()->r; }
+	if (name=="radius") { r = lParam()->a; }
+	if (name=="insertion angle") { r = lParam()->theta; }
+	if (name=="root life time") { r = lParam()->rlt; }
+//	if (name=="mean internodal distance") {
+//		r = std::accumulate(lParam()->ln.begin(), lParam()->ln.end(), 0.0) / lParam()->ln.size();
+//	}
+//	if (name=="sd internodal distance") {
+//		const std::vector<double>& v_ = lParam()->ln;
+//		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
+//		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
+//		r = std::sqrt(sq_sum / v_.size() - mean * mean);
+//	}
+//	if (name=="surface") { r = lParam()->a*lParam()->a*M_PI*length; }
+//	if (name=="number of branches") { r = lParam()->ln.size() +1; }
+	return r;
 
-	double s = Organ::getScalar(name);
-
-	/*
-	 * add leaf specific parameters here ...
-	 */
-
-	//
-	//  switch(stype) {
-	//  // st_rlt, st_meanln, st_stdln , st_nob, st_surface, , // leaf level
-	//  case Plant::st_lb:
-	//    return lParam()->lb;
-	//  case Plant::st_la:
-	//    return lParam()->la;
-	//  case Plant::st_r:
-	//    return lParam()->r;
-	//  case Plant::st_radius:
-	//    return lParam()->a;
-	//  case Plant::st_theta:
-	//    return lParam()->theta;
-	//  case Plant::st_rlt:
-	//    return lParam()->rlt;
-	//  case Plant::st_meanln:
-	//    return std::accumulate(lParam()->ln.begin(), lParam()->ln.end(), 0.0) / lParam()->ln.size();
-	//  case Plant::st_stdln: {
-	//    const std::vector<double>& v_ = lParam()->ln;
-	//    double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
-	//    double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
-	//    return std::sqrt(sq_sum / v_.size() - mean * mean);
-	//  }
-	//  case Plant::st_surface:
-	//    return lParam()->a*lParam()->a*M_PI*length;
-	//  case Plant::st_nob:
-	//    return lParam()->ln.size();
-	//  default:
-	//    return  Organ::getScalar(stype);
-	//  }
-
-	return s;
 }
 
 /**
