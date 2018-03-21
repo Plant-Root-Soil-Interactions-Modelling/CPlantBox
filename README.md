@@ -61,7 +61,7 @@ put
 ```
 in PythonPlant.cpp if it is not there. Then run it if you see
 ```
-Creating library C:\Users\xxxx\source\CPlantBox\x64\Debug\CPlantBoxVS.lib and object C:\Users\x.zhou\source\CPlantBox\x64\Debug\CPlantBoxVS.exp
+Creating library C:\Users\xxxx\source\CPlantBox\x64\Debug\CPlantBoxVS.lib and object C:\Users\xxxx\source\CPlantBox\x64\Debug\CPlantBoxVS.exp
 
 1>CPlantBoxVS.vcxproj -> C:\Users\xxxx\source\CPlantBox\x64\Debug\CPlantBoxVS.dll
 
