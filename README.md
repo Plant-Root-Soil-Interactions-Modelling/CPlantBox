@@ -23,6 +23,7 @@ To build the shared library py_rootbox for coupling with Python pleaser refer to
 # Example
 
 Visualized in R, thanks  [@guillaumelobet](https://github.com/guillaumelobet)
+
 ![alt text](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/results/plant.gif "Tree with leafs")
 
 
