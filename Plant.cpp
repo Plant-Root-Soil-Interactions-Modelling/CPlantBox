@@ -110,16 +110,6 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 
 		tinyxml2::XMLDocument xmlParamFile;
 		xmlParamFile.LoadFile(XMLname.c_str());
-		//    XMLCheckResult(eResult);
-		//    tinyxml2::XMLNode * pRoot = xmlParamFile.FirstChild();
-		//    if (pRoot == nullptr) return XML_ERROR_FILE_READ_ERROR;
-		//    tinyxml2::XMLElement * pElement = pRoot->FirstChildElement("taproot");
-		//    if (pElement == nullptr) return XML_ERROR_PARSING_ELEMENT;
-		//    int iOutInt;
-		//    eResult = pElement->QueryIntText(&iOutInt);
-		//    tinyxml2::XMLCheckResult(eResult);
-		//        const tinyxml2::XMLElement* plant_parameter = xmlParamFile.FirstChildElement("Plant");
-		//        const tinyxml2::XMLElement* root_element = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" )->NextSiblingElement("organ");
 		int c = 0;
 		for (const tinyxml2::XMLElement* organ_param = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" ); organ_param != 0 ; organ_param = organ_param->NextSiblingElement("organ") )
 		{
@@ -137,7 +127,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				setParameter(p);
 				//                root_element = root_element->NextSiblingElement("organ") ;
 				c++;
-//				std::cout << " Read from XML " << c << " root type parameters \n";
+				std::cout << " Read from XML " << c << " root type parameters \n";
 			}
 
 			if (organ_param->Attribute("type", "stem")) {
@@ -147,7 +137,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				setParameter(stem_p);
 				c++;
 //				std::cout << " Read from XML " << c << " stem type parameters \n";
-			} else {Plant::noParamFile[2] == 1;}
+			} else {Plant::noParamFile[2] = 1;}
 			if (organ_param->Attribute("type", "leaf")) {
 
 				LeafTypeParameter* leaf_p  = new LeafTypeParameter();
@@ -313,7 +303,7 @@ void Plant::writeParameters(std::ostream& os) const
 		unsigned int t = 0;
 		for (auto const& otp : otp_) {
 			if ((otp->organType>=0) && (otp->subType>=0) && ((otp->subType)==t)) {
-				//				assert((otp->subType)==t); // check if index really equals subType-1
+								assert((otp->subType)==t); // check if index really equals subType-1
 				os << otp->writeXML(0);
 			}
 			t++;
