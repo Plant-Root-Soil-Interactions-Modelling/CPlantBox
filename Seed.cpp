@@ -15,7 +15,7 @@ void Seed::initialize()
 	SeedTypeParameter* stp = (SeedTypeParameter*) plant->getParameter(Organ::ot_seed, 0);
 	param = stp->realize(); // throw the dice
 	SeedParameter* sparam = (SeedParameter*) param;
-
+	std::cout << "maxb = " << sparam->maxB << std::endl;
 	Vector3d iheading(0,0,-1);
 	if (Plant::noParamFile[1] == 1) {
 		std::cout<<"no root param"<<std::endl;
@@ -30,6 +30,8 @@ void Seed::initialize()
 				RootTypeParameter* brtp = new RootTypeParameter(*tapParam);
 				brtp->subType = basalType;
 				plant->setParameter(brtp);
+				std::cout << "maxb = " << sparam->maxB << std::endl;
+
 			}
 			int maxB = sparam->maxB;
 			if (sparam->delayB>0) {
