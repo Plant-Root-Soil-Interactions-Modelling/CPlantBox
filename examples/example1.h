@@ -14,7 +14,7 @@ void example1()
 {
     Plant plant;
 
-    string name = "Sorghum_bicolor_NA_NA";
+    string name = "Triticum_aestivum_a_Bingham_2011";
 
     /*
      * Open plant and root parameter from a file
