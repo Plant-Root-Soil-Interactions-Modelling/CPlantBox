@@ -256,7 +256,7 @@ int RootTypeParameter::getLateralType(const Vector3d& pos)
 {
 	assert(successor.size()==successorP.size());
 	double scale = sbp->getValue(pos);  //the current model makes not a lot of sense, we may come up with something more clever
-	if (successorP.size()>0) { // at least 1 successor type
+	if (successorP.size()>0) { // at least 1 successor typese 
 		if (successorP.size()>1) { // if there are more than one lateral we have to dice
 			double d = rand();
 			int i=0;
@@ -483,7 +483,7 @@ void SeedTypeParameter::read(std::istream & is) {
 
 	std::string s; // dummy
 	is  >>  s >> plantingdepth;
-	is >> s >> firstB >> s >> delayB >> s >> maxB >> s >> s >> s >> s >> s >> s >> s >> s >> s >> s >> s >> s;
+	is >> s >> firstB >> s >> delayB >> s >> maxB >> s >> nC >> s >> firstSB >> s >> delaySB >> s >> delayRC >> s >> nz >> s >> simtime;
 	seedPos = Vector3d(0,0,-plantingdepth);
 	std::cout << "SeedTypeParamter::read is deprecated, use SeedTypeParamter::readXML instead\n";
 }
@@ -536,7 +536,10 @@ void SeedTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "seedPos.z", "parameter", seedPos.z);
    getAttribute(ele_param, "plantingdepth", "parameter", plantingdepth);
    getAttribute(ele_param, "firstB", "parameter", firstB, firstBs);
-   getAttribute(ele_param, "firstB", "parameter", delayB, delayBs);
+   getAttribute(ele_param, "firstSB", "parameter", firstSB, firstSBs);
+   getAttribute(ele_param, "delayB", "parameter", delayB, delayBs);
+   getAttribute(ele_param, "delaySB", "parameter", delaySB, delaySBs);
+   getAttribute(ele_param, "delayRC", "parameter", delayRC, delayRCs);
    getAttribute(ele_param, "nC", "parameter", nC);
    getAttribute(ele_param, "nz", "parameter", nz);
    getAttribute(ele_param, "maxB", "parameter", maxB, maxBs);
@@ -558,9 +561,12 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.OpenElement("parameter");    printer.PushAttribute("name", "plantingdepth");    printer.PushAttribute("value", plantingdepth);  printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "firstB");    printer.PushAttribute("value", firstB);  printer.PushAttribute("dev", firstBs); printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "delayB");    printer.PushAttribute("value", delayB);  printer.PushAttribute("dev", delayBs); printer.CloseElement(false);
-        printer.OpenElement("parameter");    printer.PushAttribute("name", "nC");    printer.PushAttribute("value", nC);  printer.CloseElement(false);
+		printer.OpenElement("parameter");    printer.PushAttribute("name", "maxB");    printer.PushAttribute("value", maxB);  printer.PushAttribute("dev", maxBs); printer.CloseElement(false);
+		printer.OpenElement("parameter");    printer.PushAttribute("name", "nC");    printer.PushAttribute("value", nC);  printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "nz");    printer.PushAttribute("value", nz);  printer.CloseElement(false);
-        printer.OpenElement("parameter");    printer.PushAttribute("name", "maxB");    printer.PushAttribute("value", maxB);  printer.PushAttribute("dev", maxBs); printer.CloseElement(false);
+		printer.OpenElement("parameter");    printer.PushAttribute("name", "firstSB");    printer.PushAttribute("value", firstSB);  printer.PushAttribute("dev", firstSBs); printer.CloseElement(false);
+		printer.OpenElement("parameter");    printer.PushAttribute("name", "delaySB");    printer.PushAttribute("value", delaySB);  printer.PushAttribute("dev", delaySBs); printer.CloseElement(false);
+		printer.OpenElement("parameter");    printer.PushAttribute("name", "delayRC");    printer.PushAttribute("value", delayRC);  printer.PushAttribute("dev", delayRCs); printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "simulationTime");    printer.PushAttribute("value", simtime);  printer.PushAttribute("dev", maxBs); printer.CloseElement(false);
     printer.CloseElement(false); // close element compact mode false
 

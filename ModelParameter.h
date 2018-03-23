@@ -233,6 +233,12 @@ public:
 	double nC = 0;
 	double nz = 0;
 	double simtime = 60;
+	double firstSB = 0;
+	double firstSBs = 0;
+	double delaySB = 0;
+	double delaySBs = 0;
+	double delayRC = 0;
+	double delayRCs = 0;
 
 };
 
