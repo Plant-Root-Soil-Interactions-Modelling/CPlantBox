@@ -411,6 +411,8 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	break;
     case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("subType",subType); // See
 	break;
+	case 6:  printer.PushAttribute("name", "lateral2"); printer.PushAttribute("subType", subType); // See
+		break;
     }
 
     printer.OpenElement("parameter");

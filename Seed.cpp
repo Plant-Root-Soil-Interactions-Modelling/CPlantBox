@@ -26,7 +26,7 @@ void Seed::initialize()
 		if (sparam->maxB>0) {
 			if (plant->getParameter(Organ::ot_root, basalType)->subType<1) { // if the type is not defined, copy tap root
 				std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
-				RootTypeParameter* tapParam = (RootTypeParameter*)plant->getParameter(Organ::ot_root, 0);
+				RootTypeParameter* tapParam = (RootTypeParameter*)plant->getParameter(Organ::ot_root, 1);
 				RootTypeParameter* brtp = new RootTypeParameter(*tapParam);
 				brtp->subType = basalType;
 				plant->setParameter(brtp);
@@ -39,7 +39,7 @@ void Seed::initialize()
 			}
 			double delay = sparam->firstB;
 			for (int i=0; i<maxB; i++) {
-				Root* basalroot = new Root(plant, this, basalType, delay, iheading ,0., 0.);
+				Root* basalroot = new Root(plant, this, 1, delay, iheading ,0., 0.);
 				basalroot->r_nodes.push_back(taproot->r_nodes.at(0)); // node
 				basalroot->nodeIDs.push_back(taproot->nodeIDs.at(0)); // tap root ID
 				basalroot->nctimes.push_back(delay); // exact creation time

@@ -325,7 +325,7 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
 	for (auto const& otp_:organParam) {
 		unsigned int t = 0;
 		for (auto const& otp : otp_) {
-			if ((otp->organType>=1) && (otp->subType>=1) && ((otp->subType)==t) ) {
+			if ((otp->organType>=1) && (otp->subType>=0) && ((otp->subType)==t) ) {
 								assert((otp->subType)==t); // check if index really equals subType-1
 				xmloutput<<otp->writeXML(0);
 				xmloutput<<std::endl;
