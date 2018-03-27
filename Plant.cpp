@@ -137,7 +137,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				setParameter(stem_p);
 				c++;
 //				std::cout << " Read from XML " << c << " stem type parameters \n";
-			} else {Plant::noParamFile[2] = 1;}
+			} else //{Plant::noParamFile[2] = 1;}
 			if (organ_param->Attribute("type", "leaf")) {
 
 				LeafTypeParameter* leaf_p  = new LeafTypeParameter();
