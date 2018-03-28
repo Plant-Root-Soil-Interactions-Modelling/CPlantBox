@@ -1,7 +1,6 @@
 import math
 import numpy as np
 from scipy import sparse
-
 from numpy.linalg.linalg import norm
 
 #
@@ -12,16 +11,16 @@ from numpy.linalg.linalg import norm
 # nodes   numpy array (N,3) of the node coordinates [L]
 # radius  segment radii [L]
 # kr      radial conductivity for each segment [L2 T M−1]
-# kz      axial conductivity for each segment [L5 T]
+# kz      axial conductivity for each segment [L5 T M-1]
 # rho     density of soil water [M L-3]
 # g       gravitational acceleration [L T−2]
-# soil_p  lambda funciton returning the soil matric potential at a given location, p=soil_p(x,y,z) [M L−1 T−2]
+# soil_p  lambda function returning the soil matric potential at a given location, p=soil_p(x,y,z) [M L−1 T−2]
 #
 # out: 
 # Q,b     The equations are represented by the linear system Qx=b
 # 
 def linear_system(seg, nodes, radius, kr, kz, rho, g, soil_p):
-        
+
     Ns = seg.shape[0]
     N = nodes.shape[0]
     
@@ -39,21 +38,22 @@ def linear_system(seg, nodes, radius, kr, kz, rho, g, soil_p):
         
         n1 = nodes[i,:]
         n2 = nodes[j,:]
-        mid = 0.5*(n1+n2)
-        
+       
+        mid = 0.5*(n1+n2)        
         p_s = soil_p(mid[0],mid[1],mid[2]) # evaluate soil matric potential
 
         v = n2-n1
         l = norm(v)        
-        v = v / l # normed direction        
+        vz = v[2] / l # normed direction        
+        
         a = radius[c]
         
-        cii = a*math.pi*l*kr[c] + kz[c]/l # Eqn (10)
-        cij = a*math.pi*l*kr[c] - kz[c]/l # Eqn (11)
-        bi = 2.*a*math.pi*l*kr[c]*p_s # firstterm of Eqn (12) & (13)            
+        cii = a*math.pi*l*kr[c]/2 + kz[c]/l # Eqn (10)
+        cij = a*math.pi*l*kr[c]/2 - kz[c]/l # Eqn (11)
+        bi = a*math.pi*l*kr[c]*p_s # first term of Eqn (12) & (13)            
         
         # edge ij
-        b[i] +=  (bi + kz[c]*rho*g*v[2])  # Eqn (12)        
+        b[i] +=  ( bi - kz[c]*rho*g*vz )  # Eqn (12)     
         
         I[k] = i
         J[k] = i     
@@ -66,22 +66,20 @@ def linear_system(seg, nodes, radius, kr, kz, rho, g, soil_p):
         k += 1 
         
         # edge ji
-        i,j = j, i
-        
-        b[i] += (bi - kz[c]*rho*g*v[2]) # Eqn (13)
-
+        i, j = j, i
+        b[i] += ( bi + kz[c]*rho*g*vz ) # Eqn (13) 
+  
         I[k] = i
         J[k] = i  
         V[k] += cii    
         k += 1                
-        
+          
         I[k] = i
         J[k] = j        
-        V[k] += cij
-        
+        V[k] += cij        
         k += 1 
-        
-    Q = sparse.coo_matrix((V,(I,J)))
+         
+    Q = sparse.coo_matrix((V,(I,J)))    
     Q = sparse.csr_matrix(Q) # Sparse row matrix seems the most reasonable to solve Qx = b iteratively
     
     return (Q, b)
