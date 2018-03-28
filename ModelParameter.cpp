@@ -345,7 +345,7 @@ void RootTypeParameter::read(std::istream & is)
 void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
-   const char* name;
+   const char* name; //name of the suborgan,
    ele->QueryUnsignedAttribute("subType", &subType);
    ele->QueryStringAttribute("name", &name);
    getAttribute(ele_param, "lb", "parameter", lb, lbs);
@@ -411,7 +411,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 	break;
     case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("subType",subType); // See
 	break;
-	case 6:  printer.PushAttribute("name", "lateral2"); printer.PushAttribute("subType", subType); // See
+	case 6:  printer.PushAttribute("name", "lateral3"); printer.PushAttribute("subType", subType); // See
 		break;
     }
 
@@ -499,33 +499,6 @@ void SeedTypeParameter::write(std::ostream & cout) const {
 	std::cout << "SeedTypeParamter::write is deprecated, use SeedTypeParamter::writeXML instead\n";
 }
 
-//void SeedTypeParameter::readXML(FILE* fp) {
-//	tinyxml2::XMLDocument doc( fp );
-//	tinyxml2::XMLElement* seed = doc.FirstChildElement( "Seed" );
-//	seedPos = Vector3d(0,0,-3);
-//	seedPoss = Vector3d();
-//	tinyxml2::XMLElement* pos = seed->FirstChildElement("Location");
-//	if (pos!=0) {
-//		readXMLvs(pos,"x",&seedPos.x,&seedPoss.x);
-//		readXMLvs(pos,"y",&seedPos.y,&seedPoss.y);
-//		readXMLvs(pos,"z",&seedPos.z,&seedPoss.z);
-//	}
-//
-//	firstB = 1.e9;
-//	firstBs = 0.;
-//	delayB = 1.e9;
-//	delayBs =0.;
-//	maxB = 0;
-//	maxBs = 0;
-//	tinyxml2::XMLElement* basal = seed->FirstChildElement("Basal roots");
-//	if (basal!=0) {
-//		readXMLvs(basal,"First",&firstB,&firstBs);
-//		readXMLvs(basal,"Delay",&delayB,&delayBs);
-//		double dmB=0;
-//		readXMLvs(basal,"Maximum",&dmB,&maxBs);
-//		maxB = int(dmB);
-//	}
-//}
 void SeedTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
