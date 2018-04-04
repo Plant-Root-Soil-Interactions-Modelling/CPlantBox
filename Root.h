@@ -35,7 +35,8 @@ class Root : public Organ
 public:
 
     Root(Plant* plant, Organ* parent, int subtype, double delay, Vector3d iheading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
-    virtual ~Root() { }; // base class constructor is called automatically in c++
+	Root(const Organ& r, Plant& plant);
+	virtual ~Root() { }; // base class constructor is called automatically in c++
 
     virtual int organType() const override { return Organ::ot_root; };
 
@@ -64,8 +65,11 @@ public:
     void addNode(Vector3d n, double t); //< adds a node to the root
 
     /* parameters that are given per root that are constant*/
-    int pni; ///< parent node index
-    double pbl; ///< length [cm]
+	double parent_base_length; ///< length [cm]
+	int parent_ni; ///< parent node index
+	int pni;
+	double pbl;
+
 
     const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
 
@@ -79,5 +83,9 @@ protected:
     int old_non = 0;
 
 };
+
+
+
+
 
 #endif /* ROOT_H_ */

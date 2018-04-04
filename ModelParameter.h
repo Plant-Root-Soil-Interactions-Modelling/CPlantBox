@@ -147,7 +147,7 @@ public:
 	double las;		///< Standard deviation apical zone [cm];
 	double ln; 		///< Inter-lateral distance [cm]
 	double lns;  	///< Standard deviation inter-lateral distance [cm]
-		double k;
+	double k;
 	double ks;
 	double nob; 	///< Number of branches [1]
 	double nobs; 	///< Standard deviation number of branches [1]
