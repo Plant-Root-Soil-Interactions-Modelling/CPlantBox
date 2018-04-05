@@ -3,7 +3,7 @@
 .pydevproject
 .settings/
 Debug/
-*.vtp
+
 *.txt
 a.out
 CPlantBox_Codeblocks_project/
@@ -24,3 +24,6 @@ examples/Exudation/*
 /CPlantBoxVS.sln
 /py_plantbox.so
 /Report20180320-1455.diagsession
+/Debug
+/x64
+*.vtp
