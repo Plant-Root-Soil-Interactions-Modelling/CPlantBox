@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
+unsigned int Plant::noParamFile[5] = {0, 0, 1, 1, 1}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
 
 Plant::Plant()
 {
@@ -137,6 +137,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				setParameter(stem_p);
 				c++;
 //				std::cout << " Read from XML " << c << " stem type parameters \n";
+				Plant::noParamFile[2] = 0;
 			} else //{Plant::noParamFile[2] = 1;}
 			if (organ_param->Attribute("type", "leaf")) {
 
@@ -145,6 +146,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				setParameter(leaf_p);
 				c++;
 //				std::cout << " Read from XML " << c << " leaf type parameters \n";
+				Plant::noParamFile[3] = 0;
 			}
 		}
 
