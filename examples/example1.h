@@ -14,7 +14,7 @@ void example1()
 {
     Plant plant;
 
-    string name = "Triticum_aestivum_a_Bingham_2011";
+    string name = "Phloem";
 
     /*
      * Open plant and root parameter from a file
@@ -33,7 +33,7 @@ void example1()
     /*
      * Simulate
      */
-    double simtime = 30; // 60; // 20, 40, 60 days
+    double simtime = 60; // 60; // 20, 40, 60 days
     double dt = 1; // try other values here
     int N = round(simtime/dt);
 

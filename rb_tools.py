@@ -81,9 +81,9 @@ def plotRSscatter(ax,nodes): # plots the root system nodes (rather slow)
     ax.scatter(n[:,0]*scale,n[:,1]*scale,n[:,2]*scale)
     ax.set_title("Root tips")
         
-def parameterPath(): # works only if everything is located in folder CRootBox
+def parameterPath(): # works only if everything is located in folder CPlantBox
     cwd = os.getcwd()
-    i = cwd.index("CRootBox"+os.sep)
-    return cwd[0:i] + "CRootBox"+os.sep+"modelparameter"+os.sep            
+    i = cwd.index("CPlantBox"+os.sep)
+    return cwd[0:i] + "CPlantBox"+os.sep+"modelparameter"+os.sep            
     
     

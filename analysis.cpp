@@ -549,7 +549,7 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> typeN
 	os << "<Piece NumberOfLines=\""<< segments.size() << "\" NumberOfPoints=\""<< nodes.size()<< "\">\n";
 	// data (CellData)
 	os << "<CellData Scalars=\" CellData\">\n";
-	std::vector<std::string> sTypeNames = { "organtype", "id", "subtype"}; //  , "order", "radius"
+	std::vector<std::string> sTypeNames = { "organtype", "id", "subtype", "emergencetime"}; //  , "order", "radius"
 	for (size_t i=0; i<sTypeNames.size(); i++) {
 		os << "<DataArray type=\"Float32\" Name=\"" << sTypeNames[i] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
 		std::vector<double> scalars = getScalar(sTypeNames[i]);

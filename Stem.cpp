@@ -306,7 +306,7 @@ void Stem::LeafGrow(bool silence)
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = relHeading(); // current heading
-		Leaf* LeafGrow = new Leaf(plant, this , 2, delay, h, r_nodes.size()-1, length);
+		Leaf* LeafGrow = new Leaf(plant, this , 3, delay, h, r_nodes.size()-1, length);
 		//    LeafGrow->addNode(getNode(r_nodes.size()-1), length);
 		this->children.push_back(LeafGrow);
 		LeafGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current
