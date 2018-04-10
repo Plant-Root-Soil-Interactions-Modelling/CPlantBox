@@ -28,7 +28,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rhea
 
 	Matrix3d heading = Matrix3d::ons(rheading,2); // isheading is the z direction, i.e. column 2 in the matrix
 
-	double beta = (plant->getSLPIndex()*0.5+0.5)*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
+	double beta = (plant->getLPIndex()*0.5+0.5)*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
 	Matrix3d rotZ = Matrix3d::rotZ(beta);
 	double theta = leaf_p->theta;
 	Matrix3d rotX = Matrix3d::rotX(theta);

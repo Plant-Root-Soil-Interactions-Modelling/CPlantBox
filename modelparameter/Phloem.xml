@@ -17,11 +17,11 @@
 </organ>
 
 <organ type="root" name="taproot" subType="1">
-    <parameter name="lb" value="3" dev="0"/>
+    <parameter name="lb" value="1" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="2" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="1.0000000000000001e-05"/>
+    <parameter name="ln" value="2" dev="1.0000000000000001e-05"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="4.1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -69,11 +69,11 @@
 <organ type="root" name="lateral2" subType="3">
     <parameter name="lb" value="0" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="6.0099999999999998" dev="0"/>
+    <parameter name="la" value="2" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="0" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="6.0099999999999998" dev="0"/>
+    <parameter name="lmax" value="2" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="0.40000000000000002" dev="0.040000000000000001"/>
@@ -119,13 +119,13 @@
 
 
 <organ type="stem" name="mainstem" subType="1">
-    <parameter name="lb" value="2" dev="0"/>
+    <parameter name="lb" value="1" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="3" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="1" dev="1.0000000000000001e-05"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="9.1" dev="0"/>
+    <parameter name="lmax" value="6.1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="91" dev="0"/>
     <parameter name="r" value="5" dev="0.45000000000000001"/>
@@ -162,7 +162,7 @@
     <parameter name="tropismN" value="4"/>
     <parameter name="tropismS" value="0"/>
     <parameter name="dx" value="0.25"/>
-    <parameter name="theta" value="1.2" dev="0"/>
+    <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
     <parameter name="successor" number="0" type="0" percentage="1"/>
