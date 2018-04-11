@@ -30,9 +30,9 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rhea
           std::cout<<"theta "<<stem_p->theta<<"\n";
 	Matrix3d heading = Matrix3d::ons(rheading); // isheading is the z direction, i.e. column 2 in the matrix
 
-	double beta = M_PI*plant->getSTPIndex()*0.2 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
+	double beta = M_PI*plant->getSTPIndex()*0.5 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
 	Matrix3d rotZ = Matrix3d::rotX(beta);
-	double theta = 0.1*M_PI*stem_p->theta;
+	double theta = 0.5*M_PI*stem_p->theta;
 	Matrix3d rotX = Matrix3d::rotZ(theta);
 
 	heading.times(rotZ);
@@ -129,10 +129,11 @@ void Stem::simulate(double dt, bool silence)
 							if (length<s) {
 								if (i==children.size()) { // new internode leaf and shootBorneRoot
 									if (sp->subType==3) { //this decide which successor grow the leaf (TODO) adding it to parameterfile
-										LeafGrow(silence);
+										//LeafGrow(silence, newnode);
 										//                        ShootBorneRootGrow(silence);
 									} else {
 										createLateral(silence);
+										//LeafGrow(silence);
 									}
 									//                        ShootBorneRootGrow(silence);
 								}
@@ -157,7 +158,7 @@ void Stem::simulate(double dt, bool silence)
 					// apical zone
 					if (dl>0) {
 						createSegments(dl,silence);
-						LeafGrow(silence);
+						
 						length+=dl;
 					}
 				} else { // no laterals
@@ -287,7 +288,7 @@ void Stem::createLateral(bool silence)
 
 
 
-void Stem::LeafGrow(bool silence)
+void Stem::LeafGrow(bool silence, Vector3d bud)
 {
 
 	const StemParameter* sp = sParam(); // rename
@@ -302,6 +303,7 @@ void Stem::LeafGrow(bool silence)
 		Vector3d h = absHeading(); // current heading
 		Leaf* LeafGrow = new Leaf(plant, this , 3, 1, h, r_nodes.size()-1, length);
 		//    LeafGrow->addNode(getNode(r_nodes.size()-1), length);
+		LeafGrow->setRelativeOrigin(bud);
 		this->children.push_back(LeafGrow);
 		LeafGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current
 	}
@@ -377,7 +379,11 @@ void Stem::createSegments(double l, bool silence)
 				nctimes[nn-1] = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 				old_non = nn-1;
 				l -= sdx;
+
 				if (l<=0) { // ==0 should be enough
+					
+						LeafGrow(silence, newnode);
+					
 					return;
 				}
 			}
@@ -421,7 +427,7 @@ void Stem::createSegments(double l, bool silence)
 		ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 		//     std::cout<<"add node "<<newnode.toString()<<"\n";
 		addNode(newnode,ct);
-
+			
 	} // for
 
 }

@@ -104,7 +104,8 @@ public:
   int getSTPIndex() { stpid++; return stpid; } ///< returns next unique node id, called by Root::addNode()
   int getLPIndex() { slpid++; return slpid; } ///< returns next unique node id, called by leaf
   int getRootIndex() { rid++; return rid; } ///< returns next unique root id, called by the constructor of Root
-  
+  int getSTPID() {  return stpid; }
+
   Seed* seed;
 
 protected:
