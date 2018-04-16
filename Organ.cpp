@@ -139,6 +139,15 @@ std::vector<Organ*> Organ::getOrgans(unsigned int otype)
 	return v;
 }
 
+std::vector<Organ*> Organ::getChildren(unsigned int otype)
+{
+	std::vector<Organ*> v = std::vector<Organ*>();
+	this->getOrgans(otype, v);
+	return v;
+}
+
+
+
 /**
  * Returns the organs as sequential list,
  * copies only organs with more than 1 node.

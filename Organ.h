@@ -64,6 +64,7 @@ public:
     std::vector<Organ*> getOrgans(unsigned int otype); ///< the organ including successors in a sequential vector
     void getOrgans(unsigned int otype, std::vector<Organ*>& v); ///< the organ including successors in a sequential vector
 
+
     virtual double getScalar(std::string name) const; ///< returns an organ parameter of Plant::ScalarType
 
     /* IO */
@@ -80,6 +81,7 @@ public:
     Organ* parent; ///< pointer to the parent organ (equals nullptr if it has no parent)
     std::vector<Organ*> children; ///< the successive organs
 
+	std::vector<Organ*> getChildren(unsigned int otype);
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
     OrganParameter* param = nullptr; ///< the parameters of this root

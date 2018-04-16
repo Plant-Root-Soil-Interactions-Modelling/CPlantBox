@@ -26,7 +26,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rhea
 	LeafParameter* leaf_p = (LeafParameter*) param;
 	//  std::cout <<", "<<(LeafParameter*) param<< "\n";
 
-	Matrix3d heading = Matrix3d::ons(rheading,2); // isheading is the z direction, i.e. column 2 in the matrix
+	Matrix3d heading = Matrix3d::ons(rheading); // isheading is the z direction, i.e. column 2 in the matrix
 
 	double beta = (plant->getLPIndex()*0.5+0.5)*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
 	Matrix3d rotZ = Matrix3d::rotZ(beta);
@@ -35,7 +35,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rhea
 
 	rotZ.times(heading);
 	rotX.times(rotZ);
-	setRelativeHeading(rotX);
+	setRelativeHeading(rotX); // was setRelativeHeading(rotX); chnaged it to see the results
 
 	// initial node
 	//  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
@@ -267,7 +267,7 @@ void Leaf::createLateral(bool silence)
 		double ageLN = this->LeafGetAge(length); // age of leaf when lateral node is created
 		double ageLG = this->LeafGetAge(length+lp->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = relHeading(); // current heading
+		Vector3d h = absHeading(); // current heading
 		Leaf* lateral = new Leaf(plant, this, lt, delay, h,  r_nodes.size()-1, length);
 		lateral->setRelativeOrigin(r_nodes.back());
 		children.push_back(lateral);
@@ -304,7 +304,7 @@ void Leaf::createSegments(double l, bool silence)
 
 				Vector2d ab = ltParam()->tropism->getHeading(getNode(nn-2),getHeading(),olddx+sdx,this);
 
-				Vector3d h = relHeading();
+				Vector3d h = absHeading();
 				Matrix3d heading = Matrix3d::ons(h);
 				heading.times(Matrix3d::rotX(ab.y));
 				heading.times(Matrix3d::rotZ(ab.x));
@@ -351,7 +351,7 @@ void Leaf::createSegments(double l, bool silence)
 		sl+=sdx;
 
 		Vector2d ab = ltParam()->tropism->getHeading(getNode(nn-1),getHeading(),sdx,this);
-		Vector3d h = relHeading();
+		Vector3d h = absHeading();
 		Matrix3d heading = Matrix3d::ons(h);
 		heading.times(Matrix3d::rotX(ab.y));
 		heading.times(Matrix3d::rotZ(ab.x));

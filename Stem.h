@@ -76,16 +76,18 @@ public:
 	Vector3d o;
 	Matrix3d A; // relative heading
 
+	int getphytomerId(int subtype) { return phytomerId[subtype]; }
 
 protected:
 
+	void addPhytomerId(int subtype) { phytomerId[subtype]++; }
 	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
 	void createLateral(bool silence); ///< creates a new lateral, called by Stem::simulate()
 	void LeafGrow(bool silence, Vector3d bud);
 	void ShootBorneRootGrow(bool silence);
 
 	int old_non = 0; // relative origin
-
+	int phytomerId[10];
 };
 
 #endif
