@@ -11,7 +11,7 @@ import timeit
 
 
 # Simulate a root system
-name = "Triticum_aestivum_a_Bingham_2011"
+name = "Phloem"
 dt = 15 # days
 plant = pb.Plant()
 plant.openXML(name)

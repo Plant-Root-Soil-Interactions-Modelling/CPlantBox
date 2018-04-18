@@ -53,7 +53,6 @@ public:
 
   void openXML(std::string filename, std::string subdir="modelparameter/");
   int readRootParameters(std::istream & cin); ///< Reads root parameters from an input stream
-  int readXMLRootParameters(tinyxml2::XMLElement* ele); ///< Reads root parameters from an input stream
   int readStemParameters(std::istream & cin); ///< Reads stem parameters from an input stream
   int readLeafParameters(std::istream & cin);
   void writeParameters(std::ostream & os) const; ///< Writes root parameters to screen

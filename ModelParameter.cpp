@@ -375,8 +375,8 @@ void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "r", "parameter", r, rs);
    getAttribute(ele_param, "a", "parameter", a, as);
    getAttribute(ele_param, "colorR", "parameter", colorR);
-   getAttribute(ele_param, "colorG", "parameter", colorR);
-   getAttribute(ele_param, "colorB", "parameter", colorR);
+   getAttribute(ele_param, "colorG", "parameter", colorG);
+   getAttribute(ele_param, "colorB", "parameter", colorB);
    getAttribute(ele_param, "tropismN", "parameter", tropismN);
    getAttribute(ele_param, "tropismT", "parameter", tropismT);
    getAttribute(ele_param, "tropismS", "parameter", tropismS);
@@ -867,8 +867,8 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "r", "parameter", r, rs);
    getAttribute(ele_param, "a", "parameter", a, as);
    getAttribute(ele_param, "colorR", "parameter", colorR);
-   getAttribute(ele_param, "colorG", "parameter", colorR);
-   getAttribute(ele_param, "colorB", "parameter", colorR);
+   getAttribute(ele_param, "colorG", "parameter", colorG);
+   getAttribute(ele_param, "colorB", "parameter", colorB);
    getAttribute(ele_param, "tropismN", "parameter", tropismN);
    getAttribute(ele_param, "tropismT", "parameter", tropismT);
    getAttribute(ele_param, "tropismS", "parameter", tropismS);
@@ -1266,8 +1266,8 @@ void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "r", "parameter", r, rs);
    getAttribute(ele_param, "a", "parameter", a, as);
    getAttribute(ele_param, "colorR", "parameter", colorR);
-   getAttribute(ele_param, "colorG", "parameter", colorR);
-   getAttribute(ele_param, "colorB", "parameter", colorR);
+   getAttribute(ele_param, "colorG", "parameter", colorG);
+   getAttribute(ele_param, "colorB", "parameter", colorB);
    getAttribute(ele_param, "tropismN", "parameter", tropismN);
    getAttribute(ele_param, "tropismT", "parameter", tropismT);
    getAttribute(ele_param, "tropismS", "parameter", tropismS);

@@ -163,7 +163,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 		//            taproot_p->QueryStringAttribute("name", &aa);
 		//
 
-
+		writeAlltoXML(name.append("_new"));
 
 	} else{ openFile(name, subdir);
 	writeAlltoXML(name);

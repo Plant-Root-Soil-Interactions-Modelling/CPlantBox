@@ -19,8 +19,8 @@ void example1()
     /*
      * Open plant and root parameter from a file
      */
-    plant.openXML(name);
-//    plant.openFile(name);
+    plant.openXML("Phloem");
+    //plant.openFile(name);
 //    plant.writeAlltoXML(name);
 
 //     plant.writeParameters(std::cout);
