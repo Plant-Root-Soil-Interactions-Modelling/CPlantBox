@@ -296,9 +296,9 @@ void Stem::createLateral(bool silence)
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		auto lateral = std::make_shared<Organ>(Stem::Stem(plant, this, lt, delay, h, r_nodes.size() - 1, length));
+		Stem* lateral = new Stem(plant, this, lt, delay, h, r_nodes.size() - 1, length);
 		lateral->setRelativeOrigin(r_nodes.back());
-		children.uupush_back(lateral);
+		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 }

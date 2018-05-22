@@ -43,11 +43,11 @@
 </organ>
 
 <organ type="root" name="lateral1" subType="2">
-    <parameter name="lb" value="0" dev="0"/>
+    <parameter name="lb" value="0.10000000000000001" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="1.76" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0"/>
+    <parameter name="ln" value="0.10000000000000001" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="1.76" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -67,11 +67,11 @@
 </organ>
 
 <organ type="root" name="lateral2" subType="3">
-    <parameter name="lb" value="0" dev="0"/>
+    <parameter name="lb" value="0.10000000000000001" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="2" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0"/>
+    <parameter name="ln" value="0.10000000000000001" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="2" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -119,13 +119,13 @@
 <organ type="stem" name="mainstem" subType="1">
     <parameter name="lb" value="1" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
+    <parameter name="la" value="0.10000000000000001" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="3" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="4" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="2" dev="0"/>
+    <parameter name="nob" value="1.9666666666666668" dev="0"/>
     <parameter name="r" value="2.1000000000000001" dev="0"/>
     <parameter name="a" value="0.20000000000000001" dev="0.02"/>
     <parameter name="colorR" value="1"/>
@@ -166,16 +166,16 @@
     <parameter name="successor" number="0" type="0" percentage="1"/>
 </organ>
 
-<organ type="leaf" name="lateral2" subType="3">
+<organ type="leaf" name="lateral1" subType="2">
     <parameter name="lb" value="1" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0"/>
+    <parameter name="ln" value="0.10000000000000001" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="2" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="0" dev="0"/>
+    <parameter name="nob" value="1" dev="0"/>
     <parameter name="r" value="4" dev="0"/>
     <parameter name="a" value="0.02" dev="0.002"/>
     <parameter name="colorR" value="1"/>
