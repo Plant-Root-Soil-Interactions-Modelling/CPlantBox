@@ -14,12 +14,12 @@ void example1()
 {
     Plant plant;
 
-    string name = "Phloem";
+    string name = "CPlantBox_test_leaf_tree";
 
     /*
      * Open plant and root parameter from a file
      */
-    plant.openXML("Phloem");
+    plant.openXML(name);
     //plant.openFile(name);
 //    plant.writeAlltoXML(name);
 
@@ -33,7 +33,7 @@ void example1()
     /*
      * Simulate
      */
-    double simtime = 60; // 60; // 20, 40, 60 days
+    double simtime = 30; // 60; // 20, 40, 60 days
     double dt = 1; // try other values here
     int N = round(simtime/dt);
 

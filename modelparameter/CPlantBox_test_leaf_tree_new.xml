@@ -25,7 +25,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="159" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="299" dev="31.794039999999999"/>
+    <parameter name="nob" value="299" dev="0"/>
     <parameter name="r" value="4.5" dev="0.45000000000000001"/>
     <parameter name="a" value="0.20000000000000001" dev="0.02"/>
     <parameter name="colorR" value="1"/>
@@ -151,7 +151,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="120" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="10" dev="0"/>
+    <parameter name="nob" value="89" dev="0"/>
     <parameter name="r" value="5" dev="0.45000000000000001"/>
     <parameter name="a" value="0.20000000000000001" dev="0.02"/>
     <parameter name="colorR" value="1"/>
@@ -176,7 +176,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="70" dev="8"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="5" dev="2.6666666666666665"/>
+    <parameter name="nob" value="19.666666666666668" dev="2.6666666666666665"/>
     <parameter name="r" value="3" dev="0.035000000000000003"/>
     <parameter name="a" value="0.29999999999999999" dev="0.00125"/>
     <parameter name="colorR" value="1"/>

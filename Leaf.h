@@ -28,7 +28,7 @@ class Leaf : public Organ
 
 public:
 
-	Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
+	Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
 	virtual ~Leaf() { }; // base class constructor is called automatically in c++
 
 	virtual int organType() const override;
@@ -48,9 +48,10 @@ public:
 	LeafParameter* lParam() const { return (LeafParameter*)param;  } ///< type cast
 	LeafTypeParameter* ltParam() const; // type cast
 	double dx() const; ///< returns the axial resolution
-	Vector3d relHeading() const; //< relative heading of the Leaf tip
-	Vector3d absHeading() const; //< absolute heading of the Leaf tip
-
+	//Vector3d relHeading() const; //< relative heading of the Leaf tip
+	//Vector3d absHeading() const; //< absolute heading of the Leaf tip
+	Vector3d initialLeafHeading;
+	Vector3d heading() const; /// current heading of the root tip
 	/* IO */
 	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
 	std::string toString() const;

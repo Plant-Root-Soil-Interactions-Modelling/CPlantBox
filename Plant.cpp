@@ -1,5 +1,5 @@
 #include "Plant.h"
-
+#include <memory>
 #include <iostream>
 
 unsigned int Plant::noParamFile[5] = {0, 0, 1, 1, 1}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
@@ -8,7 +8,7 @@ Plant::Plant()
 {
 	initOTP();
 	setParameter(new SeedTypeParameter());
-	seed = new Seed(this);
+	std::shared_ptr<Seed> seed (new Seed(this));
 }
 
 Plant::~Plant()

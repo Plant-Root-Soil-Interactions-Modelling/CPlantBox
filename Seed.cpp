@@ -56,9 +56,9 @@ void Seed::initialize()
 		std::cout<<"no stem parameter, maybe the XML based parameter file is directly converted from the old rparam file"<<std::endl;
 	} else {
 		//	Vector3d isheading(0,0,1);//Initial Stem heading
-		Vector3d ish(-1,0,0);
-		Stem* mainstem = new Stem(plant, this, 1, 1, ish ,0., 0.); // tap root has subtype 1
-		mainstem->addNode(Vector3d(),0); // <- relative position, i.e. seed_pos should come from the seed
+		Vector3d isheading(0, 0, 1);//Initial Stem heading
+		Stem* mainstem = new Stem(plant, this, 1, 0., isheading, 0., 0.); // tap root has subtype 1
+		mainstem->addNode(sparam->seedPos, 0);
 		children.push_back(mainstem);
 
 		//	Stem* tiller1 = new Stem(plant, this, 1, 2, isheading ,0., 0.); // tap root has subtype 1

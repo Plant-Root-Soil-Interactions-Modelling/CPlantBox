@@ -31,7 +31,7 @@ class Stem : public Organ
 
 public:
 
-	Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
+	Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d isheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
 	virtual ~Stem() { }; // base class constructor is called automatically in c++
 
 	virtual int organType() const override { return Organ::ot_stem; };
@@ -51,8 +51,8 @@ public:
 	StemParameter* sParam() const { return (StemParameter*)param;  } ///< type cast
 	StemTypeParameter* stParam() const; // type cast
 	double dx() const; ///< returns the axial resolution
-	Vector3d relHeading() const; //< relative heading of the stem tip
-	Vector3d absHeading() const; //< absolute heading of the stem tip
+	//Vector3d relHeading() const; //< relative heading of the stem tip
+	//Vector3d absHeading() const; //< absolute heading of the stem tip
 
 	/* IO */
 	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
@@ -72,7 +72,8 @@ public:
 	virtual Vector3d getRelativeOrigin() const override { return o;  }
 	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
 	virtual Matrix3d getRelativeHeading() const override { return A; }
-
+	Vector3d initialStemHeading;
+	Vector3d heading() const; /// current heading of the root tip
 	Vector3d o;
 	Matrix3d A; // relative heading
 

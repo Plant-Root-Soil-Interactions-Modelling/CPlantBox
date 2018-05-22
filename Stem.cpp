@@ -1,6 +1,7 @@
 #include "Stem.h"
 #include "Leaf.h"
 #include "Root.h"
+#include <memory>
 /**
  * Constructor
  * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .stparam file) tropism, growth function, txt and vtp writing system.
@@ -17,30 +18,42 @@
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d rheading ,int pni, double pbl) :Organ(plant,parent,subtype,delay), pni(pni), pbl(pbl)
+Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d isheading ,int pni, double pbl) :Organ(plant,parent,subtype,delay), pni(pni), pbl(pbl)
 {
+	/*the relative heading is maulfunctioning 
+	so it is disabled and rerolled to old heading*/
 
-	//  initialStemHeading = isheading;
+	  initialStemHeading = isheading;
 	//  std::cout << "stem pni = "<< pni<< std::endl;
 	//  std::cout << "Stem constructor \n";
 	StemTypeParameter* sttp = (StemTypeParameter*) plant->getParameter(Organ::ot_stem, subtype);
 	param = sttp->realize(); // throw the dice
 	StemParameter* stem_p = (StemParameter*) param;
 	//  std::cout <<", "<<(StemParameter*) param<< "\n";
-          std::cout<<"theta "<<stem_p->theta<<"\n";
-	Matrix3d heading = Matrix3d::ons(rheading); // isheading is the z direction, i.e. column 2 in the matrix
+     //std::cout<<"theta "<<stem_p->theta<<"\n";
+	//Matrix3d heading = Matrix3d::ons(rheading); // isheading is the z direction, i.e. column 2 in the matrix
 
-	double beta = M_PI*plant->getSTPIndex()*0.5 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
-	Matrix3d rotX = Matrix3d::rotX(beta);
-	double theta = M_PI*stem_p->theta;
-	Matrix3d rotZ = Matrix3d::rotY(theta);
-	
-	
-	heading.times(rotX);
-	//parent->setRelativeHeading(rotX); // now the parent is rotating, so the beta is working as before
-	heading.times(rotZ);
+	//double beta = M_PI*plant->getSTPIndex()*0.5 ;//0.25*M_PI;//  +  initial rotation M_PI*plant->getSTPIndex()  +
+	//Matrix3d rotX = Matrix3d::rotX(beta);
+	//double theta = M_PI*stem_p->theta;
+	//Matrix3d rotZ = Matrix3d::rotY(theta);
+	//
+	//
+	//heading.times(rotX);
+	////parent->setRelativeHeading(rotX); // now the parent is rotating, so the beta is working as before
+	//heading.times(rotZ);
 
-	setRelativeHeading(heading);
+	double beta = M_PI * plant->getSTPIndex()*0.5 + 0.25 * M_PI*plant->rand(); //2 * M_PI*plant->rand(); // initial rotation
+	Matrix3d ons = Matrix3d::ons(initialStemHeading);
+	ons.times(Matrix3d::rotX(beta));
+	double theta = stem_p->theta;
+	if (parent->organType() != Organ::ot_seed) { // scale if not a base root
+		double scale = sttp->sa->getValue(parent->getNode(pni), this);
+		theta *= scale;
+	}
+	ons.times(Matrix3d::rotZ(theta));
+	this->initialStemHeading = ons.column(0); // new initial heading
+
 
 	// initial node
 	if (parent->organType()!=Organ::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
@@ -129,14 +142,14 @@ void Stem::simulate(double dt, bool silence)
 						for (size_t i=0; ((i<sp->ln.size()) && (dl>0)); i++) {
 							s+=sp->ln.at(i);
 							if (length<s) {
-								if (i==Organ::getChildren(2).size()) { // new internode leaf and shootBorneRoot
-									//if (sp->subType==3) { //this decide which successor grow the leaf (TODO) adding it to parameterfile
-									//	//LeafGrow(silence, newnode);
-									//	//ShootBorneRootGrow(silence);
-									//} else {
+								if (i==children.size()) { // new internode leaf and shootBorneRoot
+									if (sp->subType==3) { //this decide which successor grow the leaf (TODO) adding it to parameterfile
+										LeafGrow(silence, r_nodes.back());
+										//ShootBorneRootGrow(silence);
+									} else {
 										createLateral(silence);
 										//LeafGrow(silence);
-									//}
+									}
 									//                        ShootBorneRootGrow(silence);
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
@@ -152,7 +165,7 @@ void Stem::simulate(double dt, bool silence)
 							}
 						}
 						if (dl>0) {
-							if (sp->ln.size()== Organ::getChildren(2).size()) { // new lateral (the last one)
+							if (sp->ln.size()== children.size()) { // new lateral (the last one)
 									createLateral(silence);
 							}
 						}
@@ -282,10 +295,10 @@ void Stem::createLateral(bool silence)
 		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = absHeading(); // current heading
-		Stem* lateral = new Stem(plant, this, lt, delay, h,  r_nodes.size()-1, length);
+		Vector3d h = heading(); // current heading
+		auto lateral = std::make_shared<Organ>(Stem::Stem(plant, this, lt, delay, h, r_nodes.size() - 1, length));
 		lateral->setRelativeOrigin(r_nodes.back());
-		children.push_back(lateral);
+		children.uupush_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 }
@@ -304,8 +317,8 @@ void Stem::LeafGrow(bool silence, Vector3d bud)
 		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = absHeading(); // current heading
-		Leaf* LeafGrow = new Leaf(plant, this , 3, 1, h, r_nodes.size()-1, length);
+		Vector3d h = heading(); // current heading
+		Leaf* LeafGrow = new Leaf(plant, this , 2, 1, h, r_nodes.size()-1, length);
 		//    LeafGrow->addNode(getNode(r_nodes.size()-1), length);
 		LeafGrow->setRelativeOrigin(bud);
 		this->children.push_back(LeafGrow);
@@ -365,16 +378,21 @@ void Stem::createSegments(double l, bool silence)
 			auto n1 = r_nodes.at(nn-1);
 			double olddx = n1.minus(n2).length();
 			if (olddx<dx()*0.99) { // shift node instead of creating a new node
-
-				double sdx = std::min(dx()-olddx,l);
-
+				Vector3d h; // current heading
+				if (nn > 2) {
+					h = n2.minus(r_nodes.at(nn - 3));
+					h.normalize();
+				}
+				else {
+					h = initialStemHeading;
+				}
+				double sdx = std::min(dx() - olddx, l);
+	
+				Matrix3d ons = Matrix3d::ons(h);
 				Vector2d ab = stParam()->tropism->getHeading(getNode(nn-2),getHeading(),olddx+sdx,this);
-
-				Vector3d h = absHeading();
-				Matrix3d heading = Matrix3d::ons(h);
-				heading.times(Matrix3d::rotX(ab.y));
-				heading.times(Matrix3d::rotZ(ab.x));
-				Vector3d newdx = Vector3d(heading.column(0).times(olddx+sdx));
+				ons.times(Matrix3d::rotX(ab.y));
+				ons.times(Matrix3d::rotZ(ab.x));
+				Vector3d newdx = Vector3d(ons.column(0).times(olddx+sdx));
 
 				Vector3d newnode = Vector3d(r_nodes.at(nn-2).plus(newdx));
 				sl = sdx;
@@ -418,13 +436,12 @@ void Stem::createSegments(double l, bool silence)
 			}
 		}
 		sl+=sdx;
-
-		Vector2d ab = stParam()->tropism->getHeading(getNode(nn-1),getHeading(),sdx,this);
-		Vector3d h= absHeading();
-		Matrix3d heading = Matrix3d::ons(h);
-		heading.times(Matrix3d::rotX(ab.y));
-		heading.times(Matrix3d::rotZ(ab.x));
-		Vector3d newdx = Vector3d(heading.column(0).times(sdx));
+		Vector3d h = heading();
+		Matrix3d ons = Matrix3d::ons(h);
+		Vector2d ab = stParam()->tropism->getHeading(getNode(nn-1),ons,sdx,this);
+		ons.times(Matrix3d::rotX(ab.y));
+		ons.times(Matrix3d::rotZ(ab.x));
+		Vector3d newdx = Vector3d(ons.column(0).times(sdx));
 		Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
 		double ct = this->getCreationTime(length+sl);
 		ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
@@ -438,13 +455,24 @@ void Stem::createSegments(double l, bool silence)
 /**
  * Relative heading of organ tip
  */
-Vector3d Stem::relHeading() const {
+//Vector3d Stem::relHeading() const {
+//	Vector3d h;
+//	if (r_nodes.size()>1) {
+//		h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2)); // getHeading(b-a)
+//		h.normalize();
+//	} else {
+//		h = getRelativeHeading().column(2);
+//	}
+//	return h;
+//}
+
+Vector3d Stem::heading() const {
 	Vector3d h;
 	if (r_nodes.size()>1) {
-		h = r_nodes.back().minus(r_nodes.at(r_nodes.size()-2)); // getHeading(b-a)
-		h.normalize();
-	} else {
-		h = getRelativeHeading().column(2);
+		h = r_nodes.back().minus(r_nodes.at(r_nodes.size() - 2)); // getHeading(b-a)
+	}
+	else {
+		h = initialStemHeading;
 	}
 	return h;
 }
@@ -452,9 +480,9 @@ Vector3d Stem::relHeading() const {
 /**
  * Absolute heading of organ tip
  */
-Vector3d Stem::absHeading() const {
-	return  getHeading().column(2);;
-}
+//Vector3d Stem::absHeading() const {
+//	return  getHeading().column(2);;
+//}
 
 /**
  * Adds the next node to the stem.

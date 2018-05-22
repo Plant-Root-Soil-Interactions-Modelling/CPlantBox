@@ -16,7 +16,7 @@
  *  build a shared library from this file
  *  put comment to line 16 to ignore this file
  */
-//#define PYTHON_WRAPPER // UNCOMMENT TO BUILD SHARED LIBRARY
+#define PYTHON_WRAPPER // UNCOMMENT TO BUILD SHARED LIBRARY
 
 #ifdef PYTHON_WRAPPER
 

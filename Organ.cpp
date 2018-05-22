@@ -3,7 +3,7 @@
 /**
  * Constructor
  */
-Organ::Organ(Plant* plant, Organ* parent, int subtype, double delay) :plant(plant), parent(parent), age(delay)
+Organ::Organ(Plant* plant, Organ* parent, int subtype, double delay) : plant(plant), parent(parent), age(delay)
 {
 	id = plant->getOrganIndex(); // unique id from the plant
 }
