@@ -296,7 +296,7 @@ void Stem::createLateral(bool silence)
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Stem* lateral = new Stem(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		auto lateral = new Stem(plant, this, lt, delay, h, r_nodes.size() - 1, length);
 		lateral->setRelativeOrigin(r_nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -393,7 +393,7 @@ void Stem::createSegments(double l, bool silence)
 				ons.times(Matrix3d::rotX(ab.y));
 				ons.times(Matrix3d::rotZ(ab.x));
 				Vector3d newdx = Vector3d(ons.column(0).times(olddx+sdx));
-
+				
 				Vector3d newnode = Vector3d(r_nodes.at(nn-2).plus(newdx));
 				sl = sdx;
 				double ct = this->getCreationTime(length+sl);
@@ -403,6 +403,13 @@ void Stem::createSegments(double l, bool silence)
 				l -= sdx;
 
 				if (l<=0) { // ==0 should be enough
+					
+					if (tipleaf) {
+						LeafGrow(silence, r_nodes.back()); //the stem tip will grow leafs
+						std::cout << "leaf grow\n";
+						tipleaf = false;
+
+					}
 									return;
 				}
 			}
@@ -446,8 +453,10 @@ void Stem::createSegments(double l, bool silence)
 		double ct = this->getCreationTime(length+sl);
 		ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 		//     std::cout<<"add node "<<newnode.toString()<<"\n";
-		addNode(newnode,ct);
-			
+		if (tipleaf) {
+			addNode(newnode, ct);
+		}
+
 	} // for
 
 }

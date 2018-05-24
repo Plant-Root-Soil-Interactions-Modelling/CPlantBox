@@ -33,7 +33,7 @@ void example1()
     /*
      * Simulate
      */
-    double simtime = 30; // 60; // 20, 40, 60 days
+    double simtime =30; // 60; // 20, 40, 60 days
     double dt = 1; // try other values here
     int N = round(simtime/dt);
 

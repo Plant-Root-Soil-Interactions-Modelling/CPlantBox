@@ -15,7 +15,7 @@
 class Plant;
 class StemParameter;
 class StemTypeParameter;
-
+static bool tipleaf = true;
 /**
  * Stem
  *

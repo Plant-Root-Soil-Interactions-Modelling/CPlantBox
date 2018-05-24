@@ -6,18 +6,18 @@
 
 
 
-// auxiliary function for xml parsing
-void readXMLvs(tinyxml2::XMLElement* el_, std::string name, double* v, double* s)
-{
-	tinyxml2::XMLElement* el = el_->FirstChildElement(name.c_str());
-	if (el!=0) {
-		el->QueryDoubleText(v);
-		tinyxml2::XMLElement* sd = el->FirstChildElement("sd");
-		if (sd!=0) {
-			sd->QueryDoubleText(s);
-		}
-	}
-}
+//// auxiliary function for xml parsing
+//void readXMLvs(tinyxml2::XMLElement* el_, std::string name, double* v, double* s)
+//{
+//	tinyxml2::XMLElement* el = el_->FirstChildElement(name.c_str());
+//	if (el!=0) {
+//		el->QueryDoubleText(v);
+//		tinyxml2::XMLElement* sd = el->FirstChildElement("sd");
+//		if (sd!=0) {
+//			sd->QueryDoubleText(s);
+//		}
+//	}
+//}
 
 
 
@@ -93,6 +93,17 @@ double RootParameter::getK() const
 	return l+la+lb;
 }
 
+//void RootParameter::set(int type, double lb, double la, const std::vector<double>& ln, double nob, double r, double a, double theta, double rlt) {
+//	this->type = type;
+//	this->lb = lb;
+//	this->la = la;
+//	this->ln = ln;
+//	this->nob = nob;
+//	this->r = r;
+//	this->a = a;
+//	this->theta = theta;
+//	this->rlt = rlt;
+//}
 void RootParameter::write(std::ostream & cout) const
 {
 	cout << "# Root Parameters \n";
