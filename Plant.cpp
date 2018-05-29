@@ -8,7 +8,7 @@ Plant::Plant()
 {
 	initOTP();
 	setParameter(new SeedTypeParameter());
-	std::shared_ptr<Seed> seed (new Seed(this));
+	seed = new Seed(this);
 }
 
 Plant::~Plant()
@@ -70,7 +70,8 @@ void Plant::setGeometry(SignedDistanceFunction* geom)
  */
 void Plant::reset()
 {
-	// delete seed; // TODO??????
+
+	delete seed; // TODO??????
 	seed = new Seed(this);
 	simtime=0;
 	rid = -1;
@@ -485,6 +486,22 @@ std::vector<Vector2i> Plant::getSegments(unsigned int otype) const
 	return s;
 }
 
+
+std::vector<int> Plant::getNodesOrganType() const
+{
+	this->getOrgans(15);
+	int nos = getNumberOfSegments();
+	std::vector<int> s(nos);
+	int c = 0;
+	for (auto const& r : organs) {
+		for (size_t i = 0; i<r->getNumberOfNodes() - 1; i++) {
+			int v(r->getScalar("organtype"));
+			s.at(c) = v;
+			c++;
+		}
+	}
+	return s;
+}
 /**
  * Returns pointers to the organs corresponding to each segment
  */
@@ -553,6 +570,8 @@ std::vector<double> Plant::getScalar(unsigned int otype, std::string name) const
 	}
 	return scalars;
 }
+
+
 
 /**
  * todo most important debug informations

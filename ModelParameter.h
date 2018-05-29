@@ -94,8 +94,7 @@ public:
 	RootParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
 		lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln) { subType = type;  }
 	///< Constructor setting all parameters
-	//void set(int type, double lb, double la, const std::vector<double>& ln, double nob, double r, double a, double theta, double rlt);
-	/////< Sets all the parameters
+
 	double getK() const; ///< Returns the exact maximal root length of this realization [cm]
 
 	void write(std::ostream & cout) const; ///< Writes parameters for debugging
