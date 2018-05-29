@@ -53,7 +53,6 @@ using namespace boost::python;
  */
 Vector3d (Vector3d::*times1)(const double) const = &Vector3d::times;
 double (Vector3d::*times2)(const Vector3d&) const = &Vector3d::times;
-
 void (Matrix3d::*times3)(const Matrix3d&) = &Matrix3d::times;
 Vector3d (Matrix3d::*times4)(const Vector3d&) const = &Matrix3d::times;
 
@@ -432,6 +431,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 //	 */
     class_<Plant, Plant* >("Plant",init<>())
 		.def(init<Plant&>())
+		//.def_readwrite("noParamFile", &Plant::noParamFile)
 		.def("setOrganTypeParameter", &Plant::setParameter)
 		.def("getOrganTypeParameter", &Plant::getParameter,  return_value_policy<reference_existing_object>())
 ////		.def("setOrganParameter", &Organ::setOrganParameter)
@@ -453,6 +453,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.def("getPolylines", &Plant::getPolylines)
 		.def("getSegments", &Plant::getSegments)
 		.def("getSegmentsOrigin", &Plant::getSegmentsOrigin)
+		.def("getNodesOrganType", &Plant::getNodesOrganType)
 		.def("getNETimes", &Plant::getNETimes)
 		.def("getScalar", &Plant::getScalar)
 ////		.def("getRootTips", &Plant::getRootTips)
@@ -463,10 +464,18 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 //	/*
 //	 * Organ.
 //	 */
-	class_<Organ>("Organ",init<Plant*, Organ*, int, double >())
-////	    .def()
-////	    .def
-    ;
+	class_<Organ, Organ* >("Organ", init<Plant*, Organ*, int, double >())
+		.def(init<Organ&>())
+		.def("simulate", &Organ::simulate)
+		.def("getOrigin", &Organ::getOrigin)
+		.def("getOrganTypeParameter", &Organ::getOrganTypeParameter, return_value_policy<reference_existing_object>())
+		.def("getHeading", &Organ::getHeading)
+		.def("getNode", &Organ::getNode)
+		.def("getNodes", &Organ::getNodes)
+		.def("getScalar", &Organ::getScalar)
+		
+		
+		;
 //
     enum_<Organ::TropismTypes>("TropismType")
     	.value("plagio", Organ::TropismTypes::tt_plagio)
