@@ -143,10 +143,11 @@ void Stem::simulate(double dt, bool silence)
 							s+=sp->ln.at(i);
 							if (length<s) {
 								if (i==children.size()) { // new internode leaf and shootBorneRoot
-									if (sp->subType==3) { //this decide which successor grow the leaf (TODO) adding it to parameterfile
+									//if (sp->subType==3) 
+									{ //this decide which successor grow the leaf (TODO) adding it to parameterfile
 										LeafGrow(silence, r_nodes.back());
 										//ShootBorneRootGrow(silence);
-									} else {
+									//} else {
 										createLateral(silence);
 										//LeafGrow(silence);
 									}
