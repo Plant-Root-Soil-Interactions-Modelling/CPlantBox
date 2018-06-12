@@ -2,7 +2,7 @@
 #include <memory>
 #include <iostream>
 
-unsigned int Plant::noParamFile[5] = {0, 0, 0, 0, 0}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
+unsigned int Plant::noParamFile[5] = {0, 0, 1, 1, 1}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
 
 Plant::Plant()
 {
@@ -58,7 +58,7 @@ void Plant::setGeometry(SignedDistanceFunction* geom)
 	geometry = geom;
 	for (int i=0; i<maxtypes; i++) {
 		RootTypeParameter* rtp = (RootTypeParameter*) getParameter(Organ::ot_root,i);
-		if (rtp->subType>=0) { // defined
+		if (rtp->subType!=-1) { // defined
 			delete rtp->tropism;
 			rtp->createTropism(geom);
 		}

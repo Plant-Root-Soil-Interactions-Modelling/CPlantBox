@@ -171,7 +171,7 @@ void RootTypeParameter::set(int type, double lb, double lbs, double la, double l
 
 void RootTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
 {
-	delete tropism;
+	//delete tropism;
 	TropismFunction* t;
 	switch (tropismT) {
 	case tt_plagio: {

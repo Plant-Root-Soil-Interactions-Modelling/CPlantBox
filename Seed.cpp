@@ -17,7 +17,7 @@ void Seed::initialize()
 	SeedParameter* sparam = (SeedParameter*) param;
 	std::cout << "maxb = " << sparam->maxB << std::endl;
 	Vector3d iheading(0,0,-1);
-	if (Plant::noParamFile[1] == 9) {
+	if (Plant::noParamFile[1] == 1) {
 		std::cout<<"no root param"<<std::endl;
 	} else {
 		Root* taproot = new Root(plant, this, 1, 0, iheading ,0., 0.); // tap root has subtype 1
@@ -52,7 +52,7 @@ void Seed::initialize()
 
 	//main stem initialation
 
-	if (Plant::noParamFile[2] == 9) {
+	if (Plant::noParamFile[2] == 1) {
 		std::cout<<"no stem parameter, maybe the XML based parameter file is directly converted from the old rparam file"<<std::endl;
 	} else {
 		//	Vector3d isheading(0,0,1);//Initial Stem heading

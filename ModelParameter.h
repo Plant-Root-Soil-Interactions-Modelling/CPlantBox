@@ -117,7 +117,7 @@ public:
 class RootTypeParameter : public OrganTypeParameter
 {
 public:
-
+	
 	enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism
 	enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
@@ -175,11 +175,11 @@ public:
 
 	/* call back functions */
 	GrowthFunction* growth;
-	TropismFunction* tropism;
+	TropismFunction* tropism ;
 	SoilLookUp* se; ///< scale elongation function
 	SoilLookUp* sa; ///< scale angle function
 	SoilLookUp* sbp; ///< scale branching probability function
-
+	
 };
 
 
