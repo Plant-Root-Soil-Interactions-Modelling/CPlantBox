@@ -347,8 +347,9 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
  */
 void Plant::initialize()
 {
+	
 	reset(); // deletes the old seed, makes a new one
-	seed->initialize();
+	seed->initialize(seed->initializeparam());
 
 	/* the following code will be moved to the shoot */
 	//  // Shoot borne roots

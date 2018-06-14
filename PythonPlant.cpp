@@ -327,10 +327,9 @@ BOOST_PYTHON_MODULE(py_plantbox)
 //	/*
 //	 * ModelParameter.h
 //	 */
-	class_<RootTypeParameter>("RootTypeParameter", init<>())
-//			.def(init<OrganTypeParameter&>())
+	class_<RootTypeParameter, RootTypeParameter*>("RootTypeParameter", init<>())
 			.def(init<RootTypeParameter&>())
-			.def("realize",&OrganTypeParameter::realize, return_value_policy<reference_existing_object>())
+			.def("realize",&RootTypeParameter::realize, return_value_policy<reference_existing_object>())
 			.def("getLateralType",&RootTypeParameter::getLateralType)
 			.def("getK",&RootTypeParameter::getK)
 			.def_readwrite("type", &RootTypeParameter::subType)
@@ -381,19 +380,35 @@ BOOST_PYTHON_MODULE(py_plantbox)
 			.def("getK",&RootParameter::toString)
 			.def("__str__",&RootParameter::toString)
 	;
-	//class_<SeedTypeParameter>("SeedTypeParameter", init<>())
-	//		.def("set",&OrganParameter::set)
-	//		.def_readwrite("seedPos", &RootParameter::seedPos)
-	//		.def_readwrite("firstB", &OrganParameter::firstB)
-	//		.def_readwrite("delayB", &OrganParameter::delayB)
-	//		.def_readwrite("maxB", &OrganParameter::maxB)
-	//		.def_readwrite("nC", &OrganParameter::nC)
-	//		.def_readwrite("firstSB", &OrganParameter::firstSB)
-	//		.def_readwrite("delaySB", &OrganParameter::delaySB)
-	//		.def_readwrite("delayRC", &OrganParameter::delayRC)
-	//		.def_readwrite("nz", &OrganParameter::nz)
-	//		.def("__str__",&OrganParameter::toString)
-	//;
+	class_<SeedTypeParameter>("SeedTypeParameter", init<>())
+		.def(init<SeedTypeParameter&>())
+		.def("realize", &SeedTypeParameter::realize, return_value_policy<reference_existing_object>())
+		//	.def("set",&OrganParameter::set)
+			.def_readwrite("seedPos", &SeedTypeParameter::seedPos)
+			.def_readwrite("firstB", &SeedTypeParameter::firstB)
+			.def_readwrite("delayB", &SeedTypeParameter::delayB)
+			.def_readwrite("maxB", &SeedTypeParameter::maxB)
+			.def_readwrite("nC", &SeedTypeParameter::nC)
+			.def_readwrite("firstSB", &SeedTypeParameter::firstSB)
+			.def_readwrite("delaySB", &SeedTypeParameter::delaySB)
+			.def_readwrite("delayRC", &SeedTypeParameter::delayRC)
+			.def_readwrite("nz", &SeedTypeParameter::nz)
+			.def("__str__",&SeedTypeParameter::toString)
+	;
+
+	class_<SeedParameter, SeedParameter*>("SeedParameter", init<>())
+		//.def(init<int, double, double, std::vector<double>, double, double, double, double >())
+		//			.def("set",&RootParameter::set)
+		.def_readwrite("seedPos", &SeedParameter::seedPos)
+		.def_readwrite("firstB", &SeedParameter::firstB)
+		.def_readwrite("delayB", &SeedParameter::delayB)
+		.def_readwrite("maxB", &SeedParameter::maxB)
+		.def_readwrite("nC", &SeedParameter::nC)
+		.def_readwrite("firstSB", &SeedParameter::firstSB)
+		.def_readwrite("delaySB", &SeedParameter::delaySB)
+		.def_readwrite("delayRC", &SeedParameter::delayRC)
+		.def_readwrite("nz", &SeedParameter::nz)
+		;
 	/**
 	 * Root.h (no members, just data)
 	 */
@@ -422,7 +437,22 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.def(vector_indexing_suite<std::vector<std::vector<double>>>() )
 	;
 
-
+	class_<Seed, Seed*>("Seed", init<Plant*>())
+		.def(init<Seed&>())
+		.def("getseedPos", &Seed::getseedPos)
+		.def("__str__", &Seed::toString)
+		//.def_readwrite("plant", &Seed::plant)
+		//.def_readwrite("param", &Seed::param)
+		//.def_readwrite("id", &Seed::id)
+		//.def_readwrite("parent_base_length", &Root::pbl)
+		//.def_readwrite("parent_ni", &Seed::pni)
+		//.def_readwrite("alive", &Seed::alive)
+		//.def_readwrite("active", &Seed::active)
+		//.def_readwrite("age", &Seed::age)
+		//.def_readwrite("length", &Seed::length)
+		//.def_readwrite("parent", &Seed::parent)
+		//.def_readwrite("laterals", &Seed::children)
+		;
 
 
 
@@ -500,6 +530,20 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.value("userdata3", Organ::ScalarTypes::st_userdata3)
 		.value("parenttype", Organ::ScalarTypes::st_parenttype)
 	;
+
+	class_<OrganTypeParameter, OrganTypeParameter*>("OrganTypeParameter", init<>())
+		.def(init<OrganTypeParameter&>())
+		.def("simulate", &Organ::simulate)
+		.def_readwrite("organType", &OrganTypeParameter::organType)
+		.def_readwrite("subType", &OrganTypeParameter::subType)
+		;
+
+	class_<OrganParameter, OrganParameter*>("OrganParameter", init<>())
+		.def(init<OrganParameter&>())
+		.def("simulate", &Organ::simulate)
+		.def_readwrite("subType", &OrganParameter::subType)
+		;
+
 //    /*
 //     * analysis.h
 //     */
@@ -550,15 +594,6 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
    /*
 	* TinyXML.h
     */
-//    scope tinyxml2
-//    = class_<XMLprinter>
-//    class_<XMLprinter>("XMLprinter", init<>())
-//    .def("XMLprinter", tinyxml2::XMLPrinter)
-//    ;
-
-
-
-
 
 }
 

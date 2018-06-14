@@ -25,11 +25,11 @@ public:
 
 	virtual Vector3d getRelativeOrigin() const override { return seed_pos; };
 	///< the relative position within the parent organ
-
+	Vector3d getseedPos(SeedParameter* sparam) const { return sparam->seedPos; };
 	virtual void setRelativeOrigin(const Vector3d& o) override { seed_pos = o; };
 	///< the relative position within the parent organ
-
-	virtual void initialize();
+	virtual SeedParameter* initializeparam();
+	virtual void initialize(SeedParameter* sparam);
     	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; };
 	virtual std::string toString() const override;
 

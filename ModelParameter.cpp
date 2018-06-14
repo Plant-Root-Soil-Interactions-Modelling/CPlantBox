@@ -561,6 +561,10 @@ OrganParameter* SeedTypeParameter::realize() const
 	sp->firstB = std::max(0.,firstB);
 	sp->delayB = std::max(0.,delayB);
 	sp->maxB = std::max(0,maxB);
+	sp->seedPos = seedPos;
+	sp->nC = nC;
+	sp->nz = nz;
+
 	return sp;
 }
 

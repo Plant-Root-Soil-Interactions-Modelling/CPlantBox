@@ -5,23 +5,32 @@ Seed::Seed(Plant* plant) :Organ(plant, nullptr, 0, 0), seed_pos(Vector3d(0,0,-3)
 	param = (SeedParameter*)plant->getParameter(Organ::ot_seed,0)->realize();
 }
 
+SeedParameter* Seed::initializeparam()
+{
+	// Create root system
+
+	SeedTypeParameter* stp = (SeedTypeParameter*)plant->getParameter(Organ::ot_seed, 0);
+	param = stp->realize(); // throw the dice
+	SeedParameter* sparam = (SeedParameter*)param;
+	std::cout << "maxb = " << sparam->maxB << std::endl;
+	return sparam;
+}
+
+
+
 /**
  *
  */
-void Seed::initialize()
+void Seed::initialize(SeedParameter* sparam)
 {
-	// Create root system
 	const double maxT = 365.; // maximal simulation time
-	SeedTypeParameter* stp = (SeedTypeParameter*) plant->getParameter(Organ::ot_seed, 0);
-	param = stp->realize(); // throw the dice
-	SeedParameter* sparam = (SeedParameter*) param;
-	std::cout << "maxb = " << sparam->maxB << std::endl;
 	Vector3d iheading(0,0,-1);
 	if (Plant::noParamFile[1] == 1) {
 		std::cout<<"no root param"<<std::endl;
 	} else {
 		Root* taproot = new Root(plant, this, 1, 0, iheading ,0., 0.); // tap root has subtype 1
-		taproot->addNode(seed_pos,0);
+		taproot->addNode(sparam->seedPos,0);
+		std::cout << "sparam->seedPos is" << sparam->seedPos.toString() << "\n" ;
 		children.push_back(taproot);
 		if (sparam->maxB>0) {
 			if (plant->getParameter(Organ::ot_root, basalType)->subType<1) { // if the type is not defined, copy tap root

@@ -193,11 +193,21 @@ public:
 
 	// seed
 	Vector3d seedPos;   ///< Location of the seed [cm]
-
-	// basal roots
-	double firstB; 	///< Emergence of first basal root [day]
-	double delayB; 	///< Time delay between the basal roots [day]
-	int maxB; ///< Maximal number of basal roots [1]
+	double firstB ; 	///< Emergence of first basal root [day]
+	double firstBs;
+	double delayB ; 	///< Time delay between the basal roots [day]
+	double delayBs;
+	int maxB ; 	    ///< Maximal number of basal roots [1]
+	double maxBs ;
+	double nC ;
+	double nz ;
+	double simtime ;
+	double firstSB ;
+	double firstSBs ;
+	double delaySB ;
+	double delaySBs ;
+	double delayRC ;
+	double delayRCs ;
 
 };
 
