@@ -1,6 +1,6 @@
 #include "Seed.h"
 
-Seed::Seed(Plant* plant) :Organ(plant, nullptr, 0, 0), seed_pos(Vector3d(0,0,-3))
+Seed::Seed(Plant* plant) :Organ(plant, nullptr, 0, 0), seed_pos(Vector3d(0,0,0))
 {
 	param = (SeedParameter*)plant->getParameter(Organ::ot_seed,0)->realize();
 }

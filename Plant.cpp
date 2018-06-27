@@ -72,7 +72,7 @@ void Plant::reset()
 {
 
 	delete seed; // TODO??????
-	seed = new Seed(this);
+	seed = new Seed(this); // make_shared<Seed>(this), seed of type shared_ptr<Seed>
 	simtime=0;
 	rid = -1;
 	nid = -1;
@@ -128,6 +128,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 				setParameter(p);
 				//                root_element = root_element->NextSiblingElement("organ") ;
 				c++;
+				Plant::noParamFile[1] = 0;
 				std::cout << " Read from XML " << c << " root type parameters \n";
 			}
 
@@ -349,7 +350,7 @@ void Plant::initialize()
 {
 	
 	reset(); // deletes the old seed, makes a new one
-	seed->initialize(seed->initializeparam());
+	seed->initialize(seed->initializeparam());// randomness in the python binding
 
 	/* the following code will be moved to the shoot */
 	//  // Shoot borne roots
