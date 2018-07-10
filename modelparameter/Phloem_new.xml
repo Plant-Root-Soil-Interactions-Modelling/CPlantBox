@@ -137,7 +137,7 @@
     <parameter name="theta" value="0" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="0" percentage="1"/>
+    <parameter name="successor" number="0" type="3" percentage="1"/>
 </organ>
 
 <organ type="stem" name="2ndbranch" subType="3">

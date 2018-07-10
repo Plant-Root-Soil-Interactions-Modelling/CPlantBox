@@ -7,7 +7,7 @@
     <parameter name="plantingdepth" value="3"/>
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
-    <parameter name="maxB" value="9" dev="0"/>
+    <parameter name="maxB" value="0" dev="0"/>
     <parameter name="nC" value="2"/>
     <parameter name="nz" value="0"/>
     <parameter name="firstSB" value="14" dev="0"/>
