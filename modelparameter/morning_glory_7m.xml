@@ -13,7 +13,7 @@
     <parameter name="firstSB" value="14" dev="0"/>
     <parameter name="delaySB" value="0" dev="0"/>
     <parameter name="delayRC" value="7" dev="0"/>
-    <parameter name="simulationTime" value="56" dev="0"/>
+    <parameter name="simulationTime" value="180" dev="0"/>
 </organ>
 
 <organ type="root" name="taproot" subType="1">
@@ -116,17 +116,17 @@
 </organ>
 
 <organ type="stem" name="mainstem" subType="1">
-    <parameter name="lb" value="250" dev="0"/>
+    <parameter name="lb" value="140" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="20" dev="0"/>
+    <parameter name="ln" value="5" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="650" dev="0"/>
+    <parameter name="lmax" value="710" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="20.949999999999999" dev="0"/>
-    <parameter name="r" value="2.1000000000000001" dev="0"/>
-    <parameter name="a" value="0.20000000000000001" dev="0.02"/>
+    <parameter name="r" value="4.1000000000000001" dev="0"/>
+    <parameter name="a" value="0.50000000000000001" dev="0.02"/>
     <parameter name="colorR" value="1"/>
     <parameter name="colorG" value="0"/>
     <parameter name="colorB" value="0"/>
