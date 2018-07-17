@@ -37,6 +37,22 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
         }
              }
 }
+
+void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr, double &deviation, int &functiontype )  { //parse through different subtype
+
+        for (; param != 0; param = param->NextSiblingElement(para_name) )
+        {   if (param->Attribute("name" , attr_name)) {
+                    param->QueryDoubleAttribute("value" , &attr);
+                    param->QueryDoubleAttribute("dev" , &deviation);
+		    param->QueryIntAttribute("functiontype" , &functiontype);
+//                       std::cout << attr_name<<" is " << attr <<"  " << attr_name<<" dev is " << deviation << attr_name<<" functiontype is " << functiontype << "\n";
+        }
+             }
+}
+
+
+
+
 void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, int &attr, double &deviation )  { //parse through different subtype
 
         for (; param != 0; param = param->NextSiblingElement(para_name) )
@@ -47,6 +63,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
         }
              }
 }
+
 
 void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr)  { //parse through different subtype
 
@@ -423,7 +440,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement(); printer.PushComment("Apical zone [cm];");	///< Apical zone [cm];
 	printer.OpenElement("parameter");
 
-        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns); printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
 
 	printer.PushAttribute("name","lmax"); printer.PushAttribute("value",k); printer.PushAttribute("dev",ks);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
@@ -602,7 +619,7 @@ StemTypeParameter::StemTypeParameter()
 	se = new SoilLookUp();
 	sa = new SoilLookUp();
 	sbp = new SoilLookUp();
-	set(-1, 0., 0., 10., 0., 1., 0., 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
+	set(-1, 0., 0., 10., 0., 1., 0., 0, 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
 }
 
@@ -618,7 +635,7 @@ StemTypeParameter::~StemTypeParameter()
 /**
  * todo comment
  */
-void StemTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
+void StemTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 		double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name)
@@ -628,8 +645,9 @@ void StemTypeParameter::set(int type, double lb, double lbs, double la, double l
 	this->lbs = lbs;
 	this->la = la;
 	this->las = las;
+	this->lns = lns;	
 	this->ln = ln;
-	this->lns = lns;
+	this->lnf = lnf;
 	this->nob = nob;
 	this->nobs = nobs;
 	this->r = r;
@@ -726,9 +744,20 @@ OrganParameter* StemTypeParameter::realize() const
 	double la_ = std::max(la + randn()*las,double(0)); // length of apical zone
 	std::vector<double> ln_; // stores the inter-distances
 	int nob_ = std::max(round(nob + randn()*nobs),double(0)); // maximal number of branches
-	for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-		double d =  ln*(1+i) + randn()*lns; //std::max(  );//ln + randn()*lns,1e-9);
-		ln_.push_back(d);
+	switch(lnf) {
+		case 0:
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d =  ln*(1+i) + randn()*lns; //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+
+		};
+		case 1:
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d =  ln*(1+i) + randn()*lns; //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+
+		};
+
 	}
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
 	double a_ = std::max(a + randn()*as,double(0)); // radius
@@ -736,14 +765,9 @@ OrganParameter* StemTypeParameter::realize() const
 	double rlt_ = std::max(rlt + randn()*rlts,double(0)); // root life time
 	StemParameter* stem_p =  new StemParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 	return stem_p;
-
-
-    for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-		double d = 1 +2*i; //std::max(  );//ln + randn()*lns,1e-9);
-		ln_.push_back(d);
 	}
 
-}
+
 
 /**
  * Choose (dice) lateral type based on root parameter set,
@@ -846,7 +870,7 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    ele->QueryStringAttribute("name", &name);
    getAttribute(ele_param, "lb", "parameter", lb, lbs);
    getAttribute(ele_param, "la", "parameter", la, las);
-   getAttribute(ele_param, "ln", "parameter", ln, lns);
+   getAttribute(ele_param, "ln", "parameter", ln, lns, lnf);
    getAttribute(ele_param, "lmax", "parameter", k, ks);
    getAttribute(ele_param, "nob", "parameter", nob, nobs);
    	if (ln > 0) {
@@ -916,7 +940,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement(); printer.PushComment("Apical zone [cm];");	///< Apical zone [cm];
 	printer.OpenElement("parameter");
 
-        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns); printer.PushAttribute("function",lnf); printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
 
 	printer.PushAttribute("name","lmax"); printer.PushAttribute("value",k); printer.PushAttribute("dev",ks);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];

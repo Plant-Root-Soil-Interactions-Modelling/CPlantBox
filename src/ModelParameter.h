@@ -68,6 +68,7 @@ public:
 	virtual std::string toString() const { return "OrganTypeParameter base class\n";}
      void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, double &attr, double &deviation ); //alot of overloading, try template later..
      void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, int &attr, double &deviation );
+     void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, double &attr, double &deviation, int &functiontype );
      void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP );
      void getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, double &attr) ;
      void getAttribute(const tinyxml2::XMLElement* ele2, const char* attr_name, const char* para_name, int &attr) ;
@@ -309,7 +310,7 @@ public:
 	StemTypeParameter(); ///< default constructor
 	virtual ~StemTypeParameter();
 
-	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
+	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, int lnf, double nob, double nobs,
 			double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name); ///< sets all parameters
@@ -332,6 +333,7 @@ public:
 	double las;		///< Standard deviation apical zone [cm];
 	double ln; 		///< Inter-lateral distance [cm]
 	double lns;  	///< Standard deviation inter-lateral distance [cm]
+	int lnf;
 			double k;
 	double ks;
 	double nob; 	///< Number of branches [1]
@@ -415,10 +417,10 @@ public:
 //    double a_pp = -1.06 ; ///Parameters for the phyllochron number-plastochron number relationship
 //    double b_pp = 0.54 ; ///Parameters for the phyllochron number-plastochron number relationship
 //
-//    double a_R_p = -0.00065 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
-//    double b_R_p = -0.0138 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
-//    double c_R_p = 0.00372 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
-//    double d_R_p = -0.000072 ; ///Parameters for phytomer initiation (phytomer °C d^-1)
+//    double a_R_p = -0.00065 ; ///Parameters for phytomer initiation (phytomer \B0C d^-1)
+//    double b_R_p = -0.0138 ; ///Parameters for phytomer initiation (phytomer \B0C d^-1)
+//    double c_R_p = 0.00372 ; ///Parameters for phytomer initiation (phytomer \B0C d^-1)
+//    double d_R_p = -0.000072 ; ///Parameters for phytomer initiation (phytomer \B0C d^-1)
 //
 //    double alpha = 0.04 ; ///Photosynthetic efficiency (miu mol CO_2 miu mol^-1)
 //    double b_LSI = 0.0003; ///Lamina and sheath dry mass per unit area increment
@@ -435,11 +437,11 @@ public:
 //    double P_max = 30 ; ///Photosynthetic rate at saturating light (miu mol CO_2 m^-2 s^-1)
 //    double SMA_max = 0.0075 ; ///Maximal sheath dry mass per unit area for sheath N_p (g DM cm^-2)
 //    double SMA_min = 0.0010 ; ///Minimal lamina and sheath dry mass per unit area (g DM cm^-2)
-//    double T_base = 8 ; /// Base temperature (°C)
-//    double T_max = 50 ; /// Maximal temperature (°C)
-//    double T_opt = 31 ; /// Optimal temperature (°C)
+//    double T_base = 8 ; /// Base temperature (\B0C)
+//    double T_max = 50 ; /// Maximal temperature (\B0C)
+//    double T_opt = 31 ; /// Optimal temperature (\B0C)
 //    double vstar_c = 0.41 ; /// Multiplicative factor for standard internode elongation rate (dl)
-//    double vstar_1 = 0.564 ; ///standard leaf (lamina and sheath) elongation rate (cm°C d^-1)
+//    double vstar_1 = 0.564 ; ///standard leaf (lamina and sheath) elongation rate (cm\B0C d^-1)
 
 
 };
