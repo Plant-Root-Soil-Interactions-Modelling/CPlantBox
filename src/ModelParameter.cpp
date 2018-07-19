@@ -747,13 +747,13 @@ OrganParameter* StemTypeParameter::realize() const
 	switch(lnf) {
 		case 0:
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  ln*(1+i) + randn()*lns; //std::max(  );//ln + randn()*lns,1e-9);
+			double d = std::max(ln + randn()*lns,1e-9); //Normal function of equal internode distance
 			ln_.push_back(d);
 
 		};
 		case 1:
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  ln*(1+i) + randn()*lns; //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 
 		};
@@ -940,7 +940,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement(); printer.PushComment("Apical zone [cm];");	///< Apical zone [cm];
 	printer.OpenElement("parameter");
 
-        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns); printer.PushAttribute("function",lnf); printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns); printer.PushAttribute("functiontype",lnf); printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
 
 	printer.PushAttribute("name","lmax"); printer.PushAttribute("value",k); printer.PushAttribute("dev",ks);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
