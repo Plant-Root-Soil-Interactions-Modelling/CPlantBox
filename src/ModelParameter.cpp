@@ -731,11 +731,11 @@ void StemTypeParameter::createGrowth()
 /**
  * Creates a specific root from the root type parameters.
  * The unique root id is not set, but must be set from outside.
- * (called by Root::Root())
+ * (called by Stem::Stem())
  *
  * minimal ln distance is 1.e-9
  *
- * \return Specific root parameters derived from the root type parameters
+ * \return Specific stem parameters derived from the Stem type parameters
  */
 OrganParameter* StemTypeParameter::realize() const
 {
