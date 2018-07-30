@@ -120,7 +120,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0.29999999999999999" dev="0" lnf="1"/>
+    <parameter name="ln" value="0.29999999999999999" dev="0" functiontype="1"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="1.8" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -145,7 +145,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0.40000000000000002" dev="0" lnf="1"/>
+    <parameter name="ln" value="0.40000000000000002" dev="0" functiontype="1"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="2" dev="0"/>
     <!--Inter-lateral distance [cm];-->
