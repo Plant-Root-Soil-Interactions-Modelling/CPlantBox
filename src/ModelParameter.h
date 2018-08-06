@@ -277,8 +277,8 @@ class StemParameter : public OrganParameter
 public:
 
 	StemParameter() { subType = -1; };
-	StemParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
-		lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln) { subType = type;  }
+	StemParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, int lnf):
+		lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln), lnf(lnf) { subType = type;  }
 	///< Constructor setting all parameters
 
 	double getK() const; ///< Returns the exact maximal root length of this realization [cm]
@@ -293,6 +293,7 @@ public:
 	double a = 0.; 			///< Root radius [cm]
 	double theta = 0.; 		///< Angle between root and parent root [rad]
 	double rlt = 0.;		///< Root life time [day]
+	int lnf = 0;
 	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
 
 };

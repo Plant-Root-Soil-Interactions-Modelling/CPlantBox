@@ -746,24 +746,46 @@ OrganParameter* StemTypeParameter::realize() const
 	int nob_ = std::max(round(nob + randn()*nobs),double(0)); // maximal number of branches
 	switch(lnf) {
 		case 0:
-		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d = std::max(ln + randn()*lns,1e-9); //Normal function of equal internode distance
 			ln_.push_back(d);
-
+			ln_.push_back(0);
+			
 		};
 		case 1:
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+			ln_.push_back(0);
+
+		};
+		case 2:
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 
 		};
+		case 3:
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d =  std::max(ln + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+
+		};
+
+		case 4:
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+			ln_.push_back(0);
+		};	
 
 	}
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
 	double a_ = std::max(a + randn()*as,double(0)); // radius
 	double theta_ = std::max(theta + randn()*thetas,double(0)); // initial elongation
 	double rlt_ = std::max(rlt + randn()*rlts,double(0)); // root life time
-	StemParameter* stem_p =  new StemParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
+	int lnf_ = lnf;
+	StemParameter* stem_p =  new StemParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,lnf_);
 	return stem_p;
 	}
 
@@ -892,6 +914,7 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 		nob=0;
 		nobs = 0;
 	}
+      // if (lnf = 1){ nob = nob/3;}
    getAttribute(ele_param, "r", "parameter", r, rs);
    getAttribute(ele_param, "a", "parameter", a, as);
    getAttribute(ele_param, "colorR", "parameter", colorR);

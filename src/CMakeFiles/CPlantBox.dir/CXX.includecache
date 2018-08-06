@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -6,55 +6,55 @@
 
 #IncludeRegexTransform: 
 
-/home/x.zhou/CPlantBox/src/Leaf.cpp
+/home/crootbox/cpb/CPlantBox/src/Leaf.cpp
 Leaf.h
-/home/x.zhou/CPlantBox/src/Leaf.h
+/home/crootbox/cpb/CPlantBox/src/Leaf.h
 
-/home/x.zhou/CPlantBox/src/Leaf.h
+/home/crootbox/cpb/CPlantBox/src/Leaf.h
 iostream
 -
 assert.h
 -
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 mymath.h
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 sdf.h
-/home/x.zhou/CPlantBox/src/sdf.h
+/home/crootbox/cpb/CPlantBox/src/sdf.h
 LeafTropism.h
-/home/x.zhou/CPlantBox/src/LeafTropism.h
+/home/crootbox/cpb/CPlantBox/src/LeafTropism.h
 LeafGrowth.h
-/home/x.zhou/CPlantBox/src/LeafGrowth.h
+/home/crootbox/cpb/CPlantBox/src/LeafGrowth.h
 ModelParameter.h
-/home/x.zhou/CPlantBox/src/ModelParameter.h
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.h
 
-/home/x.zhou/CPlantBox/src/LeafGrowth.h
+/home/crootbox/cpb/CPlantBox/src/LeafGrowth.h
 
-/home/x.zhou/CPlantBox/src/LeafTropism.cpp
+/home/crootbox/cpb/CPlantBox/src/LeafTropism.cpp
 LeafTropism.h
-/home/x.zhou/CPlantBox/src/LeafTropism.h
+/home/crootbox/cpb/CPlantBox/src/LeafTropism.h
 
-/home/x.zhou/CPlantBox/src/LeafTropism.h
+/home/crootbox/cpb/CPlantBox/src/LeafTropism.h
 chrono
 -
 random
 -
 soil.h
-/home/x.zhou/CPlantBox/src/soil.h
+/home/crootbox/cpb/CPlantBox/src/soil.h
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 
-/home/x.zhou/CPlantBox/src/ModelParameter.cpp
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.cpp
 ModelParameter.h
-/home/x.zhou/CPlantBox/src/ModelParameter.h
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.h
 tinyxml2.h
-/home/x.zhou/CPlantBox/src/tinyxml2.h
+/home/crootbox/cpb/CPlantBox/src/tinyxml2.h
 Plant.h
-/home/x.zhou/CPlantBox/src/Plant.h
+/home/crootbox/cpb/CPlantBox/src/Plant.h
 cmath
 -
 
-/home/x.zhou/CPlantBox/src/ModelParameter.h
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.h
 cassert
 -
 istream
@@ -72,15 +72,15 @@ random
 assert.h
 -
 mymath.h
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 tinyxml2.h
-/home/x.zhou/CPlantBox/src/tinyxml2.h
+/home/crootbox/cpb/CPlantBox/src/tinyxml2.h
 
-/home/x.zhou/CPlantBox/src/Organ.cpp
+/home/crootbox/cpb/CPlantBox/src/Organ.cpp
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 cassert
 -
 istream
@@ -92,23 +92,23 @@ assert.h
 stdexcept
 -
 mymath.h
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 sdf.h
-/home/x.zhou/CPlantBox/src/sdf.h
+/home/crootbox/cpb/CPlantBox/src/sdf.h
 ModelParameter.h
-/home/x.zhou/CPlantBox/src/ModelParameter.h
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.h
 Plant.h
-/home/x.zhou/CPlantBox/src/Plant.h
+/home/crootbox/cpb/CPlantBox/src/Plant.h
 
-/home/x.zhou/CPlantBox/src/Plant.cpp
+/home/crootbox/cpb/CPlantBox/src/Plant.cpp
 Plant.h
-/home/x.zhou/CPlantBox/src/Plant.h
+/home/crootbox/cpb/CPlantBox/src/Plant.h
 memory
 -
 iostream
 -
 
-/home/x.zhou/CPlantBox/src/Plant.h
+/home/crootbox/cpb/CPlantBox/src/Plant.h
 iostream
 -
 fstream
@@ -124,39 +124,39 @@ numeric
 istream
 -
 ModelParameter.h
-/home/x.zhou/CPlantBox/src/ModelParameter.h
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.h
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 Root.h
-/home/x.zhou/CPlantBox/src/Root.h
+/home/crootbox/cpb/CPlantBox/src/Root.h
 Seed.h
-/home/x.zhou/CPlantBox/src/Seed.h
+/home/crootbox/cpb/CPlantBox/src/Seed.h
 Stem.h
-/home/x.zhou/CPlantBox/src/Stem.h
+/home/crootbox/cpb/CPlantBox/src/Stem.h
 Leaf.h
-/home/x.zhou/CPlantBox/src/Leaf.h
+/home/crootbox/cpb/CPlantBox/src/Leaf.h
 soil.h
-/home/x.zhou/CPlantBox/src/soil.h
+/home/crootbox/cpb/CPlantBox/src/soil.h
 RootTropism.h
-/home/x.zhou/CPlantBox/src/RootTropism.h
+/home/crootbox/cpb/CPlantBox/src/RootTropism.h
 RootGrowth.h
-/home/x.zhou/CPlantBox/src/RootGrowth.h
+/home/crootbox/cpb/CPlantBox/src/RootGrowth.h
 StemGrowth.h
-/home/x.zhou/CPlantBox/src/StemGrowth.h
+/home/crootbox/cpb/CPlantBox/src/StemGrowth.h
 StemTropism.h
-/home/x.zhou/CPlantBox/src/StemTropism.h
+/home/crootbox/cpb/CPlantBox/src/StemTropism.h
 LeafGrowth.h
-/home/x.zhou/CPlantBox/src/LeafGrowth.h
+/home/crootbox/cpb/CPlantBox/src/LeafGrowth.h
 LeafTropism.h
-/home/x.zhou/CPlantBox/src/LeafTropism.h
+/home/crootbox/cpb/CPlantBox/src/LeafTropism.h
 tinyxml2.h
-/home/x.zhou/CPlantBox/src/tinyxml2.h
+/home/crootbox/cpb/CPlantBox/src/tinyxml2.h
 
-/home/x.zhou/CPlantBox/src/Root.cpp
+/home/crootbox/cpb/CPlantBox/src/Root.cpp
 Root.h
-/home/x.zhou/CPlantBox/src/Root.h
+/home/crootbox/cpb/CPlantBox/src/Root.h
 
-/home/x.zhou/CPlantBox/src/Root.h
+/home/crootbox/cpb/CPlantBox/src/Root.h
 cassert
 -
 istream
@@ -166,103 +166,103 @@ iostream
 assert.h
 -
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 mymath.h
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 sdf.h
-/home/x.zhou/CPlantBox/src/sdf.h
+/home/crootbox/cpb/CPlantBox/src/sdf.h
 RootTropism.h
-/home/x.zhou/CPlantBox/src/RootTropism.h
+/home/crootbox/cpb/CPlantBox/src/RootTropism.h
 RootGrowth.h
-/home/x.zhou/CPlantBox/src/RootGrowth.h
+/home/crootbox/cpb/CPlantBox/src/RootGrowth.h
 ModelParameter.h
-/home/x.zhou/CPlantBox/src/ModelParameter.h
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.h
 
-/home/x.zhou/CPlantBox/src/RootGrowth.h
+/home/crootbox/cpb/CPlantBox/src/RootGrowth.h
 
-/home/x.zhou/CPlantBox/src/RootTropism.cpp
+/home/crootbox/cpb/CPlantBox/src/RootTropism.cpp
 LeafTropism.h
-/home/x.zhou/CPlantBox/src/LeafTropism.h
+/home/crootbox/cpb/CPlantBox/src/LeafTropism.h
 
-/home/x.zhou/CPlantBox/src/RootTropism.h
+/home/crootbox/cpb/CPlantBox/src/RootTropism.h
 chrono
 -
 random
 -
 soil.h
-/home/x.zhou/CPlantBox/src/soil.h
+/home/crootbox/cpb/CPlantBox/src/soil.h
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 
-/home/x.zhou/CPlantBox/src/Seed.cpp
+/home/crootbox/cpb/CPlantBox/src/Seed.cpp
 Seed.h
-/home/x.zhou/CPlantBox/src/Seed.h
+/home/crootbox/cpb/CPlantBox/src/Seed.h
 
-/home/x.zhou/CPlantBox/src/Seed.h
+/home/crootbox/cpb/CPlantBox/src/Seed.h
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 
-/home/x.zhou/CPlantBox/src/Stem.cpp
+/home/crootbox/cpb/CPlantBox/src/Stem.cpp
 Stem.h
-/home/x.zhou/CPlantBox/src/Stem.h
+/home/crootbox/cpb/CPlantBox/src/Stem.h
 Leaf.h
-/home/x.zhou/CPlantBox/src/Leaf.h
+/home/crootbox/cpb/CPlantBox/src/Leaf.h
 Root.h
-/home/x.zhou/CPlantBox/src/Root.h
+/home/crootbox/cpb/CPlantBox/src/Root.h
 memory
 -
 
-/home/x.zhou/CPlantBox/src/Stem.h
+/home/crootbox/cpb/CPlantBox/src/Stem.h
 iostream
 -
 assert.h
 -
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 mymath.h
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 sdf.h
-/home/x.zhou/CPlantBox/src/sdf.h
+/home/crootbox/cpb/CPlantBox/src/sdf.h
 StemTropism.h
-/home/x.zhou/CPlantBox/src/StemTropism.h
+/home/crootbox/cpb/CPlantBox/src/StemTropism.h
 StemGrowth.h
-/home/x.zhou/CPlantBox/src/StemGrowth.h
+/home/crootbox/cpb/CPlantBox/src/StemGrowth.h
 ModelParameter.h
-/home/x.zhou/CPlantBox/src/ModelParameter.h
+/home/crootbox/cpb/CPlantBox/src/ModelParameter.h
 
-/home/x.zhou/CPlantBox/src/StemGrowth.h
+/home/crootbox/cpb/CPlantBox/src/StemGrowth.h
 
-/home/x.zhou/CPlantBox/src/StemTropism.cpp
+/home/crootbox/cpb/CPlantBox/src/StemTropism.cpp
 StemTropism.h
-/home/x.zhou/CPlantBox/src/StemTropism.h
+/home/crootbox/cpb/CPlantBox/src/StemTropism.h
 
-/home/x.zhou/CPlantBox/src/StemTropism.h
+/home/crootbox/cpb/CPlantBox/src/StemTropism.h
 chrono
 -
 random
 -
 soil.h
-/home/x.zhou/CPlantBox/src/soil.h
+/home/crootbox/cpb/CPlantBox/src/soil.h
 Organ.h
-/home/x.zhou/CPlantBox/src/Organ.h
+/home/crootbox/cpb/CPlantBox/src/Organ.h
 
-/home/x.zhou/CPlantBox/src/analysis.cpp
+/home/crootbox/cpb/CPlantBox/src/analysis.cpp
 istream
 -
 analysis.h
-/home/x.zhou/CPlantBox/src/analysis.h
+/home/crootbox/cpb/CPlantBox/src/analysis.h
 iostream
 -
 iomanip
 -
 
-/home/x.zhou/CPlantBox/src/analysis.h
+/home/crootbox/cpb/CPlantBox/src/analysis.h
 Plant.h
-/home/x.zhou/CPlantBox/src/Plant.h
+/home/crootbox/cpb/CPlantBox/src/Plant.h
 set
 -
 
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 cassert
 -
 vector
@@ -278,11 +278,11 @@ vector
 numeric
 -
 
-/home/x.zhou/CPlantBox/src/sdf.cpp
+/home/crootbox/cpb/CPlantBox/src/sdf.cpp
 sdf.h
-/home/x.zhou/CPlantBox/src/sdf.h
+/home/crootbox/cpb/CPlantBox/src/sdf.h
 
-/home/x.zhou/CPlantBox/src/sdf.h
+/home/crootbox/cpb/CPlantBox/src/sdf.h
 istream
 -
 iostream
@@ -294,19 +294,19 @@ stdexcept
 algorithm
 -
 mymath.h
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 
-/home/x.zhou/CPlantBox/src/soil.h
+/home/crootbox/cpb/CPlantBox/src/soil.h
 mymath.h
-/home/x.zhou/CPlantBox/src/mymath.h
+/home/crootbox/cpb/CPlantBox/src/mymath.h
 cmath
 -
 sdf.h
-/home/x.zhou/CPlantBox/src/sdf.h
+/home/crootbox/cpb/CPlantBox/src/sdf.h
 
-/home/x.zhou/CPlantBox/src/tinyxml2.cpp
+/home/crootbox/cpb/CPlantBox/src/tinyxml2.cpp
 tinyxml2.h
-/home/x.zhou/CPlantBox/src/tinyxml2.h
+/home/crootbox/cpb/CPlantBox/src/tinyxml2.h
 new
 -
 stddef.h
@@ -318,7 +318,7 @@ cstddef
 cstdarg
 -
 
-/home/x.zhou/CPlantBox/src/tinyxml2.h
+/home/crootbox/cpb/CPlantBox/src/tinyxml2.h
 ctype.h
 -
 limits.h
