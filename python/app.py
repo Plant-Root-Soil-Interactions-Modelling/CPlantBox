@@ -13,7 +13,9 @@ from werkzeug.contrib.fixers import ProxyFix
 #import pandas as pd
 #from sklearn.externals import joblib
 import plotly.graph_objs as go
-
+import base64
+import datetime
+import io
 
 app = dash.Dash()
 app.server.wsgi_app = ProxyFix(app.server.wsgi_app)
@@ -29,18 +31,18 @@ app.config.update({
 
 server = app.server
 
-input_value = 'PMA2018'
+plant1 = pb.Plant()
+plant1.openXML('Phloem')
+plant1.initialize()
+plant1.simulate(160,True)
+nodes = vv2a(plant1.getNodes())/100 
 
 
 BACKGROUND = 'rgb(230, 230, 230)'
 
 COLORSCALE = [ [0, "rgb(244,236,21)"], [0.3, "rgb(249,210,41)"], [0.4, "rgb(134,191,118)"],
                 [0.5, "rgb(37,180,167)"], [0.65, "rgb(17,123,215)"], [1, "rgb(54,50,153)"] ]
-plant = pb.Plant()
-plant.openXML(input_value)
-plant.initialize()
-plant.simulate(160,True)
-nodes = vv2a(plant.getNodes())/100
+app.scripts.config.serve_locally = True
 def scatter_plot_3d(
         x = nodes[:,0],
         y = nodes[:,1],
@@ -152,29 +154,58 @@ def scatter_plot_3d(
 
 
 app.layout = html.Div([
+    html.Div([
     dcc.Dropdown(
         id='parameterdropdown',
         options=[
             {'label': '3 source 2 sink plant', 'value': 'PMA2018'},
-            {'label': 'Maize', 'value': 'maize'},
-            {'label': 'sympodial', 'value': 'sympodial_dichasium'},
-            {'label': 'Phloem', 'value': 'Phloem'}
+            {'label': 'Phloem', 'value': 'Phloem'},
+            {'label': 'sympodial_monochasium', 'value': 'sympodial_monochasium'},
+            {'label': 'sympodial_dichasium', 'value': 'sympodial_dichasium'},
+            {'label': 'MAIZE', 'value': 'AMAIZE'}
         ],
         value='PMA2018'
+    )], style={'width': '49%', 'float': 'right', 'display': 'inline-block'}),
+    html.Div([
+    dcc.Upload(
+        id='uploaddata',
+        children=html.Div([
+            'Drag and Drop or ',
+            html.A('Select Files')
+        ]),
+        style={
+            'width': '49%',
+            'height': '60px',
+            'lineHeight': '60px',
+            'borderWidth': '1px',
+            'borderStyle': 'dashed',
+            'borderRadius': '5px',
+            'textAlign': 'center',
+            'margin': '10px'
+        },
+        # Allow multiple files to be uploaded
+        multiple=True
     ),
-    html.Button('Load Parameterfile', id='button'),
+]),
     html.Div([
 	dcc.Graph(id='3d-graph'),
-	], className='nine columns', style=dict(textAlign='center')),
+	], className='nine columns', style={'width': '70%', 'float': 'left', 'display': 'inline-block'}),
     ])
  
 
 @app.callback(
     dash.dependencies.Output('3d-graph', 'figure'),
-    [dash.dependencies.Input('parameterdropdown', 'value')])
-def update_figure(parameterdropdown):
+    [dash.dependencies.Input('parameterdropdown', 'value'), dash.dependencies.Input('uploaddata', 'contents') ])
+def update_figure(parameterdropdown, uploaddata):
+    
     plant1 = pb.Plant()
-    plant1.openXML(parameterdropdown)
+    if uploaddata is not None:
+        print(uploaddata)
+        f = io.StringIO(str(uploaddata))
+        plant1.openXML(f)
+    else:
+        
+        plant1.openXML(parameterdropdown)
     plant1.initialize()
     plant1.simulate(160,True)
     nodes = vv2a(plant1.getNodes())/100 
@@ -212,8 +243,8 @@ def update_figure(parameterdropdown):
 #    plant.write("example_1a.vtp", 15)
 external_css = ["https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css",
                 "//fonts.googleapis.com/css?family=Raleway:400,300,600",
-                "//fonts.googleapis.com/css?family=Dosis:Medium",
-                "https://cdn.rawgit.com/plotly/dash-app-stylesheets/0e463810ed36927caf20372b6411690692f94819/dash-drug-discovery-demo-stylesheet.css"]
+                "//fonts.googleapis.com/css?family=Dosis:Medium"
+                ]
 
 
 for css in external_css:
