@@ -11,7 +11,8 @@ import numpy as np
 from scipy.integrate import odeint
 from werkzeug.contrib.fixers import ProxyFix
 #import pandas as pd
-
+#from sklearn.externals import joblib
+import plotly.graph_objs as go
 
 
 app = dash.Dash()
@@ -79,7 +80,7 @@ def scatter_plot_3d(
         axis['color']  = 'white'
         return axis
 
-    data = [ dict(
+    scatter_plot_3d.data = [ dict(
         x = x,
         y = y,
         z = z,
@@ -99,7 +100,7 @@ def scatter_plot_3d(
         type = plot_type,
     ) ]
 
-    layout = dict(
+    scatter_plot_3d.layout = dict(
         font = dict( family = 'Raleway' ),
         hovermode = 'closest',
         margin = dict( r=20, t=0, l=0, b=0 ),
@@ -143,26 +144,60 @@ def scatter_plot_3d(
     if len(markers) > 0:
         data = data + add_markers( data, markers, plot_type = plot_type )
 
-    return dict( data=data, layout=layout )
+    return dict( data=scatter_plot_3d.data, layout=scatter_plot_3d.layout )
 
 
-FIGURE = scatter_plot_3d()
+#FIGURE = scatter_plot_3d()
 
 
 
 app.layout = html.Div([
-    dcc.Input(id='my-id', value='PMA2018-refresh=run model', type="text"),
+    dcc.Dropdown(
+        id='parameterdropdown',
+        options=[
+            {'label': '3 source 2 sink plant', 'value': 'PMA2018'},
+            {'label': 'Maize', 'value': 'maize'},
+            {'label': 'sympodial', 'value': 'sympodial_dichasium'},
+            {'label': 'Phloem', 'value': 'Phloem'}
+        ],
+        value='PMA2018'
+    ),
     html.Button('Load Parameterfile', id='button'),
     html.Div([
-	dcc.Graph(id='clickable-graph',
-	    style=dict(width='700px'),
-	    hoverData=dict( points=[dict(pointNumber=0)] ),
-	    figure=FIGURE ),
+	dcc.Graph(id='3d-graph'),
 	], className='nine columns', style=dict(textAlign='center')),
     ])
  
 
-
+@app.callback(
+    dash.dependencies.Output('3d-graph', 'figure'),
+    [dash.dependencies.Input('parameterdropdown', 'value')])
+def update_figure(parameterdropdown):
+    plant1 = pb.Plant()
+    plant1.openXML(parameterdropdown)
+    plant1.initialize()
+    plant1.simulate(160,True)
+    nodes = vv2a(plant1.getNodes())/100 
+    asss = scatter_plot_3d()
+    return {'data' :[ dict(
+        x = nodes[:,0],
+        y = nodes[:,1],
+        z = nodes[:,2],
+        mode = 'markers',
+        marker = dict(
+                #colorscale = COLORSCALE,
+                #colorbar = dict( title = "one colorbar" ),
+                line = dict( color = '#444' ),
+                reversescale = True,
+                sizeref = 45,
+                sizemode = 'diameter',
+                opacity = 0.7,
+                size = '2',
+                color = 'red',
+            ),
+        text = '...',
+        type = 'scatter3d',
+    ) ], 'layout' : scatter_plot_3d.layout}
 
 
 
