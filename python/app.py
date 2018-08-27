@@ -37,7 +37,6 @@ plant1.initialize()
 plant1.simulate(160,True)
 nodes = vv2a(plant1.getNodes())/100 
 
-
 BACKGROUND = 'rgb(230, 230, 230)'
 
 COLORSCALE = [ [0, "rgb(244,236,21)"], [0.3, "rgb(249,210,41)"], [0.4, "rgb(134,191,118)"],
@@ -96,7 +95,7 @@ def scatter_plot_3d(
                 sizemode = 'diameter',
                 opacity = 0.7,
                 size = size,
-                color = color,
+                color = 'red',
             ),
         text = '...',
         type = plot_type,
@@ -197,38 +196,67 @@ app.layout = html.Div([
     dash.dependencies.Output('3d-graph', 'figure'),
     [dash.dependencies.Input('parameterdropdown', 'value'), dash.dependencies.Input('uploaddata', 'contents') ])
 def update_figure(parameterdropdown, uploaddata):
-    
-    plant1 = pb.Plant()
-    if uploaddata is not None:
-        print(uploaddata)
-        f = io.StringIO(str(uploaddata))
-        plant1.openXML(f)
-    else:
-        
-        plant1.openXML(parameterdropdown)
-    plant1.initialize()
-    plant1.simulate(160,True)
-    nodes = vv2a(plant1.getNodes())/100 
-    asss = scatter_plot_3d()
-    return {'data' :[ dict(
-        x = nodes[:,0],
-        y = nodes[:,1],
-        z = nodes[:,2],
-        mode = 'markers',
-        marker = dict(
-                #colorscale = COLORSCALE,
-                #colorbar = dict( title = "one colorbar" ),
-                line = dict( color = '#444' ),
-                reversescale = True,
-                sizeref = 45,
-                sizemode = 'diameter',
-                opacity = 0.7,
-                size = '2',
-                color = 'red',
-            ),
-        text = '...',
-        type = 'scatter3d',
-    ) ], 'layout' : scatter_plot_3d.layout}
+
+	plant1 = pb.Plant()
+	if uploaddata is not None:
+		print(uploaddata)
+		f = io.StringIO(str(uploaddata))
+		plant1.openXML(f)
+	else:
+		
+		plant1.openXML(parameterdropdown)
+	plant1.initialize()
+	plant1.simulate(160,True)
+	nodes = vv2a(plant1.getNodes())/100 # convert from cm to m 
+	node_connection = seg2a(plant1.getSegments(15)) # plant segments
+	#sseg = seg2a(plant.getSegments(4)) #
+	node_organtype = v2ai(plant1.getNodesOrganType())
+	node_connection1, node_connection2 = np.hsplit(node_connection,2)
+	node_connection1 = np.column_stack([node_connection1, node_organtype])
+	node_connection2 = np.column_stack([node_connection2, node_organtype])
+	nodes_organtype = np.row_stack([node_connection1,node_connection2])
+	_, indices = np.unique(nodes_organtype[:,0], return_index=True)
+	nodes_organtype = nodes_organtype[indices,:]
+	unq, unq_idx, unq_cnt = np.unique(node_connection, return_inverse=True, return_counts=True)
+	nodes_organtype = np.column_stack((nodes_organtype,unq_cnt ))
+	nodes_organtype.astype(np.int_)
+	organ_to_name = {
+	2 : 'root',
+	4 : 'stem',
+	8 : 'leaf'
+	}
+	n_org_name = np.full((len(nodes), 1),'aaaaaaaaaaaa')
+	for i in range(0,len(nodes)):
+		n_org_name[i]= organ_to_name[nodes_organtype[i,1]]
+	organ_to_color = {
+	2 : 'orange',
+	4 : 'darkgreen',
+	8 : 'lightgreen'
+	}
+	nodes_org = np.full((len(nodes), 1),'aaaaaaaaaaaa')
+	for i in range(0,len(nodes)):
+		nodes_org[i]= organ_to_color[nodes_organtype[i,1]]
+	asss = scatter_plot_3d()
+	return {'data' :[ dict(
+		x = nodes[:,0],
+		y = nodes[:,1],
+		z = nodes[:,2],
+		mode = 'markers',
+		marker = dict(
+				#colorscale = COLORSCALE,
+				#colorbar = dict( title = "one colorbar" ),
+				line = dict( color = '#444' ),
+				reversescale = True,
+				sizeref = 45,
+				sizemode = 'diameter',
+				opacity = 0.7,
+				size = '2',
+				color = nodes_org[:,0],
+				
+			),
+		text = n_org_name.T.tolist()[0],
+		type = 'scatter3d',
+	) ], 'layout' : scatter_plot_3d.layout}
 
 
 
