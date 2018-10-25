@@ -1,4 +1,4 @@
-# Install script for directory: /home/crootbox/cpb/CPlantBox/src
+# Install script for directory: /home/crootbox/CPlantBox/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

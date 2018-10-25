@@ -6,5 +6,5 @@ CXX_FLAGS = -Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/crootbox/cpb/CPlantBox/src -I/usr/include/python3.6m 
+CXX_INCLUDES = -I/home/crootbox/CPlantBox/src -I/usr/include/python3.6m 
 

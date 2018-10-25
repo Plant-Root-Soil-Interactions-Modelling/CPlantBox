@@ -22,7 +22,7 @@
  */
 int main(int argc, char* argv[])
 {
-	string name = "CPlantBox_test_Xiaoran";
+	string name = "PMA2018";
 
 	if (argc>1) {
 		name= argv[1];
