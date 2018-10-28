@@ -21,3 +21,8 @@ build-* Testing CMakeCache.txt CMakeFiles/ *.cmake *.a
 # auto-saved files
 *~
 examples/CMakeFiles/
+python/cpbvenv
+src/CMakeFiles/*
+*/Makefile
+CMakeCache.txt
+cmake_install.cmake

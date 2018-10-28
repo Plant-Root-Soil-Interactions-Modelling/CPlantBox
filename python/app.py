@@ -37,7 +37,7 @@ plant1.initialize()
 plant1.simulate(160,True)
 nodes = vv2a(plant1.getNodes())/100 
 
-BACKGROUND = 'rgb(230, 230, 230)'
+BACKGROUND = 'rgb(255, 255, 255)'
 
 COLORSCALE = [ [0, "rgb(244,236,21)"], [0.3, "rgb(249,210,41)"], [0.4, "rgb(134,191,118)"],
                 [0.5, "rgb(37,180,167)"], [0.65, "rgb(17,123,215)"], [1, "rgb(54,50,153)"] ]
@@ -59,10 +59,10 @@ def scatter_plot_3d(
         return dict(
             showbackground = True,
             backgroundcolor = BACKGROUND,
-            gridcolor = 'rgb(255, 255, 255)',
+            gridcolor = 'rgb(230, 230, 230)',
             title = title,
             type = type,
-            zerolinecolor = 'rgb(255, 255, 255)'
+            zerolinecolor = 'rgb(230, 230, 230)'
         )
     
     def axis_template_2d(title):

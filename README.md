@@ -8,7 +8,7 @@ make
 cd examples && ./test_cplantbox
 ```
 
-`cmake . ` runs CMake which configures the CRootBox libraries. `make` builds the libraries and the C++ example. `cd examples && ./test_cplantbox` runs the example.
+`cmake . ` runs CMake which configures the CPlantBox libraries. `make` builds the libraries and the C++ example. `cd examples && ./test_cplantbox` runs the example.
 
 # Folder sructure
 
