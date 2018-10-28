@@ -16,6 +16,7 @@ import plotly.graph_objs as go
 import base64
 import datetime
 import io
+import xml.etree.ElementTree as ET
 
 app = dash.Dash()
 app.server.wsgi_app = ProxyFix(app.server.wsgi_app)
@@ -30,9 +31,10 @@ app.config.update({
 
 
 server = app.server
-
+xmlname = 'Phloem'
 plant1 = pb.Plant()
-plant1.openXML('Phloem')
+plant1.openXML(xmlname)
+tree = ET.parse("modelparameter/"+xmlname+".xml")
 plant1.initialize()
 plant1.simulate(160,True)
 nodes = vv2a(plant1.getNodes())/100 
@@ -152,12 +154,14 @@ def scatter_plot_3d(
 
 
 
+
+
 app.layout = html.Div([
     html.Div([
     dcc.Dropdown(
         id='parameterdropdown',
         options=[
-            {'label': '3 source 2 sink plant', 'value': 'PMA2018'},
+            {'label': 'PMA2018 example', 'value': 'PMA2018'},
             {'label': 'Phloem', 'value': 'Phloem'},
             {'label': 'sympodial_monochasium', 'value': 'sympodial_monochasium'},
             {'label': 'sympodial_dichasium', 'value': 'sympodial_dichasium'},
@@ -165,8 +169,8 @@ app.layout = html.Div([
         ],
         value='PMA2018'
     )], style={'width': '49%', 'float': 'right', 'display': 'inline-block'}),
-    html.Div([
-    dcc.Upload(
+   html.Div([
+     dcc.Upload(
         id='uploaddata',
         children=html.Div([
             'Drag and Drop or ',
@@ -184,28 +188,37 @@ app.layout = html.Div([
         },
         # Allow multiple files to be uploaded
         multiple=True
-    ),
+    ), 
+    html.Button('Submit', id='button'),
+    html.Div(id='output-state'),
 ]),
     html.Div([
 	dcc.Graph(id='3d-graph'),
 	], className='nine columns', style={'width': '70%', 'float': 'left', 'display': 'inline-block'}),
     ])
  
+@app.callback(Output('output-state', 'children'), 
+ [dash.dependencies.Input('parameterdropdown', 'value')]
+              
+              )
+def update_output(value):
+    return u'''
+        The the paremetername is {},
+    '''.format(value)
+
 
 @app.callback(
     dash.dependencies.Output('3d-graph', 'figure'),
-    [dash.dependencies.Input('parameterdropdown', 'value'), dash.dependencies.Input('uploaddata', 'contents') ])
-def update_figure(parameterdropdown, uploaddata):
+    [dash.dependencies.Input('button', 'value')],
+[dash.dependencies.State('parameterdropdown', 'value')]
+)
+def update_figure(button, dropdown):
 
 	plant1 = pb.Plant()
-	if uploaddata is not None:
-		print(uploaddata)
-		f = io.StringIO(str(uploaddata))
-		plant1.openXML(f)
-	else:
-		
-		plant1.openXML(parameterdropdown)
+	plant1.openXML(button)
+	tree = ET.parse("modelparameter/"+button+".xml")
 	plant1.initialize()
+	
 	plant1.simulate(160,True)
 	nodes = vv2a(plant1.getNodes())/100 # convert from cm to m 
 	node_connection = seg2a(plant1.getSegments(15)) # plant segments
