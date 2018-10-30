@@ -34,11 +34,11 @@ server = app.server
 xmlname = 'Phloem'
 plant1 = pb.Plant()
 plant1.openXML(xmlname)
-tree = ET.parse("modelparameter/"+xmlname+".xml")
 plant1.initialize()
 plant1.simulate(160,True)
 nodes = vv2a(plant1.getNodes())/100 
-
+def transform_value(value):
+    return 10 ** value
 BACKGROUND = 'rgb(255, 255, 255)'
 
 COLORSCALE = [ [0, "rgb(244,236,21)"], [0.3, "rgb(249,210,41)"], [0.4, "rgb(134,191,118)"],
@@ -151,6 +151,19 @@ def scatter_plot_3d(
 
 
 #FIGURE = scatter_plot_3d()
+tree = ET.parse("modelparameter/PMA2018.xml")
+root = tree.getroot()
+parameter_options={}
+parameter_order = 0
+for organ in root.iter('organ'): 
+    list=[]
+    for parameter in organ.iter('parameter'): 
+        print(parameter.attrib['name'])
+        
+        list.append(parameter.attrib['name']) 
+        parameter_order = parameter_order+1
+    parameter_options[organ.attrib['type']+organ.attrib['subType']] = list
+    #print(organ.attrib)
 
 
 
@@ -168,7 +181,32 @@ app.layout = html.Div([
             {'label': 'MAIZE', 'value': 'AMAIZE'}
         ],
         value='PMA2018'
-    )], style={'width': '49%', 'float': 'right', 'display': 'inline-block'}),
+    ),
+    html.Div([
+    dcc.Dropdown(
+        id='organ-dropdown',
+        options=[{'label': k, 'value': k} for k in parameter_options.keys()],
+        value='seed0'
+    ),
+
+    dcc.Dropdown(id='parameter-dropdown'),
+
+    html.Div(id='display-selected-values')
+]),
+    html.Div([
+        dcc.Slider(
+            id='slider-updatemode',
+            marks={i: '{}'.format(10 ** i) for i in range(4)},
+            max=3,
+            value=2,
+            step=0.01,
+            updatemode='mouseup'
+        ),
+        html.Div(id='updatemode-output-container', style={'margin-top': 20})
+    ])
+
+], style={'width': '30%', 'float': 'right', 'display': 'inline-block'}),
+
    html.Div([
      dcc.Upload(
         id='uploaddata',
@@ -177,7 +215,7 @@ app.layout = html.Div([
             html.A('Select Files')
         ]),
         style={
-            'width': '49%',
+            'width': '30%',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '1px',
@@ -189,22 +227,65 @@ app.layout = html.Div([
         # Allow multiple files to be uploaded
         multiple=True
     ), 
+    
+    ]),
+
+    html.Div([
     html.Button('Submit', id='button'),
-    html.Div(id='output-state'),
-]),
+    html.Div(id='output-state'), 
+    ]),
+    
+
+
     html.Div([
 	dcc.Graph(id='3d-graph'),
 	], className='nine columns', style={'width': '70%', 'float': 'left', 'display': 'inline-block'}),
+
+
+
     ])
+
+@app.callback(
+    dash.dependencies.Output('parameter-dropdown', 'options'),
+    [dash.dependencies.Input('organ-dropdown', 'value')])
+def set_cities_options(selected_organ):
+    return [{'label': i, 'value': i} for i in parameter_options[selected_organ]]
+
+
+@app.callback(
+    dash.dependencies.Output('parameter-dropdown', 'value'),
+    [dash.dependencies.Input('parameter-dropdown', 'options')])
+def set_cities_value(available_options):
+    return available_options[0]['value']
+
+
+@app.callback(
+    dash.dependencies.Output('display-selected-values', 'children'),
+    [dash.dependencies.Input('organ-dropdown', 'value'),
+     dash.dependencies.Input('parameter-dropdown', 'value')])
+def set_display_children(selected_organ, selected_parameter):
+    a=root.find(".//*..[@type= {} ][@subType='1']/*[@name={}]".format('seed' , 'nC' )).attrib['value']
+    b=root.find(".//*..[@type={}][@subType='1']/*[@name={}]".format('seed' , 'nC')).attrib['dev']
+    return u'this is value {} this is dev {}'.format(a,b)
  
 @app.callback(Output('output-state', 'children'), 
  [dash.dependencies.Input('parameterdropdown', 'value')]
               
               )
 def update_output(value):
-    return u'''
-        The the paremetername is {},
-    '''.format(value)
+    tree = ET.parse("modelparameter/"+value+".xml")
+    root = tree.getroot()
+         
+    return root.attrib['name']
+
+
+@app.callback(Output('updatemode-output-container', 'children'),
+              [Input('slider-updatemode', 'value')])
+def display_value(value):
+	
+    return 'Linear Value: {} | \
+            Log Value: {:0.2f}'.format(value, transform_value(value))
+	
 
 
 @app.callback(
@@ -250,6 +331,7 @@ def update_figure(button, dropdown):
 	for i in range(0,len(nodes)):
 		nodes_org[i]= organ_to_color[nodes_organtype[i,1]]
 	asss = scatter_plot_3d()
+
 	return {'data' :[ dict(
 		x = nodes[:,0],
 		y = nodes[:,1],

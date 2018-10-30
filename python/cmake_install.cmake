@@ -1,4 +1,4 @@
-# Install script for directory: /home/crootbox/cpb2/python
+# Install script for directory: /home/crootbox/heroku/CPlantBox/python
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
