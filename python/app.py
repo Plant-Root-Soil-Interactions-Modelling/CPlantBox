@@ -172,7 +172,7 @@ for organ in root.iter('organ'):
 app.layout = html.Div([
     html.Div([
     dcc.Dropdown(
-        id='parameterdropdown',
+        id='parameter_name_dropdown',
         options=[
             {'label': 'PMA2018 example', 'value': 'PMA2018'},
             {'label': 'Phloem', 'value': 'Phloem'},
@@ -202,44 +202,49 @@ app.layout = html.Div([
             step=0.01,
             updatemode='mouseup'
         ),
-        html.Div(id='updatemode-output-container', style={'margin-top': 20})
+        html.Div(id='updatemode-output-container', style={'margin-top': 20}),
+        dcc.Input(id='xml_ouput_name', type='text', value='Test_PMA2018'),
+        html.Button(id='save_XML', n_clicks=0, children='XML Save'),
+        html.Div([
+    html.Button('Run the model', id='run_model'),
+    html.Div(id='output-state'), 
+    html.Div(id='output-state2'),
+    ]),
+
     ])
 
 ], style={'width': '30%', 'float': 'right', 'display': 'inline-block'}),
 
    html.Div([
-     dcc.Upload(
-        id='uploaddata',
-        children=html.Div([
-            'Drag and Drop or ',
-            html.A('Select Files')
-        ]),
-        style={
-            'width': '30%',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '1px',
-            'borderStyle': 'dashed',
-            'borderRadius': '5px',
-            'textAlign': 'center',
-            'margin': '10px'
-        },
-        # Allow multiple files to be uploaded
-        multiple=True
-    ), 
+    #  dcc.Upload(
+    #     id='uploaddata',
+    #     children=html.Div([
+    #         'Drag and Drop or ',
+    #         html.A('Select Files')
+    #     ]),
+    #     style={
+    #         'width': '30%',
+    #         'height': '60px',
+    #         'lineHeight': '60px',
+    #         'borderWidth': '1px',
+    #         'borderStyle': 'dashed',
+    #         'borderRadius': '5px',
+    #         'textAlign': 'center',
+    #         'margin': '10px'
+    #     },
+    #     # Allow multiple files to be uploaded
+    #     multiple=True
+    # ), 
     
     ]),
 
-    html.Div([
-    html.Button('Submit', id='button'),
-    html.Div(id='output-state'), 
-    ]),
+    
     
 
 
     html.Div([
-	dcc.Graph(id='3d-graph'),
-	], className='nine columns', style={'width': '70%', 'float': 'left', 'display': 'inline-block'}),
+    dcc.Graph(id='3d-graph'),
+    ],  style={'width': '60%', 'float': 'left', 'display': 'block'}),
 
 
 
@@ -264,94 +269,120 @@ def set_cities_value(available_options):
     [dash.dependencies.Input('organ-dropdown', 'value'),
      dash.dependencies.Input('parameter-dropdown', 'value')])
 def set_display_children(selected_organ, selected_parameter):
-    a=root.find(".//*..[@type= {} ][@subType='1']/*[@name={}]".format('seed' , 'nC' )).attrib['value']
-    b=root.find(".//*..[@type={}][@subType='1']/*[@name={}]".format('seed' , 'nC')).attrib['dev']
-    return u'this is value {} this is dev {}'.format(a,b)
+    parameter_element=root.find(".//*..[@type='{}'][@subType='{}']/*[@name='{}']".format(selected_organ[:-1] ,selected_organ[-1:], selected_parameter )).attrib
+    pe_value=parameter_element['value']
+    if 'dev' in parameter_element:
+        pe_dev=parameter_element['dev']
+    
+    else:
+        pe_dev='no deviation' 
+        pe_value=parameter_element['value']  
+    return u'value is {}, deviation is {}'.format(pe_value,pe_dev)
  
 @app.callback(Output('output-state', 'children'), 
- [dash.dependencies.Input('parameterdropdown', 'value')]
+ [dash.dependencies.Input('parameter_name_dropdown', 'value')]
               
               )
 def update_output(value):
-    tree = ET.parse("modelparameter/"+value+".xml")
-    root = tree.getroot()
          
-    return root.attrib['name']
+    return value
 
+@app.callback(
+    dash.dependencies.Output('output-state2', 'children'),
+    [dash.dependencies.Input('save_XML', 'n_clicks')],
+[dash.dependencies.State('xml_ouput_name', 'value')]
+)
+def update_output2(n_clicks, value):
+    tree.write('modelparameter/'+value+".xml")
+    return 'saved in name:  {}'.format(value)
 
 @app.callback(Output('updatemode-output-container', 'children'),
-              [Input('slider-updatemode', 'value')])
-def display_value(value):
-	
+              [Input('slider-updatemode', 'value')],
+              [State('organ-dropdown', 'value'),
+               State('parameter-dropdown', 'value'),
+               State('parameter_name_dropdown', 'value')])
+def display_value(value,selected_organ, selected_parameter, name ):
+    #tree = ET.parse("modelparameter/"+name+".xml")
+    #root = tree.getroot()
+    parameter_element=root.find(".//*..[@type='{}'][@subType='{}']/*[@name='{}']".format(selected_organ[:-1] ,selected_organ[-1:], selected_parameter )).attrib
+    pe_value=parameter_element['value']
+    if 'dev' in parameter_element:
+        pe_dev=parameter_element['dev']    
+    else:
+        pe_dev='0' 
+    root.find(".//*..[@type='{}'][@subType='{}']/*[@name='{}']".format(selected_organ[:-1] ,selected_organ[-1:], selected_parameter )).set('value',str(transform_value(value)))
     return 'Linear Value: {} | \
-            Log Value: {:0.2f}'.format(value, transform_value(value))
-	
+            Log Value: {:0.2f} original value {:f} and dev {:f}'.format(value, transform_value(value),float(pe_value),float(pe_dev))
+    
 
 
 @app.callback(
-    dash.dependencies.Output('3d-graph', 'figure'),
-    [dash.dependencies.Input('button', 'value')],
-[dash.dependencies.State('parameterdropdown', 'value')]
+    Output('3d-graph', 'figure'),
+    [Input('run_model', 'n_clicks')],
+[State('parameter_name_dropdown', 'value'),
+State('save_XML', 'n_clicks'),State('xml_ouput_name', 'value')]
 )
-def update_figure(button, dropdown):
+def update_figure(n_clicks1, dropdown,n_clicks2, xml_ouput_name):
+    plant1 = pb.Plant()
+    if n_clicks2 > 0:
+        plant1.openXML(xml_ouput_name)
+    else:
+        plant1.openXML(dropdown)
+    
+    plant1.initialize()
+    
+    plant1.simulate(160,True)
+    nodes = vv2a(plant1.getNodes())/100 # convert from cm to m 
+    node_connection = seg2a(plant1.getSegments(15)) # plant segments
+    #sseg = seg2a(plant.getSegments(4)) #
+    node_organtype = v2ai(plant1.getNodesOrganType())
+    node_connection1, node_connection2 = np.hsplit(node_connection,2)
+    node_connection1 = np.column_stack([node_connection1, node_organtype])
+    node_connection2 = np.column_stack([node_connection2, node_organtype])
+    nodes_organtype = np.row_stack([node_connection1,node_connection2])
+    _, indices = np.unique(nodes_organtype[:,0], return_index=True)
+    nodes_organtype = nodes_organtype[indices,:]
+    unq, unq_idx, unq_cnt = np.unique(node_connection, return_inverse=True, return_counts=True)
+    nodes_organtype = np.column_stack((nodes_organtype,unq_cnt ))
+    nodes_organtype.astype(np.int_)
+    organ_to_name = {
+    2 : 'root',
+    4 : 'stem',
+    8 : 'leaf'
+    }
+    n_org_name = np.full((len(nodes), 1),'aaaaaaaaaaaa')
+    for i in range(0,len(nodes)):
+        n_org_name[i]= organ_to_name[nodes_organtype[i,1]]
+    organ_to_color = {
+    2 : 'orange',
+    4 : 'darkgreen',
+    8 : 'lightgreen'
+    }
+    nodes_org = np.full((len(nodes), 1),'aaaaaaaaaaaa')
+    for i in range(0,len(nodes)):
+        nodes_org[i]= organ_to_color[nodes_organtype[i,1]]
+    asss = scatter_plot_3d()
 
-	plant1 = pb.Plant()
-	plant1.openXML(button)
-	tree = ET.parse("modelparameter/"+button+".xml")
-	plant1.initialize()
-	
-	plant1.simulate(160,True)
-	nodes = vv2a(plant1.getNodes())/100 # convert from cm to m 
-	node_connection = seg2a(plant1.getSegments(15)) # plant segments
-	#sseg = seg2a(plant.getSegments(4)) #
-	node_organtype = v2ai(plant1.getNodesOrganType())
-	node_connection1, node_connection2 = np.hsplit(node_connection,2)
-	node_connection1 = np.column_stack([node_connection1, node_organtype])
-	node_connection2 = np.column_stack([node_connection2, node_organtype])
-	nodes_organtype = np.row_stack([node_connection1,node_connection2])
-	_, indices = np.unique(nodes_organtype[:,0], return_index=True)
-	nodes_organtype = nodes_organtype[indices,:]
-	unq, unq_idx, unq_cnt = np.unique(node_connection, return_inverse=True, return_counts=True)
-	nodes_organtype = np.column_stack((nodes_organtype,unq_cnt ))
-	nodes_organtype.astype(np.int_)
-	organ_to_name = {
-	2 : 'root',
-	4 : 'stem',
-	8 : 'leaf'
-	}
-	n_org_name = np.full((len(nodes), 1),'aaaaaaaaaaaa')
-	for i in range(0,len(nodes)):
-		n_org_name[i]= organ_to_name[nodes_organtype[i,1]]
-	organ_to_color = {
-	2 : 'orange',
-	4 : 'darkgreen',
-	8 : 'lightgreen'
-	}
-	nodes_org = np.full((len(nodes), 1),'aaaaaaaaaaaa')
-	for i in range(0,len(nodes)):
-		nodes_org[i]= organ_to_color[nodes_organtype[i,1]]
-	asss = scatter_plot_3d()
-
-	return {'data' :[ dict(
-		x = nodes[:,0],
-		y = nodes[:,1],
-		z = nodes[:,2],
-		mode = 'markers',
-		marker = dict(
-				#colorscale = COLORSCALE,
-				#colorbar = dict( title = "one colorbar" ),
-				line = dict( color = '#444' ),
-				reversescale = True,
-				sizeref = 45,
-				sizemode = 'diameter',
-				opacity = 0.7,
-				size = '2',
-				color = nodes_org[:,0],
-				
-			),
-		text = n_org_name.T.tolist()[0],
-		type = 'scatter3d',
-	) ], 'layout' : scatter_plot_3d.layout}
+    return {'data' :[ dict(
+        x = nodes[:,0],
+        y = nodes[:,1],
+        z = nodes[:,2],
+        mode = 'markers',
+        marker = dict(
+                #colorscale = COLORSCALE,
+                #colorbar = dict( title = "one colorbar" ),
+                line = dict( color = '#444' ),
+                reversescale = True,
+                sizeref = 45,
+                sizemode = 'diameter',
+                opacity = 0.7,
+                size = '2',
+                color = nodes_org[:,0],
+                
+            ),
+        text = n_org_name.T.tolist()[0],
+        type = 'scatter3d',
+    ) ], 'layout' : scatter_plot_3d.layout}
 
 
 
