@@ -15,6 +15,7 @@
 class Plant;
 class LeafParameter;
 class LeafTypeParameter;
+static int leafphytomerID[10]= {0};
 
 /**
  * Stem
@@ -75,6 +76,8 @@ public:
 
 	Vector3d o;
 	Matrix3d A; // relative heading
+	int getleafphytomerID(int subtype) { return leafphytomerID[subtype]; }
+	void addleafphytomerID(int subtype) { leafphytomerID[subtype]++;  }
 
 protected:
 

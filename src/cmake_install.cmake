@@ -1,4 +1,4 @@
-# Install script for directory: /home/crootbox/cpb2/src
+# Install script for directory: /mnt/c/cpbdash/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

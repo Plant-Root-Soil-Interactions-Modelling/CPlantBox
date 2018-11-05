@@ -31,6 +31,8 @@ app.config.update({
 
 
 server = app.server
+app.title='CPlantBox'
+
 xmlname = 'Phloem'
 plant1 = pb.Plant()
 plant1.openXML(xmlname)
@@ -204,7 +206,7 @@ app.layout = html.Div([
         ),
         html.Div(id='updatemode-output-container', style={'margin-top': 20}),
         dcc.Input(id='xml_ouput_name', type='text', value='Test_PMA2018'),
-        html.Button(id='save_XML', n_clicks=0, children='XML Save'),
+        html.Button(id='save_XML', n_clicks=0, children='update_parameter'),
         html.Div([
     html.Button('Run the model', id='run_model'),
     html.Div(id='output-state'), 
@@ -278,7 +280,24 @@ def set_display_children(selected_organ, selected_parameter):
         pe_dev='no deviation' 
         pe_value=parameter_element['value']  
     return u'value is {}, deviation is {}'.format(pe_value,pe_dev)
- 
+
+@app.callback(Output('slider-updatemode', 'value'),
+              [Input('save_XML', 'n_clicks')],
+              [State('organ-dropdown', 'value'),
+               State('parameter-dropdown', 'value'),
+               State('parameter_name_dropdown', 'value')])
+def display_value(value,selected_organ, selected_parameter, name ):
+    #tree = ET.parse("modelparameter/"+name+".xml")
+    #root = tree.getroot()
+    parameter_element=root.find(".//*..[@type='{}'][@subType='{}']/*[@name='{}']".format(selected_organ[:-1] ,selected_organ[-1:], selected_parameter )).attrib
+    pe_value=parameter_element['value']
+    if 'dev' in parameter_element:
+        pe_dev=parameter_element['dev']    
+    else:
+        pe_dev='0' 
+    root.find(".//*..[@type='{}'][@subType='{}']/*[@name='{}']".format(selected_organ[:-1] ,selected_organ[-1:], selected_parameter )).set('value',str(transform_value(value)))
+    return float(pe_value)
+	
 @app.callback(Output('output-state', 'children'), 
  [dash.dependencies.Input('parameter_name_dropdown', 'value')]
               
@@ -287,6 +306,9 @@ def update_output(value):
          
     return value
 
+	
+
+	
 @app.callback(
     dash.dependencies.Output('output-state2', 'children'),
     [dash.dependencies.Input('save_XML', 'n_clicks')],
@@ -314,6 +336,9 @@ def display_value(value,selected_organ, selected_parameter, name ):
     return 'Linear Value: {} | \
             Log Value: {:0.2f} original value {:f} and dev {:f}'.format(value, transform_value(value),float(pe_value),float(pe_dev))
     
+
+    	
+
 
 
 @app.callback(

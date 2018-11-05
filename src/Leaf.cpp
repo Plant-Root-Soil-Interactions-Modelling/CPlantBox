@@ -26,25 +26,21 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 	LeafParameter* leaf_p = (LeafParameter*) param;
 	//  std::cout <<", "<<(LeafParameter*) param<< "\n";
 
-	//Matrix3d heading = Matrix3d::ons(rheading); // isheading is the z direction, i.e. column 2 in the matrix
 
-	//double beta = 0;//(plant->getLPIndex()*0.5+0.5)*M_PI ; // initial rotation 0.05*M_PI*plant->randn()
-	//Matrix3d rotZ = Matrix3d::rotZ(beta);
-	//double theta = leaf_p->theta;
-	//Matrix3d rotX = Matrix3d::rotX(theta);
-
-	//rotZ.times(heading);
-	//rotX.times(rotZ);
-	//setRelativeHeading(rotX); // was setRelativeHeading(rotX); chnaged it to see the results
-
-	double beta = M_PI * (plant->getLPIndex()+0.5);// 2 * M_PI*plant->rand(); // initial rotation
+	        std::cout <<"subtype ="<<leaf_p->subType <<"getleafphytomerID =" <<getleafphytomerID(leaf_p->subType)<< "\n";
+		addleafphytomerID(leaf_p->subType);
+	double beta = getleafphytomerID(leaf_p->subType)*M_PI*ltp->colorR + M_PI*plant->rand()*ltp->colorG ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialLeafHeading);
+	if (ltp->colorB >0 && getleafphytomerID(leaf_p->subType)==0 ){
+		beta = beta + ltp->colorB;	
+	}
 	ons.times(Matrix3d::rotX(beta));
-	double theta = leaf_p->theta;
-	//if (parent->organType() != Organ::ot_seed) { // scale if not a base root
-	//	double scale = ltp->sa->getValue(parent->getNode(pni), this);
-	//	theta *= scale;
-	//}
+	
+	double theta = M_PI*leaf_p->theta;
+	if (parent->organType() != Organ::ot_seed) { // scale if not a base root
+		double scale = ltp->sa->getValue(parent->getNode(pni), this);
+		theta *= scale;
+	}
 	ons.times(Matrix3d::rotZ(theta));
 	this->initialLeafHeading = ons.column(0); // new initial heading
 
