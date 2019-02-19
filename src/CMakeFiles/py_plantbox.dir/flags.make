@@ -6,5 +6,5 @@ CXX_FLAGS = -Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare
 
 CXX_DEFINES = -Dpy_plantbox_EXPORTS
 
-CXX_INCLUDES = -I/mnt/c/cpbdash/src -I/usr/include/python3.6m 
+CXX_INCLUDES = -I/mnt/c/cpb1/src -I/usr/include/python3.6m 
 

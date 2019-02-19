@@ -32,10 +32,10 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 	double beta = getleafphytomerID(leaf_p->subType)*M_PI*ltp->colorR + M_PI*plant->rand()*ltp->colorG ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialLeafHeading);
 	if (ltp->colorB >0 && getleafphytomerID(leaf_p->subType)==0 ){
-		beta = beta + ltp->colorB;	
+		beta = beta + ltp->colorB;
 	}
 	ons.times(Matrix3d::rotX(beta));
-	
+
 	double theta = M_PI*leaf_p->theta;
 	if (parent->organType() != Organ::ot_seed) { // scale if not a base root
 		double scale = ltp->sa->getValue(parent->getNode(pni), this);

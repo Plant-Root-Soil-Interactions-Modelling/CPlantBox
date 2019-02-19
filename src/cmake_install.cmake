@@ -1,4 +1,4 @@
-# Install script for directory: /mnt/c/cpbdash/src
+# Install script for directory: /mnt/c/cpb1/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

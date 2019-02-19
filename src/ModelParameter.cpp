@@ -273,7 +273,7 @@ int RootTypeParameter::getLateralType(const Vector3d& pos)
 {
 	assert(successor.size()==successorP.size());
 	double scale = sbp->getValue(pos);  //the current model makes not a lot of sense, we may come up with something more clever
-	if (successorP.size()>0) { // at least 1 successor typese 
+	if (successorP.size()>0) { // at least 1 successor typese
 		if (successorP.size()>1) { // if there are more than one lateral we have to dice
 			double d = rand();
 			int i=0;
@@ -645,7 +645,7 @@ void StemTypeParameter::set(int type, double lb, double lbs, double la, double l
 	this->lbs = lbs;
 	this->la = la;
 	this->las = las;
-	this->lns = lns;	
+	this->lns = lns;
 	this->ln = ln;
 	this->lnf = lnf;
 	this->nob = nob;
@@ -745,39 +745,39 @@ OrganParameter* StemTypeParameter::realize() const
 	std::vector<double> ln_; // stores the inter-distances
 	int nob_ = std::max(round(nob + randn()*nobs),double(0)); // maximal number of branches
 	switch(lnf) {
-		case 0:
+		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d = std::max(ln + randn()*lns,1e-9); //Normal function of equal internode distance
 			ln_.push_back(d);
 			ln_.push_back(0);
-			
+
 		};
-		case 1:
+		case 1: //  nodes distance increase linearly
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 
 		};
-		case 2:
+		case 2: //nodes distance decrease linearly
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 
 		};
-		case 3:
+		case 3: //nodes distance decrease exponential
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 
 		};
 
-		case 4:
+		case 4://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
-		};	
+		};
 
 	}
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
@@ -1048,7 +1048,7 @@ LeafTypeParameter::LeafTypeParameter()
 	se = new SoilLookUp();
 	sa = new SoilLookUp();
 	sbp = new SoilLookUp();
-	set(-1, 0., 0., 10., 0., 1., 0., 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
+	set(-1, 0., 0., 10., 0., 1., 0., 0, 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
 }
 
@@ -1064,7 +1064,7 @@ LeafTypeParameter::~LeafTypeParameter()
 /**
  * todo comment
  */
-void LeafTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
+void LeafTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 		double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name)
@@ -1075,6 +1075,7 @@ void LeafTypeParameter::set(int type, double lb, double lbs, double la, double l
 	this->la = la;
 	this->las = las;
 	this->ln = ln;
+	this->lnf = lnf;
 	this->lns = lns;
 	this->nob = nob;
 	this->nobs = nobs;
@@ -1172,16 +1173,52 @@ OrganParameter* LeafTypeParameter::realize() const
 	double la_ = std::max(la + randn()*las,double(0)); // length of apical zone
 	std::vector<double> ln_; // stores the inter-distances
 
+	// stores the inter-distances
 	int nob_ = std::max(round(nob + randn()*nobs),double(0)); // maximal number of branches
-	for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-		double d = std::max(ln + randn()*lns,1e-9);
-		ln_.push_back(d);
+	switch(lnf) {
+		case 0: // homogeneously distributed stem nodes
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d = std::max(ln + randn()*lns,1e-9); //Normal function of equal internode distance
+			ln_.push_back(d);
+			ln_.push_back(0);
+
+		};
+		case 1: //  nodes distance increase linearly
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+			ln_.push_back(0);
+
+		};
+		case 2: //nodes distance decrease linearly
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+
+		};
+		case 3: //nodes distance decrease exponential
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d =  std::max(ln + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+
+		};
+
+		case 4://nodes distance decrease exponential
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+			ln_.push_back(0);
+		};
+
 	}
+
+
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
 	double a_ = std::max(a + randn()*as,double(0)); // radius
 	double theta_ = std::max(theta + randn()*thetas,double(0)); // initial elongation
 	double rlt_ = std::max(rlt + randn()*rlts,double(0)); // root life time
-	LeafParameter* leaf_p =  new LeafParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
+	int lnf_ = lnf;
+	LeafParameter* leaf_p =  new LeafParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,lnf_);
 	return leaf_p;
 
 //for (int i = 0; i<nob_-1; i++) { // create inter-root distances
@@ -1292,7 +1329,7 @@ void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    ele->QueryStringAttribute("name", &name);
    getAttribute(ele_param, "lb", "parameter", lb, lbs);
    getAttribute(ele_param, "la", "parameter", la, las);
-   getAttribute(ele_param, "ln", "parameter", ln, lns);
+   getAttribute(ele_param, "ln", "parameter", ln, lns, lnf);
    getAttribute(ele_param, "lmax", "parameter", k, ks);
    getAttribute(ele_param, "nob", "parameter", nob, nobs);
    	if (ln > 0) {
@@ -1361,7 +1398,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("name","la"); printer.PushAttribute("value",la); printer.PushAttribute("dev",las);  printer.CloseElement(); printer.PushComment("Apical zone [cm];");	///< Apical zone [cm];
 	printer.OpenElement("parameter");
 
-        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
+        printer.PushAttribute("name","ln"); printer.PushAttribute("value",ln); printer.PushAttribute("dev",lns); printer.PushAttribute("functiontype",lnf); printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];
 	printer.OpenElement("parameter");//	printer.PushComment("Number of branches [1];");
 
 	printer.PushAttribute("name","lmax"); printer.PushAttribute("value",k); printer.PushAttribute("dev",ks);  printer.CloseElement();printer.PushComment("Inter-lateral distance [cm];");		///< Inter-lateral distance [cm];

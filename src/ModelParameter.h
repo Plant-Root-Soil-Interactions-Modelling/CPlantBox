@@ -118,7 +118,7 @@ public:
 class RootTypeParameter : public OrganTypeParameter
 {
 public:
-	
+
 	enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism
 	enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
@@ -180,7 +180,7 @@ public:
 	SoilLookUp* se; ///< scale elongation function
 	SoilLookUp* sa; ///< scale angle function
 	SoilLookUp* sbp; ///< scale branching probability function
-	
+
 };
 
 
@@ -278,7 +278,7 @@ public:
 
 	StemParameter() { subType = -1; };
 	StemParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, int lnf):
-		lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), lnf(lnf), ln(ln) { subType = type;  }
+		lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln), lnf(lnf) { subType = type;  }
 	///< Constructor setting all parameters
 
 	double getK() const; ///< Returns the exact maximal root length of this realization [cm]
@@ -468,8 +468,8 @@ class LeafParameter : public OrganParameter
 public:
 
 	LeafParameter() { subType = -1; };
-	LeafParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
-		lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln) { subType = type;  }
+	LeafParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, int lnf):
+		lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln), lnf(lnf) { subType = type;  }
 	///< Constructor setting all parameters
 
 	double getK() const; ///< Returns the exact maximal root length of this realization [cm]
@@ -483,7 +483,8 @@ public:
 	double r = 0.;			///< Initial growth rate [cm day-1]
 	double a = 0.; 			///< Root radius [cm]
 	double theta = 0.; 		///< Angle between root and parent root [rad]
-	double rlt = 0.;		///< Root life time [day]
+	double rlt = 0.;	///< Root life time [day]
+	int lnf = 0;
 	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
 
 };
@@ -501,7 +502,7 @@ public:
 	LeafTypeParameter(); ///< default constructor
 	virtual ~LeafTypeParameter();
 
-	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
+	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 			double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name); ///< sets all parameters
@@ -524,6 +525,7 @@ public:
 	double las;		///< Standard deviation apical zone [cm];
 	double ln; 		///< Inter-lateral distance [cm]
 	double lns;  	///< Standard deviation inter-lateral distance [cm]
+	int lnf;
 			double k;
 	double ks;
 	double nob; 	///< Number of branches [1]
