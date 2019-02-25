@@ -2,6 +2,9 @@
 #include "Leaf.h"
 #include "Root.h"
 #include <memory>
+
+namespace CPlantBox {
+
 /**
  * Constructor
  * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .stparam file) tropism, growth function, txt and vtp writing system.
@@ -360,15 +363,55 @@ void Stem::LeafGrow(bool silence, Vector3d bud)
 	//  	std::cout << "LeafGrow type " << lt << "\n";
 
 	//if (lt>0) {
+	//int lt = stParam()->getLateralType(getNode(r_nodes.size()-1));
+	int lt =2;
+	if (sp->lnf==2&& lt>0) {
 		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Leaf* LeafGrow = new Leaf(plant, this , 2, 1, h, r_nodes.size()-1, length);
-		//    LeafGrow->addNode(getNode(r_nodes.size()-1), length);
-		LeafGrow->setRelativeOrigin(bud);
-		this->children.push_back(LeafGrow);
-		LeafGrow->simulate(age-ageLN, silence);// pass time overhead (age we want to achieve minus current
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral2->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral2);
+		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+	}
+	else if (sp->lnf==3&& lt>0) {
+		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
+		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral2->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral2);
+		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+	}
+	else if (sp->lnf==4 && lt>0) {
+		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
+		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+	} else if (lt>0) {
+		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
+		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+		}
 	//}
 
 
@@ -622,3 +665,5 @@ std::string Stem::toString() const
 }
 
 
+
+} // namespace CPlantBox

@@ -25,6 +25,9 @@
 #include "LeafTropism.h"
 #include "tinyxml2.h"
 
+namespace CPlantBox {
+
+
 class Seed;
 class SeedParameter;
 
@@ -144,5 +147,7 @@ protected:
 
 
 
+
+} // namespace CPlantBox
 
 #endif /* ROOTSYSTEM_H_ */

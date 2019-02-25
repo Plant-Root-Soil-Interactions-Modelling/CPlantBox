@@ -1,6 +1,9 @@
 #ifndef GROWTH_H
 #define GROWTH_H
 
+namespace CPlantBox {
+
+
 class Organ;
 
 /**
@@ -69,5 +72,7 @@ public:
 };
 
 
+
+} // namespace CPlantBox
 
 #endif

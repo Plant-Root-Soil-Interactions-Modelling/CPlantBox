@@ -4,6 +4,9 @@
 
 #include <cmath>
 
+namespace CPlantBox {
+
+
 
 
 // auxiliary function for xml parsing
@@ -1450,3 +1453,5 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 }
 
 
+
+} // namespace CPlantBox

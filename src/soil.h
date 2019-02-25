@@ -5,6 +5,9 @@
 #include <cmath>
 #include "sdf.h"
 
+namespace CPlantBox {
+
+
 class Organ;
 
 
@@ -120,5 +123,7 @@ public:
 };
 
 
+
+} // namespace CPlantBox
 
 #endif

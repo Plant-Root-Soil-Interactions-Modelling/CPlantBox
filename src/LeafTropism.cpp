@@ -1,5 +1,8 @@
 #include "LeafTropism.h"
 
+namespace CPlantBox {
+
+
 
 
 /**
@@ -195,3 +198,5 @@ double CombinedLeafTropism::leaftropismObjective(const Vector3d& pos, Matrix3d o
 
 
 
+
+} // namespace CPlantBox

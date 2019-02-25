@@ -11,6 +11,9 @@
 #include "sdf.h"
 #include "ModelParameter.h"
 
+namespace CPlantBox {
+
+
 class Plant;
 class OrganTypeParameter;
 class OrganParameter;
@@ -99,6 +102,10 @@ public:
 
 };
 
-#include "Plant.h" // why?
 
+
+
+
+} // namespace CPlantBox
+#include "Plant.h" //
 #endif /* ORGAN_H_ */

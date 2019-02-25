@@ -1,5 +1,8 @@
 #include "StemTropism.h"
 
+namespace CPlantBox {
+
+
 
 
 /**
@@ -194,3 +197,5 @@ double CombinedStemTropism::stemtropismObjective(const Vector3d& pos, Matrix3d o
 
 
 
+
+} // namespace CPlantBox

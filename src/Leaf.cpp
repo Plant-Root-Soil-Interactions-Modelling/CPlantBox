@@ -1,5 +1,8 @@
 #include "Leaf.h"
 
+namespace CPlantBox {
+
+
 /**
  * Constructor
  * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .lParam file) tropism, growth function, txt and vtp writing syleaf.
@@ -45,7 +48,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 	this->initialLeafHeading = ons.column(0); // new initial heading
 
 	// initial node
-	//  if (parent->organType()!=Organ::ot_stem) { // the first node of the base leafs must be created in Seed::initialize()
+	//  if (parent->organType()!=Organ::ot_Leaf) { // the first node of the base leafs must be created in Seed::initialize()
 	// otherwise, don't use addNode for the first node of the leaf,
 	// since this node exists already and does not need a new identifier
 	r_nodes.push_back(Vector3d());
@@ -231,7 +234,8 @@ double Leaf::getCreationTime(double length)
 double Leaf::LeafGetLength(double age)
 {
 	assert(age>=0);
-	return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
+	//return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
+	return ltParam()->growth->LeafgetLength(age,ltParam()->r,getleafphytomerID(ltParam()->subType)*ltParam()->la+1,this);
 }
 
 /**
@@ -242,7 +246,9 @@ double Leaf::LeafGetLength(double age)
 double Leaf::LeafGetAge(double length)
 {
 	assert(length>=0);
-	return ltParam()->growth->LeafgetAge(length,ltParam()->r,ltParam()->getK(),this);
+	//std::cout<<"length subtype is"<<ltParam()->subType<<"\n";
+	//return ltParam()->growth->LeafgetAge(length,ltParam()->r,ltParam()->getK(),this);
+	return ltParam()->growth->LeafgetAge(length,ltParam()->r,getleafphytomerID(ltParam()->subType)*ltParam()->la+1,this);
 }
 
 /**
@@ -271,6 +277,56 @@ void Leaf::createLateral(bool silence)
 	int lt = ltParam()->getLateralType(getNode(r_nodes.size()-1));
 
 	if (lt>0) {
+
+		if (lp->lnf==2&& lt>0) {
+		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
+		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral2->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral2);
+		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+	}
+	else if (lp->lnf==3&& lt>0) {
+		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
+		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral2->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral2);
+		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+	}
+	else if (lp->lnf==4 && lt>0) {
+		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
+		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+	} else if (lt>0) {
+		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
+		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+		}
+
+
 		double ageLN = this->LeafGetAge(length); // age of leaf when lateral node is created
 		double ageLG = this->LeafGetAge(length+lp->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
@@ -318,7 +374,7 @@ void Leaf::createSegments(double l, bool silence)
 
 				Matrix3d ons = Matrix3d::ons(h);
 				Vector2d ab = ltParam()->tropism->getHeading(getNode(nn-2),getHeading(),olddx+sdx,this);
-
+//note todo mymath
 				ons.times(Matrix3d::rotX(ab.y));
 				ons.times(Matrix3d::rotZ(ab.x));
 				Vector3d newdx = Vector3d(ons.column(0).times(olddx+sdx));
@@ -434,7 +490,7 @@ void Leaf::addNode(Vector3d n, double t)
 void Leaf::writeRSML(std::ostream & cout, std::string indent) const
 {
 	if (this->r_nodes.size()>1) {
-		cout << indent << "<leaf id=\"" <<  id << "\">\n";  // open stem
+		cout << indent << "<leaf id=\"" <<  id << "\">\n";  // open Leaf
 
 		/* geometry tag */
 		cout << indent << "\t<geometry>\n"; // open geometry
@@ -494,3 +550,5 @@ std::string Leaf::toString() const
 
 
 
+
+} // namespace CPlantBox

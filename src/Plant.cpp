@@ -2,6 +2,9 @@
 #include <memory>
 #include <iostream>
 
+namespace CPlantBox {
+
+
 unsigned int Plant::noParamFile[5] = {0, 0, 1, 1, 1}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter
 
 Plant::Plant()
@@ -190,6 +193,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	} else {
 		std::cout << "No root system parameter file found \n";
 		Plant::noParamFile [1] = 1;
+
 	}
 	// debug
 
@@ -240,7 +244,7 @@ void Plant::openFile(std::string name, std::string subdir)
 
 	}
 	std::cout << "Read " << leaf_c << " leaf type parameters \n"; // debug
-
+    writeAlltoXML(name);
 }
 
 /**
@@ -348,7 +352,7 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
  */
 void Plant::initialize()
 {
-	
+
 	reset(); // deletes the old seed, makes a new one
 	seed->initialize(seed->initializeparam());// randomness in the python binding
 
@@ -837,3 +841,5 @@ void Plant::writeGeometry(std::ostream & os) const
 	geometry->writePVPScript(os);
 }
 
+
+} // namespace CPlantBox

@@ -15,6 +15,9 @@
 #include "RootGrowth.h"
 #include "ModelParameter.h"
 
+namespace CPlantBox {
+
+
 class Plant;
 class RootParameter;
 class RootTypeParameter;
@@ -87,5 +90,7 @@ protected:
 
 
 
+
+} // namespace CPlantBox
 
 #endif /* ROOT_H_ */

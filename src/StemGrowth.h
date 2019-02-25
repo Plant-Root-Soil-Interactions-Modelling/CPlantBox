@@ -1,6 +1,9 @@
 #ifndef STEMGROWTH_H
 #define STEMGROWTH_H
 
+namespace CPlantBox {
+
+
 class Organ;
 
 /**
@@ -69,5 +72,7 @@ public:
 };
 
 
+
+} // namespace CPlantBox
 
 #endif

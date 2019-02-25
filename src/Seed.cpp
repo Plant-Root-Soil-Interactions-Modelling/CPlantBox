@@ -1,5 +1,8 @@
 #include "Seed.h"
 
+namespace CPlantBox {
+
+
 Seed::Seed(Plant* plant) :Organ(plant, nullptr, 0, 0), seed_pos(Vector3d(0,0,0))
 {
 	param = (SeedParameter*)plant->getParameter(Organ::ot_seed,0)->realize();
@@ -93,3 +96,5 @@ std::string Seed::toString() const
 	str << "Seed #"<< id <<": type "<< param->subType << ", length: "<< length << ", age: " << age;
 	return str.str();
 }
+
+} // namespace CPlantBox

@@ -12,6 +12,9 @@
 #include "LeafGrowth.h"
 #include "ModelParameter.h"
 
+namespace CPlantBox {
+
+
 class Plant;
 class LeafParameter;
 class LeafTypeParameter;
@@ -86,5 +89,7 @@ protected:
 	int old_non = 0;
 
 };
+
+} // namespace CPlantBox
 
 #endif

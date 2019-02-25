@@ -14,6 +14,9 @@
 
 #include "mymath.h"
 #include "tinyxml2.h"
+
+namespace CPlantBox {
+
 /*
  * The model parameters consist of
  *
@@ -293,8 +296,9 @@ public:
 	double a = 0.; 			///< Root radius [cm]
 	double theta = 0.; 		///< Angle between root and parent root [rad]
 	double rlt = 0.;		///< Root life time [day]
+	std::vector<double> ln = std::vector<double>();
 	int lnf = 0;
-	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
+	    ///< Inter-lateral distances [cm]
 
 };
 
@@ -484,8 +488,8 @@ public:
 	double a = 0.; 			///< Root radius [cm]
 	double theta = 0.; 		///< Angle between root and parent root [rad]
 	double rlt = 0.;	///< Root life time [day]
-	int lnf = 0;
 	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
+	int lnf = 0;
 
 };
 
@@ -579,5 +583,7 @@ public:
  */
 
 
+
+} // namespace CPlantBox
 
 #endif

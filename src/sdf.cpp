@@ -1,5 +1,8 @@
 #include "sdf.h"
 
+namespace CPlantBox {
+
+
 
 
 
@@ -347,3 +350,5 @@ int SDF_HalfPlane::writePVPScript(std::ostream & cout, int c) const
 	  return c;
 }
 
+
+} // namespace CPlantBox

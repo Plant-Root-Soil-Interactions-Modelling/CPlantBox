@@ -1,5 +1,8 @@
 #include "Root.h"
 
+namespace CPlantBox {
+
+
 /**
  * Constructor
  *
@@ -213,7 +216,7 @@ double Root::getCreationTime(double length)
 	double age = getAge(length);
 	assert(age>=0);
 
-	
+
 	if (parent->organType()!=Organ::ot_seed) {
 		if (parent->organType()==Organ::ot_root) {
 			double pl = pbl+((Root*)parent)->rParam()->la; // parent length, when this root was created
@@ -478,3 +481,4 @@ std::string Root::toString() const
 	str << "Root #"<< id <<": type "<<param->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " children\n";
 	return str.str();
 }
+} // namespace CPlantBox

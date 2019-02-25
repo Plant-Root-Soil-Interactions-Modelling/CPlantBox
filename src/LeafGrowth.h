@@ -1,6 +1,9 @@
 #ifndef LEAFGROWTH_H
 #define LEAFGROWTH_H
 
+namespace CPlantBox {
+
+
 class Organ;
 
 /**
@@ -36,7 +39,7 @@ public:
   *
   * \return      root age [day]
   */
-  virtual double LeafgetAge(double l, double r, double k, Organ* Leaf) const
+  virtual double LeafgetAge(double l, double r, double k, Organ* leaf) const
   { throw std::runtime_error( "getAge() not implemented" ); return 0; } ///< Returns the age of a root of length l
 };
 
@@ -69,5 +72,7 @@ public:
 };
 
 
+
+} // namespace CPlantBox
 
 #endif

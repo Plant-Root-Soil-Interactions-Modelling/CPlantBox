@@ -5,6 +5,9 @@
 #include <iostream>
 #include <iomanip>
 
+namespace CPlantBox {
+
+
 /**
  * Copies the segments of the roots system into the analysis class
  *
@@ -693,3 +696,5 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 	os << "# \n";
 }
 
+
+} // namespace CPlantBox

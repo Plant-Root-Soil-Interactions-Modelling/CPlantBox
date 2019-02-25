@@ -6,8 +6,12 @@
 
 #include "soil.h"
 
+namespace CPlantBox {
 class SoilLookUp;
 class Organ;
+
+
+
 
 /**
 * Base class for all tropism functions, e.g. Gravitropism, Plagiotropism, Exotropism...
@@ -112,7 +116,9 @@ public:
   virtual double leaftropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* leaf) override {
     old.times(Matrix3d::rotX(b));
     old.times(Matrix3d::rotZ(a));
-    return 0.5*(old.column(0).z+1.); // negative values point downwards, tranformed to 0..1
+    //old.times(Matrix3d::rotZ(0.2));
+
+    return 0.5*(old.column(0).z); // negative values point downwards, tranformed to 0..1
   }
   ///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
 
@@ -128,7 +134,7 @@ public:
   virtual double leaftropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* leaf) override {
     old.times(Matrix3d::rotX(b));
     old.times(Matrix3d::rotZ(a));
-    return -0.5*(old.column(0).z+1.); // negative values point downwards, tranformed to 0..1
+    return -0.5*(old.column(0).z); // negative values point downwards, tranformed to 0..1
   }
   ///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
 
@@ -218,7 +224,9 @@ private:
 };
 
 
+
+
+
+} // namespace CPlantBox
 #include "Organ.h"
-
-
 #endif

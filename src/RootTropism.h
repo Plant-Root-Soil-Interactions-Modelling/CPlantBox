@@ -6,6 +6,8 @@
 
 #include "soil.h"
 
+
+namespace CPlantBox {
 class SoilLookUp;
 class Organ;
 
@@ -215,7 +217,11 @@ private:
 };
 
 
+
+
+
+
+
+} // namespace CPlantBox
 #include "Organ.h"
-
-
 #endif

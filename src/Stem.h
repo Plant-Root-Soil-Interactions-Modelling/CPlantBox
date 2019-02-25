@@ -11,6 +11,9 @@
 #include "StemGrowth.h"
 #include "ModelParameter.h"
 
+namespace CPlantBox {
+
+
 
 class Plant;
 class StemParameter;
@@ -90,5 +93,7 @@ protected:
 	int old_non = 0; // relative origin
 	
 };
+
+} // namespace CPlantBox
 
 #endif

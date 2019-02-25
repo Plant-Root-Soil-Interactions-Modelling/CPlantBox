@@ -37,6 +37,9 @@
 #include "tinyxml2.h"
 //#include "examples/Exudation/example_exudation.h"
 
+namespace CPlantBox {
+
+
 using namespace boost::python;
 
 
@@ -613,3 +616,5 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 
 #endif /* PY_PLANTBOX_H_ */
 
+
+} // namespace CPlantBox

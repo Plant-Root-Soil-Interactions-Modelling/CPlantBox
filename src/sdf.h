@@ -10,6 +10,9 @@
 #include <algorithm>
 #include "mymath.h"
 
+namespace CPlantBox {
+
+
 
 
 /**
@@ -239,5 +242,7 @@ public:
 
 };
 
+
+} // namespace CPlantBox
 
 #endif

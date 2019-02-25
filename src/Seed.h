@@ -4,6 +4,9 @@
 
 #include "Organ.h"
 
+namespace CPlantBox {
+
+
 class Plant;
 
 /**
@@ -38,5 +41,7 @@ public:
      	Matrix3d A; // relative heading
 };
 
+
+} // namespace CPlantBox
 
 #endif /* Seed_H_ */

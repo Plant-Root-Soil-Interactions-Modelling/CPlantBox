@@ -1,5 +1,8 @@
 #include "Organ.h"
 
+namespace CPlantBox {
+
+
 /**
  * Constructor
  */
@@ -238,3 +241,5 @@ std::string Organ::toString() const
 
 
 
+
+} // namespace CPlantBox

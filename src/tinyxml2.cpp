@@ -24,6 +24,9 @@ distribution.
 #include "tinyxml2.h"
 
 #include <new>		// yes, this one new style header, is in the Android SDK.
+
+namespace CPlantBox {
+
 #if defined(ANDROID_NDK) || defined(__BORLANDC__) || defined(__QNXNTO__)
 #   include <stddef.h>
 #   include <stdarg.h>
@@ -2803,3 +2806,5 @@ bool XMLPrinter::Visit( const XMLUnknown& unknown )
 }
 
 }   // namespace tinyxml2
+
+} // namespace CPlantBox
