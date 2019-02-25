@@ -13,8 +13,11 @@
 
 #include "example1.h"
 #include "example2.h"
-#include "example3.h"
-#include "example_scenegraph.h"
+//#include "example3.h"
+//#include "example_scenegraph.h"
+
+
+
 
 
 /**
@@ -28,7 +31,7 @@ int main(int argc, char* argv[])
 		name= argv[1];
 	}
 
-	example1(); // open parameter file, and output VTP
+	CPlantBox::example1(); // open parameter file, and output VTP
 	// example2(); // like example 1, but with put geometry
 	// example3(); // more than 1 plant
 
@@ -37,6 +40,8 @@ int main(int argc, char* argv[])
 	return(0);
 
 }
+
+
 
 
 

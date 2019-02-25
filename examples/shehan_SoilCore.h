@@ -9,6 +9,11 @@
  */
 using namespace std;
 #include <iostream>
+
+namespace CPlantBox {
+
+} // namespace CPlantBox
+
 #include <iomanip>
 
 /**

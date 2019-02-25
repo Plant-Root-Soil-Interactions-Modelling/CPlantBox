@@ -1,4 +1,4 @@
-# Install script for directory: /home/crootbox/cpb2/examples
+# Install script for directory: /mnt/c/cpb1/examples
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
