@@ -23,7 +23,7 @@ namespace CPlantBox {
  */
 Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d isheading ,int pni, double pbl) :Organ(plant,parent,subtype,delay), pni(pni), pbl(pbl)
 {
-	/*the relative heading is maulfunctioning 
+	/*the relative heading is maulfunctioning
 	so it is disabled and rerolled to old heading*/
 
 	  initialStemHeading = isheading;
@@ -50,17 +50,17 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ishe
 	double beta = getphytomerId(stem_p->subType)*M_PI*sttp->colorR + M_PI*plant->rand()*sttp->colorG ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialStemHeading);
 	if (sttp->colorB >0 && getphytomerId(stem_p->subType)==0 ){
-		beta = beta + sttp->colorB;	
+		beta = beta + sttp->colorB;
 	}
-	ons.times(Matrix3d::rotX(beta));
-	
+	//ons.times(Matrix3d::rotX(beta));
+
 	double theta = M_PI*stem_p->theta;
 	if (parent->organType() != Organ::ot_seed) { // scale if not a base root
 		double scale = sttp->sa->getValue(parent->getNode(pni), this);
 		theta *= scale;
 	}
-	ons.times(Matrix3d::rotZ(theta));
-	this->initialStemHeading = ons.column(0); // new initial heading
+	//ons.times(Matrix3d::rotZ(theta));
+	this->initialStemHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
 
 
 	// initial node
@@ -116,7 +116,7 @@ void Stem::simulate(double dt, bool silence)
 			}
 
 			if (active) {
-				
+
 				//      std::cout << "type\t" << sp->subType << "\n"  << "lb\t"<< sp->lb <<"\n" << "la\t"<< sp->la <<"\n" << "ln\t";
 				//	for (size_t i=0; i<sp->ln.size(); i++) {
 				//		std::cout << sp->ln[i] << "\t";
@@ -151,7 +151,7 @@ void Stem::simulate(double dt, bool silence)
 							s+=sp->ln.at(i);
 							if (length<s) {
 								if (i==children.size()) { // new internode leaf and shootBorneRoot
-									//if (sp->subType==3) 
+									//if (sp->subType==3)
 									{ //this decide which successor grow the leaf (TODO) adding it to parameterfile
 										LeafGrow(silence, r_nodes.back());
 										//ShootBorneRootGrow(silence);
@@ -301,7 +301,7 @@ void Stem::createLateral(bool silence)
 {
 	const StemParameter* sp = sParam(); // rename
 	int lt = stParam()->getLateralType(getNode(r_nodes.size()-1));
-	
+
 	if (sp->lnf==2&& lt>0) {
 		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
@@ -349,7 +349,7 @@ void Stem::createLateral(bool silence)
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 		}
-		
+
 	}
 
 
@@ -467,32 +467,21 @@ void Stem::createSegments(double l, bool silence)
 			auto n1 = r_nodes.at(nn-1);
 			double olddx = n1.minus(n2).length();
 			if (olddx<dx()*0.99) { // shift node instead of creating a new node
-				Vector3d h; // current heading
-				if (nn > 2) {
-					h = n2.minus(r_nodes.at(nn - 3));
-					h.normalize();
-				}
-				else {
-					h = initialStemHeading;
-				}
-				double sdx = std::min(dx() - olddx, l);
-	
-				Matrix3d ons = Matrix3d::ons(h);
-				Vector2d ab = stParam()->tropism->getHeading(getNode(nn-2),getHeading(),olddx+sdx,this);
-				ons.times(Matrix3d::rotX(ab.y));
-				ons.times(Matrix3d::rotZ(ab.x));
-				Vector3d newdx = Vector3d(ons.column(0).times(olddx+sdx));
-				
-				Vector3d newnode = Vector3d(r_nodes.at(nn-2).plus(newdx));
-				sl = sdx;
-				double ct = this->getCreationTime(length+sl);
-				r_nodes[nn-1] = newnode;
-				nctimes[nn-1] = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-				old_non = nn-1;
-				l -= sdx;
+
+				double newdx = std::min(dx()-olddx, l);
+                double sdx = olddx + newdx; // length of new segment
+
+
+                Vector3d newdxv = getIncrement(n2, sdx);
+				r_nodes[nn - 1] = Vector3d(n2.plus(newdxv));
+
+				double ct = this->getCreationTime(length + newdx);
+				nctimes[nn - 1] = std::max(ct, plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+				old_non = nn;
+				l -= newdx;
 
 				if (l<=0) { // ==0 should be enough
-					
+
 					//if (tipleaf) {
 						LeafGrow(silence, r_nodes.back()); //the stem tip will grow leafs
 						std::cout << "leaf grow\n";
@@ -503,7 +492,7 @@ void Stem::createSegments(double l, bool silence)
 				}
 			}
 		}
-		
+
 
 		old_non = nn; // CHECK
 	}
@@ -532,13 +521,9 @@ void Stem::createSegments(double l, bool silence)
 			}
 		}
 		sl+=sdx;
-		Vector3d h = heading();
-		Matrix3d ons = Matrix3d::ons(h);
-		Vector2d ab = stParam()->tropism->getHeading(getNode(nn-1),ons,sdx,this);
-		ons.times(Matrix3d::rotX(ab.y));
-		ons.times(Matrix3d::rotZ(ab.x));
-		Vector3d newdx = Vector3d(ons.column(0).times(sdx));
-		Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
+		Vector3d newdx = getIncrement(r_nodes.back(), sdx);
+
+			Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
 		double ct = this->getCreationTime(length+sl);
 		ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 		//     std::cout<<"add node "<<newnode.toString()<<"\n";
@@ -549,6 +534,29 @@ void Stem::createSegments(double l, bool silence)
 	} // for
 
 }
+
+Vector3d Stem::getIncrement(const Vector3d& p, double sdx) {
+    Vector3d h = heading(); // current heading
+    Matrix3d ons = Matrix3d::ons(h);
+    Vector2d ab = stParam()->tropism->getHeading(p, ons, sdx, this);
+    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+//    if (rootsystem->poreGeometry==nullptr) { // no pores defined
+//        return sv.times(sdx);
+//    } else {
+//        if (rootsystem->poreGeometry->getDist(p)<0) { // inside the pore
+//            auto sv1 = rootsystem->applyPoreConductivities(sv);
+//            // std::cout << "Length before " << sv.length() << ", length after " << sv1.length() << "\n";
+//            sv1.normalize();
+//            return sv1.times(sdx);
+//        } else {
+            return sv.times(sdx);
+//        }
+//    }
+}
+
+
+
+
 
 /**
  * Relative heading of organ tip
@@ -568,8 +576,8 @@ Vector3d Stem::heading() const {
 	Vector3d h;
 	if (r_nodes.size()>1) {
 		h = r_nodes.back().minus(r_nodes.at(r_nodes.size() - 2)); // getHeading(b-a)
-	}
-	else {
+        h.normalize();
+	} else {
 		h = initialStemHeading;
 	}
 	return h;

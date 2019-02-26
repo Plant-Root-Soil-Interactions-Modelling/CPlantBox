@@ -123,9 +123,9 @@ public:
     Gravitropism(double n, double sigma) : TropismFunction(n,sigma) { } ///< @see TropismFunction
     virtual TropismFunction* copy() override { return new Gravitropism(*this); } ///< copy constructor
     virtual double tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* root) override {
-        old.times(Matrix3d::rotX(b));
-        old.times(Matrix3d::rotZ(a));
-        return 0.5*(old.column(0).z+1.); // negative values point downwards, tranformed to 0..1
+//        old.times(Matrix3d::rotX(b));
+//        old.times(Matrix3d::rotZ(a));
+        return  0.5*(old.times(Vector3d::rotAB(a,b)).z+1.); // negative values point downwards, tranformed to 0..1
     }
     ///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
 
@@ -144,9 +144,9 @@ public:
     Plagiotropism(double n, double sigma) : TropismFunction(n,sigma) { } ///< @see TropismFunction
     virtual TropismFunction* copy() override { return new Plagiotropism(*this); } ///< copy constructor
     virtual double tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* root) override {
-        old.times(Matrix3d::rotX(b));
-        old.times(Matrix3d::rotZ(a));
-        return std::abs(old.column(0).z); // 0..1
+//        old.times(Matrix3d::rotX(b));
+//        old.times(Matrix3d::rotZ(a));
+        return std::abs(old.times(Vector3d::rotAB(a,b)).z); // 0..1
     }
     ///< getHeading() minimizes this function, @see TropismFunction
 

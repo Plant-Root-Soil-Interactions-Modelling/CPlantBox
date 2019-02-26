@@ -81,6 +81,7 @@ public:
 protected:
 
     void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
+    virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
     void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
 
     int old_non = 0;

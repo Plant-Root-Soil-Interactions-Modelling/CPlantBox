@@ -91,7 +91,10 @@ public:
 	Vector3d(): x(0),y(0),z(0) { } ///< Default constructor
 	Vector3d(double x_, double y_, double z_): x(x_), y(y_), z(z_) { } ///< Constructor passing three doubles
 	Vector3d(const Vector3d& v): x(v.x), y(v.y), z(v.z) { } ///< Copy Constructor
-
+    static Vector3d rotAB(double a, double b) { ///< first column of Rx(b)*Rz(a)
+        double sa = sin(a);
+        return Vector3d(cos(a), sa*cos(b), sa*sin(b) );
+    };
 	void normalize() { double l=length(); x/=l; y/=l; z/=l; } ///< normalizes the vector
 
 	double times(const Vector3d& v) const { return v.x*x+v.y*y+v.z*z; } ///< inner product

@@ -37,15 +37,15 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 	if (ltp->colorB >0 && getleafphytomerID(leaf_p->subType)==0 ){
 		beta = beta + ltp->colorB;
 	}
-	ons.times(Matrix3d::rotX(beta));
+	//ons.times(Matrix3d::rotX(beta));
 
 	double theta = M_PI*leaf_p->theta;
 	if (parent->organType() != Organ::ot_seed) { // scale if not a base root
 		double scale = ltp->sa->getValue(parent->getNode(pni), this);
 		theta *= scale;
 	}
-	ons.times(Matrix3d::rotZ(theta));
-	this->initialLeafHeading = ons.column(0); // new initial heading
+	//ons.times(Matrix3d::rotZ(theta));
+	this->initialLeafHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
 
 	// initial node
 	//  if (parent->organType()!=Organ::ot_Leaf) { // the first node of the base leafs must be created in Seed::initialize()
@@ -362,30 +362,17 @@ void Leaf::createSegments(double l, bool silence)
 			auto n1 = r_nodes.at(nn-1);
 			double olddx = n1.minus(n2).length();
 			if (olddx<dx()*0.99) { // shift node instead of creating a new node
-				Vector3d h; // current heading
-				if (nn > 2) {
-					h = n2.minus(r_nodes.at(nn - 3));
-					h.normalize();
-				}
-				else {
-					h = initialLeafHeading;
-				}
-				double sdx = std::min(dx() - olddx, l);
+				double newdx = std::min(dx()-olddx, l);
+                double sdx = olddx + newdx; // length of new segment
 
-				Matrix3d ons = Matrix3d::ons(h);
-				Vector2d ab = ltParam()->tropism->getHeading(getNode(nn-2),getHeading(),olddx+sdx,this);
-//note todo mymath
-				ons.times(Matrix3d::rotX(ab.y));
-				ons.times(Matrix3d::rotZ(ab.x));
-				Vector3d newdx = Vector3d(ons.column(0).times(olddx+sdx));
 
-				Vector3d newnode = Vector3d(r_nodes.at(nn-2).plus(newdx));
-				sl = sdx;
-				double ct = this->getCreationTime(length+sl);
-				r_nodes[nn-1] = newnode;
-				nctimes[nn-1] = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-				old_non = nn-1;
-				l -= sdx;
+                Vector3d newdxv = getIncrement(n2, sdx);
+				r_nodes[nn - 1] = Vector3d(n2.plus(newdxv));
+
+				double ct = this->getCreationTime(length + newdx);
+				nctimes[nn - 1] = std::max(ct, plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+				old_non = nn;
+				l -= newdx;
 				if (l<=0) { // ==0 should be enough
 					return;
 				}
@@ -419,13 +406,9 @@ void Leaf::createSegments(double l, bool silence)
 		}
 		sl+=sdx;
 
-		Vector3d h = heading();
-		Matrix3d ons = Matrix3d::ons(h);
-		Vector2d ab = ltParam()->tropism->getHeading(getNode(nn - 1), ons, sdx, this);
-		ons.times(Matrix3d::rotX(ab.y));
-		ons.times(Matrix3d::rotZ(ab.x));
-		Vector3d newdx = Vector3d(ons.column(0).times(sdx));
-		Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
+            Vector3d newdx = getIncrement(r_nodes.back(), sdx);
+
+			Vector3d newnode = Vector3d(r_nodes.back().plus(newdx));
 		double ct = this->getCreationTime(length+sl);
 		ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 		//     std::cout<<"add node "<<newnode.toString()<<"\n";
@@ -434,6 +417,26 @@ void Leaf::createSegments(double l, bool silence)
 	} // for
 
 }
+
+Vector3d Leaf::getIncrement(const Vector3d& p, double sdx) {
+    Vector3d h = heading(); // current heading
+    Matrix3d ons = Matrix3d::ons(h);
+    Vector2d ab = ltParam()->tropism->getHeading(p, ons, sdx, this);
+    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+//    if (rootsystem->poreGeometry==nullptr) { // no pores defined
+//        return sv.times(sdx);
+//    } else {
+//        if (rootsystem->poreGeometry->getDist(p)<0) { // inside the pore
+//            auto sv1 = rootsystem->applyPoreConductivities(sv);
+//            // std::cout << "Length before " << sv.length() << ", length after " << sv1.length() << "\n";
+//            sv1.normalize();
+//            return sv1.times(sdx);
+//        } else {
+            return sv.times(sdx);
+//        }
+//    }
+}
+
 
 /**
  * Relative heading of organ tip

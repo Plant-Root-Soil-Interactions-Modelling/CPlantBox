@@ -85,7 +85,7 @@ public:
 protected:
 
 	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
-
+    virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
 	int old_non = 0;
 
 };
