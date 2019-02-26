@@ -539,7 +539,8 @@ void SeedTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "nz", "parameter", nz);
    getAttribute(ele_param, "maxB", "parameter", maxB, maxBs);
    getAttribute(ele_param, "simulationTime", "parameter", simtime);
-   std::cout<<"subType "<<subType<<"\n";
+   std::cout<<"seed subType "<<subType<<"\n";
+  //
 
 }
 
@@ -548,7 +549,7 @@ std::string SeedTypeParameter::writeXML(FILE* fp) const {
 
 tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
     printer.OpenElement("organ", false); //compact mode false
-    printer.PushAttribute("type","seed"); printer.PushAttribute("subType",subType);
+    printer.PushAttribute("type","seed"); printer.PushAttribute("name", &name);printer.PushAttribute("subType",subType);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "seedPos.x");    printer.PushAttribute("value", seedPos.x);  printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "seedPos.y");    printer.PushAttribute("value", seedPos.y);  printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "seedPos.z");    printer.PushAttribute("value", seedPos.z);  printer.CloseElement(false);
@@ -574,6 +575,9 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
  */
 OrganParameter* SeedTypeParameter::realize() const
 {
+    //std::cout<<"seed name "<< <<"\n";
+
+
 	SeedParameter* sp = new SeedParameter();
 	sp->firstB = firstB + randn()*firstBs;
 	sp->delayB = delayB + randn()*firstBs;
@@ -587,6 +591,11 @@ OrganParameter* SeedTypeParameter::realize() const
 
 	return sp;
 }
+
+
+
+
+
 
 
 /*************************************** Stem *****************************/

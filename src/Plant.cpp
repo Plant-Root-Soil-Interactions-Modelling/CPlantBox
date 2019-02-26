@@ -329,7 +329,7 @@ void Plant::writeAlltoXML(std::string name, std::string subdir){
 	std::ofstream xmloutput;
 	xmloutput.open( xmlname.c_str());
 	xmloutput<<"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-	xmloutput<<"\n<Plant name=\"maize\" filetype=\"parameters\">\n";
+	xmloutput<<"\n<Plant name=\""<<name<<"\" filetype=\"parameters\">\n";
 	for (auto const& otp_:organParam) {
 		unsigned int t = 0;
 		for (auto const& otp : otp_) {

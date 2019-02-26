@@ -233,9 +233,18 @@ double Leaf::getCreationTime(double length)
  */
 double Leaf::LeafGetLength(double age)
 {
-	assert(age>=0);
-	//return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
-	return ltParam()->growth->LeafgetLength(age,ltParam()->r,getleafphytomerID(ltParam()->subType)*ltParam()->la+1,this);
+    std::cout<<"seed name is"<<plant->getParameter(Organ::ot_seed, 0)->name<<"\n";
+    assert(age>=0);
+    if  (plant->getParameter(Organ::ot_seed, 0)->name == "maize"){
+
+        //return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
+        return ltParam()->growth->LeafgetLength(age,ltParam()->r,getleafphytomerID(ltParam()->subType)*ltParam()->la+1,this);
+    } else if (plant->getParameter(Organ::ot_seed, 0)->name == "Anagallis_femina_Leitner_2010") {
+        return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
+    } else {
+        return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
+    }
+
 }
 
 /**

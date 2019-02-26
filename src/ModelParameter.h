@@ -234,6 +234,7 @@ public:
 	virtual std::string toString() const { std::stringstream ss; write(ss); return ss.str(); } ///< writes parameter to a string
 
 	/* Plant parameters */
+
 	Vector3d seedPos = Vector3d(0,0,-3);   ///< Position of the seed [cm]
 	Vector3d seedPoss = Vector3d();
     double plantingdepth = -seedPos.z;
@@ -332,6 +333,7 @@ public:
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
 
 	/* Rootbox parameters per root type */
+
 	double lb; 	 	///< Basal zone [cm]
 	double lbs;  	///< Standard deviation basal zone [cm]
 	double la;		///< Apical zone [cm];
