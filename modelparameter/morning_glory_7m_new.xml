@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Plant name="maize" filetype="parameters">
-<organ type="seed" subType="0">
+<Plant name="morning_glory_7m_new" filetype="parameters">
+<organ type="seed" name="true" subType="0">
     <parameter name="seedPos.x" value="0"/>
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-3"/>
@@ -118,11 +118,11 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="15" dev="0" functiontype="3"/>
+    <parameter name="ln" value="44.799999999999997" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="710" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="38.93333333333333" dev="0"/>
+    <parameter name="nob" value="13.700892857142858" dev="0"/>
     <parameter name="r" value="40" dev="0"/>
     <parameter name="a" value="0.5" dev="0.02"/>
     <parameter name="colorR" value="0"/>
@@ -143,7 +143,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="1"/>
+    <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="3.2000000000000002" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -166,9 +166,9 @@
 <organ type="leaf" name="lateral1" subType="2">
     <parameter name="lb" value="10" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="1" dev="0"/>
+    <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0"/>
+    <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="13" dev="0"/>
     <!--Inter-lateral distance [cm];-->

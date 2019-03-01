@@ -45,13 +45,14 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ishe
 	//heading.times(rotX);
 	////parent->setRelativeHeading(rotX); // now the parent is rotating, so the beta is working as before
 	//heading.times(rotZ);
-        std::cout <<"subtype ="<<stem_p->subType <<"getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
+        std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
 		addPhytomerId(stem_p->subType);
 	double beta = getphytomerId(stem_p->subType)*M_PI*sttp->colorR + M_PI*plant->rand()*sttp->colorG ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialStemHeading);
 	if (sttp->colorB >0 && getphytomerId(stem_p->subType)==0 ){
 		beta = beta + sttp->colorB;
 	}
+
 	//ons.times(Matrix3d::rotX(beta));
 
 	double theta = M_PI*stem_p->theta;
@@ -339,6 +340,25 @@ void Stem::createLateral(bool silence)
 		lateral->setRelativeOrigin(r_nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+
+    }
+	else if (sp->lnf==5 && lt>0) {
+		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
+		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+		Stem* lateral = new Stem(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+
+
+
+		Stem* lateral2 = new Stem(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral2->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral2);
+		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+
 	} else if (lt>0) {
 		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
@@ -402,7 +422,31 @@ void Stem::LeafGrow(bool silence, Vector3d bud)
 		lateral->setRelativeOrigin(r_nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-	} else if (lt>0) {
+		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral2->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral2);
+		lateral2->simulate(age-ageLN,silence); // pass
+	}else if (sp->lnf==5&& lt>0) {
+				double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
+		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double delay = ageLG-ageLN; // time the lateral has to wait
+		Vector3d h = heading(); // current heading
+
+		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral);
+
+		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+
+        //std::cout <<"leaf heading is "<<h.toString()<< "\n";
+
+		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
+		lateral2->setRelativeOrigin(r_nodes.back());
+		children.push_back(lateral2);
+
+		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+
+	}else if (lt>0) {
 		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait

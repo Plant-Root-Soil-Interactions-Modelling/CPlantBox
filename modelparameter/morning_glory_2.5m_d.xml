@@ -120,12 +120,12 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="30" dev="0" functiontype="3"/>
+    <parameter name="ln" value="40" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="650" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="20.949999999999999" dev="0"/>
-    <parameter name="r" value="40" dev="0"/>
+    <parameter name="r" value="30" dev="0"/>
     <parameter name="a" value="0.50000000000000001" dev="0.02"/>
     <parameter name="colorR" value="0"/>
     <parameter name="colorG" value="0"/>
@@ -145,7 +145,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="1"/>
+    <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="3.2000000000000002" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -170,7 +170,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0"/>
+    <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="13" dev="0"/>
     <!--Inter-lateral distance [cm];-->

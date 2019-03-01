@@ -79,6 +79,7 @@ public:
 
 	Vector3d o;
 	Matrix3d A; // relative heading
+	    	void minusPhytomerId(int subtype) { leafphytomerID[subtype]--;  }
 	int getleafphytomerID(int subtype) { return leafphytomerID[subtype]; }
 	void addleafphytomerID(int subtype) { leafphytomerID[subtype]++;  }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Plant name="maize" filetype="parameters">
-<organ type="seed" subType="0">
+<organ type="seed" name="maize" subType="0">
     <parameter name="seedPos.x" value="0"/>
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-3"/>
@@ -191,7 +191,7 @@
     <parameter name="gf" value="1"/>
 </organ>
 
-<organ type="leaf" name="maize" subType="2">
+<organ type="leaf" name="lateral1" subType="2">
     <parameter name="lb" value="30" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="4" dev="0"/>

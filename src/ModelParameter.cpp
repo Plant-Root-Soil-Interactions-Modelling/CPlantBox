@@ -790,6 +790,11 @@ OrganParameter* StemTypeParameter::realize() const
 			ln_.push_back(d);
 			ln_.push_back(0);
 		};
+		case 5://nodes distance decrease exponential
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+		};
 
 	}
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
@@ -1208,7 +1213,7 @@ OrganParameter* LeafTypeParameter::realize() const
 			ln_.push_back(d);
 
 		};
-		case 3: //nodes distance decrease exponential
+		case 3: //nodes distance increase exponential
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
@@ -1220,6 +1225,11 @@ OrganParameter* LeafTypeParameter::realize() const
 			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
+		};
+		case 5://nodes distance decrease exponential
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
 		};
 
 	}

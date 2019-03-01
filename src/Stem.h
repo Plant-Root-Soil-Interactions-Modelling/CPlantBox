@@ -49,7 +49,6 @@ public:
 	double getCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
 	double StemGetLength(double age); ///< analytical length of the stem
 	double StemGetAge(double length); ///< analytical age of the stem
-
 	/* abbreviations */
 	StemParameter* sParam() const { return (StemParameter*)param;  } ///< type cast
 	StemTypeParameter* stParam() const; // type cast
@@ -80,7 +79,7 @@ public:
 	Vector3d o;
 	Matrix3d A; // relative heading
 
-
+    	void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
 	int getphytomerId(int subtype) { return phytomerId[subtype]; }
 	void addPhytomerId(int subtype) { phytomerId[subtype]++;  }
 protected:
