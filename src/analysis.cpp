@@ -623,9 +623,9 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 
             case Organ::ot_root :
                  radius = ((Root*)r)->tParam()->a;
-                red = ((Root*)r)->tParam()->colorR;
-                green = ((Root*)r)->tParam()->colorG;
-                blue = ((Root*)r)->tParam()->colorB;
+                red = ((Root*)r)->tParam()->RotBeta;
+                green = ((Root*)r)->tParam()->BetaDev;
+                blue = ((Root*)r)->tParam()->InitBeta;
                 time = ctimes.at(i);
                 type = r->param->subType;
 
@@ -634,9 +634,9 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 break;
             case Organ::ot_stem :
                 radius = ((Stem*)r)->stParam()->a;
-                red = ((Stem*)r)->stParam()->colorR;
-                green = ((Stem*)r)->stParam()->colorG;
-                blue = ((Stem*)r)->stParam()->colorB;
+                red = ((Stem*)r)->stParam()->RotBeta;
+                green = ((Stem*)r)->stParam()->BetaDev;
+                blue = ((Stem*)r)->stParam()->InitBeta;
                 time = ctimes.at(i);
                 type = r->param->subType;
                 os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
@@ -645,9 +645,9 @@ break;
                         //
                         case Organ::ot_leafe :
                 radius = ((Leaf*)r)->ltParam()->a;
-                red = ((Leaf*)r)->ltParam()->colorR;
-                green = ((Leaf*)r)->ltParam()->colorG;
-                blue = ((Leaf*)r)->ltParam()->colorB;
+                red = ((Leaf*)r)->ltParam()->RotBeta;
+                green = ((Leaf*)r)->ltParam()->BetaDev;
+                blue = ((Leaf*)r)->ltParam()->InitBeta;
                 time = ctimes.at(i);
                 type = r->param->subType;
                 os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<

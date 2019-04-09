@@ -47,10 +47,10 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ishe
 	//heading.times(rotZ);
         std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
 		addPhytomerId(stem_p->subType);
-	double beta = getphytomerId(stem_p->subType)*M_PI*sttp->colorR + M_PI*plant->rand()*sttp->colorG ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
+	double beta = getphytomerId(stem_p->subType)*M_PI*sttp->RotBeta + M_PI*plant->rand()*sttp->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialStemHeading);
-	if (sttp->colorB >0 && getphytomerId(stem_p->subType)==0 ){
-		beta = beta + sttp->colorB;
+	if (sttp->InitBeta >0 && getphytomerId(stem_p->subType)==0 ){
+		beta = beta + sttp->InitBeta;
 	}
 
 	//ons.times(Matrix3d::rotX(beta));

@@ -151,7 +151,7 @@ RootTypeParameter::~RootTypeParameter()
  * todo comment
  */
 void RootTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
-		double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropismS,
+		double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name)
 {
@@ -168,9 +168,9 @@ void RootTypeParameter::set(int type, double lb, double lbs, double la, double l
 	this->rs = rs;
 	this->a = a;
 	this->as = as;
-	this->colorR = colorR;
-	this->colorG = colorG;
-	this->colorB = colorB;
+	this->RotBeta = RotBeta;
+	this->BetaDev = BetaDev;
+	this->InitBeta = InitBeta;
 	this->tropismT = tropismT;
 	this->tropismN = tropismN;
 	this->tropismS = tropismS;
@@ -299,7 +299,7 @@ void RootTypeParameter::write(std::ostream & os) const
 	os << "# Root type parameter for " << name << "\n";
 	os << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
 			<< "ln\t" << ln << "\t" << lns << "\n" << "nob\t"<< nob <<"\t"<< nobs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
-			"a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
+			"a\t" << a << "\t" << as << "\n" << "color\t"<< RotBeta <<"\t"<< BetaDev << "\t" << InitBeta << "\n"
 			<< "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successor.size() << "\t";
 	for (size_t i=0; i<successor.size(); i++) {
 		os << successor[i] << "\t";
@@ -321,7 +321,7 @@ void RootTypeParameter::read(std::istream & is)
 	std::string s; // dummy
 
 	is >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
-	is >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
+	is >> s >> r >> rs >> s >> a >> as >> s >> RotBeta >> BetaDev >> InitBeta >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
 	if (ln > 0) {
 		nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
 		nob = std::max(nob,0.);
@@ -394,9 +394,9 @@ void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 	}
    getAttribute(ele_param, "r", "parameter", r, rs);
    getAttribute(ele_param, "a", "parameter", a, as);
-   getAttribute(ele_param, "colorR", "parameter", colorR);
-   getAttribute(ele_param, "colorG", "parameter", colorG);
-   getAttribute(ele_param, "colorB", "parameter", colorB);
+   getAttribute(ele_param, "RotBeta", "parameter", RotBeta);
+   getAttribute(ele_param, "BetaDev", "parameter", BetaDev);
+   getAttribute(ele_param, "InitBeta", "parameter", InitBeta);
    getAttribute(ele_param, "tropismN", "parameter", tropismN);
    getAttribute(ele_param, "tropismT", "parameter", tropismT);
    getAttribute(ele_param, "tropismS", "parameter", tropismS);
@@ -456,11 +456,11 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
 
 	printer.OpenElement("parameter");//
-        printer.PushAttribute("name","colorR");  printer.PushAttribute("value",colorR); printer.CloseElement();
+        printer.PushAttribute("name","RotBeta");  printer.PushAttribute("value",RotBeta); printer.CloseElement();
     printer.OpenElement("parameter");
-        printer.PushAttribute("name","colorG");  printer.PushAttribute("value",colorG); printer.CloseElement();
+        printer.PushAttribute("name","BetaDev");  printer.PushAttribute("value",BetaDev); printer.CloseElement();
     printer.OpenElement("parameter");
-        printer.PushAttribute("name","colorB");  printer.PushAttribute("value",colorB); printer.CloseElement();	///< Root color (red)
+        printer.PushAttribute("name","InitBeta");  printer.PushAttribute("value",InitBeta); printer.CloseElement();	///< Root color (red)
 
 	printer.OpenElement("parameter");//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
         printer.PushAttribute("name","tropismT");  printer.PushAttribute("value",tropismT);  printer.CloseElement();
@@ -650,7 +650,7 @@ StemTypeParameter::~StemTypeParameter()
  * todo comment
  */
 void StemTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
-		double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropismS,
+		double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name)
 {
@@ -668,9 +668,9 @@ void StemTypeParameter::set(int type, double lb, double lbs, double la, double l
 	this->rs = rs;
 	this->a = a;
 	this->as = as;
-	this->colorR = colorR;
-	this->colorG = colorG;
-	this->colorB = colorB;
+	this->RotBeta = RotBeta;
+	this->BetaDev = BetaDev;
+	this->InitBeta = InitBeta;
 	this->tropismT = tropismT;
 	this->tropismN = tropismN;
 	this->tropismS = tropismS;
@@ -843,7 +843,7 @@ void StemTypeParameter::write(std::ostream & os) const
 	os << "# Root type parameter for " << name << "\n";
 	os << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
 			<< "ln\t" << ln << "\t" << lns << "\n" << "nob\t"<< nob <<"\t"<< nobs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
-			"a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
+			"a\t" << a << "\t" << as << "\n" << "color\t"<< RotBeta <<"\t"<< BetaDev << "\t" << InitBeta << "\n"
 			<< "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successor.size() << "\t";
 	for (size_t i=0; i<successor.size(); i++) {
 		os << successor[i] << "\t";
@@ -862,7 +862,7 @@ void StemTypeParameter::read(std::istream & is)
 	is.getline(ch,256);
 	std::string s; // dummy
 	is >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
-	is >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
+	is >> s >> r >> rs >> s >> a >> as >> s >> RotBeta >> BetaDev >> InitBeta >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
 	if (ln > 0) {
 		nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
 		nob = std::max(nob,0.);
@@ -936,9 +936,9 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
       // if (lnf = 1){ nob = nob/3;}
    getAttribute(ele_param, "r", "parameter", r, rs);
    getAttribute(ele_param, "a", "parameter", a, as);
-   getAttribute(ele_param, "colorR", "parameter", colorR);
-   getAttribute(ele_param, "colorG", "parameter", colorG);
-   getAttribute(ele_param, "colorB", "parameter", colorB);
+   getAttribute(ele_param, "RotBeta", "parameter", RotBeta);
+   getAttribute(ele_param, "BetaDev", "parameter", BetaDev);
+   getAttribute(ele_param, "InitBeta", "parameter", InitBeta);
    getAttribute(ele_param, "tropismN", "parameter", tropismN);
    getAttribute(ele_param, "tropismT", "parameter", tropismT);
    getAttribute(ele_param, "tropismS", "parameter", tropismS);
@@ -995,11 +995,11 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
 
 	printer.OpenElement("parameter");//
-        printer.PushAttribute("name","colorR");  printer.PushAttribute("value",colorR); printer.CloseElement();
+        printer.PushAttribute("name","RotBeta");  printer.PushAttribute("value",RotBeta); printer.CloseElement();
     printer.OpenElement("parameter");
-        printer.PushAttribute("name","colorG");  printer.PushAttribute("value",colorG); printer.CloseElement();
+        printer.PushAttribute("name","BetaDev");  printer.PushAttribute("value",BetaDev); printer.CloseElement();
     printer.OpenElement("parameter");
-        printer.PushAttribute("name","colorB");  printer.PushAttribute("value",colorB); printer.CloseElement();	///< Root color (red)
+        printer.PushAttribute("name","InitBeta");  printer.PushAttribute("value",InitBeta); printer.CloseElement();	///< Root color (red)
 
 	printer.OpenElement("parameter");//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
         printer.PushAttribute("name","tropismT");  printer.PushAttribute("value",tropismT);  printer.CloseElement();
@@ -1084,7 +1084,7 @@ LeafTypeParameter::~LeafTypeParameter()
  * todo comment
  */
 void LeafTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
-		double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropismS,
+		double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name)
 {
@@ -1102,9 +1102,9 @@ void LeafTypeParameter::set(int type, double lb, double lbs, double la, double l
 	this->rs = rs;
 	this->a = a;
 	this->as = as;
-	this->colorR = colorR;
-	this->colorG = colorG;
-	this->colorB = colorB;
+	this->RotBeta = RotBeta;
+	this->BetaDev = BetaDev;
+	this->InitBeta = InitBeta;
 	this->tropismT = tropismT;
 	this->tropismN = tropismN;
 	this->tropismS = tropismS;
@@ -1285,7 +1285,7 @@ void LeafTypeParameter::write(std::ostream & os) const
 	os << "# Root type parameter for " << name << "\n";
 	os << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
 			<< "ln\t" << ln << "\t" << lns << "\n" << "nob\t"<< nob <<"\t"<< nobs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
-			"a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
+			"a\t" << a << "\t" << as << "\n" << "color\t"<< RotBeta <<"\t"<< BetaDev << "\t" << InitBeta << "\n"
 			<< "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successor.size() << "\t";
 	for (size_t i=0; i<successor.size(); i++) {
 		os << successor[i] << "\t";
@@ -1304,7 +1304,7 @@ void LeafTypeParameter::read(std::istream & is)
 	is.getline(ch,256);
 	std::string s; // dummy
 	is >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
-	is >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
+	is >> s >> r >> rs >> s >> a >> as >> s >> RotBeta >> BetaDev >> InitBeta >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
 	if (ln > 0) {
 		nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
 		nob = std::max(nob,0.);
@@ -1377,9 +1377,9 @@ void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 	}
    getAttribute(ele_param, "r", "parameter", r, rs);
    getAttribute(ele_param, "a", "parameter", a, as);
-   getAttribute(ele_param, "colorR", "parameter", colorR);
-   getAttribute(ele_param, "colorG", "parameter", colorG);
-   getAttribute(ele_param, "colorB", "parameter", colorB);
+   getAttribute(ele_param, "RotBeta", "parameter", RotBeta);
+   getAttribute(ele_param, "BetaDev", "parameter", BetaDev);
+   getAttribute(ele_param, "InitBeta", "parameter", InitBeta);
    getAttribute(ele_param, "tropismN", "parameter", tropismN);
    getAttribute(ele_param, "tropismT", "parameter", tropismT);
    getAttribute(ele_param, "tropismS", "parameter", tropismS);
@@ -1435,11 +1435,11 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("name","a"); printer.PushAttribute("value",a); printer.PushAttribute("dev",as);   printer.CloseElement();		///< Root radius [cm]
 
 	printer.OpenElement("parameter");//
-        printer.PushAttribute("name","colorR");  printer.PushAttribute("value",colorR); printer.CloseElement();
+        printer.PushAttribute("name","RotBeta");  printer.PushAttribute("value",RotBeta); printer.CloseElement();
     printer.OpenElement("parameter");
-        printer.PushAttribute("name","colorG");  printer.PushAttribute("value",colorG); printer.CloseElement();
+        printer.PushAttribute("name","BetaDev");  printer.PushAttribute("value",BetaDev); printer.CloseElement();
     printer.OpenElement("parameter");
-        printer.PushAttribute("name","colorB");  printer.PushAttribute("value",colorB); printer.CloseElement();	///< Root color (red)
+        printer.PushAttribute("name","InitBeta");  printer.PushAttribute("value",InitBeta); printer.CloseElement();	///< Root color (red)
 
 	printer.OpenElement("parameter");//	printer.PushComment("Root tropism parameter (Type, number of trials, mean vale of expected change)");
         printer.PushAttribute("name","tropismT");  printer.PushAttribute("value",tropismT);  printer.CloseElement();

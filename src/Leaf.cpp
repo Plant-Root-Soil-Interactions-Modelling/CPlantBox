@@ -32,16 +32,16 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 
         std::cout <<"subtype ="<<leaf_p->subType <<"getleafphytomerID =" <<getleafphytomerID(leaf_p->subType)<< "\n";
 		addleafphytomerID(leaf_p->subType);
-	double beta = getleafphytomerID(leaf_p->subType)*M_PI*ltp->colorR + M_PI*plant->rand()*ltp->colorG ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
+	double beta = getleafphytomerID(leaf_p->subType)*M_PI*ltp->RotBeta + M_PI*plant->rand()*ltp->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialLeafHeading);
-//	if (ltp->colorB >0 && getleafphytomerID(leaf_p->subType)==0 ){
-		beta = beta + ltp->colorB;
+//	if (ltp->InitBeta >0 && getleafphytomerID(leaf_p->subType)==0 ){
+		beta = beta + ltp->InitBeta;
 //	}
 
-		if (ltp->colorB >0 && ltp->subType==2 && ltp->lnf==5 && getleafphytomerID(2)%4==2 )
-		{beta = beta + ltp->colorB*M_PI;}
-		else if (ltp->colorB >0 && ltp->subType==2 && ltp->lnf==5 && getleafphytomerID(2)%4==3 )
-        {beta = beta + ltp->colorB*M_PI + M_PI;}
+		if (ltp->InitBeta >0 && ltp->subType==2 && ltp->lnf==5 && getleafphytomerID(2)%4==2 )
+		{beta = beta + ltp->InitBeta*M_PI;}
+		else if (ltp->InitBeta >0 && ltp->subType==2 && ltp->lnf==5 && getleafphytomerID(2)%4==3 )
+        {beta = beta + ltp->InitBeta*M_PI + M_PI;}
 	//ons.times(Matrix3d::rotX(beta));
 
 	double theta = M_PI*leaf_p->theta;

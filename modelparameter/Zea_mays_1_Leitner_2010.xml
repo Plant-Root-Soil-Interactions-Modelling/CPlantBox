@@ -28,9 +28,9 @@
     <parameter name="nob" value="120.40000000000001" dev="0"/>
     <parameter name="r" value="6" dev="0.59999999999999998"/>
     <parameter name="a" value="0.040000000000000001" dev="0.0040000000000000001"/>
-    <parameter name="colorR" value="0.43137300000000001"/>
-    <parameter name="colorG" value="0.39215699999999998"/>
-    <parameter name="colorB" value="0.196078"/>
+    <parameter name="RotBeta" value="0.43137300000000001"/>
+    <parameter name="BetaDev" value="0.39215699999999998"/>
+    <parameter name="InitBeta" value="0.196078"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1.5"/>
     <parameter name="tropismS" value="0.15708"/>
@@ -53,9 +53,9 @@
     <parameter name="nob" value="0.99999999999999989" dev="3.80390434451175"/>
     <parameter name="r" value="2" dev="0.20000000000000001"/>
     <parameter name="a" value="0.029999999999999999" dev="0.0030000000000000001"/>
-    <parameter name="colorR" value="0.54901999999999995"/>
-    <parameter name="colorG" value="0.49019600000000002"/>
-    <parameter name="colorB" value="0.156863"/>
+    <parameter name="RotBeta" value="0.54901999999999995"/>
+    <parameter name="BetaDev" value="0.49019600000000002"/>
+    <parameter name="InitBeta" value="0.156863"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.31415900000000002"/>
@@ -78,9 +78,9 @@
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="2" dev="0.20000000000000001"/>
     <parameter name="a" value="0.02" dev="0.002"/>
-    <parameter name="colorR" value="0.62745099999999998"/>
-    <parameter name="colorG" value="0.58823499999999995"/>
-    <parameter name="colorB" value="0.117647"/>
+    <parameter name="RotBeta" value="0.62745099999999998"/>
+    <parameter name="BetaDev" value="0.58823499999999995"/>
+    <parameter name="InitBeta" value="0.117647"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="2"/>
     <parameter name="tropismS" value="0.31415900000000002"/>

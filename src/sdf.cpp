@@ -256,7 +256,7 @@ int SDF_Intersection::writePVPScript(std::ostream & cout, int c) const
   cout <<"]) \n";
 
   cout << name << "Display = Show(" << name <<", renderView1)\n";
-  //cout << "ColorBy("<< name <<"Display, None)\n";
+  //cout << "InitBetay("<< name <<"Display, None)\n";
   cout << name << "Display.Opacity = 0.2\n" << name << "Display.DiffuseColor = [0., 0., 1.0]\n" << "renderView1.ResetCamera()\n";
 
   c++;

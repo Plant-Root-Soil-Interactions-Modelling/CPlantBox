@@ -131,7 +131,7 @@ public:
 	virtual ~RootTypeParameter();
 
 	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
-			double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropsimS,
+			double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name); ///< sets all parameters
 
@@ -161,9 +161,9 @@ public:
 	double rs;		///< Standard deviation initial growth rate [cm day-1]
 	double a; 		///< Root radius [cm]
 	double as; 		///< Standard deviation root radius [cm]
-	double colorR;	///< Root color (red)
-	double colorG;	///< Root color (green)
-	double colorB;	///< Root color (blue)
+	double RotBeta;	///< Root color (red)
+	double BetaDev;	///< Root color (green)
+	double InitBeta;	///< Root color (blue)
 	int tropismT;	///< Root tropism parameter (Type)
 	double tropismN;///< Root tropism parameter (number of trials)
 	double tropismS;///< Root tropism parameter (mean value of expected changeg) [1/cm]
@@ -322,7 +322,7 @@ public:
 	virtual ~StemTypeParameter();
 
 	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, int lnf, double nob, double nobs,
-			double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropsimS,
+			double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name); ///< sets all parameters
 
@@ -354,9 +354,9 @@ public:
 	double rs;		///< Standard deviation initial growth rate [cm day-1]
 	double a; 		///< Root radius [cm]
 	double as; 		///< Standard deviation root radius [cm]
-	double colorR;	///< Root color (red)
-	double colorG;	///< Root color (green)
-	double colorB;	///< Root color (blue)
+	double RotBeta;	///< Root color (red)
+	double BetaDev;	///< Root color (green)
+	double InitBeta;	///< Root color (blue)
 	int tropismT;	///< Root tropism parameter (Type)
 	double tropismN;///< Root tropism parameter (number of trials)
 	double tropismS;///< Root tropism parameter (mean value of expected changeg) [1/cm]
@@ -514,7 +514,7 @@ public:
 	virtual ~LeafTypeParameter();
 
 	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
-			double r, double rs, double a, double as,  double colorR, double colorG, double colorB, int tropismT, double tropismN, double tropsimS,
+			double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name); ///< sets all parameters
 
@@ -545,9 +545,9 @@ public:
 	double rs;		///< Standard deviation initial growth rate [cm day-1]
 	double a; 		///< Root radius [cm]
 	double as; 		///< Standard deviation root radius [cm]
-	double colorR;	///< Root color (red)
-	double colorG;	///< Root color (green)
-	double colorB;	///< Root color (blue)
+	double RotBeta;	///< Root color (red)
+	double BetaDev;	///< Root color (green)
+	double InitBeta;	///< Root color (blue)
 	int tropismT;	///< Root tropism parameter (Type)
 	double tropismN;///< Root tropism parameter (number of trials)
 	double tropismS;///< Root tropism parameter (mean value of expected changeg) [1/cm]

@@ -28,9 +28,9 @@
     <parameter name="nob" value="3.7000000000000002" dev="0"/>
     <parameter name="r" value="4.5" dev="0.0"/>
     <parameter name="a" value="0.20000000000000001" dev="0.02"/>
-    <parameter name="colorR" value="0"/>
-    <parameter name="colorG" value="0"/>
-    <parameter name="colorB" value="0"/>
+    <parameter name="RotBeta" value="0"/>
+    <parameter name="BetaDev" value="0"/>
+    <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.261799"/>
@@ -53,9 +53,9 @@
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="4" dev="0.00"/>
     <parameter name="a" value="0.012500000000000001" dev="0.00125"/>
-    <parameter name="colorR" value="1"/>
-    <parameter name="colorG" value="1"/>
-    <parameter name="colorB" value="0"/>
+    <parameter name="RotBeta" value="1"/>
+    <parameter name="BetaDev" value="1"/>
+    <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="2"/>
     <parameter name="tropismN" value="2"/>
     <parameter name="tropismS" value="0.52359900000000004"/>
@@ -77,9 +77,9 @@
     <parameter name="nob" value="150" dev="1"/>
     <parameter name="r" value="4.5" dev="0.0"/>
     <parameter name="a" value="0.20000000000000001" dev="0.02"/>
-    <parameter name="colorR" value="1"/>
-    <parameter name="colorG" value="0"/>
-    <parameter name="colorB" value="0"/>
+    <parameter name="RotBeta" value="1"/>
+    <parameter name="BetaDev" value="0"/>
+    <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.050000000000000003"/>
@@ -102,9 +102,9 @@
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="2" dev="0.0"/>
     <parameter name="a" value="0.02" dev="0.002"/>
-    <parameter name="colorR" value="1"/>
-    <parameter name="colorG" value="1"/>
-    <parameter name="colorB" value="1"/>
+    <parameter name="RotBeta" value="1"/>
+    <parameter name="BetaDev" value="1"/>
+    <parameter name="InitBeta" value="1"/>
     <parameter name="tropismT" value="2"/>
     <parameter name="tropismN" value="2"/>
     <parameter name="tropismS" value="0.52359900000000004"/>
@@ -120,16 +120,16 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="30" dev="0" functiontype="3"/>
+    <parameter name="ln" value="80" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="750" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="20.949999999999999" dev="0"/>
     <parameter name="r" value="40" dev="0"/>
     <parameter name="a" value="0.50000000000000001" dev="0.02"/>
-    <parameter name="colorR" value="0"/>
-    <parameter name="colorG" value="0"/>
-    <parameter name="colorB" value="0"/>
+    <parameter name="RotBeta" value="0"/>
+    <parameter name="BetaDev" value="0"/>
+    <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="0"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0"/>
@@ -152,9 +152,9 @@
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="4.5" dev="0"/>
     <parameter name="a" value="0.29999999999999999" dev="0.00125"/>
-    <parameter name="colorR" value="0"/>
-    <parameter name="colorG" value="0"/>
-    <parameter name="colorB" value="0"/>
+    <parameter name="RotBeta" value="0"/>
+    <parameter name="BetaDev" value="0"/>
+    <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="4"/>
     <parameter name="tropismN" value="4"/>
     <parameter name="tropismS" value="0"/>
@@ -177,9 +177,9 @@
     <parameter name="nob" value="1.45" dev="0"/>
     <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.02" dev="0.002"/>
-    <parameter name="colorR" value="1"/>
-    <parameter name="colorG" value="0"/>
-    <parameter name="colorB" value="0"/>
+    <parameter name="RotBeta" value="1"/>
+    <parameter name="BetaDev" value="0"/>
+    <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="3"/>
     <parameter name="tropismS" value="0"/>
