@@ -48,7 +48,11 @@ public:
   virtual ~Plant();
 
   /* Parameter */
-  void setParameter(OrganTypeParameter*  otp);///< set the organ type parameter
+  void setParameter(SeedTypeParameter*  otp);///< set the organ type parameter
+    void setParameter(RootTypeParameter*  otp);///< set the organ type parameter
+      void setParameter(StemTypeParameter*  otp);///< set the organ type parameter
+        void setParameter(LeafTypeParameter*  otp);///< set the organ type parameter
+
   OrganTypeParameter* getParameter(int otype, int subtype) const;
 
   /* input output */
@@ -70,7 +74,9 @@ public:
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
   double getSimTime() const { return simtime; } ///< returns the current simulation time
   static unsigned int noParamFile[5] ;
-
+ const char* ot2name(unsigned int ot);
+  tinyxml2::XMLElement* XMLparameter = nullptr;
+  double getXMLparamter(tinyxml2::XMLElement*, int organtype , int subtype , const char* attr_name, const char* para_name) ;
   /* Analysis of simulation results */
   // Organs
   int getNumberOfNodes() const { return nid+1; } ///< Number of nodes of the root system
@@ -140,6 +146,7 @@ protected:
   mutable std::normal_distribution<double> ND = std::normal_distribution<double>(0,1);
 
   static unsigned int ot2index(unsigned int ot);
+
 
 };
 

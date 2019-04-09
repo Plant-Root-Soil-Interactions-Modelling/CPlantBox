@@ -66,6 +66,12 @@ void (Plant::*simulate2)() = &Plant::simulate;
 //void (Plant::*simulate3)(double dt, double maxinc, ProportionalElongation* se, bool silence) = &Plant::simulate;
 
 
+void (Plant::*setParameter1)(SeedTypeParameter*)  = &Plant::setParameter;
+void (Plant::*setParameter2)(RootTypeParameter*)  = &Plant::setParameter;
+void (Plant::*setParameter3)(StemTypeParameter*)  = &Plant::setParameter;
+void (Plant::*setParameter4)(LeafTypeParameter*)  = &Plant::setParameter;
+
+
 
 void (SegmentAnalyser::*addSegments1)(const Plant& rs) = &SegmentAnalyser::addSegments;
 void (SegmentAnalyser::*addSegments2)(const SegmentAnalyser& a) = &SegmentAnalyser::addSegments;
@@ -465,8 +471,11 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
     class_<Plant, Plant* >("Plant",init<>())
 		.def(init<Plant&>())
 		//.def_readwrite("noParamFile", &Plant::noParamFile)
-		.def("setOrganTypeParameter", &Plant::setParameter)
-		.def("getOrganTypeParameter", &Plant::getParameter,  return_value_policy<reference_existing_object>())
+		.def("setParameter", setParameter1)
+				.def("setParameter", setParameter2)
+						.def("setParameter", setParameter3)
+								.def("setParameter", setParameter4)
+		.def("getParameter", &Plant::getParameter,  return_value_policy<reference_existing_object>())
 ////		.def("setOrganParameter", &Organ::setOrganParameter)
 ////		.def("getOrganParameter", &Organ::getOrganParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
 		.def("openFile", &Plant::openFile, openFile_overloads())
@@ -506,8 +515,8 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.def("getNode", &Organ::getNode)
 		.def("getNodes", &Organ::getNodes)
 		.def("getScalar", &Organ::getScalar)
-		
-		
+
+
 		;
 //
     enum_<Organ::TropismTypes>("TropismType")

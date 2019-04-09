@@ -100,6 +100,9 @@ public:
     std::vector<int> nodeIDs; ///< unique node identifier
     std::vector<double> nctimes; ///< node creation times [days]
 
+protected:
+
+
 };
 
 

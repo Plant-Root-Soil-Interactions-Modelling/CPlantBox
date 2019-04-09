@@ -538,6 +538,7 @@ void SeedTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
    getAttribute(ele_param, "nC", "parameter", nC);
    getAttribute(ele_param, "nz", "parameter", nz);
    getAttribute(ele_param, "maxB", "parameter", maxB, maxBs);
+    getAttribute(ele_param, "maxTi", "parameter", maxTi, maxTis);
    getAttribute(ele_param, "simulationTime", "parameter", simtime);
    std::cout<<"seed subType "<<subType<<"\n";
   //
@@ -558,6 +559,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.OpenElement("parameter");    printer.PushAttribute("name", "firstB");    printer.PushAttribute("value", firstB);  printer.PushAttribute("dev", firstBs); printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "delayB");    printer.PushAttribute("value", delayB);  printer.PushAttribute("dev", delayBs); printer.CloseElement(false);
 		printer.OpenElement("parameter");    printer.PushAttribute("name", "maxB");    printer.PushAttribute("value", maxB);  printer.PushAttribute("dev", maxBs); printer.CloseElement(false);
+		printer.OpenElement("parameter");    printer.PushAttribute("name", "maxTi");    printer.PushAttribute("value", maxTi);  printer.PushAttribute("dev", maxTis); printer.CloseElement(false);
 		printer.OpenElement("parameter");    printer.PushAttribute("name", "nC");    printer.PushAttribute("value", nC);  printer.CloseElement(false);
         printer.OpenElement("parameter");    printer.PushAttribute("name", "nz");    printer.PushAttribute("value", nz);  printer.CloseElement(false);
 		printer.OpenElement("parameter");    printer.PushAttribute("name", "firstSB");    printer.PushAttribute("value", firstSB);  printer.PushAttribute("dev", firstSBs); printer.CloseElement(false);
@@ -584,7 +586,7 @@ OrganParameter* SeedTypeParameter::realize() const
 	sp->maxB = std::round(maxB + randn()*maxBs);
 	sp->firstB = std::max(0.,firstB);
 	sp->delayB = std::max(0.,delayB);
-	sp->maxB = std::max(0,maxB);
+	sp->maxTi = std::round(maxTi + randn()*maxTis);
 	sp->seedPos = seedPos;
 	sp->nC = nC;
 	sp->nz = nz;

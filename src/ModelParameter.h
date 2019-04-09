@@ -60,6 +60,8 @@ public:
 	std::string name = "Unnamed organ";
 	unsigned int organType;
 	unsigned int subType;
+	double a;
+	double as;
 
 
 
@@ -202,6 +204,7 @@ public:
 	double delayB ; 	///< Time delay between the basal roots [day]
 	double delayBs;
 	int maxB ; 	    ///< Maximal number of basal roots [1]
+	int maxTi ; 	    ///< Maximal number of basal roots [1]
 	double maxBs ;
 	double nC ;
 	double nz ;
@@ -244,7 +247,9 @@ public:
 	double delayB = 1.e9; 	///< Time delay between the basal roots [day]
 	double delayBs =0.;
 	int maxB = 0; 	    ///< Maximal number of basal roots [1]
+	int maxTi = 0; 	    ///< Maximal number of tillers [1]
 	double maxBs = 0;
+	double maxTis = 0;
 	double nC = 0;
 	double nz = 0;
 	double simtime = 60;
@@ -341,7 +346,7 @@ public:
 	double ln; 		///< Inter-lateral distance [cm]
 	double lns;  	///< Standard deviation inter-lateral distance [cm]
 	int lnf;
-			double k;
+	double k;
 	double ks;
 	double nob; 	///< Number of branches [1]
 	double nobs; 	///< Standard deviation number of branches [1]

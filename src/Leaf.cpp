@@ -35,7 +35,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 	double beta = getleafphytomerID(leaf_p->subType)*M_PI*ltp->colorR + M_PI*plant->rand()*ltp->colorG ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(initialLeafHeading);
 //	if (ltp->colorB >0 && getleafphytomerID(leaf_p->subType)==0 ){
-//		beta = beta + ltp->colorB;
+		beta = beta + ltp->colorB;
 //	}
 
 		if (ltp->colorB >0 && ltp->subType==2 && ltp->lnf==5 && getleafphytomerID(2)%4==2 )
@@ -238,7 +238,7 @@ double Leaf::getCreationTime(double length)
  */
 double Leaf::LeafGetLength(double age)
 {
-//    if (ltParam().name == "maize1"){
+//    if (ltParam().name == "maize1eaf"){
 //        assert(age>=0);
 //        //return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
 //        return ltParam()->growth->LeafgetLength(age,ltParam()->r,getleafphytomerID(ltParam()->subType)*ltParam()->la+ltParam()->getK(),this);
@@ -255,7 +255,7 @@ assert(age>=0);
  */
 double Leaf::LeafGetAge(double length)
 {
-//     if (ltParam().name == "maize1"){
+//     if (ltParam().name == "maize1eaf"){
 //        assert(length>=0);
 //        //std::cout<<"length subtype is"<<ltParam()->subType<<"\n";
 //        //return ltParam()->growth->LeafgetAge(length,ltParam()->r,ltParam()->getK(),this);
@@ -307,7 +307,7 @@ void Leaf::createLateral(bool silence)
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
-	else if (lp->lnf==3&& lt>0) {
+	else if (lp->lnf==3&& lt>0) { //ln equal and both side leaf
 		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
 		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
@@ -321,7 +321,7 @@ void Leaf::createLateral(bool silence)
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
-	else if (lp->lnf==4 && lt>0) {
+	else if (lp->lnf==4 && lt>0) {//ln exponential decreasing and one side leaf
 		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
 		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
@@ -331,7 +331,7 @@ void Leaf::createLateral(bool silence)
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
-	} else if (lp->lnf==5&& lt>0) {
+	} else if (lp->lnf==5&& lt>0) { //ln exponential decreasing and both side leaf
 		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
 		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
@@ -355,6 +355,7 @@ void Leaf::createLateral(bool silence)
 		double ageLG = this->LeafGetAge(length+lp->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
+
 		Leaf* lateral = new Leaf(plant, this, lt, delay, h, r_nodes.size() - 1, length);
 		lateral->setRelativeOrigin(r_nodes.back());
 		children.push_back(lateral);

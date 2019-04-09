@@ -111,6 +111,8 @@ double Organ::getScalar(std::string name) const {
 	if (name=="id") { r = id; }
 	if (name=="organtype") { r = this->organType(); }
 	if (name=="subtype") { r = this->param->subType; }
+//	if (name=="radius") {r = plant->getXMLparamter( plant->XMLparameter ,this->organType(),this->param->subType, "a", "parameter" ); }
+	if (name=="radius") {r = plant->getParameter(this->organType(),this->param->subType)->a; }
 	if (name=="alive") { r = alive; }
 	if (name=="active") { r = active; }
 	if (name=="age") { r = age; }

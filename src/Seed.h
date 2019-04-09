@@ -37,6 +37,7 @@ public:
 	virtual std::string toString() const override;
 
 	const int basalType = 4;
+	const int tillerType = 4;
 	Vector3d seed_pos;
      	Matrix3d A; // relative heading
 };

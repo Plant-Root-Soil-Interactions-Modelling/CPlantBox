@@ -12,6 +12,7 @@ Plant::Plant()
 	initOTP();
 	setParameter(new SeedTypeParameter());
 	seed = new Seed(this);
+
 }
 
 Plant::~Plant()
@@ -28,13 +29,41 @@ Plant::~Plant()
 /**
  *	Deletes the old parameter, sets the new one
  */
-void Plant::setParameter(OrganTypeParameter*  otp)
+void Plant::setParameter(SeedTypeParameter*  otp)
 {
 	unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
 	delete organParam.at(i).at(otp->subType);
 	organParam.at(i).at(otp->subType) = otp;
+	organParam.at(i).at(otp->subType)->a = otp->a;
 }
+
+void Plant::setParameter(RootTypeParameter*  otp)
+{
+	unsigned int ot = otp->organType;
+	unsigned int i = ot2index(ot);
+	delete organParam.at(i).at(otp->subType);
+	organParam.at(i).at(otp->subType) = otp;
+		organParam.at(i).at(otp->subType)->a = otp->a;
+}
+void Plant::setParameter(LeafTypeParameter*  otp)
+{
+	unsigned int ot = otp->organType;
+	unsigned int i = ot2index(ot);
+	delete organParam.at(i).at(otp->subType);
+	organParam.at(i).at(otp->subType) = otp;
+		organParam.at(i).at(otp->subType)->a = otp->a;
+}
+void Plant::setParameter(StemTypeParameter*  otp)
+{
+	unsigned int ot = otp->organType;
+	unsigned int i = ot2index(ot);
+	delete organParam.at(i).at(otp->subType);
+	organParam.at(i).at(otp->subType) = otp;
+		organParam.at(i).at(otp->subType)->a = otp->a;
+}
+
+
 
 OrganTypeParameter* Plant::getParameter(int otype, int subtype) const
 {
@@ -47,6 +76,17 @@ unsigned int Plant::ot2index(unsigned int ot) {
 	case Organ::ot_root: return 1;
 	case Organ::ot_stem: return 2;
 	case Organ::ot_leafe: return 3;
+	default:
+		throw std::invalid_argument("Plant::setOrganTypeParameter: pure organ type expected");
+	}
+}
+
+const char* Plant::ot2name(unsigned int ot) {
+	switch (ot) { //check the type of the organ
+	case Organ::ot_seed: return "seed";
+	case Organ::ot_root: return "root";
+	case Organ::ot_stem: return "stem";
+	case Organ::ot_leafe: return "leaf";
 	default:
 		throw std::invalid_argument("Plant::setOrganTypeParameter: pure organ type expected");
 	}
@@ -113,13 +153,16 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 	if (fis.good()){
 
 		tinyxml2::XMLDocument xmlParamFile;
+
 		xmlParamFile.LoadFile(XMLname.c_str());
+		XMLparameter = xmlParamFile.FirstChildElement(); //make a pointer so we could get the parameter anytime we want
 		int c = 0;
 		for (const tinyxml2::XMLElement* organ_param = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" ); organ_param != 0 ; organ_param = organ_param->NextSiblingElement("organ") )
 		{
 			if (organ_param->Attribute("type", "seed")) {
 				SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
 				stp->readXML(organ_param);
+
 				c++;
 //				std::cout << " Read from XML " << c << " seed type parameters \n";
 			}
@@ -128,7 +171,10 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 			if (organ_param->Attribute("type", "root")) {
 				RootTypeParameter* p  = new RootTypeParameter();
 				p->readXML(organ_param);
+				std::cout<<"radius " << p->a << "\n";
 				setParameter(p);
+				std::cout<<"radius " << organParam.at(1).at(2)->a << "\n";
+
 				//                root_element = root_element->NextSiblingElement("organ") ;
 				c++;
 				Plant::noParamFile[1] = 0;
@@ -139,8 +185,9 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 
 				StemTypeParameter* stem_p  = new StemTypeParameter();
 				stem_p->readXML(organ_param);
+//				stem_p->;
 				setParameter(stem_p);
-				c++;
+								c++;
 //				std::cout << " Read from XML " << c << " stem type parameters \n";
 				Plant::noParamFile[2] = 0;
 			} else //{Plant::noParamFile[2] = 1;}
@@ -148,7 +195,9 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 
 				LeafTypeParameter* leaf_p  = new LeafTypeParameter();
 				leaf_p->readXML(organ_param);
+//				leaf_p->set();
 				setParameter(leaf_p);
+
 				c++;
 //				std::cout << " Read from XML " << c << " leaf type parameters \n";
 				Plant::noParamFile[3] = 0;
@@ -174,6 +223,32 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 	writeAlltoXML(name);
 	}
 }
+
+double Plant::getXMLparamter(tinyxml2::XMLElement* XMLparameter, int organtype , int subtype , const char* attr_name, const char* para_name)
+{
+    if (XMLparameter == nullptr) return tinyxml2::XML_ERROR_PARSING_ELEMENT;
+
+    double attr; double deviation;
+    tinyxml2::XMLPrinter printer;
+      std::cout<<"attr " << attr << "\n";
+tinyxml2::XMLElement* organparam = XMLparameter->NextSiblingElement();
+if (organparam == nullptr) return tinyxml2::XML_ERROR_PARSING_ELEMENT;
+
+std::cout<<"organparam " << attr << "\n";
+      //std::cout<<"XMLparameter " << XMLparameter->FirstChildElement()<< "\n";
+     for (const tinyxml2::XMLElement* organ_param = XMLparameter->FirstChildElement(); organ_param != 0  ; organ_param = organ_param->NextSiblingElement() )
+		{std::cout<<"organ_param " << attr << "\n";
+		    if (organ_param->Attribute("type", "root") && organ_param->Attribute("subType", "1")){
+
+            const tinyxml2::XMLElement* ele_param = organ_param->FirstChildElement("parameter");
+                OrganTypeParameter().getAttribute( ele_param, attr_name, "parameter", attr, deviation);
+    std::cout<<"attr " << attr << "\n";
+    return attr;
+      	}
+		}
+}
+
+
 
 
 
@@ -209,7 +284,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	} else { // create a tap root system
 		std::cout << "No seed system parameter file found, using default tap root system \n";
 		delete stp;
-		setParameter(new SeedTypeParameter());
+//		setParameter(new SeedTypeParameter());
 	}
 
 
@@ -774,7 +849,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 
 	// CELLDATA (live on the polylines)
 	printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
-	std::vector<std::string> sTypeNames = { "organtype", "id",  "emergencetime", "creationtime", "age", "subtype"}; //  , "order", "radius", "subtype" ,
+	std::vector<std::string> sTypeNames = { "organtype", "id",  "emergencetime", "creationtime", "age", "subtype", "order", "radius"}; //  , "order", "radius", "subtype" ,
 	for (size_t i=0; i<sTypeNames.size(); i++) {
 		std::string sType = sTypeNames[i];
 		char const *schar = sType.c_str();
