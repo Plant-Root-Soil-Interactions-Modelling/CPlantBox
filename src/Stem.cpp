@@ -62,7 +62,13 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ishe
 	}
 	//ons.times(Matrix3d::rotZ(theta));
 	this->initialStemHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
+    age = -delay; // the root starts growing when age>0
+	alive = 1; // alive per default
 
+	this->parent = parent;
+	parent_base_length = pbl;
+	parent_ni = pni;
+	length = 0;
 
 	// initial node
 	if (parent->organType()!=Organ::ot_seed) { // the first node of the base stems must be created in Seed::initialize()

@@ -78,6 +78,8 @@ public:
 	Vector3d heading() const; /// current heading of the root tip
 	Vector3d o;
 	Matrix3d A; // relative heading
+double parent_base_length; ///< length [cm]
+	int parent_ni; ///< parent node index
 
     	void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
 	int getphytomerId(int subtype) { return phytomerId[subtype]; }

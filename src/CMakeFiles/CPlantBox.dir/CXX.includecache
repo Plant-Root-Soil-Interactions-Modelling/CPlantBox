@@ -107,6 +107,14 @@ memory
 -
 iostream
 -
+sys/stat.h
+-
+unistd.h
+-
+string
+-
+fstream
+-
 
 /mnt/c/cpb1/src/Plant.h
 iostream

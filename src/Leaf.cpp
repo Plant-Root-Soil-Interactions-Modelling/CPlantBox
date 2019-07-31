@@ -51,15 +51,21 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 	}
 	//ons.times(Matrix3d::rotZ(theta));
 	this->initialLeafHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
+    age = -delay; // the root starts growing when age>0
+	alive = 1; // alive per default
 
+	this->parent = parent;
+	parent_base_length = pbl;
+	parent_ni = pni;
+	length = 0;
 	// initial node
-	//  if (parent->organType()!=Organ::ot_Leaf) { // the first node of the base leafs must be created in Seed::initialize()
+	 if (parent->organType()!=Organ::ot_seed ) { // the first node of the base leafs must be created in Seed::initialize()
 	// otherwise, don't use addNode for the first node of the leaf,
 	// since this node exists already and does not need a new identifier
 	r_nodes.push_back(Vector3d());
 	nodeIDs.push_back(parent->getNodeID(pni));
 	nctimes.push_back(parent->getNodeCT(pni)+delay);
-	//  }
+	  }
 }
 
 int Leaf::organType() const
@@ -224,10 +230,10 @@ double Leaf::getCreationTime(double length)
 			double pAge=((Leaf*)parent)->getCreationTime(pl);
 			return age+pAge;
 		} else { // organ type is seed
-			return age;
+			return age+nctimes[0];
 		}
 	} else {
-		return age;
+		return age+nctimes[0];
 	}
 }
 
@@ -238,14 +244,17 @@ double Leaf::getCreationTime(double length)
  */
 double Leaf::LeafGetLength(double age)
 {
-//    if (ltParam().name == "maize1eaf"){
-//        assert(age>=0);
-//        //return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
-//        return ltParam()->growth->LeafgetLength(age,ltParam()->r,getleafphytomerID(ltParam()->subType)*ltParam()->la+ltParam()->getK(),this);
-//	}else {
+    std::string organ_name = std::string(ltParam()->organName);
+    //std::cout<<"organName is "<<name()<<"\n";
+    if (name()  == "maize1eaf"){
+        assert(age>=0);
+        std::cout<<"organName is "<<name()<<"\n";
+        //return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
+        return ltParam()->growth->LeafgetLength(age,ltParam()->r,getleafphytomerID(ltParam()->subType)*3,this);
+	}else {
 assert(age>=0);
 	    return ltParam()->growth->LeafgetLength(age,ltParam()->r,ltParam()->getK(),this);
-//	    }
+	    }
 }
 
 /**
@@ -255,15 +264,17 @@ assert(age>=0);
  */
 double Leaf::LeafGetAge(double length)
 {
-//     if (ltParam().name == "maize1eaf"){
-//        assert(length>=0);
-//        //std::cout<<"length subtype is"<<ltParam()->subType<<"\n";
-//        //return ltParam()->growth->LeafgetAge(length,ltParam()->r,ltParam()->getK(),this);
-//        return ltParam()->growth->LeafgetAge(length,ltParam()->r,getleafphytomerID(ltParam()->subType)*ltParam()->la+ltParam()->getK(),this);
-//        }else {
+    std::string organ_name = std::string(ltParam()->organName);
+    //std::cout<<ltParam()->name<< "\n";
+     if ( name() == "maize1eaf"){
+        assert(length>=0);
+        //std::cout<<"length subtype is"<<ltParam()->subType<<"\n";
+        //return ltParam()->growth->LeafgetAge(length,ltParam()->r,ltParam()->getK(),this);
+        return ltParam()->growth->LeafgetAge(length,ltParam()->r,getleafphytomerID(ltParam()->subType)*3,this);
+        }else {
 assert(age>=0);
 	    return ltParam()->growth->LeafgetAge(length,ltParam()->r,ltParam()->getK(),this);
-//	    }
+	    }
 }
 
 /**
@@ -279,6 +290,11 @@ LeafTypeParameter* Leaf::ltParam() const {
 double Leaf::dx() const
 {
 	return ((LeafTypeParameter*)getOrganTypeParameter())->dx;
+}
+
+std::string Leaf::name() const
+{
+	return ((LeafTypeParameter*)getOrganTypeParameter())->name;
 }
 
 /**

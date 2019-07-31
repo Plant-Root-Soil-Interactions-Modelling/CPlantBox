@@ -218,15 +218,13 @@ double Root::getCreationTime(double length)
 
 
 	if (parent->organType()!=Organ::ot_seed) {
-		if (parent->organType()==Organ::ot_root) {
+
 			double pl = pbl+((Root*)parent)->rParam()->la; // parent length, when this root was created
 			double pAge=((Root*)parent)->getCreationTime(pl);
 			return age+pAge;
-		} else { // organ type is seed
-			return age;
-		}
+
 	} else {
-		return age;
+		return age+nctimes[0];
 	}
 }
 

@@ -1,7 +1,10 @@
 #include "Plant.h"
 #include <memory>
 #include <iostream>
-
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string>
+#include <fstream>
 namespace CPlantBox {
 
 
@@ -53,6 +56,11 @@ void Plant::setParameter(LeafTypeParameter*  otp)
 	delete organParam.at(i).at(otp->subType);
 	organParam.at(i).at(otp->subType) = otp;
 		organParam.at(i).at(otp->subType)->a = otp->a;
+		organParam.at(i).at(otp->subType)->organName = otp->organName;
+		std::cout<<"set parameter "<<&(otp->organName)<<"\n";
+		std::cout<<"set parameter "<<otp->a<<"\n";
+		organParam.at(i).at(otp->subType)->name = std::string(otp->organName);
+		std::cout<<"organParam name is "<<organParam.at(i).at(otp->subType)->name<<"\n";
 }
 void Plant::setParameter(StemTypeParameter*  otp)
 {
@@ -257,10 +265,21 @@ void Plant::openFile(std::string name, std::string subdir)
 {
 	std::ifstream fis;
 	std::string rp_name = subdir;
+	std::string xml_name = subdir;
 	rp_name.append(name);
+	xml_name.append(name);
+
 	rp_name.append(".rparam");
+	xml_name.append(".xml");
+	struct stat buffer;
+	if (stat (xml_name.c_str(), &buffer) == 0)
+    {
+        std::cout<< "xml exist, using openXML instead";
+        Plant::openXML(xml_name.c_str());
+    }else{
 	fis.open(rp_name.c_str());
 	int c = 0;
+
 	if (fis.good()) { // did it work?
 		c = readRootParameters(fis);
 		fis.close();
@@ -320,6 +339,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	}
 	std::cout << "Read " << leaf_c << " leaf type parameters \n"; // debug
     writeAlltoXML(name);
+    }
 }
 
 /**

@@ -63,6 +63,7 @@ public:
 	double a;
 	double as;
 
+    const char* organName ;
 
 
 
@@ -145,7 +146,7 @@ public:
 	virtual void readXML(const tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
-
+const char* organName ;
 	/* Rootbox parameters per root type */
 	double lb; 	 	///< Basal zone [cm]
 	double lbs;  	///< Standard deviation basal zone [cm]
@@ -237,7 +238,7 @@ public:
 	virtual std::string toString() const { std::stringstream ss; write(ss); return ss.str(); } ///< writes parameter to a string
 
 	/* Plant parameters */
-
+const char* organName;
 	Vector3d seedPos = Vector3d(0,0,-3);   ///< Position of the seed [cm]
 	Vector3d seedPoss = Vector3d();
     double plantingdepth = -seedPos.z;
@@ -336,7 +337,7 @@ public:
 	virtual void readXML(const tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
-
+const char* organName;
 	/* Rootbox parameters per root type */
 
 	double lb; 	 	///< Basal zone [cm]
@@ -489,6 +490,7 @@ public:
 	std::string toString() const { std::stringstream ss; write(ss); return ss.str(); } ///< String representation using RootParameter::write
 
 	/* Rootbox parameters per root */
+
 	double lb = 0.; 		///< Basal zone [cm]
 	double la = 0.;			///< Apical zone [cm];
 	double r = 0.;			///< Initial growth rate [cm day-1]
@@ -516,7 +518,7 @@ public:
 	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 			double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
-			int gf, const std::string& name); ///< sets all parameters
+			int gf, const std::string& name, const char* organName); ///< sets all parameters
 
 	virtual OrganParameter* realize() const override; ///< Creates a specific root from the root parameter set
 	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
@@ -528,8 +530,10 @@ public:
 	virtual void readXML(const tinyxml2::XMLElement* ele) override; ///< reads a single root parameter set
 	virtual std::string writeXML(FILE* fp) const override; ///< writes a single root parameter set
 	virtual std::string toString() const override { return writeXML(0); } ///< writes parameter to a string
-
+    std::string name;
 	/* Rootbox parameters per root type */
+	const char* organName;
+
 	double lb; 	 	///< Basal zone [cm]
 	double lbs;  	///< Standard deviation basal zone [cm]
 	double la;		///< Apical zone [cm];

@@ -52,6 +52,7 @@ public:
 	LeafParameter* lParam() const { return (LeafParameter*)param;  } ///< type cast
 	LeafTypeParameter* ltParam() const; // type cast
 	double dx() const; ///< returns the axial resolution
+	std::string name() const;
 	//Vector3d relHeading() const; //< relative heading of the Leaf tip
 	//Vector3d absHeading() const; //< absolute heading of the Leaf tip
 	Vector3d initialLeafHeading;
@@ -76,6 +77,8 @@ public:
 	virtual Matrix3d getRelativeHeading() const override { return A; }
 
 	void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
+double parent_base_length; ///< length [cm]
+	int parent_ni; ///< parent node index
 
 	Vector3d o;
 	Matrix3d A; // relative heading

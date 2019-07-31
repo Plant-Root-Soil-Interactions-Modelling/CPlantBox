@@ -1068,7 +1068,7 @@ LeafTypeParameter::LeafTypeParameter()
 	sa = new SoilLookUp();
 	sbp = new SoilLookUp();
 	set(-1, 0., 0., 10., 0., 1., 0., 0, 0., 0., 1., 0, 0.1, 0., 150./255.,150./255.,50./255., 1, 1. ,0.2, 0.1,
-			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
+			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined", "sth");
 }
 
 LeafTypeParameter::~LeafTypeParameter()
@@ -1086,7 +1086,7 @@ LeafTypeParameter::~LeafTypeParameter()
 void LeafTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 		double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
-		int gf, const std::string& name)
+		int gf, const std::string& name,const char* organName)
 {
 	this->subType = type;
 	this->lb = lb;
@@ -1118,7 +1118,8 @@ void LeafTypeParameter::set(int type, double lb, double lbs, double la, double l
 	this->rlts = rlts;
 	this->gf = gf;
 	this->name = name; // string
-
+	std::cout<<this->name<<"\n";
+    this->organName =organName;
 	createTropism();
 	createGrowth();
 }
@@ -1348,9 +1349,11 @@ void LeafTypeParameter::read(std::istream & is)
 void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
-   const char* name;
+
    ele->QueryUnsignedAttribute("subType", &subType);
-   ele->QueryStringAttribute("name", &name);
+   ele->QueryStringAttribute("name", &organName);
+   std::cout<<"ltp xml read is"<< organName<<"\n";
+   name = std::string(organName);
    getAttribute(ele_param, "lb", "parameter", lb, lbs);
    getAttribute(ele_param, "la", "parameter", la, las);
    getAttribute(ele_param, "ln", "parameter", ln, lns, lnf);
@@ -1401,16 +1404,16 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.PushAttribute("type","leaf");
 
 	    switch (subType) {
-	case 1 :  printer.PushAttribute("name","taproot"); printer.PushAttribute("subType",subType);// See
+	case 1 :  printer.PushAttribute("name",organName); printer.PushAttribute("subType",subType);// See
 
 	break;
-    case 2 :  printer.PushAttribute("name","lateral1"); printer.PushAttribute("subType",subType); // See
+    case 2 :  printer.PushAttribute("name",organName); printer.PushAttribute("subType",subType); // See
 	break;
-    case 3 :  printer.PushAttribute("name","lateral2"); printer.PushAttribute("subType",subType);// See
+    case 3 :  printer.PushAttribute("name",organName); printer.PushAttribute("subType",subType);// See
 	break;
-	case 4 :  printer.PushAttribute("name","nodal_root"); printer.PushAttribute("subType",subType); // See
+	case 4 :  printer.PushAttribute("name",organName); printer.PushAttribute("subType",subType); // See
 	break;
-    case 5 :  printer.PushAttribute("name","shoot_borne_root"); printer.PushAttribute("subType",subType); // See
+    case 5 :  printer.PushAttribute("name",organName); printer.PushAttribute("subType",subType); // See
 	break;
     }
 
