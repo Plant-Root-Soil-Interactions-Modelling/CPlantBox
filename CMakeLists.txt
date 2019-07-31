@@ -6,8 +6,7 @@ cmake_minimum_required (VERSION 2.8.12)
 project (CPlantBox)
 
 # set compiler options
-set(CMAKE_C_COMPILER "/usr/bin/gcc")
-set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+
 set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare")
 set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align")
 set(RELEASE_OPTS "-std=c++11 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -march=native -funroll-loops -g0")
