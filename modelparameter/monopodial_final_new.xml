@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Plant name="maize" filetype="parameters">
-<organ type="seed" subType="0">
+<Plant name="monopodial_final_new" filetype="parameters">
+<organ type="seed" name="true" subType="0">
     <parameter name="seedPos.x" value="0"/>
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-3"/>
@@ -8,6 +8,7 @@
     <parameter name="firstB" value="15" dev="0"/>
     <parameter name="delayB" value="15" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
+    <parameter name="maxTi" value="0" dev="0"/>
     <parameter name="nC" value="2"/>
     <parameter name="nz" value="0"/>
     <parameter name="firstSB" value="14" dev="0"/>
@@ -298,7 +299,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="1.0000000000000001e-05"/>
+    <parameter name="ln" value="0" dev="1.0000000000000001e-05" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="0" dev="15.9"/>
     <!--Inter-lateral distance [cm];-->
@@ -322,7 +323,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0.20000000000000001" dev="0"/>
+    <parameter name="ln" value="0.20000000000000001" dev="0" functiontype="573082939"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="0" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -346,7 +347,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0"/>
+    <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="4" dev="0"/>
     <!--Inter-lateral distance [cm];-->
@@ -370,7 +371,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="8" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="0.10000000000000001"/>
+    <parameter name="ln" value="1" dev="0.10000000000000001" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="159" dev="15.9"/>
     <!--Inter-lateral distance [cm];-->
@@ -394,7 +395,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="8" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0.5" dev="1.0000000000000001e-05"/>
+    <parameter name="ln" value="0.5" dev="1.0000000000000001e-05" functiontype="-569686480"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="59.049999999999997" dev="5.9000000000000004"/>
     <!--Inter-lateral distance [cm];-->

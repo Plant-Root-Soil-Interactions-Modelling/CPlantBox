@@ -188,7 +188,7 @@
     <parameter name="gf" value="1"/>
 </organ>
 
-<organ type="leaf" name="lateral1" subType="2">
+<organ type="leaf" name="lateral2" subType="2">
     <parameter name="lb" value="2" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0.20000000000000001" dev="0"/>

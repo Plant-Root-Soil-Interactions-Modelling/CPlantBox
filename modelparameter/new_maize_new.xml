@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Plant name="maize" filetype="parameters">
-<organ type="seed" subType="0">
-    <parameter name="seedPos.x" value="0"/>
-    <parameter name="seedPos.y" value="0"/>
+<Plant name="new_maize_new" filetype="parameters">
+<organ type="seed" name="true" subType="0">
+    <parameter name="seedPos.x" value="200"/>
+    <parameter name="seedPos.y" value="200"/>
     <parameter name="seedPos.z" value="-3"/>
     <parameter name="plantingdepth" value="3"/>
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="7" dev="0"/>
+    <parameter name="maxTi" value="0" dev="0"/>
     <parameter name="nC" value="2"/>
     <parameter name="nz" value="0"/>
     <parameter name="firstSB" value="14" dev="0"/>
@@ -147,11 +148,11 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="3" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="3" dev="0" functiontype="1"/>
+    <parameter name="ln" value="1" dev="0" functiontype="1"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="90" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="29.666666666666668" dev="0"/>
+    <parameter name="nob" value="87" dev="0"/>
     <parameter name="r" value="20" dev="0.45000000000000001"/>
     <parameter name="a" value="0.20000000000000001" dev="0.02"/>
     <parameter name="RotBeta" value="0"/>
@@ -184,14 +185,14 @@
     <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="2"/>
-    <parameter name="tropismS" value="0.10000000000000001"/>
+    <parameter name="tropismS" value="0"/>
     <parameter name="dx" value="0.25"/>
     <parameter name="theta" value="0" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
 </organ>
 
-<organ type="leaf" name="lateral1" subType="2">
+<organ type="leaf" name="maize1eaf" subType="2">
     <parameter name="lb" value="30" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="4" dev="0"/>
@@ -202,15 +203,15 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="1" dev="3"/>
-    <parameter name="a" value="0.02" dev="0.002"/>
+    <parameter name="a" value="0.029999999999999999" dev="0.002"/>
     <parameter name="RotBeta" value="1"/>
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
-    <parameter name="tropismN" value="8"/>
-    <parameter name="tropismS" value="0.10000000000000001"/>
+    <parameter name="tropismN" value="2.5"/>
+    <parameter name="tropismS" value="0.14000000000000001"/>
     <parameter name="dx" value="0.25"/>
-    <parameter name="theta" value="0.10000000000000001" dev="0"/>
+    <parameter name="theta" value="0.10000000000000001" dev="0.01"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
 </organ>

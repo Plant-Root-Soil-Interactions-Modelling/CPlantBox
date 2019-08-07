@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Plant name="maize" filetype="parameters">
-<organ type="seed" subType="0">
+<Plant name="Phloem_new" filetype="parameters">
+<organ type="seed" name="true" subType="0">
     <parameter name="seedPos.x" value="0"/>
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-3"/>
@@ -8,6 +8,7 @@
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
+    <parameter name="maxTi" value="0" dev="0"/>
     <parameter name="nC" value="2"/>
     <parameter name="nz" value="0"/>
     <parameter name="firstSB" value="14" dev="0"/>
@@ -170,7 +171,7 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="0"/>
+    <parameter name="ln" value="1" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="3" dev="0"/>
     <!--Inter-lateral distance [cm];-->

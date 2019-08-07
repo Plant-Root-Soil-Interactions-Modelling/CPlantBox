@@ -1,0 +1,194 @@
+<Plant filetype="parameters" name="Juncus_squarrosus_Clausnitzer_1994">
+<organ name="true" subType="0" type="seed">
+    <parameter name="seedPos.x" value="0" />
+    <parameter name="seedPos.y" value="0" />
+    <parameter name="seedPos.z" value="-3" />
+    <parameter name="plantingdepth" value="3" />
+    <parameter dev="0" name="firstB" value="0" />
+    <parameter dev="0" name="delayB" value="0" />
+    <parameter dev="0" name="maxB" value="47" />
+    <parameter dev="0" name="maxTi" value="20" />
+    <parameter name="nC" value="0" />
+    <parameter name="nz" value="0" />
+    <parameter dev="0" name="firstSB" value="1000" />
+    <parameter dev="0" name="delaySB" value="1000" />
+    <parameter dev="0" name="delayRC" value="1000" />
+    <parameter dev="0" name="simulationTime" value="30" />
+</organ>
+
+<organ name="taproot" subType="1" type="root">
+    <parameter dev="0" name="lb" value="3" />
+    
+    <parameter dev="0" name="la" value="12" />
+    
+    <parameter dev="0" name="ln" value="1" />
+    
+    <parameter dev="19.600000000000001" name="lmax" value="196.69999999999999" />
+    
+    <parameter dev="19.600000000000001" name="nob" value="182.69999999999999" />
+    <parameter dev="0" name="r" value="2.0880000000000001" />
+    <parameter dev="0" name="a" value="0.14999999999999999" />
+    <parameter name="RotBeta" value="0" />
+    <parameter name="BetaDev" value="0" />
+    <parameter name="InitBeta" value="205" />
+    <parameter name="tropismT" value="1" />
+    <parameter name="tropismN" value="0.20000000000000001" />
+    <parameter name="tropismS" value="0.20000000000000001" />
+    <parameter name="dx" value="0.5" />
+    <parameter dev="0" name="theta" value="0.5" />
+    <parameter dev="0" name="rlt" value="1000000000" />
+    <parameter name="gf" value="1" />
+    <parameter name="successor" number="0" percentage="1" type="2" />
+</organ>
+
+<organ name="lateral1" subType="2" type="root">
+    <parameter dev="0" name="lb" value="0.29999999999999999" />
+    
+    <parameter dev="0" name="la" value="1.9199999999999999" />
+    
+    <parameter dev="0" name="ln" value="0.14999999999999999" />
+    
+    <parameter dev="0.27000000000000002" name="lmax" value="2.6699999999999999" />
+    
+    <parameter dev="1.8000000000000003" name="nob" value="4" />
+    <parameter dev="0" name="r" value="0.23999999999999999" />
+    <parameter dev="0" name="a" value="0.050000000000000003" />
+    <parameter name="RotBeta" value="238" />
+    <parameter name="BetaDev" value="0" />
+    <parameter name="InitBeta" value="0" />
+    <parameter name="tropismT" value="1" />
+    <parameter name="tropismN" value="1.5" />
+    <parameter name="tropismS" value="0.20000000000000001" />
+    <parameter name="dx" value="0.5" />
+    <parameter dev="0" name="theta" value="1.5708" />
+    <parameter dev="0" name="rlt" value="1000000000" />
+    <parameter name="gf" value="1" />
+</organ>
+
+<organ name="mainstem" subType="1" type="stem">
+    <parameter dev="0" name="lb" value="70" />
+    
+    <parameter dev="0" name="la" value="0.2" />
+    
+    <parameter dev="0" functiontype="0" name="ln" value="0" />
+    
+    <parameter dev="0" name="lmax" value="100" />
+    
+    <parameter dev="0" name="nob" value="0" />
+    <parameter dev="0.45000000000000001" name="r" value="4" />
+    <parameter dev="0.02" name="a" value="0.20000000000000001" />
+    <parameter name="RotBeta" value="1" />
+    <parameter name="BetaDev" value="0" />
+    <parameter name="InitBeta" value="0" />
+    <parameter name="tropismT" value="1" />
+    <parameter name="tropismN" value="1" />
+    <parameter name="tropismS" value="0" />
+    <parameter name="dx" value="0.25" />
+    <parameter dev="0" name="theta" value="0" />
+    <parameter dev="0" name="rlt" value="1000000000" />
+    <parameter name="gf" value="1" />
+    <parameter name="successor" number="0" percentage="1" type="2" />
+</organ>
+
+
+
+<organ name="1stbranch" subType="2" type="stem">
+    <parameter dev="0" name="lb" value="0" />
+    
+    <parameter dev="0" name="la" value="0" />
+    
+    <parameter dev="0" functiontype="1" name="ln" value="0" />
+    
+    <parameter dev="0" name="lmax" value="1" />
+    
+    <parameter dev="0" name="nob" value="0" />
+    <parameter dev="0.035000000000000003" name="r" value="2" />
+    <parameter dev="0.00125" name="a" value="0.29999999999999999" />
+    <parameter name="RotBeta" value="0" />
+    <parameter name="BetaDev" value="0" />
+    <parameter name="InitBeta" value="0" />
+    <parameter name="tropismT" value="1" />
+    <parameter name="tropismN" value="2" />
+    <parameter name="tropismS" value="0.10000000000000001" />
+    <parameter name="dx" value="0.25" />
+    <parameter dev="0" name="theta" value="0" />
+    <parameter dev="0" name="rlt" value="1000000000" />
+    <parameter name="gf" value="1" />
+</organ>
+
+<organ name="2ndbranch" subType="3" type="stem">
+    <parameter dev="0" name="lb" value="1" />
+    
+    <parameter dev="0" name="la" value="30" />
+    
+    <parameter dev="0" functiontype="1" name="ln" value="8" />
+    
+    <parameter dev="0" name="lmax" value="140" />
+    
+    <parameter dev="0" name="nob" value="14.625" />
+    <parameter dev="0.45000000000000001" name="r" value="2" />
+    <parameter dev="0.02" name="a" value="0.20000000000000001" />
+    <parameter name="RotBeta" value="0.5" />
+    <parameter name="BetaDev" value="0.10000000000000001" />
+    <parameter name="InitBeta" value="0" />
+    <parameter name="tropismT" value="1" />
+    <parameter name="tropismN" value="1" />
+    <parameter name="tropismS" value="0" />
+    <parameter name="dx" value="0.25" />
+    <parameter dev="0" name="theta" value="0.29999999999999999" />
+    <parameter dev="0" name="rlt" value="1000000000" />
+    <parameter name="gf" value="1" />
+    <parameter name="successor" number="0" percentage="1" type="2" />
+</organ>
+
+<organ name="lateral1" subType="2" type="leaf">
+    <parameter dev="6" name="lb" value="20" />
+    
+    <parameter dev="6" name="la" value="4" />
+    
+    <parameter dev="6" functiontype="3" name="ln" value="14" />
+    
+    <parameter dev="6" name="lmax" value="21" />
+    
+    <parameter dev="0" name="nob" value="4.5" />
+    <parameter dev="3" name="r" value="0.59999999999999998" />
+    <parameter dev="0.002" name="a" value="2" />
+    <parameter name="RotBeta" value="0.69999999999999996" />
+    <parameter name="BetaDev" value="0.29999999999999999" />
+    <parameter name="InitBeta" value="0" />
+    <parameter name="tropismT" value="1" />
+    <parameter name="tropismN" value="18" />
+    <parameter name="tropismS" value="0.01" />
+    <parameter name="dx" value="0.25" />
+    <parameter dev="0.3" name="theta" value="0.1" />
+    <parameter dev="0" name="rlt" value="1000000000" />
+    <parameter name="gf" value="1" />
+</organ>
+
+
+<organ name="tiller" subType="4" type="stem">
+    <parameter dev="0" name="lb" value="1" />
+    
+    <parameter dev="0" name="la" value="0" />
+    
+    <parameter dev="0" functiontype="0" name="ln" value="4" />
+    
+    <parameter dev="3" name="lmax" value="5" />
+    
+    <parameter dev="0" name="nob" value="0" />
+    <parameter dev="0.035000000000000003" name="r" value="1" />
+    <parameter dev="0.00125" name="a" value="0.29999999999999999" />
+    <parameter name="RotBeta" value="0.3" />
+    <parameter name="BetaDev" value="0" />
+    <parameter name="InitBeta" value="0" />
+    <parameter name="tropismT" value="1" />
+    <parameter name="tropismN" value="0.5" />
+    <parameter name="tropismS" value="0.05" />
+    <parameter name="dx" value="0.25" />
+    <parameter dev="0.02" name="theta" value="0.05" />
+
+    <parameter dev="0" name="rlt" value="1000000000" />
+    <parameter name="gf" value="1" />
+	<parameter name="successor" number="0" percentage="1" type="2" />
+</organ>
+</Plant>

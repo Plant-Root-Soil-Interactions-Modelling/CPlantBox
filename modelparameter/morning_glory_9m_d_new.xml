@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Plant name="morning_glory_9m_d_new" filetype="parameters">
 <organ type="seed" name="true" subType="0">
-    <parameter name="seedPos.x" value="480"/>
+    <parameter name="seedPos.x" value="100"/>
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-3"/>
     <parameter name="plantingdepth" value="3"/>
@@ -167,9 +167,9 @@
 <organ type="leaf" name="lateral1" subType="2">
     <parameter name="lb" value="10" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="1" dev="0"/>
+    <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="0"/>
+    <parameter name="ln" value="0" dev="0" functiontype="1487985840"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="13" dev="0"/>
     <!--Inter-lateral distance [cm];-->

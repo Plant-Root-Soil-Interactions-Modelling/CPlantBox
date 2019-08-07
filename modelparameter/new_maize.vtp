@@ -1,0 +1,44 @@
+<?xml version="1.0"?><VTKFile type="PolyData" version="0.1" byte_order="LittleEndian">
+<PolyData>
+<Piece NumberOfLines="0" NumberOfPoints="0">
+<CellData Scalars=" CellData">
+<DataArray type="Float32" Name="organtype" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+<DataArray type="Float32" Name="id" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+<DataArray type="Float32" Name="subtype" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+<DataArray type="Float32" Name="st_time" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+<DataArray type="Float32" Name="radius" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+<DataArray type="Float32" Name="age" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+<DataArray type="Float32" Name="length" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+
+</CellData>
+<Points>
+<DataArray type="Float32" Name="Coordinates" NumberOfComponents="3" format="ascii" >
+
+</DataArray>
+</Points>
+<Lines>
+<DataArray type="Int32" Name="connectivity" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+<DataArray type="Int32" Name="offsets" NumberOfComponents="1" format="ascii" >
+
+</DataArray>
+
+</Lines>
+</Piece>
+</PolyData>
+</VTKFile>
