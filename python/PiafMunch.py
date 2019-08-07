@@ -220,7 +220,7 @@ def convert( plant ):
 			nodes_r_st[i]= (intercept2 + slope2*nodes_length[i])
 		else:
 			nodes_r_st[i]= (intercept + slope*nodes_length[i])
-	return node_connection, nodes_organtype, nodes_r_st, unq_cnt;
+	return nodes_cor, node_connection, nodes_organtype, nodes_r_st, unq_cnt;
 
 
 	#R_st is calculated based on the height (or the z axis value), 
