@@ -6,6 +6,30 @@ from scipy import stats
 import pandas as pd
 import datetime
 
+def python_nodes(plant):
+	nodes = vv2a(plant.getNodes())/100 # convert from cm to m 
+	rseg = seg2a(plant.getSegments(15)) # root system segments
+	sseg = seg2a(plant.getSegments(4)) # strm system segments
+	lseg = v2ai(plant.getNodesOrganType())
+	plant_ana = pb.SegmentAnalyser(plant) 
+	node_connection_o = seg2a(plant.getSegments(15)) # plant segments
+	#sseg = seg2a(plant.getSegments(4)) #
+	node_organtype = v2ai(plant.getNodesOrganType()) #vector to numpy array
+	nodes_with_organtype = np.column_stack([node_connection_o, node_organtype]) #make the node has organtype, to know the source sink relation
+	node_connection1, node_connection2 = np.split(node_connection_o.T,2) #seperate the 2-number nodes into two list
+	node_connection1 = np.row_stack([node_connection1, node_organtype]) #first numbe list
+	node_connection2 = np.row_stack([node_connection2, node_organtype]) #second number list
+	nodes_organtype = np.column_stack([node_connection1,node_connection2])
+	_, indices = np.unique(nodes_organtype.T[:,0], return_index=True) #sort the list to remove duplicates
+	nodes_organtype = nodes_organtype.T[indices,:]
+	nodes_cor = np.column_stack([nodes_organtype, nodes]) # adding coordinates into the connections
+	node_connection = np.copy(node_connection_o)
+	unq, unq_idx, unq_cnt = np.unique(node_connection, return_inverse=True, return_counts=True)# check if all the connections are unique
+	nodes_organtype = np.column_stack((nodes_organtype,unq_cnt ))
+	nodes_organtype.astype(np.int_)
+	node_connection.astype(np.int_)
+	nodes_cor = np.column_stack([nodes_organtype, nodes])
+	return nodes_cor;
 
 # Convert the connected nodes in CPlantBox to PiafMunch arbitary numbers.
 def convert( plant ):
@@ -15,7 +39,6 @@ def convert( plant ):
 	sseg = seg2a(plant.getSegments(4)) # strm system segments
 	lseg = v2ai(plant.getNodesOrganType())
 	plant_ana = pb.SegmentAnalyser(plant) 
-	nodes = vv2a(plant.getNodes())/100 # convert from cm to m 
 	node_connection_o = seg2a(plant.getSegments(15)) # plant segments
 	#sseg = seg2a(plant.getSegments(4)) #
 	node_organtype = v2ai(plant.getNodesOrganType()) #vector to numpy array
