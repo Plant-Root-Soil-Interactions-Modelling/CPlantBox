@@ -1,14 +1,15 @@
 # CPlantBox
 
-Just uncomment the desired example in the `examples/main.cpp` file and compile and run it.
+Two main functions
+1. Create plant structure
+2. Coupling with PiafMunch to have carbon and water flow inside the structure.
 
-```bash
-cmake .
-make
-cd examples && ./test_cplantbox
-```
+# Create plant structure in 5 minutes
 
-`cmake . ` runs CMake which configures the CPlantBox libraries. `make` builds the libraries and the C++ example. `cd examples && ./test_cplantbox` runs the example.
+The most convenient way is to use google colab, which is a Linux with jupyter notebook interface.
+You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
+[here is the link to use it](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/python/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb)
+
 
 # Folder sructure
 
@@ -25,7 +26,6 @@ $ doxygen doxy_config
 
 The documentation should now be located in the folder /doc
 
-To build the shared library py_rootbox for coupling with Python pleaser refer to 'python building guide.txt'
 
 # Example
 
