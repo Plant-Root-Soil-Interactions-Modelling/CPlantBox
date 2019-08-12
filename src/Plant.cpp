@@ -251,9 +251,10 @@ std::cout<<"organparam " << attr << "\n";
             const tinyxml2::XMLElement* ele_param = organ_param->FirstChildElement("parameter");
                 OrganTypeParameter().getAttribute( ele_param, attr_name, "parameter", attr, deviation);
     std::cout<<"attr " << attr << "\n";
-    return attr;
+
       	}
 		}
+		return attr;
 }
 
 
@@ -398,7 +399,7 @@ int Plant::readLeafParameters(std::istream& cin)
  */
 void Plant::writeParameters(std::ostream& os) const
 {
-	const char* declaration ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>";
+	//const char* declaration ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>";
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLDocument dxml;
 

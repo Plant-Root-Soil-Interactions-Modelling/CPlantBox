@@ -483,7 +483,7 @@ void Stem::ShootBorneRootGrow(bool silence)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		int NodeToGrowShotBorneRoot = 2 ;
 		Vector3d sbrheading(0,0,-1); //just a test heading
-		Root* ShootBorneRootGrow = new Root(plant, this , 5, 0., sbrheading ,NodeToGrowShotBorneRoot, length);
+		Root* ShootBorneRootGrow = new Root(plant, this , 5, delay, sbrheading ,NodeToGrowShotBorneRoot, length);
 		if (r_nodes.size() > NodeToGrowShotBorneRoot ) {
 			//                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
 			children.push_back(ShootBorneRootGrow);
