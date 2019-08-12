@@ -28,3 +28,4 @@ CMakeCache.txt
 cmake_install.cmake
 
 ./src/libCPlantBox.a
+./examples/test_cplantbox
