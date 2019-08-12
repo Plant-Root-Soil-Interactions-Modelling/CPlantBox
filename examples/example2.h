@@ -74,7 +74,7 @@ void example2()
 
 
 
-    char * name = "Zea_mays_5_Leitner_2014";
+    string name = "Zea_mays_5_Leitner_2014";
 
 
 
