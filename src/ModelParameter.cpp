@@ -24,13 +24,13 @@ void readXMLvs(tinyxml2::XMLElement* el_, std::string name, double* v, double* s
 
 
 
-OrganTypeParameter::OrganTypeParameter()
+OrganRandomOrganParameter::OrganRandomOrganParameter()
 {
 	organType = Organ::ot_organ;
 	subType = -1; // means undefined
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr, double &deviation )  { //parse through different subtype
+void OrganRandomOrganParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr, double &deviation )  { //parse through different subtype
 
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
@@ -41,7 +41,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
              }
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr, double &deviation, int &functiontype )  { //parse through different subtype
+void OrganRandomOrganParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr, double &deviation, int &functiontype )  { //parse through different subtype
 
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
@@ -56,7 +56,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
 
 
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, int &attr, double &deviation )  { //parse through different subtype
+void OrganRandomOrganParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, int &attr, double &deviation )  { //parse through different subtype
 
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
@@ -68,7 +68,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
 }
 
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr)  { //parse through different subtype
+void OrganRandomOrganParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, double &attr)  { //parse through different subtype
 
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
@@ -78,7 +78,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
              }
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, int &attr)  { //parse through different subtype
+void OrganRandomOrganParameter::getAttribute(const tinyxml2::XMLElement* param, const char* attr_name, const char* para_name, int &attr)  { //parse through different subtype
 
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
@@ -88,7 +88,7 @@ void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param, const c
              }
 }
 
-void OrganTypeParameter::getAttribute(const tinyxml2::XMLElement* param,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP )  { //parse through different subtype
+void OrganRandomOrganParameter::getAttribute(const tinyxml2::XMLElement* param,const char* attr_name, const char* para_name, std::vector<int> &successor, std::vector<double> &successorP )  { //parse through different subtype
         int n = 0;
         for (; param != 0; param = param->NextSiblingElement(para_name) )
         {   if (param->Attribute("name" , attr_name)) {
@@ -125,7 +125,7 @@ void RootParameter::write(std::ostream & cout) const
 
 
 
-RootTypeParameter::RootTypeParameter()
+RootRandomOrganParameter::RootRandomOrganParameter()
 {
 	organType = Organ::ot_root;
 	subType = -1; // means undefined
@@ -138,7 +138,7 @@ RootTypeParameter::RootTypeParameter()
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
 }
 
-RootTypeParameter::~RootTypeParameter()
+RootRandomOrganParameter::~RootRandomOrganParameter()
 {
 	delete tropism;
 	delete growth;
@@ -150,7 +150,7 @@ RootTypeParameter::~RootTypeParameter()
 /**
  * todo comment
  */
-void RootTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
+void RootRandomOrganParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
 		double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name)
@@ -189,7 +189,7 @@ void RootTypeParameter::set(int type, double lb, double lbs, double la, double l
 	createGrowth();
 }
 
-void RootTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
+void RootRandomOrganParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
 {
 	//delete tropism;
 	TropismFunction* t;
@@ -223,7 +223,7 @@ void RootTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* 
 
 }
 
-void RootTypeParameter::createGrowth()
+void RootRandomOrganParameter::createGrowth()
 {
 	switch (gf) {
 	case gft_negexp: {
@@ -247,7 +247,7 @@ void RootTypeParameter::createGrowth()
  *
  * \return Specific root parameters derived from the root type parameters
  */
-OrganParameter* RootTypeParameter::realize() const
+SpecificOrganParamter* RootRandomOrganParameter::realize() const
 {
 	// type does not change
 	double lb_ = std::max(lb + randn()*lbs,double(0)); // length of basal zone
@@ -272,7 +272,7 @@ OrganParameter* RootTypeParameter::realize() const
  *
  * @param pos       spatial position (for coupling to a soil model)
  */
-int RootTypeParameter::getLateralType(const Vector3d& pos)
+int RootRandomOrganParameter::getLateralType(const Vector3d& pos)
 {
 	assert(successor.size()==successorP.size());
 	double scale = sbp->getValue(pos);  //the current model makes not a lot of sense, we may come up with something more clever
@@ -294,7 +294,7 @@ int RootTypeParameter::getLateralType(const Vector3d& pos)
 	}
 }
 
-void RootTypeParameter::write(std::ostream & os) const
+void RootRandomOrganParameter::write(std::ostream & os) const
 {
 	os << "# Root type parameter for " << name << "\n";
 	os << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
@@ -309,12 +309,12 @@ void RootTypeParameter::write(std::ostream & os) const
 		os << successorP[i] << "\t";
 	}
 	os << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";
-	std::cout << "RootTypeParameter::write is deprecated, use RootTypeParameter::writeXML instead\n";
+	std::cout << "RootRandomOrganParameter::write is deprecated, use RootRandomOrganParameter::writeXML instead\n";
 }
 
 
 
-void RootTypeParameter::read(std::istream & is)
+void RootRandomOrganParameter::read(std::istream & is)
 {
 	char ch[256]; // dummy
 	is.getline(ch,256);
@@ -334,7 +334,7 @@ void RootTypeParameter::read(std::istream & is)
 		}
 		nobs = std::max(nobs,0.);
 		if (std::isnan(nobs)) {
-			std::cout << "RootTypeParameter::read() nobs is nan \n";
+			std::cout << "RootRandomOrganParameter::read() nobs is nan \n";
 			nobs =0;
 		}
 	} else {
@@ -359,10 +359,10 @@ void RootTypeParameter::read(std::istream & is)
 	is >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
 	createTropism();
 	createGrowth();
-	std::cout << "RootTypeParameter::read is deprecated, use RootTypeParameter::readXML instead\n";
+	std::cout << "RootRandomOrganParameter::read is deprecated, use RootRandomOrganParameter::readXML instead\n";
 }
 
-void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
+void RootRandomOrganParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
    const char* name; //name of the suborgan,
@@ -385,7 +385,7 @@ void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 		}
 		nobs = std::max(nobs,0.);
 		if (std::isnan(nobs)) {
-			std::cout << "RootTypeParameter::read() nobs is nan \n";
+			std::cout << "RootRandomOrganParameter::read() nobs is nan \n";
 			nobs =0;
 		}
 	} else {
@@ -413,7 +413,7 @@ void RootTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 }
 
 
-std::string RootTypeParameter::writeXML(FILE* fp) const
+std::string RootRandomOrganParameter::writeXML(FILE* fp) const
 {
 tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.OpenElement("organ", false); //compact mode false
@@ -496,12 +496,12 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 
 
 
-SeedTypeParameter::SeedTypeParameter() {
+SeedRandomOrganParameter::SeedRandomOrganParameter() {
 	organType = Organ::ot_seed;
 	subType = 0; // there is currently only one type
 }
 
-void SeedTypeParameter::read(std::istream & is) {
+void SeedRandomOrganParameter::read(std::istream & is) {
 
 	std::string s; // dummy
 	is  >>  s >> plantingdepth;
@@ -511,7 +511,7 @@ void SeedTypeParameter::read(std::istream & is) {
 }
 
 
-void SeedTypeParameter::write(std::ostream & cout) const {
+void SeedRandomOrganParameter::write(std::ostream & cout) const {
 	double pd = -seedPos.z;
 	cout <<  "plantingdepth\t" << pd << "\n" <<  "firstB\t" << firstB << "\n" <<  "delayB\t" << delayB << "\n"
 			<<  "maxB\t" << maxB << "\n" <<  "nC\t" << 0 << "\n" <<  "firstSB\t" << 0 << "\n"
@@ -519,7 +519,7 @@ void SeedTypeParameter::write(std::ostream & cout) const {
 	std::cout << "SeedTypeParamter::write is deprecated, use SeedTypeParamter::writeXML instead\n";
 }
 
-void SeedTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
+void SeedRandomOrganParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
    const char* name;
@@ -546,7 +546,7 @@ void SeedTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 }
 
 
-std::string SeedTypeParameter::writeXML(FILE* fp) const {
+std::string SeedRandomOrganParameter::writeXML(FILE* fp) const {
 
 tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
     printer.OpenElement("organ", false); //compact mode false
@@ -575,7 +575,7 @@ tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
 /**
  *
  */
-OrganParameter* SeedTypeParameter::realize() const
+SpecificOrganParamter* SeedRandomOrganParameter::realize() const
 {
     //std::cout<<"seed name "<< <<"\n";
 
@@ -624,7 +624,7 @@ void StemParameter::write(std::ostream & cout) const
 
 
 
-StemTypeParameter::StemTypeParameter()
+StemRandomOrganParameter::StemRandomOrganParameter()
 {
 	organType = Organ::ot_stem;
 	subType = -1; // means undefined
@@ -637,7 +637,7 @@ StemTypeParameter::StemTypeParameter()
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined");
 }
 
-StemTypeParameter::~StemTypeParameter()
+StemRandomOrganParameter::~StemRandomOrganParameter()
 {
 	delete tropism;
 	delete growth;
@@ -649,7 +649,7 @@ StemTypeParameter::~StemTypeParameter()
 /**
  * todo comment
  */
-void StemTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
+void StemRandomOrganParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 		double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name)
@@ -689,7 +689,7 @@ void StemTypeParameter::set(int type, double lb, double lbs, double la, double l
 	createGrowth();
 }
 
-void StemTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
+void StemRandomOrganParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
 {
 	delete tropism;
 	StemTropismFunction* t;
@@ -707,13 +707,17 @@ void StemTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* 
 		break;
 	}
 	case tt_hydro: {
-		StemTropismFunction* gt =  new StemGravitropism(tropismN,tropismS);
-		StemTropismFunction* ht = new StemPhototropism(tropismN,tropismS,soil);
+		StemTropismFunction* gt =  new StemAntiGravitropism(tropismN,tropismS);
+		StemTropismFunction* ht = new StemPlagiotropism(tropismN,tropismS);
 		t = new CombinedStemTropism(tropismN,tropismS,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
 		break;
 	}
     case tt_antigravi: {
 		t = new StemAntiGravitropism(tropismN,tropismS);
+		break;
+    }
+    case tt_twist: {
+		t = new StemTwist(tropismN,tropismS);
 		break;
     }
 	default: throw std::invalid_argument( "StemSystem::createTropismFunction() tropism type not implemented" );
@@ -727,7 +731,7 @@ void StemTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* 
 
 }
 
-void StemTypeParameter::createGrowth()
+void StemRandomOrganParameter::createGrowth()
 {
 	switch (gf) {
 	case gft_negexp: {
@@ -751,7 +755,7 @@ void StemTypeParameter::createGrowth()
  *
  * \return Specific stem parameters derived from the Stem type parameters
  */
-OrganParameter* StemTypeParameter::realize() const
+SpecificOrganParamter* StemRandomOrganParameter::realize() const
 {
 	// type does not change
 	double lb_ = std::max(lb + randn()*lbs,double(0)); // length of basal zone
@@ -816,7 +820,7 @@ OrganParameter* StemTypeParameter::realize() const
  *
  * @param pos       spatial position (for coupling to a soil model)
  */
-int StemTypeParameter::getLateralType(const Vector3d& pos)
+int StemRandomOrganParameter::getLateralType(const Vector3d& pos)
 {
 	assert(successor.size()==successorP.size());
 	double scale = sbp->getValue(pos);  //the current model makes not a lot of sense, we may come up with something more clever
@@ -838,7 +842,7 @@ int StemTypeParameter::getLateralType(const Vector3d& pos)
 	}
 }
 
-void StemTypeParameter::write(std::ostream & os) const
+void StemRandomOrganParameter::write(std::ostream & os) const
 {
 	os << "# Root type parameter for " << name << "\n";
 	os << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
@@ -853,10 +857,10 @@ void StemTypeParameter::write(std::ostream & os) const
 		os << successorP[i] << "\t";
 	}
 	os << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";
-	std::cout << "RootTypeParameter::write is deprecated, use RootTypeParameter::writeXML instead\n";
+	std::cout << "RootRandomOrganParameter::write is deprecated, use RootRandomOrganParameter::writeXML instead\n";
 }
 
-void StemTypeParameter::read(std::istream & is)
+void StemRandomOrganParameter::read(std::istream & is)
 {
 	char ch[256]; // dummy
 	is.getline(ch,256);
@@ -875,7 +879,7 @@ void StemTypeParameter::read(std::istream & is)
 		}
 		nobs = std::max(nobs,0.);
 		if (std::isnan(nobs)) {
-			std::cout << "StemTypeParameter::read() nobs is nan \n";
+			std::cout << "StemRandomOrganParameter::read() nobs is nan \n";
 			nobs =0;
 		}
 	} else {
@@ -900,10 +904,10 @@ void StemTypeParameter::read(std::istream & is)
 	is >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
 	createTropism();
 	createGrowth();
-	std::cout << "StemTypeParameter::read is deprecated, use StemTypeParameter::readXML instead\n";
+	std::cout << "StemRandomOrganParameter::read is deprecated, use StemRandomOrganParameter::readXML instead\n";
 }
 
-void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
+void StemRandomOrganParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
    const char* name;
@@ -926,7 +930,7 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 		}
 		nobs = std::max(nobs,0.);
 		if (std::isnan(nobs)) {
-			std::cout << "RootTypeParameter::read() nobs is nan \n";
+			std::cout << "RootRandomOrganParameter::read() nobs is nan \n";
 			nobs =0;
 		}
 	} else {
@@ -954,7 +958,7 @@ void StemTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 }
 
 
-std::string StemTypeParameter::writeXML(FILE* fp) const
+std::string StemRandomOrganParameter::writeXML(FILE* fp) const
 {
 tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.OpenElement("organ", false); //compact mode false
@@ -1058,7 +1062,7 @@ void LeafParameter::write(std::ostream & cout) const
 
 
 
-LeafTypeParameter::LeafTypeParameter()
+LeafRandomOrganParameter::LeafRandomOrganParameter()
 {
 	organType = Organ::ot_leafe;
 	subType = -1; // means undefined
@@ -1071,7 +1075,7 @@ LeafTypeParameter::LeafTypeParameter()
 			successor, successorP, 1.22, 0., 1.e9, 0., 1, "undefined", "sth");
 }
 
-LeafTypeParameter::~LeafTypeParameter()
+LeafRandomOrganParameter::~LeafRandomOrganParameter()
 {
 	delete tropism;
 	delete growth;
@@ -1083,7 +1087,7 @@ LeafTypeParameter::~LeafTypeParameter()
 /**
  * todo comment
  */
-void LeafTypeParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
+void LeafRandomOrganParameter::set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 		double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropismS,
 		double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 		int gf, const std::string& name,const char* organName)
@@ -1124,7 +1128,7 @@ void LeafTypeParameter::set(int type, double lb, double lbs, double la, double l
 	createGrowth();
 }
 
-void LeafTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
+void LeafRandomOrganParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* soil)
 {
 	delete tropism;
 	LeafTropismFunction* t;
@@ -1162,7 +1166,7 @@ void LeafTypeParameter::createTropism(SignedDistanceFunction* geom, SoilLookUp* 
 
 }
 
-void LeafTypeParameter::createGrowth()
+void LeafRandomOrganParameter::createGrowth()
 {
 	switch (gf) {
 	case gft_negexp: {
@@ -1186,7 +1190,7 @@ void LeafTypeParameter::createGrowth()
  *
  * \return Specific root parameters derived from the root type parameters
  */
-OrganParameter* LeafTypeParameter::realize() const
+SpecificOrganParamter* LeafRandomOrganParameter::realize() const
 {
 	// type does not change
 	double lb_ = std::max(lb + randn()*lbs,double(0)); // length of basal zone
@@ -1259,7 +1263,7 @@ OrganParameter* LeafTypeParameter::realize() const
  *
  * @param pos       spatial position (for coupling to a soil model)
  */
-int LeafTypeParameter::getLateralType(const Vector3d& pos)
+int LeafRandomOrganParameter::getLateralType(const Vector3d& pos)
 {
 	assert(successor.size()==successorP.size());
 	double scale = sbp->getValue(pos);  //the current model makes not a lot of sense, we may come up with something more clever
@@ -1281,7 +1285,7 @@ int LeafTypeParameter::getLateralType(const Vector3d& pos)
 	}
 }
 
-void LeafTypeParameter::write(std::ostream & os) const
+void LeafRandomOrganParameter::write(std::ostream & os) const
 {
 	os << "# Root type parameter for " << name << "\n";
 	os << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
@@ -1296,10 +1300,10 @@ void LeafTypeParameter::write(std::ostream & os) const
 		os << successorP[i] << "\t";
 	}
 	os << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";
-	std::cout << "RootTypeParameter::write is deprecated, use RootTypeParameter::writeXML instead\n";
+	std::cout << "RootRandomOrganParameter::write is deprecated, use RootRandomOrganParameter::writeXML instead\n";
 }
 
-void LeafTypeParameter::read(std::istream & is)
+void LeafRandomOrganParameter::read(std::istream & is)
 {
 	char ch[256]; // dummy
 	is.getline(ch,256);
@@ -1318,7 +1322,7 @@ void LeafTypeParameter::read(std::istream & is)
 		}
 		nobs = std::max(nobs,0.);
 		if (std::isnan(nobs)) {
-			std::cout << "LeafTypeParameter::read() nobs is nan \n";
+			std::cout << "LeafRandomOrganParameter::read() nobs is nan \n";
 			nobs =0;
 		}
 	} else {
@@ -1343,10 +1347,10 @@ void LeafTypeParameter::read(std::istream & is)
 	is >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
 	createTropism();
 	createGrowth();
-	std::cout << "LeafTypeParameter::read is deprecated, use LeafTypeParameter::readXML instead\n";
+	std::cout << "LeafRandomOrganParameter::read is deprecated, use LeafRandomOrganParameter::readXML instead\n";
 }
 
-void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
+void LeafRandomOrganParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype parameter from different organ type, used by Plant::openXML
 {
    const tinyxml2::XMLElement* ele_param = ele->FirstChildElement("parameter"); //XML elements for parameters
 
@@ -1371,7 +1375,7 @@ void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 		}
 		nobs = std::max(nobs,0.);
 		if (std::isnan(nobs)) {
-			std::cout << "RootTypeParameter::read() nobs is nan \n";
+			std::cout << "RootRandomOrganParameter::read() nobs is nan \n";
 			nobs =0;
 		}
 	} else {
@@ -1397,7 +1401,7 @@ void LeafTypeParameter::readXML(const tinyxml2::XMLElement* ele) //read subtype 
 }
 
 
-std::string LeafTypeParameter::writeXML(FILE* fp) const
+std::string LeafRandomOrganParameter::writeXML(FILE* fp) const
 {
 tinyxml2::XMLPrinter printer( fp, false, 0 ); //compact mode false, and 0 indent
         printer.OpenElement("organ", false); //compact mode false

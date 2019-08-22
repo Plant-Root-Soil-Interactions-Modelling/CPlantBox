@@ -20,7 +20,7 @@ namespace CPlantBox {
 
 class Plant;
 class RootParameter;
-class RootTypeParameter;
+class RootRandomOrganParameter;
 
 /**
  * Root
@@ -56,7 +56,7 @@ public:
 
     /* abbreviations */
     RootParameter* rParam() const { return (RootParameter*)param;  } ///< type cast
-    RootTypeParameter* tParam() const; // type cast
+    RootRandomOrganParameter* tParam() const; // type cast
     double dx() const; ///< returns the axial resolution
     Vector3d heading() const; /// current heading of the root tip
 

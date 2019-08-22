@@ -149,14 +149,6 @@ double StemExotropism::stemtropismObjective(const Vector3d& pos, Matrix3d old, d
 /**
 * getHeading() minimizes this function, @see TropismFunction::tropismObjective
 */
-double StemPhototropism::stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem)
-{
-  assert(soil!=nullptr);
-  Vector3d newpos = this->getPosition(pos,old,a,b,dx);
-  double v = soil->getValue(newpos,stem);
-//   std::cout << "\n" << newpos.getString() << ", = "<< v;
-  return -v; ///< (-1) because we want to maximize the soil property
-}
 
 
 /**

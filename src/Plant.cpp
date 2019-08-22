@@ -13,7 +13,7 @@ unsigned int Plant::noParamFile[5] = {0, 0, 1, 1, 1}; // check if there are para
 Plant::Plant()
 {
 	initOTP();
-	setParameter(new SeedTypeParameter());
+	setParameter(new SeedRandomOrganParameter());
 	seed = new Seed(this);
 
 }
@@ -32,7 +32,7 @@ Plant::~Plant()
 /**
  *	Deletes the old parameter, sets the new one
  */
-void Plant::setParameter(SeedTypeParameter*  otp)
+void Plant::setParameter(SeedRandomOrganParameter*  otp)
 {
 	unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
@@ -41,7 +41,7 @@ void Plant::setParameter(SeedTypeParameter*  otp)
 	organParam.at(i).at(otp->subType)->a = otp->a;
 }
 
-void Plant::setParameter(RootTypeParameter*  otp)
+void Plant::setParameter(RootRandomOrganParameter*  otp)
 {
 	unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
@@ -49,7 +49,7 @@ void Plant::setParameter(RootTypeParameter*  otp)
 	organParam.at(i).at(otp->subType) = otp;
 		organParam.at(i).at(otp->subType)->a = otp->a;
 }
-void Plant::setParameter(LeafTypeParameter*  otp)
+void Plant::setParameter(LeafRandomOrganParameter*  otp)
 {
 	unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
@@ -62,7 +62,7 @@ void Plant::setParameter(LeafTypeParameter*  otp)
 		organParam.at(i).at(otp->subType)->name = std::string(otp->organName);
 		std::cout<<"organParam name is "<<organParam.at(i).at(otp->subType)->name<<"\n";
 }
-void Plant::setParameter(StemTypeParameter*  otp)
+void Plant::setParameter(StemRandomOrganParameter*  otp)
 {
 	unsigned int ot = otp->organType;
 	unsigned int i = ot2index(ot);
@@ -73,7 +73,7 @@ void Plant::setParameter(StemTypeParameter*  otp)
 
 
 
-OrganTypeParameter* Plant::getParameter(int otype, int subtype) const
+OrganRandomOrganParameter* Plant::getParameter(int otype, int subtype) const
 {
 	return organParam.at(ot2index(otype)).at(subtype);
 }
@@ -85,7 +85,7 @@ unsigned int Plant::ot2index(unsigned int ot) {
 	case Organ::ot_stem: return 2;
 	case Organ::ot_leafe: return 3;
 	default:
-		throw std::invalid_argument("Plant::setOrganTypeParameter: pure organ type expected");
+		throw std::invalid_argument("Plant::setOrganRandomOrganParameter: pure organ type expected");
 	}
 }
 
@@ -96,7 +96,7 @@ const char* Plant::ot2name(unsigned int ot) {
 	case Organ::ot_stem: return "stem";
 	case Organ::ot_leafe: return "leaf";
 	default:
-		throw std::invalid_argument("Plant::setOrganTypeParameter: pure organ type expected");
+		throw std::invalid_argument("Plant::setOrganRandomOrganParameter: pure organ type expected");
 	}
 }
 
@@ -108,7 +108,7 @@ void Plant::setGeometry(SignedDistanceFunction* geom)
 	delete geometry;
 	geometry = geom;
 	for (int i=0; i<maxtypes; i++) {
-		RootTypeParameter* rtp = (RootTypeParameter*) getParameter(Organ::ot_root,i);
+		RootRandomOrganParameter* rtp = (RootRandomOrganParameter*) getParameter(Organ::ot_root,i);
 		if (rtp->subType!=-1) { // defined
 			delete rtp->tropism;
 			rtp->createTropism(geom);
@@ -134,11 +134,11 @@ void Plant::reset()
  */
 void Plant::initOTP()
 {
-	organParam = std::vector<std::vector<OrganTypeParameter*> >(maxorgans);
+	organParam = std::vector<std::vector<OrganRandomOrganParameter*> >(maxorgans);
 	for (auto& otp:organParam) {
-		otp = std::vector<OrganTypeParameter*>(maxtypes);
+		otp = std::vector<OrganRandomOrganParameter*>(maxtypes);
 		for (size_t i=0; i<otp.size(); i++) {
-			otp.at(i) = new OrganTypeParameter();
+			otp.at(i) = new OrganRandomOrganParameter();
 		}
 	}
 }
@@ -168,7 +168,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 		for (const tinyxml2::XMLElement* organ_param = xmlParamFile.FirstChildElement( "Plant" )->FirstChildElement( "organ" ); organ_param != 0 ; organ_param = organ_param->NextSiblingElement("organ") )
 		{
 			if (organ_param->Attribute("type", "seed")) {
-				SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
+				SeedRandomOrganParameter* stp = (SeedRandomOrganParameter*)getParameter(Organ::ot_seed,0);
 				stp->readXML(organ_param);
 
 				c++;
@@ -177,7 +177,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 
 
 			if (organ_param->Attribute("type", "root")) {
-				RootTypeParameter* p  = new RootTypeParameter();
+				RootRandomOrganParameter* p  = new RootRandomOrganParameter();
 				p->readXML(organ_param);
 				std::cout<<"radius " << p->a << "\n";
 				setParameter(p);
@@ -191,7 +191,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 
 			if (organ_param->Attribute("type", "stem")) {
 
-				StemTypeParameter* stem_p  = new StemTypeParameter();
+				StemRandomOrganParameter* stem_p  = new StemRandomOrganParameter();
 				stem_p->readXML(organ_param);
 //				stem_p->;
 				setParameter(stem_p);
@@ -201,7 +201,7 @@ void Plant::openXML(std::string name, std::string subdir) //The first run will c
 			} else //{Plant::noParamFile[2] = 1;}
 			if (organ_param->Attribute("type", "leaf")) {
 
-				LeafTypeParameter* leaf_p  = new LeafTypeParameter();
+				LeafRandomOrganParameter* leaf_p  = new LeafRandomOrganParameter();
 				leaf_p->readXML(organ_param);
 //				leaf_p->set();
 				setParameter(leaf_p);
@@ -249,7 +249,7 @@ std::cout<<"organparam " << attr << "\n";
 		    if (organ_param->Attribute("type", "root") && organ_param->Attribute("subType", "1")){
 
             const tinyxml2::XMLElement* ele_param = organ_param->FirstChildElement("parameter");
-                OrganTypeParameter().getAttribute( ele_param, attr_name, "parameter", attr, deviation);
+                OrganRandomOrganParameter().getAttribute( ele_param, attr_name, "parameter", attr, deviation);
     std::cout<<"attr " << attr << "\n";
 
       	}
@@ -293,7 +293,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	// debug
 
 	// open seed parameter
-	SeedTypeParameter* stp = (SeedTypeParameter*)getParameter(Organ::ot_seed,0);
+	SeedRandomOrganParameter* stp = (SeedRandomOrganParameter*)getParameter(Organ::ot_seed,0);
 	std::string pp_name = subdir;
 	pp_name.append(name);
 	pp_name.append(".pparam");
@@ -304,7 +304,7 @@ void Plant::openFile(std::string name, std::string subdir)
 	} else { // create a tap root system
 		std::cout << "No seed system parameter file found, using default tap root system \n";
 		delete stp;
-//		setParameter(new SeedTypeParameter());
+//		setParameter(new SeedRandomOrganParameter());
 	}
 
 
@@ -353,7 +353,7 @@ int Plant::readRootParameters(std::istream& cin)
 	// initOTP();
 	int c = 0;
 	while (cin.good()) {
-		RootTypeParameter* p  = new RootTypeParameter();
+		RootRandomOrganParameter* p  = new RootRandomOrganParameter();
 		p->read(cin);
 		setParameter(p); // sets the param to the index (p.type-1) TODO
 		c++;
@@ -367,10 +367,10 @@ int Plant::readStemParameters(std::istream& cin)
 	int stem_c = 0;
 	while (cin.good()) {
 
-		StemTypeParameter* stem_p  = new StemTypeParameter();///added copypaste
+		StemRandomOrganParameter* stem_p  = new StemRandomOrganParameter();///added copypaste
 		stem_p->read(cin);
 
-		//		setOrganTypeParameter(p); // sets the param to the index (p.type-1) TODO
+		//		setOrganRandomOrganParameter(p); // sets the param to the index (p.type-1) TODO
 		setParameter(stem_p);
 
 		stem_c++;
@@ -384,7 +384,7 @@ int Plant::readLeafParameters(std::istream& cin)
 	// initOTP();
 	int leaf_c = 0;
 	while (cin.good()) {
-		LeafTypeParameter* leaf_p  = new LeafTypeParameter();///added copypaste
+		LeafRandomOrganParameter* leaf_p  = new LeafRandomOrganParameter();///added copypaste
 		leaf_p->read(cin);
 		setParameter(leaf_p);
 		leaf_c++;
@@ -455,11 +455,11 @@ void Plant::initialize()
 	/* the following code will be moved to the shoot */
 	//  // Shoot borne roots
 	//  if ((rs.nC>0) && (rs.delaySB<maxT)) { // if the type is not defined, copy basal root
-	//      //		if (getRootTypeParameter(shootbornetype)->type<1) {
+	//      //		if (getRootRandomOrganParameter(shootbornetype)->type<1) {
 	//      //			std::cout << "Shootborne root type #" << shootbornetype << " was not defined, using tap root parameters instead\n";
-	//      //			RootTypeParameter srtp = RootTypeParameter(*getRootTypeParameter(1));
+	//      //			RootRandomOrganParameter srtp = RootRandomOrganParameter(*getRootRandomOrganParameter(1));
 	//      //			srtp.type = shootbornetype;
-	//      //			setRootTypeParameter(srtp);
+	//      //			setRootRandomOrganParameter(srtp);
 	//      //		}
 	//      Vector3d sbpos = rs.seedPos;
 	//      sbpos.z=sbpos.z/2.; // half way up the mesocotyl

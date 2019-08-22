@@ -15,8 +15,8 @@ namespace CPlantBox {
 
 
 class Plant;
-class OrganTypeParameter;
-class OrganParameter;
+class OrganRandomOrganParameter;
+class SpecificOrganParamter;
 
 /**
  * Organ
@@ -31,7 +31,7 @@ public:
 
     enum OrganTypes { ot_seed = 1, ot_root = 2, ot_stem = 4, ot_leafe = 8, ot_shoot = ot_stem | ot_leafe, ot_organ = ot_seed | ot_root | ot_stem | ot_leafe}; ///< organ types bit wise
 
-    enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism types
+    enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_twist=5 };  ///< root tropism types
 	enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 	enum ScalarTypes { st_type = 0, st_radius = 1, st_order = 2, st_time = 3, st_length = 4, st_surface = 5, st_volume = 6, st_one = 7,
 		st_userdata1 = 8, st_userdata2 = 9, st_userdata3 = 10, st_parenttype = 11,
@@ -58,7 +58,7 @@ public:
     std::vector<Vector3d> getNodes() const; /// converts all relative nodes to absolute coordinates
 
     /* parameters */
-    OrganTypeParameter* getOrganTypeParameter() const;  ///< organ type parameter
+    OrganRandomOrganParameter* getOrganRandomOrganParameter() const;  ///< organ type parameter
 
     /* simulation */
     virtual void simulate(double dt, bool silence = false); ///< growth for a time span of \param dt
@@ -87,7 +87,7 @@ public:
 	std::vector<Organ*> getChildren(unsigned int otype);
     /* Parameters that are constant*/
     int id; ///< unique organ id, (not used so far)
-    OrganParameter* param = nullptr; ///< the parameters of this root
+    SpecificOrganParamter* param = nullptr; ///< the parameters of this root
 
     /* Parameters that may change with time */
     bool alive = 1; ///< true: alive, false: dead

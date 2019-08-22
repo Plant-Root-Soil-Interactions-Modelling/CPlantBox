@@ -20,10 +20,10 @@ namespace CPlantBox {
 /*
  * The model parameters consist of
  *
- * OrganTypeParameter			an organ type
- * OrganParameter				parameter values for a specific organ (base class)
+ * OrganRandomOrganParameter			an organ type
+ * SpecificOrganParamter				parameter values for a specific organ (base class)
  *
- * RootTypeParameter            a root type
+ * RootRandomOrganParameter            a root type
  * RootParameter     			parameter values for a specific root
  *
  * SeedTypeParamter             a single seed
@@ -39,7 +39,7 @@ class SignedDistanceFunction;
 /**
  *	Parameter base class for specific organs
  */
-class OrganParameter
+class SpecificOrganParamter
 {
 public:
 
@@ -50,12 +50,12 @@ public:
 /**
  * Parameter base class for all organ types
  */
-class OrganTypeParameter
+class OrganRandomOrganParameter
 {
 public:
 
-	OrganTypeParameter();
-	virtual ~OrganTypeParameter() { }
+	OrganRandomOrganParameter();
+	virtual ~OrganRandomOrganParameter() { }
 
 	std::string name = "Unnamed organ";
 	unsigned int organType;
@@ -67,11 +67,11 @@ public:
 
 
 
-	virtual OrganParameter* realize() const { return new OrganParameter(); }
+	virtual SpecificOrganParamter* realize() const { return new SpecificOrganParamter(); }
 
 	virtual void readXML(const tinyxml2::XMLElement* ele) { };
 	virtual std::string writeXML(FILE* fp) const { return ""; };
-	virtual std::string toString() const { return "OrganTypeParameter base class\n";}
+	virtual std::string toString() const { return "OrganRandomOrganParameter base class\n";}
      void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, double &attr, double &deviation ); //alot of overloading, try template later..
      void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, int &attr, double &deviation );
      void getAttribute(const tinyxml2::XMLElement* ele2,const char* attr_name, const char* para_name, double &attr, double &deviation, int &functiontype );
@@ -93,7 +93,7 @@ public:
 /**
  * Parameters of a single root (created by RootParameter:realize)
  */
-class RootParameter : public OrganParameter
+class RootParameter : public SpecificOrganParamter
 {
 public:
 
@@ -121,22 +121,22 @@ public:
 /**
  * A parameter set describing a root type
  */
-class RootTypeParameter : public OrganTypeParameter
+class RootRandomOrganParameter : public OrganRandomOrganParameter
 {
 public:
 
 	enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism
 	enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
-	RootTypeParameter(); ///< default constructor
-	virtual ~RootTypeParameter();
+	RootRandomOrganParameter(); ///< default constructor
+	virtual ~RootRandomOrganParameter();
 
 	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, double nob, double nobs,
 			double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name); ///< sets all parameters
 
-	virtual OrganParameter* realize() const override; ///< Creates a specific root from the root parameter set
+	virtual SpecificOrganParamter* realize() const override; ///< Creates a specific root from the root parameter set
 	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
 	double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal root length [cm]
 
@@ -194,7 +194,7 @@ const char* organName ;
 /**
  * Parameters of a specific seed
  */
-class SeedParameter : public OrganParameter
+class SeedParameter : public SpecificOrganParamter
 {
 public:
 
@@ -222,14 +222,14 @@ public:
 /**
  * Seed specific parameters like planting depth, and emergence times of basal roots
  */
-class SeedTypeParameter: public OrganTypeParameter
+class SeedRandomOrganParameter: public OrganRandomOrganParameter
 {
 public:
 
-	SeedTypeParameter();
-	virtual ~SeedTypeParameter() { };
+	SeedRandomOrganParameter();
+	virtual ~SeedRandomOrganParameter() { };
 
-	virtual OrganParameter* realize() const;
+	virtual SpecificOrganParamter* realize() const;
 
 	virtual void readXML(const tinyxml2::XMLElement* ele) override;
 	virtual void read(std::istream & cin); ///< Read plant parameters
@@ -282,7 +282,7 @@ class StemTropismFunction;
 /**
  * Parameters of a single root (created by RootParameter:realize)
  */
-class StemParameter : public OrganParameter
+class StemParameter : public SpecificOrganParamter
 {
 public:
 
@@ -312,22 +312,22 @@ public:
 /**
  * A parameter set describing a root type
  */
-class StemTypeParameter : public OrganTypeParameter
+class StemRandomOrganParameter : public OrganRandomOrganParameter
 {
 public:
 
-	enum StemTropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4 };  ///< stem tropism
+	enum StemTropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4, tt_twist =5};  ///< stem tropism
 	enum StemGrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
-	StemTypeParameter(); ///< default constructor
-	virtual ~StemTypeParameter();
+	StemRandomOrganParameter(); ///< default constructor
+	virtual ~StemRandomOrganParameter();
 
 	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, int lnf, double nob, double nobs,
 			double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name); ///< sets all parameters
 
-	virtual OrganParameter* realize() const override; ///< Creates a specific root from the root parameter set
+	virtual SpecificOrganParamter* realize() const override; ///< Creates a specific root from the root parameter set
 	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
 	double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal root length [cm]
 
@@ -475,7 +475,7 @@ class LeafTropismFunction;
 /**
  * Parameters of a single root (created by RootParameter:realize)
  */
-class LeafParameter : public OrganParameter
+class LeafParameter : public SpecificOrganParamter
 {
 public:
 
@@ -505,22 +505,22 @@ public:
 /**
  * A parameter set describing a root type
  */
-class LeafTypeParameter : public OrganTypeParameter
+class LeafRandomOrganParameter : public OrganRandomOrganParameter
 {
 public:
 
 	enum LeafTropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 , tt_antigravi = 4 };  ///< stem tropism
 	enum LeafGrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
-	LeafTypeParameter(); ///< default constructor
-	virtual ~LeafTypeParameter();
+	LeafRandomOrganParameter(); ///< default constructor
+	virtual ~LeafRandomOrganParameter();
 
 	void set(int type, double lb, double lbs, double la, double las, double ln, double lns, int inf, double nob, double nobs,
 			double r, double rs, double a, double as,  double RotBeta, double BetaDev, double InitBeta, int tropismT, double tropismN, double tropsimS,
 			double dx, const std::vector<int>& successor, const std::vector<double>& successorP, double theta, double thetas, double rlt, double rlts,
 			int gf, const std::string& name, const char* organName); ///< sets all parameters
 
-	virtual OrganParameter* realize() const override; ///< Creates a specific root from the root parameter set
+	virtual SpecificOrganParamter* realize() const override; ///< Creates a specific root from the root parameter set
 	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
 	double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal root length [cm]
 

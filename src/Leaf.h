@@ -17,7 +17,7 @@ namespace CPlantBox {
 
 class Plant;
 class LeafParameter;
-class LeafTypeParameter;
+class LeafRandomOrganParameter;
 static int leafphytomerID[10]= {0};
 
 /**
@@ -50,7 +50,7 @@ public:
 
 	/* abbreviations */
 	LeafParameter* lParam() const { return (LeafParameter*)param;  } ///< type cast
-	LeafTypeParameter* ltParam() const; // type cast
+	LeafRandomOrganParameter* ltParam() const; // type cast
 	double dx() const; ///< returns the axial resolution
 	std::string name() const;
 	//Vector3d relHeading() const; //< relative heading of the Leaf tip

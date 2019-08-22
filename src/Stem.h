@@ -17,7 +17,7 @@ namespace CPlantBox {
 
 class Plant;
 class StemParameter;
-class StemTypeParameter;
+class StemRandomOrganParameter;
 static int phytomerId[10]= {0};
 /**
  * Stem
@@ -51,7 +51,7 @@ public:
 	double StemGetAge(double length); ///< analytical age of the stem
 	/* abbreviations */
 	StemParameter* sParam() const { return (StemParameter*)param;  } ///< type cast
-	StemTypeParameter* stParam() const; // type cast
+	StemRandomOrganParameter* stParam() const; // type cast
 	double dx() const; ///< returns the axial resolution
 	//Vector3d relHeading() const; //< relative heading of the stem tip
 	//Vector3d absHeading() const; //< absolute heading of the stem tip

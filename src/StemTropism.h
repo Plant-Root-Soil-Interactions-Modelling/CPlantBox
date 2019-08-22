@@ -150,8 +150,7 @@ public:
   StemPlagiotropism(double n, double sigma) : StemTropismFunction(n,sigma) { } ///< @see TropismFunction
 
   virtual double stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem) override {
-//    old.times(Matrix3d::rotX(b));
-//    old.times(Matrix3d::rotZ(a));
+
     return  std::abs(old.times(Vector3d::rotAB(a,b)).z); // 0..1
   }
   ///< getHeading() minimizes this function, @see TropismFunction
@@ -179,19 +178,25 @@ public:
 /**
  * Hydrotropism (or Chemotropism, ...): the tendency to grow towards a higher saturation (or concentration, ...)
  */
-class StemPhototropism : public StemTropismFunction
+ class StemTwist: public StemTropismFunction
 {
 
 public:
 
-  StemPhototropism(double n, double sigma, SoilLookUp* soil) : StemTropismFunction(n,sigma), soil(soil) { } ///< @see TropismFunction
+  StemTwist(double n, double sigma) : StemTropismFunction(n,sigma) { } ///< @see TropismFunction
 
-  virtual double stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem) override;
+  virtual double stemtropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* stem) override {
+//    old.times(Matrix3d::rotX(b));
+//    old.times(Matrix3d::rotZ(a));
+    return  -0.9*(old.times(Vector3d::rotAB(a+0.5*rand(),b+0.5*rand())).z+1.); // negative values point downwards, tranformed to 0..1
+  }
+  ///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
+
+};
+
   ///< getHeading() minimizes this function, @see TropismFunction
 
-private:
-  SoilLookUp* soil;
-};
+
 
 
 

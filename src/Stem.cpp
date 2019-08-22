@@ -29,7 +29,7 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ishe
 	  initialStemHeading = isheading;
 	//  std::cout << "stem pni = "<< pni<< std::endl;
 	//  std::cout << "Stem constructor \n";
-	StemTypeParameter* sttp = (StemTypeParameter*) plant->getParameter(Organ::ot_stem, subtype);
+	StemRandomOrganParameter* sttp = (StemRandomOrganParameter*) plant->getParameter(Organ::ot_stem, subtype);
 	param = sttp->realize(); // throw the dice
 	StemParameter* stem_p = (StemParameter*) param;
 	//  std::cout <<", "<<(StemParameter*) param<< "\n";
@@ -93,7 +93,7 @@ void Stem::simulate(double dt, bool silence)
 	old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
 
 	const StemParameter* sp = sParam(); // rename
-	const StemTypeParameter* sttp = stParam();
+	const StemRandomOrganParameter* sttp = stParam();
 
 	// increase age
 	if (age+dt>sp->rlt) { // stem life time
@@ -287,8 +287,8 @@ double Stem::StemGetAge(double length)
 /**
  *
  */
-StemTypeParameter* Stem::stParam() const {
-	return (StemTypeParameter*)getOrganTypeParameter();
+StemRandomOrganParameter* Stem::stParam() const {
+	return (StemRandomOrganParameter*)getOrganRandomOrganParameter();
 }
 
 /**
@@ -296,7 +296,7 @@ StemTypeParameter* Stem::stParam() const {
  */
 double Stem::dx() const
 {
-	return ((StemTypeParameter*)getOrganTypeParameter())->dx;
+	return ((StemRandomOrganParameter*)getOrganRandomOrganParameter())->dx;
 }
 
 /**

@@ -24,7 +24,7 @@ Leaf::Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilhe
 	  initialLeafHeading=ilheading;
 	//  std::cout << "Leaf pni = "<< pni<< std::endl;
 	//  std::cout << "Plant* plant ="<< plant <<" "<< parent<<std::endl;
-	LeafTypeParameter* ltp = (LeafTypeParameter*) plant->getParameter(Organ::ot_leafe, subtype);
+	LeafRandomOrganParameter* ltp = (LeafRandomOrganParameter*) plant->getParameter(Organ::ot_leafe, subtype);
 	param = ltp->realize(); // throw the dice
 	LeafParameter* leaf_p = (LeafParameter*) param;
 	//  std::cout <<", "<<(LeafParameter*) param<< "\n";
@@ -84,7 +84,7 @@ void Leaf::simulate(double dt, bool silence)
 	old_non = 0; // is set in Leaf:createSegments, the zero indicates the first call to createSegments
 
 	const LeafParameter* lp = lParam(); // rename
-	const LeafTypeParameter* ltp = ltParam();
+	const LeafRandomOrganParameter* ltp = ltParam();
 
 	// increase age
 	if (age+dt>lp->rlt) { // leaf life time
@@ -280,8 +280,8 @@ assert(age>=0);
 /**
  *
  */
-LeafTypeParameter* Leaf::ltParam() const {
-	return (LeafTypeParameter*)getOrganTypeParameter();
+LeafRandomOrganParameter* Leaf::ltParam() const {
+	return (LeafRandomOrganParameter*)getOrganRandomOrganParameter();
 }
 
 /**
@@ -289,12 +289,12 @@ LeafTypeParameter* Leaf::ltParam() const {
  */
 double Leaf::dx() const
 {
-	return ((LeafTypeParameter*)getOrganTypeParameter())->dx;
+	return ((LeafRandomOrganParameter*)getOrganRandomOrganParameter())->dx;
 }
 
 std::string Leaf::name() const
 {
-	return ((LeafTypeParameter*)getOrganTypeParameter())->name;
+	return ((LeafRandomOrganParameter*)getOrganRandomOrganParameter())->name;
 }
 
 /**

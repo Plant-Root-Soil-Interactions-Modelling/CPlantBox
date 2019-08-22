@@ -23,7 +23,7 @@ Root::Root(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ihea
 	//	std::cout << "Root pni = "<< pni<< std::endl;
 	//std::cout << "Root constructor \n";
 
-	RootTypeParameter* rtp = (RootTypeParameter*) plant->getParameter(Organ::ot_root, subtype);
+	RootRandomOrganParameter* rtp = (RootRandomOrganParameter*) plant->getParameter(Organ::ot_root, subtype);
 	param = rtp->realize(); // throw the dice
 
 	double beta = 2*M_PI*plant->rand(); // initial rotation
@@ -77,7 +77,7 @@ void Root::simulate(double dt, bool silence)
 	old_non = 0; // is set in Root:createSegments, the zero indicates the first call to createSegments
 
 	const RootParameter* rp = rParam(); // rename
-	const RootTypeParameter* tp = tParam();
+	const RootRandomOrganParameter* tp = tParam();
 
 	// increase age
 	if (age+dt>rp->rlt) { // root life time
@@ -251,10 +251,10 @@ double Root::getAge(double length)
 }
 
 /**
- * Shortcut for the OrganTypeParameter (@see also rParam() )
+ * Shortcut for the OrganRandomOrganParameter (@see also rParam() )
  */
-RootTypeParameter* Root::tParam() const {
-	return (RootTypeParameter*)getOrganTypeParameter();
+RootRandomOrganParameter* Root::tParam() const {
+	return (RootRandomOrganParameter*)getOrganRandomOrganParameter();
 }
 
 /**
@@ -262,7 +262,7 @@ RootTypeParameter* Root::tParam() const {
  */
 double Root::dx() const
 {
-	return ((RootTypeParameter*)getOrganTypeParameter())->dx;
+	return ((RootRandomOrganParameter*)getOrganRandomOrganParameter())->dx;
 }
 
 /**

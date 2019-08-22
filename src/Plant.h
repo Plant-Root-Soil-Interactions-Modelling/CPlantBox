@@ -48,12 +48,12 @@ public:
   virtual ~Plant();
 
   /* Parameter */
-  void setParameter(SeedTypeParameter*  otp);///< set the organ type parameter
-    void setParameter(RootTypeParameter*  otp);///< set the organ type parameter
-      void setParameter(StemTypeParameter*  otp);///< set the organ type parameter
-        void setParameter(LeafTypeParameter*  otp);///< set the organ type parameter
+  void setParameter(SeedRandomOrganParameter*  otp);///< set the organ type parameter
+    void setParameter(RootRandomOrganParameter*  otp);///< set the organ type parameter
+      void setParameter(StemRandomOrganParameter*  otp);///< set the organ type parameter
+        void setParameter(LeafRandomOrganParameter*  otp);///< set the organ type parameter
 
-  OrganTypeParameter* getParameter(int otype, int subtype) const;
+  OrganRandomOrganParameter* getParameter(int otype, int subtype) const;
 
   /* input output */
   void openFile(std::string filename, std::string subdir="modelparameter/"); ///< Reads root paramter and plant parameter
@@ -119,7 +119,7 @@ public:
 
 protected:
 
-  std::vector <std::vector<OrganTypeParameter*> > organParam; ///< Parameter set for each root type
+  std::vector <std::vector<OrganRandomOrganParameter*> > organParam; ///< Parameter set for each root type
 
   SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
 

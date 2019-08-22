@@ -84,7 +84,7 @@ std::vector<Vector3d> Organ::getNodes() const
 /**
  * Asks the plant for the organ type parameter
  */
-OrganTypeParameter* Organ::getOrganTypeParameter() const
+OrganRandomOrganParameter* Organ::getOrganRandomOrganParameter() const
 {
 	return plant->getParameter(this->organType(), param->subType);
 }

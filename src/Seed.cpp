@@ -12,7 +12,7 @@ SeedParameter* Seed::initializeparam()
 {
 	// Create root system
 
-	SeedTypeParameter* stp = (SeedTypeParameter*)plant->getParameter(Organ::ot_seed, 0);
+	SeedRandomOrganParameter* stp = (SeedRandomOrganParameter*)plant->getParameter(Organ::ot_seed, 0);
 	param = stp->realize(); // throw the dice
 	SeedParameter* sparam = (SeedParameter*)param;
 	std::cout << "maxb = " << sparam->maxB << std::endl;
@@ -39,8 +39,8 @@ void Seed::initialize(SeedParameter* sparam)
     		if (sparam->maxB>0) {
 			if ((plant->getParameter(Organ::ot_root, basalType)->subType=4)) { // if the type is not defined, copy tap root
 				std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
-//				RootTypeParameter* tapParam = (RootTypeParameter*)plant->getParameter(Organ::ot_root, 1);
-//				RootTypeParameter* brtp = new RootTypeParameter(*tapParam);
+//				RootRandomOrganParameter* tapParam = (RootRandomOrganParameter*)plant->getParameter(Organ::ot_root, 1);
+//				RootRandomOrganParameter* brtp = new RootRandomOrganParameter(*tapParam);
 //				brtp->subType = basalType;
 //				plant->setParameter(brtp);
                 for (int i=0; i<sparam->maxB; i++) {
@@ -92,8 +92,8 @@ void Seed::initialize(SeedParameter* sparam)
 		if (sparam->maxTi>0) {
 			if (plant->getParameter(Organ::ot_stem, tillerType)->subType<1) { // if the type is not defined, copy tap root
 				std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
-				//StemTypeParameter* tillParam = (StemTypeParameter*)plant->getParameter(Organ::ot_stem, 1);
-//				StemTypeParameter* titp = new StemTypeParameter(*tillParam);
+				//StemRandomOrganParameter* tillParam = (StemRandomOrganParameter*)plant->getParameter(Organ::ot_stem, 1);
+//				StemRandomOrganParameter* titp = new StemRandomOrganParameter(*tillParam);
 //				titp->subType = tillerType;
 //				plant->setParameter(titp);
 				std::cout << "default maxT type is main stem = " << sparam->maxTi << "\n";
@@ -105,7 +105,7 @@ void Seed::initialize(SeedParameter* sparam)
 			}
 			std::cout << "maxT = " << sparam->maxTi << "\n";
 			double delay = sparam->firstB;
-			//StemTypeParameter* tillParam = (StemTypeParameter*)plant->getParameter(Organ::ot_stem, 4);
+			//StemRandomOrganParameter* tillParam = (StemRandomOrganParameter*)plant->getParameter(Organ::ot_stem, 4);
 			for (int i=0; i<maxTi; i++) {
 				Stem* tiller = new Stem(plant, this, 4, delay, isheading ,0., 0.);
                 tiller->addNode(sparam->seedPos,0);

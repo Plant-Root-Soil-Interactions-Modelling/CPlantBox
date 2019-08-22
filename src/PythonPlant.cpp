@@ -66,10 +66,10 @@ void (Plant::*simulate2)() = &Plant::simulate;
 //void (Plant::*simulate3)(double dt, double maxinc, ProportionalElongation* se, bool silence) = &Plant::simulate;
 
 
-void (Plant::*setParameter1)(SeedTypeParameter*)  = &Plant::setParameter;
-void (Plant::*setParameter2)(RootTypeParameter*)  = &Plant::setParameter;
-void (Plant::*setParameter3)(StemTypeParameter*)  = &Plant::setParameter;
-void (Plant::*setParameter4)(LeafTypeParameter*)  = &Plant::setParameter;
+void (Plant::*setParameter1)(SeedRandomOrganParameter*)  = &Plant::setParameter;
+void (Plant::*setParameter2)(RootRandomOrganParameter*)  = &Plant::setParameter;
+void (Plant::*setParameter3)(StemRandomOrganParameter*)  = &Plant::setParameter;
+void (Plant::*setParameter4)(LeafRandomOrganParameter*)  = &Plant::setParameter;
 
 
 
@@ -336,43 +336,43 @@ BOOST_PYTHON_MODULE(py_plantbox)
 //	/*
 //	 * ModelParameter.h
 //	 */
-	class_<RootTypeParameter, RootTypeParameter*>("RootTypeParameter", init<>())
-			.def(init<RootTypeParameter&>())
-			.def("realize",&RootTypeParameter::realize, return_value_policy<reference_existing_object>())
-			.def("getLateralType",&RootTypeParameter::getLateralType)
-			.def("getK",&RootTypeParameter::getK)
-			.def_readwrite("type", &RootTypeParameter::subType)
-			.def_readwrite("lb", &RootTypeParameter::lb)
-			.def_readwrite("lbs", &RootTypeParameter::lbs)
-			.def_readwrite("la", &RootTypeParameter::la)
-			.def_readwrite("las", &RootTypeParameter::las)
-			.def_readwrite("ln", &RootTypeParameter::ln)
-			.def_readwrite("lns", &RootTypeParameter::lns)
-			.def_readwrite("nob", &RootTypeParameter::nob)
-			.def_readwrite("nobs", &RootTypeParameter::nobs)
-			.def_readwrite("r", &RootTypeParameter::r)
-			.def_readwrite("rs", &RootTypeParameter::rs)
-			.def_readwrite("a", &RootTypeParameter::a)
-			.def_readwrite("a_s", &RootTypeParameter::as) // as is a keyword in python
-			.def_readwrite("RotBeta", &RootTypeParameter::RotBeta)
-			.def_readwrite("BetaDev", &RootTypeParameter::BetaDev)
-			.def_readwrite("InitBeta", &RootTypeParameter::InitBeta)
-			.def_readwrite("tropismT", &RootTypeParameter::tropismT)
-			.def_readwrite("tropismN", &RootTypeParameter::tropismN)
-			.def_readwrite("tropismS", &RootTypeParameter::tropismS)
-			.def_readwrite("dx", &RootTypeParameter::dx)
-			.def_readwrite("theta", &RootTypeParameter::theta)
-			.def_readwrite("thetas", &RootTypeParameter::thetas)
-			.def_readwrite("rlt", &RootTypeParameter::rlt)
-			.def_readwrite("rlts", &RootTypeParameter::rlts)
-			.def_readwrite("gf", &RootTypeParameter::gf)
-			.def_readwrite("name", &RootTypeParameter::name)
-			.def_readwrite("successor", &RootTypeParameter::successor)
-			.def_readwrite("successorP", &RootTypeParameter::successorP)
-			.def_readwrite("se", &RootTypeParameter::se)
-			.def_readwrite("sa", &RootTypeParameter::sa)
-			.def_readwrite("sbp", &RootTypeParameter::sbp)
-			.def("__str__",&RootTypeParameter::toString)
+	class_<RootRandomOrganParameter, RootRandomOrganParameter*>("RootRandomOrganParameter", init<>())
+			.def(init<RootRandomOrganParameter&>())
+			.def("realize",&RootRandomOrganParameter::realize, return_value_policy<reference_existing_object>())
+			.def("getLateralType",&RootRandomOrganParameter::getLateralType)
+			.def("getK",&RootRandomOrganParameter::getK)
+			.def_readwrite("type", &RootRandomOrganParameter::subType)
+			.def_readwrite("lb", &RootRandomOrganParameter::lb)
+			.def_readwrite("lbs", &RootRandomOrganParameter::lbs)
+			.def_readwrite("la", &RootRandomOrganParameter::la)
+			.def_readwrite("las", &RootRandomOrganParameter::las)
+			.def_readwrite("ln", &RootRandomOrganParameter::ln)
+			.def_readwrite("lns", &RootRandomOrganParameter::lns)
+			.def_readwrite("nob", &RootRandomOrganParameter::nob)
+			.def_readwrite("nobs", &RootRandomOrganParameter::nobs)
+			.def_readwrite("r", &RootRandomOrganParameter::r)
+			.def_readwrite("rs", &RootRandomOrganParameter::rs)
+			.def_readwrite("a", &RootRandomOrganParameter::a)
+			.def_readwrite("a_s", &RootRandomOrganParameter::as) // as is a keyword in python
+			.def_readwrite("RotBeta", &RootRandomOrganParameter::RotBeta)
+			.def_readwrite("BetaDev", &RootRandomOrganParameter::BetaDev)
+			.def_readwrite("InitBeta", &RootRandomOrganParameter::InitBeta)
+			.def_readwrite("tropismT", &RootRandomOrganParameter::tropismT)
+			.def_readwrite("tropismN", &RootRandomOrganParameter::tropismN)
+			.def_readwrite("tropismS", &RootRandomOrganParameter::tropismS)
+			.def_readwrite("dx", &RootRandomOrganParameter::dx)
+			.def_readwrite("theta", &RootRandomOrganParameter::theta)
+			.def_readwrite("thetas", &RootRandomOrganParameter::thetas)
+			.def_readwrite("rlt", &RootRandomOrganParameter::rlt)
+			.def_readwrite("rlts", &RootRandomOrganParameter::rlts)
+			.def_readwrite("gf", &RootRandomOrganParameter::gf)
+			.def_readwrite("name", &RootRandomOrganParameter::name)
+			.def_readwrite("successor", &RootRandomOrganParameter::successor)
+			.def_readwrite("successorP", &RootRandomOrganParameter::successorP)
+			.def_readwrite("se", &RootRandomOrganParameter::se)
+			.def_readwrite("sa", &RootRandomOrganParameter::sa)
+			.def_readwrite("sbp", &RootRandomOrganParameter::sbp)
+			.def("__str__",&RootRandomOrganParameter::toString)
 	;
 	class_<RootParameter>("RootParameter", init<>())
 			.def(init<int, double, double, std::vector<double>,double, double, double, double >())
@@ -389,20 +389,20 @@ BOOST_PYTHON_MODULE(py_plantbox)
 			.def("getK",&RootParameter::toString)
 			.def("__str__",&RootParameter::toString)
 	;
-	class_<SeedTypeParameter>("SeedTypeParameter", init<>())
-		.def(init<SeedTypeParameter&>())
-		.def("realize", &SeedTypeParameter::realize, return_value_policy<reference_existing_object>())
-		//	.def("set",&OrganParameter::set)
-			.def_readwrite("seedPos", &SeedTypeParameter::seedPos)
-			.def_readwrite("firstB", &SeedTypeParameter::firstB)
-			.def_readwrite("delayB", &SeedTypeParameter::delayB)
-			.def_readwrite("maxB", &SeedTypeParameter::maxB)
-			.def_readwrite("nC", &SeedTypeParameter::nC)
-			.def_readwrite("firstSB", &SeedTypeParameter::firstSB)
-			.def_readwrite("delaySB", &SeedTypeParameter::delaySB)
-			.def_readwrite("delayRC", &SeedTypeParameter::delayRC)
-			.def_readwrite("nz", &SeedTypeParameter::nz)
-			.def("__str__",&SeedTypeParameter::toString)
+	class_<SeedRandomOrganParameter>("SeedRandomOrganParameter", init<>())
+		.def(init<SeedRandomOrganParameter&>())
+		.def("realize", &SeedRandomOrganParameter::realize, return_value_policy<reference_existing_object>())
+		//	.def("set",&SpecificOrganParamter::set)
+			.def_readwrite("seedPos", &SeedRandomOrganParameter::seedPos)
+			.def_readwrite("firstB", &SeedRandomOrganParameter::firstB)
+			.def_readwrite("delayB", &SeedRandomOrganParameter::delayB)
+			.def_readwrite("maxB", &SeedRandomOrganParameter::maxB)
+			.def_readwrite("nC", &SeedRandomOrganParameter::nC)
+			.def_readwrite("firstSB", &SeedRandomOrganParameter::firstSB)
+			.def_readwrite("delaySB", &SeedRandomOrganParameter::delaySB)
+			.def_readwrite("delayRC", &SeedRandomOrganParameter::delayRC)
+			.def_readwrite("nz", &SeedRandomOrganParameter::nz)
+			.def("__str__",&SeedRandomOrganParameter::toString)
 	;
 
 	class_<SeedParameter, SeedParameter*>("SeedParameter", init<>())
@@ -476,8 +476,8 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 						.def("setParameter", setParameter3)
 								.def("setParameter", setParameter4)
 		.def("getParameter", &Plant::getParameter,  return_value_policy<reference_existing_object>())
-////		.def("setOrganParameter", &Organ::setOrganParameter)
-////		.def("getOrganParameter", &Organ::getOrganParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
+////		.def("setSpecificOrganParamter", &Organ::setSpecificOrganParamter)
+////		.def("getSpecificOrganParamter", &Organ::getSpecificOrganParamter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
 		.def("openFile", &Plant::openFile, openFile_overloads())
 		.def("openXML", &Plant::openXML, openXML_overloads())
 		.def("setGeometry", &Plant::setGeometry)
@@ -510,7 +510,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.def(init<Organ&>())
 		.def("simulate", &Organ::simulate)
 		.def("getOrigin", &Organ::getOrigin)
-		.def("getOrganTypeParameter", &Organ::getOrganTypeParameter, return_value_policy<reference_existing_object>())
+		.def("getOrganRandomOrganParameter", &Organ::getOrganRandomOrganParameter, return_value_policy<reference_existing_object>())
 		.def("getHeading", &Organ::getHeading)
 		.def("getNode", &Organ::getNode)
 		.def("getNodes", &Organ::getNodes)
@@ -543,17 +543,17 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.value("parenttype", Organ::ScalarTypes::st_parenttype)
 	;
 
-	class_<OrganTypeParameter, OrganTypeParameter*>("OrganTypeParameter", init<>())
-		.def(init<OrganTypeParameter&>())
+	class_<OrganRandomOrganParameter, OrganRandomOrganParameter*>("OrganRandomOrganParameter", init<>())
+		.def(init<OrganRandomOrganParameter&>())
 		.def("simulate", &Organ::simulate)
-		.def_readwrite("organType", &OrganTypeParameter::organType)
-		.def_readwrite("subType", &OrganTypeParameter::subType)
+		.def_readwrite("organType", &OrganRandomOrganParameter::organType)
+		.def_readwrite("subType", &OrganRandomOrganParameter::subType)
 		;
 
-	class_<OrganParameter, OrganParameter*>("OrganParameter", init<>())
-		.def(init<OrganParameter&>())
+	class_<SpecificOrganParamter, SpecificOrganParamter*>("SpecificOrganParamter", init<>())
+		.def(init<SpecificOrganParamter&>())
 		.def("simulate", &Organ::simulate)
-		.def_readwrite("subType", &OrganParameter::subType)
+		.def_readwrite("subType", &SpecificOrganParamter::subType)
 		;
 
 //    /*
