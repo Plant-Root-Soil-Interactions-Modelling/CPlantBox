@@ -22,7 +22,7 @@ class Organism;
  * Manages:
  * Organ development (@see Organ::simulate)
  * The organ tree: one parent, multiple children, one plant organism
- * This organ's parameters
+ * This organ's specific parameters
  * This organ's geometry (by nodes, global node indices, node creation times, and line segments)
  * Information about the last time step: nodes can either move, or be created
  * Post processing and RSML output
