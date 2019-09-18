@@ -651,7 +651,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
           .def_readwrite("theta", &LeafSpecificParameter::theta)
           .def_readwrite("rlt", &LeafSpecificParameter::rlt)
           .def("getK",&LeafSpecificParameter::getK)
-          .def("__str__",&SeedSpecificParameter::toString)
+          .def("__str__",&LeafSpecificParameter::toString)
           ;
     /*
      * stemparameter.h
@@ -708,7 +708,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
           .def_readwrite("theta", &StemSpecificParameter::theta)
           .def_readwrite("rlt", &StemSpecificParameter::rlt)
           .def("getK",&StemSpecificParameter::getK)
-          .def("__str__",&SeedSpecificParameter::toString)
+          .def("__str__",&StemSpecificParameter::toString)
           ;
 
     /**
