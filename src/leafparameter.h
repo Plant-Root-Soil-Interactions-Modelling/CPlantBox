@@ -74,26 +74,26 @@ public:
 	double ln = 1.; 	///< Inter-lateral distance [cm]
 	double lns = 0.;  	///< Standard deviation inter-lateral distance [cm]
 	int lnf = 0; 		///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
-	double k = 10.;
-	double ks =0.;
-	double nob = 0.; 	///< Number of branches [1]
-	double nobs = 0.; 	///< Standard deviation number of branches [1]
-	double r = 1.;		///< Initial growth rate [cm day-1]
-	double rs = 0.1;	///< Standard deviation initial growth rate [cm day-1]
-	double a = 0.1; 	///< Leaf width [cm]
-	double as = 0.; 	///< Standard deviation leaf width [cm]
-	double RotBeta;		///< Radial rotation (roll) (rad)
-	double BetaDev;		///< Deviation of radial rotation (rad)
-	double InitBeta;	///< Initial radial rotation (rad)
-	int tropismT;		///< Leaf tropism parameter (Type)
-	double tropismN;	///< Leaf tropism parameter (number of trials)
-	double tropismS;	///< Leaf tropism parameter (mean value of expected changeg) [1/cm]
-	double dx; 			///< Maximal segment size [cm]
-	double theta; 		///< Angle between leafvein and parent leafvein (rad)
-	double thetas; 		///< Standard deviation angle between leafvein and parent leafvein (rad)
-	double rlt = 1.9;	///< Leaf life time (days)
-	double rlts = 0.;	///< Standard deviation of leaf life time (days)
-	int gf;				///< Growth function (1=negative exponential, 2=linear)
+	double k = 10.;			///< Maximal leaf length [cm]
+	double ks =0.;			///< Standard deviation maxial leaf length [cm]
+	double nob = 0.; 		///< Number of branches [1]
+	double nobs = 0.; 		///< Standard deviation of number of branches [1]
+	double r = 1.;			///< Initial growth rate [cm day-1]
+	double rs = 0.;			///< Standard deviation initial growth rate [cm day-1]
+	double a = 0.1; 		///< Leaf width [cm]
+	double as = 0.; 		///< Standard deviation leaf width [cm]
+	double RotBeta = 0.6;	///< Radial rotation (roll) (rad)
+	double BetaDev = 0.2;	///< Deviation of radial rotation (rad)
+	double InitBeta = 0.2;	///< Initial radial rotation (rad)
+	int tropismT = 1;		///< Leaf tropism parameter (Type)
+	double tropismN = 1.;	///< Leaf tropism parameter (number of trials)
+	double tropismS = 0.2;	///< Leaf tropism parameter (mean value of expected changeg) [1/cm]
+	double dx = 0.25; 		///< Maximal segment size [cm]
+	double theta = 1.22;	///< Angle between leafvein and parent leafvein (rad)
+	double thetas = 0.; 	///< Standard deviation angle between leafvein and parent leafvein (rad)
+	double rlt = 1.e9;		///< Leaf life time (days)
+	double rlts = 0.;		///< Standard deviation of leaf life time (days)
+	int gf = 1;				///< Growth function (1=negative exponential, 2=linear)
 	std::vector<int> successor;			///< Lateral types [1]
 	std::vector<double> successorP; 	///< Probabiltities of lateral type to emerge (sum of values == 1) [1]
 
