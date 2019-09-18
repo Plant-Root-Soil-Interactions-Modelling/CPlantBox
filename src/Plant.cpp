@@ -25,7 +25,7 @@ Plant::~Plant()
 			delete otp;
 		}
 	}
-	delete seed;
+	delete f_seed;
 	delete geometry;
 }
 
@@ -82,7 +82,7 @@ unsigned int Plant::ot2index(unsigned int ot) {
 	switch (ot) { //check the type of the organ
 	case Organ::ot_seed: return 0;
 	case Organ::ot_root: return 1;
-	case Organ::ot_stem: return 2;
+	case Organism::ot_stem: return 2;
 	case Organ::ot_leafe: return 3;
 	default:
 		throw std::invalid_argument("Plant::setOrganRandomOrganParameter: pure organ type expected");
@@ -93,7 +93,7 @@ const char* Plant::ot2name(unsigned int ot) {
 	switch (ot) { //check the type of the organ
 	case Organ::ot_seed: return "seed";
 	case Organ::ot_root: return "root";
-	case Organ::ot_stem: return "stem";
+	case Organism::ot_stem: return "stem";
 	case Organ::ot_leafe: return "leaf";
 	default:
 		throw std::invalid_argument("Plant::setOrganRandomOrganParameter: pure organ type expected");
@@ -122,7 +122,7 @@ void Plant::setGeometry(SignedDistanceFunction* geom)
 void Plant::reset()
 {
 
-	delete seed; // TODO??????
+	delete f_seed; // TODO??????
 	seed = new Seed(this); // make_shared<Seed>(this), seed of type shared_ptr<Seed>
 	simtime=0;
 	rid = -1;
@@ -513,7 +513,7 @@ int Plant::getNumberOfSegments() const
 	getOrgans(Organ::ot_organ);
 	int c = 0;
 	for (const auto& o : organs) {
-		c += (o->r_nodes.size()-1);
+		c += (o->nodes.size()-1);
 	}
 	return c;
 }
@@ -546,7 +546,7 @@ std::vector<Vector3d> Plant::getNodes() const
 	std::vector<Vector3d> nv = std::vector<Vector3d>(non); // reserve big enough vector
 	for (auto const& r: organs) {
 		for (size_t i=0; i<r->getNumberOfNodes(); i++) { // loop over all nodes of all roots
-			nv.at(r->getNodeID(i)) = r->getNode(i); // pray that ids are correct
+			nv.at(r->getNodeId(i)) = r->getNode(i); // pray that ids are correct
 		}
 	}
 	return nv;
@@ -580,7 +580,7 @@ std::vector<Vector2i> Plant::getSegments(unsigned int otype) const
 	int c=0;
 	for (auto const& r:organs) {
 		for (size_t i=0; i<r->getNumberOfNodes()-1; i++) {
-			Vector2i v(r->getNodeID(i),r->getNodeID(i+1));
+			Vector2i v(r->getNodeId(i),r->getNodeId(i+1));
 			s.at(c) = v;
 			c++;
 		}
@@ -597,7 +597,7 @@ std::vector<int> Plant::getNodesOrganType() const
 	int c = 0;
 	for (auto const& r : organs) {
 		for (size_t i = 0; i<r->getNumberOfNodes() - 1; i++) {
-			int v(r->getScalar("organtype"));
+			int v(r->getParameter("organtype"));
 			s.at(c) = v;
 			c++;
 		}
@@ -663,12 +663,12 @@ std::vector<std::vector<double>> Plant::getPolylinesNET(unsigned int otype) cons
  *
  * @param stype     a scalar type (@see RootSystem::ScalarTypes). st_time is the emergence time of the root
  */
-std::vector<double> Plant::getScalar(unsigned int otype, std::string name) const
+std::vector<double> Plant::getParameter(unsigned int otype, std::string name) const
 {
 	this->getOrgans(otype); // update roots (if necessary)
 	std::vector<double> scalars(organs.size());
 	for (size_t i=0; i<organs.size(); i++) {
-		scalars.at(i) = organs[i]->Organ::getScalar(name);
+		scalars.at(i) = organs[i]->Organ::getParameter(name);
 	}
 	return scalars;
 }
@@ -797,7 +797,7 @@ void Plant::writeVTP(int otype, std::ostream & os) const // currently not using,
 	std::vector<std::string> sTypeNames = { "organtype", "id", "subtype"}; //  , "order", "radius"
 	for (size_t i=0; i<sTypeNames.size(); i++) {
 		os << "<DataArray type=\"Float32\" Name=\"" << sTypeNames[i] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-		std::vector<double> scalars = getScalar(otype, sTypeNames[i]);
+		std::vector<double> scalars = getParameter(otype, sTypeNames[i]);
 		for (double s : scalars) {
 			os << s << " ";
 		}
@@ -875,7 +875,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 		std::string sType = sTypeNames[i];
 		char const *schar = sType.c_str();
 		printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-		std::vector<double> scalars = getScalar(otype, sTypeNames[i]);
+		std::vector<double> scalars = getParameter(otype, sTypeNames[i]);
 		for (double s : scalars) {
 			printer.PushText(s); printer.PushText(" ");
 		}

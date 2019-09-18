@@ -365,13 +365,13 @@ BOOST_PYTHON_MODULE(py_plantbox)
 			.def_readwrite("thetas", &RootRandomOrganParameter::thetas)
 			.def_readwrite("rlt", &RootRandomOrganParameter::rlt)
 			.def_readwrite("rlts", &RootRandomOrganParameter::rlts)
-			.def_readwrite("gf", &RootRandomOrganParameter::gf)
+			.def_readwrite("f_gf", &RootRandomOrganParameter::gf)
 			.def_readwrite("name", &RootRandomOrganParameter::name)
 			.def_readwrite("successor", &RootRandomOrganParameter::successor)
 			.def_readwrite("successorP", &RootRandomOrganParameter::successorP)
-			.def_readwrite("se", &RootRandomOrganParameter::se)
-			.def_readwrite("sa", &RootRandomOrganParameter::sa)
-			.def_readwrite("sbp", &RootRandomOrganParameter::sbp)
+			.def_readwrite("f_se", &RootRandomOrganParameter::se)
+			.def_readwrite("f_sa", &RootRandomOrganParameter::sa)
+			.def_readwrite("f_sbp", &RootRandomOrganParameter::sbp)
 			.def("__str__",&RootRandomOrganParameter::toString)
 	;
 	class_<RootParameter>("RootParameter", init<>())
@@ -421,7 +421,7 @@ BOOST_PYTHON_MODULE(py_plantbox)
 	/**
 	 * Root.h (no members, just data)
 	 */
-class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, double>())
+class_<Root, Root*>("Root", init<Organism*, Organ*, int, double, Vector3d, int, double>())
 		.def(init<Root&>())
 		.def("__str__",&Root::toString)
 	    .def_readwrite("plant", &Root::plant)
@@ -446,7 +446,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.def(vector_indexing_suite<std::vector<std::vector<double>>>() )
 	;
 
-	class_<Seed, Seed*>("Seed", init<Plant*>())
+	class_<Seed, Seed*>("Seed", init<Organism*>())
 		.def(init<Seed&>())
 		.def("getseedPos", &Seed::getseedPos)
 		.def("__str__", &Seed::toString)
@@ -468,7 +468,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 //	/*
 //	 * Plant.h
 //	 */
-    class_<Plant, Plant* >("Plant",init<>())
+    class_<Plant, Organism* >("Plant",init<>())
 		.def(init<Plant&>())
 		//.def_readwrite("noParamFile", &Plant::noParamFile)
 		.def("setParameter", setParameter1)
@@ -497,7 +497,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.def("getSegmentsOrigin", &Plant::getSegmentsOrigin)
 		.def("getNodesOrganType", &Plant::getNodesOrganType)
 		.def("getNETimes", &Plant::getNETimes)
-		.def("getScalar", &Plant::getScalar)
+		.def("getParameter", &Plant::getParameter)
 ////		.def("getRootTips", &Plant::getRootTips)
 ////		.def("getRootBases", &Plant::getRootBases)
 		.def("write", &Plant::write)
@@ -506,7 +506,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 //	/*
 //	 * Organ.
 //	 */
-	class_<Organ, Organ* >("Organ", init<Plant*, Organ*, int, double >())
+	class_<Organ, Organ* >("Organ", init<Organism*, Organ*, int, double >())
 		.def(init<Organ&>())
 		.def("simulate", &Organ::simulate)
 		.def("getOrigin", &Organ::getOrigin)
@@ -514,7 +514,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 		.def("getHeading", &Organ::getHeading)
 		.def("getNode", &Organ::getNode)
 		.def("getNodes", &Organ::getNodes)
-		.def("getScalar", &Organ::getScalar)
+		.def("getParameter", &Organ::getParameter)
 
 
 		;
@@ -568,7 +568,7 @@ class_<Root, Root*>("Root", init<Plant*, Organ*, int, double, Vector3d, int, dou
 	.def("filter", filter1)
 	.def("filter", filter2)
 	.def("pack", &SegmentAnalyser::pack)
-	.def("getScalar", &SegmentAnalyser::getScalar)
+	.def("getParameter", &SegmentAnalyser::getParameter)
 	.def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
 	.def("getSummed", getSummed1)
 	.def("getSummed", getSummed2)

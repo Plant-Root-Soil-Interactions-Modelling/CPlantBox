@@ -59,12 +59,12 @@ void (Organ::*getOrgans2)(int otype, std::vector<Organ*>& v) = &Organ::getOrgans
 
 void (RootSystem::*simulate1)(double dt, bool silence) = &RootSystem::simulate;
 void (RootSystem::*simulate2)() = &RootSystem::simulate;
-void (RootSystem::*simulate3)(double dt, double maxinc, ProportionalElongation* f_se, bool silence) = &RootSystem::simulate;
+void (RootSystem::*simulate3)(double dt, double maxinc, ProportionalElongation* se, bool silence) = &RootSystem::simulate;
 void (RootSystem::*initialize1)() = &RootSystem::initialize;
 void (RootSystem::*initialize2)(int basal, int shootborne) = &RootSystem::initialize;
 
-RootRandomParameter* (RootSystem::*getRootTypeParameter1)(int subType) const = &RootSystem::getRootTypeParameter;
-std::vector<RootRandomParameter*> (RootSystem::*getRootTypeParameter2)() const = &RootSystem::getRootTypeParameter;
+RootRandomParameter* (RootSystem::*getRootRandomParameter1)(int subType) const = &RootSystem::getRootRandomParameter;
+std::vector<RootRandomParameter*> (RootSystem::*getRootRandomParameter2)() const = &RootSystem::getRootRandomParameter;
 
 void (SegmentAnalyser::*addSegments1)(const Organism& plant) = &SegmentAnalyser::addSegments;
 void (SegmentAnalyser::*addSegments2)(const SegmentAnalyser& a) = &SegmentAnalyser::addSegments;
@@ -719,7 +719,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
             .def("calcCreationTime", &Root::calcCreationTime)
             .def("calcLength", &Root::calcLength)
             .def("calcAge", &Root::calcAge)
-            .def("getRootTypeParameter", &Root::getRootTypeParameter, return_value_policy<reference_existing_object>())
+            .def("getRootRandomParameter", &Root::getRootRandomParameter, return_value_policy<reference_existing_object>())
             .def("param", &Root::param, return_value_policy<reference_existing_object>())
             .def("dx", &Root::dx)
             .def_readwrite("parent_base_length", &Root::parentBaseLength)
@@ -740,8 +740,8 @@ BOOST_PYTHON_MODULE(py_rootbox)
      */
     class_<RootSystem, RootSystem*, bases<Organism>>("RootSystem", init<>()) // bases<PlantBase>
              .def(init<RootSystem&>())
-             .def("getRootTypeParameter", getRootTypeParameter1, return_value_policy<reference_existing_object>())
-             .def("getRootTypeParameter", getRootTypeParameter2)
+             .def("getRootRandomParameter", getRootRandomParameter1, return_value_policy<reference_existing_object>())
+             .def("getRootRandomParameter", getRootRandomParameter2)
              .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
              .def("getRootSystemParameter", &RootSystem::getRootSystemParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
              .def("openFile", &RootSystem::openFile, openFile_overloads())

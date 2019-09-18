@@ -38,7 +38,7 @@ RootSystem::RootSystem(const RootSystem& rs): Organism(rs), geometry(rs.geometry
 /**
  * @return the i-th root parameter of sub type @param type.
  */
-RootRandomParameter* RootSystem::getRootTypeParameter(int type) const
+RootRandomParameter* RootSystem::getRootRandomParameter(int type) const
 {
     return (RootRandomParameter*) getOrganRandomParameter(Organism::ot_root, type);
 }
@@ -46,7 +46,7 @@ RootRandomParameter* RootSystem::getRootTypeParameter(int type) const
 /**
  * @return all root type parameters in a vector
  */
-std::vector<RootRandomParameter*> RootSystem::getRootTypeParameter() const
+std::vector<RootRandomParameter*> RootSystem::getRootRandomParameter() const
 {
     std::vector<RootRandomParameter*>  otps = std::vector<RootRandomParameter*>(0);
     for (auto& otp : organParam[Organism::ot_root]) {
@@ -217,7 +217,7 @@ void RootSystem::initCallbacks()
 void RootSystem::setTropism(Tropism* tf_, int rt)
 {
     if (rt>-1) { // set for a specific root type
-        getRootTypeParameter(rt)->f_tf=tf_;
+        getRootRandomParameter(rt)->f_tf=tf_;
     } else { // set for all root types (default)
         for (auto& p_otp :organParam[Organism::ot_root]) {
             RootRandomParameter* rtp = (RootRandomParameter*)p_otp.second;

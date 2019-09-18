@@ -142,7 +142,7 @@ RootRandomOrganParameter::~RootRandomOrganParameter()
 {
 	delete tropism;
 	delete growth;
-	delete se;
+	delete f_se;
 	delete sa;
 	delete sbp;
 }
@@ -626,7 +626,7 @@ void StemParameter::write(std::ostream & cout) const
 
 StemRandomOrganParameter::StemRandomOrganParameter()
 {
-	organType = Organ::ot_stem;
+	organType = Organism::ot_stem;
 	subType = -1; // means undefined
 	tropism = new StemTropismFunction(0,0);
 	growth = new StemGrowthFunction();
@@ -641,7 +641,7 @@ StemRandomOrganParameter::~StemRandomOrganParameter()
 {
 	delete tropism;
 	delete growth;
-	delete se;
+	delete f_se;
 	delete sa;
 	delete sbp;
 }
@@ -769,38 +769,38 @@ SpecificOrganParamter* StemRandomOrganParameter::realize() const
 			ln_.push_back(d);
 			ln_.push_back(0);
 
-		};
+		};break;
 		case 1: //  nodes distance increase linearly
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 
-		};
+		};break;
 		case 2: //nodes distance decrease linearly
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 
-		};
+		};break;
 		case 3: //nodes distance decrease exponential
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 
-		};
+		};break;
 
 		case 4://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
-		};
+		}; break;
 		case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln/(1+i) + randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
-		};
+		};break;
 
 	}
 	double r_ = std::max(r + randn()*rs,double(0)); // initial elongation
@@ -1079,7 +1079,7 @@ LeafRandomOrganParameter::~LeafRandomOrganParameter()
 {
 	delete tropism;
 	delete growth;
-	delete se;
+	delete f_se;
 	delete sa;
 	delete sbp;
 }

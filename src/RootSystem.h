@@ -40,8 +40,8 @@ public:
     virtual ~RootSystem() { };
 
     /* Parameter input output */
-    RootRandomParameter* getRootTypeParameter(int type) const;///< returns the i-th root parameter set (i=1..n)
-    std::vector<RootRandomParameter*> getRootTypeParameter() const; ///< all root type parameters as a vector
+    RootRandomParameter* getRootRandomParameter(int type) const;///< returns the i-th root parameter set (i=1..n)
+    std::vector<RootRandomParameter*> getRootRandomParameter() const; ///< all root type parameters as a vector
     void setRootSystemParameter(SeedRandomParameter& rsp); ///< sets the root system parameters
     SeedRandomParameter* getRootSystemParameter(); ///< gets the root system parameters
     void openFile(std::string filename, std::string subdir="modelparameter/"); ///< reads root parameter and plant parameter

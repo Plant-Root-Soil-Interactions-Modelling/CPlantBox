@@ -317,6 +317,33 @@ Seed.cpp.s:
 	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/Seed.cpp.s
 .PHONY : Seed.cpp.s
 
+Stem.o: Stem.cpp.o
+
+.PHONY : Stem.o
+
+# target to build an object file
+Stem.cpp.o:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/Stem.cpp.o
+.PHONY : Stem.cpp.o
+
+Stem.i: Stem.cpp.i
+
+.PHONY : Stem.i
+
+# target to preprocess a source file
+Stem.cpp.i:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/Stem.cpp.i
+.PHONY : Stem.cpp.i
+
+Stem.s: Stem.cpp.s
+
+.PHONY : Stem.s
+
+# target to generate assembly for a file
+Stem.cpp.s:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/Stem.cpp.s
+.PHONY : Stem.cpp.s
+
 __/external/aabbcc/AABB.o: __/external/aabbcc/AABB.cc.o
 
 .PHONY : __/external/aabbcc/AABB.o
@@ -666,6 +693,9 @@ help:
 	@echo "... Seed.o"
 	@echo "... Seed.i"
 	@echo "... Seed.s"
+	@echo "... Stem.o"
+	@echo "... Stem.i"
+	@echo "... Stem.s"
 	@echo "... __/external/aabbcc/AABB.o"
 	@echo "... __/external/aabbcc/AABB.i"
 	@echo "... __/external/aabbcc/AABB.s"

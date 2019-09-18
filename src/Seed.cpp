@@ -101,9 +101,9 @@ void Seed::initialize()
 //
 //
 //        if (sparam->maxTi>0) {
-//            if (plant->getParameter(Organ::ot_stem, tillerType)->subType<1) { // if the type is not defined, copy tap root
+//            if (plant->getParameter(Organism::ot_stem, tillerType)->subType<1) { // if the type is not defined, copy tap root
 //                std::cout << "Basal root type #" << basalType << " was not defined, using tap root parameters instead\n";
-//                StemTypeParameter* tillParam = (StemTypeParameter*)plant->getParameter(Organ::ot_stem, 1);
+//                StemTypeParameter* tillParam = (StemTypeParameter*)plant->getParameter(Organism::ot_stem, 1);
 //                //				StemTypeParameter* titp = new StemTypeParameter(*tillParam);
 //                //				titp->subType = tillerType;
 //                //				plant->setParameter(titp);
@@ -116,7 +116,7 @@ void Seed::initialize()
 //                }
 //                std::cout << "maxT = " << sparam->maxTi << "\n";
 //                double delay = sparam->firstB;
-//                StemTypeParameter* tillParam = (StemTypeParameter*)plant->getParameter(Organ::ot_stem, 4);
+//                StemTypeParameter* tillParam = (StemTypeParameter*)plant->getParameter(Organism::ot_stem, 4);
 //                for (int i=0; i<maxTi; i++) {
 //                    Stem* tiller = new Stem(plant, this, 4, delay, isheading ,0., 0.);
 //                    tiller->addNode(sparam->seedPos,0);

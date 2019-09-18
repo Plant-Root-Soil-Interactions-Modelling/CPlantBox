@@ -10,7 +10,9 @@
 #include "sdf.h"
 #include "LeafTropism.h"
 #include "LeafGrowth.h"
-#include "ModelParameter.h"
+#include "leafparameter.h"
+#include "Organism.h"
+
 
 namespace CRootBox {
 
@@ -32,7 +34,7 @@ class Leaf : public Organ
 
 public:
 
-	Leaf(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ilheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
+	Leaf(Organism* plant, Organ* parent, int subtype, double delay, Vector3d ilheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
 	virtual ~Leaf() { }; // base class constructor is called automatically in c++
 
 	virtual int organType() const override;
@@ -41,7 +43,7 @@ public:
 	virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 
 	/* get results */
-	virtual double getScalar(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
+	virtual double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
 
 	/* exact from analytical equations */
 	double getCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
@@ -49,8 +51,8 @@ public:
 	double LeafGetAge(double length); ///< analytical age of the stem
 
 	/* abbreviations */
-	LeafParameter* lParam() const { return (LeafParameter*)param;  } ///< type cast
-	LeafRandomOrganParameter* ltParam() const; // type cast
+    LeafRandomParameter* getLeafRandomParameter() const;  ///< root type parameter of this root
+    const LeafSpecificParameter* param() const; ///< root parameter
 	double dx() const; ///< returns the axial resolution
 	std::string name() const;
 	//Vector3d relHeading() const; //< relative heading of the Leaf tip
@@ -60,7 +62,9 @@ public:
 	/* IO */
 	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
 	std::string toString() const;
-
+    Vector3d iHeading; ///< the initial heading of the root, when it was created
+    double parentBaseLength; ///< length [cm]
+    int parentNI; ///< parent node index
 	/* nodes */
 	void addNode(Vector3d n, double t); //< adds a node to the stem
 
@@ -71,10 +75,10 @@ public:
 	const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 	Vector3d initialHeading;///< a heading downward
 
-	virtual void setRelativeOrigin(const Vector3d& o) override { this->o = o; }
-	virtual Vector3d getRelativeOrigin() const override { return o;  }
-	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
-	virtual Matrix3d getRelativeHeading() const override { return A; }
+//	virtual void setRelativeOrigin(const Vector3d& o) override { this->o = o; }
+//	virtual Vector3d getRelativeOrigin() const override { return o;  }
+//	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
+//	virtual Matrix3d getRelativeHeading() const override { return A; }
 
 	void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 double parent_base_length; ///< length [cm]

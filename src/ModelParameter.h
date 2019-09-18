@@ -183,7 +183,7 @@ const char* organName ;
 	/* call back functions */
 	GrowthFunction* growth;
 	TropismFunction* tropism ;
-	SoilLookUp* se; ///< scale elongation function
+	SoilLookUp* f_se; ///< scale elongation function
 	SoilLookUp* sa; ///< scale angle function
 	SoilLookUp* sbp; ///< scale branching probability function
 
@@ -376,7 +376,7 @@ const char* organName;
 	/* call back functions */
 	StemGrowthFunction* growth;
 	StemTropismFunction* tropism;
-	SoilLookUp* se; ///< scale elongation function
+	SoilLookUp* f_se; ///< scale elongation function
 	SoilLookUp* sa; ///< scale angle function
 	SoilLookUp* sbp; ///< scale branching probability function
 
@@ -570,7 +570,7 @@ public:
 	/* call back functions */
 	LeafGrowthFunction* growth;
 	LeafTropismFunction* tropism;
-	SoilLookUp* se; ///< scale elongation function
+	SoilLookUp* f_se; ///< scale elongation function
 	SoilLookUp* sa; ///< scale angle function
 	SoilLookUp* sbp; ///< scale branching probability function
 

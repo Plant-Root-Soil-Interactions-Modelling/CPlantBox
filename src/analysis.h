@@ -28,8 +28,8 @@ public:
 
     // reduce number of segments
     void crop(SignedDistanceFunction* geometry); ///< crops the data to a geometry
-    void filter(std::string name, double min, double max); ///< filters the segments to the data @see AnalysisSDF::getScalar
-    void filter(std::string name, double value); ///< filters the segments to the data @see AnalysisSDF::getScalar
+    void filter(std::string name, double min, double max); ///< filters the segments to the data @see AnalysisSDF::getParameter
+    void filter(std::string name, double value); ///< filters the segments to the data @see AnalysisSDF::getParameter
     void pack(); ///< sorts the nodes and deletes unused nodes
 
     // some things we might want to know

@@ -88,7 +88,7 @@ public:
   std::vector<Organ*> getSegmentsOrigin(unsigned int otype=Organ::ot_organ) const; ///< Copies a pointer to the root containing the segment
   std::vector<double> getNETimes() const; ///< Copies all node emergence times into a vector
   std::vector<std::vector<double> > getPolylinesNET(unsigned int otype=Organ::ot_organ) const; ///< Copies the node emergence times of each root into a vector and returns all resulting vectors
-  std::vector<double> getScalar(unsigned int otype=Organ::ot_organ, std::string name = "otype") const; ///< Copies a scalar root parameter that is constant per root to a vector
+  std::vector<double> getParameter(unsigned int otype=Organ::ot_organ, std::string name = "otype") const; ///< Copies a scalar root parameter that is constant per root to a vector
   std::vector<int> getNodesOrganType() const;
 
   // Output Simulation results

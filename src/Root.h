@@ -27,7 +27,7 @@ public:
 
     Root(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
-    Root(Organism* rs, int type, Vector3d pheading, double delay, Root* parent, double pbl, int pni); ///< used within simulation
+    Root(Organism* rs, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); ///< used within simulation
     virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
     Organ* copy(Organism* rs) override;  ///< deep copies the root tree
@@ -46,9 +46,9 @@ public:
     double calcAge(double length); ///< analytical age of the root
 
     /* Abbreviations */
-    RootRandomParameter* getRootTypeParameter() const;  ///< root type parameter of this root
+    RootRandomParameter* getRootRandomParameter() const;  ///< root type parameter of this root
     const RootSpecificParameter* param() const; ///< root parameter
-    double dx() const { return getRootTypeParameter()->dx; } ///< returns the axial resolution
+    double dx() const { return getRootRandomParameter()->dx; } ///< returns the axial resolution
 
     /* IO */
     std::string toString() const override;

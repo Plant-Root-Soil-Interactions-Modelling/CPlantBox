@@ -6,18 +6,13 @@
 
 #include "Organ.h"
 #include "mymath.h"
-#include "sdf.h"
 #include "StemTropism.h"
 #include "StemGrowth.h"
 #include "stemparameter.h"
+#include "Organism.h"
 
 namespace CRootBox {
 
-
-
-class Plant;
-class StemSpecificParameter;
-class OrganRandomParameter;
 static int phytomerId[10]= {0};
 /**
  * Stem
@@ -34,10 +29,10 @@ class Stem : public Organ
 
 public:
 
-	Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d isheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
+	Stem(Organism* plant, Organ* parent, int subtype, double delay, Vector3d isheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
 	virtual ~Stem() { }; // base class constructor is called automatically in c++
 
-	virtual int organType() const override { return Organ::ot_stem; };
+	virtual int organType() const override { return Organism::ot_stem; };
     Organ* copy(Organism* rs) override;  ///< deep copies the root tree
 
 	/* simulation */
@@ -51,8 +46,9 @@ public:
 	double StemGetLength(double age); ///< analytical length of the stem
 	double StemGetAge(double length); ///< analytical age of the stem
 	/* abbreviations */
-	StemRandomParameter* sParam() const { return (StemRandomParameter*)param;  } ///< type cast
-	StemRandomParameter* stParam() const; // type cast
+StemRandomParameter* getStemRandomParameter() const;  ///< root type parameter of this root
+    const StemSpecificParameter* param() const; ///< root parameter
+
 	double dx() const; ///< returns the axial resolution
 	//Vector3d relHeading() const; //< relative heading of the stem tip
 	//Vector3d absHeading() const; //< absolute heading of the stem tip
@@ -60,7 +56,9 @@ public:
 	/* IO */
 	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
 	std::string toString() const;
-
+   Vector3d iHeading; ///< the initial heading of the root, when it was created
+double parentBaseLength; ///< length [cm]
+    int parentNI; ///< parent node index
 	/* nodes */
 	void addNode(Vector3d n, double t); //< adds a node to the stem
 
@@ -71,10 +69,10 @@ public:
 	const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 
 	int StemID = 0; //declare Stem id.
-	virtual void setRelativeOrigin(const Vector3d& o) override { this->o = o; }
-	virtual Vector3d getRelativeOrigin() const override { return o;  }
-	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
-	virtual Matrix3d getRelativeHeading() const override { return A; }
+//	virtual void setRelativeOrigin(const Vector3d& o) override { this->o = o; }
+//	virtual Vector3d getRelativeOrigin() const override { return o;  }
+//	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; }
+//	virtual Matrix3d getRelativeHeading() const override { return A; }
 	Vector3d initialStemHeading;
 	Vector3d heading() const; /// current heading of the root tip
 	Vector3d o;

@@ -37,13 +37,13 @@ Root::Root(int id, const OrganSpecificParameter* param, bool alive, bool active,
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Root::Root(Organism* rs, int type, Vector3d heading, double delay,  Root* parent, double pbl, int pni) :Organ(rs, parent, Organism::ot_root, type, delay)
+Root::Root(Organism* rs, int type, Vector3d heading, double delay,  Organ* parent, double pbl, int pni) :Organ(rs, parent, Organism::ot_root, type, delay)
 {
     double beta = 2*M_PI*plant->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(heading);
     double theta = param()->theta;
     if (parent!=nullptr) { // scale if not a baseRoot
-        double scale = getRootTypeParameter()->f_sa->getValue(parent->getNode(pni),this);
+        double scale = getRootRandomParameter()->f_se->getValue(parent->getNode(pni),this);
         theta*=scale;
     }
     iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
@@ -101,7 +101,7 @@ void Root::simulate(double dt, bool verbose)
 
         // probabilistic branching model
         if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
-            double P = getRootTypeParameter()->f_sbp->getValue(nodes.back(),this);
+            double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(),this);
             if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
                 double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
                 if (plant->rand()>p) { // not rand()<p
@@ -130,7 +130,7 @@ void Root::simulate(double dt, bool verbose)
 
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
-                double scale = getRootTypeParameter()->f_se->getValue(nodes.back(),this);
+                double scale = getRootRandomParameter()->f_sa->getValue(nodes.back(),this);
                 double dl = std::max(scale*e, 0.); // length increment
 
                 // create geometry
@@ -215,7 +215,7 @@ double Root::calcCreationTime(double length)
 double Root::calcLength(double age)
 {
     assert(age >= 0 && "Root::getLength() negative root age");
-    return getRootTypeParameter()->f_gf->getLength(age,param()->r,param()->getK(),this);
+    return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(),this);
 }
 
 /**
@@ -227,13 +227,13 @@ double Root::calcLength(double age)
 double Root::calcAge(double length)
 {
     assert(length >= 0 && "Root::getAge() negative root length");
-    return getRootTypeParameter()->f_gf->getAge(length,param()->r,param()->getK(),this);
+    return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(),this);
 }
 
 /**
  * @return The RootTypeParameter from the plant
  */
-RootRandomParameter* Root::getRootTypeParameter() const
+RootRandomParameter* Root::getRootRandomParameter() const
 {
     return (RootRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, param_->subType);
 }
@@ -255,7 +255,7 @@ const RootSpecificParameter* Root::param() const
  */
 void Root::createLateral(bool verbose)
 {
-    int lt = getRootTypeParameter()->getLateralType(nodes.back());
+    int lt = getRootRandomParameter()->getLateralType(nodes.back());
     if (lt>0) {
         double ageLN = this->calcAge(length); // age of root when lateral node is created
         double ageLG = this->calcAge(length+param()->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
@@ -364,7 +364,7 @@ Vector3d Root::getIncrement(const Vector3d& p, double sdx)
 {
     Vector3d h = heading();
     Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getRootTypeParameter()->f_tf->getHeading(p, ons, sdx, this);
+    Vector2d ab = getRootRandomParameter()->f_tf->getHeading(p, ons, sdx, this);
     Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
     return sv.times(sdx);
 }
