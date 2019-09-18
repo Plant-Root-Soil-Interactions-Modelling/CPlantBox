@@ -559,6 +559,7 @@ void Organism::readParameters(std::string name, std::string basetag)
  */
 void Organism::writeParameters(std::string name, std::string basetag, bool comments) const
 {
+	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument xmlDoc;
     tinyxml2:: XMLElement* xmlParams = xmlDoc.NewElement(basetag.c_str()); // RSML
     for (int ot = 0; ot < numberOfOrganTypes; ot++) {
