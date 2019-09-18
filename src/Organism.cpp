@@ -577,6 +577,7 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
  */
 void Organism::writeRSML(std::string name) const
 {
+	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument xmlDoc;
     tinyxml2:: XMLElement* rsml = xmlDoc.NewElement("rsml"); // RSML
     tinyxml2:: XMLElement* meta = getRSMLMetadata(xmlDoc);
