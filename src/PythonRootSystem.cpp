@@ -19,7 +19,7 @@
 #include "RootSystem.h"
 #include "sdf_rs.h"
 #include "analysis.h"
-#include "../examples/example_exudation.h"
+//#include "../examples/example_exudation.h"
 
 namespace CRootBox {
 
@@ -664,26 +664,26 @@ BOOST_PYTHON_MODULE(py_rootbox)
     /*
      * exudation.h
      */
-    class_<ExudationModel, ExudationModel*>("ExudationModel", init<double, double, int, RootSystem&>())
-            .def(init<double, double, double, int, int, int, RootSystem&>())
-		    .def("calculate", &ExudationModel::calculate)
-		    .def_readwrite("Q", &ExudationModel::Q)
-		    .def_readwrite("Dl", &ExudationModel::Dl)
-		    .def_readwrite("theta", &ExudationModel::theta)
-		    .def_readwrite("R", &ExudationModel::R)
-		    .def_readwrite("k", &ExudationModel::k)
-		    .def_readwrite("l", &ExudationModel::l)
-		    .def_readwrite("type", &ExudationModel::type)
-		    .def_readwrite("n0", &ExudationModel::n0)
-		    .def_readwrite("thresh13", &ExudationModel::thresh13)
-            .def_readwrite("calc13", &ExudationModel::calc13)
-            .def_readwrite("observationRadius", &ExudationModel::observationRadius)
-            ;
-    enum_<ExudationModel::IntegrationType>("IntegrationType")
-            .value("mps_straight", ExudationModel::IntegrationType::mps_straight)
-            .value("mps", ExudationModel::IntegrationType::mps)
-            .value("mls", ExudationModel::IntegrationType::mls)
-            ;
+//    class_<ExudationModel, ExudationModel*>("ExudationModel", init<double, double, int, RootSystem&>())
+//            .def(init<double, double, double, int, int, int, RootSystem&>())
+//		    .def("calculate", &ExudationModel::calculate)
+//		    .def_readwrite("Q", &ExudationModel::Q)
+//		    .def_readwrite("Dl", &ExudationModel::Dl)
+//		    .def_readwrite("theta", &ExudationModel::theta)
+//		    .def_readwrite("R", &ExudationModel::R)
+//		    .def_readwrite("k", &ExudationModel::k)
+//		    .def_readwrite("l", &ExudationModel::l)
+//		    .def_readwrite("type", &ExudationModel::type)
+//		    .def_readwrite("n0", &ExudationModel::n0)
+//		    .def_readwrite("thresh13", &ExudationModel::thresh13)
+//            .def_readwrite("calc13", &ExudationModel::calc13)
+//            .def_readwrite("observationRadius", &ExudationModel::observationRadius)
+//            ;
+//    enum_<ExudationModel::IntegrationType>("IntegrationType")
+//            .value("mps_straight", ExudationModel::IntegrationType::mps_straight)
+//            .value("mps", ExudationModel::IntegrationType::mps)
+//            .value("mls", ExudationModel::IntegrationType::mls)
+//            ;
 
 }
 

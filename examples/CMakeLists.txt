@@ -2,8 +2,8 @@
 # Make the C++ example
 #
 
-add_executable(test_cplantbox main.cpp)
-target_link_libraries(test_cplantbox CPlantBox)
+#add_executable(test_cplantbox main.cpp)
+#target_link_libraries(test_cplantbox CPlantBox)
 
 # link the model parameter folder (on Windows we have to copy since symlinks are not supported)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

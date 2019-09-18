@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #include "mymath.h"
-#include "tinyxml2.h"
+#include "../external/tinyxml2.h"
 
 namespace CPlantBox {
 
