@@ -9,21 +9,21 @@
 #include "sdf.h"
 #include "StemTropism.h"
 #include "StemGrowth.h"
-#include "ModelParameter.h"
+#include "stemparameter.h"
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 
 class Plant;
-class StemParameter;
-class StemRandomOrganParameter;
+class StemSpecificParameter;
+class OrganRandomParameter;
 static int phytomerId[10]= {0};
 /**
  * Stem
  *
  * Describes a single stem, by a vector of nodes representing the stem.
- * The method simulate() creates new nodes of this stem, and lateral stems in the stem's branching zone.
+ * The method simulate() cr`eates new nodes of this stem, and lateral stems in the stem's branching zone.
  *
  */
 class Stem : public Organ
@@ -38,20 +38,21 @@ public:
 	virtual ~Stem() { }; // base class constructor is called automatically in c++
 
 	virtual int organType() const override { return Organ::ot_stem; };
+    Organ* copy(Organism* rs) override;  ///< deep copies the root tree
 
 	/* simulation */
 	virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 
 	/* get results */
-	virtual double getScalar(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
+	double getParameter(std::string name) const override; ///< returns an organ parameter
 
 	/* exact from analytical equations */
 	double getCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
 	double StemGetLength(double age); ///< analytical length of the stem
 	double StemGetAge(double length); ///< analytical age of the stem
 	/* abbreviations */
-	StemParameter* sParam() const { return (StemParameter*)param;  } ///< type cast
-	StemRandomOrganParameter* stParam() const; // type cast
+	StemRandomParameter* sParam() const { return (StemRandomParameter*)param;  } ///< type cast
+	StemRandomParameter* stParam() const; // type cast
 	double dx() const; ///< returns the axial resolution
 	//Vector3d relHeading() const; //< relative heading of the stem tip
 	//Vector3d absHeading() const; //< absolute heading of the stem tip

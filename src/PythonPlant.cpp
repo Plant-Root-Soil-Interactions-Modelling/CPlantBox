@@ -37,7 +37,7 @@
 #include "tinyxml2.h"
 //#include "examples/Exudation/example_exudation.h"
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 using namespace boost::python;

@@ -7,7 +7,7 @@
 #include "soil.h"
 
 
-namespace CPlantBox {
+namespace CRootBox {
 class SoilLookUp;
 class Organ;
 

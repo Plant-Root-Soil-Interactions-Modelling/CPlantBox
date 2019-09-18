@@ -1,7 +1,7 @@
 #ifndef LEAFGROWTH_H
 #define LEAFGROWTH_H
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 class Organ;

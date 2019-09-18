@@ -1,7 +1,7 @@
 #ifndef GROWTH_H
 #define GROWTH_H
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 class Organ;

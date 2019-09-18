@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string>
 #include <fstream>
-namespace CPlantBox {
+namespace CRootBox {
 
 
 unsigned int Plant::noParamFile[5] = {0, 0, 1, 1, 1}; // check if there are parameter files TODO to make it simpler used in Plant::readParameter

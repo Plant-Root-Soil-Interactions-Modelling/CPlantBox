@@ -41,7 +41,9 @@ if (PythonLibs_FOUND)
   add_library(py_rootbox SHARED
             organparameter.cpp            
             rootparameter.cpp
-			seedparameter.cpp            
+			seedparameter.cpp
+			stemparameter.cpp
+#			Stem.cpp
             Organ.cpp            
             Root.cpp
             Seed.cpp

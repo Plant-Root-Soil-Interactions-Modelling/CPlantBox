@@ -25,7 +25,7 @@
 #include "LeafTropism.h"
 #include "tinyxml2.h"
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 class Seed;
