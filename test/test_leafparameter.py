@@ -88,9 +88,11 @@ class TestLeafParameter(unittest.TestCase):
         otp = self.lrp  # rename
         otp.name = "lateral"
         otp.subType = 1
+        otp.nob = (otp.k-otp.la-otp.lb)/otp.ln + 1;
         otp.writeXML("leaf.xml")
         otp2 = rb.LeafRandomParameter(self.plant)
-        otp2.readXML("leaf.xml")
+        otp2.readXML("leaf.xml")    
+        otp2.nob = (otp2.k-otp2.la-otp2.lb)/otp2.ln + 1;
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
         self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
