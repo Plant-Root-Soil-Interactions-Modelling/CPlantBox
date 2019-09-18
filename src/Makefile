@@ -431,6 +431,36 @@ analysis.cpp.s:
 	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/analysis.cpp.s
 .PHONY : analysis.cpp.s
 
+leafparameter.o: leafparameter.cpp.o
+
+.PHONY : leafparameter.o
+
+# target to build an object file
+leafparameter.cpp.o:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/CRootBox.dir/build.make src/CMakeFiles/CRootBox.dir/leafparameter.cpp.o
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/leafparameter.cpp.o
+.PHONY : leafparameter.cpp.o
+
+leafparameter.i: leafparameter.cpp.i
+
+.PHONY : leafparameter.i
+
+# target to preprocess a source file
+leafparameter.cpp.i:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/CRootBox.dir/build.make src/CMakeFiles/CRootBox.dir/leafparameter.cpp.i
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/leafparameter.cpp.i
+.PHONY : leafparameter.cpp.i
+
+leafparameter.s: leafparameter.cpp.s
+
+.PHONY : leafparameter.s
+
+# target to generate assembly for a file
+leafparameter.cpp.s:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/CRootBox.dir/build.make src/CMakeFiles/CRootBox.dir/leafparameter.cpp.s
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/leafparameter.cpp.s
+.PHONY : leafparameter.cpp.s
+
 organparameter.o: organparameter.cpp.o
 
 .PHONY : organparameter.o
@@ -648,6 +678,9 @@ help:
 	@echo "... analysis.o"
 	@echo "... analysis.i"
 	@echo "... analysis.s"
+	@echo "... leafparameter.o"
+	@echo "... leafparameter.i"
+	@echo "... leafparameter.s"
 	@echo "... organparameter.o"
 	@echo "... organparameter.i"
 	@echo "... organparameter.s"
