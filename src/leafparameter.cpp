@@ -1,5 +1,5 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#include "rootparameter.h"
+#include "leafparameter.h"
 
 #include "Organism.h"
 
@@ -13,7 +13,7 @@ namespace CRootBox {
 /**
  * @return Mean maximal root length of this root type
  */
-double RootSpecificParameter::getK() const {
+double LeafSpecificParameter::getK() const {
     double l = std::accumulate(ln.begin(), ln.end(), 0.);
     return l+la+lb;
 }
@@ -21,12 +21,12 @@ double RootSpecificParameter::getK() const {
 /**
  * @copydoc OrganParameter::toString()
  */
-std::string RootSpecificParameter::toString() const
+std::string LeafSpecificParameter::toString() const
 {
     std::stringstream str;
     str << "subType\t" << subType << std::endl;
     str << "lb\t" << lb << std::endl << "la\t" << la << std::endl;
-    str << "nob\t" << nob << std::endl << "r\t" << r << std::endl << "a\t" << a << std::endl;
+    str << "r\t" << r << std::endl << "a\t" << a << std::endl;
     str << "theta\t" << theta << std::endl << "rlt\t" << rlt << std::endl;
     str << "ln\t";
     for (int i=0; i<ln.size(); i++) {
@@ -41,11 +41,11 @@ std::string RootSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-RootRandomParameter::RootRandomParameter(Organism* p) :OrganRandomParameter(p)
+LeafRandomParameter::LeafRandomParameter(Organism* p) :OrganRandomParameter(p)
 {
     // base class default values
     name = "undefined";
-    organType = Organism::ot_root;
+    organType = Organism::ot_leaf;
     subType = -1;
     f_tf = new Tropism(p);
     bindParameters();
@@ -54,7 +54,7 @@ RootRandomParameter::RootRandomParameter(Organism* p) :OrganRandomParameter(p)
 /**
  * Destructor: delete all callback functions
  */
-RootRandomParameter::~RootRandomParameter()
+LeafRandomParameter::~LeafRandomParameter()
 {
     delete f_tf;
     delete f_gf;
@@ -66,9 +66,9 @@ RootRandomParameter::~RootRandomParameter()
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-OrganRandomParameter* RootRandomParameter::copy(Organism* p)
+OrganRandomParameter* LeafRandomParameter::copy(Organism* p)
 {
-    RootRandomParameter* r = new RootRandomParameter(*this); // copy constructor breaks class introspection
+	LeafRandomParameter* r = new LeafRandomParameter(*this); // copy constructor breaks class introspection
     r->plant = p;
     r->bindParameters(); // fix class introspection
     r->f_tf = f_tf->copy(p); // copy call back classes
@@ -85,23 +85,65 @@ OrganRandomParameter* RootRandomParameter::copy(Organism* p)
  * Creates a specific root from the root type parameters.
  * @return Specific root parameters derived from the root type parameters
  */
-OrganSpecificParameter* RootRandomParameter::realize()
+OrganSpecificParameter* LeafRandomParameter::realize()
 {
-    //& std::cout << "RootTypeParameter::realize(): subType " << subType << "\n" << std::flush;
-    double lb_ = std::max(lb + plant->randn()*lbs, 0.); // length of basal zone
-    double la_ = std::max(la + plant->randn()*las, 0.); // length of apical zone
-    std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob + plant->randn()*nobs), 0.); // maximal number of branches
-    for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-        double d = std::max(ln + plant->randn()*lns, 1.e-5); // miminum is 1.e-5
-        ln_.push_back(d);
-    }
-    double r_ = std::max(r + plant->randn()*rs, 0.); // initial elongation
-    double a_ = std::max(a + plant->randn()*as, 0.); // radius
-    double theta_ = std::max(theta + plant->randn()*thetas, 0.); // initial elongation
-    double rlt_ = std::max(rlt + plant->randn()*rlts, 0.); // root life time
-    OrganSpecificParameter* p = new RootSpecificParameter(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
-    return p;
+	// type does not change
+	double lb_ = std::max(lb + plant->randn()*lbs,double(0)); // length of basal zone
+	double la_ = std::max(la + plant->randn()*las,double(0)); // length of apical zone
+	std::vector<double> ln_; // stores the inter-distances
+
+	// stores the inter-distances
+	int nob_ = std::max(round(nob + plant->randn()*nobs),double(0)); // maximal number of branches
+	switch(lnf) {
+		case 0: // homogeneously distributed stem nodes
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d = std::max(ln + plant->randn()*lns,1e-9); //Normal function of equal internode distance
+			ln_.push_back(d);
+			ln_.push_back(0);
+		}; break;
+		case 1: //nodes distance increase linearly
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln*(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+			ln_.push_back(0);
+		}; break;
+		case 2: //nodes distance decrease linearly
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d =  std::max(ln*(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+		}; break;
+		case 3: //nodes distance increase exponential
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d =  std::max(ln + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+		}; break;
+		case 4://nodes distance decrease exponential
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln/(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+			ln_.push_back(0);
+		}; break;
+		case 5://nodes distance decrease exponential
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+			double d =  std::max(ln/(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			ln_.push_back(d);
+		}; break;
+		default:
+			throw 1; // TODO make a nice one
+	}
+	double r_ = std::max(r + plant->randn()*rs,double(0)); // initial elongation
+	double a_ = std::max(a + plant->randn()*as,double(0)); // radius
+	double theta_ = std::max(theta + plant->randn()*thetas,double(0)); // initial elongation
+	double rlt_ = std::max(rlt + plant->randn()*rlts,double(0)); // root life time
+	int lnf_ = lnf;
+	LeafSpecificParameter* leaf_p =  new LeafSpecificParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,lnf_);
+	return leaf_p;
+
+//for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+//		double d = 0.01*2*i; //std::max(  );//ln + randn()*lns,1e-9);
+//		ln_.push_back(d);
+//	}
+
 }
 
 /**
@@ -110,7 +152,7 @@ OrganSpecificParameter* RootRandomParameter::realize()
  * @param pos       spatial position (for coupling to a soil model)
  * @return          root sub type of the lateral root
  */
-int RootRandomParameter::getLateralType(const Vector3d& pos)
+int LeafRandomParameter::getLateralType(const Vector3d& pos)
 {
     assert(successor.size()==successorP.size()
         && "RootTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
@@ -140,7 +182,7 @@ int RootRandomParameter::getLateralType(const Vector3d& pos)
  *
  * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  */
-std::string RootRandomParameter::toString(bool verbose) const {
+std::string LeafRandomParameter::toString(bool verbose) const {
 
     if (verbose) {
         std::string s = OrganRandomParameter::toString(true);
@@ -169,7 +211,7 @@ std::string RootRandomParameter::toString(bool verbose) const {
  *
  * If the parameter successor or successorP are not in the element, they are set to zero size.
  */
-void RootRandomParameter::readXML(tinyxml2::XMLElement* element)
+void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 {
     OrganRandomParameter::readXML(element);
     tinyxml2::XMLElement* p = element->FirstChildElement("parameter");
@@ -196,7 +238,7 @@ void RootRandomParameter::readXML(tinyxml2::XMLElement* element)
  *
  * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  */
-tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
+tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
 {
     assert(successor.size()==successorP.size() &&
         "RootTypeParameter::writeXML: Successor sub type and probability vector does not have the same size" );
@@ -223,107 +265,29 @@ tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
 }
 
 /**
- * @return Mean maximal root length of this roo    description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
- * t type
- *
- * CRootBox parameter reader
- * todo Depricated: use readXML instead
- */
-void RootRandomParameter::read(std::istream & cin)
-{
-    std::cout << "RootRandomParameter::read is deprecated, use readXML instead \n";
-    char ch[256]; // dummy
-    cin.getline(ch,256);
-    std::string s; // dummy
-    double k;
-    double ks;
-    cin >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
-    cin >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
-    if (ln > 0) {
-        nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
-        nob = std::max(nob,0.);
-        nobs = (ks/k - lns/ln)*k/ln; // error propagation
-        if (la>0) {
-            nobs -= (las/la - lns/ln)*la/ln;
-        }
-        if (lb>0) {
-            nobs -= (lbs/lb - lns/ln)*lb/ln;
-        }
-        nobs = std::max(nobs,0.);
-        if (std::isnan(nobs)) {
-            std::cout << "RootTypeParameter::read() nobs is nan \n";
-            nobs =0;
-        }
-    } else {
-        nob=0;
-        nobs = 0;
-    }
-    int n;
-    cin  >> s >> n;
-    successor.clear();
-    int is;
-    for (int i=0; i<n; i++) {
-        cin >> is;
-        successor.push_back(is);
-    }
-    cin >> s >> n;
-    successorP.clear();
-    double ds;
-    for (int i=0; i<n; i++) {
-        cin >> ds;
-        successorP.push_back(ds);
-    }
-    cin >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
-}
-
-/**
- * CRootBox parameter write
- * todo Depricated: use writeXML instead
- */
-void RootRandomParameter::write(std::ostream & cout) const {
-    std::cout << "RootRandomParameter::write is deprecated, use writeXML instead \n";
-    cout << "# Root type parameter for " << name << "\n";
-    cout << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
-        << "ln\t" << ln << "\t" << lns << "\n" << "nob\t"<< nob <<"\t"<< nobs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
-        "a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
-        << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successor.size() << "\t";
-    for (size_t i=0; i<successor.size(); i++) {
-        cout << successor[i] << "\t";
-    }
-    cout << "\n" << "successorP\t" << successorP.size() <<"\t";
-    for (size_t i=0; i<successorP.size(); i++) {
-        cout << successorP[i] << "\t";
-    }
-    cout << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";
-}
-
-/**
  * Sets up class introspection by linking parameter names to their class members,
  * additionally adds a description for each parameter, for toString and writeXML
  */
-void RootRandomParameter::bindParameters()
+void LeafRandomParameter::bindParameters()
 {
     bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4)");
     bindParameter("subType", &subType, "Unique identifier of this sub type");
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
     bindParameter("la", &la, "Apical zone [cm]", &las);
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
-    bindParameter("nob", &nob, "Maximal number of laterals [1]", &nobs);
+    bindParameter("k", &k, "Maximal leaf length [cm]", &ks);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-    bindParameter("a", &r, "Root radius [cm]", &as);
-    bindParameter("colorR", &colorR, "Root color, red component [0.-1.]");
-    bindParameter("colorG", &colorG, "Root color, green component [0.-1.]");
-    bindParameter("colorB", &colorB, "Root color, blue component [0.-1.]");
-    bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
-    bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
-    bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");
+    bindParameter("a", &r, "Leaf width [cm]", &as);
+    bindParameter("tropismT", &tropismT, "Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
+    bindParameter("tropismN", &tropismN, "Number of trials of leaf tropism");
+    bindParameter("tropismS", &tropismS, "Mean value of expected change of leaf tropism [1/cm]");
     bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
     bindParameter("theta", &theta, "Angle between root and parent root [rad]", &thetas);
     bindParameter("rlt", &rlt, "Root life time [day]", &rlts);
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);
     // other parameters (descriptions only)
     description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
-    description["successor"] = "Sub type of lateral roots";
+    description["successor"] = "Sub type of lateral leaf veins";
     description["successorP"] = "Probability of each sub type to occur";
 }
 
