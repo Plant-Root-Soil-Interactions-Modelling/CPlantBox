@@ -16,9 +16,11 @@
 
 #include "mymath.h"
 #include "sdf.h"
+#include "leafparameter.h"
 #include "RootSystem.h"
 #include "sdf_rs.h"
 #include "analysis.h"
+
 //#include "../examples/example_exudation.h"
 
 namespace CRootBox {
@@ -593,6 +595,65 @@ BOOST_PYTHON_MODULE(py_rootbox)
           .def_readwrite("nz", &SeedSpecificParameter::nz)
           .def("__str__",&SeedSpecificParameter::toString)
           ;
+    /*
+     * leafparameter.h
+     */
+    class_<LeafRandomParameter, LeafRandomParameter*, bases<LeafRandomParameter>>("SeedRandomParameter", init<Organism*>())
+                        .def("getLateralType",&LeafRandomParameter::getLateralType)
+                        .def("getK",&LeafRandomParameter::getK)
+                        .def_readwrite("type", &LeafRandomParameter::subType)
+                        .def_readwrite("lb", &LeafRandomParameter::lb)
+                        .def_readwrite("lbs", &LeafRandomParameter::lbs)
+                        .def_readwrite("la", &LeafRandomParameter::la)
+                        .def_readwrite("las", &LeafRandomParameter::las)
+                        .def_readwrite("ln", &LeafRandomParameter::ln)
+                        .def_readwrite("lns", &LeafRandomParameter::lns)
+                        .def_readwrite("lnf", &LeafRandomParameter::lnf)
+                        .def_readwrite("nob", &LeafRandomParameter::nob)
+                        .def_readwrite("nobs", &LeafRandomParameter::nobs)
+                        .def_readwrite("k", &LeafRandomParameter::k)
+                        .def_readwrite("ks", &LeafRandomParameter::ks)
+                        .def_readwrite("r", &LeafRandomParameter::r)
+                        .def_readwrite("rs", &LeafRandomParameter::rs)
+                        .def_readwrite("a", &LeafRandomParameter::a)
+                        .def_readwrite("a_s", &LeafRandomParameter::as) // as is a keyword in python
+						.def_readwrite("RotBeta", &LeafRandomParameter::RotBeta)
+						.def_readwrite("BetaDev", &LeafRandomParameter::BetaDev)
+						.def_readwrite("InitBeta", &LeafRandomParameter::InitBeta)
+                        .def_readwrite("tropismT", &LeafRandomParameter::tropismT)
+                        .def_readwrite("tropismN", &LeafRandomParameter::tropismN)
+                        .def_readwrite("tropismS", &LeafRandomParameter::tropismS)
+                        .def_readwrite("dx", &LeafRandomParameter::dx)
+                        .def_readwrite("theta", &LeafRandomParameter::theta)
+                        .def_readwrite("thetas", &LeafRandomParameter::thetas)
+                        .def_readwrite("rlt", &LeafRandomParameter::rlt)
+                        .def_readwrite("rlts", &LeafRandomParameter::rlts)
+                        .def_readwrite("gf", &LeafRandomParameter::gf)
+                        .def_readwrite("name", &LeafRandomParameter::name)
+                        .def_readwrite("successor", &LeafRandomParameter::successor)
+                        .def_readwrite("successorP", &LeafRandomParameter::successorP)
+                        .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
+                        .def_readwrite("f_gf", &LeafRandomParameter::f_gf)
+                        .def_readwrite("f_se", &LeafRandomParameter::f_se)
+                        .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
+                        .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
+            .def("__str__",&LeafRandomParameter::toString, toString_overloads())
+            ;
+    class_<LeafSpecificParameter, LeafSpecificParameter*, bases<OrganSpecificParameter>>("LeafSpecificParameter", init<>())
+          .def(init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
+          .def_readwrite("subType", &LeafSpecificParameter::subType)
+          .def_readwrite("lb", &LeafSpecificParameter::lb)
+          .def_readwrite("la", &LeafSpecificParameter::la)
+          .def_readwrite("ln", &LeafSpecificParameter::ln)
+          .def_readwrite("r", &LeafSpecificParameter::r)
+          .def_readwrite("a", &LeafSpecificParameter::a)
+          .def_readwrite("theta", &LeafSpecificParameter::theta)
+          .def_readwrite("rlt", &LeafSpecificParameter::rlt)
+          .def_readwrite("lnf", &LeafSpecificParameter::lnf)
+          .def("getK",&LeafSpecificParameter::getK)
+          .def("__str__",&SeedSpecificParameter::toString)
+          ;
+
     /**
      * Root.h
      */
