@@ -112,11 +112,11 @@ public:
     GrowthFunction* f_gf = new ExponentialGrowth(); ///< growth function
     SoilLookUp* f_se = new SoilLookUp(); ///< scale elongation function
     SoilLookUp* f_sa = new SoilLookUp(); ///< scale angle function
-    SoilLookUp* f_sbp = new SoilLookUp(); ///< scale branching probability function
+    SoilLookUp* f_sbp = new SoilLookUp(); ///< scale branching probability functiongrowth
 
 protected:
 
-    void bindParmaters(); ///<sets up class introspection
+    void bindParameters(); ///<sets up class introspectionbindParameters
 
 };
 
