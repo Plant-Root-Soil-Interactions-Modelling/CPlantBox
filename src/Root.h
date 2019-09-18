@@ -1,26 +1,15 @@
-// *** ADDED BY HEADER FIXUP ***
-#include <cassert>
-#include <istream>
-// *** END ***
+// -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #ifndef ROOT_H_
 #define ROOT_H_
 
-#include <iostream>
-#include <assert.h>
-
-#include "Organ.h"
 #include "mymath.h"
-#include "sdf.h"
-#include "RootTropism.h"
-#include "RootGrowth.h"
-#include "ModelParameter.h"
+#include "Organ.h"
+#include "Organism.h"
+#include "rootparameter.h"
 
-namespace CPlantBox {
+namespace CRootBox {
 
-
-class Plant;
-class RootParameter;
-class RootRandomOrganParameter;
+class RootState;
 
 /**
  * Root
@@ -28,70 +17,59 @@ class RootRandomOrganParameter;
  * Describes a single root, by a vector of nodes representing the root.
  * The method simulate() creates new nodes of this root, and lateral roots in the root's branching zone.
  *
- * Since roots in soil cannot move the roots nodes are represented by absolute coordinates, in contrast to
- * other organs like Leaf or Stem.
- *
  */
-class Root : public Organ
+class Root :public Organ
 {
+
+    friend RootState;
 
 public:
 
-    Root(Plant* plant, Organ* parent, int subtype, double delay, Vector3d iheading, int pni, double pbl); ///< typically called by constructor of RootSystem, or Root::createLaterals()
-	Root(const Organ& r, Plant& plant);
-	virtual ~Root() { }; // base class constructor is called automatically in c++
+    Root(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+        Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
+    Root(Organism* rs, int type, Vector3d pheading, double delay, Root* parent, double pbl, int pni); ///< used within simulation
+    virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
-    virtual int organType() const override { return Organ::ot_root; };
+    Organ* copy(Organism* rs) override;  ///< deep copies the root tree
 
-    /* simulation */
-    virtual void simulate(double dt, bool silence = false) override; ///< root growth for a time span of \param dt
+    int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 
-    /* get results */
-    virtual double getScalar(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
+    /* Grow */
+    void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
-    /* exact from analytical equations */
-    double getCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
-    double getLength(double age); ///< analytical length of the root
-    double getAge(double length); ///< analytical age of the root
+    /* Roots as sequential list */
+    double getParameter(std::string name) const override; ///< returns an organ parameter
 
-    /* abbreviations */
-    RootParameter* rParam() const { return (RootParameter*)param;  } ///< type cast
-    RootRandomOrganParameter* tParam() const; // type cast
-    double dx() const; ///< returns the axial resolution
-    Vector3d heading() const; /// current heading of the root tip
+    /* From analytical equations */
+    double calcCreationTime(double length); ///< analytical creation (=emergence) time of a node at a length
+    double calcLength(double age); ///< analytical length of the root
+    double calcAge(double length); ///< analytical age of the root
+
+    /* Abbreviations */
+    RootRandomParameter* getRootTypeParameter() const;  ///< root type parameter of this root
+    const RootSpecificParameter* param() const; ///< root parameter
+    double dx() const { return getRootTypeParameter()->dx; } ///< returns the axial resolution
 
     /* IO */
-    void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
-    std::string toString() const;
+    std::string toString() const override;
 
-    /* nodes */
-    void addNode(Vector3d n, double t); //< adds a node to the root
-
-    /* parameters that are given per root that are constant*/
-	double parent_base_length; ///< length [cm]
-	int parent_ni; ///< parent node index
-	int pni;
-	double pbl;
-
-
-    const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
-
-    Vector3d initialHeading;
+    /* Parameters that are given per root that are constant*/
+    Vector3d iHeading; ///< the initial heading of the root, when it was created
+    double parentBaseLength; ///< length [cm]
+    int parentNI; ///< parent node index
 
 protected:
 
-    void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
+    virtual void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
+    void createSegments(double l, double dt, bool silence); ///< creates segments of length l, called by Root::simulate()
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
-    void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
+    Vector3d heading(); ///< current growth direction of the root
 
-    int old_non = 0;
+    bool firstCall = true; ///< firstCall of createSegments in simulate
+    const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
 
 };
 
-
-
-
-
-} // namespace CPlantBox
+} // end namespace CRootBox
 
 #endif /* ROOT_H_ */

@@ -1,114 +1,114 @@
+// -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #ifndef ORGAN_H_
 #define ORGAN_H_
 
-#include <cassert>
-#include <istream>
-#include <iostream>
-#include <assert.h>
-#include <stdexcept>
-
 #include "mymath.h"
-#include "sdf.h"
-#include "ModelParameter.h"
 
-namespace CPlantBox {
+#include "../external/tinyxml2/tinyxml2.h"
 
+#include <vector>
 
-class Plant;
-class OrganRandomOrganParameter;
-class SpecificOrganParamter;
+namespace CRootBox {
+
+class OrganSpecificParameter;
+class OrganRandomParameter;
+class Organism;
 
 /**
  * Organ
  *
- * Base class of seed, root, shoot and leaf
+ * Describes a plant organ. Acts as base class for seed, root, stem and leaf.
  *
+ * Manages:
+ * Organ development (@see Organ::simulate)
+ * The organ tree: one parent, multiple children, one plant organism
+ * This organ's parameters
+ * This organ's geometry (by nodes, global node indices, node creation times, and line segments)
+ * Information about the last time step: nodes can either move, or be created
+ * Post processing and RSML output
  */
 class Organ
 {
-
 public:
 
-    enum OrganTypes { ot_seed = 1, ot_root = 2, ot_stem = 4, ot_leafe = 8, ot_shoot = ot_stem | ot_leafe, ot_organ = ot_seed | ot_root | ot_stem | ot_leafe}; ///< organ types bit wise
-
-    enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_twist=5 };  ///< root tropism types
-	enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
-	enum ScalarTypes { st_type = 0, st_radius = 1, st_order = 2, st_time = 3, st_length = 4, st_surface = 5, st_volume = 6, st_one = 7,
-		st_userdata1 = 8, st_userdata2 = 9, st_userdata3 = 10, st_parenttype = 11,
-		st_lb = 12, st_la = 13, st_nob = 14, st_r = 15, st_theta = 16, st_rlt = 17,
-		st_meanln = 18, st_sdln = 19}; ///< @see RootSystem::getScalar
-	static const std::vector<std::string> scalarTypeNames; ///< the corresponding names
-
-    Organ(Plant* plant, Organ* parent, int subtype, double delay);
-
+    Organ(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+        bool moved= false, int oldNON = 0); ///< creates everything from scratch
+    Organ(Organism* plant, Organ* parent, int organtype, int subtype, double delay); ///< used within simulation
     virtual ~Organ();
 
-    virtual int organType() const { return Organ::ot_organ; }  ///< returns the organs type, overwrite for each organ
+    virtual Organ* copy(Organism* plant); ///< deep copies the organ tree
 
-    /* scene graph for upper plant parts */
+    virtual int organType() const; ///< returns the organs type, overwrite for each organ
 
-    virtual Vector3d getRelativeOrigin() const { return Vector3d(); }; ///< the relative position within the parent organ
-    virtual void setRelativeOrigin(const Vector3d& o) { throw std::invalid_argument("Organ::setRelativeOrigin not implemented"); }; ///< the relative position within the parent organ
-    virtual Matrix3d getRelativeHeading() const { return Matrix3d(); }; ///< the heading in the parent organ
-    virtual void setRelativeHeading(const Matrix3d& m) { throw std::invalid_argument("Organ::getRelativeHeading not implemented"); }; ///< the heading in the parent organ
+    /* development */
+    virtual void simulate(double dt, bool verbose = false); ///< grow for a time span of \param dt
 
-    Vector3d getOrigin() const; ///< absolute coordinates of the organ origin
-    Matrix3d getHeading() const; ///< absolute heading of the organ
-    Vector3d getNode(int i) const;  ///< i-th node of the organ in absolute coordinates
-    std::vector<Vector3d> getNodes() const; /// converts all relative nodes to absolute coordinates
+    /* tree */
+    void setParent(Organ* p) { parent = p; } ///< sets parent organ
+    Organ* getParent() const { return parent; } ///< return parent organ, equals nullptr if it has no parent
+    void setOrganism(Organism* p) { plant = p; } ///< sets the organism of which the organ is part of
+    void addChild(Organ* c); ///< adds an subsequent organ
 
     /* parameters */
-    OrganRandomOrganParameter* getOrganRandomOrganParameter() const;  ///< organ type parameter
+    int getId() const { return id; } ///< unique organ id
+    const OrganSpecificParameter* getParam() const { return param_; } ///< organ parameters
+    OrganRandomParameter* getOrganRandomParameter() const;  ///< organ type parameter
+    bool isAlive() const { return alive; } ///< checks if alive
+    bool isActive() const { return active; } ///< checks if active
+    double getAge() const { return age; } ///< return age of the organ
+    double getLength() const { return length; } ///< returns length of the organ
 
-    /* simulation */
-    virtual void simulate(double dt, bool silence = false); ///< growth for a time span of \param dt
+    /* geometry */
+    int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
+    int getNumberOfSegments() { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
+    Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ
+    int getNodeId(int i) const { return nodeIds.at(i); } ///< global node index of the i-th node, i is called the local node index
+    double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
+    void addNode(Vector3d n, double t); //< adds a node to the root
+    void addNode(Vector3d n, int id, double t); //< adds a node to the root
+    std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
 
-    /* post processing */
-    std::vector<Organ*> getOrgans(unsigned int otype); ///< the organ including successors in a sequential vector
-    void getOrgans(unsigned int otype, std::vector<Organ*>& v); ///< the organ including successors in a sequential vector
+    /* last time step */
+    bool hasMoved() { return moved; }; ///< have any nodes moved during the last simulate call
+    int getOldNumberOfNodes() { return oldNumberOfNodes; } ///< the number of nodes before the last simulate call
 
-
-    virtual double getScalar(std::string name) const; ///< returns an organ parameter of Plant::ScalarType
+    /* for post processing */
+    std::vector<Organ*> getOrgans(int ot=-1); ///< the organ including children in a sequential vector
+    void getOrgans(int otype, std::vector<Organ*>& v); ///< the organ including children in a sequential vector
+    virtual double getParameter(std::string name) const; ///< returns an organ parameter
 
     /* IO */
-    virtual std::string toString() const;
-    virtual void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML root tag
-
-    size_t getNumberOfNodes() const { return r_nodes.size(); } ///< number of nodes of the organ
-    int getNodeID(int i) const { return nodeIDs.at(i); } ///< unique identifier of i-th node
-    double getNodeCT(int i) const { return nctimes.at(i); } ///< creation time of i-th node
-
-
-    /* up and down the organ tree */
-    Plant* plant; ///< the plant of which this organ is part of
-    Organ* parent; ///< pointer to the parent organ (equals nullptr if it has no parent)
-    std::vector<Organ*> children; ///< the successive organs
-
-	std::vector<Organ*> getChildren(unsigned int otype);
-    /* Parameters that are constant*/
-    int id; ///< unique organ id, (not used so far)
-    SpecificOrganParamter* param = nullptr; ///< the parameters of this root
-
-    /* Parameters that may change with time */
-    bool alive = 1; ///< true: alive, false: dead
-    bool active = 1; ///< true: active, false: root stopped growing
-    double age = 0; ///< current age [days]
-    double length = 0; ///< actual length [cm] of the root. might differ from getLength(age) in case of impeded root growth
-
-    /* node data */
-    std::vector<Vector3d> r_nodes; ///< relative nodes of the root
-    std::vector<int> nodeIDs; ///< unique node identifier
-    std::vector<double> nctimes; ///< node creation times [days]
+    virtual std::string toString() const; ///< info for debugging
+    virtual void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
 
 protected:
 
+    /* up and down the organ tree */
+    Organism* plant; ///< the plant of which this organ is part of
+    Organ* parent; ///< pointer to the parent organ (nullptr if it has no parent)
+    std::vector<Organ*> children; ///< the successive organs
+
+    /* Parameters that are constant over the organ life time */
+    const int id; ///< unique organ id
+    const OrganSpecificParameter* param_; ///< the parameter set of this organ
+
+    /* Parameters are changing over time */
+    bool alive = true; ///< true: alive, false: dead
+    bool active = true; ///< true: active, false: organ stopped growing
+    double age = 0; ///< current age [days]
+    double length = 0; ///< length of the organ [cm]
+
+    /* node data */
+    std::vector<Vector3d> nodes; ///< nodes of the organ [cm]
+    std::vector<int> nodeIds; ///< global node indices
+    std::vector<double> nodeCTs; ///< node creation times [days]
+
+    /* last time step */
+    bool moved = false; ///< nodes moved during last time step
+    int oldNumberOfNodes = 0; ///< number of nodes at the end of previous time step
 
 };
 
+} // namespace CRootBox
 
-
-
-
-} // namespace CPlantBox
-#include "Plant.h" //
-#endif /* ORGAN_H_ */
+#endif

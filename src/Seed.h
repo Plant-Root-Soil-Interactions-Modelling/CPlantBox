@@ -1,48 +1,48 @@
 #ifndef SEED_H_
 #define SEED_H_
 
-
 #include "Organ.h"
+#include "Organism.h"
+#include "seedparameter.h"
 
-namespace CPlantBox {
-
-
-class Plant;
+namespace CRootBox {
 
 /**
  * Seed
  *
- * the main organ of the plant,
  * simulate calls the simulate method of the stem, and base roots
- *
  */
 class Seed : public Organ
 {
-
 public:
 
-	Seed(Plant* plant);
-	virtual ~Seed() { };
+	Seed(Organism* plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.) { };
+	virtual ~Seed() { }; // everything is done in @Organ
 
-	virtual int organType() const override { return Organ::ot_seed; };
+	virtual int organType() const override { return Organism::ot_seed; }
 
-	virtual Vector3d getRelativeOrigin() const override { return seed_pos; };
-	///< the relative position within the parent organ
-	Vector3d getseedPos(SeedParameter* sparam) const { return sparam->seedPos; };
-	virtual void setRelativeOrigin(const Vector3d& o) override { seed_pos = o; };
-	///< the relative position within the parent organ
-	virtual SeedParameter* initializeparam();
-	virtual void initialize(SeedParameter* sparam);
-    	virtual void setRelativeHeading(const Matrix3d& m) override { this->A = m; };
+	void initialize();
+
+    SeedSpecificParameter* param() const { return (SeedSpecificParameter*)param_; }
+
 	virtual std::string toString() const override;
 
-	const int basalType = 4;
-	const int tillerType = 4;
-	Vector3d seed_pos;
-     	Matrix3d A; // relative heading
+	int getNumberOfRootCrowns() const { return numberOfRootCrowns; }
+	std::vector<Organ*>& baseOrgans() { return children; }
+	std::vector<Organ*> copyBaseOrgans();
+
+	// default positions
+	int basalType = 4;
+	int shootborneType = 5;
+	int tillerType = 4;
+
+protected:
+
+    int numberOfRootCrowns = 0;
+	int getParamSubType(int organtype, std::string str);
+
 };
 
-
-} // namespace CPlantBox
+}
 
 #endif /* Seed_H_ */
