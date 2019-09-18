@@ -353,9 +353,9 @@ void StemRandomParameter::bindParmeters()
     bindParameter("nob", &nob, "Maximal number of laterals [1]", &nobs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
     bindParameter("a", &r, "Stem radius [cm]", &as);
-    bindParameter("RotBeta", &RotBeta, "Stem color, red component [0.-1.]");
-    bindParameter("BetaDev", &BetaDev, "Stem color, green component [0.-1.]");
-    bindParameter("InitBeta", &InitBeta, "Stem color, blue component [0.-1.]");
+    bindParameter("RotBeta", &RotBeta, "RevRotation of the stem");
+    bindParameter("BetaDev", &BetaDev, "RevRotation deviation");
+    bindParameter("InitBeta", &InitBeta, "Initial RevRotation");
     bindParameter("tropismT", &tropismT, "Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of stem tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of stem tropism [1/cm]");
@@ -369,4 +369,4 @@ void StemRandomParameter::bindParmeters()
     description["successorP"] = "Probability of each sub type to occur";
 }
 
-} // end namespace CStemBox
+} // end namespace CRootBox
