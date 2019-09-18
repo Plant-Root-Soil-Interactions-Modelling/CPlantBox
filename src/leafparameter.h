@@ -20,8 +20,8 @@ class LeafSpecificParameter : public OrganSpecificParameter
 public:
 
 	LeafSpecificParameter() :OrganSpecificParameter() { };
-	LeafSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, int lnf):
-		OrganSpecificParameter() , lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln), lnf(lnf) {  };
+	LeafSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
+		OrganSpecificParameter() , lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln){  };
 
 	/*
 	 * Parameters per leaf
@@ -33,7 +33,6 @@ public:
 	double theta = 0.; 		///< Branching angle between veins [rad]
 	double rlt = 0.;		///< Leaf life time [day]
 	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
-	int lnf = 0;  		    ///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
 
 	double getK() const; ///< Returns the exact maximal leaf length of this realization [cm]
 

@@ -135,8 +135,7 @@ OrganSpecificParameter* LeafRandomParameter::realize()
 	double a_ = std::max(a + plant->randn()*as,double(0)); // radius
 	double theta_ = std::max(theta + plant->randn()*thetas,double(0)); // initial elongation
 	double rlt_ = std::max(rlt + plant->randn()*rlts,double(0)); // root life time
-	int lnf_ = lnf;
-	LeafSpecificParameter* leaf_p =  new LeafSpecificParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,lnf_);
+	LeafSpecificParameter* leaf_p =  new LeafSpecificParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 	return leaf_p;
 
 //for (int i = 0; i<nob_-1; i++) { // create inter-root distances
