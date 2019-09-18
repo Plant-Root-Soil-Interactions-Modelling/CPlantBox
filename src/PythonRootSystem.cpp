@@ -17,6 +17,7 @@
 #include "mymath.h"
 #include "sdf.h"
 #include "leafparameter.h"
+#include "stemparameter.h"
 #include "RootSystem.h"
 #include "sdf_rs.h"
 #include "analysis.h"
@@ -598,7 +599,7 @@ BOOST_PYTHON_MODULE(py_rootbox)
     /*
      * leafparameter.h
      */
-    class_<LeafRandomParameter, LeafRandomParameter*, bases<LeafRandomParameter>>("SeedRandomParameter", init<Organism*>())
+    class_<LeafRandomParameter, LeafRandomParameter*, bases<OrganRandomParameter>>("LeafRandomParameter", init<Organism*>())
                         .def("getLateralType",&LeafRandomParameter::getLateralType)
                         .def("getK",&LeafRandomParameter::getK)
                         .def_readwrite("type", &LeafRandomParameter::subType)
@@ -651,6 +652,61 @@ BOOST_PYTHON_MODULE(py_rootbox)
           .def_readwrite("rlt", &LeafSpecificParameter::rlt)
           .def_readwrite("lnf", &LeafSpecificParameter::lnf)
           .def("getK",&LeafSpecificParameter::getK)
+          .def("__str__",&SeedSpecificParameter::toString)
+          ;
+    /*
+     * stemparameter.h
+     */
+    class_<StemRandomParameter, StemRandomParameter*, bases<OrganRandomParameter>>("StemRandomParameter", init<Organism*>())
+                        .def("getLateralType",&StemRandomParameter::getLateralType)
+                        .def("getK",&StemRandomParameter::getK)
+                        .def_readwrite("type", &StemRandomParameter::subType)
+                        .def_readwrite("lb", &StemRandomParameter::lb)
+                        .def_readwrite("lbs", &StemRandomParameter::lbs)
+                        .def_readwrite("la", &StemRandomParameter::la)
+                        .def_readwrite("las", &StemRandomParameter::las)
+                        .def_readwrite("ln", &StemRandomParameter::ln)
+                        .def_readwrite("lns", &StemRandomParameter::lns)
+                        .def_readwrite("lnf", &StemRandomParameter::lnf)
+                        .def_readwrite("nob", &StemRandomParameter::nob)
+                        .def_readwrite("nobs", &StemRandomParameter::nobs)
+                        .def_readwrite("r", &StemRandomParameter::r)
+                        .def_readwrite("rs", &StemRandomParameter::rs)
+                        .def_readwrite("a", &StemRandomParameter::a)
+                        .def_readwrite("a_s", &StemRandomParameter::as) // as is a keyword in python
+						.def_readwrite("RotBeta", &StemRandomParameter::RotBeta)
+						.def_readwrite("BetaDev", &StemRandomParameter::BetaDev)
+						.def_readwrite("InitBeta", &StemRandomParameter::InitBeta)
+                        .def_readwrite("tropismT", &StemRandomParameter::tropismT)
+                        .def_readwrite("tropismN", &StemRandomParameter::tropismN)
+                        .def_readwrite("tropismS", &StemRandomParameter::tropismS)
+                        .def_readwrite("dx", &StemRandomParameter::dx)
+                        .def_readwrite("theta", &StemRandomParameter::theta)
+                        .def_readwrite("thetas", &StemRandomParameter::thetas)
+                        .def_readwrite("rlt", &StemRandomParameter::rlt)
+                        .def_readwrite("rlts", &StemRandomParameter::rlts)
+                        .def_readwrite("gf", &StemRandomParameter::gf)
+                        .def_readwrite("name", &StemRandomParameter::name)
+                        .def_readwrite("successor", &StemRandomParameter::successor)
+                        .def_readwrite("successorP", &StemRandomParameter::successorP)
+                        .def_readwrite("f_tf", &StemRandomParameter::f_tf)
+                        .def_readwrite("f_gf", &StemRandomParameter::f_gf)
+                        .def_readwrite("f_se", &StemRandomParameter::f_se)
+                        .def_readwrite("f_sa", &StemRandomParameter::f_sa)
+                        .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
+            .def("__str__",&StemRandomParameter::toString, toString_overloads())
+            ;
+    class_<StemSpecificParameter, StemSpecificParameter*, bases<OrganSpecificParameter>>("StemSpecificParameter", init<>())
+          .def(init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
+          .def_readwrite("subType", &StemSpecificParameter::subType)
+          .def_readwrite("lb", &StemSpecificParameter::lb)
+          .def_readwrite("la", &StemSpecificParameter::la)
+          .def_readwrite("ln", &StemSpecificParameter::ln)
+          .def_readwrite("r", &StemSpecificParameter::r)
+          .def_readwrite("a", &StemSpecificParameter::a)
+          .def_readwrite("theta", &StemSpecificParameter::theta)
+          .def_readwrite("rlt", &StemSpecificParameter::rlt)
+          .def("getK",&StemSpecificParameter::getK)
           .def("__str__",&SeedSpecificParameter::toString)
           ;
 
