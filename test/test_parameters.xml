@@ -1,0 +1,71 @@
+<RootBox>
+    <seed name="undefined" subType="0">
+        <parameter name="delayB" value="3" dev="0"/>
+        <parameter name="delayRC" value="1e+09" dev="0"/>
+        <parameter name="delaySB" value="1e+09" dev="0"/>
+        <parameter name="firstB" value="10" dev="0"/>
+        <parameter name="firstSB" value="1e+09" dev="0"/>
+        <parameter name="maxB" value="100" dev="0"/>
+        <parameter name="nC" value="0" dev="0"/>
+        <parameter name="nz" value="1" dev="0"/>
+        <parameter name="seedPos.x" value="0" dev="0"/>
+        <parameter name="seedPos.y" value="0" dev="0"/>
+        <parameter name="seedPos.z" value="-3" dev="0"/>
+        <parameter name="simtime" value="30" dev="0"/>
+    </seed>
+    <root name="undefined" subType="0">
+        <parameter name="gf" value="1" dev="0"/>
+        <parameter name="tropismT" value="1"/>
+        <parameter name="a" value="1" dev="0"/>
+        <parameter name="colorB" value="0.2"/>
+        <parameter name="colorG" value="0.2"/>
+        <parameter name="colorR" value="0.60000002"/>
+        <parameter name="dx" value="0.25"/>
+        <parameter name="la" value="10" dev="0"/>
+        <parameter name="lb" value="0" dev="0"/>
+        <parameter name="ln" value="1" dev="0"/>
+        <parameter name="nob" value="0" dev="0"/>
+        <parameter name="r" value="1" dev="0"/>
+        <parameter name="rlt" value="1e+09" dev="0"/>
+        <parameter name="theta" value="1.22" dev="0"/>
+        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismS" value="0.2"/>
+    </root>
+    <root name="taproot" subType="1">
+        <parameter name="gf" value="1" dev="0"/>
+        <parameter name="tropismT" value="1"/>
+        <parameter name="a" value="1" dev="0"/>
+        <parameter name="colorB" value="0.2"/>
+        <parameter name="colorG" value="0.2"/>
+        <parameter name="colorR" value="0.60000002"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="la" value="10" dev="0"/>
+        <parameter name="lb" value="2" dev="0"/>
+        <parameter name="ln" value="4.6842103" dev="0"/>
+        <parameter name="nob" value="20" dev="0"/>
+        <parameter name="r" value="1" dev="0"/>
+        <parameter name="rlt" value="1e+09" dev="0"/>
+        <parameter name="theta" value="1.22" dev="0"/>
+        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismS" value="0.2"/>
+        <parameter name="successor" number="0" type="2" percentage="1"/>
+    </root>
+    <root name="lateral" subType="2">
+        <parameter name="gf" value="1" dev="0"/>
+        <parameter name="tropismT" value="1"/>
+        <parameter name="a" value="2" dev="0"/>
+        <parameter name="colorB" value="0.2"/>
+        <parameter name="colorG" value="0.2"/>
+        <parameter name="colorR" value="0.60000002"/>
+        <parameter name="dx" value="0.1"/>
+        <parameter name="la" value="25" dev="0"/>
+        <parameter name="lb" value="0" dev="0"/>
+        <parameter name="ln" value="0" dev="0"/>
+        <parameter name="nob" value="0" dev="0"/>
+        <parameter name="r" value="2" dev="0"/>
+        <parameter name="rlt" value="1e+09" dev="0"/>
+        <parameter name="theta" value="1.22" dev="0"/>
+        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismS" value="0.2"/>
+    </root>
+</RootBox>

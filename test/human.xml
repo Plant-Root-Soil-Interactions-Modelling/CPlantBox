@@ -1,0 +1,5 @@
+<organism>
+    <organ name="nose" subType="1"/>
+    <organ name="eye" subType="2"/>
+    <root name="rootyhand" subType="1"/>
+</organism>
