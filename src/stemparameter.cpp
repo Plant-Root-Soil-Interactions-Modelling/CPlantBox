@@ -131,7 +131,7 @@ OrganSpecificParameter* StemRandomParameter::realize()
 			double d =  std::max(ln/(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
 			ln_.push_back(d);
 		};break;
-fault:
+default:
 		throw 1; // TODO make a nice one
 	}
 
