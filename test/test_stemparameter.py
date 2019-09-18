@@ -13,7 +13,6 @@ class TestStemParameter(unittest.TestCase):
         self.srp.ln = 1.25
         self.srp.lns = 0.12
         self.srp.nob = 8
-        self.srp.subType = 1
         #print(self.srp.las)
 
     def add_successors(self):
@@ -59,14 +58,14 @@ class TestStemParameter(unittest.TestCase):
         ln = srp.getParameter("ln")
         lns = srp.getParameter("ln_dev")
         la = srp.getParameter("la_mean")  # we can always add "_mean" to avoid naming conflicts
-        self.assertEqual(ot, 4., "getParameter: value unexpected")
+        self.assertEqual(ot, 3., "getParameter: value unexpected")
         self.assertEqual(st, -1., "getParameter: value unexpected")
         self.assertEqual(gf, 1., "getParameter: value unexpected")
         self.assertEqual(ln, 1., "getParameter: value unexpected")
         self.assertEqual(lns, 0.123, "getParameter: value unexpected")
         self.assertEqual(la, 12, "getParameter: value unexpected")
-        lrp.theta = 123  # change values
-        lrp.thetas = 456
+        srp.theta = 123  # change values
+        srp.thetas = 456
         theta = srp.getParameter("theta")
         thetas = srp.getParameter("theta_dev")
         self.assertEqual(theta, 123, "getParameter: value unexpected")
@@ -78,7 +77,7 @@ class TestStemParameter(unittest.TestCase):
         self.add_successors()
         srp = self.srp  # rename
         srp.name = "the stem"
-        self.assertEqual(srp.__str__(False), "Name: the srp, organType: 3, subType, -1", "toString: value unexpected")
+        self.assertEqual(srp.__str__(False), "Name: the stem, organType: 3, subType, -1", "toString: value unexpected")
         print(srp.name)
 
     def test_xml(self):
@@ -89,7 +88,7 @@ class TestStemParameter(unittest.TestCase):
         otp.name = "lateral"
         otp.subType = 1
         otp.nob = (otp.k-otp.la-otp.lb)/otp.ln + 1;
-        otp.writeXML("leaf.xml")
+        otp.writeXML("stem.xml")
         otp2 = rb.StemRandomParameter(self.plant)
         otp2.readXML("stem.xml")    
         otp2.nob = (otp2.k-otp2.la-otp2.lb)/otp2.ln + 1;
@@ -110,7 +109,7 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(p.__class__.__name__, "StemSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, -1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
-        self.assertEqual(len(p.ln) + 1, self.lrp.nob, "realize: internodal distances +1 should be  number of laterals")
+        self.assertEqual(len(p.ln) + 1, self.srp.nob, "realize: internodal distances +1 should be  number of laterals")
         print(p)
 
 
