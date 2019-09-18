@@ -71,19 +71,14 @@ public:
     void readXML(tinyxml2::XMLElement* element) override; ///< reads a single sub type organ parameter set
     tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const override; ///< writes a organ stem parameter set
 
-    // DEPRICATED
-    void read(std::istream & cin); ///< reads a single stem parameter set
-    void write(std::ostream & cout) const; ///< writes a single stem parameter set
-
     /*
-     * StemBox parameters per stem type
+     * Parameters per stem type
      */
     double lb = 0.; 	    ///< Basal zone [cm]
     double lbs = 0.;        ///< Standard deviation basal zone [cm]
     double la = 10.;	    ///< Apical zone [cm];
     double las = 0.;    	///< Standard deviation apical zone [cm];
     double ln = 1; 		    ///< Inter-lateral distance [cm]
-
     double lns = 0.;    	///< Standard deviation inter-lateral distance [cm]
     int lnf = 0;            ///< Inter-lateral type [type]
     double nob = 0.;    	///< Number of branches [1]
