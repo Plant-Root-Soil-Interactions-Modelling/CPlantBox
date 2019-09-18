@@ -94,49 +94,47 @@ OrganSpecificParameter* StemRandomParameter::realize()
     int nob_ = std::max(round(nob + plant->randn()*nobs), 0.); // maximal number of branches
     	switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
-		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d = std::max(ln +plant->randn()*lns,1e-9); //Normal function of equal internode distance
 			ln_.push_back(d);
-			ln_.push_back(0);
 
-		};break;
+
+		}break;
 		case 1: //  nodes distance increase linearly
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 
-		};break;
+		}break;
 		case 2: //nodes distance decrease linearly
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
 			ln_.push_back(d);
 
-		};break;
+		}break;
 		case 3: //nodes distance decrease exponential
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
 			ln_.push_back(d);
 
-		};break;
+		}break;
 
 		case 4://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln/(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
-		}; break;
+		} break;
 		case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln/(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
 			ln_.push_back(d);
 		};break;
-
+fault:
+		throw 1; // TODO make a nice one
 	}
-    for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-        double d = std::max(ln + plant->randn()*lns, 1.e-5); // miminum is 1.e-5
-        ln_.push_back(d);
-    }
+
 
     double r_ = std::max(r + plant->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + plant->randn()*as, 0.); // radius
