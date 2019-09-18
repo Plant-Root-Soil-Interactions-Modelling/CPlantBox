@@ -530,6 +530,7 @@ std::string Organism::toString() const
  */
 void Organism::readParameters(std::string name, std::string basetag)
 {
+	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument doc;
     doc.LoadFile(name.c_str());
     if(doc.ErrorID() == 0) {
