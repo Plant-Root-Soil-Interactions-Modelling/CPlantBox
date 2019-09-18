@@ -116,10 +116,13 @@ class TestOrganism(unittest.TestCase):
         """ test if getParameter works """
         self.hand_example()
         self.add_nodes()
+        simtime=10;
+        self.human1.simulate(simtime)
         organs = self.human1.getOrgans()
         age = v2a(self.human1.getParameter("age"))
         self.assertEqual(len(organs), age.shape[0] , "parameter: organ size unequal to parameter size")
-        self.assertEqual(age[2], -3, "parameter: wrong ages")
+        self.assertEqual(age[2], -3+simtime, "parameter: wrong ages")
+        print(age)
 
     def test_rsml(self):
         """ checks rmsl functionality with Python rsml reader """

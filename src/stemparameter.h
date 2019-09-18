@@ -80,9 +80,9 @@ public:
     double las = 0.;    	///< Standard deviation apical zone [cm];
     double ln = 1; 		    ///< Inter-lateral distance [cm]
     double lns = 0.;    	///< Standard deviation inter-lateral distance [cm]
-    int lnf = 0;            ///< Inter-lateral type [type]
+    int lnf = 0;            ///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
     double nob = 0.;    	///< Number of branches [1]
-    double nobs = 0.;   	///< Standard deviation number of branches [1]
+    double nobs = 0.;   	///< TODO get rid of nobs
     double r = 1;		    ///< Initial growth rate [cm day-1]
     double rs = 0.;	    	///< Standard deviation initial growth rate [cm day-1]
     double a = 0.1; 		///< Stem radius [cm]

@@ -77,7 +77,7 @@ public:
 	double k = 10.;			///< Maximal leaf length [cm]
 	double ks =0.;			///< Standard deviation maxial leaf length [cm]
 	double nob = 0.; 		///< Number of branches [1]
-	double nobs = 0.; 		///< Standard deviation of number of branches [1]
+	double nobs = 0.; 		///<  TODO get rid of nobs
 	double r = 1.;			///< Initial growth rate [cm day-1]
 	double rs = 0.;			///< Standard deviation initial growth rate [cm day-1]
 	double a = 0.1; 		///< Leaf width [cm]
