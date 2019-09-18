@@ -45,6 +45,8 @@ if (PythonLibs_FOUND)
             rootparameter.cpp
 			seedparameter.cpp      
 			leafparameter.cpp      
+			seedparameter.cpp
+			stemparameter.cpp
             Organ.cpp            
             Root.cpp
             Seed.cpp

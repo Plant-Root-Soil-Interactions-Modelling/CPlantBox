@@ -551,6 +551,33 @@ seedparameter.cpp.s:
 	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/seedparameter.cpp.s
 .PHONY : seedparameter.cpp.s
 
+stemparameter.o: stemparameter.cpp.o
+
+.PHONY : stemparameter.o
+
+# target to build an object file
+stemparameter.cpp.o:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/stemparameter.cpp.o
+.PHONY : stemparameter.cpp.o
+
+stemparameter.i: stemparameter.cpp.i
+
+.PHONY : stemparameter.i
+
+# target to preprocess a source file
+stemparameter.cpp.i:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/stemparameter.cpp.i
+.PHONY : stemparameter.cpp.i
+
+stemparameter.s: stemparameter.cpp.s
+
+.PHONY : stemparameter.s
+
+# target to generate assembly for a file
+stemparameter.cpp.s:
+	cd /mnt/c/cpb1 && $(MAKE) -f src/CMakeFiles/py_rootbox.dir/build.make src/CMakeFiles/py_rootbox.dir/stemparameter.cpp.s
+.PHONY : stemparameter.cpp.s
+
 tropism.o: tropism.cpp.o
 
 .PHONY : tropism.o
@@ -633,6 +660,9 @@ help:
 	@echo "... seedparameter.o"
 	@echo "... seedparameter.i"
 	@echo "... seedparameter.s"
+	@echo "... stemparameter.o"
+	@echo "... stemparameter.i"
+	@echo "... stemparameter.s"
 	@echo "... tropism.o"
 	@echo "... tropism.i"
 	@echo "... tropism.s"

@@ -12,7 +12,7 @@
 #include "LeafGrowth.h"
 #include "ModelParameter.h"
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 class Plant;

@@ -3,7 +3,7 @@
 #include "Root.h"
 #include <memory>
 
-namespace CPlantBox {
+namespace CRootBox {
 
 /**
  * Constructor
@@ -29,10 +29,10 @@ Stem::Stem(Plant* plant, Organ* parent, int subtype, double delay, Vector3d ishe
 	  initialStemHeading = isheading;
 	//  std::cout << "stem pni = "<< pni<< std::endl;
 	//  std::cout << "Stem constructor \n";
-	StemRandomOrganParameter* sttp = (StemRandomOrganParameter*) plant->getParameter(Organ::ot_stem, subtype);
+	StemRandomParameter* sttp = (StemRandomParameter*) plant->getParameter(Organ::ot_stem, subtype);
 	param = sttp->realize(); // throw the dice
-	StemParameter* stem_p = (StemParameter*) param;
-	//  std::cout <<", "<<(StemParameter*) param<< "\n";
+	StemSpecificParameter* stem_p = (StemSpecificParameter*) param;
+	//  std::cout <<", "<<(StemSpecificParameter*) param<< "\n";
      //std::cout<<"theta "<<stem_p->theta<<"\n";
 	//Matrix3d heading = Matrix3d::ons(rheading); // isheading is the z direction, i.e. column 2 in the matrix
 
@@ -92,8 +92,8 @@ void Stem::simulate(double dt, bool silence)
 	//  vector
 	old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
 
-	const StemParameter* sp = sParam(); // rename
-	const StemRandomOrganParameter* sttp = stParam();
+	const StemSpecificParameter* sp = sParam(); // rename
+	const StemRandomParameter* sttp = stParam();
 
 	// increase age
 	if (age+dt>sp->rlt) { // stem life time
@@ -217,27 +217,38 @@ void Stem::simulate(double dt, bool silence)
  * @param name 		parameter name (returns nan if not available)
  *
  */
-double Stem::getScalar(std::string name) const {
-double r = Organ::getScalar(name);
-	if (name=="basal zone") { r = stParam()->lb; }
-	if (name=="apical zone") { r = stParam()->la; }
-	if (name=="initial growth rate") { r = stParam()->r; }
-	if (name=="radius") { r = stParam()->a; }
-	if (name=="insertion angle") { r = stParam()->theta; }
-	if (name=="root life time") { r = stParam()->rlt; }
-//	if (name=="mean internodal distance") {
-//		r = std::accumulate(stParam()->ln.begin(), stParam()->ln.end(), 0.0) / stParam()->ln.size();
-//	}
-//	if (name=="sd internodal distance") {
-//		const std::vector<double>& v_ = stParam()->ln;
-//		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
-//		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
-//		r = std::sqrt(sq_sum / v_.size() - mean * mean);
-//	}
-//	if (name=="surface") { r = stParam()->a*stParam()->a*M_PI*length; }
-//	if (name=="number of branches") { r = stParam()->ln.size() +1; }
-	return r;
+double Stem::getParameter(std::string name) const
+{
+    if (name=="lb") { return param()->lb; } // basal zone [cm]
+    if (name=="la") { return param()->la; } // apical zone [cm]
+    if (name=="nob") { return param()->nob; } // number of branches
+    if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
+    if (name=="radius") { return param()->a; } // root radius [cm]
+    if (name=="a") { return param()->a; } // root radius [cm]
+    if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
+    if (name=="rlt") { return param()->rlt; } // root life time [day]
+    if (name=="k") { return param()->getK(); }; // maximal root length [cm]
+    if (name=="lnMean") { // mean lateral distance [cm]
+        auto& v =param()->ln;
+        return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+    }
+    if (name=="lnDev") { // standard deviation of lateral distance [cm]
+        auto& v =param()->ln;
+        double mean = std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+        double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
+        return std::sqrt(sq_sum / v.size() - mean * mean);
+    }
+    if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // // root volume [cm^3]
+    if (name=="surface") { return 2*param()->a*M_PI*getLength(); }
+    if (name=="type") { return this->param_->subType; }  // in CRootBox the subType is often called just type
+    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
+    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
+    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
+    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
+    if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
+    return Organ::getParameter(name);
 }
+
 
 /**
  * Analytical creation (=emergence) time of a node at a length along the stem
@@ -287,8 +298,8 @@ double Stem::StemGetAge(double length)
 /**
  *
  */
-StemRandomOrganParameter* Stem::stParam() const {
-	return (StemRandomOrganParameter*)getOrganRandomOrganParameter();
+StemRandomParameter* Stem::stParam() const {
+	return (StemRandomParameter*)getOrganRandomOrganParameter();
 }
 
 /**
@@ -296,7 +307,7 @@ StemRandomOrganParameter* Stem::stParam() const {
  */
 double Stem::dx() const
 {
-	return ((StemRandomOrganParameter*)getOrganRandomOrganParameter())->dx;
+	return ((StemRandomParameter*)getOrganRandomOrganParameter())->dx;
 }
 
 /**
@@ -306,7 +317,7 @@ double Stem::dx() const
  */
 void Stem::createLateral(bool silence)
 {
-	const StemParameter* sp = sParam(); // rename
+	const StemSpecificParameter* sp = sParam(); // rename
 	int lt = stParam()->getLateralType(getNode(r_nodes.size()-1));
 
 	if (sp->lnf==2&& lt>0) {
@@ -383,7 +394,7 @@ void Stem::createLateral(bool silence)
 void Stem::LeafGrow(bool silence, Vector3d bud)
 {
 
-	const StemParameter* sp = sParam(); // rename
+	const StemSpecificParameter* sp = sParam(); // rename
 	//int lt = stParam()->getLateralType(getNode(r_nodes.size()-1));
 	//  	std::cout << "LeafGrow createLateral()\n";
 	//  	std::cout << "LeafGrow type " << lt << "\n";
@@ -472,7 +483,7 @@ void Stem::LeafGrow(bool silence, Vector3d bud)
 void Stem::ShootBorneRootGrow(bool silence)
 {
 
-	const StemParameter* sp = sParam(); // rename
+	const StemSpecificParameter* sp = sParam(); // rename
 	int lt = stParam()->getLateralType(getNode(r_nodes.size()-1));
 	//    std::cout << "ShootBorneRootGrow createLateral()\n";
 	//    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";

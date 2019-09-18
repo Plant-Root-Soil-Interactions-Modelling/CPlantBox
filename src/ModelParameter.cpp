@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 

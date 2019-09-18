@@ -1,6 +1,6 @@
 #include "Leaf.h"
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 /**

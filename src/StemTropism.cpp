@@ -1,6 +1,6 @@
 #include "StemTropism.h"
 
-namespace CPlantBox {
+namespace CRootBox {
 
 
 
