@@ -9,7 +9,6 @@
 #include <numeric>
 #include <istream>
 
-#include "ModelParameter.h"
 #include "Organ.h"
 #include "Root.h"
 #include "Seed.h"
