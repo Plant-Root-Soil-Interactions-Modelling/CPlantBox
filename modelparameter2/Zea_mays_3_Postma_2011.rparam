@@ -1,0 +1,85 @@
+# Parameter set for type (by Rootbox)
+type	1
+name	taproot
+lb	2	0
+la	8	0
+ln	0.5	1e-05
+lmax	159	15.9
+r	4.5	0.45
+a	0.2	0.020
+color	1	0	0
+tropism	1	1	0.261799
+dx	0.25
+successors	2	2	3
+successorP	2	0.5	0.5
+theta	1.11404	0.109956
+rlt	1e+09	0
+gf	1
+# Parameter set for type (by Rootbox)
+type	2
+name	lateral1
+lb	0.0	0
+la	1.76	0
+ln	0	0
+lmax	1.76	0
+r	0.35	0.035
+a	0.0125	0.001250
+color	1	1	0
+tropism	2	2	0.523599
+dx	0.25
+successors	0
+successorP	0
+theta	1.22173	0
+rlt	1e+09	0
+gf	1
+# Parameter set for type (by Rootbox)
+type	3
+name	lateral2
+lb	0	0
+la	6.01	0
+ln	0	0
+lmax	6.01	0
+r	0.4	0.04
+a	0.02	0.0020
+color	1	1	1
+tropism	2	2	0.523599
+dx	0.25
+successors	0
+successorP	0
+theta	1.22173	0
+rlt	1e+09	0
+gf	1
+# Parameter set for type (by Rootbox)
+type	4
+name	nodalroot
+lb	2	0
+la	8	0
+ln	1	0.1
+lmax	159	15.9
+r	4.5	0.45
+a	0.2	0.020
+color	1	0	0
+tropism	1	1	0.05
+dx	0.25
+successors	2	2	3
+successorP	2	0.5	0.5
+theta	1.5708	0.15708
+rlt	1e+09	0
+gf	1
+# Parameter set for type (by Rootbox)
+type	5
+name	shootborneroot
+lb	2	0
+la	8	0
+ln	0.5	1e-05
+lmax	59.05	5.9
+r	4.5	0.45
+a	0.2	0.020
+color	1	0	0
+tropism	1	1	0.05
+dx	0.25
+successors	2	2	3
+successorP	2	0.5	0.5
+theta	1.11404	0.109956
+rlt	1e+09	0
+gf	1

@@ -1,0 +1,68 @@
+# Parameter set for type
+type	1
+name	taproot
+lb	4	0.2
+la	10	0.1
+ln	8	0.8
+lmax	286	28.0123187187352
+r	4	0.4
+a	0.05	0.010
+color	1	0.1	0
+tropism	1	5	0.18
+dx	1
+successors	1	2
+successorP	1	1
+theta	0	0
+rlt	1000000000	100000000
+gf	1
+# Parameter set for type
+type	2
+name	1storderlateral
+lb	6	0.6
+la	0	0
+ln	2	0.2
+lmax	150.7	18.1265247634509
+r	2	0.2
+a	0.03	00
+color	1	1	0
+tropism	2	0.5	0.0785398
+dx	1
+successors	1	3
+successorP	1	1
+theta	1.39626	0.139626
+rlt	1000000000	100000000
+gf	1
+# Parameter set for type
+type	3
+name	2ndorderlateral
+lb	0.5	0.05
+la	0.5	0.05
+ln	6	0.06
+lmax	7	18.000638877551
+r	2	0.2
+a	0.02	00
+color	1	1	1
+tropism	2	2	0.314159
+dx	1
+successors	1	4
+successorP	1	1
+theta	1.22173	0.122173
+rlt	1000000000	100000000
+gf	1
+# Parameter set for type
+type	4
+name	3rdorderlateral
+lb	0	0
+la	2	0.1
+ln	0	0
+lmax	2	0.2
+r	2	0.1
+a	0.02	00
+color	0	0	1
+tropism	2	2	0.314159
+dx	1
+successors	0
+successorP	0
+theta	1.22173	0.122173
+rlt	1000000000	100000000
+gf	1
