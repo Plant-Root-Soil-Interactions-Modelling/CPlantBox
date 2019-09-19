@@ -1,5 +1,4 @@
-# build the CPlantBox library using CMake
-# Simply type cmake . && make
+
 # although out-of-source-builds are encouraged
 
 cmake_minimum_required (VERSION 2.8.12)
@@ -21,5 +20,5 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # add subdirectories
 add_subdirectory(src)
-add_subdirectory(examples)
-add_subdirectory(python)
+#add_subdirectory(src/external)
+#add_subdirectory(tutorial/python)
