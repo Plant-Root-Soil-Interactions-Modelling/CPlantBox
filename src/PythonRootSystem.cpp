@@ -19,6 +19,7 @@
 #include "leafparameter.h"
 #include "stemparameter.h"
 #include "RootSystem.h"
+#include "Plant.h"
 #include "sdf_rs.h"
 #include "analysis.h"
 
@@ -734,6 +735,24 @@ BOOST_PYTHON_MODULE(plantbox)
             ;
     class_<std::vector<std::vector<double>>>("std_vector_vector_double_")
             .def(vector_indexing_suite<std::vector<std::vector<double>>>() )
+            ;
+    /**
+     * Seed.h
+     */
+    class_<Seed, Seed*, bases<Organ>>("Seed", init<Organism*>())
+            .def("__str__",&Root::toString)
+            ;
+    /**
+     * Leaf.h
+     */
+    class_<Leaf, Leaf*, bases<Organ>>("Leaf", init<Organism*, Organ*, int, double, Vector3d, int, double>())
+            .def("__str__",&Root::toString)
+            ;
+    /**
+     * Stem.h
+     */
+    class_<Stem, Stem*, bases<Organ>>("Stem", init<Organism*, Organ*, int, double, Vector3d, int, double>())
+            .def("__str__",&Root::toString)
             ;
     /*
      * RootSystem.h

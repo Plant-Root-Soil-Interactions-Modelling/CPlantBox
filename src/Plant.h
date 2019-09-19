@@ -18,7 +18,7 @@
 #include "soil.h"
 #include "tropism.h"
 #include "growth.h"
-#include "external/tinyxml2.h"
+#include "external/tinyxml2/tinyxml2.h"
 
 namespace CPlantBox {
 

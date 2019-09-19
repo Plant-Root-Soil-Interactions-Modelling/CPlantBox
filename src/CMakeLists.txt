@@ -20,7 +20,7 @@ add_library(CPlantBox SHARED
             analysis.cpp
             sdf.cpp
             tropism.cpp
-			external/tinyxml2.cpp
+			external/tinyxml2/tinyxml2.cpp
             external/aabbcc/AABB.cc)
             #external/gauss_legendre/gauss_legendre.cpp
 
@@ -39,8 +39,8 @@ find_package(PythonInterp 3)    # creates PYTHON_VERSION_MAJOR, PYTHON_VERSION_M
 if (PythonLibs_FOUND)
   include_directories( ${PYTHON_INCLUDE_DIRS} )
 #
-#   find_package( Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} REQUIRED )
-	find_package( Boost COMPONENTS python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} REQUIRED ) # if above is not working
+   find_package( Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} REQUIRED )
+#	find_package( Boost COMPONENTS python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} REQUIRED ) # if above is not working
   include_directories( ${Boost_INCLUDE_DIR} )
 
   # make shared library for Pyhton binding
@@ -51,18 +51,20 @@ if (PythonLibs_FOUND)
 			leafparameter.cpp
 			seedparameter.cpp
 			stemparameter.cpp
-			#plant.cpp
-			#Stem.cpp
+			Stem.cpp
             Organ.cpp
             Root.cpp
             Seed.cpp
+			Stem.cpp
+			Leaf.cpp            
             Organism.cpp
+            Plant.cpp
             RootSystem.cpp
             PythonRootSystem.cpp
             analysis.cpp
             sdf.cpp
             tropism.cpp
-			external/tinyxml2.cpp
+			external/tinyxml2/tinyxml2.cpp
             external/aabbcc/AABB.cc
             #external/gauss_legendre/gauss_legendre.cpp
 )
