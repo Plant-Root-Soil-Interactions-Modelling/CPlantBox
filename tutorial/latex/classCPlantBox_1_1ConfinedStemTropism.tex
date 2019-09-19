@@ -1,0 +1,95 @@
+\hypertarget{classCPlantBox_1_1ConfinedStemTropism}{}\section{C\+Plant\+Box\+:\+:Confined\+Stem\+Tropism Class Reference}
+\label{classCPlantBox_1_1ConfinedStemTropism}\index{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism@{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism}}
+
+
+{\ttfamily \#include $<$Stem\+Tropism.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Confined\+Stem\+Tropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=259pt]{classCPlantBox_1_1ConfinedStemTropism__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Confined\+Stem\+Tropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=259pt]{classCPlantBox_1_1ConfinedStemTropism__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1ConfinedStemTropism_a20fe8bddeb8063c0d2649bb8ae609a25}{Confined\+Stem\+Tropism} (\hyperlink{classCPlantBox_1_1StemTropismFunction}{Stem\+Tropism\+Function} $\ast$base\+Tropism, \hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$geometry)
+\item 
+virtual \hyperlink{classCPlantBox_1_1Vector2d}{Vector2d} \hyperlink{classCPlantBox_1_1ConfinedStemTropism_a4c662d9319b16894fca6e5ec30461312}{get\+Heading} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$stem) override
+\begin{DoxyCompactList}\small\item\em changes base\+Tropism-\/$>$\hyperlink{classCPlantBox_1_1ConfinedStemTropism_a4c662d9319b16894fca6e5ec30461312}{get\+Heading()} in case geometric boundaries are hit \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1ConfinedStemTropism_a7adf792bf5816a82995adce13dc3b067}\label{classCPlantBox_1_1ConfinedStemTropism_a7adf792bf5816a82995adce13dc3b067}} 
+virtual double \hyperlink{classCPlantBox_1_1ConfinedStemTropism_a7adf792bf5816a82995adce13dc3b067}{stemtropism\+Objective} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$stem) override
+\begin{DoxyCompactList}\small\item\em this mehtod is not called, instead base\+Tropism-\/$>$tropism\+Objective() is used by get\+Heading \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Confines root growth to a geometry 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1ConfinedStemTropism_a20fe8bddeb8063c0d2649bb8ae609a25}\label{classCPlantBox_1_1ConfinedStemTropism_a20fe8bddeb8063c0d2649bb8ae609a25}} 
+\index{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism@{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism}!Confined\+Stem\+Tropism@{Confined\+Stem\+Tropism}}
+\index{Confined\+Stem\+Tropism@{Confined\+Stem\+Tropism}!C\+Plant\+Box\+::\+Confined\+Stem\+Tropism@{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism}}
+\subsubsection{\texorpdfstring{Confined\+Stem\+Tropism()}{ConfinedStemTropism()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Confined\+Stem\+Tropism\+::\+Confined\+Stem\+Tropism (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1StemTropismFunction}{Stem\+Tropism\+Function} $\ast$}]{base\+Tropism,  }\item[{\hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$}]{geometry }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\hyperlink{classCPlantBox_1_1ConfinedTropism}{Confined\+Tropism} confines a tropism to a geometry given by a signed distance function
+
+
+\begin{DoxyParams}{Parameters}
+{\em base\+Tropism} & the underlying tropism \\
+\hline
+{\em geometry} & geometry, e.\+g. of a plant container or an obstacle \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1ConfinedStemTropism_a4c662d9319b16894fca6e5ec30461312}\label{classCPlantBox_1_1ConfinedStemTropism_a4c662d9319b16894fca6e5ec30461312}} 
+\index{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism@{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism}!get\+Heading@{get\+Heading}}
+\index{get\+Heading@{get\+Heading}!C\+Plant\+Box\+::\+Confined\+Stem\+Tropism@{C\+Plant\+Box\+::\+Confined\+Stem\+Tropism}}
+\subsubsection{\texorpdfstring{get\+Heading()}{getHeading()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Vector2d}{Vector2d} C\+Plant\+Box\+::\+Confined\+Stem\+Tropism\+::get\+Heading (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{stem }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+changes base\+Tropism-\/$>$\hyperlink{classCPlantBox_1_1ConfinedStemTropism_a4c662d9319b16894fca6e5ec30461312}{get\+Heading()} in case geometric boundaries are hit 
+
+Inside the geometric domaint base\+Tropism\+::get\+Heading() is returned. In case geometric boundaries are hit, the rotations are modified, so that growth stays inside the domain.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & root tip postion \\
+\hline
+{\em old} & rotation matrix, heading is old(\+:,1) \\
+\hline
+{\em dx} & distance to look ahead (e.\+g in case of hydrotropism) \\
+\hline
+{\em root} & points to the root that called \hyperlink{classCPlantBox_1_1ConfinedStemTropism_a4c662d9319b16894fca6e5ec30461312}{get\+Heading()}, just in case something else is needed (i.\+e. iheading for exotropism)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the rotations alpha and beta 
+\end{DoxyReturn}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1StemTropismFunction_ac72f7ad1200d1defbb3c9b20e20d1f62}{C\+Plant\+Box\+::\+Stem\+Tropism\+Function}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Stem\+Tropism.\+h\item 
+src/Stem\+Tropism.\+cpp\end{DoxyCompactItemize}

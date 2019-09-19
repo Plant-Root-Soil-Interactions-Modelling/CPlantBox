@@ -1,6 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#ifndef PY_ROOTBOX_H_
-#define PY_ROOTBOX_H_
+#ifndef rootbox_H_
+#define rootbox_H_
 
 /**
  *  A Python module for CRootbox based on boost.python
@@ -138,7 +138,7 @@ public:
 /**
  * Expose classes to Python module
  */
-BOOST_PYTHON_MODULE(py_rootbox)
+BOOST_PYTHON_MODULE(rootbox)
 {
     /*
      * general
@@ -808,4 +808,4 @@ BOOST_PYTHON_MODULE(py_rootbox)
 
 } // end namespace CRootBox
 
-#endif /* PY_ROOTBOX_H_ */
+#endif /* rootbox_H_ */

@@ -1,0 +1,2 @@
+upperDepth,	lowerDepth,	Campbell_he,	Campbell_b,	VG_he,	VG_alpha, 	VG_n, 	VG_alpha_mod,	VG_n_mod, 	thetaR, thetaS, Ksat
+0.0, 		1.0, 		-4.2, 			4.58, 		-3.8,  	0.15, 		1.35, 	0.3,  			1.33,		0.01, 	0.46, 	0.001

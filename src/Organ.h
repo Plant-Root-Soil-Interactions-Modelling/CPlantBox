@@ -4,7 +4,7 @@
 
 #include "mymath.h"
 
-#include "../external/tinyxml2/tinyxml2.h"
+#include "external/tinyxml2.h"
 
 #include <vector>
 

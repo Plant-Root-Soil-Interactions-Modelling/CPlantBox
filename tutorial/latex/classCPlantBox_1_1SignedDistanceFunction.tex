@@ -1,0 +1,106 @@
+\hypertarget{classCPlantBox_1_1SignedDistanceFunction}{}\section{C\+Plant\+Box\+:\+:Signed\+Distance\+Function Class Reference}
+\label{classCPlantBox_1_1SignedDistanceFunction}\index{C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}}
+
+
+{\ttfamily \#include $<$sdf.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Signed\+Distance\+Function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1SignedDistanceFunction__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual double \hyperlink{classCPlantBox_1_1SignedDistanceFunction_a8e58237574af3673906bba84d5d14ee8}{get\+Dist} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&v) const
+\begin{DoxyCompactList}\small\item\em Returns the signed distance to the next boundary. \end{DoxyCompactList}\item 
+virtual std\+::string \hyperlink{classCPlantBox_1_1SignedDistanceFunction_a9f375961d9a24b06dc669ac67aa16fa6}{to\+String} ()
+\item 
+virtual int \hyperlink{classCPlantBox_1_1SignedDistanceFunction_a0098fb469c9be5557d5593cec9e76d2a}{write\+P\+V\+P\+Script} (std\+::ostream \&cout, int c=1) const
+\item 
+virtual std\+::string \hyperlink{classCPlantBox_1_1SignedDistanceFunction_a4b7fe3a943e52f35b0e27187edcef640}{write\+P\+V\+P\+Script} () const
+\begin{DoxyCompactList}\small\item\em Writes a Para\+View Phython script explicitly representing the implicit geometry. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Signed Distance Function (minus is inside, plus is outside)
+
+\hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} is the base class of all geometries (e.\+g. Plant\+Container). Furthermore, the class is used when no geometry is set, and describes an unconstrained setting. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1SignedDistanceFunction_a8e58237574af3673906bba84d5d14ee8}\label{classCPlantBox_1_1SignedDistanceFunction_a8e58237574af3673906bba84d5d14ee8}} 
+\index{C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}!get\+Dist@{get\+Dist}}
+\index{get\+Dist@{get\+Dist}!C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}}
+\subsubsection{\texorpdfstring{get\+Dist()}{getDist()}}
+{\footnotesize\ttfamily virtual double C\+Plant\+Box\+::\+Signed\+Distance\+Function\+::get\+Dist (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{v }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+Returns the signed distance to the next boundary. 
+
+Returns the signed distance to the next boundary
+
+
+\begin{DoxyParams}{Parameters}
+{\em v} & spatial position \mbox{[}cm\mbox{]} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+signed distance \mbox{[}cm\mbox{]}, a minus sign means inside, plus outside 
+\end{DoxyReturn}
+
+
+Reimplemented in \hyperlink{classCPlantBox_1_1SDF__HalfPlane_a2b3edca3db93d5a80e774baecd95d952}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Half\+Plane}, \hyperlink{classCPlantBox_1_1SDF__Complement_a1f4d756f312a7ea6b208396a5a72e6a9}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Complement}, \hyperlink{classCPlantBox_1_1SDF__Difference_a3026bc983827af9842f32b1f72808ac1}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Difference}, \hyperlink{classCPlantBox_1_1SDF__Union_a8da2dd137f1676b7bd66cdcc9c8bef00}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Union}, \hyperlink{classCPlantBox_1_1SDF__Intersection_a2ed780db3881844484086de3f73543e5}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Intersection}, \hyperlink{classCPlantBox_1_1SDF__RotateTranslate_aa28e32386597198bb1d74361b284c1f5}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Rotate\+Translate}, \hyperlink{classCPlantBox_1_1SDF__PlantContainer_a952d14f86430d008b1d83fe7c047c0c2}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Plant\+Container}, and \hyperlink{classCPlantBox_1_1SDF__PlantBox_a0e618e485263f3006c19acbca920b78f}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Plant\+Box}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1SignedDistanceFunction_a9f375961d9a24b06dc669ac67aa16fa6}\label{classCPlantBox_1_1SignedDistanceFunction_a9f375961d9a24b06dc669ac67aa16fa6}} 
+\index{C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}!to\+String@{to\+String}}
+\index{to\+String@{to\+String}!C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}}
+\subsubsection{\texorpdfstring{to\+String()}{toString()}}
+{\footnotesize\ttfamily virtual std\+::string C\+Plant\+Box\+::\+Signed\+Distance\+Function\+::to\+String (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Returns a string representation of the object (for debugging) 
+
+Reimplemented in \hyperlink{classCPlantBox_1_1SDF__HalfPlane_afcf91da28b3743f4b701605181564aa6}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Half\+Plane}, \hyperlink{classCPlantBox_1_1SDF__Complement_a8950e40cf4d3d81877205b4051186135}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Complement}, \hyperlink{classCPlantBox_1_1SDF__Difference_a63fc8597ea841a973ab29d7aa6cea3ca}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Difference}, \hyperlink{classCPlantBox_1_1SDF__Union_ae73d167fbe4edc64b4f41d2e820a0517}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Union}, \hyperlink{classCPlantBox_1_1SDF__Intersection_ae095150852cdaedec026b4dea1f87c40}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Intersection}, \hyperlink{classCPlantBox_1_1SDF__RotateTranslate_aff09310a5f6e7fb009c442b786bcd45c}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Rotate\+Translate}, \hyperlink{classCPlantBox_1_1SDF__PlantContainer_acbbd3751b289a98858be25c20b4f7206}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Plant\+Container}, and \hyperlink{classCPlantBox_1_1SDF__PlantBox_af7c53cdbb174e253799444c00503b354}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Plant\+Box}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1SignedDistanceFunction_a0098fb469c9be5557d5593cec9e76d2a}\label{classCPlantBox_1_1SignedDistanceFunction_a0098fb469c9be5557d5593cec9e76d2a}} 
+\index{C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}!write\+P\+V\+P\+Script@{write\+P\+V\+P\+Script}}
+\index{write\+P\+V\+P\+Script@{write\+P\+V\+P\+Script}!C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}}
+\subsubsection{\texorpdfstring{write\+P\+V\+P\+Script()}{writePVPScript()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily virtual int C\+Plant\+Box\+::\+Signed\+Distance\+Function\+::write\+P\+V\+P\+Script (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{cout,  }\item[{int}]{c = {\ttfamily 1} }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Writes a Para\+View Phython script explicitly representing the implicit geometry
+
+
+\begin{DoxyParams}{Parameters}
+{\em cout} & e.\+g. a file output stream \\
+\hline
+{\em c} & python object counter for the script (to avoid duplicate names) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+object counter 
+\end{DoxyReturn}
+
+
+Reimplemented in \hyperlink{classCPlantBox_1_1SDF__HalfPlane_aa635bfdd7990a3369c7ef5c9c9e627a2}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Half\+Plane}, \hyperlink{classCPlantBox_1_1SDF__Complement_a9409020aca8bc34c969f5808fe5ffb9a}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Complement}, \hyperlink{classCPlantBox_1_1SDF__Intersection_ad7d4972e0a71113d93c357eddac9ae99}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Intersection}, \hyperlink{classCPlantBox_1_1SDF__RotateTranslate_ace433edd29e6ff91c9513ca3ccb12f88}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Rotate\+Translate}, \hyperlink{classCPlantBox_1_1SDF__PlantContainer_a8ca6514a0f414aaa70526575d931edda}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Plant\+Container}, and \hyperlink{classCPlantBox_1_1SDF__PlantBox_a077239ab725f28c5a85e0e27749cc532}{C\+Plant\+Box\+::\+S\+D\+F\+\_\+\+Plant\+Box}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1SignedDistanceFunction_a4b7fe3a943e52f35b0e27187edcef640}\label{classCPlantBox_1_1SignedDistanceFunction_a4b7fe3a943e52f35b0e27187edcef640}} 
+\index{C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}!write\+P\+V\+P\+Script@{write\+P\+V\+P\+Script}}
+\index{write\+P\+V\+P\+Script@{write\+P\+V\+P\+Script}!C\+Plant\+Box\+::\+Signed\+Distance\+Function@{C\+Plant\+Box\+::\+Signed\+Distance\+Function}}
+\subsubsection{\texorpdfstring{write\+P\+V\+P\+Script()}{writePVPScript()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily std\+::string C\+Plant\+Box\+::\+Signed\+Distance\+Function\+::write\+P\+V\+P\+Script (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Writes a Para\+View Phython script explicitly representing the implicit geometry. 
+
+Writes the Para\+View Phython script into a string 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/sdf.\+h\item 
+src/sdf.\+cpp\end{DoxyCompactItemize}

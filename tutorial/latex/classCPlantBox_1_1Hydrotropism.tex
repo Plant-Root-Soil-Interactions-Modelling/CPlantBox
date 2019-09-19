@@ -1,0 +1,79 @@
+\hypertarget{classCPlantBox_1_1Hydrotropism}{}\section{C\+Plant\+Box\+:\+:Hydrotropism Class Reference}
+\label{classCPlantBox_1_1Hydrotropism}\index{C\+Plant\+Box\+::\+Hydrotropism@{C\+Plant\+Box\+::\+Hydrotropism}}
+
+
+{\ttfamily \#include $<$Root\+Tropism.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Hydrotropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=232pt]{classCPlantBox_1_1Hydrotropism__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Hydrotropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=232pt]{classCPlantBox_1_1Hydrotropism__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1Hydrotropism_a7ffb4286e84c0d1b06374b43ceb29848}{Hydrotropism} (double \hyperlink{classCPlantBox_1_1TropismFunction_a619c74d63319c406730c95679784a04a}{n}, double \hyperlink{classCPlantBox_1_1TropismFunction_acdc5f9c3beda0a74ddadd591c5d8afaf}{sigma}, \hyperlink{classCPlantBox_1_1SoilLookUp}{Soil\+Look\+Up} $\ast$soil)
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Hydrotropism_abf5359dcc5966638e89c802dd49a47bb}\label{classCPlantBox_1_1Hydrotropism_abf5359dcc5966638e89c802dd49a47bb}} 
+virtual \hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} $\ast$ \hyperlink{classCPlantBox_1_1Hydrotropism_abf5359dcc5966638e89c802dd49a47bb}{copy} () override
+\begin{DoxyCompactList}\small\item\em copy constructor \end{DoxyCompactList}\item 
+virtual double \hyperlink{classCPlantBox_1_1Hydrotropism_a5f259c82922f6d62df17f07827db0338}{tropism\+Objective} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$root) override
+\begin{DoxyCompactList}\small\item\em \hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()} minimizes this function, \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+\hyperlink{classCPlantBox_1_1Hydrotropism}{Hydrotropism} (or Chemotropism, ...)\+: the tendency to grow towards a higher saturation (or concentration, ...) 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Hydrotropism_a7ffb4286e84c0d1b06374b43ceb29848}\label{classCPlantBox_1_1Hydrotropism_a7ffb4286e84c0d1b06374b43ceb29848}} 
+\index{C\+Plant\+Box\+::\+Hydrotropism@{C\+Plant\+Box\+::\+Hydrotropism}!Hydrotropism@{Hydrotropism}}
+\index{Hydrotropism@{Hydrotropism}!C\+Plant\+Box\+::\+Hydrotropism@{C\+Plant\+Box\+::\+Hydrotropism}}
+\subsubsection{\texorpdfstring{Hydrotropism()}{Hydrotropism()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Hydrotropism\+::\+Hydrotropism (\begin{DoxyParamCaption}\item[{double}]{n,  }\item[{double}]{sigma,  }\item[{\hyperlink{classCPlantBox_1_1SoilLookUp}{Soil\+Look\+Up} $\ast$}]{soil }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} 
+\end{DoxySeeAlso}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Hydrotropism_a5f259c82922f6d62df17f07827db0338}\label{classCPlantBox_1_1Hydrotropism_a5f259c82922f6d62df17f07827db0338}} 
+\index{C\+Plant\+Box\+::\+Hydrotropism@{C\+Plant\+Box\+::\+Hydrotropism}!tropism\+Objective@{tropism\+Objective}}
+\index{tropism\+Objective@{tropism\+Objective}!C\+Plant\+Box\+::\+Hydrotropism@{C\+Plant\+Box\+::\+Hydrotropism}}
+\subsubsection{\texorpdfstring{tropism\+Objective()}{tropismObjective()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Hydrotropism\+::tropism\+Objective (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{a,  }\item[{double}]{b,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{root }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+\hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()} minimizes this function, 
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function}
+\end{DoxySeeAlso}
+\hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()} minimizes this function, \begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1TropismFunction_a4f2c79fff55d1398c98a070dd8ebbe08}{Tropism\+Function\+::tropism\+Objective} 
+\end{DoxySeeAlso}
+$<$ (-\/1) because we want to maximize the soil property 
+
+Reimplemented from \hyperlink{classCPlantBox_1_1TropismFunction_a4f2c79fff55d1398c98a070dd8ebbe08}{C\+Plant\+Box\+::\+Tropism\+Function}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Root\+Tropism.\+h\item 
+src/Root\+Tropism.\+cpp\end{DoxyCompactItemize}

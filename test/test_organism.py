@@ -1,5 +1,5 @@
 import unittest
-import py_rootbox as rb
+import ../rootbox as rb
 import matplotlib.pyplot as plt
 from rsml import *
 from rb_tools import *

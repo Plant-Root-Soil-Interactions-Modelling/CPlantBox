@@ -1,5 +1,5 @@
 import unittest
-import py_rootbox as rb
+import ../rootbox as rb
 from rsml import *
 
 

@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-import py_rootbox as rb
+import ../rootbox as rb
 
 
 def maxRootLength(la, lb, ln, nob):  # maximal length the root will reach

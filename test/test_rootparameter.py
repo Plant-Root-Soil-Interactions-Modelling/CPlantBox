@@ -1,14 +1,16 @@
 import unittest
-import py_rootbox as rb
+import sys
+sys.path.append("..")
+import rootbox as rb
 from rsml import *
 
 
-class TestRootParameter(unittest.TestCase):
+class TestStemParameter(unittest.TestCase):
 
     def root_example(self):
         """ example root parameters used below """
         self.plant = rb.Organism()
-        self.rtp = rb.RootRandomParameter(self.plant)
+        self.rtp = rb.StemRandomParameter(self.plant)
         self.rtp.la = 1.5
         self.rtp.lb = 5.5
         self.rtp.ln = 1.25
@@ -32,7 +34,7 @@ class TestRootParameter(unittest.TestCase):
     def test_constructors(self):
         """ tests constructor and copy """
         plant = rb.Organism()
-        otp = rb.RootRandomParameter(plant)
+        otp = rb.StemRandomParameter(plant)
         otp.theta = 123
         otp.thetas = 456
         otp.gf = 789
@@ -48,7 +50,7 @@ class TestRootParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        rtp = rb.RootRandomParameter(rb.Organism())
+        rtp = rb.StemRandomParameter(rb.Organism())
         rtp.lns = 0.123
         rtp.la = 12
         ot = rtp.getParameter("organType")  # test defaults
@@ -57,7 +59,7 @@ class TestRootParameter(unittest.TestCase):
         ln = rtp.getParameter("ln")
         lns = rtp.getParameter("ln_dev")
         la = rtp.getParameter("la_mean")  # we can always add "_mean" to avoid naming conflicts
-        self.assertEqual(ot, 2., "getParameter: value unexpected")
+        self.assertEqual(ot, 3., "getParameter: value unexpected")
         self.assertEqual(st, -1., "getParameter: value unexpected")
         self.assertEqual(gf, 1., "getParameter: value unexpected")
         self.assertEqual(ln, 1., "getParameter: value unexpected")
@@ -72,11 +74,11 @@ class TestRootParameter(unittest.TestCase):
 
     def test_toString(self):
         """ tests __str__ output """
-        self.rtp = rb.RootRandomParameter(rb.Organism())
+        self.rtp = rb.StemRandomParameter(rb.Organism())
         self.add_successors()
         rtp = self.rtp  # rename
         rtp.name = "the root"
-        self.assertEqual(rtp.__str__(False), "Name: the root, organType: 2, subType, -1", "toString: value unexpected")
+        self.assertEqual(rtp.__str__(False), "Name: the root, organType: 3, subType, -1", "toString: value unexpected")
         # print(rtp)
 
     def test_xml(self):
@@ -87,7 +89,7 @@ class TestRootParameter(unittest.TestCase):
         otp.name = "lateral"
         otp.subType = 2
         otp.writeXML("root.xml")
-        otp2 = rb.RootRandomParameter(self.plant)
+        otp2 = rb.StemRandomParameter(self.plant)
         otp2.readXML("root.xml")
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
@@ -103,7 +105,7 @@ class TestRootParameter(unittest.TestCase):
         """ calls realize """
         self.root_example()
         p = self.rtp.realize()
-        self.assertEqual(p.__class__.__name__, "RootSpecificParameter", "realize: unexpected class type")
+        self.assertEqual(p.__class__.__name__, "StemSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, 1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
         self.assertEqual(len(p.ln) + 1, self.rtp.nob, "realize: internodal distances +1 should be  number of laterals")

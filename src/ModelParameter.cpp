@@ -1,5 +1,5 @@
 #include "ModelParameter.h"
-#include "../external/tinyxml2.h"
+#include "external/tinyxml2.h"
 #include "Plant.h"
 
 #include <cmath>

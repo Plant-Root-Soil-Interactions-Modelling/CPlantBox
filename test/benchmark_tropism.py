@@ -1,10 +1,10 @@
 """
-Shows the influence of tropism paramter on basal roots  
+Shows the influence of tropism paramter on basal roots
 with 4x4 subfigures, different axial resolutions, should lead
-to similar results  
+to similar results
 """
 
-import py_rootbox as rb
+import ../rootbox as rb
 import matplotlib.pyplot as plt
 from rb_tools import *
 from rsml import *

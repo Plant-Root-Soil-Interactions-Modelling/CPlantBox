@@ -1,0 +1,95 @@
+\hypertarget{classCPlantBox_1_1StemGrowthFunction}{}\section{C\+Plant\+Box\+:\+:Stem\+Growth\+Function Class Reference}
+\label{classCPlantBox_1_1StemGrowthFunction}\index{C\+Plant\+Box\+::\+Stem\+Growth\+Function@{C\+Plant\+Box\+::\+Stem\+Growth\+Function}}
+
+
+{\ttfamily \#include $<$Stem\+Growth.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Stem\+Growth\+Function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1StemGrowthFunction__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual double \hyperlink{classCPlantBox_1_1StemGrowthFunction_a108fded2964de8ab07f97b43c65cf78a}{Stemget\+Length} (double t, double r, double k, \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$stem) const
+\begin{DoxyCompactList}\small\item\em Returns root length at root age t. \end{DoxyCompactList}\item 
+virtual double \hyperlink{classCPlantBox_1_1StemGrowthFunction_a94c113c8b153e2cd7f3827f718024992}{Stemget\+Age} (double l, double r, double k, \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$stem) const
+\begin{DoxyCompactList}\small\item\em Returns the age of a root of length l. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Abstract base class to all growth functions\+: currently \hyperlink{classCPlantBox_1_1LinearGrowth}{Linear\+Growth} and \hyperlink{classCPlantBox_1_1ExponentialGrowth}{Exponential\+Growth}
+
+If new classes are created, they have to be added to the vector gf in in Root\+System. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1StemGrowthFunction_a94c113c8b153e2cd7f3827f718024992}\label{classCPlantBox_1_1StemGrowthFunction_a94c113c8b153e2cd7f3827f718024992}} 
+\index{C\+Plant\+Box\+::\+Stem\+Growth\+Function@{C\+Plant\+Box\+::\+Stem\+Growth\+Function}!Stemget\+Age@{Stemget\+Age}}
+\index{Stemget\+Age@{Stemget\+Age}!C\+Plant\+Box\+::\+Stem\+Growth\+Function@{C\+Plant\+Box\+::\+Stem\+Growth\+Function}}
+\subsubsection{\texorpdfstring{Stemget\+Age()}{StemgetAge()}}
+{\footnotesize\ttfamily virtual double C\+Plant\+Box\+::\+Stem\+Growth\+Function\+::\+Stemget\+Age (\begin{DoxyParamCaption}\item[{double}]{l,  }\item[{double}]{r,  }\item[{double}]{k,  }\item[{\hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{stem }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+Returns the age of a root of length l. 
+
+Returns the age of a root of length l
+
+
+\begin{DoxyParams}{Parameters}
+{\em l} & root length \mbox{[}cm\mbox{]} \\
+\hline
+{\em r} & initial growth rate \mbox{[}cm/day\mbox{]} \\
+\hline
+{\em k} & maximal root length \mbox{[}cm\mbox{]} \\
+\hline
+{\em root} & points to the root in case more information is needed\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+root age \mbox{[}day\mbox{]} 
+\end{DoxyReturn}
+
+
+Reimplemented in \hyperlink{classCPlantBox_1_1StemExponentialGrowth_a72f33a3ca13bddc934810dbe3d7b7652}{C\+Plant\+Box\+::\+Stem\+Exponential\+Growth}, and \hyperlink{classCPlantBox_1_1StemLinearGrowth_a439989850767e6c1d334c9152a5ff5d7}{C\+Plant\+Box\+::\+Stem\+Linear\+Growth}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1StemGrowthFunction_a108fded2964de8ab07f97b43c65cf78a}\label{classCPlantBox_1_1StemGrowthFunction_a108fded2964de8ab07f97b43c65cf78a}} 
+\index{C\+Plant\+Box\+::\+Stem\+Growth\+Function@{C\+Plant\+Box\+::\+Stem\+Growth\+Function}!Stemget\+Length@{Stemget\+Length}}
+\index{Stemget\+Length@{Stemget\+Length}!C\+Plant\+Box\+::\+Stem\+Growth\+Function@{C\+Plant\+Box\+::\+Stem\+Growth\+Function}}
+\subsubsection{\texorpdfstring{Stemget\+Length()}{StemgetLength()}}
+{\footnotesize\ttfamily virtual double C\+Plant\+Box\+::\+Stem\+Growth\+Function\+::\+Stemget\+Length (\begin{DoxyParamCaption}\item[{double}]{t,  }\item[{double}]{r,  }\item[{double}]{k,  }\item[{\hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{stem }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+Returns root length at root age t. 
+
+Returns root length at root age t
+
+
+\begin{DoxyParams}{Parameters}
+{\em t} & root age \mbox{[}day\mbox{]} \\
+\hline
+{\em r} & initial growth rate \mbox{[}cm/day\mbox{]} \\
+\hline
+{\em k} & maximal root length \mbox{[}cm\mbox{]} \\
+\hline
+{\em root} & points to the root in case more information is needed\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+root length \mbox{[}cm\mbox{]} 
+\end{DoxyReturn}
+
+
+Reimplemented in \hyperlink{classCPlantBox_1_1StemExponentialGrowth_a979dabd31e15e4d4a014b5477301d29c}{C\+Plant\+Box\+::\+Stem\+Exponential\+Growth}, and \hyperlink{classCPlantBox_1_1StemLinearGrowth_a32bf6f210d011546e25892c87a1e00ba}{C\+Plant\+Box\+::\+Stem\+Linear\+Growth}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/Stem\+Growth.\+h\end{DoxyCompactItemize}

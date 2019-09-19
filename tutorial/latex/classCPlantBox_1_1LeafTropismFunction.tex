@@ -1,0 +1,181 @@
+\hypertarget{classCPlantBox_1_1LeafTropismFunction}{}\section{C\+Plant\+Box\+:\+:Leaf\+Tropism\+Function Class Reference}
+\label{classCPlantBox_1_1LeafTropismFunction}\index{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}}
+
+
+{\ttfamily \#include $<$Leaf\+Tropism.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Leaf\+Tropism\+Function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1LeafTropismFunction__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1LeafTropismFunction_ad6f1d7478d104e20cd210fb69dee0d74}{Leaf\+Tropism\+Function} (double n\+\_\+, double sigma\+\_\+)
+\item 
+\hyperlink{classCPlantBox_1_1LeafTropismFunction_ab5227b152c52aff90ce8d267c71c401a}{Leaf\+Tropism\+Function} ()
+\begin{DoxyCompactList}\small\item\em Tropism with n\+\_\+ number of trials and standard deviation of sigma\+\_\+. \end{DoxyCompactList}\item 
+virtual \hyperlink{classCPlantBox_1_1Vector2d}{Vector2d} \hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$leaf)
+\begin{DoxyCompactList}\small\item\em Dices n times and takes the best shot (according to the objective function) \end{DoxyCompactList}\item 
+virtual double \hyperlink{classCPlantBox_1_1LeafTropismFunction_ab89f5f7e80103d80681bc8cadc220dba}{leaftropism\+Objective} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$leaf)
+\begin{DoxyCompactList}\small\item\em The objective function of the random optimization of \hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading()}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_a2d47f2a066887cb96dcff5ef440d3400}\label{classCPlantBox_1_1LeafTropismFunction_a2d47f2a066887cb96dcff5ef440d3400}} 
+void \hyperlink{classCPlantBox_1_1LeafTropismFunction_a2d47f2a066887cb96dcff5ef440d3400}{set\+Seed} (double seed)
+\begin{DoxyCompactList}\small\item\em Sets the seed of the random number generator. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_abedbb803bbcbaea767191a69072c0329}\label{classCPlantBox_1_1LeafTropismFunction_abedbb803bbcbaea767191a69072c0329}} 
+double \hyperlink{classCPlantBox_1_1LeafTropismFunction_abedbb803bbcbaea767191a69072c0329}{rand} ()
+\begin{DoxyCompactList}\small\item\em Uniformly distributed random number (0,1) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_a841eba2b5f8e9766df7929181a10c5d8}\label{classCPlantBox_1_1LeafTropismFunction_a841eba2b5f8e9766df7929181a10c5d8}} 
+double \hyperlink{classCPlantBox_1_1LeafTropismFunction_a841eba2b5f8e9766df7929181a10c5d8}{randn} ()
+\begin{DoxyCompactList}\small\item\em Normally distributed random number (0,1) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1LeafTropismFunction_a87441633ac10289ad861a08a7bf2c411}{get\+Position} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_a21d8d756f8b9f6015b546def33b01c89}\label{classCPlantBox_1_1LeafTropismFunction_a21d8d756f8b9f6015b546def33b01c89}} 
+double \hyperlink{classCPlantBox_1_1LeafTropismFunction_a21d8d756f8b9f6015b546def33b01c89}{n}
+\begin{DoxyCompactList}\small\item\em Number of trials. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_a82a3dc11056a65501bc4535749c304b6}\label{classCPlantBox_1_1LeafTropismFunction_a82a3dc11056a65501bc4535749c304b6}} 
+double \hyperlink{classCPlantBox_1_1LeafTropismFunction_a82a3dc11056a65501bc4535749c304b6}{sigma}
+\begin{DoxyCompactList}\small\item\em Standard deviation. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Base class for all tropism functions, e.\+g. \hyperlink{classCPlantBox_1_1Gravitropism}{Gravitropism}, \hyperlink{classCPlantBox_1_1Plagiotropism}{Plagiotropism}, \hyperlink{classCPlantBox_1_1Exotropism}{Exotropism}... 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_ad6f1d7478d104e20cd210fb69dee0d74}\label{classCPlantBox_1_1LeafTropismFunction_ad6f1d7478d104e20cd210fb69dee0d74}} 
+\index{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}!Leaf\+Tropism\+Function@{Leaf\+Tropism\+Function}}
+\index{Leaf\+Tropism\+Function@{Leaf\+Tropism\+Function}!C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}}
+\subsubsection{\texorpdfstring{Leaf\+Tropism\+Function()}{LeafTropismFunction()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Leaf\+Tropism\+Function\+::\+Leaf\+Tropism\+Function (\begin{DoxyParamCaption}\item[{double}]{n\+\_\+,  }\item[{double}]{sigma\+\_\+ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Constructor, Always call the constructor, when overwriting the class! Otherwise it will not work, and the mistake is hard to find.
+
+
+\begin{DoxyParams}{Parameters}
+{\em n\+\_\+} & number of tries \\
+\hline
+{\em sigma\+\_\+} & standard deviation of angular change \mbox{[}1/cm\mbox{]} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_ab5227b152c52aff90ce8d267c71c401a}\label{classCPlantBox_1_1LeafTropismFunction_ab5227b152c52aff90ce8d267c71c401a}} 
+\index{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}!Leaf\+Tropism\+Function@{Leaf\+Tropism\+Function}}
+\index{Leaf\+Tropism\+Function@{Leaf\+Tropism\+Function}!C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}}
+\subsubsection{\texorpdfstring{Leaf\+Tropism\+Function()}{LeafTropismFunction()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Leaf\+Tropism\+Function\+::\+Leaf\+Tropism\+Function (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Tropism with n\+\_\+ number of trials and standard deviation of sigma\+\_\+. 
+
+Default constructor is Tropism\+Function(0,0) 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}\label{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}} 
+\index{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}!get\+Heading@{get\+Heading}}
+\index{get\+Heading@{get\+Heading}!C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}}
+\subsubsection{\texorpdfstring{get\+Heading()}{getHeading()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Vector2d}{Vector2d} C\+Plant\+Box\+::\+Leaf\+Tropism\+Function\+::get\+Heading (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{leaf }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+Dices n times and takes the best shot (according to the objective function) 
+
+-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/---------Tropism Modified and Used-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/---------///
+
+Dices N times picking angles alpha and beta, takes the optimal direction according to the objective function
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & root tip position \\
+\hline
+{\em old} & rotation matrix, heading is old(\+:,1) \\
+\hline
+{\em dx} & distance to look ahead (e.\+g in case of hydrotropism) \\
+\hline
+{\em root} & points to the root that called get\+Heading(...), just in case something else is needed (i.\+e. iheading for exotropism)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+angle alpha and beta 
+\end{DoxyReturn}
+\hyperlink{classCPlantBox_1_1LeafTropismFunction_abedbb803bbcbaea767191a69072c0329}{rand()}$\ast$2$\ast$\+M\+\_\+\+PI;
+
+sigma$\ast$randn()$\ast$sqrt(dx); 
+
+Reimplemented in \hyperlink{classCPlantBox_1_1ConfinedLeafTropism_a0574aa544341937fc9df37a972cd0833}{C\+Plant\+Box\+::\+Confined\+Leaf\+Tropism}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_a87441633ac10289ad861a08a7bf2c411}\label{classCPlantBox_1_1LeafTropismFunction_a87441633ac10289ad861a08a7bf2c411}} 
+\index{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}!get\+Position@{get\+Position}}
+\index{get\+Position@{get\+Position}!C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}}
+\subsubsection{\texorpdfstring{get\+Position()}{getPosition()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} C\+Plant\+Box\+::\+Leaf\+Tropism\+Function\+::get\+Position (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{a,  }\item[{double}]{b,  }\item[{double}]{dx }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+Applies angles a and b and goes dx \mbox{[}cm\mbox{]} into the new direction and returns the new position
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & root tip position \\
+\hline
+{\em old} & rotation matrix, heading is old(\+:,1) \\
+\hline
+{\em a} & angle alpha, describes the angular rotation of the axis old \\
+\hline
+{\em b} & angle beta, describes the radial rotation of the axis old \\
+\hline
+{\em dx} & distance to look ahead\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+position 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classCPlantBox_1_1LeafTropismFunction_ab89f5f7e80103d80681bc8cadc220dba}\label{classCPlantBox_1_1LeafTropismFunction_ab89f5f7e80103d80681bc8cadc220dba}} 
+\index{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}!leaftropism\+Objective@{leaftropism\+Objective}}
+\index{leaftropism\+Objective@{leaftropism\+Objective}!C\+Plant\+Box\+::\+Leaf\+Tropism\+Function@{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}}
+\subsubsection{\texorpdfstring{leaftropism\+Objective()}{leaftropismObjective()}}
+{\footnotesize\ttfamily virtual double C\+Plant\+Box\+::\+Leaf\+Tropism\+Function\+::leaftropism\+Objective (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{a,  }\item[{double}]{b,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{leaf }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+The objective function of the random optimization of \hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading()}. 
+
+The objective function of the random optimization of \hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading()}. Overwrite this function to implement a tropism.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & current root tip position \\
+\hline
+{\em old} & rotation matrix, old(\+:,1) is the root tip heading \\
+\hline
+{\em a} & rotation angle alpha (angular change) \\
+\hline
+{\em b} & rotation angle beta (radial change) \\
+\hline
+{\em dx} & small ditance to look ahead \\
+\hline
+{\em root} & points to the root that called get\+Heading, just in case something else is needed (i.\+e. iheading for exotropism)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the value minimized by \hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading()}, it should be in \mbox{[}0,1\mbox{]}, in this way combination of various tropisms will be easier 
+\end{DoxyReturn}
+
+
+Reimplemented in \hyperlink{classCPlantBox_1_1CombinedLeafTropism_aec7a53f31265f6c10a8666d0d8647aa5}{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism}, \hyperlink{classCPlantBox_1_1LeafPhototropism_a9b9cee624adc576c2cc44b1b27b2ef0c}{C\+Plant\+Box\+::\+Leaf\+Phototropism}, \hyperlink{classCPlantBox_1_1LeafExotropism_a0b3820189c2cef88d32a0d8130c15246}{C\+Plant\+Box\+::\+Leaf\+Exotropism}, \hyperlink{classCPlantBox_1_1LeafPlagiotropism_af58514b24aae9a1020093d6955dadaaf}{C\+Plant\+Box\+::\+Leaf\+Plagiotropism}, \hyperlink{classCPlantBox_1_1LeafAntiGravitropism_a94f4abfb99515326081deebff7906ca2}{C\+Plant\+Box\+::\+Leaf\+Anti\+Gravitropism}, \hyperlink{classCPlantBox_1_1LeafGravitropism_ab0836658683f5364fef25bafc7ac610e}{C\+Plant\+Box\+::\+Leaf\+Gravitropism}, and \hyperlink{classCPlantBox_1_1ConfinedLeafTropism_afaa130b76e027bd9c21fe1938ecf9067}{C\+Plant\+Box\+::\+Confined\+Leaf\+Tropism}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Leaf\+Tropism.\+h\item 
+src/Leaf\+Tropism.\+cpp\end{DoxyCompactItemize}

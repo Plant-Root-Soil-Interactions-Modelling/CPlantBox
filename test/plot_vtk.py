@@ -1,6 +1,6 @@
 import vtk
 from vtk import *
-import py_rootbox as rb
+import ../rootbox as rb
 from rb_tools import *
 
 

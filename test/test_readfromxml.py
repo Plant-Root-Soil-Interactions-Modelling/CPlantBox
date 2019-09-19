@@ -1,10 +1,10 @@
 import unittest
-import py_rootbox as rb
+import ../rootbox as rb
 from rsml import *
 from rb_tools import *
 
 class TestRootSystem(unittest.TestCase):
-  
+
     def test_rsml(self):
         """ checks rsml functionality with Python rsml reader """
         name = "Anagallis_femina_Leitner_2010"

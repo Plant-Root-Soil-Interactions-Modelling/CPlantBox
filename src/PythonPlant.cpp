@@ -5,9 +5,9 @@
 
 
 // copy paste for daniel
-// 1.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -L/home/daniel/boost_1_62_0/stage/lib -lboost_python Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
-// 2.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
-// 3.  g++ -std=c++11 -O3 -fpic -shared -o py_rootbox.so -Wl,-soname,"py_rootbox.so" PythonPlant.cpp -I/usr/include/python3.6 -lboost_python-py36 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
+// 1.  g++ -std=c++11 -O3 -fpic -shared -o rootbox.so -Wl,-soname,"rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -L/home/daniel/boost_1_62_0/stage/lib -lboost_python Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
+// 2.  g++ -std=c++11 -O3 -fpic -shared -o rootbox.so -Wl,-soname,"rootbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
+// 3.  g++ -std=c++11 -O3 -fpic -shared -o rootbox.so -Wl,-soname,"rootbox.so" PythonPlant.cpp -I/usr/include/python3.6 -lboost_python-py36 Debug/ModelParameter.o Debug/Root.o Debug/Plant.o Debug/analysis.o Debug/sdf.o Debug/tropism.o Debug/examples/Exudation/gauss_legendre.o
 // 4   For CPlantBox g++ -std=c++11 -O3 -fpic -shared -o py_plantbox.so -Wl,-soname,"py_plantbox.so" PythonPlant.cpp -I/usr/include/python3.5 -lboost_python-py35  Debug/Plant.o Debug/tinyxml2.o Debug/sdf.o Debug/Organ.o Debug/Root.o Debug/Stem.o Debug/Leaf.o Debug/LeafTropism.o Debug/RootTropism.o Debug/StemTropism.o Debug/analysis.o Debug/ModelParameter.o Debug/Seed.o
 
 /**

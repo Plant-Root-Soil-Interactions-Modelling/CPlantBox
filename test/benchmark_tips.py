@@ -9,7 +9,7 @@
 #
 # computes in parallel to enable a lot of runs
 #
-import py_rootbox as rb
+import ../rootbox as rb
 
 from multiprocessing import Pool
 from itertools import product

@@ -1,5 +1,5 @@
 import unittest
-import py_rootbox as rb
+import ../rootbox as rb
 from rsml import *
 
 
@@ -90,7 +90,7 @@ class TestStemParameter(unittest.TestCase):
         otp.nob = (otp.k-otp.la-otp.lb)/otp.ln + 1;
         otp.writeXML("stem.xml")
         otp2 = rb.StemRandomParameter(self.plant)
-        otp2.readXML("stem.xml")    
+        otp2.readXML("stem.xml")
         otp2.nob = (otp2.k-otp2.la-otp2.lb)/otp2.ln + 1;
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")

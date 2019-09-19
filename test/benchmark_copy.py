@@ -1,4 +1,4 @@
-import py_rootbox as rb
+import ../rootbox as rb
 from rb_tools import *
 import numpy as np
 

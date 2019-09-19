@@ -1,6 +1,6 @@
 import os
 from os import walk
-import py_rootbox as rb
+import ../rootbox as rb
 
 #
 comments = True  # why not

@@ -1,0 +1,75 @@
+\hypertarget{classCPlantBox_1_1Plagiotropism}{}\section{C\+Plant\+Box\+:\+:Plagiotropism Class Reference}
+\label{classCPlantBox_1_1Plagiotropism}\index{C\+Plant\+Box\+::\+Plagiotropism@{C\+Plant\+Box\+::\+Plagiotropism}}
+
+
+{\ttfamily \#include $<$Root\+Tropism.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Plagiotropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=232pt]{classCPlantBox_1_1Plagiotropism__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Plagiotropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=232pt]{classCPlantBox_1_1Plagiotropism__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1Plagiotropism_a8211f8da1e9a25f68f1bf3eeccc643ac}{Plagiotropism} (double \hyperlink{classCPlantBox_1_1TropismFunction_a619c74d63319c406730c95679784a04a}{n}, double \hyperlink{classCPlantBox_1_1TropismFunction_acdc5f9c3beda0a74ddadd591c5d8afaf}{sigma})
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Plagiotropism_a21166cbf3f1e28ba6a337da087bfc768}\label{classCPlantBox_1_1Plagiotropism_a21166cbf3f1e28ba6a337da087bfc768}} 
+virtual \hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} $\ast$ \hyperlink{classCPlantBox_1_1Plagiotropism_a21166cbf3f1e28ba6a337da087bfc768}{copy} () override
+\begin{DoxyCompactList}\small\item\em copy constructor \end{DoxyCompactList}\item 
+virtual double \hyperlink{classCPlantBox_1_1Plagiotropism_a4bd7b5b8a2864e78b06f2f27c7642253}{tropism\+Objective} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$root) override
+\begin{DoxyCompactList}\small\item\em \hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()} minimizes this function, \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+\hyperlink{classCPlantBox_1_1Plagiotropism}{Plagiotropism}\+: the tendency to stay in a horicontal layer 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Plagiotropism_a8211f8da1e9a25f68f1bf3eeccc643ac}\label{classCPlantBox_1_1Plagiotropism_a8211f8da1e9a25f68f1bf3eeccc643ac}} 
+\index{C\+Plant\+Box\+::\+Plagiotropism@{C\+Plant\+Box\+::\+Plagiotropism}!Plagiotropism@{Plagiotropism}}
+\index{Plagiotropism@{Plagiotropism}!C\+Plant\+Box\+::\+Plagiotropism@{C\+Plant\+Box\+::\+Plagiotropism}}
+\subsubsection{\texorpdfstring{Plagiotropism()}{Plagiotropism()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Plagiotropism\+::\+Plagiotropism (\begin{DoxyParamCaption}\item[{double}]{n,  }\item[{double}]{sigma }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} 
+\end{DoxySeeAlso}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Plagiotropism_a4bd7b5b8a2864e78b06f2f27c7642253}\label{classCPlantBox_1_1Plagiotropism_a4bd7b5b8a2864e78b06f2f27c7642253}} 
+\index{C\+Plant\+Box\+::\+Plagiotropism@{C\+Plant\+Box\+::\+Plagiotropism}!tropism\+Objective@{tropism\+Objective}}
+\index{tropism\+Objective@{tropism\+Objective}!C\+Plant\+Box\+::\+Plagiotropism@{C\+Plant\+Box\+::\+Plagiotropism}}
+\subsubsection{\texorpdfstring{tropism\+Objective()}{tropismObjective()}}
+{\footnotesize\ttfamily virtual double C\+Plant\+Box\+::\+Plagiotropism\+::tropism\+Objective (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{a,  }\item[{double}]{b,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{root }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+\hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()} minimizes this function, 
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} 
+\end{DoxySeeAlso}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1TropismFunction_a4f2c79fff55d1398c98a070dd8ebbe08}{C\+Plant\+Box\+::\+Tropism\+Function}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/Root\+Tropism.\+h\end{DoxyCompactItemize}

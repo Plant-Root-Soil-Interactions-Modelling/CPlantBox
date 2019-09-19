@@ -1,20 +1,20 @@
-import py_rootbox as rb
+import ../rootbox as rb
 from rb_tools import *
 
 # set up simulation
 rs = rb.RootSystem()
-name = "Zea_mays_4_Leitner_2014" 
+name = "Zea_mays_4_Leitner_2014"
 rs.openFile(name)
 soilcore = rb.SDF_PlantContainer(5,5,40,False)
 rs.setGeometry(soilcore)  # soilcore, or rhizotron
-rs.initialize() 
+rs.initialize()
 
 # test push and pop
-rs.simulate(20) 
+rs.simulate(20)
 nodes0a = vv2a(rs.getNodes())
 rs.push() # push simualtion at time 20
 
-rs.simulate(100) 
+rs.simulate(100)
 nodes1a = vv2a(rs.getNodes())
 
 rs.pop() # should be at state 20 again

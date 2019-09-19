@@ -1,5 +1,5 @@
 import unittest
-import py_rootbox as rb
+import ../rootbox as rb
 import numpy as np
 from rb_tools import *
 
