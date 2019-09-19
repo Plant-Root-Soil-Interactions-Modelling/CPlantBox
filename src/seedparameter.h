@@ -10,7 +10,7 @@
  * SeedSpecificParameter are drawn from the SeedRandomParameter class
  */
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * SeedSpecificParameter contains all plant specific parameters like planting depth and describing

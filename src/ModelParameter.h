@@ -15,7 +15,7 @@
 #include "mymath.h"
 #include "external/tinyxml2.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /*
  * The model parameters consist of

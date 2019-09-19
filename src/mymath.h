@@ -10,7 +10,7 @@
 #include <sstream>
 #include <assert.h>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -112,7 +112,7 @@ inline bool operator!=(const Vector3d& lhs, const Vector3d& rhs){ return !(lhs =
 
 /**
  * 3x3 Matrix class, compatible with Vector3d for basic linear algebra
- * (i.e. exactly the operations needed for CRootBox)
+ * (i.e. exactly the operations needed for CPlantBox)
  */
 class Matrix3d
 {
@@ -232,6 +232,6 @@ public:
 
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

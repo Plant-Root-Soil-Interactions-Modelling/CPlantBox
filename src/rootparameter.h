@@ -13,7 +13,7 @@
  * RootSpecificParameter are drawn from the RootRandomParameter class
  */
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class Organism;
 
@@ -120,6 +120,6 @@ protected:
 
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

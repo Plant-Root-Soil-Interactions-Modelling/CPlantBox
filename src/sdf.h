@@ -8,7 +8,7 @@
 #include <vector>
 #include <stdexcept>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Signed Distance Function (minus is inside, plus is outside)
@@ -253,6 +253,6 @@ public:
 
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

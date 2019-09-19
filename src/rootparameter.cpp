@@ -8,7 +8,7 @@
 #include <chrono>
 #include <assert.h>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * @return Mean maximal root length of this root type
@@ -226,7 +226,7 @@ tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
  * @return Mean maximal root length of this roo    description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
  * t type
  *
- * CRootBox parameter reader
+ * CPlantBox parameter reader
  * todo Depricated: use readXML instead
  */
 void RootRandomParameter::read(std::istream & cin)
@@ -277,7 +277,7 @@ void RootRandomParameter::read(std::istream & cin)
 }
 
 /**
- * CRootBox parameter write
+ * CPlantBox parameter write
  * todo Depricated: use writeXML instead
  */
 void RootRandomParameter::write(std::ostream & cout) const {
@@ -327,4 +327,4 @@ void RootRandomParameter::bindParameters()
     description["successorP"] = "Probability of each sub type to occur";
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox

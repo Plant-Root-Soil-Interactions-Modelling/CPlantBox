@@ -8,7 +8,7 @@
 #include <chrono>
 #include <assert.h>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * @return Mean maximal root length of this root type
@@ -296,4 +296,4 @@ void LeafRandomParameter::bindParameters()
 	description["successorP"] = "Probability of each sub type to occur";
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox

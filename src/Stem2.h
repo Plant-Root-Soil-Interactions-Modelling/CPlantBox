@@ -7,7 +7,7 @@
 #include "Organism.h"
 #include "stemparameter.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 static int phytomerId[10]= {0};
 
@@ -71,6 +71,6 @@ protected:
 
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif /* ROOT_H_ */

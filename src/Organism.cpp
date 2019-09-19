@@ -10,7 +10,7 @@
 
 #include "organparameter.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 std::vector<std::string> Organism::organTypeNames = { "organ", "seed", "root", "stem", "leaf" };
 
@@ -534,7 +534,7 @@ void Organism::readParameters(std::string name, std::string basetag)
     doc.LoadFile(name.c_str());
     if(doc.ErrorID() == 0) {
         tinyxml2::XMLElement* base = doc.FirstChildElement(basetag.c_str());
-        if(base != NULL){ 
+        if(base != NULL){
             auto p = base->FirstChildElement();
             while(p) {
                 std::string tagname = p->Name();

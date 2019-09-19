@@ -3,7 +3,7 @@
 #include "Root.h"
 #include <memory>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Constructor
@@ -228,7 +228,7 @@ double Stem::getParameter(std::string name) const
     }
     if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // // root volume [cm^3]
     if (name=="surface") { return 2*param()->a*M_PI*getLength(); }
-    if (name=="type") { return this->param_->subType; }  // in CRootBox the subType is often called just type
+    if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
     if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
     if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
     if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]

@@ -56,7 +56,7 @@
 #include <float.h>
 #include "gauss_legendre.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 #ifndef PI
     #define PI 3.1415926535897932384626433832795028841971693993751
@@ -540,4 +540,4 @@ void gauss_legendre_tbl(int n, double* x, double* w, double eps)
     return;
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox

@@ -9,7 +9,7 @@
 #include <fstream>
 #include <set>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Copies the line segments representing the plant to the analysis class
@@ -667,4 +667,4 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
     os << "# \n";
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox

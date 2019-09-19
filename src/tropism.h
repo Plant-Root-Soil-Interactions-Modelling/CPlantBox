@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class SoilLookUp;
 class SignedDistanceFunction;
@@ -250,6 +250,6 @@ public:
 
 
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

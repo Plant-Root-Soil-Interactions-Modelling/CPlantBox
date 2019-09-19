@@ -4,7 +4,7 @@
 
 #include "sdf.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class Organism;
 class Organ;
@@ -78,6 +78,6 @@ protected:
 inline bool operator==(const SegmentAnalyser& lhs, const SegmentAnalyser& rhs){ return (&lhs==&rhs); } // only address wise, needed for boost python indexing suite
 inline bool operator!=(const SegmentAnalyser& lhs, const SegmentAnalyser& rhs){ return !(lhs == rhs); }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

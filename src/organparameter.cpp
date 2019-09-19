@@ -7,7 +7,7 @@
 #include <iostream>
 #include <exception>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * @return Quick info about the object for debugging

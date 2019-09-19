@@ -1,7 +1,7 @@
 #ifndef GROWTH_H
 #define GROWTH_H
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class Organ;
 
@@ -78,6 +78,6 @@ public:
     GrowthFunction* copy() override { return new ExponentialGrowth(*this); }
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

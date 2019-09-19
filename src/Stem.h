@@ -11,7 +11,7 @@
 #include "stemparameter.h"
 #include "Organism.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 static int phytomerId[10]= {0};
 /**

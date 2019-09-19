@@ -13,7 +13,7 @@
  * StemSpecificParameter are drawn from the StemRandomParameter class
  */
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class Organism;
 

@@ -3,7 +3,7 @@
 
 #include "Root.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  *

@@ -8,7 +8,7 @@
 #include <chrono>
 #include <assert.h>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * @return Mean maximal stem length of this stem type
@@ -292,4 +292,4 @@ void StemRandomParameter::bindParmeters()
     description["successorP"] = "Probability of each sub type to occur";
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox

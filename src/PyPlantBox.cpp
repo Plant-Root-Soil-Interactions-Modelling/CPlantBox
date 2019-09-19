@@ -12,7 +12,7 @@ namespace py = pybind11;
 #include "Organism.h"
 #include "organparameter.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * bybind11 Python bindings
