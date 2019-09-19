@@ -10,6 +10,10 @@ Testing
 .cproject
 .project
 
+# Codeblocks
+*.cbp
+Codeblocks
+
 # latex clutter
 *.pdf
 *.aux
@@ -36,5 +40,5 @@ __pycache__
 .pydevproject
 .settings/
 Debug/
-Codeblocks
+
 
