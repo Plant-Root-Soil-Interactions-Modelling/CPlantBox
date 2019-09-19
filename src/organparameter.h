@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-#include "external/tinyxml2.h"
+#include "external/tinyxml2/tinyxml2.h"
 
 /**
  * This file describes the classes OrganSpecificParameter and RootRandomParameter.
