@@ -7,10 +7,13 @@ add_library(CRootBox
             organparameter.cpp            
             rootparameter.cpp
 			seedparameter.cpp  
-			leafparameter.cpp          
+			leafparameter.cpp 
+			stemparameter.cpp  			
             Organ.cpp            
             Root.cpp
             Seed.cpp
+			Stem.cpp
+			Leaf.cpp
             Organism.cpp
             RootSystem.cpp
             analysis.cpp
@@ -48,7 +51,7 @@ if (PythonLibs_FOUND)
 			seedparameter.cpp
 			stemparameter.cpp
 			#plant.cpp
-			Stem.cpp
+			#Stem.cpp
             Organ.cpp            
             Root.cpp
             Seed.cpp
@@ -58,7 +61,7 @@ if (PythonLibs_FOUND)
             analysis.cpp
             sdf.cpp
             tropism.cpp
-			../external/tinyxml2/tinyxml2.cpp                 
+			../external/tinyxml2.cpp                 
             ../external/aabbcc/AABB.cc
             #../external/gauss_legendre/gauss_legendre.cpp
 )

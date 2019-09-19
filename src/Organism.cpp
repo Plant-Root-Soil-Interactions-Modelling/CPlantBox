@@ -530,7 +530,7 @@ std::string Organism::toString() const
  */
 void Organism::readParameters(std::string name, std::string basetag)
 {
-	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+	std::locale loc("de_DE.utf8");
     tinyxml2::XMLDocument doc;
     doc.LoadFile(name.c_str());
     if(doc.ErrorID() == 0) {
@@ -579,7 +579,7 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
  */
 void Organism::writeRSML(std::string name) const
 {
-	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+	std::locale loc("de_DE.utf8");
     tinyxml2::XMLDocument xmlDoc;
     tinyxml2:: XMLElement* rsml = xmlDoc.NewElement("rsml"); // RSML
     tinyxml2:: XMLElement* meta = getRSMLMetadata(xmlDoc);

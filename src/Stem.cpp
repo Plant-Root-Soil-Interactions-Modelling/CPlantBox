@@ -708,7 +708,15 @@ void Stem::addNode(Vector3d n, double t)
 //		cout << indent << "</root>\n"; // close stem
 //	}
 //}
-
+//*/
+// * Quick info about the object for debugging
+// */
+std::string Stem::toString() const
+{
+	std::stringstream str;
+	str << "Stem #"<< id <<": type "<<param()->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
+	return str.str();
+}
 
 
 

@@ -54,7 +54,7 @@ StemRandomParameter* getStemRandomParameter() const;  ///< root type parameter o
 	//Vector3d absHeading() const; //< absolute heading of the stem tip
 
 	/* IO */
-	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
+//	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
 	std::string toString() const;
    Vector3d iHeading; ///< the initial heading of the root, when it was created
 double parentBaseLength; ///< length [cm]
