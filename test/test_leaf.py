@@ -1,7 +1,7 @@
 """
 Copyright 2019, Forschungszentrum Jülich GmbH, licensed under GNU GPLv3
 @authors Daniel Leitner, Andrea Schnepf, Xiaoran Zhou
-"""l
+"""
 import py_rootbox as rb
 import numpy as np
 from rb_tools import *
