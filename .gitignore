@@ -1,31 +1,37 @@
-.project
+# build system clutter
+build-*
+Testing
+
+# auto-saved files
+*~
+
+# hidden files
 .cproject
+.project
+
+# latex clutter
+*.pdf
+*.aux
+*.blg
+*.log
+*.bbl
+*.dvi
+*.idx
+*.out
+*.tdo
+*.toc
+
+# something pythoon related
+*.pyc
+__pycache__
+
+# CMake
+*.cmake
+CMakeFiles
+Makefile
+
+#others
 .pydevproject
 .settings/
 Debug/
-.vs
-CMakeFiles/
-a.out
-CPlantBox_Codeblocks_project/
-
-*.ipch *.db .vs/cpb/v15/.suo examples/PSP_infiltrationRedistribution1D/* 
-examples/Exudation/* /.vs /__pycache__/xylem_flux.cpython-35.pyc 
-/__pycache__/rb_tools.cpython-36.pyc 
-/__pycache__/rb_tools.cpython-35.pyc /__pycache__ 
-/CPlantBoxVS.vcxproj.user /CPlantBoxVS.vcxproj.filters 
-/CPlantBoxVS.vcxproj /CPlantBoxVS.sln /py_plantbox.so 
-/Report20180320-1455.diagsession /Debug /x64 *.vtp py_plantbox.so 
-examples/Coupling_PSP/__pycache__/
-# CMake clutter
-build-* Testing CMakeCache.txt CMakeFiles/ *.cmake *.a
-# auto-saved files
-*~
-examples/CMakeFiles/
-python/cpbvenv
-./src/CMakeFiles/*
-*/Makefile
-CMakeCache.txt
-cmake_install.cmake
-
-./src/libCPlantBox.a
-./examples/test_cplantbox
+Codeblocks
