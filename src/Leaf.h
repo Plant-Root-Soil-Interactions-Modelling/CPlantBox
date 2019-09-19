@@ -8,7 +8,7 @@
 #include "Organ.h"
 #include "mymath.h"
 #include "sdf.h"
-#include "LeafTropism.h"
+#include "tropism.h"
 #include "LeafGrowth.h"
 #include "leafparameter.h"
 #include "Organism.h"

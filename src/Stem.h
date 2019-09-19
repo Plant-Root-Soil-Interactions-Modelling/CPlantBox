@@ -6,7 +6,7 @@
 
 #include "Organ.h"
 #include "mymath.h"
-#include "StemTropism.h"
+#include "tropism.h"
 #include "StemGrowth.h"
 #include "stemparameter.h"
 #include "Organism.h"

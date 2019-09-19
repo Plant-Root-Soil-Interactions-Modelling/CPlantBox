@@ -82,8 +82,6 @@ void Leaf::simulate(double dt, bool silence)
 {
 	old_non = 0; // is set in Leaf:createSegments, the zero indicates the first call to createSegments
 
-	const LeafSpecificParameter* lp =  param(); // rename
-
 	// increase age
 	if (age+dt>param()->rlt) { // leaf life time
 		dt=param()->rlt-age; // remaining life span
@@ -96,7 +94,7 @@ void Leaf::simulate(double dt, bool silence)
 		if ((age>0) && (age-dt<=0)) { // the leaf emerges in this time step
 			double f_soil = getLeafRandomParameter()->f_sbp->getValue(nodes.back(),this);
 			if (f_soil<1.) { // P==1 means the lateral emerges with probability 1 (default case)
-				double f_soil = 1.-std::pow((1.-f_soil), dt); //probability of emergence in this time step
+				f_soil = 1.-std::pow((1.-f_soil), dt); //probability of emergence in this time step
 				//        std::cout <<param()-><<", "<<param()-><< "\n";
 				if (plant->rand()>f_soil) { // not rand()<p
 					age -= dt; // the leaf does not emerge in this time step

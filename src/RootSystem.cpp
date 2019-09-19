@@ -159,6 +159,7 @@ void RootSystem::writeParameters(std::ostream& os) const
         ((RootRandomParameter*)otp.second)->write(os);
     }
 }
+
 /**
  * Sets up the base roots according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.

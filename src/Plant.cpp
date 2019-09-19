@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <string>
 #include <fstream>
+
 namespace CRootBox {
 
 /*
@@ -95,8 +96,29 @@ void Plant::initCallbacks()
         delete rtp->f_gf;
         rtp->f_gf  = gf_;
     }
+    for (auto& p_otp :organParam[Organism::ot_leaf]) {
+        LeafRandomParameter* rtp = (LeafRandomParameter*)p_otp.second;
+        Tropism* tropism = this->createTropismFunction(rtp->tropismT, rtp->tropismN, rtp->tropismS);
+        tropism->setGeometry(geometry);
+        delete rtp->f_tf; // delete old tropism
+        rtp->f_tf = tropism; // set new one
+        GrowthFunction* gf_ = this->createGrowthFunction(rtp->gf);
+        gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
+        delete rtp->f_gf;
+        rtp->f_gf  = gf_;
+    }
+    for (auto& p_otp :organParam[Organism::ot_stem]) {
+        StemRandomParameter* rtp = (StemRandomParameter*)p_otp.second;
+        Tropism* tropism = this->createTropismFunction(rtp->tropismT, rtp->tropismN, rtp->tropismS);
+        tropism->setGeometry(geometry);
+        delete rtp->f_tf; // delete old tropism
+        rtp->f_tf = tropism; // set new one
+        GrowthFunction* gf_ = this->createGrowthFunction(rtp->gf);
+        gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
+        delete rtp->f_gf;
+        rtp->f_gf  = gf_;
+    }
 
-    // TODO rest of hte organs...
 }
 
 /**
@@ -120,6 +142,10 @@ Tropism* Plant::createTropismFunction(int tt, double N, double sigma) {
         Tropism* cht = new CombinedTropism(this,N,sigma,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
         return cht;
     }
+    case tt_twist:  return new TwistTropism(this,N,sigma);
+    case tt_antigravi: return new AntiGravitropism(this,N,sigma);
+
+
     default: throw std::invalid_argument( "Plant::createTropismFunction() tropism type not implemented" );
     }
 }
