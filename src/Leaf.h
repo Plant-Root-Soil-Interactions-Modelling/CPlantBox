@@ -18,8 +18,7 @@ namespace CRootBox {
 
 
 class Plant;
-class LeafParameter;
-class LeafRandomOrganParameter;
+
 static int leafphytomerID[10]= {0};
 
 /**
@@ -60,7 +59,7 @@ public:
 	Vector3d initialLeafHeading;
 	Vector3d heading() const; /// current heading of the root tip
 	/* IO */
-	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
+//	void writeRSML(std::ostream & cout, std::string indent) const; ///< writes a RSML stem tag
 	std::string toString() const;
     Vector3d iHeading; ///< the initial heading of the root, when it was created
     double parentBaseLength; ///< length [cm]

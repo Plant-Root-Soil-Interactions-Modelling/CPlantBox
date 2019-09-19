@@ -23,7 +23,7 @@
 #include "StemTropism.h"
 #include "LeafGrowth.h"
 #include "LeafTropism.h"
-#include "tinyxml2.h"
+#include "../external/tinyxml2.h"
 
 namespace CRootBox {
 
