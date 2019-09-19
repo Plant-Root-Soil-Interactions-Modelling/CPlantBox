@@ -1,13 +1,15 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rsml import *
 
 
 class TestStemParameter(unittest.TestCase):
 
     def stem_example(self):
-        self.plant = rb.Organism()
-        self.srp = rb.StemRandomParameter(self.plant)
+        self.plant = pb.Organism()
+        self.srp = pb.StemRandomParameter(self.plant)
         self.srp.la = 1.5
         self.srp.lb = 5.5
         self.srp.ln = 1.25
@@ -17,12 +19,12 @@ class TestStemParameter(unittest.TestCase):
 
     def add_successors(self):
         """ add successor sub types to the example"""
-        l = rb.std_vector_int_()
+        l = pb.std_vector_int_()
         l.append(4)
         l.append(5)
         l.append(6)
         self.srp.successor = l
-        l = rb.std_vector_double_()
+        l = pb.std_vector_double_()
         l.append(0.4)
         l.append(0.1)
         l.append(0.5)
@@ -31,8 +33,8 @@ class TestStemParameter(unittest.TestCase):
 
     def test_constructors(self):
         """ tests constructor and copy """
-        plant = rb.Organism()
-        otp = rb.StemRandomParameter(plant)
+        plant = pb.Organism()
+        otp = pb.StemRandomParameter(plant)
         otp.theta = 123
         otp.thetas = 456
         otp.gf = 789
@@ -49,7 +51,7 @@ class TestStemParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        srp = rb.StemRandomParameter(rb.Organism())
+        srp = pb.StemRandomParameter(pb.Organism())
         srp.lns = 0.123
         srp.la = 12
         ot = srp.getParameter("organType")  # test defaults
@@ -73,7 +75,7 @@ class TestStemParameter(unittest.TestCase):
         #print([theta,thetas])
 
     def test_toString(self):
-        self.srp = rb.StemRandomParameter(rb.Organism())
+        self.srp = pb.StemRandomParameter(pb.Organism())
         self.add_successors()
         srp = self.srp  # rename
         srp.name = "the stem"
@@ -89,7 +91,7 @@ class TestStemParameter(unittest.TestCase):
         otp.subType = 1
         otp.nob = (otp.k-otp.la-otp.lb)/otp.ln + 1;
         otp.writeXML("stem.xml")
-        otp2 = rb.StemRandomParameter(self.plant)
+        otp2 = pb.StemRandomParameter(self.plant)
         otp2.readXML("stem.xml")
         otp2.nob = (otp2.k-otp2.la-otp2.lb)/otp2.ln + 1;
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")

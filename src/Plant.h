@@ -20,7 +20,7 @@
 #include "growth.h"
 #include "external/tinyxml2.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Plant

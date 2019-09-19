@@ -8,7 +8,7 @@
 #include <cmath>
 #include <limits>
 
-namespace CRootBox  {
+namespace CPlantBox  {
 
 class Organ;
 
@@ -402,6 +402,6 @@ public:
     SoilLookUp* copy() override { return new EquidistantGrid3D(*this); }
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

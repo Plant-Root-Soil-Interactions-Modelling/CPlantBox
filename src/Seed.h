@@ -5,7 +5,7 @@
 #include "Organism.h"
 #include "seedparameter.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Seed

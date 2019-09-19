@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Parameters of a single leaf (created by LeafSpecificParameter)
@@ -110,6 +110,6 @@ protected:
 
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif

@@ -7,7 +7,7 @@
 #include "Organism.h"
 #include "rootparameter.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class RootState;
 
@@ -70,6 +70,6 @@ protected:
 
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif /* ROOT_H_ */

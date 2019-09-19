@@ -1,11 +1,13 @@
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rb_tools import *
 
 # set up simulation
-rs = rb.RootSystem()
+rs = pb.RootSystem()
 name = "Zea_mays_4_Leitner_2014"
 rs.openFile(name)
-soilcore = rb.SDF_PlantContainer(5,5,40,False)
+soilcore = pb.SDF_PlantContainer(5,5,40,False)
 rs.setGeometry(soilcore)  # soilcore, or rhizotron
 rs.initialize()
 

@@ -12,7 +12,7 @@
  * OrganSpecificParameter are drawn from the RootRandomParameter class
  */
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class Organism; // forward declaration
 

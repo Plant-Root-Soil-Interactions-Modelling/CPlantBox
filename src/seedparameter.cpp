@@ -6,7 +6,7 @@
 #include <cmath>
 #include <iostream>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * @copydoc OrganParameter::toString()

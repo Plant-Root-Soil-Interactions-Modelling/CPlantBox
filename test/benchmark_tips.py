@@ -9,7 +9,9 @@
 #
 # computes in parallel to enable a lot of runs
 #
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 
 from multiprocessing import Pool
 from itertools import product
@@ -21,28 +23,28 @@ from scipy import stats
 from matplotlib.dates import mx2num
 
 
-def v2a(vd):  # rb.std_vector_double_ to numpy array
+def v2a(vd):  # pb.std_vector_double_ to numpy array
     l = np.zeros(len(vd))
     for i in range(0, len(vd)):
         l[i] = vd[i]
     return l
 
 
-def a2v(a):  #  numpy array to rb.std_vector_double
-    l = rb.std_vector_double_()
+def a2v(a):  #  numpy array to pb.std_vector_double
+    l = pb.std_vector_double_()
     for d in a:
         l.append(d)
     return l
 
 
-def a2i(a):  #  numpy array to rb.std_int_double
-    l = rb.std_vector_int_()
+def a2i(a):  #  numpy array to pb.std_int_double
+    l = pb.std_vector_int_()
     for i in a:
         l.append(i)
     return l
 
 
-def vv2a(vd):  # rb.std_vector_Vector3_ to numpy array
+def vv2a(vd):  # pb.std_vector_Vector3_ to numpy array
     N = len(vd)
     l = np.zeros((N, 3))
     for i in range(0, N):
@@ -54,7 +56,7 @@ def simOnce(name, simtime, lbins, lrange, zbins, zrange, dx, dt):
     abins = 100
     arange = (-math.pi, math.pi)
     # simulation
-    rs = rb.RootSystem()
+    rs = pb.RootSystem()
     rs.openFile(name, "modelparameter/")
     for p in rs.getRootTypeParameter():
         p.dx = dx

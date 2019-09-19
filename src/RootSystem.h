@@ -12,7 +12,7 @@
 #include "Root.h"
 #include "seedparameter.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class RootState;
 class RootSystemState;
@@ -171,6 +171,6 @@ private:
 
 };
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #endif /* ROOTSYSTEM_H_ */

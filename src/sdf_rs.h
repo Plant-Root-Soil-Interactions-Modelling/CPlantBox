@@ -13,7 +13,7 @@
 #include "mymath.h"
 #include "analysis.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Distance to a static root system

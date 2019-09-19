@@ -1,5 +1,7 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rsml import *
 from rb_tools import *
 
@@ -25,20 +27,20 @@ class TestRootSystem(unittest.TestCase):
 
     def rs_example_rtp(self):
         """ an example used in some of the tests below, 100 basals with laterals """
-        self.rs = rb.RootSystem()
-        srp = rb.SeedRandomParameter(self.rs)
+        self.rs = pb.RootSystem()
+        srp = pb.SeedRandomParameter(self.rs)
         srp.subType = 0
-        srp.seedPos = rb.Vector3d(0., 0., -3.)
+        srp.seedPos = pb.Vector3d(0., 0., -3.)
         srp.maxB = 100
         srp.firstB = 10
         srp.delayB = 3
         self.rs.setRootSystemParameter(srp)
-        p0 = rb.RootRandomParameter(self.rs)
+        p0 = pb.RootRandomParameter(self.rs)
         p0.name, p0.type, p0.la, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 10, 20, 89. / 19., 1, 0.5
         p0.lb = 2
-        p0.successor = a2i([2])  # to rb.std_int_double_()
-        p0.successorP = a2v([1.])  # rb.std_vector_double_()
-        p1 = rb.RootRandomParameter(self.rs)
+        p0.successor = a2i([2])  # to pb.std_int_double_()
+        p0.successorP = a2v([1.])  # pb.std_vector_double_()
+        p1 = pb.RootRandomParameter(self.rs)
         p1.name, p1.type, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
         self.p0, self.p1, self.srp = p0, p1, srp  # Python will garbage collect them away, if not stored
         self.rs.setOrganRandomParameter(self.p0)  # the organism manages the type parameters
@@ -128,7 +130,7 @@ class TestRootSystem(unittest.TestCase):
     def test_length_with_laterals(self):
         """ run a simulation with a fibrous root system and compares to analytic lengths"""
 #         name = "Anagallis_femina_Leitner_2010"
-#         rs = rb.RootSystem()
+#         rs = pb.RootSystem()
 #         rs.openFile(name)
 #         rs.initialize()
 #         rs.simulate(7)
@@ -140,11 +142,11 @@ class TestRootSystem(unittest.TestCase):
         """ checks if the root system can be copied, and if randomness works """
         seed = 100
         name = "Brassica_oleracea_Vansteenkiste_2014"
-        rs = rb.RootSystem()  # the original
+        rs = pb.RootSystem()  # the original
         rs.readParameters("modelparameter/" + name + ".xml")
         rs.setSeed(seed)
         rs.initialize()
-        rs2 = rb.RootSystem(rs)  # copy root system
+        rs2 = pb.RootSystem(rs)  # copy root system
         self.assertIsNot(rs2, rs, "copy: not a copy")
         n1 = rs.rand()
         self.assertEqual(rs2.rand(), n1, "copy: random generator seed was not copied")
@@ -152,7 +154,7 @@ class TestRootSystem(unittest.TestCase):
         rs2.simulate(10)
         n2 = rs.rand()
         self.assertEqual(rs2.rand(), n2, "copy: simulation not deterministic")
-        rs3 = rb.RootSystem()  # rebuild same
+        rs3 = pb.RootSystem()  # rebuild same
         rs3.readParameters("modelparameter/" + name + ".xml")
         rs3.setSeed(seed)
         rs3.initialize()
@@ -163,7 +165,7 @@ class TestRootSystem(unittest.TestCase):
     def test_polylines(self):
         """checks if the polylines have the right tips and bases """
         name = "Brassica_napus_a_Leitner_2010"
-        rs = rb.RootSystem()
+        rs = pb.RootSystem()
         rs.readParameters("modelparameter/" + name + ".xml")
         rs.initialize()
         rs.simulate(7)  # days young
@@ -184,9 +186,9 @@ class TestRootSystem(unittest.TestCase):
         self.rs_example_rtp()
 #         print(self.p0.__str__(False))
 #         print(self.p1.__str__(False))
-        print(rb.Organism.organTypeName(self.p0.organType))
+        print(pb.Organism.organTypeName(self.p0.organType))
         self.rs.writeParameters("test_parameters.xml", "plant", False)  # include comments
-        rs1 = rb.RootSystem
+        rs1 = pb.RootSystem
         # rs1.readParameters("test_parameters.xml", "RootBox")
         # TODO
 
@@ -198,7 +200,7 @@ class TestRootSystem(unittest.TestCase):
     def test_dynamics(self):
         """ incremental root system growth like needed for coupling"""
         name = "Anagallis_femina_Leitner_2010"  # "maize_p2"  # "Anagallis_femina_Leitner_2010"  # "Zea_mays_4_Leitner_2014"
-        rs = rb.RootSystem()
+        rs = pb.RootSystem()
         rs.readParameters("modelparameter/" + name + ".xml")
         rs.initialize()
         simtime = 60  # days
@@ -247,7 +249,7 @@ class TestRootSystem(unittest.TestCase):
     def test_rsml(self):
         """ checks rsml functionality with Python rsml reader """
         name = "Anagallis_femina_Leitner_2010"
-        rs = rb.RootSystem()
+        rs = pb.RootSystem()
         rs.readParameters("modelparameter/" + name + ".xml")
         rs.initialize()
         simtime = 60

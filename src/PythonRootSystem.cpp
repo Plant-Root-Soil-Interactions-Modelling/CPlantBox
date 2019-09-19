@@ -1,6 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#ifndef rootbox_H_
-#define rootbox_H_
+#ifndef plantbox_H_
+#define plantbox_H_
 
 /**
  *  A Python module for CRootbox based on boost.python
@@ -24,7 +24,7 @@
 
 //#include "../examples/example_exudation.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 using namespace boost::python;
 
@@ -138,7 +138,7 @@ public:
 /**
  * Expose classes to Python module
  */
-BOOST_PYTHON_MODULE(rootbox)
+BOOST_PYTHON_MODULE(plantbox)
 {
     /*
      * general
@@ -806,6 +806,6 @@ BOOST_PYTHON_MODULE(rootbox)
 }
 
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
-#endif /* rootbox_H_ */
+#endif /* plantbox_H_ */

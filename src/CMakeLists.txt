@@ -3,7 +3,7 @@
 #
 
 # file(GLOB all_sources *.cpp) # i changed that to exclude PythonRootSystem.cpp
-add_library(CRootBox SHARED
+add_library(CPlantBox SHARED
             organparameter.cpp
             rootparameter.cpp
 			seedparameter.cpp
@@ -25,13 +25,13 @@ add_library(CRootBox SHARED
             #external/gauss_legendre/gauss_legendre.cpp
 
 
-set_target_properties(CRootBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
 
 #
-# 2. Make rootbox library
+# 2. Make plantbox library
 #
 
-# Find necessary packages for rootbox
+# Find necessary packages for plantbox
 find_package(PythonLibs 3)
 find_package(PythonInterp 3)    # creates PYTHON_VERSION_MAJOR, PYTHON_VERSION_MINOR
 
@@ -44,7 +44,7 @@ if (PythonLibs_FOUND)
   include_directories( ${Boost_INCLUDE_DIR} )
 
   # make shared library for Pyhton binding
-  add_library(rootbox SHARED
+  add_library(plantbox SHARED
             organparameter.cpp
             rootparameter.cpp
 			seedparameter.cpp
@@ -66,10 +66,10 @@ if (PythonLibs_FOUND)
             external/aabbcc/AABB.cc
             #external/gauss_legendre/gauss_legendre.cpp
 )
-  target_link_libraries(rootbox ${Boost_LIBRARIES} )
-  set_target_properties(rootbox PROPERTIES PREFIX "" )
-  set_target_properties(rootbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+  target_link_libraries(plantbox ${Boost_LIBRARIES} )
+  set_target_properties(plantbox PROPERTIES PREFIX "" )
+  set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
 else ()
-  message(WARNING "Python 3 was not found on your system! You can only use the C++ interface of CRootBox. \
-                   Install Python 3 and rerun CMake to build the rootbox library.")
+  message(WARNING "Python 3 was not found on your system! You can only use the C++ interface of CPlantBox. \
+                   Install Python 3 and rerun CMake to build the plantbox library.")
 endif ()

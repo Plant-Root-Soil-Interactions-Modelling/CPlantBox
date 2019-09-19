@@ -14,7 +14,7 @@
 #include "Organism.h"
 
 
-namespace CRootBox {
+namespace CPlantBox {
 
 
 class Plant;

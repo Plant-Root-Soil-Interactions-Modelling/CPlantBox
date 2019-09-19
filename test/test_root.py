@@ -1,5 +1,7 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 import numpy as np
 from rb_tools import *
 
@@ -25,12 +27,12 @@ class TestRoot(unittest.TestCase):
 
     def root_example_rtp(self):
         """ an example used in the tests below, a main root with laterals """
-        self.plant = rb.Organism()  # Root has no dependency on RootSystem anymore
-        p0 = rb.RootRandomParameter(self.plant)
+        self.plant = pb.Organism()  # Root has no dependency on RootSystem anymore
+        p0 = pb.RootRandomParameter(self.plant)
         p0.name, p0.type, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 1, 10, 20, (89. / 19.), 1, 0.5
-        p0.successor = a2i([2])  # to rb.std_int_double_()
-        p0.successorP = a2v([1.])  # rb.std_vector_double_()
-        p1 = rb.RootRandomParameter(self.plant)
+        p0.successor = a2i([2])  # to pb.std_int_double_()
+        p0.successorP = a2v([1.])  # pb.std_vector_double_()
+        p1 = pb.RootRandomParameter(self.plant)
         p1.name, p1.type, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
         self.p0, self.p1 = p0, p1  # Python will garbage collect them away, if not stored
         self.plant.setOrganRandomParameter(self.p0)  # the organism manages the type parameters
@@ -39,10 +41,10 @@ class TestRoot(unittest.TestCase):
         self.param0.la = 0  # its important parent has zero length, otherwise creation times are messed up
         self.param0.lb = 0
         # param0 is stored, because otherwise garbage collection deletes it, an program will crash <---
-        parentroot = rb.Root(1, self.param0, True, True, 0., 0., rb.Vector3d(0, 0, -1), 0, 0, False, 0)
+        parentroot = pb.Root(1, self.param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
         parentroot.setOrganism(self.plant)
-        parentroot.addNode(rb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
-        self.root = rb.Root(self.plant, self.p0.subType, rb.Vector3d(0, 0, -1), 0, parentroot, 0, 0)
+        parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
+        self.root = pb.Root(self.plant, self.p0.subType, pb.Vector3d(0, 0, -1), 0, parentroot, 0, 0)
         self.root.setOrganism(self.plant)
 
     def root_length_test(self, dt, l, subDt):
@@ -75,14 +77,14 @@ class TestRoot(unittest.TestCase):
         self.root_example_rtp()
         # 1. constructor from scratch
         param = self.p0.realize()
-        root = rb.Root(1, param, True, True, 0., 0., rb.Vector3d(0, 0, -1), 0, 0, False, 0)
+        root = pb.Root(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
         root.setOrganism(self.plant)
-        root.addNode(rb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
+        root.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        root2 = rb.Root(self.plant, self.p1.subType, rb.Vector3d(0, 0, -1), 0, root, 0, 0)
+        root2 = pb.Root(self.plant, self.p1.subType, pb.Vector3d(0, 0, -1), 0, root, 0, 0)
         root.addChild(root2);
         # 3. deep copy (with a factory function)
-        plant2 = rb.Organism()
+        plant2 = pb.Organism()
         root3 = root.copy(plant2)
         self.assertEqual(str(root), str(root3), "deep copy: the organs shold be equal")
         self.assertIsNot(root.getParam(), root3.getParam(), "deep copy: organs have same parameter set")

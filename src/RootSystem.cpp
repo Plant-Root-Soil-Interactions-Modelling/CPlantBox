@@ -5,7 +5,7 @@
 #include "Organism.h"
 #include "Seed.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Sets up the xml reader Organism::readParameters
@@ -60,7 +60,7 @@ std::vector<RootRandomParameter*> RootSystem::getRootRandomParameter() const
  */
 void RootSystem::setRootSystemParameter(SeedRandomParameter& rsp)
 {
-    assert(rsp.subType==0 && "RootSystem::setRootSystemParameter: In CRootBox must have subType 0");
+    assert(rsp.subType==0 && "RootSystem::setRootSystemParameter: In CPlantBox must have subType 0");
     this->setOrganRandomParameter(&rsp);
 }
 
@@ -658,4 +658,4 @@ void RootState::restore(Root& r)
     }
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox

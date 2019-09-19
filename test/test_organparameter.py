@@ -1,5 +1,7 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rsml import *
 
 
@@ -7,8 +9,8 @@ class TestOrganParameter(unittest.TestCase):
 
     def test_constructors(self):
         """ tests constructor and copy """
-        plant = rb.Organism()
-        otp = rb.OrganRandomParameter(plant)
+        plant = pb.Organism()
+        otp = pb.OrganRandomParameter(plant)
         self.assertEqual(otp.name, "organ", "copy: default value unexpected")
         self.assertEqual(otp.organType, 0, "copy: default value unexpected")
         self.assertEqual(otp.subType, 0, "copy: default value unexpected")
@@ -20,7 +22,7 @@ class TestOrganParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        otp = rb.OrganRandomParameter(rb.Organism())
+        otp = pb.OrganRandomParameter(pb.Organism())
         otp.organType = 1
         otp.subType = 2
         ot = otp.getParameter("organType")
@@ -30,7 +32,7 @@ class TestOrganParameter(unittest.TestCase):
 
     def test_toString(self):
         """ tests __str__ output """
-        otp = rb.OrganRandomParameter(rb.Organism())
+        otp = pb.OrganRandomParameter(pb.Organism())
         otp.name = "the great organ"
         otp.organType = 1
         otp.subType = 2
@@ -39,13 +41,13 @@ class TestOrganParameter(unittest.TestCase):
 
     def test_xml(self):
         """ write the organ type parameter as xml, and rereads it """
-        plant = rb.Organism()
-        otp = rb.OrganRandomParameter(plant)
+        plant = pb.Organism()
+        otp = pb.OrganRandomParameter(plant)
         otp.name = "the great organ"
         otp.organType = 1  # seed
         otp.subType = 2
         otp.writeXML("organ.xml")
-        otp2 = rb.OrganRandomParameter(plant)
+        otp2 = pb.OrganRandomParameter(plant)
         otp2.readXML("organ.xml")
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
@@ -53,7 +55,7 @@ class TestOrganParameter(unittest.TestCase):
 
     def test_realize(self):
         """ calls realize """
-        otp = rb.OrganRandomParameter(rb.Organism())
+        otp = pb.OrganRandomParameter(pb.Organism())
         otp.subType = 2
         p = otp.realize();
         self.assertEqual(p.__class__.__name__, "OrganSpecificParameter", "realize: unexpected class type")

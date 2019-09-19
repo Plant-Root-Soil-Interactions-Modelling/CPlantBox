@@ -1,7 +1,7 @@
 #ifndef STEMGROWTH_H
 #define STEMGROWTH_H
 
-namespace CRootBox {
+namespace CPlantBox {
 
 
 class Organ;

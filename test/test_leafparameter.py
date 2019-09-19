@@ -1,13 +1,15 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rsml import *
 
 
 class TestLeafParameter(unittest.TestCase):
 
     def leaf_example(self):
-        self.plant = rb.Organism()
-        self.lrp = rb.LeafRandomParameter(self.plant)
+        self.plant = pb.Organism()
+        self.lrp = pb.LeafRandomParameter(self.plant)
         self.lrp.la = 1.5
         self.lrp.lb = 5.5
         self.lrp.ln = 1.25
@@ -18,12 +20,12 @@ class TestLeafParameter(unittest.TestCase):
 
     def add_successors(self):
         """ add successor sub types to the example"""
-        l = rb.std_vector_int_()
+        l = pb.std_vector_int_()
         l.append(4)
         l.append(5)
         l.append(6)
         self.lrp.successor = l
-        l = rb.std_vector_double_()
+        l = pb.std_vector_double_()
         l.append(0.4)
         l.append(0.1)
         l.append(0.5)
@@ -32,8 +34,8 @@ class TestLeafParameter(unittest.TestCase):
 
     def test_constructors(self):
         """ tests constructor and copy """
-        plant = rb.Organism()
-        otp = rb.LeafRandomParameter(plant)
+        plant = pb.Organism()
+        otp = pb.LeafRandomParameter(plant)
         otp.theta = 123
         otp.thetas = 456
         otp.gf = 789
@@ -50,7 +52,7 @@ class TestLeafParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        lrp = rb.LeafRandomParameter(rb.Organism())
+        lrp = pb.LeafRandomParameter(pb.Organism())
         lrp.lns = 0.123
         lrp.la = 12
         ot = lrp.getParameter("organType")  # test defaults
@@ -74,7 +76,7 @@ class TestLeafParameter(unittest.TestCase):
         #print([theta,thetas])
 
     def test_toString(self):
-        self.lrp = rb.LeafRandomParameter(rb.Organism())
+        self.lrp = pb.LeafRandomParameter(pb.Organism())
         self.add_successors()
         lrp = self.lrp  # rename
         lrp.name = "the leaf"
@@ -90,7 +92,7 @@ class TestLeafParameter(unittest.TestCase):
         otp.subType = 1
         otp.nob = (otp.k-otp.la-otp.lb)/otp.ln + 1;
         otp.writeXML("leaf.xml")
-        otp2 = rb.LeafRandomParameter(self.plant)
+        otp2 = pb.LeafRandomParameter(self.plant)
         otp2.readXML("leaf.xml")
         otp2.nob = (otp2.k-otp2.la-otp2.lb)/otp2.ln + 1;
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")

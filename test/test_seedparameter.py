@@ -1,5 +1,7 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rsml import *
 
 
@@ -7,8 +9,8 @@ class TestShootParameter(unittest.TestCase):
 
     def shoot_example(self):
         """ example root parameters used below """
-        self.plant = rb.Organism()
-        self.srp = rb.SeedRandomParameter(self.plant)
+        self.plant = pb.Organism()
+        self.srp = pb.SeedRandomParameter(self.plant)
         self.srp.firstB = 10
         self.srp.delayB = 7
         self.srp.nC = 5
@@ -20,8 +22,8 @@ class TestShootParameter(unittest.TestCase):
 
     def test_constructors(self):
         """ tests constructor and copy """
-        plant = rb.Organism()
-        srp = rb.SeedRandomParameter(plant)
+        plant = pb.Organism()
+        srp = pb.SeedRandomParameter(plant)
         srp.firstB = 123
         srp.firstBs = 456
         srp.nz = 789
@@ -36,8 +38,8 @@ class TestShootParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        plant = rb.Organism()
-        srp = rb.SeedRandomParameter(plant)
+        plant = pb.Organism()
+        srp = pb.SeedRandomParameter(plant)
         srp.firstB = 0.123
         srp.delaySBs = 12
         ot = srp.getParameter("organType")  # test defaults
@@ -61,7 +63,7 @@ class TestShootParameter(unittest.TestCase):
 
     def test_toString(self):
         """ tests __str__ output """
-        self.srp = rb.SeedRandomParameter(rb.Organism())
+        self.srp = pb.SeedRandomParameter(pb.Organism())
         srp = self.srp  # rename
         srp.name = "the seed"
         # print(srp.__str__(False))
@@ -75,7 +77,7 @@ class TestShootParameter(unittest.TestCase):
         otp.name = "best_seed"
         otp.subType = 0
         otp.writeXML("seed.xml")
-        otp2 = rb.SeedRandomParameter(self.plant)
+        otp2 = pb.SeedRandomParameter(self.plant)
         otp2.readXML("seed.xml")
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")

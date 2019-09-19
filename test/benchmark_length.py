@@ -13,7 +13,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 
 
 def maxRootLength(la, lb, ln, nob):  # maximal length the root will reach
@@ -38,28 +40,28 @@ def rootLateralLength(t, et, r, k):  # length of first order laterals (without s
     return l
 
 
-def v2a(vd):  # rb.std_vector_double_ to numpy array
+def v2a(vd):  # pb.std_vector_double_ to numpy array
     l = np.zeros(len(vd))
     for i in range(0, len(vd)):
         l[i] = vd[i]
     return l
 
 
-def a2v(a):  #  numpy array to rb.std_vector_double
-    l = rb.std_vector_double_()
+def a2v(a):  #  numpy array to pb.std_vector_double
+    l = pb.std_vector_double_()
     for d in a:
         l.append(d)
     return l
 
 
-def a2i(a):  #  numpy array to rb.std_vector_int
-    l = rb.std_vector_int_()
+def a2i(a):  #  numpy array to pb.std_vector_int
+    l = pb.std_vector_int_()
     for i in a:
         l.append(i)
     return l
 
 
-def vv2a(vd):  # rb.std_vector_Vector3_ to numpy array
+def vv2a(vd):  # pb.std_vector_Vector3_ to numpy array
     N = len(vd)
     l = np.zeros((N, 3))
     for i in range(0, N):
@@ -70,9 +72,9 @@ def vv2a(vd):  # rb.std_vector_Vector3_ to numpy array
 #
 # Root type parameter
 #
-rs = rb.RootSystem()
-p0 = rb.RootTypeParameter(rs)
-p1 = rb.RootTypeParameter(rs)
+rs = pb.RootSystem()
+p0 = pb.RootTypeParameter(rs)
+p1 = pb.RootTypeParameter(rs)
 
 # Taproot
 p0.name = "taproot"
@@ -102,7 +104,7 @@ p1.dx = 0.1
 maxB = 100
 firstB = 10.
 delayB = 3.
-rsp = rb.RootSystemParameter()
+rsp = pb.RootSystemParameter()
 rsp.set(-3., firstB, delayB, maxB, 0, 1.e9, 1.e9, 1.e9, 0., 0.)
 
 times = np.array([0., 7., 15., 30., 60.])
@@ -128,7 +130,7 @@ nl = np.zeros(len(times))
 non = np.zeros(len(times))
 for t in dt:
     rs.simulate(t, False)
-    d = v2a(rs.getScalar(rb.ScalarType.length))
+    d = v2a(rs.getScalar(pb.ScalarType.length))
     nl[c] = d[0]
     non[c] = rs.getNumberOfNodes()
     c += 1
@@ -142,7 +144,7 @@ for t in dt:
     dt_ = t / 1000.
     for i in range(0, 1000):
         rs.simulate(dt_, False)
-    d = v2a(rs.getScalar(rb.ScalarType.length))
+    d = v2a(rs.getScalar(pb.ScalarType.length))
     nl2[c] = d[0]
     non2[c] = rs.getNumberOfNodes()
     c += 1
@@ -187,7 +189,7 @@ nl0 = np.zeros(len(times))
 non = np.zeros(len(times))
 for t in dt:
     rs.simulate(t, False)
-    d = v2a(rs.getScalar(rb.ScalarType.length))
+    d = v2a(rs.getScalar(pb.ScalarType.length))
     nl[c] = sum(d)
     nl0[c] = d[0]  # first entry is the tap root
     non[c] = rs.getNumberOfNodes()
@@ -203,7 +205,7 @@ for t in dt:
     dt_ = t / 1000.
     for i in range(0, 1000):
         rs.simulate(dt_, False)
-    d = v2a(rs.getScalar(rb.ScalarType.length))
+    d = v2a(rs.getScalar(pb.ScalarType.length))
     nl2[c] = sum(d)
     nl02[c] = d[0]  # first entry is the tap root
     non2[c] = rs.getNumberOfNodes()
@@ -251,18 +253,18 @@ nl_tap = np.zeros(len(times))
 nl_basal = np.zeros(len(times))
 for t in dt:
     rs.simulate(t, False)
-    d = v2a(rs.getScalar(rb.ScalarType.length))
+    d = v2a(rs.getScalar(pb.ScalarType.length))
     nl[c] = sum(d)
     non[c] = rs.getNumberOfNodes()
 
     seg = rs.getSegments()
     nodes = rs.getNodes()
 
-    ana = rb.SegmentAnalyser(rs)
+    ana = pb.SegmentAnalyser(rs)
     ana.filter("subType", 1.)  # 1 is the type number of the tap root
     nl_tap[c] = ana.getSummed("length")
 
-    ana = rb.SegmentAnalyser(rs)
+    ana = pb.SegmentAnalyser(rs)
     ana.filter("subType", 4.)  # 4 is the default type number of basal roots
     nl_basal[c] = ana.getSummed("length")
 
@@ -310,12 +312,12 @@ nl_basal = np.zeros(len(times))
 nl_basallateral = np.zeros(len(times))
 for c, t in enumerate(dt):
     rs.simulate(t, False)
-    d = v2a(rs.getScalar(rb.ScalarType.length))
+    d = v2a(rs.getScalar(pb.ScalarType.length))
     nl[c] = sum(d)
     non[c] = rs.getNumberOfNodes()
 
     print("Base root sub type ", rs.getBaseRoots()[1].param().subType)
-    ana = rb.SegmentAnalyser(rs)
+    ana = pb.SegmentAnalyser(rs)
     pp = ana.getParameter("subType")
 #     for p in pp:
 #         print(p)
@@ -325,15 +327,15 @@ for c, t in enumerate(dt):
     nl_tap[c] = ana.getSummed("length")
     print("subType1: ", ana.getSummed("one"))
 
-    ana = rb.SegmentAnalyser(rs)
+    ana = pb.SegmentAnalyser(rs)
     ana.filter("parentType", 1.)  # 1 is the type number of the tap root
     nl_taplateral[c] = ana.getSummed("length")
 
-    ana = rb.SegmentAnalyser(rs)
+    ana = pb.SegmentAnalyser(rs)
     ana.filter("subType", 4.)  # 4 is the default type number of basal roots
     nl_basal[c] = ana.getSummed("length")
 
-    ana = rb.SegmentAnalyser(rs)
+    ana = pb.SegmentAnalyser(rs)
     ana.filter("parentType", 4.)  # 4 is the default type number of basal roots
     nl_basallateral[c] = ana.getSummed("length")
 

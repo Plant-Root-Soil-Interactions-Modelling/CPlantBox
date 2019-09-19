@@ -8,7 +8,7 @@
 
 #include <vector>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class OrganSpecificParameter;
 class OrganRandomParameter;
@@ -109,6 +109,6 @@ protected:
 
 };
 
-} // namespace CRootBox
+} // namespace CPlantBox
 
 #endif

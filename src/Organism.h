@@ -10,7 +10,7 @@
 #include <map>
 #include <array>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 class Organ;
 class OrganRandomParameter;
@@ -18,7 +18,7 @@ class OrganRandomParameter;
 /**
  * Organism
  *
- * Base class of Plant (CPlantBox) or RootSystem (CRootBox)
+ * Base class of Plant (CPlantBox) or RootSystem (CPlantBox)
  *
  * Manages the OrganTypeParameters
  * Offers an interface for the simulation loop (initialize, simulate, ...)

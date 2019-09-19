@@ -1,7 +1,7 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "sdf.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 std::string SignedDistanceFunction::writePVPScript() const
 {
@@ -347,4 +347,4 @@ int SDF_HalfPlane::writePVPScript(std::ostream & cout, int c) const
     return c;
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox

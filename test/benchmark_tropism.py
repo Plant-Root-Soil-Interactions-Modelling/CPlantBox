@@ -4,7 +4,9 @@ with 4x4 subfigures, different axial resolutions, should lead
 to similar results
 """
 
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 import matplotlib.pyplot as plt
 from rb_tools import *
 from rsml import *
@@ -22,13 +24,13 @@ for i, n in enumerate(N):
     for j, s in enumerate(sigma):
 
         c += 1
-        rs = rb.RootSystem()
+        rs = pb.RootSystem()
         rs.setSeed(c)
         maxB, firstB, delayB = 100, 10., 3
-        rsp = rb.RootSystemParameter()
+        rsp = pb.RootSystemParameter()
         rsp.set(-3., firstB, delayB, maxB, 0, 1.e9, 1.e9, 1.e9, 0., 0.)
         rs.setRootSystemParameter(rsp)
-        p0 = rb.RootTypeParameter(rs)
+        p0 = pb.RootTypeParameter(rs)
         p0.name, p0.type, p0.la, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 10, 20, 89. / 19., 1, 0.5
 
         p0.tropismT = 1  # GRAVI

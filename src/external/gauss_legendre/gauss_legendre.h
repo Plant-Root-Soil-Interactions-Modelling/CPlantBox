@@ -58,7 +58,7 @@ extern "C"
 {
 #endif
 
-namespace CRootBox {
+namespace CPlantBox {
 
     /* Numerical computation of int(f(x),x=a..b) by Gauss-Legendre n-th order high precision quadrature
         [in]n     - quadrature order
@@ -92,7 +92,7 @@ namespace CRootBox {
     */
     void gauss_legendre_tbl(int n, double* x, double* w, double eps);
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
 
 #ifdef __cplusplus
 }

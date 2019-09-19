@@ -6,7 +6,7 @@
 
 #include "organparameter.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Constructs an organ from given data.

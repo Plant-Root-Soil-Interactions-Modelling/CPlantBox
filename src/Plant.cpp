@@ -6,7 +6,7 @@
 #include <string>
 #include <fstream>
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /*
  * Sets up the xml reader Organism::readParameters

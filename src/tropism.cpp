@@ -7,7 +7,7 @@
 #include "Organism.h"
 #include "Root.h"
 
-namespace CRootBox {
+namespace CPlantBox {
 
 /**
  * Copies this tropism
@@ -200,4 +200,4 @@ double CombinedTropism::tropismObjective(const Vector3d& pos, Matrix3d old, doub
     return v;
 }
 
-} // end namespace CRootBox
+} // end namespace CPlantBox
