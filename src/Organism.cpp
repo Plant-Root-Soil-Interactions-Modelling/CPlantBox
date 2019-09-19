@@ -530,23 +530,27 @@ std::string Organism::toString() const
  */
 void Organism::readParameters(std::string name, std::string basetag)
 {
-	std::locale loc("de_DE.utf8");
     tinyxml2::XMLDocument doc;
     doc.LoadFile(name.c_str());
     if(doc.ErrorID() == 0) {
         tinyxml2::XMLElement* base = doc.FirstChildElement(basetag.c_str());
-        auto p = base->FirstChildElement();
-        while(p) {
-            std::string tagname = p->Name();
-            // std::cout << "Organism::readParameter: reading tag "<< tagname << std::endl << std::flush;
-            int ot = Organism::organTypeNumber(tagname);
-            OrganRandomParameter* otp = organParam[ot].begin()->second->copy(this);
-            otp->readXML(p);
-            setOrganRandomParameter(otp);
-            p = p->NextSiblingElement();
+        if(base != NULL){ 
+            auto p = base->FirstChildElement();
+            while(p) {
+                std::string tagname = p->Name();
+                //std::cout << "Organism::readParameter: reading tag "<< tagname << std::endl << std::flush;
+                int ot = Organism::organTypeNumber(tagname);
+                OrganRandomParameter* otp = organParam[ot].begin()->second->copy(this);
+                otp->readXML(p);
+                setOrganRandomParameter(otp);
+                p = p->NextSiblingElement();}
         }
+        else{
+            throw std::invalid_argument ("Organism::readParameters" + std::string(basetag.c_str()) + " was not found in xml file");
+            }
+
     } else {
-        std::cout << "readXML(): could not open file " << name << "\n" << std::flush;
+        std::cout << "Organism::readParameters: could not open file " << name << "\n" << std::flush;
     }
 }
 
@@ -579,7 +583,7 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
  */
 void Organism::writeRSML(std::string name) const
 {
-	std::locale loc("de_DE.utf8");
+	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument xmlDoc;
     tinyxml2:: XMLElement* rsml = xmlDoc.NewElement("rsml"); // RSML
     tinyxml2:: XMLElement* meta = getRSMLMetadata(xmlDoc);
