@@ -2,8 +2,11 @@
 Copyright 2019, Forschungszentrum Jülich GmbH, licensed under GNU GPLv3
 @authors Daniel Leitner, Andrea Schnepf, Xiaoran Zhou
 """
-import py_rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 import numpy as np
+
 from rb_tools import *
 
 
