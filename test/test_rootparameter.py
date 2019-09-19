@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.append("..")
-import rootbox as rb
+import plantbox as pb
 from rsml import *
 
 
@@ -9,8 +9,8 @@ class TestStemParameter(unittest.TestCase):
 
     def root_example(self):
         """ example root parameters used below """
-        self.plant = rb.Organism()
-        self.rtp = rb.StemRandomParameter(self.plant)
+        self.plant = pb.Organism()
+        self.rtp = pb.StemRandomParameter(self.plant)
         self.rtp.la = 1.5
         self.rtp.lb = 5.5
         self.rtp.ln = 1.25
@@ -20,12 +20,12 @@ class TestStemParameter(unittest.TestCase):
 
     def add_successors(self):
         """ add successor sub types to the example"""
-        l = rb.std_vector_int_()
+        l = pb.std_vector_int_()
         l.append(4)
         l.append(5)
         l.append(6)
         self.rtp.successor = l
-        l = rb.std_vector_double_()
+        l = pb.std_vector_double_()
         l.append(0.4)
         l.append(0.1)
         l.append(0.5)
@@ -33,8 +33,8 @@ class TestStemParameter(unittest.TestCase):
 
     def test_constructors(self):
         """ tests constructor and copy """
-        plant = rb.Organism()
-        otp = rb.StemRandomParameter(plant)
+        plant = pb.Organism()
+        otp = pb.StemRandomParameter(plant)
         otp.theta = 123
         otp.thetas = 456
         otp.gf = 789
@@ -50,7 +50,7 @@ class TestStemParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        rtp = rb.StemRandomParameter(rb.Organism())
+        rtp = pb.StemRandomParameter(pb.Organism())
         rtp.lns = 0.123
         rtp.la = 12
         ot = rtp.getParameter("organType")  # test defaults
@@ -74,7 +74,7 @@ class TestStemParameter(unittest.TestCase):
 
     def test_toString(self):
         """ tests __str__ output """
-        self.rtp = rb.StemRandomParameter(rb.Organism())
+        self.rtp = pb.StemRandomParameter(pb.Organism())
         self.add_successors()
         rtp = self.rtp  # rename
         rtp.name = "the root"
@@ -89,7 +89,7 @@ class TestStemParameter(unittest.TestCase):
         otp.name = "lateral"
         otp.subType = 2
         otp.writeXML("root.xml")
-        otp2 = rb.StemRandomParameter(self.plant)
+        otp2 = pb.StemRandomParameter(self.plant)
         otp2.readXML("root.xml")
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")

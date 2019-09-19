@@ -1,6 +1,8 @@
 import vtk
 from vtk import *
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rb_tools import *
 
 
@@ -57,7 +59,7 @@ def vtkData(d):
 
 
 # Simulate something
-rs = rb.RootSystem()
+rs = pb.RootSystem()
 name = "Zea_mays_1_Leitner_2010"  # "Anagallis_femina_Leitner_2010"
 rs.openFile(name)
 rs.initialize()

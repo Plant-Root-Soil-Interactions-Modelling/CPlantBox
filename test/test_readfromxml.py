@@ -1,5 +1,7 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rsml import *
 from rb_tools import *
 
@@ -8,7 +10,7 @@ class TestRootSystem(unittest.TestCase):
     def test_rsml(self):
         """ checks rsml functionality with Python rsml reader """
         name = "Anagallis_femina_Leitner_2010"
-        rs = rb.RootSystem()
+        rs = pb.RootSystem()
         rs.readParameters("modelparameter2/" + name + ".xml")
         rs.initialize()
         simtime = 60

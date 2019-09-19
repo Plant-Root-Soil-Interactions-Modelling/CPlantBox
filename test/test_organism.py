@@ -1,5 +1,7 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 import matplotlib.pyplot as plt
 from rsml import *
 from rb_tools import *
@@ -9,36 +11,36 @@ class TestOrganism(unittest.TestCase):
 
     def hand_example(self):
         """ an example used in the tests below (same as test_organ), a hand with two fingers """
-        self.human1 = rb.Organism()  # same example as in test_constructor ...
-        otp = rb.OrganRandomParameter(self.human1)
+        self.human1 = pb.Organism()  # same example as in test_constructor ...
+        otp = pb.OrganRandomParameter(self.human1)
         self.human1.setOrganRandomParameter(otp)
         op = otp.realize()
-        self.hand = rb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., False, 0)
+        self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., False, 0)
         self.hand.setOrganism(self.human1)
-        self.thumb = rb.Organ(self.human1, self.hand, 0, 0, 4)  # delayed for 4 days
-        self.little_finger = rb.Organ(self.human1, self.hand, 0, 0, 3)  # delayed for 3 days
+        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4)  # delayed for 4 days
+        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3)  # delayed for 3 days
         self.hand.addChild(self.thumb)
         self.hand.addChild(self.little_finger)
         self.human1.addOrgan(self.hand)
 
     def add_nodes(self):
         """ used in the tests below, adds nodes to the hand example """
-        self.hand.addNode(rb.Vector3d(0, 0, 0), 0)
-        self.hand.addNode(rb.Vector3d(0, 0, 1.5), 0)
-        self.hand.addNode(rb.Vector3d(0, -1, 1.6), 0)  # thumb
-        self.hand.addNode(rb.Vector3d(0, 1, 1.6), 0)  # little finger
+        self.hand.addNode(pb.Vector3d(0, 0, 0), 0)
+        self.hand.addNode(pb.Vector3d(0, 0, 1.5), 0)
+        self.hand.addNode(pb.Vector3d(0, -1, 1.6), 0)  # thumb
+        self.hand.addNode(pb.Vector3d(0, 1, 1.6), 0)  # little finger
         thumb = self.hand.getNodeId(2)
         lf = self.hand.getNodeId(3)
-        self.thumb.addNode(rb.Vector3d(0, -1, 1.6), thumb, 4)
-        self.thumb.addNode(rb.Vector3d(0, -2, 2.5), 4)
-        self.little_finger.addNode(rb.Vector3d(0, 1, 1.6), lf, 3)
-        self.little_finger.addNode(rb.Vector3d(0, 1.7, 2.5), 3)
+        self.thumb.addNode(pb.Vector3d(0, -1, 1.6), thumb, 4)
+        self.thumb.addNode(pb.Vector3d(0, -2, 2.5), 4)
+        self.little_finger.addNode(pb.Vector3d(0, 1, 1.6), lf, 3)
+        self.little_finger.addNode(pb.Vector3d(0, 1.7, 2.5), 3)
 
     def test_copy(self):
         """ checks if the organism is properly copied """
         self.hand_example()
         self.add_nodes()
-        human2 = rb.Organism(self.human1)  # copy constructor
+        human2 = pb.Organism(self.human1)  # copy constructor
         self.assertIsNot(self.human1, human2, "copy: not a copy")
         self.assertEqual(self.human1.rand(), human2.rand(), "copy: random generator seed was not copied")
         o1 = self.human1.getOrgans()  # check organs
@@ -53,39 +55,39 @@ class TestOrganism(unittest.TestCase):
 
     def test_organ_type_parameters(self):
         """ test ability to set, get, read, and write type parameters """
-        human1 = rb.Organism()  # same example as in test_constructor ...
-        otp1 = rb.OrganRandomParameter(human1)
+        human1 = pb.Organism()  # same example as in test_constructor ...
+        otp1 = pb.OrganRandomParameter(human1)
         otp1.name = "nose"
         otp1.subType = 1
-        otp2 = rb.OrganRandomParameter(human1)
+        otp2 = pb.OrganRandomParameter(human1)
         otp2.subType = 2
         otp2.name = "eye"
         human1.setOrganRandomParameter(otp1)  # set
         human1.setOrganRandomParameter(otp2)
-        otps = human1.getOrganRandomParameter(rb.OrganTypes.organ)
+        otps = human1.getOrganRandomParameter(pb.OrganTypes.organ)
         self.assertEqual(otps[0].name, "nose", "otp: name not expected ")
         self.assertEqual(otps[1].name, "eye", "otp: name not expected ")
-        otp3 = rb.OrganRandomParameter(human1)
-        otp3.organType = rb.OrganTypes.root
+        otp3 = pb.OrganRandomParameter(human1)
+        otp3.organType = pb.OrganTypes.root
         otp3.subType = 1
         otp3.name = "rootyhand"
         human1.setOrganRandomParameter(otp3)
         human1.writeParameters("human.xml")
-        human2 = rb.Organism()  # read again
-        prototype1 = rb.OrganRandomParameter(human2)
-        prototype1.organType = rb.OrganTypes.organ
-        prototype2 = rb.OrganRandomParameter(human2)
-        prototype2.organType = rb.OrganTypes.root
+        human2 = pb.Organism()  # read again
+        prototype1 = pb.OrganRandomParameter(human2)
+        prototype1.organType = pb.OrganTypes.organ
+        prototype2 = pb.OrganRandomParameter(human2)
+        prototype2.organType = pb.OrganTypes.root
         human2.setOrganRandomParameter(prototype1)  # set prototypes for reading, subTypes are overwritten if equal
         human2.setOrganRandomParameter(prototype2)
         human2.readParameters("human.xml")
-        otp1 = human2.getOrganRandomParameter(rb.OrganTypes.organ, 1)
-        otp2 = human2.getOrganRandomParameter(rb.OrganTypes.organ, 2)
+        otp1 = human2.getOrganRandomParameter(pb.OrganTypes.organ, 1)
+        otp2 = human2.getOrganRandomParameter(pb.OrganTypes.organ, 2)
         self.assertEqual(otp1.name, "nose", "otp: name not expected ")
         self.assertEqual(otp2.name, "eye", "otp: name not expected ")
         self.assertEqual(otp1.subType, 1, "otp: subType not expected ")
         self.assertEqual(otp2.subType, 2, "otp: subType not expected ")
-        rtp = human2.getOrganRandomParameter(rb.OrganTypes.root, 1)
+        rtp = human2.getOrganRandomParameter(pb.OrganTypes.root, 1)
         self.assertEqual(rtp.name, "rootyhand", "otp: name not expected ")
         self.assertEqual(rtp.subType, 1, "otp: subType not expected ")
 

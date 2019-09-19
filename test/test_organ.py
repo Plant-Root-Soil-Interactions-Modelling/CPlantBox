@@ -1,19 +1,21 @@
 import unittest
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 
 
 class TestOrgan(unittest.TestCase):
 
     def hand_example(self):
         """ an example used in the tests below, a hand with two fingers """
-        self.human1 = rb.Organism()  # same example as in test_constructor ...
-        otp = rb.OrganRandomParameter(self.human1)
+        self.human1 = pb.Organism()  # same example as in test_constructor ...
+        otp = pb.OrganRandomParameter(self.human1)
         self.human1.setOrganRandomParameter(otp)
         op = otp.realize()
-        self.hand = rb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., False, 0)
+        self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., False, 0)
         self.hand.setOrganism(self.human1)
-        self.thumb = rb.Organ(self.human1, self.hand, 0, 0, 4)  # delayedfor 4 days
-        self.little_finger = rb.Organ(self.human1, self.hand, 0, 0, 3)  # delayed for 3 days
+        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4)  # delayedfor 4 days
+        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3)  # delayed for 3 days
         self.hand.addChild(self.thumb)
         self.hand.addChild(self.little_finger)
 
@@ -21,33 +23,33 @@ class TestOrgan(unittest.TestCase):
         """ used in the tests below, adds nodes to the hand example """
         self.human1.getNodeIndex()
         self.human1.getNodeIndex()  # to make global and organ index disagree
-        self.hand.addNode(rb.Vector3d(0, 0, 0), 0)
-        self.hand.addNode(rb.Vector3d(0, 0, 1.5), 0)
-        self.hand.addNode(rb.Vector3d(0, -1, 1.6), 0)  # thumb
-        self.hand.addNode(rb.Vector3d(0, 1, 1.6), 0)  # little finger
+        self.hand.addNode(pb.Vector3d(0, 0, 0), 0)
+        self.hand.addNode(pb.Vector3d(0, 0, 1.5), 0)
+        self.hand.addNode(pb.Vector3d(0, -1, 1.6), 0)  # thumb
+        self.hand.addNode(pb.Vector3d(0, 1, 1.6), 0)  # little finger
         thumb = self.hand.getNodeId(2)
         lf = self.hand.getNodeId(3)
-        self.thumb.addNode(rb.Vector3d(0, -1, 1.6), thumb, 4)
-        self.thumb.addNode(rb.Vector3d(0, -2, 2.5), 4)
-        self.little_finger.addNode(rb.Vector3d(0, 1, 1.6), lf, 3)
-        self.little_finger.addNode(rb.Vector3d(0, 1.7, 2.5), 3)
+        self.thumb.addNode(pb.Vector3d(0, -1, 1.6), thumb, 4)
+        self.thumb.addNode(pb.Vector3d(0, -2, 2.5), 4)
+        self.little_finger.addNode(pb.Vector3d(0, 1, 1.6), lf, 3)
+        self.little_finger.addNode(pb.Vector3d(0, 1.7, 2.5), 3)
 
     def test_constructors(self):
         """ tests three different kinds of constructors """
-        human1 = rb.Organism()
-        otp = rb.OrganRandomParameter(human1)
+        human1 = pb.Organism()
+        otp = pb.OrganRandomParameter(human1)
         human1.setOrganRandomParameter(otp)
         op = otp.realize()
         # 1. constructor from scratch
-        hand = rb.Organ(human1.getOrganIndex(), op, True, True, 0, 15., False, 0)
+        hand = pb.Organ(human1.getOrganIndex(), op, True, True, 0, 15., False, 0)
         hand.setOrganism(human1)
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        thumb = rb.Organ(human1, hand, 0, 0, 4)
-        little_finger = rb.Organ(human1, hand, 0, 0, 3)
+        thumb = pb.Organ(human1, hand, 0, 0, 4)
+        little_finger = pb.Organ(human1, hand, 0, 0, 3)
         hand.addChild(thumb)
         hand.addChild(little_finger)
         # 3. deep copy (with a factory function)
-        human2 = rb.Organism()
+        human2 = pb.Organism()
         hand2 = hand.copy(human2)
         self.assertEqual(str(hand), str(hand2), "deep copy: the organs shold be equal")
         self.assertIsNot(hand.getParam(), hand2.getParam(), "deep copy: organs have same parameter set")
@@ -64,10 +66,10 @@ class TestOrgan(unittest.TestCase):
         """ tests if the the organ tree can be represented in a seqential list"""
         self.hand_example()
         self.add_nodes()  # only organs with number of nodes > 1 are considered
-        ring = rb.Organ(self.human1, self.thumb, 0, 0, 4)  # add a ring to the thumb
+        ring = pb.Organ(self.human1, self.thumb, 0, 0, 4)  # add a ring to the thumb
         self.thumb.addChild(ring)
-        ring.addNode(rb.Vector3d(0, -1, 1.6), self.thumb.getNodeId(1), 4)
-        ring.addNode(rb.Vector3d(0, -1, 1.6), 4)
+        ring.addNode(pb.Vector3d(0, -1, 1.6), self.thumb.getNodeId(1), 4)
+        ring.addNode(pb.Vector3d(0, -1, 1.6), 4)
         organs = self.hand.getOrgans()
         self.assertEqual(len(organs), 4, "wrong number of organs")
 
@@ -119,7 +121,7 @@ class TestOrgan(unittest.TestCase):
         self.assertEqual(n1, 0, "wrong number of new nodes")
         self.assertEqual(n2, 0, "wrong number of new nodes")
         self.hand.simulate(1)
-        self.little_finger.addNode(rb.Vector3d(0, 1, 1.6), 6)
+        self.little_finger.addNode(pb.Vector3d(0, 1, 1.6), 6)
         n0 = self.hand.getNumberOfNodes() - self.hand.getOldNumberOfNodes()
         n1 = self.little_finger.getNumberOfNodes() - self.little_finger.getOldNumberOfNodes()
         n2 = self.thumb.getNumberOfNodes() - self.thumb.getOldNumberOfNodes()

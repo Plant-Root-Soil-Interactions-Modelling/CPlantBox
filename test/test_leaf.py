@@ -28,24 +28,24 @@ class TestLeaf(unittest.TestCase):
 
     def leaf_example_rtp(self):
         """ an example used in the tests below, a main leaf with laterals """
-        self.plant = rb.Organism()  
-        p0 = rb.Leaf(self.plant)
+        self.plant = pb.Organism()
+        p0 = pb.Leaf(self.plant)
         p0.name, p0.type, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 1, 10, 20, (89. / 19.), 1, 0.5
-        p0.successor = a2i([2])  # to rb.std_int_double_()
-        p0.successorP = a2v([1.])  # rb.std_vector_double_()
-        p1 = rb.LeafRandomParameter(self.plant)
+        p0.successor = a2i([2])  # to pb.std_int_double_()
+        p0.successorP = a2v([1.])  # pb.std_vector_double_()
+        p1 = pb.LeafRandomParameter(self.plant)
         p1.name, p1.type, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
         self.p0, self.p1 = p0, p1  # Python will garbage collect them away, if not stored
         self.plant.setOrganRandomParameter(self.p0)  # the organism manages the type parameters
         self.plant.setOrganRandomParameter(self.p1)
-        self.param0 = self.p0.realize()  
+        self.param0 = self.p0.realize()
         self.param0.la = 0  # its important parent has zero length, otherwise creation times are messed up
         self.param0.lb = 0
         # param0 is stored, because otherwise garbage collection deletes it, an program will crash <---
-        parentleaf = rb.Leaf(1, self.param0, True, True, 0., 0., rb.Vector3d(0, 0, -1), 0, 0, False, 0)
+        parentleaf = pb.Leaf(1, self.param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
         parentleaf.setOrganism(self.plant)
-        parentleaf.addNode(rb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
-        self.leaf = rb.Leaf(self.plant, self.p0.subType, rb.Vector3d(0, 0, -1), 0, parentleaf, 0, 0)
+        parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
+        self.leaf = pb.Leaf(self.plant, self.p0.subType, pb.Vector3d(0, 0, -1), 0, parentleaf, 0, 0)
         self.leaf.setOrganism(self.plant)
 
     def leaf_length_test(self, dt, l, subDt):
@@ -78,14 +78,14 @@ class TestLeaf(unittest.TestCase):
         self.leaf_example_rtp()
         # 1. constructor from scratch
         param = self.p0.realize()
-        leaf = rb.Leaf(1, param, True, True, 0., 0., rb.Vector3d(0, 0, -1), 0, 0, False, 0)
+        leaf = pb.Leaf(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
         leaf.setOrganism(self.plant)
-        leaf.addNode(rb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
+        leaf.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        leaf2 = rb.Leaf(self.plant, self.p1.subType, rb.Vector3d(0, 0, -1), 0, leaf, 0, 0)
+        leaf2 = pb.Leaf(self.plant, self.p1.subType, pb.Vector3d(0, 0, -1), 0, leaf, 0, 0)
         leaf.addChild(leaf2);
         # 3. deep copy (with a factory function)
-        plant2 = rb.Organism()
+        plant2 = pb.Organism()
         leaf3 = leaf.copy(plant2)
         self.assertEqual(str(leaf), str(leaf3), "deep copy: the organs shold be equal")
         self.assertIsNot(leaf.getParam(), leaf3.getParam(), "deep copy: organs have same parameter set")
