@@ -17,12 +17,8 @@
 #include "Leaf.h"
 
 #include "soil.h"
-#include "RootTropism.h"
-#include "RootGrowth.h"
-#include "StemGrowth.h"
-#include "StemTropism.h"
-#include "LeafGrowth.h"
-#include "LeafTropism.h"
+#include "tropism.h"
+#include "growth.h"
 #include "../external/tinyxml2.h"
 
 namespace CRootBox {
@@ -39,8 +35,8 @@ class Plant :public Organism
 {
 public:
 
-  enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism types
-  enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
+  enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5};  ///< plant tropism types
+  enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // plant growth function
 
   Plant();
   Plant(const Plant& rs); ///< copy constructor
