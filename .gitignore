@@ -1,6 +1,7 @@
 # build system clutter
 build-*
 Testing
+*.so
 
 # auto-saved files
 *~
@@ -21,17 +22,19 @@ Testing
 *.tdo
 *.toc
 
-# something pythoon related
-*.pyc
-__pycache__
-
 # CMake
 *.cmake
 CMakeFiles
 Makefile
+*CMakeCache*
 
-#others
+# something pythoon related
+*.pyc
+__pycache__
+
+# Others
 .pydevproject
 .settings/
 Debug/
 Codeblocks
+
