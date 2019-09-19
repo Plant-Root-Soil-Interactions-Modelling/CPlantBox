@@ -12,7 +12,9 @@ import scipy.sparse.linalg as LA
 
 import matplotlib.pyplot as plt
 
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rb_tools import *
 
 import xylem_flux
@@ -20,14 +22,14 @@ import xylem_flux
 #
 # initialize (root system)
 #
-rs = rb.RootSystem()
+rs = pb.RootSystem()
 rsname = "Lupinus_albus_Leitner_2014"
 
 # path = parameterPath()
 # rs.openFile(rsname,path)
 
-p0 = rb.RootTypeParameter()
-p1 = rb.RootTypeParameter()
+p0 = pb.RootTypeParameter()
+p1 = pb.RootTypeParameter()
 # Taproot
 p0.name = "taproot"
 p0.type = 1
@@ -63,10 +65,10 @@ rs.simulate(30)
 #
 seg = seg2a(rs.getSegments())
 nodes = vv2a(rs.getNodes())/100. # convert to meter
-rs_ana = rb.SegmentAnalyser(rs)
-type = v2a(rs_ana.getScalar(rb.ScalarType.type))
-radius = v2a(rs_ana.getScalar(rb.ScalarType.radius))/100. # convert to meter
-time_ = v2a(rs_ana.getScalar(rb.ScalarType.time))*3600*24 # convert to seconds
+rs_ana = pb.SegmentAnalyser(rs)
+type = v2a(rs_ana.getScalar(pb.ScalarType.type))
+radius = v2a(rs_ana.getScalar(pb.ScalarType.radius))/100. # convert to meter
+time_ = v2a(rs_ana.getScalar(pb.ScalarType.time))*3600*24 # convert to seconds
 
 #
 # initialize (xylem_flux)
