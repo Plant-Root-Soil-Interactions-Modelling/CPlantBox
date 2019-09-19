@@ -1,31 +1,33 @@
 import os
 
 import numpy as np
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 
 #
 # Auxiliary functions that could be moved to rootbox
 #
-def v2a(vd): # rb.std_vector_double_ to numpy array
+def v2a(vd): # pb.std_vector_double_ to numpy array
     l = np.zeros(len(vd))
     for i in range(0,len(vd)):
         l[i] = vd[i]
     return l
 
-def a2v(a): #  numpy array to rb.std_vector_double
-    l = rb.std_vector_double_()
+def a2v(a): #  numpy array to pb.std_vector_double
+    l = pb.std_vector_double_()
     for d in a:
         l.append(d)
     return l
 
-def vv2a(vd): # rb.std_vector_Vector3_ to numpy array
+def vv2a(vd): # pb.std_vector_Vector3_ to numpy array
     N  = len(vd)
     l = np.zeros((N,3))
     for i in range(0,N):
         l[i,:] = [vd[i].x,vd[i].y,vd[i].z]
     return l
 
-def seg2a(seg): # rb.std_vector_Vector2i_ to numpy array
+def seg2a(seg): # pb.std_vector_Vector2i_ to numpy array
     Ns = len(seg)
     seg_ = np.zeros((Ns,2),dtype = np.uint32)
     for i in range(0,Ns):

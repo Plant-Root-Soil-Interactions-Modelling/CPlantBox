@@ -15,7 +15,9 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import PSP_infiltration1D as inf
 
-import ../rootbox as rb
+import sys
+sys.path.append("..")
+import plantbox as pb
 from rb_tools import *
 import xylem_flux
 
@@ -57,7 +59,7 @@ totalIterationNr = 0
 # Initialize root domain
 #
 rsname = "Sorghum_bicolor_NA_NA" # "Lupinus_albus_Leitner_2014"
-rs = rb.RootSystem()
+rs = pb.RootSystem()
 rs.openFile(rsname,parameterPath())
 for i in range(0,10): # set axial resolution
     rs.getRootTypeParameter(i+1).dx = 0.1
@@ -133,10 +135,10 @@ while (time < simTime):
 
     seg = seg2a(rs.getSegments())
     nodes = vv2a(rs.getNodes())/100. # convert to meter
-    rs_ana = rb.SegmentAnalyser(rs)
-    type = v2a(rs_ana.getScalar(rb.ScalarType.type))
-    radius = v2a(rs_ana.getScalar(rb.ScalarType.radius))/100. # convert to meter
-    time_ = v2a(rs_ana.getScalar(rb.ScalarType.time))*3600*24 # convert to seconds
+    rs_ana = pb.SegmentAnalyser(rs)
+    type = v2a(rs_ana.getScalar(pb.ScalarType.type))
+    radius = v2a(rs_ana.getScalar(pb.ScalarType.radius))/100. # convert to meter
+    time_ = v2a(rs_ana.getScalar(pb.ScalarType.time))*3600*24 # convert to seconds
 
     #
     # 3. Root System fluxes
@@ -222,7 +224,7 @@ while (time < simTime):
         fig1a = plt.figure(figsize=(0.6*14.,0.6*12.)) # plot root length distribution
         ax1 = fig1a.gca()
         ax2 = ax1.twiny()
-        rsl = v2a(rs_ana.distribution(rb.ScalarType.length,0.,100.,inf.n,False))
+        rsl = v2a(rs_ana.distribution(pb.ScalarType.length,0.,100.,inf.n,False))
         ax2.set_ylim(-0.25, 0)
         ax2.set_xlim(0, 1.2)
         # ax2.set_xlabel("Root system length (m)",color='green',fontsize=32)
