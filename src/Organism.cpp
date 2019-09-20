@@ -2,13 +2,12 @@
 #include "Organism.h"
 
 #include "Organ.h"
+#include "organparameter.h"
 
 #include <stdexcept>
 #include <iostream>
 #include <ctime>
 #include <numeric>
-
-#include "organparameter.h"
 
 namespace CPlantBox {
 

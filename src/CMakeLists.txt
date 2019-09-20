@@ -5,27 +5,28 @@
 # file(GLOB all_sources *.cpp) # i changed that to exclude PythonRootSystem.cpp
 add_library(CPlantBox SHARED
             organparameter.cpp
-            rootparameter.cpp
-			seedparameter.cpp
-			stemparameter.cpp
-			leafparameter.cpp			
+            #rootparameter.cpp
+			#seedparameter.cpp
+			#stemparameter.cpp
+			#leafparameter.cpp	
             Organ.cpp
-            Root.cpp
-            Seed.cpp
-			Stem.cpp
-			Leaf.cpp
+            #Root.cpp
+            #Seed.cpp
+			#Stem.cpp
+			#Leaf.cpp          
             Organism.cpp
-            Plant.cpp
-            RootSystem.cpp           
-            analysis.cpp
+            #Plant.cpp
+            #RootSystem.cpp
+            #analysis.cpp
             sdf.cpp
-            tropism.cpp
+            #tropism.cpp
 			external/tinyxml2/tinyxml2.cpp
-            external/aabbcc/AABB.cc)
+            #external/aabbcc/AABB.cc
             #external/gauss_legendre/gauss_legendre.cpp
-
+)
 
 set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+
 
 #
 # 2. Make plantbox library
@@ -43,27 +44,27 @@ if (PythonLibs_FOUND)
 #	find_package( Boost COMPONENTS python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} REQUIRED ) # if above is not working
   include_directories( ${Boost_INCLUDE_DIR} )
 
-  # make shared library for Pyhton binding
-  add_library(plantbox SHARED
+# make shared library for Pyhton binding
+add_library(plantbox SHARED
             organparameter.cpp
-            rootparameter.cpp
-			seedparameter.cpp
-			stemparameter.cpp
-			leafparameter.cpp	
+            #rootparameter.cpp
+			#seedparameter.cpp
+			#stemparameter.cpp
+			#leafparameter.cpp	
             Organ.cpp
-            Root.cpp
-            Seed.cpp
-			Stem.cpp
-			Leaf.cpp          
+            #Root.cpp
+            #Seed.cpp
+			#Stem.cpp
+			#Leaf.cpp          
             Organism.cpp
-            Plant.cpp
-            RootSystem.cpp
+            #Plant.cpp
+            #RootSystem.cpp
             PythonRootSystem.cpp
-            analysis.cpp
+            #analysis.cpp
             sdf.cpp
-            tropism.cpp
+            #tropism.cpp
 			external/tinyxml2/tinyxml2.cpp
-            external/aabbcc/AABB.cc
+            #external/aabbcc/AABB.cc
             #external/gauss_legendre/gauss_legendre.cpp
 )
   target_link_libraries(plantbox ${Boost_LIBRARIES} )

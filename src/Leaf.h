@@ -1,4 +1,3 @@
-
 #ifndef LEAF_H_
 #define LEAF_H_
 
@@ -9,7 +8,6 @@
 #include "mymath.h"
 #include "sdf.h"
 #include "tropism.h"
-#include "LeafGrowth.h"
 #include "leafparameter.h"
 #include "Organism.h"
 
@@ -51,9 +49,9 @@ public:
 
 	/* abbreviations */
     LeafRandomParameter* getLeafRandomParameter() const;  ///< root type parameter of this root
-    const LeafSpecificParameter* param() const; ///< root parameter
+    LeafSpecificParameter* param() const; ///< root parameter
 	double dx() const; ///< returns the axial resolution
-	std::string name() const;
+	// std::string name() const;
 	//Vector3d relHeading() const; //< relative heading of the Leaf tip
 	//Vector3d absHeading() const; //< absolute heading of the Leaf tip
 	Vector3d initialLeafHeading;
@@ -64,8 +62,6 @@ public:
     Vector3d iHeading; ///< the initial heading of the root, when it was created
     double parentBaseLength; ///< length [cm]
     int parentNI; ///< parent node index
-	/* nodes */
-	void addNode(Vector3d n, double t); //< adds a node to the stem
 
 	/* parameters that are given per stem that are constant*/
 	int pni; ///< parent node index

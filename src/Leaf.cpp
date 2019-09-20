@@ -244,7 +244,7 @@ double Leaf::LeafGetLength(double age)
 //    //std::cout<<"organName is "<<name()<<"\n";
 //    if (name()  == "maize1eaf"){
         assert(age>=0);
-        std::cout<<"organName is "<<name()<<"\n";
+        std::cout<<"organName is ? \n";
         //return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
         return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
 //	}else {
@@ -514,78 +514,24 @@ Vector3d Leaf::heading() const {
 	}
 	return h;
 }
+
 /**
- * Adds the next node to the leaf.
- *
- * Add nodes only with this function! For simplicity nodes can not be deleted, and leafs can only become deactivated by dying
- *
- * @param n        the new node
- * @param t        exact creation time of the node
+ * @return The RootTypeParameter from the plant
  */
-void Leaf::addNode(Vector3d n, double t)
+LeafRandomParameter* Leaf::getLeafRandomParameter() const
 {
-	assert(t>=0.);
-	nodes.push_back(n); // node
-	nodeIds.push_back(plant->getNodeIndex()); // new unique id
-	nodeCTs.push_back(t); // exact creation time
+    return (LeafRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, param_->subType);
 }
 
 /**
- * writes RSML leaf tag
- *
- * @param cout      typically a file out stream
- * @param indent    we care for looks
+ * @return Parameters of the specific root
  */
-//void Leaf::writeRSML(std::ostream & cout, std::string indent) const
-//{
-//	if (this->nodes.size()>1) {
-//		cout << indent << "<leaf id=\"" <<  id << "\">\n";  // open Leaf
-//
-//		/* geometry tag */
-//		cout << indent << "\t<geometry>\n"; // open geometry
-//		cout << indent << "\t\t<polyline>\n"; // open polyline
-//		// polyline nodes
-//		cout << indent << "\t\t\t" << "<point ";
-//		Vector3d v = nodes.at(0);
-//		cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-//		int n = 1; //this->plant->rsmlReduction;
-//		for (size_t i = 1; i<nodes.size()-1; i+=n) {
-//			cout << indent << "\t\t\t" << "<point ";
-//			Vector3d v = nodes.at(i);
-//			cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-//		}
-//		cout << indent << "\t\t\t" << "<point ";
-//		v = nodes.at(nodes.size()-1);
-//		cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-//		cout << indent << "\t\t</polyline>\n"; // close polyline
-//		cout << indent << "\t</geometry>\n"; // close geometry
-//
-//		/* properties */
-//		cout << indent <<"\t<properties>\n"; // open properties
-//		// TODO
-//		cout << indent << "\t</properties>\n"; // close properties
-//
-//		cout << indent << "\t<functions>\n"; // open functions
-//		cout << indent << "\t\t<function name='emergence_time' domain='polyline'>\n"; // open functions
-//		cout << indent << "\t\t\t" << "<sample>" << nodeCTs.at(0) << "</sample>\n";
-//		for (size_t i = 1; i<nodeCTs.size()-1; i+=n) {
-//			cout << indent << "\t\t\t" << "<sample>" << nodeCTs.at(i) << "</sample>\n";
-//
-//		}
-//		cout << indent << "\t\t\t" << "<sample>" << nodeCTs.at(nodeCTs.size()-1) << "</sample>\n";
-//
-//		cout << indent << "\t\t</function>\n"; // close functions
-//		cout << indent << "\t</functions>\n"; // close functions
-//
-//		/* laterals leafs */
-//		for (size_t i = 0; i<children.size(); i++) {
-//			children[i]->writeRSML(cout,indent+"\t");
-//		}
-//
-//		cout << indent << "</root>\n"; // close leaf
-//	}
-//}
-//
+LeafSpecificParameter* Leaf::param() const
+{
+    return (LeafSpecificParameter*)param_;
+}
+
+
 /**
  * Quick info about the object for debugging
  */

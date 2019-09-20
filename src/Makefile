@@ -140,36 +140,6 @@ plantbox/fast:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/build
 .PHONY : plantbox/fast
 
-Leaf.o: Leaf.cpp.o
-
-.PHONY : Leaf.o
-
-# target to build an object file
-Leaf.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Leaf.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Leaf.cpp.o
-.PHONY : Leaf.cpp.o
-
-Leaf.i: Leaf.cpp.i
-
-.PHONY : Leaf.i
-
-# target to preprocess a source file
-Leaf.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Leaf.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Leaf.cpp.i
-.PHONY : Leaf.cpp.i
-
-Leaf.s: Leaf.cpp.s
-
-.PHONY : Leaf.s
-
-# target to generate assembly for a file
-Leaf.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Leaf.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Leaf.cpp.s
-.PHONY : Leaf.cpp.s
-
 Organ.o: Organ.cpp.o
 
 .PHONY : Organ.o
@@ -230,36 +200,6 @@ Organism.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Organism.cpp.s
 .PHONY : Organism.cpp.s
 
-Plant.o: Plant.cpp.o
-
-.PHONY : Plant.o
-
-# target to build an object file
-Plant.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Plant.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Plant.cpp.o
-.PHONY : Plant.cpp.o
-
-Plant.i: Plant.cpp.i
-
-.PHONY : Plant.i
-
-# target to preprocess a source file
-Plant.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Plant.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Plant.cpp.i
-.PHONY : Plant.cpp.i
-
-Plant.s: Plant.cpp.s
-
-.PHONY : Plant.s
-
-# target to generate assembly for a file
-Plant.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Plant.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Plant.cpp.s
-.PHONY : Plant.cpp.s
-
 PythonRootSystem.o: PythonRootSystem.cpp.o
 
 .PHONY : PythonRootSystem.o
@@ -286,186 +226,6 @@ PythonRootSystem.s: PythonRootSystem.cpp.s
 PythonRootSystem.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PythonRootSystem.cpp.s
 .PHONY : PythonRootSystem.cpp.s
-
-Root.o: Root.cpp.o
-
-.PHONY : Root.o
-
-# target to build an object file
-Root.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Root.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Root.cpp.o
-.PHONY : Root.cpp.o
-
-Root.i: Root.cpp.i
-
-.PHONY : Root.i
-
-# target to preprocess a source file
-Root.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Root.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Root.cpp.i
-.PHONY : Root.cpp.i
-
-Root.s: Root.cpp.s
-
-.PHONY : Root.s
-
-# target to generate assembly for a file
-Root.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Root.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Root.cpp.s
-.PHONY : Root.cpp.s
-
-RootSystem.o: RootSystem.cpp.o
-
-.PHONY : RootSystem.o
-
-# target to build an object file
-RootSystem.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/RootSystem.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/RootSystem.cpp.o
-.PHONY : RootSystem.cpp.o
-
-RootSystem.i: RootSystem.cpp.i
-
-.PHONY : RootSystem.i
-
-# target to preprocess a source file
-RootSystem.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/RootSystem.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/RootSystem.cpp.i
-.PHONY : RootSystem.cpp.i
-
-RootSystem.s: RootSystem.cpp.s
-
-.PHONY : RootSystem.s
-
-# target to generate assembly for a file
-RootSystem.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/RootSystem.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/RootSystem.cpp.s
-.PHONY : RootSystem.cpp.s
-
-Seed.o: Seed.cpp.o
-
-.PHONY : Seed.o
-
-# target to build an object file
-Seed.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Seed.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Seed.cpp.o
-.PHONY : Seed.cpp.o
-
-Seed.i: Seed.cpp.i
-
-.PHONY : Seed.i
-
-# target to preprocess a source file
-Seed.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Seed.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Seed.cpp.i
-.PHONY : Seed.cpp.i
-
-Seed.s: Seed.cpp.s
-
-.PHONY : Seed.s
-
-# target to generate assembly for a file
-Seed.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Seed.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Seed.cpp.s
-.PHONY : Seed.cpp.s
-
-Stem.o: Stem.cpp.o
-
-.PHONY : Stem.o
-
-# target to build an object file
-Stem.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Stem.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Stem.cpp.o
-.PHONY : Stem.cpp.o
-
-Stem.i: Stem.cpp.i
-
-.PHONY : Stem.i
-
-# target to preprocess a source file
-Stem.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Stem.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Stem.cpp.i
-.PHONY : Stem.cpp.i
-
-Stem.s: Stem.cpp.s
-
-.PHONY : Stem.s
-
-# target to generate assembly for a file
-Stem.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Stem.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Stem.cpp.s
-.PHONY : Stem.cpp.s
-
-analysis.o: analysis.cpp.o
-
-.PHONY : analysis.o
-
-# target to build an object file
-analysis.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/analysis.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/analysis.cpp.o
-.PHONY : analysis.cpp.o
-
-analysis.i: analysis.cpp.i
-
-.PHONY : analysis.i
-
-# target to preprocess a source file
-analysis.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/analysis.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/analysis.cpp.i
-.PHONY : analysis.cpp.i
-
-analysis.s: analysis.cpp.s
-
-.PHONY : analysis.s
-
-# target to generate assembly for a file
-analysis.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/analysis.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/analysis.cpp.s
-.PHONY : analysis.cpp.s
-
-external/aabbcc/AABB.o: external/aabbcc/AABB.cc.o
-
-.PHONY : external/aabbcc/AABB.o
-
-# target to build an object file
-external/aabbcc/AABB.cc.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/external/aabbcc/AABB.cc.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/external/aabbcc/AABB.cc.o
-.PHONY : external/aabbcc/AABB.cc.o
-
-external/aabbcc/AABB.i: external/aabbcc/AABB.cc.i
-
-.PHONY : external/aabbcc/AABB.i
-
-# target to preprocess a source file
-external/aabbcc/AABB.cc.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/external/aabbcc/AABB.cc.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/external/aabbcc/AABB.cc.i
-.PHONY : external/aabbcc/AABB.cc.i
-
-external/aabbcc/AABB.s: external/aabbcc/AABB.cc.s
-
-.PHONY : external/aabbcc/AABB.s
-
-# target to generate assembly for a file
-external/aabbcc/AABB.cc.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/external/aabbcc/AABB.cc.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/external/aabbcc/AABB.cc.s
-.PHONY : external/aabbcc/AABB.cc.s
 
 external/tinyxml2/tinyxml2.o: external/tinyxml2/tinyxml2.cpp.o
 
@@ -497,36 +257,6 @@ external/tinyxml2/tinyxml2.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/external/tinyxml2/tinyxml2.cpp.s
 .PHONY : external/tinyxml2/tinyxml2.cpp.s
 
-leafparameter.o: leafparameter.cpp.o
-
-.PHONY : leafparameter.o
-
-# target to build an object file
-leafparameter.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/leafparameter.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/leafparameter.cpp.o
-.PHONY : leafparameter.cpp.o
-
-leafparameter.i: leafparameter.cpp.i
-
-.PHONY : leafparameter.i
-
-# target to preprocess a source file
-leafparameter.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/leafparameter.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/leafparameter.cpp.i
-.PHONY : leafparameter.cpp.i
-
-leafparameter.s: leafparameter.cpp.s
-
-.PHONY : leafparameter.s
-
-# target to generate assembly for a file
-leafparameter.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/leafparameter.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/leafparameter.cpp.s
-.PHONY : leafparameter.cpp.s
-
 organparameter.o: organparameter.cpp.o
 
 .PHONY : organparameter.o
@@ -556,36 +286,6 @@ organparameter.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/organparameter.cpp.s
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/organparameter.cpp.s
 .PHONY : organparameter.cpp.s
-
-rootparameter.o: rootparameter.cpp.o
-
-.PHONY : rootparameter.o
-
-# target to build an object file
-rootparameter.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/rootparameter.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/rootparameter.cpp.o
-.PHONY : rootparameter.cpp.o
-
-rootparameter.i: rootparameter.cpp.i
-
-.PHONY : rootparameter.i
-
-# target to preprocess a source file
-rootparameter.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/rootparameter.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/rootparameter.cpp.i
-.PHONY : rootparameter.cpp.i
-
-rootparameter.s: rootparameter.cpp.s
-
-.PHONY : rootparameter.s
-
-# target to generate assembly for a file
-rootparameter.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/rootparameter.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/rootparameter.cpp.s
-.PHONY : rootparameter.cpp.s
 
 sdf.o: sdf.cpp.o
 
@@ -617,96 +317,6 @@ sdf.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/sdf.cpp.s
 .PHONY : sdf.cpp.s
 
-seedparameter.o: seedparameter.cpp.o
-
-.PHONY : seedparameter.o
-
-# target to build an object file
-seedparameter.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/seedparameter.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/seedparameter.cpp.o
-.PHONY : seedparameter.cpp.o
-
-seedparameter.i: seedparameter.cpp.i
-
-.PHONY : seedparameter.i
-
-# target to preprocess a source file
-seedparameter.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/seedparameter.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/seedparameter.cpp.i
-.PHONY : seedparameter.cpp.i
-
-seedparameter.s: seedparameter.cpp.s
-
-.PHONY : seedparameter.s
-
-# target to generate assembly for a file
-seedparameter.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/seedparameter.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/seedparameter.cpp.s
-.PHONY : seedparameter.cpp.s
-
-stemparameter.o: stemparameter.cpp.o
-
-.PHONY : stemparameter.o
-
-# target to build an object file
-stemparameter.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/stemparameter.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/stemparameter.cpp.o
-.PHONY : stemparameter.cpp.o
-
-stemparameter.i: stemparameter.cpp.i
-
-.PHONY : stemparameter.i
-
-# target to preprocess a source file
-stemparameter.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/stemparameter.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/stemparameter.cpp.i
-.PHONY : stemparameter.cpp.i
-
-stemparameter.s: stemparameter.cpp.s
-
-.PHONY : stemparameter.s
-
-# target to generate assembly for a file
-stemparameter.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/stemparameter.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/stemparameter.cpp.s
-.PHONY : stemparameter.cpp.s
-
-tropism.o: tropism.cpp.o
-
-.PHONY : tropism.o
-
-# target to build an object file
-tropism.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/tropism.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/tropism.cpp.o
-.PHONY : tropism.cpp.o
-
-tropism.i: tropism.cpp.i
-
-.PHONY : tropism.i
-
-# target to preprocess a source file
-tropism.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/tropism.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/tropism.cpp.i
-.PHONY : tropism.cpp.i
-
-tropism.s: tropism.cpp.s
-
-.PHONY : tropism.s
-
-# target to generate assembly for a file
-tropism.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/tropism.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/tropism.cpp.s
-.PHONY : tropism.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -717,63 +327,24 @@ help:
 	@echo "... edit_cache"
 	@echo "... CPlantBox"
 	@echo "... plantbox"
-	@echo "... Leaf.o"
-	@echo "... Leaf.i"
-	@echo "... Leaf.s"
 	@echo "... Organ.o"
 	@echo "... Organ.i"
 	@echo "... Organ.s"
 	@echo "... Organism.o"
 	@echo "... Organism.i"
 	@echo "... Organism.s"
-	@echo "... Plant.o"
-	@echo "... Plant.i"
-	@echo "... Plant.s"
 	@echo "... PythonRootSystem.o"
 	@echo "... PythonRootSystem.i"
 	@echo "... PythonRootSystem.s"
-	@echo "... Root.o"
-	@echo "... Root.i"
-	@echo "... Root.s"
-	@echo "... RootSystem.o"
-	@echo "... RootSystem.i"
-	@echo "... RootSystem.s"
-	@echo "... Seed.o"
-	@echo "... Seed.i"
-	@echo "... Seed.s"
-	@echo "... Stem.o"
-	@echo "... Stem.i"
-	@echo "... Stem.s"
-	@echo "... analysis.o"
-	@echo "... analysis.i"
-	@echo "... analysis.s"
-	@echo "... external/aabbcc/AABB.o"
-	@echo "... external/aabbcc/AABB.i"
-	@echo "... external/aabbcc/AABB.s"
 	@echo "... external/tinyxml2/tinyxml2.o"
 	@echo "... external/tinyxml2/tinyxml2.i"
 	@echo "... external/tinyxml2/tinyxml2.s"
-	@echo "... leafparameter.o"
-	@echo "... leafparameter.i"
-	@echo "... leafparameter.s"
 	@echo "... organparameter.o"
 	@echo "... organparameter.i"
 	@echo "... organparameter.s"
-	@echo "... rootparameter.o"
-	@echo "... rootparameter.i"
-	@echo "... rootparameter.s"
 	@echo "... sdf.o"
 	@echo "... sdf.i"
 	@echo "... sdf.s"
-	@echo "... seedparameter.o"
-	@echo "... seedparameter.i"
-	@echo "... seedparameter.s"
-	@echo "... stemparameter.o"
-	@echo "... stemparameter.i"
-	@echo "... stemparameter.s"
-	@echo "... tropism.o"
-	@echo "... tropism.i"
-	@echo "... tropism.s"
 .PHONY : help
 
 

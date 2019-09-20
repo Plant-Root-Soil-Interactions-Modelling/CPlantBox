@@ -6,8 +6,8 @@
 
 #include "Organ.h"
 #include "mymath.h"
+#include "sdf.h"
 #include "tropism.h"
-#include "StemGrowth.h"
 #include "stemparameter.h"
 #include "Organism.h"
 
@@ -23,13 +23,10 @@ static int phytomerId[10]= {0};
  */
 class Stem : public Organ
 {
-    friend class Leaf;
-
-
-
 public:
 
-    Stem(Organism* rs, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
+    Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni)
+:Organ(plant,parent,Organism::ot_stem,type,delay) { }; ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
     virtual ~Stem() { }; // base class constructor is called automatically in c++
 
     virtual int organType() const override { return Organism::ot_stem; };
