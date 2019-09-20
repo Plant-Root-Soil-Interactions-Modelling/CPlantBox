@@ -44,7 +44,7 @@ void Seed::initialize()
             brtp->subType = basalType;
             plant->setOrganRandomParameter(brtp);
         }
-        int maxB = sp->maxB;
+        int maxB = (sp->maxB);
         if (sp->delayB > 0) { // limit if possible
             maxB = std::min(maxB,int(ceil((maxT-sp->firstB)/sp->delayB))); // maximal for simtime maxT
         }
@@ -121,7 +121,6 @@ void Seed::initialize()
                 }
                 std::cout << "maxT = " << sp->maxTil << "\n";
                 double delay = sp->firstB;
-                StemRandomParameter* tillParam = (StemRandomParameter*)plant->getOrganRandomParameter(Organism::ot_stem, tillerType);
                 for (int i=0; i<maxTi; i++) {
                     Organ* tiller = createStem(plant, tillerType, isheading, delay, this ,0., 0.);
                     tiller->addNode(sp->seedPos,0);

@@ -27,8 +27,8 @@ public:
 
     virtual std::string toString() const override;
 
-    int getNumberOfRootCrowns() const { return numberOfRootCrowns; }
-    std::vector<Organ*>& baseOrgans() { return children; }
+    int getNumberOfRootCrowns() const { return numberOfRootCrowns; } // for rootsystem initialisation
+    std::vector<Organ*>& baseOrgans() { return children; } // created by initialize
     std::vector<Organ*> copyBaseOrgans(); ///< shallow copy of the childs
 
     // default positions (unused) (TODO) make nicer

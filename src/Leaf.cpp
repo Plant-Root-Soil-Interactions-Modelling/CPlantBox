@@ -19,7 +19,7 @@ namespace CPlantBox {
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Leaf::Leaf(Organism* rs, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_leaf, type,delay), pni(pni), pbl(pbl)
+Leaf::Leaf(Organism* plant, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_leaf, type,delay), pni(pni), pbl(pbl)
 {
 	  initialLeafHeading=iheading;
 	//  std::cout << "Leaf pni = "<< pni<< std::endl;

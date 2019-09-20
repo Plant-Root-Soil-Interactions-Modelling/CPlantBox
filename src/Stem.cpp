@@ -1,6 +1,7 @@
 #include "Stem.h"
 #include "Leaf.h"
 #include "Root.h"
+
 #include <memory>
 
 namespace CPlantBox {
@@ -21,12 +22,12 @@ namespace CPlantBox {
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Stem::Stem(Organism* rs, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_stem,type,delay), pni(pni), pbl(pbl)
+Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_stem,type,delay), pni(pni), pbl(pbl)
 {
 	/*the relative heading is maulfunctioning
 	so it is disabled and rerolled to old heading*/
 
-	  initialStemHeading = pheading;
+    initialStemHeading = pheading;
 	//  std::cout << "stem pni = "<< pni<< std::endl;
 	//  std::cout << "Stem constructor \n";
 	StemRandomParameter* sttp = (StemRandomParameter*) plant->getOrganRandomParameter(Organism::ot_stem, type);
@@ -77,8 +78,8 @@ Stem::Stem(Organism* rs, int type, Vector3d pheading, double delay, Organ* paren
  */
 void Stem::simulate(double dt, bool silence)
 {
-	//  vector
-	old_non = 0; // is set in Stem:createSegments, the zero indicates the first call to createSegments
+    moved = false;
+    oldNumberOfNodes = nodes.size();
 
 	const StemSpecificParameter* sp = param(); // rename
 	const StemRandomParameter* sttp = getStemRandomParameter();
@@ -148,11 +149,9 @@ void Stem::simulate(double dt, bool silence)
 								if (i==children.size()) { // new internode leaf and shootBorneRoot
 									//if (sp->subType==3)
 									{ //this decide which successor grow the leaf (TODO) adding it to parameterfile
-										LeafGrow(silence, nodes.back());
+										leafGrow(silence, nodes.back());
 										//ShootBorneRootGrow(silence);
 									//} else {
-
-
 										createLateral(silence);
 										//LeafGrow(silence);
 									}
@@ -184,7 +183,7 @@ void Stem::simulate(double dt, bool silence)
 					else {
 						if (sp->subType == 3)
 						{
-							LeafGrow(silence, nodes.back());
+							leafGrow(silence, nodes.back());
 						}
 					}
 				} else { // no laterals
@@ -286,11 +285,6 @@ double Stem::StemGetAge(double length)
 /**
  *
  */
-
-
-/**
- *
- */
 double Stem::dx() const
 {
 	return getStemRandomParameter()->dx;
@@ -375,10 +369,11 @@ void Stem::createLateral(bool silence)
 	}
 
 
-
-void Stem::LeafGrow(bool silence, Vector3d bud)
+/*
+ *
+ */
+void Stem::leafGrow(bool silence, Vector3d bud)
 {
-
 	const StemSpecificParameter* sp = param(); // rename
 	//int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 	//  	std::cout << "LeafGrow createLateral()\n";
@@ -464,30 +459,28 @@ void Stem::LeafGrow(bool silence, Vector3d bud)
 }
 
 
-
-void Stem::ShootBorneRootGrow(bool silence)
+/*
+ *
+ */
+void Stem::shootBorneRootGrow(bool silence)
 {
-
-	const StemSpecificParameter* sp = param(); // rename
+	StemSpecificParameter* sp = param(); // rename
 	int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 	//    std::cout << "ShootBorneRootGrow createLateral()\n";
 	//    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
-
-	if (lt>0) {
+	if ( lt > 0 ) {
 		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
 		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
-		int NodeToGrowShotBorneRoot = 2 ;
+		int nodeToGrowShotBorneRoot = 2;
 		Vector3d sbrheading(0,0,-1); //just a test heading
-		Root* ShootBorneRootGrow = new Root(plant , 5, sbrheading, delay ,this,length,NodeToGrowShotBorneRoot);
-		if (nodes.size() > NodeToGrowShotBorneRoot ) {
+		Root* shootBorneRootGrow = new Root(plant , 5, sbrheading, delay ,this, length, nodeToGrowShotBorneRoot);
+		if (nodes.size() > nodeToGrowShotBorneRoot ) {
 			//                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
-			children.push_back(ShootBorneRootGrow);
-			ShootBorneRootGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current age)
+			children.push_back(shootBorneRootGrow);
+			shootBorneRootGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current age)
 		}
 	}
-
-
 }
 
 
@@ -507,7 +500,7 @@ void Stem::createSegments(double l, bool silence)
 
 	// shift first node to axial resolution
 	int nn = nodes.size();
-	if (old_non==0) { // first call of createSegments (in stem::simulate)
+	if (oldNumberOfNodes==0) { // first call of createSegments (in stem::simulate)
 		if (nn>1) {
 			auto n2 = nodes.at(nn-2);
 			auto n1 = nodes.at(nn-1);
@@ -523,13 +516,13 @@ void Stem::createSegments(double l, bool silence)
 
 				double ct = this->getCreationTime(length + newdx);
 				nodeCTs[nn - 1] = std::max(ct, plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-				old_non = nn;
+				oldNumberOfNodes = nn;
 				l -= newdx;
 
 				if (l<=0) { // ==0 should be enough
 
 					//if (tipleaf) {
-						LeafGrow(silence, nodes.back()); //the stem tip will grow leafs
+						leafGrow(silence, nodes.back()); //the stem tip will grow leafs
 						std::cout << "leaf grow\n";
 					//	tipleaf = false;
 
@@ -540,7 +533,7 @@ void Stem::createSegments(double l, bool silence)
 		}
 
 
-		old_non = nn; // CHECK
+		oldNumberOfNodes = nn; // CHECK
 	}
 
 	if (l<smallDx) {
@@ -586,18 +579,7 @@ Vector3d Stem::getIncrement(const Vector3d& p, double sdx) {
     Matrix3d ons = Matrix3d::ons(h);
     Vector2d ab = getStemRandomParameter()->f_tf->getHeading(p, ons, sdx, this);
     Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
-//    if (rootsystem->poreGeometry==nullptr) { // no pores defined
-//        return sv.times(sdx);
-//    } else {
-//        if (rootsystem->poreGeometry->getDist(p)<0) { // inside the pore
-//            auto sv1 = rootsystem->applyPoreConductivities(sv);
-//            // std::cout << "Length before " << sv.length() << ", length after " << sv1.length() << "\n";
-//            sv1.normalize();
-//            return sv1.times(sdx);
-//        } else {
-            return sv.times(sdx);
-//        }
-//    }
+    return sv.times(sdx);
 }
 
 /**
@@ -617,21 +599,6 @@ StemSpecificParameter* Stem::param() const
 }
 
 
-
-/**
- * Relative heading of organ tip
- */
-//Vector3d Stem::relHeading() const {
-//	Vector3d h;
-//	if (nodes.size()>1) {
-//		h = nodes.back().minus(nodes.at(nodes.size()-2)); // getHeading(b-a)
-//		h.normalize();
-//	} else {
-//		h = getRelativeHeading().column(2);
-//	}
-//	return h;
-//}
-
 Vector3d Stem::heading() const {
 	Vector3d h;
 	if (nodes.size()>1) {
@@ -643,86 +610,15 @@ Vector3d Stem::heading() const {
 	return h;
 }
 
-/**
- * Absolute heading of organ tip
+/*
+ * Quick info about the object for debugging
  */
-//Vector3d Stem::absHeading() const {
-//	return  getHeading().column(2);;
-//}
-
-void Stem::addNode(Vector3d n, double t)
-{
-	assert(t>=0.);
-	nodes.push_back(n); // node
-	nodeIds.push_back(plant->getNodeIndex()); // new unique id
-	nodeCTs.push_back(t); // exact creation time
-}
-
-/**
- * writes RSML stem tag
- *
- * @param cout      typically a file out stream
- * @param indent    we care for looks
- */
-//void Stem::writeRSML(std::ostream & cout, std::string indent) const
-//{
-//	if (this->nodes.size()>1) {
-//		cout << indent << "<stem id=\"" <<  id << "\">\n";  // open stem
-//
-//		/* geometry tag */
-//		cout << indent << "\t<geometry>\n"; // open geometry
-//		cout << indent << "\t\t<polyline>\n"; // open polyline
-//		// polyline nodes
-//		cout << indent << "\t\t\t" << "<point ";
-//		Vector3d v = nodes.at(0);
-//		cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-//		int n = 5; // this->plant->rsmlReduction;
-//		for (size_t i = 1; i<nodes.size()-1; i+=n) {
-//			cout << indent << "\t\t\t" << "<point ";
-//			Vector3d v = nodes.at(i);
-//			cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-//		}
-//		cout << indent << "\t\t\t" << "<point ";
-//		v = nodes.at(nodes.size()-1);
-//		cout << "x=\"" << v.x << "\" y=\"" << v.y << "\" z=\"" << v.z << "\"/>\n";
-//		cout << indent << "\t\t</polyline>\n"; // close polyline
-//		cout << indent << "\t</geometry>\n"; // close geometry
-//
-//		/* properties */
-//		cout << indent <<"\t<properties>\n"; // open properties
-//		// TODO
-//		cout << indent << "\t</properties>\n"; // close properties
-//
-//		cout << indent << "\t<functions>\n"; // open functions
-//		cout << indent << "\t\t<function name='emergence_time' domain='polyline'>\n"; // open functions
-//		cout << indent << "\t\t\t" << "<sample>" << nodeCTs.at(0) << "</sample>\n";
-//		for (size_t i = 1; i<nodeCTs.size()-1; i+=n) {
-//			cout << indent << "\t\t\t" << "<sample>" << nodeCTs.at(i) << "</sample>\n";
-//
-//		}
-//		cout << indent << "\t\t\t" << "<sample>" << nodeCTs.at(nodeCTs.size()-1) << "</sample>\n";
-//
-//		cout << indent << "\t\t</function>\n"; // close functions
-//		cout << indent << "\t</functions>\n"; // close functions
-//
-//		/* laterals stems */
-//		for (size_t i = 0; i<children.size(); i++) {
-//			children[i]->writeRSML(cout,indent+"\t");
-//		}
-//
-//		cout << indent << "</root>\n"; // close stem
-//	}
-//}
-//*/
-// * Quick info about the object for debugging
-// */
 std::string Stem::toString() const
 {
 	std::stringstream str;
 	str << "Stem #"<< id <<": type "<<param()->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
 	return str.str();
 }
-
 
 
 } // namespace CPlantBox
