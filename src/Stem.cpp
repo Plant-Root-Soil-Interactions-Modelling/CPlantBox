@@ -8,6 +8,28 @@
 namespace CPlantBox {
 
 /**
+ * Constructs a root from given data.
+ * The organ tree must be created, @see Organ::setPlant, Organ::setParent, Organ::addChild
+ * Organ geometry must be created, @see Organ::addNode, ensure that this->getNodeId(0) == parent->getNodeId(pni)
+ *
+ * @param id        the organ's unique id (@see Organ::getId)
+ * @param param     the organs parameters set, ownership transfers to the organ
+ * @param alive     indicates if the organ is alive (@see Organ::isAlive)
+ * @param active    indicates if the organ is active (@see Organ::isActive)
+ * @param age       the current age of the organ (@see Organ::getAge)
+ * @param length    the current length of the organ (@see Organ::getLength)
+ * @param iheading  the initial heading of this root
+ * @param pbl       base length of the parent root, where this root emerges
+ * @param pni       local node index, where this root emerges
+ * @param moved     indicates if nodes were moved in the previous time step (default = false)
+ * @param oldNON    the number of nodes of the previous time step (default = 0)
+ */
+Stem::Stem(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+    Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
+:Organ(id, param, alive, active, age, length, moved,  oldNON ), parentBaseLength(pbl), parentNI(pni)
+{ }
+
+/**
  * Constructor
  * This is a Copy Paste of the Root.cpp but it works independently, it has its own parameter file (in .stparam file) tropism, growth function, txt and vtp writing system.
  * All of those can be modified to fit the real growth of the Plant.
@@ -23,19 +45,19 @@ namespace CPlantBox {
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_stem,type,delay), pni(pni), pbl(pbl)
+Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_stem,type,delay), parentBaseLength(pbl), parentNI(pni)
 {
 	/*the relative heading is maulfunctioning
 	so it is disabled and rerolled to old heading*/
 
-    initialStemHeading = pheading;
+    iHeading = pheading;
 	param_ = getStemRandomParameter()->realize(); // throw the dice
 	StemSpecificParameter* stem_p = (StemSpecificParameter*) param_;
 
 //        std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
 		addPhytomerId(stem_p->subType);
 	double beta = getphytomerId(stem_p->subType)*M_PI*getStemRandomParameter()->RotBeta + M_PI*plant->rand()*getStemRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
-	Matrix3d ons = Matrix3d::ons(initialStemHeading);
+	Matrix3d ons = Matrix3d::ons(iHeading);
 	if (getStemRandomParameter()->InitBeta >0 && getphytomerId(stem_p->subType)==0 ){
 		beta = beta + getStemRandomParameter()->InitBeta;
 	}
@@ -48,13 +70,13 @@ Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* pa
 		theta *= scale;
 	}
 	//ons.times(Matrix3d::rotZ(theta));
-	this->initialStemHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
+	this->iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
     age = -delay; // the root starts growing when age>0
 	alive = 1; // alive per default
 
 	this->parent = parent;
-	parent_base_length = pbl;
-	parent_ni = pni;
+	parentBaseLength = pbl;
+	parentNI = pni;
 	length = 0;
 
 	// initial node
@@ -135,8 +157,8 @@ void Stem::simulate(double dt, bool silence)
 				//	}
 
 				// length increment
-				double length_ = StemGetLength(std::max(age-dt,0.)); // length of the stem for unimpeded growth (i.e. length_==length for unimpeded growth)
-				double targetlength = StemGetLength(age);
+				double length_ = calcLength(std::max(age-dt,0.)); // length of the stem for unimpeded growth (i.e. length_==length for unimpeded growth)
+				double targetlength = calcLength(age);
 				double e = targetlength-length_; //elongation in time step dt
 				double scale = getStemRandomParameter()->f_se->getValue(nodes.back(),this); // hope some of this is optimized out if not set
 				double dl = std::max(scale*e, double(0)); // length increment, dt is not used anymore
@@ -209,7 +231,7 @@ void Stem::simulate(double dt, bool silence)
 					}
 				} // if laterals
 			} // if active
-			active = StemGetLength(std::max(age,0.))<(sp->getK()-dx()/10); // become inactive, if final length is nearly reached
+			active = calcLength(std::max(age,0.))<(sp->getK()-dx()/10); // become inactive, if final length is nearly reached
 		}
 	} // if alive
 }
@@ -258,15 +280,15 @@ double Stem::getParameter(std::string name) const
  *
  * @param length   length of the stem [cm]
  */
-double Stem::getCreationTime(double length)
+double Stem::calcCreationTime(double length)
 {
 	assert(length>=0);
-	double age = StemGetAge(length);
+	double age = calcAge(length);
 	assert(age>=0);
 	if (parent->organType()!=Organism::ot_seed) {
 		if (parent->organType()==Organism::ot_stem) {
-			double pl = pbl+((Stem*)parent)->getStemRandomParameter()->la; // parent length, when this stem was created
-			double pAge=((Stem*)parent)->getCreationTime(pl);
+			double pl = parentBaseLength+((Stem*)parent)->getStemRandomParameter()->la; // parent length, when this stem was created
+			double pAge=((Stem*)parent)->calcCreationTime(pl);
 			return age+pAge;
 		} else { // organ type is seed
 			return age;
@@ -281,7 +303,7 @@ double Stem::getCreationTime(double length)
  *
  * @param age          age of the stem [day]
  */
-double Stem::StemGetLength(double age)
+double Stem::calcLength(double age)
 {
 	assert(age>=0);
 	return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,getStemRandomParameter()->getK(),this);
@@ -292,7 +314,7 @@ double Stem::StemGetLength(double age)
  *
  * @param length   length of the stem [cm]
  */
-double Stem::StemGetAge(double length)
+double Stem::calcAge(double length)
 {
 	assert(length>=0);
 	return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,getStemRandomParameter()->getK(),this);
@@ -317,8 +339,8 @@ void Stem::createLateral(bool silence)
 	int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 
 	if (getStemRandomParameter()->lnf==2&& lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 
@@ -332,8 +354,8 @@ void Stem::createLateral(bool silence)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 	else if (getStemRandomParameter()->lnf==3&& lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Stem* lateral = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
@@ -346,8 +368,8 @@ void Stem::createLateral(bool silence)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 	else if (getStemRandomParameter()->lnf==4 && lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Stem* lateral = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
@@ -357,8 +379,8 @@ void Stem::createLateral(bool silence)
 
     }
 	else if (getStemRandomParameter()->lnf==5 && lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Stem* lateral = new Stem(plant, lt, h, delay,  this, nodes.size() - 1, length);
@@ -372,8 +394,8 @@ void Stem::createLateral(bool silence)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
 	} else if (lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Stem* lateral = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
@@ -399,8 +421,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 	//int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 	int lt =2;
 	if (getStemRandomParameter()->lnf==2&& lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Leaf* lateral = new Leaf(plant, lt,  h, delay, this, nodes.size() - 1, length);
@@ -413,8 +435,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 	else if (getStemRandomParameter()->lnf==3&& lt>0) {
-		double ageLN = this->StemGetAge(length); // athis, ge of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // athis, ge of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Leaf* lateral = new Leaf(plant, lt, h, delay,  this, nodes.size() - 1, length);
@@ -427,8 +449,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 	else if (getStemRandomParameter()->lnf==4 && lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Leaf* lateral = new Leaf(plant, lt, h, delay,  this, nodes.size() - 1, length);
@@ -440,8 +462,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass
 	}else if (getStemRandomParameter()->lnf==5&& lt>0) {
-				double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+				double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 
@@ -460,8 +482,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
 	}else if (lt>0) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 		Leaf* lateral = new Leaf(plant, lt,  h, delay,this, nodes.size() - 1, length);
@@ -485,8 +507,8 @@ void Stem::shootBorneRootGrow(bool silence)
 	//    std::cout << "ShootBorneRootGrow createLateral()\n";
 	//    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
 	if ( lt > 0 ) {
-		double ageLN = this->StemGetAge(length); // age of stem when lateral node is created
-		double ageLG = this->StemGetAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		int nodeToGrowShotBorneRoot = 2;
 		Vector3d sbrheading(0,0,-1); //just a test heading
@@ -530,7 +552,7 @@ void Stem::createSegments(double l, bool silence)
                 Vector3d newdxv = getIncrement(n2, sdx);
 				nodes[nn - 1] = Vector3d(n2.plus(newdxv));
 
-				double ct = this->getCreationTime(length + newdx);
+				double ct = this->calcCreationTime(length + newdx);
 				nodeCTs[nn - 1] = std::max(ct, plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 				oldNumberOfNodes = nn;
 				l -= newdx;
@@ -579,7 +601,7 @@ void Stem::createSegments(double l, bool silence)
 		Vector3d newdx = getIncrement(nodes.back(), sdx);
 
 			Vector3d newnode = Vector3d(nodes.back().plus(newdx));
-		double ct = this->getCreationTime(length+sl);
+		double ct = this->calcCreationTime(length+sl);
 		ct = std::max(ct,plant->getSimTime()); // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 		//     std::cout<<"add node "<<newnode.toString()<<"\n";
 		//if (tipleaf) {
@@ -621,7 +643,7 @@ Vector3d Stem::heading() const {
 		h = nodes.back().minus(nodes.at(nodes.size() - 2)); // getHeading(b-a)
         h.normalize();
 	} else {
-		h = initialStemHeading;
+		h = iHeading;
 	}
 	return h;
 }
