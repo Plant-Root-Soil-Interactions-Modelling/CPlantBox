@@ -21,12 +21,12 @@
 #include "Organism.h"
 #include "soil.h"
 
-////#include "leafparameter.h"
-////#include "stemparameter.h"
-//#include "RootSystem.h"
-////#include "Plant.h"
-//#include "sdf_rs.h"
-//#include "analysis.h"
+#include "leafparameter.h"
+#include "stemparameter.h"
+#include "RootSystem.h"
+#include "Plant.h"
+#include "sdf_rs.h"
+#include "analysis.h"
 
 //#include "../examples/example_exudation.h"
 
@@ -63,26 +63,26 @@ void (Organ::*addNode2)(Vector3d n, int id, double t)= &Organ::addNode;
 std::vector<Organ*> (Organ::*getOrgans1)(int otype) = &Organ::getOrgans;
 void (Organ::*getOrgans2)(int otype, std::vector<Organ*>& v) = &Organ::getOrgans;
 
-//void (RootSystem::*simulate1)(double dt, bool silence) = &RootSystem::simulate;
-//void (RootSystem::*simulate2)() = &RootSystem::simulate;
-//void (RootSystem::*simulate3)(double dt, double maxinc, ProportionalElongation* se, bool silence) = &RootSystem::simulate;
-//void (RootSystem::*initialize1)() = &RootSystem::initialize;
-//void (RootSystem::*initialize2)(int basal, int shootborne) = &RootSystem::initialize;
-//
-//RootRandomParameter* (RootSystem::*getRootRandomParameter1)(int subType) const = &RootSystem::getRootRandomParameter;
-//std::vector<RootRandomParameter*> (RootSystem::*getRootRandomParameter2)() const = &RootSystem::getRootRandomParameter;
-//
-//void (SegmentAnalyser::*addSegments1)(const Organism& plant) = &SegmentAnalyser::addSegments;
-//void (SegmentAnalyser::*addSegments2)(const SegmentAnalyser& a) = &SegmentAnalyser::addSegments;
-//void (SegmentAnalyser::*filter1)(std::string name, double min, double max) = &SegmentAnalyser::filter;
-//void (SegmentAnalyser::*filter2)(std::string name, double value) = &SegmentAnalyser::filter;
-//double (SegmentAnalyser::*getSummed1)(std::string name) const = &SegmentAnalyser::getSummed;
-//double (SegmentAnalyser::*getSummed2)(std::string name, SignedDistanceFunction* geometry) const = &SegmentAnalyser::getSummed;
-//std::vector<double> (SegmentAnalyser::*distribution_1)(std::string name, double top, double bot, int n, bool exact) const = &SegmentAnalyser::distribution;
-//std::vector<SegmentAnalyser> (SegmentAnalyser::*distribution_2)(double top, double bot, int n) const = &SegmentAnalyser::distribution;
-//std::vector<std::vector<double>> (SegmentAnalyser::*distribution2_1)(std::string name, double top, double bot, double left, double right, int n, int m, bool exact) const = &SegmentAnalyser::distribution2;
-//std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*distribution2_2)(double top, double bot, double left, double right, int n, int m) const = &SegmentAnalyser::distribution2;
-//SegmentAnalyser (SegmentAnalyser::*cut1)(const SDF_HalfPlane& plane) const = &SegmentAnalyser::cut;
+void (RootSystem::*simulate1)(double dt, bool silence) = &RootSystem::simulate;
+void (RootSystem::*simulate2)() = &RootSystem::simulate;
+void (RootSystem::*simulate3)(double dt, double maxinc, ProportionalElongation* se, bool silence) = &RootSystem::simulate;
+void (RootSystem::*initialize1)() = &RootSystem::initialize;
+void (RootSystem::*initialize2)(int basal, int shootborne) = &RootSystem::initialize;
+
+RootRandomParameter* (RootSystem::*getRootRandomParameter1)(int subType) const = &RootSystem::getRootRandomParameter;
+std::vector<RootRandomParameter*> (RootSystem::*getRootRandomParameter2)() const = &RootSystem::getRootRandomParameter;
+
+void (SegmentAnalyser::*addSegments1)(const Organism& plant) = &SegmentAnalyser::addSegments;
+void (SegmentAnalyser::*addSegments2)(const SegmentAnalyser& a) = &SegmentAnalyser::addSegments;
+void (SegmentAnalyser::*filter1)(std::string name, double min, double max) = &SegmentAnalyser::filter;
+void (SegmentAnalyser::*filter2)(std::string name, double value) = &SegmentAnalyser::filter;
+double (SegmentAnalyser::*getSummed1)(std::string name) const = &SegmentAnalyser::getSummed;
+double (SegmentAnalyser::*getSummed2)(std::string name, SignedDistanceFunction* geometry) const = &SegmentAnalyser::getSummed;
+std::vector<double> (SegmentAnalyser::*distribution_1)(std::string name, double top, double bot, int n, bool exact) const = &SegmentAnalyser::distribution;
+std::vector<SegmentAnalyser> (SegmentAnalyser::*distribution_2)(double top, double bot, int n) const = &SegmentAnalyser::distribution;
+std::vector<std::vector<double>> (SegmentAnalyser::*distribution2_1)(std::string name, double top, double bot, double left, double right, int n, int m, bool exact) const = &SegmentAnalyser::distribution2;
+std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*distribution2_2)(double top, double bot, double left, double right, int n, int m) const = &SegmentAnalyser::distribution2;
+SegmentAnalyser (SegmentAnalyser::*cut1)(const SDF_HalfPlane& plane) const = &SegmentAnalyser::cut;
 
 /**
  * Default arguments: no idea how to do it by hand, magic everywhere...
@@ -432,378 +432,378 @@ BOOST_PYTHON_MODULE(plantbox)
         .value("stem", Organism::OrganTypes::ot_stem)
         .value("leaf", Organism::OrganTypes::ot_leaf)
         ;
-//    /*
-//     * sdf_rs.h
-//     */
-//    class_<SDF_RootSystem,SDF_RootSystem*, bases<SignedDistanceFunction>>("SDF_RootSystem", init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, double>())
-//        .def(init<Root&, double>())
-//        .def(init<RootSystem&, double>())
-//        .def("getDist",&SDF_RootSystem::getDist)
-//        .def("__str__",&SDF_RootSystem::toString)
-//    ;
-//    /**
-//     * tropism.h
-//     */
-////    class_<Tropism_Wrap, Tropism_Wrap*, boost::noncopyable>("Tropism",init<>())
-////                .def("getHeading",&Tropism_Wrap::getHeading)
-////                .def("tropismObjective",&Tropism_Wrap::tropismObjective, tropismObjective_overloads())
-////                .def("copy",&Tropism_Wrap::copy, return_value_policy<reference_existing_object>())
-////                .def("setTropismParameter",&Tropism_Wrap::setTropismParameter)
-////                .def("setGeometry",&Tropism_Wrap::setGeometry) // todo dont know how that works
-//                ;
-//    class_<Tropism, Tropism*>("TropismBase",init<Organism*>()) // Base class for the following tropisms
-//                .def(init<Organism*, double, double>())
-//                .def("getHeading",&Tropism::getHeading)
-//                .def("tropismObjective",&Tropism::tropismObjective, tropismObjective_overloads())
-//                .def("copy",&Tropism::copy, return_value_policy<reference_existing_object>())
-//                .def("setTropismParameter",&Tropism::setTropismParameter)
-//                .def("setGeometry",&Tropism::setGeometry)
-//
-//                ;
-//    class_<Gravitropism, Gravitropism*, bases<Tropism>>("Gravitropism",init<Organism*, double, double>())
-//        ;
-//    class_<Plagiotropism, Plagiotropism*, bases<Tropism>>("Plagiotropism",init<Organism*,double, double>())
-//        ;
-//    class_<Exotropism, Exotropism*, bases<Tropism>>("Exotropism",init<Organism*,double, double>())
-//        ;
-//    class_<Hydrotropism, Hydrotropism*, bases<Tropism>>("Hydrotropism",init<Organism*,double, double, SoilLookUp*>())
-//        ;
-//    //	class_<CombinedTropism, CombinedTropism*, bases<Tropism>>("CombinedTropism",init<>()) // Todo needs some extra work
-//    //	;
-//    /*
-//     * analysis.h
-//     */
-//    class_<SegmentAnalyser, SegmentAnalyser*>("SegmentAnalyser")
-//        .def(init<RootSystem&>())
-//        .def(init<SegmentAnalyser&>())
-//        .def("addSegments",addSegments1)
-//        .def("addSegments",addSegments2)
-//        .def("crop", &SegmentAnalyser::crop)
-//        .def("filter", filter1)
-//        .def("filter", filter2)
-//        .def("pack", &SegmentAnalyser::pack)
-//        .def("getParameter", &SegmentAnalyser::getParameter)
-//        .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
-//        .def("getSummed", getSummed1)
-//        .def("getSummed", getSummed2)
-//        .def("distribution", distribution_1)
-//        .def("distribution", distribution_2)
-//        .def("distribution2", distribution2_1)
-//        .def("distribution2", distribution2_2)
-//        .def("getOrgans", &SegmentAnalyser::getOrgans)
-//        .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
-//        .def("cut", cut1)
-//        .def("addUserData", &SegmentAnalyser::addUserData)
-//        .def("clearUserData", &SegmentAnalyser::clearUserData)
-//        .def("write", &SegmentAnalyser::write)
-//        .def_readwrite("nodes", &SegmentAnalyser::nodes)
-//        .def_readwrite("segments", &SegmentAnalyser::segments)
-//        .def_readwrite("segCTs", &SegmentAnalyser::segCTs)
-//        // .def("cut", cut2) // not working, see top definition of cut2
-//        ;
-//    class_<std::vector<SegmentAnalyser>>("std_vector_SegmentAnalyser_")
-//            .def(vector_indexing_suite<std::vector<SegmentAnalyser>>() )
-//            ;
-//    /*
-//     * rootparameter.h
-//     */
-//    class_<RootRandomParameter, RootRandomParameter*, bases<OrganRandomParameter>>("RootRandomParameter", init<Organism*>())
-//                .def("getLateralType",&RootRandomParameter::getLateralType)
-//                .def("getK",&RootRandomParameter::getK)
-//                .def_readwrite("type", &RootRandomParameter::subType)
-//                .def_readwrite("lb", &RootRandomParameter::lb)
-//                .def_readwrite("lbs", &RootRandomParameter::lbs)
-//                .def_readwrite("la", &RootRandomParameter::la)
-//                .def_readwrite("las", &RootRandomParameter::las)
-//                .def_readwrite("ln", &RootRandomParameter::ln)
-//                .def_readwrite("lns", &RootRandomParameter::lns)
-//                .def_readwrite("nob", &RootRandomParameter::nob)
-//                .def_readwrite("nobs", &RootRandomParameter::nobs)
-//                .def_readwrite("r", &RootRandomParameter::r)
-//                .def_readwrite("rs", &RootRandomParameter::rs)
-//                .def_readwrite("a", &RootRandomParameter::a)
-//                .def_readwrite("a_s", &RootRandomParameter::as) // as is a keyword in python
-//                .def_readwrite("colorR", &RootRandomParameter::colorR)
-//                .def_readwrite("colorG", &RootRandomParameter::colorG)
-//                .def_readwrite("colorB", &RootRandomParameter::colorB)
-//                .def_readwrite("tropismT", &RootRandomParameter::tropismT)
-//                .def_readwrite("tropismN", &RootRandomParameter::tropismN)
-//                .def_readwrite("tropismS", &RootRandomParameter::tropismS)
-//                .def_readwrite("dx", &RootRandomParameter::dx)
-//                .def_readwrite("theta", &RootRandomParameter::theta)
-//                .def_readwrite("thetas", &RootRandomParameter::thetas)
-//                .def_readwrite("rlt", &RootRandomParameter::rlt)
-//                .def_readwrite("rlts", &RootRandomParameter::rlts)
-//                .def_readwrite("gf", &RootRandomParameter::gf)
-//                .def_readwrite("name", &RootRandomParameter::name)
-//                .def_readwrite("successor", &RootRandomParameter::successor)
-//                .def_readwrite("successorP", &RootRandomParameter::successorP)
-//                .def_readwrite("f_tf", &RootRandomParameter::f_tf)
-//                .def_readwrite("f_gf", &RootRandomParameter::f_gf)
-//                .def_readwrite("f_se", &RootRandomParameter::f_se)
-//                .def_readwrite("f_sa", &RootRandomParameter::f_sa)
-//                .def_readwrite("f_sbp", &RootRandomParameter::f_sbp)
-//                .def("__str__",&RootRandomParameter::toString, toString_overloads())
-//                ;
-//    class_<std::vector<RootRandomParameter*>>("std_vector_RootRandomParameter_")
-//        .def(vector_indexing_suite<std::vector<RootRandomParameter*>>() )
-//        ;
-//    class_<RootSpecificParameter, RootSpecificParameter*, bases<OrganSpecificParameter> >("RootSpecificParameter", init<>())
-//                .def(init<int , double, double, const std::vector<double>&, int, double, double, double, double>())
-//                .def_readwrite("subType", &RootSpecificParameter::subType)
-//                .def_readwrite("lb", &RootSpecificParameter::lb)
-//                .def_readwrite("la", &RootSpecificParameter::la)
-//                .def_readwrite("ln", &RootSpecificParameter::ln)
-//                .def_readwrite("nob", &RootSpecificParameter::nob)
-//                .def_readwrite("r", &RootSpecificParameter::r)
-//                .def_readwrite("a", &RootSpecificParameter::a)
-//                .def_readwrite("theta", &RootSpecificParameter::theta)
-//                .def_readwrite("rlt", &RootSpecificParameter::rlt)
-//                .def("getK",&RootSpecificParameter::getK)
-//                .def("__str__",&RootSpecificParameter::toString)
-//                ;
-//    /*
-//     * seedparameter.h
-//     */
-//    class_<SeedRandomParameter, SeedRandomParameter*, bases<OrganRandomParameter>>("SeedRandomParameter", init<Organism*>())
-//            .def_readwrite("type", &SeedRandomParameter::subType)
-//            .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
-//            .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
-//            .def_readwrite("firstB", &SeedRandomParameter::firstB)
-//            .def_readwrite("firstBs", &SeedRandomParameter::firstBs)
-//            .def_readwrite("delayB", &SeedRandomParameter::delayB)
-//            .def_readwrite("delayBs", &SeedRandomParameter::delayBs)
-//            .def_readwrite("maxB", &SeedRandomParameter::maxB)
-//            .def_readwrite("maxBs", &SeedRandomParameter::maxBs)
-//            .def_readwrite("nC", &SeedRandomParameter::nC)
-//            .def_readwrite("nCs", &SeedRandomParameter::nCs)
-//            .def_readwrite("firstSB", &SeedRandomParameter::firstSB)
-//            .def_readwrite("firstSBs", &SeedRandomParameter::firstSBs)
-//            .def_readwrite("delaySB", &SeedRandomParameter::delaySB)
-//            .def_readwrite("delaySBs", &SeedRandomParameter::delaySBs)
-//            .def_readwrite("delayRC", &SeedRandomParameter::delayRC)
-//            .def_readwrite("delayRCs", &SeedRandomParameter::delayRCs)
-//            .def_readwrite("nz", &SeedRandomParameter::nz)
-//            .def_readwrite("nzs", &SeedRandomParameter::nzs)
-//            .def_readwrite("simtime", &SeedRandomParameter::simtime)
-//            .def_readwrite("simtime", &SeedRandomParameter::simtimes)
-//            .def("__str__",&SeedRandomParameter::toString, toString_overloads())
-//            ;
-//    class_<SeedSpecificParameter, SeedSpecificParameter*, bases<OrganSpecificParameter>>("SeedSpecificParameter", init<>())
-//          .def(init<int, Vector3d , double, int, int, int, double, double, double, double, int, double>())
-//          .def_readwrite("seedPos", &SeedSpecificParameter::seedPos)
-//          .def_readwrite("firstB", &SeedSpecificParameter::firstB)
-//          .def_readwrite("delayB", &SeedSpecificParameter::delayB)
-//          .def_readwrite("maxB", &SeedSpecificParameter::maxB)
-//          .def_readwrite("nC", &SeedSpecificParameter::nC)
-//          .def_readwrite("firstSB", &SeedSpecificParameter::firstSB)
-//          .def_readwrite("delaySB", &SeedSpecificParameter::delaySB)
-//          .def_readwrite("delayRC", &SeedSpecificParameter::delayRC)
-//          .def_readwrite("nz", &SeedSpecificParameter::nz)
-//          .def_readwrite("maxTil", &SeedSpecificParameter::maxTil)
-//          .def("__str__",&SeedSpecificParameter::toString)
-//          ;
-//    /*
-//     * leafparameter.h
-//     */
-//    class_<LeafRandomParameter, LeafRandomParameter*, bases<OrganRandomParameter>>("LeafRandomParameter", init<Organism*>())
-//                        .def("getLateralType",&LeafRandomParameter::getLateralType)
-//                        .def("getK",&LeafRandomParameter::getK)
-//                        .def_readwrite("type", &LeafRandomParameter::subType)
-//                        .def_readwrite("lb", &LeafRandomParameter::lb)
-//                        .def_readwrite("lbs", &LeafRandomParameter::lbs)
-//                        .def_readwrite("la", &LeafRandomParameter::la)
-//                        .def_readwrite("las", &LeafRandomParameter::las)
-//                        .def_readwrite("ln", &LeafRandomParameter::ln)
-//                        .def_readwrite("lns", &LeafRandomParameter::lns)
-//                        .def_readwrite("lnf", &LeafRandomParameter::lnf)
-//                        .def_readwrite("nob", &LeafRandomParameter::nob)
-//                        .def_readwrite("nobs", &LeafRandomParameter::nobs)
-//                        .def_readwrite("k", &LeafRandomParameter::k)
-//                        .def_readwrite("ks", &LeafRandomParameter::ks)
-//                        .def_readwrite("r", &LeafRandomParameter::r)
-//                        .def_readwrite("rs", &LeafRandomParameter::rs)
-//                        .def_readwrite("a", &LeafRandomParameter::a)
-//                        .def_readwrite("a_s", &LeafRandomParameter::as) // as is a keyword in python
-//						.def_readwrite("RotBeta", &LeafRandomParameter::RotBeta)
-//						.def_readwrite("BetaDev", &LeafRandomParameter::BetaDev)
-//						.def_readwrite("InitBeta", &LeafRandomParameter::InitBeta)
-//                        .def_readwrite("tropismT", &LeafRandomParameter::tropismT)
-//                        .def_readwrite("tropismN", &LeafRandomParameter::tropismN)
-//                        .def_readwrite("tropismS", &LeafRandomParameter::tropismS)
-//                        .def_readwrite("dx", &LeafRandomParameter::dx)
-//                        .def_readwrite("theta", &LeafRandomParameter::theta)
-//                        .def_readwrite("thetas", &LeafRandomParameter::thetas)
-//                        .def_readwrite("rlt", &LeafRandomParameter::rlt)
-//                        .def_readwrite("rlts", &LeafRandomParameter::rlts)
-//                        .def_readwrite("gf", &LeafRandomParameter::gf)
-//                        .def_readwrite("name", &LeafRandomParameter::name)
-//                        .def_readwrite("successor", &LeafRandomParameter::successor)
-//                        .def_readwrite("successorP", &LeafRandomParameter::successorP)
-//                        .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
-//                        .def_readwrite("f_gf", &LeafRandomParameter::f_gf)
-//                        .def_readwrite("f_se", &LeafRandomParameter::f_se)
-//                        .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
-//                        .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
-//            .def("__str__",&LeafRandomParameter::toString, toString_overloads())
-//            ;
-//    class_<LeafSpecificParameter, LeafSpecificParameter*, bases<OrganSpecificParameter>>("LeafSpecificParameter", init<>())
-//          .def(init<int , double, double, const std::vector<double>&, double, double, double, double>())
-//          .def_readwrite("subType", &LeafSpecificParameter::subType)
-//          .def_readwrite("lb", &LeafSpecificParameter::lb)
-//          .def_readwrite("la", &LeafSpecificParameter::la)
-//          .def_readwrite("ln", &LeafSpecificParameter::ln)
-//          .def_readwrite("r", &LeafSpecificParameter::r)
-//          .def_readwrite("a", &LeafSpecificParameter::a)
-//          .def_readwrite("theta", &LeafSpecificParameter::theta)
-//          .def_readwrite("rlt", &LeafSpecificParameter::rlt)
-//          .def("getK",&LeafSpecificParameter::getK)
-//          .def("__str__",&LeafSpecificParameter::toString)
-//          ;
-//    /*
-//     * stemparameter.h
-//     */
-//    class_<StemRandomParameter, StemRandomParameter*, bases<OrganRandomParameter>>("StemRandomParameter", init<Organism*>())
-//                        .def("getLateralType",&StemRandomParameter::getLateralType)
-//                        .def("getK",&StemRandomParameter::getK)
-//                        .def_readwrite("type", &StemRandomParameter::subType)
-//                        .def_readwrite("lb", &StemRandomParameter::lb)
-//                        .def_readwrite("lbs", &StemRandomParameter::lbs)
-//                        .def_readwrite("la", &StemRandomParameter::la)
-//                        .def_readwrite("las", &StemRandomParameter::las)
-//                        .def_readwrite("k", &StemRandomParameter::k)
-//                        .def_readwrite("ks", &StemRandomParameter::ks)
-//						.def_readwrite("ln", &StemRandomParameter::ln)
-//                        .def_readwrite("lns", &StemRandomParameter::lns)
-//                        .def_readwrite("lnf", &StemRandomParameter::lnf)
-//                        .def_readwrite("nob", &StemRandomParameter::nob)
-//                        .def_readwrite("nobs", &StemRandomParameter::nobs)
-//                        .def_readwrite("r", &StemRandomParameter::r)
-//                        .def_readwrite("rs", &StemRandomParameter::rs)
-//                        .def_readwrite("a", &StemRandomParameter::a)
-//                        .def_readwrite("a_s", &StemRandomParameter::as) // as is a keyword in python
-//						.def_readwrite("RotBeta", &StemRandomParameter::RotBeta)
-//						.def_readwrite("BetaDev", &StemRandomParameter::BetaDev)
-//						.def_readwrite("InitBeta", &StemRandomParameter::InitBeta)
-//                        .def_readwrite("tropismT", &StemRandomParameter::tropismT)
-//                        .def_readwrite("tropismN", &StemRandomParameter::tropismN)
-//                        .def_readwrite("tropismS", &StemRandomParameter::tropismS)
-//                        .def_readwrite("dx", &StemRandomParameter::dx)
-//                        .def_readwrite("theta", &StemRandomParameter::theta)
-//                        .def_readwrite("thetas", &StemRandomParameter::thetas)
-//                        .def_readwrite("rlt", &StemRandomParameter::rlt)
-//                        .def_readwrite("rlts", &StemRandomParameter::rlts)
-//                        .def_readwrite("gf", &StemRandomParameter::gf)
-//                        .def_readwrite("name", &StemRandomParameter::name)
-//                        .def_readwrite("successor", &StemRandomParameter::successor)
-//                        .def_readwrite("successorP", &StemRandomParameter::successorP)
-//                        .def_readwrite("f_tf", &StemRandomParameter::f_tf)
-//                        .def_readwrite("f_gf", &StemRandomParameter::f_gf)
-//                        .def_readwrite("f_se", &StemRandomParameter::f_se)
-//                        .def_readwrite("f_sa", &StemRandomParameter::f_sa)
-//                        .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
-//            .def("__str__",&StemRandomParameter::toString, toString_overloads())
-//            ;
-//    class_<StemSpecificParameter, StemSpecificParameter*, bases<OrganSpecificParameter>>("StemSpecificParameter", init<>())
-//          .def(init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
-//          .def_readwrite("subType", &StemSpecificParameter::subType)
-//          .def_readwrite("lb", &StemSpecificParameter::lb)
-//          .def_readwrite("la", &StemSpecificParameter::la)
-//          .def_readwrite("ln", &StemSpecificParameter::ln)
-//          .def_readwrite("r", &StemSpecificParameter::r)
-//          .def_readwrite("a", &StemSpecificParameter::a)
-//          .def_readwrite("theta", &StemSpecificParameter::theta)
-//          .def_readwrite("rlt", &StemSpecificParameter::rlt)
-//          .def("getK",&StemSpecificParameter::getK)
-//          .def("__str__",&StemSpecificParameter::toString)
-//          ;
+    /*
+     * sdf_rs.h
+     */
+    class_<SDF_RootSystem,SDF_RootSystem*, bases<SignedDistanceFunction>>("SDF_RootSystem", init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, double>())
+        .def(init<Root&, double>())
+        .def(init<RootSystem&, double>())
+        .def("getDist",&SDF_RootSystem::getDist)
+        .def("__str__",&SDF_RootSystem::toString)
+    ;
+    /**
+     * tropism.h
+     */
+//    class_<Tropism_Wrap, Tropism_Wrap*, boost::noncopyable>("Tropism",init<>())
+//                .def("getHeading",&Tropism_Wrap::getHeading)
+//                .def("tropismObjective",&Tropism_Wrap::tropismObjective, tropismObjective_overloads())
+//                .def("copy",&Tropism_Wrap::copy, return_value_policy<reference_existing_object>())
+//                .def("setTropismParameter",&Tropism_Wrap::setTropismParameter)
+//                .def("setGeometry",&Tropism_Wrap::setGeometry) // todo dont know how that works
+                ;
+    class_<Tropism, Tropism*>("TropismBase",init<Organism*>()) // Base class for the following tropisms
+                .def(init<Organism*, double, double>())
+                .def("getHeading",&Tropism::getHeading)
+                .def("tropismObjective",&Tropism::tropismObjective, tropismObjective_overloads())
+                .def("copy",&Tropism::copy, return_value_policy<reference_existing_object>())
+                .def("setTropismParameter",&Tropism::setTropismParameter)
+                .def("setGeometry",&Tropism::setGeometry)
 
-//    /**
-//     * Root.h
-//     */
-//    class_<Root, Root*, bases<Organ>>("Root", init<Organism*, int, Vector3d, double, Root*, double, int>())
-//            .def(init<int, OrganSpecificParameter*, bool, bool, double, double, Vector3d, double, int, bool, int >()) // with_custodian_and_ward<M,N> ?? dont know how to use it
-//            .def("calcCreationTime", &Root::calcCreationTime)
-//            .def("calcLength", &Root::calcLength)
-//            .def("calcAge", &Root::calcAge)
-//            .def("getRootRandomParameter", &Root::getRootRandomParameter, return_value_policy<reference_existing_object>())
-//            .def("param", &Root::param, return_value_policy<reference_existing_object>())
-//            .def("dx", &Root::dx)
-//            .def_readwrite("parent_base_length", &Root::parentBaseLength)
-//            .def_readwrite("parent_ni", &Root::parentNI)
-//            .def("__str__",&Root::toString)
-//            ;
-//    class_<std::vector<Root*>>("std_vector_Root_")
-//            .def(vector_indexing_suite<std::vector<Root*>>() )
-//            ;
-//    class_<std::vector<std::vector<Vector3d>>>("std_vector_vector_Vector3d_")
-//            .def(vector_indexing_suite<std::vector<std::vector<Vector3d>>>() )
-//            ;
-//    class_<std::vector<std::vector<double>>>("std_vector_vector_double_")
-//            .def(vector_indexing_suite<std::vector<std::vector<double>>>() )
-//            ;
-//    /**
-//     * Seed.h
-//     */
-//    class_<Seed, Seed*, bases<Organ>>("Seed", init<Organism*>())
-//            .def("__str__",&Seed::toString)
-//            ;
-//    /**
-//     * Leaf.h
-//     */
-//    class_<Leaf, Leaf*, bases<Organ>>("Leaf", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
-//            .def("__str__",&Leaf::toString)
-//            ;
-//    /**
-//     * Stem.h
-//     */
-//    class_<Stem, Stem*, bases<Organ>>("Stem", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
-//            .def("__str__",&Stem::toString)
-//            ;
-//    /*
-//     * RootSystem.h
-//     */
-//    class_<RootSystem, RootSystem*, bases<Organism>>("RootSystem", init<>()) // bases<PlantBase>
-//             .def(init<RootSystem&>())
-//             .def("getRootRandomParameter", getRootRandomParameter1, return_value_policy<reference_existing_object>())
-//             .def("getRootRandomParameter", getRootRandomParameter2)
-//             .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
-//             .def("getRootSystemParameter", &RootSystem::getRootSystemParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
-//             .def("openFile", &RootSystem::openFile, openFile_overloads())
-//             .def("setGeometry", &RootSystem::setGeometry)
-//             .def("setSoil", &RootSystem::setSoil)
-//             .def("reset", &RootSystem::reset)
-//             .def("initialize", initialize1)
-//             .def("initialize", initialize2)
-//             .def("setTropism", &RootSystem::setTropism)
-//             .def("simulate",simulate1, simulate1_overloads())
-//             .def("simulate",simulate2)
-//             .def("simulate",simulate3, simulate3_overloads())
-//             .def("getSimTime", &RootSystem::getSimTime)
-//             .def("getNumberOfNodes", &RootSystem::getNumberOfNodes)
-//             .def("getRoots", &RootSystem::getRoots)
-//             .def("getNumberOfSegments", &RootSystem::getNumberOfSegments, getNumberOfSegments_overloads())
-//             .def("getNumberOfRoots", &RootSystem::getNumberOfRoots, getNumberOfRoots_overloads())
-//             .def("getBaseRoots", &RootSystem::getBaseRoots)
-//             .def("getShootSegments", &RootSystem::getShootSegments)
-//             .def("getSegmentOrigins", &RootSystem::getSegmentOrigins)
-//             .def("getRootTips", &RootSystem::getRootTips)
-//             .def("getRootBases", &RootSystem::getRootBases)
-//             .def("getNumberOfNewNodes",&RootSystem::getNumberOfNewNodes)
-//             .def("push",&RootSystem::push)
-//             .def("pop",&RootSystem::pop)
-//             .def("write", &RootSystem::write)
-//             ;
-//    enum_<RootSystem::TropismTypes>("TropismType")
-//            .value("plagio", RootSystem::TropismTypes::tt_plagio)
-//            .value("gravi", RootSystem::TropismTypes::tt_gravi)
-//            .value("exo", RootSystem::TropismTypes::tt_exo)
-//            .value("hydro", RootSystem::TropismTypes::tt_hydro)
-//            ;
-//    enum_<RootSystem::GrowthFunctionTypes>("GrowthFunctionType")
-//            .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
-//            .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
-//            ;
+                ;
+    class_<Gravitropism, Gravitropism*, bases<Tropism>>("Gravitropism",init<Organism*, double, double>())
+        ;
+    class_<Plagiotropism, Plagiotropism*, bases<Tropism>>("Plagiotropism",init<Organism*,double, double>())
+        ;
+    class_<Exotropism, Exotropism*, bases<Tropism>>("Exotropism",init<Organism*,double, double>())
+        ;
+    class_<Hydrotropism, Hydrotropism*, bases<Tropism>>("Hydrotropism",init<Organism*,double, double, SoilLookUp*>())
+        ;
+    //	class_<CombinedTropism, CombinedTropism*, bases<Tropism>>("CombinedTropism",init<>()) // Todo needs some extra work
+    //	;
+    /*
+     * analysis.h
+     */
+    class_<SegmentAnalyser, SegmentAnalyser*>("SegmentAnalyser")
+        .def(init<RootSystem&>())
+        .def(init<SegmentAnalyser&>())
+        .def("addSegments",addSegments1)
+        .def("addSegments",addSegments2)
+        .def("crop", &SegmentAnalyser::crop)
+        .def("filter", filter1)
+        .def("filter", filter2)
+        .def("pack", &SegmentAnalyser::pack)
+        .def("getParameter", &SegmentAnalyser::getParameter)
+        .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
+        .def("getSummed", getSummed1)
+        .def("getSummed", getSummed2)
+        .def("distribution", distribution_1)
+        .def("distribution", distribution_2)
+        .def("distribution2", distribution2_1)
+        .def("distribution2", distribution2_2)
+        .def("getOrgans", &SegmentAnalyser::getOrgans)
+        .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
+        .def("cut", cut1)
+        .def("addUserData", &SegmentAnalyser::addUserData)
+        .def("clearUserData", &SegmentAnalyser::clearUserData)
+        .def("write", &SegmentAnalyser::write)
+        .def_readwrite("nodes", &SegmentAnalyser::nodes)
+        .def_readwrite("segments", &SegmentAnalyser::segments)
+        .def_readwrite("segCTs", &SegmentAnalyser::segCTs)
+        // .def("cut", cut2) // not working, see top definition of cut2
+        ;
+    class_<std::vector<SegmentAnalyser>>("std_vector_SegmentAnalyser_")
+            .def(vector_indexing_suite<std::vector<SegmentAnalyser>>() )
+            ;
+    /*
+     * rootparameter.h
+     */
+    class_<RootRandomParameter, RootRandomParameter*, bases<OrganRandomParameter>>("RootRandomParameter", init<Organism*>())
+                .def("getLateralType",&RootRandomParameter::getLateralType)
+                .def("getK",&RootRandomParameter::getK)
+                .def_readwrite("type", &RootRandomParameter::subType)
+                .def_readwrite("lb", &RootRandomParameter::lb)
+                .def_readwrite("lbs", &RootRandomParameter::lbs)
+                .def_readwrite("la", &RootRandomParameter::la)
+                .def_readwrite("las", &RootRandomParameter::las)
+                .def_readwrite("ln", &RootRandomParameter::ln)
+                .def_readwrite("lns", &RootRandomParameter::lns)
+                .def_readwrite("nob", &RootRandomParameter::nob)
+                .def_readwrite("nobs", &RootRandomParameter::nobs)
+                .def_readwrite("r", &RootRandomParameter::r)
+                .def_readwrite("rs", &RootRandomParameter::rs)
+                .def_readwrite("a", &RootRandomParameter::a)
+                .def_readwrite("a_s", &RootRandomParameter::as) // as is a keyword in python
+                .def_readwrite("colorR", &RootRandomParameter::colorR)
+                .def_readwrite("colorG", &RootRandomParameter::colorG)
+                .def_readwrite("colorB", &RootRandomParameter::colorB)
+                .def_readwrite("tropismT", &RootRandomParameter::tropismT)
+                .def_readwrite("tropismN", &RootRandomParameter::tropismN)
+                .def_readwrite("tropismS", &RootRandomParameter::tropismS)
+                .def_readwrite("dx", &RootRandomParameter::dx)
+                .def_readwrite("theta", &RootRandomParameter::theta)
+                .def_readwrite("thetas", &RootRandomParameter::thetas)
+                .def_readwrite("rlt", &RootRandomParameter::rlt)
+                .def_readwrite("rlts", &RootRandomParameter::rlts)
+                .def_readwrite("gf", &RootRandomParameter::gf)
+                .def_readwrite("name", &RootRandomParameter::name)
+                .def_readwrite("successor", &RootRandomParameter::successor)
+                .def_readwrite("successorP", &RootRandomParameter::successorP)
+                .def_readwrite("f_tf", &RootRandomParameter::f_tf)
+                .def_readwrite("f_gf", &RootRandomParameter::f_gf)
+                .def_readwrite("f_se", &RootRandomParameter::f_se)
+                .def_readwrite("f_sa", &RootRandomParameter::f_sa)
+                .def_readwrite("f_sbp", &RootRandomParameter::f_sbp)
+                .def("__str__",&RootRandomParameter::toString, toString_overloads())
+                ;
+    class_<std::vector<RootRandomParameter*>>("std_vector_RootRandomParameter_")
+        .def(vector_indexing_suite<std::vector<RootRandomParameter*>>() )
+        ;
+    class_<RootSpecificParameter, RootSpecificParameter*, bases<OrganSpecificParameter> >("RootSpecificParameter", init<>())
+                .def(init<int , double, double, const std::vector<double>&, int, double, double, double, double>())
+                .def_readwrite("subType", &RootSpecificParameter::subType)
+                .def_readwrite("lb", &RootSpecificParameter::lb)
+                .def_readwrite("la", &RootSpecificParameter::la)
+                .def_readwrite("ln", &RootSpecificParameter::ln)
+                .def_readwrite("nob", &RootSpecificParameter::nob)
+                .def_readwrite("r", &RootSpecificParameter::r)
+                .def_readwrite("a", &RootSpecificParameter::a)
+                .def_readwrite("theta", &RootSpecificParameter::theta)
+                .def_readwrite("rlt", &RootSpecificParameter::rlt)
+                .def("getK",&RootSpecificParameter::getK)
+                .def("__str__",&RootSpecificParameter::toString)
+                ;
+    /*
+     * seedparameter.h
+     */
+    class_<SeedRandomParameter, SeedRandomParameter*, bases<OrganRandomParameter>>("SeedRandomParameter", init<Organism*>())
+            .def_readwrite("type", &SeedRandomParameter::subType)
+            .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
+            .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
+            .def_readwrite("firstB", &SeedRandomParameter::firstB)
+            .def_readwrite("firstBs", &SeedRandomParameter::firstBs)
+            .def_readwrite("delayB", &SeedRandomParameter::delayB)
+            .def_readwrite("delayBs", &SeedRandomParameter::delayBs)
+            .def_readwrite("maxB", &SeedRandomParameter::maxB)
+            .def_readwrite("maxBs", &SeedRandomParameter::maxBs)
+            .def_readwrite("nC", &SeedRandomParameter::nC)
+            .def_readwrite("nCs", &SeedRandomParameter::nCs)
+            .def_readwrite("firstSB", &SeedRandomParameter::firstSB)
+            .def_readwrite("firstSBs", &SeedRandomParameter::firstSBs)
+            .def_readwrite("delaySB", &SeedRandomParameter::delaySB)
+            .def_readwrite("delaySBs", &SeedRandomParameter::delaySBs)
+            .def_readwrite("delayRC", &SeedRandomParameter::delayRC)
+            .def_readwrite("delayRCs", &SeedRandomParameter::delayRCs)
+            .def_readwrite("nz", &SeedRandomParameter::nz)
+            .def_readwrite("nzs", &SeedRandomParameter::nzs)
+            .def_readwrite("simtime", &SeedRandomParameter::simtime)
+            .def_readwrite("simtime", &SeedRandomParameter::simtimes)
+            .def("__str__",&SeedRandomParameter::toString, toString_overloads())
+            ;
+    class_<SeedSpecificParameter, SeedSpecificParameter*, bases<OrganSpecificParameter>>("SeedSpecificParameter", init<>())
+          .def(init<int, Vector3d , double, int, int, int, double, double, double, double, int, double>())
+          .def_readwrite("seedPos", &SeedSpecificParameter::seedPos)
+          .def_readwrite("firstB", &SeedSpecificParameter::firstB)
+          .def_readwrite("delayB", &SeedSpecificParameter::delayB)
+          .def_readwrite("maxB", &SeedSpecificParameter::maxB)
+          .def_readwrite("nC", &SeedSpecificParameter::nC)
+          .def_readwrite("firstSB", &SeedSpecificParameter::firstSB)
+          .def_readwrite("delaySB", &SeedSpecificParameter::delaySB)
+          .def_readwrite("delayRC", &SeedSpecificParameter::delayRC)
+          .def_readwrite("nz", &SeedSpecificParameter::nz)
+          .def_readwrite("maxTil", &SeedSpecificParameter::maxTil)
+          .def("__str__",&SeedSpecificParameter::toString)
+          ;
+    /*
+     * leafparameter.h
+     */
+    class_<LeafRandomParameter, LeafRandomParameter*, bases<OrganRandomParameter>>("LeafRandomParameter", init<Organism*>())
+                        .def("getLateralType",&LeafRandomParameter::getLateralType)
+                        .def("getK",&LeafRandomParameter::getK)
+                        .def_readwrite("type", &LeafRandomParameter::subType)
+                        .def_readwrite("lb", &LeafRandomParameter::lb)
+                        .def_readwrite("lbs", &LeafRandomParameter::lbs)
+                        .def_readwrite("la", &LeafRandomParameter::la)
+                        .def_readwrite("las", &LeafRandomParameter::las)
+                        .def_readwrite("ln", &LeafRandomParameter::ln)
+                        .def_readwrite("lns", &LeafRandomParameter::lns)
+                        .def_readwrite("lnf", &LeafRandomParameter::lnf)
+                        .def_readwrite("nob", &LeafRandomParameter::nob)
+                        .def_readwrite("nobs", &LeafRandomParameter::nobs)
+                        .def_readwrite("k", &LeafRandomParameter::k)
+                        .def_readwrite("ks", &LeafRandomParameter::ks)
+                        .def_readwrite("r", &LeafRandomParameter::r)
+                        .def_readwrite("rs", &LeafRandomParameter::rs)
+                        .def_readwrite("a", &LeafRandomParameter::a)
+                        .def_readwrite("a_s", &LeafRandomParameter::as) // as is a keyword in python
+						.def_readwrite("RotBeta", &LeafRandomParameter::RotBeta)
+						.def_readwrite("BetaDev", &LeafRandomParameter::BetaDev)
+						.def_readwrite("InitBeta", &LeafRandomParameter::InitBeta)
+                        .def_readwrite("tropismT", &LeafRandomParameter::tropismT)
+                        .def_readwrite("tropismN", &LeafRandomParameter::tropismN)
+                        .def_readwrite("tropismS", &LeafRandomParameter::tropismS)
+                        .def_readwrite("dx", &LeafRandomParameter::dx)
+                        .def_readwrite("theta", &LeafRandomParameter::theta)
+                        .def_readwrite("thetas", &LeafRandomParameter::thetas)
+                        .def_readwrite("rlt", &LeafRandomParameter::rlt)
+                        .def_readwrite("rlts", &LeafRandomParameter::rlts)
+                        .def_readwrite("gf", &LeafRandomParameter::gf)
+                        .def_readwrite("name", &LeafRandomParameter::name)
+                        .def_readwrite("successor", &LeafRandomParameter::successor)
+                        .def_readwrite("successorP", &LeafRandomParameter::successorP)
+                        .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
+                        .def_readwrite("f_gf", &LeafRandomParameter::f_gf)
+                        .def_readwrite("f_se", &LeafRandomParameter::f_se)
+                        .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
+                        .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
+            .def("__str__",&LeafRandomParameter::toString, toString_overloads())
+            ;
+    class_<LeafSpecificParameter, LeafSpecificParameter*, bases<OrganSpecificParameter>>("LeafSpecificParameter", init<>())
+          .def(init<int , double, double, const std::vector<double>&, double, double, double, double>())
+          .def_readwrite("subType", &LeafSpecificParameter::subType)
+          .def_readwrite("lb", &LeafSpecificParameter::lb)
+          .def_readwrite("la", &LeafSpecificParameter::la)
+          .def_readwrite("ln", &LeafSpecificParameter::ln)
+          .def_readwrite("r", &LeafSpecificParameter::r)
+          .def_readwrite("a", &LeafSpecificParameter::a)
+          .def_readwrite("theta", &LeafSpecificParameter::theta)
+          .def_readwrite("rlt", &LeafSpecificParameter::rlt)
+          .def("getK",&LeafSpecificParameter::getK)
+          .def("__str__",&LeafSpecificParameter::toString)
+          ;
+    /*
+     * stemparameter.h
+     */
+    class_<StemRandomParameter, StemRandomParameter*, bases<OrganRandomParameter>>("StemRandomParameter", init<Organism*>())
+                        .def("getLateralType",&StemRandomParameter::getLateralType)
+                        .def("getK",&StemRandomParameter::getK)
+                        .def_readwrite("type", &StemRandomParameter::subType)
+                        .def_readwrite("lb", &StemRandomParameter::lb)
+                        .def_readwrite("lbs", &StemRandomParameter::lbs)
+                        .def_readwrite("la", &StemRandomParameter::la)
+                        .def_readwrite("las", &StemRandomParameter::las)
+                        .def_readwrite("k", &StemRandomParameter::k)
+                        .def_readwrite("ks", &StemRandomParameter::ks)
+						.def_readwrite("ln", &StemRandomParameter::ln)
+                        .def_readwrite("lns", &StemRandomParameter::lns)
+                        .def_readwrite("lnf", &StemRandomParameter::lnf)
+                        .def_readwrite("nob", &StemRandomParameter::nob)
+                        .def_readwrite("nobs", &StemRandomParameter::nobs)
+                        .def_readwrite("r", &StemRandomParameter::r)
+                        .def_readwrite("rs", &StemRandomParameter::rs)
+                        .def_readwrite("a", &StemRandomParameter::a)
+                        .def_readwrite("a_s", &StemRandomParameter::as) // as is a keyword in python
+						.def_readwrite("RotBeta", &StemRandomParameter::RotBeta)
+						.def_readwrite("BetaDev", &StemRandomParameter::BetaDev)
+						.def_readwrite("InitBeta", &StemRandomParameter::InitBeta)
+                        .def_readwrite("tropismT", &StemRandomParameter::tropismT)
+                        .def_readwrite("tropismN", &StemRandomParameter::tropismN)
+                        .def_readwrite("tropismS", &StemRandomParameter::tropismS)
+                        .def_readwrite("dx", &StemRandomParameter::dx)
+                        .def_readwrite("theta", &StemRandomParameter::theta)
+                        .def_readwrite("thetas", &StemRandomParameter::thetas)
+                        .def_readwrite("rlt", &StemRandomParameter::rlt)
+                        .def_readwrite("rlts", &StemRandomParameter::rlts)
+                        .def_readwrite("gf", &StemRandomParameter::gf)
+                        .def_readwrite("name", &StemRandomParameter::name)
+                        .def_readwrite("successor", &StemRandomParameter::successor)
+                        .def_readwrite("successorP", &StemRandomParameter::successorP)
+                        .def_readwrite("f_tf", &StemRandomParameter::f_tf)
+                        .def_readwrite("f_gf", &StemRandomParameter::f_gf)
+                        .def_readwrite("f_se", &StemRandomParameter::f_se)
+                        .def_readwrite("f_sa", &StemRandomParameter::f_sa)
+                        .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
+            .def("__str__",&StemRandomParameter::toString, toString_overloads())
+            ;
+    class_<StemSpecificParameter, StemSpecificParameter*, bases<OrganSpecificParameter>>("StemSpecificParameter", init<>())
+          .def(init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
+          .def_readwrite("subType", &StemSpecificParameter::subType)
+          .def_readwrite("lb", &StemSpecificParameter::lb)
+          .def_readwrite("la", &StemSpecificParameter::la)
+          .def_readwrite("ln", &StemSpecificParameter::ln)
+          .def_readwrite("r", &StemSpecificParameter::r)
+          .def_readwrite("a", &StemSpecificParameter::a)
+          .def_readwrite("theta", &StemSpecificParameter::theta)
+          .def_readwrite("rlt", &StemSpecificParameter::rlt)
+          .def("getK",&StemSpecificParameter::getK)
+          .def("__str__",&StemSpecificParameter::toString)
+          ;
+
+    /**
+     * Root.h
+     */
+    class_<Root, Root*, bases<Organ>>("Root", init<Organism*, int, Vector3d, double, Root*, double, int>())
+            .def(init<int, OrganSpecificParameter*, bool, bool, double, double, Vector3d, double, int, bool, int >()) // with_custodian_and_ward<M,N> ?? dont know how to use it
+            .def("calcCreationTime", &Root::calcCreationTime)
+            .def("calcLength", &Root::calcLength)
+            .def("calcAge", &Root::calcAge)
+            .def("getRootRandomParameter", &Root::getRootRandomParameter, return_value_policy<reference_existing_object>())
+            .def("param", &Root::param, return_value_policy<reference_existing_object>())
+            .def("dx", &Root::dx)
+            .def_readwrite("parent_base_length", &Root::parentBaseLength)
+            .def_readwrite("parent_ni", &Root::parentNI)
+            .def("__str__",&Root::toString)
+            ;
+    class_<std::vector<Root*>>("std_vector_Root_")
+            .def(vector_indexing_suite<std::vector<Root*>>() )
+            ;
+    class_<std::vector<std::vector<Vector3d>>>("std_vector_vector_Vector3d_")
+            .def(vector_indexing_suite<std::vector<std::vector<Vector3d>>>() )
+            ;
+    class_<std::vector<std::vector<double>>>("std_vector_vector_double_")
+            .def(vector_indexing_suite<std::vector<std::vector<double>>>() )
+            ;
+    /**
+     * Seed.h
+     */
+    class_<Seed, Seed*, bases<Organ>>("Seed", init<Organism*>())
+            .def("__str__",&Seed::toString)
+            ;
+    /**
+     * Leaf.h
+     */
+    class_<Leaf, Leaf*, bases<Organ>>("Leaf", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
+            .def("__str__",&Leaf::toString)
+            ;
+    /**
+     * Stem.h
+     */
+    class_<Stem, Stem*, bases<Organ>>("Stem", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
+            .def("__str__",&Stem::toString)
+            ;
+    /*
+     * RootSystem.h
+     */
+    class_<RootSystem, RootSystem*, bases<Organism>>("RootSystem", init<>()) // bases<PlantBase>
+             .def(init<RootSystem&>())
+             .def("getRootRandomParameter", getRootRandomParameter1, return_value_policy<reference_existing_object>())
+             .def("getRootRandomParameter", getRootRandomParameter2)
+             .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
+             .def("getRootSystemParameter", &RootSystem::getRootSystemParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
+             .def("openFile", &RootSystem::openFile, openFile_overloads())
+             .def("setGeometry", &RootSystem::setGeometry)
+             .def("setSoil", &RootSystem::setSoil)
+             .def("reset", &RootSystem::reset)
+             .def("initialize", initialize1)
+             .def("initialize", initialize2)
+             .def("setTropism", &RootSystem::setTropism)
+             .def("simulate",simulate1, simulate1_overloads())
+             .def("simulate",simulate2)
+             .def("simulate",simulate3, simulate3_overloads())
+             .def("getSimTime", &RootSystem::getSimTime)
+             .def("getNumberOfNodes", &RootSystem::getNumberOfNodes)
+             .def("getRoots", &RootSystem::getRoots)
+             .def("getNumberOfSegments", &RootSystem::getNumberOfSegments, getNumberOfSegments_overloads())
+             .def("getNumberOfRoots", &RootSystem::getNumberOfRoots, getNumberOfRoots_overloads())
+             .def("getBaseRoots", &RootSystem::getBaseRoots)
+             .def("getShootSegments", &RootSystem::getShootSegments)
+             .def("getSegmentOrigins", &RootSystem::getSegmentOrigins)
+             .def("getRootTips", &RootSystem::getRootTips)
+             .def("getRootBases", &RootSystem::getRootBases)
+             .def("getNumberOfNewNodes",&RootSystem::getNumberOfNewNodes)
+             .def("push",&RootSystem::push)
+             .def("pop",&RootSystem::pop)
+             .def("write", &RootSystem::write)
+             ;
+    enum_<RootSystem::TropismTypes>("TropismType")
+            .value("plagio", RootSystem::TropismTypes::tt_plagio)
+            .value("gravi", RootSystem::TropismTypes::tt_gravi)
+            .value("exo", RootSystem::TropismTypes::tt_exo)
+            .value("hydro", RootSystem::TropismTypes::tt_hydro)
+            ;
+    enum_<RootSystem::GrowthFunctionTypes>("GrowthFunctionType")
+            .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
+            .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
+            ;
     /*
      * exudation.h
      */
@@ -827,7 +827,7 @@ BOOST_PYTHON_MODULE(plantbox)
 //            .value("mps", ExudationModel::IntegrationType::mps)
 //            .value("mls", ExudationModel::IntegrationType::mls)
 //            ;
-
+//
 }
 
 

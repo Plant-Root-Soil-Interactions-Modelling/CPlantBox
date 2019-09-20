@@ -25,12 +25,10 @@ class Stem : public Organ
 {
 public:
 
-    Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni)
-:Organ(plant,parent,Organism::ot_stem,type,delay) { }; ///< typically called by constructor of Plant::Plant, or Stem::createLaterals()
+    Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); ///< used within simulation
     virtual ~Stem() { }; // base class constructor is called automatically in c++
-
-    virtual int organType() const override { return Organism::ot_stem; };
-    Organ* copy(Organism* rs) override;  ///< deep copies the root tree
+    virtual int organType() const override ;
+    //Organ* copy(Organism* plant) override;  ///< deep copies the root tree
 
     /* simulation */
     virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt

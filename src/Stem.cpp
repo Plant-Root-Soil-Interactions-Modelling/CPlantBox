@@ -22,53 +22,50 @@ namespace CPlantBox {
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-//Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_stem,type,delay), pni(pni), pbl(pbl)
-//{
-//	/*the relative heading is maulfunctioning
-//	so it is disabled and rerolled to old heading*/
-//
-//    initialStemHeading = pheading;
-//	//  std::cout << "stem pni = "<< pni<< std::endl;
-//	//  std::cout << "Stem constructor \n";
-//	StemRandomParameter* sttp = (StemRandomParameter*) plant->getOrganRandomParameter(Organism::ot_stem, type);
-//	param_ = sttp->realize(); // throw the dice
-//	StemSpecificParameter* stem_p = (StemSpecificParameter*) param_;
-//
-////        std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
-//		addPhytomerId(stem_p->subType);
-//	double beta = getphytomerId(stem_p->subType)*M_PI*sttp->RotBeta + M_PI*plant->rand()*sttp->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
-//	Matrix3d ons = Matrix3d::ons(initialStemHeading);
-//	if (sttp->InitBeta >0 && getphytomerId(stem_p->subType)==0 ){
-//		beta = beta + sttp->InitBeta;
-//	}
-//
-//	//ons.times(Matrix3d::rotX(beta));
-//
-//	double theta = M_PI*stem_p->theta;
-//	if (parent->organType() != Organism::ot_seed) { // scale if not a base root
-//		double scale = sttp->f_sa->getValue(parent->getNode(pni), this);
-//		theta *= scale;
-//	}
-//	//ons.times(Matrix3d::rotZ(theta));
-//	this->initialStemHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
-//    age = -delay; // the root starts growing when age>0
-//	alive = 1; // alive per default
-//
-//	this->parent = parent;
-//	parent_base_length = pbl;
-//	parent_ni = pni;
-//	length = 0;
-//
-//	// initial node
-//	if (parent->organType()!=Organism::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
-//		// otherwise, don't use addNode for the first node of the stem,
-//		// since this node exists already and does not need a new identifier
-//		nodes.push_back(Vector3d());
-//		nodeIds.push_back(parent->getNodeId(pni));
-//		nodeCTs.push_back(parent->getNodeCT(pni)+delay);
-//	}
-//
-//}
+Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_stem,type,delay), pni(pni), pbl(pbl)
+{
+	/*the relative heading is maulfunctioning
+	so it is disabled and rerolled to old heading*/
+
+    initialStemHeading = pheading;
+	param_ = getStemRandomParameter()->realize(); // throw the dice
+	StemSpecificParameter* stem_p = (StemSpecificParameter*) param_;
+
+//        std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
+		addPhytomerId(stem_p->subType);
+	double beta = getphytomerId(stem_p->subType)*M_PI*getStemRandomParameter()->RotBeta + M_PI*plant->rand()*getStemRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
+	Matrix3d ons = Matrix3d::ons(initialStemHeading);
+	if (getStemRandomParameter()->InitBeta >0 && getphytomerId(stem_p->subType)==0 ){
+		beta = beta + getStemRandomParameter()->InitBeta;
+	}
+
+	//ons.times(Matrix3d::rotX(beta));
+
+	double theta = M_PI*stem_p->theta;
+	if (parent->organType() != Organism::ot_seed) { // scale if not a base root
+		double scale = getStemRandomParameter()->f_sa->getValue(parent->getNode(pni), this);
+		theta *= scale;
+	}
+	//ons.times(Matrix3d::rotZ(theta));
+	this->initialStemHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
+    age = -delay; // the root starts growing when age>0
+	alive = 1; // alive per default
+
+	this->parent = parent;
+	parent_base_length = pbl;
+	parent_ni = pni;
+	length = 0;
+
+	// initial node
+	if (parent->organType()!=Organism::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
+		// otherwise, don't use addNode for the first node of the stem,
+		// since this node exists already and does not need a new identifier
+		nodes.push_back(Vector3d());
+		nodeIds.push_back(parent->getNodeId(pni));
+		nodeCTs.push_back(parent->getNodeCT(pni)+delay);
+	}
+
+}
 
 /**
  * Simulates growth of this stem for a time span dt
@@ -82,7 +79,6 @@ void Stem::simulate(double dt, bool silence)
     oldNumberOfNodes = nodes.size();
 
 	const StemSpecificParameter* sp = param(); // rename
-	const StemRandomParameter* sttp = getStemRandomParameter();
 
 	// increase age
 	if (age+dt>sp->rlt) { // stem life time
@@ -94,7 +90,7 @@ void Stem::simulate(double dt, bool silence)
 	if (alive) { // dead stem wont grow
 		// probabilistic branching model (todo test)
 		if ((age>0) && (age-dt<=0)) { // the stem emerges in this time step
-			double stem_P = sttp->f_sbp->getValue(nodes.back(),this);
+			double stem_P = getStemRandomParameter()->f_sbp->getValue(nodes.back(),this);
 			if (stem_P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
 				double stem_p = 1.-std::pow((1.-stem_P), dt); //probability of emergence in this time step
 				//        std::cout <<stem_P<<", "<<stem_p<< "\n";
@@ -122,7 +118,7 @@ void Stem::simulate(double dt, bool silence)
 				double length_ = StemGetLength(std::max(age-dt,0.)); // length of the stem for unimpeded growth (i.e. length_==length for unimpeded growth)
 				double targetlength = StemGetLength(age);
 				double e = targetlength-length_; //elongation in time step dt
-				double scale = sttp->f_se->getValue(nodes.back(),this); // hope some of this is optimized out if not set
+				double scale = getStemRandomParameter()->f_se->getValue(nodes.back(),this); // hope some of this is optimized out if not set
 				double dl = std::max(scale*e, double(0)); // length increment, dt is not used anymore
 
 				// create geometry
@@ -198,6 +194,10 @@ void Stem::simulate(double dt, bool silence)
 	} // if alive
 }
 
+int Stem::organType() const
+{
+	return Organism::ot_stem;
+}
 /**
  * Returns a parameter per organ
  *
