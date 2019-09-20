@@ -48,7 +48,7 @@ public:
 
     /* abbreviations */
     StemRandomParameter* getStemRandomParameter() const;  ///< root type parameter of this root
-    const StemSpecificParameter* param() const; ///< root parameter
+    StemSpecificParameter* param() const; ///< root parameter
 
     double dx() const; ///< returns the axial resolution
     //Vector3d relHeading() const; //< relative heading of the stem tip
@@ -84,8 +84,8 @@ public:
     void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
     int getphytomerId(int subtype) { return phytomerId[subtype]; }
     void addPhytomerId(int subtype) { phytomerId[subtype]++;  }
-protected:
 
+protected:
 
     void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction

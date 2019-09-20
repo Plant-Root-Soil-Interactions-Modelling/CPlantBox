@@ -741,19 +741,19 @@ BOOST_PYTHON_MODULE(plantbox)
      * Seed.h
      */
     class_<Seed, Seed*, bases<Organ>>("Seed", init<Organism*>())
-            .def("__str__",&Root::toString)
+            .def("__str__",&Seed::toString)
             ;
     /**
      * Leaf.h
      */
     class_<Leaf, Leaf*, bases<Organ>>("Leaf", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
-            .def("__str__",&Root::toString)
+            .def("__str__",&Leaf::toString)
             ;
     /**
      * Stem.h
      */
     class_<Stem, Stem*, bases<Organ>>("Stem", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
-            .def("__str__",&Root::toString)
+            .def("__str__",&Stem::toString)
             ;
     /*
      * RootSystem.h
