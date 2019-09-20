@@ -1,3 +1,4 @@
+#include "Organ.h"
 #include "Stem.h"
 #include "Leaf.h"
 #include "Root.h"
@@ -65,6 +66,25 @@ Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* pa
 		nodeCTs.push_back(parent->getNodeCT(pni)+delay);
 	}
 
+}
+
+/**
+ * Deep copies the organ into the new plant @param rs.
+ * All laterals are deep copied, plant and parent pointers are updated.
+ *
+ * @param plant     the plant the copied organ will be part of
+ */
+Organ* Stem::copy(Organism* plant)
+{
+    Stem* s = new Stem(*this); // shallow copy
+    s->parent = nullptr;
+    s->plant = plant;
+    s->param_ = new StemSpecificParameter(*param()); // copy parameters
+    for (size_t i=0; i< children.size(); i++) {
+        s->children[i] = children[i]->copy(plant); // copy laterals
+        s->children[i]->setParent(this);
+    }
+    return s;
 }
 
 /**
@@ -194,10 +214,6 @@ void Stem::simulate(double dt, bool silence)
 	} // if alive
 }
 
-int Stem::organType() const
-{
-	return Organism::ot_stem;
-}
 /**
  * Returns a parameter per organ
  *

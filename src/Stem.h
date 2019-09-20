@@ -27,8 +27,10 @@ public:
 
     Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); ///< used within simulation
     virtual ~Stem() { }; // base class constructor is called automatically in c++
-    virtual int organType() const override ;
-    //Organ* copy(Organism* plant) override;  ///< deep copies the root tree
+
+    Organ* copy(Organism* plant) override;  ///< deep copies the root tree
+
+    int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
     /* simulation */
     virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt

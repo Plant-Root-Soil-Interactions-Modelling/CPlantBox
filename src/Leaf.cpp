@@ -67,9 +67,23 @@ Leaf::Leaf(Organism* plant, int type, Vector3d iheading, double delay, Organ* pa
 	  }
 }
 
-int Leaf::organType() const
+/**
+ * Deep copies the organ into the new plant @param rs.
+ * All laterals are deep copied, plant and parent pointers are updated.
+ *
+ * @param plant     the plant the copied organ will be part of
+ */
+Organ* Leaf::copy(Organism* plant)
 {
-	return Organism::ot_leaf;
+    Leaf* l = new Leaf(*this); // shallow copy
+    l->parent = nullptr;
+    l->plant = plant;
+    l->param_ = new LeafSpecificParameter(*param()); // copy parameters
+    for (size_t i=0; i< children.size(); i++) {
+        l->children[i] = children[i]->copy(plant); // copy laterals
+        l->children[i]->setParent(this);
+    }
+    return l;
 }
 
 /**

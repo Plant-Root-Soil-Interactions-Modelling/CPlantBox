@@ -34,7 +34,9 @@ public:
 	Leaf(Organism* rs, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
 	virtual ~Leaf() { }; // base class constructor is called automatically in c++
 
-	virtual int organType() const override;
+    Organ* copy(Organism* rs) override;  ///< deep copies the root tree
+
+	virtual int organType() const override  { return Organism::ot_leaf; } ///< returns the organs type
 
 	/* simulation */
 	virtual void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt

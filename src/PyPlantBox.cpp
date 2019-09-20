@@ -1,5 +1,5 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#include "pybind11/include/pybind11/pybind11.h"
+#include "external/pybind11/include/pybind11/pybind11.h"
 namespace py = pybind11;
 
 /**
