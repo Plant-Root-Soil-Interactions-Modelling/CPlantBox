@@ -13,18 +13,7 @@ namespace CPlantBox {
  */
 Plant::Plant(): Organism()
 {
-	auto rrp = new RootRandomParameter(this);
-	rrp->subType = 0;
-	setOrganRandomParameter(rrp);
-	auto srp = new SeedRandomParameter(this);
-	srp->subType = 0;
-	setOrganRandomParameter(srp);
-	auto strp = new StemRandomParameter(this);
-	strp->subType = 0;
-	setOrganRandomParameter(strp);
-	auto lrp = new LeafRandomParameter(this);
-	lrp->subType = 0;
-	setOrganRandomParameter(lrp);
+    initPrototypes(new SeedRandomParameter(this), new RootRandomParameter(this), new StemRandomParameter(this), new LeafRandomParameter(this));
 }
 
 /**
@@ -38,6 +27,22 @@ Plant::Plant(): Organism()
 Plant::Plant(const Plant& p): Organism(p), geometry(p.geometry), soil(p.soil)
 {
     std::cout << "Copying plant";
+}
+
+/**
+ *
+ */
+void Plant::initPrototypes(OrganRandomParameter* seed, OrganRandomParameter* root, OrganRandomParameter* stem,
+    OrganRandomParameter* leaf)
+{
+    seed->subType = 0;
+    setOrganRandomParameter(seed);
+    root->subType = 0;
+    setOrganRandomParameter(root);
+    stem->subType = 0;
+    setOrganRandomParameter(stem);
+    leaf->subType = 0;
+    setOrganRandomParameter(leaf);
 }
 
 
@@ -197,7 +202,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 	printer.OpenElement("VTKFile"); printer.PushAttribute("type", "PolyData"); printer.PushAttribute("version", "0.1"); printer.PushAttribute("byte_order", "LittleEndian");
 	printer.OpenElement("PolyData");
 	int non = 0; // number of nodes
-	for (auto const& r : organs) {
+    for (const auto& r : organs) {
 		non += r->getNumberOfNodes();
 	}
 	int nol=organs.size(); // number of lines
@@ -219,7 +224,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 	std::vector<std::string> sTypeNames = { "organtype", "id",  "emergencetime", "creationtime", "age", "subtype", "order", "radius"}; //  , "order", "radius", "subtype" ,
 	for (size_t i=0; i<sTypeNames.size(); i++) {
 		std::string sType = sTypeNames[i];
-		char const *schar = sType.c_str();
+        const char *schar = sType.c_str();
 		printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
 		std::vector<double> scalars = getParameter(sTypeNames[i], otype);
 		for (double s : scalars) {
@@ -232,8 +237,8 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 	// POINTS (=nodes)
 	printer.OpenElement("Points");
 	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "Coordinates"); printer.PushAttribute("NumberOfComponents", "3"); printer.PushAttribute("format", "ascii" );
-	for (auto const& r:nodes) {
-		for (auto const& n : r) {
+    for (const auto& r : nodes) {
+        for (const auto& n : r) {
 			printer.PushText(n.x); printer.PushText(" "); printer.PushText(n.y); printer.PushText(" "); printer.PushText(n.z); printer.PushText(" ");
 		}
 	}
@@ -244,7 +249,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 	printer.OpenElement("Lines");
 	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "connectivity"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
 	int c=0;
-	for (auto const& r:organs) {
+    for (const auto& r : organs) {
 		for (size_t i=0; i<r->getNumberOfNodes(); i++) {
 			printer.PushText(c); printer.PushText(" ");
 			c++;
@@ -254,7 +259,7 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 
 	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "offsets"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
 	c = 0;
-	for (auto const& r:organs) {
+    for (const auto& r : organs) {
 		c += r->getNumberOfNodes();
 		printer.PushText(c); printer.PushText(" ");
 	}

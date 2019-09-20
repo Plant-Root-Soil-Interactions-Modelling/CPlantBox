@@ -19,9 +19,9 @@ namespace CPlantBox {
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Leaf::Leaf(Organism* plant, Organ* parent, int subtype, double delay, Vector3d ilheading ,int pni, double pbl) :Organ(plant,parent,Organism::ot_leaf,subtype,delay), pni(pni), pbl(pbl)
+Leaf::Leaf(Organism* rs, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_leaf, type,delay), pni(pni), pbl(pbl)
 {
-	  initialLeafHeading=ilheading;
+	  initialLeafHeading=iheading;
 	//  std::cout << "Leaf pni = "<< pni<< std::endl;
 	//  std::cout << "Organism* plant ="<< plant <<" "<< parent<<std::endl;
 		param_ = getLeafRandomParameter()->realize(); // throw the dice, specific
@@ -310,11 +310,11 @@ void Leaf::createLateral(bool silence)
 		double ageLG = this->LeafGetAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Leaf* lateral = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
 //		lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral2 = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
 //		lateral2->setRelativeOrigin(nodes.back());
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -324,11 +324,11 @@ void Leaf::createLateral(bool silence)
 		double ageLG = this->LeafGetAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Leaf* lateral = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral = new Leaf(plant,  lt, h, delay, this, nodes.size() - 1, length);
 //		lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral2 = new Leaf(plant,  lt, h, delay, this, nodes.size() - 1, length);
 //		lateral2->setRelativeOrigin(nodes.back());
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -338,7 +338,7 @@ void Leaf::createLateral(bool silence)
 		double ageLG = this->LeafGetAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Leaf* lateral = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral = new Leaf(plant,  lt, h, delay, this, nodes.size() - 1, length);
 //		lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -348,27 +348,24 @@ void Leaf::createLateral(bool silence)
 		double ageLG = this->LeafGetAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Leaf* lateral = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral = new Leaf(plant, lt,  h, delay,  this, nodes.size() - 1, length);
 //		lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
 		addleafphytomerID(getLeafRandomParameter()->subType);
 
-		Leaf* lateral2 = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral2 = new Leaf(plant, lt, h, delay,  this, nodes.size() - 1, length);
 //		lateral2->setRelativeOrigin(nodes.back());
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-	}
-
-
-	else if (lt>0) {
+	} else if (lt>0) {
 		double ageLN = this->LeafGetAge(length); // age of Leaf when lateral node is created
 		double ageLG = this->LeafGetAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
 
-		Leaf* lateral = new Leaf(plant, this, lt, delay, h, nodes.size() - 1, length);
+		Leaf* lateral = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
 //		lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -379,7 +376,7 @@ void Leaf::createLateral(bool silence)
 		double ageLG = this->LeafGetAge(length+param()->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
-		Leaf* lateral = new Leaf(plant, this, lt, delay, h,  nodes.size()-1, length);
+		Leaf* lateral = new Leaf(plant, lt, h, delay, this, nodes.size()-1, length);
 //		lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
