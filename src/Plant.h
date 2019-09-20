@@ -49,6 +49,7 @@ public:
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
 
   /* call back function creation */
+  void initPrototypes(OrganRandomParameter* seed, OrganRandomParameter* root, OrganRandomParameter* stem, OrganRandomParameter* leaf);
   void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
   virtual Tropism* createTropismFunction(int tt, double N, double sigma); ///< Creates the tropisms, overwrite or change this method to add more tropisms
   virtual GrowthFunction* createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
@@ -63,11 +64,6 @@ protected:
   SoilLookUp* soil = nullptr; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
 };
-
-
-
-
-
 
 } // namespace CPlantBox
 

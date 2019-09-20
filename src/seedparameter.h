@@ -22,9 +22,11 @@ class SeedSpecificParameter :public OrganSpecificParameter
 {
 
 public:
-    SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0., 1.e9, 1.e9, 1.e9, 1.,30.) { }; ///< Default constructor
-    SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC, double nz, double simtime):
-    		    seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB), delayRC(dRC), nz(nz), simtime(simtime) { subType = type; };
+    SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0., 1.e9, 1.e9, 1.e9, 1., 0, 30.) { }; ///< Default constructor
+    SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
+        double nz, int maxtil, double simtime):
+    		    seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB), delayRC(dRC), nz(nz),
+    		    maxTil(maxtil), simtime(simtime) { subType = type; };
     virtual ~SeedSpecificParameter() { };
 
     /*
@@ -43,6 +45,7 @@ public:
     double delaySB;     ///< Time delay between the shoot borne roots [day]
     double delayRC;     ///< Delay between the root crowns [day]
     double nz;          ///< Distance between the root crowns along the shoot [cm]
+    int maxTil;
 
     //Simulation parameters
     double simtime;     ///< recommended final simulation time
@@ -73,7 +76,7 @@ public:
     Vector3d seedPos  = Vector3d(0.,0.,-3.); ///< Mean position of the seed [cm]
     Vector3d seedPoss = Vector3d(0.,0.,0.);  ///< Standard deviation of position  [cm]
 
-    //Basal roots (nodal roots)
+    // Basal roots (nodal roots)
     double firstB = 1.e9;  ///< Mean emergence of first basal root [day]
     double firstBs = 0.;   ///< Standard deviation of emergence of first basal root [day]
     double delayB = 1.e9;  ///< Mean time delay between the basal roots [day]
@@ -81,7 +84,7 @@ public:
     double maxB = 0.;      ///< Mean maximal number of basal roots [1]
     double maxBs = 0.;     ///< Standard deviation of maximal number of basal roots [1]
 
-    //Shoot borne roots (crown roots)
+    // Shoot borne roots (crown roots)
     double nC;             ///< Mean maximal number of roots per root crown [1]
     double nCs = 0.;       ///< Standard deviation of maximal number of roots per root crown [1]
     double firstSB = 1.e9; ///< Mean first emergence of a shoot borne root [day]
@@ -93,7 +96,11 @@ public:
     double nz = 1.;        ///< Mean distance between the root crowns along the shoot [cm]
     double nzs = 0.;       ///< Standard deviation of distance between the root crowns along the shoot [cm]
 
-    //Simulation parameters
+    // Stem parameters
+    int maxTil = 0;
+    double maxTils = 0.;
+
+    // Simulation parameters
     double simtime = 30.;  ///< Mean recommended final simulation time
     double simtimes = 0.;  ///< Standard deviation of recommended final simulation time
 

@@ -18,7 +18,8 @@ std::string SeedSpecificParameter::toString() const
     str << "seedPos\t" << seedPos.toString() << std::endl;
     str << "firstB\t" << firstB << std::endl << "delayB\t" << delayB << std::endl << "maxB\t" << maxB << std::endl;
     str << "nC\t" << nC << std::endl << "firstSB\t" << firstSB << std::endl << "delaySB\t" << delaySB << std::endl;
-    str << "delayRC\t" << delayRC << std::endl << "nz\t" << nz << std::endl << "simtime\t" << simtime << std::endl;
+    str << "delayRC\t" << delayRC << std::endl << "nz\t" << nz << std::endl << "maxTil\t" << maxTil << std::endl;
+    str << "simtime\t" << simtime << std::endl;
     return str.str();
 }
 
@@ -65,7 +66,8 @@ OrganSpecificParameter* SeedRandomParameter::realize()
     double dRC = std::max(delayRC + plant->randn()*delayRCs, 0.);
     double nz_ = std::max(delaySB + plant->randn()*delaySBs, 0.);
     double st = std::max(simtime + plant->randn()*simtimes, 0.);
-    OrganSpecificParameter* p = new SeedSpecificParameter(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, st);
+    int maxtil = std::max(maxTil + plant->randn()*maxTils, 0.);
+    OrganSpecificParameter* p = new SeedSpecificParameter(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st);
     return p;
 }
 
@@ -113,6 +115,7 @@ void SeedRandomParameter::bindParameters()
     bindParameter("delaySB", &delaySB, "Time delay between the shoot borne roots [day]", &delaySBs);
     bindParameter("delayRC", &delayRC, "Delay between the root crowns [day]", &delayRCs);
     bindParameter("nz", &nz, "Distance between the root crowns along the shoot [cm]", &nzs );
+    bindParameter("maxTil", &maxTil, "Maximal number of tillers [1]", &maxTils);
     bindParameter("simtime", &simtime, "Recommended final simulation time  [day]", &simtimes );
     // other parameters (descriptions only)
     description["name"]  = "Name of the sub type of the organ, e.g. small lateral";

@@ -33,7 +33,7 @@ class Leaf : public Organ
 
 public:
 
-	Leaf(Organism* plant, Organ* parent, int subtype, double delay, Vector3d ilheading, int pni, double pbl); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
+	Leaf(Organism* rs, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
 	virtual ~Leaf() { }; // base class constructor is called automatically in c++
 
 	virtual int organType() const override;

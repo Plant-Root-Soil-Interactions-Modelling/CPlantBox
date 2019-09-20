@@ -585,7 +585,7 @@ BOOST_PYTHON_MODULE(plantbox)
             .def("__str__",&SeedRandomParameter::toString, toString_overloads())
             ;
     class_<SeedSpecificParameter, SeedSpecificParameter*, bases<OrganSpecificParameter>>("SeedSpecificParameter", init<>())
-          .def(init<int, Vector3d , double, int, int, int, double, double, double, double, double>())
+          .def(init<int, Vector3d , double, int, int, int, double, double, double, double, int, double>())
           .def_readwrite("seedPos", &SeedSpecificParameter::seedPos)
           .def_readwrite("firstB", &SeedSpecificParameter::firstB)
           .def_readwrite("delayB", &SeedSpecificParameter::delayB)
@@ -595,6 +595,7 @@ BOOST_PYTHON_MODULE(plantbox)
           .def_readwrite("delaySB", &SeedSpecificParameter::delaySB)
           .def_readwrite("delayRC", &SeedSpecificParameter::delayRC)
           .def_readwrite("nz", &SeedSpecificParameter::nz)
+          .def_readwrite("maxTil", &SeedSpecificParameter::maxTil)
           .def("__str__",&SeedSpecificParameter::toString)
           ;
     /*
@@ -745,13 +746,13 @@ BOOST_PYTHON_MODULE(plantbox)
     /**
      * Leaf.h
      */
-    class_<Leaf, Leaf*, bases<Organ>>("Leaf", init<Organism*, Organ*, int, double, Vector3d, int, double>())
+    class_<Leaf, Leaf*, bases<Organ>>("Leaf", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
             .def("__str__",&Root::toString)
             ;
     /**
      * Stem.h
      */
-    class_<Stem, Stem*, bases<Organ>>("Stem", init<Organism*, Organ*, int, double, Vector3d, int, double>())
+    class_<Stem, Stem*, bases<Organ>>("Stem", init<Organism*,  int, Vector3d, double, Organ*, int, double>())
             .def("__str__",&Root::toString)
             ;
     /*
