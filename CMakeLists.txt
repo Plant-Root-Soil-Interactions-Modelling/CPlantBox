@@ -6,11 +6,11 @@ project (CPlantBox)
 
 # set compiler options
 
-set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare")
-set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align")
-set(RELEASE_OPTS "-std=c++11 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -march=native -funroll-loops -g0")
+set(RELEASE_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wno-sign-compare -Wl,--no-undefined ")
+set(DEBUG_WARNING_OPTS "-Wall -Wunused -Wmissing-include-dirs -Wcast-align -Wl,--no-undefined ")
+set(RELEASE_OPTS "-std=c++11 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -march=native -funroll-loops -g0 -Wl,--no-undefined ")
 set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
-set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -O0 -ggdb -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -O0 -ggdb -Wall -Wl,--no-undefined ")
 
 # set default build type to release
 set(CMAKE_BUILD_TYPE Release)
