@@ -7,16 +7,16 @@ add_library(CPlantBox SHARED
             organparameter.cpp
             rootparameter.cpp
 			seedparameter.cpp
-			leafparameter.cpp
 			stemparameter.cpp
+			leafparameter.cpp			
             Organ.cpp
             Root.cpp
             Seed.cpp
 			Stem.cpp
 			Leaf.cpp
-			Plant.cpp
             Organism.cpp
-            RootSystem.cpp
+            Plant.cpp
+            RootSystem.cpp           
             analysis.cpp
             sdf.cpp
             tropism.cpp
@@ -48,15 +48,13 @@ if (PythonLibs_FOUND)
             organparameter.cpp
             rootparameter.cpp
 			seedparameter.cpp
-			leafparameter.cpp
-			seedparameter.cpp
 			stemparameter.cpp
-			Stem.cpp
+			leafparameter.cpp	
             Organ.cpp
             Root.cpp
             Seed.cpp
 			Stem.cpp
-			Leaf.cpp            
+			Leaf.cpp          
             Organism.cpp
             Plant.cpp
             RootSystem.cpp

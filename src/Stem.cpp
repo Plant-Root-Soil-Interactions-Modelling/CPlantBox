@@ -600,7 +600,21 @@ Vector3d Stem::getIncrement(const Vector3d& p, double sdx) {
 //    }
 }
 
+/**
+ * @return The RootTypeParameter from the plant
+ */
+StemRandomParameter* Stem::getStemRandomParameter() const
+{
+    return (StemRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, param_->subType);
+}
 
+/**
+ * @return Parameters of the specific root
+ */
+StemSpecificParameter* Stem::param() const
+{
+    return (StemSpecificParameter*)param_;
+}
 
 
 
@@ -636,14 +650,6 @@ Vector3d Stem::heading() const {
 //	return  getHeading().column(2);;
 //}
 
-/**
- * Adds the next node to the stem.
- *
- * Add nodes only with this function! For simplicity nodes can not be deleted, and stems can only become deactivated by dying
- *
- * @param n        the new node
- * @param t        exact creation time of the node
- */
 void Stem::addNode(Vector3d n, double t)
 {
 	assert(t>=0.);
