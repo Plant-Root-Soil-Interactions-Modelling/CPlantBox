@@ -56,16 +56,18 @@ public:
 
 protected:
 
-	const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
-
     void minusPhytomerId(int subtype) { leafphytomerID[subtype]--;  }
     int getleafphytomerID(int subtype) { return leafphytomerID[subtype]; }
     void addleafphytomerID(int subtype) { leafphytomerID[subtype]++;  }
 
-    Vector3d heading() const; /// current heading of the root tip
     void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
-	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
+
+    Vector3d heading() const; /// current heading of the root tip
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
+	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
+
+    bool firstCall = true;
+    const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 };
 
 } // namespace CPlantBox

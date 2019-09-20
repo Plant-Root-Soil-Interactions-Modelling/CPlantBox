@@ -134,16 +134,16 @@ void Root::simulate(double dt, bool verbose)
                 double dl = std::max(scale*e, 0.); // length increment
 
                 // create geometry
-                if (p.nob>0) { // root has children
+                if (p.ln.size()>0) { // root has children
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
-                            createSegments(dl,dt,verbose);
+                            createSegments(dl,verbose);
                             length+=dl;
                             dl=0;
                         } else {
                             double ddx = p.lb-length;
-                            createSegments(ddx,dt,verbose);
+                            createSegments(ddx,verbose);
                             dl-=ddx; // ddx already has been created
                             length=p.lb;
                         }
@@ -158,12 +158,12 @@ void Root::simulate(double dt, bool verbose)
                                     createLateral(verbose);
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
-                                    createSegments(dl,dt,verbose);
+                                    createSegments(dl,verbose);
                                     length+=dl;
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
-                                    createSegments(ddx,dt,verbose);
+                                    createSegments(ddx,verbose);
                                     dl-=ddx;
                                     length=s;
                                 }
@@ -175,12 +175,12 @@ void Root::simulate(double dt, bool verbose)
                     }
                     /* apical zone */
                     if (dl>0) {
-                        createSegments(dl,dt,verbose);
+                        createSegments(dl,verbose);
                         length+=dl;
                     }
                 } else { // no laterals
                     if (dl>0) {
-                        createSegments(dl,dt,verbose);
+                        createSegments(dl,verbose);
                         length+=dl;
                     }
                 } // if lateralgetLengths
@@ -269,7 +269,7 @@ void Root::createLateral(bool verbose)
 /**
  * @return Current root heading
  */
-Vector3d Root::heading()
+Vector3d Root::heading() const
 {
     if (nodes.size()>1) {
         auto h = nodes.back().minus(nodes.at(nodes.size()-2)); // a->b = b-a
@@ -281,6 +281,22 @@ Vector3d Root::heading()
 }
 
 /**
+ * Returns the increment of the next segments
+ *
+ *  @param p       coordinates of previous node
+ *  @param sdx     length of next segment [cm]
+ *  @return        the vector representing the increment
+ */
+Vector3d Root::getIncrement(const Vector3d& p, double sdx)
+{
+    Vector3d h = heading();
+    Matrix3d ons = Matrix3d::ons(h);
+    Vector2d ab = getRootRandomParameter()->f_tf->getHeading(p, ons, sdx, this);
+    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+    return sv.times(sdx);
+}
+
+/**
  *  Creates nodes and node emergence times for a length l
  *
  *  Checks that each new segments length is <= dx but >= smallDx
@@ -288,7 +304,7 @@ Vector3d Root::heading()
  *  @param l        total length of the segments that are created [cm]
  *  @param verbose  turns console output on or off
  */
-void Root::createSegments(double l, double dt, bool verbose)
+void Root::createSegments(double l, bool verbose)
 {
     if (l==0) {
         std::cout << "Root::createSegments: zero length encountered \n";
@@ -351,22 +367,6 @@ void Root::createSegments(double l, double dt, bool verbose)
         // but might break down to temporal resolution
         addNode(newnode, et);
     }
-}
-
-/**
- * Returns the increment of the next segments
- *
- *  @param p       coordinates of previous node
- *  @param sdx     length of next segment [cm]
- *  @return        the vector representing the increment
- */
-Vector3d Root::getIncrement(const Vector3d& p, double sdx)
-{
-    Vector3d h = heading();
-    Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getRootRandomParameter()->f_tf->getHeading(p, ons, sdx, this);
-    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
-    return sv.times(sdx);
 }
 
 /**

@@ -57,19 +57,21 @@ public:
 
 protected:
 
-    const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 
     void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
     int getphytomerId(int subtype) { return phytomerId[subtype]; }
     void addPhytomerId(int subtype) { phytomerId[subtype]++;  }
 
-    Vector3d heading() const; /// current heading of the root tip
-    void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
-    virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
     void createLateral(bool silence); ///< creates a new lateral, called by Stem::simulate()
     void leafGrow(bool silence, Vector3d bud);
     void shootBorneRootGrow(bool silence);
 
+    Vector3d heading() const; /// current heading of the root tip
+    virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
+    void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
+
+    bool firstCall = true;
+    const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 };
 
 } // namespace CPlantBox

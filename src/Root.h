@@ -61,9 +61,10 @@ public:
 protected:
 
     virtual void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
-    void createSegments(double l, double dt, bool silence); ///< creates segments of length l, called by Root::simulate()
+
+    Vector3d heading() const; ///< current growth direction of the root
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
-    Vector3d heading(); ///< current growth direction of the root
+    void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
 
     bool firstCall = true; ///< firstCall of createSegments in simulate
     const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
