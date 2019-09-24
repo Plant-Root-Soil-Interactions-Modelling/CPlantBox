@@ -641,7 +641,7 @@ void Stem::createSegments(double l, bool verbose)
  */
 StemRandomParameter* Stem::getStemRandomParameter() const
 {
-    return (StemRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, param_->subType);
+    return (StemRandomParameter*)plant->getOrganRandomParameter(Organism::ot_stem, param_->subType);
 }
 
 /**
@@ -649,7 +649,7 @@ StemRandomParameter* Stem::getStemRandomParameter() const
  */
 StemSpecificParameter* Stem::param() const
 {
-    return (StemSpecificParameter*)param_;
+    return ( StemSpecificParameter*)param_;
 }
 
 /*
