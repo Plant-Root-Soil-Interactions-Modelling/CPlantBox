@@ -275,20 +275,11 @@ double Stem::getParameter(std::string name) const
  */
 double Stem::calcCreationTime(double length)
 {
-    assert(length>=0);
-    double age = calcAge(length);
-    assert(age>=0);
-    if (parent->organType()!=Organism::ot_seed) {
-        if (parent->organType()==Organism::ot_stem) {
-            double pl = parentBaseLength+((Stem*)parent)->getStemRandomParameter()->la; // parent length, when this stem was created
-            double pAge=((Stem*)parent)->calcCreationTime(pl);
-            return age+pAge;
-        } else { // organ type is seed
-            return age;
-        }
-    } else {
-        return age;
-    }
+    assert(length >= 0 && "Stem::getCreationTime() negative length");
+    double stemage = calcAge(length);
+    stemage = std::min(stemage, age);
+    assert(stemage >= 0 && "Stem::getCreationTime() negative stem age");
+    return stemage+nodeCTs[0];
 }
 
 /**
@@ -316,10 +307,7 @@ double Stem::calcAge(double length)
 /**
  *
  */
-double Stem::dx() const
-{
-    return getStemRandomParameter()->dx;
-}
+
 
 /**
  * Creates a new lateral by calling Stem::createNewstem().
@@ -556,11 +544,11 @@ Vector3d Stem::getIncrement(const Vector3d& p, double sdx)
 void Stem::createSegments(double l, bool verbose)
 {
     if (l==0) {
-        std::cout << "Root::createSegments: zero length encountered \n";
+        std::cout << "Stem::createSegments: zero length encountered \n";
         return;
     }
     if (l<0) {
-        std::cout << "Root::createSegments: negative length encountered \n";
+        std::cout << "Stem::createSegments: negative length encountered \n";
     }
 
     // shift first node to axial resolution
