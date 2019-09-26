@@ -1,6 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#ifndef ANALYSIS_H_
-#define ANALYSIS_H_
+#ifndef SEGMENTANALYSER_H_
+#define SEGMENTANALYSER_H_
 
 #include "sdf.h"
 

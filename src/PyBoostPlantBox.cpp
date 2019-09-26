@@ -1,9 +1,7 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#ifndef plantbox_H_
-#define plantbox_H_
 
 /**
- *  A Python module for CRootbox based on boost.python
+ *  A Python binding for CPlantBox based on boost.python
  */
 
 #include <boost/python.hpp>
@@ -26,7 +24,7 @@
 #include "RootSystem.h"
 #include "Plant.h"
 #include "sdf_rs.h"
-#include "analysis.h"
+#include "SegmentAnalyser.h"
 
 //#include "../examples/example_exudation.h"
 
@@ -437,7 +435,7 @@ BOOST_PYTHON_MODULE(plantbox)
      */
     class_<SDF_RootSystem,SDF_RootSystem*, bases<SignedDistanceFunction>>("SDF_RootSystem", init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, double>())
         .def(init<Root&, double>())
-        .def(init<RootSystem&, double>())
+        .def(init<Organism&, double>())
         .def("getDist",&SDF_RootSystem::getDist)
         .def("__str__",&SDF_RootSystem::toString)
     ;
@@ -474,7 +472,7 @@ BOOST_PYTHON_MODULE(plantbox)
      * analysis.h
      */
     class_<SegmentAnalyser, SegmentAnalyser*>("SegmentAnalyser")
-        .def(init<RootSystem&>())
+        .def(init<Organism&>())
         .def(init<SegmentAnalyser&>())
         .def("addSegments",addSegments1)
         .def("addSegments",addSegments2)
@@ -806,6 +804,27 @@ BOOST_PYTHON_MODULE(plantbox)
             .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
             .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
             ;
+
+    /*
+     * Plant.h
+     */
+    class_<Plant, Plant*, bases<Organism>>("Plant", init<>()) // bases<PlantBase>
+             .def(init<Plant&>())
+             ;
+    enum_<Plant::TropismTypes>("TropismType")
+            .value("plagio", Plant::TropismTypes::tt_plagio)
+            .value("gravi", Plant::TropismTypes::tt_gravi)
+            .value("exo", Plant::TropismTypes::tt_exo)
+            .value("hydro", Plant::TropismTypes::tt_hydro)
+            ;
+    enum_<Plant::GrowthFunctionTypes>("GrowthFunctionType")
+            .value("negexp", Plant::GrowthFunctionTypes::gft_negexp)
+            .value("linear", Plant::GrowthFunctionTypes::gft_linear)
+            ;
+
+
+
+
     /*
      * exudation.h
      */
@@ -834,5 +853,3 @@ BOOST_PYTHON_MODULE(plantbox)
 
 
 } // end namespace CPlantBox
-
-#endif /* plantbox_H_ */

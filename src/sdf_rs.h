@@ -11,7 +11,7 @@
 #include "sdf.h"
 #include "Organism.h"
 #include "mymath.h"
-#include "analysis.h"
+#include "SegmentAnalyser.h"
 
 namespace CPlantBox {
 

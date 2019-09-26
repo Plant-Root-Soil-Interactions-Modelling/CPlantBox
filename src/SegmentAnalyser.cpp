@@ -1,5 +1,5 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#include "analysis.h"
+#include "SegmentAnalyser.h"
 
 #include "Organ.h"
 #include "Organism.h"

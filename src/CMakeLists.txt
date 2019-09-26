@@ -9,17 +9,22 @@ add_library(CPlantBox SHARED
 			seedparameter.cpp
 			leafparameter.cpp
 			stemparameter.cpp
+			
             Organ.cpp
             Root.cpp
             Seed.cpp
 			Stem.cpp
 			Leaf.cpp
 			Plant.cpp
+			
             Organism.cpp
             RootSystem.cpp
-            analysis.cpp
+            Plant.cpp
+            
+            SegmentAnalyser.cpp            
             sdf.cpp
             tropism.cpp
+            
 			external/tinyxml2/tinyxml2.cpp
             external/aabbcc/AABB.cc)
             #external/gauss_legendre/gauss_legendre.cpp
@@ -50,22 +55,27 @@ if (PythonLibs_FOUND)
 			leafparameter.cpp
 			seedparameter.cpp
 			stemparameter.cpp
-
+            
+            SegmentAnalyser.cpp
             Organ.cpp
             Root.cpp
             Seed.cpp
 			Stem.cpp
-			Leaf.cpp            
+			Leaf.cpp
+			            
             Organism.cpp
             Plant.cpp
             RootSystem.cpp
-            PythonRootSystem.cpp
-            analysis.cpp
+            
+            SegmentAnalyser.cpp
             sdf.cpp
             tropism.cpp
+
 			external/tinyxml2/tinyxml2.cpp
             external/aabbcc/AABB.cc
             #external/gauss_legendre/gauss_legendre.cpp
+
+            PyBoostPlantBox.cpp
 )
   target_link_libraries(plantbox ${Boost_LIBRARIES} )
   set_target_properties(plantbox PROPERTIES PREFIX "" )

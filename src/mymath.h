@@ -6,6 +6,7 @@
  * My own minimalistic non-generic fixed dimension
  * not operator overloading vector matrix classes
  */
+
 #include <cmath>
 #include <sstream>
 #include <assert.h>

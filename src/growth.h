@@ -7,8 +7,6 @@ class Organ;
 
 /**
  * Abstract base class to all growth functions: currently LinearGrowth and ExponentialGrowth
- *
- * If new classes are created, they have to be added to the vector gf in in RootSystem.
  */
 class GrowthFunction
 {
@@ -18,12 +16,12 @@ public:
     /**
      * Returns root length at root age t
      *
-     * @param t     root age [day]
+     * @param t     organ age [day]
      * @param r     initial growth rate [cm/day]
-     * @param k     maximal root length [cm]
-     * @param root  points to the root in case more information is needed
+     * @param k     maximal organ length [cm]
+     * @param root  points to the organ in case more information is needed
      *
-     * \return      root length [cm]
+     * \return      organ length [cm] at specific age
      */
     virtual double getLength(double t, double r, double k, Organ* o) const
     { throw std::runtime_error( "getLength() not implemented" ); return 0; } ///< Returns root length at root age t
@@ -31,12 +29,12 @@ public:
     /**
      * Returns the age of a root of length l
      *
-     * @param l     root length [cm]
+     * @param l     organ length [cm]
      * @param r     initial growth rate [cm/day]
      * @param k     maximal root length [cm]
-     * @param root  points to the root in case more information is needed
+     * @param root  points to the organ in case more information is needed
      *
-     * \return      root age [day]
+     * \return      organ age [day] at specific length
      */
     virtual double getAge(double l, double r, double k, Organ* o) const
     { throw std::runtime_error( "getAge() not implemented" ); return 0; } ///< Returns the age of a root of length l
@@ -53,20 +51,27 @@ public:
 class LinearGrowth : public GrowthFunction
 {
 public:
+
     double getLength(double t, double r, double k, Organ* o) const override { return std::min(k,r*t); } ///< @copydoc GrowthFunction::getLegngth
+
     double getAge(double l, double r, double k, Organ* o)  const override { return l/r; } ///< @copydoc GrowthFunction::getAge
+
     GrowthFunction* copy() override { return new LinearGrowth(*this); } ///< @copydoc GrowthFunction::copy
+
 };
 
 
 /**
- * ExponentialGrowth elongates initially at constant rate r and slows down negative exponentially towards the maximum length k is reached
+ * ExponentialGrowth elongates initially at constant rate r and slows down towards the maximum length k
  */
 class ExponentialGrowth : public GrowthFunction
 {
 public:
+
     double getLength(double t, double r, double k, Organ* o) const override { return k*(1-exp(-(r/k)*t)); } ///< @copydoc GrowthFunction::getLegngth
+
     double getAge(double l, double r, double k, Organ* o) const override { ///< @copydoc GrowthFunction::getAge
+
         double age = - k/r*log(1-l/k);
         if (std::isfinite(age)) { // the age can not be computed when root length approaches max length
             return age;
@@ -76,6 +81,7 @@ public:
     } ///< @see GrowthFunction
 
     GrowthFunction* copy() override { return new ExponentialGrowth(*this); }
+
 };
 
 } // end namespace CPlantBox

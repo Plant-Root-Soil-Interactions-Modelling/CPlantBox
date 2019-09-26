@@ -260,32 +260,32 @@ Plant.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Plant.cpp.s
 .PHONY : Plant.cpp.s
 
-PythonRootSystem.o: PythonRootSystem.cpp.o
+PyBoostPlantBox.o: PyBoostPlantBox.cpp.o
 
-.PHONY : PythonRootSystem.o
+.PHONY : PyBoostPlantBox.o
 
 # target to build an object file
-PythonRootSystem.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PythonRootSystem.cpp.o
-.PHONY : PythonRootSystem.cpp.o
+PyBoostPlantBox.cpp.o:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyBoostPlantBox.cpp.o
+.PHONY : PyBoostPlantBox.cpp.o
 
-PythonRootSystem.i: PythonRootSystem.cpp.i
+PyBoostPlantBox.i: PyBoostPlantBox.cpp.i
 
-.PHONY : PythonRootSystem.i
+.PHONY : PyBoostPlantBox.i
 
 # target to preprocess a source file
-PythonRootSystem.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PythonRootSystem.cpp.i
-.PHONY : PythonRootSystem.cpp.i
+PyBoostPlantBox.cpp.i:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyBoostPlantBox.cpp.i
+.PHONY : PyBoostPlantBox.cpp.i
 
-PythonRootSystem.s: PythonRootSystem.cpp.s
+PyBoostPlantBox.s: PyBoostPlantBox.cpp.s
 
-.PHONY : PythonRootSystem.s
+.PHONY : PyBoostPlantBox.s
 
 # target to generate assembly for a file
-PythonRootSystem.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PythonRootSystem.cpp.s
-.PHONY : PythonRootSystem.cpp.s
+PyBoostPlantBox.cpp.s:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyBoostPlantBox.cpp.s
+.PHONY : PyBoostPlantBox.cpp.s
 
 Root.o: Root.cpp.o
 
@@ -377,6 +377,36 @@ Seed.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Seed.cpp.s
 .PHONY : Seed.cpp.s
 
+SegmentAnalyser.o: SegmentAnalyser.cpp.o
+
+.PHONY : SegmentAnalyser.o
+
+# target to build an object file
+SegmentAnalyser.cpp.o:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/SegmentAnalyser.cpp.o
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/SegmentAnalyser.cpp.o
+.PHONY : SegmentAnalyser.cpp.o
+
+SegmentAnalyser.i: SegmentAnalyser.cpp.i
+
+.PHONY : SegmentAnalyser.i
+
+# target to preprocess a source file
+SegmentAnalyser.cpp.i:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/SegmentAnalyser.cpp.i
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/SegmentAnalyser.cpp.i
+.PHONY : SegmentAnalyser.cpp.i
+
+SegmentAnalyser.s: SegmentAnalyser.cpp.s
+
+.PHONY : SegmentAnalyser.s
+
+# target to generate assembly for a file
+SegmentAnalyser.cpp.s:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/SegmentAnalyser.cpp.s
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/SegmentAnalyser.cpp.s
+.PHONY : SegmentAnalyser.cpp.s
+
 Stem.o: Stem.cpp.o
 
 .PHONY : Stem.o
@@ -406,36 +436,6 @@ Stem.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/Stem.cpp.s
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Stem.cpp.s
 .PHONY : Stem.cpp.s
-
-analysis.o: analysis.cpp.o
-
-.PHONY : analysis.o
-
-# target to build an object file
-analysis.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/analysis.cpp.o
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/analysis.cpp.o
-.PHONY : analysis.cpp.o
-
-analysis.i: analysis.cpp.i
-
-.PHONY : analysis.i
-
-# target to preprocess a source file
-analysis.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/analysis.cpp.i
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/analysis.cpp.i
-.PHONY : analysis.cpp.i
-
-analysis.s: analysis.cpp.s
-
-.PHONY : analysis.s
-
-# target to generate assembly for a file
-analysis.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/CPlantBox.dir/build.make src/CMakeFiles/CPlantBox.dir/analysis.cpp.s
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/analysis.cpp.s
-.PHONY : analysis.cpp.s
 
 external/aabbcc/AABB.o: external/aabbcc/AABB.cc.o
 
@@ -729,9 +729,9 @@ help:
 	@echo "... Plant.o"
 	@echo "... Plant.i"
 	@echo "... Plant.s"
-	@echo "... PythonRootSystem.o"
-	@echo "... PythonRootSystem.i"
-	@echo "... PythonRootSystem.s"
+	@echo "... PyBoostPlantBox.o"
+	@echo "... PyBoostPlantBox.i"
+	@echo "... PyBoostPlantBox.s"
 	@echo "... Root.o"
 	@echo "... Root.i"
 	@echo "... Root.s"
@@ -741,12 +741,12 @@ help:
 	@echo "... Seed.o"
 	@echo "... Seed.i"
 	@echo "... Seed.s"
+	@echo "... SegmentAnalyser.o"
+	@echo "... SegmentAnalyser.i"
+	@echo "... SegmentAnalyser.s"
 	@echo "... Stem.o"
 	@echo "... Stem.i"
 	@echo "... Stem.s"
-	@echo "... analysis.o"
-	@echo "... analysis.i"
-	@echo "... analysis.s"
 	@echo "... external/aabbcc/AABB.o"
 	@echo "... external/aabbcc/AABB.i"
 	@echo "... external/aabbcc/AABB.s"
