@@ -57,12 +57,13 @@ class StemRandomParameter :public OrganRandomParameter
 
 public:
 
-    StemRandomParameter(Organism* plant); ///< default constructor
-    virtual ~StemRandomParameter();
+    StemRandomParameter(std::weak_ptr<Organism> plant); ///< default constructor
+    virtual ~StemRandomParameter() { };
 
-    OrganRandomParameter* copy(Organism* plant_) override;
+    std::shared_ptr<OrganRandomParameter> copy(std::weak_ptr<Organism> plant) override;
 
-    OrganSpecificParameter* realize() override; ///< Creates a specific stem from the stem parameter set
+    std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific stem from the stem parameter set
+
     int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on stem parameter set
     double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal stem length [cm]
 
@@ -107,11 +108,11 @@ public:
     /*
      * Callback functions for the Stem (set up by the class StemSystem)
      */
-    Tropism* f_tf;  ///< tropism function ( = new Tropism(plant) )
-    GrowthFunction* f_gf = new ExponentialGrowth(); ///< growth function
-    SoilLookUp* f_se = new SoilLookUp(); ///< scale elongation function
-    SoilLookUp* f_sa = new SoilLookUp(); ///< scale angle function
-    SoilLookUp* f_sbp = new SoilLookUp(); ///< scale branching probability function
+    std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
+    std::shared_ptr<GrowthFunction> f_gf = std::make_shared<ExponentialGrowth>(); ///< growth function
+    std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
+    std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
+    std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth
 
 protected:
 

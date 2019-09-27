@@ -22,9 +22,9 @@ namespace CPlantBox {
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
-Organ::Organ(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length, bool moved, int oldNON):
-        plant(nullptr),
-        parent(nullptr),
+Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, bool moved, int oldNON):
+        plant(),
+        parent(),
         id(id),
         param_(param),
         alive(alive),
@@ -47,24 +47,13 @@ Organ::Organ(int id, const OrganSpecificParameter* param, bool alive, bool activ
  * @param st        sub type of the organ type, e.g. different root types
  * @param delay     time delay in days when the organ will start to grow
  */
-Organ::Organ(Organism* plant, Organ* parent, int ot, int st, double delay):
+Organ::Organ(std::weak_ptr<Organism> plant, std::weak_ptr<Organ>  parent, int ot, int st, double delay):
         plant(plant),
         parent(parent),
-        id(plant->getOrganIndex()),  // unique id from the plant
-        param_(plant->getOrganRandomParameter(ot, st)->realize()), // draw specific parameters from random distributions
+        id(plant.lock()->getOrganIndex()),  // unique id from the plant
+        param_(plant.lock()->getOrganRandomParameter(ot, st)->realize()), // draw specific parameters from random distributions
         age(-delay)
 { }
-
-/**
- * Destructor deletes all children, and its parameter class
- */
-Organ::~Organ()
-{
-    for(auto c : children) {
-        delete c;
-    }
-    delete param_; // organ parameters
-}
 
 /*
  * Deep copies this organ into the new plant @param plant.
@@ -73,15 +62,15 @@ Organ::~Organ()
  * @param plant     the plant the copied organ will be part of
  * @return          the newly created copy (ownership is passed)
  */
-Organ* Organ::copy(Organism* p)
+std::shared_ptr<Organ> Organ::copy(std::weak_ptr<Organism>  p)
 {
-    Organ* o = new Organ(*this); // shallow copy
-    o->parent=nullptr;
+    auto o = std::make_shared<Organ>(*this); // shallow copy
+    o->parent = std::weak_ptr<Organ>();
     o->plant = p;
-    o->param_ = new OrganSpecificParameter(*param_); // copy parameters
+    o->param_ = std::make_shared<OrganSpecificParameter>(*param_); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         o->children[i] = children[i]->copy(p); // copy lateral
-        o->children[i]->setParent(this);
+        o->children[i]->setParent(shared_from_this());
     }
     return o;
 }
@@ -101,9 +90,9 @@ int Organ::organType() const
  * @return The organ type parameter is retrieved from the plant organism.
  * The Organism class manages all organs type parameters.
  */
-OrganRandomParameter* Organ::getOrganRandomParameter() const
+std::shared_ptr<OrganRandomParameter> Organ::getOrganRandomParameter() const
 {
-    return plant->getOrganRandomParameter(this->organType(), param_->subType);
+    return plant.lock()->getOrganRandomParameter(this->organType(), param_->subType);
 }
 
 /**
@@ -132,9 +121,9 @@ void Organ::simulate(double dt, bool verbose)
  *
  * @param c     the organ to add (ownership is passed)
  */
-void Organ::addChild(Organ* c)
+void Organ::addChild(std::shared_ptr<Organ> c)
 {
-    c->setParent(this);
+    c->setParent(shared_from_this());
     children.push_back(c);
 }
 
@@ -164,7 +153,7 @@ void Organ::addNode(Vector3d n, int id, double t)
  */
 void Organ::addNode(Vector3d n, double t)
 {
-    addNode(n,plant->getNodeIndex(),t);
+    addNode(n,plant.lock()->getNodeIndex(),t);
 }
 
 /**
@@ -196,9 +185,9 @@ std::vector<Vector2i> Organ::getSegments() const
  * @return A sequential list of organs. If there is less than one node,
  * or another organ type is expected, an empty vector is returned.
  */
-std::vector<Organ*> Organ::getOrgans(int ot)
+std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot)
 {
-    std::vector<Organ*> v = std::vector<Organ*>();
+    auto v = std::vector<std::shared_ptr<Organ>> ();
     this->getOrgans(ot, v);
     return v;
 }
@@ -210,11 +199,11 @@ std::vector<Organ*> Organ::getOrgans(int ot)
  * @param v         vector of organs where the subtree is added,
  *                  only expected organ types with more than one nodes are added.
  */
-void Organ::getOrgans(int ot, std::vector<Organ*>& v)
+void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
 {
     if (this->nodes.size()>1) {
         if ((ot<0) || (ot==this->organType())) {
-            v.push_back(this);
+            v.push_back(shared_from_this());
         }
     }
     for (const auto& c : this->children) {
@@ -238,10 +227,10 @@ double Organ::getParameter(std::string name) const {
     if (name=="creationTime") { return getNodeCT(0); }
     if (name=="order") { // count how often it is possible to move up
         int r = 0;
-        const Organ* p = this;
-        while (p->parent != nullptr) {
+        std::shared_ptr<const Organ> p = shared_from_this();
+        while (!p->parent.expired()) {
             r++;
-            p = p->parent; // up the organ tree
+            p = p->parent.lock(); // up the organ tree
         }
         return r;
     }
@@ -268,7 +257,7 @@ double Organ::getParameter(std::string name) const {
 void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const
 {
     if (this->nodes.size()>1) {
-        int nn = plant->getRSMLSkip()+1;
+        int nn = plant.lock()->getRSMLSkip()+1;
         // organ
         // std::string name = getOrganTypeParameter()->name; // todo where to put it
         tinyxml2::XMLElement* organ = doc.NewElement("root"); // TODO use ot to fetch tag name?
@@ -277,7 +266,7 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
         tinyxml2::XMLElement* geometry = doc.NewElement("geometry");
         organ->InsertEndChild(geometry);
         tinyxml2::XMLElement* polyline = doc.NewElement("polyline");
-        int o = (this->parent!=nullptr); // baseRoot = 0, others = 1
+        int o = (!this->parent.expired()); // baseRoot = 0, others = 1
         for (int i = o; i<getNumberOfNodes(); i+=nn) {
             auto n = getNode(i);
             tinyxml2::XMLElement* p = doc.NewElement("point");
@@ -289,7 +278,7 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
         geometry->InsertEndChild(polyline);
         // properties
         tinyxml2::XMLElement* properties = doc.NewElement("properties");
-        auto prop_names = plant->getRSMLProperties();
+        auto prop_names = plant.lock()->getRSMLProperties();
         for (const auto& pname : prop_names) {
             tinyxml2::XMLElement* p = doc.NewElement(pname.c_str());
             p->SetAttribute("value", float(this->getParameter(pname)));

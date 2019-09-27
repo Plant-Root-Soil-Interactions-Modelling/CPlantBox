@@ -9,6 +9,7 @@
 #include <random>
 #include <map>
 #include <array>
+#include <memory>
 
 namespace CPlantBox {
 
@@ -29,33 +30,33 @@ class OrganRandomParameter;
  * Holds global node index and organ index counter
  * Holds random numbers generator for the organ classes
  */
-class Organism {
-
+class Organism : public std::enable_shared_from_this<Organism> {
 public:
 
     enum OrganTypes { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 }; ///< coarse organ classification
     static std::vector<std::string> organTypeNames; ///< names of the organ types
+
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
     Organism() { }; ///< empty constructor
     Organism(const Organism& o); ///< copy constructor
-    virtual ~Organism(); ///< destructor
+    virtual ~Organism() { }; ///< destructor
 
     /* organ parameter management */
-    OrganRandomParameter* getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter
-    std::vector<OrganRandomParameter*> getOrganRandomParameter(int ot) const; ///< returns all type parameters of an organ type (e.g. root)
-    void setOrganRandomParameter(OrganRandomParameter* p); ///< sets an organ type parameter, subType and organType defined within p
+    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter
+    std::vector<std::shared_ptr<OrganRandomParameter>> getOrganRandomParameter(int ot) const; ///< returns all type parameters of an organ type (e.g. root)
+    void setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p); ///< sets an organ type parameter, subType and organType defined within p
 
     /* initialization and simulation */
-    void addOrgan(Organ* o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership
+    void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership
     virtual void initialize(); ///< overwrite for initialization jobs
     virtual void simulate(double dt, bool verbose = false); ///< calls the base organs simulate methods
     double getSimTime() const { return simtime; } ///< returns the current simulation time
 
     /* organs as sequential list */
-    std::vector<Organ*> getOrgans(int ot=-1) const; ///< sequential list of organs
-    virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<Organ*> organs = std::vector<Organ*>(0)) const; ///< parameter value per organ
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1) const; ///< sequential list of organs
+    virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0)) const; ///< parameter value per organ
     double getSummed(std::string name, int ot = -1) const; ///< summed up parameters
 
     /* geometry */
@@ -68,7 +69,7 @@ public:
     virtual std::vector<double> getNodeCTs() const; ///< node creation times, corresponding to Organism::getNodes
     virtual std::vector<Vector2i> getSegments(int ot=-1) const; ///< line segment containing two node indices, corresponding to Organism::getNodes
     virtual std::vector<double> getSegmentCTs(int ot=-1) const; ///< line creation times, corresponding to Organism::getSegments
-    virtual std::vector<Organ*> getSegmentOrigins(int ot=-1) const; ///< Points to the organ which contains the segment, corresponding to Organism::getSegments
+    virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< Points to the organ which contains the segment, corresponding to Organism::getSegments
 
     /* last time step */
     int getNumberOfNewNodes() const { return getNumberOfNodes()- oldNumberOfNodes; } ///< The number of new nodes created in the previous time step (ame number as new segments)
@@ -79,7 +80,7 @@ public:
     std::vector<Vector3d> getNewNodes() const; ///< Nodes created in the previous time step
     std::vector<double> getNewNodeCTs() const; ///< Nodes created in the previous time step
     std::vector<Vector2i> getNewSegments(int ot=-1) const; ///< Segments created in the previous time step
-    std::vector<Organ*> getNewSegmentOrigins(int ot=-1) const; ///< Copies a pointer to the root containing the new segments
+    std::vector<std::shared_ptr<Organ>> getNewSegmentOrigins(int ot=-1) const; ///< Copies a pointer to the root containing the new segments
 
     /* io */
     virtual std::string toString() const; ///< Quick info for debugging
@@ -104,10 +105,10 @@ protected:
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
     virtual tinyxml2:: XMLElement* getRSMLScene(tinyxml2::XMLDocument& doc) const;
 
-    std::vector<Organ*> baseOrgans;  ///< base organs of the root system
+    std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the root system
 
     static const int numberOfOrganTypes = 5;
-    std::array<std::map<int, OrganRandomParameter*>, numberOfOrganTypes> organParam;
+    std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
 
     double simtime = 0;
     int organId = -1;

@@ -24,7 +24,7 @@ namespace CPlantBox {
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
-Stem::Stem(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
 :Organ(id, param, alive, active, age, length, moved,  oldNON ), parentBaseLength(pbl), parentNI(pni)
 { }
@@ -45,18 +45,20 @@ Stem::Stem(int id, const OrganSpecificParameter* param, bool alive, bool active,
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_stem,type,delay), parentBaseLength(pbl), parentNI(pni)
+Stem::Stem(std::weak_ptr<Organism> plant, int type, Vector3d pheading, double delay,  std::weak_ptr<Organ> parent, double pbl, int pni)
+        :Organ(plant,parent,Organism::ot_stem,type,delay), parentBaseLength(pbl), parentNI(pni)
 {
     /*the relative heading is maulfunctioning
 	so it is disabled and rerolled to old heading*/
 
     iHeading = pheading;
     param_ = getStemRandomParameter()->realize(); // throw the dice
-    StemSpecificParameter* stem_p = (StemSpecificParameter*) param_;
+    auto stem_p = this->param();
 
     //        std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
     addPhytomerId(stem_p->subType);
-    double beta = getphytomerId(stem_p->subType)*M_PI*getStemRandomParameter()->RotBeta + M_PI*plant->rand()*getStemRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
+    double beta = getphytomerId(stem_p->subType)*M_PI*getStemRandomParameter()->RotBeta +
+        M_PI*plant.lock()->rand()*getStemRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(iHeading);
     if (getStemRandomParameter()->InitBeta >0 && getphytomerId(stem_p->subType)==0 ){
         beta = beta + getStemRandomParameter()->InitBeta;
@@ -65,8 +67,8 @@ Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* pa
     //ons.times(Matrix3d::rotX(beta));
 
     double theta = M_PI*stem_p->theta;
-    if (parent->organType() != Organism::ot_seed) { // scale if not a base root
-        double scale = getStemRandomParameter()->f_sa->getValue(parent->getNode(pni), this);
+    if (!parent.expired()) { // scale if not a base root
+        double scale = getStemRandomParameter()->f_sa->getValue(parent.lock()->getNode(pni), parent.lock());
         theta *= scale;
     }
     //ons.times(Matrix3d::rotZ(theta));
@@ -80,12 +82,10 @@ Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* pa
     length = 0;
 
     // initial node
-    if (parent->organType()!=Organism::ot_seed) { // the first node of the base stems must be created in Seed::initialize()
-        // otherwise, don't use addNode for the first node of the stem,
-        // since this node exists already and does not need a new identifier
-        nodes.push_back(Vector3d());
-        nodeIds.push_back(parent->getNodeId(pni));
-        nodeCTs.push_back(parent->getNodeCT(pni)+delay);
+    if (!parent.expired()) { // the first node of the base roots must be created in RootSystem::initialize()
+        auto p = parent.lock();
+        assert(pni+1 == p->getNumberOfNodes() && "at object creation always at last node");
+        addNode(p->getNode(pni), p->getNodeId(pni), p->getNodeCT(pni)+delay);
     }
 
 }
@@ -96,15 +96,15 @@ Stem::Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* pa
  *
  * @param plant     the plant the copied organ will be part of
  */
-Organ* Stem::copy(Organism* plant)
+std::shared_ptr<Organ> Stem::copy(std::weak_ptr<Organism> p)
 {
-    Stem* s = new Stem(*this); // shallow copy
-    s->parent = nullptr;
-    s->plant = plant;
-    s->param_ = new StemSpecificParameter(*param()); // copy parameters
+    auto s = std::make_shared<Stem>(*this); // shallow copy
+    s->parent = std::weak_ptr<Organ>();
+    s->plant = p;
+    s->param_ = std::make_shared<StemSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         s->children[i] = children[i]->copy(plant); // copy laterals
-        s->children[i]->setParent(this);
+        s->children[i]->setParent(shared_from_this());
     }
     return s;
 }
@@ -134,10 +134,10 @@ void Stem::simulate(double dt, bool verbose)
 
         // probabilistic branching model (todo test)
         if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
-            double P = getStemRandomParameter()->f_sbp->getValue(nodes.back(),this);
+            double P = getStemRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
             if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
                 double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
-                if (plant->rand()>p) { // not rand()<p
+                if (plant.lock()->rand()>p) { // not rand()<p
                     age -= dt; // the root does not emerge in this time step
                 }
             }
@@ -163,7 +163,7 @@ void Stem::simulate(double dt, bool verbose)
 
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
-                double scale = getStemRandomParameter()->f_sa->getValue(nodes.back(),this);
+                double scale = getStemRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
                 double dl = std::max(scale*e, 0.); // length increment
 
                 // create geometry
@@ -290,7 +290,7 @@ double Stem::calcCreationTime(double length)
 double Stem::calcLength(double age)
 {
     assert(age>=0);
-    return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,getStemRandomParameter()->getK(),this);
+    return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,getStemRandomParameter()->getK(),shared_from_this());
 }
 
 /**
@@ -301,7 +301,7 @@ double Stem::calcLength(double age)
 double Stem::calcAge(double length)
 {
     assert(length>=0);
-    return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,getStemRandomParameter()->getK(),this);
+    return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,getStemRandomParameter()->getK(),shared_from_this());
 }
 
 /**
@@ -316,7 +316,7 @@ double Stem::calcAge(double length)
  */
 void Stem::createLateral(bool silence)
 {
-    const StemSpecificParameter* sp = param(); // rename
+    auto sp = param(); // rename
     int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 
     if (getStemRandomParameter()->lnf==2&& lt>0) {
@@ -325,11 +325,11 @@ void Stem::createLateral(bool silence)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
 
-        Stem* lateral = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Stem>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-        Stem* lateral2 = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral2 = std::make_shared<Stem>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral2->setRelativeOrigin(nodes.back());
         children.push_back(lateral2);
         lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -339,11 +339,11 @@ void Stem::createLateral(bool silence)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Stem* lateral = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Stem>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-        Stem* lateral2 = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral2 = std::make_shared<Stem>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral2->setRelativeOrigin(nodes.back());
         children.push_back(lateral2);
         lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -353,7 +353,7 @@ void Stem::createLateral(bool silence)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Stem* lateral = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Stem>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -364,12 +364,12 @@ void Stem::createLateral(bool silence)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Stem* lateral = new Stem(plant, lt, h, delay,  this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Stem>(plant, lt, h, delay,  shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
-        Stem* lateral2 = new Stem(plant, lt, h, delay,  this, nodes.size() - 1, length);
+        auto lateral2 = std::make_shared<Stem>(plant, lt, h, delay,  shared_from_this(), nodes.size() - 1, length);
         //lateral2->setRelativeOrigin(nodes.back());
         children.push_back(lateral2);
         lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -379,7 +379,7 @@ void Stem::createLateral(bool silence)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Stem* lateral = new Stem(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Stem>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -393,7 +393,7 @@ void Stem::createLateral(bool silence)
  */
 void Stem::leafGrow(bool silence, Vector3d bud)
 {
-    const StemSpecificParameter* sp = param(); // rename
+    auto sp = param(); // rename
     //int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
     //  	std::cout << "LeafGrow createLateral()\n";
     //  	std::cout << "LeafGrow type " << lt << "\n";
@@ -406,11 +406,11 @@ void Stem::leafGrow(bool silence, Vector3d bud)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Leaf* lateral = new Leaf(plant, lt,  h, delay, this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Leaf>(plant, lt,  h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-        Leaf* lateral2 = new Leaf(plant, lt,  h, delay, this, nodes.size() - 1, length);
+        auto lateral2 = std::make_shared<Leaf>(plant, lt,  h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral2->setRelativeOrigin(nodes.back());
         children.push_back(lateral2);
         lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -420,11 +420,11 @@ void Stem::leafGrow(bool silence, Vector3d bud)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Leaf* lateral = new Leaf(plant, lt, h, delay,  this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Leaf>(plant, lt, h, delay,  shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-        Leaf* lateral2 = new Leaf(plant, lt, h,  delay, this, nodes.size() - 1, length);
+        auto lateral2 = std::make_shared<Leaf>(plant, lt, h,  delay, shared_from_this(), nodes.size() - 1, length);
         //lateral2->setRelativeOrigin(nodes.back());
         children.push_back(lateral2);
         lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -434,11 +434,11 @@ void Stem::leafGrow(bool silence, Vector3d bud)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Leaf* lateral = new Leaf(plant, lt, h, delay,  this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Leaf>(plant, lt, h, delay,  shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-        Leaf* lateral2 = new Leaf(plant, lt,  h, delay, this, nodes.size() - 1, length);
+        auto lateral2 = std::make_shared<Leaf>(plant, lt,  h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral2->setRelativeOrigin(nodes.back());
         children.push_back(lateral2);
         lateral2->simulate(age-ageLN,silence); // pass
@@ -448,7 +448,7 @@ void Stem::leafGrow(bool silence, Vector3d bud)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
 
-        Leaf* lateral = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Leaf>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
 
@@ -456,7 +456,7 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 
         //std::cout <<"leaf heading is "<<h.toString()<< "\n";
 
-        Leaf* lateral2 = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
+        auto lateral2 = std::make_shared<Leaf>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral2->setRelativeOrigin(nodes.back());
         children.push_back(lateral2);
 
@@ -467,7 +467,7 @@ void Stem::leafGrow(bool silence, Vector3d bud)
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         Vector3d h = heading(); // current heading
-        Leaf* lateral = new Leaf(plant, lt,  h, delay,this, nodes.size() - 1, length);
+        auto lateral = std::make_shared<Leaf>(plant, lt,  h, delay, shared_from_this(), nodes.size() - 1, length);
         //lateral->setRelativeOrigin(nodes.back());
         children.push_back(lateral);
         lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -483,7 +483,7 @@ void Stem::leafGrow(bool silence, Vector3d bud)
  */
 void Stem::shootBorneRootGrow(bool silence)
 {
-    StemSpecificParameter* sp = param(); // rename
+    auto sp = param(); // rename
     int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
     //    std::cout << "ShootBorneRootGrow createLateral()\n";
     //    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
@@ -493,7 +493,7 @@ void Stem::shootBorneRootGrow(bool silence)
         double delay = ageLG-ageLN; // time the lateral has to wait
         int nodeToGrowShotBorneRoot = 2;
         Vector3d sbrheading(0,0,-1); //just a test heading
-        Root* shootBorneRootGrow = new Root(plant , 5, sbrheading, delay ,this, length, nodeToGrowShotBorneRoot);
+        auto shootBorneRootGrow = std::make_shared<Root>(plant , 5, sbrheading, delay ,shared_from_this(), length, nodeToGrowShotBorneRoot);
         if (nodes.size() > nodeToGrowShotBorneRoot ) {
             //                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
             children.push_back(shootBorneRootGrow);
@@ -528,7 +528,7 @@ Vector3d Stem::getIncrement(const Vector3d& p, double sdx)
 {
     Vector3d h = heading();
     Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getStemRandomParameter()->f_tf->getHeading(p, ons, sdx, this);
+    Vector2d ab = getStemRandomParameter()->f_tf->getHeading(p, ons, sdx, shared_from_this());
     Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
     return sv.times(sdx);
 }
@@ -563,13 +563,13 @@ void Stem::createSegments(double l, bool verbose)
             int type = o->getOrganRandomParameter()->organType;
             switch (type) {
             case Organism::ot_leaf: {
-                pni = ((Leaf*)o)->parentNI;
+                pni = (std::static_pointer_cast<Leaf>(o))->parentNI;
             } break;
             case Organism::ot_root: {
-                pni = ((Root*)o)->parentNI;
+                pni = (std::static_pointer_cast<Root>(o))->parentNI;
             } break;
             case Organism::ot_stem: {
-                pni = ((Stem*)o)->parentNI;
+                pni = (std::static_pointer_cast<Stem>(o))->parentNI;
             } break;
             }
         }
@@ -627,17 +627,17 @@ void Stem::createSegments(double l, bool verbose)
 /**
  * @return The RootTypeParameter from the plant
  */
-StemRandomParameter* Stem::getStemRandomParameter() const
+std::shared_ptr<StemRandomParameter> Stem::getStemRandomParameter() const
 {
-    return (StemRandomParameter*)plant->getOrganRandomParameter(Organism::ot_stem, param_->subType);
+    return std::static_pointer_cast<StemRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_stem, param_->subType));
 }
 
 /**
  * @return Parameters of the specific root
  */
-StemSpecificParameter* Stem::param() const
+std::shared_ptr<const StemSpecificParameter> Stem::param() const
 {
-    return ( StemSpecificParameter*)param_;
+    return std::static_pointer_cast<const StemSpecificParameter>(param_);
 }
 
 /*

@@ -23,12 +23,12 @@ class Stem : public Organ
 {
 public:
 
-    Stem(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+    Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0);
-    Stem(Organism* plant, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); ///< used within simulation
+    Stem(std::weak_ptr<Organism> plant, int type, Vector3d pheading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
     virtual ~Stem() { }; // base class constructor is called automatically in c++
 
-    Organ* copy(Organism* plant) override;  ///< deep copies the root tree
+    std::shared_ptr<Organ> copy(std::weak_ptr<Organism> plant) override;   ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
@@ -44,8 +44,8 @@ public:
     double calcAge(double length); ///< analytical age of the stem
 
     /* abbreviations */
-    StemRandomParameter* getStemRandomParameter() const;  ///< root type parameter of this root
-    StemSpecificParameter* param() const; ///< root parameter
+    std::shared_ptr<StemRandomParameter> getStemRandomParameter() const;  ///< root type parameter of this root
+    std::shared_ptr<const StemSpecificParameter> param() const; ///< root parameter
 
     double dx() const; ///< returns the axial resolution
 

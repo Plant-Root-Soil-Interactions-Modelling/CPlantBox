@@ -10,7 +10,8 @@ namespace CPlantBox {
  */
 void Seed::initialize()
 {
-    auto stemP = plant->getOrganRandomParameter(Organism::ot_stem);
+    auto p = plant.lock();
+    auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
     bool plantBox = stemP.size()>1;
     if (plantBox) {
         std::cout << "Seed::initialize: initializing plant \n";
@@ -22,11 +23,11 @@ void Seed::initialize()
      * Create roots
      */
     const double maxT = 365.; // maximal simulation time
-    const SeedSpecificParameter* sp = this->param(); // rename
+    auto sp = this->param(); // rename
     Vector3d iheading(0,0,-1);
 
     // Taproot
-    Organ* taproot = createRoot(plant, tapRootType, iheading ,0, nullptr, 0, 0); // tap root has root type 1
+    std::shared_ptr<Organ> taproot = createRoot(plant, tapRootType, iheading ,0); // tap root has root type 1
     taproot->addNode(sp->seedPos,0);
     this->addChild(taproot);
 
@@ -37,12 +38,12 @@ void Seed::initialize()
     } // otherwise stick with default
     if (sp->maxB>0) {
         try {
-            plant->getOrganRandomParameter(Organism::ot_root, basalType); // if the type is not defined an exception is thrown
+            p->getOrganRandomParameter(Organism::ot_root, basalType); // if the type is not defined an exception is thrown
         } catch (...) {
             std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
-            RootRandomParameter* brtp = (RootRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant);
+            auto brtp = p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant);
             brtp->subType = basalType;
-            plant->setOrganRandomParameter(brtp);
+            p->setOrganRandomParameter(brtp);
         }
         int maxB = (sp->maxB);
         if (sp->delayB > 0) { // limit if possible
@@ -50,7 +51,7 @@ void Seed::initialize()
         }
         double delay = sp->firstB;
         for (int i=0; i<maxB; i++) {
-            Organ* basalroot = createRoot(plant, basalType, iheading, delay, nullptr, 0, 0);
+            std::shared_ptr<Organ> basalroot = createRoot(plant, basalType, iheading, delay);
             basalroot->addNode(taproot->getNode(0), taproot->getNodeId(0), delay);
             this->addChild(basalroot);
             delay += sp->delayB;
@@ -64,25 +65,25 @@ void Seed::initialize()
         } // otherwise stick with default
         if ((sp->nC>0) && (sp->firstSB+sp->delaySB<maxT)) { // only if there are any shootborne roots
             try {
-                plant->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
+                p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
             } catch (...) {
                 std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
-                RootRandomParameter* srtp =  (RootRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant);
+                auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant);
                 srtp->subType = shootborneType;
-                plant->setOrganRandomParameter(srtp);
+                p->setOrganRandomParameter(srtp);
             }
             Vector3d sbpos = sp->seedPos;
             sbpos.z=sbpos.z/2.; // half way up the mesocotyl
             numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
             double delay = sp->firstSB;
             for (int i=0; i<numberOfRootCrowns; i++) {
-                Organ* shootborne0 = createRoot(plant, shootborneType, iheading ,delay, nullptr, 0, 0);
+                std::shared_ptr<Organ>  shootborne0 = createRoot(plant, shootborneType, iheading ,delay);
                 // TODO fix the initial radial heading
                 shootborne0->addNode(sbpos,delay);
                 this->addChild(shootborne0);
                 delay += sp->delaySB;
                 for (int j=1; j<sp->nC; j++) {
-                    Organ* shootborne = createRoot(plant, shootborneType, iheading ,delay, nullptr, 0, 0);
+                    std::shared_ptr<Organ>  shootborne = createRoot(plant, shootborneType, iheading ,delay);
                     // TODO fix the initial radial heading
                     shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0),delay);
                     this->addChild(shootborne);
@@ -102,17 +103,17 @@ void Seed::initialize()
     if (plantBox) { // i.e. if a stem is defined
         // Stem
         Vector3d isheading(0, 0, 1);//Initial Stem heading
-        Organ* mainstem = createStem(plant, mainStemType, isheading, 0, this ,0., 0.); // main stem has subtype 1
+        std::shared_ptr<Organ> mainstem = createStem(plant, mainStemType, isheading, 0.); // main stem has subtype 1
         mainstem->addNode(sp->seedPos, 0);
         children.push_back(mainstem);
         // Optional tillers
         if (sp->maxTil>0) {
-            if (plant->getOrganRandomParameter(Organism::ot_stem, tillerType)->subType<1) { // if the type is not defined, copy tap root
+            if (p->getOrganRandomParameter(Organism::ot_stem, tillerType)->subType<1) { // if the type is not defined, copy tap root
                 std::cout << "Tiller stem type #" << tillerType << " was not defined, using main stem parameters instead, ";
                 std::cout << "default maxT = " << sp->maxTil << "\n";
-                OrganRandomParameter* tillParam = plant->getOrganRandomParameter(Organism::ot_stem, 1)->copy(plant);
+                auto tillParam = p->getOrganRandomParameter(Organism::ot_stem, 1)->copy(plant);
                 tillParam->subType = basalType;
-                plant->setOrganRandomParameter(tillParam);
+                p->setOrganRandomParameter(tillParam);
 
             } else{
                 int maxTi = sp->maxTil;
@@ -122,7 +123,7 @@ void Seed::initialize()
                 std::cout << "maxT = " << sp->maxTil << "\n";
                 double delay = sp->firstB;
                 for (int i=0; i<maxTi; i++) {
-                    Organ* tiller = createStem(plant, tillerType, isheading, delay, this ,0., 0.);
+                    std::shared_ptr<Organ> tiller = createStem(plant, tillerType, isheading, delay);
                     tiller->addNode(sp->seedPos,0);
                     children.push_back(tiller);
                     delay += sp->delayB;
@@ -136,9 +137,9 @@ void Seed::initialize()
  * Creates a shallow copy of the seeds child organs.
  * Use: the rootsystem manages base root itself, and just uses Seed class for initialization
  */
-std::vector<Organ*> Seed::copyBaseOrgans()
+std::vector<std::shared_ptr<Organ>> Seed::copyBaseOrgans()
 {
-    std::vector<Organ*> organs;
+    std::vector<std::shared_ptr<Organ>> organs;
     for (auto& o : children) {
         organs.push_back(o->copy(plant));
     }
@@ -150,8 +151,8 @@ std::vector<Organ*> Seed::copyBaseOrgans()
  */
 int Seed::getParamSubType(int organtype, std::string str)
 {
-    auto orp = plant->getOrganRandomParameter(organtype);
-    for (auto& o:orp) {
+    auto orp = plant.lock()->getOrganRandomParameter(organtype);
+    for (auto& o :orp) {
         if (o->name == str) {
             return o->subType;
         }
@@ -170,19 +171,21 @@ std::string Seed::toString() const
 }
 
 /**
- *
+ * todo doc
  */
-Organ* Seed::createRoot(Organism* plant, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni)
+std::shared_ptr<Organ> Seed::createRoot(std::weak_ptr<Organism> plant, int type, Vector3d iheading, double delay,
+    std::weak_ptr<Organ> parent, double pbl, int pni)
 {
-    return new Root(plant, type, iheading, delay, parent, pbl, pni);
+    return std::make_shared<Root>(plant, type, iheading, delay, parent, pbl, pni);
 }
 
 /**
- *
+ * todo doc
  */
-Organ* Seed::createStem(Organism* plant, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni) // overwrite if you want to change the types
+std::shared_ptr<Organ> Seed::createStem(std::weak_ptr<Organism> plant, int type, Vector3d iheading, double delay,
+    std::weak_ptr<Organ> parent, double pbl, int pni) // overwrite if you want to change the types
 {
-    return new Stem(plant, type, iheading, delay, parent, pbl, pni);
+    return std::make_shared<Stem>(plant, type, iheading, delay, parent, pbl, pni);
 }
 
 } // namespace CPlantBox

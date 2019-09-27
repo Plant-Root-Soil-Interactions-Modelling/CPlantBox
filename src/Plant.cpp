@@ -13,7 +13,9 @@ namespace CPlantBox {
  */
 Plant::Plant(): Organism()
 {
-    initPrototypes(new SeedRandomParameter(this), new RootRandomParameter(this), new StemRandomParameter(this), new LeafRandomParameter(this));
+    initPrototypes(std::make_shared<SeedRandomParameter>(shared_from_this()), std::make_shared<RootRandomParameter>(shared_from_this()),
+        std::make_shared<StemRandomParameter>(shared_from_this()), std::make_shared<LeafRandomParameter>(shared_from_this()));
+    // todo find for solution, parent this should not be passed in constructor
 }
 
 /**
@@ -30,10 +32,10 @@ Plant::Plant(const Plant& p): Organism(p), geometry(p.geometry), soil(p.soil)
 }
 
 /**
- *
+ * todo docme , this could be made unique?
  */
-void Plant::initPrototypes(OrganRandomParameter* seed, OrganRandomParameter* root, OrganRandomParameter* stem,
-    OrganRandomParameter* leaf)
+void Plant::initPrototypes(std::shared_ptr<OrganRandomParameter> seed, std::shared_ptr<OrganRandomParameter> root,
+    std::shared_ptr<OrganRandomParameter> stem, std::shared_ptr<OrganRandomParameter> leaf)
 {
     seed->subType = 0;
     setOrganRandomParameter(seed);
@@ -51,10 +53,6 @@ void Plant::initPrototypes(OrganRandomParameter* seed, OrganRandomParameter* roo
  */
 void Plant::reset()
 {
-	if (seed!=nullptr) {
-		delete seed;
-		seed = nullptr;
-	}
 	baseOrgans.clear();
     simtime = 0;
     organId = -1;
@@ -72,11 +70,10 @@ void Plant::initialize()
     reset(); // just in case
 
     // create seed
-    Seed seed = Seed(this);
-    seed.initialize();
+    seed = std::make_shared<Seed>(shared_from_this());
+    seed->initialize();
 
-    // todo check what this does
-    oldNumberOfNodes = getNumberOfNodes();
+    oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
 
     // further intializations
     initCallbacks();
@@ -91,37 +88,31 @@ void Plant::initCallbacks()
 {
     // Create tropisms and growth functions per root type
     for (auto& p_otp :organParam[Organism::ot_root]) {
-        RootRandomParameter* rtp = (RootRandomParameter*)p_otp.second;
-        Tropism* tropism = this->createTropismFunction(rtp->tropismT, rtp->tropismN, rtp->tropismS);
+        auto rp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
         tropism->setGeometry(geometry);
-        delete rtp->f_tf; // delete old tropism
-        rtp->f_tf = tropism; // set new one
-        GrowthFunction* gf_ = this->createGrowthFunction(rtp->gf);
+        rp->f_tf = tropism; // set new one
+        auto gf_ = this->createGrowthFunction(rp->gf);
         gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
-        delete rtp->f_gf;
-        rtp->f_gf  = gf_;
+        rp->f_gf  = gf_;
     }
     for (auto& p_otp :organParam[Organism::ot_leaf]) {
-        LeafRandomParameter* rtp = (LeafRandomParameter*)p_otp.second;
-        Tropism* tropism = this->createTropismFunction(rtp->tropismT, rtp->tropismN, rtp->tropismS);
+        auto rp = std::static_pointer_cast<LeafRandomParameter>(p_otp.second);
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
         tropism->setGeometry(geometry);
-        delete rtp->f_tf; // delete old tropism
-        rtp->f_tf = tropism; // set new one
-        GrowthFunction* gf_ = this->createGrowthFunction(rtp->gf);
+        rp->f_tf = tropism; // set new one
+        auto gf_ = this->createGrowthFunction(rp->gf);
         gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
-        delete rtp->f_gf;
-        rtp->f_gf  = gf_;
+        rp->f_gf  = gf_;
     }
     for (auto& p_otp :organParam[Organism::ot_stem]) {
-        StemRandomParameter* rtp = (StemRandomParameter*)p_otp.second;
-        Tropism* tropism = this->createTropismFunction(rtp->tropismT, rtp->tropismN, rtp->tropismS);
+        auto rp = std::static_pointer_cast<StemRandomParameter>(p_otp.second);
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
         tropism->setGeometry(geometry);
-        delete rtp->f_tf; // delete old tropism
-        rtp->f_tf = tropism; // set new one
-        GrowthFunction* gf_ = this->createGrowthFunction(rtp->gf);
+        rp->f_tf = tropism; // set new one
+        auto gf_ = this->createGrowthFunction(rp->gf);
         gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
-        delete rtp->f_gf;
-        rtp->f_gf  = gf_;
+        rp->f_gf  = gf_;
     }
 
 }
@@ -135,22 +126,19 @@ void Plant::initCallbacks()
  * @param sigma     tropism parameter (passsed to the tropism class)
  * @return          the tropism class containing with the callback functions
  */
-Tropism* Plant::createTropismFunction(int tt, double N, double sigma) {
+std::shared_ptr<Tropism> Plant::createTropismFunction(int tt, double N, double sigma) {
     // std::cout << "Creating (" << tt << ", " << N << ", " << sigma <<")\n";
     switch (tt) {
-    case tt_plagio: return new Plagiotropism(this,N,sigma);
-    case tt_gravi: return new Gravitropism(this,N,sigma);
-    case tt_exo: return new Exotropism(this,N,sigma);
-    case tt_hydro: {
-        Tropism* gt =  new Gravitropism(this,N,sigma);
-        Tropism* ht= new Hydrotropism(this,N,sigma,soil);
-        Tropism* cht = new CombinedTropism(this,N,sigma,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
-        return cht;
+    case tt_plagio: return std::make_shared<Plagiotropism>(shared_from_this(),N,sigma);
+    case tt_gravi: return std::make_shared<Gravitropism>(shared_from_this(),N,sigma);
+    case tt_exo: return std::make_shared<Exotropism>(shared_from_this(),N,sigma);
+    case tt_hydro: { // uses weighted objective functions from gravitropism and hydrotropism
+        auto gt =  std::make_shared<Gravitropism>(shared_from_this(),N,sigma);
+        auto ht= std::make_shared<Hydrotropism>(shared_from_this(),N, sigma, soil);
+        return std::make_shared<CombinedTropism>(shared_from_this(),N,sigma,ht,10.,gt,1.);
     }
-    case tt_twist:  return new TwistTropism(this,N,sigma);
-    case tt_antigravi: return new AntiGravitropism(this,N,sigma);
-
-
+    case tt_twist:  return std::make_shared<TwistTropism>(shared_from_this(),N,sigma);
+    case tt_antigravi: return std::make_shared<AntiGravitropism>(shared_from_this(),N,sigma);
     default: throw std::invalid_argument( "Plant::createTropismFunction() tropism type not implemented" );
     }
 }
@@ -162,10 +150,10 @@ Tropism* Plant::createTropismFunction(int tt, double N, double sigma) {
  * @param gft       the growth function index, given in the root type parameters
  * @return          the growth function class containing with the callback functions
  */
-GrowthFunction* Plant::createGrowthFunction(int gft) {
+std::shared_ptr<GrowthFunction>Plant::createGrowthFunction(int gft) {
     switch (gft) {
-    case gft_negexp: return new ExponentialGrowth();
-    case gft_linear: return new LinearGrowth();
+    case gft_negexp: return std::make_shared<ExponentialGrowth>();
+    case gft_linear: return std::make_shared<LinearGrowth>();
     default: throw std::invalid_argument( "Plant::createGrowthFunction() growth function type not implemented" );
     }
 }
@@ -175,7 +163,7 @@ GrowthFunction* Plant::createGrowthFunction(int gft) {
  */
 void Plant::simulate()
 {
-	auto srp = (SeedRandomParameter*)organParam[Organism::ot_seed][0];
+	auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);
 	Organism::simulate(srp->simtime);
 }
 

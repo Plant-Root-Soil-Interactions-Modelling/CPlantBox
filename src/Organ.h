@@ -7,6 +7,7 @@
 #include "external/tinyxml2/tinyxml2.h"
 
 #include <vector>
+#include <memory>
 
 namespace CPlantBox {
 
@@ -27,16 +28,16 @@ class Organism;
  * Information about the last time step: nodes can either move, or be created
  * Post processing and RSML output
  */
-class Organ
+class Organ : public std::enable_shared_from_this<Organ>
 {
 public:
 
-    Organ(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+    Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         bool moved= false, int oldNON = 0); ///< creates everything from scratch
-    Organ(Organism* plant, Organ* parent, int organtype, int subtype, double delay); ///< used within simulation
-    virtual ~Organ();
+    Organ(std::weak_ptr<Organism> plant, std::weak_ptr<Organ> parent, int organtype, int subtype, double delay); ///< used within simulation
+    virtual ~Organ() { }
 
-    virtual Organ* copy(Organism* plant); ///< deep copies the organ tree
+    virtual std::shared_ptr<Organ> copy(std::weak_ptr<Organism> plant); ///< deep copies the organ tree
 
     virtual int organType() const; ///< returns the organs type, overwrite for each organ
 
@@ -44,15 +45,15 @@ public:
     virtual void simulate(double dt, bool verbose = false); ///< grow for a time span of \param dt
 
     /* tree */
-    void setParent(Organ* p) { parent = p; } ///< sets parent organ
-    Organ* getParent() const { return parent; } ///< return parent organ, equals nullptr if it has no parent
-    void setOrganism(Organism* p) { plant = p; } ///< sets the organism of which the organ is part of
-    void addChild(Organ* c); ///< adds an subsequent organ
+    void setParent(std::weak_ptr<Organ> p) { parent = p; } ///< sets parent organ
+    std::shared_ptr<Organ> getParent() const { return parent.lock(); } ///< return parent organ, equals nullptr if it has no parent
+    void setOrganism(std::weak_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
+    void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
 
     /* parameters */
     int getId() const { return id; } ///< unique organ id
-    const OrganSpecificParameter* getParam() const { return param_; } ///< organ parameters
-    OrganRandomParameter* getOrganRandomParameter() const;  ///< organ type parameter
+    std::shared_ptr<const OrganSpecificParameter> getParam() const { return param_; } ///< organ parameters
+    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;  ///< organ type parameter
     bool isAlive() const { return alive; } ///< checks if alive
     bool isActive() const { return active; } ///< checks if active
     double getAge() const { return age; } ///< return age of the organ
@@ -73,8 +74,8 @@ public:
     int getOldNumberOfNodes() { return oldNumberOfNodes; } ///< the number of nodes before the last simulate call
 
     /* for post processing */
-    std::vector<Organ*> getOrgans(int ot=-1); ///< the organ including children in a sequential vector
-    void getOrgans(int otype, std::vector<Organ*>& v); ///< the organ including children in a sequential vector
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1); ///< the organ including children in a sequential vector
+    void getOrgans(int otype, std::vector<std::shared_ptr<Organ>>& v); ///< the organ including children in a sequential vector
     virtual double getParameter(std::string name) const; ///< returns an organ parameter
 
     /* IO */
@@ -84,13 +85,13 @@ public:
 protected:
 
     /* up and down the organ tree */
-    Organism* plant; ///< the plant of which this organ is part of
-    Organ* parent; ///< pointer to the parent organ (nullptr if it has no parent)
-    std::vector<Organ*> children; ///< the successive organs
+    std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of
+    std::weak_ptr<Organ> parent; ///< pointer to the parent organ (nullptr if it has no parent)
+    std::vector<std::shared_ptr<Organ>> children; ///< the successive organs
 
     /* Parameters that are constant over the organ life time */
     const int id; ///< unique organ id
-    const OrganSpecificParameter* param_; ///< the parameter set of this organ
+    std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ
 
     /* Parameters are changing over time */
     bool alive = true; ///< true: alive, false: dead

@@ -36,42 +36,28 @@ std::string RootSpecificParameter::toString() const
     return str.str();
 }
 
-
-
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-RootRandomParameter::RootRandomParameter(Organism* p) :OrganRandomParameter(p)
+RootRandomParameter::RootRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
     // base class default values
     name = "undefined";
     organType = Organism::ot_root;
     subType = -1;
-    f_tf = new Tropism(p);
+    f_tf = std::make_shared<Tropism>(plant);
     bindParameters();
-}
-
-/**
- * Destructor: delete all callback functions
- */
-RootRandomParameter::~RootRandomParameter()
-{
-    delete f_tf;
-    delete f_gf;
-    delete f_se;
-    delete f_sa;
-    delete f_sbp;
 }
 
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-OrganRandomParameter* RootRandomParameter::copy(Organism* p)
+std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::weak_ptr<Organism> p)
 {
-    RootRandomParameter* r = new RootRandomParameter(*this); // copy constructor breaks class introspection
+    auto r = std::make_shared<RootRandomParameter>(*this); // copy constructor breaks class introspection
     r->plant = p;
     r->bindParameters(); // fix class introspection
-    r->f_tf = f_tf->copy(p); // copy call back classes
+    r->f_tf = f_tf->copy(p); // todo copy call back classes
     r->f_gf = f_gf->copy();
     r->f_se = f_se->copy();
     r->f_sa = f_sa->copy();
@@ -85,23 +71,23 @@ OrganRandomParameter* RootRandomParameter::copy(Organism* p)
  * Creates a specific root from the root type parameters.
  * @return Specific root parameters derived from the root type parameters
  */
-OrganSpecificParameter* RootRandomParameter::realize()
+std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 {
+    auto p = plant.lock();
     //& std::cout << "RootTypeParameter::realize(): subType " << subType << "\n" << std::flush;
-    double lb_ = std::max(lb + plant->randn()*lbs, 0.); // length of basal zone
-    double la_ = std::max(la + plant->randn()*las, 0.); // length of apical zone
+    double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
+    double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
     std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob + plant->randn()*nobs), 0.); // maximal number of branches
+    int nob_ = std::max(round(nob + p->randn()*nobs), 0.); // maximal number of branches
     for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-        double d = std::max(ln + plant->randn()*lns, 1.e-5); // miminum is 1.e-5
+        double d = std::max(ln + p->randn()*lns, 1.e-5); // miminum is 1.e-5
         ln_.push_back(d);
     }
-    double r_ = std::max(r + plant->randn()*rs, 0.); // initial elongation
-    double a_ = std::max(a + plant->randn()*as, 0.); // radius
-    double theta_ = std::max(theta + plant->randn()*thetas, 0.); // initial elongation
-    double rlt_ = std::max(rlt + plant->randn()*rlts, 0.); // root life time
-    OrganSpecificParameter* p = new RootSpecificParameter(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
-    return p;
+    double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
+    double a_ = std::max(a + p->randn()*as, 0.); // radius
+    double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
+    double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
+    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
 }
 
 /**
@@ -115,7 +101,7 @@ int RootRandomParameter::getLateralType(const Vector3d& pos)
     assert(successor.size()==successorP.size()
         && "RootTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
     if (successorP.size()>0) { // at least 1 successor type
-        double d = plant->rand(); // in [0,1]
+        double d = plant.lock()->rand(); // in [0,1]
         int i=0;
         double p=successorP.at(i);
         i++;

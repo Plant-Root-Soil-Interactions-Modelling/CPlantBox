@@ -53,26 +53,11 @@ Organism::Organism(const Organism& o): organParam(o.organParam), simtime(o.simti
     // std::cout << "Copying organism with "<<o.baseOrgans.size()<< " base organs \n";
     baseOrgans.resize(o.baseOrgans.size());  // copy base organs
     for (int i=0; i<baseOrgans.size(); i++) {
-        baseOrgans[i] = o.baseOrgans[i]->copy(this);
+        baseOrgans[i] = o.baseOrgans[i]->copy(shared_from_this()); // <--- todo not sured thats allowed within the constructor
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : organParam[ot]) {
-            otp.second = otp.second->copy(this);
-        }
-    }
-}
-
-/*
- * Destructor: deletes all base organs, and organ type parameters
- */
-Organism::~Organism()
-{
-    for(auto o :baseOrgans) { // delete base organs
-        delete o;
-    }
-    for (int ot = 0; ot < numberOfOrganTypes; ot++) {  // delete organ type parameters
-        for (auto& otp : organParam[ot]) {
-            delete otp.second;
+            otp.second = otp.second->copy(shared_from_this()); // <--- todo not sured thats allowed within the constructor
         }
     }
 }
@@ -82,9 +67,9 @@ Organism::~Organism()
  *
  * @param ot    the organ type
  */
-std::vector<OrganRandomParameter*> Organism::getOrganRandomParameter(int ot) const
+std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParameter(int ot) const
 {
-    std::vector<OrganRandomParameter*>  otps = std::vector<OrganRandomParameter*>(0);
+    auto  otps = std::vector<std::shared_ptr<OrganRandomParameter>>(0);
     for (auto& otp : organParam[ot]) {
         otps.push_back(otp.second);
     }
@@ -98,7 +83,7 @@ std::vector<OrganRandomParameter*> Organism::getOrganRandomParameter(int ot) con
  * @param subType  the sub type (e.g. root type)
  * @return         the respective type parameter
  */
-OrganRandomParameter* Organism::getOrganRandomParameter(int ot, int subtype) const
+std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int otype, int subType) const
 {
     try {
         //                std::cout << "reading organ type " << ot << " sub type " << subtype <<": ";
@@ -106,9 +91,9 @@ OrganRandomParameter* Organism::getOrganRandomParameter(int ot, int subtype) con
         //                    std::cout << p.first;
         //                }
         //                std::cout << "\n" << std::flush;
-        return organParam[ot].at(subtype);
+        return organParam[otype].at(subType);
     } catch(const std::out_of_range& oor) {
-        std::cout << "Organism::getOrganTypeParameter: Organ type parameter of sub type " << subtype << " was not set \n" << std::flush;
+        std::cout << "Organism::getOrganTypeParameter: Organ type parameter of sub type " << subType << " was not set \n" << std::flush;
         throw;
     }
 }
@@ -119,16 +104,11 @@ OrganRandomParameter* Organism::getOrganRandomParameter(int ot, int subtype) con
  *
  *  @param p    the organ type parameter
  */
-void Organism::setOrganRandomParameter(OrganRandomParameter* p)
+void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 {
-    assert(p->plant == this && "OrganTypeParameter::plant should be this organism");
+    assert(p->plant.lock().get()==this && "OrganTypeParameter::plant should be this organism");
     int otype = p->organType;
     int subtype = p->subType;
-    try {
-        delete organParam[otype][subtype];
-    } catch (std::exception& e) {
-        // did not exist, nothing to delete
-    }
     organParam[otype][subtype] = p;
     // std::cout << "setting organ type " << otype << ", sub type " << subtype << ", name "<< p->name << "\n";
 }
@@ -168,9 +148,9 @@ void Organism::simulate(double dt, bool verbose)
  * @return Sequential list of organs. If there is less than one node,
  * or another organ type is expected, an empty vector is returned.
  */
-std::vector<Organ*> Organism::getOrgans(int ot) const
+std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot) const
 {
-    std::vector<Organ*> organs = std::vector<Organ*>(0);
+    auto organs = std::vector<std::shared_ptr<Organ>>(0);
     organs.reserve(getNumberOfOrgans()); // just for speed up
     for (const auto& o : this->baseOrgans) {
         o->getOrgans(ot, organs);
@@ -189,7 +169,7 @@ std::vector<Organ*> Organism::getOrgans(int ot) const
  * @param organs    optionally, a predefined sequential organ list can be used (@param ot is ignored in this case)
  * @return A vector of one parameter values per each organ, if unknown NaN
  */
-std::vector<double> Organism::getParameter(std::string name, int ot, std::vector<Organ*> organs) const
+std::vector<double> Organism::getParameter(std::string name, int ot, std::vector<std::shared_ptr<Organ>> organs) const
 {
     if (organs.empty()) {
         organs = getOrgans(ot);
@@ -360,10 +340,10 @@ std::vector<double> Organism::getSegmentCTs(int ot) const
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          creation times of each segment
  */
-std::vector<Organ*> Organism::getSegmentOrigins(int ot) const
+std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
 {
     auto organs = getOrgans(ot);
-    std::vector<Organ*> segs = std::vector<Organ*>(0);
+    auto segs = std::vector<std::shared_ptr<Organ>>(0);
     segs.reserve(this->getNumberOfSegments(ot)); // for speed up
     for (const auto& o : organs) {
         auto s = o->getSegments();
@@ -491,10 +471,10 @@ std::vector<Vector2i> Organism::getNewSegments(int ot) const
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          a vector of pointers to organs
  */
-std::vector<Organ*> Organism::getNewSegmentOrigins(int ot) const
+std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
 {
     auto organs = this->getOrgans(ot);
-    std::vector<Organ*> so = std::vector<Organ*>(0);
+    auto so = std::vector<std::shared_ptr<Organ>>(0);
     so.reserve(this->getNumberOfNewNodes());
     for (auto& o :organs) {
         int onon = o->getOldNumberOfNodes();
@@ -539,7 +519,7 @@ void Organism::readParameters(std::string name, std::string basetag)
                 std::string tagname = p->Name();
                 //std::cout << "Organism::readParameter: reading tag "<< tagname << std::endl << std::flush;
                 int ot = Organism::organTypeNumber(tagname);
-                OrganRandomParameter* otp = organParam[ot].begin()->second->copy(this);
+                auto otp = organParam[ot].begin()->second->copy(shared_from_this());
                 otp->readXML(p);
                 setOrganRandomParameter(otp);
                 p = p->NextSiblingElement();}

@@ -1,4 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+#ifndef PY_ROOTBOX_H_
+#define PY_ROOTBOX_H_
 
 /**
  *  A Python binding for CPlantBox based on boost.python
@@ -25,8 +27,6 @@
 #include "Plant.h"
 #include "sdf_rs.h"
 #include "SegmentAnalyser.h"
-
-//#include "../examples/example_exudation.h"
 
 namespace CPlantBox {
 
@@ -124,18 +124,18 @@ public:
 
 };
 
-//class Tropism_Wrap : public Tropism, public wrapper<Tropism> {
-//public:
-//
-//    virtual double tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* o = nullptr) override {
-//        return this->get_override("tropismObjective")(pos, old, a, b, dx, o);
-//    }
-//
-//    virtual Tropism* copy() override {
-//        return this->get_override("copy")();
-//    }
-//
-//}; // dont know how that works...
+class Tropism_Wrap : public Tropism, public wrapper<Tropism> {
+public:
+
+    virtual double tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const Organ* o = nullptr) override {
+        return this->get_override("tropismObjective")(pos, old, a, b, dx, o);
+    }
+
+    virtual Tropism* copy() override {
+        return this->get_override("copy")();
+    }
+
+}; // dont know how that works...
 
 
 
@@ -466,9 +466,9 @@ BOOST_PYTHON_MODULE(plantbox)
         ;
     class_<Hydrotropism, Hydrotropism*, bases<Tropism>>("Hydrotropism",init<Organism*,double, double, SoilLookUp*>())
         ;
-    //	class_<CombinedTropism, CombinedTropism*, bases<Tropism>>("CombinedTropism",init<>()) // Todo needs some extra work
-    //	;
-    /*
+//    	class_<CombinedTropism, CombinedTropism*, bases<Tropism>>("CombinedTropism",init<>()) // Todo needs some extra work
+//    	;
+   /*
      * analysis.h
      */
     class_<SegmentAnalyser, SegmentAnalyser*>("SegmentAnalyser")
@@ -805,23 +805,23 @@ BOOST_PYTHON_MODULE(plantbox)
             .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
             ;
 
-    /*
-     * Plant.h
-     */
-    class_<Plant, Plant*, bases<Organism>>("Plant", init<>()) // bases<PlantBase>
-             .def(init<Plant&>())
-             ;
-    enum_<Plant::TropismTypes>("TropismType")
-            .value("plagio", Plant::TropismTypes::tt_plagio)
-            .value("gravi", Plant::TropismTypes::tt_gravi)
-            .value("exo", Plant::TropismTypes::tt_exo)
-            .value("hydro", Plant::TropismTypes::tt_hydro)
-            ;
-    enum_<Plant::GrowthFunctionTypes>("GrowthFunctionType")
-            .value("negexp", Plant::GrowthFunctionTypes::gft_negexp)
-            .value("linear", Plant::GrowthFunctionTypes::gft_linear)
-            ;
-
+//    /*
+//     * Plant.h
+//     */
+//    class_<Plant, Plant*, bases<Organism>>("Plant", init<>()) // bases<PlantBase>
+//             .def(init<Plant&>())
+//             ;
+//    enum_<Plant::TropismTypes>("TropismType")
+//            .value("plagio", Plant::TropismTypes::tt_plagio)
+//            .value("gravi", Plant::TropismTypes::tt_gravi)
+//            .value("exo", Plant::TropismTypes::tt_exo)
+//            .value("hydro", Plant::TropismTypes::tt_hydro)
+//            ;
+//    enum_<Plant::GrowthFunctionTypes>("GrowthFunctionType")
+//            .value("negexp", Plant::GrowthFunctionTypes::gft_negexp)
+//            .value("linear", Plant::GrowthFunctionTypes::gft_linear)
+//            ;
+//
 
 
 
@@ -853,3 +853,5 @@ BOOST_PYTHON_MODULE(plantbox)
 
 
 } // end namespace CPlantBox
+
+#endif /* PY_ROOTBOX_H_ */

@@ -20,9 +20,9 @@ namespace CPlantBox {
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
-Root::Root(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
-:Organ(id, param, alive, active, age, length, moved,  oldNON ), parentBaseLength(pbl), parentNI(pni)
+    :Organ(id, param, alive, active, age, length, moved,  oldNON ), parentBaseLength(pbl), parentNI(pni)
 { }
 
 /**
@@ -31,19 +31,20 @@ Root::Root(int id, const OrganSpecificParameter* param, bool alive, bool active,
  *
  * @param rs 			points to RootSystem
  * @param type 		    type of root that is created
- * @param pheading		heading of parent root at emergence
+ * @param heading		heading of parent root at emergence
  * @param delay 		to give apical zone of parent time to develop
  * @param parent		parent root
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Root::Root(Organism* rs, int type, Vector3d heading, double delay,  Organ* parent, double pbl, int pni) :Organ(rs, parent, Organism::ot_root, type, delay)
+Root::Root(std::weak_ptr<Organism> rs, int type, Vector3d heading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni)
+    :Organ(rs, parent, Organism::ot_root, type, delay)
 {
-    double beta = 2*M_PI*plant->rand(); // initial rotation
+    double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(heading);
     double theta = param()->theta;
-    if (parent!=nullptr) { // scale if not a baseRoot
-        double scale = getRootRandomParameter()->f_se->getValue(parent->getNode(pni),this);
+    if (!parent.expired()) { // scale if not a baseRoot
+        double scale = getRootRandomParameter()->f_se->getValue(parent.lock()->getNode(pni), parent.lock());
         theta*=scale;
     }
     iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
@@ -51,9 +52,10 @@ Root::Root(Organism* rs, int type, Vector3d heading, double delay,  Organ* paren
     parentNI = pni;
     length = 0;
     // initial node
-    if (parent!=nullptr) { // the first node of the base roots must be created in RootSystem::initialize()
-        assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");
-        addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
+    if (!parent.expired()) { // the first node of the base roots must be created in RootSystem::initialize()
+        auto p = parent.lock();
+        assert(pni+1 == p->getNumberOfNodes() && "at object creation always at last node");
+        addNode(p->getNode(pni), p->getNodeId(pni), p->getNodeCT(pni)+delay);
     }
 }
 
@@ -63,15 +65,15 @@ Root::Root(Organism* rs, int type, Vector3d heading, double delay,  Organ* paren
  *
  * @param plant     the plant the copied organ will be part of
  */
-Organ* Root::copy(Organism* rs)
+std::shared_ptr<Organ> Root::copy(std::weak_ptr<Organism> rs)
 {
-    Root* r = new Root(*this); // shallow copy
-    r->parent = nullptr;
+    auto r = std::make_shared<Root>(*this); // shallow copy
+    r->parent = std::weak_ptr<Organ>();
     r->plant = rs;
-    r->param_ = new RootSpecificParameter(*param()); // copy parameters
+    r->param_ = std::make_shared<RootSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         r->children[i] = children[i]->copy(rs); // copy laterals
-        r->children[i]->setParent(this);
+        r->children[i]->setParent(shared_from_this());
     }
     return r;
 }
@@ -101,10 +103,10 @@ void Root::simulate(double dt, bool verbose)
 
         // probabilistic branching model
         if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
-            double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(),this);
+            double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
             if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
                 double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
-                if (plant->rand()>p) { // not rand()<p
+                if (plant.lock()->rand()>p) { // not rand()<p
                     age -= dt; // the root does not emerge in this time step
                 }
             }
@@ -130,7 +132,7 @@ void Root::simulate(double dt, bool verbose)
 
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
-                double scale = getRootRandomParameter()->f_sa->getValue(nodes.back(),this);
+                double scale = getRootRandomParameter()->f_sa->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.); // length increment
 
                 // create geometry
@@ -215,7 +217,7 @@ double Root::calcCreationTime(double length)
 double Root::calcLength(double age)
 {
     assert(age >= 0 && "Root::getLength() negative root age");
-    return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(),this);
+    return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
 }
 
 /**
@@ -227,23 +229,23 @@ double Root::calcLength(double age)
 double Root::calcAge(double length)
 {
     assert(length >= 0 && "Root::getAge() negative root length");
-    return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(),this);
+    return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this());
 }
 
 /**
  * @return The RootTypeParameter from the plant
  */
-RootRandomParameter* Root::getRootRandomParameter() const
+std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const
 {
-    return (RootRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, param_->subType);
+    return std::static_pointer_cast<RootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 
 /**
  * @return Parameters of the specific root
  */
-const RootSpecificParameter* Root::param() const
+ std::shared_ptr<const RootSpecificParameter> Root::param() const
 {
-    return (const RootSpecificParameter*)param_;
+    return std::static_pointer_cast<const RootSpecificParameter>(param_);
 }
 
 /**
@@ -260,7 +262,7 @@ void Root::createLateral(bool verbose)
         double ageLN = this->calcAge(length); // age of root when lateral node is created
         double ageLG = this->calcAge(length+param()->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
-        Root* lateral = new Root(plant, lt,  heading(), delay,  this, length, nodes.size()-1);
+        auto lateral = std::make_shared<Root>(plant, lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
         children.push_back(lateral);
         lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
     }
@@ -291,7 +293,7 @@ Vector3d Root::getIncrement(const Vector3d& p, double sdx)
 {
     Vector3d h = heading();
     Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getRootRandomParameter()->f_tf->getHeading(p, ons, sdx, this);
+    Vector2d ab = getRootRandomParameter()->f_tf->getHeading(p, ons, sdx, shared_from_this());
     Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
     return sv.times(sdx);
 }
@@ -319,7 +321,7 @@ void Root::createSegments(double l, bool verbose)
     int nn = nodes.size();
     if (firstCall) { // first call of createSegments (in Root::simulate)
         firstCall = false;
-        if ((nn>1) && (children.empty() || (nn-1 != ((Root*)children.back())->parentNI)) ) { // don't move a child base node
+        if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)) ) { // don't move a child base node
             Vector3d n2 = nodes[nn-2];
             Vector3d n1 = nodes[nn-1];
             double olddx = n1.minus(n2).length(); // length of last segment

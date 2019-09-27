@@ -41,37 +41,25 @@ std::string StemSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-StemRandomParameter::StemRandomParameter(Organism* p) :OrganRandomParameter(p)
+StemRandomParameter::StemRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
     // base class default values
     name = "undefined";
     organType = Organism::ot_stem;
     subType = -1;
-    f_tf = new Tropism(p);
+    f_tf = std::make_shared<Tropism>(plant);
     bindParmeters();
-}
-
-/**
- * Destructor: delete all callback functions
- */
-StemRandomParameter::~StemRandomParameter()
-{
-    delete f_tf;
-    delete f_gf;
-    delete f_se;
-    delete f_sa;
-    delete f_sbp;
 }
 
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-OrganRandomParameter* StemRandomParameter::copy(Organism* p)
+std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::weak_ptr<Organism> plant)
 {
-    StemRandomParameter* r = new StemRandomParameter(*this); // copy constructor breaks class introspection
-    r->plant = p;
+    auto r = std::make_shared<StemRandomParameter>(*this); // copy constructor breaks class introspection
+    r->plant = plant;
     r->bindParmeters(); // fix class introspection
-    r->f_tf = f_tf->copy(p); // copy call back classes
+    r->f_tf = f_tf->copy(plant); // copy call back classes
     r->f_gf = f_gf->copy();
     r->f_se = f_se->copy();
     r->f_sa = f_sa->copy();
@@ -85,63 +73,61 @@ OrganRandomParameter* StemRandomParameter::copy(Organism* p)
  * Creates a specific stem from the stem type parameters.
  * @return Specific stem parameters derived from the stem type parameters
  */
-OrganSpecificParameter* StemRandomParameter::realize()
+std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 {
+    auto p = plant.lock();
     //& std::cout << "StemTypeParameter::realize(): subType " << subType << "\n" << std::flush;
-    double lb_ = std::max(lb + plant->randn()*lbs, 0.); // length of basal zone
-    double la_ = std::max(la + plant->randn()*las, 0.); // length of apical zone
+    double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
+    double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
     std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob + plant->randn()*nobs), 0.); // maximal number of branches
+    int nob_ = std::max(round(nob + p->randn()*nobs), 0.); // maximal number of branches
     	switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d = std::max(ln +plant->randn()*lns,1e-9); //Normal function of equal internode distance
+			double d = std::max(ln +p->randn()*lns,1e-9); //Normal function of equal internode distance
 			ln_.push_back(d);
 
 
 		}break;
 		case 1: //  nodes distance increase linearly
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln*(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 
 		}break;
 		case 2: //nodes distance decrease linearly
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  std::max(ln*(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 
 		}break;
 		case 3: //nodes distance decrease exponential
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  std::max(ln +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
+			double d =  std::max(ln +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 
 		}break;
 
 		case 4://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln/(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
+			double d =  std::max(ln/(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 		} break;
 		case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln/(1+i) +plant->randn()*lns,1e-9); //std::max(  );//ln +plant->randn()*lns,1e-9);
+			double d =  std::max(ln/(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 		};break;
 default:
 		throw 1; // TODO make a nice one
 	}
-
-
-    double r_ = std::max(r + plant->randn()*rs, 0.); // initial elongation
-    double a_ = std::max(a + plant->randn()*as, 0.); // radius
-    double theta_ = std::max(theta + plant->randn()*thetas, 0.); // initial elongation
-    double rlt_ = std::max(rlt + plant->randn()*rlts, 0.); // stem life time
-    OrganSpecificParameter* p = new StemSpecificParameter(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
-    return p;
+    double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
+    double a_ = std::max(a + p->randn()*as, 0.); // radius
+    double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
+    double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // stem life time
+    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
 }
 
 /**
@@ -155,7 +141,7 @@ int StemRandomParameter::getLateralType(const Vector3d& pos)
     assert(successor.size()==successorP.size()
         && "StemTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
     if (successorP.size()>0) { // at least 1 successor type
-        double d = plant->rand(); // in [0,1]
+        double d = plant.lock()->rand(); // in [0,1]
         int i=0;
         double p=successorP.at(i);
         i++;

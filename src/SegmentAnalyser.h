@@ -4,6 +4,8 @@
 
 #include "sdf.h"
 
+#include <memory>
+
 namespace CPlantBox {
 
 class Organism;
@@ -44,7 +46,7 @@ public:
     // todo distribution3
 
     // rather specialized things we want to know
-    std::vector<Organ*> getOrgans() const; ///< segment origins
+    std::vector<std::shared_ptr<Organ>> getOrgans() const; ///< segment origins
     int getNumberOfOrgans() const; ///< number of different organs
     SegmentAnalyser foto(const Vector3d& pos, const Matrix3d& ons, double height) const; ///< takes a picture TODO unfinished, untested
     SegmentAnalyser cut(const SDF_HalfPlane& plane) const; ///< returns the segments intersecting with a plane (e.g. for trenches)
@@ -66,7 +68,7 @@ public:
     std::vector<Vector3d> nodes; ///< nodes
     std::vector<Vector2i> segments; ///< connectivity of the nodes
     std::vector<double> segCTs; ///< creation times of the segments
-    std::vector<Organ*> segO; ///< to look up things
+    std::vector<std::shared_ptr<Organ>> segO; ///< to look up things
 
 protected:
 

@@ -128,7 +128,7 @@ void SegmentAnalyser::crop(SignedDistanceFunction* geometry)
 {
     //std::cout << "cropping " << segments.size() << " segments...";
     std::vector<Vector2i> seg;
-    std::vector<Organ*> sO;
+    std::vector<std::shared_ptr<Organ>> sO;
     std::vector<double> ntimes;
     for (size_t i=0; i<segments.size(); i++) {
         auto s = segments.at(i);
@@ -185,7 +185,7 @@ void SegmentAnalyser::filter(std::string name, double min, double max)
 {
     std::vector<double> data = getParameter(name);
     std::vector<Vector2i> seg;
-    std::vector<Organ*> sO;
+    std::vector<std::shared_ptr<Organ>> sO;
     std::vector<double> ntimes;
     for (size_t i=0; i<segments.size(); i++) {
         if ((data.at(i)>=min) && (data.at(i)<=max)) {
@@ -210,7 +210,7 @@ void SegmentAnalyser::filter(std::string name, double value)
 {
     std::vector<double> data = getParameter(name);
     std::vector<Vector2i> seg;
-    std::vector<Organ*> sO;
+    std::vector<std::shared_ptr<Organ>> sO;
     std::vector<double> ntimes;
     for (size_t i=0; i<segments.size(); i++) {
         if (data.at(i)==value) {
@@ -304,13 +304,13 @@ double SegmentAnalyser::getSummed(std::string name, SignedDistanceFunction* g) c
 /**
  * Return the unique origins of the segments
  */
-std::vector<Organ*> SegmentAnalyser::getOrgans() const
+std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
 {
-    std::set<Organ*> rootset;  // praise the stl
-    for (Organ* r : segO) {
-        rootset.insert(r);
+    std::set<std::shared_ptr<Organ>> rootset;  // praise the stl
+    for (auto o : segO) {
+        rootset.insert(o);
     }
-    return std::vector<Organ*>(rootset.begin(), rootset.end());
+    return std::vector<std::shared_ptr<Organ>>(rootset.begin(), rootset.end());
 }
 
 /**
@@ -617,7 +617,7 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         Vector2i s = segments.at(i);
         Vector3d n1 = nodes.at(s.x);
         Vector3d n2 = nodes.at(s.y);
-        Organ* o = segO.at(i);
+        std::shared_ptr<Organ> o = segO.at(i);
         int organ=o->organType();
         double radius = o->getParameter("radius");
         double red = o->getParameter("RotBeta");
@@ -651,7 +651,7 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
         Vector2i s = segments.at(i);
         Vector3d n1 = nodes.at(s.x);
         Vector3d n2 = nodes.at(s.y);
-        Organ* o = segO.at(i);
+        std::shared_ptr<Organ> o = segO.at(i);
         int branchnumber = o->getId();
         double radius = o->getParameter("radius");
         double length = sqrt((n1.x-n2.x)*(n1.x-n2.x)+(n1.y-n2.y)*(n1.y-n2.y)+(n1.z-n2.z)*(n1.z-n2.z));

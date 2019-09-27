@@ -1,6 +1,8 @@
 #ifndef GROWTH_H
 #define GROWTH_H
 
+#include <memory>
+
 namespace CPlantBox {
 
 class Organ;
@@ -23,7 +25,7 @@ public:
      *
      * \return      organ length [cm] at specific age
      */
-    virtual double getLength(double t, double r, double k, Organ* o) const
+    virtual double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const
     { throw std::runtime_error( "getLength() not implemented" ); return 0; } ///< Returns root length at root age t
 
     /**
@@ -36,11 +38,11 @@ public:
      *
      * \return      organ age [day] at specific length
      */
-    virtual double getAge(double l, double r, double k, Organ* o) const
+    virtual double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const
     { throw std::runtime_error( "getAge() not implemented" ); return 0; } ///< Returns the age of a root of length l
 
 
-    virtual GrowthFunction* copy() { return new GrowthFunction(*this); } ///< Copy the object
+    virtual std::shared_ptr<GrowthFunction> copy() const { return std::make_shared<GrowthFunction>(*this); } ///< Copy the object
 };
 
 
@@ -52,11 +54,11 @@ class LinearGrowth : public GrowthFunction
 {
 public:
 
-    double getLength(double t, double r, double k, Organ* o) const override { return std::min(k,r*t); } ///< @copydoc GrowthFunction::getLegngth
+    double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { return std::min(k,r*t); } ///< @copydoc GrowthFunction::getLegngth
 
-    double getAge(double l, double r, double k, Organ* o)  const override { return l/r; } ///< @copydoc GrowthFunction::getAge
+    double getAge(double l, double r, double k, std::shared_ptr<Organ> o)  const override { return l/r; } ///< @copydoc GrowthFunction::getAge
 
-    GrowthFunction* copy() override { return new LinearGrowth(*this); } ///< @copydoc GrowthFunction::copy
+    std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<LinearGrowth>(*this); } ///< @copydoc GrowthFunction::copy
 
 };
 
@@ -68,9 +70,9 @@ class ExponentialGrowth : public GrowthFunction
 {
 public:
 
-    double getLength(double t, double r, double k, Organ* o) const override { return k*(1-exp(-(r/k)*t)); } ///< @copydoc GrowthFunction::getLegngth
+    double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { return k*(1-exp(-(r/k)*t)); } ///< @copydoc GrowthFunction::getLegngth
 
-    double getAge(double l, double r, double k, Organ* o) const override { ///< @copydoc GrowthFunction::getAge
+    double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override { ///< @copydoc GrowthFunction::getAge
 
         double age = - k/r*log(1-l/k);
         if (std::isfinite(age)) { // the age can not be computed when root length approaches max length
@@ -80,7 +82,7 @@ public:
         }
     } ///< @see GrowthFunction
 
-    GrowthFunction* copy() override { return new ExponentialGrowth(*this); }
+    std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<ExponentialGrowth>(*this); }
 
 };
 

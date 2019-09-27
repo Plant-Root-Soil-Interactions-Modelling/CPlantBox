@@ -25,12 +25,12 @@ class Root :public Organ
 
 public:
 
-    Root(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+    Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
-    Root(Organism* rs, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); ///< used within simulation
+    Root(std::weak_ptr<Organism> rs, int type, Vector3d heading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
     virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
-    Organ* copy(Organism* rs) override;  ///< deep copies the root tree
+    std::shared_ptr<Organ> copy(std::weak_ptr<Organism> rs) override;  ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 
@@ -38,7 +38,7 @@ public:
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
     /* Roots as sequential list */
-    double getParameter(std::string name) const override; ///< returns an organ parameter
+    double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
 
     /* From analytical equations */
     double calcCreationTime(double length); ///< analytical creation (=emergence) time of a node at a length
@@ -46,8 +46,8 @@ public:
     double calcAge(double length); ///< analytical age of the root
 
     /* Abbreviations */
-    RootRandomParameter* getRootRandomParameter() const;  ///< root type parameter of this root
-    const RootSpecificParameter* param() const; ///< root parameter
+    std::shared_ptr<RootRandomParameter> getRootRandomParameter() const;  ///< root type parameter of this root
+    std::shared_ptr<const RootSpecificParameter> param() const; ///< root parameter
     double dx() const { return getRootRandomParameter()->dx; } ///< returns the axial resolution
 
     /* IO */

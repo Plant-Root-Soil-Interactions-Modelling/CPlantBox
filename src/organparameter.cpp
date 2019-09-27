@@ -24,7 +24,7 @@ std::string OrganSpecificParameter::toString() const
  *
  * @param plant     the organism managing this organ type parameter
  */
-OrganRandomParameter::OrganRandomParameter(Organism* plant): plant(plant)
+OrganRandomParameter::OrganRandomParameter(std::weak_ptr<Organism> p): plant(p)
 {
     iparam["organType"] = &organType; // set up class introspection
     iparam["subType"] = &subType;
@@ -38,11 +38,11 @@ OrganRandomParameter::OrganRandomParameter(Organism* plant): plant(plant)
  *
  * @param plant     target organism managing this organ type parameter
  *
- * @return A new organ type parameter object, with same values as this
+ * @return A new organ type parameter object, with same values as this, ownership is passed to the caller
  */
-OrganRandomParameter* OrganRandomParameter::copy(Organism* p)
+std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::weak_ptr<Organism> p)
 {
-    OrganRandomParameter* o = new OrganRandomParameter(p);     // copy constructor would break class introspection
+    auto o = std::make_shared<OrganRandomParameter>(p); // copy constructor would break class introspection
     o->name == name;
     o->organType = organType;
     o->subType = subType;
@@ -55,11 +55,11 @@ OrganRandomParameter* OrganRandomParameter::copy(Organism* p)
  *
  * Normally, both OrganParameter, and OrganTypeParameter are constant over the organ life time.
  *
- * @return The organ specific parameter set (each organ has exactly one set)
+ * @return The organ specific parameter set (each organ has exactly one set), ownership is passed to caller
  */
-OrganSpecificParameter* OrganRandomParameter::realize()
+std::shared_ptr<OrganSpecificParameter> OrganRandomParameter::realize()
 {
-    OrganSpecificParameter* op = new OrganSpecificParameter();
+    auto op = std::make_shared<OrganSpecificParameter>();
     op->subType = subType;
     return op;
 }

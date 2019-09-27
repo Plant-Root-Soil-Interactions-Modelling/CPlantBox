@@ -23,12 +23,12 @@ class Leaf : public Organ
 {
 public:
 
-    Leaf(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+    Leaf(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0);
-	Leaf(Organism* rs, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
+	Leaf(std::weak_ptr<Organism> rs, int type, Vector3d iheading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
 	virtual ~Leaf() { }; // base class constructor is called automatically in c++
 
-    Organ* copy(Organism* rs) override;  ///< deep copies the root tree
+	std::shared_ptr<Organ> copy(std::weak_ptr<Organism> plant) override;   ///< deep copies the root tree
 
 	int organType() const override  { return Organism::ot_leaf; } ///< returns the organs type
 
@@ -44,8 +44,8 @@ public:
 	double calcAge(double length); ///< analytical age of the stem
 
 	/* abbreviations */
-    LeafRandomParameter* getLeafRandomParameter() const;  ///< root type parameter of this root
-    LeafSpecificParameter* param() const; ///< root parameter
+	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
+	std::shared_ptr<const LeafSpecificParameter> param() const; ///< root parameter
 	double dx() const; ///< returns the axial resolution
 
     std::string toString() const;

@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <limits>
+#include <memory>
 
 namespace CPlantBox  {
 
@@ -24,7 +25,7 @@ public:
     SoilLookUp() { }
     virtual ~SoilLookUp() { }
 
-    virtual SoilLookUp* copy() { return new SoilLookUp(*this); }
+    virtual std::shared_ptr<SoilLookUp> copy() { return std::make_shared<SoilLookUp>(*this); }
 
     /**
      * Returns a scalar property of the soil scaled from 0..1.
@@ -34,7 +35,7 @@ public:
      *                  in some situation this might be usefull (e.g. could increase look up speed from a unstructured mesh)
      * \return          scalar soil property
      */
-    virtual double getValue(const Vector3d& pos, const Organ* o = nullptr) const { return 1.; } ///< Returns a scalar property of the soil, 1. per default
+    virtual double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o = nullptr) const { return 1.; } ///< Returns a scalar property of the soil, 1. per default
 
     virtual std::string toString() const { return "SoilLookUp base class"; } ///< Quick info about the object for debugging
 
@@ -113,7 +114,7 @@ public:
 
     SoilLookUpSDF(): SoilLookUpSDF(nullptr) { } ///< Default constructor
 
-    SoilLookUp* copy() override { return new SoilLookUpSDF(*this); }  // todo?: now its a shallow copy
+    std::shared_ptr<SoilLookUp> copy() override { return std::make_shared<SoilLookUpSDF>(*this); }  // todo?: now its a shallow copy
 
     /**
      * Creates the soil property from a signed distance function,
@@ -134,7 +135,7 @@ public:
     /**
      * returns fmin outside of the domain and fmax inside, and a linear ascend according slope
      */
-    virtual double getValue(const Vector3d& pos, const Organ* o = nullptr) const override {
+    double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o  = nullptr) const override {
         Vector3d p = periodic(pos);
         double c = -sdf->getDist(p)/slope*2.; ///< *(-1), because inside the geometry the value is largest
         c += (fmax-fmin)/2.; // thats the value at the boundary
@@ -162,17 +163,17 @@ public:
 
     MultiplySoilLookUps(std::vector<SoilLookUp*> soils) :soils(soils) { }
 
-    SoilLookUp* copy() override { return new MultiplySoilLookUps(*this); } // todo? now its a shallow copy
+    std::shared_ptr<SoilLookUp> copy() override { return std::make_shared<MultiplySoilLookUps>(*this); } // todo? now its a shallow copy
 
-    virtual double getValue(const Vector3d& pos, const Organ* o = nullptr) const override {
+    double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o = nullptr) const override {
         double v = 1.;
         for (size_t i=0; i<soils.size(); i++) {
-            v *= soils[i]->getValue(pos,o);
+            v *= soils[i]->getValue(pos, o);
         }
         return v;
     }
 
-    virtual std::string toString() const override {
+    std::string toString() const override {
         std::string str = "";
         for (size_t i=0; i<soils.size(); i++) {
             str += soils[i]->toString();
@@ -182,7 +183,9 @@ public:
     } ///< Quick info about the object for debugging
 
 protected:
+
     std::vector<SoilLookUp*> soils;
+
 };
 
 
@@ -205,22 +208,22 @@ public:
     :scale(scale), baseLookUp(baseLookUp) {
     }
 
-    SoilLookUp* copy() override { return new ProportionalElongation(*this); } // todo? now its a shallow copy
+    std::shared_ptr<SoilLookUp> copy() override { return std::make_shared<ProportionalElongation>(*this); } // todo? now its a shallow copy
 
     void setScale(double s) { scale = s; }
 
     void setBaseLookUp(SoilLookUp* baseLookUp) { this->baseLookUp=baseLookUp; } ///< proportionally scales a base soil look up
 
-    virtual double getValue(const Vector3d& pos, const Organ* o = nullptr) const override {
+    double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o = nullptr) const override {
         if (baseLookUp==nullptr) {
             return scale;
         } else {
             Vector3d p = this->periodic(pos);
-            return baseLookUp->getValue(p,o)*scale;  // superimpose scaling on a base soil look up function
+            return baseLookUp->getValue(p, o)*scale;  // superimpose scaling on a base soil look up function
         }
     }
 
-    virtual std::string toString() const override { return "ProportionalElongation"; } ///< Quick info about the object for debugging
+    std::string toString() const override { return "ProportionalElongation"; } ///< Quick info about the object for debugging
 
 protected:
 
@@ -250,7 +253,7 @@ public:
     }
 
 
-    SoilLookUp* copy() override { return new Grid1D(*this); }
+    std::shared_ptr<SoilLookUp> copy()  override { return std::make_shared<Grid1D>(*this); }
 
     virtual size_t map(double x) const {
         unsigned int jr,jm,jl;
@@ -266,12 +269,12 @@ public:
         return jl;
     } ///< Generic way to perform look up in an ordered table, overwrite by faster method if appropriate, todo currently floor
 
-    virtual double getValue(const Vector3d& pos, const Organ* o = nullptr) const override {
+    double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o = nullptr) const override {
         Vector3d p = this->periodic(pos);
         return data[map(p.z)];
     } ///< Returns the data of the 1d table, repeats first or last entry if out of bound
 
-    virtual std::string toString() const override { return "RectilinearGrid1D"; } ///< Quick info about the object for debugging
+    std::string toString() const override { return "RectilinearGrid1D"; } ///< Quick info about the object for debugging
 
     size_t n;
     std::vector<double> grid;
@@ -302,7 +305,7 @@ public:
         this->data = data;
     }
 
-    SoilLookUp* copy() override { return new EquidistantGrid1D(*this); }
+    std::shared_ptr<SoilLookUp> copy()  override { return std::make_shared<EquidistantGrid1D>(*this); }
 
     void makeGrid(double a, double b, size_t n) {
         this->grid = std::vector<double>(n);
@@ -311,11 +314,11 @@ public:
         }
     }
 
-    virtual size_t map(double x) const override {
+    size_t map(double x) const override {
         return std::floor((x-a)/(b-a)*(n-1));
     } ///< faster than general look up
 
-    virtual std::string toString() const  override{ return "LinearGrid1D"; } ///< Quick info about the object for debugging
+    std::string toString() const  override{ return "LinearGrid1D"; } ///< Quick info about the object for debugging
 
     double a;
     double b;
@@ -339,7 +342,7 @@ public:
 
     virtual ~RectilinearGrid3D() { };
 
-    SoilLookUp* copy() override { return new RectilinearGrid3D(*this); }
+    std::shared_ptr<SoilLookUp> copy()  override { return std::make_shared<RectilinearGrid3D>(*this); }
 
     virtual size_t map(double x, double y, double z) const {
         size_t i = xgrid->map(x);
@@ -352,7 +355,7 @@ public:
         return data.at(map(i,j,k));
     }
 
-    double getValue(const Vector3d& pos, const Organ* o = nullptr) const override {
+    double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o = nullptr) const override {
         Vector3d p = periodic(pos);
         return data[map(p.x,p.y,p.z)];
     } ///< Returns the data of the 1d table, repeats first or last entry if out of bound
@@ -399,7 +402,8 @@ public:
         delete zgrid;
     }
 
-    SoilLookUp* copy() override { return new EquidistantGrid3D(*this); }
+    std::shared_ptr<SoilLookUp> copy()  override { return std::make_shared<EquidistantGrid3D>(*this); }
+
 };
 
 } // end namespace CPlantBox

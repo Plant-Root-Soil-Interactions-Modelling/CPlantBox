@@ -4,6 +4,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 
 #include "external/tinyxml2/tinyxml2.h"
 
@@ -44,12 +45,12 @@ class OrganRandomParameter
 {
 public:
 
-    OrganRandomParameter(Organism* plant); ///< default constructor
+    OrganRandomParameter(std::weak_ptr<Organism> plant); ///< default constructor
     virtual ~OrganRandomParameter() { };
 
-    virtual OrganRandomParameter* copy(Organism* plant); ///< copies the root type parameter into a new plant
+    virtual std::shared_ptr<OrganRandomParameter> copy(std::weak_ptr<Organism> plant); ///< copies the root type parameter into a new plant
 
-    virtual OrganSpecificParameter* realize(); ///< creates a specific organ from the root parameter set
+    virtual std::shared_ptr<OrganSpecificParameter> realize(); ///< creates a specific organ from the root parameter set
 
     virtual double getParameter(std::string name) const; // get a scalar parameter
 
@@ -67,7 +68,7 @@ public:
     int organType = 0;
     int subType = 0;
 
-    Organism* plant;
+    std::weak_ptr<Organism> plant;
 
 protected:
 

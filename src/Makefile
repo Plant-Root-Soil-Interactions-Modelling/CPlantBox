@@ -260,32 +260,32 @@ Plant.cpp.s:
 	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/Plant.cpp.s
 .PHONY : Plant.cpp.s
 
-PyBoostPlantBox.o: PyBoostPlantBox.cpp.o
+PyPlantBox.o: PyPlantBox.cpp.o
 
-.PHONY : PyBoostPlantBox.o
+.PHONY : PyPlantBox.o
 
 # target to build an object file
-PyBoostPlantBox.cpp.o:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyBoostPlantBox.cpp.o
-.PHONY : PyBoostPlantBox.cpp.o
+PyPlantBox.cpp.o:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyPlantBox.cpp.o
+.PHONY : PyPlantBox.cpp.o
 
-PyBoostPlantBox.i: PyBoostPlantBox.cpp.i
+PyPlantBox.i: PyPlantBox.cpp.i
 
-.PHONY : PyBoostPlantBox.i
+.PHONY : PyPlantBox.i
 
 # target to preprocess a source file
-PyBoostPlantBox.cpp.i:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyBoostPlantBox.cpp.i
-.PHONY : PyBoostPlantBox.cpp.i
+PyPlantBox.cpp.i:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyPlantBox.cpp.i
+.PHONY : PyPlantBox.cpp.i
 
-PyBoostPlantBox.s: PyBoostPlantBox.cpp.s
+PyPlantBox.s: PyPlantBox.cpp.s
 
-.PHONY : PyBoostPlantBox.s
+.PHONY : PyPlantBox.s
 
 # target to generate assembly for a file
-PyBoostPlantBox.cpp.s:
-	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyBoostPlantBox.cpp.s
-.PHONY : PyBoostPlantBox.cpp.s
+PyPlantBox.cpp.s:
+	cd /home/daniel/workspace/CPlantBox && $(MAKE) -f src/CMakeFiles/plantbox.dir/build.make src/CMakeFiles/plantbox.dir/PyPlantBox.cpp.s
+.PHONY : PyPlantBox.cpp.s
 
 Root.o: Root.cpp.o
 
@@ -729,9 +729,9 @@ help:
 	@echo "... Plant.o"
 	@echo "... Plant.i"
 	@echo "... Plant.s"
-	@echo "... PyBoostPlantBox.o"
-	@echo "... PyBoostPlantBox.i"
-	@echo "... PyBoostPlantBox.s"
+	@echo "... PyPlantBox.o"
+	@echo "... PyPlantBox.i"
+	@echo "... PyPlantBox.s"
 	@echo "... Root.o"
 	@echo "... Root.i"
 	@echo "... Root.s"

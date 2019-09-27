@@ -28,7 +28,7 @@ std::string SeedSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-SeedRandomParameter::SeedRandomParameter(Organism* p) :OrganRandomParameter(p)
+SeedRandomParameter::SeedRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
     // base class default values
     name = "undefined";
@@ -40,10 +40,10 @@ SeedRandomParameter::SeedRandomParameter(Organism* p) :OrganRandomParameter(p)
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-OrganRandomParameter* SeedRandomParameter::copy(Organism* p)
+std::shared_ptr<OrganRandomParameter> SeedRandomParameter::copy(std::weak_ptr<Organism> plant)
 {
-	SeedRandomParameter* s = new SeedRandomParameter(*this); // copy constructor breaks class introspection
-    s->plant = p;
+	auto s = std::make_shared<SeedRandomParameter>(*this); // copy constructor breaks class introspection
+    s->plant = plant;
     s->bindParameters(); // fix class introspection
     return s;
 }
@@ -54,21 +54,21 @@ OrganRandomParameter* SeedRandomParameter::copy(Organism* p)
  * Creates a specific plant from the plant random parameters.
  * @return Specific plant parameters derived from the root random parameters
  */
-OrganSpecificParameter* SeedRandomParameter::realize()
+std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
 {
-    Vector3d sP = seedPos.plus(Vector3d(plant->randn()*seedPoss.x, plant->randn()*seedPoss.y, plant->randn()*seedPoss.z));
-    double fB = std::max(firstB + plant->randn()*firstBs, 0.);
-    double dB = std::max(delayB + plant->randn()*delayBs, 0.);
-    int mB = (int)(std::max(maxB + plant->randn()*maxBs, 0.) +0.5);
-    double nC_ = std::max(nC + plant->randn()*nCs, 0.);
-    double fSB = std::max(firstSB + plant->randn()*firstSBs, 0.);
-    double dSB = std::max(delaySB + plant->randn()*delaySBs, 0.);
-    double dRC = std::max(delayRC + plant->randn()*delayRCs, 0.);
-    double nz_ = std::max(delaySB + plant->randn()*delaySBs, 0.);
-    double st = std::max(simtime + plant->randn()*simtimes, 0.);
-    int maxtil = std::max(maxTil + plant->randn()*maxTils, 0.);
-    OrganSpecificParameter* p = new SeedSpecificParameter(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st);
-    return p;
+    auto p = plant.lock();
+    Vector3d sP = seedPos.plus(Vector3d(p->randn()*seedPoss.x, p->randn()*seedPoss.y, p->randn()*seedPoss.z));
+    double fB = std::max(firstB + p->randn()*firstBs, 0.);
+    double dB = std::max(delayB + p->randn()*delayBs, 0.);
+    int mB = (int)(std::max(maxB + p->randn()*maxBs, 0.) +0.5);
+    double nC_ = std::max(nC + p->randn()*nCs, 0.);
+    double fSB = std::max(firstSB + p->randn()*firstSBs, 0.);
+    double dSB = std::max(delaySB + p->randn()*delaySBs, 0.);
+    double dRC = std::max(delayRC + p->randn()*delayRCs, 0.);
+    double nz_ = std::max(delaySB + p->randn()*delaySBs, 0.);
+    double st = std::max(simtime + p->randn()*simtimes, 0.);
+    int maxtil = std::max(maxTil + p->randn()*maxTils, 0.);
+    return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st);
 }
 
 /**

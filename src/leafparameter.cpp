@@ -41,37 +41,25 @@ std::string LeafSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-LeafRandomParameter::LeafRandomParameter(Organism* p) :OrganRandomParameter(p)
+LeafRandomParameter::LeafRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
 	// base class default values
 	name = "undefined";
 	organType = Organism::ot_leaf;
 	subType = -1;
-	f_tf = new Tropism(p);
+	f_tf = std::make_shared<Tropism>(plant);
 	bindParameters();
-}
-
-/**
- * Destructor: delete all callback functions
- */
-LeafRandomParameter::~LeafRandomParameter()
-{
-	delete f_tf;
-	delete f_gf;
-	delete f_se;
-	delete f_sa;
-	delete f_sbp;
 }
 
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-OrganRandomParameter* LeafRandomParameter::copy(Organism* p)
+std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::weak_ptr<Organism> plant)
 {
-	LeafRandomParameter* r = new LeafRandomParameter(*this); // copy constructor breaks class introspection
-	r->plant = p;
+	auto r = std::make_shared<LeafRandomParameter>(*this); // copy constructor breaks class introspection
+	r->plant = plant;
 	r->bindParameters(); // fix class introspection
-	r->f_tf = f_tf->copy(p); // copy call back classes
+	r->f_tf = f_tf->copy(plant); // copy call back classes
 	r->f_gf = f_gf->copy();
 	r->f_se = f_se->copy();
 	r->f_sa = f_sa->copy();
@@ -85,69 +73,63 @@ OrganRandomParameter* LeafRandomParameter::copy(Organism* p)
  * Creates a specific root from the root type parameters.
  * @return Specific root parameters derived from the root type parameters
  */
-OrganSpecificParameter* LeafRandomParameter::realize()
+std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
+    auto p = plant.lock();
 	// type does not change
-	double lb_ = std::max(lb + plant->randn()*lbs,double(0)); // length of basal zone
-	double la_ = std::max(la + plant->randn()*las,double(0)); // length of apical zone
+	double lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
+	double la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
 	std::vector<double> ln_; // stores the inter-distances
 
 	// stores the inter-distances
-	int nob_ = std::max(round(nob + plant->randn()*nobs),double(0)); // maximal number of leafs
+	int nob_ = std::max(round(nob + p->randn()*nobs),double(0)); // maximal number of leafs
 	switch(lnf) {
 	case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d = std::max(ln + plant->randn()*lns,1e-9); //Normal function of equal internode distance
+			double d = std::max(ln + p->randn()*lns,1e-9); //Normal function of equal internode distance
 			ln_.push_back(d);
 		}
 		break;
 	case 1: //nodes distance increase linearly TODO
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln*(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) + p->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 		}
 		break;
 	case 2: //nodes distance decrease linearly TODO
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  std::max(ln*(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) + p->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 		}
 		break;
 	case 3: //nodes distance increase exponential TODO
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  std::max(ln + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln + p->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 		}
 		break;
 	case 4://nodes distance decrease exponential TODO
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln/(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln/(1+i) + p->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 		}
 		break;
 	case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln/(1+i) + plant->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln/(1+i) + p->randn()*lns,1e-9); //std::max(  );//ln + randn()*lns,1e-9);
 			ln_.push_back(d);
 		}
 		break;
 	default:
 		throw 1; // TODO make a nice one
 	}
-	double r_ = std::max(r + plant->randn()*rs,double(0)); // initial elongation
-	double a_ = std::max(a + plant->randn()*as,double(0)); // radius
-	double theta_ = std::max(theta + plant->randn()*thetas,double(0)); // initial elongation
-	double rlt_ = std::max(rlt + plant->randn()*rlts,double(0)); // root life time
-	LeafSpecificParameter* leaf_p =  new LeafSpecificParameter(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
-	return leaf_p;
-
-	//for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-	//		double d = 0.01*2*i; //std::max(  );//ln + randn()*lns,1e-9);
-	//		ln_.push_back(d);
-	//	}
-
+	double r_ = std::max(r + p->randn()*rs,double(0)); // initial elongation
+	double a_ = std::max(a + p->randn()*as,double(0)); // radius
+	double theta_ = std::max(theta + p->randn()*thetas,double(0)); // initial elongation
+	double rlt_ = std::max(rlt + p->randn()*rlts,double(0)); // root life time
+	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 }
 
 /**
@@ -161,7 +143,7 @@ int LeafRandomParameter::getLateralType(const Vector3d& pos)
 	assert(successor.size()==successorP.size()
 			&& "RootTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
 	if (successorP.size()>0) { // at least 1 successor type
-		double d = plant->rand(); // in [0,1]
+		double d = plant.lock()->rand(); // in [0,1]
 		int i=0;
 		double p=successorP.at(i);
 		i++;

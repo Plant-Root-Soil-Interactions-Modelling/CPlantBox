@@ -12,10 +12,10 @@ namespace CPlantBox {
  */
 RootSystem::RootSystem(): Organism()
 {
-   auto rrp = new RootRandomParameter(this);
+   auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
    rrp->subType = 0;
    setOrganRandomParameter(rrp);
-   auto srp = new SeedRandomParameter(this);
+   auto srp = std::make_shared<SeedRandomParameter>(shared_from_this());
    srp->subType = 0;
    setOrganRandomParameter(srp);
 }
@@ -38,19 +38,19 @@ RootSystem::RootSystem(const RootSystem& rs): Organism(rs), geometry(rs.geometry
 /**
  * @return the i-th root parameter of sub type @param type.
  */
-RootRandomParameter* RootSystem::getRootRandomParameter(int type) const
+std::shared_ptr<RootRandomParameter> RootSystem::getRootRandomParameter(int type) const
 {
-    return (RootRandomParameter*) getOrganRandomParameter(Organism::ot_root, type);
+    return std::static_pointer_cast<RootRandomParameter>(getOrganRandomParameter(Organism::ot_root, type));
 }
 
 /**
  * @return all root type parameters in a vector
  */
-std::vector<RootRandomParameter*> RootSystem::getRootRandomParameter() const
+std::vector<std::shared_ptr<RootRandomParameter>> RootSystem::getRootRandomParameter() const
 {
-    std::vector<RootRandomParameter*>  otps = std::vector<RootRandomParameter*>(0);
+    auto otps = std::vector<std::shared_ptr<RootRandomParameter>>(0);
     for (auto& otp : organParam[Organism::ot_root]) {
-        otps.push_back((RootRandomParameter*)otp.second);
+        otps.push_back(std::static_pointer_cast<RootRandomParameter>(otp.second));
     }
     return otps;
 }
@@ -58,18 +58,18 @@ std::vector<RootRandomParameter*> RootSystem::getRootRandomParameter() const
 /**
  * Sets the root system parameters @param rsp
  */
-void RootSystem::setRootSystemParameter(SeedRandomParameter& rsp)
+void RootSystem::setRootSystemParameter(std::shared_ptr<SeedRandomParameter> sp)
 {
-    assert(rsp.subType==0 && "RootSystem::setRootSystemParameter: In CPlantBox must have subType 0");
-    this->setOrganRandomParameter(&rsp);
+    assert(sp->subType==0 && "RootSystem::setRootSystemParameter: In CPlantBox must have subType 0");
+    this->setOrganRandomParameter(sp);
 }
 
 /**
  * @return the root system parameter
  */
-SeedRandomParameter* RootSystem::getRootSystemParameter()
+std::shared_ptr<SeedRandomParameter> RootSystem::getRootSystemParameter()
 {
-    return (SeedRandomParameter*)this->getOrganRandomParameter(ot_seed,0 );
+    return std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(ot_seed,0 ));
 }
 
 /**
@@ -77,9 +77,6 @@ SeedRandomParameter* RootSystem::getRootSystemParameter()
  */
 void RootSystem::reset()
 {
-    for(auto b :baseOrgans) {
-        delete b;
-    }
     baseOrgans.clear();
     simtime = 0;
     organId = -1;
@@ -116,7 +113,7 @@ void RootSystem::openFile(std::string name, std::string subdir)
     pp_name.append(name);
     pp_name.append(".pparam");
     fis.open(pp_name.c_str());
-    auto randomSeed = new SeedRandomParameter(this);
+    auto randomSeed = std::make_shared<SeedRandomParameter>(shared_from_this());
     randomSeed->subType = 0;
     if (fis.good()) { // did it work?
         randomSeed->read(fis); // reads the random parameters
@@ -124,7 +121,7 @@ void RootSystem::openFile(std::string name, std::string subdir)
     } else { // create a tap root system
         std::cout << "No root system parameters found, using default tap root system \n";
     }
-    this->setRootSystemParameter(*randomSeed);
+    this->setRootSystemParameter(randomSeed);
 }
 
 /**
@@ -138,7 +135,7 @@ int RootSystem::readParameters(std::istream& is)
 	std::cout << "RootSystem::readParameters(std::istream) is deprecated, use readParameters(std::string filename) instead \n";
     int c = 0;
     while (is.good()) {
-        RootRandomParameter* p = new RootRandomParameter(this);
+        auto p = std::make_shared<RootRandomParameter>(shared_from_this());
         p->read(is);
         p->organType = Organism::ot_root;
         setOrganRandomParameter(p);
@@ -156,7 +153,7 @@ void RootSystem::writeParameters(std::ostream& os) const
 {
 	std::cout << "RootSystem::writeParameters is deprecated, use writeParameters(std::string filename) instead \n";
     for (auto& otp :organParam[Organism::ot_root]) {
-        ((RootRandomParameter*)otp.second)->write(os);
+        std::static_pointer_cast<RootRandomParameter>(otp.second)->write(os);
     }
 }
 
@@ -177,7 +174,7 @@ void RootSystem::initialize(int basaltype, int shootbornetype)
     getNodeIndex(); // increase node index
 
     // create seed
-    Seed seed = Seed(this);
+    Seed seed = Seed(shared_from_this());
     seed.initialize();
     seedParam = SeedSpecificParameter(*seed.param()); // copy the specific parameters
     // std::cout << "RootSystem::initialize:\n" <<  seedParam.toString() ;
@@ -196,15 +193,13 @@ void RootSystem::initCallbacks()
 {
     // Create tropisms and growth functions per root type
     for (auto& p_otp :organParam[Organism::ot_root]) {
-        RootRandomParameter* rtp = (RootRandomParameter*)p_otp.second;
-        Tropism* tropism = this->createTropismFunction(rtp->tropismT, rtp->tropismN, rtp->tropismS);
+        auto rp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
         tropism->setGeometry(geometry);
-        delete rtp->f_tf; // delete old tropism
-        rtp->f_tf = tropism; // set new one
-        GrowthFunction* gf_ = this->createGrowthFunction(rtp->gf);
+        rp->f_tf = tropism; // set new one
+        auto gf_ = this->createGrowthFunction(rp->gf);
         gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
-        delete rtp->f_gf;
-        rtp->f_gf  = gf_;
+        rp->f_gf  = gf_;
     }
 }
 
@@ -215,13 +210,13 @@ void RootSystem::initCallbacks()
  * @param tf_           a tropism
  * @param rt            root type, if rt = -1 all types are set to this tropism (default).
  */
-void RootSystem::setTropism(Tropism* tf_, int rt)
+void RootSystem::setTropism(std::shared_ptr<Tropism> tf_, int rt)
 {
     if (rt>-1) { // set for a specific root type
         getRootRandomParameter(rt)->f_tf=tf_;
     } else { // set for all root types (default)
         for (auto& p_otp :organParam[Organism::ot_root]) {
-            RootRandomParameter* rtp = (RootRandomParameter*)p_otp.second;
+            auto rtp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
             rtp->f_tf = tf_;
         }
     }
@@ -313,17 +308,16 @@ void RootSystem::simulate(double dt, double maxinc_, ProportionalElongation* se,
  * @param sigma     tropism parameter (passsed to the tropism class)
  * @return          the tropism class containing with the callback functions
  */
-Tropism* RootSystem::createTropismFunction(int tt, double N, double sigma) {
+std::shared_ptr<Tropism>  RootSystem::createTropismFunction(int tt, double N, double sigma) {
     // std::cout << "Creating (" << tt << ", " << N << ", " << sigma <<")\n";
     switch (tt) {
-    case tt_plagio: return new Plagiotropism(this,N,sigma);
-    case tt_gravi: return new Gravitropism(this,N,sigma);
-    case tt_exo: return new Exotropism(this,N,sigma);
-    case tt_hydro: {
-        Tropism* gt =  new Gravitropism(this,N,sigma);
-        Tropism* ht= new Hydrotropism(this,N,sigma,soil);
-        Tropism* cht = new CombinedTropism(this,N,sigma,ht,10.,gt,1.); // does only use the objective functions from gravitropism and hydrotropism
-        return cht;
+    case tt_plagio: return std::make_shared<Plagiotropism>(shared_from_this(),N,sigma);
+    case tt_gravi: return std::make_shared<Gravitropism>(shared_from_this(),N,sigma);
+    case tt_exo: return std::make_shared<Exotropism>(shared_from_this(),N,sigma);
+    case tt_hydro: { // uses weighted objective functions from gravitropism and hydrotropism
+        auto gt =  std::make_shared<Gravitropism>(shared_from_this(),N,sigma);
+        auto ht= std::make_shared<Hydrotropism>(shared_from_this(),N, sigma, soil);
+        return std::make_shared<CombinedTropism>(shared_from_this(),N,sigma,ht,10.,gt,1.);
     }
     default: throw std::invalid_argument( "RootSystem::createTropismFunction() tropism type not implemented" );
     }
@@ -336,10 +330,10 @@ Tropism* RootSystem::createTropismFunction(int tt, double N, double sigma) {
  * @param gft       the growth function index, given in the root type parameters
  * @return          the growth function class containing with the callback functions
  */
-GrowthFunction* RootSystem::createGrowthFunction(int gft) {
+std::shared_ptr<GrowthFunction>  RootSystem::createGrowthFunction(int gft) {
     switch (gft) {
-    case gft_negexp: return new ExponentialGrowth();
-    case gft_linear: return new LinearGrowth();
+    case gft_negexp: return std::make_shared<ExponentialGrowth>();
+    case gft_linear: return std::make_shared<LinearGrowth>();
     default: throw std::invalid_argument( "RootSystem::createGrowthFunction() growth function type not implemented" );
     }
 }
@@ -350,16 +344,16 @@ GrowthFunction* RootSystem::createGrowthFunction(int gft) {
  *
  * \return sequential vector of roots with more than 1 node
  */
-std::vector<Root*> RootSystem::getRoots() const
+std::vector<std::shared_ptr<Root>> RootSystem::getRoots() const
 {
     if (roots.empty()) { // create buffer
-        std::vector<Organ*> organs;
+        std::vector<std::shared_ptr<Organ>> organs;
         organs.reserve(getNumberOfOrgans()); // for speed up
         for (const auto& br : this->baseOrgans) {
-            ((Root*)br)->getOrgans(ot_root, organs);
+            br->getOrgans(ot_root, organs);
         }
         for (auto& o :organs) {
-            roots.push_back((Root*)o);
+            roots.push_back(std::static_pointer_cast<Root>(o));
         }
         return roots;
     } else { // return buffer
@@ -588,7 +582,7 @@ RootSystemState::RootSystemState(const RootSystem& rs) : simtime(rs.simtime), ri
 {
     baseRoots = std::vector<RootState>(rs.baseOrgans.size()); // store base roots
     for (size_t i=0; i<baseRoots.size(); i++) {
-        baseRoots[i] = RootState(*((Root*)rs.baseOrgans[i]));
+        baseRoots[i] = RootState(*(std::static_pointer_cast<Root>(rs.baseOrgans[i])));
     }
 }
 
@@ -610,7 +604,7 @@ void RootSystemState::restore(RootSystem& rs)
     rs.UD = UD;
     rs.ND = ND;
     for (size_t i=0; i<baseRoots.size(); i++) { // restore base roots
-        baseRoots[i].restore(*((Root*)rs.baseOrgans[i]));
+        baseRoots[i].restore(*(std::static_pointer_cast<Root>(rs.baseOrgans[i])));
     }
 }
 
@@ -627,7 +621,7 @@ RootState::RootState(const Root& r): alive(r.alive), active(r.active), age(r.age
     non = r.nodes.size();
     laterals = std::vector<RootState>(r.children.size());
     for (size_t i=0; i<laterals.size(); i++) {
-        laterals[i] = RootState(*((Root*)r.children[i]));
+        laterals[i] = RootState(*(std::static_pointer_cast<Root>(r.children[i])));
     }
 }
 
@@ -649,12 +643,9 @@ void RootState::restore(Root& r)
     r.nodes.back() = lNode; // restore last value
     r.nodeIds.back() = lNodeId;
     r.nodeCTs.back() = lneTime;
-    for (size_t i = laterals.size(); i<r.children.size(); i++) { // delete roots that have not been created
-        delete r.children[i];
-    }
     r.children.resize(laterals.size()); // shrink and restore laterals
     for (size_t i=0; i<laterals.size(); i++) {
-        laterals[i].restore(*((Root*)r.children[i]));
+        laterals[i].restore(*(std::static_pointer_cast<Root>(r.children[i])));
     }
 }
 

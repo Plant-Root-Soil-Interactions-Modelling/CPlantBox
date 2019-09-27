@@ -19,7 +19,7 @@ namespace CPlantBox {
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
-Leaf::Leaf(int id, const OrganSpecificParameter* param, bool alive, bool active, double age, double length,
+Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
 :Organ(id, param, alive, active, age, length, moved,  oldNON ), parentBaseLength(pbl), parentNI(pni)
 { }
@@ -40,7 +40,8 @@ Leaf::Leaf(int id, const OrganSpecificParameter* param, bool alive, bool active,
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Leaf::Leaf(Organism* plant, int type, Vector3d iheading, double delay, Organ* parent, double pbl, int pni) :Organ(plant,parent,Organism::ot_leaf, type,delay), parentBaseLength(pbl), parentNI(pni)
+Leaf::Leaf(std::weak_ptr<Organism> plant, int type, Vector3d iheading, double delay,  std::weak_ptr<Organ> parent, double pbl, int pni)
+        :Organ(plant,parent,Organism::ot_leaf, type,delay), parentBaseLength(pbl), parentNI(pni)
 {
     iHeading=iheading;
     //  std::cout << "Leaf pni = "<< pni<< std::endl;
@@ -52,7 +53,8 @@ Leaf::Leaf(Organism* plant, int type, Vector3d iheading, double delay, Organ* pa
 
     std::cout <<"subtype ="<<param()->subType <<"getleafphytomerID =" <<getleafphytomerID(param()->subType)<< "\n";
     addleafphytomerID(param()->subType);
-    double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->RotBeta + M_PI*plant->rand()*getLeafRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
+    double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->RotBeta
+        + M_PI*plant.lock()->rand()*getLeafRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(iHeading);
     //	if (getLeafRandomParameter()->InitBeta >0 && getleafphytomerID(param()->subType)==0 ){
     beta = beta + getLeafRandomParameter()->InitBeta;
@@ -65,8 +67,8 @@ Leaf::Leaf(Organism* plant, int type, Vector3d iheading, double delay, Organ* pa
     //ons.times(Matrix3d::rotX(beta));
 
     double theta = M_PI*param()->theta;
-    if (parent->organType() != Organism::ot_seed) { // scale if not a base root
-        double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), this);
+    if (!parent.expired()) { // scale if not a base root
+        double scale = getLeafRandomParameter()->f_sa->getValue(parent.lock()->getNode(pni), parent.lock());
         theta *= scale;
     }
     //ons.times(Matrix3d::rotZ(theta));
@@ -79,12 +81,10 @@ Leaf::Leaf(Organism* plant, int type, Vector3d iheading, double delay, Organ* pa
     parentNI = pni;
     length = 0;
     // initial node
-    if (parent->organType()!=Organism::ot_seed ) { // the first node of the base leafs must be created in Seed::initialize()
-        // otherwise, don't use addNode for the first node of the leaf,
-        // since this node exists already and does not need a new identifier
-        nodes.push_back(Vector3d());
-        nodeIds.push_back(parent->getNodeId(pni));
-        nodeCTs.push_back(parent->getNodeCT(pni)+delay);
+    if (!parent.expired()) { // the first node of the base roots must be created in RootSystem::initialize()
+        auto p = parent.lock();
+        assert(pni+1 == p->getNumberOfNodes() && "at object creation always at last node");
+        addNode(p->getNode(pni), p->getNodeId(pni), p->getNodeCT(pni)+delay);
     }
 }
 
@@ -94,15 +94,15 @@ Leaf::Leaf(Organism* plant, int type, Vector3d iheading, double delay, Organ* pa
  *
  * @param plant     the plant the copied organ will be part of
  */
-Organ* Leaf::copy(Organism* plant)
+std::shared_ptr<Organ> Leaf::copy(std::weak_ptr<Organism> p)
 {
-    Leaf* l = new Leaf(*this); // shallow copy
-    l->parent = nullptr;
-    l->plant = plant;
-    l->param_ = new LeafSpecificParameter(*param()); // copy parameters
+    auto l = std::make_shared<Leaf>(*this); // shallow copy
+    l->parent = std::weak_ptr<Organ>();
+    l->plant = p;
+    l->param_ = std::make_shared<LeafSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         l->children[i] = children[i]->copy(plant); // copy laterals
-        l->children[i]->setParent(this);
+        l->children[i]->setParent(shared_from_this());
     }
     return l;
 }
@@ -132,10 +132,10 @@ void Leaf::simulate(double dt, bool verbose)
 
         // probabilistic branching model (todo test)
         if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
-            double P = getLeafRandomParameter()->f_sbp->getValue(nodes.back(),this);
+            double P = getLeafRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
             if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
                 double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
-                if (plant->rand()>p) { // not rand()<p
+                if (plant.lock()->rand()>p) { // not rand()<p
                     age -= dt; // the root does not emerge in this time step
                 }
             }
@@ -161,7 +161,7 @@ void Leaf::simulate(double dt, bool verbose)
 
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
-                double scale = getLeafRandomParameter()->f_sa->getValue(nodes.back(),this);
+                double scale = getLeafRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
                 double dl = std::max(scale*e, 0.); // length increment
 
                 // create geometry
@@ -254,20 +254,11 @@ double Leaf::getParameter(std::string name) const {
  */
 double Leaf::calcCreationTime(double length)
 {
-    assert(length>=0);
-    double age = calcAge(length);
-    assert(age>=0);
-    if (parent->organType()!=Organism::ot_stem) {
-        if (parent->organType()==Organism::ot_leaf) {
-            double pl = parentBaseLength+((Leaf*)parent)->getLeafRandomParameter()->la; // parent length, when this leaf was created
-            double pAge=((Leaf*)parent)->calcCreationTime(pl);
-            return age+pAge;
-        } else { // organ type is seed
-            return age+nodeCTs[0];
-        }
-    } else {
-        return age+nodeCTs[0];
-    }
+    assert(length >= 0 && "Leaf::getCreationTime() negative length");
+    double leafage = calcAge(length);
+    leafage = std::min(leafage, age);
+    assert(leafage >= 0 && "Leaf::getCreationTime() negative root age");
+    return leafage+nodeCTs[0];
 }
 
 /**
@@ -283,7 +274,7 @@ double Leaf::calcLength(double age)
     assert(age>=0);
     std::cout<<"organName is ? \n";
     //return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
-    return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
+    return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,shared_from_this());
     //	}else {
     //assert(age>=0);
     //	    return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
@@ -302,7 +293,7 @@ double Leaf::calcAge(double length)
     //     if ( name() == "maize1eaf"){
     assert(length>=0);
     //std::cout<<"length subtype is"<<getLeafRandomParameter()->subType<<"\n";
-    return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
+    return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),shared_from_this());
     //        return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
     //        }else {
     //assert(age>=0);
@@ -335,11 +326,11 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            Leaf* lateral = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-            Leaf* lateral2 = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
+            auto lateral2 = std::make_shared<Leaf>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
             //		lateral2->setRelativeOrigin(nodes.back());
             children.push_back(lateral2);
             lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -349,11 +340,11 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            Leaf* lateral = new Leaf(plant,  lt, h, delay, this, nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant,  lt, h, delay, shared_from_this(), nodes.size() - 1, length);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-            Leaf* lateral2 = new Leaf(plant,  lt, h, delay, this, nodes.size() - 1, length);
+            auto lateral2 = std::make_shared<Leaf>(plant,  lt, h, delay, shared_from_this(), nodes.size() - 1, length);
             //		lateral2->setRelativeOrigin(nodes.back());
             children.push_back(lateral2);
             lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -363,7 +354,7 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            Leaf* lateral = new Leaf(plant,  lt, h, delay, this, nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant,  lt, h, delay, shared_from_this(), nodes.size() - 1, length);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -373,14 +364,14 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            Leaf* lateral = new Leaf(plant, lt,  h, delay,  this, nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant, lt,  h, delay,  shared_from_this(), nodes.size() - 1, length);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
             addleafphytomerID(getLeafRandomParameter()->subType);
 
-            Leaf* lateral2 = new Leaf(plant, lt, h, delay,  this, nodes.size() - 1, length);
+            auto lateral2 = std::make_shared<Leaf>(plant, lt, h, delay,  shared_from_this(), nodes.size() - 1, length);
             //		lateral2->setRelativeOrigin(nodes.back());
             children.push_back(lateral2);
             lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -390,7 +381,7 @@ void Leaf::createLateral(bool silence)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
 
-            Leaf* lateral = new Leaf(plant, lt, h, delay, this, nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant, lt, h, delay, shared_from_this(), nodes.size() - 1, length);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -401,7 +392,7 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            Leaf* lateral = new Leaf(plant, lt, h, delay, this, nodes.size()-1, length);
+            auto lateral = std::make_shared<Leaf>(plant, lt, h, delay, shared_from_this(), nodes.size()-1, length);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -434,7 +425,7 @@ Vector3d Leaf::getIncrement(const Vector3d& p, double sdx)
 {
     Vector3d h = heading();
     Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, sdx, this);
+    Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, sdx,shared_from_this());
     Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
     return sv.times(sdx);
 }
@@ -462,7 +453,7 @@ void Leaf::createSegments(double l, bool verbose)
     int nn = nodes.size();
     if (firstCall) { // first call of createSegments (in Root::simulate)
         firstCall = false;
-        if ((nn>1) && (children.empty() || (nn-1 != ((Leaf*)children.back())->parentNI)) ) { // don't move a child base node
+        if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Leaf>(children.back())->parentNI)) ) { // don't move a child base node
             Vector3d n2 = nodes[nn-2];
             Vector3d n1 = nodes[nn-1];
             double olddx = n1.minus(n2).length(); // length of last segment
@@ -515,17 +506,17 @@ void Leaf::createSegments(double l, bool verbose)
 /**
  * @return The RootTypeParameter from the plant
  */
-LeafRandomParameter* Leaf::getLeafRandomParameter() const
+std::shared_ptr<LeafRandomParameter> Leaf::getLeafRandomParameter() const
 {
-    return (LeafRandomParameter*)plant->getOrganRandomParameter(Organism::ot_root, param_->subType);
+    return std::static_pointer_cast<LeafRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 
 /**
  * @return Parameters of the specific root
  */
-LeafSpecificParameter* Leaf::param() const
+std::shared_ptr<const LeafSpecificParameter>  Leaf::param() const
 {
-    return (LeafSpecificParameter*)param_;
+    return std::static_pointer_cast<const LeafSpecificParameter>(param_);
 }
 
 /**

@@ -16,20 +16,20 @@ class Seed : public Organ
 {
 public:
 
-    Seed(Organism* plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.) { };
+    Seed(std::weak_ptr<Organism> plant) :Organ(plant, std::weak_ptr<Organ>(),Organism::ot_seed, 0, 0.) { };
     virtual ~Seed() { }; // everything is done in @Organ
 
     virtual int organType() const override { return Organism::ot_seed; }
 
     void initialize();
 
-    SeedSpecificParameter* param() const { return (SeedSpecificParameter*)param_; }
+    std::shared_ptr<const SeedSpecificParameter> param() const { return std::static_pointer_cast<const SeedSpecificParameter>(param_); }
 
     virtual std::string toString() const override;
 
     int getNumberOfRootCrowns() const { return numberOfRootCrowns; } // for rootsystem initialisation
-    std::vector<Organ*>& baseOrgans() { return children; } // created by initialize
-    std::vector<Organ*> copyBaseOrgans(); ///< shallow copy of the childs
+    std::vector<std::shared_ptr<Organ>>& baseOrgans() { return children; } // created by initialize
+    std::vector<std::shared_ptr<Organ>> copyBaseOrgans(); ///< shallow copy of the childs
 
     // default positions (unused) (TODO) make nicer
     int tapRootType =1; // todo
@@ -38,8 +38,10 @@ public:
     int mainStemType = 1; // todo
     int tillerType = 4; // todo
 
-    virtual Organ* createRoot(Organism* rs, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); // overwrite if you want to change the types
-    virtual Organ* createStem(Organism* rs, int type, Vector3d pheading, double delay, Organ* parent, double pbl, int pni); // overwrite if you want to change the types
+    virtual std::shared_ptr<Organ> createRoot(std::weak_ptr<Organism> plant, int type, Vector3d heading, double delay,
+        std::weak_ptr<Organ> parent = std::weak_ptr<Organ>(), double pbl = 0., int pni = 0); // overwrite if you want to change the types
+    virtual std::shared_ptr<Organ> createStem(std::weak_ptr<Organism> plant, int type, Vector3d heading, double delay,
+        std::weak_ptr<Organ> parent = std::weak_ptr<Organ>(), double pbl = 0., int pni = 0); // overwrite if you want to change the types
 
 protected:
 

@@ -40,10 +40,10 @@ public:
     virtual ~RootSystem() { };
 
     /* Parameter input output */
-    RootRandomParameter* getRootRandomParameter(int type) const;///< returns the i-th root parameter set (i=1..n)
-    std::vector<RootRandomParameter*> getRootRandomParameter() const; ///< all root type parameters as a vector
-    void setRootSystemParameter(SeedRandomParameter& rsp); ///< sets the root system parameters
-    SeedRandomParameter* getRootSystemParameter(); ///< gets the root system parameters
+    std::shared_ptr<RootRandomParameter> getRootRandomParameter(int type) const;///< returns the i-th root parameter set (i=1..n)
+    std::vector<std::shared_ptr<RootRandomParameter>> getRootRandomParameter() const; ///< all root type parameters as a vector
+    void setRootSystemParameter(std::shared_ptr<SeedRandomParameter> rsp); ///< sets the root system parameters
+    std::shared_ptr<SeedRandomParameter> getRootSystemParameter(); ///< gets the root system parameters
     void openFile(std::string filename, std::string subdir="modelparameter/"); ///< reads root parameter and plant parameter
     int readParameters(std::istream & cin); ///< reads root parameters from an input stream
     void writeParameters(std::ostream & os) const; ///< writes root parameters
@@ -54,24 +54,25 @@ public:
     void reset(); ///< resets the root class, keeps the root type parameters
     void initialize() override { initialize(4,5); }; ///< creates the base roots, call before simulation and after setting the plant and root parameters
     void initialize(int basal, int shootborne); ///< creates the base roots, call before simulation and after setting the plant and root parameters
-    void setTropism(Tropism* tf, int rt = -1); ///< sets a tropism function for a single root type or all root types (defaut)
+    void setTropism(std::shared_ptr<Tropism> tf, int rt = -1); ///< sets a tropism function for a single root type or all root types (defaut)
     void simulate(double dt, bool verbose = false) override; ///< simulates root system growth for time span dt
     void simulate(); ///< simulates root system growth for the time defined in the root system parameters
     void simulate(double dt, double maxinc, ProportionalElongation* se, bool silence = false); // simulates the root system with a maximal overall elongation
 
     /* sequential */
-    std::vector<Root*> getRoots() const; ///< represents the root system as sequential vector of roots and buffers the result
+    std::vector<std::shared_ptr<Root>>  getRoots() const; ///< represents the root system as sequential vector of roots and buffers the result
 
     /* call back function creation */
     void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
-    virtual Tropism* createTropismFunction(int tt, double N, double sigma); ///< Creates the tropisms, overwrite or change this method to add more tropisms
-    virtual GrowthFunction* createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
+    virtual std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma); ///< Creates the tropisms, overwrite or change this method to add more tropisms
+    virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
+
 
     /* Analysis of simulation results */
     int getNumberOfSegments(int ot = -1) const override { return nodeId-numberOfCrowns-1; } ///< Number of segments of the root system ((nid+1)-1) - numberOfCrowns - 1 (artificial shoot)
     int getNumberOfRoots(bool all = false) const { if (all) return organId+1; else return getRoots().size(); }
     std::vector<Vector3d> getNodes() const override;
-    std::vector<Organ*> getBaseRoots() const { return baseOrgans; } ///< Base roots are tap root, basal roots, and shoot borne roots TODO
+    std::vector<std::shared_ptr<Organ>> getBaseRoots() const { return baseOrgans; } ///< Base roots are tap root, basal roots, and shoot borne roots TODO
     std::vector<Vector2i> getShootSegments() const; ///< Copies the segments connecting tap, basal root, shootborne roots
     std::vector<int> getRootTips() const; ///< Node indices of the root tips
     std::vector<int> getRootBases() const; ///< Node indices of the root bases
@@ -93,7 +94,7 @@ private:
     SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
     SoilLookUp* soil = nullptr; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
-    mutable std::vector<Root*> roots = std::vector<Root*>(); // buffer for getRoots()
+    mutable std::vector<std::shared_ptr<Root>> roots = std::vector<std::shared_ptr<Root>>(); // buffer for getRoots()
     int numberOfCrowns = 0;
 
     std::stack<RootSystemState> stateStack;
