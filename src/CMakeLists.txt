@@ -29,7 +29,8 @@ set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BI
 #
 # 2. Make plantbox library
 #
-add_subdirectory(pybind11)
+find_package(pybind11 REQUIRED) 
+
 pybind11_add_module(plantbox SHARED 
             sdf.cpp
             organparameter.cpp

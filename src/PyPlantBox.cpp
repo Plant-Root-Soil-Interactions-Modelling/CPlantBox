@@ -6,7 +6,6 @@ namespace py = pybind11;
 /**
  * A Python binding based on pybind11
  */
-
 #include "mymath.h"
 #include "sdf.h"
 #include "organparameter.h"
@@ -87,18 +86,18 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * sdf
      */
-    py::class_<SignedDistanceFunction>(m,"SignedDistanceFunction")
+    py::class_<SignedDistanceFunction, std::shared_ptr<SignedDistanceFunction>>(m,"SignedDistanceFunction")
         .def(py::init<>())
         .def("getDist",&SignedDistanceFunction::getDist)
         .def("writePVPScript", (std::string (SignedDistanceFunction::*)() const) &SignedDistanceFunction::writePVPScript) // overloads
         .def("getGradient",  &SignedDistanceFunction::getGradient, py::arg("p"), py::arg("eps") = 5.e-4) // defaults
         .def("__str__",&SignedDistanceFunction::toString);
-    py::class_<SDF_PlantBox, SignedDistanceFunction>(m, "SDF_PlantBox")
+    py::class_<SDF_PlantBox, SignedDistanceFunction, std::shared_ptr<SDF_PlantBox>>(m, "SDF_PlantBox")
         .def(py::init<double,double,double>());
-    py::class_<SDF_PlantContainer, SignedDistanceFunction>(m,"SDF_PlantContainer")
+    py::class_<SDF_PlantContainer, SignedDistanceFunction, std::shared_ptr<SDF_PlantContainer>>(m,"SDF_PlantContainer")
         .def(py::init<>())
         .def(py::init<double,double,double,double>());
-    py::class_<SDF_RotateTranslate, SignedDistanceFunction>(m, "SDF_RotateTranslate")
+    py::class_<SDF_RotateTranslate, SignedDistanceFunction, std::shared_ptr<SDF_RotateTranslate>>(m, "SDF_RotateTranslate")
         .def(py::init<SignedDistanceFunction*,double,int,Vector3d&>())
         .def(py::init<SignedDistanceFunction*,Vector3d&>());
     py::enum_<SDF_RotateTranslate::SDF_Axes>(m, "SDF_Axis")
@@ -106,18 +105,18 @@ PYBIND11_MODULE(plantbox, m) {
         .value("yaxis", SDF_RotateTranslate::SDF_Axes::yaxis)
         .value("zaxis", SDF_RotateTranslate::SDF_Axes::zaxis)
         .export_values();
-    py::class_<SDF_Intersection, SignedDistanceFunction>(m,"SDF_Intersection")
+    py::class_<SDF_Intersection, SignedDistanceFunction, std::shared_ptr<SDF_Intersection>>(m,"SDF_Intersection")
         .def(py::init<std::vector<SignedDistanceFunction*>>())
         .def(py::init<SignedDistanceFunction*,SignedDistanceFunction*>());
-    py::class_<SDF_Union, SDF_Intersection>(m, "SDF_Union")
+    py::class_<SDF_Union, SDF_Intersection, std::shared_ptr<SDF_Union>>(m, "SDF_Union")
         .def(py::init<std::vector<SignedDistanceFunction*>>())
         .def(py::init<SignedDistanceFunction*,SignedDistanceFunction*>());
-    py::class_<SDF_Difference, SDF_Intersection>(m, "SDF_Difference")
+    py::class_<SDF_Difference, SDF_Intersection, std::shared_ptr<SDF_Difference>>(m, "SDF_Difference")
         .def(py::init<std::vector<SignedDistanceFunction*>>())
         .def(py::init<SignedDistanceFunction*,SignedDistanceFunction*>());
-    py::class_<SDF_Complement, SignedDistanceFunction>(m, "SDF_Complement")
+    py::class_<SDF_Complement, SignedDistanceFunction, std::shared_ptr<SDF_Complement>>(m, "SDF_Complement")
         .def(py::init<SignedDistanceFunction*>());
-    py::class_<SDF_HalfPlane, SignedDistanceFunction>(m, "SDF_HalfPlane")
+    py::class_<SDF_HalfPlane, SignedDistanceFunction, std::shared_ptr<SDF_HalfPlane>>(m, "SDF_HalfPlane")
         .def(py::init<Vector3d&,Vector3d&>())
         .def(py::init<Vector3d&,Vector3d&,Vector3d&>())
         .def_readwrite("o", &SDF_HalfPlane::o)
@@ -127,12 +126,12 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * organparameter.h
      */
-    py::class_<OrganSpecificParameter>(m,"OrganSpecificParameter")
+    py::class_<OrganSpecificParameter, std::shared_ptr<OrganSpecificParameter>>(m,"OrganSpecificParameter")
         .def(py::init<>())
         .def_readwrite("subType",&OrganSpecificParameter::subType)
         .def("__str__",&OrganSpecificParameter::toString);
-    py::class_<OrganRandomParameter>(m,"OrganRandomParameter")
-        .def(py::init<Organism*>())
+    py::class_<OrganRandomParameter, std::shared_ptr<OrganRandomParameter>>(m,"OrganRandomParameter")
+        .def(py::init<std::weak_ptr<Organism>>())
         .def("copy",&OrganRandomParameter::copy)
         .def("realize",&OrganRandomParameter::realize)
         .def("getParameter",&OrganRandomParameter::getParameter)
@@ -150,9 +149,9 @@ PYBIND11_MODULE(plantbox, m) {
     /**
      * Organ.h
      */
-    py::class_<Organ>(m,"Organ")
-        .def(py::init<Organism*, Organ*, int, int, double>())
-        .def(py::init<int, OrganSpecificParameter*, bool, bool, double, double, bool, int>(), py::keep_alive<1, 3>())
+    py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ") // std::unique_ptr<Organ, py::nodelete>>
+        .def(py::init<std::weak_ptr<Organism>, std::weak_ptr<Organ>, int, int, double>())
+        .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, bool, int>())
         .def("copy",&Organ::copy)
         .def("organType",&Organ::organType)
         .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
@@ -163,7 +162,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("addChild",&Organ::addChild)
 
         .def("getId",&Organ::getId)
-        .def("getParam",&Organ::getParam, py::return_value_policy::reference)
+        .def("getParam",&Organ::getParam)
         .def("getOrganRandomParameter",&Organ::getOrganRandomParameter)
         .def("isAlive",&Organ::isAlive)
         .def("isActive",&Organ::isActive)
@@ -181,20 +180,20 @@ PYBIND11_MODULE(plantbox, m) {
         .def("hasMoved",&Organ::hasMoved)
         .def("getOldNumberOfNodes",&Organ::getOldNumberOfNodes)
 
-        .def("getOrgans", (std::vector<Organ*> (Organ::*)(int otype)) &Organ::getOrgans, py::arg("ot")=-1) //overloads, default
-        .def("getOrgans", (void (Organ::*)(int otype, std::vector<Organ*>& v)) &Organ::getOrgans)
+        .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype)) &Organ::getOrgans, py::arg("ot")=-1) //overloads, default
+        .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>>& v)) &Organ::getOrgans)
         .def("getParameter",&Organ::getParameter)
         .def("__str__",&Organ::toString);
     /*
      * Organism.h
      */
-    py::class_<Organism>(m, "Organism")
+    py::class_<Organism, std::shared_ptr<Organism>>(m, "Organism")
         .def(py::init<>())
         .def(py::init<Organism&>())
         .def("organTypeNumber", &Organism::organTypeNumber)
         .def("organTypeName", &Organism::organTypeName)
-        .def("getOrganRandomParameter", (OrganRandomParameter* (Organism::*)(int, int) const)  &Organism::getOrganRandomParameter) //overloads
-        .def("getOrganRandomParameter", (std::vector<OrganRandomParameter*> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
+        .def("getOrganRandomParameter", (std::shared_ptr<OrganRandomParameter> (Organism::*)(int, int) const)  &Organism::getOrganRandomParameter) //overloads
+        .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
         .def("setOrganRandomParameter", &Organism::setOrganRandomParameter, py::keep_alive<1, 2>())
 
         .def("addOrgan", &Organism::addOrgan)
@@ -203,7 +202,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getSimTime", &Organism::getSimTime)
 
         .def("getOrgans", &Organism::getOrgans, py::arg("ot") = -1) // default
-        .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<Organ*>(0)) // default
+        .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<std::shared_ptr<Organ>>(0)) // default
         .def("getSummed", &Organism::getSummed, py::arg("name"), py::arg("ot") = -1) // default
 
         .def("getNumberOfOrgans", &Organism::getNumberOfOrgans)
@@ -253,33 +252,33 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * soil
      */
-    py::class_<SoilLookUp>(m, "SoilLookUp")   /// <--- TODO WRAP (?)
+    py::class_<SoilLookUp, std::shared_ptr<SoilLookUp>>(m, "SoilLookUp")   /// <--- TODO WRAP (?)
         .def(py::init<>())
         .def("getValue",&SoilLookUp::getValue) /// <--- TODO defaults
         .def("__str__",&SoilLookUp::toString);
-    py::class_<SoilLookUpSDF, SoilLookUp>(m,"SoilLookUpSDF")
+    py::class_<SoilLookUpSDF, SoilLookUp, std::shared_ptr<SoilLookUpSDF>>(m,"SoilLookUpSDF")
         .def(py::init<>())
         .def(py::init<SignedDistanceFunction*, double, double, double>())
         .def_readwrite("sdf", &SoilLookUpSDF::sdf)
         .def_readwrite("fmax", &SoilLookUpSDF::fmax)
         .def_readwrite("fmin", &SoilLookUpSDF::fmin)
         .def_readwrite("slope", &SoilLookUpSDF::slope);
-    py::class_<MultiplySoilLookUps, SoilLookUp>(m, "MultiplySoilLookUps")
+    py::class_<MultiplySoilLookUps, SoilLookUp, std::shared_ptr<MultiplySoilLookUps>>(m, "MultiplySoilLookUps")
         .def(py::init<SoilLookUp*, SoilLookUp*>())
         .def(py::init<std::vector<SoilLookUp*>>());
-    py::class_<ProportionalElongation, SoilLookUp>(m, "ProportionalElongation")
+    py::class_<ProportionalElongation, SoilLookUp, std::shared_ptr<ProportionalElongation>>(m, "ProportionalElongation")
         .def(py::init<>())
         .def("setScale", &ProportionalElongation::setScale)
         .def("setBaseLookUp", &ProportionalElongation::setBaseLookUp)
         .def("__str__",&ProportionalElongation::toString);
-    py::class_<Grid1D, SoilLookUp>(m, "Grid1D")
+    py::class_<Grid1D, SoilLookUp, std::shared_ptr<Grid1D>>(m, "Grid1D")
         .def(py::init<>())
         .def(py::init<size_t, std::vector<double>, std::vector<double>>())
         .def("map",&Grid1D::map)
         .def_readwrite("n", &Grid1D::n)
         .def_readwrite("grid", &Grid1D::grid)
         .def_readwrite("data", &Grid1D::data);
-    py::class_<EquidistantGrid1D, Grid1D>(m, "EquidistantGrid1D")
+    py::class_<EquidistantGrid1D, Grid1D, std::shared_ptr<EquidistantGrid1D>>(m, "EquidistantGrid1D")
         .def(py::init<double, double, size_t>())
         .def(py::init<double, double, std::vector<double>>())
         .def("map",&EquidistantGrid1D::map)
@@ -289,9 +288,9 @@ PYBIND11_MODULE(plantbox, m) {
     /**
      * tropism.h
      */
-    py::class_<Tropism>(m, "TropismBase")
-        .def(py::init<Organism*>())
-        .def(py::init<Organism*, double, double>())
+    py::class_<Tropism, std::shared_ptr<Tropism>>(m, "TropismBase")
+        .def(py::init<std::weak_ptr<Organism>>())
+        .def(py::init<std::weak_ptr<Organism>, double, double>())
         .def("copy",&Tropism::copy) // todo policy
         .def("setGeometry",&Tropism::setGeometry)
         .def("setTropismParameter",&Tropism::setTropismParameter)
@@ -299,21 +298,21 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getUCHeading",&Tropism::getUCHeading)
         .def("tropismObjective",&Tropism::tropismObjective)
         .def("getPosition",&Tropism::getPosition);
-    py::class_<Gravitropism, Tropism>(m, "Gravitropism")
-        .def(py::init<Organism*, double, double>());
-    py::class_<Plagiotropism, Tropism>(m, "Plagiotropism")
-        .def(py::init<Organism*,double, double>());
-    py::class_<Exotropism, Tropism>(m, "Exotropism")
-        .def(py::init<Organism*,double, double>());
-    py::class_<Hydrotropism, Tropism>(m, "Hydrotropism")
-        .def(py::init<Organism*,double, double, SoilLookUp*>());
+    py::class_<Gravitropism, Tropism, std::shared_ptr<Gravitropism>>(m, "Gravitropism")
+        .def(py::init<std::weak_ptr<Organism>, double, double>());
+    py::class_<Plagiotropism, Tropism, std::shared_ptr<Plagiotropism>>(m, "Plagiotropism")
+        .def(py::init<std::weak_ptr<Organism>,double, double>());
+    py::class_<Exotropism, Tropism, std::shared_ptr<Exotropism>>(m, "Exotropism")
+        .def(py::init<std::weak_ptr<Organism>,double, double>());
+    py::class_<Hydrotropism, Tropism, std::shared_ptr<Hydrotropism>>(m, "Hydrotropism")
+        .def(py::init<std::weak_ptr<Organism>,double, double, SoilLookUp*>());
 //    py::class_<CombinedTropism, Tropism>(m, "CombinedTropism") // Todo constructors needs some extra work (?)
 //        .def(py::init<>());
     // todo antigravi, twist ...
    /*
     * analysis.h
     */
-    py::class_<SegmentAnalyser>(m, "SegmentAnalyser")
+    py::class_<SegmentAnalyser, std::shared_ptr<SegmentAnalyser>>(m, "SegmentAnalyser")
        .def(py::init<>())
        .def(py::init<Organism&>())
        .def(py::init<SegmentAnalyser&>())
@@ -344,8 +343,8 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * rootparameter.h
      */
-    py::class_<RootRandomParameter, OrganRandomParameter>(m, "RootRandomParameter")
-        .def(py::init<Organism*>())
+    py::class_<RootRandomParameter, OrganRandomParameter, std::shared_ptr<RootRandomParameter>>(m, "RootRandomParameter")
+        .def(py::init<std::weak_ptr<Organism>>())
         .def("getLateralType",&RootRandomParameter::getLateralType)
         .def("getK",&RootRandomParameter::getK)
         .def_readwrite("lb", &RootRandomParameter::lb)
@@ -379,7 +378,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("f_se", &RootRandomParameter::f_se)
         .def_readwrite("f_sa", &RootRandomParameter::f_sa)
         .def_readwrite("f_sbp", &RootRandomParameter::f_sbp);
-    py::class_<RootSpecificParameter, OrganSpecificParameter>(m, "RootSpecificParameter")
+    py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
         .def(py::init<>())
         .def(py::init<int , double, double, const std::vector<double>&, int, double, double, double, double>())
         .def_readwrite("lb", &RootSpecificParameter::lb)
@@ -394,8 +393,8 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * seedparameter.h
      */
-    py::class_<SeedRandomParameter, OrganRandomParameter>(m, "SeedRandomParameter")
-        .def(py::init<Organism*>())
+    py::class_<SeedRandomParameter, OrganRandomParameter, std::shared_ptr<SeedRandomParameter>>(m, "SeedRandomParameter")
+        .def(py::init<std::weak_ptr<Organism>>())
         .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
         .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
         .def_readwrite("firstB", &SeedRandomParameter::firstB)
@@ -415,7 +414,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("nz", &SeedRandomParameter::nz)
         .def_readwrite("nzs", &SeedRandomParameter::nzs)
         .def_readwrite("simtime", &SeedRandomParameter::simtime);
-    py::class_<SeedSpecificParameter, OrganSpecificParameter>(m, "SeedSpecificParameter")
+    py::class_<SeedSpecificParameter, OrganSpecificParameter, std::shared_ptr<SeedSpecificParameter>>(m, "SeedSpecificParameter")
         .def(py::init<>())
         .def(py::init<int, Vector3d , double, int, int, int, double, double, double, double, int, double>())
         .def_readwrite("seedPos", &SeedSpecificParameter::seedPos)
@@ -431,8 +430,8 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * leafparameter.h
      */
-    py::class_<LeafRandomParameter, OrganRandomParameter>(m, "LeafRandomParameter")
-        .def(py::init<Organism*>())
+    py::class_<LeafRandomParameter, OrganRandomParameter, std::shared_ptr<LeafRandomParameter>>(m, "LeafRandomParameter")
+        .def(py::init<std::weak_ptr<Organism>>())
         .def("getLateralType",&LeafRandomParameter::getLateralType)
         .def("getK",&LeafRandomParameter::getK)
         .def_readwrite("lb", &LeafRandomParameter::lb)
@@ -469,7 +468,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("f_se", &LeafRandomParameter::f_se)
         .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
         .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp);
-    py::class_<LeafSpecificParameter, OrganSpecificParameter>(m, "LeafSpecificParameter")
+    py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
         .def(py::init<>())
         .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
         .def_readwrite("lb", &LeafSpecificParameter::lb)
@@ -483,8 +482,8 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * stemparameter.h
      */
-    py::class_<StemRandomParameter, OrganRandomParameter>(m, "StemRandomParameter")
-        .def(py::init<Organism*>())
+    py::class_<StemRandomParameter, OrganRandomParameter, std::shared_ptr<StemRandomParameter>>(m, "StemRandomParameter")
+        .def(py::init<std::weak_ptr<Organism>>())
         .def("getLateralType",&StemRandomParameter::getLateralType)
         .def("getK",&StemRandomParameter::getK)
         .def_readwrite("lb", &StemRandomParameter::lb)
@@ -521,7 +520,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("f_se", &StemRandomParameter::f_se)
         .def_readwrite("f_sa", &StemRandomParameter::f_sa)
         .def_readwrite("f_sbp", &StemRandomParameter::f_sbp);
-    py::class_<StemSpecificParameter, OrganSpecificParameter>(m, "StemSpecificParameter")
+    py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
         .def(py::init<>())
         .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
         .def_readwrite("lb", &StemSpecificParameter::lb)

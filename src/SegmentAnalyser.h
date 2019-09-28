@@ -3,13 +3,14 @@
 #define SEGMENTANALYSER_H_
 
 #include "sdf.h"
+#include "Organ.h"
+#include "organparameter.h"
 
 #include <memory>
 
 namespace CPlantBox {
 
 class Organism;
-class Organ;
 
 /**
  * Meshfree analysis of the root system based on signed distance functions.

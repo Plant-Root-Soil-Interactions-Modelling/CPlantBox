@@ -27,7 +27,7 @@ Codeblocks
 *.toc
 
 # CMake
-*.cmake
+.cmake
 CMakeFiles
 Makefile
 *CMakeCache*
