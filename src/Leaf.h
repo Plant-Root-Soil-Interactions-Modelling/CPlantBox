@@ -25,10 +25,10 @@ public:
 
     Leaf(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0);
-	Leaf(std::weak_ptr<Organism> rs, int type, Vector3d iheading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
+	Leaf(std::shared_ptr<Organism> rs, int type, Vector3d iheading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni); ///< typically called by constructor of Plant::Plant, or Leaf::createLaterals()
 	virtual ~Leaf() { }; // base class constructor is called automatically in c++
 
-	std::shared_ptr<Organ> copy(std::weak_ptr<Organism> plant) override;   ///< deep copies the root tree
+	std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;   ///< deep copies the root tree
 
 	int organType() const override  { return Organism::ot_leaf; } ///< returns the organs type
 

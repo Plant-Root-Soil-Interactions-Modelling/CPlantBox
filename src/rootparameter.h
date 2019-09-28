@@ -57,10 +57,10 @@ class RootRandomParameter :public OrganRandomParameter
 
 public:
 
-    RootRandomParameter(std::weak_ptr<Organism> plant); ///< default constructor
+    RootRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
     virtual ~RootRandomParameter() { };
 
-    std::shared_ptr<OrganRandomParameter> copy(std::weak_ptr<Organism> plant) override;
+    std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 

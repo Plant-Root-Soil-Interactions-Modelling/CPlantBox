@@ -24,7 +24,7 @@ std::string OrganSpecificParameter::toString() const
  *
  * @param plant     the organism managing this organ type parameter
  */
-OrganRandomParameter::OrganRandomParameter(std::weak_ptr<Organism> p): plant(p)
+OrganRandomParameter::OrganRandomParameter(std::shared_ptr<Organism> p): plant(p)
 {
     iparam["organType"] = &organType; // set up class introspection
     iparam["subType"] = &subType;
@@ -40,7 +40,7 @@ OrganRandomParameter::OrganRandomParameter(std::weak_ptr<Organism> p): plant(p)
  *
  * @return A new organ type parameter object, with same values as this, ownership is passed to the caller
  */
-std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::weak_ptr<Organism> p)
+std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::shared_ptr<Organism> p)
 {
     auto o = std::make_shared<OrganRandomParameter>(p); // copy constructor would break class introspection
     o->name == name;

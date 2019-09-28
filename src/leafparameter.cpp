@@ -41,7 +41,7 @@ std::string LeafSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-LeafRandomParameter::LeafRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
+LeafRandomParameter::LeafRandomParameter(std::shared_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
 	// base class default values
 	name = "undefined";
@@ -54,7 +54,7 @@ LeafRandomParameter::LeafRandomParameter(std::weak_ptr<Organism> plant) :OrganRa
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::weak_ptr<Organism> plant)
+std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<Organism> plant)
 {
 	auto r = std::make_shared<LeafRandomParameter>(*this); // copy constructor breaks class introspection
 	r->plant = plant;

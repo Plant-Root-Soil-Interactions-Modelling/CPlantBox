@@ -57,10 +57,10 @@ class StemRandomParameter :public OrganRandomParameter
 
 public:
 
-    StemRandomParameter(std::weak_ptr<Organism> plant); ///< default constructor
+    StemRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
     virtual ~StemRandomParameter() { };
 
-    std::shared_ptr<OrganRandomParameter> copy(std::weak_ptr<Organism> plant) override;
+    std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific stem from the stem parameter set
 

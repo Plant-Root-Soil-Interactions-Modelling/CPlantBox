@@ -41,7 +41,7 @@ std::string StemSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-StemRandomParameter::StemRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
+StemRandomParameter::StemRandomParameter(std::shared_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
     // base class default values
     name = "undefined";
@@ -54,7 +54,7 @@ StemRandomParameter::StemRandomParameter(std::weak_ptr<Organism> plant) :OrganRa
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::weak_ptr<Organism> plant)
+std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<Organism> plant)
 {
     auto r = std::make_shared<StemRandomParameter>(*this); // copy constructor breaks class introspection
     r->plant = plant;

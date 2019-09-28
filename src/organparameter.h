@@ -45,10 +45,10 @@ class OrganRandomParameter
 {
 public:
 
-    OrganRandomParameter(std::weak_ptr<Organism> plant); ///< default constructor
+    OrganRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
     virtual ~OrganRandomParameter() { };
 
-    virtual std::shared_ptr<OrganRandomParameter> copy(std::weak_ptr<Organism> plant); ///< copies the root type parameter into a new plant
+    virtual std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant); ///< copies the root type parameter into a new plant
 
     virtual std::shared_ptr<OrganSpecificParameter> realize(); ///< creates a specific organ from the root parameter set
 

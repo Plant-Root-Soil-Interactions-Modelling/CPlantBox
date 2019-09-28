@@ -37,14 +37,14 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Root::Root(std::weak_ptr<Organism> rs, int type, Vector3d heading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni)
+Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni)
     :Organ(rs, parent, Organism::ot_root, type, delay)
 {
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(heading);
     double theta = param()->theta;
-    if (!parent.expired()) { // scale if not a baseRoot
-        double scale = getRootRandomParameter()->f_se->getValue(parent.lock()->getNode(pni), parent.lock());
+    if (parent!=nullptr) { // scale if not a baseRoot
+        double scale = getRootRandomParameter()->f_se->getValue(parent->getNode(pni), parent);
         theta*=scale;
     }
     iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
@@ -52,10 +52,9 @@ Root::Root(std::weak_ptr<Organism> rs, int type, Vector3d heading, double delay,
     parentNI = pni;
     length = 0;
     // initial node
-    if (!parent.expired()) { // the first node of the base roots must be created in RootSystem::initialize()
-        auto p = parent.lock();
-        assert(pni+1 == p->getNumberOfNodes() && "at object creation always at last node");
-        addNode(p->getNode(pni), p->getNodeId(pni), p->getNodeCT(pni)+delay);
+    if (parent!=nullptr) { // the first node of the base roots must be created in RootSystem::initialize()
+        assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");
+        addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
     }
 }
 
@@ -65,7 +64,7 @@ Root::Root(std::weak_ptr<Organism> rs, int type, Vector3d heading, double delay,
  *
  * @param plant     the plant the copied organ will be part of
  */
-std::shared_ptr<Organ> Root::copy(std::weak_ptr<Organism> rs)
+std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
 {
     auto r = std::make_shared<Root>(*this); // shallow copy
     r->parent = std::weak_ptr<Organ>();
@@ -262,7 +261,7 @@ void Root::createLateral(bool verbose)
         double ageLN = this->calcAge(length); // age of root when lateral node is created
         double ageLG = this->calcAge(length+param()->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
-        auto lateral = std::make_shared<Root>(plant, lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
+        auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
         children.push_back(lateral);
         lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
     }

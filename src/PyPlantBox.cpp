@@ -131,7 +131,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("subType",&OrganSpecificParameter::subType)
         .def("__str__",&OrganSpecificParameter::toString);
     py::class_<OrganRandomParameter, std::shared_ptr<OrganRandomParameter>>(m,"OrganRandomParameter")
-        .def(py::init<std::weak_ptr<Organism>>())
+        .def(py::init<std::shared_ptr<Organism>>())
         .def("copy",&OrganRandomParameter::copy)
         .def("realize",&OrganRandomParameter::realize)
         .def("getParameter",&OrganRandomParameter::getParameter)
@@ -150,7 +150,7 @@ PYBIND11_MODULE(plantbox, m) {
      * Organ.h
      */
     py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ") // std::unique_ptr<Organ, py::nodelete>>
-        .def(py::init<std::weak_ptr<Organism>, std::weak_ptr<Organ>, int, int, double>())
+        .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double>())
         .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, bool, int>())
         .def("copy",&Organ::copy)
         .def("organType",&Organ::organType)
@@ -289,8 +289,8 @@ PYBIND11_MODULE(plantbox, m) {
      * tropism.h
      */
     py::class_<Tropism, std::shared_ptr<Tropism>>(m, "TropismBase")
-        .def(py::init<std::weak_ptr<Organism>>())
-        .def(py::init<std::weak_ptr<Organism>, double, double>())
+        .def(py::init<std::shared_ptr<Organism>>())
+        .def(py::init<std::shared_ptr<Organism>, double, double>())
         .def("copy",&Tropism::copy) // todo policy
         .def("setGeometry",&Tropism::setGeometry)
         .def("setTropismParameter",&Tropism::setTropismParameter)
@@ -299,13 +299,13 @@ PYBIND11_MODULE(plantbox, m) {
         .def("tropismObjective",&Tropism::tropismObjective)
         .def("getPosition",&Tropism::getPosition);
     py::class_<Gravitropism, Tropism, std::shared_ptr<Gravitropism>>(m, "Gravitropism")
-        .def(py::init<std::weak_ptr<Organism>, double, double>());
+        .def(py::init<std::shared_ptr<Organism>, double, double>());
     py::class_<Plagiotropism, Tropism, std::shared_ptr<Plagiotropism>>(m, "Plagiotropism")
-        .def(py::init<std::weak_ptr<Organism>,double, double>());
+        .def(py::init<std::shared_ptr<Organism>,double, double>());
     py::class_<Exotropism, Tropism, std::shared_ptr<Exotropism>>(m, "Exotropism")
-        .def(py::init<std::weak_ptr<Organism>,double, double>());
+        .def(py::init<std::shared_ptr<Organism>,double, double>());
     py::class_<Hydrotropism, Tropism, std::shared_ptr<Hydrotropism>>(m, "Hydrotropism")
-        .def(py::init<std::weak_ptr<Organism>,double, double, SoilLookUp*>());
+        .def(py::init<std::shared_ptr<Organism>,double, double, SoilLookUp*>());
 //    py::class_<CombinedTropism, Tropism>(m, "CombinedTropism") // Todo constructors needs some extra work (?)
 //        .def(py::init<>());
     // todo antigravi, twist ...
@@ -344,7 +344,7 @@ PYBIND11_MODULE(plantbox, m) {
      * rootparameter.h
      */
     py::class_<RootRandomParameter, OrganRandomParameter, std::shared_ptr<RootRandomParameter>>(m, "RootRandomParameter")
-        .def(py::init<std::weak_ptr<Organism>>())
+        .def(py::init<std::shared_ptr<Organism>>())
         .def("getLateralType",&RootRandomParameter::getLateralType)
         .def("getK",&RootRandomParameter::getK)
         .def_readwrite("lb", &RootRandomParameter::lb)
@@ -394,7 +394,7 @@ PYBIND11_MODULE(plantbox, m) {
      * seedparameter.h
      */
     py::class_<SeedRandomParameter, OrganRandomParameter, std::shared_ptr<SeedRandomParameter>>(m, "SeedRandomParameter")
-        .def(py::init<std::weak_ptr<Organism>>())
+        .def(py::init<std::shared_ptr<Organism>>())
         .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
         .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
         .def_readwrite("firstB", &SeedRandomParameter::firstB)
@@ -431,7 +431,7 @@ PYBIND11_MODULE(plantbox, m) {
      * leafparameter.h
      */
     py::class_<LeafRandomParameter, OrganRandomParameter, std::shared_ptr<LeafRandomParameter>>(m, "LeafRandomParameter")
-        .def(py::init<std::weak_ptr<Organism>>())
+        .def(py::init<std::shared_ptr<Organism>>())
         .def("getLateralType",&LeafRandomParameter::getLateralType)
         .def("getK",&LeafRandomParameter::getK)
         .def_readwrite("lb", &LeafRandomParameter::lb)
@@ -483,7 +483,7 @@ PYBIND11_MODULE(plantbox, m) {
      * stemparameter.h
      */
     py::class_<StemRandomParameter, OrganRandomParameter, std::shared_ptr<StemRandomParameter>>(m, "StemRandomParameter")
-        .def(py::init<std::weak_ptr<Organism>>())
+        .def(py::init<std::shared_ptr<Organism>>())
         .def("getLateralType",&StemRandomParameter::getLateralType)
         .def("getK",&StemRandomParameter::getK)
         .def_readwrite("lb", &StemRandomParameter::lb)

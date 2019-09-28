@@ -49,10 +49,10 @@ class LeafRandomParameter : public OrganRandomParameter
 {
 public:
 
-	LeafRandomParameter(std::weak_ptr<Organism> plant); ///< default constructor
+	LeafRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
 	virtual ~LeafRandomParameter() { };
 
-	std::shared_ptr<OrganRandomParameter> copy(std::weak_ptr<Organism> plant) override;
+	std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
 
 	std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific leaf from the leaf parameter set
 

@@ -61,10 +61,10 @@ public:
 class SeedRandomParameter :public OrganRandomParameter {
 public:
 
-	SeedRandomParameter(std::weak_ptr<Organism> plant); ///< default constructor
+	SeedRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
     virtual ~SeedRandomParameter() { }; ///< nothing to do
 
-    std::shared_ptr<OrganRandomParameter> copy(std::weak_ptr<Organism> plant) override;
+    std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific plant seed from the seed parameter set
 

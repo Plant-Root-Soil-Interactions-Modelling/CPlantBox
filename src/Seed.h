@@ -16,8 +16,10 @@ class Seed : public Organ
 {
 public:
 
-    Seed(std::weak_ptr<Organism> plant) :Organ(plant, std::weak_ptr<Organ>(),Organism::ot_seed, 0, 0.) { };
+    Seed(std::shared_ptr<Organism> plant) :Organ(plant, std::shared_ptr<Organ>(),Organism::ot_seed, 0, 0.) { };
     virtual ~Seed() { }; // everything is done in @Organ
+
+    // tODO a copy is missing !!!!!
 
     virtual int organType() const override { return Organism::ot_seed; }
 
@@ -38,10 +40,10 @@ public:
     int mainStemType = 1; // todo
     int tillerType = 4; // todo
 
-    virtual std::shared_ptr<Organ> createRoot(std::weak_ptr<Organism> plant, int type, Vector3d heading, double delay,
-        std::weak_ptr<Organ> parent = std::weak_ptr<Organ>(), double pbl = 0., int pni = 0); // overwrite if you want to change the types
-    virtual std::shared_ptr<Organ> createStem(std::weak_ptr<Organism> plant, int type, Vector3d heading, double delay,
-        std::weak_ptr<Organ> parent = std::weak_ptr<Organ>(), double pbl = 0., int pni = 0); // overwrite if you want to change the types
+    virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay,
+        std::shared_ptr<Organ> parent = nullptr, double pbl = 0., int pni = 0); // overwrite if you want to change the types
+    virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay,
+        std::shared_ptr<Organ> parent = nullptr, double pbl = 0., int pni = 0); // overwrite if you want to change the types
 
 protected:
 

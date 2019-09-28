@@ -25,10 +25,10 @@ public:
 
     Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0);
-    Stem(std::weak_ptr<Organism> plant, int type, Vector3d pheading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
+    Stem(std::shared_ptr<Organism> plant, int type, Vector3d pheading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
     virtual ~Stem() { }; // base class constructor is called automatically in c++
 
-    std::shared_ptr<Organ> copy(std::weak_ptr<Organism> plant) override;   ///< deep copies the root tree
+    std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;   ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 

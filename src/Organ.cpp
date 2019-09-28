@@ -47,11 +47,11 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  * @param st        sub type of the organ type, e.g. different root types
  * @param delay     time delay in days when the organ will start to grow
  */
-Organ::Organ(std::weak_ptr<Organism> plant, std::weak_ptr<Organ>  parent, int ot, int st, double delay):
+Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ>  parent, int ot, int st, double delay):
         plant(plant),
         parent(parent),
-        id(plant.lock()->getOrganIndex()),  // unique id from the plant
-        param_(plant.lock()->getOrganRandomParameter(ot, st)->realize()), // draw specific parameters from random distributions
+        id(plant->getOrganIndex()),  // unique id from the plant
+        param_(plant->getOrganRandomParameter(ot, st)->realize()), // draw specific parameters from random distributions
         age(-delay)
 { }
 
@@ -62,7 +62,7 @@ Organ::Organ(std::weak_ptr<Organism> plant, std::weak_ptr<Organ>  parent, int ot
  * @param plant     the plant the copied organ will be part of
  * @return          the newly created copy (ownership is passed)
  */
-std::shared_ptr<Organ> Organ::copy(std::weak_ptr<Organism>  p)
+std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
 {
     auto o = std::make_shared<Organ>(*this); // shallow copy
     o->parent = std::weak_ptr<Organ>();

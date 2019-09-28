@@ -28,7 +28,7 @@ std::string SeedSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-SeedRandomParameter::SeedRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
+SeedRandomParameter::SeedRandomParameter(std::shared_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
     // base class default values
     name = "undefined";
@@ -40,7 +40,7 @@ SeedRandomParameter::SeedRandomParameter(std::weak_ptr<Organism> plant) :OrganRa
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-std::shared_ptr<OrganRandomParameter> SeedRandomParameter::copy(std::weak_ptr<Organism> plant)
+std::shared_ptr<OrganRandomParameter> SeedRandomParameter::copy(std::shared_ptr<Organism> plant)
 {
 	auto s = std::make_shared<SeedRandomParameter>(*this); // copy constructor breaks class introspection
     s->plant = plant;

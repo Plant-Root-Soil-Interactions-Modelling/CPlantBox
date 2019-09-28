@@ -27,10 +27,10 @@ public:
 
     Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
-    Root(std::weak_ptr<Organism> rs, int type, Vector3d heading, double delay, std::weak_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
+    Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
     virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
-    std::shared_ptr<Organ> copy(std::weak_ptr<Organism> rs) override;  ///< deep copies the root tree
+    std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 

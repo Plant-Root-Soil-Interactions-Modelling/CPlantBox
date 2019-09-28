@@ -34,10 +34,10 @@ public:
 
     Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         bool moved= false, int oldNON = 0); ///< creates everything from scratch
-    Organ(std::weak_ptr<Organism> plant, std::weak_ptr<Organ> parent, int organtype, int subtype, double delay); ///< used within simulation
+    Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay); ///< used within simulation
     virtual ~Organ() { }
 
-    virtual std::shared_ptr<Organ> copy(std::weak_ptr<Organism> plant); ///< deep copies the organ tree
+    virtual std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant); ///< deep copies the organ tree
 
     virtual int organType() const; ///< returns the organs type, overwrite for each organ
 
@@ -45,9 +45,9 @@ public:
     virtual void simulate(double dt, bool verbose = false); ///< grow for a time span of \param dt
 
     /* tree */
-    void setParent(std::weak_ptr<Organ> p) { parent = p; } ///< sets parent organ
+    void setParent(std::shared_ptr<Organ> p) { parent = p; } ///< sets parent organ
     std::shared_ptr<Organ> getParent() const { return parent.lock(); } ///< return parent organ, equals nullptr if it has no parent
-    void setOrganism(std::weak_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
+    void setOrganism(std::shared_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
     void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
 
     /* parameters */

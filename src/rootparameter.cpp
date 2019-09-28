@@ -39,7 +39,7 @@ std::string RootSpecificParameter::toString() const
 /**
  * Default constructor sets up hashmaps for class introspection
  */
-RootRandomParameter::RootRandomParameter(std::weak_ptr<Organism> plant) :OrganRandomParameter(plant)
+RootRandomParameter::RootRandomParameter(std::shared_ptr<Organism> plant) :OrganRandomParameter(plant)
 {
     // base class default values
     name = "undefined";
@@ -52,7 +52,7 @@ RootRandomParameter::RootRandomParameter(std::weak_ptr<Organism> plant) :OrganRa
 /**
  * @copydoc OrganTypeParameter::copy()
  */
-std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::weak_ptr<Organism> p)
+std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<Organism> p)
 {
     auto r = std::make_shared<RootRandomParameter>(*this); // copy constructor breaks class introspection
     r->plant = p;
