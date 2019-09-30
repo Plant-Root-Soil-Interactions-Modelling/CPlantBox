@@ -190,7 +190,6 @@ tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
     for (int i = 0; i<successor.size(); i++) {
         tinyxml2::XMLElement* p = doc.NewElement("parameter");
         p->SetAttribute("name", "successor");
-        p->SetAttribute("number", i);
         p->SetAttribute("type", successor[i]);
         p->SetAttribute("percentage", float(successorP[i]));
         element->InsertEndChild(p);

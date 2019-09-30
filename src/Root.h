@@ -34,11 +34,11 @@ public:
 
     int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 
-    /* Grow */
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
-    /* Roots as sequential list */
     double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
+
+    std::string toString() const override;
 
     /* From analytical equations */
     double calcCreationTime(double length); ///< analytical creation (=emergence) time of a node at a length
@@ -49,9 +49,6 @@ public:
     std::shared_ptr<RootRandomParameter> getRootRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const RootSpecificParameter> param() const; ///< root parameter
     double dx() const { return getRootRandomParameter()->dx; } ///< returns the axial resolution
-
-    /* IO */
-    std::string toString() const override;
 
     /* Parameters that are given per root that are constant*/
     Vector3d iHeading; ///< the initial heading of the root, when it was created

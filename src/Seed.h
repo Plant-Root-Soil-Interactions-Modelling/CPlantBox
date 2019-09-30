@@ -16,22 +16,31 @@ class Seed : public Organ
 {
 public:
 
-    Seed(std::shared_ptr<Organism> plant) :Organ(plant, std::shared_ptr<Organ>(),Organism::ot_seed, 0, 0.) { };
+    using Organ::Organ;
+
+    Seed(std::shared_ptr<Organism> plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.) { };
     virtual ~Seed() { }; // everything is done in @Organ
 
-    // tODO a copy is missing !!!!!
+    std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the seed
 
     virtual int organType() const override { return Organism::ot_seed; }
+
+    void simulate(double dt, bool silence = false) override { Organ::simulate(dt, silence); }
+
+    double getParameter(std::string name) const override { return Organ::getParameter(name); } // TODO all virtual methods MUST be overwritten, otherwise pybind11 crashes
+
+    virtual std::string toString() const override;
 
     void initialize();
 
     std::shared_ptr<const SeedSpecificParameter> param() const { return std::static_pointer_cast<const SeedSpecificParameter>(param_); }
 
-    virtual std::string toString() const override;
-
     int getNumberOfRootCrowns() const { return numberOfRootCrowns; } // for rootsystem initialisation
-    std::vector<std::shared_ptr<Organ>>& baseOrgans() { return children; } // created by initialize
+    std::vector<std::shared_ptr<Organ>> baseOrgans() { return children; } // created by initialize
     std::vector<std::shared_ptr<Organ>> copyBaseOrgans(); ///< shallow copy of the childs
+
+    virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay); ///< overwrite if you want to change class types
+    virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay); ///< overwrite if you want to change class types
 
     // default positions (unused) (TODO) make nicer
     int tapRootType =1; // todo
@@ -39,11 +48,6 @@ public:
     int shootborneType = 5;
     int mainStemType = 1; // todo
     int tillerType = 4; // todo
-
-    virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay,
-        std::shared_ptr<Organ> parent = nullptr, double pbl = 0., int pni = 0); // overwrite if you want to change the types
-    virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay,
-        std::shared_ptr<Organ> parent = nullptr, double pbl = 0., int pni = 0); // overwrite if you want to change the types
 
 protected:
 

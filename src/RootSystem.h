@@ -60,7 +60,7 @@ public:
     void simulate(double dt, double maxinc, ProportionalElongation* se, bool silence = false); // simulates the root system with a maximal overall elongation
 
     /* sequential */
-    std::vector<std::shared_ptr<Root>>  getRoots() const; ///< represents the root system as sequential vector of roots and buffers the result
+    std::vector<std::shared_ptr<Root>> getRoots() const; ///< represents the root system as sequential vector of roots and buffers the result
 
     /* call back function creation */
     void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()

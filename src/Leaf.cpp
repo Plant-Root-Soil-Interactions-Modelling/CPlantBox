@@ -2,6 +2,8 @@
 
 namespace CPlantBox {
 
+std::vector<int> Leaf::leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 /**
  * Constructs a root from given data.
  * The organ tree must be created, @see Organ::setPlant, Organ::setParent, Organ::addChild
@@ -41,7 +43,7 @@ Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bo
  * @param pbl			parent base length
  */
 Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,  std::shared_ptr<Organ> parent, double pbl, int pni)
-        :Organ(plant,parent,Organism::ot_leaf, type,delay), parentBaseLength(pbl), parentNI(pni)
+        :Organ(plant, parent,Organism::ot_leaf, type, delay), parentBaseLength(pbl), parentNI(pni)
 {
     iHeading=iheading;
     //  std::cout << "Leaf pni = "<< pni<< std::endl;
@@ -75,11 +77,8 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
     this->iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
     age = -delay; // the root starts growing when age>0
     alive = 1; // alive per default
-
-    this->parent = parent;
-    parentBaseLength = pbl;
-    parentNI = pni;
     length = 0;
+
     // initial node
     if (parent!=nullptr) { // the first node of the base roots must be created in RootSystem::initialize()
         assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");

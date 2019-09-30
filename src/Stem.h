@@ -1,16 +1,14 @@
 #ifndef STEM_H_
 #define STEM_H_
 
-#include <iostream>
-#include <assert.h>
-
 #include "Organ.h"
 #include "Organism.h"
 #include "stemparameter.h"
 
-namespace CPlantBox {
+#include <iostream>
+#include <assert.h>
 
-static int phytomerId[10]= {0};
+namespace CPlantBox {
 
 /**
  * Stem
@@ -23,20 +21,22 @@ class Stem : public Organ
 {
 public:
 
+    static std::vector<int> phytomerId;
+
     Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0);
-    Stem(std::shared_ptr<Organism> plant, int type, Vector3d pheading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
-    virtual ~Stem() { }; // base class constructor is called automatically in c++
+        Vector3d iheading, double pbl, int pni, bool moved = false, int oldNON = 0);
+    Stem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
+    virtual ~Stem() { };
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;   ///< deep copies the root tree
 
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
-    /* simulation */
     void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 
-    /* get results */
     double getParameter(std::string name) const override; ///< returns an organ parameter
+
+    std::string toString() const override;
 
     /* exact from analytical equations */
     double calcCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
@@ -46,17 +46,13 @@ public:
     /* abbreviations */
     std::shared_ptr<StemRandomParameter> getStemRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const StemSpecificParameter> param() const; ///< root parameter
-
     double dx() const; ///< returns the axial resolution
 
-    std::string toString() const;
-
-    Vector3d iHeading; ///< the initial heading of the root, when it was created
+    Vector3d iHeading; ///< the initial heading of the stem, when it was created
     double parentBaseLength; ///< length [cm]
     int parentNI; ///< parent node index
 
 protected:
-
 
     void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
     int getphytomerId(int subtype) { return phytomerId[subtype]; }
@@ -72,6 +68,7 @@ protected:
 
     bool firstCall = true;
     const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
+
 };
 
 } // namespace CPlantBox

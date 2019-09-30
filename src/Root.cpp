@@ -38,21 +38,18 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param pni			parent node index
  */
 Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni)
-    :Organ(rs, parent, Organism::ot_root, type, delay)
+    :Organ(rs, parent, Organism::ot_root, type, delay), parentBaseLength(pbl), parentNI(pni)
 {
+    assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
-    Matrix3d ons = Matrix3d::ons(heading);
     double theta = param()->theta;
-    if (parent!=nullptr) { // scale if not a baseRoot
+    if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
         double scale = getRootRandomParameter()->f_se->getValue(parent->getNode(pni), parent);
         theta*=scale;
     }
-    iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
-    parentBaseLength = pbl;
-    parentNI = pni;
-    length = 0;
-    // initial node
-    if (parent!=nullptr) { // the first node of the base roots must be created in RootSystem::initialize()
+    iHeading = Matrix3d::ons(heading).times(Vector3d::rotAB(theta,beta)); // new initial heading
+    length = 0.;
+    if (parent->organType()!=Organism::ot_seed) { // the first node of the base roots must be created in RootSystem::initialize()
         assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");
         addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
     }
@@ -67,7 +64,6 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
 std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
 {
     auto r = std::make_shared<Root>(*this); // shallow copy
-    r->parent = std::weak_ptr<Organ>();
     r->plant = rs;
     r->param_ = std::make_shared<RootSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {

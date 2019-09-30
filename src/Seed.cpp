@@ -1,12 +1,32 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "Seed.h"
+
 #include "Root.h"
 #include "Stem.h"
 
 namespace CPlantBox {
 
 /**
+ * Deep copies the organ into the new plant @param rs.
+ * All laterals are deep copied, plant and parent pointers are updated.
  *
+ * @param plant     the plant the copied organ will be part of
+ */
+std::shared_ptr<Organ> Seed::copy(std::shared_ptr<Organism> rs)
+{
+    auto s = std::make_shared<Seed>(*this); // shallow copy
+    s->parent = std::weak_ptr<Organ>();
+    s->plant = rs;
+    s->param_ = std::make_shared<SeedSpecificParameter>(*param()); // copy parameters
+    for (size_t i=0; i< children.size(); i++) {
+        s->children[i] = children[i]->copy(rs); // copy laterals
+        s->children[i]->setParent(shared_from_this());
+    }
+    return s;
+}
+
+/**
+ * todo docme!
  */
 void Seed::initialize()
 {
@@ -173,19 +193,17 @@ std::string Seed::toString() const
 /**
  * todo doc
  */
-std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,
-    std::shared_ptr<Organ> parent, double pbl, int pni)
+std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay)
 {
-    return std::make_shared<Root>(plant, type, iheading, delay, parent, pbl, pni);
+    return std::make_shared<Root>(plant, type, iheading, delay, shared_from_this(), 0, 0);
 }
 
 /**
- * todo doc
+ * todo doc// overwrite if you want to change the types
  */
-std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,
-    std::shared_ptr<Organ> parent, double pbl, int pni) // overwrite if you want to change the types
+std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay)
 {
-    return std::make_shared<Stem>(plant, type, iheading, delay, parent, pbl, pni);
+    return std::make_shared<Stem>(plant, type, iheading, delay, shared_from_this(), 0, 0);
 }
 
 } // namespace CPlantBox

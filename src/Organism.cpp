@@ -45,23 +45,20 @@ std::string Organism::organTypeName(int ot)
 }
 
 /**
- * Copy constructor
+ * doc me
  */
-Organism::Organism(const Organism& o): organParam(o.organParam), simtime(o.simtime),
-    organId(o.organId), nodeId(o.nodeId), gen(o.gen), UD(o.UD), ND(o.ND)
+std::shared_ptr<Organism> Organism::copy()
 {
-    // std::cout << "Copying organism with "<<o.baseOrgans.size()<< " base organs \n";
-    baseOrgans.resize(o.baseOrgans.size());  // copy base organs
+    auto no = std::make_shared<Organism> (*this); // copy constructor
     for (int i=0; i<baseOrgans.size(); i++) {
-        baseOrgans[i] = o.baseOrgans[i]->copy(shared_from_this()); // <--- todo not sured thats allowed within the constructor
-        // does not work, change to copy() ...
+        no->baseOrgans[i] = baseOrgans[i]->copy(shared_from_this());
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : organParam[ot]) {
-            otp.second = otp.second->copy(shared_from_this()); // <--- todo not sured thats allowed within the constructor
-            // does not work, change to copy() ...
+            otp.second = otp.second->copy(shared_from_this());
         }
     }
+    return no;
 }
 
 /**

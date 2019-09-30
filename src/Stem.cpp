@@ -1,11 +1,11 @@
-#include "Organ.h"
 #include "Stem.h"
+
 #include "Leaf.h"
 #include "Root.h"
 
-#include <memory>
-
 namespace CPlantBox {
+
+std::vector<int> Stem::phytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /**
  * Constructs a root from given data.
@@ -26,7 +26,7 @@ namespace CPlantBox {
  */
 Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
-:Organ(id, param, alive, active, age, length, moved,  oldNON ), parentBaseLength(pbl), parentNI(pni)
+:Organ(id, param, alive, active, age, length, moved,  oldNON), iHeading(iheading), parentBaseLength(pbl), parentNI(pni)
 { }
 
 /**
@@ -45,13 +45,11 @@ Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param pni			parent node index
  * @param pbl			parent base length
  */
-Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d pheading, double delay,  std::shared_ptr<Organ> parent, double pbl, int pni)
-        :Organ(plant,parent,Organism::ot_stem,type,delay), parentBaseLength(pbl), parentNI(pni)
+Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,  std::shared_ptr<Organ> parent, double pbl, int pni)
+        :Organ(plant, parent, Organism::ot_stem, type, delay), iHeading(iheading), parentBaseLength(pbl), parentNI(pni)
 {
     /*the relative heading is maulfunctioning
 	so it is disabled and rerolled to old heading*/
-
-    iHeading = pheading;
     param_ = getStemRandomParameter()->realize(); // throw the dice
     auto stem_p = this->param();
 
@@ -75,10 +73,6 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d pheading, double 
     this->iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
     age = -delay; // the root starts growing when age>0
     alive = 1; // alive per default
-
-    this->parent = parent;
-    parentBaseLength = pbl;
-    parentNI = pni;
     length = 0;
 
     if (parent!=nullptr) {
@@ -86,8 +80,9 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d pheading, double 
         assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");
         addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
     }
-
 }
+
+
 
 /**
  * Deep copies the organ into the new plant @param rs.
@@ -624,6 +619,14 @@ void Stem::createSegments(double l, bool verbose)
 }
 
 /**
+ *
+ */
+double Stem::dx() const
+{
+    return getStemRandomParameter()->dx;
+}
+
+/**
  * @return The RootTypeParameter from the plant
  */
 std::shared_ptr<StemRandomParameter> Stem::getStemRandomParameter() const
@@ -645,9 +648,11 @@ std::shared_ptr<const StemSpecificParameter> Stem::param() const
 std::string Stem::toString() const
 {
     std::stringstream str;
-    str << "Stem #"<< id <<": type "<<param()->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
+    str << "Stem #"<< id <<": type "<<" <param()->subType todo" << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
     return str.str();
 }
+
+
 
 
 } // namespace CPlantBox

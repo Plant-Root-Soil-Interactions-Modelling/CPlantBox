@@ -29,8 +29,8 @@ set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BI
 #
 # 2. Make plantbox library
 #
-find_package(pybind11 REQUIRED) 
-
+# find_package(pybind11 REQUIRED) 
+add_subdirectory(external/pybind11)
 pybind11_add_module(plantbox SHARED 
             sdf.cpp
             organparameter.cpp
@@ -47,13 +47,11 @@ pybind11_add_module(plantbox SHARED
 			Stem.cpp
 			Leaf.cpp
 			Plant.cpp
-			
-            
+			            
             Plant.cpp            
             RootSystem.cpp
            
             SegmentAnalyser.cpp            
-
             tropism.cpp
             
 			external/tinyxml2/tinyxml2.cpp

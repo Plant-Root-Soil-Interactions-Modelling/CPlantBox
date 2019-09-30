@@ -40,8 +40,9 @@ public:
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
     Organism() { }; ///< empty constructor
-    Organism(const Organism& o); ///< copy constructor todo change to copy()
     virtual ~Organism() { }; ///< destructor
+
+    virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism
 
     /* organ parameter management */
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter

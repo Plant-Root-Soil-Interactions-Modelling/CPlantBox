@@ -149,7 +149,7 @@ PYBIND11_MODULE(plantbox, m) {
     /**
      * Organ.h
      */
-    py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ") // std::unique_ptr<Organ, py::nodelete>>
+    py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ")
         .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double>())
         .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, bool, int>())
         .def("copy",&Organ::copy)
@@ -189,7 +189,7 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<Organism, std::shared_ptr<Organism>>(m, "Organism")
         .def(py::init<>())
-        .def(py::init<Organism&>())
+        .def("copy", &Organism::copy)
         .def("organTypeNumber", &Organism::organTypeNumber)
         .def("organTypeName", &Organism::organTypeName)
         .def("getOrganRandomParameter", (std::shared_ptr<OrganRandomParameter> (Organism::*)(int, int) const)  &Organism::getOrganRandomParameter) //overloads
@@ -531,37 +531,53 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("theta", &StemSpecificParameter::theta)
         .def_readwrite("rlt", &StemSpecificParameter::rlt)
         .def("getK",&StemSpecificParameter::getK);
-//    /**
-//      * Root.h
-//      */
-//    py::class_<Root, Organ>(m, "Root")
-//        .def(py::init<Organism*, int, Vector3d, double, Root*, double, int>())
-//        .def(py::init<int, OrganSpecificParameter*, bool, bool, double, double, Vector3d, double, int, bool, int >()) // todo policy
-//        .def("calcCreationTime", &Root::calcCreationTime)
-//        .def("calcLength", &Root::calcLength)
-//        .def("calcAge", &Root::calcAge)
-//        .def("getRootRandomParameter", &Root::getRootRandomParameter) // todo policy
-//        .def("param", &Root::param) // todo policy
-//        .def("dx", &Root::dx)
-//        .def_readwrite("parent_base_length", &Root::parentBaseLength)
-//        .def_readwrite("parent_ni", &Root::parentNI);
-//    /**
-//     * Seed.h
-//     */
-//    py::class_<Seed, Organ>(m, "Seed")
-//        .def(py::init<Organism*>());
-//    /**
-//     * Leaf.h
-//     */
-//    py::class_<Leaf, Organ>(m, "Leaf")
-//        .def(py::init<Organism*,  int, Vector3d, double, Organ*, int, double>())
-//        .def(py::init<int, OrganSpecificParameter*, bool, bool, double, double, Vector3d, double, int, bool, int >());
-//   /**
-//    * Stem.h
-//    */
-//   py::class_<Stem, Organ>(m, "Stem")
-//       .def(py::init<Organism*,  int, Vector3d, double, Organ*, int, double>())
-//       .def(py::init<int, OrganSpecificParameter*, bool, bool, double, double, Vector3d, double, int, bool, int >());
+    /**
+      * Root.h
+      */
+    py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
+        .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
+        .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+        .def("calcCreationTime", &Root::calcCreationTime)
+        .def("calcLength", &Root::calcLength)
+        .def("calcAge", &Root::calcAge)
+        .def("getRootRandomParameter", &Root::getRootRandomParameter)
+        .def("param", &Root::param)
+        .def("dx", &Root::dx)
+        .def_readwrite("iHeading", &Root::iHeading)
+        .def_readwrite("parentBaseLength", &Root::parentBaseLength)
+        .def_readwrite("parentNI", &Root::parentNI);
+     /**
+      * Seed.h
+      */
+    py::class_<Seed, Organ, std::shared_ptr<Seed>>(m, "Seed")
+        .def(py::init<std::shared_ptr<Organism>>())
+        .def("initialize", &Seed::initialize)
+        .def("param", &Seed::param)
+        .def("getNumberOfRootCrowns", &Seed::getNumberOfRootCrowns)
+        .def("baseOrgans", &Seed::baseOrgans)
+        .def("copyBaseOrgans", &Seed::copyBaseOrgans)
+        .def("createRoot", &Seed::createRoot)
+        .def("createStem", &Seed::createStem)
+        .def_readwrite("tapRootType", &Seed::tapRootType)
+        .def_readwrite("basalType", &Seed::basalType)
+        .def_readwrite("shootborneType", &Seed::shootborneType)
+        .def_readwrite("mainStemType", &Seed::mainStemType)
+        .def_readwrite("tillerType", &Seed::tillerType);
+
+    /**
+     * Leaf.h
+     */
+    py::class_<Leaf, Organ, std::shared_ptr<Leaf>>(m, "Leaf")
+        .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
+        .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>());
+
+   /**
+    * Stem.h
+    */
+   py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
+       .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
+       .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>());
+
 //     /*
 //      * RootSystem.h
 //      */
@@ -596,16 +612,14 @@ PYBIND11_MODULE(plantbox, m) {
 //              .def("pop",&RootSystem::pop)
 //              .def("write", &RootSystem::write)
 //              ;
-//     enum_<RootSystem::TropismTypes>("TropismType")
+//   py::enum_<RootSystem::TropismTypes>(m, "TropismType")
 //             .value("plagio", RootSystem::TropismTypes::tt_plagio)
 //             .value("gravi", RootSystem::TropismTypes::tt_gravi)
 //             .value("exo", RootSystem::TropismTypes::tt_exo)
-//             .value("hydro", RootSystem::TropismTypes::tt_hydro)
-//             ;
-//     enum_<RootSystem::GrowthFunctionTypes>("GrowthFunctionType")
+//             .value("hydro", RootSystem::TropismTypes::tt_hydro);
+//     py::enum_<RootSystem::GrowthFunctionTypes>(m, "GrowthFunctionType")
 //             .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
-//             .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
-//             ;
+//             .value("linear", RootSystem::GrowthFunctionTypes::gft_linear);
 
  //    /*
  //     * Plant.h

@@ -226,13 +226,13 @@ double Organ::getParameter(std::string name) const {
     if (name=="age") { return getAge(); }
     if (name=="creationTime") { return getNodeCT(0); }
     if (name=="order") { // count how often it is possible to move up
-        int r = 0;
-        std::shared_ptr<const Organ> p = shared_from_this();
-        while (!p->parent.expired()) {
-            r++;
+        int o = 0;
+        auto p = shared_from_this();
+        while ((!p->parent.expired()) && (p->organType()!=Organism::ot_seed)) {
+            o++;
             p = p->parent.lock(); // up the organ tree
         }
-        return r;
+        return o;
     }
     if (name=="one") { return 1; } // e.g. for counting the organs
     if (name=="id") { return getId(); }
