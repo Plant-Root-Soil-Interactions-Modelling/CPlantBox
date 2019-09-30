@@ -43,7 +43,7 @@ OrganRandomParameter::OrganRandomParameter(std::shared_ptr<Organism> p): plant(p
 std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::shared_ptr<Organism> p)
 {
     auto o = std::make_shared<OrganRandomParameter>(p); // copy constructor would break class introspection
-    o->name == name;
+    o->name = name;
     o->organType = organType;
     o->subType = subType;
     return o;
@@ -146,7 +146,7 @@ std::string OrganRandomParameter::toString(bool verbose) const
         str << "===" << std::endl;
         return str.str();
     } else {
-        str << "Name: " << name << ", " << "organType: "<< organType << ", " << "subType" << ", " << subType;
+        str << "name: " << name << ", " << "organType: "<< organType << ", " << "subType: " << subType << ".";
         return str.str();
     }
 }

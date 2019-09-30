@@ -54,10 +54,12 @@ Organism::Organism(const Organism& o): organParam(o.organParam), simtime(o.simti
     baseOrgans.resize(o.baseOrgans.size());  // copy base organs
     for (int i=0; i<baseOrgans.size(); i++) {
         baseOrgans[i] = o.baseOrgans[i]->copy(shared_from_this()); // <--- todo not sured thats allowed within the constructor
+        // does not work, change to copy() ...
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : organParam[ot]) {
             otp.second = otp.second->copy(shared_from_this()); // <--- todo not sured thats allowed within the constructor
+            // does not work, change to copy() ...
         }
     }
 }

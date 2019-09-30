@@ -40,7 +40,7 @@ public:
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
     Organism() { }; ///< empty constructor
-    Organism(const Organism& o); ///< copy constructor
+    Organism(const Organism& o); ///< copy constructor todo change to copy()
     virtual ~Organism() { }; ///< destructor
 
     /* organ parameter management */
