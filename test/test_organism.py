@@ -40,7 +40,7 @@ class TestOrganism(unittest.TestCase):
         """ checks if the organism is properly copied """
         self.hand_example()
         self.add_nodes()
-        human2 = pb.Organism(self.human1)  # copy constructor
+        human2 = self.human1.copy()  # copies organism
         self.assertIsNot(self.human1, human2, "copy: not a copy")
         self.assertEqual(self.human1.rand(), human2.rand(), "copy: random generator seed was not copied")
         o1 = self.human1.getOrgans()  # check organs
@@ -118,13 +118,12 @@ class TestOrganism(unittest.TestCase):
         """ test if getParameter works """
         self.hand_example()
         self.add_nodes()
-        simtime=10;
+        simtime = 10;
         self.human1.simulate(simtime)
         organs = self.human1.getOrgans()
         age = v2a(self.human1.getParameter("age"))
         self.assertEqual(len(organs), age.shape[0] , "parameter: organ size unequal to parameter size")
-        self.assertEqual(age[2], -3+simtime, "parameter: wrong ages")
-        print(age)
+        self.assertEqual(age[2], -3 + simtime, "parameter: wrong ages")
 
     def test_rsml(self):
         """ checks rmsl functionality with Python rsml reader """

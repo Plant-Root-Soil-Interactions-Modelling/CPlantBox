@@ -23,6 +23,8 @@ namespace py = pybind11;
 #include "Leaf.h"
 #include "Stem.h"
 
+#include "RootSystem.h"
+
 #include "sdf_rs.h" // to revise ...
 
 namespace CPlantBox {
@@ -563,25 +565,40 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("shootborneType", &Seed::shootborneType)
         .def_readwrite("mainStemType", &Seed::mainStemType)
         .def_readwrite("tillerType", &Seed::tillerType);
-
     /**
      * Leaf.h
      */
     py::class_<Leaf, Organ, std::shared_ptr<Leaf>>(m, "Leaf")
         .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
-        .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>());
-
+        .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+        .def("calcCreationTime", &Leaf::calcCreationTime)
+        .def("calcLength", &Leaf::calcLength)
+        .def("calcAge", &Leaf::calcAge)
+        .def("getLeafRandomParameter", &Leaf::getLeafRandomParameter)
+        .def("param", &Leaf::param)
+        .def("dx", &Leaf::dx)
+        .def_readwrite("iHeading", &Leaf::iHeading)
+        .def_readwrite("parentBaseLength", &Leaf::parentBaseLength)
+        .def_readwrite("parentNI", &Leaf::parentNI);
    /**
     * Stem.h
     */
    py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
        .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
-       .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>());
-
-//     /*
-//      * RootSystem.h
-//      */
-//     class_<RootSystem, RootSystem*, bases<Organism>>("RootSystem", init<>()) // bases<PlantBase>
+       .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+       .def("calcCreationTime", &Stem::calcCreationTime)
+       .def("calcLength", &Stem::calcLength)
+       .def("calcAge", &Stem::calcAge)
+       .def("getStemRandomParameter", &Stem::getStemRandomParameter)
+       .def("param", &Stem::param)
+       .def("dx", &Stem::dx)
+       .def_readwrite("iHeading", &Stem::iHeading)
+       .def_readwrite("parentBaseLength", &Stem::parentBaseLength)
+       .def_readwrite("parentNI", &Stem::parentNI);
+     /*
+      * RootSystem.h
+      */
+//     class_<RootSystem, Organism, std::shared_ptr<RootSystem>>>(m, "RootSystem")
 //              .def(init<RootSystem&>())
 //              .def("getRootRandomParameter", getRootRandomParameter1, return_value_policy<reference_existing_object>())
 //              .def("getRootRandomParameter", getRootRandomParameter2)
@@ -611,15 +628,17 @@ PYBIND11_MODULE(plantbox, m) {
 //              .def("push",&RootSystem::push)
 //              .def("pop",&RootSystem::pop)
 //              .def("write", &RootSystem::write)
-//              ;
-//   py::enum_<RootSystem::TropismTypes>(m, "TropismType")
-//             .value("plagio", RootSystem::TropismTypes::tt_plagio)
-//             .value("gravi", RootSystem::TropismTypes::tt_gravi)
-//             .value("exo", RootSystem::TropismTypes::tt_exo)
-//             .value("hydro", RootSystem::TropismTypes::tt_hydro);
-//     py::enum_<RootSystem::GrowthFunctionTypes>(m, "GrowthFunctionType")
-//             .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
-//             .value("linear", RootSystem::GrowthFunctionTypes::gft_linear);
+////              ;
+   py::enum_<RootSystem::TropismTypes>(m, "TropismType")
+             .value("plagio", RootSystem::TropismTypes::tt_plagio)
+             .value("gravi", RootSystem::TropismTypes::tt_gravi)
+             .value("exo", RootSystem::TropismTypes::tt_exo)
+             .value("hydro", RootSystem::TropismTypes::tt_hydro)
+             .export_values();
+     py::enum_<RootSystem::GrowthFunctionTypes>(m, "GrowthFunctionType")
+             .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
+             .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
+             .export_values();
 
  //    /*
  //     * Plant.h

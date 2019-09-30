@@ -16,18 +16,12 @@ class Seed : public Organ
 {
 public:
 
-    using Organ::Organ;
-
     Seed(std::shared_ptr<Organism> plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.) { };
-    virtual ~Seed() { }; // everything is done in @Organ
+    virtual ~Seed() { };
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the seed
 
     virtual int organType() const override { return Organism::ot_seed; }
-
-    void simulate(double dt, bool silence = false) override { Organ::simulate(dt, silence); }
-
-    double getParameter(std::string name) const override { return Organ::getParameter(name); } // TODO all virtual methods MUST be overwritten, otherwise pybind11 crashes
 
     virtual std::string toString() const override;
 
