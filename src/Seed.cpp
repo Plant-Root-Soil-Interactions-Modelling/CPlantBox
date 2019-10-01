@@ -34,9 +34,9 @@ void Seed::initialize()
     auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
     bool plantBox = stemP.size()>1;
     if (plantBox) {
-        std::cout << "Seed::initialize: initializing plant \n";
+        std::cout << "Seed::initialize: Plant \n";
     } else {
-        std::cout << "Seed::initialize: initializing root system \n";
+        std::cout << "Seed::initialize: RootSystem \n";
     }
 
     /*

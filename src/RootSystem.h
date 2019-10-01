@@ -11,6 +11,7 @@
 #include "rootparameter.h"
 #include "Root.h"
 #include "seedparameter.h"
+#include "Seed.h"
 
 namespace CPlantBox {
 
@@ -36,17 +37,20 @@ public:
     enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
     RootSystem(); ///< empty root system
-    RootSystem(const RootSystem& rs); ///< copy constructor
     virtual ~RootSystem() { };
+
+    std::shared_ptr<Organism> copy() override; ///< deep copies the organism
 
     /* Parameter input output */
     std::shared_ptr<RootRandomParameter> getRootRandomParameter(int type) const;///< returns the i-th root parameter set (i=1..n)
     std::vector<std::shared_ptr<RootRandomParameter>> getRootRandomParameter() const; ///< all root type parameters as a vector
     void setRootSystemParameter(std::shared_ptr<SeedRandomParameter> rsp); ///< sets the root system parameters
     std::shared_ptr<SeedRandomParameter> getRootSystemParameter(); ///< gets the root system parameters
-    void openFile(std::string filename, std::string subdir="modelparameter/"); ///< reads root parameter and plant parameter
-    int readParameters(std::istream & cin); ///< reads root parameters from an input stream
-    void writeParameters(std::ostream & os) const; ///< writes root parameters
+
+    void initializeReader() override; ///< initializes XML reader
+    void openFile(std::string filename, std::string subdir="modelparameter/"); ///< DEPRICATED reads root parameter and plant parameter
+    int readParameters(std::istream & cin); ///< DEPRICATED reads root parameters from an input stream
+    void writeParameters(std::ostream & os) const; ///< DEPRICATED writes root parameters
 
     /* Simulation */
     void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
@@ -90,7 +94,9 @@ public:
 
 private:
 
+    std::shared_ptr<Seed> seed = nullptr;
     SeedSpecificParameter seedParam;
+
     SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
     SoilLookUp* soil = nullptr; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 

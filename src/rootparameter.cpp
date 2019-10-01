@@ -54,10 +54,11 @@ RootRandomParameter::RootRandomParameter(std::shared_ptr<Organism> plant) :Organ
  */
 std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<Organism> p)
 {
+    // std::cout << "RootRandomParameter::copy\n"<< std::flush;
     auto r = std::make_shared<RootRandomParameter>(*this); // copy constructor breaks class introspection
     r->plant = p;
     r->bindParameters(); // fix class introspection
-    r->f_tf = f_tf->copy(p); // todo copy call back classes
+    r->f_tf = f_tf->copy(p); // copy call back classes
     r->f_gf = f_gf->copy();
     r->f_se = f_se->copy();
     r->f_sa = f_sa->copy();
@@ -161,11 +162,16 @@ void RootRandomParameter::readXML(tinyxml2::XMLElement* element)
     tinyxml2::XMLElement* p = element->FirstChildElement("parameter");
     successor.resize(0);
     successorP.resize(0);
-    while(p) {
-        std::string key = p->Attribute("name");
-        if (key.compare("successor")==0)  {
-            successor.push_back(p->IntAttribute("type"));
-            successorP.push_back(p->DoubleAttribute("percentage"));
+    while(p!=nullptr) {
+        const char* str = p->Attribute("name");
+        if (str!=nullptr) {
+            std::string key = std::string(str);
+            if (key.compare("successor")==0)  {
+                successor.push_back(p->IntAttribute("type", 1.));
+                successorP.push_back(p->DoubleAttribute("percentage", 1.));
+            }
+        } else {
+            std::cout << "RootRandomParameter::readXML: warning! tag has no attribute 'name' \n" << std::flush;
         }
         p = p->NextSiblingElement("parameter");
     }
@@ -198,7 +204,6 @@ tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
             tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
             element->InsertEndChild(c);
         }
-
     }
     double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
     if ((p_<1) && (p_!=0)) {

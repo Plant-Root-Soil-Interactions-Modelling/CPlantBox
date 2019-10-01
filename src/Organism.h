@@ -85,6 +85,7 @@ public:
 
     /* io */
     virtual std::string toString() const; ///< Quick info for debugging
+    virtual void initializeReader() { }
     void readParameters(std::string name, std::string  basetag = "plant"); ///< reads all organ type parameters from a xml file
     void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
     virtual void writeRSML(std::string name) const; ///< writes a RSML file

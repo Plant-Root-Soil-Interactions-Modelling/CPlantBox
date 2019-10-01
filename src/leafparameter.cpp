@@ -56,6 +56,7 @@ LeafRandomParameter::LeafRandomParameter(std::shared_ptr<Organism> plant) :Organ
  */
 std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<Organism> plant)
 {
+    // std::cout << "LeafRandomParameter::copy\n"<< std::flush;
 	auto r = std::make_shared<LeafRandomParameter>(*this); // copy constructor breaks class introspection
 	r->plant = plant;
 	r->bindParameters(); // fix class introspection

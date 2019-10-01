@@ -42,6 +42,7 @@ OrganRandomParameter::OrganRandomParameter(std::shared_ptr<Organism> p): plant(p
  */
 std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::shared_ptr<Organism> p)
 {
+    // std::cout << "OrganRandomParameter::copy\n"<< std::flush;
     auto o = std::make_shared<OrganRandomParameter>(p); // copy constructor would break class introspection
     o->name = name;
     o->organType = organType;
@@ -164,22 +165,42 @@ std::string OrganRandomParameter::toString(bool verbose) const
  */
 void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
 {
-    std::string type = element->Name();
+    // std::cout << "OrganRandomParameter::readXML starting read " << "\n" << std::flush;
+    std::string type = std::string(element->Name());
     this->organType =  Organism::organTypeNumber(type);
-    subType = element->IntAttribute("subType");
-    name = element->Attribute("name");
+    subType = element->IntAttribute("subType", 0);
+    const char* cname = element->Attribute("name");
+    if (cname!=nullptr) {
+        name = std::string(cname);
+    } else {
+        name = "undefined*";
+    }
     auto p = element->FirstChildElement("parameter");
-    while(p) {
-        std::string key = p->Attribute("name");
-        if (iparam.count(key)>0) {
-            *iparam[key] = p->IntAttribute("value");
-        } else if (dparam.count(key)>0) {
-            *dparam[key] = p->DoubleAttribute("value");
+    while(p!=nullptr) {
+        const char* str = p->Attribute("name");
+        if (str!=nullptr) {
+            std::string key = std::string(str);
+            int i = 0;
+            if (iparam.count(key)>0) {
+                *iparam[key] = p->IntAttribute("value", *iparam[key]);  // if not found, leave default
+                i++;
+            } else if (dparam.count(key)>0) {
+                *dparam[key] = p->DoubleAttribute("value", *dparam[key]);  // if not found, leave default
+                i++;
+            }
+            if (param_sd.count(key)>0) {
+                i++;
+            }
+            if (i == 0) {
+                if (key.compare("successor")!=0) {
+                    std::cout << "OrganRandomParameter::readXML: warning! parameter " << key << " not found in " << type << " of subType " << subType << "\n" << std::flush;
+                }
+            }
+            p = p->NextSiblingElement("parameter");
+        } else {
+            std::cout << "OrganRandomParameter::readXML: warning! tag has no attribute 'name' \n" << std::flush;
+            p = p->NextSiblingElement("parameter");
         }
-        if (param_sd.count(key)>0) {
-            *param_sd[key] = p->DoubleAttribute("dev", 0); // optional value
-        }
-        p = p->NextSiblingElement("parameter");
     }
 }
 

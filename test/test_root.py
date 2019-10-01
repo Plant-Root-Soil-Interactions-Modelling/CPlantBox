@@ -36,13 +36,18 @@ class TestRoot(unittest.TestCase):
         self.p0, self.p1 = p0, p1  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
+        # TODO (first node is not set, if seed is used)
+        self.plant.setOrganRandomParameter(pb.SeedRandomParameter(self.plant))
+        self.seed = pb.Seed(self.plant)  # store parent (not owned by child Organ)
+        #
         param0 = p0.realize()  # set up root by hand (without a root system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
         parentroot = pb.Root(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
         self.parentroot = parentroot  # store parent (not owned by child Organ)
-        self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, parentroot, 0, 0)
+        #
+        self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0, 0)
         self.root.setOrganism(self.plant)
 
     def root_length_test(self, dt, l, subDt):
@@ -71,7 +76,7 @@ class TestRoot(unittest.TestCase):
             self.assertLessEqual(0.25, meanDX[i], "axial resolution dx is unexpected small")
 
     def test_constructors(self):
-        """ tests three different kinds of constructors """
+        """ tests two kinds of constructors and copy"""
         self.root_example_rtp()
         # 1. constructor from scratch
         param = self.p0.realize()
@@ -80,7 +85,7 @@ class TestRoot(unittest.TestCase):
         root.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
         root2 = pb.Root(self.plant, self.p1.subType, pb.Vector3d(0, 0, -1), 0, root, 0, 0)
-        root.addChild(root2);
+        root.addChild(root2)
         # 3. deep copy (with a factory function)
         plant2 = pb.Organism()
         root3 = root.copy(plant2)
@@ -173,4 +178,7 @@ class TestRoot(unittest.TestCase):
 
 
 if __name__ == '__main__':
+#     test = TestRoot()
+#     test.test_constructors()
+#     test.test_root_length()
     unittest.main()

@@ -18,16 +18,13 @@ std::vector<std::string> Organism::organTypeNames = { "organ", "seed", "root", "
  */
 int Organism::organTypeNumber(std::string name)
 {
-    int ot = 0;
-    try {
-        while (name.compare(organTypeNames.at(ot))!=0) {
-            ot++;
+    for (int ot=0; ot < organTypeNames.size(); ot++ ) {
+        if (name.compare(organTypeNames.at(ot))==0) {
+            return ot;
         }
-    } catch (const std::exception& e) {
-        std::cout << "Organism::organTypeNumber: unknown organ type name " << name << "\n";
-        throw(e);
     }
-    return ot;
+    std::cout << "Organism::organTypeNumber: unknown organ type name " << name << "\n" << std::flush;
+    return -1;
 }
 
 /**
@@ -38,10 +35,9 @@ std::string Organism::organTypeName(int ot)
     try {
         return organTypeNames.at(ot);
     } catch (const std::exception& e) {
-        std::cout << "Organism::organTypeName: unknown organ type number " << ot << "\n";
-        throw(e);
+        std::cout << "Organism::organTypeName: unknown organ type number " << ot << "\n" << std::flush;
+        throw(e); // rethrow
     }
-
 }
 
 /**
@@ -49,7 +45,7 @@ std::string Organism::organTypeName(int ot)
  */
 std::shared_ptr<Organism> Organism::copy()
 {
-    auto no = std::make_shared<Organism> (*this); // copy constructor
+    auto no = std::make_shared<Organism>(*this); // copy constructor
     for (int i=0; i<baseOrgans.size(); i++) {
         no->baseOrgans[i] = baseOrgans[i]->copy(shared_from_this());
     }
@@ -82,7 +78,7 @@ std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParam
  * @param subType  the sub type (e.g. root type)
  * @return         the respective type parameter
  */
-std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int otype, int subType) const
+std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, int subType) const
 {
     try {
         //                std::cout << "reading organ type " << ot << " sub type " << subtype <<": ";
@@ -90,9 +86,10 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int otyp
         //                    std::cout << p.first;
         //                }
         //                std::cout << "\n" << std::flush;
-        return organParam[otype].at(subType);
-    } catch(const std::out_of_range& oor) {
-        std::cout << "Organism::getOrganTypeParameter: Organ type parameter of sub type " << subType << " was not set \n" << std::flush;
+        return organParam[ot].at(subType);
+    } catch(...) { // const std::out_of_range& oor
+        std::cout << "Organism::getOrganTypeParameter: OrganRandomParameter for " << Organism::organTypeName(ot)
+        <<", of sub type " << subType << " was not set. \n" << std::flush;
         throw;
     }
 }
@@ -106,10 +103,8 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int otyp
 void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 {
     assert(p->plant.lock().get()==this && "OrganTypeParameter::plant should be this organism");
-    int otype = p->organType;
-    int subtype = p->subType;
-    organParam[otype][subtype] = p;
-    // std::cout << "setting organ type " << otype << ", sub type " << subtype << ", name "<< p->name << "\n";
+    organParam[p->organType][p->subType] = p;
+    // std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << "\n";
 }
 
 /**
@@ -491,7 +486,7 @@ std::string Organism::toString() const
 {
     std::stringstream str;
     str << "Organism with "<< baseOrgans.size() <<" base organs, " << getNumberOfNodes()
-                                << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
+                                                << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
     return str.str();
 }
 
@@ -512,21 +507,47 @@ void Organism::readParameters(std::string name, std::string basetag)
     doc.LoadFile(name.c_str());
     if(doc.ErrorID() == 0) {
         tinyxml2::XMLElement* base = doc.FirstChildElement(basetag.c_str());
-        if(base != NULL){
+        if(base != nullptr){
             auto p = base->FirstChildElement();
-            while(p) {
-                std::string tagname = p->Name();
-                //std::cout << "Organism::readParameter: reading tag "<< tagname << std::endl << std::flush;
-                int ot = Organism::organTypeNumber(tagname);
-                auto otp = organParam[ot].begin()->second->copy(shared_from_this());
-                otp->readXML(p);
-                setOrganRandomParameter(otp);
-                p = p->NextSiblingElement();}
-        }
-        else{
-            throw std::invalid_argument ("Organism::readParameters" + std::string(basetag.c_str()) + " was not found in xml file");
-            }
+            while((p!=nullptr) && (p->Name()!=nullptr)) {
 
+                std::string tagname = p->Name();
+                int ot = Organism::organTypeNumber(tagname);
+                std::shared_ptr<OrganRandomParameter> prototype;
+                if (organParam[ot].count(0)) { // is the prototype defined?
+                    prototype = organParam[ot][0];
+                } else {
+                    prototype = nullptr;
+                }
+
+                if ((ot==0) && (prototype==nullptr)) { // read depricated xml format, in case organ is not used
+                    tagname = p->Attribute("type");
+                    ot = Organism::organTypeNumber(tagname);
+                    if (ot>0) { // tagname known?
+                        if (organParam[ot].count(0)) { // is the prototype defined?
+                            prototype = organParam[ot][0];
+                        } else {
+                            prototype = nullptr;
+                        }
+                    } else {
+                        prototype = nullptr;
+                    }
+                }
+
+                if (prototype!=nullptr) { // read prototype
+                    auto otp = prototype->copy(shared_from_this());
+                    otp->readXML(p);
+                    otp->organType = ot; // in depricated case, readXML will a give wrong value
+                    setOrganRandomParameter(otp);
+                } else { // skip prototype
+                    std::cout << "Organism::readParameters: warning, skipping " << tagname <<
+                        ", no random parameter class defined, use initializeReader()\n" << std::flush;
+                }
+                p = p->NextSiblingElement();
+            } // while
+        } else {
+            throw std::invalid_argument ("Organism::readParameters: " + std::string(basetag.c_str()) + " was not found in xml file");
+        }
     } else {
         std::cout << "Organism::readParameters: could not open file " << name << "\n" << std::flush;
     }
@@ -542,7 +563,7 @@ void Organism::readParameters(std::string name, std::string basetag)
  */
 void Organism::writeParameters(std::string name, std::string basetag, bool comments) const
 {
-	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+    std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument xmlDoc;
     tinyxml2:: XMLElement* xmlParams = xmlDoc.NewElement(basetag.c_str()); // RSML
     for (int ot = 0; ot < numberOfOrganTypes; ot++) {
@@ -561,7 +582,7 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
  */
 void Organism::writeRSML(std::string name) const
 {
-	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+    std::setlocale(LC_NUMERIC, "en_US.UTF-8");
     tinyxml2::XMLDocument xmlDoc;
     tinyxml2:: XMLElement* rsml = xmlDoc.NewElement("rsml"); // RSML
     tinyxml2:: XMLElement* meta = getRSMLMetadata(xmlDoc);

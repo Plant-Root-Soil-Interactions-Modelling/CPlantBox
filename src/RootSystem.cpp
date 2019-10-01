@@ -3,7 +3,6 @@
 
 #include "organparameter.h"
 #include "Organism.h"
-#include "Seed.h"
 
 namespace CPlantBox {
 
@@ -12,27 +11,25 @@ namespace CPlantBox {
  */
 RootSystem::RootSystem(): Organism()
 {
-   auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
-   rrp->subType = 0;
-   setOrganRandomParameter(rrp);
-   auto srp = std::make_shared<SeedRandomParameter>(shared_from_this());
-   srp->subType = 0;
-   setOrganRandomParameter(srp);
+
 }
 
 /**
- * Copy Constructor
- *
- * deep copies the root system
- * does not deep copy geometry, elongation functions, and soil (all not owned by rootsystem)
- * empties buffer
- *
- * @param rs        root system that is copied
+ * doc me
  */
-RootSystem::RootSystem(const RootSystem& rs): Organism(rs), geometry(rs.geometry), soil(rs.soil)
+std::shared_ptr<Organism> RootSystem::copy()
 {
-    std::cout << "Copying root system with "<<rs.baseOrgans.size()<< " base roots \n";
-    roots.clear();
+    roots.clear(); // clear buffer
+    auto no = std::make_shared<RootSystem>(*this); // copy constructor
+    for (int i=0; i<baseOrgans.size(); i++) {
+        no->baseOrgans[i] = baseOrgans[i]->copy(shared_from_this());
+    }
+    for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
+        for (auto& otp : organParam[ot]) {
+            otp.second = otp.second->copy(shared_from_this());
+        }
+    }
+    return no;
 }
 
 /**
@@ -84,7 +81,20 @@ void RootSystem::reset()
 }
 
 /**
- * Reads the root parameter from a file. Opens plant parameters with the same filename if available,
+ * todo docme
+ */
+void RootSystem::initializeReader()
+{
+    auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
+    rrp->subType = 0;
+    setOrganRandomParameter(rrp);
+    auto srp = std::make_shared<SeedRandomParameter>(shared_from_this());
+    srp->subType = 0;
+    setOrganRandomParameter(srp);
+}
+
+/**
+ * DEPRICATED Reads the root parameter from a file. Opens plant parameters with the same filename if available,
  * otherwise assumes a tap root system at position (0,0,-3).
  *
  * @param name          filename without file extension
@@ -125,7 +135,7 @@ void RootSystem::openFile(std::string name, std::string subdir)
 }
 
 /**
- * Reads root type parameter from an input stream @param is
+ * DEPRICATED Reads root type parameter from an input stream @param is
  * (there is a Matlab script exporting these, @see writeParams.m)
  *
  * @param cin  in stream
@@ -145,7 +155,7 @@ int RootSystem::readParameters(std::istream& is)
 }
 
 /**
- * Writes root type parameters to an output stream @param os
+ * DEPRICATED Writes root type parameters to an output stream @param os
  *
  * @param os  out stream
  */
@@ -174,11 +184,11 @@ void RootSystem::initialize(int basaltype, int shootbornetype)
     getNodeIndex(); // increase node index
 
     // create seed
-    Seed seed = Seed(shared_from_this());
-    seed.initialize();
-    seedParam = SeedSpecificParameter(*seed.param()); // copy the specific parameters
+    seed = std::make_shared<Seed>(shared_from_this());
+    seed->initialize();
+    seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
     // std::cout << "RootSystem::initialize:\n" <<  seedParam.toString() ;
-    baseOrgans = seed.copyBaseOrgans();
+    baseOrgans = seed->copyBaseOrgans();
 
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();

@@ -196,7 +196,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("organTypeName", &Organism::organTypeName)
         .def("getOrganRandomParameter", (std::shared_ptr<OrganRandomParameter> (Organism::*)(int, int) const)  &Organism::getOrganRandomParameter) //overloads
         .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
-        .def("setOrganRandomParameter", &Organism::setOrganRandomParameter, py::keep_alive<1, 2>())
+        .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
 
         .def("addOrgan", &Organism::addOrgan)
         .def("initialize", &Organism::initialize)
@@ -229,6 +229,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getNewSegments", &Organism::getNewSegments, py::arg("ot") = -1)  // default
         .def("getNewSegmentOrigins", &Organism::getNewSegmentOrigins, py::arg("ot") = -1)  // default
 
+        .def("initializeReader", &Organism::initializeReader)
         .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant")  // default
         .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("comments") = true)  // default
         .def("writeRSML", &Organism::writeRSML)
@@ -598,37 +599,34 @@ PYBIND11_MODULE(plantbox, m) {
      /*
       * RootSystem.h
       */
-//     class_<RootSystem, Organism, std::shared_ptr<RootSystem>>>(m, "RootSystem")
-//              .def(init<RootSystem&>())
-//              .def("getRootRandomParameter", getRootRandomParameter1, return_value_policy<reference_existing_object>())
-//              .def("getRootRandomParameter", getRootRandomParameter2)
-//              .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
-//              .def("getRootSystemParameter", &RootSystem::getRootSystemParameter, return_value_policy<reference_existing_object>()) // tutorial: "naive (dangerous) approach"
-//              .def("openFile", &RootSystem::openFile, openFile_overloads())
-//              .def("setGeometry", &RootSystem::setGeometry)
-//              .def("setSoil", &RootSystem::setSoil)
-//              .def("reset", &RootSystem::reset)
-//              .def("initialize", initialize1)
-//              .def("initialize", initialize2)
-//              .def("setTropism", &RootSystem::setTropism)
-//              .def("simulate",simulate1, simulate1_overloads())
-//              .def("simulate",simulate2)
-//              .def("simulate",simulate3, simulate3_overloads())
-//              .def("getSimTime", &RootSystem::getSimTime)
-//              .def("getNumberOfNodes", &RootSystem::getNumberOfNodes)
-//              .def("getRoots", &RootSystem::getRoots)
-//              .def("getNumberOfSegments", &RootSystem::getNumberOfSegments, getNumberOfSegments_overloads())
-//              .def("getNumberOfRoots", &RootSystem::getNumberOfRoots, getNumberOfRoots_overloads())
-//              .def("getBaseRoots", &RootSystem::getBaseRoots)
-//              .def("getShootSegments", &RootSystem::getShootSegments)
-//              .def("getSegmentOrigins", &RootSystem::getSegmentOrigins)
-//              .def("getRootTips", &RootSystem::getRootTips)
-//              .def("getRootBases", &RootSystem::getRootBases)
-//              .def("getNumberOfNewNodes",&RootSystem::getNumberOfNewNodes)
-//              .def("push",&RootSystem::push)
-//              .def("pop",&RootSystem::pop)
-//              .def("write", &RootSystem::write)
-////              ;
+     py::class_<RootSystem, Organism, std::shared_ptr<RootSystem>>(m, "RootSystem")
+              .def(py::init<>())
+              .def("getRootRandomParameter", (std::shared_ptr<RootRandomParameter> (RootSystem::*)(int) const) &RootSystem::getRootRandomParameter)
+              .def("getRootRandomParameter", (std::vector<std::shared_ptr<RootRandomParameter>> (RootSystem::*)() const) &RootSystem::getRootRandomParameter)
+              .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
+              .def("getRootSystemParameter", &RootSystem::getRootSystemParameter)
+              .def("openFile", &RootSystem::openFile, py::arg("filename"), py::arg("subdir") = "modelparameter/")
+              .def("setGeometry", &RootSystem::setGeometry)
+              .def("setSoil", &RootSystem::setSoil)
+              .def("reset", &RootSystem::reset)
+              .def("initialize", (void (RootSystem::*)()) &RootSystem::initialize)
+              .def("initialize", (void (RootSystem::*)(int,int)) &RootSystem::initialize)
+              .def("setTropism", &RootSystem::setTropism)
+              .def("simulate",(void (RootSystem::*)(double,bool)) &RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
+              .def("simulate",(void (RootSystem::*)()) &RootSystem::simulate)
+              .def("simulate",(void (RootSystem::*)(double, double, ProportionalElongation*, bool)) &RootSystem::simulate)
+              .def("getRoots", &RootSystem::getRoots)
+              .def("initCallbacks", &RootSystem::initCallbacks)
+              .def("createTropismFunction", &RootSystem::createTropismFunction)
+              .def("createGrowthFunction", &RootSystem::createGrowthFunction)
+              .def("getNumberOfRoots", &RootSystem::getNumberOfRoots, py::arg("all") = false)
+              .def("getBaseRoots", &RootSystem::getBaseRoots)
+              .def("getShootSegments", &RootSystem::getShootSegments)
+              .def("getRootTips", &RootSystem::getRootTips)
+              .def("getRootBases", &RootSystem::getRootBases)
+              .def("push",&RootSystem::push)
+              .def("pop",&RootSystem::pop)
+              .def("write", &RootSystem::write);
    py::enum_<RootSystem::TropismTypes>(m, "TropismType")
              .value("plagio", RootSystem::TropismTypes::tt_plagio)
              .value("gravi", RootSystem::TropismTypes::tt_gravi)
@@ -639,7 +637,6 @@ PYBIND11_MODULE(plantbox, m) {
              .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
              .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
              .export_values();
-
  //    /*
  //     * Plant.h
  //     */

@@ -85,7 +85,7 @@ public:
     double maxBs = 0.;     ///< Standard deviation of maximal number of basal roots [1]
 
     // Shoot borne roots (crown roots)
-    double nC;             ///< Mean maximal number of roots per root crown [1]
+    double nC = 0.;        ///< Mean maximal number of roots per root crown [1]
     double nCs = 0.;       ///< Standard deviation of maximal number of roots per root crown [1]
     double firstSB = 1.e9; ///< Mean first emergence of a shoot borne root [day]
     double firstSBs = 0.;  ///< Standard deviation of first emergence of a shoot borne root [day]
