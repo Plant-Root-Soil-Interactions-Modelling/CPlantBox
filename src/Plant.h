@@ -38,8 +38,13 @@ public:
   enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // plant growth function
 
   Plant();
-  Plant(const Plant& rs); ///< copy constructor
   virtual ~Plant() { };
+
+  std::shared_ptr<Organism> copy() override; ///< deep copies the organism
+
+  /* parameters */
+  void initializeReader() override; ///< initializes XML reader
+  void readParameters(std::string name, std::string  basetag = "plant") override { this->initializeReader(); Organism::readParameters(name, basetag); };
 
   /* Simulation */
   void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before Plant::initialize())

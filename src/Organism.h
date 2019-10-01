@@ -86,8 +86,8 @@ public:
     /* io */
     virtual std::string toString() const; ///< Quick info for debugging
     virtual void initializeReader() { }
-    void readParameters(std::string name, std::string  basetag = "plant"); ///< reads all organ type parameters from a xml file
-    void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
+    virtual void readParameters(std::string name, std::string  basetag = "plant"); ///< reads all organ type parameters from a xml file
+    virtual void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
     virtual void writeRSML(std::string name) const; ///< writes a RSML file
     int getRSMLSkip() const { return rsmlSkip; } ///< skips points in the RSML output (default = 0)
     void setRSMLSkip(int skip) { assert(rsmlSkip>=0 && "rsmlSkip must be >= 0" ); rsmlSkip = skip;  } ///< skips points in the RSML output (default = 0)

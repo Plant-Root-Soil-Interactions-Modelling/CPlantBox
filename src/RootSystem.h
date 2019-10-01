@@ -48,6 +48,7 @@ public:
     std::shared_ptr<SeedRandomParameter> getRootSystemParameter(); ///< gets the root system parameters
 
     void initializeReader() override; ///< initializes XML reader
+    void readParameters(std::string name, std::string  basetag = "plant") override { this->initializeReader(); Organism::readParameters(name, basetag); };
     void openFile(std::string filename, std::string subdir="modelparameter/"); ///< DEPRICATED reads root parameter and plant parameter
     int readParameters(std::istream & cin); ///< DEPRICATED reads root parameters from an input stream
     void writeParameters(std::ostream & os) const; ///< DEPRICATED writes root parameters

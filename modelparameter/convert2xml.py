@@ -1,3 +1,5 @@
+""" converts old parameter files (.pparam, .rparam) to the new xml format """
+
 import os
 from os import walk
 import sys

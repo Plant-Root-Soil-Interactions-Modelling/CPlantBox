@@ -9,44 +9,47 @@
 namespace CPlantBox {
 
 /*
- * Sets up the xml reader Organism::readParameters
+ * todo doc me
  */
 Plant::Plant(): Organism()
-{
-    initPrototypes(std::make_shared<SeedRandomParameter>(shared_from_this()), std::make_shared<RootRandomParameter>(shared_from_this()),
-        std::make_shared<StemRandomParameter>(shared_from_this()), std::make_shared<LeafRandomParameter>(shared_from_this()));
-    // todo find for solution, parent this should not be passed in constructor
-}
+{ }
 
 /**
- * Copy Constructor
- *
- * deep copies the plant
- * does not deep copy geometry, elongation functions, and soil (all not owned by plant)
- *
- * @param p        plant that is copied
+ * todo doc me
  */
-Plant::Plant(const Plant& p): Organism(p), geometry(p.geometry), soil(p.soil)
+std::shared_ptr<Organism> Plant::copy()
 {
-    std::cout << "Copying plant";
+    auto no = std::make_shared<Plant>(*this); // copy constructor
+    for (int i=0; i<baseOrgans.size(); i++) {
+        no->baseOrgans[i] = baseOrgans[i]->copy(shared_from_this());
+    }
+    for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
+        for (auto& otp : organParam[ot]) {
+            otp.second = otp.second->copy(shared_from_this());
+        }
+    }
+    return no;
 }
 
 /**
  * todo docme , this could be made unique?
  */
-void Plant::initPrototypes(std::shared_ptr<OrganRandomParameter> seed, std::shared_ptr<OrganRandomParameter> root,
-    std::shared_ptr<OrganRandomParameter> stem, std::shared_ptr<OrganRandomParameter> leaf)
+void Plant::initializeReader()
 {
-    seed->subType = 0;
-    setOrganRandomParameter(seed);
-    root->subType = 0;
-    setOrganRandomParameter(root);
-    stem->subType = 0;
-    setOrganRandomParameter(stem);
-    leaf->subType = 0;
-    setOrganRandomParameter(leaf);
-}
+    auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
+    rrp->subType = 0;
+    setOrganRandomParameter(rrp);
+    auto srp = std::make_shared<SeedRandomParameter>(shared_from_this());
+    srp->subType = 0;
+    setOrganRandomParameter(srp);
+    auto strp = std::make_shared<StemRandomParameter>(shared_from_this());
+    strp->subType = 0;
+    setOrganRandomParameter(strp);
+    auto lrp = std::make_shared<LeafRandomParameter>(shared_from_this());
+    lrp->subType = 0;
+    setOrganRandomParameter(lrp);
 
+}
 
 /**
  * Resets the root system: deletes all roots, sets simulation time to 0.

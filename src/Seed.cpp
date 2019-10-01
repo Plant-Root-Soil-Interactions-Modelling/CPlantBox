@@ -33,11 +33,11 @@ void Seed::initialize()
     auto p = plant.lock();
     auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
     bool plantBox = stemP.size()>1;
-    if (plantBox) {
-        std::cout << "Seed::initialize: Plant \n";
-    } else {
-        std::cout << "Seed::initialize: RootSystem \n";
-    }
+//    if (plantBox) {
+//        std::cout << "Seed::initialize: Plant \n";
+//    } else {
+//        std::cout << "Seed::initialize: RootSystem \n";
+//    }
 
     /*
      * Create roots
