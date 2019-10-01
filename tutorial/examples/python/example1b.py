@@ -1,19 +1,22 @@
 """small example in a container"""
-import py_rootbox as rb
+import sys
+sys.path.append("../../..")
+import plantbox as pb
 
-rootsystem = rb.RootSystem()
+rootsystem = pb.RootSystem()
 
 # Open plant and root parameter from a file
+path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
-rootsystem.readParameters("modelparameter/" + name + ".xml")
+rootsystem.readParameters(path + name + ".xml")
 
 # Create and set geometry
 
 # 1.creates a cylindrical soil core with top radius 5 cm, bot radius 5 cm, height 50 cm, not square but circular
-soilcore = rb.SDF_PlantContainer(5, 5, 40, False)
+soilcore = pb.SDF_PlantContainer(5, 5, 40, False)
 
 # 2. creates a square 27*27 cm containter with height 1.4 cm
-rhizotron = rb.SDF_PlantBox(1.4, 27, 27)
+rhizotron = pb.SDF_PlantBox(1.4, 27, 27)
 
 # Pick 1, or 2
 rootsystem.setGeometry(soilcore)  # soilcore, or rhizotron

@@ -1,30 +1,22 @@
 """small example"""
-import py_plantbox as rb
+import sys
+sys.path.append("../../..")
+import plantbox as pb
 
-# print("hallo")
+rootsystem = pb.RootSystem()
 
-v = rb.Vector3d(1, 2, 3)
-print(v)
+# Open plant and root parameter from a file
+path = "../../../modelparameter/rootsystem/"
+name = "Anagallis_femina_Leitner_2010"
+rootsystem.readParameters(path + name + ".xml")
 
-# sdf = rb.SignedDistanceFunction();
-# print(sdf)
-# print("hello")
+# Initialize
+rootsystem.initialize()
 
-# import py_rootbox as rb
-#
-# rootsystem = rb.RootSystem()
-#
-# # Open plant and root parameter from a file
-# name = "Zea_mays_1_Leitner_2010"  # "Anagallis_femina_Leitner_2010"
-# rootsystem.readParameters("modelparameter/" + name + ".xml")
-#
-# # Initialize
-# rootsystem.initialize()
-#
-# # Simulate
-# rootsystem.simulate(30, True)
-#
-# # Export final result (as vtp)
-# rootsystem.write("../results/example_1a.vtp")
-#
-# print("done.")
+# Simulate
+rootsystem.simulate(30, True)
+
+# Export final result (as vtp)
+rootsystem.write("../results/example_1a.vtp")
+
+print("done.")
