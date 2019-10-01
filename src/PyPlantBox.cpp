@@ -24,8 +24,9 @@ namespace py = pybind11;
 #include "Stem.h"
 
 #include "RootSystem.h"
+#include "Plant.h"
 
-#include "sdf_rs.h" // to revise ...
+#include "sdf_rs.h" // todo to revise ...
 
 namespace CPlantBox {
 
@@ -596,67 +597,65 @@ PYBIND11_MODULE(plantbox, m) {
        .def_readwrite("iHeading", &Stem::iHeading)
        .def_readwrite("parentBaseLength", &Stem::parentBaseLength)
        .def_readwrite("parentNI", &Stem::parentNI);
+    /*
+     * RootSystem.h
+     */
+    py::class_<RootSystem, Organism, std::shared_ptr<RootSystem>>(m, "RootSystem")
+        .def(py::init<>())
+        .def("getRootRandomParameter", (std::shared_ptr<RootRandomParameter> (RootSystem::*)(int) const) &RootSystem::getRootRandomParameter)
+        .def("getRootRandomParameter", (std::vector<std::shared_ptr<RootRandomParameter>> (RootSystem::*)() const) &RootSystem::getRootRandomParameter)
+        .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
+        .def("getRootSystemParameter", &RootSystem::getRootSystemParameter)
+        .def("openFile", &RootSystem::openFile, py::arg("filename"), py::arg("subdir") = "modelparameter/")
+        .def("setGeometry", &RootSystem::setGeometry)
+        .def("setSoil", &RootSystem::setSoil)
+        .def("reset", &RootSystem::reset)
+        .def("initialize", (void (RootSystem::*)()) &RootSystem::initialize)
+        .def("initialize", (void (RootSystem::*)(int,int)) &RootSystem::initialize)
+        .def("setTropism", &RootSystem::setTropism)
+        .def("simulate",(void (RootSystem::*)(double,bool)) &RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
+        .def("simulate",(void (RootSystem::*)()) &RootSystem::simulate)
+        .def("simulate",(void (RootSystem::*)(double, double, ProportionalElongation*, bool)) &RootSystem::simulate)
+        .def("getRoots", &RootSystem::getRoots)
+        .def("initCallbacks", &RootSystem::initCallbacks)
+        .def("createTropismFunction", &RootSystem::createTropismFunction)
+        .def("createGrowthFunction", &RootSystem::createGrowthFunction)
+        .def("getNumberOfRoots", &RootSystem::getNumberOfRoots, py::arg("all") = false)
+        .def("getBaseRoots", &RootSystem::getBaseRoots)
+        .def("getShootSegments", &RootSystem::getShootSegments)
+        .def("getRootTips", &RootSystem::getRootTips)
+        .def("getRootBases", &RootSystem::getRootBases)
+        .def("push",&RootSystem::push)
+        .def("pop",&RootSystem::pop)
+        .def("write", &RootSystem::write);
      /*
-      * RootSystem.h
+      * Plant.h
       */
-     py::class_<RootSystem, Organism, std::shared_ptr<RootSystem>>(m, "RootSystem")
-              .def(py::init<>())
-              .def("getRootRandomParameter", (std::shared_ptr<RootRandomParameter> (RootSystem::*)(int) const) &RootSystem::getRootRandomParameter)
-              .def("getRootRandomParameter", (std::vector<std::shared_ptr<RootRandomParameter>> (RootSystem::*)() const) &RootSystem::getRootRandomParameter)
-              .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
-              .def("getRootSystemParameter", &RootSystem::getRootSystemParameter)
-              .def("openFile", &RootSystem::openFile, py::arg("filename"), py::arg("subdir") = "modelparameter/")
-              .def("setGeometry", &RootSystem::setGeometry)
-              .def("setSoil", &RootSystem::setSoil)
-              .def("reset", &RootSystem::reset)
-              .def("initialize", (void (RootSystem::*)()) &RootSystem::initialize)
-              .def("initialize", (void (RootSystem::*)(int,int)) &RootSystem::initialize)
-              .def("setTropism", &RootSystem::setTropism)
-              .def("simulate",(void (RootSystem::*)(double,bool)) &RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
-              .def("simulate",(void (RootSystem::*)()) &RootSystem::simulate)
-              .def("simulate",(void (RootSystem::*)(double, double, ProportionalElongation*, bool)) &RootSystem::simulate)
-              .def("getRoots", &RootSystem::getRoots)
-              .def("initCallbacks", &RootSystem::initCallbacks)
-              .def("createTropismFunction", &RootSystem::createTropismFunction)
-              .def("createGrowthFunction", &RootSystem::createGrowthFunction)
-              .def("getNumberOfRoots", &RootSystem::getNumberOfRoots, py::arg("all") = false)
-              .def("getBaseRoots", &RootSystem::getBaseRoots)
-              .def("getShootSegments", &RootSystem::getShootSegments)
-              .def("getRootTips", &RootSystem::getRootTips)
-              .def("getRootBases", &RootSystem::getRootBases)
-              .def("push",&RootSystem::push)
-              .def("pop",&RootSystem::pop)
-              .def("write", &RootSystem::write);
-   py::enum_<RootSystem::TropismTypes>(m, "TropismType")
-             .value("plagio", RootSystem::TropismTypes::tt_plagio)
-             .value("gravi", RootSystem::TropismTypes::tt_gravi)
-             .value("exo", RootSystem::TropismTypes::tt_exo)
-             .value("hydro", RootSystem::TropismTypes::tt_hydro)
-             .export_values();
-     py::enum_<RootSystem::GrowthFunctionTypes>(m, "GrowthFunctionType")
-             .value("negexp", RootSystem::GrowthFunctionTypes::gft_negexp)
-             .value("linear", RootSystem::GrowthFunctionTypes::gft_linear)
-             .export_values();
- //    /*
- //     * Plant.h
- //     */
- //    class_<Plant, Plant*, bases<Organism>>("Plant", init<>()) // bases<PlantBase>
- //             .def(init<Plant&>())
- //             ;
- //    enum_<Plant::TropismTypes>("TropismType")
- //            .value("plagio", Plant::TropismTypes::tt_plagio)
- //            .value("gravi", Plant::TropismTypes::tt_gravi)
- //            .value("exo", Plant::TropismTypes::tt_exo)
- //            .value("hydro", Plant::TropismTypes::tt_hydro)
- //            ;
- //    enum_<Plant::GrowthFunctionTypes>("GrowthFunctionType")
- //            .value("negexp", Plant::GrowthFunctionTypes::gft_negexp)
- //            .value("linear", Plant::GrowthFunctionTypes::gft_linear)
- //            ;
- //
+     py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
+        .def(py::init<>())
+        .def("setGeometry", &Plant::setGeometry)
+        .def("reset", &Plant::reset)
+        .def("setTropism", &Plant::setTropism)
+        .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false) // in Organism::simulate
+        .def("simulate",(void (Plant::*)()) &Plant::simulate)
+        .def("initCallbacks", &Plant::initCallbacks)
+        .def("createTropismFunction", &Plant::createTropismFunction)
+        .def("createGrowthFunction", &Plant::createGrowthFunction);
+     py::enum_<Plant::TropismTypes>(m, "TropismType")
+        .value("plagio", Plant::TropismTypes::tt_plagio)
+        .value("gravi", Plant::TropismTypes::tt_gravi)
+        .value("exo", Plant::TropismTypes::tt_exo)
+        .value("hydro", Plant::TropismTypes::tt_hydro)
+        .value("antigravi", Plant::TropismTypes::tt_antigravi)
+        .value("twist", Plant::TropismTypes::tt_twist)
+        .export_values();
+     py::enum_<Plant::GrowthFunctionTypes>(m, "GrowthFunctionType")
+         .value("negexp", Plant::GrowthFunctionTypes::gft_negexp)
+         .value("linear", Plant::GrowthFunctionTypes::gft_linear)
+         .export_values();
 
     //   /*
-    //    * sdf_rs.h
+    //    * sdf_rs.h todo
     //    */
     //   py::class_<SDF_RootSystem, SignedDistanceFunction>(m, "SDF_RootSystem")
     //       .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, double>())

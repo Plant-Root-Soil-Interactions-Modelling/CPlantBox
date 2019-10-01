@@ -48,7 +48,6 @@ void Plant::initializeReader()
     auto lrp = std::make_shared<LeafRandomParameter>(shared_from_this());
     lrp->subType = 0;
     setOrganRandomParameter(lrp);
-
 }
 
 /**
@@ -162,6 +161,26 @@ std::shared_ptr<GrowthFunction>Plant::createGrowthFunction(int gft) {
 }
 
 /**
+ * Manually sets a tropism function for a specific or for all root types. TODO
+ * Must be called after RootSystem::initialize(), otherwise its overwritten.
+ *
+ * @param tf_           a tropism
+ * @param rt            root type, if rt = -1 all types are set to this tropism (default).
+ */
+void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) // todo
+{
+//    if (rt>-1) { // set for a specific root type
+//        getRootRandomParameter(rt)->f_tf=tf_;
+//    } else { // set for all root types (default)
+//        for (auto& p_otp :organParam[Organism::ot_root]) {
+//            auto rtp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
+//            rtp->f_tf = tf_;
+//        }
+//    }
+}
+
+
+/**
  * Simulates plant growth for the time span defined in the root system parameters
  */
 void Plant::simulate()
@@ -181,7 +200,7 @@ std::string Plant::toString() const
 /**
 write VTP using tinyXML
  **/
-void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file by using TinyXML2 performance slowed by 0.5 seconds but precision increased
+void Plant::writeVTP(int otype, std::ostream & os) const // Write .VTP file by using TinyXML2 performance slowed by 0.5 seconds but precision increased
 {
 	tinyxml2::XMLPrinter printer( 0, false, 0 );
 
@@ -261,9 +280,5 @@ void Plant::TiXMLwriteVTP(int otype, std::ostream & os) const // Write .VTP file
 	printer.CloseElement();
 	os << std::string(printer.CStr());
 }
-
-
-
-
 
 } // namespace CPlantBox
