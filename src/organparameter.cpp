@@ -189,6 +189,7 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
                 i++;
             }
             if (param_sd.count(key)>0) {
+                *param_sd[key] = p->DoubleAttribute("dev", *param_sd[key]); // if not found, leave default
                 i++;
             }
             if (i == 0) {
@@ -247,7 +248,9 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
             p->SetAttribute("value", *ip.second);
             if (param_sd.count(key)) { // deviations
                 double d = *(param_sd.at(key));
-                p->SetAttribute("dev", d);
+                if (d!=0) {
+                    p->SetAttribute("dev", float(d));
+                }
             }
             organ->InsertEndChild(p);
             if (comments && description.count(key)) { // descriptions
@@ -264,7 +267,10 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
             p->SetAttribute("name", key.c_str());
             p->SetAttribute ("value", float(*dp.second)); // float output is much nicer
             if (param_sd.count(key)) { // deviations
-                p->SetAttribute("dev", *(param_sd.at(key)));
+                double d = *(param_sd.at(key));
+                if (d!=0) {
+                    p->SetAttribute("dev", float(d));
+                }
             }
             organ->InsertEndChild(p);
             if (comments && description.count(key)) { // descriptions

@@ -135,48 +135,37 @@ class TestRootSystem(unittest.TestCase):
 #         rs.simulate(7)
 #         # todo
         pass
-    # TODO
+    # todo
 
     def test_copy(self):
         """ checks if the root system can be copied, and if randomness works """
-
-        seed = 100  # random seed
+        seed = 110  # random seed
         name = "Brassica_oleracea_Vansteenkiste_2014"
         rs = pb.RootSystem()  # the original
-        rs.initializeReader()
-        rs.readParameters("../modelparameter2/" + name + ".xml")
-
-#         rrps = rs.getOrganRandomParameter(pb.OrganTypes.seed)
-#         for r in rrps:
-#             print(r)
-
+        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
         rs.setSeed(seed)
         rs.initialize()
-
-        print("Initialized")
-#         rs2 = rs.copy()  # copy root system
-#         self.assertIsNot(rs2, rs, "copy: not a copy")
+        rs2 = rs.copy()  # copy root system
+        self.assertIsNot(rs2, rs, "copy: not a copy")
         n1 = rs.rand()
-#         self.assertEqual(rs2.rand(), n1, "copy: random generator seed was not copied")
-#         rs.simulate(10)
-#         rs2.simulate(10)
-#         n2 = rs.rand()
-#         # self.assertEqual(rs2.rand(), n2, "copy: simulation not deterministic")
+        self.assertEqual(rs2.rand(), n1, "copy: random generator seed was not copied")
+        rs.simulate(10)
+        rs2.simulate(10)
+        n2 = rs.rand()
+        self.assertEqual(rs2.rand(), n2, "copy: simulation is not deterministic")
         rs3 = pb.RootSystem()  # rebuild same
-        rs3.initializeReader()
-        rs3.readParameters("../modelparameter2/" + name + ".xml")
+        rs3.readParameters("../modelparameter/rootsystem/" + name + ".xml")
         rs3.setSeed(seed)
         rs3.initialize()
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
         rs3.simulate(10)
-        # self.assertEqual(rs3.rand(), n2, "copy: simulation not deterministic")
+        self.assertEqual(rs3.rand(), n2, "copy: simulation is not deterministic")
 
     def test_polylines(self):
         """checks if the polylines have the right tips and bases """
         name = "Brassica_napus_a_Leitner_2010"
         rs = pb.RootSystem()
-        rs.initializeReader()
-        rs.readParameters("../modelparameter2/" + name + ".xml")
+        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
         rs.initialize()
         rs.simulate(7)  # days young
         polylines = rs.getPolylines()  # Use polyline representation of the roots
@@ -210,8 +199,7 @@ class TestRootSystem(unittest.TestCase):
         """ incremental root system growth like needed for coupling"""
         name = "Anagallis_femina_Leitner_2010"  # "maize_p2"  # "Anagallis_femina_Leitner_2010"  # "Zea_mays_4_Leitner_2014"
         rs = pb.RootSystem()
-        rs.initializeReader()
-        rs.readParameters("../modelparameter2/" + name + ".xml")
+        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
         rs.initialize()
         simtime = 60  # days
         dt = 1
@@ -243,7 +231,6 @@ class TestRootSystem(unittest.TestCase):
         nodes_ = vv2a(rs.getNodes())
         nodeCTs_ = v2a(rs.getNodeCTs())
         seg_ = seg2a(rs.getSegments())
-
         self.assertEqual(nodes_.shape, nodes.shape, "incremental growth: node lists are not equal")
         self.assertEqual(nodeCTs_.shape, nodeCTs.shape, "incremental growth: node lists are not equal")
         self.assertEqual(seg_.shape, seg.shape, "incremental growth: node lists are not equal")
@@ -260,8 +247,7 @@ class TestRootSystem(unittest.TestCase):
         """ checks rsml functionality with Python rsml reader """
         name = "Anagallis_femina_Leitner_2010"
         rs = pb.RootSystem()
-        rs.initializeReader()
-        rs.readParameters("../modelparameter2/" + name + ".xml")
+        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
         rs.initialize()
         simtime = 60
         rs.simulate(simtime)
@@ -269,8 +255,10 @@ class TestRootSystem(unittest.TestCase):
         pl, props, funcs = read_rsml(name + ".rsml")
         # todo
 
-#     def test_stack(self):
-#         """ checks if push and pop are working """
+    def test_stack(self):
+        """ checks if push and pop are working """
+        pass
+        # TODO
 
 
 if __name__ == '__main__':

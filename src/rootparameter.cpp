@@ -58,7 +58,7 @@ std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<
     auto r = std::make_shared<RootRandomParameter>(*this); // copy constructor breaks class introspection
     r->plant = p;
     r->bindParameters(); // fix class introspection
-    r->f_tf = f_tf->copy(p); // copy call back classes
+    r->f_tf = f_tf->copy(p); // copy call back function classes
     r->f_gf = f_gf->copy();
     r->f_se = f_se->copy();
     r->f_sa = f_sa->copy();

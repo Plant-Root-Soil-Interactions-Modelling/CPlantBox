@@ -39,7 +39,8 @@ class TestStemParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        rrp = pb.RootRandomParameter(pb.Organism())
+        self.plant = pb.Organism()
+        rrp = pb.RootRandomParameter(self.plant)
         rrp.lns = 0.123
         rrp.la = 12
         ot = rrp.getParameter("organType")  # test defaults
