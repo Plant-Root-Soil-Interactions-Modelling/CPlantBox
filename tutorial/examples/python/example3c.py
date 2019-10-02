@@ -1,13 +1,15 @@
 """everything from scratch (without parameter files)"""
-import py_rootbox as rb
-from rb_tools import *
+import sys
+sys.path.append("../../..")
+import plantbox as pb
+
 import math
 
-rs = rb.RootSystem()
+rs = pb.RootSystem()
 
 # Root type parameter
-p0 = rb.RootRandomParameter(rs)  # with default values,
-p1 = rb.RootRandomParameter(rs)  # all standard deviations are 0
+p0 = pb.RootRandomParameter(rs)  # with default values,
+p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 
 p0.name = "taproot"
 p0.subType = 1
@@ -18,9 +20,9 @@ p0.ln = 89. / 19.
 p0.theta = 30. / 180.*math.pi
 p0.r = 1
 p0.dx = 0.5
-p0.successor = a2i([2])  # add successors
-p0.successorP = a2v([1])
-p0.tropismT = rb.TropismType.gravi
+p0.successor = [2]  # add successors
+p0.successorP = [1]
+p0.tropismT = pb.TropismType.gravi
 p0.tropismN = 1.
 p0.tropismS = 0.2
 
@@ -38,8 +40,8 @@ rs.setOrganRandomParameter(p1)
 
 # Root system parameter (neglecting shoot borne)
 
-rsp = rb.SeedRandomParameter(rs)
-rsp.seedPos = rb.Vector3d(0., 0., -3.)
+rsp = pb.SeedRandomParameter(rs)
+rsp.seedPos = pb.Vector3d(0., 0., -3.)
 rsp.maxB = 100
 rsp.firstB = 10.
 rsp.delayB = 3.

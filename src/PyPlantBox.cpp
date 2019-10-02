@@ -37,21 +37,41 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * mymath
      */
-    py::class_<Vector2i>(m, "Vector2i")
+    py::class_<Vector2i>(m, "Vector2i", py::buffer_protocol())
         .def(py::init<>())
         .def(py::init<int, int>())
         .def(py::init<const Vector2i&>())
         .def("__str__", &Vector2i::toString)
         .def_readwrite("x", &Vector2i::x)
-        .def_readwrite("y", &Vector2i::y);
-    py::class_<Vector2d>(m, "Vector2d")
+        .def_readwrite("y", &Vector2i::y)
+        .def_buffer([](Vector2i &v) -> py::buffer_info { /* enables numpy conversion with np.array(vector2i_instance, copy = False) */
+            return py::buffer_info(
+                    &v.x,                                    /* Pointer to buffer */
+                    sizeof(int),                            /* Size of one scalar */
+                    py::format_descriptor<int>::format(),   /* Python struct-style format descriptor */
+                    1,                                       /* Number of dimensions */
+                    { 2 },                                   /* Buffer dimensions */
+                    { sizeof(int) }                         /* Strides (in bytes) for each index */
+                );
+        });
+    py::class_<Vector2d>(m, "Vector2d", py::buffer_protocol())
         .def(py::init<>())
         .def(py::init<double, double>())
         .def(py::init<const Vector2d&>())
         .def("__str__", &Vector2d::toString)
         .def_readwrite("x", &Vector2d::x)
-        .def_readwrite("y", &Vector2d::y);
-    py::class_<Vector3d>(m, "Vector3d")
+        .def_readwrite("y", &Vector2d::y)
+        .def_buffer([](Vector2d &v) -> py::buffer_info { /* enables numpy conversion with np.array(vector2d_instance, copy = False) */
+            return py::buffer_info(
+                &v.x,                                    /* Pointer to buffer */
+                sizeof(double),                          /* Size of one scalar */
+                py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
+                1,                                       /* Number of dimensions */
+                { 2 },                                   /* Buffer dimensions */
+                { sizeof(double) }                       /* Strides (in bytes) for each index */
+            );
+        });
+    py::class_<Vector3d>(m, "Vector3d", py::buffer_protocol())
         .def(py::init<>())
         .def(py::init<double, double, double>())
         .def(py::init<const Vector3d&>())
@@ -66,8 +86,18 @@ PYBIND11_MODULE(plantbox, m) {
         .def("__str__", &Vector3d::toString)
         .def_readwrite("x", &Vector3d::x)
         .def_readwrite("y", &Vector3d::y)
-        .def_readwrite("z", &Vector3d::z);
-    py::class_<Matrix3d>(m, "Matrix3d")
+        .def_readwrite("z", &Vector3d::z)
+        .def_buffer([](Vector3d &v) -> py::buffer_info { /* enables numpy conversion with np.array(vector3d_instance, copy = False) */
+            return py::buffer_info(
+                &v.x,                                    /* Pointer to buffer */
+                sizeof(double),                          /* Size of one scalar */
+                py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
+                1,                                       /* Number of dimensions */
+                { 3 },                                   /* Buffer dimensions */
+                { sizeof(double) }                       /* Strides (in bytes) for each index */
+            );
+        });
+    py::class_<Matrix3d>(m, "Matrix3d", py::buffer_protocol())
         .def(py::init<>())
         .def(py::init<double, double, double, double, double, double, double, double, double>())
         .def(py::init<const Vector3d&, const Vector3d&, const Vector3d&>())
@@ -85,7 +115,17 @@ PYBIND11_MODULE(plantbox, m) {
         .def("__str__", &Matrix3d::toString)
         .def_readwrite("r0", &Matrix3d::r0)
         .def_readwrite("r1", &Matrix3d::r1)
-        .def_readwrite("r2", &Matrix3d::r2);
+        .def_readwrite("r2", &Matrix3d::r2)
+        .def_buffer([](Matrix3d &m_) -> py::buffer_info { /* enables numpy conversion with np.array(matrix3d_instance, copy = False) */
+            return py::buffer_info(
+                &m_.r0.x,                               /* Pointer to buffer */
+                sizeof(float),                          /* Size of one scalar */
+                py::format_descriptor<double>::format(),/* Python struct-style format descriptor */
+                2,                                      /* Number of dimensions */
+                { 3, 3 },                               /* Buffer dimensions */
+                { sizeof(double) * 3,  sizeof(double) } /* Strides (in bytes) for each index */
+                );
+            });
     /*
      * sdf
      */

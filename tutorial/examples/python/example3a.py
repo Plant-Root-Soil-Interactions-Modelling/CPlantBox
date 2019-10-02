@@ -1,12 +1,16 @@
 """root system length over time, root tip distriubtion"""
-import py_rootbox as rb
-from rb_tools import *
+import sys
+sys.path.append("../../..")
+import plantbox as pb
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-rs = rb.RootSystem()
-name = "Brassica_oleracea_Vansteenkiste_2014"
-rs.readParameters("modelparameter/" + name + ".xml")
+path = "../../../modelparameter/rootsystem/"
+name = "Anagallis_femina_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"
+
+rs = pb.RootSystem()
+rs.readParameters(path + name + ".xml")
 rs.initialize()
 
 simtime = 60.  # days
@@ -22,8 +26,8 @@ v2_ = np.zeros(N)
 v3_ = np.zeros(N)
 for i in range(0, N):
     rs.simulate(dt)
-    t = v2a(rs.getParameter("type"))
-    v = v2a(rs.getParameter(stype))
+    t = np.array(rs.getParameter("type"))
+    v = np.array(rs.getParameter(stype))
     v_[i] = np.sum(v)
     v1_[i] = np.sum(v[t == 1])
     v2_[i] = np.sum(v[t == 2])
@@ -37,7 +41,7 @@ plt.plot(t_, v3_)
 plt.xlabel("time (days)")
 plt.ylabel(stype_str)
 plt.legend(["total", "tap root", "lateral", "2. order lateral"])
-plt.savefig("../results/example_3a.png")
+plt.savefig("results/example_3a.png")
 plt.show()
 
 # Find root tips and bases (two approaches)
@@ -56,7 +60,7 @@ for i, r in enumerate(polylines):
     tips[i, :] = [r[-1].x, r[-1].y, r[-1].z]
 
 # Or, use node indices to find tip or base nodes
-nodes = vv2a(rs.getNodes())
+nodes = np.array((list(map(np.array, rs.getNodes()))))  # is there a better way?
 tipI = rs.getRootTips()
 baseI = rs.getRootBases()
 
@@ -66,7 +70,7 @@ plt.xlabel("cm")
 plt.ylabel("cm")
 plt.scatter(nodes[baseI, 0], nodes[baseI, 1], c = "g", label = "root bases")
 plt.scatter(nodes[tipI, 0], nodes[tipI, 1], c = "r", label = "root tips")
-plt.savefig("../results/example_3a2.png")
+plt.savefig("results/example_3a2.png")
 plt.show()
 
  # check if the two approaches yield the same result

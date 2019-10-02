@@ -27,11 +27,11 @@ for rs in allRS:
 # Export results as single vtp files (as polylines)
 ana = pb.SegmentAnalyser()  # see example 3b
 for i, rs in enumerate(allRS):
-      vtpname = "../results/example_2b_" + str(i) + ".vtp"
+      vtpname = "results/example_2b_" + str(i) + ".vtp"
       rs.write(vtpname)
       ana.addSegments(rs)  # collect all
 
 # Write all into single file (segments)
-ana.write("../results/example_2b_all.vtp")
+ana.write("results/example_2b_all.vtp")
 
 print("done.")

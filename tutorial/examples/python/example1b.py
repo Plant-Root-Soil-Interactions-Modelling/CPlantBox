@@ -28,9 +28,9 @@ rootsystem.initialize()
 rootsystem.simulate(60)  # days
 
 # Export final result (as vtp)
-rootsystem.write("../results/example_1b.vtp")
+rootsystem.write("results/example_1b.vtp")
 
 # Export container geometry as Paraview Python script
-rootsystem.write("../results/example_1b.py")
+rootsystem.write("results/example_1b.py")
 
 print("done.")

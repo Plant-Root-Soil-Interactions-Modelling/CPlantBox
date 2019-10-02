@@ -55,10 +55,10 @@ rs.initialize()
 rs.simulate(90)  # days
 
 # Export results (as vtp)
-rs.write("../results/example_2a.vtp")
+rs.write("results/example_2a.vtp")
 
 # Export container geometry as Paraview Python script
-rs.write("../results/example_2a.py")
+rs.write("results/example_2a.py")
 
 print("done.")
 

@@ -1,5 +1,8 @@
 """sensitivity analysis: insertion anlge on root tip distribution"""
-import py_rootbox as rb
+import sys
+sys.path.append("../../..")
+import plantbox as pb
+
 import math
 from multiprocessing import Pool
 import numpy as np
@@ -8,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # sets all standard deviation to value*s
 def set_all_sd(rs, s):
-    for p in rs.getRootTypeParameter():
+    for p in rs.getRootRandomParameter():
         p.lbs = p.lb * s
         p.las = p.la * s
         p.lns = p.ln * s
@@ -18,6 +21,7 @@ def set_all_sd(rs, s):
 
 
 # Parameters
+path = "../../../modelparameter/rootsystem/"
 name = "Triticum_aestivum_a_Bingham_2011"
 simtime = 20
 N = 50  # resolution of paramter
@@ -27,14 +31,14 @@ theta0_ = np.linspace(0, math.pi / 2, N)
 
 # One simulation
 def simulate(i):
-    rs = rb.RootSystem()
-    rs.readParameters("modelparameter/" + name + ".xml")
+    rs = pb.RootSystem()
+    rs.readParameters(path + name + ".xml")
     set_all_sd(rs, 0.)  # set all sd to zero
     rs.initialize()  # copy to tap to basal root parameters
 
     # vary parameter
-    p1 = rs.getRootTypeParameter(1)  # tap root
-    p4 = rs.getRootTypeParameter(4)  # basal roots
+    p1 = rs.getRootRandomParameter(1)  # tap root
+    p4 = rs.getRootRandomParameter(4)  # basal roots
     p1.theta = theta0_[i]
     p4.theta = theta0_[i]
 
@@ -82,7 +86,7 @@ axes[1].set_ylabel('Mean tip radial distance (cm)')
 axes[0].plot(theta0_, depth_)
 axes[1].plot(theta0_, rad_dist_)
 fig.subplots_adjust()
-plt.savefig("../results/example_3d.png")
+plt.savefig("results/example_3d.png")
 plt.show()
 
 print("done.")
