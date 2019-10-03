@@ -64,6 +64,7 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
 std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
 {
     auto r = std::make_shared<Root>(*this); // shallow copy
+    r->parent = std::weak_ptr<Organ>();
     r->plant = rs;
     r->param_ = std::make_shared<RootSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {

@@ -16,7 +16,9 @@ class Seed : public Organ
 {
 public:
 
-    Seed(std::shared_ptr<Organism> plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.) { };
+    Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
+        bool moved= false, int oldNON = 0) :Organ(id, param, alive, active, age, length, moved, oldNON) { }; ///< creates everything from scratch
+    Seed(std::shared_ptr<Organism> plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.) { }; ///< used within simulation
     virtual ~Seed() { };
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the seed
@@ -37,11 +39,11 @@ public:
     virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay); ///< overwrite if you want to change class types
 
     // default positions (unused) (TODO) make nicer
-    int tapRootType =1; // todo
+    int tapRootType = 1;
     int basalType = 4;
     int shootborneType = 5;
-    int mainStemType = 1; // todo
-    int tillerType = 4; // todo
+    int mainStemType = 1;
+    int tillerType = 4;
 
 protected:
 

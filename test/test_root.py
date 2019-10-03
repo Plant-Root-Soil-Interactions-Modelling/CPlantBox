@@ -24,7 +24,7 @@ def rootLateralLength(t, et, r, k):  # length of first order laterals (without s
 
 class TestRoot(unittest.TestCase):
 
-    def root_example_rtp(self):
+    def root_example_rrp(self):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.RootRandomParameter(self.plant)
@@ -77,7 +77,7 @@ class TestRoot(unittest.TestCase):
 
     def test_constructors(self):
         """ tests two kinds of constructors and copy"""
-        self.root_example_rtp()
+        self.root_example_rrp()
         # 1. constructor from scratch
         param = self.p0.realize()
         root = pb.Root(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
@@ -89,13 +89,13 @@ class TestRoot(unittest.TestCase):
         # 3. deep copy (with a factory function)
         plant2 = pb.Organism()
         root3 = root.copy(plant2)
-        self.assertEqual(str(root), str(root3), "deep copy: the organs shold be equal")
-        self.assertIsNot(root.getParam(), root3.getParam(), "deep copy: organs have same parameter set")
-        # TODO check if OTP were copied
+        self.assertEqual(str(root), str(root3), "deep copy: the root string representations shold be equal")
+        self.assertIsNot(root.getParam(), root3.getParam(), "deep copy: roots have same specific parameter set")  # type OrganSpecificParameter
+        self.assertEqual(str(root.param()), str(root3.param()), "deep copy: roots have different parameter values")  # type RootSpecificParameter
 
     def test_root_length(self):
         """ tests if numerical root length agrees with analytic solutions at 4 points in time with two scales of dt"""
-        self.root_example_rtp()
+        self.root_example_rrp()
         times = np.array([0., 7., 15., 30., 60.])
         dt = np.diff(times)
         k = self.root.param().getK()  # maximal root length
@@ -108,7 +108,7 @@ class TestRoot(unittest.TestCase):
 
     def test_root_length_including_laterals(self):
         """ tests if numerical root length agrees with analytic solution including laterals """
-        self.root_example_rtp()
+        self.root_example_rrp()
         times = np.array([0., 7., 15., 30., 60.])
         dt = np.diff(times)
         p = self.root.param()  # rename
@@ -147,7 +147,7 @@ class TestRoot(unittest.TestCase):
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
-        self.root_example_rtp()
+        self.root_example_rrp()
         self.root.simulate(30)
         organs = self.root.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
@@ -165,7 +165,7 @@ class TestRoot(unittest.TestCase):
 
     def test_dynamics(self):
         """ tests if nodes created in last time step are correct """  #
-        self.root_example_rtp()
+        self.root_example_rrp()
         r = self.root
         r.simulate(.5, True)
         self.assertEqual(r.hasMoved(), False, "dynamics: node movement during first step")
@@ -178,7 +178,4 @@ class TestRoot(unittest.TestCase):
 
 
 if __name__ == '__main__':
-#     test = TestRoot()
-#     test.test_constructors()
-#     test.test_root_length()
     unittest.main()

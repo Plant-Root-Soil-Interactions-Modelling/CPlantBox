@@ -8,7 +8,7 @@ from rsml import *
 class TestShootParameter(unittest.TestCase):
 
     def shoot_example(self):
-        """ example root parameters used below """
+        """ example seed parameters used below """
         self.plant = pb.Organism()
         self.srp = pb.SeedRandomParameter(self.plant)
         self.srp.firstB = 10
@@ -49,7 +49,7 @@ class TestShootParameter(unittest.TestCase):
         delaySBs = srp.getParameter("delaySB_dev")
         firstB2 = srp.getParameter("firstB_mean")  # we can always add "_mean" to avoid naming conflicts
         self.assertEqual(ot, 1., "getParameter: value unexpected")
-        self.assertEqual(st, -1., "getParameter: value unexpected")
+        self.assertEqual(st, 0, "getParameter: value unexpected")
         self.assertEqual(nz, 1., "getParameter: value unexpected")
         self.assertEqual(firstB, 0.123, "getParameter: value unexpected")
         self.assertEqual(firstB, firstB2, "getParameter: value unexpected")
@@ -68,7 +68,7 @@ class TestShootParameter(unittest.TestCase):
         srp.name = "the seed"
         # print(srp.__str__(False))
         # print(srp)
-        self.assertEqual(srp.__str__(False), "Name: the seed, organType: 1, subType, -1", "toString: value unexpected")
+        self.assertEqual(srp.__str__(False), "name: the seed, organType: 1, subType: 0.", "toString: value unexpected")
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
