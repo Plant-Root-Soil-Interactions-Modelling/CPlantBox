@@ -42,7 +42,7 @@ public:
     std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant) override
         { PYBIND11_OVERLOAD( std::shared_ptr<Tropism>, Tropism, copy, plant); }
 
-    double tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const std::shared_ptr<Organ> organ) override
+    double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> organ) override
         { PYBIND11_OVERLOAD( double, Tropism, tropismObjective, pos, old, a, b, dx, organ ); }
 
     // TODO do all virtuals
