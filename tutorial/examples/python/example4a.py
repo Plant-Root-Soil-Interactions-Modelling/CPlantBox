@@ -1,15 +1,18 @@
 """hydrotropism in a thin layer"""
-import py_rootbox as rb
+import sys
+sys.path.append("../../..")
+import plantbox as pb
 
-rs = rb.RootSystem()
+rs = pb.RootSystem()
+path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
-rs.readParameters("modelparameter/" + name + ".xml")
+rs.readParameters(path + name + ".xml")
 
 # Manually set tropism to hydrotropism for the first ten root types
 sigma = [0.4, 1., 1., 1., 1. ] * 2
-for p in rs.getRootTypeParameter():
+for p in rs.getRootRandomParameter():
         p.dx = 0.25  # adjust resolution
-        p.tropismT = rb.TropismType.hydro
+        p.tropismT = pb.TropismType.hydro
         p.tropismN = 2  # strength of tropism
         p.tropismS = sigma[p.subType - 1]
 
@@ -17,9 +20,9 @@ for p in rs.getRootTypeParameter():
 maxS = 0.7  # maximal
 minS = 0.1  # minimal
 slope = 5  # linear gradient between min and max (cm)
-box = rb.SDF_PlantBox(30, 30, 2)  # cm
-layer = rb.SDF_RotateTranslate(box, rb.Vector3d(0, 0, -16))
-soil_prop = rb.SoilLookUpSDF(layer, maxS, minS, slope)
+box = pb.SDF_PlantBox(30, 30, 2)  # cm
+layer = pb.SDF_RotateTranslate(box, pb.Vector3d(0, 0, -16))
+soil_prop = pb.SoilLookUpSDF(layer, maxS, minS, slope)
 
 # Set the soil properties before calling initialize
 rs.setSoil(soil_prop)

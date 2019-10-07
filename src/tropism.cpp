@@ -12,7 +12,7 @@ namespace CPlantBox {
 /**
  * Copies this tropism
  */
-std::shared_ptr<Tropism> Tropism::copy(std::weak_ptr<Organism> plant)
+std::shared_ptr<Tropism> Tropism::copy(std::shared_ptr<Organism> plant)
 {
     auto nt = std::make_shared<Tropism>(*this); // default copy constructor
     nt->plant = plant;
@@ -30,7 +30,7 @@ std::shared_ptr<Tropism> Tropism::copy(std::weak_ptr<Organism> plant)
  *
  * \return             position
  */
-Vector3d Tropism::getPosition(const Vector3d& pos, Matrix3d old, double a, double b, double dx)
+Vector3d Tropism::getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx)
 {
     return pos.plus((old.times(Vector3d::rotAB(a,b))).times(dx));
 }
@@ -45,7 +45,7 @@ Vector3d Tropism::getPosition(const Vector3d& pos, Matrix3d old, double a, doubl
  *
  * \return             angle alpha and beta
  */
-Vector2d Tropism::getUCHeading(const Vector3d& pos, Matrix3d old, double dx, const std::shared_ptr<Organ> o)
+Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o)
 {
     auto p = plant.lock();
     double a = sigma*p->randn()*sqrt(dx);
@@ -91,7 +91,7 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, Matrix3d old, double dx, con
  *
  * \return           the rotations alpha and beta
  */
-Vector2d Tropism::getHeading(const Vector3d& pos, Matrix3d old, double dx, const std::shared_ptr<Organ> o)
+Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o)
 {
     // std::cout << "n " << n << ", " << sigma << "\n";
     Vector2d h = this->getUCHeading(pos, old, dx, o);
@@ -143,7 +143,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, Matrix3d old, double dx, const
 /**
  * getHeading() minimizes this function, @see TropismFunction::tropismObjective
  */
-double Exotropism::tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const std::shared_ptr<Organ> o)
+double Exotropism::tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o)
 {
     Vector3d iheading = std::static_pointer_cast<Root>(o)->iHeading; //// TODO works only for roots
     double s = iheading.times(old.times(Vector3d::rotAB(a,b)));
@@ -155,9 +155,9 @@ double Exotropism::tropismObjective(const Vector3d& pos, Matrix3d old, double a,
 
 
 /**
- * getHeading() minimizes this function, @see TropismFunction::tropismObjective
+ * getHeading() minimizes this function, @see TropismFunction::tropismObjectiveMatrix3d
  */
-double Hydrotropism::tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const std::shared_ptr<Organ> o)
+double Hydrotropism::tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o)
 {
     assert(soil!=nullptr);
     Vector3d newpos = this->getPosition(pos,old,a,b,dx);
@@ -179,7 +179,7 @@ double Hydrotropism::tropismObjective(const Vector3d& pos, Matrix3d old, double 
  * @param t2            first tropism
  * @param w2            first weight
  */
-CombinedTropism::CombinedTropism(std::weak_ptr<Organism> plant, double n, double sigma, std::shared_ptr<Tropism> t1, double w1, std::shared_ptr<Tropism> t2, double w2)
+CombinedTropism::CombinedTropism(std::shared_ptr<Organism> plant, double n, double sigma, std::shared_ptr<Tropism> t1, double w1, std::shared_ptr<Tropism> t2, double w2)
     :Tropism(plant,n,sigma)
 {
     tropisms.push_back(t1);
@@ -191,7 +191,7 @@ CombinedTropism::CombinedTropism(std::weak_ptr<Organism> plant, double n, double
 /**
  * getHeading() minimizes this function, @see TropismFunction::tropismObjective
  */
-double CombinedTropism::tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const std::shared_ptr<Organ> o)
+double CombinedTropism::tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o)
 {
     //std::cout << "CombinedTropsim::tropismObjective\n";
     double v = tropisms[0]->tropismObjective(pos,old,a,b,dx,o)*weights[0];

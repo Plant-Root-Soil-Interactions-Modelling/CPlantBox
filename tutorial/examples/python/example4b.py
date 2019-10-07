@@ -1,27 +1,31 @@
-import py_rootbox as rb
+"""user defined tropism in python"""
+
+import sys
+sys.path.append("../../..")
+import plantbox as pb
 
 
 # User tropism 1: print input arguments to command line
-class My_Info_Tropism(rb.Tropism):
+class My_Info_Tropism(pb.Tropism):
 
-    def tropismObjective(self, pos, old, a, b, dx, root):
+    def tropismObjective(self, pos, old, a, b, dx):
         print("Postion \t", pos)
         print("Heading \t", old.column(0))
         print("Test for angle alpha = \t", a)
         print("Test for angle beta = \t", b)
         print("Eesolution of next segment \t", dx)
-        print("Root id", root.getId())
+        # print("Root id", root.getId())
         print()
         return 0.
 
 
 # User tropism 2: depending on root age use plagio- or gravitropism
-class My_Age_Tropism(rb.Tropism):
+class My_Age_Tropism(pb.Tropism):
 
-    def __init__(self, n, sigma, age):
-        super(My_Age_Tropism, self).__init__()
-        self.plagio = rb.Plagiotropism(0., 0.)
-        self.gravi = rb.Gravitropism(0., 0.)
+    def __init__(self, rs, n, sigma, age):
+        super(My_Age_Tropism, self).__init__(rs)
+        self.plagio = pb.Plagiotropism(rs, 0., 0.)
+        self.gravi = pb.Gravitropism(rs, 0., 0.)
         self.setTropismParameter(n, sigma)
         self.age = age
 
@@ -35,16 +39,17 @@ class My_Age_Tropism(rb.Tropism):
 
 
 # set up the root system
-rs = rb.RootSystem()
+rs = pb.RootSystem()
+path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
-rs.openFile(name)
+rs.readParameters(path + name + ".xml")
 rs.initialize()
 
 # Set useer defined after initialize
-mytropism1 = My_Info_Tropism()
+mytropism1 = My_Info_Tropism(rs)
 mytropism1.setTropismParameter(2., 0.2)
-mytropism2 = My_Age_Tropism(2., 0.5, 5.)  # after 5 days switch from plagio- to gravitropism
-rs.setTropism(mytropism2, 2)  # 2 for laterals, -1 for all root types
+mytropism2 = My_Age_Tropism(rs, 2., 0.5, 5.)  # after 5 days switch from plagio- to gravitropism
+rs.setTropism(mytropism1, 2)  # 2 for laterals, -1 for all root types
 
 # Simulate
 simtime = 100  # e.g. 30 or 60 days

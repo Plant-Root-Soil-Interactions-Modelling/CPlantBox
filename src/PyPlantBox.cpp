@@ -31,6 +31,29 @@ namespace py = pybind11;
 namespace CPlantBox {
 
 /**
+ * Trampoline classes
+ * are required for all base classes that can be derived in Python (TODO)
+ */
+class PyTropism : public Tropism {
+public:
+
+    using Tropism::Tropism; /* Inherit the constructors */
+
+    std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant) override
+        { PYBIND11_OVERLOAD( std::shared_ptr<Tropism>, Tropism, copy, plant); }
+
+    double tropismObjective(const Vector3d& pos, Matrix3d old, double a, double b, double dx, const std::shared_ptr<Organ> organ) override
+        { PYBIND11_OVERLOAD( double, Tropism, tropismObjective, pos, old, a, b, dx, organ ); }
+
+    // TODO do all virtuals
+
+};
+
+
+
+
+
+/**
  * plantbox
  */
 PYBIND11_MODULE(plantbox, m) {
@@ -332,7 +355,7 @@ PYBIND11_MODULE(plantbox, m) {
     /**
      * tropism.h
      */
-    py::class_<Tropism, std::shared_ptr<Tropism>>(m, "TropismBase")
+    py::class_<Tropism, PyTropism, std::shared_ptr<Tropism>>(m, "Tropism")
         .def(py::init<std::shared_ptr<Organism>>())
         .def(py::init<std::shared_ptr<Organism>, double, double>())
         .def("copy",&Tropism::copy) // todo policy
