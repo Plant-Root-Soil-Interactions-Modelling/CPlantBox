@@ -1,86 +1,91 @@
-import scipy.sparse.linalg as LA
-from scipy import sparse
-import matplotlib.pylab as plt
+"""Three types of interaction, setting f_se, f_sa, f_sbp"""
+import sys
+sys.path.append("../../..")
+import plantbox as pb
+import math
 
-import py_rootbox as rb
-from rb_tools import *
+rs = pb.RootSystem()
+path = "../../../modelparameter/rootsystem/"
+name = "Anagallis_femina_Leitner_2010"
+rs.readParameters(path + name + ".xml")
 
-import xylem_flux
+# box with a left and a right compartment for analysis
+sideBox = pb.SDF_PlantBox(10, 20, 50)
+left = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(-4.99, 0, 0))
+right = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(4.99, 0, 0))
+leftright = pb.SDF_Union(left, right)
+rs.setGeometry(leftright)
 
-import timeit
+# left compartment has a minimum of 0.01, 1 elsewhere
+maxS = 1.  # maximal
+minS = 0.01  # minimal
+slope = 1.  # [cm] linear gradient between min and max
+leftC = pb.SDF_Complement(left)
+soilprop = pb.SoilLookUpSDF(leftC, maxS, minS, slope)  # for root elongation
+soilprop2 = pb.SoilLookUpSDF(left, 1., 0.002, slope)  # for branching
 
-# Simulate a root system
-name = "Triticum_aestivum_a_Bingham_2011"
-dt = 30  # days
-rs = rb.RootSystem()
-rs.openFile(name)
+# Manually set scaling function and tropism parameters
+sigma = [0.4, 1., 1., 1., 1. ] * 2
+for p in rs.getRootRandomParameter():
+    p.dx = 0.25  # adjust resolution
+    p.tropismS = sigma[p.subType - 1]
+
+    # 1. Scale elongation
+#    p.f_se = soilprop
+
+    # 2. Scale insertion angle
+#    p.f_sa = soilprop
+
+# 3. Scale branching probability
+p = rs.getRootRandomParameter(2)
+p.ln = p.ln / 5
+p.nob = p.nob * 5
+p = rs.getRootRandomParameter(3)
+p.f_sbp = soilprop2
+
+# simulation
 rs.initialize()
-rs.simulate(dt)
-# for i in range(0,7):
-#     rs.simulate(1)
+simtime = 120.
+dt = 1.
+N = 120 / dt
+for i in range(0, round(N)):
+    rs.simulate(dt, True)
 
-# Create graph
-nodes = vv2a(rs.getNodes()) / 100  # convert from cm to m
-rseg = seg2a(rs.getSegments())  # root system segments
-sseg = seg2a(rs.getShootSegments())  # additional shoot segments
-seg = np.vstack((sseg, rseg))
-print("number of segments", len(seg))
+# analyse
+print()
+print("Left compartment: ")
+al = pb.SegmentAnalyser(rs)
+al.crop(left)
+ll = al.getSummed("length")
+print('Total root length', ll, 'cm')
+lmct = al.getSummed("creationTime") / al.getSummed("one")
+print('Mean age', simtime - lmct, 'days')
+lroots = al.getOrgans()
+lm_theta = 0
+for r in lroots:
+    lm_theta += r.param().theta  # downcast
+lm_theta /= len(lroots)
+print('Mean insertion angle is ', lm_theta / math.pi * 180, 'degrees')
+print()
 
-# Adjacency matrix
-A = sparse.coo_matrix((np.ones(seg.shape[0]), (seg[:, 0], seg[:, 1])))
+print("Right compartment: ")
+ar = pb.SegmentAnalyser(rs)
+ar.crop(right)
+lr = ar.getSummed("length")
+print('Total root length', lr, 'cm')
+rmct = ar.getSummed("creationTime") / ar.getSummed("one")
+print('Mean age', simtime - rmct, 'days')
+rroots = ar.getOrgans()
+rm_theta = 0
+for r in lroots:
+    rm_theta += r.param().theta
+rm_theta /= len(rroots)
+print('Mean insertion angle is ', rm_theta / math.pi * 180, 'degrees')
+print()
 
-# Parameters for flux model
-rs_Kr = np.array([ 2.e-10, 2.e-10, 2.e-10, 2.e-10, 2.e-10, 2.e-11, 2.e-11 ])  # s/m; root hydraulic radial conductivity per root type
-rs_Kz = np.array([ 5.e-14, 5.e-14, 5.e-14, 5.e-14, 5e-14, 5e-14, 5e-14 ])  # m2*s; root hydraulic axial conductivity per root type
-
-soil_psi = -700  # static soil pressure J kg^-1
-
-rho = 1e3  # kg / m^3
-g = 1.e-3 * 9.8065  # m / s^2
-
-pot_trans = np.array([-1.15741e-10])  # # m^3 s^-1 potential transpiration
-
-# Conversions
-rs_ana = rb.SegmentAnalyser(rs)
-radius = v2a(rs_ana.getParameter("radius")) / 100.  # convert from cm to m
-type = v2a(rs_ana.getParameter("subType"))
-kr = np.array(list(map(lambda t: rs_Kr[int(t) - 1], type)))  # convert from 'per type' to 'per segment'
-kr.resize((kr.shape[0], 1))
-kz = np.array(list(map(lambda t: rs_Kz[int(t) - 1], type)))
-kz.resize((kz.shape[0], 1))
-
-# glue together shoot and root segments
-shoot1 = np.ones((sseg.shape[0], 1))
-shoot0 = np.ones((sseg.shape[0], 1))
-radius = np.vstack((shoot1, radius))
-kr = np.vstack((shoot0, kr))
-kz = np.vstack((shoot1, kz))
-
-# Call back function for soil potential
-soil = lambda x, y, z : soil_psi
-
-# Calculate fluxes within the root system
-Q, b = xylem_flux.linear_system(seg, nodes, radius, kr, kz, rho, g, soil)
-# plt.spy(Q)
-# plt.show()
-Q, b = xylem_flux.bc_neumann(Q, b, np.array([0]), np.array([pot_trans]))
-
-start = timeit.default_timer()
-x = LA.spsolve(Q, b, use_umfpack = True)  # direct
-stop = timeit.default_timer()
-print ("linear system solved in", stop - start, " s")
-
-# Save results into vtp
-segP = nodes2seg(nodes, seg, x)  # save vtp
-axial_flux = xylem_flux.axial_flux(x, seg, nodes, kz, rho, g)
-radial_flux = xylem_flux.radial_flux(x, seg, nodes, radius, kr, soil)
-net_flux = axial_flux + radial_flux
-
-rs_ana.addUserData(a2v(segP[sseg.shape[0]:]), "pressure")
-rs_ana.addUserData(a2v(axial_flux[sseg.shape[0]:]), "axial_flux")
-rs_ana.addUserData(a2v(radial_flux[sseg.shape[0]:]), "radial_flux")
-rs_ana.addUserData(a2v(net_flux[sseg.shape[0]:]), "net_flux")
-
-rs_ana.write("results/example_5a.vtp")
+# write results
+rs.write("results/example_5a.py")  # compartment geometry
+rs.write("results/example_5a.vtp")  # root system
 
 print("done.")
+

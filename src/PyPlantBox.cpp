@@ -42,15 +42,21 @@ public:
     std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant) override
         { PYBIND11_OVERLOAD( std::shared_ptr<Tropism>, Tropism, copy, plant); }
 
-    double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> organ) override
-        { PYBIND11_OVERLOAD( double, Tropism, tropismObjective, pos, old, a, b, dx, organ ); }
+    Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> organ = nullptr) override
+        { PYBIND11_OVERLOAD( Vector2d, Tropism, getHeading, pos, old, dx, organ ); }
 
-    // TODO do all virtuals
+    Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> organ) override
+        { PYBIND11_OVERLOAD( Vector2d, Tropism, getUCHeading, pos, old, dx, organ ); }
+
+    double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> organ = nullptr) override
+        { PYBIND11_OVERLOAD( double, Tropism, tropismObjective, pos, old, a, b, dx, organ ); }
 
 };
 
-
-
+// SoilLookUp
+// SignedDistanceFunction
+// OrganRandomParameter
+// Organ
 
 
 /**
@@ -317,11 +323,11 @@ PYBIND11_MODULE(plantbox, m) {
         .value("leaf", Organism::OrganTypes::ot_leaf)
         .export_values();
     /*
-     * soil
+     * soil.h
      */
-    py::class_<SoilLookUp, std::shared_ptr<SoilLookUp>>(m, "SoilLookUp")   /// <--- TODO WRAP (?)
+    py::class_<SoilLookUp, std::shared_ptr<SoilLookUp>>(m, "SoilLookUp")
         .def(py::init<>())
-        .def("getValue",&SoilLookUp::getValue) /// <--- TODO defaults
+        .def("getValue",&SoilLookUp::getValue, py::arg("pos"), py::arg("organ") = (std::shared_ptr<Organ>) nullptr )
         .def("__str__",&SoilLookUp::toString);
     py::class_<SoilLookUpSDF, SoilLookUp, std::shared_ptr<SoilLookUpSDF>>(m,"SoilLookUpSDF")
         .def(py::init<>())

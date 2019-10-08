@@ -60,7 +60,7 @@ public:
 	 *
 	 * \return         the value minimized by getHeading(), it should be in [0,1], in this way combination of various tropisms will be easier
 	 */
-	virtual double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o)
+	virtual double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o = nullptr)
 	    { std::cout << "TropismFunction::tropismObjective() not overwritten\n"; return 0; } ///< The objective function of the random optimization of getHeading().
 
 	static Vector3d getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx);

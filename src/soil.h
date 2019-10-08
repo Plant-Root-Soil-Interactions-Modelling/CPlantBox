@@ -35,7 +35,7 @@ public:
      *                  in some situation this might be usefull (e.g. could increase look up speed from a unstructured mesh)
      * \return          scalar soil property
      */
-    virtual double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o = nullptr) const { return 1.; } ///< Returns a scalar property of the soil, 1. per default
+    virtual double getValue(const Vector3d& pos, const std::shared_ptr<Organ> organ = nullptr) const { return 1.; } ///< Returns a scalar property of the soil, 1. per default
 
     virtual std::string toString() const { return "SoilLookUp base class"; } ///< Quick info about the object for debugging
 

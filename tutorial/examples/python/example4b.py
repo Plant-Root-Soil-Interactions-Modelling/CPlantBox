@@ -1,5 +1,4 @@
 """user defined tropism in python"""
-
 import sys
 sys.path.append("../../..")
 import plantbox as pb
@@ -8,13 +7,13 @@ import plantbox as pb
 # User tropism 1: print input arguments to command line
 class My_Info_Tropism(pb.Tropism):
 
-    def tropismObjective(self, pos, old, a, b, dx):
+    def tropismObjective(self, pos, old, a, b, dx, root):
         print("Postion \t", pos)
         print("Heading \t", old.column(0))
         print("Test for angle alpha = \t", a)
         print("Test for angle beta = \t", b)
         print("Eesolution of next segment \t", dx)
-        # print("Root id", root.getId())
+        print("Root id", root.getId())
         print()
         return 0.
 
@@ -49,7 +48,7 @@ rs.initialize()
 mytropism1 = My_Info_Tropism(rs)
 mytropism1.setTropismParameter(2., 0.2)
 mytropism2 = My_Age_Tropism(rs, 2., 0.5, 5.)  # after 5 days switch from plagio- to gravitropism
-rs.setTropism(mytropism1, 2)  # 2 for laterals, -1 for all root types
+rs.setTropism(mytropism2, 2)  # 2 for laterals, -1 for all root types
 
 # Simulate
 simtime = 100  # e.g. 30 or 60 days
