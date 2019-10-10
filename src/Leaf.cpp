@@ -45,19 +45,16 @@ Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bo
 Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,  std::shared_ptr<Organ> parent, double pbl, int pni)
         :Organ(plant, parent,Organism::ot_leaf, type, delay), parentBaseLength(pbl), parentNI(pni)
 {
-    iHeading=iheading;
+    assert(parent!=nullptr && "Stem::Stem parent must be set");
     //  std::cout << "Leaf pni = "<< pni<< std::endl;
     //  std::cout << "Organism* plant ="<< plant <<" "<< parent<<std::endl;
-    param_ = getLeafRandomParameter()->realize(); // throw the dice, specific
-
     //  std::cout <<", "<<(LeafParameter*) param<< "\n";
+    // std::cout <<"subtype ="<<param()->subType <<"getleafphytomerID =" <<getleafphytomerID(param()->subType)<< "\n";
 
-
-    std::cout <<"subtype ="<<param()->subType <<"getleafphytomerID =" <<getleafphytomerID(param()->subType)<< "\n";
     addleafphytomerID(param()->subType);
     double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->RotBeta
         + M_PI*plant->rand()*getLeafRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
-    Matrix3d ons = Matrix3d::ons(iHeading);
+    Matrix3d ons = Matrix3d::ons(iheading);
     //	if (getLeafRandomParameter()->InitBeta >0 && getleafphytomerID(param()->subType)==0 ){
     beta = beta + getLeafRandomParameter()->InitBeta;
     //	}
@@ -69,19 +66,16 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
     //ons.times(Matrix3d::rotX(beta));
 
     double theta = M_PI*param()->theta;
-    if (parent!=nullptr) { // scale if not a base root
+    if (parent->organType()!=Organism::ot_seed) { // scale if not a base root
         double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta *= scale;
     }
     //ons.times(Matrix3d::rotZ(theta));
     this->iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
-    age = -delay; // the root starts growing when age>0
-    alive = 1; // alive per default
-    length = 0;
 
     // initial node
-    if (parent!=nullptr) { // the first node of the base roots must be created in RootSystem::initialize()
-        assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");
+    if (parent->organType()!=Organism::ot_seed) { // the first node of the base roots must be created in RootSystem::initialize()
+        // assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node"); // ?????
         addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
     }
 }
@@ -519,12 +513,15 @@ std::shared_ptr<const LeafSpecificParameter>  Leaf::param() const
 
 /**
  * Quick info about the object for debugging
+ * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string Leaf::toString() const
 {
-    std::stringstream str;
-    str << "Leaf #"<< id <<": type "<<param()->subType << ", length: "<< length << ", age: " <<age<<" with "<< children.size() << " laterals\n";
-    return str.str();
+    std::string str = Organ::toString();
+    str.replace(0, 5, "Leaf");
+    std::stringstream newstring;
+    newstring << "; initial heading: " << iHeading.toString() << ", parent base length " << parentBaseLength << ", parent node index" << parentNI << ".";
+    return str+newstring.str();
 }
 
 } // namespace CPlantBox

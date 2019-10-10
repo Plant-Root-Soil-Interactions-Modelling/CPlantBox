@@ -97,8 +97,8 @@ public:
     double nzs = 0.;       ///< Standard deviation of distance between the root crowns along the shoot [cm]
 
     // Stem parameters
-    int maxTil = 0;
-    double maxTils = 0.;
+    int maxTil = 0;        ///< Maximal number of tillers
+    double maxTils = 0.;   ///< Standard deviation of tillers
 
     // Simulation parameters
     double simtime = 30.;  ///< Mean recommended final simulation time

@@ -39,7 +39,7 @@ public:
     virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay); ///< overwrite if you want to change class types
 
     // default positions (unused) (TODO) make nicer
-    int tapRootType = 1;
+    int tapType = 1;
     int basalType = 4;
     int shootborneType = 5;
     int mainStemType = 1;

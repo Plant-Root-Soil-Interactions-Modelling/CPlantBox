@@ -33,11 +33,11 @@ void Seed::initialize()
     auto p = plant.lock();
     auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
     bool plantBox = stemP.size()>1;
-//    if (plantBox) {
-//        std::cout << "Seed::initialize: Plant \n";
-//    } else {
-//        std::cout << "Seed::initialize: RootSystem \n";
-//    }
+    //    if (plantBox) {
+    //        std::cout << "Seed::initialize: Plant \n";
+    //    } else {
+    //        std::cout << "Seed::initialize: RootSystem \n";
+    //    }
 
     /*
      * Create roots
@@ -47,7 +47,7 @@ void Seed::initialize()
     Vector3d iheading(0,0,-1);
 
     // Taproot
-    std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapRootType, iheading ,0); // tap root has root type 1
+    std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, iheading ,0); // tap root has root type 1
     taproot->addNode(sp->seedPos,0);
     this->addChild(taproot);
 
@@ -77,6 +77,7 @@ void Seed::initialize()
             delay += sp->delayB;
         }
     }
+
     // Shoot borne roots
     if (!plantBox) { // use CRootBox initialization
         int st = getParamSubType(Organism::ot_root, "shootborne");
@@ -128,26 +129,24 @@ void Seed::initialize()
         children.push_back(mainstem);
         // Optional tillers
         if (sp->maxTil>0) {
-            if (p->getOrganRandomParameter(Organism::ot_stem, tillerType)->subType<1) { // if the type is not defined, copy tap root
+            try {
+                p->getOrganRandomParameter(Organism::ot_stem, tillerType);
+            } catch (...) {
                 std::cout << "Tiller stem type #" << tillerType << " was not defined, using main stem parameters instead, ";
-                std::cout << "default maxT = " << sp->maxTil << "\n";
                 auto tillParam = p->getOrganRandomParameter(Organism::ot_stem, 1)->copy(plant.lock());
                 tillParam->subType = basalType;
                 p->setOrganRandomParameter(tillParam);
-
-            } else{
-                int maxTi = sp->maxTil;
-                if (sp->delayB>0) {
-                    maxTi = std::min(maxTi,int(std::ceil((maxT-sp->firstB)/sp->delayB))); // maximal for simtime maxT
-                }
-                std::cout << "maxT = " << sp->maxTil << "\n";
-                double delay = sp->firstB;
-                for (int i=0; i<maxTi; i++) {
-                    std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType, isheading, delay);
-                    tiller->addNode(sp->seedPos,0);
-                    children.push_back(tiller);
-                    delay += sp->delayB;
-                }
+            }
+            int maxTi = sp->maxTil;
+            if (sp->delayB>0) {
+                maxTi = std::min(maxTi,int(std::ceil((maxT-sp->firstB)/sp->delayB))); // maximal for simtime maxT
+            }
+            double delay = sp->firstB;
+            for (int i=0; i<maxTi; i++) {
+                std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType, isheading, delay);
+                tiller->addNode(sp->seedPos,0);
+                children.push_back(tiller);
+                delay += sp->delayB;
             }
         }
     }
@@ -181,13 +180,17 @@ int Seed::getParamSubType(int organtype, std::string str)
 }
 
 /**
- * Quick info about the object for debugging (TODO)
+ * Quick info about the object for debugging
+ * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string Seed::toString() const
 {
-    std::stringstream str;
-    str << "Seed #"<< id <<": type "<< param_->subType << ", length: "<< length << ", age: " << age;
-    return str.str();
+    std::string str = Organ::toString();
+    str.replace(0, 5, "Seed");
+    std::stringstream newstring;
+    newstring << "; maximal number of basals: " << param()->maxB << ", of shootborne " << param()->nC  << ", of tillers " << param()->maxTil << ".";
+    str.replace(str.size()-1, 1, newstring.str());
+    return str;
 }
 
 /**

@@ -408,13 +408,15 @@ double Root::getParameter(std::string name) const
 
 /**
  * @return Quick info about the object for debugging
+ * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string Root::toString() const
 {
-    std::stringstream str;
-    str << "Root #"<< id <<": type "<<param()->subType << ", length: "<< length << ", age: " <<age<<" with "
-        << children.size() << " laterals" << std::endl;
-    return str.str();
+    std::string str = Organ::toString();
+    str.replace(0, 5, "Root");
+    std::stringstream newstring;
+    newstring << "; initial heading: " << iHeading.toString() << ", parent base length " << parentBaseLength << ", parent node index" << parentNI << ".";
+    return str+newstring.str();
 }
 
 } // end namespace CPlantBox

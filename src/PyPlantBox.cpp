@@ -72,11 +72,11 @@ public:
 
 };
 
-//
+// todo
 // SignedDistanceFunction
 // OrganRandomParameter
 // Organ
-
+// Seed
 
 /**
  * plantbox
@@ -507,7 +507,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("delayRCs", &SeedRandomParameter::delayRCs)
         .def_readwrite("nz", &SeedRandomParameter::nz)
         .def_readwrite("nzs", &SeedRandomParameter::nzs)
-        .def_readwrite("simtime", &SeedRandomParameter::simtime);
+        .def_readwrite("maxTil", &SeedRandomParameter::maxTil)
+        .def_readwrite("maxTils", &SeedRandomParameter::maxTils)
+        .def_readwrite("simtime", &SeedRandomParameter::simtime)
+        .def_readwrite("simtimes", &SeedRandomParameter::simtimes);
     py::class_<SeedSpecificParameter, OrganSpecificParameter, std::shared_ptr<SeedSpecificParameter>>(m, "SeedSpecificParameter")
         .def(py::init<>())
         .def(py::init<int, Vector3d , double, int, int, int, double, double, double, double, int, double>())
@@ -520,7 +523,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("delaySB", &SeedSpecificParameter::delaySB)
         .def_readwrite("delayRC", &SeedSpecificParameter::delayRC)
         .def_readwrite("nz", &SeedSpecificParameter::nz)
-        .def_readwrite("maxTil", &SeedSpecificParameter::maxTil);
+        .def_readwrite("maxTil", &SeedSpecificParameter::maxTil)
+        .def_readwrite("simtime", &SeedSpecificParameter::simtime);
     /*
      * leafparameter.h
      */
@@ -644,6 +648,7 @@ PYBIND11_MODULE(plantbox, m) {
       * Seed.h
       */
     py::class_<Seed, Organ, std::shared_ptr<Seed>>(m, "Seed")
+        .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, bool, int>())
         .def(py::init<std::shared_ptr<Organism>>())
         .def("initialize", &Seed::initialize)
         .def("param", &Seed::param)
@@ -652,7 +657,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("copyBaseOrgans", &Seed::copyBaseOrgans)
         .def("createRoot", &Seed::createRoot)
         .def("createStem", &Seed::createStem)
-        .def_readwrite("tapRootType", &Seed::tapRootType)
+        .def_readwrite("tapType", &Seed::tapType)
         .def_readwrite("basalType", &Seed::basalType)
         .def_readwrite("shootborneType", &Seed::shootborneType)
         .def_readwrite("mainStemType", &Seed::mainStemType)

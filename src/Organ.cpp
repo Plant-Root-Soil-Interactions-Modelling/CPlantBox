@@ -317,14 +317,15 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
 }
 
 /**
- * @return Quick info about the object for debugging
+ * @return Quick info about the object for debugging,
+ * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string Organ::toString() const
 {
     std::stringstream str;
-    str << "Organ #"<< getId() << ": organ type "<< organType() << " sub type "<< param_->subType << ", length " <<
-        getLength() << " cm, age " << getAge() << " days, alive " << isAlive() << ", active " << isActive()
-        << ", number of nodes " << this->getNumberOfNodes() << ", with "<< children.size() << " children" << std::endl;
+    str << "Organ #"<< getId() <<": sub type "<< param_->subType << ", length " << getLength() << " cm, age " << getAge()
+        << " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes()
+        << ", with "<< children.size() << " children";
     return str.str();
 }
 

@@ -1,26 +1,28 @@
 <seed name="best_seed" subType="0">
-    <parameter name="delayB" value="7" dev="0"/>
+    <parameter name="maxTil" value="0"/>
+    <!--Maximal number of tillers [1]-->
+    <parameter name="delayB" value="7"/>
     <!--Time delay between the basal roots [day]-->
-    <parameter name="delayRC" value="15" dev="0"/>
-    <!--Root color, blue component [0.-1.]-->
-    <parameter name="delaySB" value="4" dev="0"/>
-    <!--Root color, green component [0.-1.]-->
-    <parameter name="firstB" value="10" dev="0"/>
+    <parameter name="delayRC" value="15"/>
+    <!--Delay between the root crowns [day]-->
+    <parameter name="delaySB" value="4"/>
+    <!--Time delay between the shoot borne roots [day]-->
+    <parameter name="firstB" value="10"/>
     <!--Emergence of first basal root [day]-->
-    <parameter name="firstSB" value="21" dev="0"/>
-    <!--Root color, red component [0.-1.]-->
-    <parameter name="maxB" value="0" dev="0"/>
+    <parameter name="firstSB" value="21"/>
+    <!--First emergence of a shoot borne root [day]-->
+    <parameter name="maxB" value="0"/>
     <!--Maximal number of basal roots [1]-->
-    <parameter name="nC" value="5" dev="0"/>
+    <parameter name="nC" value="5"/>
     <!--Maximal number of roots per root crown [1]-->
-    <parameter name="nz" value="1" dev="0"/>
-    <!--Distance between the root crowns along the shoot-->
-    <parameter name="seedPos.x" value="0" dev="0"/>
+    <parameter name="nz" value="1"/>
+    <!--Distance between the root crowns along the shoot [cm]-->
+    <parameter name="seedPos.x" value="0"/>
     <!--X-Coordinate of seed position [cm]-->
-    <parameter name="seedPos.y" value="0" dev="0"/>
+    <parameter name="seedPos.y" value="0"/>
     <!--Y-Coordinate of seed position [cm]-->
-    <parameter name="seedPos.z" value="-3" dev="0"/>
+    <parameter name="seedPos.z" value="-3"/>
     <!--Z-Coordinate of seed position [cm]-->
-    <parameter name="simtime" value="30" dev="0"/>
-    <!--Recommended final simulation time-->
+    <parameter name="simtime" value="30"/>
+    <!--Recommended final simulation time  [day]-->
 </seed>
