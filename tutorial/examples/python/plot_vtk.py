@@ -1,12 +1,18 @@
+import sys
+sys.path.append("../../..")
+import plantbox as pb
+import numpy as np
 import vtk
-from vtk import *
-import py_rootbox as rb
-from rb_tools import *
+# from vtk import *
+
+
+def convert(x):
+    """ Converts a list of something to a 2d numpy array"""
+    return np.array(list(map(np.array, x)))  # is there a better way?
 
 
 def vtkPoints(p):
-    """ Creates vtkPoints from an numpy array
-    """
+    """ Creates vtkPoints from an numpy array """
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
     da.SetNumberOfComponents(3)  # vtk point dimension is always 3
     da.SetNumberOfTuples(p.shape[0])
@@ -21,8 +27,7 @@ def vtkPoints(p):
 
 
 def vtkCells(t):
-    """ Creates vtkCells from an numpy array
-    """
+    """ Creates vtkCells from an numpy array """
     cellArray = vtk.vtkCellArray()
     for vert in t:
         if t.shape[1] == 2:
@@ -38,8 +43,7 @@ def vtkCells(t):
 
 
 def vtkData(d):
-    """ Creates a vtkDataArray from an numpy array, e.g. grid.GetCellData().SetScalars(vtkData(celldata))
-    """
+    """ Creates a vtkDataArray from an numpy array, e.g. grid.GetCellData().SetScalars(vtkData(celldata))"""
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
     noc = d.shape[1]
     da.SetNumberOfComponents(noc)
@@ -55,18 +59,22 @@ def vtkData(d):
             da.InsertTuple4(i, d[i, 0], d[i, 1], d[i, 2], d[i, 3])
     return da
 
-
 # Simulate something
-rs = rb.RootSystem()
-name = "Zea_mays_1_Leitner_2010"  # "Anagallis_femina_Leitner_2010"
-rs.openFile(name)
+
+
+path = "../../../modelparameter/rootsystem/"
+name = "Brassica_napus_a_Leitner_2010"
+rs = pb.RootSystem()
+rs.readParameters(path + name + ".xml")
 rs.initialize()
 rs.simulate(30, True)
 
 # Export to VTK
-nodes = vv2a(rs.getNodes())
-segs = seg2a(rs.getSegments())
-types = v2ai(rs.getParameter("type"))
+nodes = convert(rs.getNodes())
+segs = convert(rs.getSegments())
+types_ = np.array(rs.getParameter("type"), dtype = np.int64)
+types = np.zeros((len(types_), 1))
+types[:, 0] = types_
 print(len(types), types, types.shape)
 points = vtkPoints(nodes)
 cells = vtkCells(segs)
@@ -74,7 +82,7 @@ data = vtkData(types)
 pd = vtk.vtkPolyData()
 pd.SetPoints(points)
 pd.SetLines(cells)
-pd.GetCellData().SetScalars(types)
+pd.GetCellData().SetScalars(data)
 
 # Set the background color
 colors = vtk.vtkNamedColors()

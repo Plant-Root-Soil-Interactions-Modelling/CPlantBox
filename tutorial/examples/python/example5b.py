@@ -1,43 +1,63 @@
-"""Scale root elongation based on SoilLookup"""  # todo improve example
+"""user defined tropism in python"""
 import sys
 sys.path.append("../../..")
 import plantbox as pb
-import math
-import numpy as np
 
+
+# User tropism 1: print input arguments to command line
+class My_Info_Tropism(pb.Tropism):
+
+    def tropismObjective(self, pos, old, a, b, dx, root):
+        print("Postion \t", pos)
+        print("Heading \t", old.column(0))
+        print("Test for angle alpha = \t", a)
+        print("Test for angle beta = \t", b)
+        print("Eesolution of next segment \t", dx)
+        print("Root id", root.getId())
+        print()
+        return 0.
+
+
+# User tropism 2: depending on root age use plagio- or gravitropism
+class My_Age_Tropism(pb.Tropism):
+
+    def __init__(self, rs, n, sigma, age):
+        super(My_Age_Tropism, self).__init__(rs)
+        self.plagio = pb.Plagiotropism(rs, 0., 0.)
+        self.gravi = pb.Gravitropism(rs, 0., 0.)
+        self.setTropismParameter(n, sigma)
+        self.age = age
+
+    def tropismObjective(self, pos, old, a, b, dx, root):
+        age = root.getAge()
+        if age < self.age:
+            d = self.plagio.tropismObjective(pos, old, a, b, dx, root)
+            return d
+        else:
+            return self.gravi.tropismObjective(pos, old, a, b, dx, root)
+
+
+# set up the root system
 rs = pb.RootSystem()
 path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
-
-scale_elongation = pb.EquidistantGrid1D(0, -50, 100)  # for root elongation from 0 cm to -50 cm, 100 layers
-soil_strength = np.ones((99,)) * 0.5  # some data
-scales = np.exp(-0.4 * soil_strength)  # scales from some equation (TODO)
-scale_elongation.data = scales  # set proportionality factors
-
-print("value at -3 cm", scale_elongation.getValue(pb.Vector3d(0, 0, -3)))
-
-# Manually set scale elongation function
-for p in rs.getRootRandomParameter():
-    p.f_se = scale_elongation
-
-# Simulation
 rs.initialize()
-simtime = 120.
-dt = 1.
-N = 120 / dt
-for i in range(0, round(N)):
 
-    # update soil model (e.g. soil_strength)
+# Set useer defined after initialize
+mytropism1 = My_Info_Tropism(rs)
+mytropism1.setTropismParameter(2., 0.2)
+mytropism2 = My_Age_Tropism(rs, 2., 0.5, 5.)  # after 5 days switch from plagio- to gravitropism
+rs.setTropism(mytropism2, 2)  # 2 for laterals, -1 for all root types
 
-    # update scales (e.g. from water content, soil_strength)
-    scales = np.exp(-0.4 * soil_strength)  # scales from some equation (TODO)
+# Simulate
+simtime = 100  # e.g. 30 or 60 days
+dt = 1
+N = round(simtime / dt)
+for _ in range(0, N):
+    rs.simulate(dt)
 
-    # copy scales into scaling funciton
-    scale_elongation.data = scales
-
-    rs.simulate(dt, True)
-
-rs.write("../results/example_5b.vtp")
+# Export results (as vtp)
+rs.write("../results/example_4b.vtp")
 
 print("done.")

@@ -1,48 +1,55 @@
-"""hydrotropism in a thin layer"""
+"""everything from scratch (without parameter files)"""
 import sys
 sys.path.append("../../..")
 import plantbox as pb
 
+import math
+
 rs = pb.RootSystem()
-path = "../../../modelparameter/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-rs.readParameters(path + name + ".xml")
 
-# Manually set tropism to hydrotropism for the first ten root types
-sigma = [0.4, 1., 1., 1., 1. ] * 2
-for p in rs.getRootRandomParameter():
-        p.dx = 0.25  # adjust resolution
-        p.tropismT = pb.TropismType.hydro
-        p.tropismN = 2  # strength of tropism
-        p.tropismS = sigma[p.subType - 1]
+# Root type parameter
+p0 = pb.RootRandomParameter(rs)  # with default values,
+p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 
-# Static soil property in a thin layer
-maxS = 0.7  # maximal
-minS = 0.1  # minimal
-slope = 5  # linear gradient between min and max (cm)
-box = pb.SDF_PlantBox(30, 30, 2)  # cm
-layer = pb.SDF_RotateTranslate(box, pb.Vector3d(0, 0, -16))
-soil_prop = pb.SoilLookUpSDF(layer, maxS, minS, slope)
+p0.name = "taproot"
+p0.subType = 1
+p0.lb = 1
+p0.la = 10
+p0.nob = 20
+p0.ln = 89. / 19.
+p0.theta = 30. / 180.*math.pi
+p0.r = 1
+p0.dx = 0.5
+p0.successor = [2]  # add successors
+p0.successorP = [1]
+p0.tropismT = pb.TropismType.gravi
+p0.tropismN = 1.
+p0.tropismS = 0.2
 
-# Set the soil properties before calling initialize
-rs.setSoil(soil_prop)
+p1.name = "lateral"
+p1.subType = 2
+p1.la = 25
+p1.las = 10  # add standard deviation
+p1.ln = 0
+p1.r = 2
+p1.dx = 0.1
+p1.tropismS = 0.3
 
-# Initialize
+rs.setOrganRandomParameter(p0)
+rs.setOrganRandomParameter(p1)
+
+# Root system parameter (neglecting shoot borne)
+
+rsp = pb.SeedRandomParameter(rs)
+rsp.seedPos = pb.Vector3d(0., 0., -3.)
+rsp.maxB = 100
+rsp.firstB = 10.
+rsp.delayB = 3.
+rs.setRootSystemParameter(rsp)
+
 rs.initialize()
+rs.simulate(40, False)
 
-# Simulate
-simtime = 100  # e.g. 30 or 60 days
-dt = 1
-N = round(simtime / dt)
-for _ in range(0, N):
-    # in a dynamic soil setting you would need to update soil_prop
-    rs.simulate(dt)
-
-# Export results (as vtp)
-rs.write("../results/example_4a.vtp")
-
-# Export geometry of static soil
-rs.setGeometry(layer)  # just for vizualisation
-rs.write("../results/example_4a.py")
+rs.write("../results/example_3c.vtp")
 
 print("done.")
