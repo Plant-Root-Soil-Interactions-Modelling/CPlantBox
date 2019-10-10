@@ -21,8 +21,9 @@ class SegmentAnalyser
 public:
 
     SegmentAnalyser() { }; ///< creates an empty object (use AnalysisSDF::addSegments)
+    SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector2i> segments, std::vector<double> segCTs, std::vector<double> radii); ///< everything from scratch
     SegmentAnalyser(const Organism& plant); ///< creates an analyser object containing the segments from the root system
-    SegmentAnalyser(const SegmentAnalyser& a) : nodes(a.nodes), segments(a.segments), segCTs(a.segCTs), segO(a.segO) { } ///< copy constructor, does not copy user data
+    SegmentAnalyser(const SegmentAnalyser& a) : nodes(a.nodes), segments(a.segments), segCTs(a.segCTs), radii(a.radii), segO(a.segO) { } ///< copy constructor, does not copy user data
     virtual ~SegmentAnalyser() { }; ///< nothing to do here
 
     // merge segments
@@ -69,7 +70,8 @@ public:
     std::vector<Vector3d> nodes; ///< nodes
     std::vector<Vector2i> segments; ///< connectivity of the nodes
     std::vector<double> segCTs; ///< creation times of the segments
-    std::vector<std::shared_ptr<Organ>> segO; ///< to look up things
+    std::vector<double> radii; ///< segment radii
+    std::vector<std::weak_ptr<Organ>> segO; ///< to look up things
 
 protected:
 
@@ -77,9 +79,6 @@ protected:
     std::vector<std::string> userDataNames; ///< names of the data added, e.g. "Flux", "Pressure", etc.
 
 };
-
-inline bool operator==(const SegmentAnalyser& lhs, const SegmentAnalyser& rhs){ return (&lhs==&rhs); } // only address wise, needed for boost python indexing suite
-inline bool operator!=(const SegmentAnalyser& lhs, const SegmentAnalyser& rhs){ return !(lhs == rhs); }
 
 } // end namespace CPlantBox
 

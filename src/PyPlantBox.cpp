@@ -32,7 +32,10 @@ namespace CPlantBox {
 
 /**
  * Trampoline classes
- * are required for all base classes that can be derived in Python (TODO)
+ *
+ * Are required for all base classes that can be derived in Python, currently
+ * Tropism
+ * SoilLookUp
  */
 class PyTropism : public Tropism {
 public:
@@ -53,7 +56,23 @@ public:
 
 };
 
-// SoilLookUp
+class PySoilLookUp : public SoilLookUp {
+public:
+
+    using SoilLookUp::SoilLookUp; /* Inherit the constructors */
+
+    std::shared_ptr<SoilLookUp> copy() override
+        { PYBIND11_OVERLOAD( std::shared_ptr<SoilLookUp>, SoilLookUp, copy); }
+
+    double getValue(const Vector3d& pos, const std::shared_ptr<Organ> organ = nullptr) const override
+        {  PYBIND11_OVERLOAD( double, SoilLookUp, getValue, pos, organ ); }
+
+    std::string toString() const override
+        { PYBIND11_OVERLOAD( std::string, SoilLookUp, toString); }
+
+};
+
+//
 // SignedDistanceFunction
 // OrganRandomParameter
 // Organ
@@ -387,6 +406,7 @@ PYBIND11_MODULE(plantbox, m) {
     */
     py::class_<SegmentAnalyser, std::shared_ptr<SegmentAnalyser>>(m, "SegmentAnalyser")
        .def(py::init<>())
+       .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, std::vector<double>>())
        .def(py::init<Organism&>())
        .def(py::init<SegmentAnalyser&>())
        .def("addSegments",(void (SegmentAnalyser::*)(const Organism&)) &SegmentAnalyser::addSegments) //overloads
@@ -412,6 +432,7 @@ PYBIND11_MODULE(plantbox, m) {
        .def_readwrite("nodes", &SegmentAnalyser::nodes)
        .def_readwrite("segments", &SegmentAnalyser::segments)
        .def_readwrite("segCTs", &SegmentAnalyser::segCTs)
+       .def_readwrite("radii", &SegmentAnalyser::radii)
        .def_readwrite("segO", &SegmentAnalyser::segO);
     /*
      * rootparameter.h
