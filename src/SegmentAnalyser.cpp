@@ -552,8 +552,9 @@ std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double 
  * (that must be lower case)
  *
  * @param name      file name e.g. output.vtp
+ * @param types 	todo docme
  */
-void SegmentAnalyser::write(std::string name)
+void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
 {
     this->pack(); // a good idea before writing any file
     std::ofstream fos;
@@ -561,7 +562,7 @@ void SegmentAnalyser::write(std::string name)
     std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
     if (ext.compare("vtp")==0) {
         std::cout << "writing VTP: " << name << "\n" << std::flush;
-        this->writeVTP(fos,{ "radius", "subType", "creationTime" });
+        this->writeVTP(fos, types);
     } else if (ext.compare("txt")==0)  {
         std::cout << "writing text file for Matlab import: "<< name << "\n"<< std::flush;
         writeRBSegments(fos);
