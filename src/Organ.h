@@ -81,7 +81,7 @@ public:
 
     /* IO */
     virtual std::string toString() const; ///< info for debugging
-    virtual void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
+    void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
 
 protected:
 
