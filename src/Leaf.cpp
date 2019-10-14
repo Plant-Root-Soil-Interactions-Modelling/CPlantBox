@@ -94,7 +94,7 @@ std::shared_ptr<Organ> Leaf::copy(std::shared_ptr<Organism> p)
     l->param_ = std::make_shared<LeafSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         l->children[i] = children[i]->copy(p); // copy laterals
-        l->children[i]->setParent(shared_from_this());
+        l->children[i]->setParent(l);
     }
     return l;
 }

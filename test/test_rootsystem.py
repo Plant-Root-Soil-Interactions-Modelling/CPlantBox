@@ -3,7 +3,6 @@ import sys
 sys.path.append("..")
 import plantbox as pb
 from rsml import *
-from rb_tools import *
 
 
 def rootAge(l, r, k):  # root age at a certain length
@@ -146,8 +145,9 @@ class TestRootSystem(unittest.TestCase):
         rs.setSeed(seed)
         rs.initialize()
         rs2 = rs.copy()  # copy root system
-        self.assertIsNot(rs2, rs, "copy: not a copy")
         n1 = rs.rand()
+        self.assertIsNot(rs2, rs, "copy: not a copy")
+        self.assertEqual(str(rs), str(rs2), "copy: the organisms should be equal")
         self.assertEqual(rs2.rand(), n1, "copy: random generator seed was not copied")
         rs.simulate(10)
         rs2.simulate(10)
@@ -174,7 +174,7 @@ class TestRootSystem(unittest.TestCase):
         for i, r in enumerate(polylines):
             bases[i, :] = [r[0].x, r[0].y, r[0].z]
             tips[i, :] = [r[-1].x, r[-1].y, r[-1].z]
-        nodes = vv2a(rs.getNodes())  # Or, use node indices to find tip or base nodes
+        nodes = np.array((list(map(np.array, rs.getNodes()))))  # Or, use node indices to find tip or base nodes
         tipI = rs.getRootTips()
         baseI = rs.getRootBases()
         uneq = np.sum(nodes[baseI, :] != bases) + np.sum(nodes[tipI, :] != tips)
@@ -185,8 +185,8 @@ class TestRootSystem(unittest.TestCase):
         self.rs_example_rtp()
 #         print(self.p0.__str__(False))
 #         print(self.p1.__str__(False))
-        print(pb.Organism.organTypeName(self.p0.organType))
-        self.rs.writeParameters("test_parameters.xml", "plant", False)  # include comments
+        # print(pb.Organism.organTypeName(self.p0.organType))
+        self.rs.writeParameters("rs_parameters.xml", "plant", False)  # include comments
         rs1 = pb.RootSystem
         # rs1.readParameters("test_parameters.xml", "RootBox")
         # TODO
@@ -204,33 +204,35 @@ class TestRootSystem(unittest.TestCase):
         simtime = 60  # days
         dt = 1
         N = round(simtime / dt)
-        nodes = vv2a(rs.getNodes())  # contains the initial nodes of tap, basal and shootborne roots
-        nodeCTs = v2a(rs.getNodeCTs())
+        nodes = np.array((list(map(np.array, rs.getNodes()))))
+        nodeCTs = np.array(rs.getNodeCTs())
         seg = np.array([], dtype = np.int64).reshape(0, 2)
-        cts = v2a(rs.getSegmentCTs())
+        cts = rs.getSegmentCTs()
         nonm = 0
         for i in range(0, N):
             rs.simulate(dt, False)
             # MOVE NODES
-            uni = v2ai(rs.getUpdatedNodeIndices())
-            unodes = vv2a(rs.getUpdatedNodes())
-            ucts = v2a(rs.getUpdatedNodeCTs())
-            nodes[uni] = unodes  # do the update
-            nodeCTs[uni] = ucts
-            nonm += uni.shape[0]
+            uni = np.array((list(map(np.array, rs.getUpdatedNodeIndices()))), dtype = np.int64)
+            unodes = np.array((list(map(np.array, rs.getUpdatedNodes()))))
+            ucts = np.array(rs.getUpdatedNodeCTs())
+            if len(uni) > 0:
+                nodes[uni] = unodes  # do the update
+                nodeCTs[uni] = ucts
+                nonm += uni.shape[0]
             # NEW NODES
-            newnodes = vv2a(rs.getNewNodes())
-            newcts = v2a(rs.getNewNodeCTs())
-            newsegs = seg2a(rs.getNewSegments())
+            newnodes = np.array((list(map(np.array, rs.getNewNodes()))))
+            newcts = np.array(rs.getNewNodeCTs())
+            newsegs = np.array((list(map(np.array, rs.getNewSegments()))), dtype = np.int64)
             if len(newnodes) != 0:
                 nodes = np.vstack((nodes, newnodes))
-                nodeCTs = np.vstack((nodeCTs, newcts))
+                nodeCTs = np.append(nodeCTs, newcts)
+
             if len(newsegs) != 0:
                 seg = np.vstack((seg, newsegs))
 
-        nodes_ = vv2a(rs.getNodes())
-        nodeCTs_ = v2a(rs.getNodeCTs())
-        seg_ = seg2a(rs.getSegments())
+        nodes_ = np.array((list(map(np.array, rs.getNodes()))))
+        nodeCTs_ = np.array(rs.getNodeCTs())
+        seg_ = np.array((list(map(np.array, rs.getSegments()))), dtype = np.int64)
         self.assertEqual(nodes_.shape, nodes.shape, "incremental growth: node lists are not equal")
         self.assertEqual(nodeCTs_.shape, nodeCTs.shape, "incremental growth: node lists are not equal")
         self.assertEqual(seg_.shape, seg.shape, "incremental growth: node lists are not equal")
@@ -262,7 +264,4 @@ class TestRootSystem(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    test = TestRootSystem()
-    test.test_dynamics()
-    print("fin.")
     unittest.main()

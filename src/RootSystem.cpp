@@ -7,12 +7,10 @@
 namespace CPlantBox {
 
 /**
- * Sets up the xml reader Organism::readParameters
+ * todo doc me
  */
 RootSystem::RootSystem(): Organism()
-{
-
-}
+{ }
 
 /**
  * todo doc me
@@ -20,16 +18,15 @@ RootSystem::RootSystem(): Organism()
 std::shared_ptr<Organism> RootSystem::copy()
 {
     roots.clear(); // clear buffer
-    auto no = std::make_shared<RootSystem>(*this); // copy constructor
-    for (int i=0; i<baseOrgans.size(); i++) {
-        no->baseOrgans[i] = baseOrgans[i]->copy(shared_from_this());
-    }
+    auto nrs = std::make_shared<RootSystem>(*this); // copy constructor
+    nrs->seed = std::static_pointer_cast<Seed>(seed->copy(nrs));
+    baseOrgans = nrs->seed->copyBaseOrgans();
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
-        for (auto& otp : organParam[ot]) {
-            otp.second = otp.second->copy(shared_from_this());
+        for (auto& otp : nrs->organParam[ot]) {
+            otp.second = otp.second->copy(nrs);
         }
     }
-    return no;
+    return nrs;
 }
 
 /**
@@ -74,6 +71,7 @@ std::shared_ptr<SeedRandomParameter> RootSystem::getRootSystemParameter()
  */
 void RootSystem::reset()
 {
+    roots.clear(); // clear buffer
     baseOrgans.clear();
     simtime = 0;
     organId = -1;
@@ -102,7 +100,7 @@ void RootSystem::initializeReader()
  */
 void RootSystem::openFile(std::string name, std::string subdir)
 {
-	std::cout << "RootSystem::openFile is deprecated, use readParameter instead \n";
+    std::cout << "RootSystem::openFile is deprecated, use readParameter instead \n";
     std::ifstream fis;
     // open root parameter
     std::string rp_name = subdir;
@@ -142,7 +140,7 @@ void RootSystem::openFile(std::string name, std::string subdir)
  */
 int RootSystem::readParameters(std::istream& is)
 {
-	std::cout << "RootSystem::readParameters(std::istream) is deprecated, use readParameters(std::string filename) instead \n";
+    std::cout << "RootSystem::readParameters(std::istream) is deprecated, use readParameters(std::string filename) instead \n";
     int c = 0;
     while (is.good()) {
         auto p = std::make_shared<RootRandomParameter>(shared_from_this());
@@ -161,7 +159,7 @@ int RootSystem::readParameters(std::istream& is)
  */
 void RootSystem::writeParameters(std::ostream& os) const
 {
-	std::cout << "RootSystem::writeParameters is deprecated, use writeParameters(std::string filename) instead \n";
+    std::cout << "RootSystem::writeParameters is deprecated, use writeParameters(std::string filename) instead \n";
     for (auto& otp :organParam[Organism::ot_root]) {
         std::static_pointer_cast<RootRandomParameter>(otp.second)->write(os);
     }
@@ -459,7 +457,7 @@ std::string RootSystem::toString() const
 {
     std::stringstream str;
     str << "Rootsystem with "<< baseOrgans.size() <<" base roots, " << getNumberOfNodes()
-                            << " nodes, and a total of " << getNumberOfOrgans() << " roots, after " << getSimTime() << " days";
+                                << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
     return str.str();
 }
 

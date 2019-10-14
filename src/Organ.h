@@ -46,8 +46,9 @@ public:
 
     /* tree */
     void setParent(std::shared_ptr<Organ> p) { parent = p; } ///< sets parent organ
-    std::shared_ptr<Organ> getParent() const { return parent.lock(); } ///< return parent organ, equals nullptr if it has no parent
+    std::shared_ptr<Organ> getParent() const { return parent.lock(); } ///< return parent organ
     void setOrganism(std::shared_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
+    std::shared_ptr<Organism> getOrganism() const { return plant.lock(); } ///< return parent organism
     void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
 
     /* parameters */

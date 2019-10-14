@@ -69,7 +69,7 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
     r->param_ = std::make_shared<RootSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         r->children[i] = children[i]->copy(rs); // copy laterals
-        r->children[i]->setParent(shared_from_this());
+        r->children[i]->setParent(r);
     }
     return r;
 }
@@ -376,6 +376,8 @@ void Root::createSegments(double l, bool verbose)
  */
 double Root::getParameter(std::string name) const
 {
+    // specific
+    if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="nob") { return param()->nob; } // number of branches
@@ -385,6 +387,13 @@ double Root::getParameter(std::string name) const
     if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
     if (name=="rlt") { return param()->rlt; } // root life time [day]
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
+    // organ members
+    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
+    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
+    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
+    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
+    if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
+    // computed
     if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
         return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
@@ -397,13 +406,8 @@ double Root::getParameter(std::string name) const
     }
     if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // // root volume [cm^3]
     if (name=="surface") { return 2*param()->a*M_PI*getLength(); }
-    if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
-    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
-    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
-    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
-    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
-    if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
-    return Organ::getParameter(name);
+    // others
+    return Organ::getParameter(name); // pass to base class
 }
 
 /**

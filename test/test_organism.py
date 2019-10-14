@@ -4,7 +4,6 @@ sys.path.append("..")
 import plantbox as pb
 import matplotlib.pyplot as plt
 from rsml import *
-from rb_tools import *
 
 
 class TestOrganism(unittest.TestCase):
@@ -48,6 +47,8 @@ class TestOrganism(unittest.TestCase):
         self.assertEqual(len(o2), 3, "copy: unexpected number of organs")
         for i in range(0, len(o1)):
             self.assertIsNot(o1[i], o2[i], "copy: organ is not copied")
+        for i in range(1, len(o1)):
+            self.assertIsNot(o1[i].getParent(), o2[i].getParent(), "copy: organs have same parents")
         p1 = self.human1.getOrganRandomParameter(0)
         p2 = human2.getOrganRandomParameter(0)
         for i in range(0, len(p1)):
@@ -109,9 +110,9 @@ class TestOrganism(unittest.TestCase):
         """ tests ability to retrieve geometry """
         self.hand_example()
         self.add_nodes()
-        nodes = vv2a(self.human1.getNodes())
+        nodes = np.array((list(map(np.array, self.human1.getNodes()))))
         self.assertEqual(nodes.shape, (6, 3), "geometry: number of nodes unexpected")
-        segs = seg2a(self.human1.getSegments())
+        segs = np.array((list(map(np.array, self.human1.getSegments()))))
         self.assertEqual(np.sum(np.sum(segs.flat != np.array([[0, 1], [1, 2], [2, 3], [2, 4], [3, 5]]).flat)), 0, "geometry: segments ids are unexcpected")
 
     def test_parameter(self):
@@ -121,8 +122,8 @@ class TestOrganism(unittest.TestCase):
         simtime = 10;
         self.human1.simulate(simtime)
         organs = self.human1.getOrgans()
-        age = v2a(self.human1.getParameter("age"))
-        self.assertEqual(len(organs), age.shape[0] , "parameter: organ size unequal to parameter size")
+        age = self.human1.getParameter("age")
+        self.assertEqual(len(organs), len(age) , "parameter: organ size unequal to parameter size")
         self.assertEqual(age[2], -3 + simtime, "parameter: wrong ages")
 
     def test_rsml(self):

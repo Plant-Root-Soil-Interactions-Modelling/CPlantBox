@@ -94,7 +94,7 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p)
     s->param_ = std::make_shared<StemSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         s->children[i] = children[i]->copy(p); // copy laterals
-        s->children[i]->setParent(shared_from_this());
+        s->children[i]->setParent(s);
     }
     return s;
 }

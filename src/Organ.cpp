@@ -70,7 +70,7 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
     o->param_ = std::make_shared<OrganSpecificParameter>(*param_); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         o->children[i] = children[i]->copy(p); // copy lateral
-        o->children[i]->setParent(shared_from_this());
+        o->children[i]->setParent(o);
     }
     return o;
 }
@@ -237,13 +237,13 @@ double Organ::getParameter(std::string name) const {
     if (name=="one") { return 1; } // e.g. for counting the organs
     if (name=="id") { return getId(); }
     if (name=="organType") { return this->organType(); }
-    if (name=="subType") { return this->param_->subType; }
     if (name=="alive") { return isAlive(); }
     if (name=="active") { return isActive(); }
-    if (name=="nubmerOfChildren") { return children.size(); }
+    if (name=="numberOfChildren") { return children.size(); }
+    if (name=="subType") { return this->param_->subType; }
     // numberOfNodes
     // numberOfSegments
-    return this->getOrganRandomParameter()->getParameter(name); // ask the type parameter
+    return this->getOrganRandomParameter()->getParameter(name); // ask the random parameter
 }
 
 /**

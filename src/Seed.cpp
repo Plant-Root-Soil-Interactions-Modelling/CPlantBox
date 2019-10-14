@@ -20,7 +20,7 @@ std::shared_ptr<Organ> Seed::copy(std::shared_ptr<Organism> rs)
     s->param_ = std::make_shared<SeedSpecificParameter>(*param()); // copy parameters
     for (size_t i=0; i< children.size(); i++) {
         s->children[i] = children[i]->copy(rs); // copy laterals
-        s->children[i]->setParent(shared_from_this());
+        s->children[i]->setParent(s);
     }
     return s;
 }

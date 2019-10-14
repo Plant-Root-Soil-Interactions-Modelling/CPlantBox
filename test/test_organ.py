@@ -50,9 +50,13 @@ class TestOrgan(unittest.TestCase):
         hand.addChild(little_finger)
         # 3. deep copy (with a factory function)
         human2 = pb.Organism()
+        human2.setOrganRandomParameter(otp.copy(human2))
         hand2 = hand.copy(human2)
-        self.assertEqual(str(hand), str(hand2), "deep copy: the organs shold be equal")
+        self.assertEqual(str(hand), str(hand2), "deep copy: the organs should be equal")
         self.assertIsNot(hand.getParam(), hand2.getParam(), "deep copy: organs have same parameter set")
+        self.assertEqual(str(hand.getParam()), str(hand2.getParam()), "deep copy: the different parameter set values")
+        self.assertEqual(str(hand.getOrganRandomParameter()), str(hand2.getOrganRandomParameter()), "deep copy: the different random parameter set values")
+        self.assertIsNot(hand.getOrganism(), hand2.getOrganism(), "deep copy: organs have same parent organisms")
 
     def test_simulation(self):
         """ tests if the ages agree after a simulate call of 10 days"""

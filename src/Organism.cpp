@@ -47,11 +47,11 @@ std::shared_ptr<Organism> Organism::copy()
 {
     auto no = std::make_shared<Organism>(*this); // copy constructor
     for (int i=0; i<baseOrgans.size(); i++) {
-        no->baseOrgans[i] = baseOrgans[i]->copy(shared_from_this());
+        no->baseOrgans[i] = baseOrgans[i]->copy(no);
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
-        for (auto& otp : organParam[ot]) {
-            otp.second = otp.second->copy(shared_from_this());
+        for (auto& otp : no->organParam[ot]) {
+            otp.second = otp.second->copy(no);
         }
     }
     return no;

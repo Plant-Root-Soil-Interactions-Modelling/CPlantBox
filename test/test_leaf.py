@@ -8,8 +8,6 @@ sys.path.append("..")
 import plantbox as pb
 import numpy as np
 
-from rb_tools import *
-
 
 def leafAge(l, r, k):  # leaf age at a certain length
     return -np.log(1 - l / k) * k / r
@@ -35,8 +33,8 @@ class TestLeaf(unittest.TestCase):
         self.plant = pb.Organism()
         p0 = pb.Leaf(self.plant)
         p0.name, p0.type, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 1, 10, 20, (89. / 19.), 1, 0.5
-        p0.successor = a2i([2])  # to pb.std_int_double_()
-        p0.successorP = a2v([1.])  # pb.std_vector_double_()
+        p0.successor = [2]  # to pb.std_int_double_()
+        p0.successorP = [1.]  # pb.std_vector_double_()
         p1 = pb.LeafRandomParameter(self.plant)
         p1.name, p1.type, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
         self.p0, self.p1 = p0, p1  # Python will garbage collect them away, if not stored

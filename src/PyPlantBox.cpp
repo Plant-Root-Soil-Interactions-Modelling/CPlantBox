@@ -250,6 +250,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setParent",&Organ::setParent)
         .def("getParent",&Organ::getParent)
         .def("setOrganism",&Organ::setOrganism)
+        .def("getOrganism",&Organ::getOrganism)
         .def("addChild",&Organ::addChild)
 
         .def("getId",&Organ::getId)
