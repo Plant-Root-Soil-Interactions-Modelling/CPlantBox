@@ -1,5 +1,5 @@
 <stem name="lateral" subType="1">
-    <parameter name="gf" value="1" dev="0"/>
+    <parameter name="gf" value="1"/>
     <!--Growth function number [1]-->
     <parameter name="tropismT" value="1"/>
     <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
@@ -9,23 +9,23 @@
     <!--Initial RevRotation-->
     <parameter name="RotBeta" value="0.60000002"/>
     <!--RevRotation of the stem-->
-    <parameter name="a" value="1" dev="0"/>
+    <parameter name="a" value="1"/>
     <!--Stem radius [cm]-->
     <parameter name="dx" value="0.25"/>
     <!--Axial resolution [cm] (maximal segment size)-->
-    <parameter name="la" value="1.5" dev="0"/>
+    <parameter name="la" value="1.5"/>
     <!--Apical zone [cm]-->
-    <parameter name="lb" value="5.5" dev="0"/>
+    <parameter name="lb" value="5.5"/>
     <!--Basal zone [cm]-->
     <parameter name="ln" value="1.25" dev="0.12"/>
     <!--Inter-lateral distance [cm]-->
-    <parameter name="nob" value="-4.5999999" dev="0"/>
+    <parameter name="nob" value="-4.5999999"/>
     <!--Maximal number of laterals [1]-->
-    <parameter name="r" value="1" dev="0"/>
+    <parameter name="r" value="1"/>
     <!--Initial growth rate [cm day-1]-->
-    <parameter name="rlt" value="1e+09" dev="0"/>
+    <parameter name="rlt" value="1e+09"/>
     <!--Stem life time [day]-->
-    <parameter name="theta" value="1.22" dev="0"/>
+    <parameter name="theta" value="1.22"/>
     <!--Angle between stem and parent stem [rad]-->
     <parameter name="tropismN" value="1"/>
     <!--Number of trials of stem tropism-->
