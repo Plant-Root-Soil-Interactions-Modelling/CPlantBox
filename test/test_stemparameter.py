@@ -15,21 +15,13 @@ class TestStemParameter(unittest.TestCase):
         self.srp.ln = 1.25
         self.srp.lns = 0.12
         self.srp.nob = 8
-        #print(self.srp.las)
+        # print(self.srp.las)
 
     def add_successors(self):
         """ add successor sub types to the example"""
-        l = pb.std_vector_int_()
-        l.append(4)
-        l.append(5)
-        l.append(6)
-        self.srp.successor = l
-        l = pb.std_vector_double_()
-        l.append(0.4)
-        l.append(0.1)
-        l.append(0.5)
-        self.srp.successorP = l
-        #print(self.srp.successorP[0])
+        self.srp.successor = [4, 5, 6]
+        self.srp.successorP = [0.4, 0.1, 0.5]
+        # print(self.srp.successorP[0])
 
     def test_constructors(self):
         """ tests constructor and copy """
@@ -47,7 +39,7 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(otp2.theta, otp.theta, "copy: value unexpected")
         self.assertEqual(otp2.thetas, otp.thetas, "copy: value unexpected")
         self.assertEqual(otp2.gf, otp.gf, "copy: value unexpected")
-        #print(self.assertEqual(otp2.name, otp.name, "copy: value unexpected"))
+        # print(self.assertEqual(otp2.name, otp.name, "copy: value unexpected"))
 
     def test_parameter(self):
         """ tests getParameter() """
@@ -72,15 +64,15 @@ class TestStemParameter(unittest.TestCase):
         thetas = srp.getParameter("theta_dev")
         self.assertEqual(theta, 123, "getParameter: value unexpected")
         self.assertEqual(thetas, 456, "getParameter: value unexpected")
-        #print([theta,thetas])
+        # print([theta,thetas])
 
     def test_toString(self):
         self.srp = pb.StemRandomParameter(pb.Organism())
         self.add_successors()
         srp = self.srp  # rename
         srp.name = "the stem"
-        self.assertEqual(srp.__str__(False), "Name: the stem, organType: 3, subType, -1", "toString: value unexpected")
-        print(srp.name)
+        # print(srp.__str__(False))
+        self.assertEqual(srp.__str__(False), "name: the stem, organType: 3, subType: -1.", "toString: value unexpected")
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
@@ -89,11 +81,11 @@ class TestStemParameter(unittest.TestCase):
         otp = self.srp  # rename
         otp.name = "lateral"
         otp.subType = 1
-        otp.nob = (otp.k-otp.la-otp.lb)/otp.ln + 1;
+        otp.nob = (otp.k - otp.la - otp.lb) / otp.ln + 1;
         otp.writeXML("stem.xml")
         otp2 = pb.StemRandomParameter(self.plant)
         otp2.readXML("stem.xml")
-        otp2.nob = (otp2.k-otp2.la-otp2.lb)/otp2.ln + 1;
+        otp2.nob = (otp2.k - otp2.la - otp2.lb) / otp2.ln + 1;
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
         self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
@@ -112,11 +104,9 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(p.subType, -1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
         self.assertEqual(len(p.ln) + 1, self.srp.nob, "realize: internodal distances +1 should be  number of laterals")
-        print(p)
+        # print(p)
 
 
 if __name__ == '__main__':
     unittest.main()
-
-
 

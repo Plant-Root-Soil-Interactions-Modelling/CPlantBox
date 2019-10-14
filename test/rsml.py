@@ -115,7 +115,7 @@ def plot_segs(nodes, segs):
 
 
 if __name__ == '__main__':
-    polylines, properties, functions = read_rsml("RootSystem.rsml")
+    polylines, properties, functions = read_rsml("organism.rsml")
     print("Properties:")
     for key, v in properties.items() :
         print("\t", key, len(properties[key]))
