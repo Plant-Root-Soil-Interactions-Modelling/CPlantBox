@@ -7,7 +7,7 @@ import math
 
 rs = pb.RootSystem()
 
-# Root type parameter
+# Root random parameter
 p0 = pb.RootRandomParameter(rs)  # with default values,
 p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 
@@ -50,6 +50,4 @@ rs.setRootSystemParameter(rsp)
 rs.initialize()
 rs.simulate(40, False)
 
-rs.write("../results/example_3c.vtp")
-
-print("done.")
+rs.write("../results/example_4a.vtp")

@@ -39,10 +39,8 @@ for _ in range(0, N):
     rs.simulate(dt)
 
 # Export results (as vtp)
-rs.write("../results/example_4a.vtp")
+rs.write("../results/example_5a.vtp")
 
 # Export geometry of static soil
 rs.setGeometry(layer)  # just for vizualisation
-rs.write("../results/example_4a.py")
-
-print("done.")
+rs.write("../results/example_5a.py")

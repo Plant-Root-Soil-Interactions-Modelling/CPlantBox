@@ -86,8 +86,6 @@ axes[1].set_ylabel('Mean tip radial distance (cm)')
 axes[0].plot(theta0_, depth_)
 axes[1].plot(theta0_, rad_dist_)
 fig.subplots_adjust()
-plt.savefig("results/example_3d.png")
+plt.savefig("results/example_4b.png")
 plt.show()
-
-print("done.")
 

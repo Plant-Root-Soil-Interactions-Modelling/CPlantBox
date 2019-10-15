@@ -58,6 +58,5 @@ for _ in range(0, N):
     rs.simulate(dt)
 
 # Export results (as vtp)
-rs.write("../results/example_4b.vtp")
+rs.write("../results/example_5b.vtp")
 
-print("done.")

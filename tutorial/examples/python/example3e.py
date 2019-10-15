@@ -1,9 +1,7 @@
-"""analysis of results using signed distance functions"""
+""" analysis of nodes and segmented from experiments """
 import sys
 sys.path.append("../../..")
 import plantbox as pb
-import numpy as np
-import matplotlib.pyplot as plt
 
 nodes = [ [0, 1, 0], [0, 1, -1], [0, 1, -2], [0, 1, -3], ]
 segs = [ [0, 1], [1, 2], [2, 3] ]
@@ -16,7 +14,5 @@ ana = pb.SegmentAnalyser(nodes, segs, cts, radii)
 
 print("length", ana.getSummed("length"))
 
-ana.write("test.vtp", ["radius"] ) # working 
-# ana.write("test.vtp") # not working, but with a meaningful exception 
-
-print("done.")
+ana.write("test.vtp", ["radius"])  # working
+# ana.write("test.vtp") # not working, but with a meaningful exception

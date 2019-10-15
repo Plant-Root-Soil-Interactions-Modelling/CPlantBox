@@ -84,8 +84,6 @@ print('Mean insertion angle is ', rm_theta / math.pi * 180, 'degrees')
 print()
 
 # write results
-rs.write("results/example_5a.py")  # compartment geometry
-rs.write("results/example_5a.vtp")  # root system
-
-print("done.")
+rs.write("results/example_6a.py")  # compartment geometry
+rs.write("results/example_6a.vtp")  # root system
 

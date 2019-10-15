@@ -4,11 +4,10 @@ with 4x4 subfigures, different axial resolutions, should lead
 to similar results
 """
 import sys
-sys.path.append("..")
+sys.path.append("../../..")
 import plantbox as pb
 import matplotlib.pyplot as plt
-from rb_tools import *
-from rsml import *
+# from rsml import *
 from cmath import pi
 
 dx = 1

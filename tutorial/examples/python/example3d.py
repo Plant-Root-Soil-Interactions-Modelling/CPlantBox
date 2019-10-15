@@ -61,7 +61,5 @@ axes[3].set_title('Soil core, lateral roots (120 days)')
 axes[3].plot(rl_, z_)
 
 fig.subplots_adjust()
-plt.savefig("results/example_3b.png")
+plt.savefig("results/example_3d.png")
 plt.show()
-
-print("done.")
