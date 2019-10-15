@@ -47,7 +47,7 @@ class TestRootSystem(unittest.TestCase):
 
     def rs_length_test(self, dt, l, subDt):
         """ simulates a root system and checks basal lengths against its analytic lengths @param l at times @param t"""
-        self.rs.initialize()
+        self.rs.initialize(False)
         nl = []
         for t in dt:
             for i in range(0, subDt):
@@ -64,7 +64,7 @@ class TestRootSystem(unittest.TestCase):
 
     def rs_ct_test(self, dt, ct, subDt):
         """ simulates a root system and checks creation times analytic @param ct at times @param t"""
-        self.rs.initialize()
+        self.rs.initialize(False)
         nl = []
         for t in dt:
             for i in range(0, subDt):
@@ -143,7 +143,7 @@ class TestRootSystem(unittest.TestCase):
         rs = pb.RootSystem()  # the original
         rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
         rs.setSeed(seed)
-        rs.initialize()
+        rs.initialize(False)
         rs2 = rs.copy()  # copy root system
         n1 = rs.rand()
         self.assertIsNot(rs2, rs, "copy: not a copy")
@@ -156,7 +156,7 @@ class TestRootSystem(unittest.TestCase):
         rs3 = pb.RootSystem()  # rebuild same
         rs3.readParameters("../modelparameter/rootsystem/" + name + ".xml")
         rs3.setSeed(seed)
-        rs3.initialize()
+        rs3.initialize(False)
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
         rs3.simulate(10)
         self.assertEqual(rs3.rand(), n2, "copy: simulation is not deterministic")
@@ -166,7 +166,7 @@ class TestRootSystem(unittest.TestCase):
         name = "Brassica_napus_a_Leitner_2010"
         rs = pb.RootSystem()
         rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
-        rs.initialize()
+        rs.initialize(False)
         rs.simulate(7)  # days young
         polylines = rs.getPolylines()  # Use polyline representation of the roots
         bases = np.zeros((len(polylines), 3))
@@ -180,8 +180,8 @@ class TestRootSystem(unittest.TestCase):
         uneq = np.sum(nodes[baseI, :] != bases) + np.sum(nodes[tipI, :] != tips)
         self.assertEqual(uneq, 0, "polylines: tips or base nodes do not agree")
 
-    def test_root_type_parameters(self):
-        """ root type parameters xml read and write """
+    def test_root_random_parameters(self):
+        """ root random parameters xml read and write """
         self.rs_example_rtp()
 #         print(self.p0.__str__(False))
 #         print(self.p1.__str__(False))
@@ -200,7 +200,7 @@ class TestRootSystem(unittest.TestCase):
         name = "Anagallis_femina_Leitner_2010"  # "maize_p2"  # "Anagallis_femina_Leitner_2010"  # "Zea_mays_4_Leitner_2014"
         rs = pb.RootSystem()
         rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
-        rs.initialize()
+        rs.initialize(False)
         simtime = 60  # days
         dt = 1
         N = round(simtime / dt)
@@ -250,7 +250,7 @@ class TestRootSystem(unittest.TestCase):
         name = "Anagallis_femina_Leitner_2010"
         rs = pb.RootSystem()
         rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
-        rs.initialize()
+        rs.initialize(False)
         simtime = 60
         rs.simulate(simtime)
         rs.writeRSML(name + ".rsml")
@@ -264,4 +264,6 @@ class TestRootSystem(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    # MANY tests missing !!!
+
     unittest.main()

@@ -25,7 +25,7 @@ class TestRoot(unittest.TestCase):
         return srp
 
     def test_constructors(self):
-        """ tests two kinds of constructors and copy"""
+        """ tests two kinds of constructors and copy """
         srp = self.get_srp()
         # print(srp)
         # 1. constructor from scratch
@@ -42,7 +42,7 @@ class TestRoot(unittest.TestCase):
         self.assertEqual(str(seed.param()), str(seed3.param()), "deep copy: organs have different parameter values")  # type RootSpecificParameter
 
     def test_initialize(self):
-        """ test initialization (! most important)"""
+        """ test initialization (! most important) """
         srp = self.get_srp()
         seed = pb.Seed(self.plant)
         # print(seed)
@@ -58,7 +58,7 @@ class TestRoot(unittest.TestCase):
         self.plant.setOrganRandomParameter(tap_rp)
         self.plant.setOrganRandomParameter(basal_rp)
         self.plant.setOrganRandomParameter(shootborne_rp)
-        seed.initialize()  # A CRootBox initializations (now StemRandomParameter set)
+        seed.initialize(False)  # A CRootBox initializations (now StemRandomParameter set)
 
         # print("CRootBox initialization (including shootborne)")
         organs = seed.baseOrgans()
@@ -82,7 +82,7 @@ class TestRoot(unittest.TestCase):
 
         self.plant.setOrganRandomParameter(stem_rp)
         self.plant.setOrganRandomParameter(tiller_rp)
-        seed.initialize()  # A CPlantBox initializations (now StemRandomParameter set)
+        seed.initialize(False)  # A CPlantBox initializations (now StemRandomParameter set)
         organs = seed.baseOrgans()
 
         # print("CPlantBox initialization (no shootborne, since they emerge from the stem)")
@@ -100,7 +100,7 @@ class TestRoot(unittest.TestCase):
             self.assertEqual(ot_[i], ot[i], "tap root produced wrong organ type")
 
     def test_advanced_initialize(self):
-        """ tests if factory functions can be overwritten """
+        """ tests if factory functions can be overwritten in Pyhton """
         # todo
         pass
 
