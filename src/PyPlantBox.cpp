@@ -289,7 +289,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
 
         .def("addOrgan", &Organism::addOrgan)
-        .def("initialize", &Organism::initialize)
+        .def("initialize", &Organism::initialize, py::arg("verbose") = true)
         .def("simulate", &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) //default
         .def("getSimTime", &Organism::getSimTime)
 
@@ -651,7 +651,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Seed, Organ, std::shared_ptr<Seed>>(m, "Seed")
         .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, bool, int>())
         .def(py::init<std::shared_ptr<Organism>>())
-        .def("initialize", &Seed::initialize)
+        .def("initialize", &Seed::initialize, py::arg("verbose") = true)
         .def("param", &Seed::param)
         .def("getNumberOfRootCrowns", &Seed::getNumberOfRootCrowns)
         .def("baseOrgans", &Seed::baseOrgans)
@@ -706,8 +706,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setGeometry", &RootSystem::setGeometry)
         .def("setSoil", &RootSystem::setSoil)
         .def("reset", &RootSystem::reset)
-        .def("initialize", (void (RootSystem::*)()) &RootSystem::initialize)
-        .def("initialize", (void (RootSystem::*)(int,int)) &RootSystem::initialize)
+        .def("initialize", (void (RootSystem::*)(bool)) &RootSystem::initialize, py::arg("verbose") = true)
+        .def("initialize", (void (RootSystem::*)(int, int, bool)) &RootSystem::initialize, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
         .def("setTropism", &RootSystem::setTropism)
         .def("simulate",(void (RootSystem::*)(double,bool)) &RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
         .def("simulate",(void (RootSystem::*)()) &RootSystem::simulate)

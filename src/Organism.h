@@ -6,6 +6,7 @@
 
 #include "external/tinyxml2/tinyxml2.h"
 
+#include <chrono>
 #include <random>
 #include <map>
 #include <array>
@@ -39,7 +40,9 @@ public:
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
-    Organism() { }; ///< empty constructor
+    Organism() {
+        gen = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+    }; ///< constructor
     virtual ~Organism() { }; ///< destructor
 
     virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism
@@ -51,7 +54,7 @@ public:
 
     /* initialization and simulation */
     void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership
-    virtual void initialize(); ///< overwrite for initialization jobs
+    virtual void initialize(bool verbose = true); ///< overwrite for initialization jobs
     virtual void simulate(double dt, bool verbose = false); ///< calls the base organs simulate methods
     double getSimTime() const { return simtime; } ///< returns the current simulation time
 

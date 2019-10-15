@@ -67,13 +67,13 @@ void Plant::reset()
  *
  * Call this method before simulation and after setting geometry, plant and root parameters
  */
-void Plant::initialize()
+void Plant::initialize(bool verbose)
 {
     reset(); // just in case
 
     // create seed
     seed = std::make_shared<Seed>(shared_from_this());
-    seed->initialize();
+    seed->initialize(verbose);
 
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
 

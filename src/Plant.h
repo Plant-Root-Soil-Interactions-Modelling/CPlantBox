@@ -49,7 +49,7 @@ public:
   /* Simulation */
   void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before Plant::initialize())
   void reset(); ///< resets the plant class, keeps the organ type parameters
-  void initialize() override; ///< creates the base roots, call before simulation and after setting the plant and root parameters
+  void initialize(bool verbose = true) override; ///< creates the base roots, call before simulation and after setting the plant and root parameters
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
 

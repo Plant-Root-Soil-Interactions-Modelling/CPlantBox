@@ -174,7 +174,7 @@ void RootSystem::writeParameters(std::ostream& os) const
  * @parm basaltype      the type of the basal roots (default = 4)
  * @parm basaltype      the type of the shootborne roots (default = 5)
  */
-void RootSystem::initialize(int basaltype, int shootbornetype)
+void RootSystem::initialize(int basaltype, int shootbornetype, bool verbose)
 {
     reset(); // just in case
 
@@ -183,7 +183,7 @@ void RootSystem::initialize(int basaltype, int shootbornetype)
 
     // create seed
     seed = std::make_shared<Seed>(shared_from_this());
-    seed->initialize();
+    seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
     // std::cout << "RootSystem::initialize:\n" <<  seedParam.toString() ;
     baseOrgans = seed->copyBaseOrgans();

@@ -35,8 +35,7 @@ std::string Organism::organTypeName(int ot)
     try {
         return organTypeNames.at(ot);
     } catch (const std::exception& e) {
-        std::cout << "Organism::organTypeName: unknown organ type number " << ot << "\n" << std::flush;
-        throw(e); // rethrow
+        throw std::invalid_argument("Organism::organTypeName: unknown organ type number "+ std::to_string(ot));
     }
 }
 
@@ -88,9 +87,8 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
         //                std::cout << "\n" << std::flush;
         return organParam[ot].at(subType);
     } catch(...) { // const std::out_of_range& oor
-        std::cout << "Organism::getOrganTypeParameter: OrganRandomParameter for " << Organism::organTypeName(ot)
-        <<", of sub type " << subType << " was not set. \n" << std::flush;
-        throw;
+        throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for "+ Organism::organTypeName(ot) + ", of sub type " +
+            std::to_string(subType) + " was not set");
     }
 }
 
@@ -113,7 +111,7 @@ void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
  *
  * e.g. initialization of GrowthFunctions, TropismFunctions, set up base Organs
  */
-void Organism::initialize()
+void Organism::initialize(bool verbose)
 { }
 
 /**

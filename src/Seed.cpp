@@ -28,16 +28,18 @@ std::shared_ptr<Organ> Seed::copy(std::shared_ptr<Organism> rs)
 /**
  * todo docme!
  */
-void Seed::initialize()
+void Seed::initialize(bool verbose)
 {
     auto p = plant.lock();
     auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
     bool plantBox = stemP.size()>1;
-    //    if (plantBox) {
-    //        std::cout << "Seed::initialize: Plant \n";
-    //    } else {
-    //        std::cout << "Seed::initialize: RootSystem \n";
-    //    }
+    if (verbose) {
+        if (plantBox) {
+            std::cout << "Seed::initialize: Plant \n";
+        } else {
+            std::cout << "Seed::initialize: RootSystem \n";
+        }
+    }
 
     /*
      * Create roots
@@ -60,7 +62,9 @@ void Seed::initialize()
         try {
             p->getOrganRandomParameter(Organism::ot_root, basalType); // if the type is not defined an exception is thrown
         } catch (...) {
-            std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
+            if (verbose) {
+                std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
+            }
             auto brtp = p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
             brtp->subType = basalType;
             p->setOrganRandomParameter(brtp);
@@ -88,7 +92,9 @@ void Seed::initialize()
             try {
                 p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
             } catch (...) {
-                std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
+                if (verbose) {
+                    std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
+                }
                 auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
                 srtp->subType = shootborneType;
                 p->setOrganRandomParameter(srtp);
@@ -132,7 +138,9 @@ void Seed::initialize()
             try {
                 p->getOrganRandomParameter(Organism::ot_stem, tillerType);
             } catch (...) {
-                std::cout << "Tiller stem type #" << tillerType << " was not defined, using main stem parameters instead, ";
+                if (verbose) {
+                    std::cout << "Tiller stem type #" << tillerType << " was not defined, using main stem parameters instead, ";
+                }
                 auto tillParam = p->getOrganRandomParameter(Organism::ot_stem, 1)->copy(plant.lock());
                 tillParam->subType = basalType;
                 p->setOrganRandomParameter(tillParam);
