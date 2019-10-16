@@ -36,12 +36,15 @@ public:
 
     enum OrganTypes { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 }; ///< coarse organ classification
     static std::vector<std::string> organTypeNames; ///< names of the organ types
+    static int instances; // number of instances
 
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
     Organism() {
-        gen = std::mt19937(std::chrono::system_clock::now().time_since_epoch().count());
+    	instances++;
+    	auto seed = std::chrono::system_clock::now().time_since_epoch().count()+instances;
+        gen = std::mt19937(seed);
     }; ///< constructor
     virtual ~Organism() { }; ///< destructor
 

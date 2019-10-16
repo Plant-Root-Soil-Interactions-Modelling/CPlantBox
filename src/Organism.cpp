@@ -12,19 +12,22 @@
 namespace CPlantBox {
 
 std::vector<std::string> Organism::organTypeNames = { "organ", "seed", "root", "stem", "leaf" };
+int Organism::instances = 0; // number of instances
+
+
 
 /**
  * @return the organ type number of an organ type name @param name
  */
 int Organism::organTypeNumber(std::string name)
 {
-    for (int ot=0; ot < organTypeNames.size(); ot++ ) {
-        if (name.compare(organTypeNames.at(ot))==0) {
-            return ot;
-        }
-    }
-    std::cout << "Organism::organTypeNumber: unknown organ type name " << name << "\n" << std::flush;
-    return -1;
+	for (int ot=0; ot < organTypeNames.size(); ot++ ) {
+		if (name.compare(organTypeNames.at(ot))==0) {
+			return ot;
+		}
+	}
+	std::cout << "Organism::organTypeNumber: unknown organ type name " << name << "\n" << std::flush;
+	return -1;
 }
 
 /**
@@ -32,11 +35,11 @@ int Organism::organTypeNumber(std::string name)
  */
 std::string Organism::organTypeName(int ot)
 {
-    try {
-        return organTypeNames.at(ot);
-    } catch (const std::exception& e) {
-        throw std::invalid_argument("Organism::organTypeName: unknown organ type number "+ std::to_string(ot));
-    }
+	try {
+		return organTypeNames.at(ot);
+	} catch (const std::exception& e) {
+		throw std::invalid_argument("Organism::organTypeName: unknown organ type number "+ std::to_string(ot));
+	}
 }
 
 /**
@@ -44,16 +47,16 @@ std::string Organism::organTypeName(int ot)
  */
 std::shared_ptr<Organism> Organism::copy()
 {
-    auto no = std::make_shared<Organism>(*this); // copy constructor
-    for (int i=0; i<baseOrgans.size(); i++) {
-        no->baseOrgans[i] = baseOrgans[i]->copy(no);
-    }
-    for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
-        for (auto& otp : no->organParam[ot]) {
-            otp.second = otp.second->copy(no);
-        }
-    }
-    return no;
+	auto no = std::make_shared<Organism>(*this); // copy constructor
+	for (int i=0; i<baseOrgans.size(); i++) {
+		no->baseOrgans[i] = baseOrgans[i]->copy(no);
+	}
+	for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
+		for (auto& otp : no->organParam[ot]) {
+			otp.second = otp.second->copy(no);
+		}
+	}
+	return no;
 }
 
 /**
@@ -63,11 +66,11 @@ std::shared_ptr<Organism> Organism::copy()
  */
 std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParameter(int ot) const
 {
-    auto  otps = std::vector<std::shared_ptr<OrganRandomParameter>>(0);
-    for (auto& otp : organParam[ot]) {
-        otps.push_back(otp.second);
-    }
-    return otps;
+	auto  otps = std::vector<std::shared_ptr<OrganRandomParameter>>(0);
+	for (auto& otp : organParam[ot]) {
+		otps.push_back(otp.second);
+	}
+	return otps;
 }
 
 /**
@@ -79,17 +82,17 @@ std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParam
  */
 std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, int subType) const
 {
-    try {
-        //                std::cout << "reading organ type " << ot << " sub type " << subtype <<": ";
-        //                for (auto& p : organParam[ot]) {
-        //                    std::cout << p.first;
-        //                }
-        //                std::cout << "\n" << std::flush;
-        return organParam[ot].at(subType);
-    } catch(...) { // const std::out_of_range& oor
-        throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for "+ Organism::organTypeName(ot) + ", of sub type " +
-            std::to_string(subType) + " was not set");
-    }
+	try {
+		//                std::cout << "reading organ type " << ot << " sub type " << subtype <<": ";
+		//                for (auto& p : organParam[ot]) {
+		//                    std::cout << p.first;
+		//                }
+		//                std::cout << "\n" << std::flush;
+		return organParam[ot].at(subType);
+	} catch(...) { // const std::out_of_range& oor
+		throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for "+ Organism::organTypeName(ot) + ", of sub type " +
+				std::to_string(subType) + " was not set");
+	}
 }
 
 /**
@@ -100,9 +103,9 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
  */
 void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 {
-    assert(p->plant.lock().get()==this && "OrganTypeParameter::plant should be this organism");
-    organParam[p->organType][p->subType] = p;
-    // std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << "\n";
+	assert(p->plant.lock().get()==this && "OrganTypeParameter::plant should be this organism");
+	organParam[p->organType][p->subType] = p;
+	// std::cout << "setting organ type " << p->organType << ", sub type " << p->subType << ", name "<< p->name << "\n";
 }
 
 /**
@@ -122,15 +125,15 @@ void Organism::initialize(bool verbose)
  */
 void Organism::simulate(double dt, bool verbose)
 {
-    if (verbose) {
-        std::cout << "Organism::simulate: from "<< simtime << " to " << simtime+dt << " days" << std::endl;
-    }
-    oldNumberOfNodes = getNumberOfNodes();
-    oldNumberOfOrgans = getNumberOfOrgans();
-    for (const auto& r : baseOrgans) {
-        r->simulate(dt, verbose);
-    }
-    simtime+=dt;
+	if (verbose) {
+		std::cout << "Organism::simulate: from "<< simtime << " to " << simtime+dt << " days" << std::endl;
+	}
+	oldNumberOfNodes = getNumberOfNodes();
+	oldNumberOfOrgans = getNumberOfOrgans();
+	for (const auto& r : baseOrgans) {
+		r->simulate(dt, verbose);
+	}
+	simtime+=dt;
 }
 
 /**
@@ -142,12 +145,12 @@ void Organism::simulate(double dt, bool verbose)
  */
 std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot) const
 {
-    auto organs = std::vector<std::shared_ptr<Organ>>(0);
-    organs.reserve(getNumberOfOrgans()); // just for speed up
-    for (const auto& o : this->baseOrgans) {
-        o->getOrgans(ot, organs);
-    }
-    return organs;
+	auto organs = std::vector<std::shared_ptr<Organ>>(0);
+	organs.reserve(getNumberOfOrgans()); // just for speed up
+	for (const auto& o : this->baseOrgans) {
+		o->getOrgans(ot, organs);
+	}
+	return organs;
 }
 
 /**
@@ -163,14 +166,14 @@ std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot) const
  */
 std::vector<double> Organism::getParameter(std::string name, int ot, std::vector<std::shared_ptr<Organ>> organs) const
 {
-    if (organs.empty()) {
-        organs = getOrgans(ot);
-    }
-    std::vector<double> p = std::vector<double>(organs.size());
-    for (int i=0; i<organs.size(); i++) {
-        p[i] = organs[i]->getParameter(name);
-    }
-    return p;
+	if (organs.empty()) {
+		organs = getOrgans(ot);
+	}
+	std::vector<double> p = std::vector<double>(organs.size());
+	for (int i=0; i<organs.size(); i++) {
+		p[i] = organs[i]->getParameter(name);
+	}
+	return p;
 }
 
 /**
@@ -182,8 +185,8 @@ std::vector<double> Organism::getParameter(std::string name, int ot, std::vector
  */
 double Organism::getSummed(std::string name, int ot) const
 {
-    auto v = getParameter(name, ot);
-    return std::accumulate(v.begin(), v.end(), 0.0);
+	auto v = getParameter(name, ot);
+	return std::accumulate(v.begin(), v.end(), 0.0);
 }
 
 /**
@@ -194,12 +197,12 @@ double Organism::getSummed(std::string name, int ot) const
  */
 int Organism::getNumberOfSegments(int ot) const
 {
-    int s=0;
-    auto organs = getOrgans(ot);
-    for (const auto& o : organs) {
-        s += o->getNumberOfSegments();
-    }
-    return s;
+	int s=0;
+	auto organs = getOrgans(ot);
+	for (const auto& o : organs) {
+		s += o->getNumberOfSegments();
+	}
+	return s;
 }
 
 /**
@@ -210,16 +213,16 @@ int Organism::getNumberOfSegments(int ot) const
  */
 std::vector<std::vector<Vector3d>> Organism::getPolylines(int ot) const
 {
-    auto organs = getOrgans(ot);
-    std::vector<std::vector<Vector3d>> nodes = std::vector<std::vector<Vector3d>>(organs.size());
-    for (size_t j=0; j<organs.size(); j++) {
-        std::vector<Vector3d>  n = std::vector<Vector3d>(organs[j]->getNumberOfNodes());
-        for (size_t i=0; i<organs[j]->getNumberOfNodes(); i++) { // loop over all nodes of all organs
-            n.at(i) = organs[j]->getNode(i);
-        }
-        nodes[j] = n;
-    }
-    return nodes;
+	auto organs = getOrgans(ot);
+	std::vector<std::vector<Vector3d>> nodes = std::vector<std::vector<Vector3d>>(organs.size());
+	for (size_t j=0; j<organs.size(); j++) {
+		std::vector<Vector3d>  n = std::vector<Vector3d>(organs[j]->getNumberOfNodes());
+		for (size_t i=0; i<organs[j]->getNumberOfNodes(); i++) { // loop over all nodes of all organs
+			n.at(i) = organs[j]->getNode(i);
+		}
+		nodes[j] = n;
+	}
+	return nodes;
 }
 
 /**
@@ -230,16 +233,16 @@ std::vector<std::vector<Vector3d>> Organism::getPolylines(int ot) const
  */
 std::vector<std::vector<double>> Organism::getPolylineCTs(int ot) const
 {
-    auto organs = getOrgans(ot);
-    std::vector<std::vector<double>> nodes = std::vector<std::vector<double>>(organs.size());
-    for (size_t j=0; j<organs.size(); j++) {
-        std::vector<double>  nct = std::vector<double>(organs[j]->getNumberOfNodes());
-        for (size_t i=0; i<organs[j]->getNumberOfNodes(); i++) { // loop over all nodes of all organs
-            nct.at(i) = organs[j]->getNodeCT(i);
-        }
-        nodes[j] = nct;
-    }
-    return nodes;
+	auto organs = getOrgans(ot);
+	std::vector<std::vector<double>> nodes = std::vector<std::vector<double>>(organs.size());
+	for (size_t j=0; j<organs.size(); j++) {
+		std::vector<double>  nct = std::vector<double>(organs[j]->getNumberOfNodes());
+		for (size_t i=0; i<organs[j]->getNumberOfNodes(); i++) { // loop over all nodes of all organs
+			nct.at(i) = organs[j]->getNodeCT(i);
+		}
+		nodes[j] = nct;
+	}
+	return nodes;
 }
 
 /**
@@ -250,17 +253,17 @@ std::vector<std::vector<double>> Organism::getPolylineCTs(int ot) const
  */
 std::vector<Vector3d> Organism::getNodes() const
 {
-    auto organs = getOrgans();
-    std::vector<Vector3d> nv = std::vector<Vector3d>(getNumberOfNodes()); // reserve big enough vector
-    for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
-        nv.at(o->getNodeId(0)) = o->getNode(0);
-    }
-    for (const auto& o : organs) { // copy all organ nodes
-        for (size_t i = 1; i<o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
-            nv.at(o->getNodeId(i)) = o->getNode(i);
-        }
-    }
-    return nv;
+	auto organs = getOrgans();
+	std::vector<Vector3d> nv = std::vector<Vector3d>(getNumberOfNodes()); // reserve big enough vector
+	for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
+		nv.at(o->getNodeId(0)) = o->getNode(0);
+	}
+	for (const auto& o : organs) { // copy all organ nodes
+		for (size_t i = 1; i<o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
+			nv.at(o->getNodeId(i)) = o->getNode(i);
+		}
+	}
+	return nv;
 }
 
 /**
@@ -274,18 +277,18 @@ std::vector<Vector3d> Organism::getNodes() const
  */
 std::vector<double> Organism::getNodeCTs() const
 {
-    auto organs = getOrgans();
-    std::vector<double> cts = std::vector<double>(getNumberOfNodes()); // reserve big enough vector
-    for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
-        cts.at(o->getNodeId(0)) = o->getNodeCT(0);
-    }
-    for (const auto& o : organs) { // copy all organ creation times
-        for (size_t i=1; i<o->getNumberOfNodes(); i++) {
-            // we start at 1 because we don't copy the emergence time of the lateral root
-            cts.at(o->getNodeId(i)) = o->getNodeCT(i);
-        }
-    }
-    return cts;
+	auto organs = getOrgans();
+	std::vector<double> cts = std::vector<double>(getNumberOfNodes()); // reserve big enough vector
+	for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
+		cts.at(o->getNodeId(0)) = o->getNodeCT(0);
+	}
+	for (const auto& o : organs) { // copy all organ creation times
+		for (size_t i=1; i<o->getNumberOfNodes(); i++) {
+			// we start at 1 because we don't copy the emergence time of the lateral root
+			cts.at(o->getNodeId(i)) = o->getNodeCT(i);
+		}
+	}
+	return cts;
 }
 
 /**
@@ -298,14 +301,14 @@ std::vector<double> Organism::getNodeCTs() const
  */
 std::vector<Vector2i> Organism::getSegments(int ot) const
 {
-    auto organs = getOrgans(ot);
-    std::vector<Vector2i> segs = std::vector<Vector2i>(0);
-    segs.reserve(this->getNumberOfSegments(ot)); // for speed up
-    for (const auto& o : organs) {
-        auto s = o->getSegments();
-        segs.insert(segs.end(), s.begin(), s.end()); // append s; todo check if it works..
-    }
-    return segs;
+	auto organs = getOrgans(ot);
+	std::vector<Vector2i> segs = std::vector<Vector2i>(0);
+	segs.reserve(this->getNumberOfSegments(ot)); // for speed up
+	for (const auto& o : organs) {
+		auto s = o->getSegments();
+		segs.insert(segs.end(), s.begin(), s.end()); // append s; todo check if it works..
+	}
+	return segs;
 }
 
 /**
@@ -317,13 +320,13 @@ std::vector<Vector2i> Organism::getSegments(int ot) const
  */
 std::vector<double> Organism::getSegmentCTs(int ot) const
 {
-    auto nodeCT = getNodeCTs(); // of all nodes (otherwise indices are tricky)
-    auto segs = getSegments(ot);
-    std::vector<double> cts = std::vector<double>(segs.size());
-    for (int i=0; i<cts.size(); i++) {
-        cts[i] = nodeCT[segs[i].y]; // segment creation time is the node creation time of the second node
-    }
-    return cts;
+	auto nodeCT = getNodeCTs(); // of all nodes (otherwise indices are tricky)
+	auto segs = getSegments(ot);
+	std::vector<double> cts = std::vector<double>(segs.size());
+	for (int i=0; i<cts.size(); i++) {
+		cts[i] = nodeCT[segs[i].y]; // segment creation time is the node creation time of the second node
+	}
+	return cts;
 }
 
 /**
@@ -334,16 +337,16 @@ std::vector<double> Organism::getSegmentCTs(int ot) const
  */
 std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
 {
-    auto organs = getOrgans(ot);
-    auto segs = std::vector<std::shared_ptr<Organ>>(0);
-    segs.reserve(this->getNumberOfSegments(ot)); // for speed up
-    for (const auto& o : organs) {
-        auto s = o->getSegments();
-        for (int i=0; i<s.size(); i++) {
-            segs.push_back(o);
-        }
-    }
-    return segs;
+	auto organs = getOrgans(ot);
+	auto segs = std::vector<std::shared_ptr<Organ>>(0);
+	segs.reserve(this->getNumberOfSegments(ot)); // for speed up
+	for (const auto& o : organs) {
+		auto s = o->getSegments();
+		for (int i=0; i<s.size(); i++) {
+			segs.push_back(o);
+		}
+	}
+	return segs;
 }
 
 /**
@@ -353,14 +356,14 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
  */
 std::vector<int> Organism::getUpdatedNodeIndices() const
 {
-    auto organs = this->getOrgans();
-    std::vector<int> ni = std::vector<int>(0);
-    for (const auto& o : organs) {
-        if (o->hasMoved()) {
-            ni.push_back(o->getNodeId(o->getOldNumberOfNodes()-1));
-        }
-    }
-    return ni;
+	auto organs = this->getOrgans();
+	std::vector<int> ni = std::vector<int>(0);
+	for (const auto& o : organs) {
+		if (o->hasMoved()) {
+			ni.push_back(o->getNodeId(o->getOldNumberOfNodes()-1));
+		}
+	}
+	return ni;
 }
 
 /**
@@ -369,14 +372,14 @@ std::vector<int> Organism::getUpdatedNodeIndices() const
  */
 std::vector<Vector3d> Organism::getUpdatedNodes() const
 {
-    auto organs = this->getOrgans();
-    std::vector<Vector3d> nv = std::vector<Vector3d>(0);
-    for (const auto& o : organs) {
-        if (o->hasMoved()) {
-            nv.push_back(o->getNode(o->getOldNumberOfNodes()-1));
-        }
-    }
-    return nv;
+	auto organs = this->getOrgans();
+	std::vector<Vector3d> nv = std::vector<Vector3d>(0);
+	for (const auto& o : organs) {
+		if (o->hasMoved()) {
+			nv.push_back(o->getNode(o->getOldNumberOfNodes()-1));
+		}
+	}
+	return nv;
 }
 
 /**
@@ -385,14 +388,14 @@ std::vector<Vector3d> Organism::getUpdatedNodes() const
  */
 std::vector<double> Organism::getUpdatedNodeCTs() const
 {
-    auto organs = this->getOrgans();
-    std::vector<double> nv = std::vector<double>(0);
-    for (const auto& o : organs) {
-        if (o->hasMoved()) {
-            nv.push_back(o->getNodeCT(o->getOldNumberOfNodes()-1));
-        }
-    }
-    return nv;
+	auto organs = this->getOrgans();
+	std::vector<double> nv = std::vector<double>(0);
+	for (const auto& o : organs) {
+		if (o->hasMoved()) {
+			nv.push_back(o->getNodeCT(o->getOldNumberOfNodes()-1));
+		}
+	}
+	return nv;
 }
 
 /**
@@ -401,15 +404,15 @@ std::vector<double> Organism::getUpdatedNodeCTs() const
  */
 std::vector<Vector3d> Organism::getNewNodes() const
 {
-    auto organs = this->getOrgans();
-    std::vector<Vector3d> nv(this->getNumberOfNewNodes());
-    for (const auto& o : organs) {
-        int onon = o->getOldNumberOfNodes();
-        for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
-            nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNode(i);
-        }
-    }
-    return nv;
+	auto organs = this->getOrgans();
+	std::vector<Vector3d> nv(this->getNumberOfNewNodes());
+	for (const auto& o : organs) {
+		int onon = o->getOldNumberOfNodes();
+		for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
+			nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNode(i);
+		}
+	}
+	return nv;
 }
 
 /**
@@ -420,18 +423,18 @@ std::vector<Vector3d> Organism::getNewNodes() const
  */
 std::vector<double> Organism::getNewNodeCTs() const
 {
-    auto organs = this->getOrgans();
-    std::vector<double> nv(this->getNumberOfNewNodes());
-    for (const auto& o : organs) {
-        int onon = o->getOldNumberOfNodes();
-        if (onon==0) { // make sure to never copy the root emergence time
-            onon = 1;
-        }
-        for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
-            nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNodeCT(i);
-        }
-    }
-    return nv;
+	auto organs = this->getOrgans();
+	std::vector<double> nv(this->getNumberOfNewNodes());
+	for (const auto& o : organs) {
+		int onon = o->getOldNumberOfNodes();
+		if (onon==0) { // make sure to never copy the root emergence time
+			onon = 1;
+		}
+		for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
+			nv.at(o->getNodeId(i)-this->oldNumberOfNodes) = o->getNodeCT(i);
+		}
+	}
+	return nv;
 }
 
 /**
@@ -442,17 +445,17 @@ std::vector<double> Organism::getNewNodeCTs() const
  */
 std::vector<Vector2i> Organism::getNewSegments(int ot) const
 {
-    auto organs = this->getOrgans(ot);
-    std::vector<Vector2i> si = std::vector<Vector2i>(0);
-    si.reserve(this->getNumberOfNewNodes());
-    for (const auto& o :organs) {
-        int onon = o->getOldNumberOfNodes();
-        for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments
-            Vector2i v(o->getNodeId(i),o->getNodeId(i+1));
-            si.push_back(v);
-        }
-    }
-    return si;
+	auto organs = this->getOrgans(ot);
+	std::vector<Vector2i> si = std::vector<Vector2i>(0);
+	si.reserve(this->getNumberOfNewNodes());
+	for (const auto& o :organs) {
+		int onon = o->getOldNumberOfNodes();
+		for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments
+			Vector2i v(o->getNodeId(i),o->getNodeId(i+1));
+			si.push_back(v);
+		}
+	}
+	return si;
 }
 
 /**
@@ -465,16 +468,16 @@ std::vector<Vector2i> Organism::getNewSegments(int ot) const
  */
 std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
 {
-    auto organs = this->getOrgans(ot);
-    auto so = std::vector<std::shared_ptr<Organ>>(0);
-    so.reserve(this->getNumberOfNewNodes());
-    for (auto& o :organs) {
-        int onon = o->getOldNumberOfNodes();
-        for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments
-            so.push_back(o);
-        }
-    }
-    return so;
+	auto organs = this->getOrgans(ot);
+	auto so = std::vector<std::shared_ptr<Organ>>(0);
+	so.reserve(this->getNumberOfNewNodes());
+	for (auto& o :organs) {
+		int onon = o->getOldNumberOfNodes();
+		for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments
+			so.push_back(o);
+		}
+	}
+	return so;
 }
 
 /**
@@ -482,10 +485,10 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
  */
 std::string Organism::toString() const
 {
-    std::stringstream str;
-    str << "Organism with "<< baseOrgans.size() <<" base organs, " << getNumberOfNodes()
-                                                << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
-    return str.str();
+	std::stringstream str;
+	str << "Organism with "<< baseOrgans.size() <<" base organs, " << getNumberOfNodes()
+                                                		<< " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
+	return str.str();
 }
 
 /**
@@ -501,54 +504,54 @@ std::string Organism::toString() const
  */
 void Organism::readParameters(std::string name, std::string basetag)
 {
-    tinyxml2::XMLDocument doc;
-    doc.LoadFile(name.c_str());
-    if(doc.ErrorID() == 0) {
-        tinyxml2::XMLElement* base = doc.FirstChildElement(basetag.c_str());
-        if(base != nullptr){
-            auto p = base->FirstChildElement();
-            while((p!=nullptr) && (p->Name()!=nullptr)) {
+	tinyxml2::XMLDocument doc;
+	doc.LoadFile(name.c_str());
+	if(doc.ErrorID() == 0) {
+		tinyxml2::XMLElement* base = doc.FirstChildElement(basetag.c_str());
+		if(base != nullptr){
+			auto p = base->FirstChildElement();
+			while((p!=nullptr) && (p->Name()!=nullptr)) {
 
-                std::string tagname = p->Name();
-                int ot = Organism::organTypeNumber(tagname);
-                std::shared_ptr<OrganRandomParameter> prototype;
-                if (organParam[ot].count(0)) { // is the prototype defined?
-                    prototype = organParam[ot][0];
-                } else {
-                    prototype = nullptr;
-                }
+				std::string tagname = p->Name();
+				int ot = Organism::organTypeNumber(tagname);
+				std::shared_ptr<OrganRandomParameter> prototype;
+				if (organParam[ot].count(0)) { // is the prototype defined?
+						prototype = organParam[ot][0];
+				} else {
+					prototype = nullptr;
+				}
 
-                if ((ot==0) && (prototype==nullptr)) { // read depricated xml format, in case organ is not used
-                    tagname = p->Attribute("type");
-                    ot = Organism::organTypeNumber(tagname);
-                    if (ot>0) { // tagname known?
-                        if (organParam[ot].count(0)) { // is the prototype defined?
-                            prototype = organParam[ot][0];
-                        } else {
-                            prototype = nullptr;
-                        }
-                    } else {
-                        prototype = nullptr;
-                    }
-                }
+				if ((ot==0) && (prototype==nullptr)) { // read depricated xml format, in case organ is not used
+					tagname = p->Attribute("type");
+					ot = Organism::organTypeNumber(tagname);
+					if (ot>0) { // tagname known?
+						if (organParam[ot].count(0)) { // is the prototype defined?
+							prototype = organParam[ot][0];
+						} else {
+							prototype = nullptr;
+						}
+					} else {
+						prototype = nullptr;
+					}
+				}
 
-                if (prototype!=nullptr) { // read prototype
-                    auto otp = prototype->copy(shared_from_this());
-                    otp->readXML(p);
-                    otp->organType = ot; // in depricated case, readXML will a give wrong value
-                    setOrganRandomParameter(otp);
-                } else { // skip prototype
-                    std::cout << "Organism::readParameters: warning, skipping " << tagname <<
-                        ", no random parameter class defined, use initializeReader()\n" << std::flush;
-                }
-                p = p->NextSiblingElement();
-            } // while
-        } else {
-            throw std::invalid_argument ("Organism::readParameters: " + std::string(basetag.c_str()) + " was not found in xml file");
-        }
-    } else {
-        std::cout << "Organism::readParameters: could not open file " << name << "\n" << std::flush;
-    }
+				if (prototype!=nullptr) { // read prototype
+					auto otp = prototype->copy(shared_from_this());
+					otp->readXML(p);
+					otp->organType = ot; // in depricated case, readXML will a give wrong value
+					setOrganRandomParameter(otp);
+				} else { // skip prototype
+					std::cout << "Organism::readParameters: warning, skipping " << tagname <<
+							", no random parameter class defined, use initializeReader()\n" << std::flush;
+				}
+				p = p->NextSiblingElement();
+			} // while
+		} else {
+			throw std::invalid_argument ("Organism::readParameters: " + std::string(basetag.c_str()) + " was not found in xml file");
+		}
+	} else {
+		std::cout << "Organism::readParameters: could not open file " << name << "\n" << std::flush;
+	}
 }
 
 /**
@@ -561,16 +564,16 @@ void Organism::readParameters(std::string name, std::string basetag)
  */
 void Organism::writeParameters(std::string name, std::string basetag, bool comments) const
 {
-    std::setlocale(LC_NUMERIC, "en_US.UTF-8");
-    tinyxml2::XMLDocument xmlDoc;
-    tinyxml2:: XMLElement* xmlParams = xmlDoc.NewElement(basetag.c_str()); // RSML
-    for (int ot = 0; ot < numberOfOrganTypes; ot++) {
-        for (auto& otp : organParam[ot]) {
-            xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
-        }
-    }
-    xmlDoc.InsertEndChild(xmlParams);
-    xmlDoc.SaveFile(name.c_str());
+	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+	tinyxml2::XMLDocument xmlDoc;
+	tinyxml2:: XMLElement* xmlParams = xmlDoc.NewElement(basetag.c_str()); // RSML
+	for (int ot = 0; ot < numberOfOrganTypes; ot++) {
+		for (auto& otp : organParam[ot]) {
+			xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
+		}
+	}
+	xmlDoc.InsertEndChild(xmlParams);
+	xmlDoc.SaveFile(name.c_str());
 }
 
 /**
@@ -580,15 +583,15 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
  */
 void Organism::writeRSML(std::string name) const
 {
-    std::setlocale(LC_NUMERIC, "en_US.UTF-8");
-    tinyxml2::XMLDocument xmlDoc;
-    tinyxml2:: XMLElement* rsml = xmlDoc.NewElement("rsml"); // RSML
-    tinyxml2:: XMLElement* meta = getRSMLMetadata(xmlDoc);
-    tinyxml2:: XMLElement* scene = getRSMLScene(xmlDoc);
-    rsml->InsertEndChild(meta);
-    rsml->InsertEndChild(scene);
-    xmlDoc.InsertEndChild(rsml);
-    xmlDoc.SaveFile(name.c_str());
+	std::setlocale(LC_NUMERIC, "en_US.UTF-8");
+	tinyxml2::XMLDocument xmlDoc;
+	tinyxml2:: XMLElement* rsml = xmlDoc.NewElement("rsml"); // RSML
+	tinyxml2:: XMLElement* meta = getRSMLMetadata(xmlDoc);
+	tinyxml2:: XMLElement* scene = getRSMLScene(xmlDoc);
+	rsml->InsertEndChild(meta);
+	rsml->InsertEndChild(scene);
+	xmlDoc.InsertEndChild(rsml);
+	xmlDoc.SaveFile(name.c_str());
 }
 
 /**
@@ -596,30 +599,30 @@ void Organism::writeRSML(std::string name) const
  */
 tinyxml2:: XMLElement* Organism::getRSMLMetadata(tinyxml2::XMLDocument& xmlDoc) const
 {
-    tinyxml2:: XMLElement* metadata = xmlDoc.NewElement("metadata"); // META
-    tinyxml2:: XMLElement* version = xmlDoc.NewElement("version");
-    version->SetText(1);
-    tinyxml2:: XMLElement* unit = xmlDoc.NewElement("unit");
-    unit->SetText("cm");
-    tinyxml2:: XMLElement* resolution = xmlDoc.NewElement("resolution");
-    resolution->SetText(1);
-    tinyxml2:: XMLElement* last = xmlDoc.NewElement("last-modified");
-    std::time_t t = std::time(0);
-    std::tm* now = std::localtime(&t);
-    std::string s = std::to_string(now->tm_mday)+"-"+std::to_string(now->tm_mon+1)+"-"+std::to_string(now->tm_year + 1900);
-    last->SetText(s.c_str());
-    tinyxml2:: XMLElement* software = xmlDoc.NewElement("software");
-    software->SetText("OrganicBox");
-    // todo no image tag (?)
-    // todo property-definitions
-    // todo time sequence (?)
-    metadata->InsertEndChild(version);
-    metadata->InsertEndChild(unit);
-    metadata->InsertEndChild(resolution);
-    metadata->InsertEndChild(last);
-    metadata->InsertEndChild(software);
-    // todo insert remaining tags
-    return metadata;
+	tinyxml2:: XMLElement* metadata = xmlDoc.NewElement("metadata"); // META
+	tinyxml2:: XMLElement* version = xmlDoc.NewElement("version");
+	version->SetText(1);
+	tinyxml2:: XMLElement* unit = xmlDoc.NewElement("unit");
+	unit->SetText("cm");
+	tinyxml2:: XMLElement* resolution = xmlDoc.NewElement("resolution");
+	resolution->SetText(1);
+	tinyxml2:: XMLElement* last = xmlDoc.NewElement("last-modified");
+	std::time_t t = std::time(0);
+	std::tm* now = std::localtime(&t);
+	std::string s = std::to_string(now->tm_mday)+"-"+std::to_string(now->tm_mon+1)+"-"+std::to_string(now->tm_year + 1900);
+	last->SetText(s.c_str());
+	tinyxml2:: XMLElement* software = xmlDoc.NewElement("software");
+	software->SetText("OrganicBox");
+	// todo no image tag (?)
+	// todo property-definitions
+	// todo time sequence (?)
+	metadata->InsertEndChild(version);
+	metadata->InsertEndChild(unit);
+	metadata->InsertEndChild(resolution);
+	metadata->InsertEndChild(last);
+	metadata->InsertEndChild(software);
+	// todo insert remaining tags
+	return metadata;
 }
 
 /**
@@ -627,13 +630,13 @@ tinyxml2:: XMLElement* Organism::getRSMLMetadata(tinyxml2::XMLDocument& xmlDoc) 
  */
 tinyxml2:: XMLElement* Organism::getRSMLScene(tinyxml2::XMLDocument& xmlDoc) const
 {
-    tinyxml2:: XMLElement* scene = xmlDoc.NewElement("scene");
-    tinyxml2:: XMLElement* plant = xmlDoc.NewElement("plant");
-    scene->InsertEndChild(plant);
-    for (auto& o: baseOrgans) {
-        o->writeRSML(xmlDoc, plant);
-    }
-    return scene;
+	tinyxml2:: XMLElement* scene = xmlDoc.NewElement("scene");
+	tinyxml2:: XMLElement* plant = xmlDoc.NewElement("plant");
+	scene->InsertEndChild(plant);
+	for (auto& o: baseOrgans) {
+		o->writeRSML(xmlDoc, plant);
+	}
+	return scene;
 }
 
 /**
@@ -644,7 +647,7 @@ tinyxml2:: XMLElement* Organism::getRSMLScene(tinyxml2::XMLDocument& xmlDoc) con
  */
 void Organism::setSeed(unsigned int seed)
 {
-    this->gen = std::mt19937(seed);
+	this->gen = std::mt19937(seed);
 }
 
 
