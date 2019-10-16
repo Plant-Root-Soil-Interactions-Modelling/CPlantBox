@@ -216,7 +216,7 @@ First, lets analyse the root length versus time, and consider the total root len
 
 \item[23-30] The simulation loops executes the simulation for a single time step L24. L25 calculates the type of each root, L26 the length (or other scalar type) of the root. L27-L30 calculates the total root length in the time step for all roots, and for specific root types.
 
-\item[31-40] Creates Figure \ref{fig:length}.
+\item[32-38] Creates Figure \ref{fig:length}.
 
 \end{itemize}
 
@@ -255,25 +255,33 @@ Next we show two options how to retrieve root tip postions and root base positio
 
 \subsection{Analysis per segment}
 
-The class SegmentAnalyser offers post-processing methods per root segment. 
-The advantage is that we can do distributions or densities, and that we can crop the segments with any geometry. 
+The class SegmentAnalyser offers post-processing methods per root segment. The advantage is that we can do distributions or densities, and that we can crop the segments with any geometry. 
 
 
-\subsection{Analysis per segment, rootsystem legnt density}
+\subsection{Analysis per segment, rootsystem length density}
 
-We start with a small example plotting the root length and root surface densities of a root system.
+We start with a small example plotting the root surface densities of a root system versus root depth.
 
-% \lstinputlisting[language=Python, caption=Example 3c]{../../examples/python/example3c.py} % TODO
+\lstinputlisting[language=Python, caption=Example 3c]{../../examples/python/example3c.py}
+
+
+\begin{itemize}
+
+\item[14,15] todo
+
+\end{itemize}
+
+
 
 \subsection{Analysis per segment using SDF}
 
-The following script demonstrates some of the post processing possibilities by setting up a virtual soil core experiment. 
+The following script demonstrates some of the post processing possibilities by setting up a virtual soil core experiment, where we analyse the content of two soil cores located at other positions.
 
 \lstinputlisting[language=Python, caption=Example 3d]{../../examples/python/example3d.py}
 
 \begin{itemize}
 
-\item[5-L10] Performs the simulation and exports the results.
+\item[5-10] Performs the simulation and exports the results.
 
 \item[13-16] We define two soil cores, one in the center of the root and one 10 cm translated. In L16 we pick which one we use for the further analysis.  Figure \ref{fig:soilcoreGeom} shows the resulting geometry.
 
@@ -318,7 +326,7 @@ The basic idea is that such simulations help to increase the understanding of ex
 
 It is possible to make use of the SegmentAnalyser class without any ohter CPlantBox classes (e.g. to plot densities, or for writing vtp). The following example shows how to construct the class with arbitrary nodes and segments (e.g. from measurements). 
 
-% \lstinputlisting[language=Python, caption=Example 3e]{../../examples/python/example3e.py} % TODO
+\lstinputlisting[language=Python, caption=Example 3e]{../../examples/python/example3e.py}
 
 
 
@@ -349,14 +357,14 @@ This is especially important if we want to modify any of the parameters in our s
 
 \end{itemize}
 
-Note that all parameters can be set and modified within the script. Especially, standard deviations can be set to zero in order to be able to precisely predict the result. For example we can calculate the total root system length analytically, and check if the numerical simulation yield the (exact) same result. This is performed in the tests withing test_root.py, and test_rootsystem, which is used to test and validate CPlantBox and formerly CRootBox.
+Note that all parameters can be set and modified within the script. Especially, standard deviations can be set to zero in order to be able to precisely predict the result. For example we can calculate the total root system length analytically, and check if the numerical simulation yield the (exact) same result. This is performed in the tests withing test\_root.py, and test\_rootsystem, which is used to test and validate CPlantBox and formerly CRootBox.
 
 \subsection{Sensitivity analysis} \label{sec:sa}
 
 In the next part we vary given parameters in order to make a sensitivity analysis. This takes a lot of simulation runs and we demonstrate the of use parallel computing to speed up execution.
 We vary the insertion angle of the tap root and basal root, and look at the change in mean root tip depth and radial distance. 
 
-%\lstinputlisting[language=Python, caption=Example 3d]{../../examples/python/example3d.py}
+\lstinputlisting[language=Python, caption=Example 4b]{../../examples/python/example4b.py}
 
 \begin{itemize}
 
@@ -389,7 +397,7 @@ A specific frame is then obtained by thresholding within Paraview using the segm
 
 We modify example1b.py to demonstrate how to create an animation.
 
-%\lstinputlisting[language=Python, caption=Example 3e (modified from Example 1b)]{../../examples/python/example3e.py}
+\lstinputlisting[language=Python, caption=Example 4c (modified from Example 1b)]{../../examples/python/example4c.py} 
 
 \begin{itemize}
 
@@ -411,22 +419,17 @@ After running the script we perform the following operations to create an animat
 \end{enumerate}
 
 
+\section{Tropisms}
 
-\section{Root functional modelling}
+The change in root growth direction is described by tropisms. 
 
-Root growth is strongly influenced by pedo-climate conditions, and plant internal state. CRootBox offers build in ways to develop such models. 
-In this section we assume static soil conditions, and describe predefined ways how the soil can affect root growth.
-Dynamic soil conditions are described in the following section 'Coupling with a soil model'. 
-
-Implemented root responses are (1) the change in direction of the growing root tip, described in Sections \ref{sec:hydro} and \ref{sec:usertropism} 
-(2) the scaling of the elongation rate (3) the change of insertion angle (4) the change of lateral emergence probability, (2)-(4) are described in Section \ref{sec:elongation}.
 
 \subsection{Hydro- and chemotropism} \label{sec:hydro}
 
 Root growth direction is influenced by soil conditions such as water content, soil strength, or nutrient concentration. 
 In the following we show how this is achieved in CRootBox.
 
-\lstinputlisting[language=Python, caption=Example 4a]{../../examples/python/example4a.py}
+\lstinputlisting[language=Python, caption=Example 5a]{../../examples/python/example5a.py}
 
 \begin{itemize}
 
@@ -480,7 +483,7 @@ The following example shows how to implement a new tropism in Python. Two new tr
 The first does nothing put to output the incoming arguments of the method Tropism::tropismObjective to the command line (e.g. for debugging).  
 The second one, is a Plagiotropism that changes with time to Gravitropism depending on the root age.
 
-\lstinputlisting[language=Python, caption=Example 4b]{../../examples/python/example4b.py}
+\lstinputlisting[language=Python, caption=Example 5b]{../../examples/python/example5b.py}
 
 \begin{itemize}
 
@@ -512,6 +515,15 @@ Number 2 is the root type number of the laterals, -1 states that the tropism app
 
 
 
+\section{Root functional modelling}
+
+Root growth is strongly influenced by pedo-climate conditions, and plant internal state. CRootBox offers build in ways to develop such models. 
+In this section we assume static soil conditions, and describe predefined ways how the soil can affect root growth.
+Dynamic soil conditions are described in the following section 'Coupling with a soil model'. 
+
+Implemented root responses are (1) the change in direction of the growing root tip, described in Sections \ref{sec:hydro} and \ref{sec:usertropism} 
+(2) the scaling of the elongation rate (3) the change of insertion angle (4) the change of lateral emergence probability, (2)-(4) are described in Section \ref{sec:elongation}.
+
 \subsection{Scaling elongation rate, insertion angle, and lateral emergence probability} \label{sec:elongation}
 
 The following script is an example to this and the following two sections, where (a) the elongation rate, (b) the insertion angle, and (c) the probability of lateral emergence are scaled.
@@ -522,7 +534,7 @@ The insertion angle is reported to be dependent on nutrient supply in some speci
 
 The scaling itself can be performed in the following way:
 
-\lstinputlisting[firstline=1,lastline=50, language=Python, caption=Example 4c (1)]{../../examples/python/example5a.py}
+\lstinputlisting[firstline=1,lastline=50, language=Python, caption=Example 6a (1)]{../../examples/python/example6a.py}
 
 \begin{itemize}
 
@@ -562,7 +574,14 @@ Then, we set the scale branching probability function $sbp$ to the soil property
 
 When playing with model parameters, it is not always clear if the suggested effect is realized from the figures alone. The following script helps to quantify the effects of above simulation: 
 
-\lstinputlisting[firstline=51,lastline=81, language=Python, caption=Example 4c (2)]{../../examples/python/example5b.py}
+\lstinputlisting[firstline=51,lastline=81, language=Python, caption=Example 6b´ (2)]{../../examples/python/example6b.py}
+
+
+\subsection{Soil} \label{sec:soil}
+
+
+\subsection{User defined soil} \label{sec:usersoil}
+
 
 
 
@@ -581,36 +600,24 @@ Then we discuss the example published in \cite{}.
 Finally, we present features that can be used to analyse the dynamic behaviour of the root system development.
 
 
-
-\subsection{Soil} \label{sec:soil}
-
-
-\subsection{User defined soil} \label{sec:usersoil}
-
-
-
-
 \subsection{Graph representation} \label{sec:graph} 
 
 In this section we show how to build an adjacency matrix, and how to calculate fluxes within the root system.
 
-% \lstinputlisting[language=Python, caption=Example 5a]{../../examples/python/example7.py}
+% \lstinputlisting[language=Python, caption=Example 5a]{../../examples/python/example7a.py}
 
 \subsection{Coupling to 1D water content} \label{sec:fullcoupling} 
 
 Explain and link to paper example (to do)
 
 
-
-\subsection{Other dynamic aspects} \label{sec:published}
+\subsection{Dynamic root system grid} \label{sec:published}
 
 In this section it is described how information about the last time step can be retrieved, 
 and how we can incrementally obtain the root system from only new nodes and segments. 
-These methods are especially important if we couple to other numerical software like DuMux (example 5b)
+These methods are especially important if we couple to other numerical software like DuMux
 
-
-
-%\lstinputlisting[firstline=1, lastline=58, language=Python, caption=Example 5b]{../../examples/python/example6.py}
+%\lstinputlisting[firstline=1, lastline=58, language=Python, caption=Example 5b]{../../examples/python/example7b.py}
 
 \bibliographystyle{apalike}
 \bibliography{references}

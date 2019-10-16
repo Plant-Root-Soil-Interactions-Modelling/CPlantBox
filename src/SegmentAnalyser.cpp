@@ -187,8 +187,9 @@ void SegmentAnalyser::crop(SignedDistanceFunction* geometry)
 					nodes.push_back(newnode);
 					Vector2i newseg(ini,nodes.size()-1);
 					seg.push_back(newseg);
+                    ntimes.push_back(segCTs.at(i));
 					sO.push_back(segO.at(i));
-					ntimes.push_back(segCTs.at(i));
+                    radii_.push_back(radii.at(i));
 				}
 
 	}
@@ -421,7 +422,7 @@ SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
  * @param name      parameter type @see RootSystem::ScalarType
  * @param top       vertical top position (cm)
  * @param bot       vertical bot position (cm)
- * @param n         number of layers (each with a height of (bot-top)/n )
+ * @param n         number of layers, each with a height of (bot-top)/n
  * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
  * \return Vector of size @param n containing the summed parameter in this layer
  */

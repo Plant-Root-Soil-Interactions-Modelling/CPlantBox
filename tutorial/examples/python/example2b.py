@@ -17,12 +17,12 @@ for i in range(0, N):
         rs = pb.RootSystem()
         rs.readParameters(path + name + ".xml")
         rs.getRootSystemParameter().seedPos = pb.Vector3d(dist * i, dist * j, -3.)  # cm
-        rs.initialize()
+        rs.initialize(False)  # verbose = False
         allRS.append(rs)
 
 # Simulate
 for rs in allRS:
-    rs.simulate(simtime, True)
+    rs.simulate(simtime, False)  # verbose = False
 
 # Export results as single vtp files (as polylines)
 ana = pb.SegmentAnalyser()  # see example 3b
