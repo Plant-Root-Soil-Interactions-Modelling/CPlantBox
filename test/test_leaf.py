@@ -4,16 +4,16 @@ Copyright 2019, Forschungszentrum Jülich GmbH, licensed under GNU GPLv3
 """
 import unittest
 import sys
+import numpy as np
 sys.path.append("..")
 import plantbox as pb
-import numpy as np
 
 
 def leafAge(l, r, k):  # leaf age at a certain length
     return -np.log(1 - l / k) * k / r
 
 
-def lengthLength(t, r, k):  # leaf length at a certain age
+def leafLength(t, r, k):  # leaf length at a certain age
     return k * (1 - np.exp(-r * t / k))
 
 
@@ -28,26 +28,30 @@ def leafLateralLength(t, et, r, k):  # length of first order laterals (without s
 
 class TestLeaf(unittest.TestCase):
 
-    def leaf_example_rtp(self):
+    def leaf_example_rrp(self):
         """ an example used in the tests below, a main leaf with laterals """
-        self.plant = pb.Organism()
-        p0 = pb.Leaf(self.plant)
-        p0.name, p0.type, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 1, 10, 20, (89. / 19.), 1, 0.5
-        p0.successor = [2]  # to pb.std_int_double_()
-        p0.successorP = [1.]  # pb.std_vector_double_()
+        self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
+        p0 = pb.LeafRandomParameter(self.plant)
+        p0.name, p0.subType, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "tapleaf", 1, 1, 10, 20, (89. / 19.), 1, 0.5
+        p0.successor = [3]
+        p0.successorP = [1.]
         p1 = pb.LeafRandomParameter(self.plant)
-        p1.name, p1.type, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
-        self.p0, self.p1 = p0, p1  # Python will garbage collect them away, if not stored
-        self.plant.setOrganRandomParameter(self.p0)  # the organism manages the type parameters
-        self.plant.setOrganRandomParameter(self.p1)
-        self.param0 = self.p0.realize()
-        self.param0.la = 0  # its important parent has zero length, otherwise creation times are messed up
-        self.param0.lb = 0
-        # param0 is stored, because otherwise garbage collection deletes it, an program will crash <---
-        parentleaf = pb.Leaf(1, self.param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
+        p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
+        self.p0, self.p1 = p0, p1  # needed at later point
+        self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
+        self.plant.setOrganRandomParameter(p1)
+        # TODO (first node is not set, if seed is used)
+        self.plant.setOrganRandomParameter(pb.SeedRandomParameter(self.plant))
+        self.seed = pb.Seed(self.plant)  # store parent (not owned by child Organ)
+        #
+        param0 = p0.realize()  # set up leaf by hand (without a leaf syleaf)
+        param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
+        parentleaf = pb.Leaf(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
         parentleaf.setOrganism(self.plant)
         parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
-        self.leaf = pb.Leaf(self.plant, self.p0.subType, pb.Vector3d(0, 0, -1), 0, parentleaf, 0, 0)
+        self.parentleaf = parentleaf  # store parent (not owned by child Organ)
+        #
+        self.leaf = pb.Leaf(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentleaf , 0, 0)
         self.leaf.setOrganism(self.plant)
 
     def leaf_length_test(self, dt, l, subDt):
@@ -76,8 +80,8 @@ class TestLeaf(unittest.TestCase):
             self.assertLessEqual(0.25, meanDX[i], "axial resolution dx is unexpected small")
 
     def test_constructors(self):
-        """ tests three different kinds of constructors """
-        self.leaf_example_rtp()
+        """ tests two kinds of constructors and copy"""
+        self.leaf_example_rrp()
         # 1. constructor from scratch
         param = self.p0.realize()
         leaf = pb.Leaf(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
@@ -85,17 +89,17 @@ class TestLeaf(unittest.TestCase):
         leaf.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
         leaf2 = pb.Leaf(self.plant, self.p1.subType, pb.Vector3d(0, 0, -1), 0, leaf, 0, 0)
-        leaf.addChild(leaf2);
+        leaf.addChild(leaf2)
         # 3. deep copy (with a factory function)
         plant2 = pb.Organism()
         leaf3 = leaf.copy(plant2)
-        self.assertEqual(str(leaf), str(leaf3), "deep copy: the organs shold be equal")
-        self.assertIsNot(leaf.getParam(), leaf3.getParam(), "deep copy: organs have same parameter set")
-        # TODO check if ORP were copied
+        self.assertEqual(str(leaf), str(leaf3), "deep copy: the leaf string representations shold be equal")
+        self.assertIsNot(leaf.getParam(), leaf3.getParam(), "deep copy: leafs have same specific parameter set")  # type OrganSpecificParameter
+        self.assertEqual(str(leaf.param()), str(leaf3.param()), "deep copy: leafs have different parameter values")  # type LeafSpecificParameter
 
     def test_leaf_length(self):
         """ tests if numerical leaf length agrees with analytic solutions at 4 points in time with two scales of dt"""
-        self.leaf_example_rtp()
+        self.leaf_example_rrp()
         times = np.array([0., 7., 15., 30., 60.])
         dt = np.diff(times)
         k = self.leaf.param().getK()  # maximal leaf length
@@ -108,7 +112,7 @@ class TestLeaf(unittest.TestCase):
 
     def test_leaf_length_including_laterals(self):
         """ tests if numerical leaf length agrees with analytic solution including laterals """
-        self.leaf_example_rtp()
+        self.leaf_example_rrp()
         times = np.array([0., 7., 15., 30., 60.])
         dt = np.diff(times)
         p = self.leaf.param()  # rename
@@ -147,7 +151,7 @@ class TestLeaf(unittest.TestCase):
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
-        self.leaf_example_rtp()
+        self.leaf_example_rrp()
         self.leaf.simulate(30)
         organs = self.leaf.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
@@ -165,7 +169,7 @@ class TestLeaf(unittest.TestCase):
 
     def test_dynamics(self):
         """ tests if nodes created in last time step are correct """  #
-        self.leaf_example_rtp()
+        self.leaf_example_rrp()
         r = self.leaf
         r.simulate(.5, True)
         self.assertEqual(r.hasMoved(), False, "dynamics: node movement during first step")
