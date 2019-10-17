@@ -11,7 +11,7 @@
 #include <vector>
 
 namespace CPlantBox {
-
+class Organism;
 /**
  * Parameters of a single leaf (created by LeafSpecificParameter)
  */

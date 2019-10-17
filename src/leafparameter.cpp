@@ -11,7 +11,7 @@
 namespace CPlantBox {
 
 /**
- * @return Mean maximal root length of this root type
+ * @return Mean maximal leaf length of this leaf type
  */
 double LeafSpecificParameter::getK() const {
 	double l = std::accumulate(ln.begin(), ln.end(), 0.);
@@ -71,8 +71,8 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
 /**
  * @copydoc OrganTypeParameter::realize()
  *
- * Creates a specific root from the root type parameters.
- * @return Specific root parameters derived from the root type parameters
+ * Creates a specific leaf from the leaf type parameters.
+ * @return Specific leaf parameters derived from the leaf type parameters
  */
 std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
@@ -129,20 +129,20 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	double r_ = std::max(r + p->randn()*rs,double(0)); // initial elongation
 	double a_ = std::max(a + p->randn()*as,double(0)); // radius
 	double theta_ = std::max(theta + p->randn()*thetas,double(0)); // initial elongation
-	double rlt_ = std::max(rlt + p->randn()*rlts,double(0)); // root life time
+	double rlt_ = std::max(rlt + p->randn()*rlts,double(0)); // leaf life time
 	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 }
 
 /**
- * Choose (dice) lateral type based on root parameters successor and successorP
+ * Choose (dice) lateral type based on leaf parameters successor and successorP
  *
  * @param pos       spatial position (for coupling to a soil model)
- * @return          root sub type of the lateral root
+ * @return          leaf sub type of the lateral leaf
  */
 int LeafRandomParameter::getLateralType(const Vector3d& pos)
 {
 	assert(successor.size()==successorP.size()
-			&& "RootTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
+			&& "LeafTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
 	if (successorP.size()>0) { // at least 1 successor type
 		double d = plant.lock()->rand(); // in [0,1]
 		int i=0;
@@ -214,10 +214,10 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 	}
 	double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
 	if  ((p_<1) && (p_!=0))  {
-		std::cout << "RootRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
+		std::cout << "LeafRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
 	}
 	assert(successor.size()==successorP.size() &&
-			"RootTypeParameter::readXML: Successor sub type and probability vector does not have the same size" );
+			"LeafTypeParameter::readXML: Successor sub type and probability vector does not have the same size" );
 }
 
 /**
@@ -228,7 +228,7 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
 {
 	assert(successor.size()==successorP.size() &&
-			"RootTypeParameter::writeXML: Successor sub type and probability vector does not have the same size" );
+			"LeafTypeParameter::writeXML: Successor sub type and probability vector does not have the same size" );
 	tinyxml2::XMLElement* element = OrganRandomParameter::writeXML(doc, comments);
 	for (int i = 0; i<successor.size(); i++) {
 		tinyxml2::XMLElement* p = doc.NewElement("parameter");
@@ -246,7 +246,7 @@ tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
 	}
 	double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
 	if ((p_<1) && (p_!=0)) {
-		std::cout << "RootRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
+		std::cout << "LeafRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
 	}
 	return element;
 }
@@ -257,7 +257,7 @@ tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
  */
 void LeafRandomParameter::bindParameters()
 {
-	bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4)");
+	bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, leaf = 2, stem = 3, leaf = 4)");
 	bindParameter("subType", &subType, "Unique identifier of this sub type");
 	bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
 	bindParameter("la", &la, "Apical zone [cm]", &las);
@@ -269,8 +269,8 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("tropismN", &tropismN, "Number of trials of leaf tropism");
 	bindParameter("tropismS", &tropismS, "Mean value of expected change of leaf tropism [1/cm]");
 	bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
-	bindParameter("theta", &theta, "Angle between root and parent root [rad]", &thetas);
-	bindParameter("rlt", &rlt, "Root life time [day]", &rlts);
+	bindParameter("theta", &theta, "Angle between leaf and parent leaf [rad]", &thetas);
+	bindParameter("rlt", &rlt, "Leaf life time [day]", &rlts);
 	bindParameter("gf", &gf, "Growth function number [1]", &rlts);
 	bindParameter("lnf", &lnf, "Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)");
 	// other parameters (descriptions only)

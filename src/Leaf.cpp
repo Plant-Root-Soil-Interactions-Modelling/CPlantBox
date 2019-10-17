@@ -1,5 +1,6 @@
+#include "Stem.h"
 #include "Leaf.h"
-
+#include "Root.h"
 namespace CPlantBox {
 
 std::vector<int> Leaf::leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -45,14 +46,14 @@ Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bo
 Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,  std::shared_ptr<Organ> parent, double pbl, int pni)
         :Organ(plant, parent,Organism::ot_leaf, type, delay), parentBaseLength(pbl), parentNI(pni)
 {
-    assert(parent!=nullptr && "Stem::Stem parent must be set");
+    assert(parent!=nullptr && "Leaf::Leaf parent must be set");
     //  std::cout << "Leaf pni = "<< pni<< std::endl;
     //  std::cout << "Organism* plant ="<< plant <<" "<< parent<<std::endl;
     //  std::cout <<", "<<(LeafParameter*) param<< "\n";
     // std::cout <<"subtype ="<<param()->subType <<"getleafphytomerID =" <<getleafphytomerID(param()->subType)<< "\n";
-
-    addleafphytomerID(param()->subType);
-    double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->RotBeta
+    auto leaf_p = this->param();
+    addleafphytomerID(leaf_p->subType);
+    double beta = getleafphytomerID(leaf_p->subType)*M_PI*getLeafRandomParameter()->RotBeta
         + M_PI*plant->rand()*getLeafRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(iheading);
     //	if (getLeafRandomParameter()->InitBeta >0 && getleafphytomerID(param()->subType)==0 ){
@@ -65,7 +66,7 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
     {beta = beta + getLeafRandomParameter()->InitBeta*M_PI + M_PI;}
     //ons.times(Matrix3d::rotX(beta));
 
-    double theta = M_PI*param()->theta;
+    double theta = M_PI*leaf_p ->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a base leaf
         double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta *= scale;
@@ -218,25 +219,34 @@ void Leaf::simulate(double dt, bool verbose)
  *
  */
 double Leaf::getParameter(std::string name) const {
-    double r = Organ::getParameter(name);
-    if (name=="basal zone") { r = param()->lb; }
-    if (name=="apical zone") { r = param()->la; }
-    if (name=="initial f_gf rate") { r = param()->r; }
-    if (name=="radius") { r = param()->a; }
-    if (name=="insertion angle") { r = param()->theta; }
-    if (name=="leaf life time") { r = param()->rlt; }
-    //	if (name=="mean internodal distance") {
-    //		r = std::accumulate(param()->ln.begin(), param()->ln.end(), 0.0) / param()->ln.size();
-    //	}
-    //	if (name=="sd internodal distance") {
-    //		const std::vector<double>& v_ = param()->ln;
-    //		double mean = std::accumulate(v_.begin(), v_.end(), 0.0) / v_.size();
-    //		double sq_sum = std::inner_product(v_.begin(), v_.end(), v_.begin(), 0.0);
-    //		r = std::sqrt(sq_sum / v_.size() - mean * mean);
-    //	}
-    //	if (name=="surface") { r = param()->a*param()->a*M_PI*length; }
-    //	if (name=="number of branches") { r = param()->ln.size() +1; }
-    return r;
+       if (name=="lb") { return param()->lb; } // basal zone [cm]
+    if (name=="la") { return param()->la; } // apical zone [cm]
+    //if (name=="nob") { return param()->nob; } // number of branches
+    if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
+    if (name=="radius") { return param()->a; } // root radius [cm]
+    if (name=="a") { return param()->a; } // root radius [cm]
+    if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
+    if (name=="rlt") { return param()->rlt; } // root life time [day]
+    if (name=="k") { return param()->getK(); }; // maximal root length [cm]
+    if (name=="lnMean") { // mean lateral distance [cm]
+        auto& v =param()->ln;
+        return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+    }
+    if (name=="lnDev") { // standard deviation of lateral distance [cm]
+        auto& v =param()->ln;
+        double mean = std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+        double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
+        return std::sqrt(sq_sum / v.size() - mean * mean);
+    }
+    if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // // root volume [cm^3]
+    if (name=="surface") { return 2*param()->a*M_PI*getLength(); }
+    if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
+    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
+    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
+    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
+    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
+    if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
+    return Organ::getParameter(name);
 }
 
 /**
@@ -293,13 +303,6 @@ double Leaf::calcAge(double length)
     //	    }
 }
 
-/**
- *
- */
-double Leaf::dx() const
-{
-    return getLeafRandomParameter()->dx;
-}
 
 /**
  * Creates a new lateral by calling Leaf::createNewleaf().
@@ -445,7 +448,25 @@ void Leaf::createSegments(double l, bool verbose)
     int nn = nodes.size();
     if (firstCall) { // first call of createSegments (in Leaf::simulate)
         firstCall = false;
-        if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Leaf>(children.back())->parentNI)) ) { // don't move a child base node
+
+        int pni = -1;
+        if (!children.empty()) {
+            auto o = children.back();
+            int type = o->getOrganRandomParameter()->organType;
+            switch (type) {
+            case Organism::ot_leaf: {
+                pni = (std::static_pointer_cast<Leaf>(o))->parentNI;
+            } break;
+            case Organism::ot_root: {
+                pni = (std::static_pointer_cast<Root>(o))->parentNI;
+            } break;
+            case Organism::ot_stem: {
+                pni = (std::static_pointer_cast<Stem>(o))->parentNI;
+            } break;
+            }
+        }
+        //if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Leaf>(children.back())->parentNI)) ) { // don't move a child base node
+        if ((nn>1) && (children.empty() || (nn-1 != pni)) ) { // don't move a child base node
             Vector3d n2 = nodes[nn-2];
             Vector3d n1 = nodes[nn-1];
             double olddx = n1.minus(n2).length(); // length of last segment
@@ -493,6 +514,11 @@ void Leaf::createSegments(double l, bool verbose)
         // but might break down to temporal resolution
         addNode(newnode, et);
     }
+}
+
+double Leaf::dx() const
+{
+    return getLeafRandomParameter()->dx;
 }
 
 /**
