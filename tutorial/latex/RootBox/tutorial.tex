@@ -49,7 +49,7 @@
 \begin{center}
 %\includegraphics[width=0.2\textwidth]{sw_logo} \\
 \vspace{0.5 cm}
-\huge{\textbf{PlantBox: Rootsystem Tutorial}} \\
+\huge{\textbf{PlantBox: RootSystem Tutorial}} \\
 \vspace{0.5 cm}
 \normalsize
 Daniel Leitner \\
@@ -155,7 +155,7 @@ L48 and L48 compose the final geometry by to set operation, first a union of all
 \includegraphics[width=0.99\textwidth]{example_2a3.png}
 \subcaption{Rhizotubes} \label{fig:rhizotubes}
 \end{subfigure}
-\caption{Manipulating SDF (Example 2a)}
+\caption{Different geometries described by SDF (Example 2a)}
 \end{figure}
 
 \subsection{Multiple root systems}
@@ -234,9 +234,9 @@ Next we show two options how to retrieve root tip postions and root base positio
 
 \item[28-31] Second approach: L29 rs.getNodes() returns all nodes of the root system as a list of Vector3d objects. Each Vector3d object can be converted into a numpy array automatically, but is necessary to do that for each element of the list. The methods L30, L31 return the indices of the tips and bases. 
 
-\item[33-40] Creates Figure \ref{fig:scatter} using the second approach.
+\item[33-41] Creates Figure \ref{fig:scatter} using the second approach.
 
-\item[43-44] Verifies that both approaches yield the same result.
+\item[44,45] Verifies that both approaches yield the same result.
 
 \end{itemize}
 
@@ -246,11 +246,12 @@ Next we show two options how to retrieve root tip postions and root base positio
 \subcaption{Total root length versus time} \label{fig:length}
 \end{subfigure}
 \begin{subfigure}[c]{0.5\textwidth}
-\includegraphics[width=0.99\textwidth]{example_3a2.png}
+\includegraphics[width=0.99\textwidth]{example_3b.png}
 \subcaption{Top view of the root tip and root bases} \label{fig:scatter}
 \end{subfigure}
-\caption{Root system analysis (Example 3a)} 
+\caption{Root system analysis: Example 3a (a), Example 3b (b)} 
 \end{figure}
+
 
 
 \subsection{Analysis per segment}
@@ -264,10 +265,21 @@ We start with a small example plotting the root surface densities of a root syst
 
 \lstinputlisting[language=Python, caption=Example 3c]{../../examples/python/example3c.py}
 
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{example_3c.png}
+\caption{Root surface densitiy versus depth mean (Example 3c), and standard error ($N$=10)} \label{fig:surface_density}
+\end{figure}
+
 
 \begin{itemize}
 
-\item[14,15] todo
+\item[8-12] Pick a root system.
+\item[14-16] Depth describes the y-axis of the graph, layers the number of vertical soil layers, where the root surface is accumulated, and runs is the number of simulation runs. 
+\item[18-23] Perfoms the simulations. L23 creates a distribution of a parameter (name) over a vertical range (bot, top). The data are accumulated layers, segments are either cut (exact = True) or accumaled by their mid point (exact = False). 
+\item[25] In order to calculate a root surface density from the summed up surface, we need to define a soil volume. The vertical height is the layer length, lenght and widht (here 10 cm), can be determined by planting widht, or by geometry, if root growth is confined. 
+\item[26-28] Calculates the densitis, mean densities, and standard error. 
+\item[30-39] Prepares teh plot (see Figure \ref{fig:surface_density}).
 
 \end{itemize}
 
@@ -281,21 +293,23 @@ The following script demonstrates some of the post processing possibilities by s
 
 \begin{itemize}
 
-\item[5-10] Performs the simulation and exports the results.
+\item[9-15] Performs the simulation.
 
-\item[13-16] We define two soil cores, one in the center of the root and one 10 cm translated. In L16 we pick which one we use for the further analysis.  Figure \ref{fig:soilcoreGeom} shows the resulting geometry.
+\item[17-20] We define two soil cores, one in the center of the root and one 10 cm translated. In L16 we pick which one we use for the further analysis.  Figure \ref{fig:soilcoreGeom} shows the resulting geometry.
 
-\item[18-22] Prepares the plot. We use four sub-figures. 
+\item[23] We pick which geometry we will use for further analysis.
 
-\item[24-28] Creates a root length distribution versus depth. L25 creates the SegmentAnalyser object, and L26 creates the distribution.
+\item[25-29] Prepares the plot. We use four sub-figures. 
 
-\item[30-36] Performs the same distribution in the soil core. In L32 we crop the segments with the geometry. L33 is used to delete unused nodes. 
+\item[31-35] Creates a root length distribution versus depth. L32 creates the SegmentAnalyser object, and L41 creates the distribution.
 
-\item[38-45] Same as before, but we are only interested in segments that are younger than 30 days. In L40 we use the filer method to keep only the segments we want to analyse. 
+\item[37-43] Performs the same distribution in the soil core. In L39 we crop the segments to the geometry. L49 is used to delete unused nodes. 
 
-\item[47-54] The filter method can be used for many different applications. In the following we use it to analyse lateral roots only. Possible rb.ScalarType are: 
-'type', 'radius', 'order', segment creation time 'time', 'length', 'surface', 'volume', 'one', 'userdata1', 'userdata2', 'userdata3', and 'parenttype'.
-\item[56-58] Show and save resulting Figure \ref{fig:central} or \ref{fig:shifted}.
+\item[45-52] Same as before, but we are only interested in segments that are younger than 30 days. In L47 we use the filer method (name, min, max) to keep only the segments we want in the analysis. 
+
+\item[54-61] The filter method can be used for many different applications. In the following we use it to analyse lateral roots only. Possible rb.ScalarType are: 'type', 'radius', 'order', segment creation time 'time', 'length', 'surface', 'volume', 'one', 'userdata1', 'userdata2', 'userdata3', and 'parenttype'.
+
+\item[63-65] Show and save resulting Figure \ref{fig:central}, and \ref{fig:shifted}.
 
 \end{itemize}
 
@@ -305,20 +319,20 @@ The basic idea is that such simulations help to increase the understanding of ex
 
 \begin{figure}
 \centering
-\includegraphics[width=0.6\textwidth]{example_3b.png}
-\caption{Virtual soil cores experiment (Example 3b): Central core (blue), shifted core (red)} \label{fig:soilcoreGeom}
+\includegraphics[width=0.7\textwidth]{example_3d.png} % 
+\caption{Virtual soil cores experiment (Example 3d): Central core (blue), shifted core (red)} \label{fig:soilcoreGeom}
 \end{figure} 
 
 \begin{figure}
 \centering
-\includegraphics[width=0.9\textwidth]{example_3b1.png} 
-\caption{Central core (Example 3b)} \label{fig:central}
+\includegraphics[width=0.9\textwidth]{example_3d1.png} 
+\caption{Central core (Example 3d)} \label{fig:central}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=0.9\textwidth]{example_3b2.png} 
-\caption{Shifted core (Example 3b)} \label{fig:shifted}
+\includegraphics[width=0.9\textwidth]{example_3d2.png} 
+\caption{Shifted core (Example 3d)} \label{fig:shifted}
 \end{figure}
 
 
@@ -359,6 +373,7 @@ This is especially important if we want to modify any of the parameters in our s
 
 Note that all parameters can be set and modified within the script. Especially, standard deviations can be set to zero in order to be able to precisely predict the result. For example we can calculate the total root system length analytically, and check if the numerical simulation yield the (exact) same result. This is performed in the tests withing test\_root.py, and test\_rootsystem, which is used to test and validate CPlantBox and formerly CRootBox.
 
+
 \subsection{Sensitivity analysis} \label{sec:sa}
 
 In the next part we vary given parameters in order to make a sensitivity analysis. This takes a lot of simulation runs and we demonstrate the of use parallel computing to speed up execution.
@@ -385,7 +400,7 @@ L42-L49 calculates the mean root tip depth and radial distance.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.7\textwidth]{example_3d.png}
+\includegraphics[width=0.7\textwidth]{example_4b.png}
 \caption{Sensitivity of mean root tip depth (left) and radial distance (right) to the insertion angle theta (Example 3d) } \label{fig:sa}
 \end{figure}
 

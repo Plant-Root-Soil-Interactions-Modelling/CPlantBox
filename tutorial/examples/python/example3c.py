@@ -2,62 +2,38 @@
 import sys
 sys.path.append("../../..")
 import plantbox as pb
-
 import numpy as np
 import matplotlib.pyplot as plt
 
 path = "../../../modelparameter/rootsystem/"
-name = "Brassica_napus_a_Leitner_2010"
+name = "Crypsis_aculeata_Clausnitzer_1994"
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
-rs.initialize()
-rs.simulate(120, True)
 
-# Soil core analysis
-r, depth, layers = 10, 100., 100
-z_ = np.linspace(0, -1 * depth, layers)
+depth = 130
+layers = 50
+runs = 10
 
-# fig, axes = plt.subplots(nrows = 1, ncols = 4, figsize = (16, 8))
-# for a in axes:
-#     a.set_xlabel('RLD (cm/cm)')
-#     a.set_ylabel('Depth (cm)')
+rl_ = []
+for i in range(0, runs):
+    rs.initialize(False)
+    rs.simulate(120, False)
+    ana = pb.SegmentAnalyser(rs)
+    rl_.append(ana.distribution("length", 0., -depth, layers, True))
 
-# Make a root length distribution
-ana = pb.SegmentAnalyser(rs)
-print(ana.getSummed("surface"))
+soilvolume = (depth / layers) * 10 * 10
+rl_ = np.array(rl_) / soilvolume  # convert to density
+rl_mean = np.mean(rl_, axis = 0)
+rl_err = np.std(rl_, axis = 0) / np.sqrt(runs)
 
-rl_ = ana.distribution("length", 0., depth, layers, True)
-plt.plot(rl_)
+z_ = np.linspace(0, -depth, layers)  # z - axis
+plt.plot(rl_mean, z_, "b")
+plt.plot(rl_mean + rl_err, z_, "b:")
+plt.plot(rl_mean - rl_err, z_, "b:")
 
+plt.xlabel("root surface (cm^2 / cm^3)")
+plt.ylabel("z-coordinate (cm)")
+plt.legend(["mean value (" + str(runs) + " runs)", "error"])
+plt.savefig("results/example_3c.png")
 plt.show()
-
-# # Make a root length distribution along the soil core
-# ana = pb.SegmentAnalyser(rs)
-# # ana.crop(geom)
-# ana.pack()
-# rl_ = ana.distribution("length", 0., depth, layers, True)
-# axes[1].set_title('Soil core (120 days)')
-# axes[1].plot(rl_, z_)
-#
-# # How it looked after 30 days?
-# ana = pb.SegmentAnalyser(rs)
-# ana.filter("creationTime", 0, 30)
-# # ana.crop(geom)
-# ana.pack()
-# rl_ = ana.distribution("length", 0., depth, layers, True)
-# axes[2].set_title('Soil core (30 days)')
-# axes[2].plot(rl_, z_)
-#
-# # Only laterals?
-# ana = pb.SegmentAnalyser(rs)
-# ana.filter("subType", 2)  # assuming laterals are of type 2
-# ana.crop(geom)
-# ana.pack()
-# rl_ = ana.distribution("length", 0., depth, layers, True)
-# axes[3].set_title('Soil core, lateral roots (120 days)')
-# axes[3].plot(rl_, z_)
-#
-# fig.subplots_adjust()
-# plt.savefig("results/example_3d.png")
-# plt.show()

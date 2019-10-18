@@ -420,16 +420,17 @@ SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
  *  Creates a vertical distribution of the parameter of type @param st (@see RootSystem::ScalarType)
  *
  * @param name      parameter type @see RootSystem::ScalarType
- * @param top       vertical top position (cm)
- * @param bot       vertical bot position (cm)
- * @param n         number of layers, each with a height of (bot-top)/n
+ * @param top       vertical top position (cm) (normally = 0)
+ * @param bot       vertical bot position (cm) (e.g. = -100 cm)
+ * @param n         number of layers, each with a height of (top-bot)/n
  * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
  * \return Vector of size @param n containing the summed parameter in this layer
  */
 std::vector<double> SegmentAnalyser::distribution(std::string name, double top, double bot, int n, bool exact) const
 {
 	std::vector<double> d(n);
-	double dz = (bot-top)/double(n);
+	double dz = (top-bot)/double(n);
+	assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
 	SDF_PlantBox* layer = new SDF_PlantBox(1e100,1e100,dz);
 	for (int i=0; i<n; i++) {
 		Vector3d t(0,0,top-i*dz);
@@ -449,15 +450,16 @@ std::vector<double> SegmentAnalyser::distribution(std::string name, double top, 
 /**
  *  Creates a vertical distribution
  *
- * @param top       vertical top position (cm)
- * @param bot       vertical bot position (cm)
- * @param n         number of layers (each with a height of (bot-top)/n )
+ * @param top       vertical top position (cm) (normally = 0)
+ * @param bot       vertical bot position (cm) (e.g. = -100 cm)
+ * @param n         number of layers, each with a height of (top-bot)/n
  * \return Vector of size @param n containing an Analysis object of the layers (cropped exactly)
  */
 std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bot, int n) const
 {
 	std::vector<SegmentAnalyser> d(n);
-	double dz = (bot-top)/double(n);
+    double dz = (top-bot)/double(n);
+    assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );;
 	SDF_PlantBox* layer = new SDF_PlantBox(1e100,1e100,dz);
 	for (int i=0; i<n; i++) {
 		Vector3d t(0,0,top-i*dz);
@@ -474,11 +476,11 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
  *  Creates a two-dimensional distribution of the parameter of type @param st (@see RootSystem::ScalarType)
  *
  * @param name      parameter type @see RootSystem::ScalarType
- * @param top       vertical top position (cm)
- * @param bot       vertical bot position (cm)
+ * @param top       vertical top position (cm) (normally = 0)
+ * @param bot       vertical bot position (cm) (e.g. = -100 cm)
  * @param left      left along x-axis (cm)
  * @param right     right along x-axis (cm)
- * @param n         number of vertical grid elements (each with height of (bot-top)/n )
+ * @param n         number of layers, each with a height of (top-bot)/n
  * @param m 		number of horizontal grid elements (each with length of (right-left)/m)
  * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
  * \return Vector of size @param n containing the summed parameter in this layer
@@ -486,8 +488,10 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
 std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name, double top, double bot, double left, double right, int n, int m, bool exact) const
 {
 	std::vector<std::vector<double>> d(n);
-	double dz = (bot-top)/double(n);
+    double dz = (top-bot)/double(n);
+    assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
 	double dx = (right-left)/double(m);
+    assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
 	SDF_PlantBox* layer = new SDF_PlantBox(dx,1e9,dz);
 	for (int i=0; i<n; i++) {
 		std::vector<double> row(m); // m columns
@@ -511,19 +515,21 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name
 /**
  *  Creates a vertical distribution
  *
- * @param top       vertical top position (cm)
- * @param bot       vertical bot position (cm)
+ * @param top       vertical top position (cm) (normally = 0)
+ * @param bot       vertical bot position (cm) (e.g. = -100 cm)
  * @param left      left along x-axis (cm)
  * @param right     right along x-axis (cm)
- * @param n         number of vertical grid elements (each with height of (bot-top)/n )
+ * @param n         number of layers, each with a height of (top-bot)/n
  * @param m 		number of horizontal grid elements (each with length of (right-left)/m)
  * \return Vector of size @param n containing the summed parameter in this layer
  */
 std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double top, double bot, double left, double right, int n, int m) const
 {
 	std::vector<std::vector<SegmentAnalyser>> d(n);
-	double dz = (bot-top)/double(n);
-	double dx = (right-left)/double(m);
+    double dz = (top-bot)/double(n);
+    assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
+    double dx = (right-left)/double(m);
+    assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
 	SDF_PlantBox* layer = new SDF_PlantBox(dx,1e4,dz);
 	// std::cout << "dx " << dx  <<", dz "<< dz << "\n";
 	for (int i=0; i<n; i++) {

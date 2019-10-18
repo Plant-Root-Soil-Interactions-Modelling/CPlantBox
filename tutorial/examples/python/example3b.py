@@ -36,6 +36,7 @@ plt.xlabel("cm")
 plt.ylabel("cm")
 plt.scatter(nodes[baseI, 0], nodes[baseI, 1], c = "g", label = "root bases")
 plt.scatter(nodes[tipI, 0], nodes[tipI, 1], c = "r", label = "root tips")
+plt.legend()
 plt.savefig("results/example_3b.png")
 plt.show()
 
