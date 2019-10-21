@@ -22,4 +22,4 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 # add subdirectories
 add_subdirectory(src)
 add_subdirectory(examples)
-add_subdirectory(python)
+add_subdirectory(tutorial/jupyter)
