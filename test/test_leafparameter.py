@@ -102,7 +102,7 @@ class TestLeafParameter(unittest.TestCase):
         self.leaf_example()
         p = self.lrp.realize()
         self.assertEqual(p.__class__.__name__, "LeafSpecificParameter", "realize: unexpected class type")
-        self.assertEqual(p.subType, -1, "realize: unexpected sub type")
+        self.assertEqual(p.subType, 1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
         self.assertEqual(len(p.ln) + 1, self.lrp.nob, "realize: internodal distances +1 should be  number of laterals")
         # print(p)

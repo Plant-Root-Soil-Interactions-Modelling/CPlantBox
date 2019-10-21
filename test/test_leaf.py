@@ -29,7 +29,7 @@ def leafLateralLength(t, et, r, k):  # length of first order laterals (without s
 class TestLeaf(unittest.TestCase):
 
     def leaf_example_rrp(self):
-        """ an example used in the tests below, a main leaf with laterals """
+        """ an example used in the tests below, a main leaf with sub-leafs """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.LeafRandomParameter(self.plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "tapleaf", 1, 1, 10, 20, (89. / 19.), 1, 0.5
@@ -117,10 +117,10 @@ class TestLeaf(unittest.TestCase):
         dt = np.diff(times)
         p = self.leaf.param()  # rename
         k = p.getK()
-        et = np.zeros((p.nob))
+        et = np.zeros((p.nob()))
         l = 0
         et[0] = leafAge(p.la + p.lb + l, p.r, k)
-        for i in range(0, p.nob - 1):  # calculate lateral emergence times
+        for i in range(0, p.nob() - 1):  # calculate lateral emergence times
             l += p.ln[i]
             et[i + 1] = leafAge(p.la + p.lb + l, p.r, k + 1e-12)
         l = leafLength(times[1:], p.r, k)  # zero order lengths

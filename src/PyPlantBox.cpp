@@ -218,7 +218,7 @@ PYBIND11_MODULE(plantbox, m) {
      * organparameter.h
      */
     py::class_<OrganSpecificParameter, std::shared_ptr<OrganSpecificParameter>>(m,"OrganSpecificParameter")
-        .def(py::init<>())
+        .def(py::init<int>())
         .def_readwrite("subType",&OrganSpecificParameter::subType)
         .def("__str__",&OrganSpecificParameter::toString);
     py::class_<OrganRandomParameter, std::shared_ptr<OrganRandomParameter>>(m,"OrganRandomParameter")
@@ -479,12 +479,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("lb", &RootSpecificParameter::lb)
         .def_readwrite("la", &RootSpecificParameter::la)
         .def_readwrite("ln", &RootSpecificParameter::ln)
-        .def_readwrite("nob", &RootSpecificParameter::nob)
         .def_readwrite("r", &RootSpecificParameter::r)
         .def_readwrite("a", &RootSpecificParameter::a)
         .def_readwrite("theta", &RootSpecificParameter::theta)
         .def_readwrite("rlt", &RootSpecificParameter::rlt)
-        .def("getK",&RootSpecificParameter::getK);
+        .def("getK",&RootSpecificParameter::getK)
+        .def("nob", &RootSpecificParameter::nob);
     /*
      * seedparameter.h
      */
@@ -577,7 +577,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("a", &LeafSpecificParameter::a)
         .def_readwrite("theta", &LeafSpecificParameter::theta)
         .def_readwrite("rlt", &LeafSpecificParameter::rlt)
-        .def("getK",&LeafSpecificParameter::getK);
+        .def("getK",&LeafSpecificParameter::getK)
+        .def("nob",&LeafSpecificParameter::nob);
     /*
      * stemparameter.h
      */
@@ -629,7 +630,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("a", &StemSpecificParameter::a)
         .def_readwrite("theta", &StemSpecificParameter::theta)
         .def_readwrite("rlt", &StemSpecificParameter::rlt)
-        .def("getK",&StemSpecificParameter::getK);
+        .def("getK",&StemSpecificParameter::getK)
+        .def("nob", &StemSpecificParameter::nob);
     /**
       * Root.h
       */

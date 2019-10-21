@@ -27,20 +27,20 @@ public:
 
     RootSpecificParameter(): RootSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
     RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt):
-        OrganSpecificParameter(),  lb(lb), la(la), nob(nob), r(r), a(a), theta(theta), rlt(rlt), ln(ln) { subType = type; } ///< Constructor setting all parameters
+        OrganSpecificParameter(type),  lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln) { }; ///< Constructor setting all parameters
 
     /*
      * RootBox parameters per single root
      */
     double lb;              ///< Basal zone [cm]
     double la;              ///< Apical zone [cm]
-    int nob;                ///< Number of branches [1], ln.size()== nob-1 for nob>0
     double r;               ///< Initial growth rate [cm day-1]
     double a;               ///< Root radius [cm]
     double theta;           ///< Angle between root and parent root [rad]
     double rlt;             ///< Root life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
 
+    int nob() const { return ln.size(); } ///< return the maximal number of lateral branches [1]
     double getK() const; ///< Returns the exact maximal root length of this realization [cm]
 
     std::string toString() const override; ///< for debugging

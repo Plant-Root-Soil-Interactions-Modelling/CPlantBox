@@ -113,10 +113,10 @@ class TestRoot(unittest.TestCase):
         dt = np.diff(times)
         p = self.root.param()  # rename
         k = p.getK()
-        et = np.zeros((p.nob))
+        et = np.zeros((p.nob()))
         l = 0
         et[0] = rootAge(p.la + p.lb + l, p.r, k)
-        for i in range(0, p.nob - 1):  # calculate lateral emergence times
+        for i in range(0, p.nob() - 1):  # calculate lateral emergence times
             l += p.ln[i]
             et[i + 1] = rootAge(p.la + p.lb + l, p.r, k + 1e-12)
         l = rootLength(times[1:], p.r, k)  # zero order lengths

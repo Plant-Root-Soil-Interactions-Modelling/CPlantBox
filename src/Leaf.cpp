@@ -49,7 +49,7 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
     assert(parent!=nullptr && "Leaf::Leaf parent must be set");
     //  std::cout << "Leaf pni = "<< pni<< std::endl;
     //  std::cout << "Organism* plant ="<< plant <<" "<< parent<<std::endl;
-    //  std::cout <<", "<<(LeafParameter*) param<< "\n";
+    // std::cout <<", "<< std::static_pointer_cast<const LeafSpecificParameter>(param_)->toString() << "\n";
     // std::cout <<"subtype ="<<param()->subType <<"getleafphytomerID =" <<getleafphytomerID(param()->subType)<< "\n";
     auto leaf_p = this->param();
     addleafphytomerID(leaf_p->subType);
@@ -273,8 +273,7 @@ double Leaf::calcLength(double age)
     //    std::string organ_name = std::string(getLeafRandomParameter()->organName);
     //    //std::cout<<"organName is "<<name()<<"\n";
     //    if (name()  == "maize1eaf"){
-    assert(age>=0);
-    std::cout<<"organName is ? \n";
+    assert(age>=0  && "Leaf::calcLength() negative root age");
     //return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
     return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,shared_from_this());
     //	}else {
@@ -293,7 +292,7 @@ double Leaf::calcAge(double length)
     //    std::string organ_name = std::string(getLeafRandomParameter()->organName);
     //    //std::cout<<getLeafRandomParameter()->name<< "\n";
     //     if ( name() == "maize1eaf"){
-    assert(length>=0);
+    assert(length>=0 && "Leaf::calcAge() negative root length");
     //std::cout<<"length subtype is"<<getLeafRandomParameter()->subType<<"\n";
     return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),shared_from_this());
     //        return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);

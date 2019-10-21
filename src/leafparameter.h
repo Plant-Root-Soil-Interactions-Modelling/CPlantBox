@@ -19,9 +19,9 @@ class LeafSpecificParameter : public OrganSpecificParameter
 {
 public:
 
-	LeafSpecificParameter() :OrganSpecificParameter() { };
+	LeafSpecificParameter() :OrganSpecificParameter(-1) { };
 	LeafSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
-		OrganSpecificParameter() , lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln){  };
+		OrganSpecificParameter(type) , lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln)  { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
@@ -34,6 +34,7 @@ public:
 	double rlt = 0.;		///< Leaf life time [day]
 	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
 
+	int nob() const { return ln.size(); }
 	double getK() const; ///< Returns the exact maximal leaf length of this realization [cm]
 
 	std::string toString() const override;

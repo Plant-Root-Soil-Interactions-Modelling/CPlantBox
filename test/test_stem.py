@@ -1,9 +1,8 @@
 import unittest
 import sys
-import numpy as np			  
+import numpy as np
 sys.path.append("..")
 import plantbox as pb
-
 
 
 def stemAge(l, r, k):  # stem age at a certain length
@@ -32,11 +31,11 @@ class TestStem(unittest.TestCase):
         p0.name, p0.subType, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "tapstem", 1, 1, 10, 20, (89. / 19.), 1, 0.5
         p0.successor = [2]
         p0.successorP = [1.]
-				  
+
         p1 = pb.StemRandomParameter(self.plant)
-				  
+
         p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
-				  
+
         self.p0, self.p1 = p0, p1  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
@@ -46,8 +45,7 @@ class TestStem(unittest.TestCase):
         #
         param0 = p0.realize()  # set up stem by hand (without a stem system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-						  
-																									   
+
         parentstem = pb.Stem(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
         parentstem.setOrganism(self.plant)
         parentstem.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
@@ -55,21 +53,18 @@ class TestStem(unittest.TestCase):
         #
         self.stem = pb.Stem(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentstem , 0, 0)
         self.stem.setOrganism(self.plant)
-						   
 
     def stem_length_test(self, dt, l, subDt):
-						  
         """ simulates a single stem and checks length against analytic length """
         nl, nl2, non, meanDX = [], [], [], []
 
         for t in dt:
             for i in range(0, subDt):
-				
+
                 self.stem.simulate(t / subDt)
             nl.append(self.stem.getParameter("length"))
             non.append(self.stem.getNumberOfNodes())
             meanDX.append(nl[-1] / non[-1])
-							   
 
             # length from geometry
             poly = np.zeros((non[-1], 3))  #
@@ -86,18 +81,13 @@ class TestStem(unittest.TestCase):
             self.assertAlmostEqual(l[i], nl2[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
             self.assertLessEqual(meanDX[i], 0.5, "axial resolution dx is too large")
             self.assertLessEqual(0.25, meanDX[i], "axial resolution dx is unexpected small")
-						   
 
     def test_constructors(self):
-								  
         """ tests two kinds of constructors and copy"""
         self.stem_example_rtp()
         # 1. constructor from scratch
-							  
         param = self.p0.realize()
-							   
         stem = pb.Stem(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
-							   
         stem.setOrganism(self.plant)
         stem.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
@@ -109,10 +99,8 @@ class TestStem(unittest.TestCase):
         self.assertEqual(str(stem), str(stem3), "deep copy: the organs shold be equal")
         self.assertIsNot(stem.getParam(), stem3.getParam(), "deep copy: organs have same parameter set")
         # TODO check if OTP were copied
-						   
 
     def test_stem_length(self):
-							 
         """ tests if numerical stem length agrees with analytic solutions at 4 points in time with two scales of dt"""
         self.stem_example_rtp()
         times = np.array([0., 7., 15., 30., 60.])
@@ -124,20 +112,18 @@ class TestStem(unittest.TestCase):
         self.stem_length_test(dt, l, 1)  # large dt
         self.stem = stem
         self.stem_length_test(dt, l, 1000)  # very fine dt
-						   
 
     def test_stem_length_including_laterals(self):
-							   
         """ tests if numerical stem length agrees with analytic solution including laterals """
         self.stem_example_rtp()
         times = np.array([0., 7., 15., 30., 60.])
         dt = np.diff(times)
         p = self.stem.param()  # rename
         k = p.getK()
-        et = np.zeros((p.nob))
+        et = np.zeros((p.nob()))
         l = 0
         et[0] = stemAge(p.la + p.lb + l, p.r, k)
-        for i in range(0, p.nob - 1):  # calculate lateral emergence times
+        for i in range(0, p.nob() - 1):  # calculate lateral emergence times
             l += p.ln[i]
             et[i + 1] = stemAge(p.la + p.lb + l, p.r, k + 1e-12)
         l = stemLength(times[1:], p.r, k)  # zero order lengths
@@ -161,15 +147,12 @@ class TestStem(unittest.TestCase):
                 self.stem = stem
             for i in range(0, len(times[1:])):
                 self.assertAlmostEqual(numeric_total[i], analytic_total[i], 10, "numeric and analytic total lengths do not agree in time step " + str(i + 1))
-						   
 
     def test_geometry(self):
-							   
         """ tests if nodes can be retrieved from the organ """
         # TODO make plot for plausibility
 
     def test_parameter(self):
-						  
         """ tests some parameters on sequential organ list """
         self.stem_example_rtp()
         self.stem.simulate(30)
@@ -185,17 +168,16 @@ class TestStem(unittest.TestCase):
         self.assertEqual(order, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected stem sub types")  # +1, because of artificial parent stem
         for i in range(0, 5):
             self.assertEqual(age[i], 30 - ct[i], "getParameter: unexpected stem sub types")  # +1, because of artificial parent stem
-						   
+
 #
 
     def test_dynamics(self):
-							   
         """ tests if nodes created in last time step are correct """  #
         self.stem_example_rtp()
         r = self.stem
-								
+
         r.simulate(.5, True)
-		
+
         self.assertEqual(r.hasMoved(), False, "dynamics: node movement during first step")
         r.simulate(1e-1, True)
         self.assertEqual(r.hasMoved(), False, "dynamics: movement, but previous node at axial resolution")
@@ -203,7 +185,6 @@ class TestStem(unittest.TestCase):
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         r.simulate(2.4, True)
         self.assertEqual(r.getNumberOfNodes() - r.getOldNumberOfNodes(), 5, "dynamics: unexcpected number of new nodes")
-						   
 
 
 if __name__ == '__main__':

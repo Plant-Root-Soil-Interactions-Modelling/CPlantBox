@@ -60,9 +60,7 @@ std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::shared_ptr
  */
 std::shared_ptr<OrganSpecificParameter> OrganRandomParameter::realize()
 {
-    auto op = std::make_shared<OrganSpecificParameter>();
-    op->subType = subType;
-    return op;
+    return std::make_shared<OrganSpecificParameter>(subType);
 }
 
 /**

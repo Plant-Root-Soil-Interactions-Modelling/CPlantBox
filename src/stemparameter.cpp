@@ -26,7 +26,7 @@ std::string StemSpecificParameter::toString() const
     std::stringstream str;
     str << "subType\t" << subType << std::endl;
     str << "lb\t" << lb << std::endl << "la\t" << la << std::endl;
-    str << "nob\t" << nob << std::endl << "r\t" << r << std::endl << "a\t" << a << std::endl;
+    str << "nob\t" << nob() << std::endl << "r\t" << r << std::endl << "a\t" << a << std::endl;
     str << "theta\t" << theta << std::endl << "rlt\t" << rlt << std::endl;
     str << "ln\t";
     for (int i=0; i<ln.size(); i++) {

@@ -212,7 +212,7 @@ double Root::calcCreationTime(double length)
  */
 double Root::calcLength(double age)
 {
-    assert(age >= 0 && "Root::getLength() negative root age");
+    assert(age >= 0 && "Root::calcLength() negative root age");
     return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
 }
 
@@ -224,7 +224,7 @@ double Root::calcLength(double age)
  */
 double Root::calcAge(double length)
 {
-    assert(length >= 0 && "Root::getAge() negative root length");
+    assert(length >= 0 && "Root::calcAge() negative root length");
     return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this());
 }
 
@@ -380,7 +380,7 @@ double Root::getParameter(std::string name) const
     if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
-    if (name=="nob") { return param()->nob; } // number of branches
+    if (name=="nob") { return param()->nob(); } // number of branches
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
     if (name=="radius") { return param()->a; } // root radius [cm]
     if (name=="a") { return param()->a; } // root radius [cm]
