@@ -1,5 +1,5 @@
 # CPlantBox
-DOI: [![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851)
+[![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851)\
 Two main functions
 1. Create plant structure
 2. Coupling with PiafMunch to have carbon and water flow inside the structure.
