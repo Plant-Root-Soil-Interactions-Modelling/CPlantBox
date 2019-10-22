@@ -437,7 +437,7 @@ After running the script we perform the following operations to create an animat
  \item Optionally, create a tube plot with the help of the script tutorial/pyscript/rsTubePlot.py (Tools$\rightarrow$Python Shell, press 'Run script').
  \item Run the script tutorial/pyscript/rsAnimate.py (Tools$\rightarrow$Python Shell, press 'Run script'). The script creates the threshold filter and the animation. 
  \item Optionally, visualize the domain boundaries by running the script tutorial/examples/python/results/example\_4c.py (Tools$\rightarrow$Python Shell, press 'Run script'). Run after the animation script (ohterwise it does not work).  
- \item Use File$\rightarrow$Save Animation... to render and save the animation. Pick quality (<100 \%), and the frame rate in order to achieve an appropriate video length, e.g. 300 frames with 50 fps equals 6 seconds. Files might be very big, and needs compression (e.g. by VLC).
+ \item Use File$\rightarrow$Save Animation... to render and save the animation. Pick quality (<100 \%), and the frame rate in order to achieve an appropriate video length, e.g. 300 frames with 50 fps equals 6 seconds. Files might be very big, and needs compression (e.g. ffmpeg -i in.avi -vcodec libx264 -b 4000k -an out.avi, produces high quality, tiny file size, and plays with VLC).
 \end{enumerate}
 
 
