@@ -264,7 +264,7 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
 	bindParameter("k", &k, "Maximal leaf length [cm]", &ks);
 	bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-	bindParameter("a", &r, "Leaf width [cm]", &as);
+	bindParameter("a", &a, "Leaf width [cm]", &as);
 	bindParameter("tropismT", &tropismT, "Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
 	bindParameter("tropismN", &tropismN, "Number of trials of leaf tropism");
 	bindParameter("tropismS", &tropismS, "Mean value of expected change of leaf tropism [1/cm]");

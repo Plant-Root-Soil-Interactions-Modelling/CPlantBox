@@ -342,10 +342,15 @@ It is possible to make use of the SegmentAnalyser class without any ohter CPlant
 
 \lstinputlisting[language=Python, caption=Example 3e]{../../examples/python/example3e.py}
 
+\begin{itemize}
+ \item[6-9] Define some segments with data
+ \item[14,15] We convert the Python list to lists of C++ types
+ \item[21] We create the SegmentAnalyser object without an underlying Organsim
+\end{itemize}
 
 
 
-\section{Changing model parameters}
+\section{Model parameters} % chapter 4
 
 In the following we show how model parameters can be modified, and how a sensitivity analysis can be performed. Additionally, we comment on how to best make an animation from a CPlantBox simulation.
 
@@ -353,48 +358,52 @@ In the following we show how model parameters can be modified, and how a sensiti
 
 In the previous examples we always opened the root system parameters from a file. 
 In the following example we show to do everything in a Python script without the need of any parameter files. 
-This is especially important if we want to modify any of the parameters in our scripts, like it is needed for sensitivity analysis in the next section. 
+This is especially important if we want to modify any of the parameters in our scripts, like it is needed for sensitivity analysis in the next section.
+
+In order to set up a simulation by hand, we have to define all relevant OrganRandomParameter objects. For the RootSystem class these are RootRandomParameter (on for each root type) and SeedRandomParameter (on for each plant type). Note that within the simulation, the parameters for a specific root (RootSpecificParameter) are generated from the RootRandomParameter that represents the random distributions of certain parameters.
 
 \lstinputlisting[language=Python, caption=Example 4a]{../../examples/python/example4a.py}
 
 \begin{itemize}
 
-\item[8,9] Create the root type parameters of type 1 and type 2.
-\item[11-33] We set up a simple root system by hand. First we define the tap root L11-L24, then the laterals L26-L33. In L20 and L21 we have to convert the Python types to the exposed C++ types.
-\item[35,36] Set the root type parameters.
+\item[11,12] Create the root type parameters of type 1 and type 2.
+\item[16-36] We set up a simple root system by hand. First we define the tap root L14-L27, then the laterals L29-L36. By default all standard deviations are 0. Most parameters standard deviations can be set with an additional 's' appended to the parameter name, e.g. las is the std of la, see L32
+\item[38,39] Set the root type parameters.
 
-\item[38-43] Create the root system parameter stating when basal and shoot borne roots emerge.
+\item[32-46] Create the seed random parameter stating when basal and shoot borne roots emerge. In this example we neglect shoot borne roots, and just define the seed location and  the emergence times (in days) of the basal roots.
+\item[47] Sets the root system parameters.
 
-\item[45] Sets the root system parameters.
+\item[49] We state the root types of basal and shoot borne roots. Per default these types are 4 (for basal) and 5 (for shootborne). If they are not set a warning is produced and the tap root type 1 is taken. 
+\item-[50,51] Simulate and export results. 
 
-\item[47-50] Initialize, simulate, export. 
+\item[57-55] It is not only possible to set all model parameter, but to retrieve all parameters after the simulation with rs.getParameter. For all parameters that are derived from a distribution the root specific parameters are returned (L56). The root random parameter can be accessed by adding '\_mean', '\_dev' to the parameter value (L57).  
+
+\item[58-60] Simulation results can also accessed with getParameter. 
 
 \end{itemize}
 
-Note that all parameters can be set and modified within the script. Especially, standard deviations can be set to zero in order to be able to precisely predict the result. For example we can calculate the total root system length analytically, and check if the numerical simulation yield the (exact) same result. This is performed in the tests withing test\_root.py, and test\_rootsystem, which is used to test and validate CPlantBox and formerly CRootBox.
+Note that all parameters can be set and modified within Python. Especially, standard deviations can be set to zero in order to be able to precisely predict the result. For example we can calculate the total root system length analytically, and check if the numerical simulation yield the (exact) same result. This is performed in the tests withing test\_root.py, and test\_rootsystem, which is used to test and validate CPlantBox and formerly CRootBox.
 
 
 \subsection{Sensitivity analysis} \label{sec:sa}
 
 In the next part we vary given parameters in order to make a sensitivity analysis. This takes a lot of simulation runs and we demonstrate the of use parallel computing to speed up execution.
-We vary the insertion angle of the tap root and basal root, and look at the change in mean root tip depth and radial distance. 
+
+In this exmemplary sensitivity analysis ww will vary the insertion angle of the tap and basal root, and look at the resulting change in mean root tip depth and radial distance. 
 
 \lstinputlisting[language=Python, caption=Example 4b]{../../examples/python/example4b.py}
 
 \begin{itemize}
 
-\item[8-16] Defines a function to set all standard deviations proportional to the parameter values. We use this function in the following to set the standard deviation to zero everywhere. 
+\item[12-20] Defines a function to set all standard deviations proportional to the parameter values. We use this function in the following to set the standard deviation to zero everywhere. 
 
-\item[19-23] Parameters of the analysis. $N$ denotes the resolution of the parameter we vary, and $runs$ the number of iterations, i.e. $N\cdot runs$ simulations are performed. 
-In L24 we define the insertion angle to be varied linearly between 0 and $\pi/2$.
+\item[23-29] Parameters of the analysis. $N$ denotes the resolution of the parameter we vary, and $runs$ the number of iterations, i.e. a total of $N\cdot runs$ simulations are performed. In L29 we define the insertion angle to be varied linearly between 0 and $\pi/2$.
 
-\item[26-51] Definition of a function that performs the simulation and returns mean root tip depth and radial distance. First we create a root system and set the standard deviation to zero L27-L29. 
-L32-L35 sets the insertion angle, tap root is always of type 1, and in the parameter file basal roots are of type 4. L38-39 performs the simulation. 
-L42-L49 calculates the mean root tip depth and radial distance. 
+\item[32-52] Definition of a function that performs the simulation and returns mean root tip depth and radial distance. First we create a root system and set the standard deviation to zero L34-L36. L38, L39 sets the insertion angle. L41 initializes the root system and states that basal root are of root tape 1 (same as tap root). The False value turns of verbosity to avoid any outputs to the console. L42 performs the simulation. L44-L52 calculates the mean root tip depth and radial distance. 
 
-\item[53-69] This section performs the computation. L53-54 preallocates the resulting arrays. L58-L64 performs the parallel computations, index $i$ is the index of the insertion angle. L67-L69 calculates the mean values.
+\item[55-73] This section performs the computation of all simulation runs. L55-56 preallocates the resulting arrays. L62-L68 performs the parallel computations, index $i$ is the index of the insertion angle. L71-73 calculates the mean values.
 
-\item[72-82] Creates the resulting Figure \ref{fig:sa}
+\item[75-85] Creates the resulting Figure \ref{fig:sa}
 
 \end{itemize}
 
@@ -406,9 +415,7 @@ L42-L49 calculates the mean root tip depth and radial distance.
 
 \subsection{How to make an animation}
 
-In order to create an animation in Paraview we have to consider some details. 
-The main idea is to export the result file as segments using the class SegmentAnalyser. 
-A specific frame is then obtained by thresholding within Paraview using the segments creation times. 
+In order to create an animation in Paraview we have to consider some details. The main idea is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. 
 
 We modify example1b.py to demonstrate how to create an animation.
 
@@ -416,25 +423,26 @@ We modify example1b.py to demonstrate how to create an animation.
 
 \begin{itemize}
 
-\item[14-16] Its important to use a small resolution in order to obtain a smooth animation. L16 set the axial resolution to 0.1 cm. 
+\item[17,18] Its important to use a small resolution in order to obtain a smooth animation. L18 set the axial resolution to 0.1 cm. 
 
-\item[23] Instead of saving the root system as polylines, we use the SegmentAnalyser to save the root system as segments.
+\item[25] Instead of saving the root system as polylines, we use the SegmentAnalyser to save the root system as segments.
 
-\item[26] We save the geometry as Python script for the visualization in ParaView.
+\item[28] We save the geometry as Python script for the visualization in ParaView.
 
 \end{itemize}
 
 After running the script we perform the following operations to create an animation:
 \begin{enumerate}
- \item Open the .vtp file in ParaView (File$\rightarrow$Open...).
- \item Optionally, create a tube plot with the help of the script scripts/tubePlot.py (Tools$\rightarrow$Python Shell, press 'Run script').
- \item Optionally, visualize the domain boundaries by running the script results/example\_3e.py (Tools$\rightarrow$Python Shell, press 'Run script').
- \item Run the script scripts/animate.py (Tools$\rightarrow$Python Shell, press 'Run script'). The script creates the threshold filter and the animation. 
- \item Use File$\rightarrow$Save Animation... to render and save the animation.
+ \item Open the .vtp file in ParaView (File$\rightarrow$Open...), and open tutorial/examples/python/results/example\_4c.vtp.
+ \item Optionally, create a tube plot with the help of the script tutorial/pyscript/rsTubePlot.py (Tools$\rightarrow$Python Shell, press 'Run script').
+ \item Run the script tutorial/pyscript/rsAnimate.py (Tools$\rightarrow$Python Shell, press 'Run script'). The script creates the threshold filter and the animation. 
+ \item Optionally, visualize the domain boundaries by running the script tutorial/examples/python/results/example\_4c.py (Tools$\rightarrow$Python Shell, press 'Run script'). Run after the animation script (ohterwise it does not work).  
+ \item Use File$\rightarrow$Save Animation... to render and save the animation. Pick quality (<100 \%), and the frame rate in order to achieve an appropriate video length, e.g. 300 frames with 50 fps equals 6 seconds. Files might be very big, and needs compression (e.g. by VLC).
 \end{enumerate}
 
 
-\section{Tropisms}
+
+\section{Tropisms} % chapter 5
 
 The change in root growth direction is described by tropisms. 
 

@@ -24,8 +24,8 @@ def set_all_sd(rs, s):
 path = "../../../modelparameter/rootsystem/"
 name = "Triticum_aestivum_a_Bingham_2011"
 simtime = 20
-N = 50  # resolution of paramter
-runs = 10  # iterations
+N = 25  # resolution of paramter
+runs = 20  # iterations
 theta0_ = np.linspace(0, math.pi / 2, N)
 
 
@@ -34,28 +34,21 @@ def simulate(i):
     rs = pb.RootSystem()
     rs.readParameters(path + name + ".xml")
     set_all_sd(rs, 0.)  # set all sd to zero
-    rs.initialize()  # copy to tap to basal root parameters
-
     # vary parameter
-    p1 = rs.getRootRandomParameter(1)  # tap root
-    p4 = rs.getRootRandomParameter(4)  # basal roots
+    p1 = rs.getRootRandomParameter(1)  # tap and basal root type
     p1.theta = theta0_[i]
-    p4.theta = theta0_[i]
-
     # simulation
-    rs.initialize()  # build again with theta0
-    rs.simulate(simtime, True)
-
-    # target
+    rs.initialize(1, 1, False)
+    rs.simulate(simtime, False)
+    # calculate target
+    depth = 0.  # mean depth
+    rad_dist = 0.  # mean raidal distance
     roots = rs.getPolylines()
-    depth = 0.
-    rad_dist = 0.
     for r in roots:
         depth += r[-1].z
         rad_dist += math.hypot(r[-1].x, r[-1].y)
     depth /= len(roots)
     rad_dist /= len(roots)
-
     return depth, rad_dist
 
 
@@ -63,6 +56,8 @@ depth_ = np.zeros(N)
 rad_dist_ = np.zeros(N)
 
 for r in range(0, runs):
+
+    print("run", r + 1)
 
     # Parallel execution
     param = []  # param is a list of tuples
@@ -88,4 +83,3 @@ axes[1].plot(theta0_, rad_dist_)
 fig.subplots_adjust()
 plt.savefig("results/example_4b.png")
 plt.show()
-

@@ -22,5 +22,5 @@ ana = pb.SegmentAnalyser(nodes, segs, cts, radii)
 
 print("length", ana.getSummed("length"))
 
-ana.write("example_3e.vtp", ["radius"])  # working
-# ana.write("test.vtp") # not working, but with a meaningful exception
+ana.write("results/example_3e.vtp", ["radius"])  # working
+# ana.write("results/example_3e.vtp") # not working, but with a meaningful exception

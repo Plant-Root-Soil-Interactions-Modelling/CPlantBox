@@ -183,11 +183,12 @@ void RootSystem::initialize(int basaltype, int shootbornetype, bool verbose)
 
     // create seed
     seed = std::make_shared<Seed>(shared_from_this());
+    seed->basalType = basaltype;
+    seed->shootborneType = shootbornetype;
     seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
     // std::cout << "RootSystem::initialize:\n" <<  seedParam.toString() ;
     baseOrgans = seed->copyBaseOrgans();
-
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();
 }
@@ -524,7 +525,7 @@ void RootSystem::writeVTP(std::ostream & os) const
     // CELLDATA (live on the polylines)
     os << "<CellData Scalars=\" CellData\">\n";
     const size_t N = 3; // SCALARS
-    std::string scalarTypeNames[N] = {"type", "order", "radius" };
+    std::string scalarTypeNames[N] = { "radius", "subType", "creationTime" };
     for (size_t i=0; i<N; i++) {
         os << "<DataArray type=\"Float32\" Name=\"" << scalarTypeNames[i] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
         auto scalars = getParameter(scalarTypeNames[i]);

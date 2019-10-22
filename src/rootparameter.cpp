@@ -300,7 +300,7 @@ void RootRandomParameter::bindParameters()
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
     bindParameter("nob", &nob, "Maximal number of laterals [1]", &nobs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-    bindParameter("a", &r, "Root radius [cm]", &as);
+    bindParameter("a", &a, "Root radius [cm]", &as);
     bindParameter("colorR", &colorR, "Root color, red component [0.-1.]");
     bindParameter("colorG", &colorG, "Root color, green component [0.-1.]");
     bindParameter("colorB", &colorB, "Root color, blue component [0.-1.]");

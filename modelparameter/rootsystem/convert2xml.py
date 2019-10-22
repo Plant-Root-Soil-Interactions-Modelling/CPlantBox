@@ -3,7 +3,7 @@
 import os
 from os import walk
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 import plantbox as pb
 
 #

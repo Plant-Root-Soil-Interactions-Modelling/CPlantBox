@@ -261,7 +261,7 @@ void StemRandomParameter::bindParmeters()
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
     bindParameter("nob", &nob, "Maximal number of laterals [1]", &nobs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-    bindParameter("a", &r, "Stem radius [cm]", &as);
+    bindParameter("a", &a, "Stem radius [cm]", &as);
     bindParameter("RotBeta", &RotBeta, "RevRotation of the stem");
     bindParameter("BetaDev", &BetaDev, "RevRotation deviation");
     bindParameter("InitBeta", &InitBeta, "Initial RevRotation");
