@@ -121,7 +121,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			ln_.push_back(d);
 		};break;
 default:
-		throw 1; // TODO make a nice one
+		throw 0; // TODO make a nice one
 	}
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.); // radius
