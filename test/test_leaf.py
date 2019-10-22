@@ -33,7 +33,7 @@ class TestLeaf(unittest.TestCase):
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.LeafRandomParameter(self.plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "tapleaf", 1, 1, 10, 20, (89. / 19.), 1, 0.5
-        p0.successor = [3]
+        p0.successor = [2]
         p0.successorP = [1.]
         p1 = pb.LeafRandomParameter(self.plant)
         p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1

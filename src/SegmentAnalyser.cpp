@@ -559,6 +559,18 @@ std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double 
 }
 
 /**
+ * Adds user data that are written into the VTP file
+ *
+ *
+ */
+void SegmentAnalyser::addUserData(std::vector<double> data, std::string name)
+{
+    assert(data.size()==segments.size());
+    userData.push_back(data);
+    userDataNames.push_back(name);
+}
+
+/**
  * Exports the simulation results with the type from the extension in name
  * (that must be lower case)
  *

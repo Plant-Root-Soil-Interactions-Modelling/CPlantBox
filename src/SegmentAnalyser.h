@@ -54,8 +54,7 @@ public:
     SegmentAnalyser cut(const SDF_HalfPlane& plane) const; ///< returns the segments intersecting with a plane (e.g. for trenches)
 
     // User data for export or distributions
-    void addUserData(std::vector<double> data, std::string name) { assert(data.size()==segments.size()); userData.push_back(data); userDataNames.push_back(name); }
-    ///< adds user data that are written into the VTP file, @see SegmentAnalyser::writeVTP
+    void addUserData(std::vector<double> data, std::string name); ///< adds user data that are written into the VTP file, @see SegmentAnalyser::writeVTP
     void clearUserData() { userData.clear(); userDataNames.clear(); } ///< resets the user data
 
     // some exports

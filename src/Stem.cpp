@@ -63,7 +63,6 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
         beta = beta + getStemRandomParameter()->InitBeta;
     }
     //ons.times(Matrix3d::rotX(beta));
-
     double theta = M_PI*stem_p->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a base root
         double scale = getStemRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
@@ -71,9 +70,8 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
     }
     //ons.times(Matrix3d::rotZ(theta));
     this->iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
-
     if (parent->organType()!=Organism::ot_seed) { // initial node
-        // assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node"); // ???
+        // assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");
         addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
     }
 }

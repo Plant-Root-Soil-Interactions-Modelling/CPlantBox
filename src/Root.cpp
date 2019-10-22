@@ -22,7 +22,7 @@ namespace CPlantBox {
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
-    :Organ(id, param, alive, active, age, length, moved,  oldNON ), parentBaseLength(pbl), parentNI(pni)
+    :Organ(id, param, alive, active, age, length, moved,  oldNON ), iHeading(iheading), parentBaseLength(pbl), parentNI(pni)
 { }
 
 /**
@@ -48,9 +48,8 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
         theta*=scale;
     }
     iHeading = Matrix3d::ons(heading).times(Vector3d::rotAB(theta,beta)); // new initial heading
-    length = 0.;
     if (parent->organType()!=Organism::ot_seed) { // the first node of the base roots must be created in RootSystem::initialize()
-        assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node");
+        // assert(pni+1 == parent->getNumberOfNodes() && "Root::Root: at object creation always at last node");
         addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
     }
 }

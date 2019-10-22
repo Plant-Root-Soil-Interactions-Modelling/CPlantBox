@@ -161,7 +161,6 @@ class TestRoot(unittest.TestCase):
         self.assertEqual(order, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected root sub types")  # +1, because of artificial parent root
         for i in range(0, 5):
             self.assertEqual(age[i], 30 - ct[i], "getParameter: unexpected root sub types")  # +1, because of artificial parent root
-#
 
     def test_dynamics(self):
         """ tests if nodes created in last time step are correct """  #
