@@ -162,8 +162,7 @@ class TestStem(unittest.TestCase):
         self.assertEqual(type, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected stem sub types")
         self.assertEqual(order, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected stem sub types")  # +1, because of artificial parent stem
         for i in range(0, 5):
-            print(i, ":", age[i], ct[i])
-            # self.assertEqual(age[i], 30 - ct[i], "getParameter: unexpected stem sub types")  # +1, because of artificial parent stem
+            self.assertEqual(age[i], 30 - ct[i], "getParameter: unexpected stem sub types")  # +1, because of artificial parent stem
 
     def test_dynamics(self):
         """ tests if nodes created in last time step are correct """  #
