@@ -11,7 +11,7 @@ def CPlantBox_PiafMunch(name, time, output = "test_output"):
     plant.openXML(name)
     plant.initialize()
     plant.simulate(time)
-    plant.write("../results/{}.vtp".format(output),15)
+    plant.write("../../results/{}.vtp".format(output),15)
     dict_all  = convert( plant )
     return dict_all ;
 
@@ -20,7 +20,9 @@ def CPlantBox(name, time, output = "morning_glory_7m"): #define a function, in l
     plant.openXML(name)
     plant.initialize()
     plant.simulate(time)
-    plant.write("../results/{}.vtp".format(output),15)
+    #plant.write("../../results/{}.vtp".format(output),15)
+    ana = pb.SegmentAnalyser(plant)
+    ana.write("../../results/{}.vtp".format(str(output)))
     return plant;
 
 def python_nodes(plant):
