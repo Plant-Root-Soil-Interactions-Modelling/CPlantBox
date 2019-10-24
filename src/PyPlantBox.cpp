@@ -733,12 +733,14 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<>())
         .def("setGeometry", &Plant::setGeometry)
         .def("reset", &Plant::reset)
+        .def("openXML", &Plant::openXML)
         .def("setTropism", &Plant::setTropism)
         .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false) // in Organism::simulate
         .def("simulate",(void (Plant::*)()) &Plant::simulate)
         .def("initCallbacks", &Plant::initCallbacks)
         .def("createTropismFunction", &Plant::createTropismFunction)
-        .def("createGrowthFunction", &Plant::createGrowthFunction);
+        .def("createGrowthFunction", &Plant::createGrowthFunction)
+        .def("write", &Plant::write);
      py::enum_<Plant::TropismTypes>(m, "TropismType")
         .value("plagio", Plant::TropismTypes::tt_plagio)
         .value("gravi", Plant::TropismTypes::tt_gravi)

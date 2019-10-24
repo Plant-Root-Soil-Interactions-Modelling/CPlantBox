@@ -45,6 +45,7 @@ public:
   /* parameters */
   void initializeReader() override; ///< initializes XML reader
   void readParameters(std::string name, std::string  basetag = "plant") override { this->initializeReader(); Organism::readParameters(name, basetag); };
+  void openXML(std::string name) { readParameters(name); } // old name
 
   /* Simulation */
   void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before Plant::initialize())
@@ -58,12 +59,12 @@ public:
   virtual std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma); ///< Creates the tropisms, overwrite or change this method to add more tropisms
   virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
 
+  void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
   std::string toString() const override;
   void writeVTP(int otype, std::ostream & os) const;
 
 protected:
 
-  std::shared_ptr<Seed> seed;
   SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
   SoilLookUp* soil = nullptr; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 

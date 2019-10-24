@@ -41,11 +41,7 @@ public:
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
-    Organism() {
-    	instances++;
-    	auto seed = std::chrono::system_clock::now().time_since_epoch().count()+instances;
-        gen = std::mt19937(seed);
-    }; ///< constructor
+    Organism(); ///< constructor
     virtual ~Organism() { }; ///< destructor
 
     virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism
@@ -76,22 +72,22 @@ public:
     virtual std::vector<double> getNodeCTs() const; ///< node creation times, corresponding to Organism::getNodes
     virtual std::vector<Vector2i> getSegments(int ot=-1) const; ///< line segment containing two node indices, corresponding to Organism::getNodes
     virtual std::vector<double> getSegmentCTs(int ot=-1) const; ///< line creation times, corresponding to Organism::getSegments
-    virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< Points to the organ which contains the segment, corresponding to Organism::getSegments
+    virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< points to the organ which contains the segment, corresponding to Organism::getSegments
 
     /* last time step */
-    int getNumberOfNewNodes() const { return getNumberOfNodes()- oldNumberOfNodes; } ///< The number of new nodes created in the previous time step (ame number as new segments)
+    int getNumberOfNewNodes() const { return getNumberOfNodes()- oldNumberOfNodes; } ///< The number of new nodes created in the previous time step (same number as new segments)
     int getNumberOfNewOrgans() const { return getNumberOfOrgans() - oldNumberOfOrgans; }  ///< The number of new roots created in the previous time step
     std::vector<int> getUpdatedNodeIndices() const; ///< Indices of nodes that were updated in the previous time step
-    std::vector<Vector3d> getUpdatedNodes() const; ///< New coordinates of the updated nodes
-    std::vector<double> getUpdatedNodeCTs() const; ///< New coordinates of the updated nodes
-    std::vector<Vector3d> getNewNodes() const; ///< Nodes created in the previous time step
-    std::vector<double> getNewNodeCTs() const; ///< Nodes created in the previous time step
+    std::vector<Vector3d> getUpdatedNodes() const; ///< new coordinates of the updated nodes
+    std::vector<double> getUpdatedNodeCTs() const; ///< new coordinates of the updated nodes
+    std::vector<Vector3d> getNewNodes() const; ///< nodes created in the previous time step
+    std::vector<double> getNewNodeCTs() const; ///< nodes created in the previous time step
     std::vector<Vector2i> getNewSegments(int ot=-1) const; ///< Segments created in the previous time step
     std::vector<std::shared_ptr<Organ>> getNewSegmentOrigins(int ot=-1) const; ///< Copies a pointer to the root containing the new segments
 
     /* io */
-    virtual std::string toString() const; ///< Quick info for debugging
-    virtual void initializeReader() { }
+    virtual std::string toString() const; ///< quick info for debugging
+    virtual void initializeReader() { } ///< initializes parameter reader
     virtual void readParameters(std::string name, std::string  basetag = "plant"); ///< reads all organ type parameters from a xml file
     virtual void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
     virtual void writeRSML(std::string name) const; ///< writes a RSML file
@@ -104,9 +100,9 @@ public:
     int getNodeIndex() { nodeId++; return nodeId; } ///< returns next unique node id, only organ constructors should call this
 
     /* random number generator */
-    virtual void setSeed(unsigned int seed); ///< Sets the seed of the organisms random number generator
-    virtual double rand() { return UD(gen); } ///< Uniformly distributed random number (0,1)
-    virtual double randn() { return ND(gen); } ///< Normally distributed random number (0,1)
+    virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
+    virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
+    virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
 
 protected:
 

@@ -69,18 +69,17 @@ public:
 
     /* call back function creation */
     void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
-    virtual std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma); ///< Creates the tropisms, overwrite or change this method to add more tropisms
-    virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
-
+    virtual std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma); ///< creates the tropisms, overwrite or change this method to add more tropisms
+    virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< creates the growth function per root type, overwrite or change this method to add more tropisms
 
     /* Analysis of simulation results */
-    int getNumberOfSegments(int ot = -1) const override { return nodeId-numberOfCrowns-1; } ///< Number of segments of the root system ((nid+1)-1) - numberOfCrowns - 1 (artificial shoot)
+    int getNumberOfSegments(int ot = -1) const override { return nodeId-numberOfCrowns-1; } ///< number of segments of the root system ((nid+1)-1) - numberOfCrowns - 1 (artificial shoot)
     int getNumberOfRoots(bool all = false) const { if (all) return organId+1; else return getRoots().size(); }
     std::vector<Vector3d> getNodes() const override;
-    std::vector<std::shared_ptr<Organ>> getBaseRoots() const { return baseOrgans; } ///< Base roots are tap root, basal roots, and shoot borne roots TODO
-    std::vector<Vector2i> getShootSegments() const; ///< Copies the segments connecting tap, basal root, shootborne roots
-    std::vector<int> getRootTips() const; ///< Node indices of the root tips
-    std::vector<int> getRootBases() const; ///< Node indices of the root bases
+    std::vector<std::shared_ptr<Organ>> getBaseRoots() const { return baseOrgans; } ///< base roots are tap root, basal roots, and shoot borne roots TODO
+    std::vector<Vector2i> getShootSegments() const; ///< copies the segments connecting tap, basal root, shootborne roots
+    std::vector<int> getRootTips() const; ///< node indices of the root tips
+    std::vector<int> getRootBases() const; ///< node indices of the root bases
 
     /* dynamics */
     void push(); ///< push current state to a stack

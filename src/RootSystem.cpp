@@ -466,26 +466,31 @@ std::string RootSystem::toString() const
  * Exports the simulation results with the type from the extension in name
  * (that must be lower case)
  *
+ * todo move to Organism
+ *
  * @param name      file name e.g. output.vtp
  */
 void RootSystem::write(std::string name) const
 {
-    std::ofstream fos;
-    fos.open(name.c_str());
     std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
     if (ext.compare("sml")==0) {
         std::cout << "writing RSML... "<< name.c_str() <<"\n";
-        //writeRSML(fos);
+        writeRSML(name); // use base class writer
     } else if (ext.compare("vtp")==0) {
         std::cout << "writing VTP... "<< name.c_str() <<"\n";
+        std::ofstream fos;
+        fos.open(name.c_str());
         writeVTP(fos);
+        fos.close();
     } else if (ext.compare(".py")==0)  {
         std::cout << "writing Geometry ... "<< name.c_str() <<"\n";
+        std::ofstream fos;
+        fos.open(name.c_str());
         writeGeometry(fos);
+        fos.close();
     } else {
         throw std::invalid_argument("RootSystem::write(): Unkwown file type");
     }
-    fos.close();
 }
 
 /**
@@ -568,6 +573,8 @@ void RootSystem::writeVTP(std::ostream & os) const
 /**
  * Writes the current confining geometry (e.g. a plant container) as paraview python script
  * Just adds the initial lines, before calling the method of the sdf.
+ *
+  * todo move to Organism (including geometry)
  *
  * @param os      typically a file out stream
  */

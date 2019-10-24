@@ -21,11 +21,11 @@ std::shared_ptr<Organism> Plant::copy()
 {
     auto no = std::make_shared<Plant>(*this); // copy constructor
     for (int i=0; i<baseOrgans.size(); i++) {
-        no->baseOrgans[i] = baseOrgans[i]->copy(shared_from_this());
+        no->baseOrgans[i] = baseOrgans[i]->copy(no);
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : organParam[ot]) {
-            otp.second = otp.second->copy(shared_from_this());
+            otp.second = otp.second->copy(no);
         }
     }
     return no;
@@ -55,7 +55,7 @@ void Plant::initializeReader()
  */
 void Plant::reset()
 {
-	baseOrgans.clear();
+    baseOrgans.clear();
     simtime = 0;
     organId = -1;
     nodeId = -1;
@@ -72,12 +72,13 @@ void Plant::initialize(bool verbose)
     reset(); // just in case
 
     // create seed
-    seed = std::make_shared<Seed>(shared_from_this());
+    auto seed = std::make_shared<Seed>(shared_from_this());
     seed->initialize(verbose);
+    baseOrgans.push_back(seed);
 
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
 
-    // further intializations
+    // further initializations
     initCallbacks();
 }
 
@@ -88,7 +89,7 @@ void Plant::initialize(bool verbose)
  */
 void Plant::initCallbacks()
 {
-    // Create tropisms and growth functions per root type
+    // Create tropisms and growth functions per random root parameter
     for (auto& p_otp :organParam[Organism::ot_root]) {
         auto rp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
@@ -98,6 +99,7 @@ void Plant::initCallbacks()
         gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
         rp->f_gf  = gf_;
     }
+    // Create tropisms and growth functions per random leaf parameter
     for (auto& p_otp :organParam[Organism::ot_leaf]) {
         auto rp = std::static_pointer_cast<LeafRandomParameter>(p_otp.second);
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
@@ -107,6 +109,7 @@ void Plant::initCallbacks()
         gf_->getAge(1,1,1,nullptr);  // check if getAge is implemented (otherwise an exception is thrown)
         rp->f_gf  = gf_;
     }
+    // Create tropisms and growth functions per random stem parameter
     for (auto& p_otp :organParam[Organism::ot_stem]) {
         auto rp = std::static_pointer_cast<StemRandomParameter>(p_otp.second);
         auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
@@ -117,6 +120,58 @@ void Plant::initCallbacks()
         rp->f_gf  = gf_;
     }
 
+}
+
+/**
+ * Manually sets a tropism function for a specific or for all root types. TODO
+ * Must be called after RootSystem::initialize(), otherwise its overwritten.
+ *
+ * @param tf_           a tropism
+ * @param rt            root type, if rt = -1 all types are set to this tropism (default).
+ */
+void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) // todo
+{
+    if (organType==-1) { // call for all relevant
+        setTropism(tf, Organism::ot_root, subType);
+        setTropism(tf, Organism::ot_stem, subType);
+        setTropism(tf, Organism::ot_leaf, subType);
+        return;
+    }
+    // put it into a vector
+    std::vector<std::shared_ptr<OrganRandomParameter>> orp;
+    if (subType>-1) { // set for a specific root type
+        orp.push_back(getOrganRandomParameter(organType, subType));
+    } else { // set for all root types (default)
+        for (auto& orp_ :organParam[organType]) {
+            orp.push_back(orp_.second);
+        }
+    }
+    // static cast since tropisms are not in the base class
+    for (auto& orp_ : orp)
+    switch(organType) {
+    case Organism::ot_root: {
+        auto rtp = std::static_pointer_cast<RootRandomParameter>(orp_);
+        rtp->f_tf = tf;
+    } break;
+    case Organism::ot_stem: {
+        auto rtp = std::static_pointer_cast<StemRandomParameter>(orp_);
+        rtp->f_tf = tf;
+    } break;
+    case Organism::ot_leaf: {
+        auto rtp = std::static_pointer_cast<LeafRandomParameter>(orp_);
+        rtp->f_tf = tf;
+    } break;
+    default: throw std::invalid_argument( "Plant::setTropism() cannot set tropism for organ type "+ Organism::organTypeName(organType) );
+    }
+}
+
+/**
+ * Simulates plant growth for the time span defined in the root system parameters
+ */
+void Plant::simulate()
+{
+    auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);
+    Organism::simulate(srp->simtime);
 }
 
 /**
@@ -161,124 +216,124 @@ std::shared_ptr<GrowthFunction>Plant::createGrowthFunction(int gft) {
 }
 
 /**
- * Manually sets a tropism function for a specific or for all root types. TODO
- * Must be called after RootSystem::initialize(), otherwise its overwritten.
- *
- * @param tf_           a tropism
- * @param rt            root type, if rt = -1 all types are set to this tropism (default).
- */
-void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) // todo
-{
-//    if (rt>-1) { // set for a specific root type
-//        getRootRandomParameter(rt)->f_tf=tf_;
-//    } else { // set for all root types (default)
-//        for (auto& p_otp :organParam[Organism::ot_root]) {
-//            auto rtp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
-//            rtp->f_tf = tf_;
-//        }
-//    }
-}
-
-
-/**
- * Simulates plant growth for the time span defined in the root system parameters
- */
-void Plant::simulate()
-{
-	auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);
-	Organism::simulate(srp->simtime);
-}
-
-/**
  * todo most important debug informations
  */
 std::string Plant::toString() const
 {
-	return "todo";
+    return "Plant " + Organism::toString();
+}
+
+/**
+ * Exports the simulation results with the type from the extension in name
+ * (that must be lower case)
+ *
+ * todo move to Organism
+ *
+ * @param name      file name e.g. output.vtp
+ */
+void Plant::write(std::string name) const
+{
+    std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
+    if (ext.compare("sml")==0) {
+        std::cout << "writing RSML... "<< name.c_str() <<"\n";
+        writeRSML(name); // use base class writer
+    } else if (ext.compare("vtp")==0) {
+        std::cout << "writing VTP... "<< name.c_str() <<"\n";
+        std::ofstream fos;
+        fos.open(name.c_str());
+        writeVTP(-1, fos);
+        fos.close();
+//    } else if (ext.compare(".py")==0)  {
+//        std::cout << "writing Geometry ... "<< name.c_str() <<"\n";
+//        writeGeometry(fos);
+    } else {
+        throw std::invalid_argument("RootSystem::write(): Unkwown file type");
+    }
 }
 
 /**
 write VTP using tinyXML
+todo move to Organism
  **/
 void Plant::writeVTP(int otype, std::ostream & os) const // Write .VTP file by using TinyXML2 performance slowed by 0.5 seconds but precision increased
 {
-	tinyxml2::XMLPrinter printer( 0, false, 0 );
+    tinyxml2::XMLPrinter printer( 0, false, 0 );
 
-	auto organs = this->getOrgans(otype); // update roots (if necessary)
-	auto nodes = getPolylines(otype);
-	auto times = getPolylineCTs(otype);
+    auto organs = this->getOrgans(otype); // update roots (if necessary)
+    auto nodes = getPolylines(otype);
+    auto times = getPolylineCTs(otype);
 
-	os << "<?xml version=\"1.0\"?>";
-	printer.OpenElement("VTKFile"); printer.PushAttribute("type", "PolyData"); printer.PushAttribute("version", "0.1"); printer.PushAttribute("byte_order", "LittleEndian");
-	printer.OpenElement("PolyData");
-	int non = 0; // number of nodes
+    os << "<?xml version=\"1.0\"?>";
+    printer.OpenElement("VTKFile"); printer.PushAttribute("type", "PolyData"); printer.PushAttribute("version", "0.1"); printer.PushAttribute("byte_order", "LittleEndian");
+    printer.OpenElement("PolyData");
+    int non = 0; // number of nodes
     for (const auto& r : organs) {
-		non += r->getNumberOfNodes();
-	}
-	int nol=organs.size(); // number of lines
-	printer.OpenElement("Piece"); printer.PushAttribute("NumberOfLines",  nol); printer.PushAttribute("NumberOfPoints", non);
+        non += r->getNumberOfNodes();
+    }
+    int nol=organs.size(); // number of lines
+    printer.OpenElement("Piece"); printer.PushAttribute("NumberOfLines",  nol); printer.PushAttribute("NumberOfPoints", non);
 
-	// POINTDATA
-	printer.OpenElement("PointData"); printer.PushAttribute("Scalars", "Pointdata");
-	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "time"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-	for (std::vector<double> r: times) {
-		for (double t : r) {
-			printer.PushText(t); printer.PushText(" ");
-		}
-	}
-	printer.CloseElement();
-	printer.CloseElement();
+    // POINTDATA
+    printer.OpenElement("PointData"); printer.PushAttribute("Scalars", "Pointdata");
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "time"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+    for (std::vector<double> r: times) {
+        for (double t : r) {
+            printer.PushText(t); printer.PushText(" ");
+        }
+    }
+    printer.CloseElement();
+    printer.CloseElement();
 
-	// CELLDATA (live on the polylines)
-	printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
-	std::vector<std::string> sTypeNames = { "organtype", "id",  "emergencetime", "creationtime", "age", "subtype", "order", "radius"}; //  , "order", "radius", "subtype" ,
-	for (size_t i=0; i<sTypeNames.size(); i++) {
-		std::string sType = sTypeNames[i];
+    // CELLDATA (live on the polylines)
+    printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
+    std::vector<std::string> sTypeNames = { "organType", "id", "creationTime", "age", "subType", "order", "radius"}; //  , "order", "radius", "subtype" ,
+    for (size_t i=0; i<sTypeNames.size(); i++) {
+        std::string sType = sTypeNames[i];
         const char *schar = sType.c_str();
-		printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-		std::vector<double> scalars = getParameter(sTypeNames[i], otype);
-		for (double s : scalars) {
-			printer.PushText(s); printer.PushText(" ");
-		}
-		printer.CloseElement();
-	}
-	printer.CloseElement();
+        printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+        std::vector<double> scalars = getParameter(sTypeNames[i], otype);
+        for (double s : scalars) {
+            printer.PushText(s); printer.PushText(" ");
+        }
+        printer.CloseElement();
+    }
+    printer.CloseElement();
 
-	// POINTS (=nodes)
-	printer.OpenElement("Points");
-	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "Coordinates"); printer.PushAttribute("NumberOfComponents", "3"); printer.PushAttribute("format", "ascii" );
+    // POINTS (=nodes)
+    printer.OpenElement("Points");
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "Coordinates"); printer.PushAttribute("NumberOfComponents", "3"); printer.PushAttribute("format", "ascii" );
     for (const auto& r : nodes) {
         for (const auto& n : r) {
-			printer.PushText(n.x); printer.PushText(" "); printer.PushText(n.y); printer.PushText(" "); printer.PushText(n.z); printer.PushText(" ");
-		}
-	}
-	printer.CloseElement();
-	printer.CloseElement();
+            printer.PushText(n.x); printer.PushText(" "); printer.PushText(n.y); printer.PushText(" "); printer.PushText(n.z); printer.PushText(" ");
+        }
+    }
+    printer.CloseElement();
+    printer.CloseElement();
 
-	// LINES (polylines)
-	printer.OpenElement("Lines");
-	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "connectivity"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-	int c=0;
+    // LINES (polylines)
+    printer.OpenElement("Lines");
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "connectivity"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+    int c=0;
     for (const auto& r : organs) {
-		for (size_t i=0; i<r->getNumberOfNodes(); i++) {
-			printer.PushText(c); printer.PushText(" ");
-			c++;
-		}
-	}
-	printer.CloseElement();
+        for (size_t i=0; i<r->getNumberOfNodes(); i++) {
+            printer.PushText(c); printer.PushText(" ");
+            c++;
+        }
+    }
+    printer.CloseElement();
 
-	printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "offsets"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-	c = 0;
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "offsets"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+    c = 0;
     for (const auto& r : organs) {
-		c += r->getNumberOfNodes();
-		printer.PushText(c); printer.PushText(" ");
-	}
-	printer.CloseElement();
-	printer.CloseElement();
-	printer.CloseElement();
-	printer.CloseElement();
-	printer.CloseElement();
-	os << std::string(printer.CStr());
+        c += r->getNumberOfNodes();
+        printer.PushText(c); printer.PushText(" ");
+    }
+    printer.CloseElement();
+    printer.CloseElement();
+    printer.CloseElement();
+    printer.CloseElement();
+    printer.CloseElement();
+    os << std::string(printer.CStr());
 }
 
 } // namespace CPlantBox
