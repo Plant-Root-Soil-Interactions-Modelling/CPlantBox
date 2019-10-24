@@ -57,7 +57,7 @@ if (PythonLibs_FOUND)
 			  )
   target_link_libraries(py_plantbox ${Boost_LIBRARIES} )
   set_target_properties(py_plantbox PROPERTIES PREFIX "" )
-  set_target_properties(py_plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/python)
+  set_target_properties(py_plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tutorial/jupyter)
 else ()
   message(WARNING "Python 3 was not found on your system! You can only use the C++ interface of CRootBox. \
                    Install Python 3 and rerun CMake to build the py_rootbox library.")
