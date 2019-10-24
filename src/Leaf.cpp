@@ -44,7 +44,7 @@ Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bo
  * @param pbl			parent base length
  */
 Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,  std::shared_ptr<Organ> parent, double pbl, int pni)
-        :Organ(plant, parent,Organism::ot_leaf, type, delay), parentBaseLength(pbl), parentNI(pni)
+:Organ(plant, parent,Organism::ot_leaf, type, delay), parentBaseLength(pbl), parentNI(pni)
 {
     assert(parent!=nullptr && "Leaf::Leaf parent must be set");
     //  std::cout << "Leaf pni = "<< pni<< std::endl;
@@ -53,17 +53,17 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
     // std::cout <<"subtype ="<<param()->subType <<"getleafphytomerID =" <<getleafphytomerID(param()->subType)<< "\n";
     auto leaf_p = this->param();
     addleafphytomerID(leaf_p->subType);
-    double beta = getleafphytomerID(leaf_p->subType)*M_PI*getLeafRandomParameter()->RotBeta
-        + M_PI*plant->rand()*getLeafRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
+    double beta = getleafphytomerID(leaf_p->subType)*M_PI*getLeafRandomParameter()->rotBeta
+        + M_PI*plant->rand()*getLeafRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(iheading);
     //	if (getLeafRandomParameter()->InitBeta >0 && getleafphytomerID(param()->subType)==0 ){
-    beta = beta + getLeafRandomParameter()->InitBeta;
+    beta = beta + getLeafRandomParameter()->initBeta;
     //	}
 
-    if (getLeafRandomParameter()->InitBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==2 )
-    {beta = beta + getLeafRandomParameter()->InitBeta*M_PI;}
-    else if (getLeafRandomParameter()->InitBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==3 )
-    {beta = beta + getLeafRandomParameter()->InitBeta*M_PI + M_PI;}
+    if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==2 )
+    {beta = beta + getLeafRandomParameter()->initBeta*M_PI;}
+    else if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==3 )
+    {beta = beta + getLeafRandomParameter()->initBeta*M_PI + M_PI;}
     //ons.times(Matrix3d::rotX(beta));
 
     double theta = M_PI*leaf_p ->theta;
@@ -219,7 +219,7 @@ void Leaf::simulate(double dt, bool verbose)
  *
  */
 double Leaf::getParameter(std::string name) const {
-       if (name=="lb") { return param()->lb; } // basal zone [cm]
+    if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     //if (name=="nob") { return param()->nob; } // number of branches
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -275,7 +275,7 @@ double Leaf::calcLength(double age)
     //    if (name()  == "maize1eaf"){
     assert(age>=0  && "Leaf::calcLength() negative root age");
     //return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
-    return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,shared_from_this());
+    return getLeafRandomParameter()->f_gf->getLength(age,param()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,shared_from_this());
     //	}else {
     //assert(age>=0);
     //	    return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
@@ -294,7 +294,7 @@ double Leaf::calcAge(double length)
     //     if ( name() == "maize1eaf"){
     assert(length>=0 && "Leaf::calcAge() negative root length");
     //std::cout<<"length subtype is"<<getLeafRandomParameter()->subType<<"\n";
-    return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),shared_from_this());
+    return getLeafRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(),shared_from_this());
     //        return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
     //        }else {
     //assert(age>=0);

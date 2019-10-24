@@ -65,7 +65,8 @@ public:
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 
     int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
-    double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal root length [cm]
+    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
+    double nobs() const; ///< returns the standard deviation of number of branches [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
@@ -85,8 +86,8 @@ public:
     double las = 0.;    	///< Standard deviation apical zone [cm];
     double ln = 1; 		    ///< Inter-lateral distance [cm]
     double lns = 0.;    	///< Standard deviation inter-lateral distance [cm]
-    double nob = 0.;    	///< Number of branches [1]
-    double nobs = 0.;   	///< TODO get rid of nobs
+    double lmax = 0.;    	///< Maximal root length [cm]
+    double lmaxs = 0.;   	///< Standard deviation of maximal root length [cm]
     double r = 1;		    ///< Initial growth rate [cm day-1]
     double rs = 0.;	    	///< Standard deviation initial growth rate [cm day-1]
     double a = 0.1; 		///< Root radius [cm]

@@ -1,6 +1,6 @@
 <plant>
     <seed name="Anagallis_femina_Leitner_2010" subType="0">
-        <parameter name="maxTil" value="0"/>
+        <parameter name="maxTi" value="0"/>
         <!--Maximal number of tillers [1]-->
         <parameter name="delayB" value="0"/>
         <!--Time delay between the basal roots [day]-->
@@ -24,7 +24,7 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-3"/>
         <!--Z-Coordinate of seed position [cm]-->
-        <parameter name="simtime" value="15"/>
+        <parameter name="simulationTime" value="15"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
     <root name="primaryroot" subType="1">
@@ -46,10 +46,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="1"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="33.400002" dev="3.3"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.80000001"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="40" dev="4.125"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="4"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
@@ -82,10 +82,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0.40000001" dev="0.1"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="7.6999998" dev="10"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.5" dev="0.1"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="14" dev="16.799999"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="1.5" dev="0.15000001"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
@@ -118,10 +118,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0.1" dev="0.0099999998"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="0.44" dev="0.039999999"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.23999999"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="2" dev="0.083333336"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="2" dev="0.2"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
@@ -154,10 +154,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="0.40000001" dev="0.039999999"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="0"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="2" dev="0.2"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>

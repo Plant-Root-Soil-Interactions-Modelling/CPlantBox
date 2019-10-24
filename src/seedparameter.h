@@ -45,7 +45,7 @@ public:
     double delaySB;     ///< Time delay between the shoot borne roots [day]
     double delayRC;     ///< Delay between the root crowns [day]
     double nz;          ///< Distance between the root crowns along the shoot [cm]
-    int maxTil;
+    int maxTil;         ///< maximal number of tillers
 
     //Simulation parameters
     double simtime;     ///< recommended final simulation time

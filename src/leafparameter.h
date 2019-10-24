@@ -58,7 +58,8 @@ public:
 	std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific leaf from the leaf parameter set
 
 	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on leaf parameter set
-	double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal leaf length [cm]
+    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
+    double nobs() const; ///< returns the standard deviation of number of branches [1]
 
 	std::string toString(bool verbose = true) const override; ///< writes parameter to a string
 
@@ -77,15 +78,15 @@ public:
 	int lnf = 0; 		///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
 	double k = 10.;			///< Maximal leaf length [cm]
 	double ks =0.;			///< Standard deviation maxial leaf length [cm]
-	double nob = 0.; 		///< Number of branches [1]
-	double nobs = 0.; 		///<  TODO get rid of nobs
+    double lmax = 0.;       ///< Maximal stem length [cm]
+    double lmaxs = 0.;      ///< Standard deviation of maximal stem length [cm]
 	double r = 1.;			///< Initial growth rate [cm day-1]
 	double rs = 0.;			///< Standard deviation initial growth rate [cm day-1]
 	double a = 0.1; 		///< Leaf width [cm]
 	double as = 0.; 		///< Standard deviation leaf width [cm]
-	double RotBeta = 0.6;	///< Radial rotation (roll) (rad)
-	double BetaDev = 0.2;	///< Deviation of radial rotation (rad)
-	double InitBeta = 0.2;	///< Initial radial rotation (rad)
+	double rotBeta = 0.6;	///< Radial rotation (roll) (rad)
+	double betaDev = 0.2;	///< Deviation of radial rotation (rad)
+	double initBeta = 0.2;	///< Initial radial rotation (rad)
 	int tropismT = 1;		///< Leaf tropism parameter (Type)
 	double tropismN = 1.;	///< Leaf tropism parameter (number of trials)
 	double tropismS = 0.2;	///< Leaf tropism parameter (mean value of expected changeg) [1/cm]

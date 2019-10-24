@@ -44,13 +44,11 @@ class TestOrganParameter(unittest.TestCase):
         plant = pb.Organism()
         orp = pb.OrganRandomParameter(plant)
         orp.name = "the great organ"
-        orp.organType = 1  # seed
         orp.subType = 2
         orp.writeXML("organ.xml")
         otp2 = pb.OrganRandomParameter(plant)
         otp2.readXML("organ.xml")
         self.assertEqual(otp2.name, orp.name, "xml: value unexpected")
-        self.assertEqual(otp2.organType, orp.organType, "xml: value unexpected")
         self.assertEqual(otp2.subType, orp.subType, "xml: value unexpected")
 
     def test_realize(self):

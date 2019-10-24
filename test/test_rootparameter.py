@@ -15,7 +15,7 @@ class TestStemParameter(unittest.TestCase):
         self.rrp.lb = 5.5
         self.rrp.ln = 1.25
         self.rrp.lns = 0.12
-        self.rrp.nob = 8
+        self.rrp.lmax = 7 * self.rrp.ln + self.rrp.la + self.rrp.lb
         self.rrp.subType = 1
         self.rrp.successor = [4, 5, 6]
         self.rrp.successorP = [0.4, 0.1, 0.5]
@@ -82,7 +82,7 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(otp2.name, rrp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, rrp.organType, "xml: value unexpected")
         self.assertEqual(otp2.subType, rrp.subType, "xml: value unexpected")
-        self.assertEqual(otp2.nob, rrp.nob, "xml: value unexpected")  # value
+        self.assertEqual(otp2.nob(), rrp.nob(), "xml: value unexpected")  # value
         self.assertEqual(otp2.lns, rrp.lns, "xml: value unexpected")  # dev
         for i in range(0, 3):
             self.assertEqual(otp2.successor[i], rrp.successor[i], "xml: value unexpected")
@@ -96,7 +96,7 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(p.__class__.__name__, "RootSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, 1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
-        self.assertEqual(len(p.ln) + 1, self.rrp.nob, "realize: internodal distances +1 should be  number of laterals")
+        self.assertEqual(len(p.ln) + 1, self.rrp.nob(), "realize: internodal distances +1 should be  number of laterals")
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 <plant>
     <seed name="Medicago_truncatula_Postma_2011" subType="0">
-        <parameter name="maxTil" value="0"/>
+        <parameter name="maxTi" value="0"/>
         <!--Maximal number of tillers [1]-->
         <parameter name="delayB" value="0"/>
         <!--Time delay between the basal roots [day]-->
@@ -24,7 +24,7 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-3"/>
         <!--Z-Coordinate of seed position [cm]-->
-        <parameter name="simtime" value="21"/>
+        <parameter name="simulationTime" value="21"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
     <root name="taproot" subType="1">
@@ -46,10 +46,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0.25999999" dev="0.23999999"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="50.610001" dev="42.969357"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.25999999" dev="0.23999999"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="178"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="2.8299999" dev="0.28299999"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09" dev="1e+08"/>
@@ -82,10 +82,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="1.04" dev="1.24"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="3.49" dev="4.0122561"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.81999999" dev="1.53"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="2"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="0.98000002" dev="0.28999999"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09" dev="1e+08"/>
@@ -118,10 +118,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="0.58999997"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="0"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="1.54" dev="0.28"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09" dev="1e+08"/>

@@ -36,6 +36,8 @@ std::string RootSpecificParameter::toString() const
     return str.str();
 }
 
+
+
 /**
  * Default constructor sets up hashmaps for class introspection
  */
@@ -79,7 +81,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
     double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
     std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob + p->randn()*nobs), 0.); // maximal number of branches
+    int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
     for (int i = 0; i<nob_-1; i++) { // create inter-root distances
         double d = std::max(ln + p->randn()*lns, 1.e-5); // miminum is 1.e-5
         ln_.push_back(d);
@@ -120,6 +122,23 @@ int RootRandomParameter::getLateralType(const Vector3d& pos)
     } else {
         return -1; // no successors
     }
+}
+
+/**
+ * todo docme
+ *
+ * todo I have no idea why this holds...
+ */
+double RootRandomParameter::nobs() const
+{
+    double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+    if (la>0) {
+        nobs -= (las/la - lns/ln)*la/ln;
+    }
+    if (lb>0) {
+        nobs -= (lbs/lb - lns/ln)*lb/ln;
+    }
+    return std::max(nobs,0.);
 }
 
 /**
@@ -207,7 +226,7 @@ tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
     }
     double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
     if ((p_<1) && (p_!=0)) {
-        std::cout << "RootRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
+        std::cout << "RootRandomParameter:  double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal leaf length [cm]:writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
     }
     return element;
 }
@@ -225,29 +244,8 @@ void RootRandomParameter::read(std::istream & cin)
     char ch[256]; // dummy
     cin.getline(ch,256);
     std::string s; // dummy
-    double k;
-    double ks;
-    cin >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> k >> ks;
+    cin >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> lmax >> lmaxs;
     cin >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
-    if (ln > 0) {
-        nob=  (k-la-lb)/ln+1;   //conversion, because the input file delivers the lmax value and not the nob value
-        nob = std::max(nob,0.);
-        nobs = (ks/k - lns/ln)*k/ln; // error propagation
-        if (la>0) {
-            nobs -= (las/la - lns/ln)*la/ln;
-        }
-        if (lb>0) {
-            nobs -= (lbs/lb - lns/ln)*lb/ln;
-        }
-        nobs = std::max(nobs,0.);
-        if (std::isnan(nobs)) {
-            std::cout << "RootTypeParameter::read() nobs is nan \n";
-            nobs =0;
-        }
-    } else {
-        nob=0;
-        nobs = 0;
-    }
     int n;
     cin  >> s >> n;
     successor.clear();
@@ -274,7 +272,7 @@ void RootRandomParameter::write(std::ostream & cout) const {
     std::cout << "RootRandomParameter::write is deprecated, use writeXML instead \n";
     cout << "# Root type parameter for " << name << "\n";
     cout << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
-        << "ln\t" << ln << "\t" << lns << "\n" << "nob\t"<< nob <<"\t"<< nobs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
+        << "ln\t" << ln << "\t" << lns << "\n" << "lmax\t"<< lmax <<"\t"<< lmaxs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
         "a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
         << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successor.size() << "\t";
     for (size_t i=0; i<successor.size(); i++) {
@@ -298,7 +296,7 @@ void RootRandomParameter::bindParameters()
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
     bindParameter("la", &la, "Apical zone [cm]", &las);
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
-    bindParameter("nob", &nob, "Maximal number of laterals [1]", &nobs);
+    bindParameter("lmax", &lmax, "Maximal root length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
     bindParameter("a", &a, "Root radius [cm]", &as);
     bindParameter("colorR", &colorR, "Root color, red component [0.-1.]");

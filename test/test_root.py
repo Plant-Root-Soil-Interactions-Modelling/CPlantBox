@@ -28,7 +28,7 @@ class TestRoot(unittest.TestCase):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.RootRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 1, 10, 20, (89. / 19.), 1, 0.5
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 1, 10, 100, (89. / 19.), 1, 0.5
         p0.successor = [2]
         p0.successorP = [1.]
         p1 = pb.RootRandomParameter(self.plant)

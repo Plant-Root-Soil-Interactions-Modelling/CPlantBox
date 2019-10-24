@@ -1,6 +1,6 @@
 <plant>
     <seed name="Heliantus_Pagès_2013" subType="0">
-        <parameter name="maxTil" value="0"/>
+        <parameter name="maxTi" value="0"/>
         <!--Maximal number of tillers [1]-->
         <parameter name="delayB" value="0"/>
         <!--Time delay between the basal roots [day]-->
@@ -24,7 +24,7 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-3"/>
         <!--Z-Coordinate of seed position [cm]-->
-        <parameter name="simtime" value="20"/>
+        <parameter name="simulationTime" value="20"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
     <root name="Taproot" subType="1">
@@ -46,10 +46,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="1"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="101.46" dev="10.1"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.40000001" dev="0.2"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="227.14999"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="2.76"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
@@ -84,10 +84,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="15" dev="1.5"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.40000001"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="26" dev="3.75"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="2.76"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
@@ -120,10 +120,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="10" dev="1"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="0"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="2.76"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>

@@ -83,7 +83,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	std::vector<double> ln_; // stores the inter-distances
 
 	// stores the inter-distances
-	int nob_ = std::max(round(nob + p->randn()*nobs),double(0)); // maximal number of leafs
+	int nob_ = std::max(round(nob() + p->randn()*nobs()),double(0)); // maximal number of leafs
 	switch(lnf) {
 	case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
@@ -162,6 +162,23 @@ int LeafRandomParameter::getLateralType(const Vector3d& pos)
 	} else {
 		return -1; // no successors
 	}
+}
+
+/**
+ * todo docme
+ *
+ * todo I have no idea why this holds...
+ */
+double LeafRandomParameter::nobs() const
+{
+    double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+    if (la>0) {
+        nobs -= (las/la - lns/ln)*la/ln;
+    }
+    if (lb>0) {
+        nobs -= (lbs/lb - lns/ln)*lb/ln;
+    }
+    return std::max(nobs,0.);
 }
 
 /**
@@ -262,9 +279,12 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
 	bindParameter("la", &la, "Apical zone [cm]", &las);
 	bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
-	bindParameter("k", &k, "Maximal leaf length [cm]", &ks);
+    bindParameter("lmax", &lmax, "Maximal stem length [cm]", &lmaxs);
 	bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
 	bindParameter("a", &a, "Leaf width [cm]", &as);
+    bindParameter("RotBeta", &rotBeta, "RevRotation of the leaf"); /// todo improve description, start lower letter
+    bindParameter("BetaDev", &betaDev, "RevRotation deviation"); /// todo improve description, start lower letter
+    bindParameter("InitBeta", &initBeta, "Initial RevRotation"); /// todo improve description, start lower letter
 	bindParameter("tropismT", &tropismT, "Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
 	bindParameter("tropismN", &tropismN, "Number of trials of leaf tropism");
 	bindParameter("tropismS", &tropismS, "Mean value of expected change of leaf tropism [1/cm]");

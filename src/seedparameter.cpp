@@ -116,8 +116,8 @@ void SeedRandomParameter::bindParameters()
     bindParameter("delaySB", &delaySB, "Time delay between the shoot borne roots [day]", &delaySBs);
     bindParameter("delayRC", &delayRC, "Delay between the root crowns [day]", &delayRCs);
     bindParameter("nz", &nz, "Distance between the root crowns along the shoot [cm]", &nzs );
-    bindParameter("maxTil", &maxTil, "Maximal number of tillers [1]", &maxTils);
-    bindParameter("simtime", &simtime, "Recommended final simulation time  [day]", &simtimes );
+    bindParameter("maxTi", &maxTil, "Maximal number of tillers [1]", &maxTils);
+    bindParameter("simulationTime", &simtime, "Recommended final simulation time  [day]", &simtimes );
     // other parameters (descriptions only)
     description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
 }

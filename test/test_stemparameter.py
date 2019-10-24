@@ -14,7 +14,7 @@ class TestStemParameter(unittest.TestCase):
         self.srp.lb = 5.5
         self.srp.ln = 1.25
         self.srp.lns = 0.12
-        self.srp.nob = 8
+        self.srp.lmax = 7 * self.srp.ln + self.srp.la + self.srp.lb
         # print(self.srp.las)
 
     def add_successors(self):
@@ -81,15 +81,15 @@ class TestStemParameter(unittest.TestCase):
         otp = self.srp  # rename
         otp.name = "lateral"
         otp.subType = 1
-        otp.nob = (otp.k - otp.la - otp.lb) / otp.ln + 1;
+        otp.lmax = 42
         otp.writeXML("stem.xml")
         otp2 = pb.StemRandomParameter(self.plant)
         otp2.readXML("stem.xml")
-        otp2.nob = (otp2.k - otp2.la - otp2.lb) / otp2.ln + 1;
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
         self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
-        self.assertEqual(otp2.nob, otp.nob, "xml: value unexpected")  # value
+        self.assertEqual(otp2.lmax, otp.lmax, "xml: value unexpected")  # value
+        self.assertEqual(otp2.nob(), otp.nob(), "xml: value unexpected")  # value
         self.assertEqual(otp2.lns, otp.lns, "xml: value unexpected")  # dev
         for i in range(0, 3):
             self.assertEqual(otp2.successor[i], otp.successor[i], "xml: value unexpected")
@@ -103,7 +103,7 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(p.__class__.__name__, "StemSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, -1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
-        self.assertEqual(len(p.ln) + 1, self.srp.nob, "realize: internodal distances +1 should be  number of laterals")
+        self.assertEqual(len(p.ln) + 1, self.srp.nob(), "realize: internodal distances +1 should be  number of laterals")
         # print(p)
 
 

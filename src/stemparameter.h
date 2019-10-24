@@ -65,7 +65,8 @@ public:
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific stem from the stem parameter set
 
     int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on stem parameter set
-    double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal stem length [cm]
+    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
+    double nobs() const; ///< returns the standard deviation of number of branches [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
@@ -82,17 +83,17 @@ public:
     double ln = 1; 		    ///< Inter-lateral distance [cm]
     double lns = 0.;    	///< Standard deviation inter-lateral distance [cm]
     int lnf = 0;            ///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
-    double nob = 0.;    	///< Number of branches [1]
-    double nobs = 0.;   	///< TODO get rid of nobs
+    double lmax = 0.;       ///< Maximal stem length [cm]
+    double lmaxs = 0.;      ///< Standard deviation of maximal stem length [cm]
     double r = 1;		    ///< Initial growth rate [cm day-1]
     double rs = 0.;	    	///< Standard deviation initial growth rate [cm day-1]
     double a = 0.1; 		///< Stem radius [cm]
     double as = 0.; 		///< Standard deviation stem radius [cm]
     double k = 0.;          ///< Maximal stem length [cm]
     double ks = 0.;         ///< Maximal stem length deviation [cm]
-    double RotBeta = 0.6;	///< Revrotation
-    double BetaDev = 0.2;	///< Deviation of RevRotation
-    double InitBeta = 0.2;	///< Initial RevRotation
+    double rotBeta = 0.6;	///< Revrotation
+    double betaDev = 0.2;	///< Deviation of RevRotation
+    double initBeta = 0.2;	///< Initial RevRotation
     int tropismT = 1;	    ///< Stem tropism parameter (Type)
     double tropismN = 1.;   ///< Stem tropism parameter (number of trials)
     double tropismS = 0.2;  ///< Stem tropism parameter (mean value of expected changeg) [1/cm]

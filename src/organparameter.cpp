@@ -157,15 +157,12 @@ std::string OrganRandomParameter::toString(bool verbose) const
  * The reader does not check if all parameters are in the XML Tag,
  * missing parameters are not altered.
  *
- * Not exposed to Python
+ * Not directly exposed to Python (called by Organism::readParameters)
  *
  * @param element  The XML element containing the parameter tags
  */
 void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
 {
-    // std::cout << "OrganRandomParameter::readXML starting read " << "\n" << std::flush;
-    std::string type = std::string(element->Name());
-    this->organType =  Organism::organTypeNumber(type);
     subType = element->IntAttribute("subType", 0);
     const char* cname = element->Attribute("name");
     if (cname!=nullptr) {
@@ -192,7 +189,8 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
             }
             if (i == 0) {
                 if (key.compare("successor")!=0) {
-                    std::cout << "OrganRandomParameter::readXML: warning! parameter " << key << " not found in " << type << " of subType " << subType << "\n" << std::flush;
+                    std::cout << "OrganRandomParameter::readXML: warning! parameter " << key <<
+                        " is defined in the xml, but not available in organ " << Organism::organTypeName(organType) << "\n" << std::flush;
                 }
             }
             p = p->NextSiblingElement("parameter");

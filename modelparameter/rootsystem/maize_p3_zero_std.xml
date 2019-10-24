@@ -1,6 +1,6 @@
 <plant>
     <seed name="maize_p3_zero_std" subType="0">
-        <parameter name="maxTil" value="0"/>
+        <parameter name="maxTi" value="0"/>
         <!--Maximal number of tillers [1]-->
         <parameter name="delayB" value="7"/>
         <!--Time delay between the basal roots [day]-->
@@ -24,7 +24,7 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-1.2"/>
         <!--Z-Coordinate of seed position [cm]-->
-        <parameter name="simtime" value="60"/>
+        <parameter name="simulationTime" value="60"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
     <root name="primaryroots" subType="1">
@@ -46,10 +46,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="2"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="239.3"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="2"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="109"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="3.55"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09" dev="1e+08"/>
@@ -82,10 +82,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="80"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="1.2"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="0"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="1.5"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09" dev="1e+08"/>

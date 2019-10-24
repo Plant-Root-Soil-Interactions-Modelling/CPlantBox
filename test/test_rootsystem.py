@@ -35,7 +35,7 @@ class TestRootSystem(unittest.TestCase):
         srp.delayB = 3
         self.rs.setRootSystemParameter(srp)
         p0 = pb.RootRandomParameter(self.rs)
-        p0.name, p0.subType, p0.la, p0.nob, p0.ln, p0.r, p0.dx = "taproot", 1, 10, 20, 89. / 19., 1, 0.5
+        p0.name, p0.subType, p0.la, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 10, 101, 89. / 19., 1, 0.5
         p0.lb = 2
         p0.successor = [2]
         p0.successorP = [1.]
@@ -109,7 +109,7 @@ class TestRootSystem(unittest.TestCase):
         for j, t in enumerate(times):
             i = 0  # basal root counter
             while t - etB[i] > 0:
-                bl[j] += rootLength(t - etB[i], self.p0.r, self.p0.getK())
+                bl[j] += rootLength(t - etB[i], self.p0.r, self.p0.lmax)
                 i += 1
         self.rs_length_test(dt, bl, 1)
         self.rs_length_test(dt, bl, 100)

@@ -560,6 +560,7 @@ void Organism::readParameters(std::string name, std::string basetag)
             if (basetag.compare("plant") == 0) { // try old spelling
                 std::cout << "Organism::readParameters: plant tag was not found in xml file, retrying with Plant " << std::endl;
                 readParameters(name, "Plant"); // rerun
+                return;
             }
             throw std::invalid_argument ("Organism::readParameters: " + std::string(basetag.c_str()) + " tag was not found in xml file");
         }

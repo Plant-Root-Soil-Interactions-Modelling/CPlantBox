@@ -80,7 +80,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
     double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
     std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob + p->randn()*nobs), 0.); // maximal number of branches
+    int nob_ = std::max(round(nob() + p->randn()*nobs()), 0.); // maximal number of branches
     	switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
@@ -159,6 +159,23 @@ int StemRandomParameter::getLateralType(const Vector3d& pos)
     } else {
         return -1; // no successors
     }
+}
+
+/**
+ * todo docme
+ *
+ * todo I have no idea why this holds...
+ */
+double StemRandomParameter::nobs() const
+{
+    double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+    if (la>0) {
+        nobs -= (las/la - lns/ln)*la/ln;
+    }
+    if (lb>0) {
+        nobs -= (lbs/lb - lns/ln)*lb/ln;
+    }
+    return std::max(nobs,0.);
 }
 
 /**
@@ -259,12 +276,12 @@ void StemRandomParameter::bindParmeters()
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
     bindParameter("la", &la, "Apical zone [cm]", &las);
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
-    bindParameter("nob", &nob, "Maximal number of laterals [1]", &nobs);
+    bindParameter("lmax", &lmax, "Maximal stem length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
     bindParameter("a", &a, "Stem radius [cm]", &as);
-    bindParameter("RotBeta", &RotBeta, "RevRotation of the stem");
-    bindParameter("BetaDev", &BetaDev, "RevRotation deviation");
-    bindParameter("InitBeta", &InitBeta, "Initial RevRotation");
+    bindParameter("RotBeta", &rotBeta, "RevRotation of the stem");  /// todo improve description, start lower letter
+    bindParameter("BetaDev", &betaDev, "RevRotation deviation");  /// todo improve description, start lower letter
+    bindParameter("InitBeta", &initBeta, "Initial RevRotation");  /// todo improve description, start lower letter
     bindParameter("tropismT", &tropismT, "Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of stem tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of stem tropism [1/cm]");

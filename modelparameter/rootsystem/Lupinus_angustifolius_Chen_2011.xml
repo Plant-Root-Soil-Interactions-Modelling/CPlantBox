@@ -1,6 +1,6 @@
 <plant>
     <seed name="Lupinus_angustifolius_Chen_2011" subType="0">
-        <parameter name="maxTil" value="0"/>
+        <parameter name="maxTi" value="0"/>
         <!--Maximal number of tillers [1]-->
         <parameter name="delayB" value="0"/>
         <!--Time delay between the basal roots [day]-->
@@ -24,7 +24,7 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-3"/>
         <!--Z-Coordinate of seed position [cm]-->
-        <parameter name="simtime" value="42"/>
+        <parameter name="simulationTime" value="42"/>
         <!--Recommended final simulation time  [day]-->
     </seed>
     <root name="Type0" subType="1">
@@ -46,10 +46,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0.38" dev="0.037999999"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="72.599998" dev="18.875999"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.89999998" dev="0.02"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="77.833336" dev="18.882593"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="1.7" dev="0.442"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="3000" dev="300"/>
@@ -82,10 +82,10 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0"/>
         <!--Basal zone [cm]-->
+        <parameter name="lmax" value="10"/>
+        <!--Maximal root length [cm]-->
         <parameter name="ln" value="0"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="nob" value="0"/>
-        <!--Maximal number of laterals [1]-->
         <parameter name="r" value="0.88" dev="0.088"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="3000" dev="300"/>

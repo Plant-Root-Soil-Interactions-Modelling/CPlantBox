@@ -56,11 +56,11 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
 
     //        std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
     addPhytomerId(stem_p->subType);
-    double beta = getphytomerId(stem_p->subType)*M_PI*getStemRandomParameter()->RotBeta +
-        M_PI*plant->rand()*getStemRandomParameter()->BetaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
+    double beta = getphytomerId(stem_p->subType)*M_PI*getStemRandomParameter()->rotBeta +
+        M_PI*plant->rand()*getStemRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
     Matrix3d ons = Matrix3d::ons(iHeading);
-    if (getStemRandomParameter()->InitBeta >0 && getphytomerId(stem_p->subType)==0 ){
-        beta = beta + getStemRandomParameter()->InitBeta;
+    if (getStemRandomParameter()->initBeta >0 && getphytomerId(stem_p->subType)==0 ){
+        beta = beta + getStemRandomParameter()->initBeta;
     }
     //ons.times(Matrix3d::rotX(beta));
     double theta = M_PI*stem_p->theta;
@@ -278,7 +278,7 @@ double Stem::calcCreationTime(double length)
 double Stem::calcLength(double age)
 {
     assert(age>=0 && "Stem::calcLength() negative root age");
-    return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,getStemRandomParameter()->getK(),shared_from_this());
+    return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,param()->getK(),shared_from_this());
 }
 
 /**
@@ -289,7 +289,7 @@ double Stem::calcLength(double age)
 double Stem::calcAge(double length)
 {
     assert(length>=0 && "Stem::calcAge() negative root age");
-    return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,getStemRandomParameter()->getK(),shared_from_this());
+    return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
 }
 
 /**
