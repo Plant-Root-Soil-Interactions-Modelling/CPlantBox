@@ -11,19 +11,19 @@ def CPlantBox_PiafMunch(name, time, output = "test_output"):
     plant.openXML(name)
     plant.initialize()
     plant.simulate(time)
-    plant.write("../../results/{}.vtp".format(output),15)
+    plant.write("../../results/{}.vtp".format(str(output)),15)
     dict_all  = convert( plant )
     return dict_all ;
 
-def CPlantBox(name, time, output = "morning_glory_7m"): #define a function, in line 20, we can run it in one line of code
+def CPlantBox(name, time, output = "output"): #define a function, in line 20, we can run it in one line of code
     plant = pb.Plant()
     plant.openXML(name)
     plant.initialize()
     plant.simulate(time)
-    plant.write("../../results/{}.vtp".format(output),15)
+    plant.write("../../results/{}.vtp".format(str(output)),15)
     return plant;
 
-def CPlantBox_analysis(name, time, output = "morning_glory_7m"): #define a function, in line 20, we can run it in one line of code
+def CPlantBox_analysis(name, time, output = "output"): #define a function, in line 20, we can run it in one line of code
     plant = pb.Plant()
     plant.openXML(name)
     plant.initialize()
