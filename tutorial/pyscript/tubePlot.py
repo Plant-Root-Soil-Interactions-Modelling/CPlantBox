@@ -26,13 +26,13 @@ cellDatatoPointData1Display.ColorArrayName = [None, '']
 Hide(sorghumvtp, renderView1)
 
 # create a new 'Tube'
-leaf= Threshold(Input=cellDatatoPointData1, Scalars="organtype", ThresholdRange=(7,9))
+leaf= Threshold(Input=cellDatatoPointData1, Scalars="organType", ThresholdRange=(7,9))
 leaf_poly= ExtractSurface(leaf)
 
-stem= Threshold(Input=cellDatatoPointData1, Scalars="organtype", ThresholdRange=(3,5))
+stem= Threshold(Input=cellDatatoPointData1, Scalars="organType", ThresholdRange=(3,5))
 stem_poly= ExtractSurface(stem)
 
-root= Threshold(Input=cellDatatoPointData1, Scalars="organtype", ThresholdRange=(0,3))
+root= Threshold(Input=cellDatatoPointData1, Scalars="organType", ThresholdRange=(0,3))
 root_poly= ExtractSurface(root)
 
 leaf_ribbon = Ribbon(leaf_poly)
@@ -73,16 +73,16 @@ tube1Display = Show(stem_tube, renderView1)
 tube2Display = Show(root_tube, renderView1)
 ribbon1Display = Show(leaf_ribbon, renderView1)
 # trace defaults for the display properties.
-tube2Display.ColorArrayName = [None, 'organtype']
-tube1Display.ColorArrayName = [None, 'organtype']
-ribbon1Display.ColorArrayName = [None, 'organtype']
+tube2Display.ColorArrayName = [None, 'organType']
+tube1Display.ColorArrayName = [None, 'organType']
+ribbon1Display.ColorArrayName = [None, 'organType']
 # hide data in view
 Hide(cellDatatoPointData1, renderView1)
 
 # set scalar coloring
-ColorBy(tube1Display, ('CELLS', 'organtype'))
-ColorBy(tube2Display, ('CELLS', 'organtype'))
-ColorBy(ribbon1Display, ('CELLS', 'organtype'))
+ColorBy(tube1Display, ('CELLS', 'organType'))
+ColorBy(tube2Display, ('CELLS', 'organType'))
+ColorBy(ribbon1Display, ('CELLS', 'organType'))
 
 # rescale color and/or opacity maps used to include current data range
 tube1Display.RescaleTransferFunctionToDataRange(True)

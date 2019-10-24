@@ -15,7 +15,7 @@ threshold1.Scalars = ['POINTS', 'order']
 threshold1.ThresholdRange = [0.0, 3.0]
 
 # Properties modified on threshold1
-threshold1.Scalars = ['CELLS', 'emergencetime']
+threshold1.Scalars = ['CELLS', 'creationTime']
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
@@ -25,7 +25,7 @@ typeLUT = GetColorTransferFunction('organtype')
 # show data in view
 threshold1Display = Show(threshold1, renderView1)
 # trace defaults for the display properties.
-threshold1Display.ColorArrayName = ['CELLS', 'organtype']
+threshold1Display.ColorArrayName = ['CELLS', 'organType']
 threshold1Display.LookupTable = typeLUT
 threshold1Display.ScalarOpacityUnitDistance = 0.4049429502949595
 

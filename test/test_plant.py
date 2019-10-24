@@ -27,22 +27,23 @@ class TestPlant(unittest.TestCase):
 #         for p_ in leafs[1:]:
 #             print(p_)
 
-        self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1], "read wrong number of random parameter from xml")
+        self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1],
+                         "test_CPlantBox: read wrong number of random parameter from xml")
 
-        p.initialize()
+        p.initialize(True)
         p.simulate(76)
         p.write("morningglory.vtp")
 
-    def CPlantBox_analysis(self):
-        """tests the CPlantBox_analysis function defined in CPlantBox_PiafMunch.py"""
-        p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013")
-        p.initialize()
-        p.simulate(time)
+#     def test_CPlantBox_analysis(self):
+#         """tests the CPlantBox_analysis function defined in CPlantBox_PiafMunch.py"""
+#         p = pb.Plant()
+#         p.openXML(path + "Heliantus_Pagès_2013_new.xml")
+#         p.initialize()
+#         p.simulate(76)
 #         ana = pb.SegmentAnalyser(p)
-#         ana.write("../../results/{}.vtp".format(str(output)))
+#         ana.write(write("morningglory_ama.vtp"))
 
-    def CPlantBox_convert(self):
+    def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
         pass
 

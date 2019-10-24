@@ -738,7 +738,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("reset", &Plant::reset)
         .def("openXML", &Plant::openXML)
         .def("setTropism", &Plant::setTropism)
-        .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false) // in Organism::simulate
+        .def("simulate",(void (Plant::*)(double,bool)) &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) // in Organism::simulate
         .def("simulate",(void (Plant::*)()) &Plant::simulate)
         .def("initCallbacks", &Plant::initCallbacks)
         .def("createTropismFunction", &Plant::createTropismFunction)
