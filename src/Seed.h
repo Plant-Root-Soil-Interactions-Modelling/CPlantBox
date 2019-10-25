@@ -10,6 +10,8 @@ namespace CPlantBox {
 /**
  * Seed
  *
+ * Creates one node, which is the origin of stem, tillers, tap, and basal
+ *
  * simulate calls the simulate method of the stem, and base roots
  */
 class Seed : public Organ
@@ -18,7 +20,7 @@ public:
 
     Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         bool moved= false, int oldNON = 0) :Organ(id, param, alive, active, age, length, moved, oldNON) { }; ///< creates everything from scratch
-    Seed(std::shared_ptr<Organism> plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.) { }; ///< used within simulation
+    Seed(std::shared_ptr<Organism> plant); ///< used within simulation
     virtual ~Seed() { };
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the seed

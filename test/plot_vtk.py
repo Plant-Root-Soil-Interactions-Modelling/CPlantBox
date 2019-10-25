@@ -3,80 +3,59 @@ from vtk import *
 import sys
 sys.path.append("..")
 import plantbox as pb
-from rb_tools import *
 
 
-def vtkPoints(p):
-    """ Creates vtkPoints from an numpy array
-    """
+def vtkPoints(p_):
+    """ Creates vtkPoints from a list of Vector3d """
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
     da.SetNumberOfComponents(3)  # vtk point dimension is always 3
-    da.SetNumberOfTuples(p.shape[0])
-    for i in range(0, p.shape[0]):
-        if p.shape[1] == 2:
-            da.InsertTuple3(i, p[i, 0], p[i, 1], 0.)
-        elif p.shape[1] == 3:
-            da.InsertTuple3(i, p[i, 0], p[i, 1], p[i, 2])
+    da.SetNumberOfTuples(len(p_))
+    for i, p in enumerate(p_):
+        da.InsertTuple3(i, p.x, p.y, p.z)
     points = vtk.vtkPoints()
     points.SetData(da)
     return points
 
-
 def vtkCells(t):
-    """ Creates vtkCells from an numpy array
-    """
+    """ Creates vtkCells from an numpy array """
     cellArray = vtk.vtkCellArray()
-    for vert in t:
-        if t.shape[1] == 2:
-            tetra = vtk.vtkLine()
-        if t.shape[1] == 3:
-            tetra = vtk.vtkTriangle()
-        elif t.shape[1] == 4:
-            tetra = vtk.vtkTetra()
-        for i, v in enumerate(vert):
-            tetra.GetPointIds().SetId(i, int(v))
+    for i, l in enumerate(t):
+        tetra = vtk.vtkLine()
+        tetra.GetPointIds().SetId(0, l.x)
+        tetra.GetPointIds().SetId(1, l.y)        
         cellArray.InsertNextCell(tetra)
     return cellArray
 
 
 def vtkData(d):
-    """ Creates a vtkDataArray from an numpy array, e.g. grid.GetCellData().SetScalars(vtkData(celldata))
-    """
+    """ Creates a vtkDataArray from an numpy array, e.g. grid.GetCellData().SetScalars(vtkData(celldata)) """
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
-    noc = d.shape[1]
-    da.SetNumberOfComponents(noc)
-    da.SetNumberOfTuples(d.shape[0])
-    for i in range(0, d.shape[0]):
-        if  noc == 1:
-            da.InsertTuple1(i, d[i, 0])
-        elif noc == 2:
-            da.InsertTuple2(i, d[i, 0], d[i, 1])
-        elif noc == 3:
-            da.InsertTuple3(i, d[i, 0], d[i, 1], d[i, 2])
-        elif noc == 4:
-            da.InsertTuple4(i, d[i, 0], d[i, 1], d[i, 2], d[i, 3])
+    da.SetNumberOfComponents(1)
+    da.SetNumberOfTuples(len(d))
+    for i in range(0, len(d)):
+        da.InsertTuple1(i, d[i])
     return da
 
 
 # Simulate something
 rs = pb.RootSystem()
-name = "Zea_mays_1_Leitner_2010"  # "Anagallis_femina_Leitner_2010"
-rs.openFile(name)
+path = "../modelparameter/rootsystem/"
+name = "Zea_mays_1_Leitner_2010.xml"  # "Anagallis_femina_Leitner_2010"
+rs.readParameters(path+name)
 rs.initialize()
 rs.simulate(30, True)
 
 # Export to VTK
-nodes = vv2a(rs.getNodes())
-segs = seg2a(rs.getSegments())
-types = v2ai(rs.getParameter("type"))
-print(len(types), types, types.shape)
+nodes = rs.getNodes()
+segs = rs.getSegments()
+types = rs.getParameter("type")
 points = vtkPoints(nodes)
 cells = vtkCells(segs)
 data = vtkData(types)
 pd = vtk.vtkPolyData()
 pd.SetPoints(points)
 pd.SetLines(cells)
-pd.GetCellData().SetScalars(types)
+pd.GetCellData().SetScalars(data)
 
 # Set the background color
 colors = vtk.vtkNamedColors()
@@ -95,7 +74,7 @@ ren = vtk.vtkRenderer()
 renWin = vtk.vtkRenderWindow()
 renWin.AddRenderer(ren)
 iren = vtk.vtkRenderWindowInteractor()
-iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
+# iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
 iren.SetRenderWindow(renWin)
 
 # Add the actors to the renderer, set the background and size
