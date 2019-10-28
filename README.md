@@ -1,5 +1,5 @@
 # CPlantBox
-[![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/tutorial/jupyter/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb)\
+[![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/tutorial/jupyter/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb) [![Teaching Material LBRAI2219](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/tutorial/jupyter/CPlantBox_Lesson.ipynb)\
 Two main functions
 1. Create plant structure
 2. Coupling with PiafMunch to have carbon and water flow inside the structure.
