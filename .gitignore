@@ -2,6 +2,10 @@
 build-*
 Testing
 *.so
+src/CMakeFiles/
+src/Makefile
+src/cmake_install.cmake
+test/__pycache__/
 
 # auto-saved files
 *~
@@ -40,5 +44,7 @@ __pycache__
 .pydevproject
 .settings/
 Debug/
+*.vtp
 
-
+# Jupyter notebook
+tutorial/jupyter/.ipynb_checkpoints/

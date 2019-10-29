@@ -177,7 +177,7 @@ void Stem::simulate(double dt, bool verbose)
                             if (length<s) {
                                 if (i==children.size()) { // new lateral
                                     //this decide which successor grow the leaf (TODO) adding it to parameterfile
-                                    //leafGrow(verbose, nodes.back());
+                                    leafGrow(verbose, nodes.back());
                                     createLateral(verbose);
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i

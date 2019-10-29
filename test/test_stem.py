@@ -28,11 +28,11 @@ class TestStem(unittest.TestCase):
         """ an example used in the tests below, a main stem with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.StemRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "tapstem", 1, 1, 10, 100, (89. / 19.), 1, 0.5
-        p0.successor = [2]
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "main", 1, 1, 10, 100, (89. / 19.), 1, 0.5
+        p0.successor = [3]
         p0.successorP = [1.]
         p1 = pb.StemRandomParameter(self.plant)
-        p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
+        p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 3, 25, 0, 2, 0.1
         self.p0, self.p1 = p0, p1  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
@@ -159,7 +159,7 @@ class TestStem(unittest.TestCase):
             ct.append(o.getParameter("creationTime"))
             radius.append(o.getParameter("radius"))
             order.append(o.getParameter("order"))
-        self.assertEqual(type, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected stem sub types")
+        self.assertEqual(type, [1.0, 3.0, 3.0, 3.0, 3.0], "getParameter: unexpected stem sub types")
         self.assertEqual(order, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected stem sub types")  # +1, because of artificial parent stem
         for i in range(0, 5):
             self.assertEqual(age[i], 30 - ct[i], "getParameter: unexpected stem sub types")  # +1, because of artificial parent stem
@@ -176,7 +176,11 @@ class TestStem(unittest.TestCase):
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         r.simulate(2.4, True)
         self.assertEqual(r.getNumberOfNodes() - r.getOldNumberOfNodes(), 5, "dynamics: unexcpected number of new nodes")
-
+    
+    def test_leafgrow(self):
+        """ tests if the stem can create leaf """  #
+        self.stem_example_rtp()
+        r = self.stem
 
 if __name__ == '__main__':
     unittest.main()
