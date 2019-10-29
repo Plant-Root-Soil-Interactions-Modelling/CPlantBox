@@ -275,7 +275,7 @@ double Leaf::calcLength(double age)
     //    if (name()  == "maize1eaf"){
     assert(age>=0  && "Leaf::calcLength() negative root age");
     //return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
-    return getLeafRandomParameter()->f_gf->getLength(age,param()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,shared_from_this());
+    return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
     //	}else {
     //assert(age>=0);
     //	    return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
@@ -294,7 +294,7 @@ double Leaf::calcAge(double length)
     //     if ( name() == "maize1eaf"){
     assert(length>=0 && "Leaf::calcAge() negative root length");
     //std::cout<<"length subtype is"<<getLeafRandomParameter()->subType<<"\n";
-    return getLeafRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(),shared_from_this());
+    return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
     //        return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
     //        }else {
     //assert(age>=0);
@@ -320,11 +320,11 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-            auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), nodes.size() - 1, length);
+            auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
             //		lateral2->setRelativeOrigin(nodes.back());
             children.push_back(lateral2);
             lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -334,11 +334,11 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), length, nodes.size() - 1);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-            auto lateral2 = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), nodes.size() - 1, length);
+            auto lateral2 = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), length, nodes.size() - 1);
             //		lateral2->setRelativeOrigin(nodes.back());
             children.push_back(lateral2);
             lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -348,7 +348,7 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), length, nodes.size() - 1);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -358,14 +358,14 @@ void Leaf::createLateral(bool silence)
             double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
-            auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay,  shared_from_this(), nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay,  shared_from_this(), length, nodes.size() - 1);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
             addleafphytomerID(getLeafRandomParameter()->subType);
 
-            auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay,  shared_from_this(), nodes.size() - 1, length);
+            auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay,  shared_from_this(), length, nodes.size() - 1);
             //		lateral2->setRelativeOrigin(nodes.back());
             children.push_back(lateral2);
             lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -375,7 +375,7 @@ void Leaf::createLateral(bool silence)
             double delay = ageLG-ageLN; // time the lateral has to wait
             Vector3d h = heading(); // current heading
 
-            auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), nodes.size() - 1, length);
+            auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
             //		lateral->setRelativeOrigin(nodes.back());
             children.push_back(lateral);
             lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
