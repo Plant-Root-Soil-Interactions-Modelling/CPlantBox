@@ -429,7 +429,7 @@ PYBIND11_MODULE(plantbox, m) {
        .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
        .def("addUserData", &SegmentAnalyser::addUserData)
        .def("clearUserData", &SegmentAnalyser::clearUserData)
-       .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime"}))
+       .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}))
        .def_readwrite("nodes", &SegmentAnalyser::nodes)
        .def_readwrite("segments", &SegmentAnalyser::segments)
        .def_readwrite("segCTs", &SegmentAnalyser::segCTs)
