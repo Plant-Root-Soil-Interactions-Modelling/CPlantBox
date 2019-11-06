@@ -1,12 +1,13 @@
-# CPlantBox
+# Hi, I am CPlantBox
 
-Two main functions
-1. Create plant structure
-2. Coupling with PiafMunch to have carbon and water flow inside the structure.
+[![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851) [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/tutorial/jupyter/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb) Teaching Material LBRAI2219:[![Teaching Material LBRAI2219](https://badgen.net/badge/Launch/on%20Google%20Colab/blue?icon=terminal)](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/tutorial/jupyter/CPlantBox_Lesson.ipynb)\
+## I can :
+1. Create multiple plant structure
+2. Coupling with PiafMunch, and make carbon and water flow inside of me.
 
-# Create plant structure in 5 minutes
+## Try me 1 click
 
-The most convenient way is to use google colab, which is a Linux with jupyter notebook interface.
+The most convenient way is to use google colab, which is a Linux virtual machine with jupyter notebook interface.
 You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
 [here is the link to use it](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/python/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb)
 
@@ -14,10 +15,9 @@ You can click the link to follow the guide there, just to click some buttons and
 # Folder sructure
 
 /src			CPlantBox C++ codes
-/examples 		Some examples how to use the CplantBox
-/modelparameter		Some root parameter, and a plant parameter files
-/scripts 		Pyhthon scripts for visualization with Paraview, and Matlab scripts for parameter export
-/results 		Nice result images
+/tutorial 		learn to use CPlantBox
+/modelparameter		Plant parameter files
+
 
 # Documentation
 
@@ -27,9 +27,10 @@ $ doxygen doxy_config
 The documentation should now be located in the folder /doc
 
 
-# Example
+# Examples
 
-Visualized in R, thanks  [@guillaumelobet](https://github.com/guillaumelobet)
 
-![alt text](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/results/plant.gif "Tree with leafs")
+[![Plant Simulations -- 8K resolution](https://img.youtube.com/vi/jNbvjW-WFvk/0.jpg)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
+
+
 
