@@ -90,8 +90,8 @@ def CPlantBox_analysis(name, time, output = "output"): #define a function, in li
     plant.simulate(time)
     #plant.write("../../results/{}.vtp".format(output),15)
     ana = pb.SegmentAnalyser(plant)
-    ana.write("{}.vtp".format(str(output)))
-    ana.write("{}.txt".format(str(output)))
+    ana.write("../../results/{}.vtp".format(str(output)))
+    ana.write("../../results/{}.txt".format(str(output)))
     return plant;
 
 def python_nodes(plant):
