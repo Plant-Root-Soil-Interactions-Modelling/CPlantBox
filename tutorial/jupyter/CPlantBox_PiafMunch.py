@@ -40,14 +40,14 @@ def visual_plant_sub(plant1,name='plant'):
 
     return fig
 def change_parameter(input_name, output_name, organ_name, subtype , parameter_name, value_type, value):   
-    all_parameter = ET.parse("../../modelparameter/{}.xml".format(input_name)) # read the parameter file from xml file
+    all_parameter = ET.parse("../../modelparameter/plant/{}.xml".format(input_name)) # read the parameter file from xml file
     plant_parameter = all_parameter.getroot() # get the first level of parameters
     original_lmax = plant_parameter.find("./organ[@type='{}'][@subType='{}']/parameter[@name='{}']".format(organ_name, subtype, parameter_name)).get('{}'.format(value_type)) # get function to read the value
     # The '10' in the following line is the value that need to be changed change the value
     plant_parameter.find("./organ[@type='{}'][@subType='{}']/parameter[@name='{}']".format(organ_name, subtype, parameter_name)).set('{}'.format(value_type),'{}'.format(value)) # set function to read the value
     current_lmax = plant_parameter.find("./organ[@type='{}'][@subType='{}']/parameter[@name='{}']".format(organ_name, subtype, parameter_name)).get('{}'.format(value_type)) # get function to read the value
     print('original {} of {} organ with subtype {} is {}, changed to {}'.format(parameter_name, organ_name, subtype ,original_lmax, current_lmax))
-    all_parameter.write('../../modelparameter/{}.xml'.format(output_name))   
+    all_parameter.write('../../modelparameter/plant/{}.xml'.format(output_name))   
 
 def visual_plant(plant1):
     subfig = visual_plant_sub(plant1)
@@ -90,8 +90,8 @@ def CPlantBox_analysis(name, time, output = "output"): #define a function, in li
     plant.simulate(time)
     #plant.write("../../results/{}.vtp".format(output),15)
     ana = pb.SegmentAnalyser(plant)
-    ana.write("../../results/{}.vtp".format(str(output)))
-    ana.write("../../results/{}.txt".format(str(output)))
+    ana.write("{}.vtp".format(str(output)))
+    ana.write("{}.txt".format(str(output)))
     return plant;
 
 def python_nodes(plant):
