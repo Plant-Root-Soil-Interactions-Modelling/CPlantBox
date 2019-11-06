@@ -77,6 +77,7 @@ void Plant::initialize(bool verbose)
     baseOrgans.push_back(seed);
 
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
+    Leaf::leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     // further initializations
     initCallbacks();
