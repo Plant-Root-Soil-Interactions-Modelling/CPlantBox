@@ -73,7 +73,7 @@ def CPlantBox_PiafMunch(name, time, output = "test_output"):
 
 def CPlantBox(name, time, output = "output"): #define a function, in line 20, we can run it in one line of code
     plant = pb.Plant()
-    plant.openXML('../../modelparameter/plant/0_new.xml')
+    plant.openXML('../../modelparameter/plant/'+name)
     seeds = plant.getOrganRandomParameter(pb.OrganTypes.seed)
     roots = plant.getOrganRandomParameter(pb.OrganTypes.root)
     stems = plant.getOrganRandomParameter(pb.OrganTypes.stem)
