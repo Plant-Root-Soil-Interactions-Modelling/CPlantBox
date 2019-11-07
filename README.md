@@ -17,11 +17,11 @@ You can click the link to follow the guide there, just to click some buttons and
 
 ## or build local
 
- Runs CMake which configures the CPlantBox libraries by runnning
+ Run CMake which configures the CPlantBox libraries by 
 ```bash
 cmake . && make
 ```
-in the root folder, and try to run some Python tutorial examples, e.g:
+in the root folder, and run some Python tutorial examples, e.g:
 ```bash
 cd tutorial/examples/python
 python3 example1a.py
