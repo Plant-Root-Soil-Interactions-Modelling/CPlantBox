@@ -15,15 +15,29 @@ The most convenient way is to use google colab, which is a Linux virtual machine
 You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
 [here is the link to use it](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/python/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb)
 
+## or build local
+
+ Runs CMake which configures the CPlantBox libraries by runnning
+```bash
+cmake .
+make
+```
+in the root folder. 
+
+Try to run some Python tutorial examples:
+```
+cd tutorial/examples/python
+python3 example1a.py
+```
 
 # Folder sructure
 
-`/src`			CPlantBox C++ codes\
-`/tutorial` 		learn to use CPlantBox\
 `/modelparameter`		Plant parameter files
+`/src`			CPlantBox C++ codes\
+`/test`   Python tests for all CPlantBox classes\
+`/tutorial` 		learn to use CPlantBox\
 
-
-# Documentation
+# Code documentation
 
 Create the documentation by running doxygen in the folder 
 $ doxygen doxy_config
@@ -32,7 +46,6 @@ The documentation should now be located in the folder /doc
 
 
 # Examples
-
 
 [![Plant Simulations -- 8K resolution](https://img.youtube.com/vi/jNbvjW-WFvk/0.jpg)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
 
