@@ -18,9 +18,9 @@ You can click the link to follow the guide there, just to click some buttons and
 
 # Folder sructure
 
-/src			CPlantBox C++ codes
-/tutorial 		learn to use CPlantBox
-/modelparameter		Plant parameter files
+`/src`			CPlantBox C++ codes\
+`/tutorial` 		learn to use CPlantBox\
+`/modelparameter`		Plant parameter files
 
 
 # Documentation
