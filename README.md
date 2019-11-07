@@ -13,7 +13,7 @@
 
 The most convenient way is to use google colab, which is a Linux virtual machine with jupyter notebook interface.
 You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
-[here is the link to use it](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/python/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb)
+[here is the link to use it](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/python/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb).
 
 ## or build local
 
@@ -21,7 +21,7 @@ You can click the link to follow the guide there, just to click some buttons and
 ```bash
 cmake . && make
 ```
-in the root folder, and run some Python tutorial examples, e.g:
+in the root folder, and run some Python tutorial examples, e.g
 ```bash
 cd tutorial/examples/python
 python3 example1a.py
@@ -29,18 +29,17 @@ python3 example1a.py
 
 # Folder sructure
 
-`/modelparameter`		Plant parameter files
+`/modelparameter`		Plant parameter files\
 `/src`			CPlantBox C++ codes\
 `/test`   Python tests for all CPlantBox classes\
-`/tutorial` 		learn to use CPlantBox\
+`/tutorial` 		learn to use CPlantBox
 
 # Code documentation
 
 Create the documentation by running doxygen in the folder 
 $ doxygen doxy_config
 
-The documentation should now be located in the folder /doc
-
+The documentation will be located in the folder /doc
 
 # Examples
 
