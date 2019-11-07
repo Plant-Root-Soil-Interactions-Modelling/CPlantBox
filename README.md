@@ -19,13 +19,10 @@ You can click the link to follow the guide there, just to click some buttons and
 
  Runs CMake which configures the CPlantBox libraries by runnning
 ```bash
-cmake .
-make
+cmake . && make
 ```
-in the root folder. 
-
-Try to run some Python tutorial examples:
-```
+in the root folder, and try to run some Python tutorial examples, e.g:
+```bash
 cd tutorial/examples/python
 python3 example1a.py
 ```
