@@ -7,7 +7,7 @@
 
 ## I can :
 1. Create multiple plant structure
-2. Coupling with PiafMunch, and make carbon and water flow inside of me.
+2. Coupling with PiafMunch, and make carbon and water flow inside of the plant.
 
 ## Try me 1 click
 
