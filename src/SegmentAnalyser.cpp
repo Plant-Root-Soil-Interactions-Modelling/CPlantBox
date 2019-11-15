@@ -698,7 +698,7 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 
 	os << "# \n";
 	os << "SIMPLEX \n";
-	os << "parameters 10 \n";
+	os << "parameters 9 \n";
 	// node1ID, node2ID, type, branchID, surfaceIdx, length, radiusIdx, massIdx, axialPermIdx, radialPermIdx, creationTimeId
 	for (size_t i=0; i<segments.size(); i++) {
 		Vector2i s = segments.at(i);
@@ -710,7 +710,7 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 		double length = sqrt((n1.x-n2.x)*(n1.x-n2.x)+(n1.y-n2.y)*(n1.y-n2.y)+(n1.z-n2.z)*(n1.z-n2.z));
 		double surface = 2*radius*M_PI*length;
 		double time = segCTs.at(i);
-		int subType = o->getParameter("sub_type");
+		int subType = o->getParameter("subType");
 		os << s.x << " " << s.y << " " << subType << " " << branchnumber << " " << surface/10000 << " " << length/100 <<" " << radius/100 << " " << "0.00" << " " << "0.0001" << " "<< "0.00001" << " " << time*3600*24 << " \n";
 	}
 
