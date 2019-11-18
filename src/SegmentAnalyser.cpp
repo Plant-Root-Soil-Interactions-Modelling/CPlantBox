@@ -709,7 +709,7 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 	}
 	os << "# \n";
 	os << "SIMPLEX \n";
-	os << "parameters 9 \n";
+	os << "parameters 7 \n";
 	// node1ID, node2ID, type, branchID, surface, length, radius, creationTimeId
 	for (size_t i=0; i<segments.size(); i++) {
 		Vector2i s = segments.at(i);
