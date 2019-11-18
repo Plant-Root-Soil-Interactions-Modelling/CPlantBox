@@ -686,16 +686,17 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 /**
  * Writes the (line)segments of the root system in dgf format used by DuMux
  *
- * Six parameters are passed:
- * 0: Organ Type (ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4)
- * 1: Organ's subType
- * 2: Organ's unique id
+ * Seven parameters are passed:
+ * 0: Organ's subType
+ * 1: Organ's radius [m
+ * 2: Organ's creationTime [s]
  * 3: Organ's length [m]
- * 4: Organ's radius [m]
- * 5: Organ's surface [m]
- * 6: Organ's creationTime [s]
+ * 4: Organ's unique id
+ * 5: Organ Type (ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4)
+ * 6: Organ's surface [m]
+
  *
- * things we could further add are "alive", "order" ?
+ * things we could further add, are "alive", "order" ?
  *
  * @param os      typically a file out stream
  */
@@ -706,7 +707,6 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 	for (auto& n : nodes) {
 		os << n.x/100 << " " << n.y/100 << " " << n.z/100 << " \n";
 	}
-
 	os << "# \n";
 	os << "SIMPLEX \n";
 	os << "parameters 9 \n";
@@ -722,9 +722,10 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 		double surface = 2*radius*M_PI*length;
 		double time = segCTs.at(i);
 		int subType = o->getParameter("subType");
-		os << s.x << " " << s.y << " " << subType << " " << branchnumber << " " << surface/10000 << " " << length/100 << " " << radius/100 << " " << time*3600*24 << " \n";
+        int organType = o->getParameter("organType");
+		os << s.x << " " << s.y << " " << subType << " " << radius/100   << " " << time*3600*24 << " "
+		    << length/100 << " " << branchnumber << " " << organType << " " << surface/10000  << " \n";
 	}
-
 	os << "# \n";
 	os << "BOUNDARYDOMAIN \n";
 	os << "default 1 \n";
