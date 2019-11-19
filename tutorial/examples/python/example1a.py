@@ -18,3 +18,7 @@ rootsystem.simulate(30, True)
 
 # Export final result (as vtp)
 rootsystem.write("results/example_1a.vtp")
+
+# or as DGF
+ana = pb.SegmentAnalyser(rootsystem)
+ana.write("results/example_1a.dgf")
