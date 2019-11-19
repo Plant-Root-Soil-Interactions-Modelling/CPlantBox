@@ -686,17 +686,17 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 /**
  * Writes the (line)segments of the root system in dgf format used by DuMux
  *
- * Seven parameters are passed:
- * 0: Organ's subType
- * 1: Organ's radius [m
- * 2: Organ's creationTime [s]
- * 3: Organ's length [m]
- * 4: Organ's unique id
- * 5: Organ Type (ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4)
- * 6: Organ's surface [m]
-
- *
- * things we could further add, are "alive", "order" ?
+ * For parameters, the IBG-3 default is:
+ * 0 order,
+ * 1 brnID,
+ * 2 surf [cm2],
+ * 3 length [cm],
+ * 4 radius [cm],
+ * 5 kz [cm4 hPa-1 d-1],  axial root conductivity (unknown to CPlantBox) is set to 0.
+ * 6 kr [cm hPa-1 d-1],   radial root conductivity (unknown to CPlantBox) is set to 0.
+ * 7 emergence time [d],
+ * 8 subType,
+ * 9 organType
  *
  * @param os      typically a file out stream
  */
@@ -709,22 +709,24 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 	}
 	os << "# \n";
 	os << "SIMPLEX \n";
-	os << "parameters 7 \n";
-	// node1ID, node2ID, type, branchID, surface, length, radius, creationTimeId
+	os << "parameters 10 \n";
+	// node1ID, node2ID, order, brnID, surf [cm2], length [cm], radius [cm],
+	// kz [cm4 hPa-1 d-1], kr [cm hPa-1 d-1], emergence time [d], subType, organType
 	for (size_t i=0; i<segments.size(); i++) {
 		Vector2i s = segments.at(i);
 		Vector3d n1 = nodes.at(s.x);
 		Vector3d n2 = nodes.at(s.y);
 		std::shared_ptr<Organ> o = segO.at(i).lock();
-		int branchnumber = o->getId();
+		int organId = o->getId();
 		double radius = radii.at(i);
 		double length = sqrt((n1.x-n2.x)*(n1.x-n2.x)+(n1.y-n2.y)*(n1.y-n2.y)+(n1.z-n2.z)*(n1.z-n2.z));
 		double surface = 2*radius*M_PI*length;
-		double time = segCTs.at(i);
+		double ctime = segCTs.at(i);
 		int subType = o->getParameter("subType");
         int organType = o->getParameter("organType");
-		os << s.x << " " << s.y << " " << subType << " " << radius/100   << " " << time*3600*24 << " "
-		    << length/100 << " " << branchnumber << " " << organType << " " << surface/10000  << " \n";
+        int order = o->getParameter("order");
+		os << s.x << " " << s.y << " " << order <<  " " << organId << " " << surface << " " << length << " " << radius <<
+		    " " << 0. << " " << 0. << " " << ctime << " " << subType << " " << organType << std::endl;
 	}
 	os << "# \n";
 	os << "BOUNDARYDOMAIN \n";
