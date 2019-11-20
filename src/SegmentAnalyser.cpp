@@ -686,6 +686,18 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 /**
  * Writes the (line)segments of the root system in dgf format used by DuMux
  *
+ * For parameters, the IBG-3 default is:
+ * 0 order,
+ * 1 brnID,
+ * 2 surf [cm2],
+ * 3 length [cm],
+ * 4 radius [cm],
+ * 5 kz [cm4 hPa-1 d-1],  axial root conductivity (unknown to CPlantBox) is set to 0.
+ * 6 kr [cm hPa-1 d-1],   radial root conductivity (unknown to CPlantBox) is set to 0.
+ * 7 emergence time [d],
+ * 8 subType,
+ * 9 organType
+ *
  * @param os      typically a file out stream
  */
 void SegmentAnalyser::writeDGF(std::ostream & os) const
@@ -695,25 +707,27 @@ void SegmentAnalyser::writeDGF(std::ostream & os) const
 	for (auto& n : nodes) {
 		os << n.x/100 << " " << n.y/100 << " " << n.z/100 << " \n";
 	}
-
 	os << "# \n";
 	os << "SIMPLEX \n";
 	os << "parameters 10 \n";
-	// node1ID, node2ID, type, branchID, surfaceIdx, length, radiusIdx, massIdx, axialPermIdx, radialPermIdx, creationTimeId
+	// node1ID, node2ID, order, brnID, surf [cm2], length [cm], radius [cm],
+	// kz [cm4 hPa-1 d-1], kr [cm hPa-1 d-1], emergence time [d], subType, organType
 	for (size_t i=0; i<segments.size(); i++) {
 		Vector2i s = segments.at(i);
 		Vector3d n1 = nodes.at(s.x);
 		Vector3d n2 = nodes.at(s.y);
 		std::shared_ptr<Organ> o = segO.at(i).lock();
-		int branchnumber = o->getId();
+		int organId = o->getId();
 		double radius = radii.at(i);
 		double length = sqrt((n1.x-n2.x)*(n1.x-n2.x)+(n1.y-n2.y)*(n1.y-n2.y)+(n1.z-n2.z)*(n1.z-n2.z));
 		double surface = 2*radius*M_PI*length;
-		double time = segCTs.at(i);
-		int subType = o->getParameter("sub_type");
-		os << s.x << " " << s.y << " " << subType << " " << branchnumber << " " << surface/10000 << " " << length/100 <<" " << radius/100 << " " << "0.00" << " " << "0.0001" << " "<< "0.00001" << " " << time*3600*24 << " \n";
+		double ctime = segCTs.at(i);
+		int subType = o->getParameter("subType");
+        int organType = o->getParameter("organType");
+        int order = o->getParameter("order");
+		os << s.x << " " << s.y << " " << order <<  " " << organId << " " << surface << " " << length << " " << radius <<
+		    " " << 0. << " " << 0. << " " << ctime << " " << subType << " " << organType << std::endl;
 	}
-
 	os << "# \n";
 	os << "BOUNDARYDOMAIN \n";
 	os << "default 1 \n";
