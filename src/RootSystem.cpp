@@ -378,7 +378,7 @@ std::vector<std::shared_ptr<Root>> RootSystem::getRoots() const
 std::vector<Vector3d> RootSystem::getNodes() const
 {
     auto v = Organism::getNodes();
-    v.at(0) = Vector3d(0.,0.,0.); // add artificial shoot
+    v.at(0) = Vector3d(0.,0.,0.); // the artifical node is created by initialize()
     return v;
 }
 

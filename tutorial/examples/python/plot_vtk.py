@@ -85,9 +85,9 @@ pd.SetLines(cells)
 pd.GetCellData().SetScalars(data)
 
 # Set the background color
-colors = vtk.vtkNamedColors()
-bkg = map(lambda x: x / 255.0, [26, 51, 102, 255])
-colors.SetColor("BkgColor", *bkg)
+# colors = vtk.vtkNamedColors()
+# bkg = map(lambda x: x / 255.0, [26, 51, 102, 255])
+# colors.SetColor("BkgColor", *bkg)
 
 # Set up VTK
 mapper = vtk.vtkPolyDataMapper()
@@ -106,7 +106,7 @@ iren.SetRenderWindow(renWin)
 
 # Add the actors to the renderer, set the background and size
 ren.AddActor(plantActor)
-ren.SetBackground(colors.GetColor3d("BkgColor"))
+# ren.SetBackground(colors.GetColor3d("BkgColor"))
 renWin.SetSize(800, 800)
 renWin.SetWindowName(name)
 

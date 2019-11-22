@@ -74,6 +74,17 @@ void SegmentAnalyser::addSegments(const SegmentAnalyser& a)
 }
 
 /**
+ * Adds a single segment (e.g. an artifical shoot)
+ */
+void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius)
+{
+    segments.push_back(seg);
+    segCTs.push_back(ct);
+    segO.push_back(std::weak_ptr<Organ>()); // expired
+    radii.push_back(radius);
+}
+
+/**
  * Returns a specific parameter per root segment
  *
  * @param st    parameter type @see RootSystem::ScalarType per segment
@@ -120,9 +131,18 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name) const
 	for (size_t i=0; i<segO.size(); i++) {
 		if (!segO.at(i).expired()) {
 			data.at(i) = segO.at(i).lock()->getParameter(name);
-		} else { // in case the segment has no orgin
+		} else { // in case the segment has no origin
+
+		    if (name == "subType") {
+		        data.at(i) = -1;
+		    } else if (name == "order") {
+                data.at(i) = -1;
+            } else if (name == "organType") {
+                data.at(i) = -1;
+            } else {
 			throw std::invalid_argument("SegmentAnalyser::getParameter: segment origin expired (segment has no onwer), for segment index "
 					+ std::to_string(i) + ", parameter name "+name);
+            }
 		}
 	}
 	return data;
@@ -579,7 +599,10 @@ void SegmentAnalyser::addUserData(std::vector<double> data, std::string name)
  */
 void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
 {
+    std::cout << "SegmentAnalyser(): nodes 0 " << nodes[0].toString() << "\n";
 	this->pack(); // a good idea before writing any file
+    std::cout << "SegmentAnalyser(): nodes 0 " << nodes[0].toString() << "\n";
+
 	std::ofstream fos;
 	fos.open(name.c_str());
 	std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer

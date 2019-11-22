@@ -29,6 +29,7 @@ public:
     // merge segments
     void addSegments(const Organism& plant); ///< adds the segments
     void addSegments(const SegmentAnalyser& a); ///< adds the segments
+    void addSegment(Vector2i seg, double ct, double radius); ///< adds a single segment
 
     // reduce number of segments
     void crop(SignedDistanceFunction* geometry); ///< crops the data to a geometry
