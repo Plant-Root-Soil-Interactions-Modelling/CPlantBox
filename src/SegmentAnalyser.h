@@ -22,14 +22,14 @@ public:
 
     SegmentAnalyser() { }; ///< creates an empty object (use AnalysisSDF::addSegments)
     SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector2i> segments, std::vector<double> segCTs, std::vector<double> radii); ///< everything from scratch
-    SegmentAnalyser(const Organism& plant); ///< creates an analyser object containing the segments from the root system
-    SegmentAnalyser(const SegmentAnalyser& a) : nodes(a.nodes), segments(a.segments), segCTs(a.segCTs), radii(a.radii), segO(a.segO) { } ///< copy constructor, does not copy user data
+    SegmentAnalyser(const Organism& plant); ///< creates an analyser object containing the segments from the organism @param plant
+    SegmentAnalyser(const SegmentAnalyser& a) : nodes(a.nodes), segments(a.segments), segCTs(a.segCTs), radii(a.radii), segO(a.segO) { } ///< copy constructor, does not any copy user data
     virtual ~SegmentAnalyser() { }; ///< nothing to do here
 
     // merge segments
     void addSegments(const Organism& plant); ///< adds the segments
     void addSegments(const SegmentAnalyser& a); ///< adds the segments
-    void addSegment(Vector2i seg, double ct, double radius); ///< adds a single segment
+    void addSegment(Vector2i seg, double ct, double radius, bool insert = false); ///< adds a single segment
 
     // reduce number of segments
     void crop(SignedDistanceFunction* geometry); ///< crops the data to a geometry
@@ -41,7 +41,7 @@ public:
     std::vector<double> getParameter(std::string name) const; ///< Returns a specific parameter per segment @see RootSystem::ScalarType
     double getSegmentLength(int i) const; ///< returns the length of a segment
     double getSummed(std::string name) const; ///< Sums up the parameter
-    double getSummed(std::string name, SignedDistanceFunction* geometry) const; ///< Sums up the parameter within the geometry
+    double getSummed(std::string name, SignedDistanceFunction* geometry) const; ///< Sums up the parameter within the geometry (e.g. for length or surface)
     std::vector<double> distribution(std::string name, double top, double bot, int n, bool exact=false) const; ///< vertical distribution of a parameter
     std::vector<SegmentAnalyser> distribution(double top, double bot, int n) const; ///< vertical distribution of a parameter
     std::vector<std::vector<double>> distribution2(std::string name, double top, double bot, double left, double right, int n, int m, bool exact=false) const; ///< 2d distribution (x,z) of a parameter
@@ -55,12 +55,12 @@ public:
     SegmentAnalyser cut(const SDF_HalfPlane& plane) const; ///< returns the segments intersecting with a plane (e.g. for trenches)
 
     // User data for export or distributions
-    void addUserData(std::vector<double> data, std::string name); ///< adds user data that are written into the VTP file, @see SegmentAnalyser::writeVTP
-    void clearUserData() { userData.clear(); userDataNames.clear(); } ///< resets the user data
+    void addUserData(std::string name, std::vector<double> data); ///< adds user data that are written into the VTP file, @see SegmentAnalyser::writeVTP
+    void clearUserData() { userData.clear();} ///< resets the user data
 
     // some exports
     void write(std::string name, std::vector<std::string>  types = { "radius", "subType", "creationTime", "organType" }); ///< writes simulation results (type is determined from file extension in name)
-    void writeVTP(std::ostream & os, std::vector<std::string>  types = { }) const; ///< writes a VTP file
+    void writeVTP(std::ostream & os, std::vector<std::string>  types = { "radius", "subType", "creationTime", "organType"  }) const; ///< writes a VTP file
     void writeRBSegments(std::ostream & os) const; ///< Writes the segments of the root system, mimics the Matlab script getSegments()
     void writeDGF(std::ostream & os) const; ///< Writes the segments of the root system in DGF format used by DuMux
 
@@ -75,8 +75,7 @@ public:
 
 protected:
 
-    std::vector<std::vector<double>> userData; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.
-    std::vector<std::string> userDataNames; ///< names of the data added, e.g. "Flux", "Pressure", etc.
+    std::map<std::string, std::vector<double>> userData; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.
 
 };
 

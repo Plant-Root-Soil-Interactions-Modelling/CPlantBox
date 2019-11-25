@@ -412,7 +412,7 @@ PYBIND11_MODULE(plantbox, m) {
        .def(py::init<SegmentAnalyser&>())
        .def("addSegments",(void (SegmentAnalyser::*)(const Organism&)) &SegmentAnalyser::addSegments) //overloads
        .def("addSegments",(void (SegmentAnalyser::*)(const SegmentAnalyser&)) &SegmentAnalyser::addSegments) //overloads
-       .def("addSegment", &SegmentAnalyser::addSegment)
+       .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert")=false)
        .def("crop", &SegmentAnalyser::crop)
        .def("filter", (void (SegmentAnalyser::*)(std::string, double, double)) &SegmentAnalyser::filter) //overloads
        .def("filter", (void (SegmentAnalyser::*)(std::string, double)) &SegmentAnalyser::filter) //overloads
