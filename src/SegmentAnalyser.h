@@ -7,6 +7,7 @@
 #include "organparameter.h"
 
 #include <memory>
+#include <limits>
 
 namespace CPlantBox {
 
@@ -38,7 +39,7 @@ public:
     void pack(); ///< sorts the nodes and deletes unused nodes
 
     // some things we might want to know
-    std::vector<double> getParameter(std::string name) const; ///< Returns a specific parameter per segment @see RootSystem::ScalarType
+    std::vector<double> getParameter(std::string name, double def = std::numeric_limits<double>::quiet_NaN()) const; ///< Returns a specific parameter per segment @see RootSystem::ScalarType
     double getSegmentLength(int i) const; ///< returns the length of a segment
     double getSummed(std::string name) const; ///< Sums up the parameter
     double getSummed(std::string name, SignedDistanceFunction* geometry) const; ///< Sums up the parameter within the geometry (e.g. for length or surface)
