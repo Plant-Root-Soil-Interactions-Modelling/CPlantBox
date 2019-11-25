@@ -21,7 +21,7 @@ You can click the link to follow the guide there, just to click some buttons and
 ```bash
 cmake . && make
 ```
-in the root folder, and run some Python tutorial examples, e.g
+in the root folder, and run some Python tutorial examples (see tutorial/latex/PlantBox_RootSytem), e.g
 ```bash
 cd tutorial/examples/python
 python3 example1a.py
