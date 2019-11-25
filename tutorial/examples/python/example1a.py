@@ -18,14 +18,3 @@ rootsystem.simulate(30, True)
 
 # Export final result (as vtp)
 rootsystem.write("results/example_1a.vtp")
-
-aseg = rootsystem.getShootSegments()
-for s in aseg:
-    print("Shoot", s)
-
-# or as DGF
-ana = pb.SegmentAnalyser(rootsystem)
-for s in aseg:  # its actually only one
-    ana.addSegment(s, 0, 0.1)  # ct, radius
-
-ana.write("results/example_1b.dgf")

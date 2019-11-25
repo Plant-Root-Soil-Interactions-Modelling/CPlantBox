@@ -254,12 +254,9 @@ Next we show two options how to retrieve root tip postions and root base positio
 
 
 
-\subsection{Analysis per segment}
+\subsection{Analysis per segment, rootsystem length density}
 
 The class SegmentAnalyser offers post-processing methods per root segment. The advantage is that we can do distributions or densities, and that we can crop the segments with any geometry. 
-
-
-\subsection{Analysis per segment, rootsystem length density}
 
 We start with a small example plotting the root surface densities of a root system versus root depth.
 
@@ -336,21 +333,32 @@ The basic idea is that such simulations help to increase the understanding of ex
 \end{figure}
 
 
-\subsection{SegmentAnalyser without RootSystem}
+\subsection{SegmentAnalyser for DGF or VTP export}
 
-It is possible to make use of the SegmentAnalyser class without any ohter CPlantBox classes (e.g. to plot densities, or for writing vtp). The following example shows how to construct the class with arbitrary nodes and segments (e.g. from measurements). 
+If we want to export our root system as dune grid file (dgf) we need to introduce an artificial shoot. By default the tap root and basal root starts at the seed node (i.e. multiple segments start at the same node), and its difficult to define a boundary condition in Dumux for such a situation. Furthermore, if there are shoot borne roots, they emerge out of nothing above the seed node. Therefore, we introduce artifical segments eventually connecting shoot borne roots (if there are any) and connecting the seed node (noramlly located at 0,0,-3) to the orgin at (0,0,0). The following code snippet shows how to export a RootSytem dgf:
 
 \lstinputlisting[language=Python, caption=Example 3e]{../../examples/python/example3e.py}
 
 \begin{itemize}
+ \item[6-11] Define a example root sytemytem
+ \item[13] Create the analyser object
+ \item[15-18] Get the artificial shoot segments from the root sytem (L15) and manually add them ot the SegmentAnalyser (L18).
+ \item[20] Write the DGF file 
+\end{itemize}
+
+It is also possible to make use of the SegmentAnalyser class without any ohter CPlantBox classes (e.g. for writing vtp from measurements). The following example shows how to construct the class with arbitrary nodes and segments (e.g. from measurements). 
+
+\lstinputlisting[language=Python, caption=Example 3f]{../../examples/python/example3f.py}
+
+\begin{itemize}
  \item[6-9] Define some segments with data
  \item[14,15] We convert the Python list to lists of C++ types
- \item[21] We create the SegmentAnalyser object without an underlying Organsim
+ \item[20] We create the SegmentAnalyser object without an underlying Organsim
 \end{itemize}
 
 
 
-\section{Model parameters} % chapter 4
+\section{Model parameters} %Chapter 4
 
 In the following we show how model parameters can be modified, and how a sensitivity analysis can be performed. Additionally, we comment on how to best make an animation from a CPlantBox simulation.
 
@@ -374,7 +382,7 @@ In order to set up a simulation by hand, we have to define all relevant OrganRan
 \item[47] Sets the root system parameters.
 
 \item[49] We state the root types of basal and shoot borne roots. Per default these types are 4 (for basal) and 5 (for shootborne). If they are not set a warning is produced and the tap root type 1 is taken. 
-\item-[50,51] Simulate and export results. 
+\item[50,51] Simulate and export results. 
 
 \item[57-55] It is not only possible to set all model parameter, but to retrieve all parameters after the simulation with rs.getParameter. For all parameters that are derived from a distribution the root specific parameters are returned (L56). The root random parameter can be accessed by adding '\_mean', '\_dev' to the parameter value (L57).  
 
