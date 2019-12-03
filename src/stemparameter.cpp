@@ -88,33 +88,33 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			ln_.push_back(d);
 
 
-		}break;
+		};break;
 		case 1: //  nodes distance increase linearly
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 
-		}break;
+		};break;
 		case 2: //nodes distance decrease linearly
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 
-		}break;
+		};break;
 		case 3: //nodes distance decrease exponential
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d =  std::max(ln +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 
-		}break;
+		};break;
 
 		case 4://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln/(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
-		} break;
+		}; break;
 		case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln/(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);

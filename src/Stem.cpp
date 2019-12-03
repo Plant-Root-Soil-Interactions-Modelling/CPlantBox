@@ -177,8 +177,16 @@ void Stem::simulate(double dt, bool verbose)
                             if (length<s) {
                                 if (i==children.size()) { // new lateral
                                     //this decide which successor grow the leaf (TODO) adding it to parameterfile
-                                    leafGrow(verbose, nodes.back());
+
                                     createLateral(verbose);
+                                    if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2){
+                                        leafGrow(verbose, nodes.back());
+                                    }else
+                                        {
+                                            // terminates the loop if the stem is not organtype 2
+                                            break;
+                                        }
+
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
                                     createSegments(dl,verbose);
@@ -304,10 +312,11 @@ double Stem::calcAge(double length)
  */
 void Stem::createLateral(bool silence)
 {
+    std::cout<<"lnf is = "<<getStemRandomParameter()->lnf<<"\n";
     auto sp = param(); // rename
     int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 
-    if (getStemRandomParameter()->lnf==2&& lt>0) {
+    if (StemSpecificParameter.inf==2&& lt>0) {
         double ageLN = this->calcAge(length); // age of stem when lateral node is created
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
