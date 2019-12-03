@@ -316,7 +316,7 @@ void Stem::createLateral(bool silence)
     auto sp = param(); // rename
     int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 
-    if (StemSpecificParameter.inf==2&& lt>0) {
+    if (getStemRandomParameter()->lnf == 2&& lt>0) {
         double ageLN = this->calcAge(length); // age of stem when lateral node is created
         double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
