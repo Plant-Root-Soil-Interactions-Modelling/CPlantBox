@@ -256,7 +256,6 @@ tinyxml2::XMLElement* StemRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
             tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
             element->InsertEndChild(c);
         }
-
     }
     double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
     if ((p_<1) && (p_!=0)) {
@@ -276,6 +275,7 @@ void StemRandomParameter::bindParmeters()
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
     bindParameter("la", &la, "Apical zone [cm]", &las);
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
+    bindParameter("lnf", &lnf, "Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)");
     bindParameter("lmax", &lmax, "Maximal stem length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
     bindParameter("a", &a, "Stem radius [cm]", &as);
