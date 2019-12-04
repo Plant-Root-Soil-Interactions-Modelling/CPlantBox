@@ -69,7 +69,7 @@ def CPlantBox_PiafMunch(name, time, output = "test_output"):
 	plant.simulate(time)
 	plant.write("{}.vtp".format(str(output)))
 	dict_all  = convert( plant )
-	write_PiafMunch_parameter(dict_all['node_connection'], dict_all['nodes_organtype'], dict_all['nodes_r_st'], dict_all['unq_cnt'])
+	write_PiafMunch_parameter(dict_all['node_connection'], dict_all['nodes_organtype'], dict_all['nodes_r_st'], dict_all['unq_cnt'], name)
 	return dict_all ;
 
 def CPlantBox(name, time, output = "output"): #define a function, in line 20, we can run it in one line of code
@@ -379,7 +379,7 @@ def convert( plant ):
 	# file-output.py
 
 
-def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_cnt): #function of creating parameters of PiafMunch
+def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_cnt, name='mg_test.ini'): #function of creating parameters of PiafMunch
 	Nt = len(nodes_organtype) #total number of nodes, here the 0 and 1st node are the same, so minus 1
 	Nc = len(node_connection) #total number of connections
 
@@ -675,7 +675,6 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 		return r_ST;
 
 	sys.path.append(".")
-	name = "dddmg.ini"
 
 	f = open(name,'w')
 	f.write('******** DESCRIPTION OF ARCHITECTURE *********\n\n')
