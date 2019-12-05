@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
+#include <memory>
 
 namespace CPlantBox {
 
@@ -132,8 +133,8 @@ public:
 
     enum SDF_Axes { xaxis=0, yaxis=1, zaxis=2 };
 
-    SDF_RotateTranslate(SignedDistanceFunction* sdf, double angle=0, int axis=xaxis, const Vector3d& pos = Vector3d(0,0,0)); ///< Constructor
-    SDF_RotateTranslate(SignedDistanceFunction* sdf, Vector3d pos): SDF_RotateTranslate(sdf, 0., xaxis, pos) { } ///< Translate only
+    SDF_RotateTranslate(std::shared_ptr<SignedDistanceFunction> sdf, double angle=0, int axis=xaxis, const Vector3d& pos = Vector3d(0,0,0)); ///< Constructor
+    SDF_RotateTranslate(std::shared_ptr<SignedDistanceFunction> sdf, Vector3d pos): SDF_RotateTranslate(sdf, 0., xaxis, pos) { } ///< Translate only
 
     virtual double getDist(const Vector3d& v) const override; ///< @see SignedDistanceFunction::getDist
 
@@ -142,7 +143,7 @@ public:
     virtual int writePVPScript(std::ostream & cout, int c=1)  const override; ///< @see SignedDistanceFunction::writePVPScript
 
 private:
-    SignedDistanceFunction* sdf; // base geometry
+    std::shared_ptr<SignedDistanceFunction> sdf; // base geometry
     Vector3d pos; // translate origin to this position
     Matrix3d A; // rotation matrix
     int axis; // axis and angle (in degree) is needed for the python script
@@ -158,9 +159,9 @@ class SDF_Intersection : public SignedDistanceFunction
 {
 
 public:
-    SDF_Intersection(std::vector<SignedDistanceFunction*> sdfs_) { sdfs=sdfs_; }
+    SDF_Intersection(std::vector<std::shared_ptr<SignedDistanceFunction>> sdfs_) { sdfs=sdfs_; }
     ///< Constructs (sdfs_[0] ∩ sdfs_[1] ∩ sdfs_[2] ∩ ... )
-    SDF_Intersection(SignedDistanceFunction* sdf1, SignedDistanceFunction* sdf2) { sdfs.push_back(sdf1); sdfs.push_back(sdf2); }
+    SDF_Intersection(std::shared_ptr<SignedDistanceFunction> sdf1, std::shared_ptr<SignedDistanceFunction> sdf2) { sdfs.push_back(sdf1); sdfs.push_back(sdf2); }
     ///< Constructs (sdf1 ∩ sdf2)
 
     virtual double getDist(const Vector3d& v) const override;  ///< @see SignedDistanceFunction::getDist
@@ -170,7 +171,7 @@ public:
     virtual int writePVPScript(std::ostream & cout, int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
 
 protected:
-    std::vector<SignedDistanceFunction*> sdfs; ///< the set of signed distance functions
+    std::vector<std::shared_ptr<SignedDistanceFunction>> sdfs; ///< the set of signed distance functions
 };
 
 
@@ -182,8 +183,8 @@ class SDF_Union : public SDF_Intersection
 {
 
 public:
-    SDF_Union(std::vector<SignedDistanceFunction*> sdfs): SDF_Intersection(sdfs) { } ///< Constructs (sdfs_[0] U sdfs_[1] U sdfs_[2] U ... )
-    SDF_Union(SignedDistanceFunction* sdf1, SignedDistanceFunction* sdf2): SDF_Intersection(sdf1,sdf2) { } ///< Constructs sdf1 U sdf2
+    SDF_Union(std::vector<std::shared_ptr<SignedDistanceFunction>> sdfs): SDF_Intersection(sdfs) { } ///< Constructs (sdfs_[0] U sdfs_[1] U sdfs_[2] U ... )
+    SDF_Union(std::shared_ptr<SignedDistanceFunction> sdf1, std::shared_ptr<SignedDistanceFunction> sdf2): SDF_Intersection(sdf1,sdf2) { } ///< Constructs sdf1 U sdf2
 
     virtual double getDist(const Vector3d& v) const override;  ///< @see SignedDistanceFunction::getDist
 
@@ -199,8 +200,8 @@ class SDF_Difference : public SDF_Intersection
 {
 
 public:
-    SDF_Difference(std::vector<SignedDistanceFunction*> sdfs) :SDF_Intersection(sdfs) { } ///< Constructs (...((sdfs_[0] \ sdfs_[1]) \ sdfs_[2])...)
-    SDF_Difference(SignedDistanceFunction* sdf1, SignedDistanceFunction* sdf2) :SDF_Intersection(sdf1,sdf2) { } ///< Constructs sdf1 \ sdf2
+    SDF_Difference(std::vector<std::shared_ptr<SignedDistanceFunction>> sdfs) :SDF_Intersection(sdfs) { } ///< Constructs (...((sdfs_[0] \ sdfs_[1]) \ sdfs_[2])...)
+    SDF_Difference(std::shared_ptr<SignedDistanceFunction> sdf1, std::shared_ptr<SignedDistanceFunction> sdf2) :SDF_Intersection(sdf1,sdf2) { } ///< Constructs sdf1 \ sdf2
 
     virtual double getDist(const Vector3d& v) const override;  ///< @see SignedDistanceFunction::getDist
 
@@ -216,7 +217,7 @@ class SDF_Complement : public SignedDistanceFunction
 {
 
 public:
-    SDF_Complement(SignedDistanceFunction* sdf_) { sdf=sdf_; } ///< Constructs the complement (sdf_)^c
+    SDF_Complement(std::shared_ptr<SignedDistanceFunction> sdf_) { sdf=sdf_; } ///< Constructs the complement (sdf_)^c
 
     virtual double getDist(const Vector3d& v) const override { return -sdf->getDist(v); } ///< @see SignedDistanceFunction::getDist
 
@@ -225,7 +226,7 @@ public:
     virtual std::string toString() const override { return "SDF_Complement"; } ///< @see SignedDistanceFunction::toString
 
 private:
-    SignedDistanceFunction* sdf;
+    std::shared_ptr<SignedDistanceFunction> sdf;
 };
 
 
