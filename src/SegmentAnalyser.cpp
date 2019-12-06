@@ -475,7 +475,7 @@ std::vector<double> SegmentAnalyser::distribution(std::string name, double top, 
 	std::vector<double> d(n);
 	double dz = (top-bot)/double(n);
 	assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
-	SDF_PlantBox* layer = new SDF_PlantBox(1e100,1e100,dz);
+	std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(1e100,1e100,dz);
 	for (int i=0; i<n; i++) {
 		Vector3d t(0,0,top-i*dz);
 		SDF_RotateTranslate g(layer,t);
@@ -487,7 +487,6 @@ std::vector<double> SegmentAnalyser::distribution(std::string name, double top, 
 			d.at(i) = this->getSummed(name, &g);
 		}
 	}
-	delete layer;
 	return d;
 }
 
@@ -504,7 +503,7 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
 	std::vector<SegmentAnalyser> d(n);
 	double dz = (top-bot)/double(n);
 	assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
-	SDF_PlantBox* layer = new SDF_PlantBox(1e100,1e100,dz);
+    std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(1.e100, 1.e100, dz);
 	for (int i=0; i<n; i++) {
 		Vector3d t(0,0,top-i*dz);
 		SDF_RotateTranslate g(layer,t);
@@ -512,7 +511,6 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
 		a.crop(&g); // crop exactly
 		d.at(i) = a;
 	}
-	delete layer;
 	return d;
 }
 
@@ -536,7 +534,7 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name
 	assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
 	double dx = (right-left)/double(m);
 	assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
-	SDF_PlantBox* layer = new SDF_PlantBox(dx,1e9,dz);
+    std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(dx, 1.e9, dz);
 	for (int i=0; i<n; i++) {
 		std::vector<double> row(m); // m columns
 		for (int j=0; j<m; j++) {
@@ -552,7 +550,6 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name
 		}
 		d.at(i)=row; // store the row (n rows)
 	}
-	delete layer;
 	return d;
 }
 
@@ -574,7 +571,7 @@ std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double 
 	assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
 	double dx = (right-left)/double(m);
 	assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
-	SDF_PlantBox* layer = new SDF_PlantBox(dx,1e4,dz);
+    std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(dx, 1.e4, dz);
 	// std::cout << "dx " << dx  <<", dz "<< dz << "\n";
 	for (int i=0; i<n; i++) {
 		for (int j=0; j<m; j++) {
@@ -585,7 +582,6 @@ std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double 
 			d.at(i).push_back(a);
 		}
 	}
-	delete layer;
 	return d;
 }
 

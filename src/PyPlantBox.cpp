@@ -189,24 +189,24 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<>())
         .def(py::init<double,double,double,double>());
     py::class_<SDF_RotateTranslate, SignedDistanceFunction, std::shared_ptr<SDF_RotateTranslate>>(m, "SDF_RotateTranslate")
-        .def(py::init<SignedDistanceFunction*,double,int,Vector3d&>())
-        .def(py::init<SignedDistanceFunction*,Vector3d&>());
+        .def(py::init<std::shared_ptr<SignedDistanceFunction>,double,int,Vector3d&>())
+        .def(py::init<std::shared_ptr<SignedDistanceFunction>,Vector3d&>());
     py::enum_<SDF_RotateTranslate::SDF_Axes>(m, "SDF_Axis")
         .value("xaxis", SDF_RotateTranslate::SDF_Axes::xaxis)
         .value("yaxis", SDF_RotateTranslate::SDF_Axes::yaxis)
         .value("zaxis", SDF_RotateTranslate::SDF_Axes::zaxis)
         .export_values();
     py::class_<SDF_Intersection, SignedDistanceFunction, std::shared_ptr<SDF_Intersection>>(m,"SDF_Intersection")
-        .def(py::init<std::vector<SignedDistanceFunction*>>())
-        .def(py::init<SignedDistanceFunction*,SignedDistanceFunction*>());
+        .def(py::init<std::vector<std::shared_ptr<SignedDistanceFunction>>>())
+        .def(py::init<std::shared_ptr<SignedDistanceFunction>,std::shared_ptr<SignedDistanceFunction>>());
     py::class_<SDF_Union, SDF_Intersection, std::shared_ptr<SDF_Union>>(m, "SDF_Union")
-        .def(py::init<std::vector<SignedDistanceFunction*>>())
-        .def(py::init<SignedDistanceFunction*,SignedDistanceFunction*>());
+        .def(py::init<std::vector<std::shared_ptr<SignedDistanceFunction>>>())
+        .def(py::init<std::shared_ptr<SignedDistanceFunction>,std::shared_ptr<SignedDistanceFunction>>());
     py::class_<SDF_Difference, SDF_Intersection, std::shared_ptr<SDF_Difference>>(m, "SDF_Difference")
-        .def(py::init<std::vector<SignedDistanceFunction*>>())
-        .def(py::init<SignedDistanceFunction*,SignedDistanceFunction*>());
+        .def(py::init<std::vector<std::shared_ptr<SignedDistanceFunction>>>())
+        .def(py::init<std::shared_ptr<SignedDistanceFunction>,std::shared_ptr<SignedDistanceFunction>>());
     py::class_<SDF_Complement, SignedDistanceFunction, std::shared_ptr<SDF_Complement>>(m, "SDF_Complement")
-        .def(py::init<SignedDistanceFunction*>());
+        .def(py::init<std::shared_ptr<SignedDistanceFunction>>());
     py::class_<SDF_HalfPlane, SignedDistanceFunction, std::shared_ptr<SDF_HalfPlane>>(m, "SDF_HalfPlane")
         .def(py::init<Vector3d&,Vector3d&>())
         .def(py::init<Vector3d&,Vector3d&,Vector3d&>())

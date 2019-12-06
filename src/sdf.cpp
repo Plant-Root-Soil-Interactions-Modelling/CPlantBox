@@ -135,7 +135,7 @@ int SDF_PlantContainer::writePVPScript(std::ostream & cout, int c) const
  * @param axis_         rotation axis (SDF_Axes: sdf_xaxis, sdf_yaxis, or sdf_zaxis)
  * @param pos_          position of origin [cm], default=(0,0,0)
  */
-SDF_RotateTranslate::SDF_RotateTranslate(SignedDistanceFunction* sdf_, double a, int axis_, const Vector3d& pos_)
+SDF_RotateTranslate::SDF_RotateTranslate(std::shared_ptr<SignedDistanceFunction> sdf_, double a, int axis_, const Vector3d& pos_)
 {
     sdf=sdf_;
     pos=pos_;
