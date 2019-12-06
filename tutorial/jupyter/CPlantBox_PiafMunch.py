@@ -516,7 +516,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	P_thr = np.zeros(len(nodes_organtype))
 	vol_Sympl_max = np.zeros(len(nodes_organtype))
 
-	r_Xyl = np.full(len(nodes_organtype), 0.0005)
+	r_Xyl = np.full(len(nodes_organtype), 0.05) #0.0005
 	r_ST = np.full(len(nodes_organtype), nodes_r_st)	   #automatically assign the sieve tube resistance calculated based on 
 	r_Trsv = np.full(len(nodes_organtype), 100)
 	r_PhlMb = np.full(len(nodes_organtype), 135.785)
@@ -796,7 +796,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	f.write('\n')	
 
 
-	f.write('individual-Node-related variables selected for saving : nvs = 30\n')	
+	f.write('individual-Node-related variables selected for saving : nvs = 33\n')	
 	f.write('''
 	C_ApoUpflow (mmol / ml)
 	C_ParApo (mmol / ml)
@@ -830,6 +830,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	vol_Sympl_dot (ml / h)
 	StarchSyn (mmol eq. Glu / h)
 	Starch (mmol eq. Glu)
+	Q_ST (mmol)
 	''')
 
 	f.write('******** OUTPUT SETTINGS : INTERNODE CONNECTION - AXIAL FLUXES-RELATED VARIABLES *********\n')  
