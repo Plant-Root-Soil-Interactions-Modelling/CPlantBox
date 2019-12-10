@@ -4,14 +4,9 @@ sys.path.append("../../..")
 import plantbox as pb
 
 rs = pb.RootSystem()
-
 path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
-
-# Set Geometry
-soilcore = pb.SDF_PlantContainer(5, 5, 40, False)
-rs.setGeometry(soilcore)
 
 # Modify axial resolution
 for p in rs.getRootRandomParameter():
@@ -25,5 +20,10 @@ rs.simulate(60)  # days
 ana = pb.SegmentAnalyser(rs)
 ana.write("results/example_4c.vtp")
 
-# Export container geometry as Paraview Python script
-rs.write("results/example_4c.py")
+ana.mapPeriodic(20, 15)
+ana.write("results/example_4c_periodic.vtp")
+
+# Export geometry as Paraview Python script
+box = pb.SDF_PlantBox(20, 15, 35)
+rs.setGeometry(box)
+rs.write("results/example_4c_periodic.py")
