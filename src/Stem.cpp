@@ -177,9 +177,10 @@ void Stem::simulate(double dt, bool verbose)
                             dl=0;
                         } else {
                             double ddx = Organism::seed_nZ_-length;
-                            shootBorneRootGrow(verbose);
-                            dl-=ddx; // ddx already has been created
+                            createSegments(dl,verbose);
 
+                            dl-=ddx; // ddx already has been created
+                            shootBorneRootGrow(verbose);
                             length=Organism::seed_nZ_;
                         }
 
