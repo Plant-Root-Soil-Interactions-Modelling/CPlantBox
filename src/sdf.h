@@ -80,7 +80,7 @@ public:
     /**
      * Creates a rectangular box: [-x/2,-y/2,0] - [x/2,y/2,-z]
      *
-     * @param x  depth
+     * @param x  length
      * @param y  width
      * @param z  height
      */

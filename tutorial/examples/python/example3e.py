@@ -8,7 +8,7 @@ path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 rs.initialize()
-rs.simulate(30, True)
+rs.simulate(15, True)
 
 ana = pb.SegmentAnalyser(rs)
 
@@ -17,7 +17,6 @@ for s in aseg:
     print("Shoot segment", s)
     ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
 
-
 ana.write("results/example_3e.dgf")
 
-print("done")
+print("done.")

@@ -414,28 +414,28 @@ PYBIND11_MODULE(plantbox, m) {
        .def("addSegments",(void (SegmentAnalyser::*)(const SegmentAnalyser&)) &SegmentAnalyser::addSegments) //overloads
        .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
        .def("crop", &SegmentAnalyser::crop)
+       .def("cropDomain", &SegmentAnalyser::cropDomain)
        .def("filter", (void (SegmentAnalyser::*)(std::string, double, double)) &SegmentAnalyser::filter) //overloads
        .def("filter", (void (SegmentAnalyser::*)(std::string, double)) &SegmentAnalyser::filter) //overloads
        .def("pack", &SegmentAnalyser::pack)
        .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN())
        .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
        .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) &SegmentAnalyser::getSummed) //overloads
-       .def("getSummed", (double (SegmentAnalyser::*)(std::string, SignedDistanceFunction*) const) &SegmentAnalyser::getSummed) //overloads
+       .def("getSummed", (double (SegmentAnalyser::*)(std::string, std::shared_ptr<SignedDistanceFunction>) const) &SegmentAnalyser::getSummed) //overloads
        .def("distribution", (std::vector<double> (SegmentAnalyser::*)(std::string, double, double, int, bool) const) &SegmentAnalyser::distribution) //overloads
        .def("distribution", (std::vector<SegmentAnalyser> (SegmentAnalyser::*)(double, double, int) const) &SegmentAnalyser::distribution) //overloads
        .def("distribution2", (std::vector<std::vector<double>> (SegmentAnalyser::*)(std::string, double, double, double, double, int, int, bool) const) &SegmentAnalyser::distribution2) //overloads
        .def("distribution2", (std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*)(double, double, double, double, int, int) const) &SegmentAnalyser::distribution2) //overloads
+       .def("mapPeriodic", &SegmentAnalyser::mapPeriodic)
        .def("getOrgans", &SegmentAnalyser::getOrgans)
        .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
        .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
-       .def("addUserData", &SegmentAnalyser::addUserData)
-       .def("clearUserData", &SegmentAnalyser::clearUserData)
+       .def("addData", &SegmentAnalyser::addData)
        .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}))
        .def_readwrite("nodes", &SegmentAnalyser::nodes)
        .def_readwrite("segments", &SegmentAnalyser::segments)
-       .def_readwrite("segCTs", &SegmentAnalyser::segCTs)
-       .def_readwrite("radii", &SegmentAnalyser::radii)
-       .def_readwrite("segO", &SegmentAnalyser::segO);
+       .def_readwrite("segO", &SegmentAnalyser::segO)
+       .def_readwrite("data", &SegmentAnalyser::data);
     /*
      * rootparameter.h
      */

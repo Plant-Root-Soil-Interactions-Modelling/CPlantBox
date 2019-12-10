@@ -8,11 +8,12 @@
 #include <istream>
 #include <fstream>
 #include <set>
+#include <math.h>
 
 namespace CPlantBox {
 
 /**
- * Creates segments, with creation times and radii.
+ * Creates segments, with data "creationTime" and "radius"
  *
  * The rest of parameters, that might be needed are either a default value, or
  * if not defined an exception is thrown, see SegmentAnalyser::getParameter.
@@ -23,11 +24,13 @@ namespace CPlantBox {
  * @param radii     the segment radii
  */
 SegmentAnalyser::SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector2i> segments, std::vector<double> segCTs, std::vector<double> radii)
-:nodes(nodes), segments(segments), segCTs(segCTs), radii(radii)
+:nodes(nodes), segments(segments)
 {
-	assert((segments.size() == segCTs.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
-	assert((segments.size() == radii.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
-	segO = std::vector<std::weak_ptr<Organ>>(segments.size()); // create expired
+    assert((segments.size() == segCTs.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
+    assert((segments.size() == radii.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
+    data["creationTime"] = segCTs;
+    data["radius"] = radii;
+    segO = std::vector<std::weak_ptr<Organ>>(segments.size()); // create expired
 }
 
 /**
@@ -37,18 +40,19 @@ SegmentAnalyser::SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector
  */
 SegmentAnalyser::SegmentAnalyser(const Organism& plant)
 {
-	nodes = plant.getNodes();
-	segments = plant.getSegments();
-	segCTs = plant.getSegmentCTs();
-	auto sego = plant.getSegmentOrigins();
-	segO = std::vector<std::weak_ptr<Organ>>(segments.size());
-	radii = std::vector<double>(segments.size());
-	for (size_t i=0; i<segments.size(); i++) {
-		segO[i] = sego[i]; // convert shared_ptr to weak_ptr
-		radii[i] = segO[i].lock()->getParameter("radius");
-	}
-	assert(segments.size()==segCTs.size());
-	assert(segments.size()==segO.size());
+    nodes = plant.getNodes();
+    segments = plant.getSegments();
+    auto segCTs = plant.getSegmentCTs();
+    assert(segments.size()==segCTs.size());
+    data["creationTime"] = segCTs;
+    auto sego = plant.getSegmentOrigins();
+    segO = std::vector<std::weak_ptr<Organ>>(segments.size());
+    auto radii = std::vector<double>(segments.size());
+    for (size_t i=0; i<segments.size(); i++) {
+        segO[i] = sego[i]; // convert shared_ptr to weak_ptr
+        radii[i] = segO[i].lock()->getParameter("radius");
+    }
+    data["radius"] = radii;
 }
 
 /**
@@ -56,7 +60,7 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
  */
 void SegmentAnalyser::addSegments(const Organism& plant)
 {
-	addSegments(SegmentAnalyser(plant));
+    addSegments(SegmentAnalyser(plant));
 }
 
 /**
@@ -66,20 +70,25 @@ void SegmentAnalyser::addSegments(const Organism& plant)
  */
 void SegmentAnalyser::addSegments(const SegmentAnalyser& a)
 {
-	int offset = nodes.size();
-	nodes.insert(nodes.end(),a.nodes.begin(),a.nodes.end()); // copy nodes
-	auto ns = a.segments;
-	for (auto& s : ns) { // shift indices
-		s.x += offset;
-		s.y += offset;
-	}
-	segments.insert(segments.end(),ns.begin(),ns.end()); // copy segments
-	segCTs.insert(segCTs.end(),a.segCTs.begin(),a.segCTs.end()); // copy times
-	segO.insert(segO.end(),a.segO.begin(),a.segO.end());// copy origins
-	radii.insert(radii.end(),a.radii.begin(),a.radii.end());// copy radii
-	assert(segments.size()==segCTs.size());
-	assert(segments.size()==segO.size());
-	assert(segments.size()==radii.size());
+    int offset = nodes.size();
+    nodes.insert(nodes.end(),a.nodes.begin(),a.nodes.end()); // copy nodes
+    auto ns = a.segments;
+    for (auto& s : ns) { // shift indices
+        s.x += offset;
+        s.y += offset;
+    }
+    segments.insert(segments.end(),ns.begin(),ns.end()); // copy segments
+    segO.insert(segO.end(),a.segO.begin(),a.segO.end());// copy origins
+    assert(segments.size() == segO.size() && "SegmentAnalyser::addSegments(): Unequal vector sizes" );
+    for(auto iter = data.begin(); iter != data.end(); ++iter) {
+        std::string key =  iter->first;
+        if (a.data.count(key)>=0) {
+            data[key].insert(data[key].end(),a.data.at(key).begin(),a.data.at(key).end());
+            assert(segments.size() == data[key].size() && "SegmentAnalyser::addSegments(): Unequal vector sizes" );
+        } else {
+            data.erase(key);
+        }
+    }
 }
 
 /**
@@ -93,27 +102,26 @@ void SegmentAnalyser::addSegments(const SegmentAnalyser& a)
  */
 void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool insert)
 {
-	if (insert) {
-		segments.insert(segments.begin(),seg);
-		segCTs.insert(segCTs.begin(),ct);
-		segO.insert(segO.begin(),std::weak_ptr<Organ>()); // expired
-		radii.insert(radii.begin(),radius);
-	} else {
-		segments.push_back(seg);
-		segCTs.push_back(ct);
-		segO.push_back(std::weak_ptr<Organ>()); // expired
-		radii.push_back(radius);
-	}
+    if (insert) {
+        segments.insert(segments.begin(),seg);
+        data["creationTime"].insert(data["creationTime"].begin(),ct);
+        segO.insert(segO.begin(),std::weak_ptr<Organ>()); // expired
+        data["radius"].insert(data["radius"].begin(),radius);
+    } else {
+        segments.push_back(seg);
+        data["creationTime"].push_back(ct);
+        segO.push_back(std::weak_ptr<Organ>()); // expired
+        data["radius"].push_back(radius);
+    }
 }
 
 /**
  * Returns a specific parameter per root segment.
  *
- * The parameters "creationTime" and "radius" are stored by root segment. Additional parameters can be added by using addUserData.
+ * The parameters "creationTime" and "radius" are stored in. Additional parameters can be added by using addData.
  *
  * Other parameters are retrieved from the segment's organ.
- * If the pointer of the organ is expired the default value is returned,
- * or if nan an exception is thrown.
+ * If the pointer of the organ is expired the default value is returned, or if default is nan an exception is thrown.
  *
  * @param name  parameter name
  * @param def	default parameter, if organ's origin is expired. If nan an exception is thrown.
@@ -121,49 +129,42 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
  */
 std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) const
 {
-	if (name == "creationTime") {
-		return segCTs;
-	}
-	if (name == "radius") {
-		return radii;
-	}
-	if (userData.count(name)) {     // else check user data
-		return userData.at(name);
-	}
-	std::vector<double> data(segO.size()); // make return vector
-	if (name == "length") {
-		for (size_t i=0; i<data.size(); i++) {
-			data.at(i) = getSegmentLength(i);
-		}
-		return data;
-	}
-	if (name == "surface") {
-		for (size_t i=0; i<data.size(); i++) {
-			data.at(i) = 2*radii.at(i)*M_PI*getSegmentLength(i);
-		}
-		return data;
-	}
-	if (name == "volume") {
-		for (size_t i=0; i<data.size(); i++) {
-			double a = radii.at(i);
-			data.at(i) = a*a*M_PI*getSegmentLength(i);
-		}
-		return data;
-	}
-	// else pass to Organs
-	for (size_t i=0; i<segO.size(); i++) {
-		if (!segO.at(i).expired()) {
-			data.at(i) = segO.at(i).lock()->getParameter(name);
-		} else { // in case the segment has no origin
-			if (std::isnan(def)) {
-				throw std::invalid_argument("SegmentAnalyser::getParameter: segment origin expired (segment has no onwer), "
-						"for segment index " + std::to_string(i) + ", parameter name "+name);
-			} else {
-				data.at(i) = def;
-			}
-		}
-	}
-	return data;
+    if (data.count(name)) { // first, check data
+        return data.at(name);
+    }
+    std::vector<double> d(segO.size()); // make return vector
+    if (name == "length") {
+        for (size_t i=0; i<d.size(); i++) {
+            d.at(i) = getSegmentLength(i);
+        }
+        return d;
+    }
+    if (name == "surface") {
+        for (size_t i=0; i<d.size(); i++) {
+            d.at(i) = 2*data.at("radius")[i]*M_PI*getSegmentLength(i);
+        }
+        return d;
+    }
+    if (name == "volume") {
+        for (size_t i=0; i<d.size(); i++) {
+            double a = data.at("radius")[i];
+            d.at(i) = a*a*M_PI*getSegmentLength(i);
+        }
+        return d;
+    }
+    for (size_t i=0; i<segO.size(); i++) { // else pass to Organs
+        if (!segO.at(i).expired()) {
+            d.at(i) = segO.at(i).lock()->getParameter(name);
+        } else { // in case the segment has no origin
+            if (std::isnan(def)) {
+                throw std::invalid_argument("SegmentAnalyser::getParameter: segment origin expired (segment has no onwer), "
+                    "for segment index " + std::to_string(i) + ", parameter name "+name);
+            } else {
+                d.at(i) = def;
+            }
+        }
+    }
+    return d;
 }
 
 /**
@@ -174,69 +175,65 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
  */
 double SegmentAnalyser::getSegmentLength(int i) const
 {
-	Vector2i s = segments.at(i);
-	Vector3d x = nodes.at(s.x);
-	Vector3d y = nodes.at(s.y);
-	return (x.minus(y)).length();
+    Vector2i s = segments.at(i);
+    return (nodes.at(s.x).minus(nodes.at(s.y))).length();
 }
 
 /**
  * Crops the segments with some geometry.
  * This is done exact, i.e. segments are cut in two at the geometry border.
  *
+ * All nodes are kept, use pack() to remove unused nodes.
+ *
  * @param geometry      signed distance function of the geometry
  */
-void SegmentAnalyser::crop(SignedDistanceFunction* geometry)
+void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
 {
-	//std::cout << "cropping " << segments.size() << " segments...";
-	std::vector<Vector2i> seg;
-	std::vector<double> ntimes;
-	std::vector<std::weak_ptr<Organ>> sO;
-	std::vector<double> radii_;
-	for (size_t i=0; i<segments.size(); i++) {
-		auto s = segments.at(i);
-		Vector3d x = nodes.at(s.x);
-		Vector3d y = nodes.at(s.y);
-		bool x_ = geometry->getDist(x)<=0; // in?
-				bool y_ = geometry->getDist(y)<=0; // in?
-				if ((x_==true) && (y_==true)) { //segment is inside
-					seg.push_back(s);
-					ntimes.push_back(segCTs.at(i));
-					sO.push_back(segO.at(i));
-					radii_.push_back(radii.at(i));
-				} else if ((x_==false) && (y_==false)) { // segment is outside
+    //std::cout << "cropping " << segments.size() << " segments...";
+    std::vector<Vector2i> seg;
+    std::vector<std::weak_ptr<Organ>> sO;
+    std::map<std::string, std::vector<double>> ndata;
+    for (size_t i=0; i<segments.size(); i++) {
+        auto s = segments.at(i);
+        bool x_ = geometry->getDist(nodes.at(s.x))<=0; // in?
+        bool y_ = geometry->getDist(nodes.at(s.y))<=0; // in?
+        if (x_ && y_) { //segment is inside
+            seg.push_back(s);
+            sO.push_back(segO.at(i));
+            for(auto iter = data.begin(); iter != data.end(); ++iter) {
+                std::string key =  iter->first;
+                ndata[key].push_back(data[key].at(i));
+            }
+        } else if ((x_==false) && (y_==false)) { // segment is outside
+        } else { // one node is inside, one outside
+            if (x_==false) { // swap indices
+                int ind = s.x;
+                s.x = s.y;
+                s.y = ind;
+            }
+            Vector3d newnode = cut(nodes[s.x], nodes[s.y], geometry);
+            nodes.push_back(newnode); // add new segment
+            Vector2i newseg(s.x,nodes.size()-1);
+            seg.push_back(newseg);
+            sO.push_back(segO.at(i));
+            for(auto iter = data.begin(); iter != data.end(); ++iter) {
+                std::string key =  iter->first;
+                ndata[key].push_back(data[key].at(i));
+            }
+        }
+    }
+    segments = seg;
+    segO  = sO;
+    data = ndata;
+    //std::cout << " cropped to " << segments.size() << " segments " << "\n";
+}
 
-				} else { // one node is inside, one outside
-					// sort
-					Vector3d in;
-					Vector3d out;
-					int ini;
-					if (x_==true) {
-						in = x;
-						ini = s.x;
-						out = y;
-					} else {
-						in = y;
-						ini = s.y;
-						out = x;
-					}
-					// cut
-					Vector3d newnode = cut(in, out, geometry);
-					// add new segment
-					nodes.push_back(newnode);
-					Vector2i newseg(ini,nodes.size()-1);
-					seg.push_back(newseg);
-					ntimes.push_back(segCTs.at(i));
-					sO.push_back(segO.at(i));
-					radii_.push_back(radii.at(i));
-				}
-
-	}
-	segments = seg;
-	segO  = sO;
-	segCTs = ntimes;
-	radii = radii_;
-	//std::cout << " cropped to " << segments.size() << " segments " << "\n";
+/**
+ *  Crops the segments to the domain [-xx/2, -yy/2, -zz] - [xx/2, yy/2, 0.]
+ */
+void SegmentAnalyser::cropDomain(double xx, double yy, double zz)
+{
+    crop(std::make_shared<SDF_PlantBox>(xx,yy,zz));
 }
 
 /**
@@ -249,23 +246,23 @@ void SegmentAnalyser::crop(SignedDistanceFunction* geometry)
  */
 void SegmentAnalyser::filter(std::string name, double min, double max)
 {
-	std::vector<double> data = getParameter(name);
-	std::vector<Vector2i> seg;
-	std::vector<double> ntimes;
-	std::vector<std::weak_ptr<Organ>> sO;
-	std::vector<double> radii_;
-	for (size_t i=0; i<segments.size(); i++) {
-		if ((data.at(i)>=min) && (data.at(i)<=max)) {
-			seg.push_back(segments.at(i));
-			ntimes.push_back(segCTs.at(i));
-			sO.push_back(segO.at(i));
-			radii_.push_back(radii.at(i));
-		}
-	}
-	segments = seg;
-	segO  = sO;
-	segCTs = ntimes;
-	radii = radii_;
+    std::vector<double> d_ = getParameter(name);
+    std::vector<Vector2i> seg;
+    std::vector<std::weak_ptr<Organ>> sO;
+    std::map<std::string, std::vector<double>> ndata;
+    for (size_t i=0; i<segments.size(); i++) {
+        if ((d_.at(i)>=min) && (d_.at(i)<=max)) {
+            seg.push_back(segments.at(i));
+            sO.push_back(segO.at(i));
+            for(auto iter = data.begin(); iter != data.end(); ++iter) {
+                std::string key =  iter->first;
+                ndata[key].push_back(data[key].at(i));
+            }
+        }
+    }
+    segments = seg;
+    segO  = sO;
+    data = ndata;
 }
 
 /**
@@ -277,23 +274,23 @@ void SegmentAnalyser::filter(std::string name, double min, double max)
  */
 void SegmentAnalyser::filter(std::string name, double value)
 {
-	std::vector<double> data = getParameter(name);
-	std::vector<Vector2i> seg;
-	std::vector<std::weak_ptr<Organ>> sO;
-	std::vector<double> ntimes;
-	std::vector<double> radii_;
-	for (size_t i=0; i<segments.size(); i++) {
-		if (data.at(i)==value) {
-			seg.push_back(segments.at(i));
-			sO.push_back(segO.at(i));
-			ntimes.push_back(segCTs.at(i));
-			radii_.push_back(radii.at(i));
-		}
-	}
-	segments = seg;
-	segO  = sO;
-	segCTs = ntimes;
-	radii = radii_;
+    std::vector<double> d_ = getParameter(name);
+    std::vector<Vector2i> seg;
+    std::vector<std::weak_ptr<Organ>> sO;
+    std::map<std::string, std::vector<double>> ndata;
+    for (size_t i=0; i<segments.size(); i++) {
+        if (d_.at(i)==value) {
+            seg.push_back(segments.at(i));
+            sO.push_back(segO.at(i));
+            for(auto iter = data.begin(); iter != data.end(); ++iter) {
+                std::string key =  iter->first;
+                ndata[key].push_back(data[key].at(i));
+            }
+        }
+    }
+    segments = seg;
+    segO  = sO;
+    data = ndata;
 }
 
 /**
@@ -303,23 +300,23 @@ void SegmentAnalyser::filter(std::string name, double value)
  * only delete segments, not unused nodes
  */
 void SegmentAnalyser::pack() {
-	std::vector<double> ni(nodes.size());
-	std::fill(ni.begin(),ni.end(), -1.);
-	std::vector<Vector3d> newnodes;
-	for (auto& s:segments) {
-		if (ni.at(s.x) == -1.) { // the node is new
-			newnodes.push_back(nodes.at(s.x));
-			ni.at(s.x) = newnodes.size()-1; // set index of the new node
-		}
-		s.x = ni.at(s.x);
-		if (ni.at(s.y) == -1.) { // the node is new
-			newnodes.push_back(nodes.at(s.y));
-			ni.at(s.y) = newnodes.size()-1; // set index of the new node
-		}
-		s.y = ni.at(s.y);
-	}
-	// std::cout << "pack(): nodes: " << nodes.size() << " -> " << newnodes.size() << ", " << double(newnodes.size())/double(nodes.size()) << " \n";
-	nodes = newnodes; // kabum!
+    std::vector<double> ni(nodes.size());
+    std::fill(ni.begin(),ni.end(), -1.);
+    std::vector<Vector3d> newnodes;
+    for (auto& s:segments) {
+        if (ni.at(s.x) == -1.) { // the node is new
+            newnodes.push_back(nodes.at(s.x));
+            ni.at(s.x) = newnodes.size()-1; // set index of the new node
+        }
+        s.x = ni.at(s.x);
+        if (ni.at(s.y) == -1.) { // the node is new
+            newnodes.push_back(nodes.at(s.y));
+            ni.at(s.y) = newnodes.size()-1; // set index of the new node
+        }
+        s.y = ni.at(s.y);
+    }
+    // std::cout << "pack(): nodes: " << nodes.size() << " -> " << newnodes.size() << ", " << double(newnodes.size())/double(nodes.size()) << " \n";
+    nodes = newnodes; // kabum!
 }
 
 /**
@@ -328,30 +325,31 @@ void SegmentAnalyser::pack() {
  * @param in       the node within the domain
  * @param out      the node outside of the domain
  * @param geometry signed distance function of the geometry
+ * @param eps      accuracy of intersection (default = 1.e-6 cm)
  * @return         the intersection point
  */
-Vector3d SegmentAnalyser::cut(Vector3d in, Vector3d out, SignedDistanceFunction* geometry)
+Vector3d SegmentAnalyser::cut(Vector3d in, Vector3d out, std::shared_ptr<SignedDistanceFunction> geometry, double eps)
 {
-	assert(geometry->getDist(in)<=0);
-	assert(geometry->getDist(out)>=0);
-	if (std::abs(geometry->getDist(out))>1e-6) {
-		Vector3d c =  in.plus(out).times(0.5); // mid
-		if (geometry->getDist(c)<0) { // in
-			return cut(c,out,geometry);
-		} else { // out
-			return cut(in,c,geometry);
-		}
-	} else {
-		return out;
-	}
+    assert(geometry->getDist(in)<=0  && "SegmentAnalyser::cut(): in is not within domain" );
+    assert(geometry->getDist(out)>=0 && "SegmentAnalyser::cut(): out is not outside domain" );
+    if (std::abs(geometry->getDist(out))>eps) {
+        Vector3d c =  in.plus(out).times(0.5); // mid
+        if (geometry->getDist(c)<0) { // in
+            return cut(c, out, geometry, eps);
+        } else { // out
+            return cut(in, c, geometry, eps);
+        }
+    } else {
+        return out;
+    }
 }
 
 /**
  * @return The sum of parameter @param name
  */
 double SegmentAnalyser::getSummed(std::string name) const {
-	std::vector<double> v_ = getParameter(name);
-	return std::accumulate(v_.begin(), v_.end(), 0.0);
+    std::vector<double> v_ = getParameter(name);
+    return std::accumulate(v_.begin(), v_.end(), 0.0);
 }
 
 /**
@@ -362,32 +360,117 @@ double SegmentAnalyser::getSummed(std::string name) const {
  *
  * @return Approximated sum of parameter @param name within the geometry @param g
  */
-double SegmentAnalyser::getSummed(std::string name, SignedDistanceFunction* g) const {
-	std::vector<double> data = getParameter(name);
-	double v = 0;
-	for (size_t i=0; i<segments.size(); i++) {
-		double d = data.at(i);
-		Vector2i s = segments.at(i);
-		Vector3d n1 = nodes.at(s.x);
-		Vector3d n2 = nodes.at(s.y);
-		Vector3d mid = n1.plus(n2).times(0.5);
-		if (g->getDist(mid)<0) {
-			v += d;
-		}
-	}
-	return v;
+double SegmentAnalyser::getSummed(std::string name, std::shared_ptr<SignedDistanceFunction> g) const {
+    std::vector<double> data = getParameter(name);
+    double v = 0;
+    for (size_t i=0; i<segments.size(); i++) {
+        Vector2i s = segments.at(i);
+        Vector3d mid = nodes.at(s.x).plus(nodes.at(s.y)).times(0.5);
+        if (g->getDist(mid)<0) {
+            v += data.at(i);
+        }
+    }
+    return v;
 }
 
 /**
- * @return The origin's of the segments, i.e. the organ's where the segments are part of
+ * A unconfined rootsystem is mapped into a periodic domain with period xx.
+ *
+ * Segments crossing the periodic boundary are split, nodes are mapped into [ [-xx/2, xx/2), [-yy/2, yy/2) ]
+ *
+ * @param xx    period in x direction
+ * @param xx    period in y direction
+ */
+void SegmentAnalyser::mapPeriodic(double xx, double yy) {
+    mapPeriodic_(xx, Vector3d(1.,0,0), 1.e-6);
+    mapPeriodic_(yy, Vector3d(0,1.,0), 1.e-6);
+}
+
+/**
+ * A unconfined rootsystem is mapped into a periodic domain with period xx.
+ *
+ * Segments crossing the periodic boundary are split, nodes are mapped into [-xx/2, xx/2)
+ *
+ * @param xx    width
+ * @param axis  unit vector in the periodic direction (e.g. Vector3d(1,0,0), or Vector(0,1,0)).
+ * @param eps   accuracy at boundary
+ */
+void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
+    /* 1. split segments at the boundaries */
+    std::vector<Vector2i> seg;
+    std::vector<std::weak_ptr<Organ>> sO;
+    std::map<std::string, std::vector<double>> ndata;
+
+    for (size_t i=0; i<segments.size(); i++) {
+        auto s = segments.at(i);
+        auto n1 = nodes.at(s.x);
+        auto n2 = nodes.at(s.y);
+        int p1 = floor((n1.times(axis)+xx/2.)/xx);
+        int p2 = floor((n2.times(axis)+xx/2.)/xx);
+        if (p1 == p2) { //same periodicity index, do nothing [0,xx)
+            seg.push_back(s);
+            sO.push_back(segO.at(i));
+            for(auto iter = data.begin(); iter != data.end(); ++iter) { // copy data
+                std::string key =  iter->first;
+                ndata[key].push_back(data[key].at(i));
+            }
+        } else { // otherwise split
+            if (p1 > p2) { // sort
+                int ind = s.x;
+                s.x = s.y;
+                s.y = ind;
+                n1 = nodes.at(s.x);
+                n2 = nodes.at(s.y);
+                ind = p1;
+                p1 = p2;
+                p2 = ind;
+            }
+            // now: p1x < p2x, n1.x < n2.x
+            double theta = (p2*xx - (n1.times(axis)+xx/2) )/(n2.times(axis)-n1.times(axis));
+//            std::cout << " n1.x " <<  n1.x << " n2.x " <<  n2.x << ", length: " << n2.x-n1.x << ", theta: "<< theta << " p1: "<< p1 <<", p2: " << p2 << "\n";
+            auto v = n2.minus(n1);
+            auto x = n1.plus(v.times(theta)); // cutting point
+            auto x0 = x.minus(axis.times(eps)); // less
+            auto x1 = x.plus(axis.times(eps)); // greater
+            int c = 0; // segments added
+            if ((n1.minus(x0)).length()>eps) { // if inside segment is large enough
+                nodes.push_back(x0); // add node and new add segment
+                seg.push_back(Vector2i(s.x,nodes.size()-1));
+                c++;
+            }
+            if ((n2.minus(x1)).length()>eps) { // if outside segment is large enough
+                nodes.push_back(x1); // add node and new add segment
+                seg.push_back(Vector2i(nodes.size()-1, s.y));
+                c++;
+            }
+            for (int j=0; j<c; j++) { // copy attached data
+                sO.push_back(segO.at(i));
+                for(auto iter = data.begin(); iter != data.end(); ++iter) {
+                    std::string key =  iter->first;
+                    ndata[key].push_back(data[key].at(i));
+                }
+            }
+        }
+    }
+    segments = seg;
+    segO  = sO;
+    data = ndata;
+    /* 2. map points to period [-xx/2, xx/2] */
+    for (auto& n : nodes) {
+        n = n.minus(axis.times(floor((n.times(axis)+xx/2.)/xx)*xx));
+    }
+}
+
+/**
+ * @return The origin's of the segments, i.e. the organ's where the segments are part of (unique, no special ordering)
  */
 std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
 {
-	std::set<std::shared_ptr<Organ>> rootset;  // praise the stl
-	for (auto o : segO) {
-		rootset.insert(o.lock());
-	}
-	return std::vector<std::shared_ptr<Organ>>(rootset.begin(), rootset.end());
+    std::set<std::shared_ptr<Organ>> rootset;  // praise the stl
+    for (auto o : segO) {
+        rootset.insert(o.lock());
+    }
+    return std::vector<std::shared_ptr<Organ>>(rootset.begin(), rootset.end());
 }
 
 /**
@@ -395,8 +478,7 @@ std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
  */
 int SegmentAnalyser::getNumberOfOrgans() const
 {
-	const auto& rootset = getOrgans();
-	return rootset.size();
+    return getOrgans().size();
 }
 
 /**
@@ -410,30 +492,28 @@ int SegmentAnalyser::getNumberOfOrgans() const
  */
 SegmentAnalyser SegmentAnalyser::foto(const Vector3d& pos, const Matrix3d& ons, double fl) const
 {
-	SegmentAnalyser f(*this); // copy
-	for (auto& n : f.nodes) { // translate
-		n = n.minus(pos);
-	}
-	Matrix3d m = ons.inverse(); // rotate
-	for (auto& n : f.nodes) {
-		n = m.times(n);
-	}
-	//	// crop to objects in front of the camera
-	Vector3d o(0.,0.,0.);
-	Vector3d plane(0.,0., -1);
-	SDF_HalfPlane sdf = SDF_HalfPlane(o,plane);
-	f.crop(&sdf);
-	f.pack();
-	// project
-	for (auto& a : f.nodes) {
-		a = a.times(fl/(-plane.times(a)));
-		a.z = 0;
-	}
-	// final image crop
-	SDF_PlantBox box(1.,1.,2.); // TODO --> d = sqrt(2) cm
-	f.crop(&box);
-	f.pack();
-	return f;
+    SegmentAnalyser f(*this); // copy
+    for (auto& n : f.nodes) { // translate
+        n = n.minus(pos);
+    }
+    Matrix3d m = ons.inverse(); // rotate
+    for (auto& n : f.nodes) {
+        n = m.times(n);
+    }
+    //	// crop to objects in front of the camera
+    Vector3d o(0.,0.,0.);
+    Vector3d plane(0.,0., -1);
+    f.crop(std::make_shared<SDF_HalfPlane>(o,plane));
+    f.pack();
+    // project
+    for (auto& a : f.nodes) {
+        a = a.times(fl/(-plane.times(a)));
+        a.z = 0;
+    }
+    // final image crop // TODO --> d = sqrt(2) cm
+    f.crop(std::make_shared<SDF_PlantBox>(1.,1.,2.));
+    f.pack();
+    return f;
 }
 
 /**
@@ -443,21 +523,27 @@ SegmentAnalyser SegmentAnalyser::foto(const Vector3d& pos, const Matrix3d& ons, 
  */
 SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
 {
-	SegmentAnalyser f;
-	f.nodes = nodes; // copy all nodes
-	for (size_t i=0; i<segments.size(); i++) {
-		Vector2i s = segments.at(i);
-		Vector3d n1 = nodes.at(s.x);
-		Vector3d n2 = nodes.at(s.y);
-		double d = plane.getDist(n1)*plane.getDist(n2);
-		if (d<=0) { // one is inside, one is outside
-			f.segments.push_back(s);
-			f.segCTs.push_back(segCTs.at(i));
-			f.segO.push_back(segO.at(i));
-		}
-	}
-	f.pack(); // delete unused nodes
-	return f;
+    SegmentAnalyser f;
+    f.nodes = nodes; // copy all nodes
+    for (size_t i=0; i<segments.size(); i++) {
+        Vector2i s = segments.at(i);
+        Vector3d n1 = nodes.at(s.x);
+        Vector3d n2 = nodes.at(s.y);
+        double d = plane.getDist(n1)*plane.getDist(n2);
+        if (d<=0) { // one is inside, one is outside
+            f.segments.push_back(s);
+            f.segO.push_back(segO.at(i));
+
+            for(auto iter = data.begin(); iter != data.end(); ++iter) {
+                std::string key =  iter->first;
+                f.data[key].push_back(data.at(key)[i]);
+            }
+
+
+        }
+    }
+    f.pack(); // delete unused nodes
+    return f;
 }
 
 /**
@@ -472,22 +558,22 @@ SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
  */
 std::vector<double> SegmentAnalyser::distribution(std::string name, double top, double bot, int n, bool exact) const
 {
-	std::vector<double> d(n);
-	double dz = (top-bot)/double(n);
-	assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
-	std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(1e100,1e100,dz);
-	for (int i=0; i<n; i++) {
-		Vector3d t(0,0,top-i*dz);
-		SDF_RotateTranslate g(layer,t);
-		if (exact) {
-			SegmentAnalyser a(*this); // copy everything
-			a.crop(&g); // crop exactly
-			d.at(i) = a.getSummed(name);
-		} else {
-			d.at(i) = this->getSummed(name, &g);
-		}
-	}
-	return d;
+    std::vector<double> d(n);
+    double dz = (top-bot)/double(n);
+    assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
+    std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(1e100,1e100,dz);
+    for (int i=0; i<n; i++) {
+        Vector3d t(0,0,top-i*dz);
+        auto g = std::make_shared<SDF_RotateTranslate>(layer,t);
+        if (exact) {
+            SegmentAnalyser a(*this); // copy everything
+            a.crop(g); // crop exactly
+            d.at(i) = a.getSummed(name);
+        } else {
+            d.at(i) = this->getSummed(name, g);
+        }
+    }
+    return d;
 }
 
 /**
@@ -500,18 +586,17 @@ std::vector<double> SegmentAnalyser::distribution(std::string name, double top, 
  */
 std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bot, int n) const
 {
-	std::vector<SegmentAnalyser> d(n);
-	double dz = (top-bot)/double(n);
-	assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
+    std::vector<SegmentAnalyser> d(n);
+    double dz = (top-bot)/double(n);
+    assert(dz > 0 && "SegmentAnalyser::distribution: top must be larger than bot" );
     std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(1.e100, 1.e100, dz);
-	for (int i=0; i<n; i++) {
-		Vector3d t(0,0,top-i*dz);
-		SDF_RotateTranslate g(layer,t);
-		SegmentAnalyser a = SegmentAnalyser(*this); // copy everything
-		a.crop(&g); // crop exactly
-		d.at(i) = a;
-	}
-	return d;
+    for (int i=0; i<n; i++) {
+        Vector3d t(0,0,top-i*dz);
+        SegmentAnalyser a = SegmentAnalyser(*this); // copy everything
+        a.crop(std::make_shared<SDF_RotateTranslate>(layer,t)); // crop exactly
+        d.at(i) = a;
+    }
+    return d;
 }
 
 /**
@@ -529,28 +614,28 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
  */
 std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name, double top, double bot, double left, double right, int n, int m, bool exact) const
 {
-	std::vector<std::vector<double>> d(n);
-	double dz = (top-bot)/double(n);
-	assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
-	double dx = (right-left)/double(m);
-	assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
+    std::vector<std::vector<double>> d(n);
+    double dz = (top-bot)/double(n);
+    assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
+    double dx = (right-left)/double(m);
+    assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
     std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(dx, 1.e9, dz);
-	for (int i=0; i<n; i++) {
-		std::vector<double> row(m); // m columns
-		for (int j=0; j<m; j++) {
-			Vector3d t(left+(j+0.5)*dx,0.,top-i*dz); // box is [-x/2,-y/2,0] - [x/2,y/2,-z]
-			SDF_RotateTranslate g(layer,t);
-			if (exact) {
-				SegmentAnalyser a(*this); // copy everything
-				a.crop(&g); // crop exactly
-				row.at(j) = a.getSummed(name);
-			} else {
-				row.at(j) = this->getSummed(name, &g);
-			}
-		}
-		d.at(i)=row; // store the row (n rows)
-	}
-	return d;
+    for (int i=0; i<n; i++) {
+        std::vector<double> row(m); // m columns
+        for (int j=0; j<m; j++) {
+            Vector3d t(left+(j+0.5)*dx,0.,top-i*dz); // box is [-x/2,-y/2,0] - [x/2,y/2,-z]
+            auto g = std::make_shared<SDF_RotateTranslate>(layer,t);
+            if (exact) {
+                SegmentAnalyser a(*this); // copy everything
+                a.crop(g); // crop exactly
+                row.at(j) = a.getSummed(name);
+            } else {
+                row.at(j) = this->getSummed(name, g);
+            }
+        }
+        d.at(i)=row; // store the row (n rows)
+    }
+    return d;
 }
 
 /**
@@ -566,36 +651,34 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name
  */
 std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double top, double bot, double left, double right, int n, int m) const
 {
-	std::vector<std::vector<SegmentAnalyser>> d(n);
-	double dz = (top-bot)/double(n);
-	assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
-	double dx = (right-left)/double(m);
-	assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
+    std::vector<std::vector<SegmentAnalyser>> d(n);
+    double dz = (top-bot)/double(n);
+    assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
+    double dx = (right-left)/double(m);
+    assert(dx > 0 && "SegmentAnalyser::distribution2: right must be larger than left" );
     std::shared_ptr<SignedDistanceFunction> layer = std::make_shared<SDF_PlantBox>(dx, 1.e4, dz);
-	// std::cout << "dx " << dx  <<", dz "<< dz << "\n";
-	for (int i=0; i<n; i++) {
-		for (int j=0; j<m; j++) {
-			Vector3d t(left+(j+0.5)*dx,0.,top-i*dz); // box is [-x/2,-y/2,0] - [x/2,y/2,-z]
-			SDF_RotateTranslate g(layer,t);
-			SegmentAnalyser a(*this); // copy everything
-			a.crop(&g); // crop exactly
-			d.at(i).push_back(a);
-		}
-	}
-	return d;
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<m; j++) {
+            Vector3d t(left+(j+0.5)*dx,0.,top-i*dz); // box is [-x/2,-y/2,0] - [x/2,y/2,-z]
+            SegmentAnalyser a(*this); // copy everything
+            a.crop(std::make_shared<SDF_RotateTranslate>(layer,t)); // crop exactly
+            d.at(i).push_back(a);
+        }
+    }
+    return d;
 }
 
 /**
  * Adds user data that can be accessed by SegmentAnalyser::getParameter, and that can be written to the VTP file
  * (e.g. used to add simulation results like xylem pressure to the output).
  *
- * @param name  parameter name
- * @param data  parameter values
+ * @param name   parameter name
+ * @param values parameter values
  */
-void SegmentAnalyser::addUserData(std::string name, std::vector<double> data)
+void SegmentAnalyser::addData(std::string name, std::vector<double> values)
 {
-	assert(data.size()==segments.size());
-	userData[name] = data;
+    assert(values.size()==segments.size());
+    data[name] = values;
 }
 
 /**
@@ -610,23 +693,23 @@ void SegmentAnalyser::addUserData(std::string name, std::vector<double> data)
  */
 void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
 {
-	this->pack(); // a good idea before writing any file
-	std::ofstream fos;
-	fos.open(name.c_str());
-	std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
-	if (ext.compare("vtp")==0) {
-		std::cout << "writing VTP: " << name << "\n" << std::flush;
-		this->writeVTP(fos, types);
-	} else if (ext.compare("txt")==0)  {
-		std::cout << "writing text file for Matlab import: "<< name << "\n"<< std::flush;
-		writeRBSegments(fos);
-	} else if (ext.compare("dgf")==0)  {
-		std::cout << "writing dgf file: "<< name << "\n"<< std::flush;
-		writeDGF(fos);
-	} else {
-		throw std::invalid_argument("SegmentAnalyser::write: Unknown file type");
-	}
-	fos.close();
+    this->pack(); // a good idea before writing any file
+    std::ofstream fos;
+    fos.open(name.c_str());
+    std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
+    if (ext.compare("vtp")==0) {
+        std::cout << "writing VTP: " << name << "\n" << std::flush;
+        this->writeVTP(fos, types);
+    } else if (ext.compare("txt")==0)  {
+        std::cout << "writing text file for Matlab import: "<< name << "\n"<< std::flush;
+        writeRBSegments(fos);
+    } else if (ext.compare("dgf")==0)  {
+        std::cout << "writing dgf file: "<< name << "\n"<< std::flush;
+        writeDGF(fos);
+    } else {
+        throw std::invalid_argument("SegmentAnalyser::write: Unknown file type");
+    }
+    fos.close();
 }
 
 /**
@@ -637,54 +720,42 @@ void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
  */
 void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types) const
 {
-	assert(segments.size() == segO.size() && " SegmentAnalyser::writeVTP wrong number of segment origins");
-	assert(segments.size() == segCTs.size()&& " SegmentAnalyser::writeVTP wrong number of creation times");
-	assert(segments.size() == radii.size()&& " SegmentAnalyser::writeVTP wrong number of radii");
-	os << "<?xml version=\"1.0\"?>";
-	os << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
-	os << "<PolyData>\n";
-	os << "<Piece NumberOfLines=\""<< segments.size() << "\" NumberOfPoints=\""<< nodes.size()<< "\">\n";
-	// data (CellData)
-	os << "<CellData Scalars=\" CellData\">\n";
-	for (auto name : types) {
-		std::vector<double> data = getParameter(name);
-		os << "<DataArray type=\"Float32\" Name=\"" << name << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-		for (const auto& t : data) {
-			os << t << " ";
-		}
-		os << "\n</DataArray>\n";
-	}
-	// write user data
-	for (auto& u :userData) {
-		std::string name = u.first;
-		auto& value = u.second;
-		os << "<DataArray type=\"Float32\" Name=\"" << name << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-		for (const auto& t : value) {
-			os << t << " ";
-		}
-		os << "\n</DataArray>\n";
-	}
-	os << "\n</CellData>\n";
-	// nodes (Points)
-	os << "<Points>\n"<<"<DataArray type=\"Float32\" Name=\"Coordinates\" NumberOfComponents=\"3\" format=\"ascii\" >\n";
-	for (const auto& n : nodes) {
-		os << n.x << " "<< n.y <<" "<< n.z<< " ";
-	}
-	os << "\n</DataArray>\n"<< "</Points>\n";
-	// segments (Lines)
-	os << "<Lines>\n"<<"<DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-	for (const auto& s : segments) {
-		os << s.x << " " << s.y << " ";
-	}
-	os << "\n</DataArray>\n"<<"<DataArray type=\"Int32\" Name=\"offsets\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-	for (size_t i=0; i<segments.size(); i++) {
-		os << 2*i+2 << " ";
-	}
-	os << "\n</DataArray>\n";
-	os << "\n</Lines>\n";
-	//
-	os << "</Piece>\n";
-	os << "</PolyData>\n" << "</VTKFile>\n";
+    assert(segments.size() == segO.size() && " SegmentAnalyser::writeVTP wrong number of segment origins");
+    os << "<?xml version=\"1.0\"?>";
+    os << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
+    os << "<PolyData>\n";
+    os << "<Piece NumberOfLines=\""<< segments.size() << "\" NumberOfPoints=\""<< nodes.size()<< "\">\n";
+    // data (CellData)
+    os << "<CellData Scalars=\" CellData\">\n";
+    for (auto name : types) {
+        std::vector<double> data = getParameter(name);
+        os << "<DataArray type=\"Float32\" Name=\"" << name << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
+        for (const auto& t : data) {
+            os << t << " ";
+        }
+        os << "\n</DataArray>\n";
+    }
+    os << "\n</CellData>\n";
+    // nodes (Points)
+    os << "<Points>\n"<<"<DataArray type=\"Float32\" Name=\"Coordinates\" NumberOfComponents=\"3\" format=\"ascii\" >\n";
+    for (const auto& n : nodes) {
+        os << n.x << " "<< n.y <<" "<< n.z<< " ";
+    }
+    os << "\n</DataArray>\n"<< "</Points>\n";
+    // segments (Lines)
+    os << "<Lines>\n"<<"<DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
+    for (const auto& s : segments) {
+        os << s.x << " " << s.y << " ";
+    }
+    os << "\n</DataArray>\n"<<"<DataArray type=\"Int32\" Name=\"offsets\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
+    for (size_t i=0; i<segments.size(); i++) {
+        os << 2*i+2 << " ";
+    }
+    os << "\n</DataArray>\n";
+    os << "\n</Lines>\n";
+    //
+    os << "</Piece>\n";
+    os << "</PolyData>\n" << "</VTKFile>\n";
 }
 
 /**
@@ -695,22 +766,22 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types
  */
 void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
-	os << "x1 y1 z1 x2 y2 z2 radius R G B time type organ \n";
-	for (size_t i=0; i<segments.size(); i++) {
-		Vector2i s = segments.at(i);
-		Vector3d n1 = nodes.at(s.x);
-		Vector3d n2 = nodes.at(s.y);
-		std::shared_ptr<Organ> o = segO.at(i).lock();
-		int organ=o->organType();
-		double radius = radii.at(i);
-		double red = o->getParameter("RotBeta");
-		double green = o->getParameter("BetaDev");
-		double blue = o->getParameter("InitBeta");
-		double time = segCTs.at(i);
-		int subType = o->getParameter("sub_type");
-		os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
-				radius << " " << red << " " << green << " " << blue << " " << time<< " " << subType << " " << organ <<" \n";
-	}
+    os << "x1 y1 z1 x2 y2 z2 radius R G B time type organ \n";
+    for (size_t i=0; i<segments.size(); i++) {
+        Vector2i s = segments.at(i);
+        Vector3d n1 = nodes.at(s.x);
+        Vector3d n2 = nodes.at(s.y);
+        std::shared_ptr<Organ> o = segO.at(i).lock();
+        int organ=o->organType();
+        double radius = data.at("radius")[i];
+        double red = o->getParameter("RotBeta");
+        double green = o->getParameter("BetaDev");
+        double blue = o->getParameter("InitBeta");
+        double time = data.at("creatonTime")[i];
+        int subType = o->getParameter("sub_type");
+        os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
+            radius << " " << red << " " << green << " " << blue << " " << time<< " " << subType << " " << organ <<" \n";
+    }
 }
 
 /**
@@ -737,35 +808,35 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
  */
 void SegmentAnalyser::writeDGF(std::ostream & os) const
 {
-	os << "DGF" << std::endl;
-	os << "Vertex" << std::endl;
-	for (auto& n : nodes) {
-		os << n.x/100 << " " << n.y/100 << " " << n.z/100  << std::endl;
-	}
-	os << "#" << std::endl;
-	os << "SIMPLEX" << std::endl;
-	// node1ID, node2ID, order, brnID, surf [cm2], length [cm], radius [cm],
-	// kz [cm4 hPa-1 d-1], kr [cm hPa-1 d-1], emergence time [d], subType, organType
-	os << "parameters 10 # id0, id1, order, branchId, surf[cm2], length[cm], radius[cm], "
-			"kz[cm4 hPa-1 d-1], kr[cm hPa-1 d-1], emergence time [d], subType, organType " << std::endl;
-	std::vector<double> radius = getParameter("radius");
-	std::vector<double> length  = getParameter("length");
-	std::vector<double> surface = getParameter("surface");
-	std::vector<double> ctime = getParameter("creationTime");
-	std::vector<double> subType = getParameter("subType", -1.); // -1 if no origin organ
-	std::vector<double> organType = getParameter("organType", Organism::ot_stem); // artificial stem
-	std::vector<double> order = getParameter("order", -1.); // -1 if no origin organ
-	std::vector<double> organId =  getParameter("id", -1.); // -1 if no origin organ
-	for (size_t i=0; i<segments.size(); i++) {
-		Vector2i s = segments.at(i);
-		os << s.x << " " << s.y << " " << order.at(i) <<  " " << organId.at(i) << " " << surface.at(i) << " "
-				<< length.at(i) << " " << radius.at(i) << " " << 0. << " " << 0. << " " << ctime.at(i) << " "
-				<< subType.at(i) << " " << organType.at(i) << std::endl;
-	}
-	os << "#" << std::endl;
-	os << "BOUNDARYDOMAIN " << std::endl;
-	os << "default 1" << std::endl;
-	os << "#" << std::endl;
+    os << "DGF" << std::endl;
+    os << "Vertex" << std::endl;
+    for (auto& n : nodes) {
+        os << n.x/100 << " " << n.y/100 << " " << n.z/100  << std::endl;
+    }
+    os << "#" << std::endl;
+    os << "SIMPLEX" << std::endl;
+    // node1ID, node2ID, order, brnID, surf [cm2], length [cm], radius [cm],
+    // kz [cm4 hPa-1 d-1], kr [cm hPa-1 d-1], emergence time [d], subType, organType
+    os << "parameters 10 # id0, id1, order, branchId, surf[cm2], length[cm], radius[cm], "
+        "kz[cm4 hPa-1 d-1], kr[cm hPa-1 d-1], emergence time [d], subType, organType " << std::endl;
+    std::vector<double> radius = getParameter("radius");
+    std::vector<double> length  = getParameter("length");
+    std::vector<double> surface = getParameter("surface");
+    std::vector<double> ctime = getParameter("creationTime");
+    std::vector<double> subType = getParameter("subType", -1.); // -1 if no origin organ
+    std::vector<double> organType = getParameter("organType", Organism::ot_stem); // artificial stem
+    std::vector<double> order = getParameter("order", -1.); // -1 if no origin organ
+    std::vector<double> organId =  getParameter("id", -1.); // -1 if no origin organ
+    for (size_t i=0; i<segments.size(); i++) {
+        Vector2i s = segments.at(i);
+        os << s.x << " " << s.y << " " << order.at(i) <<  " " << organId.at(i) << " " << surface.at(i) << " "
+            << length.at(i) << " " << radius.at(i) << " " << 0. << " " << 0. << " " << ctime.at(i) << " "
+            << subType.at(i) << " " << organType.at(i) << std::endl;
+    }
+    os << "#" << std::endl;
+    os << "BOUNDARYDOMAIN " << std::endl;
+    os << "default 1" << std::endl;
+    os << "#" << std::endl;
 }
 
 } // end namespace CPlantBox
