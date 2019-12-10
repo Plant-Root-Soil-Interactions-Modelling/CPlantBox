@@ -82,7 +82,7 @@ public:
     /* IO */
     virtual std::string toString() const; ///< info for debugging
     void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
-
+    int getParamSubType(int organtype, std::string str);
 protected:
 
     /* up and down the organ tree */

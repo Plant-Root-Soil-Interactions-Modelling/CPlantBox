@@ -55,6 +55,8 @@ void Seed::initialize(bool verbose)
 	 */
 	const double maxT = 365.; // maximal simulation time
 	auto sp = this->param(); // rename
+	Organism::seed_nC_ = sp->nC;
+    Organism::seed_nZ_ = sp->nz;
 	Vector3d iheading(0,0,-1);
 
 	// Taproot

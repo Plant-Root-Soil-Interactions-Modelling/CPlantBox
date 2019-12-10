@@ -333,7 +333,11 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setSeed", &Organism::setSeed)
         .def("rand", &Organism::rand)
         .def("randn", &Organism::randn)
+//        .def_readwrite("seed_nC_", &Organism::seed_nC_)
+//        .def_readwrite("seed_nZ_", &Organism::seed_nZ_)
+
         .def("__str__",&Organism::toString);
+
 
     py::enum_<Organism::OrganTypes>(m, "OrganTypes")
         .value("organ", Organism::OrganTypes::ot_organ)
