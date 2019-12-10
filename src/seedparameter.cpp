@@ -63,10 +63,12 @@ std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
     double dB = std::max(delayB + p->randn()*delayBs, 0.);
     int mB = (int)(std::max(maxB + p->randn()*maxBs, 0.) +0.5);
     double nC_ = std::max(nC + p->randn()*nCs, 0.);
+
     double fSB = std::max(firstSB + p->randn()*firstSBs, 0.);
     double dSB = std::max(delaySB + p->randn()*delaySBs, 0.);
     double dRC = std::max(delayRC + p->randn()*delayRCs, 0.);
-    double nz_ = std::max(delaySB + p->randn()*delaySBs, 0.);
+    double nz_ = std::max(nz , 0.);
+
     double st = std::max(simtime + p->randn()*simtimes, 0.);
     int maxtil = std::max(maxTil + p->randn()*maxTils, 0.);
     return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st);

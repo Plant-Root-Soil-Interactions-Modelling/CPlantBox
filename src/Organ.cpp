@@ -329,4 +329,19 @@ std::string Organ::toString() const
     return str.str();
 }
 
+/**
+ * @return get the organtype by string,
+ */
+
+int Organ::getParamSubType(int organtype, std::string str)
+{
+	auto orp = plant.lock()->getOrganRandomParameter(organtype);
+	for (auto& o :orp) {
+		if (o->name == str) {
+			return o->subType;
+		}
+	}
+	return -1;
+}
+
 }

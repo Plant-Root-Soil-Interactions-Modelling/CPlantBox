@@ -105,11 +105,20 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p)
  */
 void Stem::simulate(double dt, bool verbose)
 {
+    const StemSpecificParameter& p = *param(); // rename
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
+    auto p_all = plant.lock();
+	auto p_stem = p_all->getOrganRandomParameter(Organism::ot_stem);
+    int additional_childern;
+    if (p.subType == 1)
+    {
+        additional_childern= (int)round(Organism::seed_nC_); //if it is the main stem, the children should include the shoot borne root
+    } else {
+        additional_childern = 0;
+    }
 
-    const StemSpecificParameter& p = *param(); // rename
 
     if (alive) { // dead roots wont grow
 
@@ -156,6 +165,27 @@ void Stem::simulate(double dt, bool verbose)
 
                 // create geometry
                 if (p.ln.size()>0) { // stem has laterals
+            std::cout<<"sim seed nC is"<<Organism::seed_nC_<<"\n";
+            std::cout<<"sim seed nZ is"<<Organism::seed_nZ_<<"\n";
+                    /*
+                    shoot born root
+                    */
+                    if ((dl>0)&&(length<Organism::seed_nZ_)) {
+                                  if (length+dl<=Organism::seed_nZ_) {
+                            createSegments(dl,verbose);
+                            length+=dl;
+                            dl=0;
+                        } else {
+                            double ddx = Organism::seed_nZ_-length;
+                            shootBorneRootGrow(verbose);
+                            dl-=ddx; // ddx already has been created
+
+                            length=Organism::seed_nZ_;
+                        }
+
+
+                    }
+
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
@@ -175,7 +205,7 @@ void Stem::simulate(double dt, bool verbose)
                         for (size_t i=0; ((i<p.ln.size()) && (dl>0)); i++) {
                             s+=p.ln.at(i);
                             if (length<s) {
-                                if (i==children.size()) { // new lateral
+                                if (i==children.size()-additional_childern) { // new lateral
                                     //this decide which successor grow the leaf (TODO) adding it to parameterfile
 
                                     createLateral(verbose);
@@ -200,7 +230,7 @@ void Stem::simulate(double dt, bool verbose)
                                 }
                             }
                         }
-                        if (p.ln.size()==children.size()) { // new lateral (the last one)
+                        if (p.ln.size()==children.size()-additional_childern) { // new lateral (the last one)
                             createLateral(verbose);
                         }
                     }
@@ -478,25 +508,65 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 /*
  *
  */
-void Stem::shootBorneRootGrow(bool silence)
+void Stem::shootBorneRootGrow(bool verbose)
 {
-    auto sp = param(); // rename
-    int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
-    //    std::cout << "ShootBorneRootGrow createLateral()\n";
-    //    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
-    if ( lt > 0 ) {
-        double ageLN = this->calcAge(length); // age of stem when lateral node is created
-        double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-        double delay = ageLG-ageLN; // time the lateral has to wait
-        int nodeToGrowShotBorneRoot = 2;
-        Vector3d sbrheading(0,0,-1); //just a test heading
-        auto shootBorneRootGrow = std::make_shared<Root>(plant.lock() , 5, sbrheading, delay ,shared_from_this(), length, nodeToGrowShotBorneRoot);
-        if (nodes.size() > nodeToGrowShotBorneRoot ) {
-            //                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
-            children.push_back(shootBorneRootGrow);
-            shootBorneRootGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current age)
-        }
-    }
+    //const double maxT = 365.; // maximal simulation time
+	auto sp = this->param(); // rename
+    auto stem_p = this->param();
+    auto p = plant.lock();
+	auto p_seed = p->getOrganRandomParameter(Organism::ot_seed,0);
+                        int st = getParamSubType(Organism::ot_root, "shootborne");
+                       if (st>0) {
+                            shootborneType = st;
+                        } // otherwise stick with default
+			try {
+				p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
+			} catch (...) {
+				if (verbose) {
+					std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
+				}
+                        shootborneType =1;
+			}
+    //        std::cout <<"subtype ="<<stem_p->subType <<"stem getPhytomerId =" <<getphytomerId(stem_p->subType)<< "\n";
+    addPhytomerId(stem_p->subType);
+
+
+    if ((Organism::seed_nC_>0) ) { // only if there are any shootborne roots && (p_seed->firstSB+p_seed->delaySB<maxT)
+            std::cout<<"seed nC is"<<Organism::seed_nC_<<"\n";
+            std::cout<<"seed nZ is"<<Organism::seed_nZ_<<"\n";
+            double ageLN = this->calcAge(length); // age of stem when lateral node is created
+            double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+            double delay = ageLG-ageLN; // time the lateral has to wait
+                            for (int i=0; i<Organism::seed_nC_; i++) {
+                                  double  beta = i*M_PI*getStemRandomParameter()->rotBeta;
+                                Matrix3d ons = Matrix3d::ons(iHeading);
+                                auto shootBorneRoot = std::make_shared<Root>(plant.lock() , shootborneType, ons.times(Vector3d::rotAB(0,beta)), delay ,shared_from_this(), length, nodes.size() - 1);
+                            children.push_back(shootBorneRoot);
+                            shootBorneRoot->simulate(age-ageLN,verbose);
+                            std::cout<<"root grow number"<<i<<"\n";
+                            }
+                        }
+
+
+
+//    auto sp = param(); // rename
+//    int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
+//    //    std::cout << "ShootBorneRootGrow createLateral()\n";
+//    //    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
+//
+//    if ( lt > 0 ) {
+//        double ageLN = this->calcAge(length); // age of stem when lateral node is created
+//        double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+//        double delay = ageLG-ageLN; // time the lateral has to wait
+//        int nodeToGrowShotBorneRoot = 2;
+//        Vector3d sbrheading(0,0,-1); //just a test heading
+//        auto shootBorneRootGrow = std::make_shared<Root>(plant.lock() , 5, sbrheading, delay ,shared_from_this(), length, nodeToGrowShotBorneRoot);
+//        if (nodes.size() > nodeToGrowShotBorneRoot ) {
+//            //                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
+//            children.push_back(shootBorneRootGrow);
+//            shootBorneRootGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current age)
+//        }
+//    }
 }
 
 

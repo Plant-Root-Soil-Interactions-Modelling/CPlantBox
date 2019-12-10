@@ -103,7 +103,8 @@ public:
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
     virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
     virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
-
+    static double seed_nC_ ; ///< pass seed nC to stem
+    static double seed_nZ_ ; ///< pass seed nZ to stem
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
