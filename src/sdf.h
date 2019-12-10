@@ -51,7 +51,8 @@ public:
     virtual std::string writePVPScript() const; ///< Writes the ParaView Python script into a string
 
     /**
-     * Returns the (numerical) gradient of the sdf, overwrite with an analytical gradient (where appropriate)
+     * Returns the (numerical) gradient of the sdf, overwrite with an analytical gradient (where appropriate).
+     * Denotes direction of greatest ascent, e.g the outside normal of a boundary point
      *
      * @param p     spatial position [cm]
      * @param eps   central differences epsilon
@@ -60,8 +61,8 @@ public:
         auto epsX = Vector3d(eps, 0, 0);
         auto epsY = Vector3d(0, eps, 0);
         auto epsZ = Vector3d(0, 0, eps);
-        return Vector3d(0.5 * (getDist(p.plus(epsX)) - getDist(p.minus(epsX))), 0.5 * (getDist(p.plus(epsY)) - getDist(p.minus(epsY))),
-            0.5 * (getDist(p.plus(epsZ)) - getDist(p.minus(epsZ))));
+        return Vector3d((getDist(p.plus(epsX)) - getDist(p.minus(epsX)))/(2.*eps), (getDist(p.plus(epsY)) - getDist(p.minus(epsY)))/(2.*eps),
+            (getDist(p.plus(epsZ)) - getDist(p.minus(epsZ)))/(2.*eps));
     }
 
 };
