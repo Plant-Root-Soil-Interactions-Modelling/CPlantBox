@@ -770,12 +770,12 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         Vector3d n2 = nodes.at(s.y);
         std::shared_ptr<Organ> o = segO.at(i).lock();
         int organ=o->organType();
-        double radius = data.at("radius")[i];
+        double radius = o->getParameter("radius");
         double red = o->getParameter("RotBeta");
         double green = o->getParameter("BetaDev");
         double blue = o->getParameter("InitBeta");
-        double time = data.at("creatonTime")[i];
-        int subType = o->getParameter("sub_type");
+        double time = o->getParameter("creationTime");
+        int subType = o->getParameter("subType");
         os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
             radius << " " << red << " " << green << " " << blue << " " << time<< " " << subType << " " << organ <<" \n";
     }
