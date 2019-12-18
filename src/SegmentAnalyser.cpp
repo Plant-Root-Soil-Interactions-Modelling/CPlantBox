@@ -775,9 +775,10 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         double green = o->getParameter("BetaDev");
         double blue = o->getParameter("InitBeta");
         double time = o->getParameter("creationTime");
+        double age = o->getParameter("age");
         int subType = o->getParameter("subType");
         os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
-            radius << " " << red << " " << green << " " << blue << " " << time<< " " << subType << " " << organ <<" \n";
+            radius << " " << red << " " << green << " " << blue << " " << time<< " " << age<<" " <<subType << " " << organ <<" \n";
     }
 }
 
