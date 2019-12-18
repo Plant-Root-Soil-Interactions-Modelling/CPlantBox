@@ -27,7 +27,7 @@ public:
 
     StemSpecificParameter(): StemSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
     StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt):
-        OrganSpecificParameter(type),  lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln) { } ///< Constructor setting all parameters
+        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln) { } ///< Constructor setting all parameters
 
     /*
      * StemBox parameters per single stem
@@ -35,7 +35,6 @@ public:
     double lb;              ///< Basal zone [cm]
     double la;              ///< Apical zone [cm]
     double r;               ///< Initial growth rate [cm day-1]
-    double a;               ///< Stem radius [cm]
     double theta;           ///< Angle between stem and parent stem [rad]
     double rlt;             ///< Stem life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]

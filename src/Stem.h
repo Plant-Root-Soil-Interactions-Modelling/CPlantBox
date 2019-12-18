@@ -10,6 +10,8 @@
 
 namespace CPlantBox {
 
+class Plant;
+
 /**
  * Stem
  *
@@ -46,11 +48,10 @@ public:
     /* abbreviations */
     std::shared_ptr<StemRandomParameter> getStemRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const StemSpecificParameter> param() const; ///< root parameter
+	std::shared_ptr<Plant> getPlant();
     double dx() const; ///< returns the axial resolution
+
     int shootborneType = 5;
-    Vector3d iHeading; ///< the initial heading of the stem, when it was created
-    double parentBaseLength; ///< length [cm]
-    int parentNI; ///< parent node index
 
 protected:
 

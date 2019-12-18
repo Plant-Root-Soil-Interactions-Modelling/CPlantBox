@@ -31,6 +31,7 @@ OrganRandomParameter::OrganRandomParameter(std::shared_ptr<Organism> p): plant(p
     description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
     description["organType"]  = "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4)";
     description["subType"]  = "Unique identifier of this sub type";
+    bindParameters();
 }
 
 /**
@@ -60,7 +61,9 @@ std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::shared_ptr
  */
 std::shared_ptr<OrganSpecificParameter> OrganRandomParameter::realize()
 {
-    return std::make_shared<OrganSpecificParameter>(subType);
+    auto p = plant.lock();
+    double a_ = std::max(a + p->randn()*as, 0.); // radius
+    return std::make_shared<OrganSpecificParameter>(subType, a_);
 }
 
 /**
@@ -292,6 +295,16 @@ void OrganRandomParameter::writeXML(std::string name) const
     doc.InsertEndChild(organ);
     doc.SaveFile(name.c_str());
 }
+
+/**
+ * Sets up class introspection by linking parameter names to their class members,
+ * additionally adds a description for each parameter, for toString and writeXML
+ */
+void OrganRandomParameter::bindParameters()
+{
+    bindParameter("a", &a, "Root radius [cm]", &as);
+}
+
 
 /**
  *  Binds a parameter name to its int member variable,

@@ -16,7 +16,7 @@ namespace CPlantBox {
  * SeedSpecificParameter contains all plant specific parameters like planting depth and describing
  * the emergence times of basal and shoot borne roots
  *
- * The model currently rather limited in, and we might replace it, if we come up with something better
+ * The model currently rather limited, and we might replace it, if we come up with something better
  */
 class SeedSpecificParameter :public OrganSpecificParameter
 {
@@ -25,7 +25,7 @@ public:
     SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0., 1.e9, 1.e9, 1.e9, 1., 0, 30.) { }; ///< Default constructor
     SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
         double nz, int maxtil, double simtime):
-            OrganSpecificParameter(type), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
+            OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
             delayRC(dRC), nz(nz), maxTil(maxtil), simtime(simtime) {  };
     virtual ~SeedSpecificParameter() { };
 

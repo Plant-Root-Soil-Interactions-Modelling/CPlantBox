@@ -533,13 +533,10 @@ SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
         if (d<=0) { // one is inside, one is outside
             f.segments.push_back(s);
             f.segO.push_back(segO.at(i));
-
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
                 f.data[key].push_back(data.at(key)[i]);
             }
-
-
         }
     }
     f.pack(); // delete unused nodes
@@ -788,18 +785,18 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
  * Writes the (line)segments of the root system in dgf format used by DuMux
  *
  * For parameters, the IBG-3 default is:
- * 0 order,
- * 1 brnID,
+ * 0 order (starting from 0)
+ * 1 brnID (the unique organ id, for RootSystem starting at 1 because seed has id 0) ,
  * 2 surf [cm2],
  * 3 length [cm],
  * 4 radius [cm],
  * 5 kz [cm4 hPa-1 d-1],  axial root conductivity (unknown to CPlantBox) is set to 0.
  * 6 kr [cm hPa-1 d-1],   radial root conductivity (unknown to CPlantBox) is set to 0.
  * 7 emergence time [d],
- * 8 subType,
- * 9 organType
+ * 8 subType, (normally, starting from 1, type is set in the parameter xml files)
+ * 9 organType (seed=1, root=2 ,stem=3, leaf=4)
  *
- * For artifical shoot segments (that can be added with SegmentAnalyser::addSegment)
+ * For artificial shoot segments (that can be added with SegmentAnalyser::addSegment)
  * order = -1
  * subType = -1
  * organType = -1.

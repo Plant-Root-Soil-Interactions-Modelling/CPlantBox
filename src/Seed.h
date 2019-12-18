@@ -19,7 +19,8 @@ class Seed : public Organ
 public:
 
     Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        bool moved= false, int oldNON = 0) :Organ(id, param, alive, active, age, length, moved, oldNON) { }; ///< creates everything from scratch
+        bool moved= false, int oldNON = 0)
+	:Organ(id, param, alive, active, age, length, Vector3d(), 0., 0, moved, oldNON) { }; ///< creates everything from scratch
     Seed(std::shared_ptr<Organism> plant); ///< used within simulation
     virtual ~Seed() { };
 

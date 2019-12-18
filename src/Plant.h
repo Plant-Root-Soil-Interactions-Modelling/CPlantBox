@@ -42,6 +42,9 @@ public:
 
   std::shared_ptr<Organism> copy() override; ///< deep copies the organism
 
+  /* organs */
+  std::shared_ptr<Seed> getSeed(); ///< the plant seed
+
   /* parameters */
   void initializeReader() override; ///< initializes XML reader
   void readParameters(std::string name, std::string  basetag = "plant") override { this->initializeReader(); Organism::readParameters(name, basetag); };
@@ -62,6 +65,8 @@ public:
   void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
   std::string toString() const override;
   void writeVTP(int otype, std::ostream & os) const;
+
+  std::vector<int> leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 protected:
 

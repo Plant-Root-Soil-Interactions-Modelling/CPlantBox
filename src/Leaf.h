@@ -10,6 +10,8 @@
 
 namespace CPlantBox {
 
+class Plant;
+
 /**
  * Stem
  *
@@ -20,8 +22,6 @@ namespace CPlantBox {
 class Leaf : public Organ
 {
 public:
-
-    static std::vector<int> leafphytomerID;
 
     Leaf(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d iheading, double pbl, int pni, bool moved = false, int oldNON = 0);
@@ -46,17 +46,18 @@ public:
 	/* abbreviations */
 	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
 	std::shared_ptr<const LeafSpecificParameter> param() const; ///< root parameter
+	std::shared_ptr<Plant> getPlant();
 	double dx() const; ///< returns the axial resolution
 
-	Vector3d iHeading; ///< the initial heading of the leaf, when it was created
-    double parentBaseLength; ///< length [cm]
-    int parentNI; ///< parent node index
+    int getParentChildrenCount() {
+    	return getParent()->getNumberOfChildren();
+    }
 
 protected:
 
-    void minusPhytomerId(int subtype) { leafphytomerID[subtype]--;  }
-    int getleafphytomerID(int subtype) { return leafphytomerID[subtype]; }
-    void addleafphytomerID(int subtype) { leafphytomerID[subtype]++;  }
+    void minusPhytomerId(int subtype);
+    int getleafphytomerID(int subtype);
+    void addleafphytomerID(int subtype);
 
     void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 

@@ -33,8 +33,9 @@ class Organ : public std::enable_shared_from_this<Organ>
 public:
 
     Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        bool moved= false, int oldNON = 0); ///< creates everything from scratch
-    Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay); ///< used within simulation
+    		Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0); ///< creates everything from scratch
+    Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
+    		Vector3d iheading, double pbl, int pni); ///< used within simulation
     virtual ~Organ() { }
 
     virtual std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant); ///< deep copies the organ tree
@@ -50,6 +51,8 @@ public:
     void setOrganism(std::shared_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
     std::shared_ptr<Organism> getOrganism() const { return plant.lock(); } ///< return parent organism
     void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
+    int getNumberOfChildren() { return children.size(); }
+    std::shared_ptr<Organ> getChild(int i) { return children.at(i); }
 
     /* parameters */
     int getId() const { return id; } ///< unique organ id
@@ -83,6 +86,12 @@ public:
     virtual std::string toString() const; ///< info for debugging
     void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
     int getParamSubType(int organtype, std::string str);
+
+    /* Parameters that are given per root that are constant*/
+    Vector3d iHeading; ///< the initial heading of the root, when it was created
+    double parentBaseLength; ///< length [cm]
+    int parentNI; ///< parent node index
+
 protected:
 
     /* up and down the organ tree */

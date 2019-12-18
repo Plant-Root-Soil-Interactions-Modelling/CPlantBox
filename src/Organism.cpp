@@ -14,10 +14,8 @@ namespace CPlantBox {
 std::vector<std::string> Organism::organTypeNames = { "organ", "seed", "root", "stem", "leaf" };
 int Organism::instances = 0; // number of instances
 
-double Organism::seed_nC_ = 0 ;
-double Organism::seed_nZ_ = 0;
 /**
- * todo docme
+ * Constructs organism, initializes random number generator
  */
 Organism::Organism()
 {
@@ -54,7 +52,7 @@ std::string Organism::organTypeName(int ot)
 }
 
 /**
- * doc me
+ * Deep copies the organism
  */
 std::shared_ptr<Organism> Organism::copy()
 {
@@ -71,7 +69,7 @@ std::shared_ptr<Organism> Organism::copy()
 }
 
 /**
- * Copies the organ type parameters of a specific organ type into a vector
+ * Copies the organ random parameters of all sub types of one specific organ type into a vector
  *
  * @param ot    the organ type
  */
@@ -85,11 +83,11 @@ std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParam
 }
 
 /**
- * Returns an organ type parameter of a specific organ type and sub type
+ * Returns an organ random parameter of a specific organ type and sub type
  *
  * @param ot       the organ type (e.g. ot_root)
  * @param subType  the sub type (e.g. root type)
- * @return         the respective type parameter
+ * @return         the respective random parameter
  */
 std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, int subType) const
 {
@@ -107,10 +105,10 @@ std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, 
 }
 
 /**
- *  Sets the  type parameter, subType and organType defined within p
- *  Deletes the old parameter if there is one, takes ownership of the new one
+ *  Sets the random parameter.
+ *  subType and organType are defined within @param p.
  *
- *  @param p    the organ type parameter
+ *  @param p    the organ random parameter
  */
 void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 {
@@ -121,9 +119,9 @@ void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 
 /**
  * Overwrite if there is the need for additional initializations,
- * before simulation starts.
+ * before the simulation starts.
  *
- * e.g. initialization of GrowthFunctions, TropismFunctions, set up base Organs
+ * e.g. for initialization of GrowthFunctions, TropismFunctions, set up base Organs
  */
 void Organism::initialize(bool verbose)
 { }

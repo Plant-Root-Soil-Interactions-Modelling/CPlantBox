@@ -50,11 +50,6 @@ public:
     std::shared_ptr<const RootSpecificParameter> param() const; ///< root parameter
     double dx() const { return getRootRandomParameter()->dx; } ///< returns the axial resolution
 
-    /* Parameters that are given per root that are constant*/
-    Vector3d iHeading; ///< the initial heading of the root, when it was created
-    double parentBaseLength; ///< length [cm]
-    int parentNI; ///< parent node index
-
 protected:
 
     virtual void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()

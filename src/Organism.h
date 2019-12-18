@@ -20,9 +20,9 @@ class OrganRandomParameter;
 /**
  * Organism
  *
- * Base class of Plant (CPlantBox) or RootSystem (CPlantBox)
+ * Base class of Plant or RootSystem
  *
- * Manages the OrganTypeParameters
+ * Manages the OrganRandomParameters
  * Offers an interface for the simulation loop (initialize, simulate, ...)
  * Collects node and line segment geometry from the organ tree
  * Collect parameters from the organs
@@ -57,10 +57,11 @@ public:
     virtual void simulate(double dt, bool verbose = false); ///< calls the base organs simulate methods
     double getSimTime() const { return simtime; } ///< returns the current simulation time
 
-    /* organs as sequential list */
+    /* as sequential list */
     std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1) const; ///< sequential list of organs
     virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0)) const; ///< parameter value per organ
     double getSummed(std::string name, int ot = -1) const; ///< summed up parameters
+    // std::shared_ptr<Organ> pickOrgan(int nodeId); // TODO
 
     /* geometry */
     int getNumberOfOrgans() const { return organId+1; } ///< number of nodes of the organism
@@ -103,8 +104,7 @@ public:
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
     virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
     virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
-    static double seed_nC_ ; ///< pass seed nC to stem
-    static double seed_nZ_ ; ///< pass seed nZ to stem
+
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
