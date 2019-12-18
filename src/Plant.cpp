@@ -1,4 +1,5 @@
 #include "Plant.h"
+
 #include <memory>
 #include <iostream>
 #include <sys/stat.h>
@@ -29,6 +30,14 @@ std::shared_ptr<Organism> Plant::copy()
         }
     }
     return no;
+}
+
+/**
+ * Returns the seed of the plant
+ */
+std::shared_ptr<Seed> Plant::getSeed()
+{
+	return std::static_pointer_cast<Seed>(baseOrgans.at(0));
 }
 
 /**
@@ -77,7 +86,6 @@ void Plant::initialize(bool verbose)
     baseOrgans.push_back(seed);
 
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
-    Leaf::leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     // further initializations
     initCallbacks();

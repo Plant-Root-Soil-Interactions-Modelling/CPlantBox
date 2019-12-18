@@ -291,14 +291,12 @@ void RootRandomParameter::write(std::ostream & cout) const {
  */
 void RootRandomParameter::bindParameters()
 {
-    bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4)");
-    bindParameter("subType", &subType, "Unique identifier of this sub type");
+	OrganRandomParameter::bindParameters();
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
     bindParameter("la", &la, "Apical zone [cm]", &las);
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
     bindParameter("lmax", &lmax, "Maximal root length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-    bindParameter("a", &a, "Root radius [cm]", &as);
     bindParameter("colorR", &colorR, "Root color, red component [0.-1.]");
     bindParameter("colorG", &colorG, "Root color, green component [0.-1.]");
     bindParameter("colorB", &colorB, "Root color, blue component [0.-1.]");

@@ -27,7 +27,7 @@ public:
 
     RootSpecificParameter(): RootSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
     RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt):
-        OrganSpecificParameter(type),  lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln) { }; ///< Constructor setting all parameters
+        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln) { }; ///< Constructor setting all parameters
 
     /*
      * RootBox parameters per single root
@@ -35,7 +35,6 @@ public:
     double lb;              ///< Basal zone [cm]
     double la;              ///< Apical zone [cm]
     double r;               ///< Initial growth rate [cm day-1]
-    double a;               ///< Root radius [cm]
     double theta;           ///< Angle between root and parent root [rad]
     double rlt;             ///< Root life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
@@ -77,6 +76,9 @@ public:
     void read(std::istream & cin); ///< reads a single root parameter set
     void write(std::ostream & cout) const; ///< writes a single root parameter set
 
+    void bindParameters() override; ///<sets up class introspection
+
+
     /*
      * RootBox parameters per root type
      */
@@ -90,8 +92,6 @@ public:
     double lmaxs = 0.;   	///< Standard deviation of maximal root length [cm]
     double r = 1;		    ///< Initial growth rate [cm day-1]
     double rs = 0.;	    	///< Standard deviation initial growth rate [cm day-1]
-    double a = 0.1; 		///< Root radius [cm]
-    double as = 0.; 		///< Standard deviation root radius [cm]
     double colorR = 0.6;	///< Root color (red)
     double colorG = 0.2;	///< Root color (green)
     double colorB = 0.2;	///< Root color (blue)
@@ -115,10 +115,6 @@ public:
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth
-
-protected:
-
-    void bindParameters(); ///<sets up class introspectionbindParameters
 
 };
 

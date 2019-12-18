@@ -39,9 +39,6 @@ public:
 
 };
 
-inline bool operator==(const Vector2i& lhs, const Vector2i& rhs){ return ((lhs.x==rhs.x) && (lhs.y==rhs.y)); } // needed for boost python indexing suite
-inline bool operator!=(const Vector2i& lhs, const Vector2i& rhs){ return !(lhs == rhs); }
-
 
 
 /**

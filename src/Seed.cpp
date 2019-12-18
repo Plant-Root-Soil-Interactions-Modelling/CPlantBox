@@ -9,9 +9,10 @@ namespace CPlantBox {
 /**
  * todo docme
  */
-Seed::Seed(std::shared_ptr<Organism> plant) :Organ(plant, nullptr, Organism::ot_seed, 0, 0.)
+Seed::Seed(std::shared_ptr<Organism> plant)
+:Organ(plant, nullptr, Organism::ot_seed, 0, 0., Vector3d(), 0., 0)
 {
-	// realize is called in Organ constructor
+	// realize() is called in Organ constructor
 	addNode(param()->seedPos,0);
 }
 
@@ -55,8 +56,6 @@ void Seed::initialize(bool verbose)
 	 */
 	const double maxT = 365.; // maximal simulation time
 	auto sp = this->param(); // rename
-	Organism::seed_nC_ = sp->nC;
-    Organism::seed_nZ_ = sp->nz;
 	Vector3d iheading(0,0,-1);
 
 	// Taproot

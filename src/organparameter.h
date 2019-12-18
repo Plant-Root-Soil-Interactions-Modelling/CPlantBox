@@ -23,11 +23,12 @@ class Organism; // forward declaration
 class OrganSpecificParameter {
 public:
 
-    OrganSpecificParameter(int t): subType(t)  { }
+    OrganSpecificParameter(int t, double a): subType(t)  { }
 
     virtual ~OrganSpecificParameter() { }
 
     int subType = -1; ///< sub type of the organ
+    double a = 0.; ///< radius of the organ [cm]
 
     virtual std::string toString() const; ///< quick info for debugging
 
@@ -63,12 +64,16 @@ public:
     virtual tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const; ///< writes a organ root parameter set
     void writeXML(std::string name) const; ///< writes a organ root parameter set
 
+    virtual void bindParameters(); ///<sets up class introspection
+
     void bindParameter(std::string name, int* i, std::string descr = "", double* dev = nullptr); ///< binds integer to parameter name
     void bindParameter(std::string name, double* d, std::string descr = "", double* dev = nullptr); ///< binds double to parameter name
 
     std::string name = "organ";
     int organType = 0;
     int subType = 0;
+    double a = 0.1; 		///< Root radius [cm]
+    double as = 0.; 		///< Standard deviation root radius [cm]
 
     std::weak_ptr<Organism> plant;
 

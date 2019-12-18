@@ -218,7 +218,7 @@ PYBIND11_MODULE(plantbox, m) {
      * organparameter.h
      */
     py::class_<OrganSpecificParameter, std::shared_ptr<OrganSpecificParameter>>(m,"OrganSpecificParameter")
-        .def(py::init<int>())
+        .def(py::init<int, double>())
         .def_readwrite("subType",&OrganSpecificParameter::subType)
         .def("__str__",&OrganSpecificParameter::toString);
     py::class_<OrganRandomParameter, std::shared_ptr<OrganRandomParameter>>(m,"OrganRandomParameter")
@@ -229,7 +229,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("__str__",&OrganRandomParameter::toString, py::arg("verbose") = true) // default
         .def("writeXML",(void (OrganRandomParameter::*)(std::string name) const) &OrganRandomParameter::writeXML) // overloads
         .def("readXML", (void (OrganRandomParameter::*)(std::string name)) &OrganRandomParameter::readXML) // overloads
-        .def("bindIntParameter", (void (OrganRandomParameter::*)(std::string, int*, std::string, double*))  &OrganRandomParameter::bindParameter,
+        .def("bindParameters",&OrganRandomParameter::bindParameters)
+		.def("bindIntParameter", (void (OrganRandomParameter::*)(std::string, int*, std::string, double*))  &OrganRandomParameter::bindParameter,
             py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
         .def("bindDoubleParameter", (void (OrganRandomParameter::*)(std::string, double*, std::string, double*))  &OrganRandomParameter::bindParameter,
             py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
@@ -241,8 +242,8 @@ PYBIND11_MODULE(plantbox, m) {
      * Organ.h
      */
     py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ")
-        .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double>())
-        .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, bool, int>())
+        .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, Vector3d, double, int>())
+        .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
         .def("copy",&Organ::copy)
         .def("organType",&Organ::organType)
         .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
@@ -252,6 +253,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setOrganism",&Organ::setOrganism)
         .def("getOrganism",&Organ::getOrganism)
         .def("addChild",&Organ::addChild)
+        .def("getNumberOfChildren",&Organ::getNumberOfChildren)
+        .def("getChild",&Organ::getChild)
 
         .def("getId",&Organ::getId)
         .def("getParam",&Organ::getParam)
@@ -275,7 +278,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype)) &Organ::getOrgans, py::arg("ot")=-1) //overloads, default
         .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>>& v)) &Organ::getOrgans)
         .def("getParameter",&Organ::getParameter)
-        .def("__str__",&Organ::toString);
+        .def("__str__",&Organ::toString)
+
+    	.def_readwrite("iHeading", &Organ::iHeading)
+    	.def_readwrite("parentBaseLength", &Organ::parentBaseLength)
+		.def_readwrite("parentNI", &Organ::parentNI);
+
     /*
      * Organism.h
      */
@@ -651,10 +659,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("calcAge", &Root::calcAge)
         .def("getRootRandomParameter", &Root::getRootRandomParameter)
         .def("param", &Root::param)
-        .def("dx", &Root::dx)
-        .def_readwrite("iHeading", &Root::iHeading)
-        .def_readwrite("parentBaseLength", &Root::parentBaseLength)
-        .def_readwrite("parentNI", &Root::parentNI);
+        .def("dx", &Root::dx);
      /**
       * Seed.h
       */
@@ -684,10 +689,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("calcAge", &Leaf::calcAge)
         .def("getLeafRandomParameter", &Leaf::getLeafRandomParameter)
         .def("param", &Leaf::param)
-        .def("dx", &Leaf::dx)
-        .def_readwrite("iHeading", &Leaf::iHeading)
-        .def_readwrite("parentBaseLength", &Leaf::parentBaseLength)
-        .def_readwrite("parentNI", &Leaf::parentNI);
+        .def("dx", &Leaf::dx);
    /**
     * Stem.h
     */
@@ -699,10 +701,7 @@ PYBIND11_MODULE(plantbox, m) {
        .def("calcAge", &Stem::calcAge)
        .def("getStemRandomParameter", &Stem::getStemRandomParameter)
        .def("param", &Stem::param)
-       .def("dx", &Stem::dx)
-       .def_readwrite("iHeading", &Stem::iHeading)
-       .def_readwrite("parentBaseLength", &Stem::parentBaseLength)
-       .def_readwrite("parentNI", &Stem::parentNI);
+       .def("dx", &Stem::dx);
     /*
      * RootSystem.h
      */
@@ -739,6 +738,7 @@ PYBIND11_MODULE(plantbox, m) {
       */
      py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
         .def(py::init<>())
+        .def("getSeed", &Plant::getSeed)
         .def("setGeometry", &Plant::setGeometry)
         .def("reset", &Plant::reset)
         .def("openXML", &Plant::openXML)

@@ -19,9 +19,9 @@ class LeafSpecificParameter : public OrganSpecificParameter
 {
 public:
 
-	LeafSpecificParameter() :OrganSpecificParameter(-1) { };
-	LeafSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
-		OrganSpecificParameter(type) , lb(lb), la(la), r(r), a(a), theta(theta), rlt(rlt), ln(ln)  { }; ///< Constructor setting all parameters
+	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
+	LeafSpecificParameter(int subType, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
+		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln)  { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
@@ -29,7 +29,6 @@ public:
 	double lb = 0.; 		///< Basal zone of leaf vein [cm]
 	double la = 0.;			///< Apical zone of leaf vein [cm];
 	double r = 0.;			///< Initial growth rate [cm day-1]
-	double a = 0.; 			///< Leaf width [cm]
 	double theta = 0.; 		///< Branching angle between veins [rad]
 	double rlt = 0.;		///< Leaf life time [day]
 	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
