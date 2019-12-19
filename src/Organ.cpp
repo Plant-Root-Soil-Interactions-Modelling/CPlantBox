@@ -25,8 +25,8 @@ namespace CPlantBox {
 Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active,
 		double age, double length, Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
 
-:plant(), parent(), id(id), param_(param), alive(alive), active(active), age(age), length(length), moved(moved),
- oldNumberOfNodes(oldNON), iHeading(iheading), parentBaseLength(pbl), parentNI(pni)
+:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(), parent(), id(id), param_(param), alive(alive), active(active), age(age), length(length),
+ moved(moved), oldNumberOfNodes(oldNON)
 { }
 
 /**
@@ -43,9 +43,9 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  */
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ>  parent, int ot, int st, double delay,
 		Vector3d iheading, double pbl, int pni)
-:plant(plant), parent(parent), id(plant->getOrganIndex()),  // unique id from the plant
+:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),  // unique id from the plant
  param_(plant->getOrganRandomParameter(ot, st)->realize()), // draw specific parameters from random distributions
- age(-delay), iHeading(iheading), parentBaseLength(pbl), parentNI(pni)
+ age(-delay)
 { }
 
 /*

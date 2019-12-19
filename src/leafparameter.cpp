@@ -274,8 +274,7 @@ tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
  */
 void LeafRandomParameter::bindParameters()
 {
-	bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, leaf = 2, stem = 3, leaf = 4)");
-	bindParameter("subType", &subType, "Unique identifier of this sub type");
+    OrganRandomParameter::bindParameters();
 	bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
 	bindParameter("la", &la, "Apical zone [cm]", &las);
 	bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
@@ -294,7 +293,6 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("gf", &gf, "Growth function number [1]", &rlts);
 	bindParameter("lnf", &lnf, "Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)");
 	// other parameters (descriptions only)
-	description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
 	description["successor"] = "Sub type of lateral leaf veins";
 	description["successorP"] = "Probability of each sub type to occur";
 }

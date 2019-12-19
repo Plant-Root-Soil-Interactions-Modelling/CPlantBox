@@ -308,7 +308,6 @@ void RootRandomParameter::bindParameters()
     bindParameter("rlt", &rlt, "Root life time [day]", &rlts);
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);
     // other parameters (descriptions only)
-    description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
     description["successor"] = "Sub type of lateral roots";
     description["successorP"] = "Probability of each sub type to occur";
 }

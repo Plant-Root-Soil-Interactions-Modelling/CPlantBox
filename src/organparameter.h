@@ -23,7 +23,7 @@ class Organism; // forward declaration
 class OrganSpecificParameter {
 public:
 
-    OrganSpecificParameter(int t, double a): subType(t)  { }
+    OrganSpecificParameter(int t, double a): subType(t), a(a)  { }
 
     virtual ~OrganSpecificParameter() { }
 
