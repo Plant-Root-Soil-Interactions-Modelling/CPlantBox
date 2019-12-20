@@ -763,6 +763,7 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types
  */
 void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
+    auto ctime = getParameter("creationTime");
     os << "x1 y1 z1 x2 y2 z2 radius R G B time type organ \n";
     for (size_t i=0; i<segments.size(); i++) {
         Vector2i s = segments.at(i);
@@ -774,7 +775,7 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         double red = o->getParameter("RotBeta");
         double green = o->getParameter("BetaDev");
         double blue = o->getParameter("InitBeta");
-        double time = o->getParameter("creationTime");
+        double time = ctime[i];
         double age = o->getParameter("age");
         int subType = o->getParameter("subType");
         os << std::fixed << std::setprecision(4)<< n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
