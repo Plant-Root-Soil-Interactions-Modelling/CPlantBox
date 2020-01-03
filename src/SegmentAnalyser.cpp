@@ -765,8 +765,8 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
     auto ctime = getParameter("creationTime");
     os << "node1ID node2ID branchID x1 y1 z1 x2 y2 z2 radius R G B time age type organ \n";
-	int = nid1 = 0;
-	int = nid2 = 1;
+	int  nid1 = 0;
+	int  nid2 = 1;
     for (size_t i=0; i<segments.size(); i++) {
         Vector2i s = segments.at(i);
         Vector3d n1 = nodes.at(s.x);
@@ -783,7 +783,7 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         int subType = o->getParameter("subType");
         os << std::fixed << std::setprecision(4)<< nid1 << " " << nid2 << " " << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
             radius << " " << red << " " << green << " " << blue << " " << time<< " " << age<<" " <<subType << " " << organ <<" \n";
-			
+
 		nid1 = nid1+1;
 		nid2 = nid2+1;
     }
