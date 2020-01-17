@@ -29,7 +29,8 @@ The documentation should now be located in the folder /doc
 
 # Example
 
-Visualized in R, thanks  [@guillaumelobet](https://github.com/guillaumelobet)
+# Examples
+Simulation videos availabe in Youtube Channel https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q
 
-![alt text](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/results/plant.gif "Tree with leafs")
+[![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
 
