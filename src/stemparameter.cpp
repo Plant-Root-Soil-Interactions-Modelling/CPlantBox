@@ -83,7 +83,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     int nob_ = std::max(round(nob() + p->randn()*nobs()), 0.); // maximal number of branches
     	switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
-		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_; i++) { // create inter-stem distances
 			double d = std::max(ln +p->randn()*lns,1e-9); //Normal function of equal internode distance
 			ln_.push_back(d);
 

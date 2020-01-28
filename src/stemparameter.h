@@ -64,7 +64,7 @@ public:
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific stem from the stem parameter set
 
     int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on stem parameter set
-    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
+    double nob() const { return std::max((lmax-la-lb)/ln +1, 1.); }  ///< returns the mean number of branches [1]
     double nobs() const; ///< returns the standard deviation of number of branches [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging

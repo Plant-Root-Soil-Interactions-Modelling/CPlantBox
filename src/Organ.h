@@ -91,7 +91,7 @@ public:
     Vector3d iHeading; ///< the initial heading of the root, when it was created
     double parentBaseLength; ///< length [cm]
     int parentNI; ///< parent node index
-
+    std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ
 protected:
 
     /* up and down the organ tree */
@@ -101,7 +101,7 @@ protected:
 
     /* Parameters that are constant over the organ life time */
     const int id; ///< unique organ id
-    std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ
+
 
     /* Parameters are changing over time */
     bool alive = true; ///< true: alive, false: dead

@@ -113,8 +113,8 @@ void Stem::simulate(double dt, bool verbose)
 	auto p_all = plant.lock();
 	auto p_stem = p_all->getOrganRandomParameter(Organism::ot_stem);
 
-	int nC = getPlant()->getSeed()->param()->nC;
-	double nZ = getPlant()->getSeed()->param()->nz;
+	int nC = getPlant()->getSeed()->param()->nC; //number of the shoot born root
+	double nZ = getPlant()->getSeed()->param()->nz; // distance between shoot born root and the seed
 
 	int additional_childern;
 	if (p.subType == 1)
@@ -244,14 +244,15 @@ void Stem::simulate(double dt, bool verbose)
 						createSegments(dl,verbose);
 						length+=dl;
 					} else {
-						if (p.subType == 3) {
-							leafGrow(verbose, nodes.back());
-						}
+						//if (p.subType == 3) {
+
+						//}
 					}
 				} else { // no laterals
 					if (dl>0) {
 						createSegments(dl,verbose);
 						length+=dl;
+						leafGrow(verbose, nodes.back());
 					}
 				} // if lateralgetLengths
 			} // if active
@@ -345,12 +346,12 @@ void Stem::createLateral(bool silence)
 	std::cout<<"lnf is = "<<getStemRandomParameter()->lnf<<"\n";
 	auto sp = param(); // rename
 	int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
-
-	if (getStemRandomParameter()->lnf == 2&& lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+        double ageLN = this->calcAge(length); // age of stem when lateral node is created
 		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
+	if (getStemRandomParameter()->lnf == 2&& lt>0) {
+
 
 		auto lateral = std::make_shared<Stem>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
@@ -362,10 +363,7 @@ void Stem::createLateral(bool silence)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 	else if (getStemRandomParameter()->lnf==3&& lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+
 		auto lateral = std::make_shared<Stem>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
@@ -376,10 +374,7 @@ void Stem::createLateral(bool silence)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
 	else if (getStemRandomParameter()->lnf==4 && lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+
 		auto lateral = std::make_shared<Stem>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
@@ -387,10 +382,7 @@ void Stem::createLateral(bool silence)
 
 	}
 	else if (getStemRandomParameter()->lnf==5 && lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+
 		auto lateral = std::make_shared<Stem>(plant.lock(), lt, h, delay,  shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
@@ -402,10 +394,7 @@ void Stem::createLateral(bool silence)
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
 	} else if (lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+
 		auto lateral = std::make_shared<Stem>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
@@ -424,15 +413,13 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 	//int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 	//  	std::cout << "LeafGrow createLateral()\n";
 	//  	std::cout << "LeafGrow type " << lt << "\n";
-
-	//if (lt>0) {
-	//int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
-	int lt =2;
-	if (getStemRandomParameter()->lnf==2&& lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
+	double ageLN = this->calcAge(length); // age of stem when lateral node is created
 		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h = heading(); // current heading
+	int lt =2;
+	if (getStemRandomParameter()->lnf==2) {
+
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay, shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
@@ -442,11 +429,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
-	else if (getStemRandomParameter()->lnf==3&& lt>0) {
-		double ageLN = this->calcAge(length); // athis, ge of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+	else if (getStemRandomParameter()->lnf==3) {
+
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay,  shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
@@ -456,11 +440,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
-	else if (getStemRandomParameter()->lnf==4 && lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+	else if (getStemRandomParameter()->lnf==4 ) {
+
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay,  shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);
@@ -469,11 +450,8 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 		//lateral2->setRelativeOrigin(nodes.back());
 		children.push_back(lateral2);
 		lateral2->simulate(age-ageLN,silence); // pass
-	}else if (getStemRandomParameter()->lnf==5&& lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+	}else if (getStemRandomParameter()->lnf==5) {
+
 
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
@@ -489,11 +467,7 @@ void Stem::leafGrow(bool silence, Vector3d bud)
 
 		lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
-	}else if (lt>0) {
-		double ageLN = this->calcAge(length); // age of stem when lateral node is created
-		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h = heading(); // current heading
+	}else{
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay, shared_from_this(), length, nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
 		children.push_back(lateral);

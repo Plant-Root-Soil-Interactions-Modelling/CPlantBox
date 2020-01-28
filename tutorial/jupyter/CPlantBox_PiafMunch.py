@@ -170,26 +170,14 @@ def convert( plant ):
 	#print("node_connection length is{}".format(len(node_connection) ))
 	# Write input file for PiafMunch
 	# Here we created several functions we used later
-
-
-	first_zero = node_connection[node_connection[:,0] == 0][0]
-	second_zero = node_connection[node_connection[:,0] == 0][1]
-	first_zero[1]=0
-	first_zero= first_zero[::-1] 
-	second_zero[0]=1
-	second_zero= second_zero[::-1] 
-	node_connection[node_connection[:,0]== 0] = [first_zero, second_zero]
-	#condition = ==0
-	#print(nodes_organtype[:,0]) #some nodes are not correct, here is the revise
-	nodes_organtype[1,1] =1
-	node_connection[0,1] =0
-	node_connection[0,0] =0
-	nodes_organtype[0,1] =0
-	nodes_organtype[0,2] =0
-	nodes_organtype[0,3] =0
-	nodes_organtype = np.delete(nodes_organtype,0,0)
-	node_connection = np.delete(node_connection,0,0)
-
+	node_connection = node_connection+1
+	nodes_organtype[:,0] = nodes_organtype[:,0]+1 
+	nodes_c_with_1 = np.where(node_connection[:,0]==1)
+	shoot_c_with_1 = node_connection[nodes_c_with_1]
+	node_need_reverse = np.where(nodes_organtype[node_connection[nodes_c_with_1][:,1]-1][:,1]==3)
+	total_nodes_reversed = nodes_c_with_1[0][node_need_reverse[0]][0]
+	reversed_node = node_connection[nodes_c_with_1[0][node_need_reverse][0]][::-1]
+	node_connection[total_nodes_reversed]= reversed_node
 	pi= 3.1415926
 
 	k = 1.118e-12 # conductivity (m2)
@@ -292,9 +280,9 @@ def convert( plant ):
 			return 'None'
 
 	#node_connection_cor
-	nodes_c_cor = np.full((len(node_connection), 3),0.0)
+	nodes_c_cor = np.full((len(nodes_organtype), 3),0.0)
 	#charar = np.chararray((3, 3))
-	nodes_org = np.full((len(node_connection), 1),0)
+	nodes_org = np.full((len(nodes_organtype), 1),0)
 
 	for i in range(0,len(node_connection)-1):
 		nodes_org[i]= nodes_organtype[nodes_organtype[:,0] == node_connection[i][0]][0][1]
@@ -307,7 +295,7 @@ def convert( plant ):
 
 
 	for i in range(0,len(node_connection)): #calculate the mid point of two segment nodes
-		nodes_c_cor[i] = (nodes[node_connection[i,0]] + nodes[node_connection[i,1]])/2
+		nodes_c_cor[i] = (nodes[node_connection[i,0]-1] + nodes[node_connection[i,1]-1])/2
 
 
 
@@ -316,7 +304,7 @@ def convert( plant ):
 	node_c_o = np.zeros((node_connection.shape[0],node_connection.shape[1]+5)); node_c_o[:,:-5] = node_connection
 
 	for i in range(0,len(node_connection)):
-		node_c_o[i][2:5] = (nodes[node_connection[i,0]] + nodes[node_connection[i,1]])/2
+		node_c_o[i][2:5] = (nodes[node_connection[i,0]-1] + nodes[node_connection[i,1]-1])/2
 	#	node_c_o[i][6] = nodes_organtype[node_c_o[i][0]][0]
 		#node_c_o[i][6] = nodes_organtype[node_c_o[i][0]][1]
 
@@ -329,8 +317,8 @@ def convert( plant ):
 
 
 
-	node_c_o = pd.DataFrame({'1st_node':node_connection[:,0],'2nd_node':node_connection[:,1],'x':node_c_o[:,2]
-							,'y':node_c_o[:,3],'z':node_c_o[:,4], 'organ_type':nodes_org[:,0],'marker':nodes_c_marker[:,0], 'r_st':r_st_all[:,0]})
+	#node_c_o = pd.DataFrame({'1st_node':node_connection[:,0],'2nd_node':node_connection[:,1],'x':node_c_o[:,2]
+	#						,'y':node_c_o[:,3],'z':node_c_o[:,4], 'organ_type':nodes_org[:,0],'marker':nodes_c_marker[:,0], 'r_st':r_st_all[:,0]})
 	#claculate the length from seed of every nodes (root is minus)
 	nodes_length = np.zeros(len(nodes_cor))
 	for i in range(1,len(nodes_cor)):
@@ -354,14 +342,11 @@ def convert( plant ):
 	#print(len(nodes_length))
 	nodes_length
 	#node_connection_o[0,0]=1
-	nodes_length = np.delete(nodes_length,0,0)
+
 	np.c_[ nodes_organtype, nodes_length]
 
 
-	len(nodes_organtype)
-	#node_connection
-	len(nodes_cor)
-	nodes_cor[:,4]
+
 	nodes_r_st = np.zeros(len(nodes_cor)-1)
 	for i in range(0,len(nodes_cor)-1):
 		if nodes_length[i] > R_name[1]:
@@ -379,7 +364,7 @@ def convert( plant ):
 	# file-output.py
 
 
-def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_cnt, name='mg_test.ini'): #function of creating parameters of PiafMunch
+def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_cnt, Soil_water, k1, name='mg_test.ini', time=100): #function of creating parameters of PiafMunch
 	Nt = len(nodes_organtype) #total number of nodes, here the 0 and 1st node are the same, so minus 1
 	Nc = len(node_connection) #total number of connections
 
@@ -505,7 +490,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	Vmax = np.zeros(len(nodes_organtype)) # kinetic parameter / starch Synthesis
 	C_targ = np.zeros(len(nodes_organtype)) #kinetic parameter / starch/sugar equilibrium. (regul. par. sugar conc.)			 (mmol / ml)
 	kHyd = np.zeros(len(nodes_organtype))
-	k1 = np.zeros(len(nodes_organtype))
+	# k1 = np.zeros(len(nodes_organtype))
 	k2 = np.zeros(len(nodes_organtype))
 	k3 = np.zeros(len(nodes_organtype))
 	StructC = np.zeros(len(nodes_organtype))
@@ -517,7 +502,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	vol_Sympl_max = np.zeros(len(nodes_organtype))
 
 	r_Xyl = np.full(len(nodes_organtype), 0.05) #0.0005
-	r_ST = np.full(len(nodes_organtype), nodes_r_st)	   #automatically assign the sieve tube resistance calculated based on 
+	r_ST = np.full(len(node_connection), nodes_r_st)	   #automatically assign the sieve tube resistance calculated based on 
 	r_Trsv = np.full(len(nodes_organtype), 100)
 	r_PhlMb = np.full(len(nodes_organtype), 135.785)
 	r_ParMb = np.full(len(nodes_organtype), 1e+025)
@@ -539,7 +524,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 			Vmax[i]	   = 0
 			C_targ[i]	 = 0.17	  #different in source, sink or connection of piafmunch2
 			kHyd[i]	   = 0
-			k1[i]		 = 0
+			#k1[i]		 = 0
 			k2[i]		 = 0	 #
 			k3[i]		 = 0
 			StructC[i]	= 0	  #different in source, sink or connection of piafmunch2
@@ -560,7 +545,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 			Vmax[i]	   = 0
 			C_targ[i]	 =	 0.1	 #different in source, sink or connection of piafmunch2
 			kHyd[i]	   = 0
-			k1[i]		 = 0
+			#k1[i]		 = 0
 			k2[i]		 = 0	 #manually set it to 0.4
 			k3[i]		 = 0
 			StructC[i]	= 1	  #different in source, sink or connection of piafmunch2
@@ -581,7 +566,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 			Vmax[i]	   = 0
 			C_targ[i]	 = 0.1	  #different in source, sink or connection of piafmunch2
 			kHyd[i]	   = 0
-			k1[i]		 = 0
+			#k1[i]		 = 0
 			k2[i]		 = 0
 			k3[i]		 = 0
 			StructC[i]	= 1	  #different in source, sink or connection of piafmunch2
@@ -603,7 +588,8 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	Q_ParApo = np.full(len(nodes_organtype), 4.4e-006)
 	Tr_Q_ST = np.full(len(nodes_organtype), 0)
 	Tr_Q_Sympl = np.full(len(nodes_organtype), 4.4e-006)
-	Tr_Starch = np.full(len(nodes_organtype), 1)
+	# Tr_Starch = np.full(len(nodes_organtype), 1)
+	Tr_Starch = Soil_water
 	Tr_Q_PhlApo = np.full(len(nodes_organtype), 0)
 	Tr_Q_ParApo = np.full(len(nodes_organtype), 0)
 	vol_Sympl = np.full(len(nodes_organtype), 2.6e-005)
@@ -767,7 +753,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 
 	f.write('******** SIMULATION SOLVING PARAMETERS *********\n')
 	f.write('{:s}  {:s}  {:s}   {:s}  {:s}\n'.format('StartTime','EndTime','OutputStep', 'TracerHalfLife','Rel_Tol'))
-	f.write('{:s}  {:s}  {:s}   {:s}  {:s}\n'.format('0', '100', '0.166667', '0.33967', '1e-007'))
+	f.write('{:s}  {:s}  {:s}   {:s}  {:s}\n'.format('0', str(time), '0.166667', '0.33967', '1e-007'))
 	f.write('\n')	 
 
 	f.write('***Abs_Tols for individual  nodes ***')
@@ -780,9 +766,9 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	f.write('\n')	 
 
 	f.write('******** OUTPUT SETTINGS : INDIVIDUAL NODE - LATERAL FLUXES-RELATED VARIABLES *********\n')	
-	f.write('Nodes selected for plotting  : nsp = {:.0f}\n' .format((len(nodes_organtype))-1 ))	
-	for i in range(-1,len(nodes_organtype)-1):
-		f.write('{:.0f}\n'.format(nodes_organtype[i+1][0]))
+	f.write('Nodes selected for plotting  : nsp = {:.0f}\n' .format((len(nodes_organtype)) ))	
+	for i in range(0,len(nodes_organtype)):
+		f.write('{:.0f}\n'.format(nodes_organtype[i][0]))
 
 	f.write('individual-Node-related variables selected for plotting : nvp = 1\n')	
 	f.write('C_ST (mmol / ml)\n')		
@@ -790,9 +776,9 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	#f.write('JW_Trsv (ml / h)\n')		
 
 
-	f.write('Nodes selected for saving  : nss = {:.0f}\n' .format((len(nodes_organtype))-1 ))	
-	for i in range(-1,len(nodes_organtype)-1):
-		f.write('{:.0f}\n'.format(nodes_organtype[i+1][0]))
+	f.write('Nodes selected for saving  : nss = {:.0f}\n' .format((len(nodes_organtype)) ))	
+	for i in range(0,len(nodes_organtype)):
+		f.write('{:.0f}\n'.format(nodes_organtype[i][0]))
 	f.write('\n')	
 
 
@@ -834,7 +820,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	''')
 
 	f.write('******** OUTPUT SETTINGS : INTERNODE CONNECTION - AXIAL FLUXES-RELATED VARIABLES *********\n')  
-	f.write('node-to-node Fluxes selected for plotting  : fsp = {} \n' .format(len(node_connection)))
+	f.write('node-to-node Fluxes selected for plotting  : fsp = {:.0f} \n'.format(len(node_connection)))
 	for i in range(len(node_connection)):
 		f.write("{:.0f}\n".format((i+1)))
 	f.write('\n')
@@ -857,3 +843,79 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 
 	print('output successful'.format())
 	#return create_piafmunch_parameter;
+	
+	
+def read_output(name, node_connection ):
+    path = name+'_output.txt'
+    #path = 'PiafMunch2_PMA1_output.txt'
+    output = pd.read_table(path,sep='\t',header=1)
+
+    ##################### Segment Values ##################### 
+
+    # water exchange between xylem and phloem from output of PiafMunch
+    n_begin = output.columns.get_loc("JW_Trsv (ml / h)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)+1
+    print('the end is',output.columns[n_end])
+    JW_Trsv = np.array(output.iloc[:,n_begin:n_end])
+
+    # water exchange between xylem and phloem from output of PiafMunch
+    n_begin = output.columns.get_loc("JW_Apo (ml / h)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)+1
+    print('the end is',output.columns[n_end])
+    JW_Apo = np.array(output.iloc[:,n_begin:n_end])
+
+    # Hydraulic pressure in xylem from output of PiafMunch
+    n_begin = output.columns.get_loc("P_Xyl (MPa)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)+1
+    print('the end is',output.columns[n_end])
+    P_Xyl = np.array(output.iloc[:,n_begin:n_end])
+
+    # Hydraulic pressure in sievetubes from output of PiafMunch
+    n_begin = output.columns.get_loc("P_ST (MPa)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)+1
+    print('the end is',output.columns[n_end])
+    P_ST = np.array(output.iloc[:,n_begin:n_end])
+
+    # Carbon content in the segment from output of PiafMunch
+    n_begin = output.columns.get_loc("Q_ST (mmol)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)+1
+    print('the end is',output.columns[n_end])
+    Q_ST = np.array(output.iloc[:,n_begin:n_end])
+
+    # Carbon content in the segment from output of PiafMunch
+    n_begin = output.columns.get_loc("C_ST (mmol / ml)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)+1
+    print('the end is',output.columns[n_end])
+    C_ST = np.array(output.iloc[:,n_begin:n_end])
+
+    ##################### Connection Values ##################### 
+
+    # Xylem water flow JW_Xyl from output of PiafMunch
+    n_begin = output.columns.get_loc("JW_Xyl (ml / h)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)-1
+    print('the end is',output.columns[n_end])
+    JW_Xyl = np.array(output.iloc[:,n_begin:n_end])
+
+    # Phloem water flow JW_ST from output of PiafMunch
+    n_begin = output.columns.get_loc("JW_ST (ml / h)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)-1
+    print('the end is',output.columns[n_end])
+    JW_ST = np.array(output.iloc[:,n_begin:n_end])
+
+
+    # Phloem carbon flow JS_ST from output of PiafMunch
+    n_begin = output.columns.get_loc("JS_ST (mmol / h)[{first: >{width}}]".format(first='1', width=2))
+    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    n_end = n_begin + len(node_connection)-1
+    print('the end is',output.columns[n_end])
+    JS_ST = np.array(output.iloc[:,n_begin:n_end])
+    return { "JW_Trsv":JW_Trsv,"JW_Apo": JW_Apo, "P_Xyl": P_Xyl, "P_ST":P_ST, "Q_ST": Q_ST, "C_ST": C_ST, "JW_Xyl": JW_Xyl, "JW_ST": JW_ST, "JS_ST": JS_ST}
+
