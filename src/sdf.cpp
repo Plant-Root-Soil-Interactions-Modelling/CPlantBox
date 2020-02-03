@@ -299,9 +299,8 @@ double SDF_Difference::getDist(const Vector3d& v) const
 /**
  * Constructor
  */
-SDF_HalfPlane::SDF_HalfPlane(const Vector3d& o, const Vector3d& n_)
+SDF_HalfPlane::SDF_HalfPlane(const Vector3d& o, const Vector3d& n_) : o(o),n(n_)
 {
-    n = n_;
     n.normalize();
     Matrix3d A = Matrix3d::ons(n);
     p1 = A.column(1);
