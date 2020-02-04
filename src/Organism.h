@@ -100,6 +100,10 @@ public:
     int getOrganIndex() { organId++; return organId; } ///< returns next unique organ id, only organ constructors should call this
     int getNodeIndex() { nodeId++; return nodeId; } ///< returns next unique node id, only organ constructors should call this
 
+    /* discretisation*/
+    void setMinDx(double dx) { minDx = dx; } ///< Minimum segment size, smaller segments will be skipped
+    double getMinDx() { return minDx; } ///< Minimum segment size, smaller segments will be skipped
+
     /* random number generator */
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
     virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
@@ -123,6 +127,7 @@ protected:
 
     std::vector<std::string> rsmlProperties = { "organType", "subType","length", "age"  };
     int rsmlSkip = 0; // skips points
+    double minDx = 1.e-6; ///< threshold value, smaller segments will be skipped, otherwise root tip direction can become NaN
 
     std::mt19937 gen;
     std::uniform_real_distribution<double> UD;

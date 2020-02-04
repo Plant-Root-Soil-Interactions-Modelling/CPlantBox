@@ -23,9 +23,7 @@ namespace CPlantBox {
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
  :Organ(id, param, alive, active, age, length, iheading, pbl, pni, moved,  oldNON )
-{
-    Root::smallDx = 1.e-6;
-}
+{ }
 
 
 /**
@@ -44,7 +42,6 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
     :Organ(rs, parent, Organism::ot_root, type, delay, heading, pbl, pni)
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
-    Root::smallDx = 1.e-6;
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     double theta = param()->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
@@ -300,7 +297,7 @@ Vector3d Root::getIncrement(const Vector3d& p, double sdx)
 /**
  *  Creates nodes and node emergence times for a length l
  *
- *  Checks that each new segments length is <= dx but >= smallDx
+ *  Checks that each new segments length is <= dx but >= parent->minDx
  *
  *  @param l        total length of the segments that are created [cm]
  *  @param verbose  turns console output on or off
@@ -353,9 +350,9 @@ void Root::createSegments(double l, bool verbose)
             sdx = dx();
         } else { // last segment
             sdx = l-n*dx();
-            if (sdx<smallDx) { // quit if l is too small
+            if (sdx<plant.lock()->getMinDx()) { // quit if l is too small
                 if (verbose) {
-                    std::cout << "skipped small segment ("<< sdx <<" < "<< smallDx << ") \n";
+                    std::cout << "skipped small segment ("<< sdx <<" < "<< plant.lock()->getMinDx() << ") \n";
                 }
                 return;
             }
