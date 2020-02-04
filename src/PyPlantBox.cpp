@@ -654,6 +654,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
         .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
         .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+        .def("setMinDx", &Root::setMinDx)
         .def("calcCreationTime", &Root::calcCreationTime)
         .def("calcLength", &Root::calcLength)
         .def("calcAge", &Root::calcAge)

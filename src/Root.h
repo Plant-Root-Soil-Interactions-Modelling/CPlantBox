@@ -40,6 +40,10 @@ public:
 
     std::string toString() const override;
 
+    void setMinDx(double dx) {
+        Root::smallDx = dx;
+    }
+
     /* From analytical equations */
     double calcCreationTime(double length); ///< analytical creation (=emergence) time of a node at a length
     double calcLength(double age); ///< analytical length of the root
@@ -59,7 +63,7 @@ protected:
     void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
 
     bool firstCall = true; ///< firstCall of createSegments in simulate
-    const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
+    static double smallDx; ///< threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN)
 
 };
 

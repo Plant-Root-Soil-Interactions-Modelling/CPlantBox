@@ -23,7 +23,9 @@ namespace CPlantBox {
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
  :Organ(id, param, alive, active, age, length, iheading, pbl, pni, moved,  oldNON )
-{ }
+{
+    Root::smallDx = 1.e-6;
+}
 
 
 /**
@@ -42,6 +44,7 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
     :Organ(rs, parent, Organism::ot_root, type, delay, heading, pbl, pni)
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
+    Root::smallDx = 1.e-6;
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     double theta = param()->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
