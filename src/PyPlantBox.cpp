@@ -1,6 +1,7 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "external/pybind11/include/pybind11/pybind11.h"
 #include "external/pybind11/include/pybind11/stl.h"
+#include <pybind11/functional.h>
 namespace py = pybind11;
 
 /**
@@ -738,19 +739,30 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * MappedRootSystem.h
      */
-    py::class_<Pickable, std::shared_ptr<Pickable>>(m, "Pickable")
-            .def(py::init<>())
-            .def("pick", &Pickable::pick);
     py::class_<MappedRootSystem, RootSystem, std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
             .def(py::init<>())
             .def("setSoilGrid", &MappedRootSystem::setSoilGrid)
-            .def_readonly("nodes", &MappedRootSystem::nodes)
-            .def_readonly("nodeCTs", &MappedRootSystem::nodeCTs)
-            .def_readonly("segments", &MappedRootSystem::segments)
-            .def_readonly("radii", &MappedRootSystem::radii)
-            .def_readonly("types", &MappedRootSystem::types)
-            .def_readonly("seg2cell", &MappedRootSystem::seg2cell)
-            .def_readonly("cell2seg", &MappedRootSystem::cell2seg);
+            .def("mapSegments", &MappedRootSystem::mapSegments)
+            .def_readwrite("nodes", &MappedRootSystem::nodes)
+            .def_readwrite("nodeCTs", &MappedRootSystem::nodeCTs)
+            .def_readwrite("segments", &MappedRootSystem::segments)
+            .def_readwrite("radii", &MappedRootSystem::radii)
+            .def_readwrite("types", &MappedRootSystem::types)
+            .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
+            .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
+    py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
+            .def(py::init<std::shared_ptr<CPlantBox::MappedRootSystem>>())
+            .def("setKrF",&XylemFlux::setKrF)
+            .def("setKxF",&XylemFlux::setKxF)
+            .def("linearSystem",&XylemFlux::linearSystem)
+            .def("getSolution",&XylemFlux::getSolution)
+            .def_readwrite("aI", &XylemFlux::aI)
+            .def_readwrite("aJ", &XylemFlux::aJ)
+            .def_readwrite("aV", &XylemFlux::aV)
+            .def_readwrite("aB", &XylemFlux::aB)
+            .def_readwrite("rho", &XylemFlux::rho)
+            .def_readwrite("g", &XylemFlux::g)
+            .def_readwrite("rs", &XylemFlux::rs);
     /*
      * Plant.h
      */
@@ -783,7 +795,7 @@ PYBIND11_MODULE(plantbox, m) {
     //   /*
     //    * sdf_rs.h todo
     //    */
-    //   py::class_<SDF_MappedRootSystem, SignedDistanceFunction>(m, "SDF_RootSystem")
+    //   py::class_<SDF_RootSystem, SignedDistanceFunction>(m, "SDF_RootSystem")
     //       .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, double>())
     //       .def(py::init<Root&, double>())
     //       .def(py::init<Organism&, double>());

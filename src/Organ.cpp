@@ -199,6 +199,7 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
 			v.push_back(shared_from_this());
 		}
 	}
+	// std::cout << "Organ::getOrgans recursive: number of children " <<  this->children.size() << "\n" << std::flush;
 	for (const auto& c : this->children) {
 		c->getOrgans(ot,v);
 	}
