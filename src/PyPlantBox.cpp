@@ -739,19 +739,20 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * MappedRootSystem.h
      */
-    py::class_<MappedRootSystem, RootSystem, std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-            .def(py::init<>())
-            .def("setSoilGrid", &MappedRootSystem::setSoilGrid)
-            .def("mapSegments", &MappedRootSystem::mapSegments)
-            .def_readwrite("nodes", &MappedRootSystem::nodes)
-            .def_readwrite("nodeCTs", &MappedRootSystem::nodeCTs)
-            .def_readwrite("segments", &MappedRootSystem::segments)
-            .def_readwrite("radii", &MappedRootSystem::radii)
-            .def_readwrite("types", &MappedRootSystem::types)
-            .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
-            .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
+    py::class_<MappedSegments, std::shared_ptr<MappedSegments>>(m, "MappedSegments")
+        .def("mapSegments", &MappedRootSystem::mapSegments)
+        .def("setSoilGrid", &MappedRootSystem::setSoilGrid)
+        .def_readwrite("nodes", &MappedRootSystem::nodes)
+        .def_readwrite("nodeCTs", &MappedRootSystem::nodeCTs)
+        .def_readwrite("segments", &MappedRootSystem::segments)
+        .def_readwrite("radii", &MappedRootSystem::radii)
+        .def_readwrite("types", &MappedRootSystem::types)
+        .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
+        .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
+    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
+            .def(py::init<>());
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedRootSystem>>())
+            .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKrF",&XylemFlux::setKrF)
             .def("setKxF",&XylemFlux::setKxF)
             .def("linearSystem",&XylemFlux::linearSystem)

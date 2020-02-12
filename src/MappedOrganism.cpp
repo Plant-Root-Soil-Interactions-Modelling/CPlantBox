@@ -3,6 +3,65 @@
 
 namespace CPlantBox {
 
+
+MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
+    std::vector<double> radii, std::vector<int> types) : nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), types(types)
+{ }
+
+MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii) : nodes(nodes), segments(segs) {
+    nodeCTs.resize(nodes.size());
+    for (int i=0; i<segments.size(); i++) {
+        nodeCTs[i] = 0;
+    }
+    if (radii.size()==0) {
+        setRadius(0.1); // cm
+    }
+    setTypes(0);
+}
+
+/**
+ * Sets the soil cell index call back
+ */
+void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s) {
+    soil_index = s;
+    seg2cell.clear();
+    cell2seg.clear();
+    mapSegments(segments);
+}
+
+void MappedSegments::setRadius(double a) {
+    radii.resize(segments.size());
+    for (int i=0; i<segments.size(); i++) {
+        radii[i] = a;
+    }
+}
+
+void MappedSegments::setTypes(int t) {
+    types.resize(segments.size());
+    for (int i=0; i<segments.size(); i++) {
+        types[i] = t;
+    }
+}
+
+/**
+ * update the mappers with the new segments
+ */
+void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
+    for (auto& ns : segs) {
+        Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
+        int segIdx = ns.y-1;
+        int cellIdx = soil_index(mid.x,mid.y,mid.z);
+        seg2cell[segIdx] = cellIdx;
+        if (cell2seg.count(cellIdx)>0) {
+            cell2seg[cellIdx].push_back(segIdx);
+        } else {
+            cell2seg[cellIdx] = std::vector<int>({segIdx});
+        }
+    }
+}
+
+
+
 /**
  * override
  */
@@ -14,7 +73,7 @@ void MappedRootSystem::initialize(int basaltype, int shootbornetype, bool verbos
     nodeCTs = this->getNodeCTs();
     radii = { 0.1 };
     types = { 0 };
-    this->mapSegments(segments);
+    mapSegments(segments);
 }
 
 void MappedRootSystem::initialize(bool verbose) {
@@ -29,7 +88,7 @@ void MappedRootSystem::initialize(bool verbose) {
  */
 void MappedRootSystem::simulate(double dt, bool verbose)
 {
-    if (soil==nullptr) {
+    if (soil_index==nullptr) {
         throw std::invalid_argument("MappedRootSystem::simulate():soil was not set, use MappedRootSystem::simulate::setSoilGrid" );
     }
 
@@ -80,32 +139,13 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 }
 
 /**
- *
- */
-void MappedRootSystem::mapSegments(std::vector<Vector2i> segs) {
-    for (auto& ns : segs) {
-        Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
-        int segIdx = ns.y-1;
-        int cellIdx = soil(mid.x,mid.y,mid.z);
-        seg2cell[segIdx] = cellIdx;
-        if (cell2seg.count(cellIdx)>0) {
-            cell2seg[cellIdx].push_back(segIdx);
-        } else {
-            cell2seg[cellIdx] = std::vector<int>({segIdx});
-        }
-    }
-}
-
-
-
-/**
  * Assembles the linear system as sparse matrix, given by
  * indices aI, aJ, and values aV, and load aB
  *
  * The linear system is solved to yield the homogeneous solution
  */
-void XylemFlux::linearSystem() {
-    double simTime = rs->getSimTime(); // to calculate age from ct
+void XylemFlux::linearSystem(double simTime) {
+
     int Ns = rs->segments.size(); // number of segments
     aI.resize(4*Ns);
     aJ.resize(4*Ns);
