@@ -10,7 +10,9 @@
 namespace CPlantBox {
 
 /**
- * Connected 1d rootsystem segments, which are mapped to a 3d soil grid.
+ * Represents connected 1d rootsystem segments, which are mapped to a 3d soil grid.
+ *
+ * Holds nodes, nodeCTs, segments, radii, and types
  */
 class MappedSegments
 {
@@ -22,7 +24,7 @@ public:
         std::vector<double> radii, std::vector<int> types);
     ///< for kr and kx age and type dependent
 
-    MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii = std::vector<double>(0));
+    MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii);
     ///< for constant kr, and kx
 
     void setRadius(double a); ///< sets a constant radius for all segments
@@ -46,23 +48,18 @@ public:
 
 
 /**
- * Manages the 1d rootsystem grid, which is mapped to a 3d soil grid.
- *
- * Overwrites simulate to:
- * 1) build a 1d grid sequentially, consisting of nodes, nodeCTs, segments, radii, and types
- * 2) map segments to cell indices and vice versa
+ * Build MappedSegmentds sequentially from a RootSystem
  */
-// template <class BaseOrganism>
 class MappedRootSystem : public MappedSegments, public RootSystem
 {
 public:
 
     using RootSystem::RootSystem;
 
-    void initialize(bool verbose = true) override;
-    void initialize(int basaltype, int shootbornetype, bool verbose = true) override;
+    void initialize(bool verbose = true) override; ///< overridden, to map initial shoot segments,
+    void initialize(int basaltype, int shootbornetype, bool verbose = true) override; ///< overridden, to map initial shoot segments,
 
-    void simulate(double dt, bool verbose = false) override;
+    void simulate(double dt, bool verbose = false) override; ///< build nodes and segmentssequentially
 
 };
 
@@ -74,48 +71,17 @@ class XylemFlux
 {
 public:
 
-    XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs)  :rs(rs) { }
+    XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs) :rs(rs) { }
 
     virtual ~XylemFlux() { }
 
-    void setKrF(const std::function<int(double,int)>&  kr) { kr_f = kr; }
-    void setKxF(const std::function<int(double,int)>&  kx) { kx_f = kx; }
+    void setKrF(const std::function<int(double,int)>&  kr) { kr_f = kr; } ///< sets a callback for kr:=kr(age,type)
+    void setKxF(const std::function<int(double,int)>&  kx) { kx_f = kx; } ///< sets a callback for kx:=kx(age,type)
 
-    void linearSystem(double simTime = 0.);
-    std::vector<double> getSolution(std::vector<double> rx, std::vector<double> sx);
+    void linearSystem(double simTime = 0.); ///< builds linear system (simTime is needed for age dependent conductivities)
+    std::vector<double> getSolution(std::vector<double> rx, std::vector<double> sx); ///< creates the solution from the homogeneous solution
 
-    /**
-     * Fluxes from root segments into a the soil cell with cell index cIdx [TODO]
-     * (needed by the soil part)
-     */
-//    virtual double roots2cell(rx, sx_old)
-//    {
-//        if (rs->cell2seg.count(cIdx)>0) {
-//            auto sIdxs = rs->cell2seg.at(cIdx);
-//            double flux = 0;
-//            for (int i : sIdxs) {
-//                double f = 0.;
-//                if (i < oldRootX.size()) {
-//                    double rootP = oldRootX[i];
-//                    double a = rs->radii[i];
-//                    auto n1 = rs->nodes[rs->segments[i].x];
-//                    auto n2 = rs->nodes[rs->segments[i].y];
-//                    double l = (n2.minus(n1)).length();
-//
-//                    // f = 2*
-//
-//                }
-//                flux += f;
-//            }
-//
-//            return flux;
-//        } else {
-//            return 0.;
-//        }
-//    }
-
-    // to assemble the sparse matrix on the pyhthon side
-    std::vector<int> aI;
+    std::vector<int> aI; // to assemble the sparse matrix on the Python side
     std::vector<int> aJ;
     std::vector<double> aV;
     std::vector<double> aB;
@@ -123,15 +89,11 @@ public:
     std::function<int(double,int)> kr_f = [](double age, int type) { return 0.; };
     std::function<int(double,int)> kx_f = [](double age, int type) { return 1.; };
 
-    double rho = 1; // cm^3
-    double g =  9.8065*100.*24.*3600.*24.*3600.;  // [cm/day^2]
+    double rho = 1; // [g cm-3]
+    double g =  9.8065*100.*24.*3600.*24.*3600.;  // [cm day-2]
 
     std::shared_ptr<CPlantBox::MappedSegments> rs;
 };
-
-
-
-
 
 }
 

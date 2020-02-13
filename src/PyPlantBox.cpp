@@ -740,6 +740,11 @@ PYBIND11_MODULE(plantbox, m) {
      * MappedRootSystem.h
      */
     py::class_<MappedSegments, std::shared_ptr<MappedSegments>>(m, "MappedSegments")
+        .def(py::init<>())
+        .def(py::init<std::vector<Vector3d>, std::vector<double>, std::vector<Vector2i>, std::vector<double>, std::vector<int>>())
+        .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>>())
+        .def("setRadius", &MappedRootSystem::setRadius)
+        .def("setTypes", &MappedRootSystem::setTypes)
         .def("mapSegments", &MappedRootSystem::mapSegments)
         .def("setSoilGrid", &MappedRootSystem::setSoilGrid)
         .def_readwrite("nodes", &MappedRootSystem::nodes)
@@ -749,13 +754,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("types", &MappedRootSystem::types)
         .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
         .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
-    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-            .def(py::init<>());
+    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem");
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKrF",&XylemFlux::setKrF)
             .def("setKxF",&XylemFlux::setKxF)
-            .def("linearSystem",&XylemFlux::linearSystem)
+            .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") = 0.)
             .def("getSolution",&XylemFlux::getSolution)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)

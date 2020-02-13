@@ -63,7 +63,9 @@ void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
 
 
 /**
- * override
+ * Overridden, to map initial shoot segments,
+ * shoot segments have per defautl radii = 0.1 cm, types =0
+ * (can be changed by directly accessing the member variables)
  */
 void MappedRootSystem::initialize(int basaltype, int shootbornetype, bool verbose) {
     std::cout << "MappedRootSystem::initialize \n" << std::flush;
@@ -210,6 +212,35 @@ std::vector<double> XylemFlux::getSolution(std::vector<double> rx, std::vector<d
     return rx;
 }
 
+/**
+ * Fluxes from root segments into a the soil cell with cell index cIdx [TODO]
+ * (needed by the soil part)
+ */
+//    virtual double roots2cell(rx, sx_old)
+//    {
+//        if (rs->cell2seg.count(cIdx)>0) {
+//            auto sIdxs = rs->cell2seg.at(cIdx);
+//            double flux = 0;
+//            for (int i : sIdxs) {
+//                double f = 0.;
+//                if (i < oldRootX.size()) {
+//                    double rootP = oldRootX[i];
+//                    double a = rs->radii[i];
+//                    auto n1 = rs->nodes[rs->segments[i].x];
+//                    auto n2 = rs->nodes[rs->segments[i].y];
+//                    double l = (n2.minus(n1)).length();
+//
+//                    // f = 2*
+//
+//                }
+//                flux += f;
+//            }
+//
+//            return flux;
+//        } else {
+//            return 0.;
+//        }
+//    }
 
 
 }
