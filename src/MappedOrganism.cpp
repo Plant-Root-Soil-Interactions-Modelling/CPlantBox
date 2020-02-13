@@ -1,14 +1,18 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "MappedOrganism.h"
 
-namespace CPlantBox {
+#include <algorithm>
+#include <functional>
 
+
+namespace CPlantBox {
 
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
     std::vector<double> radii, std::vector<int> types) : nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), types(types)
 { }
 
-MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii) : nodes(nodes), segments(segs) {
+MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii)
+:nodes(nodes), segments(segs), radii(radii) {
     nodeCTs.resize(nodes.size());
     for (int i=0; i<segments.size(); i++) {
         nodeCTs[i] = 0;
@@ -59,8 +63,6 @@ void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
         }
     }
 }
-
-
 
 /**
  * Overridden, to map initial shoot segments,
@@ -140,6 +142,8 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 
 }
 
+
+
 /**
  * Assembles the linear system as sparse matrix, given by
  * indices aI, aJ, and values aV, and load aB
@@ -163,12 +167,11 @@ void XylemFlux::linearSystem(double simTime) {
         auto n1 = rs->nodes[i];
         auto n2 = rs->nodes[j];
 
+        double a = rs->radii[j - 1];
         double age = simTime - rs->nodeCTs[j];
         int type = rs->types[j - 1];
-        double a = rs->radii[j - 1];
-
         double kx = kx_f(age, type);
-        double kr = kr_f(age, type);
+        double  kr = kr_f(age, type);
 
         auto v = n2.minus(n1);
         double l = v.length();
@@ -181,8 +184,9 @@ void XylemFlux::linearSystem(double simTime) {
         double cii = -kx * di * std::sqrt(c) * (std::exp(-std::sqrt(c) * l) + std::exp(std::sqrt(c) * l)); // Eqn 16
         double cij = 2 * kx * di * std::sqrt(c);  // Eqn 17
         double bi = kx * vz; //  # Eqn 18 (* rho * g)
+        // std::cout << "cii " << cii << ", c " << c << ", d "<< d << "\n";
 
-        aB[k] += bi;
+        aB[i] += bi;
         aI[k] = i; aJ[k]= i; aV[k] = cii;
         k += 1;
         aI[k] = i; aJ[k] = j;  aV[k] = cij;
@@ -190,7 +194,7 @@ void XylemFlux::linearSystem(double simTime) {
 
         int ii = i;
         i = j;  j = ii; // edge ji
-        aB[i] += bi;
+        aB[i] -= bi; // Eqn 14 with changed sign
         aI[k] = i; aJ[k]= i; aV[k] = cii;
         k += 1;
         aI[k] = i; aJ[k] = j;  aV[k] = cij;
@@ -210,6 +214,93 @@ std::vector<double> XylemFlux::getSolution(std::vector<double> rx, std::vector<d
         rx[i] += sx[cIdx];
     }
     return rx;
+}
+
+/**
+ *  Sets the radial conductivity in [1 day-1], converts to [cm2 day g-1] by dividing by rho*g
+ */
+void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
+    std::transform(values.begin(), values.end(), values.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
+    kr = values;
+    kr_t = age;
+    if (age.size()==0) {
+        if (values.size()==1) {
+            kr_f = std::bind(&XylemFlux::kr_const, this, std::placeholders::_1, std::placeholders::_2);
+            std::cout << "Kr is constant " << values[0] << " cm2 day g-1 \n";
+        } else {
+            kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2);
+            std::cout << "Kr is constant per type, type 0 = " << values[0] << " cm2 day g-1 \n";
+        }
+    } else {
+        kr_f  = std::bind(&XylemFlux::kr_table, this, std::placeholders::_1, std::placeholders::_2);
+        std::cout << "Kr is age dependent\n";
+    }
+}
+
+
+/**
+ *  Sets the axial conductivity in [cm3 day-1], converts to [cm5 day g-1] by dividing by rho*g
+ */
+void XylemFlux::setKx(std::vector<double> values, std::vector<double> age) {
+    std::transform(values.begin(), values.end(), values.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
+    kx = values;
+    kx_t = age;
+    if (age.size()==0) {
+        if (values.size()==1) {
+            kx_f = std::bind(&XylemFlux::kx_const, this, std::placeholders::_1, std::placeholders::_2);
+            std::cout << "Kx is constant " << values[0] << " cm2 day g-1 \n";
+        } else {
+            kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2);
+            std::cout << "Kx is constant per type, type 0 = " << values[0] << " cm2 day g-1 \n";
+        }
+    } else {
+        kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2);
+        std::cout << "Kx is age dependent\n";
+    }
+}
+
+/**
+ *  Sets the radial conductivity in [1 day-1], converts to [cm2 day g-1] by dividing by rho*g
+ */
+void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
+    krs.resize(0);
+    for (auto v :values) {
+        std::transform(v.begin(), v.end(), v.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
+        krs.push_back(v);
+    }
+    krs_t = age;
+    kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2);
+    std::cout << "Kr is age dependent per root type\n";
+}
+
+/**
+ *  Sets the axial conductivity in [cm3 day-1], converts to [cm5 day g-1] by dividing by rho*g
+ */
+void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
+    kxs.resize(0);
+    for (auto v :values) {
+        std::transform(v.begin(), v.end(), v.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
+        kxs.push_back(v);
+    }
+    kxs_t = age;
+    kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2);
+    std::cout << "Kx is age dependent per root type\n";
+}
+
+/**
+ *
+ */
+double  XylemFlux::interp1(double ip, std::vector<double> x, std::vector<double> y) {
+    if (ip > x.back()) return y.back(); // check bounds
+    if (ip < x[0]) return y[0];
+
+    // if we are within bounds find the index of the lower bound
+    const auto lookUpIndex = std::distance(x.begin(), std::lower_bound(x.begin(), x.end(), ip));
+    if (lookUpIndex == 0) {
+        return y[0];
+    }
+    double ip_ = (ip - x[lookUpIndex-1])/(x[lookUpIndex] - x[lookUpIndex-1]);
+    return y[lookUpIndex-1]*(1.0 - ip_)  + y[lookUpIndex]*ip_;
 }
 
 /**

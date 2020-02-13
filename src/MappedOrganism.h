@@ -6,6 +6,7 @@
 #include "Plant.h"
 
 #include <functional>
+#include <vector>
 
 namespace CPlantBox {
 
@@ -66,6 +67,10 @@ public:
 
 /**
  * Hybrid solver (Meunier et al. )
+ *
+ * Units are [cm], [g], and [day], they are fixed by choosing g, and rho
+ *
+ * todo age dependent per type (tablePerType)
  */
 class XylemFlux
 {
@@ -75,9 +80,6 @@ public:
 
     virtual ~XylemFlux() { }
 
-    void setKrF(const std::function<int(double,int)>&  kr) { kr_f = kr; } ///< sets a callback for kr:=kr(age,type)
-    void setKxF(const std::function<int(double,int)>&  kx) { kx_f = kx; } ///< sets a callback for kx:=kx(age,type)
-
     void linearSystem(double simTime = 0.); ///< builds linear system (simTime is needed for age dependent conductivities)
     std::vector<double> getSolution(std::vector<double> rx, std::vector<double> sx); ///< creates the solution from the homogeneous solution
 
@@ -86,13 +88,38 @@ public:
     std::vector<double> aV;
     std::vector<double> aB;
 
-    std::function<int(double,int)> kr_f = [](double age, int type) { return 0.; };
-    std::function<int(double,int)> kx_f = [](double age, int type) { return 1.; };
+    void setKr(std::vector<double> values, std::vector<double> age); ///< sets a callback for kr:=kr(age,type)
+    void setKx(std::vector<double> values, std::vector<double> age); ///< sets a callback for kx:=kx(age,type)
+    void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
+    void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
+
+    std::function<double(double,int)> kr_f = [](double age, int type) { return 0.; };
+    std::function<double(double,int)> kx_f = [](double age, int type) { return 1.; };
 
     double rho = 1; // [g cm-3]
     double g =  9.8065*100.*24.*3600.*24.*3600.;  // [cm day-2]
 
     std::shared_ptr<CPlantBox::MappedSegments> rs;
+
+    std::vector<double> kr, kr_t;
+    std::vector<double> kx, kx_t;
+    std::vector<std::vector<double> > krs, krs_t; //
+    std::vector<std::vector<double>> kxs, kxs_t;
+
+protected:
+
+    double kr_const(double age, int type) { return kr[0]; }
+    double kr_perType(double age, int type) { return kr.at(type); }
+    double kr_table(double age, int type) { return interp1(age, kr_t, kr); }
+    double kr_tablePerType(double age, int type) { return interp1(age, krs_t.at(type), krs.at(type)); }
+
+    double kx_const(double age, int type) { return kx[0]; }
+    double kx_perType(double age, int type) { return kx.at(type); }
+    double kx_table(double age, int type) { return interp1(age, kx_t, kx); }
+    double kx_tablePerType(double age, int type) { return interp1(age, kxs_t.at(type), kxs.at(type)); }
+
+    static double interp1(double ip, std::vector<double> x, std::vector<double> y);
+
 };
 
 }
