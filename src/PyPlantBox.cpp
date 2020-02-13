@@ -754,7 +754,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("types", &MappedRootSystem::types)
         .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
         .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
-    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem");
+    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
+        .def(py::init<>());
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKrF",&XylemFlux::setKrF)
