@@ -764,6 +764,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKxTables",&XylemFlux::setKxTables)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") = 0.)
             .def("getSolution",&XylemFlux::getSolution)
+            .def_readonly("kr_f", &XylemFlux::kr_f)
+            .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)
             .def_readwrite("aV", &XylemFlux::aV)

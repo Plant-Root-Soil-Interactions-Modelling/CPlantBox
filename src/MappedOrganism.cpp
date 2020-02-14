@@ -158,7 +158,10 @@ void XylemFlux::linearSystem(double simTime) {
     aV.resize(4*Ns);
     int N = rs->nodes.size(); // number of nodes
     aB.resize(N);
-
+    std::fill(aB.begin(), aB.end(), 0.);
+    std::fill(aV.begin(), aV.end(), 0.);
+    std::fill(aI.begin(), aI.end(), 0);
+    std::fill(aJ.begin(), aJ.end(), 0);
     size_t k=0;
     for (int si = 0; si<Ns; si++) {
 
@@ -167,9 +170,9 @@ void XylemFlux::linearSystem(double simTime) {
         auto n1 = rs->nodes[i];
         auto n2 = rs->nodes[j];
 
-        double a = rs->radii[j - 1];
+        double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
         double age = simTime - rs->nodeCTs[j];
-        int type = rs->types[j - 1];
+        int type = rs->types[si];
         double kx = kx_f(age, type);
         double  kr = kr_f(age, type);
 

@@ -103,7 +103,7 @@ public:
 
     std::vector<double> kr, kr_t;
     std::vector<double> kx, kx_t;
-    std::vector<std::vector<double> > krs, krs_t; //
+    std::vector<std::vector<double> > krs, krs_t;
     std::vector<std::vector<double>> kxs, kxs_t;
 
 protected:
