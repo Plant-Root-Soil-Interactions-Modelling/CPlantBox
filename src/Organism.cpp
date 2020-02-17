@@ -155,6 +155,7 @@ void Organism::simulate(double dt, bool verbose)
 std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot) const
 {
     auto organs = std::vector<std::shared_ptr<Organ>>(0);
+    // std::cout << "Organism::getOrgans: getNumberOfOrgans() " << getNumberOfOrgans() << "\n" << std::flush;
     organs.reserve(getNumberOfOrgans()); // just for speed up
     for (const auto& o : this->baseOrgans) {
         o->getOrgans(ot, organs);
@@ -478,8 +479,7 @@ std::vector<Vector2i> Organism::getNewSegments(int ot) const
 std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
 {
     auto organs = this->getOrgans(ot);
-    auto so = std::vector<std::shared_ptr<Organ>>(0);
-    so.reserve(this->getNumberOfNewNodes());
+    std::vector<std::shared_ptr<Organ>> so;
     for (auto& o :organs) {
         int onon = o->getOldNumberOfNodes();
         for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments

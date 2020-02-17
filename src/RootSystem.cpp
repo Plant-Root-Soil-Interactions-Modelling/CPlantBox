@@ -189,6 +189,7 @@ void RootSystem::initialize(int basaltype, int shootbornetype, bool verbose)
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
     // std::cout << "RootSystem::initialize:\n" <<  seedParam.toString() ;
     baseOrgans = seed->copyBaseOrgans();
+
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();
 }
