@@ -216,7 +216,7 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
             Vector2i newseg(s.x,nodes.size()-1);
             seg.push_back(newseg);
             sO.push_back(segO.at(i));
-            for(auto iter = data.begin(); iter != data.end(); ++iter) {
+            for(auto iter = data.begin(); iter != data.end(); ++iter) { // copy data
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
             }

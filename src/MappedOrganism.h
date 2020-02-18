@@ -11,9 +11,9 @@
 namespace CPlantBox {
 
 /**
- * Represents connected 1d rootsystem segments, which are mapped to a 3d soil grid.
+ * Represents a connected 1d rootsystem as segments, which are mapped to a 3d soil grid.
  *
- * Holds nodes, nodeCTs, segments, radii, and types
+ * Holds nodes, nodeCTs, segments, radii, and types, which can be directly accessed.
  */
 class MappedSegments
 {
@@ -82,6 +82,8 @@ public:
 
     void linearSystem(double simTime = 0.); ///< builds linear system (simTime is needed for age dependent conductivities)
     std::vector<double> getSolution(std::vector<double> rx, std::vector<double> sx); ///< creates the solution from the homogeneous solution
+
+    std::map<int,double> soilFluxes(double simTime, std::vector<double> rxz);
 
     std::vector<int> aI; // to assemble the sparse matrix on the Python side
     std::vector<int> aJ;
