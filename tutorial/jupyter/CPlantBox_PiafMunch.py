@@ -313,7 +313,7 @@ def convert( plant ):
 
 	r_st_all = np.full((len(node_connection), 1),0.0)
 	for i in range(0,len(node_connection)):
-		r_st_all[i]= intercept + slope*node_c_o[i,4]
+		r_st_all[i]= max(intercept + slope*node_c_o[i,4], 20)
 
 
 
@@ -350,9 +350,9 @@ def convert( plant ):
 	nodes_r_st = np.zeros(len(nodes_cor)-1)
 	for i in range(0,len(nodes_cor)-1):
 		if nodes_length[i] > R_name[1]:
-			nodes_r_st[i]= (intercept2 + slope2*nodes_length[i])
+			nodes_r_st[i]= max((intercept2 + slope2*nodes_length[i]),10)
 		else:
-			nodes_r_st[i]= (intercept + slope*nodes_length[i])
+			nodes_r_st[i]= max((intercept + slope*nodes_length[i]),10)
 	return {'node_connection':node_connection, 'nodes_organtype':nodes_organtype, 'nodes_r_st':nodes_r_st, 'unq_cnt':unq_cnt}
 
 
@@ -367,116 +367,148 @@ def convert( plant ):
 def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_cnt, Soil_water, k1, name='mg_test.ini', time=100): #function of creating parameters of PiafMunch
 	Nt = len(nodes_organtype) #total number of nodes, here the 0 and 1st node are the same, so minus 1
 	Nc = len(node_connection) #total number of connections
+	position_switch=[1,0]
+	positive_switch=[1,-1]
 
-
-	#all the leaf source segment nodes
-	N1L_node = nodes_organtype[(nodes_organtype[:,0] >2 ) & ((nodes_organtype[:,1] ==4)|(nodes_organtype[:,1] ==3)  ) & (nodes_organtype[:,2] ==1 )]
+	#all the leaf/stem source segment nodes
+	N1L_node = nodes_organtype[(nodes_organtype[:,0] >2 ) & ((nodes_organtype[:,1] ==4)|(nodes_organtype[:,1] ==3)  ) & (nodes_organtype[:,2] ==1 )] 
 	#all the leaf source segments
-	N1L_c_nd = list(range(0, len(N1L_node)+1))
-	N1L_conn = list(range(0, len(N1L_node)+1))
-	for i in range(len(N1L_node)):
-		N1L_c_nd[i] = node_connection[(node_connection[:,0] == N1L_node[i][0])]
-		N1L_conn[i] = np.where( node_connection[:,1] == N1L_c_nd[i][0,1])[-1]
-
-
+	n_c = 1
+	all_n1l_output = []
+	for i, node_i in enumerate(N1L_node):
+		row_3n_output= [0]*(n_c*2+1)
+		row_3n_output[0] = int(node_i[0])
+		loc_n3 = np.where(node_connection==node_i[0])
+		loc_n3_col, loc_n3_row = np.where(node_connection==N1L_node[i][0])
+		for j in range(0, n_c):
+			row_3n_output[j*2+1] = node_connection[loc_n3_col[j]][position_switch[loc_n3_row[j]]]
+			row_3n_output[j*2+2] = (loc_n3_col[j]+1) * positive_switch[loc_n3_row[j]]
+		all_n1l_output.append(row_3n_output)       
+	#print(all_n1l_output)
+	#all the root sink segment nodes
 	N1R_node = nodes_organtype[(nodes_organtype[:,0] >2 ) & (nodes_organtype[:,1] ==2 ) & (nodes_organtype[:,2] ==1 )]
-	N1R_c_nd = list(range(1, len(N1R_node)+1))
-	N1R_conn = list(range(1, len(N1R_node)+1))
-	for i in range(len(N1R_node)):
-		N1R_c_nd[i] = node_connection[(node_connection[:,1] == N1R_node[i][0])]
-		N1R_conn[i] = np.where( node_connection[:,1] == N1R_c_nd[i][0,1])[0]
-	N1R_r_abs = 1e-025
-
-	N2_node = nodes_organtype[ (nodes_organtype[:,2] ==2 )]
+	n_c = 1
+	all_n1r_output = []
+	for i, node_i in enumerate(N1R_node):
+		row_3n_output= [0]*(n_c*2+1)
+		row_3n_output[0] = int(node_i[0])
+		loc_n3 = np.where(node_connection==node_i[0])
+		loc_n3_col, loc_n3_row = np.where(node_connection==N1R_node[i][0])
+		for j in range(0, n_c):
+			row_3n_output[j*2+1] = node_connection[loc_n3_col[j]][position_switch[loc_n3_row[j]]]
+			row_3n_output[j*2+2] = (loc_n3_col[j]+1) * positive_switch[loc_n3_row[j]]
+		all_n1r_output.append(row_3n_output)     
 
 
 
 	################## Nodes With 2 Connections #########################
-	N2_c_nd_1 = list(range(0, len(N2_node)+1))
-	N2_conn_1 = list(range(0, len(N2_node)+1))
-	for i in range(0,len(N2_node)):
-		N2_c_nd_1[i] = node_connection[(node_connection[:,0] == N2_node[i,0])]
-		N2_conn_1[i] = np.where( node_connection[:,0] == N2_c_nd_1[i][0,0])[0]
-
-		N2_c_nd_2 = list(range(1, len(N2_node)+1))
-		N2_conn_2 = list(range(1, len(N2_node)+1))
-
-		for i in range(len(N2_node)):
-			N2_c_nd_2[i] = node_connection[(node_connection[:,1] == N2_node[i,0])]
-			N2_conn_2[i] = np.where( node_connection[:,1] == N2_c_nd_2[i][0][1])[0]
-
+	N2_node = nodes_organtype[ (nodes_organtype[:,2] ==2 )]
+	n_c = 2
+	all_n2_output = []
+	for i, node_i in enumerate(N2_node):
+		row_3n_output= [0]*(n_c*2+1)
+		row_3n_output[0] = int(node_i[0])
+		loc_n3 = np.where(node_connection==node_i[0])
+		loc_n3_col, loc_n3_row = np.where(node_connection==N2_node[i][0])
+		for j in range(0, n_c):
+			row_3n_output[j*2+1] = node_connection[loc_n3_col[j]][position_switch[loc_n3_row[j]]]
+			row_3n_output[j*2+2] = (loc_n3_col[j]+1) * positive_switch[loc_n3_row[j]]
+		all_n2_output.append(row_3n_output)  
 
 	################## Nodes With 3 Connections #########################
 	N3_node = nodes_organtype[ (nodes_organtype[:,2] ==3 )]
 	#print(N3_node)
 
-	N3_c_nd_1 = list(range(0, len(N3_node)+1))
-	N3_conn_1 = list(range(0, len(N3_node)+1))
-	for i in range(len(N3_node)):
-		if N3_node[i,0] == N3_node[i-1,0]+1 : # some n3 nodes are inter connected
-			N3_c_nd_1[i] = node_connection[(node_connection[:,1] == N3_node[i,0])][0][0]
-			N3_conn_1[i] = 0-np.where( node_connection[:,0] ==  node_connection[(node_connection[:,0] == N3_node[i-1,0])][1][1])[0][0]
-		elif  N3_node[i,1] == 2 or N3_node[i,1] == 1:
-			N3_c_nd_1[i] = node_connection[(node_connection[:,1] == N3_node[i,0])][0][0]
-			N3_conn_1[i] = 0-np.where( node_connection[:,0] == N3_c_nd_1[i])[0][0]-1
 
-		else:
-			N3_c_nd_1[i] = node_connection[(node_connection[:,0] == N3_node[i,0])][0][1]
-			N3_conn_1[i] = np.where( node_connection[:,1] == N3_c_nd_1[i])[0][0]+1
 
-	N3_c_nd_2 = list(range(0, len(N3_node)+1))
-	N3_conn_2 = list(range(0, len(N3_node)+1))
-	for i in range(len(N3_node)):
-		if N3_node[i,1] == 2 or N3_node[i,1] == 1 and N3_node[i,0] != N3_node[i-1,0]+1:
-			N3_c_nd_2[i] = node_connection[(node_connection[:,0] == N3_node[i,0])][0][1]
-			N3_conn_2[i] = np.where( node_connection[:,1] == N3_c_nd_2[i])[0][0]+1
-		else:
-			N3_c_nd_2[i] = node_connection[(node_connection[:,1] == N3_node[i,0])][0][0]
-			N3_conn_2[i] = 0-np.where( node_connection[:,0] == N3_c_nd_2[i])[0][0]-1
-
-	N3_c_nd_3 = list(range(0, len(N3_node)+1))
-	N3_conn_3 = list(range(0, len(N3_node)+1))
-	for i in range(len(N3_node)):
-		if N3_node[i,1] == 2 or N3_node[i,1] == 1 and N3_node[i,0] != N3_node[i-1,0]+1:
-			N3_c_nd_3[i] = node_connection[(node_connection[:,0] == N3_node[i,0])][1][1]
-			N3_conn_3[i] = np.where( node_connection[:,1] == N3_c_nd_3[i])[0][0]+1
-		else:
-			N3_c_nd_3[i] = node_connection[(node_connection[:,1] == N3_node[i,0])][1][0]
-			N3_conn_3[i] = 0-np.where( node_connection[:,0] == N3_c_nd_3[i])[0][0]-1
+	n_c = 3
+	all_3n_output = []
+	for i, node_i in enumerate(N3_node):
+		row_3n_output= [0]*(n_c*2+1)
+		row_3n_output[0] = int(node_i[0])
+		loc_n3 = np.where(node_connection==node_i[0])
+		loc_n3_col, loc_n3_row = np.where(node_connection==N3_node[i][0])
+		for j in range(0, n_c):
+			row_3n_output[j*2+1] = node_connection[loc_n3_col[j]][position_switch[loc_n3_row[j]]]
+			row_3n_output[j*2+2] = (loc_n3_col[j]+1) * positive_switch[loc_n3_row[j]]
+		all_3n_output.append(row_3n_output)       
 
 
 
-
+	################## Nodes With 4 Connections #########################
 
 	N4_node = nodes_organtype[ (nodes_organtype[:,2] ==4 )]
-	#print(N4_node)
+	n_c = 4
+	all_4n_output = []
+	for i, node_i in enumerate(N4_node):
+		row_4n_output= [0]*(n_c*2+1)
+		row_4n_output[0] = int(node_i[0])
+		loc_n4 = np.where(node_connection==node_i[0])
+		loc_n4_col, loc_n4_row = np.where(node_connection==N4_node[i][0])
+		for j in range(0, n_c):
+			row_4n_output[j*2+1] = node_connection[loc_n4_col[j]][position_switch[loc_n4_row[j]]]
+			row_4n_output[j*2+2] = (loc_n4_col[j]+1) * positive_switch[loc_n4_row[j]]
+		all_4n_output.append(row_4n_output) 
 
-	N4_c_nd_1 = list(range(0, len(N4_node)+1))
-	N4_conn_1 = list(range(0, len(N4_node)+1))
-	for i in range(len(N4_node)):
-		N4_c_nd_1[i] = node_connection[(node_connection[:,0] == N4_node[i,0])][0][1]
-		N4_conn_1[i] = np.where( node_connection[:,1] == N4_c_nd_1[i])[0][0]+1
+	################## Nodes With 5 Connections #########################
 
-	#print(N4_c_nd_1)
-	#print(N4_conn_1)
-	#for i in range(len(N4_node)):
-	#	print(N4_c_nd_1[i])
-	#for i in range(len(N4_node)):
-	#	print(N4_conn_1[i][0]+1)
+	N5_node = nodes_organtype[ (nodes_organtype[:,2] ==5 )]
+	n_c = 5
+	all_5n_output = []
+	for i, node_i in enumerate(N5_node):
+		row_4n_output= [0]*(n_c*2+1)
+		row_4n_output[0] = int(node_i[0])
+		loc_n4 = np.where(node_connection==node_i[0])
+		loc_n4_col, loc_n4_row = np.where(node_connection==N5_node[i][0])
+		for j in range(0, n_c):
+			row_4n_output[j*2+1] = node_connection[loc_n4_col[j]][position_switch[loc_n4_row[j]]]
+			row_4n_output[j*2+2] = (loc_n4_col[j]+1) * positive_switch[loc_n4_row[j]]
+		all_5n_output.append(row_4n_output) 
 
+	################## Nodes With 6 Connections #########################
+		
+	N6_node = nodes_organtype[ (nodes_organtype[:,2] ==6 )]
+	n_c = 6
+	all_6n_output = []
+	for i, node_i in enumerate(N6_node):
+		row_4n_output= [0]*(n_c*2+1)
+		row_4n_output[0] = int(node_i[0])
+		loc_n4 = np.where(node_connection==node_i[0])
+		loc_n4_col, loc_n4_row = np.where(node_connection==N6_node[i][0])
+		for j in range(0, n_c):
+			row_4n_output[j*2+1] = node_connection[loc_n4_col[j]][position_switch[loc_n4_row[j]]]
+			row_4n_output[j*2+2] = (loc_n4_col[j]+1) * positive_switch[loc_n4_row[j]]
+		all_6n_output.append(row_4n_output) 
 
-	N4_c_nd_2 = list(range(0, len(N4_node)+1))
-	N4_conn_2 = list(range(0, len(N4_node)+1))
-	N4_conn_3 = list(range(0, len(N4_node)+1))
-	N4_conn_4 = list(range(0, len(N4_node)+1))
-	for i in range(len(N4_node)):
-		N4_c_nd_2[i] = node_connection[(node_connection[:,1] == N4_node[i,0])]
-		N4_conn_2[i] = np.where( node_connection[:,0] == N4_c_nd_2[i][0][0])[0]
-		N4_conn_3[i] = np.where( node_connection[:,0] == N4_c_nd_2[i][1][0])[0]
-		N4_conn_4[i] = np.where( node_connection[:,0] == N4_c_nd_2[i][2][0])[0]
+	################## Nodes With 7 Connections #########################
 
+	N7_node = nodes_organtype[ (nodes_organtype[:,2] ==7 )]
+	n_c = 7
+	all_7n_output = []
+	for i, node_i in enumerate(N7_node):
+		row_4n_output= [0]*(n_c*2+1)
+		row_4n_output[0] = int(node_i[0])
+		loc_n4 = np.where(node_connection==node_i[0])
+		loc_n4_col, loc_n4_row = np.where(node_connection==N7_node[i][0])
+		for j in range(0, n_c):
+			row_4n_output[j*2+1] = node_connection[loc_n4_col[j]][position_switch[loc_n4_row[j]]]
+			row_4n_output[j*2+2] = (loc_n4_col[j]+1) * positive_switch[loc_n4_row[j]]
+		all_7n_output.append(row_4n_output) 
 
-
+	################## Nodes With 8 Connections #########################
+		
+	N8_node = nodes_organtype[ (nodes_organtype[:,2] ==8 )]
+	n_c = 8
+	all_8n_output = []
+	for i, node_i in enumerate(N8_node):
+		row_4n_output= [0]*(n_c*2+1)
+		row_4n_output[0] = int(node_i[0])
+		loc_n4 = np.where(node_connection==node_i[0])
+		loc_n4_col, loc_n4_row = np.where(node_connection==N8_node[i][0])
+		for j in range(0, n_c):
+			row_4n_output[j*2+1] = node_connection[loc_n4_col[j]][position_switch[loc_n4_row[j]]]
+			row_4n_output[j*2+2] = (loc_n4_col[j]+1) * positive_switch[loc_n4_row[j]]
+		all_8n_output.append(row_4n_output) 
 
 	#'******** CARBON Lateral FLUX - RELATED PARAMETERS *********\n'
 	#initialization of the parameters
@@ -671,7 +703,8 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	f.write("Nodes Of Connectivity Order 1, Transpiring Leaf Ends : {0} = {1}\n".format('N1L', len(N1L_node)))
 	f.write("{:s}  {:s}  {:s}\n".format('node#','c.node','conn.#'))
 	for i in range(len(N1L_node)):
-		f.write("{:.0f}  {:.0f}  {:.0f}\n\n".format(N1L_node[i][0],N1L_c_nd[i][0,1],(N1L_conn[i][-1]+1)))
+		f.write("{:.0f}  {:.0f}  {:.0f}\n\n".format(all_n1l_output[i][0], all_n1l_output[i][1], all_n1l_output[i][2] ))
+	f.write('\n')
 
 
 
@@ -680,18 +713,19 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	f.write("Nodes Of Connectivity Order 1, Absorbing Root Ends : {0} = {1}\n\n".format('N1R', len(N1R_node)))
 	f.write("{:s}  {:s}  {:s}  {:s}\n".format('node#','c.node','conn.#','r_abs'))
 	for i in range(len(N1R_node)):
-		f.write("{:.0f}  {:.0f}  {:.0f} {:e}\n\n".format(N1R_node[i][0], N1R_c_nd[i][0,0],0- N1R_conn[i][0]-1, 1e-025))
+		f.write("{:.0f}  {:.0f}  {:.0f} {:e}\n\n".format(all_n1r_output[i][0], all_n1r_output[i][1], all_n1r_output[i][2] , 1e-025))
+	f.write('\n')
 
 	f.write('Nodes Of Connectivity Order 2 :  {0} = {1}\n\n' .format('N2', len(N2_node) ))
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}\n".format('node#','c.nd.1','conn.1','c.nd.2','conn.2'))
 	for i in range(len(N2_node)):
-		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} \n".format(N2_node[i][0],N2_c_nd_1[i][0,1],N2_conn_1[i][0]+1,N2_c_nd_2[i][0,0],0 -N2_conn_2[i][0]-1))	
+		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} \n".format(all_n2_output[i][0], all_n2_output[i][1], all_n2_output[i][2], all_n2_output[i][3], all_n2_output[i][4] ))	
 	f.write('\n')
 
 	f.write("Nodes Of Connectivity Order 3 :  {0} = {1}\n".format('N3', len(N3_node)))
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}\n".format('node#','c.nd.1','conn.1','c.nd.2','conn.2','c.nd.3','conn.3'))
 	for i in range(len(N3_node)):
-		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(N3_node[i][0],N3_c_nd_1[i],N3_conn_1[i],N3_c_nd_2[i],N3_conn_2[i],N3_c_nd_3[i],N3_conn_3[i]))	
+		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(all_3n_output[i][0], all_3n_output[i][1], all_3n_output[i][2], all_3n_output[i][3], all_3n_output[i][4], all_3n_output[i][5], all_3n_output[i][6]))	
 	f.write('\n')
 
 
@@ -701,19 +735,36 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}\n".format('node#','c.nd.1','conn.1','c.nd.2','conn.2','c.nd.3','conn.3','c.nd.4','conn.4'))
 
 	for i in range(len(N4_node)):
-		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(N4_node[i][0],N4_c_nd_1[i],N4_conn_1[i],N4_c_nd_2[i][0][0],0-N4_conn_2[i][0]-1,N4_c_nd_2[i][1][0],0-N4_conn_3[i][0]-1,N4_c_nd_2[i][2][0],0-N4_conn_4[i][0]-1))	
+		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(all_4n_output[i][0], all_4n_output[i][1], all_4n_output[i][2], all_4n_output[i][3], all_4n_output[i][4], all_4n_output[i][5], all_4n_output[i][6], all_4n_output[i][7], all_4n_output[i][8]))	
 	f.write('\n')
 
 
 
 	f.write("Nodes Of Connectivity Order 5 :  {0} = {1}\n\n".format('N5', np.count_nonzero(unq_cnt == 5)))
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}\n\n".format('node#','c.nd.1','conn.1','c.nd.2','conn.2','c.nd.3','conn.3','c.nd.4','conn.4','c.nd.5','conn.5'))
+	for i in range(len(N5_node)):
+		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(all_5n_output[i][0], all_5n_output[i][1], all_5n_output[i][2], all_5n_output[i][3], all_5n_output[i][4], all_5n_output[i][5], all_5n_output[i][6], all_5n_output[i][7], all_5n_output[i][8], all_5n_output[i][9], all_5n_output[i][10]))	
+	f.write('\n')
+	
+	
 	f.write("Nodes Of Connectivity Order 6 :  {0} = {1}\n".format('N6', np.count_nonzero(unq_cnt == 6)))
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}\n\n".format('node#','c.nd.1','conn.1','c.nd.2','conn.2','c.nd.3','conn.3','c.nd.4','conn.4','c.nd.5','conn.5','c.nd.6','conn.6'))
+	for i in range(len(N6_node)):
+		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(all_6n_output[i][0], all_6n_output[i][1], all_6n_output[i][2], all_6n_output[i][3], all_6n_output[i][4], all_6n_output[i][5], all_6n_output[i][6], all_6n_output[i][7], all_6n_output[i][8], all_6n_output[i][9], all_6n_output[i][10], all_6n_output[i][11], all_6n_output[i][12]))	
+	f.write('\n')
+	
 	f.write("Nodes Of Connectivity Order 7 :  {0} = {1}\n".format('N7', np.count_nonzero(unq_cnt == 7)))
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}\n\n".format('node#','c.nd.1','conn.1','c.nd.2','conn.2','c.nd.3','conn.3','c.nd.4','conn.4','c.nd.5','conn.5','c.nd.6','conn.6','c.nd.7','conn.7'))
+	for i in range(len(N7_node)):
+		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(all_7n_output[i][0], all_7n_output[i][1], all_7n_output[i][2], all_7n_output[i][3], all_7n_output[i][4], all_7n_output[i][5], all_7n_output[i][6], all_7n_output[i][7], all_7n_output[i][8], all_7n_output[i][9], all_7n_output[i][10], all_7n_output[i][11], all_7n_output[i][12], all_7n_output[i][13], all_7n_output[i][14]))	
+	f.write('\n')
+	
 	f.write("Nodes Of Connectivity Order 8 :  {0} = {1}\n".format('N8', np.count_nonzero(unq_cnt == 8)))
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}\n\n".format('node#','c.nd.1','conn.1','c.nd.2','conn.2','c.nd.3','conn.3','c.nd.4','conn.4','c.nd.5','conn.5','c.nd.6','conn.6','c.nd.7','conn.7','c.nd.8','conn.8'))
+	for i in range(len(N8_node)):
+		f.write("{:.0f}  {:.0f}  {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f} {:.0f}\n".format(all_8n_output[i][0], all_8n_output[i][1], all_8n_output[i][2], all_8n_output[i][3], all_8n_output[i][4], all_8n_output[i][5], all_8n_output[i][6], all_8n_output[i][7], all_8n_output[i][8], all_8n_output[i][9], all_8n_output[i][10], all_8n_output[i][11], all_8n_output[i][12], all_8n_output[i][13], all_8n_output[i][14], all_8n_output[i][15], all_8n_output[i][16]))	
+	f.write('\n')
+	
 
 	f.write('******** WATER FLUX - RELATED PARAMETERS *********\n\n')
 	f.write("{:s}  {:s}  {:s} \n".format('T\xb0 K','visco=f(C)','NonLin.Psi+NonZeroSugarVol.'))
@@ -739,7 +790,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 		.format(nodes_organtype[i+1][0],kML[i+1], vML[i+1], kMU[i+1], vMU[i+1], kMParMb[i+1], vMParMb[i+1], kM[i+1], Vmax[i+1], C_targ[i+1], kHyd[i+1], 
 		k1[i+1], k2[i+1], k3[i+1], StructC[i+1], vol_ST[i+1], volPhlApo[i+1], volParApo[i+1], k_Lockhart[i+1], P_thr[i+1], vol_Sympl_max[i+1]))
 	f.write('\n')
-	print(k1)
+	# print(k1)
 
 
 
@@ -855,68 +906,68 @@ def read_output(name, node_connection ):
 
     # water exchange between xylem and phloem from output of PiafMunch
     n_begin = output.columns.get_loc("JW_Trsv (ml / h)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    #print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)+1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     JW_Trsv = np.array(output.iloc[:,n_begin:n_end])
 
     # water exchange between xylem and phloem from output of PiafMunch
     n_begin = output.columns.get_loc("JW_Apo (ml / h)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+   # print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)+1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     JW_Apo = np.array(output.iloc[:,n_begin:n_end])
 
     # Hydraulic pressure in xylem from output of PiafMunch
     n_begin = output.columns.get_loc("P_Xyl (MPa)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    #print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)+1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     P_Xyl = np.array(output.iloc[:,n_begin:n_end])
 
     # Hydraulic pressure in sievetubes from output of PiafMunch
     n_begin = output.columns.get_loc("P_ST (MPa)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    #print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)+1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     P_ST = np.array(output.iloc[:,n_begin:n_end])
 
     # Carbon content in the segment from output of PiafMunch
     n_begin = output.columns.get_loc("Q_ST (mmol)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    #print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)+1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     Q_ST = np.array(output.iloc[:,n_begin:n_end])
 
     # Carbon content in the segment from output of PiafMunch
     n_begin = output.columns.get_loc("C_ST (mmol / ml)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+   # print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)+1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     C_ST = np.array(output.iloc[:,n_begin:n_end])
 
     ##################### Connection Values ##################### 
 
     # Xylem water flow JW_Xyl from output of PiafMunch
     n_begin = output.columns.get_loc("JW_Xyl (ml / h)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    #print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)-1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     JW_Xyl = np.array(output.iloc[:,n_begin:n_end])
 
     # Phloem water flow JW_ST from output of PiafMunch
     n_begin = output.columns.get_loc("JW_ST (ml / h)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    #print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)-1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     JW_ST = np.array(output.iloc[:,n_begin:n_end])
 
 
     # Phloem carbon flow JS_ST from output of PiafMunch
     n_begin = output.columns.get_loc("JS_ST (mmol / h)[{first: >{width}}]".format(first='1', width=2))
-    print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
+    #print('at Nr.',n_begin, 'we can find',output.columns[n_begin])
     n_end = n_begin + len(node_connection)-1
-    print('the end is',output.columns[n_end])
+    #print('the end is',output.columns[n_end])
     JS_ST = np.array(output.iloc[:,n_begin:n_end])
     return { "JW_Trsv":JW_Trsv,"JW_Apo": JW_Apo, "P_Xyl": P_Xyl, "P_ST":P_ST, "Q_ST": Q_ST, "C_ST": C_ST, "JW_Xyl": JW_Xyl, "JW_ST": JW_ST, "JS_ST": JS_ST}
 
