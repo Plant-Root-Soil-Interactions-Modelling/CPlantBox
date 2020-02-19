@@ -9,7 +9,7 @@
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
     <parameter name="maxTi" value="0" dev="0"/>
-    <parameter name="nC" value="10"/>
+    <parameter name="nC" value="3"/>
     <parameter name="nz" value="0.5"/>
     <parameter name="firstSB" value="14" dev="0"/>
     <parameter name="delaySB" value="0" dev="0"/>
