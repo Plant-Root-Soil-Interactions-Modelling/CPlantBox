@@ -32,10 +32,15 @@ public:
     void setTypes(int t); ///< sets a constant type for all segments
 
     void setSoilGrid(const std::function<int(double,double,double)>& s); ///< sets the soil, resets the mappers and maps the segments
+    void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res); ///< sets the soil, resets the mappers and maps the segments
+
     void mapSegments(std::vector<Vector2i> segs);
 
+    void removeSegments(std::vector<Vector2i> segs);
+    std::vector<Vector2i> cutSegments(std::vector<Vector2i> segs) const;
+
     std::map<int, int> seg2cell; // root segment to soil cell mappper
-    std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
+    std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper represented as two node indices n1, n2
 
     std::function<int(double,double,double)> soil_index = [](double x, double y, double z) { return 0; }; ///< soil cell index call back function
 
@@ -44,6 +49,11 @@ public:
     std::vector<Vector2i> segments; ///< connectivity of the nodes
     std::vector<double> radii; ///< radii [cm]
     std::vector<int> types; ///< types [1]
+
+    Vector3d minBound;
+    Vector3d maxBound;
+    Vector3d resolution;
+    bool rectangularGrid = false;
 
 };
 
@@ -60,7 +70,9 @@ public:
     void initialize(bool verbose = true) override; ///< overridden, to map initial shoot segments,
     void initialize(int basaltype, int shootbornetype, bool verbose = true) override; ///< overridden, to map initial shoot segments,
 
-    void simulate(double dt, bool verbose = false) override; ///< build nodes and segmentssequentially
+    void simulate(double dt, bool verbose = false) override; ///< build nodes and segments sequentially
+
+    void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res); ///< sets an underlying rectangular grid, for cutting segments
 
 };
 
@@ -69,8 +81,6 @@ public:
  * Hybrid solver (Meunier et al. )
  *
  * Units are [cm], [g], and [day], they are fixed by choosing g, and rho
- *
- * todo age dependent per type (tablePerType)
  */
 class XylemFlux
 {

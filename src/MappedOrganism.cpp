@@ -42,11 +42,23 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i
  * Sets the soil cell index call back function. Resets and updates the mappers.
  * The callback function takes a spatial coordinate [cm] and returns the index of the cell
  */
+void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res) {
+    minBound = min;
+    maxBound = max;
+    resolution = res;
+    rectangularGrid = true;
+    this->setSoilGrid(s);
+}
+
+/**
+ * Sets the soil cell index call back function. Resets and updates the mappers.
+ * The callback function takes a spatial coordinate [cm] and returns the index of the cell
+ */
 void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s) {
     soil_index = s;
     seg2cell.clear();
     cell2seg.clear();
-    mapSegments(segments);
+    mapSegments(segments); // TODO use rectangularGrid
 }
 
 /**
@@ -70,24 +82,22 @@ void MappedSegments::setTypes(int t) {
  * cell2seg which maps soil cell index to multiple root segments.
  *
  * @param segs      the (new) segments that need to be mapped
- *
- * segment mid point TODO moving nodes (care),
- * TODO cut segments
  */
 void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
+    if (rectangularGrid) {
+        segs = cutSegments(segs);
+    }
     for (auto& ns : segs) {
         Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
-        int segIdx = ns.y-1; // this is unique in a tree like structured
         int cellIdx = soil_index(mid.x,mid.y,mid.z);
-        if ((cellIdx)>0) {
-
-            // TODO eventually, delete from the cell2seg vector (currently cell2seg is unused)
-
+        if (cellIdx>0) {
+            int segIdx = ns.y-1; // this is unique in a tree like structured
             seg2cell[segIdx] = cellIdx;
             if (cell2seg.count(cellIdx)>0) {
-                cell2seg[cellIdx].push_back(segIdx);
+                cell2seg[cellIdx].push_back(ns.x);
+                cell2seg[cellIdx].push_back(ns.y);
             } else {
-                cell2seg[cellIdx] = std::vector<int>({segIdx});
+                cell2seg[cellIdx] = std::vector<int>({ns.x, ns.y});
             }
         } else {
             std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
@@ -95,12 +105,49 @@ void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
     }
 }
 
+/**
+ * Removes segments from the mappers todo make private
+ */
+void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
+    for (auto& ns : segs) {
+        int cellIdx = -1;
+        int segIdx = ns.y-1;
+        if (seg2cell.count(segIdx)>0) {
+            cellIdx = seg2cell[segIdx];
+            auto it = seg2cell.find(segIdx);
+            seg2cell.erase(it);
+        } else {
+            throw std::invalid_argument("MappedSegments::removeSegments: warning segment index "+ std::to_string(segIdx)+ " was not found in the seg2cell mapper");
+        }
+        if (cell2seg.count(cellIdx)>0) {
+            auto& segs= cell2seg[cellIdx];
+            int c = 0;
+            for (int i=1; i<segs.size(); i+=2) {
+                int ni = segs[i];
+                if (ni == ns.y) {
+                    segs.erase(segs.begin() + c -1, segs.begin() + c); // cannot be the first
+                    break; // inner for
+                }
+                c++;
+            }
+        } else {
+            throw std::invalid_argument("MappedSegments::removeSegments: warning cell index "+ std::to_string(cellIdx)+ " was not found in the cell2seg mapper");
+        }
+    }
+}
+
+/**
+ * use soil_index on mid and end points, cut at rectangular grid
+ * TODO
+ */
+std::vector<Vector2i> MappedSegments::cutSegments(std::vector<Vector2i> segs) const {
+    return segs;
+}
 //Vector3d newnode = cut(nodes[s.x], nodes[s.y], geometry);
 //nodes.push_back(newnode); // add new segment
 //Vector2i newseg(s.x,nodes.size()-1);
 //seg.push_back(newseg);
 //sO.push_back(segO.at(i));
-
 //std::vector<Vector2i> MappedSegments::cutSegments(std::vector<Vector2i> segs) {
 //    std::vector<Vector2i> newsegs;
 //    for (auto& ns : segs) {
@@ -203,8 +250,43 @@ void MappedRootSystem::simulate(double dt, bool verbose)
     // map new segments
     this->mapSegments(newsegs);
 
-    // update segments of moved nodes (TODO)
+    // update segments of moved nodes
+    std::vector<Vector2i> rSegs;
+    for (int i : uni) {
+        int segIdx = i -1;
+        int cellIdx = seg2cell[segIdx];
+        auto s = segments[segIdx];
+        Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
+        int newCellIdx = soil_index(mid.x,mid.y,mid.z);
+        // 1. check if mid is still in same cell (otherwise, remove, and add again)
+        // 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
+        bool remove = false;
+        if (cellIdx==newCellIdx) {
+            if (rectangularGrid) {
+                auto endPoint = nodes[s.y];
+                newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
+                remove = (newCellIdx!=cellIdx);
+            }
+        } else {
+            remove = true;
+        }
+        if (remove) {
+            rSegs.push_back(s);
+        }
+    }
+    MappedSegments::removeSegments(rSegs);
+    MappedSegments::mapSegments(rSegs);
+}
 
+/**
+ * TODO docme
+ */
+void MappedRootSystem::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res)
+{
+   MappedSegments::minBound = min;
+   MappedSegments::maxBound = max;
+   MappedSegments::resolution = res;
+   MappedSegments::rectangularGrid = true;
 }
 
 
@@ -275,6 +357,9 @@ void XylemFlux::linearSystem(double simTime) {
 
 /**
  * Creates the inhomogeneous solution from the homogeneous one
+ *
+ * @param rx        root xylem solution per node
+ * @param sx        soil solution per cell
  */
 std::vector<double> XylemFlux::getSolution(std::vector<double> rx, std::vector<double> sx) {
     int cIdx = rs->seg2cell[0]; // the first node ends no segment attached to it
@@ -375,8 +460,10 @@ double XylemFlux::interp1(double ip, std::vector<double> x, std::vector<double> 
 
 /**
  * Fluxes from root segments into a the soil cell with cell index cIdx
+ *
+ * Approximation(!) TODO exact
  */
-std::map<int,double> XylemFlux::soilFluxes(double simTime, std::vector<double> rx)
+std::map<int,double> XylemFlux::soilFluxes(double simTime, std::vector<double> rx_hom)
 {
     std::map<int,double> fluxes;
 
@@ -399,7 +486,7 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, std::vector<double> r
             auto n2 = rs->nodes[j];
             double l = (n2.minus(n1)).length();
 
-            double f = - 2*a*M_PI*l*(kr*rho*g)*(-rx[segIdx]); // cm3 / day
+            double f = - 2*a*M_PI*l*(kr*rho*g)*(-rx_hom[j]); // cm3 / day
 
             if (fluxes.count(cellIdx)==0) {
                 fluxes[cellIdx] = f;
