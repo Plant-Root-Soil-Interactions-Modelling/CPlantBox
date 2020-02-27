@@ -94,6 +94,7 @@ public:
     std::vector<double> getSolution(std::vector<double> rx, std::vector<double> sx); ///< creates the solution from the homogeneous solution
 
     std::map<int,double> soilFluxes(double simTime, std::vector<double> rxz);
+    std::map<int,double> soilFluxesApprox(double simTime, std::vector<double> rxz);
 
     std::vector<int> aI; // to assemble the sparse matrix on the Python side
     std::vector<int> aJ;

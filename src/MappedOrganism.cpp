@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <functional>
-
+#include <cmath>
 
 namespace CPlantBox {
 
@@ -283,10 +283,10 @@ void MappedRootSystem::simulate(double dt, bool verbose)
  */
 void MappedRootSystem::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res)
 {
-   MappedSegments::minBound = min;
-   MappedSegments::maxBound = max;
-   MappedSegments::resolution = res;
-   MappedSegments::rectangularGrid = true;
+    MappedSegments::minBound = min;
+    MappedSegments::maxBound = max;
+    MappedSegments::resolution = res;
+    MappedSegments::rectangularGrid = true;
 }
 
 
@@ -459,11 +459,61 @@ double XylemFlux::interp1(double ip, std::vector<double> x, std::vector<double> 
 }
 
 /**
- * Fluxes from root segments into a the soil cell with cell index cIdx
+ * Exact fluxes from root segments into a the soil cell with cell index cIdx.
  *
- * Approximation(!) TODO exact
+ * todo cite Menuier et al.
  */
 std::map<int,double> XylemFlux::soilFluxes(double simTime, std::vector<double> rx_hom)
+{
+    std::map<int,double> fluxes;
+
+    for (int si = 0; si<rs->segments.size(); si++) {
+
+        int i = rs->segments[si].x;
+        int j = rs->segments[si].y;
+        int segIdx = j-1;
+
+        if (rs->seg2cell.count(segIdx)>0) {
+
+            int cellIdx = rs->seg2cell[segIdx];
+
+            double a = rs->radii[si]; // si is correct, with ordered and unordered segments
+            double age = simTime - rs->nodeCTs[j];
+            int type = rs->types[si];
+            double  kr = kr_f(age, type);
+            double  kz = kx_f(age, type);
+
+            auto n1 = rs->nodes[i];
+            auto n2 = rs->nodes[j];
+            double l = (n2.minus(n1)).length();
+
+            double sc = std::sqrt(2*a*M_PI*kr/kz); // sqrt(c) [cm-1]
+            double d = std::exp(-sc*l)-std::exp(sc*l); // det
+            double f = -2*a*M_PI*l*(kr*rho*g)*(1./(sc*d))*(std::exp(sc*l)+std::exp(-sc*l)-2)*(rx_hom[i]+rx_hom[j]); // fancy
+            // I seems to be exact, but on minus too much (compared to my text)
+
+            if (fluxes.count(cellIdx)==0) {
+                fluxes[cellIdx] = f;
+            } else {
+                fluxes[cellIdx] += f; // sum up fluxes per cell
+            }
+
+        } else {
+            std::cout << "XylemFlux::soilFluxes: Warning! unmapped segments with index " << segIdx << "\n";
+        }
+
+    }
+    return fluxes;
+
+}
+
+/**
+ * Fluxes from root segments into a the soil cell with cell index cIdx.
+ *
+ * This is (a frequently used) approximation,
+ * taking root segment surface times constant radial flux.
+ */
+std::map<int,double> XylemFlux::soilFluxesApprox(double simTime, std::vector<double> rx_hom)
 {
     std::map<int,double> fluxes;
 
@@ -494,7 +544,7 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, std::vector<double> r
                 fluxes[cellIdx] += f; // sum up fluxes per cell
             }
         } else {
-            std::cout << "XylemFlux::soilFluxes: Warning! unmapped segments with index " << segIdx << "\n";
+            std::cout << "XylemFlux::soilFluxesApprox: Warning! unmapped segments with index " << segIdx << "\n";
         }
 
     }

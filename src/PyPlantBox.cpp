@@ -768,6 +768,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") = 0.)
             .def("getSolution",&XylemFlux::getSolution)
             .def("soilFluxes",&XylemFlux::soilFluxes)
+            .def("soilFluxesApprox",&XylemFlux::soilFluxesApprox)
             .def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
