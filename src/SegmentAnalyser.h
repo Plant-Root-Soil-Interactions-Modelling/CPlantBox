@@ -12,6 +12,7 @@
 namespace CPlantBox {
 
 class Organism;
+class MappedSegments;
 
 /**
  * Meshfree analysis of the root system based on signed distance functions.
@@ -24,6 +25,7 @@ public:
     SegmentAnalyser() { }; ///< creates an empty object (use AnalysisSDF::addSegments)
     SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector2i> segments, std::vector<double> segCTs, std::vector<double> radii); ///< everything from scratch
     SegmentAnalyser(const Organism& plant); ///< creates an analyser object containing the segments from the organism @param plant
+    SegmentAnalyser(const MappedSegments& plant); ///< creates an analyser object containing the segments from @param plant
     virtual ~SegmentAnalyser() { }; ///< nothing to do here
 
     // merge segments

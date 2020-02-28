@@ -3,6 +3,7 @@
 
 #include "Organ.h"
 #include "Organism.h"
+#include "MappedOrganism.h"
 
 #include <iomanip>
 #include <istream>
@@ -43,7 +44,7 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     nodes = plant.getNodes();
     segments = plant.getSegments();
     auto segCTs = plant.getSegmentCTs();
-    assert(segments.size()==segCTs.size());
+    assert(segments.size()==segCTs.size() && "SegmentAnalyser::SegmentAnalyser(Organism p): Unequal vector sizes");
     data["creationTime"] = segCTs;
     auto sego = plant.getSegmentOrigins();
     segO = std::vector<std::weak_ptr<Organ>>(segments.size());
@@ -53,6 +54,28 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
         radii[i] = segO[i].lock()->getParameter("radius");
     }
     data["radius"] = radii;
+}
+
+/**
+ * Copies the line segments representing the plant to the analysis class
+ *
+ * @param plant     the the organism that is analysed
+ */
+SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments)
+{
+    assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
+    assert((segments.size()==plant.types.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
+    std::vector<double> segCTs;
+    std::vector<double> typesd(plant.types.size());
+    segCTs.reserve(plant.nodeCTs.size()-1);
+    for (size_t i=0; i<segments.size(); i++) {
+        int segIdx = segments[i].y-1;
+        segCTs.push_back(plant.nodeCTs.at(segIdx));
+        typesd[i] = double(plant.types[i]);
+    }
+    data["creationTime"] = segCTs;
+    data["radius"] = plant.radii;
+    data["subType"] = typesd;
 }
 
 /**

@@ -425,6 +425,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, std::vector<double>>())
            .def(py::init<Organism&>())
            .def(py::init<SegmentAnalyser&>())
+           .def(py::init<MappedSegments&>())
            .def("addSegments",(void (SegmentAnalyser::*)(const Organism&)) &SegmentAnalyser::addSegments) //overloads
            .def("addSegments",(void (SegmentAnalyser::*)(const SegmentAnalyser&)) &SegmentAnalyser::addSegments) //overloads
            .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
