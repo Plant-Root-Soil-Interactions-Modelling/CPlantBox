@@ -18,7 +18,11 @@ namespace CPlantBox {
  */
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
     std::vector<double> radii, std::vector<int> types) : nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), types(types)
-{ }
+{
+    assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
+    assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
+    assert((segments.size()==types.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and types");
+}
 
 /**
  *  A static root system, as needed for flux computations.
@@ -36,6 +40,8 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i
     nodeCTs.resize(nodes.size());
     std::fill(nodeCTs.begin(), nodeCTs.end(), 0.);
     setTypes(0);
+    assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
+    assert((segments.size()==types.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and types");
 }
 
 /**
@@ -141,6 +147,12 @@ void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
  * TODO
  */
 std::vector<Vector2i> MappedSegments::cutSegments(std::vector<Vector2i> segs) const {
+
+    // [n1 m n2]
+//    if ind(n1)!=ind(m2) // cut !!!
+//    or ind(m)!=ind(n2) // cut !!!
+
+
     return segs;
 }
 //Vector3d newnode = cut(nodes[s.x], nodes[s.y], geometry);

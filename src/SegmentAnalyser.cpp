@@ -66,11 +66,10 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.types.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     std::vector<double> segCTs;
-    std::vector<double> typesd(plant.types.size());
+    std::vector<double> typesd(plant.types.size()); // convert to double
     segCTs.reserve(plant.nodeCTs.size()-1);
     for (size_t i=0; i<segments.size(); i++) {
-        int segIdx = segments[i].y-1;
-        segCTs.push_back(plant.nodeCTs.at(segIdx));
+        segCTs.push_back(plant.nodeCTs.at(segments[i].y));
         typesd[i] = double(plant.types[i]);
     }
     data["creationTime"] = segCTs;
@@ -692,13 +691,23 @@ std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double 
  * Adds user data that can be accessed by SegmentAnalyser::getParameter, and that can be written to the VTP file
  * (e.g. used to add simulation results like xylem pressure to the output).
  *
- * @param name   parameter name
- * @param values parameter values
+ * @param name      parameter name
+ * @param values    segment or node data, node data are converted to segment data
  */
 void SegmentAnalyser::addData(std::string name, std::vector<double> values)
 {
-    assert(values.size()==segments.size());
-    data[name] = values;
+    if (values.size()== segments.size()) {
+        data[name] = values;
+    } else if (values.size()==nodes.size()) { // convert node to segment data
+        std::vector<double> d;
+        d.reserve(segments.size());
+        for (int i = 0; i<segments.size(); i++) {
+            d.push_back(values.at(segments[i].y));
+        }
+        data[name] = d;
+    } else {
+        throw std::invalid_argument("SegmentAnalyser::addData: parameter values has wrong size.");
+    }
 }
 
 /**
