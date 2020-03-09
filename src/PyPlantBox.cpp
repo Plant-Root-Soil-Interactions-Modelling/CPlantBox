@@ -27,6 +27,7 @@ namespace py = pybind11;
 #include "RootSystem.h"
 #include "Plant.h"
 #include "MappedOrganism.h"
+#include "XylemFlux.h"
 
 #include "sdf_rs.h" // todo to revise ...
 
@@ -748,9 +749,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setTypes", &MappedSegments::setTypes)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d)) &MappedSegments::setSoilGrid)
-        .def("mapSegments", (void (MappedSegments::*)(std::vector<Vector2i>)) &MappedSegments::mapSegments)
-        .def("removeSegments", &MappedSegments::removeSegments) // for testing only
-        .def("cutSegments", &MappedSegments::cutSegments)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid)
+        .def("mapSegments",  &MappedSegments::mapSegments)
+        .def("addSegments", &MappedSegments::addSegments)
+        .def_readwrite("soil_index", &MappedRootSystem::soil_index)
         .def_readwrite("nodes", &MappedRootSystem::nodes)
         .def_readwrite("nodeCTs", &MappedRootSystem::nodeCTs)
         .def_readwrite("segments", &MappedRootSystem::segments)
@@ -759,17 +761,17 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
         .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-        .def(py::init<>());
+        .def(py::init<>())
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d)) &MappedSegments::setSoilGrid)
+        .def("setRectangularGrid", &MappedRootSystem::setRectangularGrid);
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKr",&XylemFlux::setKr, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKx",&XylemFlux::setKx, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",&XylemFlux::setKrTables)
             .def("setKxTables",&XylemFlux::setKxTables)
-            .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") = 0.)
-            .def("getSolution",&XylemFlux::getSolution)
-            .def("soilFluxes",&XylemFlux::soilFluxes)
-            .def("soilFluxesApprox",&XylemFlux::soilFluxesApprox)
+            .def("linearSystem",&XylemFlux::linearSystem)
+            .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
             .def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)

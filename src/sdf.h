@@ -19,7 +19,6 @@ namespace CPlantBox {
  */
 class SignedDistanceFunction
 {
-
 public:
 
     SignedDistanceFunction() { }
@@ -74,7 +73,6 @@ public:
  */
 class SDF_PlantBox : public SignedDistanceFunction
 {
-
 public:
 
     /**
@@ -84,7 +82,7 @@ public:
      * @param y  width
      * @param z  height
      */
-    SDF_PlantBox(double x, double y, double z) { dim = Vector3d(x/2.,y/2.,z/2.); } ///< creates a rectangular box
+    SDF_PlantBox(double x, double y, double z) :dim(x/2.,y/2.,z/2.) { } ///< creates a rectangular box
 
     virtual double getDist(const Vector3d& v) const override; ///< @see SignedDistanceFunction::getDist
 
@@ -99,11 +97,29 @@ private:
 
 
 /**
+ * A Cuboid is a Quader
+ **/
+class SDF_Cuboid : public SignedDistanceFunction
+{
+public:
+    SDF_Cuboid() { };
+    SDF_Cuboid(Vector3d min, Vector3d max) : min(min), max(max) { };
+
+    virtual double getDist(const Vector3d& v) const override;  ///< @see SignedDistanceFunction::getDist
+
+    virtual std::string toString() const override { return "SDF_Cuboid ["+min.toString()+" - "+max.toString()+"]"; } ///< @see SignedDistanceFunction::toString
+
+    Vector3d min;
+    Vector3d max;
+};
+
+
+
+/**
  * Cylindrical or square container
  */
 class SDF_PlantContainer : public SignedDistanceFunction
 {
-
 public:
 
     SDF_PlantContainer() { r1=5; r2=5; h=100; square = false; } ///< Default is a cylindrical rhizotron with radius 10 cm and 100 cm depth
@@ -129,7 +145,6 @@ private:
  */
 class SDF_RotateTranslate :public SignedDistanceFunction
 {
-
 public:
 
     enum SDF_Axes { xaxis=0, yaxis=1, zaxis=2 };
@@ -199,7 +214,6 @@ public:
  */
 class SDF_Difference : public SDF_Intersection
 {
-
 public:
     SDF_Difference(std::vector<std::shared_ptr<SignedDistanceFunction>> sdfs) :SDF_Intersection(sdfs) { } ///< Constructs (...((sdfs_[0] \ sdfs_[1]) \ sdfs_[2])...)
     SDF_Difference(std::shared_ptr<SignedDistanceFunction> sdf1, std::shared_ptr<SignedDistanceFunction> sdf2) :SDF_Intersection(sdf1,sdf2) { } ///< Constructs sdf1 \ sdf2
@@ -237,7 +251,6 @@ private:
  */
 class SDF_HalfPlane : public SignedDistanceFunction
 {
-
 public:
     SDF_HalfPlane(const Vector3d& o, const Vector3d& n_); ///< half plane by origin and normal vector
     SDF_HalfPlane(const Vector3d& o, const Vector3d& p1, const Vector3d& p2);  ///< half plane by origin and two linear independent vectors

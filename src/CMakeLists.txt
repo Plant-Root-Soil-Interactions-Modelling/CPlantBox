@@ -16,7 +16,8 @@ add_library(CPlantBox SHARED
             Organism.cpp
             Plant.cpp            
             RootSystem.cpp
-            MappedOrganism.cpp            
+            MappedOrganism.cpp
+            XylemFlux.cpp
      		sdf.cpp
             SegmentAnalyser.cpp            
             tropism.cpp            
@@ -51,7 +52,8 @@ pybind11_add_module(plantbox SHARED
 			            
             Plant.cpp            
             RootSystem.cpp
-            MappedOrganism.cpp    
+            MappedOrganism.cpp
+			XylemFlux.cpp
            
             SegmentAnalyser.cpp            
             tropism.cpp
