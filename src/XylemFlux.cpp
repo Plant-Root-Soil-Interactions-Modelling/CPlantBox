@@ -14,8 +14,8 @@ namespace CPlantBox {
  * @simTime         [days] current simulation time is needed for age dependend conductivities,
  *                  to calculate the age from the creation times.
  */
-void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx) {
-
+void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx)
+{
     int Ns = rs->segments.size(); // number of segments
     aI.resize(4*Ns);
     aJ.resize(4*Ns);
@@ -34,8 +34,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx) {
         auto n1 = rs->nodes[i];
         auto n2 = rs->nodes[j];
         auto mid = n1.plus(n2);
-        double psi_s = sx.at(this->rs->soil_index(mid.x,mid.y,mid.z));
-
+        double psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
         double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
         double age = simTime - rs->nodeCTs[j];
         int type = rs->types[si];
@@ -92,9 +91,9 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
 
         if (rs->seg2cell.count(segIdx)>0) {
             auto mid = rs->nodes[i].plus(rs->nodes[j]);
-            double psi_s = sx.at(this->rs->soil_index(mid.x,mid.y,mid.z));
 
             int cellIdx = rs->seg2cell[segIdx];
+            double psi_s = sx.at(cellIdx);
 
             double a = rs->radii[si]; // si is correct, with ordered and unordered segments
             double age = simTime - rs->nodeCTs[j];
@@ -106,15 +105,15 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
             auto n2 = rs->nodes[j];
             double l = (n2.minus(n1)).length();
 
-            double f =  -2*a*M_PI*l*(kr*rho*g); // flux is proportional to f
-
-            double fApprox = f*(psi_s - rx[j]); // cm3 / day
+            double f =  -2*a*M_PI*(kr*rho*g); // flux is proportional to f
+            double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
 
             double tau = std::sqrt(2*a*M_PI*kr/kz); // sqrt(c) [cm-1]
             double d = std::exp(-tau*l)-std::exp(tau*l); // det
             double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
 
-            double flux =  fExact*(!approx)+approx*fApprox; // pick
+            double flux = fExact*(!approx)+approx*fApprox;
+            // std::cout << cellIdx << ", " << fExact << ", " << fApprox << ", psi_s " << psi_s << "\n" << std::flush;
             if (fluxes.count(cellIdx)==0) {
                 fluxes[cellIdx] = flux;
             } else {
