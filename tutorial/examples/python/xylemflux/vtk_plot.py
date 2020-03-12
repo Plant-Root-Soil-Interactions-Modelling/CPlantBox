@@ -61,12 +61,31 @@ def uniform_grid(min_, max_, res):
     return grid
 
 
-def render_window(actor, windowName = "", scalarBar = None):
+def render_window(actor, title = "", scalarBar = None):
     """ puts a vtk actor on the stage (an interactive window) @name is the window titel 
+    
     @param actor         the (single) actor
     @param windowName    optional
     @param scalarBar     an optional vtkScalarBarActor
     @return The vtkRenderWindow (not sure if this is ever needed)
+    
+    (built in)
+    Keypress j / Keypress t: toggle between joystick (position sensitive) and trackball (motion sensitive) styles. In joystick style, motion occurs continuously as long as a mouse button is pressed. In trackball style, motion occurs when the mouse button is pressed and the mouse pointer moves.
+    Keypress c / Keypress a: toggle between camera and actor modes. In camera mode, mouse events affect the camera position and focal point. In actor mode, mouse events affect the actor that is under the mouse pointer.
+    Button 1: rotate the camera around its focal point (if camera mode) or rotate the actor around its origin (if actor mode). The rotation is in the direction defined from the center of the renderer's viewport towards the mouse position. In joystick mode, the magnitude of the rotation is determined by the distance the mouse is from the center of the render window.
+    Button 2: pan the camera (if camera mode) or translate the actor (if actor mode). In joystick mode, the direction of pan or translation is from the center of the viewport towards the mouse position. In trackball mode, the direction of motion is the direction the mouse moves. (Note: with 2-button mice, pan is defined as <Shift>-Button 1.)
+    Button 3: zoom the camera (if camera mode) or scale the actor (if actor mode). Zoom in/increase scale if the mouse position is in the top half of the viewport; zoom out/decrease scale if the mouse position is in the bottom half. In joystick mode, the amount of zoom is controlled by the distance of the mouse pointer from the horizontal centerline of the window.
+    Keypress 3: toggle the render window into and out of stereo mode. By default, red-blue stereo pairs are created. Some systems support Crystal Eyes LCD stereo glasses; you have to invoke SetStereoTypeToCrystalEyes() on the rendering window.
+    Keypress e: exit the application.
+    Keypress f: fly to the picked point
+    Keypress p: perform a pick operation. The render window interactor has an internal instance of vtkCellPicker that it uses to pick.
+    Keypress r: reset the camera view along the current view direction. Centers the actors and moves the camera so that all actors are visible.
+    Keypress s: modify the representation of all actors so that they are surfaces.
+    Keypress u: invoke the user-defined function. Typically, this keypress will bring up an interactor that you can type commands in. Typing u calls UserCallBack() on the vtkRenderWindowInteractor, which invokes a vtkCommand::UserEvent. In other words, to define a user-defined callback, just add an observer to the vtkCommand::UserEvent on the vtkRenderWindowInteractor object.
+    Keypress w: modify the representation of all actors so that they are wireframe.
+    
+    (additional)
+    Keypress g: save as png    
     """
     colors = vtk.vtkNamedColors()  # Set the background color
     bkg = map(lambda x: x / 255.0, [26, 51, 102, 255])
@@ -75,8 +94,9 @@ def render_window(actor, windowName = "", scalarBar = None):
     renWin = vtk.vtkRenderWindow()
     renWin.AddRenderer(ren)
     iren = vtk.vtkRenderWindowInteractor()
+    iren.AddObserver('KeyPressEvent', keypress_callback_, 1.0)
     # iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
-    iren.SetRenderWindow(renWin)
+
     if isinstance(actor, list):
         actors = actor  # plural
     else:
@@ -87,13 +107,26 @@ def render_window(actor, windowName = "", scalarBar = None):
         ren.AddActor2D(scalarBar)
     ren.SetBackground(colors.GetColor3d("BkgColor"))
     renWin.SetSize(1000, 1000)
-    renWin.SetWindowName(windowName)
-    iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
+    renWin.SetWindowName(title)
     ren.ResetCamera()
     ren.GetActiveCamera().Zoom(1.5)
+
+    iren.SetRenderWindow(renWin)
     renWin.Render()
+
+    iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
     iren.Start()  # Start the event loop.
+
     return renWin
+
+
+def keypress_callback_(obj, ev):
+    key = obj.GetKeySym()
+    if key == 'g':
+        renWin = obj.GetRenderWindow()
+        file_name = renWin.GetWindowName()
+        write_png(renWin, file_name)
+        print("saved", file_name + ".png")
 
 
 def write_png(renWin, fileName):
@@ -140,10 +173,10 @@ def get_lookup_table():
     return lut
 
 
-def plot_roots(pd, pname, render = True):
+def plot_roots(pd, p_name, render = True):
     """ renders the root system in an interactive window 
     @param pd         the polydata representing the root system
-    @param pname      parameter name of the data to be visualized
+    @param p_name      parameter name of the data to be visualized
     @param render     render in a new interactive window (default = True)
     @return The vtkActor object
     """
@@ -159,20 +192,20 @@ def plot_roots(pd, pname, render = True):
     mapper.Update()
     mapper.ScalarVisibilityOn();
     mapper.SetScalarModeToUseCellFieldData()  # Cell is not working
-    mapper.SetArrayName(pname)
-    mapper.SelectColorArray(pname)
+    mapper.SetArrayName(p_name)
+    mapper.SelectColorArray(p_name)
     mapper.UseLookupTableScalarRangeOn()
 
     plantActor = vtk.vtkActor()
     plantActor.SetMapper(mapper)
 
     lut = get_lookup_table()
-    lut.SetTableRange(pd.GetPointData().GetScalars(pname).GetRange())
+    lut.SetTableRange(pd.GetPointData().GetScalars(p_name).GetRange())
     mapper.SetLookupTable(lut)
 
     scalarBar = vtk.vtkScalarBarActor()
     scalarBar.SetLookupTable(lut)
-    scalarBar.SetTitle(pname)
+    scalarBar.SetTitle(p_name)
 #    textProperty = vtk.vtkTextProperty()
 #    scalarBar.SetTitleTextProperty(textProperty)
 #    scalarBar.SetLabelTextProperty(textProperty)
@@ -184,14 +217,16 @@ def plot_roots(pd, pname, render = True):
     return plantActor, scalarBar
 
 
-def plot_mesh_wireframe(grid, p_name, render = True):
-    """ Plots the grid as wireframe 
+def plot_mesh(grid, p_name, win_title = "", render = True):
+    """ Plots the grid as wireframe
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
         
     """
 #     bounds = grid.GetBounds()
 #     print("mesh bounds", bounds, "[m]")
+    if win_title == "":
+        win_title = p_name
 
     mapper = vtk.vtkDataSetMapper()
     mapper.SetInputData(grid)
@@ -205,7 +240,8 @@ def plot_mesh_wireframe(grid, p_name, render = True):
     meshActor.GetProperty().SetRepresentationToWireframe();
 
     lut = get_lookup_table()
-    lut.SetTableRange(grid.GetPointData().GetScalars(p_name).GetRange())
+    if p_name != "":
+        lut.SetTableRange(grid.GetPointData().GetScalars(p_name).GetRange())
     mapper.SetLookupTable(lut)
 
     scalarBar = vtk.vtkScalarBarActor()
@@ -213,7 +249,7 @@ def plot_mesh_wireframe(grid, p_name, render = True):
     scalarBar.SetTitle(p_name)
 
     if render:
-        render_window(meshActor, p_name, scalarBar)  # todo scalarBar (and plot a thing or two)
+        render_window(meshActor, win_title, scalarBar)  # todo scalarBar (and plot a thing or two)
     return meshActor, scalarBar
 
 

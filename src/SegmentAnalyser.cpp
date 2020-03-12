@@ -41,6 +41,7 @@ SegmentAnalyser::SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector
  */
 SegmentAnalyser::SegmentAnalyser(const Organism& plant)
 {
+    std::cout << "construct from Organism\n";
     nodes = plant.getNodes();
     segments = plant.getSegments();
     auto segCTs = plant.getSegmentCTs();
@@ -63,6 +64,7 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
  */
 SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments)
 {
+    std::cout << "construct from MappedSegments\n";
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.types.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     std::vector<double> segCTs;
@@ -431,7 +433,9 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
         int p2 = floor((n2.times(axis)+xx/2.)/xx);
         if (p1 == p2) { //same periodicity index, do nothing [0,xx)
             seg.push_back(s);
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) { // if used
+                sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) { // copy data
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
@@ -466,7 +470,9 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
                 c++;
             }
             for (int j=0; j<c; j++) { // copy attached data
-                sO.push_back(segO.at(i));
+                if (segO.size()>0) { // if used
+                    sO.push_back(segO.at(i));
+                }
                 for(auto iter = data.begin(); iter != data.end(); ++iter) {
                     std::string key =  iter->first;
                     ndata[key].push_back(data[key].at(i));

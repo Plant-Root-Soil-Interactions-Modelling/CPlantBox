@@ -739,7 +739,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("pop",&RootSystem::pop)
             .def("write", &RootSystem::write);
     /*
-     * MappedRootSystem.h
+     * MappedOrganism.h
      */
     py::class_<MappedSegments, std::shared_ptr<MappedSegments>>(m, "MappedSegments")
         .def(py::init<>())
@@ -752,18 +752,18 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setRectangularGrid", &MappedSegments::setRectangularGrid)
         .def("mapSegments",  &MappedSegments::mapSegments)
         .def("addSegments", &MappedSegments::addSegments)
-        .def_readwrite("soil_index", &MappedRootSystem::soil_index)
-        .def_readwrite("nodes", &MappedRootSystem::nodes)
-        .def_readwrite("nodeCTs", &MappedRootSystem::nodeCTs)
-        .def_readwrite("segments", &MappedRootSystem::segments)
-        .def_readwrite("radii", &MappedRootSystem::radii)
-        .def_readwrite("types", &MappedRootSystem::types)
-        .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
-        .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
+        .def_readwrite("soil_index", &MappedSegments::soil_index)
+        .def_readwrite("nodes", &MappedSegments::nodes)
+        .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
+        .def_readwrite("segments", &MappedSegments::segments)
+        .def_readwrite("radii", &MappedSegments::radii)
+        .def_readwrite("types", &MappedSegments::types)
+        .def_readwrite("seg2cell", &MappedSegments::seg2cell)
+        .def_readwrite("cell2seg", &MappedSegments::cell2seg);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d)) &MappedSegments::setSoilGrid)
-        .def("setRectangularGrid", &MappedRootSystem::setRectangularGrid);
+        .def("mappedSegments",  &MappedRootSystem::mappedSegments)
+        .def("addSegments", &MappedRootSystem::rootSystem);
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKr",&XylemFlux::setKr, py::arg("values"), py::arg("age") = std::vector<double>(0))

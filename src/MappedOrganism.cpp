@@ -88,8 +88,6 @@ void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>&
 
 /**
  * Sets a rectangular grid, and cuts all segments along the grid cells
- *
- * TODO grids are not mapped correctly after cutting
  */
 void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res)
 {
@@ -104,6 +102,9 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
     types.clear();
     radii.clear();
     addSegments(segs, radii_, types_); // re-add
+    seg2cell.clear(); // re-map all segments
+    cell2seg.clear();
+    mapSegments(segments);
 }
 
 
@@ -127,7 +128,7 @@ void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
                 cell2seg[cellIdx] = std::vector<int>({ns.x, ns.y});
             }
         } else {
-            std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
+            // std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
         }
     }
 }
@@ -306,7 +307,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
         nodes.at(i) = unodes[c];
         c++;
     }
-    std::cout << "nodes moved \n" << std::flush;
+    std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
     auto newnodes = this->getNewNodes(); // add nodes
     nodes.reserve(nodes.size()+newnodes.size());
     for (auto& nn : newnodes) {
@@ -317,19 +318,19 @@ void MappedRootSystem::simulate(double dt, bool verbose)
     for (auto& nct : newnode_cts) {
         nodeCTs.push_back(nct);
     }
-    std::cout << "new nodes added \n" << std::flush;
+    std::cout << "new nodes added " << nodes.size() << "\n" << std::flush;
     auto newsegs = this->getNewSegments(); // add segments
     segments.resize(segments.size()+newsegs.size());
     for (auto& ns : newsegs) {
         segments[ns.y-1] = ns;
     }
-    std::cout << "segments added \n" << std::flush;
+    std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
     auto newsegO = this->getNewSegmentOrigins(); // add radius and type
     std::cout << "resize(): << " << radii.size()+newsegO.size() << "\n"<< std::flush;
     radii.resize(radii.size()+newsegO.size());
     types.resize(types.size()+newsegO.size());
     c = 0;
-    std::cout << "total length " << radii.size() << ", new " << newsegO.size() << "\n "<< std::flush;
+    std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
     for (auto& so : newsegO) {
         int segIdx = newsegs[c].y-1;
         c++;
@@ -363,6 +364,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
             rSegs.push_back(s);
         }
     }
+
     MappedSegments::removeSegments(rSegs);
     MappedSegments::mapSegments(rSegs);
 }

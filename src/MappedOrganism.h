@@ -79,6 +79,12 @@ public:
 
     void simulate(double dt, bool verbose = false) override; ///< build nodes and segments sequentially
 
+    /* segments are shoot and root segments */
+
+
+    std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
+    std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
+
 };
 
 }

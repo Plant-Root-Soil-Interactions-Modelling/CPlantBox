@@ -32,11 +32,11 @@ r.rs.nodes = nodes
 ana = pb.SegmentAnalyser(r.rs)
 pd = vp.segs_to_polydata(ana, 1.e-2, ["radius", "subType", "creationTime"])
 print("Root system bounds", pd.GetBounds())
-rootActor = vp.plot_roots(pd, "creationTime", False)
+rootActor, rootCBar = vp.plot_roots(pd, "creationTime", False)
 
 ug = vp.read_vtu("benchmark3d_2-00001.vtu")
 print("Mesh bounds", ug.GetBounds())
 p_name = "water content"  # "pressure head"  # e.g. "S_liq" "water content"
-meshActor = vp.plot_mesh_wireframe(ug, "", False)
+meshActor, meshCBar = vp.plot_mesh(ug, "", "", False)
 
 vp.render_window([rootActor, meshActor], "mixed fun")

@@ -19,12 +19,9 @@ Tests if we manage to plot a mesh
 """
 
 ug = vp.read_vtu("benchmark3d_2-00001.vtu")
-
-p_name = "water content"  # "pressure head, "S_liq" "water content"
-meshActor, scalarBar = vp.plot_mesh_wireframe(ug, p_name, False)
-
+vp.plot_mesh(ug, "water content", "Mesh")  # "pressure head, "S_liq" "water content"
 # vp.plot_mesh_cuts(ug, p_name)
 
-renWin = vp.render_window([meshActor], "Wireframe mesh", scalarBar)
-
-vp.write_png(renWin, "test_plot_mesh")
+# p         write png (added it)
+# s         as solid (built in default)
+# w         as wireframe (built in default)

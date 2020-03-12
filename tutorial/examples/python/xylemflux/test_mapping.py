@@ -25,7 +25,7 @@ fig, (ax1, ax2) = plt.subplots(1, 2)
 
 """ Roots """
 r = XylemFluxPython("RootSystem.rsml")  # returns a MappedSegments object
-r.rs.setRectangularGrid(vector_3d(min_), vector_3d(max_), vector_3d(res_))  # cut and map segments
+# r.rs.setRectangularGrid(vector_3d(min_), vector_3d(max_), vector_3d(res_))  # cut and map segments
 
 # Assign soil cell index (per hand todo)
 segs = r.rs.segments
@@ -40,7 +40,7 @@ for c, s in enumerate(segs):
 
 y = np.zeros(x.shape[0])
 for i in range(0, x.shape[0]):
-   y[i] = 1 if x[i] >= 0 else -1  #  i % 2
+   y[i] = i % 2 if x[i] >= 0 else i % 2 - 1  #
 y[0] = -2
 
 for i in range(0, x.shape[0]):
@@ -48,9 +48,9 @@ for i in range(0, x.shape[0]):
 
 ana = pb.SegmentAnalyser(r.rs)
 ana.addData("linear_index", x)  # node data are converted to segment data
-ana.addData("in", y)
-pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "linear_index", "in"])
-rootActor, scalarBar = vp.plot_roots(pd, "in", False)
+ana.addData("zebra", y)
+pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "linear_index", "zebra"])
+rootActor, rootCBar = vp.plot_roots(pd, "linear_index", False)
 
 """ Mesh """
 width_ = max_ - min_
@@ -60,7 +60,7 @@ print("max    ", max_)
 print("width  ", width_)
 print("cuboids", 1 / ind_)
 grid = vp.uniform_grid(min_, max_, res_)
-meshActor = vp.plot_mesh_wireframe(grid, "", False)
+meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
 
-vp.render_window([rootActor, meshActor], "mixed fun", scalarBar)
+vp.render_window([meshActor, rootActor], "Test mapping", rootCBar)
 
