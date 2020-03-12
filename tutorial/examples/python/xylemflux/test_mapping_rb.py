@@ -18,12 +18,13 @@ def vector_3d(a):
 Tests if MappedSegments work 
 """
 # grid to test cutting
-min_ = np.array([-3, -3, -20])
-max_ = np.array([3, 3, 0])
+min_ = np.array([-2, -2, -20])
+max_ = np.array([2, 2, 0])
 
-res_ = np.array([1, 1, 10])
-# res_ = np.array([1, 5, 1]) # TODO this one is wrong...
-# res_ = np.array([5, 1, 1])
+""" pick one of the resolutions """
+# res_ = np.array([1, 1, 10])
+# res_ = np.array([1, 5, 1])
+res_ = np.array([10, 1, 1])
 
 
 def periodic_soil_index(x, y, z):
@@ -48,7 +49,7 @@ def periodic_soil_index(x, y, z):
         if ((i[k] < 0) or (i[k] >= res_[k])):
             return -1;
 
-    return floor(i[0]) * res_[1] * res_[2] + floor(i[1]) * res_[1] + floor(i[2])  # a linear index not periodic
+    return floor(i[0]) * res_[1] * res_[2] + floor(i[1]) * res_[2] + floor(i[2])  # a linear index not periodic
 
 
 rs = pb.MappedRootSystem()
