@@ -13,7 +13,7 @@ rootsystem.readParameters(path + name + ".xml")
 # Initialize
 rootsystem.initialize()
 
-# Simulate
+# Simulategit stat
 rootsystem.simulate(30, True)
 
 # Export final result (as vtp)

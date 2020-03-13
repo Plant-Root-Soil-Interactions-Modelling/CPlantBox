@@ -1,3 +1,6 @@
+""" 
+Tests if MappedSegments works for PlantBox.RootSystem under a periodic setting  
+"""
 import sys
 sys.path.append("../../../..")
 
@@ -8,29 +11,26 @@ import vtk_plot as vp
 
 from math import *
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def vector_3d(a):
     return pb.Vector3d(a[0], a[1], a[2])
 
-""" 
-Tests if MappedSegments work 
-"""
+
 # grid to test cutting
 min_ = np.array([-2, -2, -20])
-max_ = np.array([2, 2, 0])
+max_ = np.array([2, 2, -3])
 
 """ pick one of the resolutions """
 # res_ = np.array([1, 1, 10])
-# res_ = np.array([1, 5, 1])
-res_ = np.array([10, 1, 1])
+res_ = np.array([1, 5, 1])
+# res_ = np.array([10, 1, 1])
 
 
 def periodic_soil_index(x, y, z):
+    """ not in C++, because this should be handeld by mesh.pick(x,y,z), implemented for dumux in solverbase.cc """
     pos = np.array([x, y, z])
-    # periodic mapping
-    for i in range(0, 2):  # for x and y, not z
+    for i in range(0, 2):  # periodic mapping for x and y, not z
         minx = min_[i]
         xx = max_[i] - minx
         if not isinf(xx):  # periodic in x
@@ -40,7 +40,6 @@ def periodic_soil_index(x, y, z):
             else:
                 pos[i] = pos[i] + int((xx - pos[i]) / xx) * xx;
             pos[i] += minx;
-
     # map to linear index
     w = max_ - min_
     p0 = pos - min_
@@ -64,43 +63,34 @@ rs.simulate(20)  # days
 rs.setSoilGrid(periodic_soil_index)
 rs.setRectangularGrid(vector_3d(min_), vector_3d(max_), vector_3d(res_))  # cut and map segments
 
-fig, (ax1, ax2) = plt.subplots(1, 2)
-
-# Assign soil cell index (per hand todo)
+""" Assign soil cell index to root segments """
 segs = rs.segments
 nodes = rs.nodes
 x = np.zeros(len(segs))
 for c, s in enumerate(segs):
-    i, j = s.x, s.y
-    n1 = np.array(nodes[i])
-    n2 = np.array(nodes[j])
-    mid = 0.5 * (n1 + n2)
-    x[c] = rs.soil_index(mid[0], mid[1], mid[2])
-#     try:
-#         x[c] = rs.seg2cell[s.y - 1]
-#     except:
-#         x[c] = -1
+#     i, j = s.x, s.y
+#     n1 = np.array(nodes[i])
+#     n2 = np.array(nodes[j])
+#     mid = 0.5 * (n1 + n2)
+#     x[c] = rs.soil_index(mid[0], mid[1], mid[2])
+    try:
+        x[c] = rs.seg2cell[s.y - 1]
+    except:
+        x[c] = -1
 
 y = np.zeros(x.shape[0])
 for i in range(0, x.shape[0]):
-   y[i] = i % 2 if x[i] >= 0 else i % 2 - 1  #
-y[0] = -2
+   y[i] = i % 2 if x[i] >= 0 else i % 2 - 2  #
 
 for i in range(0, x.shape[0]):
    x[i] = x[i] if x[i] >= 0 else -1
-# x[0] = -x.shape[0]
 
 print("RS number of segments (mapped)", len(rs.segments), "(rs)", rs.getNumberOfSegments())  # shoot segments are mapped
 ana = pb.SegmentAnalyser(rs.mappedSegments())  # rs is MappedSegments and RootSystem. So passing rs it is not unique which constructor is called.
 print("Number of segments", len(ana.segments), "x", len(x), "and", len(y))
 ana.addData("linear_index", x)  # node data are converted to segment data
 ana.addData("zebra", y)
-
-print(ana)
-ana.pack()
-print("packed")
-# periodicity
-ana.mapPeriodic(max_[0] - min_[0], max_[1] - min_[1])
+ana.mapPeriodic(max_[0] - min_[0], max_[1] - min_[1])  # data are also split
 
 pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "linear_index", "zebra"])
 rootActor, rootCBar = vp.plot_roots(pd, "linear_index", False)
@@ -115,5 +105,5 @@ print("cuboids", 1 / ind_)
 grid = vp.uniform_grid(min_, max_, res_)
 meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
 
-vp.render_window([meshActor, rootActor], "Test mapping", rootCBar)
+vp.render_window([meshActor, rootActor], "Test mapping", rootCBar).Start()
 

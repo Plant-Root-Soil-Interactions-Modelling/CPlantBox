@@ -1,3 +1,6 @@
+""" 
+Tests if we can combine different plots in vtk
+"""
 import sys
 sys.path.append("../../../..")
 
@@ -8,16 +11,11 @@ import vtk_plot as vp
 
 from math import *
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def vector_3d(a):
     return pb.Vector3d(a[0], a[1], a[2])
 
-""" 
-Tests if MappedSegments work 
-"""
-fig, (ax1, ax2) = plt.subplots(1, 2)
 
 """ root problem """
 r = XylemFluxPython("RootSystem.rsml")  # returns a MappedSegments object
@@ -36,7 +34,6 @@ rootActor, rootCBar = vp.plot_roots(pd, "creationTime", False)
 
 ug = vp.read_vtu("benchmark3d_2-00001.vtu")
 print("Mesh bounds", ug.GetBounds())
-p_name = "water content"  # "pressure head"  # e.g. "S_liq" "water content"
-meshActor, meshCBar = vp.plot_mesh(ug, "", "", False)
+meshActor, meshCBar = vp.plot_mesh(ug, "water content", "", False)  # "pressure head"  # e.g. "S_liq" "water content"
 
-vp.render_window([rootActor, meshActor], "mixed fun")
+vp.render_window([rootActor, meshActor], "mixed fun", meshCBar).Start()

@@ -62,7 +62,7 @@ def vtkData(d):
 # Simulate something
 
 
-path = "../../../modelparameter/rootsystem/"
+path = "../../../modelparameter/plant/"
 name = "Brassica_napus_a_Leitner_2010"
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
@@ -101,7 +101,7 @@ ren = vtk.vtkRenderer()
 renWin = vtk.vtkRenderWindow()
 renWin.AddRenderer(ren)
 iren = vtk.vtkRenderWindowInteractor()
-iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
+# iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
 iren.SetRenderWindow(renWin)
 
 # Add the actors to the renderer, set the background and size

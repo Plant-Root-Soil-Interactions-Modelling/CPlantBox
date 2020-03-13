@@ -50,11 +50,13 @@ def segs_to_polydata(rs, zoom_factor = 10., param_names = ["radius", "type", "cr
 
 def uniform_grid(min_, max_, res):
     """ Creates an uniform grid
-    
+    @param min_    minimum of bounding rectangle
+    @param max_    maximum of bounding rectangle
+    @param res_    cell resolution
     @return The vtkUniformGrid
     """
     grid = vtk.vtkUniformGrid()
-    grid.SetDimensions(int(res[0]) + 1, int(res[1]) + 1, int(res[2]) + 1)  # points
+    grid.SetDimensions(int(res[0]) + 1, int(res[1]) + 1, int(res[2]) + 1)  # cell to point resolution
     grid.SetOrigin(min_[0], min_[1], min_[2])
     s = (max_ - min_) / res
     grid.SetSpacing(s[0], s[1], s[2])
@@ -94,14 +96,13 @@ def render_window(actor, title = "", scalarBar = None):
     renWin = vtk.vtkRenderWindow()
     renWin.AddRenderer(ren)
     iren = vtk.vtkRenderWindowInteractor()
-    iren.AddObserver('KeyPressEvent', keypress_callback_, 1.0)
     # iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
-
     if isinstance(actor, list):
         actors = actor  # plural
     else:
         actors = [actor]  # army of one
     for a in actors:
+        a.RotateX(-90)
         ren.AddActor(a)  # Add the actors to the renderer, set the background and size
     if scalarBar is not None:
         ren.AddActor2D(scalarBar)
@@ -110,17 +111,17 @@ def render_window(actor, title = "", scalarBar = None):
     renWin.SetWindowName(title)
     ren.ResetCamera()
     ren.GetActiveCamera().Zoom(1.5)
-
+    ren.GetActiveCamera().ParallelProjectionOn()
     iren.SetRenderWindow(renWin)
     renWin.Render()
-
     iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
-    iren.Start()  # Start the event loop.
-
-    return renWin
+    iren.CreateRepeatingTimer(500)  # [ms] 0.5 s in case a timer event is interested
+    iren.AddObserver('KeyPressEvent', keypress_callback_, 1.0)
+    return iren
 
 
 def keypress_callback_(obj, ev):
+    """ adds the functionality to make a screenshot by pressing 'g' """
     key = obj.GetKeySym()
     if key == 'g':
         renWin = obj.GetRenderWindow()
@@ -145,31 +146,17 @@ def write_png(renWin, fileName):
     writer.Write()
 
 
-def get_lookup_table():
+def get_lookup_table(colorSeriesEnum = 15):
     """ creates a color lookup table 
+    @param colorSeriesEnum      the number of the predefined color table, see VTKColorSeriesPatches.html
     @return A vtkLookupTable
+    
+    @todo I don't know how to modify the number of colors used (or how to interpolate between)
     """
-#     # Make the lookup table.
-#     lut.SetTableRange(scalarRange) = vtk.vtkColorSeries()
-#     # Select a color scheme.
-#     # colorSeriesEnum = colorSeries.BREWER_DIVERGING_BROWN_BLUE_GREEN_9
-#     # colorSeriesEnum = colorSeries.BREWER_DIVERGING_SPECTRAL_10
-#     # colorSeriesEnum = colorSeries.BREWER_DIVERGING_SPECTRAL_3
-#     # colorSeriesEnum = colorSeries.BREWER_DIVERGING_PURPLE_ORANGE_9
-#     # colorSeriesEnum = colorSeries.BREWER_SEQUENTIAL_BLUE_PURPLE_9
-#     # colorSeriesEnum = colorSeries.BREWER_SEQUENTIAL_BLUE_GREEN_9
-#     colorSeriesEnum = colorSeries.BREWER_QUALITATIVE_SET3
-#     # colorSeriesEnum = colorSeries.CITRUS
-#     colorSeries.SetColorScheme(colorSeriesEnum)
-#     lut = vtk.vtkLookupTable()
-#     lut.SetNumberOfTableValues(16)"radius"
-#     colorSeries.BuildLookupTable(lut)
-#     # lut.SetNanColor(1, 0, 0, 1)
-#     lut.SetTableRange([0, 1])
+    colorSeries = vtk.vtkColorSeries()
+    colorSeries.SetColorScheme(colorSeriesEnum)
     lut = vtk.vtkLookupTable()
-    lut.SetNumberOfTableValues(16)
-    lut.SetHueRange(0.0, 1.0)
-    lut.Build()
+    colorSeries.BuildLookupTable(lut, vtk.vtkColorSeries.ORDINAL)
     return lut
 
 
@@ -199,18 +186,18 @@ def plot_roots(pd, p_name, render = True):
     plantActor = vtk.vtkActor()
     plantActor.SetMapper(mapper)
 
-    lut = get_lookup_table()
+    lut = get_lookup_table(24)  # 24= Brewer Diverging Brown-Blue-Green (11)
     lut.SetTableRange(pd.GetPointData().GetScalars(p_name).GetRange())
     mapper.SetLookupTable(lut)
 
     scalarBar = vtk.vtkScalarBarActor()
     scalarBar.SetLookupTable(lut)
     scalarBar.SetTitle(p_name)
-#    textProperty = vtk.vtkTextProperty()
-#    scalarBar.SetTitleTextProperty(textProperty)
-#    scalarBar.SetLabelTextProperty(textProperty)
+    textProperty = vtk.vtkTextProperty()
+    textProperty.SetFontSize(1)
+    scalarBar.SetTitleTextProperty(textProperty)
+    scalarBar.SetLabelTextProperty(textProperty)
 #    scalarBar.SetAnnotationTextProperty(textProperty)
-#    scalarBar = None
 
     if render:
         render_window(plantActor, pname, scalarBar)
@@ -247,9 +234,16 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
     scalarBar = vtk.vtkScalarBarActor()
     scalarBar.SetLookupTable(lut)
     scalarBar.SetTitle(p_name)
+#     textProperty = vtk.vtkTextProperty()
+#     textProperty.SetFontSize(10)
+#     textProperty.UseTightBoundingBoxOff()
+#     scalarBar.GetLabelTextProperty().BoldOff()
+#     scalarBar.SetTitleTextProperty(textProperty)
+#     scalarBar.SetLabelTextProperty(textProperty)
+#     scalarBar.GetLabelTextProperty().SetFontSize(1)
 
     if render:
-        render_window(meshActor, win_title, scalarBar)  # todo scalarBar (and plot a thing or two)
+        render_window(meshActor, win_title, scalarBar)
     return meshActor, scalarBar
 
 
