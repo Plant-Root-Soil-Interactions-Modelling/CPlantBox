@@ -128,7 +128,7 @@ void Root::simulate(double dt, bool verbose)
 
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
-                double scale = getRootRandomParameter()->f_sa->getValue(nodes.back(), shared_from_this());
+                double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.); // length increment
 
                 // create geometry
