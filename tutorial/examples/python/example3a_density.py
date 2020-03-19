@@ -6,12 +6,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 path = "../../../modelparameter/rootsystem/"
-name = "Crypsis_aculeata_Clausnitzer_1994"
+name = "Brassica_napus_a_Leitner_2010" # "Crypsis_aculeata_Clausnitzer_1994"
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
 
-depth = 130
+depth = 220
 layers = 50
 runs = 10
 

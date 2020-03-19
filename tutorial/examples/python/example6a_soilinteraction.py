@@ -39,7 +39,7 @@ for p in rs.getRootRandomParameter():
 # 3. Scale branching probability
 p = rs.getRootRandomParameter(2)
 p.ln = p.ln / 5
-p.nob = p.nob * 5
+# p.nob = p.nob * 5
 p = rs.getRootRandomParameter(3)
 p.f_sbp = soilprop2
 

@@ -2,13 +2,14 @@
 import sys
 sys.path.append("../../..")
 import plantbox as pb
+import vtk_plot as vp
 
-rootsystem = pb.RootSystem()
+rs = pb.RootSystem()
 
 # Open plant and root parameter from a file
 path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
-rootsystem.readParameters(path + name + ".xml")
+rs.readParameters(path + name + ".xml")
 
 # Create and set geometry
 
@@ -19,16 +20,19 @@ soilcore = pb.SDF_PlantContainer(5, 5, 40, False)
 rhizotron = pb.SDF_PlantBox(1.4, 27, 27)
 
 # Pick 1, or 2
-rootsystem.setGeometry(soilcore)  # soilcore, or rhizotron
+rs.setGeometry(soilcore)  # soilcore, or rhizotron
 
 # Initialize
-rootsystem.initialize()
+rs.initialize()
 
 # Simulate
-rootsystem.simulate(60)  # days
+rs.simulate(60)  # days
 
 # Export final result (as vtp)
-rootsystem.write("results/example_1b.vtp")
+rs.write("results/example_1b.vtp")
 
 # Export container geometry as Paraview Python script
-rootsystem.write("results/example_1b.py")
+rs.write("results/example_1b.py")
+
+# Plot, using vtk
+vp.plot_roots(rs, "type")

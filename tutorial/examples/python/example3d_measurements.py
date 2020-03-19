@@ -3,6 +3,7 @@ import sys
 sys.path.append("../../..")
 import plantbox as pb
 
+# Data from any source, as Python types
 nodes = [ [0, 1, 0], [0, 1, -1], [0, 1, -2], [0, 1, -3], ]
 segs = [ [0, 1], [1, 2], [2, 3] ]
 cts = [0., 0., 0.]
@@ -18,3 +19,5 @@ ana = pb.SegmentAnalyser(nodes, segs, cts, radii)
 print("length", ana.getSummed("length"))
 
 ana.write("results/example_3f.vtp", ["radius"])  # working
+
+# TODO add data (interchange 3e, and 3f)

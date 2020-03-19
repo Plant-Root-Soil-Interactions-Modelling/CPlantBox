@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 path = "../../../modelparameter/rootsystem/"
-name = "Zea_mays_1_Leitner_2010"
+name = "Brassica_napus_a_Leitner_2010"
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
@@ -23,7 +23,7 @@ soilcolumn = pb.SDF_PlantContainer(r, r, depth, False)  # in the center of the r
 soilcolumn2 = pb.SDF_RotateTranslate(soilcolumn, 0, 0, pb.Vector3d(12, 0, 0))  # shift 10 cm
 
 # pick one geometry for further analysis
-geom = soilcolumn2
+geom = soilcolumn
 
 z_ = np.linspace(0, -1 * depth, layers)
 fig, axes = plt.subplots(nrows = 1, ncols = 4, figsize = (16, 8))

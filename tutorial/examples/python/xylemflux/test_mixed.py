@@ -37,3 +37,10 @@ print("Mesh bounds", ug.GetBounds())
 meshActor, meshCBar = vp.plot_mesh(ug, "water content", "", False)  # "pressure head"  # e.g. "S_liq" "water content"
 
 vp.render_window([rootActor, meshActor], "mixed fun", meshCBar).Start()
+
+
+# # Plot, using vtk
+# rootActor, cBar = vp.plot_roots(rs, "creationTime", False)
+# rootActor.RotateX(90) # to look at it from top
+# vp.render_window(rootActor,"top view", cBar).Start()
+
