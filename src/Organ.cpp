@@ -24,9 +24,8 @@ namespace CPlantBox {
  */
 Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active,
 		double age, double length, Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
-
-:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(), parent(), id(id), param_(param), alive(alive), active(active), age(age), length(length),
- moved(moved), oldNumberOfNodes(oldNON)
+:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), param_(param), plant(), parent(), id(id), alive(alive), active(active), age(age),
+ length(length), moved(moved), oldNumberOfNodes(oldNON)
 { }
 
 /**
@@ -43,9 +42,8 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  */
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ>  parent, int ot, int st, double delay,
 		Vector3d iheading, double pbl, int pni)
-:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),  // unique id from the plant
- param_(plant->getOrganRandomParameter(ot, st)->realize()), // draw specific parameters from random distributions
- age(-delay)
+:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), param_(plant->getOrganRandomParameter(ot, st)->realize()),
+ plant(plant), parent(parent), id(plant->getOrganIndex()), age(-delay)
 { }
 
 /*
@@ -67,7 +65,6 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
 	}
 	return o;
 }
-
 
 /**
  * @return The organ type, which is a coarse classification of the organs.
@@ -318,24 +315,9 @@ std::string Organ::toString() const
 {
 	std::stringstream str;
 	str << "Organ #"<< getId() <<": sub type "<< param_->subType << ", length " << getLength() << " cm, age " << getAge()
-        														<< " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes()
-																<< ", with "<< children.size() << " children";
+    				<< " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes()
+					<< ", with "<< children.size() << " children";
 	return str.str();
-}
-
-/**
- * @return get the organtype by string,
- */
-
-int Organ::getParamSubType(int organtype, std::string str)
-{
-	auto orp = plant.lock()->getOrganRandomParameter(organtype);
-	for (auto& o :orp) {
-		if (o->name == str) {
-			return o->subType;
-		}
-	}
-	return -1;
 }
 
 }

@@ -118,6 +118,24 @@ void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 }
 
 /**
+ * @return Get the organ sub type by its name
+ *
+ * @param organtype 		the organ type
+ * @param str 				the sub type name
+ */
+
+int Organism::getParameterSubType(int organtype, std::string str) const
+{
+	auto orp = this->getOrganRandomParameter(organtype);
+	for (auto& o :orp) {
+		if (o->name == str) {
+			return o->subType;
+		}
+	}
+	return -1;
+}
+
+/**
  * Overwrite if there is the need for additional initializations,
  * before the simulation starts.
  *
