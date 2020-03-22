@@ -79,6 +79,7 @@ public:
 
 protected:
 
+    /* class introspection */
     std::map<std::string, double*> dparam; ///< Parameters with type double that can be read and written
     std::map<std::string, int*> iparam; ///< Parameters with type double that can be read and written
     std::map<std::string, double*> param_sd; ///< Deviations of parameters

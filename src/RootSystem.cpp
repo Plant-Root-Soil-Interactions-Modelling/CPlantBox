@@ -3,17 +3,18 @@
 
 #include "organparameter.h"
 #include "Organism.h"
+#include "RootDelay.h"
 
 namespace CPlantBox {
 
 /**
- * todo doc me
+ * Creates a root system
  */
 RootSystem::RootSystem(): Organism()
 { }
 
 /**
- * todo doc me
+ * Deep copies the organism
  */
 std::shared_ptr<Organism> RootSystem::copy()
 {
@@ -79,7 +80,9 @@ void RootSystem::reset()
 }
 
 /**
- * todo docme
+ * Initializes the xml parameter reader, specifying prototypes for roots (RootRandomParameter), and seed (SeedRandomParameter)
+ *
+ * Overwrite this function if you want to use other parameter classes.
  */
 void RootSystem::initializeReader()
 {
@@ -153,7 +156,7 @@ int RootSystem::readParameters(std::istream& is)
 }
 
 /**
- * DEPRICATED Writes root type parameters to an output stream @param os
+ * (DEPRICATED) Writes root type parameters to an output stream @param os
  *
  * @param os  out stream
  */
@@ -169,25 +172,59 @@ void RootSystem::writeParameters(std::ostream& os) const
  * Sets up the base roots according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.
  *
+ * LB, Length based: Delay for lateral root is calculated from the apical length (classical RootBox approach)
+ *
  * Call this method before simulation and after setting geometry, plant and root parameters
  *
- * @parm basaltype      the type of the basal roots (default = 4)
- * @parm basaltype      the type of the shootborne roots (default = 5)
+ * @parm basal  	    the type of the basal roots (default = 4)
+ * @parm shootborne     the type of the shootborne roots (default = 5)
+ * @param verobse 	 	chatty with the std::couts
  */
-void RootSystem::initialize(int basaltype, int shootbornetype, bool verbose)
+void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
 {
+	seed = std::make_shared<Seed>(shared_from_this());
+	initialize_(basal, shootborne, verbose);
+}
+
+/**
+ * Sets up the base roots according to the plant parameters,
+ * a confining geometry, the tropism functions, and the growth functions.
+ *
+ * DB, Delay based: Delay for lateral root is predefined, apical length therefore not constant
+ *
+ * Call this method before simulation and after setting geometry, plant and root parameters
+ *
+ * @parm basal      	the type of the basal roots (default = 4)
+ * @parm shootborne     the type of the shootborne roots (default = 5)
+ * @param verobse 	 	chatty with the std::couts
+ */
+void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
+{
+    class SeedDB :public Seed { // make the seed use the RootDelay class
+    	using Seed::Seed;
+    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay) override {
+    		std::cout << "SeedDB: createRoot called \n"; // check it works
+    		return std::make_shared<RootDelay>(plant, type, heading, delay, shared_from_this(), 0, 0);
+    	};
+    };
+    seed = std::make_shared<SeedDB>(shared_from_this());
+    initialize_(basal, shootborne, verbose);
+}
+
+/**
+ * Initializes the seed (@see initialize, initializeDB, initializeLB)
+ */
+void RootSystem::initialize_(int basal, int shootborne, bool verbose) {
     reset(); // just in case
 
     // introduce an extra node at nodes[0]
     getNodeIndex(); // increase node index
 
     // create seed
-    seed = std::make_shared<Seed>(shared_from_this());
-    seed->basalType = basaltype;
-    seed->shootborneType = shootbornetype;
+    seed->basalType = basal;
+    seed->shootborneType = shootborne;
     seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
-    // std::cout << "RootSystem::initialize:\n" <<  seedParam.toString() ;
     baseOrgans = seed->copyBaseOrgans();
 
     oldNumberOfNodes = baseOrgans.size();

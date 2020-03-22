@@ -31,9 +31,6 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx)
 
         int i = rs->segments[si].x;
         int j = rs->segments[si].y;
-        auto n1 = rs->nodes[i];
-        auto n2 = rs->nodes[j];
-        auto mid = n1.plus(n2);
         double psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
         double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
         double age = simTime - rs->nodeCTs[j];
@@ -41,6 +38,8 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx)
         double kx = kx_f(age, type);
         double  kr = kr_f(age, type);
 
+        auto n1 = rs->nodes[i];
+        auto n2 = rs->nodes[j];
         auto v = n2.minus(n1);
         double l = v.length();
         double vz = v.z / l; // normed direction
@@ -90,9 +89,8 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
         int segIdx = j-1;
 
         if (rs->seg2cell.count(segIdx)>0) {
-            auto mid = rs->nodes[i].plus(rs->nodes[j]);
 
-            int cellIdx = rs->seg2cell[segIdx];
+        	int cellIdx = rs->seg2cell[segIdx];
             double psi_s = sx.at(cellIdx);
 
             double a = rs->radii[si]; // si is correct, with ordered and unordered segments

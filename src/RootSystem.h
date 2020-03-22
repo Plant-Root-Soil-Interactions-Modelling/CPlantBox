@@ -8,7 +8,6 @@
 #include "soil.h"
 #include "tropism.h"
 #include "Organism.h"
-#include "rootparameter.h"
 #include "Root.h"
 #include "seedparameter.h"
 #include "Seed.h"
@@ -57,23 +56,31 @@ public:
     void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
     void setSoil(SoilLookUp* soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before RootSystem::initialize())
     void reset(); ///< resets the root class, keeps the root type parameters
-    void initialize(bool verbose = true) override { initialize(4,5, verbose); }; ///< creates the base roots, call before simulation and after setting the plant and root parameters
-    virtual void initialize(int basal, int shootborne, bool verbose = true); ///< creates the base roots, call before simulation and after setting the plant and root parameters
+    virtual void initialize(bool verbose = true) override { initializeLB(4,5, verbose); };
+    ///< creates the base roots, call before simulation and after setting the plant and root parameters
+    virtual void initializeLB(int basal = 4, int shootborne = 5, bool verbose = true);
+    ///< creates the base roots (length based lateral emergence times), call before simulation and after setting plant and root parameters
+    virtual void initializeDB(int basal = 4, int shootborne = 5, bool verbose = true);
+    ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting plant and root parameters
     void setTropism(std::shared_ptr<Tropism> tf, int rt = -1); ///< sets a tropism function for a single root type or all root types (defaut)
     void simulate(double dt, bool verbose = false) override; ///< simulates root system growth for time span dt
     void simulate(); ///< simulates root system growth for the time defined in the root system parameters
-    void simulate(double dt, double maxinc, ProportionalElongation* se, bool silence = false); // simulates the root system with a maximal overall elongation
+    void simulate(double dt, double maxinc, ProportionalElongation* se, bool silence = false);
+    ///< simulates the root system with a maximal overall elongation
 
     /* sequential */
     std::vector<std::shared_ptr<Root>> getRoots() const; ///< represents the root system as sequential vector of roots and buffers the result
 
     /* call back function creation */
     void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
-    virtual std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma); ///< creates the tropisms, overwrite or change this method to add more tropisms
-    virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< creates the growth function per root type, overwrite or change this method to add more tropisms
+    virtual std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma);
+    ///< creates the tropisms, overwrite or change this method to add more tropisms
+    virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft);
+    ///< creates the growth function per root type, overwrite or change this method to add more tropisms
 
     /* Analysis of simulation results */
-    int getNumberOfSegments(int ot = -1) const override { return nodeId-numberOfCrowns-1; } ///< number of segments of the root system ((nid+1)-1) - numberOfCrowns - 1 (artificial shoot)
+    int getNumberOfSegments(int ot = -1) const override { return nodeId-numberOfCrowns-1; }
+    ///< number of segments of the root system ((nid+1)-1) - numberOfCrowns - 1 (artificial shoot)
     int getNumberOfRoots(bool all = false) const { if (all) return organId+1; else return getRoots().size(); }
     std::vector<Vector3d> getNodes() const override;
     std::vector<std::shared_ptr<Organ>> getBaseRoots() const { return baseOrgans; } ///< base roots are tap root, basal roots, and shoot borne roots TODO
@@ -88,11 +95,13 @@ public:
     /* Output */
     void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
     void writeVTP(std::ostream & os) const; ///< writes current simulation results as VTP (VTK polydata file)
-    void writeGeometry(std::ostream & os) const; ///< writes the current confining geometry (e.g. a plant container) as paraview python script
+    void writeGeometry(std::ostream & os) const; ///< writes the current confining geometry (e.g. a plant container) as paraview Python script
 
     std::string toString() const override; ///< infos about current root system state (for debugging)
 
 private:
+
+    void initialize_(int basal = 4, int shootborne = 5, bool verbose = true);
 
     std::shared_ptr<Seed> seed = nullptr;
     SeedSpecificParameter seedParam;

@@ -9,6 +9,7 @@ add_library(CPlantBox SHARED
 			stemparameter.cpp
             Organ.cpp
             Root.cpp
+            RootDelay.cpp            
             Seed.cpp
 			Stem.cpp
 			Leaf.cpp
@@ -45,6 +46,7 @@ pybind11_add_module(plantbox SHARED
 			stemparameter.cpp			
             
             Root.cpp
+            RootDelay.cpp
             Seed.cpp
 			Stem.cpp
 			Leaf.cpp

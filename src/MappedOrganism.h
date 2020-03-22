@@ -74,8 +74,8 @@ public:
 
     using RootSystem::RootSystem;
 
-    void initialize(bool verbose = true) override; ///< overridden, to map initial shoot segments,
-    void initialize(int basaltype, int shootbornetype, bool verbose = true) override; ///< overridden, to map initial shoot segments,
+    void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
+    void initializeLB(int basaltype, int shootbornetype, bool verbose = true); ///< overridden, to map initial shoot segments,
 
     void simulate(double dt, bool verbose = false) override; ///< build nodes and segments sequentially
 

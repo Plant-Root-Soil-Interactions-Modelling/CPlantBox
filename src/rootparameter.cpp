@@ -36,8 +36,6 @@ std::string RootSpecificParameter::toString() const
     return str.str();
 }
 
-
-
 /**
  * Default constructor sets up hashmaps for class introspection
  */
@@ -82,8 +80,11 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
     std::vector<double> ln_; // stores the inter-distances
     int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
+    double sum_ln = nob_*ln; // mean length of lateral zone
     for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-        double d = std::max(ln + p->randn()*lns, 1.e-5); // miminum is 1.e-5
+    	double z = ((double)i+0.5)*ln; // regular position along root lateral zone
+    	double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
+        double d = std::max(ln * f + p->randn()*lns, 1.e-5); // miminum is 1.e-5
         ln_.push_back(d);
     }
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
@@ -125,7 +126,8 @@ int RootRandomParameter::getLateralType(const Vector3d& pos)
 }
 
 /**
- * todo docme
+ * The standard deviation of number of branches is calculated form root maximal length lmax, and
+ * its standard deviation lmaxs
  *
  * todo I have no idea why this holds...
  */
@@ -205,7 +207,7 @@ void RootRandomParameter::readXML(tinyxml2::XMLElement* element)
 /**
  * @copydoc OrganTypeParameter::writeXML()
  *
- * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
+ * We only need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
  */
 tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
 {
@@ -232,11 +234,7 @@ tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
 }
 
 /**
- * @return Mean maximal root length of this roo    description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
- * t type
- *
- * CPlantBox parameter reader
- * todo Depricated: use readXML instead
+ * CPlantBox parameter reader (DEPRICATED)
  */
 void RootRandomParameter::read(std::istream & cin)
 {
@@ -265,8 +263,7 @@ void RootRandomParameter::read(std::istream & cin)
 }
 
 /**
- * CPlantBox parameter write
- * todo Depricated: use writeXML instead
+ * CPlantBox parameter write (DEPRICATED)
  */
 void RootRandomParameter::write(std::ostream & cout) const {
     std::cout << "RootRandomParameter::write is deprecated, use writeXML instead \n";
@@ -307,6 +304,9 @@ void RootRandomParameter::bindParameters()
     bindParameter("theta", &theta, "Angle between root and parent root [rad]", &thetas);
     bindParameter("rlt", &rlt, "Root life time [day]", &rlts);
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);
+   // NEW
+    bindParameter("lnk", &lnk, "Slope of inter-lateral distances [1]");
+    bindParameter("ldelay", &lnk, "Lateral root emergence delay [day]", &ldelays);
     // other parameters (descriptions only)
     description["successor"] = "Sub type of lateral roots";
     description["successorP"] = "Probability of each sub type to occur";

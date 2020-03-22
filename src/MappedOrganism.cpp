@@ -262,9 +262,9 @@ int MappedSegments::soil_index_(double x, double y, double z) {
  * Shoot segments have per default radii = 0.1 cm, types = 0
  * This can be changed by directly accessing the member variables.
  */
-void MappedRootSystem::initialize(int basaltype, int shootbornetype, bool verbose) {
+void MappedRootSystem::initializeLB(int basaltype, int shootbornetype, bool verbose) {
     std::cout << "MappedRootSystem::initialize \n" << std::flush;
-    RootSystem::initialize(basaltype, shootbornetype, verbose);
+    RootSystem::initializeLB(basaltype, shootbornetype, verbose);
     segments = this->getShootSegments();
     nodes = this->getNodes();
     nodeCTs = this->getNodeCTs();
@@ -282,7 +282,7 @@ void MappedRootSystem::initialize(int basaltype, int shootbornetype, bool verbos
  * This can be changed by directly accessing the member variables.
  */
 void MappedRootSystem::initialize(bool verbose) {
-    this->initialize(4,5, verbose);
+    this->initializeLB(4,5, verbose);
 }
 
 /**
