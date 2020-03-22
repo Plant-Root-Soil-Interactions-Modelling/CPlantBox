@@ -27,3 +27,4 @@ ana.write("results/example_4c_periodic.vtp")
 box = pb.SDF_PlantBox(20, 15, 35)
 rs.setGeometry(box)
 rs.write("results/example_4c_periodic.py")
+

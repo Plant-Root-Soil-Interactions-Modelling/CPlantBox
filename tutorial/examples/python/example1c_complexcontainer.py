@@ -2,6 +2,7 @@
 import sys
 sys.path.append("../../..")
 import plantbox as pb
+import vtk_plot as vp
 import math
 
 rs = pb.RootSystem()
@@ -48,14 +49,17 @@ rhizotubes = pb.SDF_Union(rhizotubes_)
 rhizoTube = pb.SDF_Difference(box, rhizotubes)
 
 # Set geometry: rotatedRhizotron, splitBox, or rhizoTube
-rs.setGeometry(rhizoTube)
+rs.setGeometry(rotatedRhizotron)
 
 # Simulate
 rs.initialize()
 rs.simulate(90)  # days
 
 # Export results (as vtp)
-rs.write("results/example_2a.vtp")
+rs.write("results/example_1c.vtp")
 
 # Export container geometry as Paraview Python script
-rs.write("results/example_2a.py")
+rs.write("results/example_1c.py")
+
+# Plot, using vtk
+vp.plot_roots(rs, "type")

@@ -15,7 +15,7 @@ def set_all_sd(rs, s):
         p.lbs = p.lb * s
         p.las = p.la * s
         p.lns = p.ln * s
-        p.nobs = p.nob * s
+        # p.nobs = p.nob * s TODO
         p.rs = p.r * s
         p.a_s = p.a * s
 

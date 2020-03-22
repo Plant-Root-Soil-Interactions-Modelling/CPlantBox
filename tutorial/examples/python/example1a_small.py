@@ -2,19 +2,23 @@
 import sys
 sys.path.append("../../..")
 import plantbox as pb
+import vtk_plot as vp
 
-rootsystem = pb.RootSystem()
+rs = pb.RootSystem()
 
 # Open plant and root parameter from a file
 path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
-rootsystem.readParameters(path + name + ".xml")
+rs.readParameters(path + name + ".xml")
 
 # Initialize
-rootsystem.initialize()
+rs.initialize()
 
-# Simulategit stat
-rootsystem.simulate(30, True)
+# Simulate
+rs.simulate(30, True)
 
 # Export final result (as vtp)
-rootsystem.write("results/example_1a.vtp")
+rs.write("results/example_1a.vtp")
+
+# Plot, using vtk
+vp.plot_roots(rs, "creationTime")

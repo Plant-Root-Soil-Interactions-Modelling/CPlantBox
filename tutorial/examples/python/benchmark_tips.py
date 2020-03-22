@@ -30,7 +30,8 @@ def simOnce(name, simtime, lbins, lrange, zbins, zrange, dx, dt):
 
     # Simulation
     rs = pb.RootSystem()
-    rs.openFile(name, "modelparameter/")
+    path = "../../../modelparameter/rootsystem/"
+    rs.readParameters(path + name + ".xml")
     for p in rs.getRootRandomParameter():
         p.dx = dx
 
@@ -89,9 +90,9 @@ dt = 5
 simtime = 60
 
 runs = 100
-# name = "Lupinus_albus_Leitner_2014"
+name = "Lupinus_albus_Leitner_2014"
 # name = "Zea_mays_1_Leitner_2010"
-name = "Anagallis_femina_Leitner_2010"
+# name = "Anagallis_femina_Leitner_2010"
 # name = "Triticum_aestivum_a_Bingham_2011"
 
 # Histogram params

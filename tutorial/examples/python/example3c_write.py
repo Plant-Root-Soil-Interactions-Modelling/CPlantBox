@@ -20,3 +20,5 @@ for s in aseg:
 ana.write("results/example_3e.dgf")
 
 print("done.")
+
+# TODO other options...

@@ -7,12 +7,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 path = "../../../modelparameter/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"
+name = "Brassica_napus_a_Leitner_2010"
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
 rs.initialize()
-rs.simulate(7)  # 7 days young....
+rs.simulate(21, True)  # 7 days young....
 
 print(rs.getNumberOfNodes(), "nodes")
 print(rs.getNumberOfSegments(), "segments")
@@ -22,14 +22,14 @@ polylines = rs.getPolylines()
 bases = np.zeros((len(polylines), 3))
 tips = np.zeros((len(polylines), 3))
 for i, r in enumerate(polylines):
-    bases[i, :] = [r[0].x, r[0].y, r[0].z]
-    tips[i, :] = [r[-1].x, r[-1].y, r[-1].z]
+    bases[i, :] = [r[0].x, r[0].y, r[0].z]  # first index is the base
+    tips[i, :] = [r[-1].x, r[-1].y, r[-1].z] # last index is the tip
 
 # Or, use node indices to find tip or base nodes
 nodes = np.array((list(map(np.array, rs.getNodes()))))
 tipI = rs.getRootTips()
 baseI = rs.getRootBases()
-
+ 
 # Plot results (1st approach)
 plt.title("Top view")
 plt.xlabel("cm")
@@ -37,7 +37,7 @@ plt.ylabel("cm")
 plt.scatter(nodes[baseI, 0], nodes[baseI, 1], c = "g", label = "root bases")
 plt.scatter(nodes[tipI, 0], nodes[tipI, 1], c = "r", label = "root tips")
 plt.legend()
-plt.savefig("results/example_3b.png")
+plt.savefig("results/example_2c.png")
 plt.show()
 
  # check if the two approaches yield the same result
