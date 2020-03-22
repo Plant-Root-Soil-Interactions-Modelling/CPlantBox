@@ -13,7 +13,7 @@ Seed::Seed(std::shared_ptr<Organism> plant)
 :Organ(plant, nullptr, Organism::ot_seed, 0, 0., Vector3d(), 0., 0)
 {
 	// realize() is called in Organ constructor
-	addNode(param()->seedPos,0);
+	addNode(param()->seedPos, 0.);
 }
 
 /**

@@ -178,10 +178,12 @@ void RootSystem::writeParameters(std::ostream& os) const
  *
  * @parm basal  	    the type of the basal roots (default = 4)
  * @parm shootborne     the type of the shootborne roots (default = 5)
- * @param verobse 	 	chatty with the std::couts
+ * @param verbose 	 	chatty with the std::couts
  */
 void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
 {
+	reset(); // just in case
+    getNodeIndex(); // introduce an extra node at nodes[0] (todo why?)
 	seed = std::make_shared<Seed>(shared_from_this());
 	initialize_(basal, shootborne, verbose);
 }
@@ -196,10 +198,13 @@ void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
  *
  * @parm basal      	the type of the basal roots (default = 4)
  * @parm shootborne     the type of the shootborne roots (default = 5)
- * @param verobse 	 	chatty with the std::couts
+ * @param verbose 	 	chatty with the std::couts
  */
 void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
 {
+	reset(); // just in case
+    getNodeIndex(); // introduce an extra node at nodes[0] (todo why?)
+
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
     	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay) override {
@@ -207,6 +212,7 @@ void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
     		return std::make_shared<RootDelay>(plant, type, heading, delay, shared_from_this(), 0, 0);
     	};
     };
+
     seed = std::make_shared<SeedDB>(shared_from_this());
     initialize_(basal, shootborne, verbose);
 }
@@ -214,19 +220,13 @@ void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
 /**
  * Initializes the seed (@see initialize, initializeDB, initializeLB)
  */
-void RootSystem::initialize_(int basal, int shootborne, bool verbose) {
-    reset(); // just in case
-
-    // introduce an extra node at nodes[0]
-    getNodeIndex(); // increase node index
-
-    // create seed
+void RootSystem::initialize_(int basal, int shootborne, bool verbose)
+{
     seed->basalType = basal;
     seed->shootborneType = shootborne;
     seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
     baseOrgans = seed->copyBaseOrgans();
-
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();
 }
