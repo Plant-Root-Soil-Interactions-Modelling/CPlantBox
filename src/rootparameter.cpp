@@ -84,7 +84,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     for (int i = 0; i<nob_-1; i++) { // create inter-root distances
     	double z = ((double)i+0.5)*ln; // regular position along root lateral zone
     	double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
-        double d = std::max(ln * f + p->randn()*lns, 1.e-5); // miminum is 1.e-5
+        double d = std::max(ln + f + p->randn()*lns, 1.e-5); // miminum is 1.e-5
         ln_.push_back(d);
     }
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
