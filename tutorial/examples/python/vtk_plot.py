@@ -63,12 +63,13 @@ def uniform_grid(min_, max_, res):
     return grid
 
 
-def render_window(actor, title = "", scalarBar = None):
+def render_window(actor, title = "", scalarBar = None, axis = 'side_view'):
     """ puts a vtk actor on the stage (an interactive window) @name is the window titel 
     
     @param actor         the (single) actor
     @param windowName    optional
     @param scalarBar     an optional vtkScalarBarActor
+    @param axis          inital view: 'side_view' (default, xz), 'top_view' (xy),'oblique' (nice)  
     @return The vtkRenderWindow (not sure if this is ever needed)
     
     (built in)
@@ -102,7 +103,13 @@ def render_window(actor, title = "", scalarBar = None):
     else:
         actors = [actor]  # army of one
     for a in actors:
-        a.RotateX(-90)
+        if axis=='side_view':        
+            a.RotateX(-90)
+        elif axis == 'top_view':
+            pass
+        elif axis == 'oblique':
+            a.RotateX(-70.)
+            a.RotateZ(45.)
         ren.AddActor(a)  # Add the actors to the renderer, set the background and size
     if scalarBar is not None:
         ren.AddActor2D(scalarBar)
@@ -160,11 +167,12 @@ def get_lookup_table(colorSeriesEnum = 15):
     return lut
 
 
-def plot_roots(pd, p_name, render = True):
+def plot_roots(pd, p_name, render = True, axis = 'side_view'):
     """ renders the root system in an interactive window 
     @param pd         the polydata representing the root system
     @param p_name      parameter name of the data to be visualized
     @param render     render in a new interactive window (default = True)
+    @param axis       inital view: 'side_view' (default, xz), 'top_view' (xy),'oblique' (nice)  
     @return The vtkActor object
     """
     if isinstance(pd, pb.RootSystem):
@@ -206,11 +214,11 @@ def plot_roots(pd, p_name, render = True):
 #    scalarBar.SetAnnotationTextProperty(textProperty)
 
     if render:
-        render_window(plantActor, p_name, scalarBar).Start()
+        render_window(plantActor, p_name, scalarBar, axis).Start()
     return plantActor, scalarBar
 
 
-def plot_mesh(grid, p_name, win_title = "", render = True):
+def plot_mesh(grid, p_name, win_title = "", render = True, axis = 'side_view'):
     """ Plots the grid as wireframe
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
@@ -249,7 +257,7 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
 #     scalarBar.GetLabelTextProperty().SetFontSize(1)
 
     if render:
-        render_window(meshActor, win_title, scalarBar).Stat()
+        render_window(meshActor, win_title, scalarBar, axis).Stat()
     return meshActor, scalarBar
 
 

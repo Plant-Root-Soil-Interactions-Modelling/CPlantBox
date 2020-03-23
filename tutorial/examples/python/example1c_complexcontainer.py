@@ -62,4 +62,4 @@ rs.write("results/example_1c.vtp")
 rs.write("results/example_1c.py")
 
 # Plot, using vtk
-vp.plot_roots(rs, "type")
+vp.plot_roots(rs, "type", True, 'oblique')

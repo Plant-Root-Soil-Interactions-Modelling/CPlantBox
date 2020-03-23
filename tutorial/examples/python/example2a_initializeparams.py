@@ -48,7 +48,7 @@ srp.firstB = 10. # [day] first emergence of a basal root
 srp.delayB = 3. # [day] delay between the emergence of basal roots
 rs.setRootSystemParameter(srp)
 
-rs.initialize(1, 1)  # basalType, shootborneType
+rs.initialize()
 rs.simulate(40) #  [day]
 rs.write("../results/example_2a.vtp")
 
