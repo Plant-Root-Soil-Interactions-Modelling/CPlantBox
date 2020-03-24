@@ -75,23 +75,35 @@ std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<
 std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 {
     auto p = plant.lock();
-    //& std::cout << "RootTypeParameter::realize(): subType " << subType << "\n" << std::flush;
-    double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
-    double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+    double lb_;
+    double la_;
     std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
-    double sum_ln = nob_*ln; // mean length of lateral zone
-    for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-    	double z = ((double)i+0.5)*ln; // regular position along root lateral zone
-    	double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
-        double d = std::max(ln + f + p->randn()*lns, 1.e-5); // miminum is 1.e-5
-        ln_.push_back(d);
+
+    if (successor.size()==0) { // no laterals
+
+    	lb_ = 0;
+        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
+
+    } else { // laterals
+
+        lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
+        la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+
+        int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
+        double sum_ln = nob_*ln; // mean length of lateral zone
+        for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+        	double z = ((double)i+0.5)*ln; // regular position along root lateral zone
+        	double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
+            double d = std::max(ln + f + p->randn()*lns, 1.e-5); // miminum is 1.e-5
+            ln_.push_back(d);
+        }
     }
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.); // radius
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
-    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
+
+    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 }
 
 /**

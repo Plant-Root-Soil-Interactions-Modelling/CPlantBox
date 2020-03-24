@@ -497,7 +497,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("f_sbp", &RootRandomParameter::f_sbp);
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, int, double, double, double, double>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
             .def_readwrite("lb", &RootSpecificParameter::lb)
             .def_readwrite("la", &RootSpecificParameter::la)
             .def_readwrite("ln", &RootSpecificParameter::ln)

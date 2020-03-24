@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <iostream>
 
 #include "external/tinyxml2/tinyxml2.h"
 

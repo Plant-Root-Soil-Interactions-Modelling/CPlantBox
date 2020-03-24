@@ -24,8 +24,8 @@ namespace CPlantBox {
  * @param segCT     creation time of each segment
  * @param radii     the segment radii
  */
-SegmentAnalyser::SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector2i> segments, std::vector<double> segCTs, std::vector<double> radii)
-:nodes(nodes), segments(segments)
+SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::vector<Vector2i>& segments,
+		const std::vector<double>& segCTs, const std::vector<double>& radii) :nodes(nodes), segments(segments)
 {
     assert((segments.size() == segCTs.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
     assert((segments.size() == radii.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");

@@ -256,7 +256,9 @@ void Root::createLateral(bool verbose)
     int lt = getRootRandomParameter()->getLateralType(nodes.back());
     if (lt>0) {
         double ageLN = this->calcAge(length); // age of root when lateral node is created
-        double ageLG = this->calcAge(length+param()->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+        double meanLn = getRootRandomParameter()->ln; // mean inter-lateral distance
+        double effectiveLa = std::max(param()->la-meanLn/2, meanLn/2); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+        double ageLG = this->calcAge(length+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
         children.push_back(lateral);
@@ -380,7 +382,7 @@ double Root::getParameter(std::string name) const
     if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
-    if (name=="nob") { return param()->nob(); } // number of branches
+    if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes (todo numberOfLaterals, i.e. numberOfChilds that have age>0)
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
     if (name=="radius") { return param()->a; } // root radius [cm]
     if (name=="a") { return param()->a; } // root radius [cm]

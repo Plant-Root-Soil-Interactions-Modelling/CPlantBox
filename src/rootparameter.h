@@ -25,8 +25,8 @@ class RootSpecificParameter :public OrganSpecificParameter
 
 public:
 
-    RootSpecificParameter(): RootSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
-    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt):
+    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
+    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
         OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln) { }; ///< Constructor setting all parameters
 
     /*
@@ -39,7 +39,7 @@ public:
     double rlt;             ///< Root life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
 
-    int nob() const { return ln.size(); } ///< return the maximal number of lateral branches [1] todo should be -1, but on the ohter hand the last one is never reached, we should fix this
+    int nob() const { return ln.size()+1; } ///< return the maximal number of lateral branching nodes [1]
     double getK() const; ///< Returns the exact maximal root length of this realization [cm]
 
     std::string toString() const override; ///< for debugging
@@ -64,8 +64,8 @@ public:
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 
     int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
-    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1] todo inconsistent with
-    double nobs() const; ///< returns the standard deviation of number of branches [1]
+    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean maximal number of branching nodes [1]
+    double nobs() const; ///< returns the standard deviation of number of branching nodes [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging
 

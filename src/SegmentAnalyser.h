@@ -23,7 +23,8 @@ class SegmentAnalyser
 public:
 
     SegmentAnalyser() { }; ///< creates an empty object (use AnalysisSDF::addSegments)
-    SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector2i> segments, std::vector<double> segCTs, std::vector<double> radii); ///< everything from scratch
+    SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::vector<Vector2i>& segments,
+    		const std::vector<double>& segCTs, const std::vector<double>& radii); ///< everything from scratch
     SegmentAnalyser(const Organism& plant); ///< creates an analyser object containing the segments from the organism @param plant
     SegmentAnalyser(const MappedSegments& plant); ///< creates an analyser object containing the segments from @param plant
     virtual ~SegmentAnalyser() { }; ///< nothing to do here
