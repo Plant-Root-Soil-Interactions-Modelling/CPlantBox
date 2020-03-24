@@ -12,7 +12,7 @@ name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
 # Initialize
-rs.initialize()
+rs.initializeDB(1, 4)
 
 # Simulate
 rs.simulate(30, True)

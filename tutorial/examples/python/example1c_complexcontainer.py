@@ -52,7 +52,7 @@ rhizoTube = pb.SDF_Difference(box, rhizotubes)
 rs.setGeometry(rotatedRhizotron)
 
 # Simulate
-rs.initialize()
+rs.initialize() 
 rs.simulate(90)  # days
 
 # Export results (as vtp)

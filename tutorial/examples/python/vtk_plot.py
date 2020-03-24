@@ -92,7 +92,7 @@ def render_window(actor, title = "", scalarBar = None, axis = 'side_view'):
     """
     colors = vtk.vtkNamedColors()  # Set the background color
     bkg = map(lambda x: x / 255.0, [26, 51, 102, 255])
-    colors.SetColor("BkgColor", *bkg)
+    colors.SetColor("BkgColor", *bkg) # "*" for unpacking the containers.
     ren = vtk.vtkRenderer()  # Set up window with interaction
     renWin = vtk.vtkRenderWindow()
     renWin.AddRenderer(ren)

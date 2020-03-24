@@ -1,30 +1,29 @@
-\section{Basic usage} /label{sec:basic}
+\section{Basic usage} \label{sec:basic}
 
 \subsection{Installation notes}
 
-After successfully compiling CPlantBox the Python library \emph{plantbox} should be available on the system. 
-Additionally, you will need the following Python packages: numpy, scipy, matplotlib, and vtk (e.g. pip3 install numpy). 
+After successfully compiling CPlantBox the Python library \emph{plantbox} should be available on the system. % TODO do we have a tutorial for that?
+Additionally, you will need Python 3 to run the sripts with the additional Python packages: numpy, scipy, matplotlib, and vtk (e.g. pip3 install numpy). \\
 
-The figures of the rootsystem were created using Paraview, and some Paraview Python scripts for convenience.
-% TODO
+The figures of the rootsystem were created using Paraview, and some Paraview Python scripts for convenience. % TODO
 
 \subsection{Small example}
 
 The first example shows how to use CPlantBox: open a parameter file (L12), do the simulation (L18), 
-save the result (L21), and make an interactive plot showing the results (L24). 
+save the results (L21), and make an interactive plot showing the results (L24). 
 
 \lstinputlisting[language=Python, caption=Example 1a]{../../examples/python/example1a_small.py} 
 
 \noindent 
 Lets revise the above code in more detail: 
 \begin{itemize}
- \item[2,3] We add the path to py\_plantbox.
- \item[3] Imports the CPlantBox Python library (py\_plantbox) and name it pb.
+ \item[2,3] We add the path to find the \emph{plantbox} module.
+ \item[3] Imports the CPlantBox Python library \emph{plantbox} and name it pb.
  \item[4] Imports a auxilliary script for visualization of the rootsystem with vtk
  \item[7] Constructs the root system object.
  \item[12] Opens an .xml containing parameters describing the types of root (RootRandomParameters), 
  and the type of pant (SeedRandomParameters). Alternatively, all parameter can be set or modified directly in Python 
- (see Section \ref{sec:sa}).
+ (see Section \ref{sec:from_scratch}).
  \item[15] Initializes the simulation: Creates the tap root the base roots 
  (i.e. all basal roots, and shoot borne roots that might emerge), creates the tropisms and passes the domain geometry to it, 
  and creates the elongation functions. 
@@ -103,9 +102,12 @@ and then cut them out the surrounding box by taking the difference.
 \item[52] Pick one of the three geometries for your simulation.
 \item[62] Also more complex geometries can be visualized by the Paraview script, 
 however, set operations are not really performed, only the involved geometries are visualized.
-\item[65] As before we cannot visualize the container geometry in the interactive rendering, but only the roots. 
+\item[65] As before we cannot visualize the container geometry in the interactive rendering, but only the roots. We give two additional arguments: The first argument 'True' indicates that an interactive window should be created, otherwise with 'False' we are only interested in the return value of the method. The second argument is the axis alignhment. Currently, the options are 'top\_view', 'side\_view' (default), or 'oblique'. 
 
 \end{itemize}
+
+% TODO describe the creation of hte paraview plots in detail...
+
 
 \begin{figure}
 \begin{subfigure}[c]{0.3\textwidth}
@@ -143,11 +145,10 @@ and finally export the single file L36. The resulting geometry is shown in Figur
 
 \end{itemize}
 
+If we consider only one plant type we often simplify plot scale simulations to a single plant simulation with periodic boundary conditions. We can analyse the root geometry with an underlying periodic grid as described in Section \ref{ssec:periodic}. 
+
 \begin{figure}
 \centering
 \includegraphics[width=0.7\textwidth]{example_2b.png}
 \caption{Multiple root systems (Example 1d), colors denote the creation time of the root segments} \label{fig:multiple}
 \end{figure}
-
-
-
