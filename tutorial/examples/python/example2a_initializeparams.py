@@ -29,7 +29,7 @@ p1.name = "lateral"
 p1.a = 0.1  # [cm] radius
 p1.subType = 2  # [1] index starts at 1
 p1.lmax = 15  # # [cm] apical zone
-p1.lmaxs = 0.15  # [cm] standard deviation of the apical zone, 10%ce
+p1.lmaxs = 0.15  # [cm] standard deviation of the apical zone
 p1.theta = 90. / 180.*np.pi  # [rad] 
 p1.r = 2  # initial growth rate
 p1.dx = 1  # [cm] axial resolution
@@ -50,7 +50,7 @@ rs.setRootSystemParameter(srp)
 rs.initialize()
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 7))
-simtimes = [0, 30, 60, 125]  # the last will emerge at -(lmax/r)*ln(1-(lmax-ln/2)/r) = 122.8 
+simtimes = [0, 30, 60, 125]  # the last lateral will emerge at 
 for i in range(0, 3):
 
     rs.simulate(np.diff(simtimes)[i])  #  [day]

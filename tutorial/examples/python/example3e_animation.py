@@ -18,13 +18,13 @@ rs.simulate(60)  # days
 
 # Export results as segments
 ana = pb.SegmentAnalyser(rs)
-ana.write("results/example_4c.vtp")
+ana.write("results/example_3e.vtp")
 
 ana.mapPeriodic(20, 15)
-ana.write("results/example_4c_periodic.vtp")
+ana.write("results/example_3e_periodic.vtp")
 
 # Export geometry as Paraview Python script
 box = pb.SDF_PlantBox(20, 15, 35)
 rs.setGeometry(box)
-rs.write("results/example_4c_periodic.py")
+rs.write("results/example_3e_periodic.py")
 

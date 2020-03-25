@@ -9,9 +9,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# sets all standard deviation to value*s
+# sets all standard deviation to a percantage, i.e. value*s
 def set_all_sd(rs, s):
     for p in rs.getRootRandomParameter():
+        p.lmaxs = p.lmaxs * s
         p.lbs = p.lb * s
         p.las = p.la * s
         p.lns = p.ln * s
@@ -80,5 +81,5 @@ axes[1].set_ylabel('Mean tip radial distance (cm)')
 axes[0].plot(theta0_, depth_)
 axes[1].plot(theta0_, rad_dist_)
 fig.subplots_adjust()
-plt.savefig("results/example_4b.png")
+plt.savefig("results/example_2f.png")
 plt.show()

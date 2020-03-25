@@ -23,8 +23,7 @@ p0.name, p0.subType, p0.lmax, p0.r, p0.dx, p0.theta = "taproot", 1, 50., 2., dx0
 p0.tropismT, p0.tropismN, p0.tropismS = pb.TropismType.gravi, 2, 0.1 
 p0.successor, p0.successorP = [2], [1.]  # set up successors
 p0.lns = 0.  # test with other values...
-p0.lb = 2  
-p0.la = 5   
+p0.lb, p0.la = 0., 0.   
 rs.setOrganRandomParameter(p0) 
 
 p1 = pb.RootRandomParameter(rs)

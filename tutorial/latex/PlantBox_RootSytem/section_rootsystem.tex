@@ -1,51 +1,57 @@
 \section{The RootSystem class} \label{sec:rs}
 
-The class RootSystem is responsible for the model parameters and controls the simulation. Additionally, the class offers utility functions for post processing on a per root level, where each root is represented by polyline, e.g. a list of nodes. Post processing functions per segment can be found in the class SegmentAnalyser (see Section \ref{sec:sa}), where a segment is part of the root represented by a line connecting two nodes.
+The class RootSystem is responsible for the model parameters and controls the simulation. Additionally, the class offers utility functions for post processing on a per root level, where each root is represented by a polyline, which is represented by Python list of nodes. 
+
+Post processing functions per segment can be found in the class SegmentAnalyser (see Section \ref{sec:sa}), where a segment is part of the root represented by a line connecting two nodes.
+
+
 
 \subsection{Initialize parameters from scratch} \label{sec:from_scratch}
  
-In the previous examples we always opened the root system parameters from a file. In this example we show how to do everything in a Python script without the need of any parameter files. This is especially important if we want to modify parameters in our scripts (e.g. like it is needed for a sensitivity analysis, see Section \ref{ssec:sensitivity}).
+In the previous examples we opened the root system parameters from a xml file. In this example we show how to do everything in a Python script without the need of any parameter file. This is especially important if we want to modify parameters in our scripts (e.g. like it is needed for a sensitivity analysis, see Section \ref{ssec:sensitivity}).
 
 In order to set up a simulation by hand, we have to define all relevant model parameters. This is done by creating a RootRandomParameter object for each root type, and a SeedRandomParameter for each plant type. 
 
-Note that within the simulation, the parameters for a specific root (RootSpecificParameter) are generated from the RootRandomParameter class which represents the random distributions of certain parameters.
+Note that during the simulation, the parameters for a specific root (RootSpecificParameter) are generated from the RootRandomParameter class which represents the random distributions of certain parameters.
 
 \lstinputlisting[language=Python, caption=Example 2a]{../../examples/python/example2a_initializeparams.py}
 
 \begin{itemize}
 
 \item[11,12] Create the root type parameters of type 1 and type 2.
-\item[16-36] We set up a simple root system by hand. First we define the tap root L14-L27, then the laterals L29-L36. By default all standard deviations are 0. Most parameters standard deviations can be set with an additional 's' appended to the parameter name, e.g. las is the std of la, see L32
-\item[38,39] Set the root type parameters.
+\item[16-38] We set up a simple root system by hand. First we define the tap root L12-L26, then the laterals L28-L38. By default all standard deviations are 0. Most parameters standard deviations can be set with an additional 's' appended to the parameter name, e.g. $lmaxs$ is the standard deviation of $lmax$, see L32
+\item[40,41] Set the root type parameters.
 
-\item[32-46] Create the seed random parameter stating when basal and shoot borne roots emerge. In this example we neglect shoot borne roots, and just define the seed location and  the emergence times (in days) of the basal roots.
-\item[47] Sets the root system parameters.
+\item[43-47] Create the seed random parameter stating when basal and shoot borne roots emerge. In this example we neglect basal adn shoot borne roots, and just define the seed location and deactivate basal roots by setting their maximal number $maxB$ to 0 ($firstB$ and $delayB$ are ignored i that case). 
+\item[48] Sets the root system parameters.
 
-\item[49] We state the root types of basal and shoot borne roots. 
-Per default these types are 4 (for basal) and 5 (for shootborne). 
-If they are not set a warning is produced and the tap root type 1 is taken. 
-\item[50,51] Simulate and export results. 
+\item[53] We choose the simulation times in a way that we can see the temporal development, and that all lateral roots have emerged in the final time step.
 
-\item[57-55] It is not only possible to set all model parameter, 
-but to retrieve all parameters after the simulation with rs.getParameter. 
-For all parameters that are derived from a distribution the root specific parameters are returned (L56), 
-i.e. the values that were drawn from the normal distribution. 
-The root random parameter can be accessed by adding '\_mean', '\_dev' to the parameter value (L57).  
+\item[54-70] Within the simulation loop we create Figure \ref{fig:ip}. L58-61 defines the limits and titles. In L63 we retrieve the roots as a polylines which is a list of roots, each root represented as list of nodes.
 
-\item[56-63] Simulation results can also accessed with getParameter(), 
-which returns the parameter value per root. Especially, note the difference between la, and la\_mean
+\item[75-80] It is not only possible to set all model parameter, 
+but to retrieve the parameters after the simulation with rs.getParameter(), which returns one value per root. For all parameters that are derived from a random distribution the root specific parameter is returned (e.g. $la$, L78), i.e. the values that were drawn from the normal distribution. The root random parameter can be accessed by adding '\_mean', '\_dev' to the parameter value (e.g. $la\_mean$, L79).
 
 \end{itemize}
 
-Note that all parameters can be set and modified within Python. 
-Especially, standard deviations can be set to zero in order to be able to precisely predict the result. 
-For example we can calculate the total root system length analytically, 
-and check if the numerical simulation yield the (exact) same result. 
-This is performed in the tests withing test\_root.py, and test\_rootsystem, 
-which is used to test and validate CPlantBox and formerly CRootBox.
+Note that all parameters can be set and modified within Python. Especially, standard deviations can be set to zero in order to be able to precisely predict the result. For example we can calculate the total root system length analytically, and check if the numerical simulation yield the (exact) same result. This is performed in the tests withing test\_root.py, and test\_rootsystem, which is used to test and validate CPlantBox and formerly CRootBox.
+
+With such simple simualtions, we can quickly check if the model does, what we expect. For exmaple the maximal number of laterals of above parameters is 16 
+$= round(lmax - la - lb)/ln +  1$. We can calulate the time when the final lateral emerges as $-(lmax/r)*ln(1-(lmax-ln/2)/lmax)$ = 122.8 days. At simulation time 125 the root is 2.2 days old, and therefore approximately 4.4 cm long (initial growth rate $r_1 = 2$), which agrees with Figure \ref{fig:ip}.
+
+% comment on length of apical zone
+
+% ref comming sections
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{fig_initializeparams.png}
+\caption{Root development} \label{fig:ip}
+\end{figure}
 
 
-\subsection{Root tropism parameters $N$ and $\sigma$}
+
+\subsection{Root tropism parameters $N$ and $\sigma$} \label{ssec:tropism}
 
 We show the influence parameters $N$ and $\sigma$ in the case of gravitropism. The parameter $N$ [1] denotes the strength of the tropism, and $\sigma$ [cm$^{-1}$] the flexibility of the root, i.e. the expected angular variation per cm root length. 
 
@@ -60,12 +66,11 @@ We show the influence parameters $N$ and $\sigma$ in the case of gravitropism. T
 
 \item[25-28] The loop runs over the parameters we want to modify. We create a subplot for each configuration, and start with a new root system by calling reset in L28.
 
-\item[L30-34] We set the parameters (L30,L31) and do the simulation (L33,L34)
+\item[30-34] We set the parameters (L30,L31) and do the simulation (L33,L34)
 
 \item[36-44] Matplotlib is used for visualization (looping over the segments is rather slow). L36 gives a list of all nodes, and L37 of all segments as two node indices. Therefore, each segment starting node n1 and end node n2, as defined in L39.
 
 \item[L48] Creates Figure \ref{fig:tropism}.
-
 \end{itemize}
 
 In the first column of Figure \ref{fig:tropism} nothing happens, because if the root has no flexibility to bend ($\sigma$=0), the strength has no influence on the resulting root system. 
@@ -76,20 +81,30 @@ The other subplots show different shapes of the root system. We normally derive 
 
 \begin{figure}
 \centering
-\includegraphics[width=0.7\textwidth]{fig_gravitropism.png}
-\caption{Influence of $N$ and $\sigma$ in case of gravitropism (Example 2b) } \label{fig:tropism}
+\includegraphics[width=\textwidth]{fig_gravitropism.png}
+\caption{Influence of $N$ and $\sigma$ in case of gravitropism} \label{fig:tropism}
 \end{figure}
 
 
 
 
-\subsection{Inter lateral spacing ($ln$, $lnk$)}
+\subsection{Inter lateral spacing ($ln$, $lnk$)} \label{ssec:spacing}
 
 A single root is divided in the basal zone, the root branching zone, and the root apical zone. Basal and apical zone are given by the parameters $la$, and $lb$ with standard deviations $la_s$ and $lb_s$. 
 
 The root branching zone can be calculated form the maximal root length $lmax$
 
+\lstinputlisting[language=Python, caption=Example 2c]{../../examples/python/example2c_lateralspacing.py}
 
+\begin{itemize}
+\item[10-13] TODO
+\end{itemize}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.99\textwidth]{fig_lateralspacing.png}
+\caption{Inter-lateral spacing, larger near base (left column), constant (mid column), and smaller near base (right column) } \label{fig:spacing}
+\end{figure}
 
 
 

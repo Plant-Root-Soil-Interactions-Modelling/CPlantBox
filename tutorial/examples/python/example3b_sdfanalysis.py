@@ -26,7 +26,7 @@ soilcolumn2 = pb.SDF_RotateTranslate(soilcolumn, 0, 0, pb.Vector3d(12, 0, 0))  #
 geom = soilcolumn
 
 z_ = np.linspace(0, -1 * depth, layers)
-fig, axes = plt.subplots(nrows = 1, ncols = 4, figsize = (16, 8))
+fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(16, 8))
 for a in axes:
     a.set_xlabel('RLD (cm/cm^3)')  # layer size is 1 cm
     a.set_ylabel('Depth (cm)')
@@ -111,5 +111,5 @@ axes[3].plot(np.array(rl0_) / layerVolume, z_)
 axes[3].legend(["10 days", "30 days", "60 days", "120 days"])
 
 fig.subplots_adjust()
-plt.savefig("results/example_3d.png")
+plt.savefig("results/example_3b.png")
 plt.show()
