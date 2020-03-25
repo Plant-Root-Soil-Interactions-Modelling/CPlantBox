@@ -44,11 +44,12 @@ std::string RootDelay::toString() const
  */
 void RootDelay::createLateral(bool verbose)
 {
+	// std::cout<< "create delayed root\n";
 	auto rrp = getRootRandomParameter(); // rename
     int lt = rrp->getLateralType(nodes.back());
     if (lt>0) {
     	double delay = std::max(rrp->ldelay + plant.lock()->randn()*rrp->ldelays, 0.);
-        auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
+        auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
         children.push_back(lateral);
     	double ageLN = this->calcAge(length); // age of root when lateral node is created
         lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
