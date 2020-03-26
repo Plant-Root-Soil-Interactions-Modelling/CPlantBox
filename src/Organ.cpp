@@ -24,7 +24,7 @@ namespace CPlantBox {
  */
 Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active,
 		double age, double length, Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
-:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), param_(param), plant(), parent(), id(id), alive(alive), active(active), age(age),
+:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(), parent(), id(id), param_(param), alive(alive), active(active), age(age),
  length(length), moved(moved), oldNumberOfNodes(oldNON)
 { }
 
@@ -42,8 +42,8 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  */
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ>  parent, int ot, int st, double delay,
 		Vector3d iheading, double pbl, int pni)
-:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), param_(plant->getOrganRandomParameter(ot, st)->realize()),
- plant(plant), parent(parent), id(plant->getOrganIndex()), age(-delay)
+:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),
+  param_(plant->getOrganRandomParameter(ot, st)->realize()), age(-delay)
 { }
 
 /*
@@ -207,34 +207,48 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
  * This method is for post processing, since it is flexible but slow.
  * Overwrite to add more parameters for specific organs.
  *
- * For OrganTypeParametrs: add "_dev" to obtain the parameter's deviation (usually standard deviation),
- * optionally, add "_mean" to obtain the mean value (to avoid naming conflicts with the specific parameters).
+ * For OrganRandomParameters add '_mean', or '_dev',
+ * to avoid naming conflicts with the organ specific parameters.
  *
  * @return The parameter value, if unknown NaN
  */
 double Organ::getParameter(std::string name) const {
-	if (name=="length") { return getLength(); }
+    // specific
+	if (name=="subType") { return this->param_->subType; }
+    if (name=="a") { return param_->a; } // root radius [cm]
+	if (name=="radius") { return this->param_->a; } // root radius [cm]
+	// organ member variables
+    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
+    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
+    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
+    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
+    if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
+    // organ member functions
+	if (name=="organType") { return organType(); }
+    if (name=="numberOfChildren") { return children.size(); }
+	if (name=="id") { return getId(); }
+	if (name=="alive") { return isAlive(); }
+	if (name=="active") { return isActive(); }
 	if (name=="age") { return getAge(); }
-	if (name=="creationTime") { return getNodeCT(0); }
+    if (name=="length") { return getLength(); }
+    if (name=="getNumberOfNodes") { return getNumberOfNodes(); }
+    if (name=="getNumberOfSegments") { return getNumberOfSegments(); }
+    if (name=="hasMoved") { return hasMoved(); }
+    if (name=="oldNumberOfNodes") { return getOldNumberOfNodes(); }
+    // further
+    if (name=="creationTime") { return getNodeCT(0); }
 	if (name=="order") { // count how often it is possible to move up
 		int o = 0;
 		auto p = shared_from_this();
-		while ((!p->parent.expired()) && (p->organType()!=Organism::ot_seed)) {
+		while ((!p->parent.expired()) && (p->parent.lock()->organType()!=Organism::ot_seed)) {
 			o++;
 			p = p->parent.lock(); // up the organ tree
 		}
 		return o;
 	}
 	if (name=="one") { return 1; } // e.g. for counting the organs
-	if (name=="id") { return getId(); }
-	if (name=="organType") { return this->organType(); }
-	if (name=="alive") { return isAlive(); }
-	if (name=="active") { return isActive(); }
-	if (name=="numberOfChildren") { return children.size(); }
-	if (name=="subType") { return this->param_->subType; }
-	// numberOfNodes
-	// numberOfSegments
-	return this->getOrganRandomParameter()->getParameter(name); // ask the random parameter
+    if (name=="numberOfNodes") { return getNodeCT(0); }
+    return this->getOrganRandomParameter()->getParameter(name); // ask the random parameter
 }
 
 /**

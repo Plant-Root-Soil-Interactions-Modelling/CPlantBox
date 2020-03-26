@@ -8,6 +8,8 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
+#include <map>
 
 namespace CPlantBox {
 
@@ -65,7 +67,7 @@ public:
 
     /* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
-    int getNumberOfSegments() { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
+    int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
     Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ
     int getNodeId(int i) const { return nodeIds.at(i); } ///< global node index of the i-th node, i is called the local node index
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
@@ -74,8 +76,8 @@ public:
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
 
     /* last time step */
-    bool hasMoved() { return moved; }; ///< have any nodes moved during the last simulate call
-    int getOldNumberOfNodes() { return oldNumberOfNodes; } ///< the number of nodes before the last simulate call
+    bool hasMoved() const { return moved; }; ///< have any nodes moved during the last simulate call
+    int getOldNumberOfNodes() const { return oldNumberOfNodes; } ///< the number of nodes before the last simulate call
 
     /* for post processing */
     std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1); ///< the organ including children in a sequential vector
@@ -90,7 +92,6 @@ public:
     Vector3d iHeading; ///< the initial heading of the root, when it was created
     double parentBaseLength; ///< length [cm]
     int parentNI; ///< parent node index
-    std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ
 
 protected:
 
@@ -101,6 +102,7 @@ protected:
 
     /* Parameters that are constant over the organ life time */
     const int id; ///< unique organ id
+    std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ (@see getParam())
 
     /* Parameters are changing over time */
     bool alive = true; ///< true: alive, false: dead

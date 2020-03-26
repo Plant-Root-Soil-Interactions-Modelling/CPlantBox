@@ -374,28 +374,24 @@ void Root::createSegments(double l, bool verbose)
  *
  * Note:
  * lnMean, and lnDev denotes the mean and standard deviation of the inter-lateral distance of this organ
- * ln_mean, and ln_dev is the mean and standard deviation from the root type parameters
+ * ln_mean, and ln_dev is the mean and standard deviation from the RootRandomParmaeters
  */
 double Root::getParameter(std::string name) const
 {
-    // specific
+    // specific parameters
     if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
-    if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes (todo numberOfLaterals, i.e. numberOfChilds that have age>0)
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
-    if (name=="radius") { return param()->a; } // root radius [cm]
-    if (name=="a") { return param()->a; } // root radius [cm]
     if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
     if (name=="rlt") { return param()->rlt; } // root life time [day]
+    // specific parameters member functions
+    if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
-    // organ members
-    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
-    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
-    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
-    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
-    if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
-    // computed
+    if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
+    // member functions
+    if (name=="numberOfLaterals") { return getNumberOfLaterals(); }
+    // further
     if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
         return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
@@ -406,10 +402,23 @@ double Root::getParameter(std::string name) const
         double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
         return std::sqrt(sq_sum / v.size() - mean * mean);
     }
-    if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // // root volume [cm^3]
-    if (name=="surface") { return 2*param()->a*M_PI*getLength(); }
-    // others
+    if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // root volume [cm^3]
+    if (name=="surface") { return 2*param()->a*M_PI*getLength(); } // root surface [cm^2]
     return Organ::getParameter(name); // pass to base class
+}
+
+/**
+ * @return The number of emerged lateral roots (i.e. number of children with age>0)
+ * @see Organ::getNumberOfChildren
+ */
+int Root::getNumberOfLaterals() const {
+	int nol = 0;
+	for (auto& c : children)  {
+		if (c->getAge()>0) { // born
+			nol ++;
+		}
+	}
+	return nol;
 }
 
 /**
