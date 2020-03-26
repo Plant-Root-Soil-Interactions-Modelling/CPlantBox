@@ -12,7 +12,7 @@ name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
 # Initialize
-rs.initializeDB(1, 4)
+rs.initializeDB(1, 4)   # numbers indicate basal and shoot borne root types 
 
 # Simulate
 rs.simulate(30, True)
