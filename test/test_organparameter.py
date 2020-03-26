@@ -29,7 +29,7 @@ class TestOrganParameter(unittest.TestCase):
         st = orp.getParameter("subType")
         self.assertEqual(ot, 1., "getParameter: value unexpected")
         self.assertEqual(st, 2., "getParameter: value unexpected")
-
+ 
     def test_toString(self):
         """ tests __str__ output """
         orp = pb.OrganRandomParameter(pb.Organism())
@@ -38,7 +38,7 @@ class TestOrganParameter(unittest.TestCase):
         orp.subType = 2
         self.assertEqual(orp.__str__(False), "name: the great organ, organType: 1, subType: 2.", "toString: value unexpected")
         # print(orp)
-
+ 
     def test_xml(self):
         """ write the organ type parameter as xml, and rereads it """
         plant = pb.Organism()
@@ -50,12 +50,13 @@ class TestOrganParameter(unittest.TestCase):
         otp2.readXML("organ.xml")
         self.assertEqual(otp2.name, orp.name, "xml: value unexpected")
         self.assertEqual(otp2.subType, orp.subType, "xml: value unexpected")
-
+ 
     def test_realize(self):
         """ calls realize """
-        orp = pb.OrganRandomParameter(pb.Organism())
+        o = pb.Organism()  
+        orp = pb.OrganRandomParameter(o)
         orp.subType = 2
-        p = orp.realize();
+        p = orp.realize()
         self.assertEqual(p.__class__.__name__, "OrganSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, 2, "realize: unexpected sub type")
 
