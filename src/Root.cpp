@@ -257,7 +257,7 @@ void Root::createLateral(bool verbose)
     if (lt>0) {
         double ageLN = this->calcAge(length); // age of root when lateral node is created
         double meanLn = getRootRandomParameter()->ln; // mean inter-lateral distance
-        double effectiveLa = std::max(param()->la-meanLn/2, meanLn/2); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+        double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
         double ageLG = this->calcAge(length+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);

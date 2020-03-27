@@ -54,7 +54,7 @@ class TestRoot(unittest.TestCase):
         nl, nl2, non, meanDX = [], [], [], []
         for t in dt:
             for i in range(0, subDt):
-                self.root.simulate(t / subDt)
+                self.root.simulate(t / subDt, False)
             nl.append(self.root.getParameter("length"))
             non.append(self.root.getNumberOfNodes())
             meanDX.append(nl[-1] / non[-1])
@@ -122,14 +122,13 @@ class TestRoot(unittest.TestCase):
         l = rootLength(times[1:], p.r, k)  # zero order lengths
         l1 = []
         r2 = self.p1.r
-        k2 = self.p1.la  # consists of lateral zone only
+        k2 = self.p1.lmax  # consists of lateral zone only
+
         for t in times[1:]:
             l1.append(rootLateralLength(t, et, r2, k2))
+            
         analytic_total = l + l1
-        print(analytic_total)
-        print(l)
-        print(l1)
-
+     
         for subDX in [1, 1000]:
             numeric_total = []
             for t in times[1:]:
@@ -138,22 +137,17 @@ class TestRoot(unittest.TestCase):
                 organs = self.root.getOrgans()
                 nl = 0
                 for o in organs:
-                    # print(o.getParameter("length"))
                     nl += o.getParameter("length")
                 numeric_total.append(nl);
                 self.root = root
             for i in range(0, len(times[1:])):
                 self.assertAlmostEqual(numeric_total[i], analytic_total[i], 10, "numeric and analytic total lengths do not agree in time step " + str(i + 1))
 
-    def test_geometry(self):
-        """ tests if nodes can be retrieved from the organ """
-        # TODO make plot for plausibility
-
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
         self.root_example_rrp()
         simtime = 30.
-        self.root.simulate(simtime)        
+        self.root.simulate(simtime, False)        
         organs = self.root.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
         for o in organs:
@@ -175,12 +169,12 @@ class TestRoot(unittest.TestCase):
         """ tests if nodes created in last time step are correct """  
         self.root_example_rrp()
         r = self.root
-        r.simulate(.5, True)
+        r.simulate(.5, False)
         self.assertEqual(r.hasMoved(), False, "dynamics: node is creaetd during first step")
-        r.simulate(1e-1, True)        
+        r.simulate(1e-1, False)        
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         non = r.getNumberOfNodes() 
-        r.simulate(2.4, True)
+        r.simulate(2.4, False)
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
         dx = r.getRootRandomParameter().dx
         self.assertEqual(r.getNumberOfNodes() - non, round(2.4 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth

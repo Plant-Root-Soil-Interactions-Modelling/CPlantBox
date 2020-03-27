@@ -54,7 +54,7 @@ class TestOrganism(unittest.TestCase):
         for i in range(0, len(p1)):
             self.assertIsNot(p1[i], p2[i], "copy: OrganTypeParameters is not copied")
 
-    def test_organ_type_parameters(self):
+    def test_organ_random_parameters(self):
         """ test ability to set, get, read, and write type parameters """
         human1 = pb.Organism()  # same example as in test_constructor ...
         otp1 = pb.OrganRandomParameter(human1)
@@ -139,4 +139,5 @@ class TestOrganism(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    # todo test XML ?
     unittest.main()
