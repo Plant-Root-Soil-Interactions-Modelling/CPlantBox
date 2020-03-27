@@ -3,8 +3,6 @@ import sys
 sys.path.append("../../..")
 import plantbox as pb
 import matplotlib.pyplot as plt
-import math
-
 import numpy as np
 
 fig, axes = plt.subplots(2, 3, figsize=(15, 7))
@@ -13,10 +11,9 @@ rs = pb.RootSystem()
 srp = pb.SeedRandomParameter(rs)
 srp.firstB, srp.delayB, srp.maxB = 1., 1., 0
 rs.setRootSystemParameter(srp)
-rs.setRootSystemParameter(srp)
 
 dx0, dx1 = 100, 1  # very large resolution for taproot
-theta = 70 / 180 * math.pi
+theta = 70 / 180 * np.pi
 
 p0 = pb.RootRandomParameter(rs)
 p0.name, p0.subType, p0.lmax, p0.r, p0.dx, p0.theta = "taproot", 1, 50., 2., dx0, 0.  # parameters as before
