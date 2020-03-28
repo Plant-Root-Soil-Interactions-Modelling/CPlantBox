@@ -1,0 +1,34 @@
+# Parameter set for type
+type	1
+name	basalroots
+lb	1.37664	1.81966
+la	2.22941	2.16547
+ln	1.13841	2.01036
+lmax	10.7111	4.96068
+r	1.39738	0.0154542
+a	0.043677	0.01578380
+color	255	0	0
+tropism	1	1.5	0.249709
+dx	0.25
+successors	1	2
+successorP	1	1
+theta	1.3963	0.105941
+rlt	1e+09	0
+gf	2
+# Parameter set for type
+type	2
+name	lateral
+lb	1.25274	1.24005
+la	1.03781	1.20834
+ln	0.652492	0.870837
+lmax	2.29054	1.80924
+r	1.68924	0.0556532
+a	0.0348324	0.01073630
+color	0	255	0
+tropism	2	2	0.385683
+dx	0.25
+successors	1	0
+successorP	1	1
+theta	1.46672	0.551017
+rlt	1e+09	0
+gf	2
