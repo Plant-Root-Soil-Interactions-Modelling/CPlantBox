@@ -39,7 +39,7 @@ pi = []  # index of the corresponding base root
 pet = []
 
 for i, p in enumerate(polylines):
-    pi.append(es.find_base(pp, i))
+    pi.append(es.find_base_index(pp, i))
     pet.append(fet[i][0])
     if pp[i] == -1: 
         baseindices.append(i)
@@ -52,12 +52,13 @@ print(len(basepolys), "base roots found, ", np.sum(nppt == 1.), " type 1 roots f
 # print(baseindices)
 # print(pi)  # already sorted by base root
 print(pet)
-polylines0, properties0, functions0 = es.measurement_time(polylines, properties, functions, times[0])
-polylines1, properties1, functions1 = es.measurement_time(polylines, properties, functions, times[1])
-polylines2, properties2, functions2 = es.measurement_time(polylines, properties, functions, times[2])
-pt0 = properties0["type"]
-pt1 = properties1["type"]
-pt2 = properties2["type"]
+polylines0, properties0 = es.measurement_time(polylines, properties, functions, times[0])
+polylines1, properties1 = es.measurement_time(polylines, properties, functions, times[1])
+polylines2, properties2 = es.measurement_time(polylines, properties, functions, times[2])
+visprop = "type"
+pt0 = properties0[visprop]
+pt1 = properties1[visprop]
+pt2 = properties2[visprop]
 rsml.plot_multiple_rsml([polylines0, polylines1, polylines2], [pt0, pt1, pt2], times)  # looks good
 
 # rsml.plot_rsml(basepolys, basetypes)  # looks all right
