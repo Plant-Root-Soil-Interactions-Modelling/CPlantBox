@@ -12,6 +12,7 @@ import numpy as np
 
 times = [7, 11, 15]  # not in the rsml
 polylines, properties, functions = rsml.read_rsml("RSML/Faba_12/DAP15.rsml")
+polylines = [[np.array([polylines[i][j][k] / 10 for k in range(0, 3)]) for j in range(0, len(polylines[i])) ] for i in range(0, len(polylines)) ]  # mm -> cm
 
 print("Summary\n*******")
 print("Number of roots", len(polylines))

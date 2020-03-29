@@ -134,8 +134,8 @@ def plot_multiple_rsml(polylines :list, prop :list, times):
         for i, pl in enumerate(polylines[j]):
             nodes = np.array(pl)
             axes[j].plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[j][i])))  # y,z plot
-        axes[j].set_xlim([-50, 50.])
-        axes[j].set_ylim([-150., 0.])
+        axes[j].set_xlim([-5, 5.])
+        axes[j].set_ylim([-15., 0.])
         axes[j].set_title("{} days".format(times[j]))  
     fig.tight_layout()         
     plt.show()
