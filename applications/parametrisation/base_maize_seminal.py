@@ -114,18 +114,25 @@ for i in range(0, len(names)):
             non = number_of_l[j, i] - initial_number  # number of new roots
         else: 
             non = number_of_l[j, i] - number_of_l[j - 1, i]  # number of new roots
-
-        for k, l_ in enumerate(l[j, i]):  
+        c = 0    
+        for k, l_ in enumerate(l[j, i]):              
 #             """ method 1 using linear model """
 #             et = max((k - initial_number) * delay_[i], 0)  # or delay instead of delay_            
 #             age[j, i][k] = max(times[j] - et, 0)
+
             """ data only, linearly interpolate between data """ 
-            
-            if k <= initial_number:
-                age[j, i][k] = times0[j + 1]
-            else:
-                age[j, i][k] = times0[j + 1] + (k - initial_number) * (dt / non)  # ###################################################TDOO
- 
+            if j==0: 
+                if k <= initial_number:
+                    age[j, i][k] = times0[1] 
+                else:
+                    age[j, i][k] = times0[1] - (k - initial_number) * (dt / non)  
+            else: 
+                if k<len(age[j-1,i]): # old root
+                    age[j, i][k] = age[j-1, i][k] + dt
+                else: # new root
+                    age[j, i][k] = times0[j+1] - c*(dt / non) 
+                    c += 1
+  
 # """ modeled length plot """
 # for i in range(0, len(names)):
 #     for j in [0]:  # range(0, len(times)) PICK time step 0, 1, 2 (all are too confusing)           
@@ -137,11 +144,30 @@ for i in range(0, len(names)):
 # plt.title("Maize seminals")
 
 """ root age plot """ 
+for j in range(0, len(times)):             
+    age_flat, l_flat, c_flat = [], [], []
+    for i in range(0, len(names)):    
+        for k, l_ in enumerate(l[j, i]):   
+            age_flat.append(age[j, i][k])
+            l_flat.append(l[j, i][k])   
+    plt.plot(age_flat, l_flat, col[j])
+   
 age_flat = [item for sublist in age for sublist2 in sublist for item in sublist2]
-l_flat = [item for sublist in l for sublist2 in sublist for item in sublist2]
-plt.plot(age_flat, l_flat, "g*")
+l_flat = [item for sublist in l for sublist2 in sublist for item in sublist2]       
+r, k = es.fit_taproot_rk(l_flat, age_flat)
+k1 = 150.
+r1 = es.fit_taproot_r(l_flat, age_flat, k1)
+print(r, "cm/day", k, "cm") 
+print(r1, "cm/day", k1, "cm")        
+t_ = np.linspace(0, times[-1], 200)
+y0 = es.negexp_growth(t_, r, k)
+y1 = es.negexp_growth(t_, r1, k1)
+plt.plot(t_, y0, "k")            
+plt.plot(t_, y1, "k:")            
 plt.xlabel("root age [day]")    
 plt.ylabel("root length [cm]")
+
+
 
 plt.show()  
 print("fin.")

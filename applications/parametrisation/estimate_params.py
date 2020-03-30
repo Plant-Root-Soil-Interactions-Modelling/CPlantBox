@@ -104,15 +104,19 @@ def target(r, k, length, times):
     for i, t in enumerate(times):
         sim_l = negexp_growth(t, r, k)
         sum_t = 0.
-        for l in length[i]:            
-            sum_t += (sim_l - l) ** 2
+        if isinstance(length[i], float):
+            sum_t += (sim_l - length[i]) ** 2
+        else:
+            for l in length[i]:            
+                sum_t += (sim_l - l) ** 2            
+            
         sum += np.sqrt(sum_t)
     return sum    
 
     
 def fit_taproot_r(length, times, k):
     """ fits initial growth rate r, assumes maximal root lenght k as fixed (e.g. literature value) """
-    assert(length.shape[0] == len(times))
+    assert(len(length) == len(times))
     f = lambda x0: target(x0, k, length, times)
     x0 = [1.]
     res = minimize(f, x0, method='Nelder-Mead', tol=1e-6)  # bounds and constraints are possible, but method dependent
@@ -121,7 +125,7 @@ def fit_taproot_r(length, times, k):
 
 def fit_taproot_rk(length, times):
     """ fits initial growth rate r, and maximal root lenght k """
-    assert(length.shape[0] == len(times))
+    assert(len(length) == len(times))
     f = lambda x0: target(x0[0], x0[1], length, times)
     x0 = [5., 200]
     res = minimize(f, x0, method='Nelder-Mead', tol=1e-6)  # bounds and constraints are possible, but method dependent
