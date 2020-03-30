@@ -7,6 +7,7 @@ import estimate_params as es
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 
 # times = [7, 11, 15]  # not in the rsml
 # names = ["Faba_12/DAP15.rsml", "Faba_14/DAP15.rsml", "Faba_16/DAP15.rsml", "Faba_20/DAP15.rsml", "Faba_24/DAP15.rsml" ]
@@ -42,66 +43,106 @@ for i in range(0, len(names)):
     for j in range(0, len(times)):
             es.create_length(base_polylines[i][j], base_properties[i][j])
 
-""" plots """
-# vis_prop_name = "order"
-# vis_p = [[] for t in times]
-# for i in range(0, len(times)):
-#     # print(properties[0][i][vis_prop_name])
-#     vis_p[i] = properties[0][i][vis_prop_name]  # so many indices...
-# rsml.plot_multiple_rsml([polylines[0][0], polylines[0][1], polylines[0][2]], vis_p, times)  # length NOT WORKING
-
-# vis_prop_name = "type"
-# base_vis_p = [[] for t in times]
-# for i in range(0, len(times)):
-#     base_vis_p[i] = base_properties[0][i][vis_prop_name]  # so many indices...
-# rsml.plot_multiple_rsml([base_polylines[0][0], base_polylines[0][1], base_polylines[0][2]], base_vis_p, times)  # looks good
-
-# vis_prop_name = "order"
-# ti = 2
-# base_vis_p2 = [[] for n in names]
-# for i in range(0, len(names)):
-#     base_vis_p2[i] = base_properties[i][ti][vis_prop_name]  # so many indices...
-# rsml.plot_multiple_rsml([base_polylines[0][ti], base_polylines[1][ti], base_polylines[2][ti], base_polylines[3][ti], base_polylines[4][ti]], base_vis_p2, names)  # looks good
-l = np.array([[base_properties[i][j]["length"] for i in range(0, len(names))] for j in range(0, len(times)) ]) 
-# l_tap = np.array([[l[i][j]["length"][0] for i in range(0, len(names))] for j in range(0, len(times)) ])
-print(l)
-
-# k0 = 50.
-# r0 = es.fit_taproot_r(l[0:1, :], [times[0]], k0)
-# print(r0, "cm/day", k0, "cm")
-# 
-# k1 = 50.
-# r1 = es.fit_taproot_r(l, times, k1)
-# print(r1, "cm/day", k1, "cm")
-# 
-# r2, k2 = es.fit_taproot_rk(l, times)
-# print(r2, "cm/day", k2, "cm")
-# 
-# t_ = np.linspace(0, times[-1], 200)
-# y0 = es.negexp_growth(t_, r0, k0)
-# y1 = es.negexp_growth(t_, r1, k1)
-# y2 = es.negexp_growth(t_, r2, k2)
-
-""" length plot """
 col = ["r*", "g*", "b*", "m*", "c*"]
-plt.plot([0.], [0.], "r*")  # we can add that point
-c = 0
-for j in range(0, len(times)):
-    for i in range(0, len(names)):           
-        print(len(l[j,i]), i, j)               
-        l[j,i].sort() 
-        plt.plot(list(range(c,c+len(l[j,i]))), l[j,i], col[i])
-        c += len(l[j,i])
-        
-# plt.plot(t_, y0, "b")
-# plt.plot(t_, y1, "g")
-# plt.plot(t_, y2, "r")
-#plt.legend(["first only, k fixed", "k fixed", "fit r, k"])
-plt.title("Maize seminals")
+l_tap = np.array([[base_properties[i][j]["length"][0] for i in range(0, len(names))] for j in range(0, len(times)) ])
+l = np.array([[base_properties[i][j]["length"][1:] for i in range(0, len(names))] for j in range(0, len(times)) ])  # [1:] without the primary root
+number_of_l = np.array([[len(l[j, i]) for i in range(0, len(names))] for j in range(0, len(times)) ]) 
 
+""" 
+Plots 
+"""
+
+# """ length plot """
+# plt.plot([0.], [0.], "r*")  # we can add that point
+# c = 0
+# for i in range(0, len(names)):
+#     for j in range(0, len(times)):           
+#         l[j, i].sort() 
+#         plt.plot(list(range(c, c + len(l[j, i]))), l[j, i], col[i])
+#     c += len(l[-1, i])
+# plt.ylabel("Root length [cm]")             
+# plt.title("Maize seminals")
+
+# """ number bar plot """ 
+# width = 0.2  # the width of the bars
+# x = np.arange(len(names)) 
+# fig, ax = plt.subplots()
+# for i, t in enumerate(times):
+#     ax.bar(x - 2 * width + i * width, number_of_l[i], width)
+# ax.set_xticks(x)
+# ax.set_xticklabels(names) 
+# plt.ylabel("Number of seminal roots [1]")
+
+""" estimate delay of seminals """ 
+initial_number = 2.  # we start with to seminals (need to check literature)
+delay = es.fit_number_of_roots(times, number_of_l, initial_number)
+print("Seminal delay", delay)
+delay_ = []
+for i in range(0, len(names)):
+    delay_.append(es.fit_number_of_roots(times, number_of_l[:, i:i + 1], initial_number))
+    print("individual delay", delay_[-1])
+    
+# """ number plot """ 
+# width = 0.2  # the width of the bars
+# x = np.arange(len(names)) 
+# plt.plot(0., initial_number, "k*") 
+# plt.ylabel("Number of seminal roots [1]")
 # plt.xlabel("Time [days]")
-plt.ylabel("Length [cm]")
-plt.show()  
+# t_ = np.linspace(0, times[-1], 400)
+# y = initial_number + np.round(t_ / delay)
+# plt.plot(t_, y, "k")
+# for i in range(0, len(names)):
+#     y = initial_number + np.round(t_ / delay_[i])
+#     plt.plot(t_, y, col[i][0] + ":")
+# for j, n in enumerate(names):  # PLOT DATA
+#     for i, t in enumerate(times):
+#         plt.plot(t, number_of_l[i][j], col[j])
+# plt.ylim(0, 20)
 
+for i in range(0, len(names)):
+    for j in range(0, len(times)):             
+        l[j, i].sort(reverse=True)
+ 
+age = copy.deepcopy(l)
+times0 = [0]
+times0.extend(times) 
+for i in range(0, len(names)):    
+    for j in range(0, len(times)):             
+
+        dt = times0[j + 1] - times0[j]  # time span
+        if j == 0: 
+            non = number_of_l[j, i] - initial_number  # number of new roots
+        else: 
+            non = number_of_l[j, i] - number_of_l[j - 1, i]  # number of new roots
+
+        for k, l_ in enumerate(l[j, i]):  
+#             """ method 1 using linear model """
+#             et = max((k - initial_number) * delay_[i], 0)  # or delay instead of delay_            
+#             age[j, i][k] = max(times[j] - et, 0)
+            """ data only, linearly interpolate between data """ 
+            
+            if k <= initial_number:
+                age[j, i][k] = times0[j + 1]
+            else:
+                age[j, i][k] = times0[j + 1] + (k - initial_number) * (dt / non)  # ###################################################TDOO
+ 
+# """ modeled length plot """
+# for i in range(0, len(names)):
+#     for j in [0]:  # range(0, len(times)) PICK time step 0, 1, 2 (all are too confusing)           
+#         for k, l_ in enumerate(l[j, i]): 
+#             et = max((k - initial_number) * delay_[i], 0)  # emergence time of the root
+#             plt.plot(et, l[j, i][k], col[i])
+# plt.xlabel("Modelled emergence time [day]")    
+# plt.ylabel("Root length at measurement time [cm]")
+# plt.title("Maize seminals")
+
+""" root age plot """ 
+age_flat = [item for sublist in age for sublist2 in sublist for item in sublist2]
+l_flat = [item for sublist in l for sublist2 in sublist for item in sublist2]
+plt.plot(age_flat, l_flat, "g*")
+plt.xlabel("root age [day]")    
+plt.ylabel("root length [cm]")
+
+plt.show()  
 print("fin.")
 

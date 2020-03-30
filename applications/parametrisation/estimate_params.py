@@ -99,7 +99,7 @@ def negexp_growth(t, r, k):
 
 
 def target(r, k, length, times):
-    """ target function for optimization """ 
+    """ target function for optimization for fit_taproot_r, fit_taproot_rk """ 
     sum = 0.
     for i, t in enumerate(times):
         sim_l = negexp_growth(t, r, k)
@@ -125,8 +125,30 @@ def fit_taproot_rk(length, times):
     f = lambda x0: target(x0[0], x0[1], length, times)
     x0 = [5., 200]
     res = minimize(f, x0, method='Nelder-Mead', tol=1e-6)  # bounds and constraints are possible, but method dependent
-    # print(x)
     return res.x[0], res.x[1]
+
+
+def target2(delay, times, numbers, i_n):
+    """ target function for optimization for fit_number_of_roots""" 
+    sum = 0.
+    for i, t in enumerate(times):
+        sim_n = i_n + t / delay  # missing round (continious seems easier to optimize)
+        s = 0.
+        for j in range(0, len(numbers[i])): 
+            s += (numbers[i][j] - sim_n) ** 2
+        sum += np.sqrt(s)     
+    return sum
+
+
+def fit_number_of_roots(times, numbers, initial_number):
+    """ we fit the delay between emergence of seminals with, 
+        number_of_roots = inital_number + round(t/delay)
+    """
+    assert(len(numbers) == len(times))
+    f = lambda x0 : target2(x0, times, numbers, initial_number)
+    x0 = [1.]  # days
+    res = minimize(f, x0, method='Nelder-Mead', tol=1e-6)  # linear regression would be enough in this case
+    return res.x[0]
 
 # def fit_seminal_rk(length, times):
 #     """ fits initial growth rate r, and maximal root lenght k """
@@ -136,6 +158,7 @@ def fit_taproot_rk(length, times):
 #     res = minimize(f, x0, method='Nelder-Mead', tol=1e-6)  # bounds and constraints are possible, but method dependent
 #     # print(x)
 #     return res.x[0], res.x[1]
+
 
 def estimate():
     pass
