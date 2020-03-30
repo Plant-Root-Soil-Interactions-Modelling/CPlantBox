@@ -62,42 +62,44 @@ for i in range(0, len(names)):
 # for i in range(0, len(names)):
 #     base_vis_p2[i] = base_properties[i][ti][vis_prop_name]  # so many indices...
 # rsml.plot_multiple_rsml([base_polylines[0][ti], base_polylines[1][ti], base_polylines[2][ti], base_polylines[3][ti], base_polylines[4][ti]], base_vis_p2, names)  # looks good
-
-l = np.array([[base_properties[i][j]["length"][0] for i in range(0, len(names))] for j in range(0, len(times)) ])
+l = np.array([[base_properties[i][j]["length"] for i in range(0, len(names))] for j in range(0, len(times)) ]) 
 # l_tap = np.array([[l[i][j]["length"][0] for i in range(0, len(names))] for j in range(0, len(times)) ])
 print(l)
 
-k0 = 50.
-r0 = es.fit_taproot_r(l[0:1, :], [times[0]], k0)
-print(r0, "cm/day", k0, "cm")
-
-k1 = 50.
-r1 = es.fit_taproot_r(l, times, k1)
-print(r1, "cm/day", k1, "cm")
-
-r2, k2 = es.fit_taproot_rk(l, times)
-print(r2, "cm/day", k2, "cm")
-
-t_ = np.linspace(0, times[-1], 200)
-y0 = es.negexp_growth(t_, r0, k0)
-y1 = es.negexp_growth(t_, r1, k1)
-y2 = es.negexp_growth(t_, r2, k2)
+# k0 = 50.
+# r0 = es.fit_taproot_r(l[0:1, :], [times[0]], k0)
+# print(r0, "cm/day", k0, "cm")
+# 
+# k1 = 50.
+# r1 = es.fit_taproot_r(l, times, k1)
+# print(r1, "cm/day", k1, "cm")
+# 
+# r2, k2 = es.fit_taproot_rk(l, times)
+# print(r2, "cm/day", k2, "cm")
+# 
+# t_ = np.linspace(0, times[-1], 200)
+# y0 = es.negexp_growth(t_, r0, k0)
+# y1 = es.negexp_growth(t_, r1, k1)
+# y2 = es.negexp_growth(t_, r2, k2)
 
 """ length plot """
-c = ["r*", "g*", "b*", "m*", "c*"]
+col = ["r*", "g*", "b*", "m*", "c*"]
 plt.plot([0.], [0.], "r*")  # we can add that point
-for i in range(0, len(names)):
-    for j in range(0, len(times)):           
-        # print(len(times), l.shape, i, j)        
-        plt.plot(times[j], l[j,i], c[i])
+c = 0
+for j in range(0, len(times)):
+    for i in range(0, len(names)):           
+        print(len(l[j,i]), i, j)               
+        l[j,i].sort() 
+        plt.plot(list(range(c,c+len(l[j,i]))), l[j,i], col[i])
+        c += len(l[j,i])
         
-plt.plot(t_, y0, "b")
-plt.plot(t_, y1, "g")
-plt.plot(t_, y2, "r")
-plt.legend(["first only, k fixed", "k fixed", "fit r, k"])
-plt.title("Faba")
+# plt.plot(t_, y0, "b")
+# plt.plot(t_, y1, "g")
+# plt.plot(t_, y2, "r")
+#plt.legend(["first only, k fixed", "k fixed", "fit r, k"])
+plt.title("Maize seminals")
 
-plt.xlabel("Time [days]")
+# plt.xlabel("Time [days]")
 plt.ylabel("Length [cm]")
 plt.show()  
 

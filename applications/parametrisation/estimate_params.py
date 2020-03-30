@@ -128,6 +128,14 @@ def fit_taproot_rk(length, times):
     # print(x)
     return res.x[0], res.x[1]
 
+# def fit_seminal_rk(length, times):
+#     """ fits initial growth rate r, and maximal root lenght k """
+#     assert(len(length.shape[0] == len(times))
+#     f = lambda x0: target(x0[0], x0[1], length, times)
+#     x0 = [5., 200]
+#     res = minimize(f, x0, method='Nelder-Mead', tol=1e-6)  # bounds and constraints are possible, but method dependent
+#     # print(x)
+#     return res.x[0], res.x[1]
 
 def estimate():
     pass

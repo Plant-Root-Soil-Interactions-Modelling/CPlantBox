@@ -43,25 +43,12 @@ for i in range(0, len(names)):
             es.create_length(base_polylines[i][j], base_properties[i][j])
 
 """ plots """
-# vis_prop_name = "order"
-# vis_p = [[] for t in times]
-# for i in range(0, len(times)):
-#     # print(properties[0][i][vis_prop_name])
-#     vis_p[i] = properties[0][i][vis_prop_name]  # so many indices...
-# rsml.plot_multiple_rsml([polylines[0][0], polylines[0][1], polylines[0][2]], vis_p, times)  # length NOT WORKING
-
-# vis_prop_name = "type"
-# base_vis_p = [[] for t in times]
-# for i in range(0, len(times)):
-#     base_vis_p[i] = base_properties[0][i][vis_prop_name]  # so many indices...
-# rsml.plot_multiple_rsml([base_polylines[0][0], base_polylines[0][1], base_polylines[0][2]], base_vis_p, times)  # looks good
-
-# vis_prop_name = "order"
-# ti = 2
-# base_vis_p2 = [[] for n in names]
-# for i in range(0, len(names)):
-#     base_vis_p2[i] = base_properties[i][ti][vis_prop_name]  # so many indices...
-# rsml.plot_multiple_rsml([base_polylines[0][ti], base_polylines[1][ti], base_polylines[2][ti], base_polylines[3][ti], base_polylines[4][ti]], base_vis_p2, names)  # looks good
+vis_prop_name = "type"
+mi = 0
+base_vis_p = [[] for t in times]
+for i in range(0, len(times)):
+    base_vis_p[i] = base_properties[0][i][vis_prop_name]  # so many indices...
+rsml.plot_multiple_rsml([base_polylines[mi][0], base_polylines[mi][1], base_polylines[mi][2]], base_vis_p, times)  # looks good
 
 l = np.array([[base_properties[i][j]["length"][0] for i in range(0, len(names))] for j in range(0, len(times)) ])
 # l_tap = np.array([[l[i][j]["length"][0] for i in range(0, len(names))] for j in range(0, len(times)) ])
@@ -91,11 +78,11 @@ for i in range(0, len(names)):
         # print(len(times), l.shape, i, j)        
         plt.plot(times[j], l[j,i], c[i])
         
-plt.plot(t_, y0, "b")
-plt.plot(t_, y1, "g")
-plt.plot(t_, y2, "r")
-plt.legend(["first only, k fixed", "k fixed", "fit r, k"])
-plt.title("Faba")
+plt.plot(t_, y0, "b", label = "first only, k fixed")
+plt.plot(t_, y1, "g", label = "fixed")
+plt.plot(t_, y2, "r", label = "fit r, k")
+plt.legend() 
+plt.title("Maize radicle")
 
 plt.xlabel("Time [days]")
 plt.ylabel("Length [cm]")
