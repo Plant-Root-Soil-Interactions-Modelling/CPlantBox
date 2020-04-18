@@ -55,20 +55,20 @@ l = np.array([[base_properties[i][j]["length"][0] for i in range(0, len(names))]
 print(l)
 
 k0 = 50.
-r0 = es.fit_taproot_r(l[0:1, :], [times[0]], k0)
+r0, f0 = es.fit_taproot_r(l[0:1, :], [times[0]], k0)
 print(r0, "cm/day", k0, "cm")
 
 k1 = 50.
-r1 = es.fit_taproot_r(l, times, k1)
+r1, f1 = es.fit_taproot_r(l, times, k1)
 print(r1, "cm/day", k1, "cm")
 
-r2, k2 = es.fit_taproot_rk(l, times)
+r2, k2, f2 = es.fit_taproot_rk(l, times)
 print(r2, "cm/day", k2, "cm")
 
 t_ = np.linspace(0, times[-1], 200)
-y0 = es.negexp_growth(t_, r0, k0)
-y1 = es.negexp_growth(t_, r1, k1)
-y2 = es.negexp_growth(t_, r2, k2)
+y0 = es.negexp_length(t_, r0, k0)
+y1 = es.negexp_length(t_, r1, k1)
+y2 = es.negexp_length(t_, r2, k2)
 
 """ length plot """
 c = ["r*", "g*", "b*", "m*", "c*"]
@@ -76,11 +76,11 @@ plt.plot([0.], [0.], "r*")  # we can add that point
 for i in range(0, len(names)):
     for j in range(0, len(times)):           
         # print(len(times), l.shape, i, j)        
-        plt.plot(times[j], l[j,i], c[i])
+        plt.plot(times[j], l[j, i], c[i])
         
-plt.plot(t_, y0, "b", label = "first only, k fixed")
-plt.plot(t_, y1, "g", label = "fixed")
-plt.plot(t_, y2, "r", label = "fit r, k")
+plt.plot(t_, y0, "b", label="first only, k fixed")
+plt.plot(t_, y1, "g", label="fixed")
+plt.plot(t_, y2, "r", label="fit r, k")
 plt.legend() 
 plt.title("Maize radicle")
 

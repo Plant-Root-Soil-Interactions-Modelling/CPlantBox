@@ -76,11 +76,11 @@ Plots
 """ estimate delay of seminals """ 
 initial_number = 2.  # we start with to seminals (need to check literature)
 delay = es.fit_number_of_roots(times, number_of_l, initial_number)
-print("Seminal delay", delay)
+print("Seminal delay", delay, "days")
 delay_ = []
 for i in range(0, len(names)):
     delay_.append(es.fit_number_of_roots(times, number_of_l[:, i:i + 1], initial_number))
-    print("individual delay", delay_[-1])
+    print("individual delay", delay_[-1], "days")
     
 # """ number plot """ 
 # width = 0.2  # the width of the bars
@@ -115,22 +115,23 @@ for i in range(0, len(names)):
         else: 
             non = number_of_l[j, i] - number_of_l[j - 1, i]  # number of new roots
         c = 0    
-        for k, l_ in enumerate(l[j, i]):              
+        for k, l_ in enumerate(l[j, i]):             
+             
 #             """ method 1 using linear model """
 #             et = max((k - initial_number) * delay_[i], 0)  # or delay instead of delay_            
 #             age[j, i][k] = max(times[j] - et, 0)
 
             """ data only, linearly interpolate between data """ 
-            if j==0: 
+            if j == 0: 
                 if k <= initial_number:
                     age[j, i][k] = times0[1] 
                 else:
                     age[j, i][k] = times0[1] - (k - initial_number) * (dt / non)  
             else: 
-                if k<len(age[j-1,i]): # old root
-                    age[j, i][k] = age[j-1, i][k] + dt
-                else: # new root
-                    age[j, i][k] = times0[j+1] - c*(dt / non) 
+                if k < len(age[j - 1, i]):  # old root
+                    age[j, i][k] = age[j - 1, i][k] + dt
+                else:  # new root
+                    age[j, i][k] = times0[j + 1] - c * (dt / non) 
                     c += 1
   
 # """ modeled length plot """
@@ -154,20 +155,18 @@ for j in range(0, len(times)):
    
 age_flat = [item for sublist in age for sublist2 in sublist for item in sublist2]
 l_flat = [item for sublist in l for sublist2 in sublist for item in sublist2]       
-r, k = es.fit_taproot_rk(l_flat, age_flat)
+r, k, f = es.fit_taproot_rk(l_flat, age_flat)
 k1 = 150.
-r1 = es.fit_taproot_r(l_flat, age_flat, k1)
+r1, f1 = es.fit_taproot_r(l_flat, age_flat, k1)
 print(r, "cm/day", k, "cm") 
 print(r1, "cm/day", k1, "cm")        
 t_ = np.linspace(0, times[-1], 200)
-y0 = es.negexp_growth(t_, r, k)
-y1 = es.negexp_growth(t_, r1, k1)
+y0 = es.negexp_length(t_, r, k)
+y1 = es.negexp_length(t_, r1, k1)
 plt.plot(t_, y0, "k")            
 plt.plot(t_, y1, "k:")            
 plt.xlabel("root age [day]")    
 plt.ylabel("root length [cm]")
-
-
 
 plt.show()  
 print("fin.")
