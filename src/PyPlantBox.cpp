@@ -361,7 +361,7 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * soil.h
      */
-    py::class_<SoilLookUp, std::shared_ptr<SoilLookUp>>(m, "SoilLookUp")
+    py::class_<SoilLookUp, PySoilLookUp, std::shared_ptr<SoilLookUp>>(m, "SoilLookUp")
             .def(py::init<>())
             .def("getValue",&SoilLookUp::getValue, py::arg("pos"), py::arg("organ") = (std::shared_ptr<Organ>) nullptr )
             .def("__str__",&SoilLookUp::toString);
