@@ -3,6 +3,7 @@ import sys
 sys.path.append("../../..")
 import plantbox as pb
 import vtk_plot as vp
+import matplotlib.pyplot as plt
 
 import numpy as np
 
@@ -93,6 +94,7 @@ rs.initialize()
 simtimes = np.array([0, 7, 11, 15])
 rs.writeParameters("faba.xml")  # for later use
 
+fig, axes = plt.subplots(1, 3, figsize=(15, 7))
 T = 10  # temporal resolution 
 for i, dt in enumerate(np.diff(simtimes)):
     
@@ -100,7 +102,19 @@ for i, dt in enumerate(np.diff(simtimes)):
         rs.simulate(1. / T, False)  #
         
     rs.write("../results/example_faba_{}_days.vtp".format(simtimes[i + 1]))
+    a = axes[i]
+    a.set_xlim([-7.5, 7.5])
+    a.set_ylim([-15., 0.])  # starts at -3 cm, max length 30 cm      
+    a.set_title("after {} days".format(rs.getSimTime()))
 
+    roots = rs.getPolylines()        
+    for root in roots:
+        for j, n in enumerate(root[:-1]):
+            n2 = root[j + 1]
+            a.plot([n.x, n2.x], [n.z, n2.z], "g")
+
+fig.tight_layout()         
+plt.show()  
 # Plot, using vtk
-vp.plot_roots(rs, "creationTime")
+#vp.plot_roots(rs, "creationTime")
 
