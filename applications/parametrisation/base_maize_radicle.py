@@ -27,7 +27,7 @@ for i in range(0, len(names)):
     es.create_order(polylines[i][j], properties[i][j])  # add root order
     # es.create_length(polylines[i][j], properties[i][j])  # add root order    
     for k in range(0, j):  # truncate the others
-        polylines[i][k], properties[i][k] = es.measurement_time(polylines[i][j], properties[i][j], functions[i][j], times[k])
+        polylines[i][k], properties[i][k], functions[i][k] = es.measurement_time(polylines[i][j], properties[i][j], functions[i][j], times[k])
 # polylines[i][j] contains i-th plant, j-th measurement time
 
 """ find all base roots """

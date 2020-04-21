@@ -24,7 +24,7 @@ for i in range(0, len(names)):
     p = [[np.array([p[i][j][k] / 10 for k in range(0, 3)]) for j in range(0, len(p[i])) ] for i in range(0, len(p)) ]  # mm -> cm
     polylines[i][j] = p
     for k in range(0, j):  # truncate the others
-        polylines[i][k], properties[i][k] = es.measurement_time(polylines[i][j], properties[i][j], functions[i][j], times[k])
+        polylines[i][k], properties[i][k], functions[i][k] = es.measurement_time(polylines[i][j], properties[i][j], functions[i][j], times[k])
 # polylines[i][j] contains i-th plant, j-th measurement time
 
 """ find all base roots """
