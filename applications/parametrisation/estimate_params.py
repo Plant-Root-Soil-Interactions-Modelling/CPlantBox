@@ -263,7 +263,10 @@ def analyze_theta(polylines, properties):
         if j > 0:
             p = polylines[0][j]
             p0 = polylines[0][j - 1]
-            p2 = polylines[i][0]
+            if len(polylines[i]) > 2:
+                p2 = polylines[i][2]
+            else:
+                p2 = polylines[i][0]
             v1 = p - p0
             v2 = p2 - p
             v1 = v1 / np.linalg.norm(v1)

@@ -49,6 +49,15 @@ for i in range(0, len(names)):
 #     print("Number of nodes", len(base_polylines[i][-1][0]))  # approx 1 node per mm
 
 # for Faba this is exactly 1 for all 5 measurements
+
+""" plots """
+mi = 0
+vis_p = [[] for t in times]
+for i in range(0, len(times)):
+    vis_p[i] = properties[mi][i]["length"]  
+rsml.plot_multiple_rsml([polylines[mi][0], polylines[mi][1], polylines[mi][2]], vis_p, times) 
+plt.show()
+
 """ recalculate length """
 for i in range(0, len(names)):
     for j in range(0, len(times)):
@@ -61,13 +70,6 @@ for i in range(0, len(names)):
             # print("\nMeasurement", i, ", time", j, "number of roots", len(polylines[i][j]))
             polylines[i][j], properties[i][j] = es.reconstruct_laterals(polylines[i][j], properties[i][j], base_polylines[i][j][0]) 
             es.create_order(polylines[i][j], properties[i][j])  # add root order  
-
-# """ plots """
-# mi = 0
-# vis_p = [[] for t in times]
-# for i in range(0, len(times)):
-#     vis_p[i] = properties[mi][i]["order"]  
-# rsml.plot_multiple_rsml([polylines[mi][0], polylines[mi][1], polylines[mi][2]], vis_p, times) 
   
 """ measure remaining tap root parameters """
 print()
@@ -121,7 +123,7 @@ for i in range(0, len(names)):
 
 """ root age plot """ 
 col = ["r*", "g*", "b*", "m*", "c*"]
-for j in range(0, len(times) - 1):  # Maybe drop measurement 3 ? TODO                  
+for j in range(0, len(times)):  # Maybe drop measurement 3 ? TODO                  
     age_flat, l_flat = [], []    
     for i in range(0, len(names)):  # len(names)    
         lengths = properties[i][j]["length"]

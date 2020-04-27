@@ -319,7 +319,7 @@ void RootRandomParameter::bindParameters()
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);
    // NEW
     bindParameter("lnk", &lnk, "Slope of inter-lateral distances [1]");
-    bindParameter("ldelay", &lnk, "Lateral root emergence delay [day]", &ldelays);
+    bindParameter("ldelay", &ldelay, "Lateral root emergence delay [day]", &ldelays);
     // other parameters (descriptions only)
     description["successor"] = "Sub type of lateral roots";
     description["successorP"] = "Probability of each sub type to occur";
