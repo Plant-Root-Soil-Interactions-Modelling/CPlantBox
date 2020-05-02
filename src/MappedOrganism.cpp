@@ -122,13 +122,12 @@ void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
             int segIdx = ns.y-1; // this is unique in a tree like structured
             seg2cell[segIdx] = cellIdx;
             if (cell2seg.count(cellIdx)>0) {
-                cell2seg[cellIdx].push_back(ns.x);
-                cell2seg[cellIdx].push_back(ns.y);
+                cell2seg[cellIdx].push_back(segIdx);
             } else {
-                cell2seg[cellIdx] = std::vector<int>({ns.x, ns.y});
+                cell2seg[cellIdx] = std::vector<int>({segIdx});
             }
         } else {
-            // std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
+        	// std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
         }
     }
 }
@@ -188,7 +187,7 @@ void MappedSegments::addSegments(const std::vector<Vector2i>& segs, const std::v
                     nodes.push_back(cPoint);
                     nodeCTs.push_back(nodeCTs[ns.x]); // nn, todo: we might linearly interpolate
                 } else { // otherwise split in mid, use cutSegments on those
-                    std::cout << "mid\n" << std::flush;
+                    // std::cout << "mid\n" << std::flush;
                     nodes.push_back(mid);
                     nodeCTs.push_back(0.5*(nodeCTs[ns.x]+nodeCTs[ns.x]));
                 }
@@ -223,10 +222,9 @@ void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
         if (cell2seg.count(cellIdx)>0) {
             auto& segs= cell2seg[cellIdx];
             int c = 0;
-            for (int i=1; i<segs.size(); i+=2) {
-                int ni = segs[i];
-                if (ni == ns.y) {
-                    segs.erase(segs.begin() + c -1, segs.begin() + c); // cannot be the first
+            for (int i=0; i<segs.size(); i++) {
+                if (segs[i] == segIdx) {
+                    segs.erase(segs.begin() + c, segs.begin() + c);
                     break; // inner for
                 }
                 c++;
@@ -245,7 +243,7 @@ int MappedSegments::soil_index_(double x, double y, double z) {
     std::array<double,3>  r = { resolution.x, resolution.y, resolution.z};
     auto w = maxBound.minus(minBound);
     auto p0 = p.minus(minBound);
-    std::array<double,3> i = { p0.x/w.x*r[0],p0.y/w.y*r[1],p0.z/w.z*r[2] };
+    std::array<double,3> i = { p0.x/w.x*r[0], p0.y/w.y*r[1], p0.z/w.z*r[2] };
     for (int k=0; k<3; k++) {
         if ((i[k] < 0) or (i[k] >= r[k])) {
             return -1;

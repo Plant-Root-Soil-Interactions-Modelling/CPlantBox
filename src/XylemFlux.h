@@ -19,9 +19,11 @@ public:
 
     virtual ~XylemFlux() { }
 
-    void linearSystem(double simTime, const std::vector<double>& sx); ///< builds linear system (simTime is needed for age dependent conductivities)
+    void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true); ///< builds linear system (simTime is needed for age dependent conductivities)
 
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false);
+    std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false);
+    std::map<int,double> sumSoilFluxes(std::vector<double> segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSoilFluxes(segFluxes)
 
     std::vector<int> aI; // to assemble the sparse matrix on the Python side
     std::vector<int> aJ;
