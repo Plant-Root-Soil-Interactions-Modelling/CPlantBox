@@ -38,7 +38,7 @@ public:
     void addSegments(const std::vector<Vector2i>& segs, const std::vector<double>& radii,  const std::vector<int>& types); // cut and add segments
 
     std::map<int, int> seg2cell; // root segment to soil cell mapper
-    std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper represented as two node indices n1, n2
+    std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
     // TODO  std::map<int, std::set<Vector2i>> makes more sense !!!!
 
     std::function<int(double,double,double)> soil_index =

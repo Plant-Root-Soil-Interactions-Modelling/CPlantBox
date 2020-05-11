@@ -80,7 +80,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
  *
  * @param simTime   [days] current simulation time (to calculate age dependent conductivities)
  * @param rx        [cm] root xylem matric potential
- * @param sx        [cm] soil matric potential
+ * @param sx        [cm] soil matric potential for eadh cell
  * @param approx    approximate or exact (default = false, i.e. exact)
  *
  * @return Hash map with cell indices as keys and fluxes as values [cm3/day]
@@ -138,7 +138,7 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  *
  * @param simTime   [days] current simulation time (to calculate age dependent conductivities)
  * @param rx        [cm] root xylem matric potential
- * @param sx        [cm] soil matric potential
+ * @param sx        [cm] soil matric potential for each segment
  * @param approx    approximate or exact (default = false, i.e. exact)
  *
  * @return Hash map with cell indices as keys and fluxes as values [cm3/day]
