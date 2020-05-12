@@ -779,6 +779,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
             .def("sumSoilFluxes",&XylemFlux::sumSoilFluxes)
+            .def("segFluxes",&XylemFlux::segFluxes)
 			.def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)

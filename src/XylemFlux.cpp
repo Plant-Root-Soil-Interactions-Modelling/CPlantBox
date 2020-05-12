@@ -3,6 +3,8 @@
 
 #include <algorithm>
 
+// #include "../external/gauss_legendre/gauss_legendre.h"
+
 namespace CPlantBox {
 
 /**
@@ -174,6 +176,68 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		fluxes[i] = flux;
 	}
 	return fluxes;
+}
+
+/**
+ * Applies source term (operator splitting)
+ * Only apllies soilFluxes if not stressed according to approximation of Schröder et al.
+ * If stressed applies Flux based assuming critP in xylem
+ */
+std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<double> rx, const std::vector<double>& sx, double critP, std::function<double(double)> mfp) {
+	auto outerRadii = this->segRadii();
+	auto fluxes = this->segFluxes(simTime, rx, sx, false);
+	for (int i = 0; i<rs->segments.size(); i++) { // modify rx in case of stress
+		double q_root = fluxes.at(i); // UNITS?
+		double q_out = 0.;
+		double r_root = rs->radii.at(i);
+		double r_out = outerRadii.at(i);
+		double rho = r_out/r_root;
+		double r = r_root;
+
+		double p = 0;
+		if (rs->seg2cell.count(i)>0) {
+			int cellIdx = rs->seg2cell.at(i);
+			p = sx[cellIdx];
+		} else {
+			std::cout << "XylemFlux::segFluxesSchroeder: Unmapped segment \n";
+		}
+
+		double mfp_ = mfp(p);
+		double noStress = mfp_ + (q_root*r_root-q_out*r_out)*((r*r)/(r_root*r_root)/(2*(1-rho*rho)))+
+				(rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5)) + q_out*r_out*log(r/r_out);
+	}
+	return this->segFluxes(simTime, rx, sx, false);
+}
+
+/**
+ * Calculates outer segment radii, so that the summed segment volumes per cell equal the cell volume
+ */
+std::vector<double> XylemFlux::segRadii() {
+    auto width = rs->maxBound.minus(rs->minBound);
+	double cellVolume = width.x*width.y*width.z/rs->resolution.x/rs->resolution.y/rs->resolution.z; // TODO only true for equidistant rectangular grid
+	std::vector<double> radii = std::vector<double>(rs->segments.size());
+	std::fill(radii.begin(), radii.end(), 0.);
+	auto map = rs->cell2seg;
+	for(auto iter = map.begin(); iter != map.end(); ++iter) {
+		int cellId =  iter->first;
+		auto segs = map.at(cellId);
+		double v = 0;
+		for (int i : segs) {
+			auto n1 = rs->nodes[rs->segments[i].x];
+			auto n2 = rs->nodes[rs->segments[i].y];
+			double l = (n2.minus(n1)).length();
+			v += 3.1415*(rs->radii[i]*rs->radii[i])*l;
+		}
+		for (int i : segs) {
+			auto n1 = rs->nodes[rs->segments[i].x];
+			auto n2 = rs->nodes[rs->segments[i].y];
+			double l = (n2.minus(n1)).length();
+			double t = (rs->radii[i]*rs->radii[i])*l/v; // proportionality factor
+			double targetV = t * cellVolume;  // target volume
+			radii[i] = sqrt((targetV+M_PI*(rs->radii[i]*rs->radii[i])*l)/(M_PI*l));
+		}
+	}
+	return radii;
 }
 
 /**
