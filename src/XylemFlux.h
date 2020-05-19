@@ -21,20 +21,23 @@ public:
 
     void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true); ///< builds linear system (simTime is needed for age dependent conductivities)
 
-    std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false);
-    std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false);
-    std::map<int,double> sumSoilFluxes(std::vector<double> segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSoilFluxes(segFluxes)
+    std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false); // [cm3/day]
+    std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false); // for each segment in [cm3/day]
 
-    std::vector<double> segRadii();
     std::vector<double> segFluxesSchroeder(double simTime, std::vector<double> rx, const std::vector<double>& sx, double critP, std::function<double(double)> mpf);
+
+    std::vector<double> segOuterRadii() const; ///< outer cylinder radii to match cell volume
+    std::map<int,double> sumSoilFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSoilFluxes(segFluxes), [cm3/day]
+    std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes) const; ///< splits soil fluxes (per cell) into segment fluxes
+    std::vector<double> segLength() const; ///< calculates segment lengths
 
     std::vector<int> aI; // to assemble the sparse matrix on the Python side
     std::vector<int> aJ;
     std::vector<double> aV;
     std::vector<double> aB;
 
-    void setKr(std::vector<double> values, std::vector<double> age); ///< sets a callback for kr:=kr(age,type)
-    void setKx(std::vector<double> values, std::vector<double> age); ///< sets a callback for kx:=kx(age,type)
+    void setKr(std::vector<double> values, std::vector<double> age); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
+    void setKx(std::vector<double> values, std::vector<double> age); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
     void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
     void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
 

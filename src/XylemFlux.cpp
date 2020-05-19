@@ -147,13 +147,13 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  */
 std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx)
 {
+	// std::cout << "XylemFlux::segFluxes is alive" << rs->segments.size() << ", " << sx.size() << "\n" << std::flush;
 	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
 	for (int si = 0; si<rs->segments.size(); si++) {
 
 		int i = rs->segments[si].x;
 		int j = rs->segments[si].y;
-		int segIdx = j-1;
-		double psi_s = sx.at(segIdx);
+		double psi_s = sx.at(si);
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segments
 		double age = simTime - rs->nodeCTs[j];
@@ -175,6 +175,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		double flux = fExact*(!approx)+approx*fApprox;
 		fluxes[i] = flux;
 	}
+	// std::cout << "XylemFlux::segFluxes is still alive \n" << std::flush;
 	return fluxes;
 }
 
@@ -184,7 +185,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
  * If stressed applies Flux based assuming critP in xylem
  */
 std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<double> rx, const std::vector<double>& sx, double critP, std::function<double(double)> mfp) {
-	auto outerRadii = this->segRadii();
+	auto outerRadii = this->segOuterRadii();
 	auto fluxes = this->segFluxes(simTime, rx, sx, false);
 	for (int i = 0; i<rs->segments.size(); i++) { // modify rx in case of stress
 		double q_root = fluxes.at(i); // UNITS?
@@ -193,7 +194,6 @@ std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<do
 		double r_out = outerRadii.at(i);
 		double rho = r_out/r_root;
 		double r = r_root;
-
 		double p = 0;
 		if (rs->seg2cell.count(i)>0) {
 			int cellIdx = rs->seg2cell.at(i);
@@ -205,14 +205,19 @@ std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<do
 		double mfp_ = mfp(p);
 		double noStress = mfp_ + (q_root*r_root-q_out*r_out)*((r*r)/(r_root*r_root)/(2*(1-rho*rho)))+
 				(rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5)) + q_out*r_out*log(r/r_out);
+
+		if (noStress<0) { // in case of stress, modify xylem pressure
+			rx[i] = critP; // SHOULD BE SX
+		}
 	}
-	return this->segFluxes(simTime, rx, sx, false);
+	return this->segFluxes(simTime, rx, sx, false); // exact fluxes, due to new rx
 }
 
 /**
  * Calculates outer segment radii, so that the summed segment volumes per cell equal the cell volume
  */
-std::vector<double> XylemFlux::segRadii() {
+std::vector<double> XylemFlux::segOuterRadii() const {
+	auto lengths =  this->segLength();
     auto width = rs->maxBound.minus(rs->minBound);
 	double cellVolume = width.x*width.y*width.z/rs->resolution.x/rs->resolution.y/rs->resolution.z; // TODO only true for equidistant rectangular grid
 	std::vector<double> radii = std::vector<double>(rs->segments.size());
@@ -222,17 +227,12 @@ std::vector<double> XylemFlux::segRadii() {
 		int cellId =  iter->first;
 		auto segs = map.at(cellId);
 		double v = 0;
-		for (int i : segs) {
-			auto n1 = rs->nodes[rs->segments[i].x];
-			auto n2 = rs->nodes[rs->segments[i].y];
-			double l = (n2.minus(n1)).length();
-			v += 3.1415*(rs->radii[i]*rs->radii[i])*l;
+		for (int i : segs) { // calculate segments volume within cell
+			v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
 		}
-		for (int i : segs) {
-			auto n1 = rs->nodes[rs->segments[i].x];
-			auto n2 = rs->nodes[rs->segments[i].y];
-			double l = (n2.minus(n1)).length();
-			double t = (rs->radii[i]*rs->radii[i])*l/v; // proportionality factor
+		for (int i : segs) { // calculate outer radius
+			double l = lengths[i];
+			double t = M_PI*(rs->radii[i]*rs->radii[i])*l/v; // proportionality factor
 			double targetV = t * cellVolume;  // target volume
 			radii[i] = sqrt((targetV+M_PI*(rs->radii[i]*rs->radii[i])*l)/(M_PI*l));
 		}
@@ -240,10 +240,14 @@ std::vector<double> XylemFlux::segRadii() {
 	return radii;
 }
 
+
 /**
- * TODO
+ * Sums segment fluxes over each cell, @see splitSoilFluxes()
+ *
+ * @param segFluxes 	segment fluxes [cm3/day]
+ * @return fluxes for each cell idx [cm3/day]
  */
-std::map<int,double> XylemFlux::sumSoilFluxes(std::vector<double> segFluxes)
+std::map<int,double> XylemFlux::sumSoilFluxes(const std::vector<double>& segFluxes)
 {
 	std::map<int,double> fluxes;
 	for (int si = 0; si<rs->segments.size(); si++) {
@@ -261,7 +265,45 @@ std::map<int,double> XylemFlux::sumSoilFluxes(std::vector<double> segFluxes)
 	return fluxes;
 }
 
+/**
+ * Splits soil fluxes per cell to the segments within the cell, so that the summed fluxes agree, @see sumSoilFluxes()
+ *
+ * @param soilFluxes 	cell fluxes per global index [cm3/day]
+ * @return fluxes for each segment [cm3/day]
+ */
+std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFluxes) const
+{
+	auto lengths =  this->segLength();
+	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
+	std::fill(fluxes.begin(), fluxes.end(), 0.);
+	auto map = rs->cell2seg;
+	for(auto iter = map.begin(); iter != map.end(); ++iter) {
+		int cellId =  iter->first;
+		auto segs = map.at(cellId);
+		double v = 0;
+		for (int i : segs) { // calculate segments volume within cell
+			v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+		}
+		for (int i : segs) { // calculate outer radius
+			double t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v; // proportionality factor
+			fluxes[i] = t*soilFluxes.at(cellId);
+		}
+	}
+	return fluxes;
+}
 
+/**
+ * Calculates segment lengths
+ */
+std::vector<double> XylemFlux::segLength() const {
+	std::vector<double> lengths = std::vector<double>(rs->segments.size());
+	for(int i=0; i<lengths.size(); i++) {
+		auto n1 = rs->nodes[rs->segments[i].x];
+		auto n2 = rs->nodes[rs->segments[i].y];
+		lengths[i] = (n2.minus(n1)).length();
+	}
+	return lengths;
+}
 
 /**
  *  Sets the radial conductivity in [1 day-1], converts to [cm2 day g-1] by dividing by rho*g
