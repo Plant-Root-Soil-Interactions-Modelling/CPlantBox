@@ -45,7 +45,7 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     double theta = param()->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
-        double scale = getRootRandomParameter()->f_se->getValue(parent->getNode(pni), parent);
+        double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta*=scale;
     }
     iHeading = Matrix3d::ons(heading).times(Vector3d::rotAB(theta,beta)); // new initial heading
@@ -130,18 +130,19 @@ void Root::simulate(double dt, bool verbose)
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.); // length increment
+                // std::cout << "Root::simulate: " << dt_ << ", " << e <<  ", " << scale <<"\n"; // for debugging
 
                 // create geometry
                 if (p.ln.size()>0) { // root has children
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
-                            createSegments(dl,verbose);
+                            createSegments(dl,dt,verbose);
                             length+=dl;
                             dl=0;
                         } else {
                             double ddx = p.lb-length;
-                            createSegments(ddx,verbose);
+                            createSegments(ddx,dt,verbose);
                             dl-=ddx; // ddx already has been created
                             length=p.lb;
                         }
@@ -156,12 +157,12 @@ void Root::simulate(double dt, bool verbose)
                                     createLateral(verbose);
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
-                                    createSegments(dl,verbose);
+                                    createSegments(dl,dt,verbose);
                                     length+=dl;
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
-                                    createSegments(ddx,verbose);
+                                    createSegments(ddx,dt,verbose);
                                     dl-=ddx;
                                     length=s;
                                 }
@@ -173,12 +174,12 @@ void Root::simulate(double dt, bool verbose)
                     }
                     /* apical zone */
                     if (dl>0) {
-                        createSegments(dl,verbose);
+                        createSegments(dl,dt,verbose);
                         length+=dl;
                     }
                 } else { // no laterals
                     if (dl>0) {
-                        createSegments(dl,verbose);
+                        createSegments(dl,dt,verbose);
                         length+=dl;
                     }
                 } // if lateralgetLengths
@@ -193,15 +194,17 @@ void Root::simulate(double dt, bool verbose)
  * Analytical creation (=emergence) time of a point along the already grown root
  *
  * @param length   length along the root, where the point is located [cm]
- * @return         the analytic time when this point was reached by the growing root [day]
+ * @param dt 	   current time step [day]
+ * @return         the analytic time when this point was reached by the growing root [day],
+ * 				   if growth is impeded, the value is not exact, but approximated dependent on the temporal resolution.
  */
-double Root::calcCreationTime(double length)
+double Root::calcCreationTime(double length, double dt)
 {
     assert(length >= 0 && "Root::getCreationTime() negative length");
-    double rootage = calcAge(length);
-    rootage = std::min(rootage, age);
-    assert(rootage >= 0 && "Root::getCreationTime() negative root age");
-    return rootage+nodeCTs[0];
+    double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+    double a = std::max(age_, age-dt);
+    a = std::min(a, age); // a in [age-dt, age]
+    return a+nodeCTs[0];
 }
 
 /**
@@ -302,9 +305,10 @@ Vector3d Root::getIncrement(const Vector3d& p, double sdx)
  *  Checks that each new segments length is <= dx but >= parent->minDx
  *
  *  @param l        total length of the segments that are created [cm]
+ *  @param dt       time step [day]
  *  @param verbose  turns console output on or off
  */
-void Root::createSegments(double l, bool verbose)
+void Root::createSegments(double l, double dt, bool verbose)
 {
     if (l==0) {
         std::cout << "Root::createSegments: zero length encountered \n";
@@ -328,7 +332,7 @@ void Root::createSegments(double l, bool verbose)
                 double sdx = olddx + shiftl; // length of new segment
                 Vector3d newdxv = getIncrement(n2, sdx);
                 nodes[nn-1] = Vector3d(n2.plus(newdxv));
-                double et = this->calcCreationTime(length+shiftl);
+                double et = this->calcCreationTime(length+shiftl, dt);
                 nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
@@ -362,7 +366,7 @@ void Root::createSegments(double l, bool verbose)
         sl += sdx;
         Vector3d newdx = getIncrement(nodes.back(), sdx);
         Vector3d newnode = Vector3d(nodes.back().plus(newdx));
-        double et = this->calcCreationTime(length+shiftl+sl);
+        double et = this->calcCreationTime(length+shiftl+sl, dt);
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
         addNode(newnode, et);

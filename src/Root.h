@@ -42,7 +42,7 @@ public:
     std::string toString() const override;
 
     /* From analytical equations */
-    double calcCreationTime(double length); ///< analytical creation (=emergence) time of a node at a length
+    double calcCreationTime(double length, double dt); ///< analytical creation (=emergence) time of a node at a length
     double calcLength(double age); ///< analytical length of the root
     double calcAge(double length); ///< analytical age of the root
 
@@ -57,7 +57,7 @@ protected:
 
     Vector3d heading() const; ///< current growth direction of the root
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
-    void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
+    void createSegments(double l, double dt, bool silence); ///< creates segments of length l, called by Root::simulate()
 
     bool firstCall = true; ///< firstCall of createSegments in simulate
 
