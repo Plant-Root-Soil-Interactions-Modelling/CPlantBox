@@ -154,7 +154,7 @@ void Root::simulate(double dt, bool verbose)
                             s+=p.ln.at(i);
                             if (length<s) {
                                 if (i==children.size()) { // new lateral
-                                    createLateral(verbose);
+                                    createLateral(dt, verbose);
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
                                     createSegments(dl,dt,verbose);
@@ -169,7 +169,7 @@ void Root::simulate(double dt, bool verbose)
                             }
                         }
                         if (p.ln.size()==children.size()) { // new lateral (the last one)
-                            createLateral(verbose);
+                            createLateral(dt, verbose);
                         }
                     }
                     /* apical zone */
@@ -215,7 +215,7 @@ double Root::calcCreationTime(double length, double dt)
  */
 double Root::calcLength(double age)
 {
-    assert(age >= 0 && "Root::calcLength() negative root age");
+    // assert(age >= 0 && "Root::calcLength() negative root age");
     return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
 }
 
@@ -254,11 +254,12 @@ std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const
  *
  * @param verbose   turns console output on or off
  */
-void Root::createLateral(bool verbose)
+void Root::createLateral(double dt, bool verbose)
 {
     int lt = getRootRandomParameter()->getLateralType(nodes.back());
     if (lt>0) {
         double ageLN = this->calcAge(length); // age of root when lateral node is created
+        ageLN = std::max(ageLN, age-dt);
         double meanLn = getRootRandomParameter()->ln; // mean inter-lateral distance
         double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
         double ageLG = this->calcAge(length+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)

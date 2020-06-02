@@ -53,7 +53,7 @@ public:
 
 protected:
 
-    virtual void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
+    virtual void createLateral(double dt, bool silence); ///< creates a new lateral, called by Root::simulate()
 
     Vector3d heading() const; ///< current growth direction of the root
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
