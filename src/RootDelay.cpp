@@ -52,7 +52,7 @@ void RootDelay::createLateral(double dt, bool verbose)
         auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
         children.push_back(lateral);
     	double ageLN = this->calcAge(length); // age of root when lateral node is created
-        ageLN = std::max(ageLN, age-dt);
+        ageLN = std::max(ageLN, age-dt); // dt_*(1-dl/dl0) are ready
         lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
     }
 }

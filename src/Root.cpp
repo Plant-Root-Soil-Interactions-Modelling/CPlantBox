@@ -137,12 +137,12 @@ void Root::simulate(double dt, bool verbose)
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
-                            createSegments(dl,dt,verbose);
+                            createSegments(dl,dt_,verbose);
                             length+=dl;
                             dl=0;
                         } else {
                             double ddx = p.lb-length;
-                            createSegments(ddx,dt,verbose);
+                            createSegments(ddx,dt_,verbose);
                             dl-=ddx; // ddx already has been created
                             length=p.lb;
                         }
@@ -154,32 +154,32 @@ void Root::simulate(double dt, bool verbose)
                             s+=p.ln.at(i);
                             if (length<s) {
                                 if (i==children.size()) { // new lateral
-                                    createLateral(dt, verbose);
+                                    createLateral(dt_, verbose);
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
-                                    createSegments(dl,dt,verbose);
+                                    createSegments(dl,dt_,verbose);
                                     length+=dl;
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
-                                    createSegments(ddx,dt,verbose);
+                                    createSegments(ddx,dt_,verbose);
                                     dl-=ddx;
                                     length=s;
                                 }
                             }
                         }
                         if (p.ln.size()==children.size()) { // new lateral (the last one)
-                            createLateral(dt, verbose);
+                            createLateral(dt_, verbose);
                         }
                     }
                     /* apical zone */
                     if (dl>0) {
-                        createSegments(dl,dt,verbose);
+                        createSegments(dl,dt_,verbose);
                         length+=dl;
                     }
                 } else { // no laterals
                     if (dl>0) {
-                        createSegments(dl,dt,verbose);
+                        createSegments(dl,dt_,verbose);
                         length+=dl;
                     }
                 } // if lateralgetLengths
@@ -215,7 +215,7 @@ double Root::calcCreationTime(double length, double dt)
  */
 double Root::calcLength(double age)
 {
-    // assert(age >= 0 && "Root::calcLength() negative root age");
+    assert(age >= 0 && "Root::calcLength() negative root age");
     return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
 }
 

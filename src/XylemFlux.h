@@ -19,7 +19,8 @@ public:
 
     virtual ~XylemFlux() { }
 
-    void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true); ///< builds linear system (simTime is needed for age dependent conductivities)
+    void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true,
+    		const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
 
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false); // [cm3/day]
     std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false); // for each segment in [cm3/day]
@@ -44,8 +45,8 @@ public:
     std::function<double(double,int)> kr_f = [](double age, int type) { return 0.; };
     std::function<double(double,int)> kx_f = [](double age, int type) { return 1.; };
 
-    double rho = 1; // [g cm-3]
-    double g =  9.8065*100.*24.*3600.*24.*3600.;  // [cm day-2]
+//    double rho = 1; // [g cm-3]
+//    double g =  9.8065*100.*24.*3600.*24.*3600.;  // [cm day-2]
 
     std::shared_ptr<CPlantBox::MappedSegments> rs;
 

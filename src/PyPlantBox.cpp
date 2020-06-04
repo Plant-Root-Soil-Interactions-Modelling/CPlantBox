@@ -775,7 +775,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKx",&XylemFlux::setKx, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",&XylemFlux::setKrTables)
             .def("setKxTables",&XylemFlux::setKxTables)
-            .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true)
+            .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
+            		py::arg("soil_k") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
             .def("sumSoilFluxes",&XylemFlux::sumSoilFluxes)
@@ -791,8 +792,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("aB", &XylemFlux::aB)
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
-            .def_readwrite("rho", &XylemFlux::rho)
-            .def_readwrite("g", &XylemFlux::g)
             .def_readwrite("rs", &XylemFlux::rs);
     /*
      * Plant.h
