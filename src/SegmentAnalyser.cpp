@@ -223,7 +223,9 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
         bool y_ = geometry->getDist(nodes.at(s.y))<=0; // in?
         if (x_ && y_) { //segment is inside
             seg.push_back(s);
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) {
+            	sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
@@ -239,7 +241,9 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
             nodes.push_back(newnode); // add new segment
             Vector2i newseg(s.x,nodes.size()-1);
             seg.push_back(newseg);
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) {
+            	sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) { // copy data
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
@@ -277,7 +281,9 @@ void SegmentAnalyser::filter(std::string name, double min, double max)
     for (size_t i=0; i<segments.size(); i++) {
         if ((d_.at(i)>=min) && (d_.at(i)<=max)) {
             seg.push_back(segments.at(i));
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) {
+            	sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
