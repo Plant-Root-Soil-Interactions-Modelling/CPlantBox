@@ -1,6 +1,8 @@
 <seed name="best_seed" subType="0">
-    <parameter name="maxTil" value="0"/>
+    <parameter name="maxTi" value="0"/>
     <!--Maximal number of tillers [1]-->
+    <parameter name="a" value="0,1"/>
+    <!--Root radius [cm]-->
     <parameter name="delayB" value="7"/>
     <!--Time delay between the basal roots [day]-->
     <parameter name="delayRC" value="15"/>
@@ -23,6 +25,6 @@
     <!--Y-Coordinate of seed position [cm]-->
     <parameter name="seedPos.z" value="-3"/>
     <!--Z-Coordinate of seed position [cm]-->
-    <parameter name="simtime" value="30"/>
+    <parameter name="simulationTime" value="30"/>
     <!--Recommended final simulation time  [day]-->
 </seed>

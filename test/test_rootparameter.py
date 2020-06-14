@@ -19,6 +19,8 @@ class TestStemParameter(unittest.TestCase):
         self.rrp.subType = 1
         self.rrp.successor = [4, 5, 6]
         self.rrp.successorP = [0.4, 0.1, 0.5]
+        self.rrp.ldelay = 5
+        self.rrp.ldelays = 2
 
     def test_constructors(self):
         """ tests constructor and copy """
@@ -72,13 +74,15 @@ class TestStemParameter(unittest.TestCase):
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
-        self.root_example()
+        self.root_example()        
         rrp = self.rrp  # rename
         rrp.name = "lateral"
         rrp.subType = 2
         rrp.writeXML("root.xml")
         otp2 = pb.RootRandomParameter(self.plant)
         otp2.readXML("root.xml")
+        self.assertEqual(otp2.ldelay, rrp.ldelay, "xml: value unexpected")        
+        self.assertEqual(otp2.ldelays, rrp.ldelays, "xml: value unexpected")        
         self.assertEqual(otp2.name, rrp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, rrp.organType, "xml: value unexpected")
         self.assertEqual(otp2.subType, rrp.subType, "xml: value unexpected")

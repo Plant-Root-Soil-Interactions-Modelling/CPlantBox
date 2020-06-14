@@ -48,6 +48,23 @@ int SDF_PlantBox::writePVPScript(std::ostream & cout, int c) const
 
 
 /**
+ * Returns the signed distance to the next boundary of the cuboid
+ *
+ * @param v     spatial position [cm]
+ * \return      signed distance [cm], a minus sign means inside, plus outside
+ */
+double SDF_Cuboid::getDist(const Vector3d& v) const
+{
+    // d=-min(min(min(min(min(-z1+p(:,3),z2-p(:,3)),-y1+p(:,2)),y2-p(:,2)),-x1+p(:,1)),x2-p(:,1));
+    double d =   std::min(   -min.z+v.z,  max.z-v.z);
+    d = std::min(std::min(d, -min.y+v.y), max.y-v.y);
+    d = std::min(std::min(d, -min.x+v.x), max.x-v.x);
+    return -d;
+}
+
+
+
+/**
  * Creates a cylindrical or square container
  *
  * @param r1_   top radius [cm]
@@ -55,13 +72,8 @@ int SDF_PlantBox::writePVPScript(std::ostream & cout, int c) const
  * @param h_    height of the container [cm]
  * @param sq    square (true) or cylindrical (false), default=false
  */
-SDF_PlantContainer::SDF_PlantContainer(double r1_, double r2_, double h_, double sq)
-{
-    r1=r1_;
-    r2=r2_;
-    h=h_;
-    square = sq;
-}
+SDF_PlantContainer::SDF_PlantContainer(double r1_, double r2_, double h_, double sq) : r1(r1_), r2(r2_), h(h_), square(sq)
+{ }
 
 /**
  * Returns the signed distance to the next boundary

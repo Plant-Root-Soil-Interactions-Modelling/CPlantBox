@@ -1,6 +1,8 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "MappedOrganism.h"
 
+#include "SegmentAnalyser.h"
+
 #include <algorithm>
 #include <functional>
 #include <cmath>
@@ -45,29 +47,6 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i
 }
 
 /**
- * Sets the soil cell index call back function. Resets and updates the mappers.
- * The callback function takes a spatial coordinate [cm] and returns the index of the cell
- */
-void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res) {
-    minBound = min;
-    maxBound = max;
-    resolution = res;
-    rectangularGrid = true;
-    this->setSoilGrid(s);
-}
-
-/**
- * Sets the soil cell index call back function. Resets and updates the mappers.
- * The callback function takes a spatial coordinate [cm] and returns the index of the cell
- */
-void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s) {
-    soil_index = s;
-    seg2cell.clear();
-    cell2seg.clear();
-    mapSegments(segments); // TODO use rectangularGrid
-}
-
-/**
  * Sets the radius for all segments.
  */
 void MappedSegments::setRadius(double a) {
@@ -84,35 +63,151 @@ void MappedSegments::setTypes(int t) {
 }
 
 /**
+ * Sets the soil cell index call back function and a rectangular grids.
+ * First cuts all segments at the grid boundaries, then resets and updates the mappers.
+ *
+ * The callback function takes a spatial coordinate [cm] and returns the index of the cell
+ */
+void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res) {
+    soil_index = s;
+    this->setRectangularGrid(min,max,res);
+    this->setSoilGrid(s);
+}
+
+/**
+ * Sets the soil cell index call back function. Resets and updates the mappers.
+ *
+ * The callback function takes a spatial coordinate [cm] and returns the index of the cell
+ */
+void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s) {
+    soil_index = s;
+    seg2cell.clear(); // re-map all segments
+    cell2seg.clear();
+    mapSegments(segments);
+}
+
+/**
+ * Sets a rectangular grid, and cuts all segments along the grid cells
+ */
+void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res)
+{
+    minBound = min;
+    maxBound = max;
+    resolution = res;
+    rectangularGrid = true;
+    auto segs = segments; // copy
+    auto types_ = types;
+    auto radii_ = radii;
+    segments.clear(); // clear
+    types.clear();
+    radii.clear();
+    addSegments(segs, radii_, types_); // re-add
+    seg2cell.clear(); // re-map all segments
+    cell2seg.clear();
+    mapSegments(segments);
+}
+
+
+/**
  * Update the mappers root2cell, which maps root segment index to soil cell index, and
  * cell2seg which maps soil cell index to multiple root segments.
  *
  * @param segs      the (new) segments that need to be mapped
  */
 void MappedSegments::mapSegments(std::vector<Vector2i> segs) {
-    if (rectangularGrid) {
-        segs = cutSegments(segs);
-    }
     for (auto& ns : segs) {
         Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
         int cellIdx = soil_index(mid.x,mid.y,mid.z);
-        if (cellIdx>0) {
+        if (cellIdx>=0) {
             int segIdx = ns.y-1; // this is unique in a tree like structured
             seg2cell[segIdx] = cellIdx;
             if (cell2seg.count(cellIdx)>0) {
-                cell2seg[cellIdx].push_back(ns.x);
-                cell2seg[cellIdx].push_back(ns.y);
+                cell2seg[cellIdx].push_back(segIdx);
             } else {
-                cell2seg[cellIdx] = std::vector<int>({ns.x, ns.y});
+                cell2seg[cellIdx] = std::vector<int>({segIdx});
             }
         } else {
-            std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
+        	// std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
         }
     }
 }
 
 /**
- * Removes segments from the mappers todo make private
+ * Adds the segments to the list.
+ * Optionally, cut segments @param segs at a rectangular grid (@see MappedSegments::setSoilGrid)
+ */
+void MappedSegments::addSegments(const std::vector<Vector2i>& segs, const std::vector<double>& radii_,  const std::vector<int>& types_) {
+    assert(segs.size()==radii_.size() && "MappedSegments::addSegments: number of segments and radii disagree!");
+    assert(segs.size()==types_.size() && "MappedSegments::addSegments: number of segments and types disagree!");
+    if (!rectangularGrid) {
+        for (int i=0; i<segs.size(); i++ ) {
+            segments.push_back(segs[i]);
+            radii.push_back(radii_[i]);
+            types.push_back(types_[i]);
+        }
+    } else {
+        SDF_Cuboid sdf;
+        for (int i=0; i<segs.size(); i++ ) {
+            Vector2i ns = segs[i];
+            Vector3d n1 = nodes[ns.x]; // since we cut at the bounds, they are often located at the bounds
+            Vector3d n2 = nodes[ns.y];
+            Vector3d mid = (n1.plus(n2)).times(0.5);
+            Vector3d v = (n2.minus(n1)).times(10*eps); // never evaluate soil_index exactly at the bounds (no unique return value)
+            n1 = n1.plus(v);
+            n2 = n2.minus(v);
+            int im = soil_index(mid.x,mid.y,mid.z); // cell indices
+            int in1 = soil_index(n1.x,n1.y,n1.z);
+            int in2 = soil_index(n2.x,n2.y,n2.z);
+
+            // std::cout << im <<", "<< in1 <<", "<< in2 <<", "<< "\n";
+            if ((im!=in1) or (im!=in2)) { // cut
+                auto width = maxBound.minus(minBound); // construct sdf
+                Vector3d dx(width.x/resolution.x, width.y/resolution.y, width.z/resolution.z);
+                auto mid0 = mid.minus(minBound);
+                int x = std::floor(mid0.x/dx.x); // important in case of minus
+                int y = std::floor(mid0.y/dx.y);
+                int z = std::floor(mid0.z/dx.z);
+                Vector3d minB(x*dx.x, y*dx.y, z*dx.z);
+                minB = minB.plus(minBound);
+                Vector3d maxB((x+1)*dx.x, (y+1)*dx.y, (z+1)*dx.z);
+                maxB = maxB.plus(minBound);
+                sdf.min = minB;
+                sdf.max = maxB;
+    //            std::cout << "Segment "<< ns.y-1 << "/" << segs.size() << ", index " << x << ", " << ", " << y << ", " << z <<
+    //                "\nCuboid: "<< sdf.toString() << " at " << mid.toString() << ": dist = " << sdf.getDist(mid) << "\n";
+                if (im==in1) { // is one node at mid (sort accordingly)
+    //                std::cout << "im==in1, \nn2: " << n2.toString() << ", " <<  sdf.getDist(n2) << ", " << im << ", " <<in2 << "\n"  << std::flush;
+    //                std::cout << "n1: " <<n1.toString() << ", " <<  sdf.getDist(n1) << ", " << im << ", " << in1 << "\n"  << std::flush;
+                    auto cPoint = SegmentAnalyser::cut(mid, n2, std::make_shared<SDF_Cuboid>(sdf), 0.01*eps);
+                    nodes.push_back(cPoint);
+                    nodeCTs.push_back(nodeCTs[ns.y]); // nn, todo: we might linearly interpolate
+                } else if (im==in2) {
+    //                std::cout << "im==in2, \nn1: " <<n1.toString() << ", " <<  sdf.getDist(n1) << ", " << im << ", " <<in1 << "\n"  << std::flush;
+    //                std::cout << "n2: " << n2.toString() << ", " <<  sdf.getDist(n2) << ", " << im << ", " <<in2 << "\n"  << std::flush;
+                    auto cPoint = SegmentAnalyser::cut(mid, n1, std::make_shared<SDF_Cuboid>(sdf), 0.01*eps);
+                    nodes.push_back(cPoint);
+                    nodeCTs.push_back(nodeCTs[ns.x]); // nn, todo: we might linearly interpolate
+                } else { // otherwise split in mid, use cutSegments on those
+                    // std::cout << "mid\n" << std::flush;
+                    nodes.push_back(mid);
+                    nodeCTs.push_back(0.5*(nodeCTs[ns.x]+nodeCTs[ns.x]));
+                }
+                Vector2i s1(ns.x, nodes.size()-1);
+                Vector2i s2(nodes.size()-1, ns.y);
+                int t = types_[i];
+                double r = radii_[i];
+                addSegments({s1,s2}, {r,r}, {t,t});
+            } else { // dont't cut
+                segments.push_back(ns);
+                radii.push_back(radii_[i]);
+                types.push_back(types_[i]);
+            }
+        }
+    }
+}
+
+/**
+ * Removes segments from the mappers
  */
 void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
     for (auto& ns : segs) {
@@ -128,10 +223,9 @@ void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
         if (cell2seg.count(cellIdx)>0) {
             auto& segs= cell2seg[cellIdx];
             int c = 0;
-            for (int i=1; i<segs.size(); i+=2) {
-                int ni = segs[i];
-                if (ni == ns.y) {
-                    segs.erase(segs.begin() + c -1, segs.begin() + c); // cannot be the first
+            for (int i=0; i<segs.size(); i++) {
+                if (segs[i] == segIdx) {
+                    segs.erase(segs.begin() + c, segs.begin() + c);
                     break; // inner for
                 }
                 c++;
@@ -143,38 +237,21 @@ void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
 }
 
 /**
- * use soil_index on mid and end points, cut at rectangular grid
- * TODO
+ * linear index
  */
-std::vector<Vector2i> MappedSegments::cutSegments(std::vector<Vector2i> segs) const {
-
-    // [n1 m n2]
-//    if ind(n1)!=ind(m2) // cut !!!
-//    or ind(m)!=ind(n2) // cut !!!
-
-
-    return segs;
+int MappedSegments::soil_index_(double x, double y, double z) {
+    Vector3d p(x,y,z);
+    std::array<double,3>  r = { resolution.x, resolution.y, resolution.z};
+    auto w = maxBound.minus(minBound);
+    auto p0 = p.minus(minBound);
+    std::array<double,3> i = { p0.x/w.x*r[0], p0.y/w.y*r[1], p0.z/w.z*r[2] };
+    for (int k=0; k<3; k++) {
+        if ((i[k] < 0) or (i[k] >= r[k])) {
+            return -1;
+        }
+    }
+    return std::floor(i[0]) * r[1] * r[2] + std::floor(i[1]) * r[1] + std::floor(i[2]); // a linear index not periodic
 }
-//Vector3d newnode = cut(nodes[s.x], nodes[s.y], geometry);
-//nodes.push_back(newnode); // add new segment
-//Vector2i newseg(s.x,nodes.size()-1);
-//seg.push_back(newseg);
-//sO.push_back(segO.at(i));
-//std::vector<Vector2i> MappedSegments::cutSegments(std::vector<Vector2i> segs) {
-//    std::vector<Vector2i> newsegs;
-//    for (auto& ns : segs) {
-//       auto n1 = nodes[ns.x];
-//       auto n2 = nodes[ns.y];
-//       int c1 = soil_index(n1.x,n1.y,n1.z);
-//       int c2 = soil_index(n1.x,n1.y,n1.z);
-//       if (c1==c2) { // nothing todo
-//           newsegs.push_back(ns);
-//       } else { // split
-//
-//       }
-//    }
-//    return newsegs;
-//}
 
 
 
@@ -184,9 +261,9 @@ std::vector<Vector2i> MappedSegments::cutSegments(std::vector<Vector2i> segs) co
  * Shoot segments have per default radii = 0.1 cm, types = 0
  * This can be changed by directly accessing the member variables.
  */
-void MappedRootSystem::initialize(int basaltype, int shootbornetype, bool verbose) {
+void MappedRootSystem::initializeLB(int basaltype, int shootbornetype, bool verbose) {
     std::cout << "MappedRootSystem::initialize \n" << std::flush;
-    RootSystem::initialize(basaltype, shootbornetype, verbose);
+    RootSystem::initializeLB(basaltype, shootbornetype, verbose);
     segments = this->getShootSegments();
     nodes = this->getNodes();
     nodeCTs = this->getNodeCTs();
@@ -204,7 +281,7 @@ void MappedRootSystem::initialize(int basaltype, int shootbornetype, bool verbos
  * This can be changed by directly accessing the member variables.
  */
 void MappedRootSystem::initialize(bool verbose) {
-    this->initialize(4,5, verbose);
+    this->initializeLB(4,5, verbose);
 }
 
 /**
@@ -229,7 +306,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
         nodes.at(i) = unodes[c];
         c++;
     }
-    std::cout << "nodes moved \n" << std::flush;
+    std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
     auto newnodes = this->getNewNodes(); // add nodes
     nodes.reserve(nodes.size()+newnodes.size());
     for (auto& nn : newnodes) {
@@ -240,19 +317,19 @@ void MappedRootSystem::simulate(double dt, bool verbose)
     for (auto& nct : newnode_cts) {
         nodeCTs.push_back(nct);
     }
-    std::cout << "new nodes added \n" << std::flush;
+    std::cout << "new nodes added " << nodes.size() << "\n" << std::flush;
     auto newsegs = this->getNewSegments(); // add segments
     segments.resize(segments.size()+newsegs.size());
     for (auto& ns : newsegs) {
         segments[ns.y-1] = ns;
     }
-    std::cout << "segments added \n" << std::flush;
+    std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
     auto newsegO = this->getNewSegmentOrigins(); // add radius and type
     std::cout << "resize(): << " << radii.size()+newsegO.size() << "\n"<< std::flush;
     radii.resize(radii.size()+newsegO.size());
     types.resize(types.size()+newsegO.size());
     c = 0;
-    std::cout << "total length " << radii.size() << ", new " << newsegO.size() << "\n "<< std::flush;
+    std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
     for (auto& so : newsegO) {
         int segIdx = newsegs[c].y-1;
         c++;
@@ -286,282 +363,9 @@ void MappedRootSystem::simulate(double dt, bool verbose)
             rSegs.push_back(s);
         }
     }
+
     MappedSegments::removeSegments(rSegs);
     MappedSegments::mapSegments(rSegs);
 }
 
-/**
- * TODO docme
- */
-void MappedRootSystem::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res)
-{
-    MappedSegments::minBound = min;
-    MappedSegments::maxBound = max;
-    MappedSegments::resolution = res;
-    MappedSegments::rectangularGrid = true;
-}
-
-
-
-/**
- * Assembles the linear system as sparse matrix, given by
- * indices aI, aJ, and values aV, and load aB
- *
- * The linear system is solved to yield the homogeneous solution
- *
- * @simTime         [days] current simulation time is needed for age dependend conductivities,
- *                  to calculate the age from the creation times.
- */
-void XylemFlux::linearSystem(double simTime) {
-
-    int Ns = rs->segments.size(); // number of segments
-    aI.resize(4*Ns);
-    aJ.resize(4*Ns);
-    aV.resize(4*Ns);
-    int N = rs->nodes.size(); // number of nodes
-    aB.resize(N);
-    std::fill(aB.begin(), aB.end(), 0.);
-    std::fill(aV.begin(), aV.end(), 0.);
-    std::fill(aI.begin(), aI.end(), 0);
-    std::fill(aJ.begin(), aJ.end(), 0);
-    size_t k=0;
-    for (int si = 0; si<Ns; si++) {
-
-        int i = rs->segments[si].x;
-        int j = rs->segments[si].y;
-        auto n1 = rs->nodes[i];
-        auto n2 = rs->nodes[j];
-
-        double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
-        double age = simTime - rs->nodeCTs[j];
-        int type = rs->types[si];
-        double kx = kx_f(age, type);
-        double  kr = kr_f(age, type);
-
-        auto v = n2.minus(n1);
-        double l = v.length();
-        double vz = v.z / l; // normed direction
-
-        double c = 2.*a * M_PI * kr / kx; // Eqn (2)
-        double d = std::exp(-std::sqrt(c) * l) - std::exp(std::sqrt(c) * l); // Eqn (5)
-        double di = 1. / d;
-
-        double cii = -kx * di * std::sqrt(c) * (std::exp(-std::sqrt(c) * l) + std::exp(std::sqrt(c) * l)); // Eqn 16
-        double cij = 2 * kx * di * std::sqrt(c);  // Eqn 17
-        double bi = kx * vz; //  # Eqn 18 (* rho * g) todo change back to kr [1/day]
-        // std::cout << "cii " << cii << ", c " << c << ", d "<< d << "\n";
-
-        aB[i] += bi;
-        aI[k] = i; aJ[k]= i; aV[k] = cii;
-        k += 1;
-        aI[k] = i; aJ[k] = j;  aV[k] = cij;
-        k += 1;
-
-        int ii = i;
-        i = j;  j = ii; // edge ji
-        aB[i] -= bi; // Eqn 14 with changed sign
-        aI[k] = i; aJ[k]= i; aV[k] = cii;
-        k += 1;
-        aI[k] = i; aJ[k] = j;  aV[k] = cij;
-        k += 1;
-    }
-}
-
-/**
- * Creates the inhomogeneous solution from the homogeneous one
- *
- * @param rx        root xylem solution per node
- * @param sx        soil solution per cell
- */
-std::vector<double> XylemFlux::getSolution(std::vector<double> rx, std::vector<double> sx) {
-    int cIdx = rs->seg2cell[0]; // the first node ends no segment attached to it
-    rx[0] += sx[cIdx];
-    for (int i = 1; i< rx.size(); i++) {
-        int cIdx = rs->seg2cell[i-1]; // i-1 is the segment index
-        rx[i] += sx[cIdx];
-    }
-    return rx;
-}
-
-/**
- *  Sets the radial conductivity in [1 day-1], converts to [cm2 day g-1] by dividing by rho*g
- */
-void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
-    std::transform(values.begin(), values.end(), values.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
-    kr = values;
-    kr_t = age;
-    if (age.size()==0) {
-        if (values.size()==1) {
-            kr_f = std::bind(&XylemFlux::kr_const, this, std::placeholders::_1, std::placeholders::_2);
-            std::cout << "Kr is constant " << values[0] << " cm2 day g-1 \n";
-        } else {
-            kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2);
-            std::cout << "Kr is constant per type, type 0 = " << values[0] << " cm2 day g-1 \n";
-        }
-    } else {
-        kr_f  = std::bind(&XylemFlux::kr_table, this, std::placeholders::_1, std::placeholders::_2);
-        std::cout << "Kr is age dependent\n";
-    }
-}
-
-
-/**
- *  Sets the axial conductivity in [cm3 day-1], converts to [cm5 day g-1] by dividing by rho*g
- */
-void XylemFlux::setKx(std::vector<double> values, std::vector<double> age) {
-    std::transform(values.begin(), values.end(), values.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
-    kx = values;
-    kx_t = age;
-    if (age.size()==0) {
-        if (values.size()==1) {
-            kx_f = std::bind(&XylemFlux::kx_const, this, std::placeholders::_1, std::placeholders::_2);
-            std::cout << "Kx is constant " << values[0] << " cm2 day g-1 \n";
-        } else {
-            kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2);
-            std::cout << "Kx is constant per type, type 0 = " << values[0] << " cm2 day g-1 \n";
-        }
-    } else {
-        kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2);
-        std::cout << "Kx is age dependent\n";
-    }
-}
-
-/**
- *  Sets the radial conductivity in [1 day-1], converts to [cm2 day g-1] by dividing by rho*g
- */
-void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-    krs.resize(0);
-    for (auto v :values) {
-        std::transform(v.begin(), v.end(), v.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
-        krs.push_back(v);
-    }
-    krs_t = age;
-    kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2);
-    std::cout << "Kr is age dependent per root type\n";
-}
-
-/**
- *  Sets the axial conductivity in [cm3 day-1], converts to [cm5 day g-1] by dividing by rho*g
- */
-void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-    kxs.resize(0);
-    for (auto v :values) {
-        std::transform(v.begin(), v.end(), v.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
-        kxs.push_back(v);
-    }
-    kxs_t = age;
-    kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2);
-    std::cout << "Kx is age dependent per root type\n";
-}
-
-/**
- *
- */
-double XylemFlux::interp1(double ip, std::vector<double> x, std::vector<double> y) {
-    if (ip > x.back()) return y.back(); // check bounds
-    if (ip < x[0]) return y[0];
-
-    // if we are within bounds find the index of the lower bound
-    const auto lookUpIndex = std::distance(x.begin(), std::lower_bound(x.begin(), x.end(), ip));
-    if (lookUpIndex == 0) {
-        return y[0];
-    }
-    double ip_ = (ip - x[lookUpIndex-1])/(x[lookUpIndex] - x[lookUpIndex-1]);
-    return y[lookUpIndex-1]*(1.0 - ip_)  + y[lookUpIndex]*ip_;
-}
-
-/**
- * Exact fluxes from root segments into a the soil cell with cell index cIdx.
- *
- * todo cite Menuier et al.
- */
-std::map<int,double> XylemFlux::soilFluxes(double simTime, std::vector<double> rx_hom)
-{
-    std::map<int,double> fluxes;
-
-    for (int si = 0; si<rs->segments.size(); si++) {
-
-        int i = rs->segments[si].x;
-        int j = rs->segments[si].y;
-        int segIdx = j-1;
-
-        if (rs->seg2cell.count(segIdx)>0) {
-
-            int cellIdx = rs->seg2cell[segIdx];
-
-            double a = rs->radii[si]; // si is correct, with ordered and unordered segments
-            double age = simTime - rs->nodeCTs[j];
-            int type = rs->types[si];
-            double  kr = kr_f(age, type);
-            double  kz = kx_f(age, type);
-
-            auto n1 = rs->nodes[i];
-            auto n2 = rs->nodes[j];
-            double l = (n2.minus(n1)).length();
-
-            double sc = std::sqrt(2*a*M_PI*kr/kz); // sqrt(c) [cm-1]
-            double d = std::exp(-sc*l)-std::exp(sc*l); // det
-            double f = -2*a*M_PI*l*(kr*rho*g)*(1./(sc*d))*(std::exp(sc*l)+std::exp(-sc*l)-2)*(rx_hom[i]+rx_hom[j]); // fancy
-            // I seems to be exact, but on minus too much (compared to my text)
-
-            if (fluxes.count(cellIdx)==0) {
-                fluxes[cellIdx] = f;
-            } else {
-                fluxes[cellIdx] += f; // sum up fluxes per cell
-            }
-
-        } else {
-            std::cout << "XylemFlux::soilFluxes: Warning! unmapped segments with index " << segIdx << "\n";
-        }
-
-    }
-    return fluxes;
-
-}
-
-/**
- * Fluxes from root segments into a the soil cell with cell index cIdx.
- *
- * This is (a frequently used) approximation,
- * taking root segment surface times constant radial flux.
- */
-std::map<int,double> XylemFlux::soilFluxesApprox(double simTime, std::vector<double> rx_hom)
-{
-    std::map<int,double> fluxes;
-
-    for (int si = 0; si<rs->segments.size(); si++) {
-
-        int i = rs->segments[si].x;
-        int j = rs->segments[si].y;
-        int segIdx = j-1;
-
-        if (rs->seg2cell.count(segIdx)>0) {
-
-            int cellIdx = rs->seg2cell[segIdx];
-
-            double a = rs->radii[si]; // si is correct, with ordered and unordered segments
-            double age = simTime - rs->nodeCTs[j];
-            int type = rs->types[si];
-            double  kr = kr_f(age, type);
-
-            auto n1 = rs->nodes[i];
-            auto n2 = rs->nodes[j];
-            double l = (n2.minus(n1)).length();
-
-            double f = - 2*a*M_PI*l*(kr*rho*g)*(-rx_hom[j]); // cm3 / day
-
-            if (fluxes.count(cellIdx)==0) {
-                fluxes[cellIdx] = f;
-            } else {
-                fluxes[cellIdx] += f; // sum up fluxes per cell
-            }
-        } else {
-            std::cout << "XylemFlux::soilFluxesApprox: Warning! unmapped segments with index " << segIdx << "\n";
-        }
-
-    }
-    return fluxes;
-}
-
-
-}
+} // namespace

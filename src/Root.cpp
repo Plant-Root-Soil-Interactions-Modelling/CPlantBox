@@ -45,7 +45,7 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     double theta = param()->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
-        double scale = getRootRandomParameter()->f_se->getValue(parent->getNode(pni), parent);
+        double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta*=scale;
     }
     iHeading = Matrix3d::ons(heading).times(Vector3d::rotAB(theta,beta)); // new initial heading
@@ -128,20 +128,21 @@ void Root::simulate(double dt, bool verbose)
 
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
-                double scale = getRootRandomParameter()->f_sa->getValue(nodes.back(), shared_from_this());
+                double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.); // length increment
+                // std::cout << "Root::simulate: " << dt_ << ", " << e <<  ", " << scale <<"\n"; // for debugging
 
                 // create geometry
                 if (p.ln.size()>0) { // root has children
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
-                            createSegments(dl,verbose);
+                            createSegments(dl,dt_,verbose);
                             length+=dl;
                             dl=0;
                         } else {
                             double ddx = p.lb-length;
-                            createSegments(ddx,verbose);
+                            createSegments(ddx,dt_,verbose);
                             dl-=ddx; // ddx already has been created
                             length=p.lb;
                         }
@@ -153,32 +154,32 @@ void Root::simulate(double dt, bool verbose)
                             s+=p.ln.at(i);
                             if (length<s) {
                                 if (i==children.size()) { // new lateral
-                                    createLateral(verbose);
+                                    createLateral(dt_, verbose);
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
-                                    createSegments(dl,verbose);
+                                    createSegments(dl,dt_,verbose);
                                     length+=dl;
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
-                                    createSegments(ddx,verbose);
+                                    createSegments(ddx,dt_,verbose);
                                     dl-=ddx;
                                     length=s;
                                 }
                             }
                         }
                         if (p.ln.size()==children.size()) { // new lateral (the last one)
-                            createLateral(verbose);
+                            createLateral(dt_, verbose);
                         }
                     }
                     /* apical zone */
                     if (dl>0) {
-                        createSegments(dl,verbose);
+                        createSegments(dl,dt_,verbose);
                         length+=dl;
                     }
                 } else { // no laterals
                     if (dl>0) {
-                        createSegments(dl,verbose);
+                        createSegments(dl,dt_,verbose);
                         length+=dl;
                     }
                 } // if lateralgetLengths
@@ -193,15 +194,17 @@ void Root::simulate(double dt, bool verbose)
  * Analytical creation (=emergence) time of a point along the already grown root
  *
  * @param length   length along the root, where the point is located [cm]
- * @return         the analytic time when this point was reached by the growing root [day]
+ * @param dt 	   current time step [day]
+ * @return         the analytic time when this point was reached by the growing root [day],
+ * 				   if growth is impeded, the value is not exact, but approximated dependent on the temporal resolution.
  */
-double Root::calcCreationTime(double length)
+double Root::calcCreationTime(double length, double dt)
 {
     assert(length >= 0 && "Root::getCreationTime() negative length");
-    double rootage = calcAge(length);
-    rootage = std::min(rootage, age);
-    assert(rootage >= 0 && "Root::getCreationTime() negative root age");
-    return rootage+nodeCTs[0];
+    double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+    double a = std::max(age_, age-dt);
+    a = std::min(a, age); // a in [age-dt, age]
+    return a+nodeCTs[0];
 }
 
 /**
@@ -251,12 +254,15 @@ std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const
  *
  * @param verbose   turns console output on or off
  */
-void Root::createLateral(bool verbose)
+void Root::createLateral(double dt, bool verbose)
 {
     int lt = getRootRandomParameter()->getLateralType(nodes.back());
     if (lt>0) {
         double ageLN = this->calcAge(length); // age of root when lateral node is created
-        double ageLG = this->calcAge(length+param()->la); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+        ageLN = std::max(ageLN, age-dt);
+        double meanLn = getRootRandomParameter()->ln; // mean inter-lateral distance
+        double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+        double ageLG = this->calcAge(length+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
         auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
         children.push_back(lateral);
@@ -300,9 +306,10 @@ Vector3d Root::getIncrement(const Vector3d& p, double sdx)
  *  Checks that each new segments length is <= dx but >= parent->minDx
  *
  *  @param l        total length of the segments that are created [cm]
+ *  @param dt       time step [day]
  *  @param verbose  turns console output on or off
  */
-void Root::createSegments(double l, bool verbose)
+void Root::createSegments(double l, double dt, bool verbose)
 {
     if (l==0) {
         std::cout << "Root::createSegments: zero length encountered \n";
@@ -326,7 +333,7 @@ void Root::createSegments(double l, bool verbose)
                 double sdx = olddx + shiftl; // length of new segment
                 Vector3d newdxv = getIncrement(n2, sdx);
                 nodes[nn-1] = Vector3d(n2.plus(newdxv));
-                double et = this->calcCreationTime(length+shiftl);
+                double et = this->calcCreationTime(length+shiftl, dt);
                 nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
@@ -360,7 +367,7 @@ void Root::createSegments(double l, bool verbose)
         sl += sdx;
         Vector3d newdx = getIncrement(nodes.back(), sdx);
         Vector3d newnode = Vector3d(nodes.back().plus(newdx));
-        double et = this->calcCreationTime(length+shiftl+sl);
+        double et = this->calcCreationTime(length+shiftl+sl, dt);
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
         addNode(newnode, et);
@@ -372,28 +379,24 @@ void Root::createSegments(double l, bool verbose)
  *
  * Note:
  * lnMean, and lnDev denotes the mean and standard deviation of the inter-lateral distance of this organ
- * ln_mean, and ln_dev is the mean and standard deviation from the root type parameters
+ * ln_mean, and ln_dev is the mean and standard deviation from the RootRandomParmaeters
  */
 double Root::getParameter(std::string name) const
 {
-    // specific
+    // specific parameters
     if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
-    if (name=="nob") { return param()->nob(); } // number of branches
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
-    if (name=="radius") { return param()->a; } // root radius [cm]
-    if (name=="a") { return param()->a; } // root radius [cm]
     if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
     if (name=="rlt") { return param()->rlt; } // root life time [day]
+    // specific parameters member functions
+    if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
-    // organ members
-    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
-    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
-    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
-    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
-    if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
-    // computed
+    if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
+    // member functions
+    if (name=="numberOfLaterals") { return getNumberOfLaterals(); }
+    // further
     if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
         return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
@@ -404,10 +407,23 @@ double Root::getParameter(std::string name) const
         double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
         return std::sqrt(sq_sum / v.size() - mean * mean);
     }
-    if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // // root volume [cm^3]
-    if (name=="surface") { return 2*param()->a*M_PI*getLength(); }
-    // others
+    if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // root volume [cm^3]
+    if (name=="surface") { return 2*param()->a*M_PI*getLength(); } // root surface [cm^2]
     return Organ::getParameter(name); // pass to base class
+}
+
+/**
+ * @return The number of emerged lateral roots (i.e. number of children with age>0)
+ * @see Organ::getNumberOfChildren
+ */
+int Root::getNumberOfLaterals() const {
+	int nol = 0;
+	for (auto& c : children)  {
+		if (c->getAge()>0) { // born
+			nol ++;
+		}
+	}
+	return nol;
 }
 
 /**

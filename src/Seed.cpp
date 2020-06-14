@@ -13,7 +13,7 @@ Seed::Seed(std::shared_ptr<Organism> plant)
 :Organ(plant, nullptr, Organism::ot_seed, 0, 0., Vector3d(), 0., 0)
 {
 	// realize() is called in Organ constructor
-	addNode(param()->seedPos,0);
+	addNode(param()->seedPos, 0.);
 }
 
 /**
@@ -214,17 +214,17 @@ std::string Seed::toString() const
 /**
  * todo doc
  */
-std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay)
+std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay)
 {
-	return std::make_shared<Root>(plant, type, iheading, delay, shared_from_this(), 0, 0);
+	return std::make_shared<Root>(plant, type, heading, delay, shared_from_this(), 0, 0);
 }
 
 /**
  * todo doc// overwrite if you want to change the types
  */
-std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay)
+std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay)
 {
-	return std::make_shared<Stem>(plant, type, iheading, delay, shared_from_this(), 0, 0);
+	return std::make_shared<Stem>(plant, type, heading, delay, shared_from_this(), 0, 0);
 }
 
 } // namespace CPlantBox

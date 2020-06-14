@@ -36,7 +36,7 @@ public:
 
     enum OrganTypes { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 }; ///< coarse organ classification
     static std::vector<std::string> organTypeNames; ///< names of the organ types
-    static int instances; // number of instances
+    static int instances; ///< the number of instances of this or derived classes
 
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
@@ -50,6 +50,7 @@ public:
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter
     std::vector<std::shared_ptr<OrganRandomParameter>> getOrganRandomParameter(int ot) const; ///< returns all type parameters of an organ type (e.g. root)
     void setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p); ///< sets an organ type parameter, subType and organType defined within p
+    int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str
 
     /* initialization and simulation */
     void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership

@@ -1,7 +1,11 @@
-''' More like a case study, Should be moved to a jupyter notebook '''
+"""
+Analysis of root tip distribution
 
-#
-# Compares numerical approximations with altering resolutions dt, dx (L86 - )
+works in parallel using multiprocessing
+
+TODO this is not working...
+"""
+
 #
 # plots root tip radial distance
 # plots root tip depth
@@ -27,14 +31,14 @@ def simOnce(name, simtime, lbins, lrange, zbins, zrange, dx, dt):
 
     abins = 100
     arange = (-math.pi, math.pi)
-
+    hl,hz,ha = None, None, None # histograms
+    
     # Simulation
-    rs = pb.RootSystem()
-    rs.openFile(name, "modelparameter/")
+    rs = pb.RootSystem() 
+    path = "../../../modelparameter/rootsystem/"
+    rs.readParameters(path + name + ".xml")
     for p in rs.getRootRandomParameter():
         p.dx = dx
-
-    rs.initialize()
     rs.getRootRandomParameter(4).theta = 80. / 180.*math.pi  # fix insertion angle of the basal roots
     rs.initialize()
 
@@ -42,34 +46,28 @@ def simOnce(name, simtime, lbins, lrange, zbins, zrange, dx, dt):
     for i in range(0, N):
         rs.simulate(dt, True);
 
-    # analysis
+    # Analysis
     img = np.zeros((2 * lbins, 2 * lbins))
     nodes = rs.getNodes();
     tips = rs.getRootTips()
-    notips = len(tips)
-    z_ = np.zeros(notips)
-    l_ = np.zeros(notips)
-    alpha_ = np.zeros(notips)
-    c = 0;
-    mx = 0
-    my = 0
+    z_ = np.zeros(len(tips))
+    l_ = np.zeros(len(tips))
+    alpha_ = np.zeros(len(tips))    
+    c = 0 # counter
+    mx, my = 0, 0 # mean tip position
     for t in tips:
-        x = nodes[t].x
-        y = nodes[t].y
-        z = nodes[t].z
+        x, y, z = nodes[t].x, nodes[t].y, nodes[t].z
 
         # tip top view
         i = math.floor(((x + lrange[1]) / (2.*lrange[1])) * 2.*float(lbins))  # np.around((x/lrange[1])*lbins+lbins)
         j = math.floor(((y + lrange[1]) / (2.*lrange[1])) * 2.*float(lbins))  # np.around((y/lrange[1])*lbins+lbins)
-
         i = min(i, 2 * lbins - 1)
         j = min(j, 2 * lbins - 1)
         i = int(max(i, 0))
         j = int(max(j, 0))
-
         img[j, i] += 1.
 
-        # depth, and length distribution
+        # depth and length distribution
         z_[c] = z
         l_[c] = math.sqrt(x * x + y * y)
         alpha_[c] = math.atan2(x, y)
@@ -79,8 +77,12 @@ def simOnce(name, simtime, lbins, lrange, zbins, zrange, dx, dt):
         ha, bins = np.histogram(alpha_, bins = abins, range = arange)
         mx += nodes[t].x
         my += nodes[t].y
-
-    return hl, hz, ha, img, mx / len(tips), my / len(tips)
+    
+    if (len(tips)==0):
+        print("No tips?")
+        return hl, hz, ha, img, mx, my 
+    else:
+        return hl, hz, ha, img, mx / len(tips), my / len(tips)
 
 
 # Params
@@ -89,19 +91,20 @@ dt = 5
 simtime = 60
 
 runs = 100
-# name = "Lupinus_albus_Leitner_2014"
+ #name = "Lupinus_albus_Leitner_2014"
 # name = "Zea_mays_1_Leitner_2010"
 name = "Anagallis_femina_Leitner_2010"
 # name = "Triticum_aestivum_a_Bingham_2011"
 
 # Histogram params
 lbins = 40
-lrange = (0., 20.)
+lrange = (0., 20.) # cm
 zbins = 120
 zrange = (-120., 0.)
 
 pool = Pool()  # defaults to number of available CPU's
-chunksize = 20  # this may take some guessing ... take a look at the docs to decide
+chunksize = 100  # this may take some guessing ... take a look at the docs to decide
+# simOnce(name, simtime, lbins, lrange, zbins, zrange, dx, dt)
 output = pool.starmap(simOnce, [(name, simtime, lbins, lrange, zbins, zrange, dx, dt)] * runs)
 
 mmx = 0

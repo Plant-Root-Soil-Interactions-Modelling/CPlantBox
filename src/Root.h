@@ -37,11 +37,12 @@ public:
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
     double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
+    int getNumberOfLaterals() const; ///< the number of emerged laterals (i.e. number of children with age>0)
 
     std::string toString() const override;
 
     /* From analytical equations */
-    double calcCreationTime(double length); ///< analytical creation (=emergence) time of a node at a length
+    double calcCreationTime(double length, double dt); ///< analytical creation (=emergence) time of a node at a length
     double calcLength(double age); ///< analytical length of the root
     double calcAge(double length); ///< analytical age of the root
 
@@ -52,11 +53,11 @@ public:
 
 protected:
 
-    virtual void createLateral(bool silence); ///< creates a new lateral, called by Root::simulate()
+    virtual void createLateral(double dt, bool silence); ///< creates a new lateral, called by Root::simulate()
 
     Vector3d heading() const; ///< current growth direction of the root
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
-    void createSegments(double l, bool silence); ///< creates segments of length l, called by Root::simulate()
+    void createSegments(double l, double dt, bool silence); ///< creates segments of length l, called by Root::simulate()
 
     bool firstCall = true; ///< firstCall of createSegments in simulate
 

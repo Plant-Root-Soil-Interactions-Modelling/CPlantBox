@@ -25,8 +25,8 @@ class RootSpecificParameter :public OrganSpecificParameter
 
 public:
 
-    RootSpecificParameter(): RootSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
-    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt):
+    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
+    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
         OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln) { }; ///< Constructor setting all parameters
 
     /*
@@ -39,7 +39,7 @@ public:
     double rlt;             ///< Root life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
 
-    int nob() const { return ln.size(); } ///< return the maximal number of lateral branches [1]
+    int nob() const { return ln.size()+1; } ///< return the maximal number of lateral branching nodes [1]
     double getK() const; ///< Returns the exact maximal root length of this realization [cm]
 
     std::string toString() const override; ///< for debugging
@@ -64,20 +64,19 @@ public:
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 
     int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
-    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
-    double nobs() const; ///< returns the standard deviation of number of branches [1]
+    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean maximal number of branching nodes [1]
+    double nobs() const; ///< returns the standard deviation of number of branching nodes [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
     void readXML(tinyxml2::XMLElement* element) override; ///< reads a single sub type organ parameter set
-    tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const override; ///< writes a organ root parameter set
+    tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const override; ///< writes a organ root parameter set RootSpecificParameter::nob()
 
     // DEPRICATED
     void read(std::istream & cin); ///< reads a single root parameter set
     void write(std::ostream & cout) const; ///< writes a single root parameter set
 
     void bindParameters() override; ///<sets up class introspection
-
 
     /*
      * RootBox parameters per root type
@@ -106,6 +105,11 @@ public:
     int gf = 1;			    ///< Growth function (1=negative exponential, 2=linear)
     std::vector<int> successor = std::vector<int>(0);			///< Lateral types [1]
     std::vector<double> successorP = std::vector<double>(0);  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]
+    // new
+    double lnk = 0.; 		///< Slope of inter-lateral distances [1]
+    double ldelay = 1.; 	///< Lateral root emergence delay [day], only used by RootDelay, @see RootDelay, RootSystem::initializeDB
+    double ldelays = 0.; 	///< Standard deviation of lateral root emergence delay [day]
+
 
     /*
      * Callback functions for the Root (set up by the class RootSystem)

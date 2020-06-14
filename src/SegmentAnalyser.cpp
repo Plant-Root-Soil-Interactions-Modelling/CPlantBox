@@ -24,8 +24,8 @@ namespace CPlantBox {
  * @param segCT     creation time of each segment
  * @param radii     the segment radii
  */
-SegmentAnalyser::SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector2i> segments, std::vector<double> segCTs, std::vector<double> radii)
-:nodes(nodes), segments(segments)
+SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::vector<Vector2i>& segments,
+		const std::vector<double>& segCTs, const std::vector<double>& radii) :nodes(nodes), segments(segments)
 {
     assert((segments.size() == segCTs.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
     assert((segments.size() == radii.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
@@ -41,6 +41,7 @@ SegmentAnalyser::SegmentAnalyser(std::vector<Vector3d> nodes, std::vector<Vector
  */
 SegmentAnalyser::SegmentAnalyser(const Organism& plant)
 {
+    std::cout << "construct from Organism\n";
     nodes = plant.getNodes();
     segments = plant.getSegments();
     auto segCTs = plant.getSegmentCTs();
@@ -63,6 +64,7 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
  */
 SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments)
 {
+    std::cout << "construct from MappedSegments\n";
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.types.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     std::vector<double> segCTs;
@@ -221,7 +223,9 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
         bool y_ = geometry->getDist(nodes.at(s.y))<=0; // in?
         if (x_ && y_) { //segment is inside
             seg.push_back(s);
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) {
+            	sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
@@ -237,7 +241,9 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
             nodes.push_back(newnode); // add new segment
             Vector2i newseg(s.x,nodes.size()-1);
             seg.push_back(newseg);
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) {
+            	sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) { // copy data
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
@@ -275,7 +281,9 @@ void SegmentAnalyser::filter(std::string name, double min, double max)
     for (size_t i=0; i<segments.size(); i++) {
         if ((d_.at(i)>=min) && (d_.at(i)<=max)) {
             seg.push_back(segments.at(i));
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) {
+            	sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
@@ -431,7 +439,9 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
         int p2 = floor((n2.times(axis)+xx/2.)/xx);
         if (p1 == p2) { //same periodicity index, do nothing [0,xx)
             seg.push_back(s);
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) { // if used
+                sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) { // copy data
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));
@@ -466,7 +476,9 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
                 c++;
             }
             for (int j=0; j<c; j++) { // copy attached data
-                sO.push_back(segO.at(i));
+                if (segO.size()>0) { // if used
+                    sO.push_back(segO.at(i));
+                }
                 for(auto iter = data.begin(); iter != data.end(); ++iter) {
                     std::string key =  iter->first;
                     ndata[key].push_back(data[key].at(i));

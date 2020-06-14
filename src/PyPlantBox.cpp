@@ -27,6 +27,7 @@ namespace py = pybind11;
 #include "RootSystem.h"
 #include "Plant.h"
 #include "MappedOrganism.h"
+#include "XylemFlux.h"
 
 #include "sdf_rs.h" // todo to revise ...
 
@@ -360,7 +361,7 @@ PYBIND11_MODULE(plantbox, m) {
     /*
      * soil.h
      */
-    py::class_<SoilLookUp, std::shared_ptr<SoilLookUp>>(m, "SoilLookUp")
+    py::class_<SoilLookUp, PySoilLookUp, std::shared_ptr<SoilLookUp>>(m, "SoilLookUp")
             .def(py::init<>())
             .def("getValue",&SoilLookUp::getValue, py::arg("pos"), py::arg("organ") = (std::shared_ptr<Organ>) nullptr )
             .def("__str__",&SoilLookUp::toString);
@@ -486,14 +487,17 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("gf", &RootRandomParameter::gf)
             .def_readwrite("successor", &RootRandomParameter::successor)
             .def_readwrite("successorP", &RootRandomParameter::successorP)
-            .def_readwrite("f_tf", &RootRandomParameter::f_tf)
+            .def_readwrite("lnk", &RootRandomParameter::lnk)
+            .def_readwrite("ldelay", &RootRandomParameter::ldelay)
+            .def_readwrite("ldelays", &RootRandomParameter::ldelays)
+			.def_readwrite("f_tf", &RootRandomParameter::f_tf)
             .def_readwrite("f_gf", &RootRandomParameter::f_gf)
             .def_readwrite("f_se", &RootRandomParameter::f_se)
             .def_readwrite("f_sa", &RootRandomParameter::f_sa)
             .def_readwrite("f_sbp", &RootRandomParameter::f_sbp);
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, int, double, double, double, double>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
             .def_readwrite("lb", &RootSpecificParameter::lb)
             .def_readwrite("la", &RootSpecificParameter::la)
             .def_readwrite("ln", &RootSpecificParameter::ln)
@@ -658,7 +662,8 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
             .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
-            .def("calcCreationTime", &Root::calcCreationTime)
+			.def("getNumberOfLaterals", &Root::getNumberOfLaterals)
+			.def("calcCreationTime", &Root::calcCreationTime)
             .def("calcLength", &Root::calcLength)
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
@@ -720,8 +725,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setSoil", &RootSystem::setSoil)
             .def("reset", &RootSystem::reset)
             .def("initialize", (void (RootSystem::*)(bool)) &RootSystem::initialize, py::arg("verbose") = true)
-            .def("initialize", (void (RootSystem::*)(int, int, bool)) &RootSystem::initialize, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
-            .def("setTropism", &RootSystem::setTropism)
+            .def("initializeLB", (void (RootSystem::*)(int, int, bool)) &RootSystem::initializeLB, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
+            .def("initializeDB", (void (RootSystem::*)(int, int, bool)) &RootSystem::initializeDB, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
+			.def("setTropism", &RootSystem::setTropism)
             .def("simulate",(void (RootSystem::*)(double,bool)) &RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
             .def("simulate",(void (RootSystem::*)()) &RootSystem::simulate)
             .def("simulate",(void (RootSystem::*)(double, double, ProportionalElongation*, bool)) &RootSystem::simulate)
@@ -738,7 +744,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("pop",&RootSystem::pop)
             .def("write", &RootSystem::write);
     /*
-     * MappedRootSystem.h
+     * MappedOrganism.h
      */
     py::class_<MappedSegments, std::shared_ptr<MappedSegments>>(m, "MappedSegments")
         .def(py::init<>())
@@ -748,29 +754,37 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setTypes", &MappedSegments::setTypes)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d)) &MappedSegments::setSoilGrid)
-        .def("mapSegments", (void (MappedSegments::*)(std::vector<Vector2i>)) &MappedSegments::mapSegments)
-        .def("removeSegments", &MappedSegments::removeSegments) // for testing only
-        .def("cutSegments", &MappedSegments::cutSegments)
-        .def_readwrite("nodes", &MappedRootSystem::nodes)
-        .def_readwrite("nodeCTs", &MappedRootSystem::nodeCTs)
-        .def_readwrite("segments", &MappedRootSystem::segments)
-        .def_readwrite("radii", &MappedRootSystem::radii)
-        .def_readwrite("types", &MappedRootSystem::types)
-        .def_readwrite("seg2cell", &MappedRootSystem::seg2cell)
-        .def_readwrite("cell2seg", &MappedRootSystem::cell2seg);
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid)
+        .def("mapSegments",  &MappedSegments::mapSegments)
+        .def("addSegments", &MappedSegments::addSegments)
+        .def_readwrite("soil_index", &MappedSegments::soil_index)
+        .def_readwrite("nodes", &MappedSegments::nodes)
+        .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
+        .def_readwrite("segments", &MappedSegments::segments)
+        .def_readwrite("radii", &MappedSegments::radii)
+        .def_readwrite("types", &MappedSegments::types)
+        .def_readwrite("seg2cell", &MappedSegments::seg2cell)
+        .def_readwrite("cell2seg", &MappedSegments::cell2seg);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-        .def(py::init<>());
+        .def(py::init<>())
+        .def("mappedSegments",  &MappedRootSystem::mappedSegments)
+        .def("addSegments", &MappedRootSystem::rootSystem);
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKr",&XylemFlux::setKr, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKx",&XylemFlux::setKx, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",&XylemFlux::setKrTables)
             .def("setKxTables",&XylemFlux::setKxTables)
-            .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") = 0.)
-            .def("getSolution",&XylemFlux::getSolution)
-            .def("soilFluxes",&XylemFlux::soilFluxes)
-            .def("soilFluxesApprox",&XylemFlux::soilFluxesApprox)
-            .def_readonly("kr_f", &XylemFlux::kr_f)
+            .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
+            		py::arg("soil_k") = std::vector<double>())
+            .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
+            .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
+            .def("sumSoilFluxes",&XylemFlux::sumSoilFluxes)
+			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes)
+            .def("segOuterRadii",&XylemFlux::segOuterRadii)
+			.def("segLength",&XylemFlux::segLength)
+            .def("segFluxesSchroeder",&XylemFlux::segFluxesSchroeder)
+			.def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)
@@ -778,8 +792,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("aB", &XylemFlux::aB)
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
-            .def_readwrite("rho", &XylemFlux::rho)
-            .def_readwrite("g", &XylemFlux::g)
             .def_readwrite("rs", &XylemFlux::rs);
     /*
      * Plant.h

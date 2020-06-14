@@ -28,25 +28,24 @@ class TestRoot(unittest.TestCase):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.RootRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 1, 10, 100, (89. / 19.), 1, 0.5
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5
         p0.successor = [2]
         p0.successorP = [1.]
         p1 = pb.RootRandomParameter(self.plant)
-        p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx = "lateral", 2, 25., 2., 0.1
         self.p0, self.p1 = p0, p1  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
-        # TODO (first node is not set, if seed is used)
-        self.plant.setOrganRandomParameter(pb.SeedRandomParameter(self.plant))
-        self.seed = pb.Seed(self.plant)  # store parent (not owned by child Organ)
-        #
+        srp = pb.SeedRandomParameter(self.plant)
+        self.plant.setOrganRandomParameter(srp)
+        
         param0 = p0.realize()  # set up root by hand (without a root system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
         parentroot = pb.Root(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
+        
         self.parentroot = parentroot  # store parent (not owned by child Organ)
-        #
         self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0, 0)
         self.root.setOrganism(self.plant)
 
@@ -55,7 +54,7 @@ class TestRoot(unittest.TestCase):
         nl, nl2, non, meanDX = [], [], [], []
         for t in dt:
             for i in range(0, subDt):
-                self.root.simulate(t / subDt)
+                self.root.simulate(t / subDt, False)
             nl.append(self.root.getParameter("length"))
             non.append(self.root.getNumberOfNodes())
             meanDX.append(nl[-1] / non[-1])
@@ -66,8 +65,8 @@ class TestRoot(unittest.TestCase):
                 poly[i, 0] = v.x
                 poly[i, 1] = v.y
                 poly[i, 2] = v.z
-            d = np.diff(poly, axis = 0)
-            sd = np.sqrt((d ** 2).sum(axis = 1))
+            d = np.diff(poly, axis=0)
+            sd = np.sqrt((d ** 2).sum(axis=1))
             nl2.append(sum(sd))
         for i in range(0, len(dt)):
             self.assertAlmostEqual(l[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
@@ -111,22 +110,25 @@ class TestRoot(unittest.TestCase):
         self.root_example_rrp()
         times = np.array([0., 7., 15., 30., 60.])
         dt = np.diff(times)
+        rp = self.root.getRootRandomParameter()
         p = self.root.param()  # rename
         k = p.getK()
         et = np.zeros((p.nob()))
         l = 0
-        et[0] = rootAge(p.la + p.lb + l, p.r, k)
+        et[0] = rootAge(p.la - rp.ln / 2. + p.lb + l, p.r, k)
         for i in range(0, p.nob() - 1):  # calculate lateral emergence times
             l += p.ln[i]
-            et[i + 1] = rootAge(p.la + p.lb + l, p.r, k + 1e-12)
+            et[i + 1] = rootAge(p.la - rp.ln / 2. + p.lb + l, p.r, k)
         l = rootLength(times[1:], p.r, k)  # zero order lengths
         l1 = []
         r2 = self.p1.r
-        k2 = self.p1.la  # consists of lateral zone only
+        k2 = self.p1.lmax  # consists of lateral zone only
+
         for t in times[1:]:
             l1.append(rootLateralLength(t, et, r2, k2))
+            
         analytic_total = l + l1
-
+     
         for subDX in [1, 1000]:
             numeric_total = []
             for t in times[1:]:
@@ -141,14 +143,11 @@ class TestRoot(unittest.TestCase):
             for i in range(0, len(times[1:])):
                 self.assertAlmostEqual(numeric_total[i], analytic_total[i], 10, "numeric and analytic total lengths do not agree in time step " + str(i + 1))
 
-    def test_geometry(self):
-        """ tests if nodes can be retrieved from the organ """
-        # TODO make plot for plausibility
-
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
         self.root_example_rrp()
-        self.root.simulate(30)
+        simtime = 30.
+        self.root.simulate(simtime, False)        
         organs = self.root.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
         for o in organs:
@@ -157,23 +156,28 @@ class TestRoot(unittest.TestCase):
             ct.append(o.getParameter("creationTime"))
             radius.append(o.getParameter("radius"))
             order.append(o.getParameter("order"))
-        self.assertEqual(type, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected root sub types")
-        self.assertEqual(order, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected root sub types")  # +1, because of artificial parent root
-        for i in range(0, 5):
-            self.assertEqual(age[i], 30 - ct[i], "getParameter: unexpected root sub types")  # +1, because of artificial parent root
+        
+        nol = round(self.root.getParameter("numberOfLaterals"))
+        type_ = [1.]
+        type_.extend([2.] * nol)
+        self.assertEqual(type, type_, "getParameter: unexpected root sub types")
+        self.assertEqual(order, type_, "getParameter: unexpected root order")  # +1, because of artificial parent root
+        for i in range(0, nol):
+            self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree") 
 
     def test_dynamics(self):
-        """ tests if nodes created in last time step are correct """  #
+        """ tests if nodes created in last time step are correct """  
         self.root_example_rrp()
         r = self.root
-        r.simulate(.5, True)
-        self.assertEqual(r.hasMoved(), False, "dynamics: node movement during first step")
-        r.simulate(1e-1, True)
-        self.assertEqual(r.hasMoved(), False, "dynamics: movement, but previous node at axial resolution")
-        r.simulate(1e-1, True)
+        r.simulate(.5, False)
+        self.assertEqual(r.hasMoved(), False, "dynamics: node is creaetd during first step")
+        r.simulate(1e-1, False)        
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
-        r.simulate(2.4, True)
-        self.assertEqual(r.getNumberOfNodes() - r.getOldNumberOfNodes(), 5, "dynamics: unexcpected number of new nodes")
+        non = r.getNumberOfNodes() 
+        r.simulate(2.4, False)
+        self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
+        dx = r.getRootRandomParameter().dx
+        self.assertEqual(r.getNumberOfNodes() - non, round(2.4 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth
 
 
 if __name__ == '__main__':

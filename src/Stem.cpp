@@ -486,7 +486,7 @@ void Stem::shootBorneRootGrow(bool verbose)
 	auto stem_p = this->param();
 	auto p = plant.lock();
 	auto p_seed = p->getOrganRandomParameter(Organism::ot_seed,0);
-	int st = getParamSubType(Organism::ot_root, "shootborne");
+	int st = p->getParameterSubType(Organism::ot_root, "shootborne");
 	if (st>0) {
 		shootborneType = st;
 	} // otherwise stick with default
