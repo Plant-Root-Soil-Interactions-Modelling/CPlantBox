@@ -229,7 +229,7 @@ std::vector<double> XylemFlux::segOuterRadii(int type) const {
 	for(auto iter = map.begin(); iter != map.end(); ++iter) {
 		int cellId =  iter->first;
 		auto segs = map.at(cellId);
-		double v = 0.;  // calculate sum over cell
+		double v = 0.;  // calculate sum of root volumes or surfaces over cell
 		for (int i : segs) {
 			if (type==0) { // volume
 				v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
@@ -246,7 +246,7 @@ std::vector<double> XylemFlux::segOuterRadii(int type) const {
 				t = 2*M_PI*rs->radii[i]*l/v;
 			}
 			double targetV = t * cellVolume;  // target volume
-			radii[i] = sqrt(targetV/(M_PI*l))+rs->radii[i];
+			radii[i] = sqrt(targetV/(M_PI*l)+rs->radii[i]*rs->radii[i]);
 		}
 	}
 	return radii;
