@@ -27,9 +27,9 @@ public:
 
     std::vector<double> segFluxesSchroeder(double simTime, std::vector<double> rx, const std::vector<double>& sx, double critP, std::function<double(double)> mpf);
 
-    std::vector<double> segOuterRadii() const; ///< outer cylinder radii to match cell volume
+    std::vector<double> segOuterRadii(int type = 0) const; ///< outer cylinder radii to match cell volume
     std::map<int,double> sumSoilFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSoilFluxes(segFluxes), [cm3/day]
-    std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes) const; ///< splits soil fluxes (per cell) into segment fluxes
+    std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
     std::vector<double> segLength() const; ///< calculates segment lengths
 
     std::vector<int> aI; // to assemble the sparse matrix on the Python side
