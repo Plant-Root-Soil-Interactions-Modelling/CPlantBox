@@ -314,6 +314,25 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
 }
 
 /**
+ * todo
+ */
+void XylemFlux::sort() {
+    auto newSegs = rs->segments;
+    auto newRadii = rs->radii;
+    auto newTypes = rs->types;
+
+    for (int i=0; i<newSegs.size(); i++) {
+        int ind = rs->segments[i].y-1;
+        newSegs[ind] = rs->segments[i];
+        newRadii[ind] = rs->radii[i];
+        newTypes[ind] = rs->types[i];
+    }
+    rs->segments = newSegs;
+    rs->radii = newRadii;
+    rs->types = newTypes;
+}
+
+/**
  * Calculates segment lengths
  */
 std::vector<double> XylemFlux::segLength() const {
