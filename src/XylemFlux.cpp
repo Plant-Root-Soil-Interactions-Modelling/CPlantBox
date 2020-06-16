@@ -219,25 +219,34 @@ std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<do
 /**
  * Calculates outer segment radii, so that the summed segment volumes per cell equal the cell volume
  */
-std::vector<double> XylemFlux::segOuterRadii() const {
+std::vector<double> XylemFlux::segOuterRadii(int type) const {
 	auto lengths =  this->segLength();
     auto width = rs->maxBound.minus(rs->minBound);
 	double cellVolume = width.x*width.y*width.z/rs->resolution.x/rs->resolution.y/rs->resolution.z; // TODO only true for equidistant rectangular grid
 	std::vector<double> radii = std::vector<double>(rs->segments.size());
 	std::fill(radii.begin(), radii.end(), 0.);
-	auto map = rs->cell2seg;
+	auto& map = rs->cell2seg;
 	for(auto iter = map.begin(); iter != map.end(); ++iter) {
 		int cellId =  iter->first;
 		auto segs = map.at(cellId);
-		double v = 0;
-		for (int i : segs) { // calculate segments volume within cell
-			v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+		double v = 0.;  // calculate sum of root volumes or surfaces over cell
+		for (int i : segs) {
+			if (type==0) { // volume
+				v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+			} else if (type==1) { // surface
+				v += 2*M_PI*rs->radii[i]*lengths[i];
+			}
 		}
 		for (int i : segs) { // calculate outer radius
 			double l = lengths[i];
-			double t = M_PI*(rs->radii[i]*rs->radii[i])*l/v; // proportionality factor
+			double t =0.; // proportionality factor (must sum up to == 1 over cell)
+			if (type==0) { // volume
+				t = M_PI*(rs->radii[i]*rs->radii[i])*l/v;
+			} else if (type==1) { // surface
+				t = 2*M_PI*rs->radii[i]*l/v;
+			}
 			double targetV = t * cellVolume;  // target volume
-			radii[i] = sqrt((targetV+M_PI*(rs->radii[i]*rs->radii[i])*l)/(M_PI*l));
+			radii[i] = sqrt(targetV/(M_PI*l)+rs->radii[i]*rs->radii[i]);
 		}
 	}
 	return radii;
@@ -274,7 +283,7 @@ std::map<int,double> XylemFlux::sumSoilFluxes(const std::vector<double>& segFlux
  * @param soilFluxes 	cell fluxes per global index [cm3/day]
  * @return fluxes for each segment [cm3/day]
  */
-std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFluxes) const
+std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFluxes, int type) const
 {
 	auto lengths =  this->segLength();
 	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
@@ -283,16 +292,44 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
 	for(auto iter = map.begin(); iter != map.end(); ++iter) {
 		int cellId =  iter->first;
 		auto segs = map.at(cellId);
-		double v = 0;
-		for (int i : segs) { // calculate segments volume within cell
-			v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+		double v = 0.;  // calculate sum over cell
+		for (int i : segs) {
+			if (type==0) { // volume
+				v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+			} else if (type==1) { // surface
+				v += 2*M_PI*rs->radii[i]*lengths[i];
+			}
 		}
 		for (int i : segs) { // calculate outer radius
-			double t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v; // proportionality factor
+			double t =0.; // proportionality factor (must sum up to == 1 over cell)
+			if (type==0) { // volume
+				t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
+			} else if (type==1) { // surface
+				t = 2*M_PI*rs->radii[i]*lengths[i]/v;
+			}
 			fluxes[i] = t*soilFluxes.at(cellId);
 		}
 	}
 	return fluxes;
+}
+
+/**
+ * todo
+ */
+void XylemFlux::sort() {
+    auto newSegs = rs->segments;
+    auto newRadii = rs->radii;
+    auto newTypes = rs->types;
+
+    for (int i=0; i<newSegs.size(); i++) {
+        int ind = rs->segments[i].y-1;
+        newSegs[ind] = rs->segments[i];
+        newRadii[ind] = rs->radii[i];
+        newTypes[ind] = rs->types[i];
+    }
+    rs->segments = newSegs;
+    rs->radii = newRadii;
+    rs->types = newTypes;
 }
 
 /**
