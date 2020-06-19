@@ -254,6 +254,25 @@ int MappedSegments::soil_index_(double x, double y, double z) {
 }
 
 
+/**
+ * Sorts the segments, so that the segment index == second node index -1 (unique mapping in a tree)
+ */
+void MappedSegments::sort() {
+    auto newSegs = segments;
+    auto newRadii = radii;
+    auto newTypes = types;
+
+    for (int i=0; i<newSegs.size(); i++) {
+        int ind = segments[i].y-1;
+        newSegs[ind] = segments[i];
+        newRadii[ind] = radii[i];
+        newTypes[ind] = types[i];
+    }
+    segments = newSegs;
+    radii = newRadii;
+    types = newTypes;
+}
+
 
 /**
  * Overridden, to map initial shoot segments (@see RootSystem::initialize).

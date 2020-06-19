@@ -235,7 +235,9 @@ std::vector<double> XylemFlux::segOuterRadii(int type) const {
 				v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
 			} else if (type==1) { // surface
 				v += 2*M_PI*rs->radii[i]*lengths[i];
-			}
+			} else if (type==2) { // length
+                v += lengths[i];
+            }
 		}
 		for (int i : segs) { // calculate outer radius
 			double l = lengths[i];
@@ -244,7 +246,9 @@ std::vector<double> XylemFlux::segOuterRadii(int type) const {
 				t = M_PI*(rs->radii[i]*rs->radii[i])*l/v;
 			} else if (type==1) { // surface
 				t = 2*M_PI*rs->radii[i]*l/v;
-			}
+			} else if (type==2) { // length
+                t = l/v;
+            }
 			double targetV = t * cellVolume;  // target volume
 			radii[i] = sqrt(targetV/(M_PI*l)+rs->radii[i]*rs->radii[i]);
 		}
@@ -298,7 +302,9 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
 				v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
 			} else if (type==1) { // surface
 				v += 2*M_PI*rs->radii[i]*lengths[i];
-			}
+			} else if (type==2) { // length
+                v += lengths[i];
+            }
 		}
 		for (int i : segs) { // calculate outer radius
 			double t =0.; // proportionality factor (must sum up to == 1 over cell)
@@ -306,30 +312,13 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
 				t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
 			} else if (type==1) { // surface
 				t = 2*M_PI*rs->radii[i]*lengths[i]/v;
-			}
+			} else if (type==2) { // length
+                t = lengths[i]/v;
+            }
 			fluxes[i] = t*soilFluxes.at(cellId);
 		}
 	}
 	return fluxes;
-}
-
-/**
- * todo
- */
-void XylemFlux::sort() {
-    auto newSegs = rs->segments;
-    auto newRadii = rs->radii;
-    auto newTypes = rs->types;
-
-    for (int i=0; i<newSegs.size(); i++) {
-        int ind = rs->segments[i].y-1;
-        newSegs[ind] = rs->segments[i];
-        newRadii[ind] = rs->radii[i];
-        newTypes[ind] = rs->types[i];
-    }
-    rs->segments = newSegs;
-    rs->radii = newRadii;
-    rs->types = newTypes;
 }
 
 /**

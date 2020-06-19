@@ -44,6 +44,8 @@ public:
     std::function<int(double,double,double)> soil_index =
         std::bind(&MappedSegments::soil_index_, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3); ///< soil cell index call back function, (care need all MPI ranks in case of dumux)
 
+    void sort();
+
     std::vector<Vector3d> nodes; ///< nodes [cm]
     std::vector<double> nodeCTs; ///< creation times [days]
     std::vector<Vector2i> segments; ///< connectivity of the nodes

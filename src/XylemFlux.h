@@ -55,8 +55,6 @@ public:
     std::vector<std::vector<double> > krs, krs_t;
     std::vector<std::vector<double>> kxs, kxs_t;
 
-    void sort(); ///< sort according to segment index
-
 protected:
 
     double kr_const(double age, int type) { return kr[0]; }
