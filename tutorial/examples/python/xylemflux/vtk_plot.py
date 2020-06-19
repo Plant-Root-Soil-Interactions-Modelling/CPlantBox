@@ -106,7 +106,7 @@ def render_window(actor, title = "", scalarBar = None):
         ren.AddActor(a)  # Add the actors to the renderer, set the background and size
     if scalarBar is not None:
         ren.AddActor2D(scalarBar)
-    ren.SetBackground(colors.GetColor3d("BkgColor"))
+    ren.SetBackground(colors.GetColor3d("Silver"))  #
     renWin.SetSize(1000, 1000)
     renWin.SetWindowName(title)
     ren.ResetCamera()
@@ -247,39 +247,52 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
     return meshActor, scalarBar
 
 
-def plot_mesh_cuts(ug, p_name, nz = 7):
+def plot_mesh_cuts(pd, p_name, nz = 7):
     """ """
-    bounds = ug.GetBounds()
-    print(bounds)
-    print("z-axis", bounds[4], bounds[5])
-    # z-slices (implicit fucntions)
+
+    # Create a cube
+    cube = vtk.vtkCubeSource()
+    cube.SetXLength(40)
+    cube.SetYLength(30)
+    cube.SetZLength(20)
+#     cubeMapper = vtk.vtkPolyDataMapper()
+#     cubeMapper.SetInputConnection(cube.GetOutputPort())
+
+    pd.GetPointData().SetActiveScalars("radius")  # for the the filter
+    tubeFilter = vtk.vtkTubeFilter()
+    tubeFilter.SetInputData(pd)
+    tubeFilter.SetNumberOfSides(9)
+    tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
+    tubeFilter.Update()
+
+    bounds = pd.GetBounds()
     planes = []
-    for i in range(0, nz):
+    for i in range(0, nz):  # z-slices (implicit functions)
         p = vtk.vtkPlane()
         z = ((bounds[5] - bounds[4]) / (nz + 1)) * (i + 1)
-        print(bounds[4] + z)
-        p.SetOrigin(bounds[4] + z, 0, 0)
-        p.SetNormal(0, 0, 1)
+        p.SetOrigin(0., 0., bounds[4] + z)
+        p.SetNormal(0., 0., 1)
         planes.append(p)
+
+    lut = get_lookup_table(24)  # 24= Brewer Diverging Brown-Blue-Green (11)
+    # lut.SetTableRange(pd.GetPointData().GetScalars(p_name).GetRange())
 
     # create cutter, mappers, and actors
     actors = []
     for i in range(0, nz):
         cutter = vtk.vtkCutter()
+        # cutter.SetInputData(pd)
         cutter.SetCutFunction(planes[i])
-        cutter.SetInputData(ug)
-        # cutter.SetInputConnection(cube.GetOutputPort())
+        cutter.SetInputConnection(tubeFilter.GetOutputPort())
         cutter.Update()
         m = vtk.vtkPolyDataMapper()
         m.SetInputConnection(cutter.GetOutputPort())
         m.Update()
-        # create plane actor
-        a = vtk.vtkActor()
-#         planeActor.GetProperty().SetColor(1.0, 1, 0)
-#         planeActor.GetProperty().SetLineWidth(2)
+        m.SetLookupTable(lut)
+        a = vtk.vtkActor()  # create plane actor
+        a.GetProperty().SetColor(1.0, 1, 0)
+        a.GetProperty().SetLineWidth(2)
         a.SetMapper(m)
         actors.append(a)
-    if render:
-        render_window_(actors, "Cuts")
     return actors
 

@@ -62,9 +62,16 @@ rs.simulate(20)  # days
 
 rs.setSoilGrid(periodic_soil_index)
 rs.setRectangularGrid(vector_3d(min_), vector_3d(max_), vector_3d(res_))  # cut and map segments
+rs.sort()
 
 """ Assign soil cell index to root segments """
 segs = rs.segments
+
+for i, s in enumerate(segs):
+    if s.y - 1 != i :
+        print("ohno!!!!")
+        input()
+
 nodes = rs.nodes
 x = np.zeros(len(segs))
 for c, s in enumerate(segs):
@@ -105,5 +112,12 @@ print("cuboids", 1 / ind_)
 grid = vp.uniform_grid(min_, max_, res_)
 meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
 
-vp.render_window([meshActor, rootActor], "Test mapping", rootCBar).Start()
+# vp.render_window([meshActor, rootActor], "Test mapping", rootCBar).Start()
+grid = vp.uniform_grid(min_, max_, res_)
+actors = vp.plot_mesh_cuts(pd, "linear_index")
+print(actors)
+print(len(actors))
+
+# actors.extend([rootActor])
+vp.render_window(actors, "Test mapping", rootCBar).Start()
 
