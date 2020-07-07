@@ -153,7 +153,7 @@ SDF_RotateTranslate::SDF_RotateTranslate(std::shared_ptr<SignedDistanceFunction>
     pos=pos_;
     axis =axis_;  // remember for the python script
     angle = a;
-    a = a/180*M_PI; // convert to radian
+    a = a/180.*M_PI; // convert to radian
     assert(((axis>=0) && (axis<3)));
     switch (axis) {
     case xaxis:
@@ -171,7 +171,7 @@ SDF_RotateTranslate::SDF_RotateTranslate(std::shared_ptr<SignedDistanceFunction>
  * Distance to the next boundary, after rotation and translation of the base geometry
  *
  * @param v    spatial position [cm]
- * \return      signed distance [cm], a minus sign means inside, plus outside
+ * \return      signed distance [cm], a minus sign6 means inside, plus outside
  */
 double SDF_RotateTranslate::getDist(const Vector3d& v) const
 {

@@ -12,7 +12,7 @@ namespace CPlantBox {
  * indices aI, aJ, and corresponding values aV; and load aB
  *
  * @param simTime         	[days] current simulation time is needed for age dependent conductivities,
- *                  		to calculate the age from the creation times.
+ *                  		to calculate the age from the creation times (age = sim_time - segment creation time).
  * @param sx 				soil matric potential in the cells or around the segments
  * @param cells 			sx per cell (true), or segments (false)
  */
@@ -46,6 +46,9 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		int type = rs->types[si];
 		double kx = kx_f(age, type);
 		double  kr = kr_f(age, type);
+//        if (age<=0) {
+//            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
+//        }
 		if (soil_k.size()>0) {
 			kr = std::min(kr, soil_k[si]);
 		}
@@ -83,7 +86,8 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 /**
  * Fluxes from root segments into soil cells
  *
- * @param simTime   [days] current simulation time (to calculate age dependent conductivities)
+ * @param simTime   [days] current simulation time is needed for age dependent conductivities,
+ *                  to calculate the age from the creation times (age = sim_time - segment creation time).
  * @param rx        [cm] root xylem matric potential
  * @param sx        [cm] soil matric potential for eadh cell
  * @param approx    approximate or exact (default = false, i.e. exact)
@@ -141,7 +145,8 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
 /**
  * Fluxes from root segments into soil cells
  *
- * @param simTime   [days] current simulation time (to calculate age dependent conductivities)
+ * @param simTime   [days] current simulation time is needed for age dependent conductivities,
+ *                  to calculate the age from the creation times (age = sim_time - segment creation time).
  * @param rx        [cm] root xylem matric potential
  * @param sx        [cm] soil matric potential for each segment
  * @param approx    approximate or exact (default = false, i.e. exact)
@@ -150,12 +155,16 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  */
 std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx)
 {
-	// std::cout << "XylemFlux::segFluxes is alive" << rs->segments.size() << ", " << sx.size() << "\n" << std::flush;
 	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
 	for (int si = 0; si<rs->segments.size(); si++) {
 
 		int i = rs->segments[si].x;
 		int j = rs->segments[si].y;
+
+		if (j>=rs->nodeCTs.size()) {
+		    std::cout << j << " index j is broken \n"<< std::flush;
+		}
+
 		double psi_s = sx.at(si);
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segments
@@ -164,8 +173,8 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		double  kr = kr_f(age, type);
 		double  kz = kx_f(age, type);
 
-		auto n1 = rs->nodes[i];
-		auto n2 = rs->nodes[j];
+        Vector3d n1 = rs->nodes[i];
+        Vector3d n2 = rs->nodes[j];
 		double l = (n2.minus(n1)).length();
 
 		double f =  -2*a*M_PI*kr; // flux is proportional to f // *rho*g
@@ -176,9 +185,8 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
 
 		double flux = fExact*(!approx)+approx*fApprox;
-		fluxes[i] = flux;
+		fluxes[si] = flux;
 	}
-	// std::cout << "XylemFlux::segFluxes is still alive \n" << std::flush;
 	return fluxes;
 }
 
@@ -378,12 +386,11 @@ void XylemFlux::setKx(std::vector<double> values, std::vector<double> age) {
 }
 
 /**
- *  Sets the radial conductivity in [1 day-1], converts to [cm2 day g-1] by dividing by rho*g
+ *  Sets the radial conductivity in [1 day-1]
  */
 void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
 	krs.resize(0);
 	for (auto v :values) {
-		// std::transform(v.begin(), v.end(), v.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
 		krs.push_back(v);
 	}
 	krs_t = age;
@@ -392,12 +399,11 @@ void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector
 }
 
 /**
- *  Sets the axial conductivity in [cm3 day-1], converts to [cm5 day g-1] by dividing by rho*g
+ *  Sets the axial conductivity in [cm3 day-1]
  */
 void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
 	kxs.resize(0);
 	for (auto v :values) {
-		// std::transform(v.begin(), v.end(), v.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
 		kxs.push_back(v);
 	}
 	kxs_t = age;
@@ -406,7 +412,7 @@ void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector
 }
 
 /**
- *
+ * Linear interpolation
  */
 double XylemFlux::interp1(double ip, std::vector<double> x, std::vector<double> y) {
 	if (ip > x.back()) return y.back(); // check bounds

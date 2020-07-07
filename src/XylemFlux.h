@@ -45,9 +45,6 @@ public:
     std::function<double(double,int)> kr_f = [](double age, int type) { return 0.; };
     std::function<double(double,int)> kx_f = [](double age, int type) { return 1.; };
 
-//    double rho = 1; // [g cm-3]
-//    double g =  9.8065*100.*24.*3600.*24.*3600.;  // [cm day-2]
-
     std::shared_ptr<CPlantBox::MappedSegments> rs;
 
     std::vector<double> kr, kr_t;
