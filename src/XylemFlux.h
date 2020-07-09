@@ -45,17 +45,12 @@ public:
     std::function<double(double,int)> kr_f = [](double age, int type) { return 0.; };
     std::function<double(double,int)> kx_f = [](double age, int type) { return 1.; };
 
-//    double rho = 1; // [g cm-3]
-//    double g =  9.8065*100.*24.*3600.*24.*3600.;  // [cm day-2]
-
     std::shared_ptr<CPlantBox::MappedSegments> rs;
 
     std::vector<double> kr, kr_t;
     std::vector<double> kx, kx_t;
     std::vector<std::vector<double> > krs, krs_t;
     std::vector<std::vector<double>> kxs, kxs_t;
-
-    void sort(); ///< sort according to segment index
 
 protected:
 

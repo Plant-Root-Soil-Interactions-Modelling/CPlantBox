@@ -42,7 +42,9 @@ def vtk_cells(t):
 
 
 def vtk_data(d):
-    """ Creates a vtkDataArray from an numpy array, usage e.g. grid.GetCellData().SetScalars(vtk_data(celldata))"""
+    """ Creates a vtkDataArray from an numpy array, usage e.g. grid.GetCellData().SetScalars(vtk_data(celldata))
+    TODO vtkAbstractArray.SetComponentName
+    """
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
     da.SetNumberOfComponents(1)  # number of components
     da.SetNumberOfTuples(len(d))

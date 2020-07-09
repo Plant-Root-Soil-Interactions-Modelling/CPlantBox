@@ -237,7 +237,7 @@ void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
 }
 
 /**
- * linear index
+ * Maps a point into a cell and return the cells linear index (for a equidistant rectangular domain)
  */
 int MappedSegments::soil_index_(double x, double y, double z) {
     Vector3d p(x,y,z);
@@ -247,12 +247,30 @@ int MappedSegments::soil_index_(double x, double y, double z) {
     std::array<double,3> i = { p0.x/w.x*r[0], p0.y/w.y*r[1], p0.z/w.z*r[2] };
     for (int k=0; k<3; k++) {
         if ((i[k] < 0) or (i[k] >= r[k])) {
-            return -1;
+            return -1; // point is out of domain
         }
     }
     return std::floor(i[0]) * r[1] * r[2] + std::floor(i[1]) * r[1] + std::floor(i[2]); // a linear index not periodic
 }
 
+/**
+ * Sorts the segments, so that the segment index == second node index -1 (unique mapping in a tree)
+ */
+void MappedSegments::sort() {
+    auto newSegs = segments;
+    auto newRadii = radii;
+    auto newTypes = types;
+
+    for (int i=0; i<newSegs.size(); i++) {
+        int ind = segments[i].y-1;
+        newSegs[ind] = segments[i];
+        newRadii[ind] = radii[i];
+        newTypes[ind] = types[i];
+    }
+    segments = newSegs;
+    radii = newRadii;
+    types = newTypes;
+}
 
 
 /**
