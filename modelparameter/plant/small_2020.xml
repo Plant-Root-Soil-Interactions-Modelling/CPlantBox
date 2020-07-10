@@ -22,9 +22,9 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="2.0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="0"/>
+    <parameter name="ln" value="6" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="80" dev="0"/>
+    <parameter name="lmax" value="27" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="1.3666666666666665" dev="0"/>
     <parameter name="r" value="2" dev="0"/>
@@ -50,7 +50,7 @@
     <!--Apical zone [cm];-->
     <parameter name="ln" value="1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="3" dev="0"/>
+    <parameter name="lmax" value="5" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="1.5" dev="0"/>
@@ -177,7 +177,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="1" dev="0"/>
     <parameter name="r" value="1.5" dev="0"/>
-    <parameter name="a" value="0.02" dev="0.002"/>
+    <parameter name="a" value="0.2" dev="0.002"/>
     <parameter name="RotBeta" value="1"/>
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="0"/>
