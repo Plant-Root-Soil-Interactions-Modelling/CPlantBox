@@ -247,7 +247,7 @@ class TestRootSystem(unittest.TestCase):
         self.assertEqual(list(props.keys()), ['parent-poly', 'organType', 'subType', 'length', 'age'], "properties names are unexpected")
         self.assertEqual(list(funcs.keys()), ['node_creation_time', 'node_index'], "function names are unexpected")
 
-    def test_vtk(self):
+    def test_vtp(self):
         """ checks rsml functionality with Python rsml reader """
         self.rs_example_rtp()
         self.rs.initialize(False)
