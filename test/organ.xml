@@ -1,4 +1,0 @@
-<organ name="the great organ" subType="2">
-    <parameter name="a" value="0,1"/>
-    <!--Root radius [cm]-->
-</organ>

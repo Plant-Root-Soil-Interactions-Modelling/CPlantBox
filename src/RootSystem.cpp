@@ -103,7 +103,7 @@ void RootSystem::initializeReader()
  */
 void RootSystem::openFile(std::string name, std::string subdir)
 {
-    std::cout << "RootSystem::openFile is deprecated, use readParameter instead \n";
+    std::cout << "RootSystem::openFile is deprecated, use readParameters instead \n";
     std::ifstream fis;
     // open root parameter
     std::string rp_name = subdir;
@@ -565,7 +565,7 @@ void RootSystem::writeVTP(std::ostream & os) const
     }
     os << "\n</DataArray>\n" << "\n</PointData>\n";
     // CELLDATA (live on the polylines)
-    os << "<CellData Scalars=\" CellData\">\n";
+    os << "<CellData Scalars=\"CellData\">\n";
     const size_t N = 3; // SCALARS
     std::string scalarTypeNames[N] = { "radius", "subType", "creationTime" };
     for (size_t i=0; i<N; i++) {

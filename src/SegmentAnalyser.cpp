@@ -727,7 +727,7 @@ void SegmentAnalyser::addData(std::string name, std::vector<double> values)
 
 /**
  * Exports the simulation results with the type from the file extension in name (must be lower case)
- *  Currently its possible to write "vtp", "txt", or "dgf" files.
+ * Currently its possible to write "vtp", "txt", or "dgf" files.
  *
  * SegmentAnalyser::pack() is called before writing the file, i.e. nodes are sorted.
  *
@@ -764,7 +764,6 @@ void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
  */
 void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types) const
 {
-    assert(segments.size() == segO.size() && " SegmentAnalyser::writeVTP wrong number of segment origins");
     os << "<?xml version=\"1.0\"?>";
     os << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
     os << "<PolyData>\n";
