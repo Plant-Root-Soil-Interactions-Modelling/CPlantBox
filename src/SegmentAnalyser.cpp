@@ -134,11 +134,17 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
         data["creationTime"].insert(data["creationTime"].begin(),ct);
         segO.insert(segO.begin(),std::weak_ptr<Organ>()); // expired
         data["radius"].insert(data["radius"].begin(),radius);
+        if (data.count("subType")>0) {
+            data["subType"].insert(data["subType"].begin(), -1.);
+        }
     } else {
         segments.push_back(seg);
         data["creationTime"].push_back(ct);
         segO.push_back(std::weak_ptr<Organ>()); // expired
         data["radius"].push_back(radius);
+        if (data.count("subType")>0) {
+            data["subType"].push_back(-1.);
+        }
     }
 }
 
@@ -771,7 +777,7 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types
     // data (CellData)
     os << "<CellData Scalars=\" CellData\">\n";
     for (auto name : types) {
-        std::vector<double> data = getParameter(name);
+        std::vector<double> data = getParameter(name, -1.);
         os << "<DataArray type=\"Float32\" Name=\"" << name << "\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
         for (const auto& t : data) {
             os << t << " ";
