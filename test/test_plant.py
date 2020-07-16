@@ -12,7 +12,7 @@ class TestPlant(unittest.TestCase):
     def test_CPlantBox(self):
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013_new.xml")
+        p.openXML(path + "Heliantus_Pagès_2013.xml")
 
         seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
         roots = p.getOrganRandomParameter(pb.OrganTypes.root)
@@ -37,7 +37,7 @@ class TestPlant(unittest.TestCase):
     def test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013_new.xml")
+        p.openXML(path + "Heliantus_Pagès_2013.xml")
         p.initialize()
         p.simulate(76)
         ana = pb.SegmentAnalyser(p)
@@ -46,7 +46,7 @@ class TestPlant(unittest.TestCase):
     def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013_new.xml")
+        p.openXML(path + "Heliantus_Pagès_2013.xml")
         p.initialize()
         p.simulate(76)
         nodes = np.array([np.array(a)/100 for a in p.getNodes()]) # convert to numpy array, and from cm to m 
