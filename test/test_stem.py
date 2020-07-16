@@ -29,10 +29,10 @@ class TestStem(unittest.TestCase):
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.StemRandomParameter(self.plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "main", 1,  10., 1., 100., 1., 1.5, 0.5
-        p0.successor = [2]
+        p0.successor = [5]
         p0.successorP = [1.]
         p1 = pb.StemRandomParameter(self.plant)
-        p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx = "lateral", 5, 25., 2., 0.1
         self.p0, self.p1 = p0, p1  # needed at later point
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
@@ -113,12 +113,13 @@ class TestStem(unittest.TestCase):
         self.stem_example_rtp()
         times = np.array([0., 7., 15., 30., 60.])
         dt = np.diff(times)
-		rp = self.stem.getStemRandomParameter()									   
+        rp = self.stem.getStemRandomParameter()                                       
         p = self.stem.param()  # rename
         k = p.getK()
+        print(k)
         et = np.zeros((p.nob()))
         l = 0
-        et[0] = stemAge(p.la + p.lb + l, p.r, k)
+        et[0] = stemAge(p.la - rp.ln / 2. + p.lb + l, p.r, k)
         for i in range(0, p.nob() - 1):  # calculate lateral emergence times
             l += p.ln[i]
             et[i + 1] = stemAge(p.la - rp.ln / 2. + p.lb + l, p.r, k)
@@ -151,8 +152,8 @@ class TestStem(unittest.TestCase):
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
         self.stem_example_rtp()
-		simtime = 30.			 
-        self.stem.simulate(30)
+        simtime = 30.             
+        self.stem.simulate(30,False)
         organs = self.stem.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
         for o in organs:
@@ -161,15 +162,15 @@ class TestStem(unittest.TestCase):
             ct.append(o.getParameter("creationTime"))
             radius.append(o.getParameter("radius"))
             order.append(o.getParameter("order"))
-		nol = round(self.root.getParameter("numberOfLaterals"))
+#        nol = round(self.stem.getParameter("numberOfLaterals"))
         type_ = [1.]
-        type_.extend([2.] * nol)													   
-		self.assertEqual(type, type_, "getParameter: unexpected stem sub types")
+        type_.extend([2.] * nol)                                                       
+        self.assertEqual(type, type_, "getParameter: unexpected stem sub types")
         self.assertEqual(order, type_, "getParameter: unexpected stem order")  # +1, because of artificial parent root
-		for i in range(0, nol):
+        for i in range(0, nol):
             self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree") 
-			
-						
+            
+                        
        
     def test_dynamics(self):
         """ tests if nodes created in last time step are correct """  #
@@ -177,17 +178,17 @@ class TestStem(unittest.TestCase):
         r = self.stem
         r.simulate(.5, True)
         self.assertEqual(r.hasMoved(), False, "dynamics: node movement during first step")
-        r.simulate(1e-1, True)
-						  
+        r.simulate(.1, True)
+                          
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         non = r.getNumberOfNodes() 
         r.simulate(2.4, False)
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
-        dx = r.getRootRandomParameter().dx
+        dx = r.getStemRandomParameter().dx
         self.assertEqual(r.getNumberOfNodes() - non, round(2.4 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth
 
-							 	
-		
+                                 
+        
     def test_leafgrow(self):
         """ tests if the stem can create leaf """  #
         self.stem_example_rtp()
