@@ -1,7 +1,7 @@
 """increase axial resolution (e.g. for animation)"""
-import sys
-sys.path.append("../../..")
+import sys; sys.path.append("../../..")
 import plantbox as pb
+import vtk_plot as vp
 
 rs = pb.RootSystem()
 path = "../../../modelparameter/rootsystem/"
@@ -20,11 +20,13 @@ rs.simulate(60)  # days
 ana = pb.SegmentAnalyser(rs)
 ana.write("results/example_3e.vtp")
 
-ana.mapPeriodic(20, 15)
+ana.mapPeriodic(15, 10)
 ana.write("results/example_3e_periodic.vtp")
 
 # Export geometry as Paraview Python script
-box = pb.SDF_PlantBox(20, 15, 35)
+box = pb.SDF_PlantBox(15, 10, 35)
 rs.setGeometry(box)
 rs.write("results/example_3e_periodic.py")
 
+# Plot final (periodic) image, using vtk
+vp.plot_roots(ana, "creationTime", True, 'oblique')

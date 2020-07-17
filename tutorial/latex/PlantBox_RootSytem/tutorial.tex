@@ -9,7 +9,7 @@
 \usepackage{listings}
 \usepackage{color}
 
-% \usepackage{draftwatermark}
+%\usepackage{draftwatermark}
 %\usepackage{fullpage}
 
 % \SetWatermarkText{\includegraphics{sw_logo.png}}
@@ -38,7 +38,7 @@
     showtabs=false,                  
     tabsize=2
 }
- 
+  
 \lstset{style=mystyle}
  
 
@@ -71,183 +71,26 @@ The following tutorial offers scripts to outline the usage of the CPlantBox Pyth
 
 \input{section_rootsystem.tex}
 
-\input{section_segmentanalyser.tex}
+\input{section_segmentanalyser.tex} 
 
-% \input{section_tropisms.tex}
+\input{section_tropism.tex}
 
-% \input{section_interactions.tex}
+\input{section_interactions.tex}
 
-% \input{section_modelcoupling.tex}
+% \input{section_modelcoupling.tex} % with soil models
+
+% \input{section_growing.tex} % model coupling with dynamic roots 
+
+% \subsection{Dynamic root system grid} \label{sec:published}
+% 
+% In this section it is described how information about the last time step can be retrieved, 
+% and how we can incrementally obtain the root system from only new nodes and segments. 
+% These methods are especially important if we couple to other numerical software like DuMux
+% 
+% \lstinputlisting[firstline=1, lastline=58, language=Python, caption=Example 5b]{../../examples/python/example7b.py}
 
 
 
-
-% \section{Tropisms} % chapter 5
-% 
-% The change in root growth direction is described by tropisms. 
-% 
-% 
-% \subsection{Hydro- and chemotropism} \label{sec:hydro}
-% 
-% Root growth direction is influenced by soil conditions such as water content, soil strength, or nutrient concentration. 
-% In the following we show how this is achieved in CRootBox.
-% 
-% \lstinputlisting[language=Python, caption=Example 5a]{../../examples/python/example5a.py}
-% 
-% \begin{itemize}
-% 
-% \item[3-5] Creates the root system and opens the parameter file
-% 
-% \item[7-14] Change the tropism for the first ten root types: L10 retrieves the parameter, where the CRootBox parameters run from 1 to 11. L11 modifies the axial resolution, and L12-14 sets the three tropism parameters. 
-% 
-% \item[16-22] Definition of a static soil property using SDF. We first define the geometry (L20-L21), and then create a static soil (L22) that obtains the maximal value $maxS$ inside the geometry, 
-% $minS$ outside the geometry, and linear slope with length $slope$. At the boundary the soil has the value $(maxS+minS)/2$.
-% 
-% \item[25] Sets the soil. Must be called before RootSystem::initialize()
-% 
-% \item[28] Initializes the root system, and among others sets up the hydrotropism. 
-% 
-% \item[30-36] Simulation loop
-% 
-% \item[39] Exports the root system geometry
-% 
-% \item[42-43] We actually do not wish to set this geometry, but we abuse the writer of the class RootSytem to export a Python script showing the layer geometry. The resulting ParaView visualization is presented in Figure \ref{fig:chemo}.
-% 
-% \end{itemize}
-% 
-% \begin{figure}
-% \centering
-% \includegraphics[width=0.7\textwidth]{example4a.png}
-% \caption{Chemotropism in a nutrient rich layer (Example 4a)} \label{fig:chemo}
-% \end{figure}
-% 
-% 
-% 
-% \subsection{User defined tropisms} \label{sec:usertropism}
-% 
-% Normally, the simulation is created from a set of parameters. For tropisms these are the type of tropism $tt$, number of trials $N$ , and tortuosity $\sigma$.
-% There are two ways to add user defined tropisms: 
-% 
-% \begin{enumerate}
-% \item The first is C++ only: It is to extend the CRootBox class and overwrite the method RootSystem::createTropism. 
-% This is the function that is called, when the tropisms are created from the parameters ($tt$, $N$, $\sigma$) in RootSystem::initialize(). 
-% This is necessary when user defined tropism are created from a parameter file, where $tt$ is the number of the new tropism type. 
-% \item The second is to manually set the tropisms using the method RootSystem::setTropism. Make sure to call Rootsystem::setTropism($\dots$) after Rootsystem::initialize().
-% \end{enumerate}
-% 
-% In both approaches the user has to extend the new tropism class from the class Tropism. 
-% If just the objective function of the tropism is changed, it is enough to overwrite Tropism::tropismObjective. 
-% This can done in Python or in C++,the classes Hydrotropism, Gravitropism, and Plagiotropism are examples for this procedure.
-% 
-% If the whole concept of the random optimization is altered, Tropism: :getUCHeading must be overwritten. 
-% If the geometry model is also changed Tropism: :getHeading must be overwritten.
-% 
-% The following example shows how to implement a new tropism in Python. Two new tropism are introduced:
-% The first does nothing put to output the incoming arguments of the method Tropism::tropismObjective to the command line (e.g. for debugging).  
-% The second one, is a Plagiotropism that changes with time to Gravitropism depending on the root age.
-% 
-% \lstinputlisting[language=Python, caption=Example 5b]{../../examples/python/example5b.py}
-% 
-% \begin{itemize}
-% 
-% \item[3-14] Creates a new tropism that just writes incoming arguments of Tropism: :tropismObjective to the command line. This can be used for debugging. The new class is extended from rb.Tropism, 
-% and the method Tropism::tropismObjective is overwritten with the right number of arguments.
-% 
-% \item[16-32] Again, we extend the new class from rb.Tropism. In L19-24 we define our own constructor.
-% Doing this two things are important: (1) the constructor of the super class must be called (L20), and (2) the tropism parameters $n$, and $\sigma$ must be set (L23). 
-% Furthermore, the constructor defines two tropisms: plagio- and gravitropism, that are used in Tropism::tropismObjective at a later point, and a root age, when to switch from plagi- to gravitropism. \\
-% In L26-L32 the method Tropism::tropismObjective is defined. We choose the predefined objective function depending on the root age.
-% 
-% \item[34-38] Sets up the simulation.
-% 
-% \item[40-44] L40,L41 creates the first user defined tropsim. Since we did not define a constructor Tropism::setTropismParameter must be called. L43 creates the second user defined tropism. 
-% In L44 the tropism is chosen, using the method Tropism::setTropism. The second argument states for which root type it applies. 
-% Number 2 is the root type number of the laterals, -1 states that the tropism applies for all root types (default = -1).
-% 
-% \item[46-51] The simulation loop. 
-% 
-% \item [54] Exports the result producing Figure (\ref{fig:tropism}). Comparing to Figure (\ref{fig:basicA}) we can see the effect of the new user defined tropsim.
-% 
-% \end{itemize}
-% 
-% \begin{figure}
-% \centering
-% \includegraphics[width=0.7\textwidth]{example4b.png}
-% \caption{Depending on root age the laterals follow plagio- or gravitropism (Example 4b)} \label{fig:tropism}
-% \end{figure}
-% 
-% 
-% 
-% \section{Root functional modelling}
-% 
-% Root growth is strongly influenced by pedo-climate conditions, and plant internal state. CRootBox offers build in ways to develop such models. 
-% In this section we assume static soil conditions, and describe predefined ways how the soil can affect root growth.
-% Dynamic soil conditions are described in the following section 'Coupling with a soil model'. 
-% 
-% Implemented root responses are (1) the change in direction of the growing root tip, described in Sections \ref{sec:hydro} and \ref{sec:usertropism} 
-% (2) the scaling of the elongation rate (3) the change of insertion angle (4) the change of lateral emergence probability, (2)-(4) are described in Section \ref{sec:elongation}.
-% 
-% \subsection{Scaling elongation rate, insertion angle, and lateral emergence probability} \label{sec:elongation}
-% 
-% The following script is an example to this and the following two sections, where (a) the elongation rate, (b) the insertion angle, and (c) the probability of lateral emergence are scaled.
-% 
-% Without giving a specific model these mechanisms are considered important. 
-% For example the elongation rate as well as the probability of lateral emergence is dependent on soil properties like water saturation, soil strength, and temperature (among others).  
-% The insertion angle is reported to be dependent on nutrient supply in some species. Furthermore, theses mechanisms are influenced by plant systemic responses.
-% 
-% The scaling itself can be performed in the following way:
-% 
-% \lstinputlisting[firstline=1,lastline=50, language=Python, caption=Example 6a (1)]{../../examples/python/example6a.py}
-% 
-% \begin{itemize}
-% 
-% \item[4-6] Creates the root system and opens the parameter file
-% 
-% \item[8-13] We create a confining box with two overlapping boxes left and right. This geometries are used for later analysis.
-% 
-% \item[15-21] We define two static soil properties using SDF (L20, L21) as explained in Section \ref{sec:hydro}. 
-% The left compartment has the value $minS$, the right $maxS$, between them is a linear gradient of length $slope$.
-% 
-% \item[23-34] Sets the scaling functions. L24-L28 adjusts axial resolution and tortuosity $sigma$. L31 sets the scale elongation function $se$ to the soil property. L34 sets the scale insertion angle function $sa$. 
-% Comment and uncomment the relevant code parts to achieve the desired scaling, to achieve the resulting Figures \ref{fig:elongation} and \ref{fig:insertion}.
-% 
-% \item[36-41] Sets the lateral emergence probability. 
-% First, we increase the number of laterals of the first laterals (root type 2) by a factor of five and decrease the inter-nodal distances for the same factor L37-L39. This is the maximal lateral density that can be achieved.
-% Then, we set the scale branching probability function $sbp$ to the soil property defined in L21, see Figure \ref{fig:probability}.
-% 
-% \item[44-49] Initialization and simulation loop.
-% 
-% \end{itemize}
-% 
-% \begin{figure}
-% \begin{subfigure}[c]{0.3\textwidth}
-% \includegraphics[width=0.99\textwidth]{example4c1.png}
-% \subcaption{Root elongation rate} \label{fig:elongation}
-% \end{subfigure}
-% \begin{subfigure}[c]{0.3\textwidth}
-% \includegraphics[width=0.99\textwidth]{example4c2.png}
-% \subcaption{Insertion angle of laterals} \label{fig:insertion}
-% \end{subfigure}
-% \begin{subfigure}[c]{0.3\textwidth}
-% \includegraphics[width=0.99\textwidth]{example4c3.png}
-% \subcaption{Branching density (probabilistic model)} \label{fig:probability}
-% \end{subfigure}
-% \caption{Predefined root responses (Example 4c)}
-% \end{figure}
-% 
-% When playing with model parameters, it is not always clear if the suggested effect is realized from the figures alone. The following script helps to quantify the effects of above simulation: 
-% 
-% \lstinputlisting[firstline=51,lastline=81, language=Python, caption=Example 6b´ (2)]{../../examples/python/example6b.py}
-% 
-% 
-% \subsection{Soil} \label{sec:soil}
-% 
-% 
-% \subsection{User defined soil} \label{sec:usersoil}
-% 
-% 
-% 
-% 
 % \section{Model coupling}
 % 
 % In the previous section root responses were described in a static soil. 
@@ -261,26 +104,28 @@ The following tutorial offers scripts to outline the usage of the CPlantBox Pyth
 % Then we discuss the example published in \cite{}. 
 % 
 % Finally, we present features that can be used to analyse the dynamic behaviour of the root system development.
+
+% \subsection{MappedSegments and MappedRootSystem} \label{sec:fullcoupling} 
+% 
+% Explain and link to paper example (to do)
+
+
+% \subsection{Coupling to 1D water content} \label{sec:fullcoupling} 
+% 
+% Explain and link to paper example (to do)
+
+
+
 % 
 % 
 % \subsection{Graph representation} \label{sec:graph} 
 % 
 % In this section we show how to build an adjacency matrix, and how to calculate fluxes within the root system.
-% 
-% \lstinputlisting[language=Python, caption=Example 5a]{../../examples/python/example7a.py}
-% 
-% \subsection{Coupling to 1D water content} \label{sec:fullcoupling} 
-% 
-% Explain and link to paper example (to do)
-% 
-% 
-% \subsection{Dynamic root system grid} \label{sec:published}
-% 
-% In this section it is described how information about the last time step can be retrieved, 
-% and how we can incrementally obtain the root system from only new nodes and segments. 
-% These methods are especially important if we couple to other numerical software like DuMux
-% 
-% \lstinputlisting[firstline=1, lastline=58, language=Python, caption=Example 5b]{../../examples/python/example7b.py}
+
+ 
+ 
+ 
+
 
 \bibliographystyle{apalike}
 \bibliography{references}

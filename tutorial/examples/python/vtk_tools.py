@@ -1,12 +1,14 @@
 import vtk
 import numpy as np
-# from rsml_writer import write_rsml
+# from rsml_writer import write_rsml # to write a rsml
 
 """ 
-VTK Tools, by Daniel Leitner (refurbished 12/2019) 
+VTK Tools, by Daniel Leitner (refurbished 6/2020) 
 
 for vtk to numpy, and numpy to vtk conversions
-reading: vtp, writing: msh, dgf, vtp, rsml
+
+reading: vtp, vtu 
+writing: vtp, vtu, msh, dgf, rsml
 """
 
 
@@ -42,7 +44,10 @@ def vtk_cells(t):
 
 
 def vtk_data(d):
-    """ Creates a vtkDataArray from an numpy array, usage e.g. grid.GetCellData().SetScalars(vtk_data(celldata))"""
+    """ Creates a vtkDataArray from an numpy array, usage 
+    e.g. grid.GetCellData().SetScalars(vtk_data(celldata)), grid.GetCellData().AddArray(...)
+    TODO vtkAbstractArray.SetComponentName
+    """
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
     da.SetNumberOfComponents(1)  # number of components
     da.SetNumberOfTuples(len(d))
@@ -149,6 +154,15 @@ def read_vtu(name):
     return ug
 
 
+def read_rect_vtu(name):
+    """ Opens a vtp and returns the vtkUnstructuredGrid class """
+    reader = vtk.vtkXMLImageDataReader()
+    reader.SetFileName(name)
+    reader.Update()
+    ug = reader.GetOutput()
+    return ug
+
+
 def write_msh(name, pd):
     """ Writes a tetraedral .msh file including cell data from vtkPolyData """
     with open(name, "w") as f:
@@ -243,6 +257,14 @@ def write_vtp(name, pd):
     writer = vtk.vtkXMLPolyDataWriter()
     writer.SetFileName(name)
     writer.SetInputData(pd)
+    writer.Write()
+
+
+def write_vtu(name, grid):
+    """ Writes a VTU file """
+    writer = vtk.vtkXMLImageDataWriter()
+    writer.SetFileName(name)
+    writer.SetInputData(grid)
     writer.Write()
 
 
