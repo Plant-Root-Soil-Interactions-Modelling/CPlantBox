@@ -36,7 +36,8 @@ std::shared_ptr<Organ> Seed::copy(std::shared_ptr<Organism> rs)
 }
 
 /**
- * todo docme!
+ * Creates the initial organs,
+ * i.e. taproot, basal root, (if needed) shoot borne root (if plant) stem
  */
 void Seed::initialize(bool verbose)
 {
