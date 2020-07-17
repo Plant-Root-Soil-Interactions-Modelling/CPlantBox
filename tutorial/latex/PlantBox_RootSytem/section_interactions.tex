@@ -80,17 +80,45 @@ Next, we give a short layout, how the code would look like, if we take measured 
 \end{figure}
 
 
+
 \subsection{Change of insertion angle} \label{sec:insertion_angle}
 
 The impact of nutrient concentration can influence the anlge between parent roots and laterals (ref what else).
 
-Analog to Example 5a to comparments are created, the insertion scale altered accordingly, and 
+Analog to Example 5a two comparments are created, and the insertion andgle is scale altered accordingly.
 
-\lstinputlisting[firstline=1,lastline=50, language=Python, caption=Example 5c]{../../examples/python/example5c_insertionangle.py}
+\lstinputlisting[firstline=1, language=Python, caption=Example 5c]{../../examples/python/example5c_insertionangle.py}
+
+\begin{itemize}
+
+\item[7-10] (as before) Creates the root system and opens the parameter file.
+
+\item[13-17](as before) We create a confining box with two overlapping boxes called left and right. These geometries are used for later analysis.
+
+\item[20-24] (as before) We define a static soil properties using SDF (L23, L24) as we did in Section \ref{sec:hydro}. 
+The left compartment has the value $minS$, the right $maxS$, between them is a linear gradient of length $slope$.
+
+\item[27-32] Sets the insertion angle scaling functions to second order laterals only (L29). L20 adjusts axial resolution and, L31 tortuosity $sigma$, and L32 sets the scale insertion angle function $f_{sa}$ to the soil property. Additionally, the maximal length of second order roots is redoubled. 
+
+\item[34-39] Initialization and simulation loop.
+
+\item[42-50] Analysis the root insertion angle in the left and right compartment. 
+
+\item[53, 54] Writes the results for Paraview visualization (see Figure \ref{fig:insertion}).
+
+\item[57] A vtk simulation of root lenghts. Press 'y' to obtain a x-z view of the root sytem to better see the effect. 
+
+\end{itemize}
+
+
+
 
 \subsection{Cange of lateral emergence probability} \label{sec:branching}
 
-\lstinputlisting[firstline=1,lastline=50, language=Python, caption=Example 5d]{../../examples/python/example5d_branching.py}
+Soil properies can affect branching patterns
+
+
+\lstinputlisting[firstline=1, language=Python, caption=Example 5d]{../../examples/python/example5d_branching.py}
 
 Note 0 never, systemic responses, getValue(x, organ) 
 
