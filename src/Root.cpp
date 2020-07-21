@@ -23,7 +23,9 @@ namespace CPlantBox {
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
  :Organ(id, param, alive, active, age, length, iheading, pbl, pni, moved,  oldNON )
-{ }
+{
+    insertionAngle = this->param()->theta;
+}
 
 
 /**
@@ -39,7 +41,7 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param pni			parent node index
  */
 Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni)
-    :Organ(rs, parent, Organism::ot_root, type, delay, heading, pbl, pni)
+    :Organ(rs, parent, Organism::ot_root, type, delay, heading, pbl, pni) // <- OrganRandomParameter::realize() is called here
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
@@ -48,6 +50,7 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
         double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta*=scale;
     }
+    insertionAngle = theta;
     iHeading = Matrix3d::ons(heading).times(Vector3d::rotAB(theta,beta)); // new initial heading
     if (parent->organType()!=Organism::ot_seed) { // the first node of the base roots must be created in RootSystem::initialize()
         // assert(pni+1 == parent->getNumberOfNodes() && "Root::Root: at object creation always at last node");
@@ -388,7 +391,7 @@ double Root::getParameter(std::string name) const
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
-    if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
+    if (name=="theta") { return insertionAngle; } // angle between root and parent root [rad]
     if (name=="rlt") { return param()->rlt; } // root life time [day]
     // specific parameters member functions
     if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes
@@ -407,6 +410,7 @@ double Root::getParameter(std::string name) const
         double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
         return std::sqrt(sq_sum / v.size() - mean * mean);
     }
+    if (name=="rootLength") { return getLength(); } // root length [cm], same as length, but a SegmentAnalyser::getParameter call would give the segment length
     if (name=="volume") { return param()->a*param()->a*M_PI*getLength(); } // root volume [cm^3]
     if (name=="surface") { return 2*param()->a*M_PI*getLength(); } // root surface [cm^2]
     return Organ::getParameter(name); // pass to base class

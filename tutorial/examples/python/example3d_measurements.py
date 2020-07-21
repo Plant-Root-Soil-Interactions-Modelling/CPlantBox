@@ -1,6 +1,5 @@
-""" analysis of nodes and segments from measurements """
-import sys
-sys.path.append("../../..")
+""" nodes and segments from measurements """
+import sys; sys.path.append("../../..")
 import plantbox as pb
 
 # Data from any source, as Python types
@@ -13,11 +12,9 @@ radii = [ 0.1, 0.1, 0.1 ]
 nodes = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
 segs = [pb.Vector2i(s[0], s[1]) for s in segs]
 
-# create the SegmentAnalyser without undrlying RootSystem
+# create the SegmentAnalyser without underlying RootSystem
 ana = pb.SegmentAnalyser(nodes, segs, cts, radii)
 
 print("length", ana.getSummed("length"))
 
-ana.write("results/example_3f.vtp", ["radius"])  # working
-
-# TODO add data (interchange 3e, and 3f)
+ana.write("results/example_3d.vtp", ["creationTime", "radius"])

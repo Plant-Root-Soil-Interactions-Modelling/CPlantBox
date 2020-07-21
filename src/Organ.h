@@ -92,6 +92,7 @@ public:
     Vector3d iHeading; ///< the initial heading of the root, when it was created
     double parentBaseLength; ///< length [cm]
     int parentNI; ///< parent node index
+    double insertionAngle; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa
 
 protected:
 

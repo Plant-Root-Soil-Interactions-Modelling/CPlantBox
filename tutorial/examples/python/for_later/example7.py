@@ -1,7 +1,5 @@
 """Incrementially builds a root system"""
-# see also test_rootsystem.py
-import sys
-sys.path.append("../../../..")
+import sys; sys.path.append("../../../..")
 import plantbox as pb
 import numpy as np
 

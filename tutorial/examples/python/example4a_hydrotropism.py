@@ -1,7 +1,7 @@
 """hydrotropism in a thin layer"""
-import sys
-sys.path.append("../../..")
+import sys; sys.path.append("../../..")
 import plantbox as pb
+import vtk_plot as vp
 
 rs = pb.RootSystem()
 path = "../../../modelparameter/rootsystem/"
@@ -35,12 +35,15 @@ simtime = 100  # e.g. 30 or 60 days
 dt = 1
 N = round(simtime / dt)
 for _ in range(0, N):
-    # in a dynamic soil setting you would need to update soil_prop
+    # in a dynamic soil setting you would need to update the soil properties (soil_prop)
     rs.simulate(dt)
 
 # Export results (as vtp)
-rs.write("../results/example_5a.vtp")
+rs.write("results/example_4a.vtp")
 
 # Export geometry of static soil
 rs.setGeometry(layer)  # just for vizualisation
-rs.write("../results/example_5a.py")
+rs.write("results/example_4a.py")
+
+# Plot, using vtk
+vp.plot_roots(rs, "type", True, 'oblique')

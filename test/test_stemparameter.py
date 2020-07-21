@@ -17,10 +17,10 @@ class TestStemParameter(unittest.TestCase):
         self.srp.lmax = 7 * self.srp.ln + self.srp.la + self.srp.lb
         # print(self.srp.las)
 
-    def add_successors(self):
-        """ add successor sub types to the example"""
+
         self.srp.successor = [4, 5, 6]
         self.srp.successorP = [0.4, 0.1, 0.5]
+
         # print(self.srp.successorP[0])
 
     def test_constructors(self):
@@ -43,7 +43,8 @@ class TestStemParameter(unittest.TestCase):
 
     def test_parameter(self):
         """ tests getParameter() """
-        srp = pb.StemRandomParameter(pb.Organism())
+        self.plant = pb.Organism()
+        srp = pb.StemRandomParameter(self.plant)
         srp.lns = 0.123
         srp.la = 12
         ot = srp.getParameter("organType")  # test defaults
@@ -68,25 +69,26 @@ class TestStemParameter(unittest.TestCase):
 
     def test_toString(self):
         self.srp = pb.StemRandomParameter(pb.Organism())
-        self.add_successors()
+
         srp = self.srp  # rename
         srp.name = "the stem"
-        # print(srp.__str__(False))
+
         self.assertEqual(srp.__str__(False), "name: the stem, organType: 3, subType: -1.", "toString: value unexpected")
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
         self.stem_example()
-        self.add_successors()
+
         otp = self.srp  # rename
         otp.name = "lateral"
         otp.subType = 1
-        otp.lmax = 42
+
         otp.writeXML("stem.xml")
         otp2 = pb.StemRandomParameter(self.plant)
         otp2.readXML("stem.xml")
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
+        
         self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
         self.assertEqual(otp2.lmax, otp.lmax, "xml: value unexpected")  # value
         self.assertEqual(otp2.nob(), otp.nob(), "xml: value unexpected")  # value
@@ -103,7 +105,7 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(p.__class__.__name__, "StemSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, -1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
-        self.assertEqual(len(p.ln) + 1, self.srp.nob(), "realize: internodal distances +1 should be  number of laterals")
+        self.assertEqual(len(p.ln)+1 , self.srp.nob(), "realize: internodal distances +1 should be  number of laterals")
         # print(p)
 
 

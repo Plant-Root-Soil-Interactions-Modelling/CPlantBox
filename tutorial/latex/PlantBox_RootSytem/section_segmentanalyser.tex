@@ -1,8 +1,9 @@
+\newpage
 \section{The SegmentAnalyser class} \label{sec:sa}
 
 \subsection{Analysis per segment, rootsystem length density}
 
-The class SegmentAnalyser offers post-processing methods per root segment. The advantage is that we can do distributions or densities, and that we can crop the segments with any geometry. 
+The class SegmentAnalyser offers post-processing methods per root segment. The advantage is that we can do distributions or densities, and that we can analyse the segments with any geometry. 
 
 We start with a small example plotting the root surface densities of a root system versus root depth.
 
@@ -88,8 +89,9 @@ If we want to export our root system as dune grid file (dgf) we need to introduc
 \begin{itemize}
  \item[6-11] Define a example root sytemytem
  \item[13] Create the analyser object
- \item[15-18] Get the artificial shoot segments from the root sytem (L15) and manually add them ot the SegmentAnalyser (L18).
- \item[20] Write the DGF file 
+ \item[15-18] Get the artificial shoot segments from the root sytem (L15) and manually add them ot the SegmentAnalyser (L18), first argument is the segment $s$, second is creation time, third is radius, and fourth arguments states taht the segment is inserted at the top of the list (True), while (False) would append it to segment list.
+ \item[19] Write the VTP file. For VTP files its possible to add a list of parameters that will be exported. 
+ \item[20] Write the DGF file. The parameters are fixed (see documentation of SegmentAnalyser::writeDGF)
 \end{itemize}
 
 It is also possible to make use of the SegmentAnalyser class without any ohter CPlantBox classes (e.g. for writing vtp from measurements). The following example shows how to construct the class with arbitrary nodes and segments (e.g. from measurements). 
@@ -102,39 +104,36 @@ It is also possible to make use of the SegmentAnalyser class without any ohter C
  \item[20] We create the SegmentAnalyser object without an underlying Organsim
 \end{itemize}
 
-
-
-In the following we show how model parameters can be modified, and how a sensitivity analysis can be performed. Additionally, we comment on how to best make an animation from a CPlantBox simulation.
-
-
-
+Next, we describe how to best make an animation from a CPlantBox simulation.
 
 
 \subsection{How to make an animation}
 
-In order to create an animation in Paraview we have to consider some details. The main idea is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. 
+In order to create an animation in Paraview we have to consider some details. The main idea is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. In this way we have to only export one vtp file. 
 
 We modify example1b.py to demonstrate how to create an animation.
 
-%\lstinputlisting[language=Python, caption=Example 4c (modified from Example 1b)]{../../examples/python/example4c.py} 
+\lstinputlisting[language=Python, caption=Example 4c (modified from Example 1b)]{../../examples/python/example3e_animation.py} 
 
 \begin{itemize}
 
-\item[17,18] Its important to use a small resolution in order to obtain a smooth animation. L18 set the axial resolution to 0.1 cm. 
+\item[11,12] Its important to use a small resolution in order to obtain a smooth animation. L18 set the axial resolution to 0.1 cm. 
 
-\item[25] Instead of saving the root system as polylines, we use the SegmentAnalyser to save the root system as segments.
+\item[19,29] Instead of saving the root system as polylines, we use the SegmentAnalyser to save the root system as segments.
 
-\item[28] We save the geometry as Python script for the visualization in ParaView.
+\item[22,23] It is also possible to make the root system periodic in the visualization in $x$ and $y$ direction to mimic field conditions.
+
+\item[26-28] We save the geometry as Python script for the visualization in ParaView.
 
 \end{itemize}
 
-After running the script we perform the following operations to create an animation:
+After running the script we perform the following operations Paraview to create the animation:
 \begin{enumerate}
- \item Open the .vtp file in ParaView (File$\rightarrow$Open...), and open tutorial/examples/python/results/example\_4c.vtp.
+ \item Open the .vtp file in ParaView (File$\rightarrow$Open...), and open tutorial/examples/python/results/example\_3e.vtp.
  \item Optionally, create a tube plot with the help of the script tutorial/pyscript/rsTubePlot.py (Tools$\rightarrow$Python Shell, press 'Run script').
  \item Run the script tutorial/pyscript/rsAnimate.py (Tools$\rightarrow$Python Shell, press 'Run script'). The script creates the threshold filter and the animation. 
- \item Optionally, visualize the domain boundaries by running the script tutorial/examples/python/results/example\_4c.py (Tools$\rightarrow$Python Shell, press 'Run script'). Run after the animation script (ohterwise it does not work).  
- \item Use File$\rightarrow$Save Animation... to render and save the animation. Pick quality (<100 \%), and the frame rate in order to achieve an appropriate video length, e.g. 300 frames with 50 fps equals 6 seconds. Files might be very big, and needs compression (e.g. ffmpeg -i in.avi -vcodec libx264 -b 4000k -an out.avi, produces high quality, tiny file size, and plays with VLC).
+ \item Optionally, visualize the domain boundaries by running the script tutorial/examples/python/results/example\_4e.py (Tools$\rightarrow$Python Shell, press 'Run script'). Run after the animation script (ohterwise it does not work).  
+ \item Use File$\rightarrow$Save Animation... to render and save the animation. Pick quality ($<$100 \%), and the frame rate in order to achieve an appropriate video length, e.g. 300 frames with 50 fps equals 6 seconds. The resulting files might be uncompressed and are very big. The file needs compression, for Linux e.g. ffmpeg -i in.avi -vcodec libx264 -b 4000k -an out.avi, produces high quality and tiny files, and it plays with VLC.
 \end{enumerate}
 
 

@@ -28,7 +28,7 @@ res_ = np.array([1, 5, 1])
 
 
 def periodic_soil_index(x, y, z):
-    """ not in C++, because this should be handeld by mesh.pick(x,y,z), implemented for dumux in solverbase.cc """
+    """ not in C++, because this should be handeld by mesh.pick(x,y,z) implemented for dumux in solverbase.cc """
     pos = np.array([x, y, z])
     for i in range(0, 2):  # periodic mapping for x and y, not z
         minx = min_[i]

@@ -1,19 +1,19 @@
 import plantbox as pb
 from vtk_tools import *
 
+import time
 import numpy as np
 import vtk
 
 """ 
-VTK Tools, by Daniel Leitner (refurbished 12/2019) 
+VTK Plot, by Daniel Leitner (refurbished 06/2020) 
 
-for vtk to numpy, and numpy to vtk conversions
-reading: vtp, writing: msh, dgf, vtp, rsml
+to make interactive vtk plot of root systems and soil grids
 """
 
 
-def segs_to_polydata(rs, zoom_factor = 10., param_names = ["radius", "type", "creationTime"]):
-    """ Creates vtkPolydata from a RootSystem or Plant using segments 
+def segs_to_polydata(rs, zoom_factor = 1., param_names = ["radius", "type", "creationTime"]):
+    """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments 
     @param rs             A RootSystem, Plant, or SegmentAnalyser
     @param zoom_factor    The radial zoom factor, since root are sometimes too thin for vizualisation
     @param param_names    Parameter names of scalar fields, that are copied to the polydata    
@@ -63,14 +63,14 @@ def uniform_grid(min_, max_, res):
     return grid
 
 
-def render_window(actor, title = "", scalarBar = None, axis = 'side_view'):
-    """ puts a vtk actor on the stage (an interactive window) @name is the window titel 
+def render_window(actor, title, scalarBar, bounds):
+    """ puts a vtk actor on the stage (renders an interactive window)
     
-    @param actor         the (single) actor
-    @param windowName    optional
-    @param scalarBar     an optional vtkScalarBarActor
-    @param axis          inital view: 'side_view' (default, xz), 'top_view' (xy),'oblique' (nice)  
-    @return The vtkRenderWindow (not sure if this is ever needed)
+    @param actor                    a (single) actor, or a list of actors (ensemble)
+    @param title                    window title (optional)
+    @param scalarBar                one or a list of vtkScalarBarActor (optional)
+    @param bounds                   spatial bounds (to set axes actor, and camera position and focal point)
+    @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write png
     
     (built in)
     Keypress j / Keypress t: toggle between joystick (position sensitive) and trackball (motion sensitive) styles. In joystick style, motion occurs continuously as long as a mouse button is pressed. In trackball style, motion occurs when the mouse button is pressed and the mouse pointer moves.
@@ -89,56 +89,103 @@ def render_window(actor, title = "", scalarBar = None, axis = 'side_view'):
     
     (additional)
     Keypress g: save as png    
+    Keypress x,y,z,v: various views    
     """
     colors = vtk.vtkNamedColors()  # Set the background color
-    bkg = map(lambda x: x / 255.0, [26, 51, 102, 255])
-    colors.SetColor("BkgColor", *bkg) # "*" for unpacking the containers.
     ren = vtk.vtkRenderer()  # Set up window with interaction
+    ren.SetBackground(colors.GetColor3d("Silver"))
+
     renWin = vtk.vtkRenderWindow()
     renWin.AddRenderer(ren)
+    renWin.SetSize(1000, 1000)
+    renWin.SetWindowName(title)
+
     iren = vtk.vtkRenderWindowInteractor()
     # iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
+
     if isinstance(actor, list):
         actors = actor  # plural
     else:
         actors = [actor]  # army of one
     for a in actors:
-        if axis=='side_view':        
-            a.RotateX(-90)
-        elif axis == 'top_view':
-            pass
-        elif axis == 'oblique':
-            a.RotateX(-70.)
-            a.RotateZ(45.)
+        a.GetProperty().BackfaceCullingOff()
         ren.AddActor(a)  # Add the actors to the renderer, set the background and size
-    if scalarBar is not None:
-        ren.AddActor2D(scalarBar)
-    ren.SetBackground(colors.GetColor3d("BkgColor"))
-    renWin.SetSize(1000, 1000)
-    renWin.SetWindowName(title)
+
+    if scalarBar:
+        if isinstance(scalarBar, list):
+            c = 0.
+            for sb in scalarBar:  # TODO looks awful
+                x = sb.GetPosition()
+                y = (x[0] + c, x[1])
+                sb.SetPosition(y)
+                ren.AddActor2D(sb)
+                c -= 0.2
+        else:
+            ren.AddActor2D(scalarBar)
+
+    axes = vtk.vtkAxesActor()
+    axes.AxisLabelsOff()  # because i am too lazy to change font size
+    translate = vtk.vtkTransform()
+    translate.Translate(bounds[0], bounds[2], bounds[4])  # minx, miny, minz
+    axes.SetUserTransform(translate)
+    ren.AddActor(axes)
+
     ren.ResetCamera()
-    ren.GetActiveCamera().Zoom(1.5)
-    ren.GetActiveCamera().ParallelProjectionOn()
+    camera = ren.GetActiveCamera()
+    camera.ParallelProjectionOn()
+    camera.SetPosition([100, 0, 0])
+    camera.SetFocalPoint([0, 0, 0.5 * (bounds[4] + bounds[5])])
+    camera.SetViewUp(0, 0, 1)
+    camera.Azimuth(30)
+    camera.Elevation(30)
+    camera.OrthogonalizeViewUp()
+
     iren.SetRenderWindow(renWin)
     renWin.Render()
-    iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
-    iren.CreateRepeatingTimer(500)  # [ms] 0.5 s in case a timer event is interested
+    iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
     iren.AddObserver('KeyPressEvent', keypress_callback_, 1.0)
+    iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
+    renWin.Render()
     return iren
 
 
 def keypress_callback_(obj, ev):
-    """ adds the functionality to make a screenshot by pressing 'g' """
+    """ adds the functionality to make a screenshot by pressing 'g', 
+    and to change view to axis aligned plots (by 'x', 'y', 'z', 'v') """
     key = obj.GetKeySym()
     if key == 'g':
         renWin = obj.GetRenderWindow()
         file_name = renWin.GetWindowName()
         write_png(renWin, file_name)
         print("saved", file_name + ".png")
+    if key == 'x' or key == 'y' or key == 'z' or key == 'v':
+        renWin = obj.GetRenderWindow()
+        ren = renWin.GetRenderers().GetItemAsObject(0)
+        camera = ren.GetActiveCamera()
+        if key == 'x':
+            camera.SetPosition([100, 0, 0])  #
+            camera.SetViewUp(0, 0, 1)
+            print("y-z plot")
+        if key == 'y':
+            camera.SetPosition([0, 100, 0])  # s
+            camera.SetViewUp(0, 0, 1)
+            print("x-z plot")
+        if key == 'z':
+            camera.SetPosition([0, 0, 100])  #
+            camera.SetViewUp(0, 1, 0)
+            print("x-y plot")
+        if key == 'v':
+            camera.SetPosition([100, 0, 0])  #
+            camera.SetViewUp(0, 0, 1)
+            camera.Azimuth(30)
+            camera.Elevation(30)
+            print("oblique plot")
+        camera.OrthogonalizeViewUp()
+        renWin.Render()
 
 
 def write_png(renWin, fileName):
-    """" Save the current render window in a png
+    """" Save the current render window in a png (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
     @param renWin        the vtkRenderWindow 
     @parma fileName      file name without extension
     """
@@ -153,34 +200,81 @@ def write_png(renWin, fileName):
     writer.Write()
 
 
-def get_lookup_table(colorSeriesEnum = 15):
+def create_lookup_table(tableIdx = 15, numberOfColors = 256):
     """ creates a color lookup table 
-    @param colorSeriesEnum      the number of the predefined color table, see VTKColorSeriesPatches.html
+    @param tableIdx          index of the predefined color table, see VTKColorSeriesPatches.html
+    @param numberOfColors    number of colors interpolated from the predefined table
     @return A vtkLookupTable
-    
-    @todo I don't know how to modify the number of colors used (or how to interpolate between)
     """
     colorSeries = vtk.vtkColorSeries()
-    colorSeries.SetColorScheme(colorSeriesEnum)
+    colorSeries.SetColorScheme(tableIdx)
+    lut_ = colorSeries.CreateLookupTable(vtk.vtkColorSeries.ORDINAL)
+    n = lut_.GetNumberOfTableValues ()
+
     lut = vtk.vtkLookupTable()
-    colorSeries.BuildLookupTable(lut, vtk.vtkColorSeries.ORDINAL)
+    lut.SetNumberOfTableValues(numberOfColors)
+    for i in range(0, numberOfColors):
+        psi = (n - 1) * (float(i) / numberOfColors)
+        i0 = np.floor(psi)
+        theta = psi - i0
+        col = (1 - theta) * np.array(lut_.GetTableValue(int(i0))) + theta * np.array(lut_.GetTableValue(int(i0) + 1))
+        lut.SetTableValue(i, col)
+
     return lut
 
 
-def plot_roots(pd, p_name, render = True, axis = 'side_view'):
-    """ renders the root system in an interactive window 
-    @param pd         the polydata representing the root system
-    @param p_name      parameter name of the data to be visualized
+def create_scalar_bar(lut, grid = None, p_name = ""):
+    """ creates a vtkScalarBarActor, for a vtkLookupTable, sets hte active scalar to p_name
+    @param lut         vtkLookupTable
+    @param grid        the grid the scalar bar will be used on (to automatically determine the scalar range)
+    @param p_name      name of the cell data or point data, from which the range is determined
+    @return a vtkScalarBarActor
+    """
+    if grid != None and p_name != "":
+        range = [0, 1]
+        a = grid.GetCellData().GetAbstractArray(p_name)
+        if a:
+            range = a.GetRange()
+            grid.GetCellData().SetActiveScalars(p_name)
+        else:
+            a = grid.GetPointData().GetAbstractArray(p_name)
+            grid.GetPointData().SetActiveScalars(p_name)
+            if a:
+                range = a.GetRange()
+        lut.SetTableRange(range)
+
+    scalarBar = vtk.vtkScalarBarActor()
+    scalarBar.SetLookupTable(lut)
+    scalarBar.SetTitle(p_name)
+    scalarBar.SetDrawAnnotations(False)
+    textProperty = vtk.vtkTextProperty()
+    textProperty.SetFontSize(30)
+    scalarBar.SetAnnotationTextProperty(textProperty)
+    scalarBar.SetTitleTextProperty(textProperty)
+    scalarBar.SetLabelTextProperty(textProperty)
+    scalarBar.AnnotationTextScalingOff()
+    scalarBar.SetUnconstrainedFontSize(True)
+
+    return scalarBar
+
+
+def plot_roots(pd, p_name, win_title = "", render = True):
+    """ plots the root system 
+    @param pd         the polydata representing the root system (lines, or polylines)
+    @param p_name     parameter name of the data to be visualized
+    @param win_title  the windows titles (optionally, defaults to p_name)
     @param render     render in a new interactive window (default = True)
-    @param axis       inital view: 'side_view' (default, xz), 'top_view' (xy),'oblique' (nice)  
-    @return The vtkActor object
+    @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if isinstance(pd, pb.RootSystem):
-        pd = segs_to_polydata(pd, 1.)
-    
+        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+
     if isinstance(pd, pb.SegmentAnalyser):
-        pd = segs_to_polydata(pd, 1.)
-        
+        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+
+    if win_title == "":
+        win_title = p_name
+
     pd.GetPointData().SetActiveScalars("radius")  # for the the filter
     tubeFilter = vtk.vtkTubeFilter()
     tubeFilter.SetInputData(pd)
@@ -192,40 +286,30 @@ def plot_roots(pd, p_name, render = True, axis = 'side_view'):
     mapper.SetInputConnection(tubeFilter.GetOutputPort())
     mapper.Update()
     mapper.ScalarVisibilityOn();
-    mapper.SetScalarModeToUseCellFieldData()  # Cell is not working
+    mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
     mapper.SetArrayName(p_name)
     mapper.SelectColorArray(p_name)
     mapper.UseLookupTableScalarRangeOn()
-
     plantActor = vtk.vtkActor()
     plantActor.SetMapper(mapper)
 
-    lut = get_lookup_table(24)  # 24= Brewer Diverging Brown-Blue-Green (11)
-    lut.SetTableRange(pd.GetPointData().GetScalars(p_name).GetRange())
+    lut = create_lookup_table(15, 256)  # 24
+    scalar_bar = create_scalar_bar(lut, pd, p_name)  # vtkScalarBarActor
     mapper.SetLookupTable(lut)
 
-    scalarBar = vtk.vtkScalarBarActor()
-    scalarBar.SetLookupTable(lut)
-    scalarBar.SetTitle(p_name)
-    textProperty = vtk.vtkTextProperty()
-    textProperty.SetFontSize(1)
-    scalarBar.SetTitleTextProperty(textProperty)
-    scalarBar.SetLabelTextProperty(textProperty)
-#    scalarBar.SetAnnotationTextProperty(textProperty)
-
     if render:
-        render_window(plantActor, p_name, scalarBar, axis).Start()
-    return plantActor, scalarBar
+        render_window(plantActor, win_title, scalar_bar, pd.GetBounds()).Start()
+    return plantActor, scalar_bar
 
 
-def plot_mesh(grid, p_name, win_title = "", render = True, axis = 'side_view'):
+def plot_mesh(grid, p_name, win_title = "", render = True):
     """ Plots the grid as wireframe
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
-        
+    @param win_title  the windows titles (optionally, defaults to p_name)
+    @param render     render in a new interactive window (default = True)    
+    @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
-#     bounds = grid.GetBounds()
-#     print("mesh bounds", bounds, "[m]")
     if win_title == "":
         win_title = p_name
 
@@ -233,67 +317,129 @@ def plot_mesh(grid, p_name, win_title = "", render = True, axis = 'side_view'):
     mapper.SetInputData(grid)
     mapper.Update()
     mapper.SetArrayName(p_name)
-    mapper.SelectColorArray(p_name)
+    mapper.SelectColorArray(p_name)  # ? to choosvtkScalarBarActore cell data or point data
     mapper.UseLookupTableScalarRangeOn()
-
     meshActor = vtk.vtkActor()
     meshActor.SetMapper(mapper)
     meshActor.GetProperty().SetRepresentationToWireframe();
 
-    lut = get_lookup_table()
-    if p_name != "":
-        lut.SetTableRange(grid.GetPointData().GetScalars(p_name).GetRange())
+    lut = create_lookup_table()
+    scalar_bar = create_scalar_bar(lut, grid, p_name)  # vtkScalarBarActor
     mapper.SetLookupTable(lut)
 
-    scalarBar = vtk.vtkScalarBarActor()
-    scalarBar.SetLookupTable(lut)
-    scalarBar.SetTitle(p_name)
-#     textProperty = vtk.vtkTextProperty()
-#     textProperty.SetFontSize(10)
-#     textProperty.UseTightBoundingBoxOff()
-#     scalarBar.GetLabelTextProperty().BoldOff()
-#     scalarBar.SetTitleTextProperty(textProperty)
-#     scalarBar.SetLabelTextProperty(textProperty)
-#     scalarBar.GetLabelTextProperty().SetFontSize(1)
-
     if render:
-        render_window(meshActor, win_title, scalarBar, axis).Stat()
-    return meshActor, scalarBar
+        render_window(meshActor, win_title, scalar_bar, grid.GetBounds()).Start()
+    return meshActor, scalar_bar
 
 
-def plot_mesh_cuts(ug, p_name, nz = 7):
-    """ """
-    bounds = ug.GetBounds()
-    print(bounds)
-    print("z-axis", bounds[4], bounds[5])
-    # z-slices (implicit fucntions)
-    planes = []
-    for i in range(0, nz):
+def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True):
+    """ plots orthogonal nz vertical cuts z[:-1] (xy-planes), with z = linspace(min_z, max_z, nz+1), 
+    and two additonal sclices at x=0 (yz-plane), y=0 (xz-plane)          
+    @param grid         some vtk grid (structured or unstructured)
+    @param p_name       parameter to visualize
+    @param nz           number of vertical slices
+    @param win_title    the windows titles (optionally, defaults to p_name)
+    @param render       render in a new interactive window (default = True)
+    @return a tuple of a list of vtkActors and a single corresponding color bar vtkScalarBarActor    
+    """
+    if win_title == "":
+        win_title = p_name
+
+    eps = 1.e-2
+    planes = []  # create the cut planes
+    bounds = grid.GetBounds()
+    z = np.linspace(bounds[4] + eps, bounds[5], nz + 1)
+    for i in range(0, nz):  # z-slices (implicit functions)
         p = vtk.vtkPlane()
-        z = ((bounds[5] - bounds[4]) / (nz + 1)) * (i + 1)
-        print(bounds[4] + z)
-        p.SetOrigin(bounds[4] + z, 0, 0)
+        p.SetOrigin(0, 0, z[i])
         p.SetNormal(0, 0, 1)
         planes.append(p)
+    for n in [(1, 0, 0), (0, 1, 0)]:
+        p = vtk.vtkPlane()
+        p.SetOrigin(bounds[0] + eps, bounds[2] + eps, bounds[4])
+        p.SetNormal(n[0], n[1], n[2])
+        planes.append(p)
 
-    # create cutter, mappers, and actors
-    actors = []
-    for i in range(0, nz):
+    lut = create_lookup_table()
+    scalar_bar = create_scalar_bar(lut, grid, p_name)
+
+    actors = []  # create cutter, mappers, and actors
+    for p in planes:
         cutter = vtk.vtkCutter()
-        cutter.SetCutFunction(planes[i])
-        cutter.SetInputData(ug)
-        # cutter.SetInputConnection(cube.GetOutputPort())
+        cutter.SetInputData(grid)
+        # cutter.SetInputConnection(tubeFilter.GetOutputPort()) # for root system (tube plot)
+        cutter.SetCutFunction(p)
         cutter.Update()
-        m = vtk.vtkPolyDataMapper()
+        m = vtk.vtkDataSetMapper()
         m.SetInputConnection(cutter.GetOutputPort())
         m.Update()
-        # create plane actor
-        a = vtk.vtkActor()
-#         planeActor.GetProperty().SetColor(1.0, 1, 0)
-#         planeActor.GetProperty().SetLineWidth(2)
+        m.SetArrayName(p_name)
+        m.SelectColorArray(p_name)
+        m.UseLookupTableScalarRangeOn()
+        m.SetLookupTable(lut)
+        m.SetColorModeToMapScalars();
+        a = vtk.vtkActor()  # create plane actor
+#         a.GetProperty().SetColor(1.0, 1, 0)
+#         a.GetProperty().SetLineWidth(2)
         a.SetMapper(m)
         actors.append(a)
+
     if render:
-        render_window_(actors, "Cuts")
-    return actors
+        render_window(actors, win_title, scalar_bar, grid.GetBounds()).Start()
+
+    return actors, scalar_bar
+
+
+def plot_roots_and_soil(rs, pname :str, rp, s, periodic :bool, min_b, max_b, cell_number, filename :str):
+    """ Plots soil slices and roots, additionally saves both grids as files
+    @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
+    @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
+    @param rp            root parameter segment data (will be added)
+    @param periodic      if yes the root system will be mapped into the domain 
+    @param min_b         minimum of domain boundaries
+    @param max_b         maximum of domain boundaries    
+    @param cell_number   domain resolution
+    @param filename      file name (without extension)
+    """
+    ana = pb.SegmentAnalyser(rs)
+    ana.addData(pname, rp)
+    if periodic:
+        w = max_b - min_b
+        ana.mapPeriodic(w[0], w[1])
+    pd = segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", pname])
+
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(s.getWaterContent()))
+    soil_water_content.SetName("water content")
+    soil_grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    soil_grid.GetCellData().AddArray(soil_pressure)
+
+    rootActor, rootCBar = plot_roots(pd, pname, "", False)
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname, 4, "", False)
+    lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
+    rootActor.GetMapper().SetLookupTable(lut)
+    meshActors.extend([rootActor])
+    render_window(meshActors, filename, meshCBar).Start()
+
+    path = "results/"
+    write_vtp(path + filename + ".vtp", pd)
+    write_vtu(path + filename + ".vtu", soil_grid)
+
+
+def plot_roots_and_soil_files(filename : str, pname :str):
+    """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil() 
+    @param filename      file name (without extension)
+    @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")    
+    """
+    path = "results/"
+    pd = read_vtp(path + filename + ".vtp")
+    soil_grid = read_rect_vtu(path + filename + ".vtp")
+    rootActor, rootCBar = plot_roots(pd, pname, "", False)
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname, 4, "", False)
+    lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
+    rootActor.GetMapper().SetLookupTable(lut)
+    meshActors.extend([rootActor])
+    render_window(meshActors, filename, meshCBar).Start()
 

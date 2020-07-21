@@ -22,10 +22,10 @@ def set_all_sd(rs, s):
 
 # Parameters
 path = "../../../modelparameter/rootsystem/"
-name = "Brassica_napus_a_Leitner_2010"
+name = "Zea_mays_1_Leitner_2010"
 simtime = 25
 N = 25  # resolution of paramter
-runs = 20  # iterations
+runs = 25  # iterations
 theta0_ = np.linspace(0, math.pi / 2, N)
 
 
@@ -33,10 +33,10 @@ theta0_ = np.linspace(0, math.pi / 2, N)
 def simulate(i):
     rs = pb.RootSystem()
     rs.readParameters(path + name + ".xml")
-    set_all_sd(rs, 0.)  # set all sd to zero    
+    set_all_sd(rs, 0.)  # set all sd to zero
     p1 = rs.getRootRandomParameter(1)  # tap and basal root type
     # 1. vary parameter
-    p1.theta = theta0_[i] 
+    p1.theta = theta0_[i]
     # 2. simulate
     rs.initializeLB(1, 1, False)
     rs.simulate(simtime, False)
@@ -73,7 +73,7 @@ for r in range(0, runs):
         rad_dist_[i] += (o[1] / runs)
 
 # Figure
-fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 8))
+fig, axes = plt.subplots(nrows = 1, ncols = 2, figsize = (10, 8))
 axes[0].set_xlabel('Insertion angle theta (-)')
 axes[1].set_xlabel('Insertion angle theta (-)')
 axes[0].set_ylabel('Mean tip depth (cm)')

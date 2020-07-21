@@ -1,6 +1,7 @@
+\newpage
 \section{The RootSystem class} \label{sec:rs}
 
-The class RootSystem is responsible for the model parameters and controls the simulation. Additionally, the class offers utility functions for post processing on a per root level, where each root is represented by a polyline, which is represented by Python list of nodes. 
+The class RootSystem is responsible for the model parameters and controls the simulation. Additionally, the class offers utility functions for post processing on a per root level, where each root is represented as a polyline, which is represented by a Python list of nodes. 
 
 Post processing functions per segment can be found in the class SegmentAnalyser (see Section \ref{sec:sa}). A segment is a part of the root and is represented by two nodes that are connected by a straight line.
 
@@ -38,11 +39,11 @@ but to retrieve the parameters after the simulation with rs.getParameter(), whic
 Note that all parameters can be set and modified within Python. Especially, standard deviations can be set to zero in order to be able to precisely predict the result. For example we can calculate the total root system length analytically, and check if the numerical simulation yield the (exact) same result. This is performed in the tests test\_root.py, and test\_rootsystem, which is used to test and validate CPlantBox and formerly CRootBox.
 
 With such simple simulations, we can quickly check if the model does, what we expect. For example the maximal number of laterals of above parameters is 16 
-$= round(lmax - la - lb)/l_n +  1$. We can calculate the time when the final lateral emerges as $-(lmax/r)*\ln(1-(lmax-l_n/2)/lmax)$ = 122.8 days. At simulation time 125 the root is 2.2 days old, and therefore approximately 4.4 cm long (initial growth rate $r_1 = 2$), which agrees with Figure \ref{fig:ip}.
+$= round(lmax - la - lb)/l_n +  1$. We can calculate the time when the final lateral emerges as $-(lmax/r)*\ln(1-(lmax-l_n/2)/lmax)$ = 122.8 days. At simulation time 125 the last lateral root that has emerged is 2.2 days old, and therefore approximately 4.4 cm long (initial growth rate $r_1 = 2$), which agrees with Figure \ref{fig:ip}.
 
 By default the length of the apical zone is fixed, when the root is created. During growth the apical zone stays in the interval $[la - l_n/2, la+l_n/2]$. The first branch emerges at length $lb$, when the root length reaches $lb +la$.
 
-% TODO ref comming sections
+In the following two subsections we show, how the most tropism parameters and inter lateral spacing will affect the resulting root system.
 
 \begin{figure}
 \centering
@@ -54,7 +55,7 @@ By default the length of the apical zone is fixed, when the root is created. Dur
 
 \subsection{Root tropism parameters $N$ and $\sigma$} \label{ssec:tropism}
 
-We show the influence parameters $N$ and $\sigma$ in the case of gravitropism. The parameter $N$ [1] denotes the strength of the tropism, and $\sigma$ [cm$^{-1}$] the flexibility of the root, i.e. the expected angular variation per cm root length. 
+We show the influence of the parameters $N$ and $\sigma$ in the case of gravitropism. The parameter $N$ [1] denotes the strength of the tropism, and $\sigma$ [cm$^{-1}$] the flexibility of the root, i.e. the expected angular variation per cm root length. 
 
 \lstinputlisting[language=Python, caption=Example 2b]{../../examples/python/example2b_tropism.py}
 
@@ -74,11 +75,9 @@ We show the influence parameters $N$ and $\sigma$ in the case of gravitropism. T
 \item[L48] Creates Figure \ref{fig:tropism}.
 \end{itemize}
 
-In the first column of Figure \ref{fig:tropism} nothing happens, because if the root has no flexibility to bend ($\sigma$=0), the strength has no influence on the resulting root system. 
+In the first column ($\sigma$=0) of Figure \ref{fig:tropism} nothing happens, because if the root has no flexibility to bend, the strength has no influence on the resulting root system. The first row ($N$=0) shows the influence of $\sigma$ only. The growth is undirected, because the strength of the gravitropism is zero. If the roots have small flexibility, they grow downwards because they initially do. 
 
-The first row ($N$=0) shows the influence of $\sigma$ only. The growth is undirected, because the strength of the gravitropism is zero. If the roots have small flexibility, they grow downwards because they initially do. 
-
-The other subplots show different shapes of the root system. We normally derive the two parameters $N$ and $\sigma$ by visual comparison.  
+The other subplots show different shapes of the root system. We normally derive the two parameters $N$ and $\sigma$ by visual comparison. Note that results are independent of the root axial resolution $dx$ and the temporal resolution.
 
 \begin{figure}
 \centering
@@ -91,13 +90,9 @@ The other subplots show different shapes of the root system. We normally derive 
 
 \subsection{Inter lateral spacing ($ln$, $lnk$)} \label{ssec:spacing}
 
-A single root is divided in the basal zone, the root branching zone, and the root apical zone. Basal and apical zone are given by the parameters $la$, and $lb$ with standard deviations $la_s$ and $lb_s$. The branching zone has the size $lmax-la-lb$, where $lmax$ is the maximal root length. The branching zone is divided into inter lateral distances $l_n$, which are values drawn from a normal distribution with standard deviation $l_{ns}$. All values are fixed when the root is created This is performed in the method RootRandomParameter::realize(). 
+A single root is divided in the basal zone, the root branching zone, and the root apical zone. Basal and apical zone are given by the parameters $la$, and $lb$ with standard deviations $la_s$ and $lb_s$. The branching zone has the size $lmax-la-lb$, where $lmax$ is the maximal root length. The branching zone is divided into inter lateral distances $l_n$, which are values drawn from a normal distribution with standard deviation $l_{ns}$. All values are fixed when the root is created This is performed in the method RootRandomParameter::realize(). The chosen parameters reflect the root growth under perfect conditions. Based on this, the root development can then be influenced by environmental conditions e.g. impeding growth speed, or lateral emergance.
 
-Normally, the model of branching distances is sufficient, but sometime data indicate that inter lateral distances are smaller, or larger near the base then near the root tip. The reason for this could be soil root interaction (e.g. root response to dense or nutritious layer), or within the genotype. 
-
-We added a purely descriptive parameter to mimic such experimental observations. The parameter $lnk$, which is zero per default, defines the slope, at the mid of the branching, altering the inter lateral distance linearly along the root axis. 
-
-In the following script, we demonstrate the usage of $lnk$.
+Normally, the setting constant branching distances is sufficient, but sometime experimental data indicate that inter lateral distances are smaller, or larger near the base then near the root tip. The reason for this could be soil root interaction (e.g. root response to dense or nutritious layer), or within the genotype. We added a purely descriptive parameter to mimic such experimental observations. The parameter $lnk$, which is zero per default, defines the slope, at the mid of the branching, altering the inter lateral distance linearly along the root axis. In the following script, we demonstrate the usage of $lnk$.
 
 \lstinputlisting[language=Python, caption=Example 2c]{../../examples/python/example2c_lateralspacing.py}
 
@@ -122,6 +117,7 @@ The mid column of Figure \ref{fig:spacing} shows to different inter lateral dist
 \caption{Inter-lateral spacing, larger near base (left column), constant (mid column), and smaller near base (right column) } \label{fig:spacing}
 \end{figure}
 
+In the following we show, how to analyse model results on a per root basis using the RootSystem class. To create density distributions the reulting root segments are analysed using the SegmentAnalyser class described in Section \ref{sec:sa}.
 
 
 \subsection{Root system length over time}
@@ -135,11 +131,11 @@ The following script shows how to analyse root system length versus time.
 
 \item[16-18] Defines the simulation time, time step, and the resulting number of simulate(dt) calls. 
 
-\item[21] First we state which scalar type we want to analyse ('surface', or 'one' would also make sense).
+\item[21] First we state which scalar type we want to analyse ('volume', 'surface', or 'one' would also make sense). 
 
 \item[22] Pre-definition of the NumPy arrays storing the lengths over time. 
 
-\item[23-30] The simulation loops executes the simulation for a single time step L24. L25 calculates the type of each root, L26 the length (or other scalar type) of the root. L27-L30 calculates the total root length in the time step for all roots, and for specific root types.
+\item[23-30] The simulation loops executes the simulation for a single time step L24. L25 calculates the type of each root, L26 the length (or other scalar type) of the root. L27-L30 calculates the total root length in the time step for all roots, and for specific root types. The method rs.getParameter collects from information from the RootSystem organs, in C++ its defined in Root::getParameter, Organ::getParameter. It is possible to access all root system parameters and resulting realisations using rs.getParameter.
 
 \item[32-38] Creates Figure \ref{fig:length}.
 
@@ -200,11 +196,11 @@ In this exemplary sensitivity study we will vary the insertion angle of the tap 
 
 \item[22-28] Parameters of the analysis. $N$ denotes the resolution of the parameter we vary, and $runs$ the number of iterations, i.e. a total of $N\cdot runs$ simulations are performed. In L29 we define the insertion angle to be varied linearly between 0 and $\pi/2$.
 
-\item[32-51] Definition of a function that performs the simulation and returns mean root tip depth and radial distance. First we create a root system and set the standard deviation to zero L34-L36. L38, L39 sets the insertion angle. L41 initializes the root system and states that basal root are of root tape 1 (same as tap root). The False value turns of verbosity to avoid any outputs to the console. L42 performs the simulation. L44-L52 calculates the mean root tip depth and radial distance. 
+\item[32-51] Definition of a function that performs the simulation and returns mean root tip depth and radial distance. First we create a root system and set the standard deviation to zero L34-L36. L38, L39 sets the insertion angle. L41 initializes the root system and states that basal root are of root type 1 (same as tap root). The False value turns of verbosity to avoid any outputs to the console. L42 performs the simulation. L44-L52 calculates the mean root tip depth and radial distance. 
 
 \item[55-73] This section performs the computation of all simulation runs. L55-56 preallocates the resulting arrays. L62-L68 performs the parallel computations, index $i$ is the index of the insertion angle. L71-73 calculates the mean values.
 
-\item[74-83] Creates the resulting Figure \ref{fig:sensitivity}. Note that the resulting curves become smoother, if the number of runs is increased. (in L27)
+\item[74-83] Creates the resulting Figure \ref{fig:sensitivity}. Note that the resulting curves become smoother, if the number of runs is increased (L28).
 
 \end{itemize}
 

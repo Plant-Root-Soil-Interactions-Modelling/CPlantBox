@@ -80,18 +80,18 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
     double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
     std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob() + p->randn()*nobs()), 0.); // maximal number of branches
+    int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
     	switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
-		for (int i = 0; i<nob_; i++) { // create inter-stem distances
-			double d = std::max(ln +p->randn()*lns,1e-9); //Normal function of equal internode distance
+		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+			double d = std::max(ln +p->randn()*lns,1e-5); //Normal function of equal internode distance
 			ln_.push_back(d);
 
 
 		};break;
 		case 1: //  nodes distance increase linearly
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-5); //std::max(  );//ln +p->randn()*lns,1e-9);
 			ln_.push_back(d);
 			ln_.push_back(0);
 

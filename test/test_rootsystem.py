@@ -124,7 +124,7 @@ class TestRootSystem(unittest.TestCase):
         ctB = np.array(range(maxB)) * self.srp.delayB + np.ones(maxB) * self.srp.firstB  # basal root emergence times
         self.rs_ct_test(dt, ctB, 1)
         self.rs_ct_test(dt, ctB, 100)
- 
+
     def test_copy(self):
         """ checks if the root system can be copied, and if randomness works """
         seed = 110  # random seed
@@ -149,7 +149,7 @@ class TestRootSystem(unittest.TestCase):
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
         rs3.simulate(10)
         self.assertEqual(rs3.rand(), n2, "copy: simulation is not deterministic")
- 
+
     def test_polylines(self):
         """checks if the polylines have the right tips and bases """
         name = "Brassica_napus_a_Leitner_2010"
@@ -168,7 +168,7 @@ class TestRootSystem(unittest.TestCase):
         baseI = rs.getRootBases()
         uneq = np.sum(nodes[baseI, :] != bases) + np.sum(nodes[tipI, :] != tips)
         self.assertEqual(uneq, 0, "polylines: tips or base nodes do not agree")
- 
+
     def test_root_random_parameters(self):
         """ root random parameters xml read and write """
         self.rs_example_rtp()
@@ -179,11 +179,11 @@ class TestRootSystem(unittest.TestCase):
         rs1 = pb.RootSystem
         # rs1.readParameters("test_parameters.xml", "RootBox")
         # TODO
- 
+
     def test_adjacency_matrix(self):
         """ builds an adjacency matrix, and checks if everything is connected"""
         pass
- 
+
     def test_dynamics(self):
         """ incremental root system growth like needed for coupling"""
         name = "Anagallis_femina_Leitner_2010"  # "maize_p2"  # "Anagallis_femina_Leitner_2010"  # "Zea_mays_4_Leitner_2014"
@@ -195,13 +195,13 @@ class TestRootSystem(unittest.TestCase):
         N = round(simtime / dt)
         nodes = np.array((list(map(np.array, rs.getNodes()))))
         nodeCTs = np.array(rs.getNodeCTs())
-        seg = np.array([], dtype=np.int64).reshape(0, 2)
+        seg = np.array([], dtype = np.int64).reshape(0, 2)
         cts = rs.getSegmentCTs()
         nonm = 0
         for i in range(0, N):
             rs.simulate(dt, False)
             # MOVE NODES
-            uni = np.array((list(map(np.array, rs.getUpdatedNodeIndices()))), dtype=np.int64)
+            uni = np.array((list(map(np.array, rs.getUpdatedNodeIndices()))), dtype = np.int64)
             unodes = np.array((list(map(np.array, rs.getUpdatedNodes()))))
             ucts = np.array(rs.getUpdatedNodeCTs())
             if len(uni) > 0:
@@ -211,17 +211,17 @@ class TestRootSystem(unittest.TestCase):
             # NEW NODES
             newnodes = np.array((list(map(np.array, rs.getNewNodes()))))
             newcts = np.array(rs.getNewNodeCTs())
-            newsegs = np.array((list(map(np.array, rs.getNewSegments()))), dtype=np.int64)
+            newsegs = np.array((list(map(np.array, rs.getNewSegments()))), dtype = np.int64)
             if len(newnodes) != 0:
                 nodes = np.vstack((nodes, newnodes))
                 nodeCTs = np.append(nodeCTs, newcts)
- 
+
             if len(newsegs) != 0:
                 seg = np.vstack((seg, newsegs))
- 
+
         nodes_ = np.array((list(map(np.array, rs.getNodes()))))
         nodeCTs_ = np.array(rs.getNodeCTs())
-        seg_ = np.array((list(map(np.array, rs.getSegments()))), dtype=np.int64)
+        seg_ = np.array((list(map(np.array, rs.getSegments()))), dtype = np.int64)
         self.assertEqual(nodes_.shape, nodes.shape, "incremental growth: node lists are not equal")
         self.assertEqual(nodeCTs_.shape, nodeCTs.shape, "incremental growth: node lists are not equal")
         self.assertEqual(seg_.shape, seg.shape, "incremental growth: node lists are not equal")
@@ -229,23 +229,38 @@ class TestRootSystem(unittest.TestCase):
         self.assertEqual(uneq, 0, "incremental growth: node lists are not equal")
         uneq = np.sum(nodeCTs_ != nodeCTs)
         self.assertEqual(uneq, 0, "incremental growth: node creation time lists are not equal")
-        seg = np.sort(seg, axis=0)  # per default along the last axis
-        seg_ = np.sort(seg_, axis=0)
+        seg = np.sort(seg, axis = 0)  # per default along the last axis
+        seg_ = np.sort(seg_, axis = 0)
         uneq = np.sum(seg_ != seg) / 2
         self.assertEqual(uneq, 0, "incremental growth: segment lists are not equal")
- 
+
     def test_rsml(self):
         """ checks rsml functionality with Python rsml reader """
-        name = "Anagallis_femina_Leitner_2010"
-        rs = pb.RootSystem()
-        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
-        rs.initialize(False)
+        self.rs_example_rtp()
+        self.rs.initialize(False)
         simtime = 60
-        rs.simulate(simtime)
-        rs.writeRSML(name + ".rsml")
+        self.rs.simulate(simtime)
+        name = "test_rootsystem"
+        self.rs.writeRSML(name + ".rsml")
         pl, props, funcs = read_rsml(name + ".rsml")
-        # todo
- 
+        self.assertEqual(len(pl), 18, "number of roots is wrong")
+        self.assertEqual(list(props.keys()), ['parent-poly', 'organType', 'subType', 'length', 'age'], "properties names are unexpected")
+        self.assertEqual(list(funcs.keys()), ['node_creation_time', 'node_index'], "function names are unexpected")
+
+    def test_vtp(self):
+        """ checks rsml functionality with Python rsml reader """
+        self.rs_example_rtp()
+        self.rs.initialize(False)
+        simtime = 60
+        self.rs.simulate(simtime)
+        name = "test_rootsystem"
+        self.rs.write(name + ".vtp")
+        with open(name + ".vtp", "r+") as file:
+            for i in range(0, 18):
+                check_str = file.readline()
+        floats = [int(item) for item in check_str.split()]
+        self.assertEqual(floats, [0, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58], "creation times are unexpected")
+
     def test_stack(self):
         """ checks if push and pop are working """
         pass
