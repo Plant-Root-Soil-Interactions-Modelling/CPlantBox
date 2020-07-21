@@ -39,12 +39,11 @@ public:
 
     std::map<int, int> seg2cell; // root segment to soil cell mapper
     std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
-    // TODO  std::map<int, std::set<Vector2i>> makes more sense !!!!
 
     std::function<int(double,double,double)> soil_index =
         std::bind(&MappedSegments::soil_index_, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3); ///< soil cell index call back function, (care need all MPI ranks in case of dumux)
 
-    void sort();
+    void sort(); ///< sorts segments, each segment belongs to position s.y-1
 
     std::vector<Vector3d> nodes; ///< nodes [cm]
     std::vector<double> nodeCTs; ///< creation times [days]

@@ -10,6 +10,9 @@
 #include <cmath>
 #include <sstream>
 #include <assert.h>
+#include <vector>
+
+
 
 namespace CPlantBox {
 
@@ -27,6 +30,7 @@ public:
     Vector2i(): x(0), y(0) { } ///< Default constructor
     Vector2i(int x_, int y_): x(x_),y(y_) { } ///< Constructor passing two ints
     Vector2i(const Vector2i& v): x(v.x), y(v.y) { } ///< Copy constructor
+    Vector2i(const std::vector<int>& xx): x(xx.at(0)), y(xx.at(1)) { } ///< for Python coupling
 
     std::string toString() const {
         std::ostringstream strs;
@@ -51,6 +55,7 @@ public:
     Vector2d(): x(0), y(0) { } ///< Default constructor
     Vector2d(double x_, double y_): x(x_),y(y_) { } ///< Constructor passing two doubles
     Vector2d(const Vector2d& v): x(v.x), y(v.y) { } ///< Copy Constructor
+    Vector2d(const std::vector<double>& xx): x(xx.at(0)), y(xx.at(1)) { } ///< for Python coupling
 
     std::string toString() const {
         std::ostringstream strs;
@@ -75,6 +80,7 @@ public:
     Vector3d(): x(0),y(0),z(0) { } ///< Default constructor
     Vector3d(double x_, double y_, double z_): x(x_), y(y_), z(z_) { } ///< Constructor passing three doubles
     Vector3d(const Vector3d& v): x(v.x), y(v.y), z(v.z) { } ///< Copy Constructor
+    Vector3d(const std::vector<double>& xx): x(xx.at(0)), y(xx.at(1)), z(xx.at(2)) { } ///< for Python coupling
 
     static Vector3d rotAB(double a, double b) { ///< first column of Rx(b)*Rz(a)
         double sa = sin(a);

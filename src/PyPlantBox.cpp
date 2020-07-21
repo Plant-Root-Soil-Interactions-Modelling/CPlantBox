@@ -92,6 +92,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<>())
             .def(py::init<int, int>())
             .def(py::init<const Vector2i&>())
+            .def(py::init<const std::vector<int>&>())
             .def("__str__", &Vector2i::toString)
             .def_readwrite("x", &Vector2i::x)
             .def_readwrite("y", &Vector2i::y)
@@ -109,6 +110,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<>())
             .def(py::init<double, double>())
             .def(py::init<const Vector2d&>())
+            .def(py::init<const std::vector<double>&>())
             .def("__str__", &Vector2d::toString)
             .def_readwrite("x", &Vector2d::x)
             .def_readwrite("y", &Vector2d::y)
@@ -126,6 +128,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<>())
             .def(py::init<double, double, double>())
             .def(py::init<const Vector3d&>())
+            .def(py::init<const std::vector<double>&>())
             .def("rotAB", &Vector3d::rotAB)
             .def("normalize", &Vector3d::normalize)
             .def("times", (double (Vector3d::*)(const Vector3d&) const) &Vector3d::times) // overloads

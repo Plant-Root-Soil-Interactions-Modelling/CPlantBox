@@ -101,7 +101,8 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
     segments.clear(); // clear
     types.clear();
     radii.clear();
-    addSegments(segs, radii_, types_); // re-add
+    addSegments(segs, radii_, types_); // re-add (for cutting)
+    sort(); // todo only necessary
     seg2cell.clear(); // re-map all segments
     cell2seg.clear();
     mapSegments(segments);
@@ -149,17 +150,19 @@ void MappedSegments::addSegments(const std::vector<Vector2i>& segs, const std::v
         SDF_Cuboid sdf;
         for (int i=0; i<segs.size(); i++ ) {
             Vector2i ns = segs[i];
-            Vector3d n1 = nodes[ns.x]; // since we cut at the bounds, they are often located at the bounds
+            Vector3d n1 = nodes[ns.x];
             Vector3d n2 = nodes[ns.y];
             Vector3d mid = (n1.plus(n2)).times(0.5);
-            Vector3d v = (n2.minus(n1)).times(10*eps); // never evaluate soil_index exactly at the bounds (no unique return value)
+            Vector3d v = (n2.minus(n1)); // 1% into direction of other node, never evaluate soil_index exactly at the bounds (no unique return value)
+            v.normalize();
+            v = v.times(10*eps);
             n1 = n1.plus(v);
             n2 = n2.minus(v);
             int im = soil_index(mid.x,mid.y,mid.z); // cell indices
             int in1 = soil_index(n1.x,n1.y,n1.z);
             int in2 = soil_index(n2.x,n2.y,n2.z);
-
-            // std::cout << im <<", "<< in1 <<", "<< in2 <<", "<< "\n";
+//            std::cout << in1 <<", "<< im<<", "<< in2 <<", "<< n1.toString() <<", "<< mid.toString() <<", "<< n2.toString() << ", " << v.toString() << "\n";
+//            std::cin.get();
             if ((im!=in1) or (im!=in2)) { // cut
                 auto width = maxBound.minus(minBound); // construct sdf
                 Vector3d dx(width.x/resolution.x, width.y/resolution.y, width.z/resolution.z);
@@ -173,29 +176,24 @@ void MappedSegments::addSegments(const std::vector<Vector2i>& segs, const std::v
                 maxB = maxB.plus(minBound);
                 sdf.min = minB;
                 sdf.max = maxB;
-    //            std::cout << "Segment "<< ns.y-1 << "/" << segs.size() << ", index " << x << ", " << ", " << y << ", " << z <<
-    //                "\nCuboid: "<< sdf.toString() << " at " << mid.toString() << ": dist = " << sdf.getDist(mid) << "\n";
                 if (im==in1) { // is one node at mid (sort accordingly)
-    //                std::cout << "im==in1, \nn2: " << n2.toString() << ", " <<  sdf.getDist(n2) << ", " << im << ", " <<in2 << "\n"  << std::flush;
-    //                std::cout << "n1: " <<n1.toString() << ", " <<  sdf.getDist(n1) << ", " << im << ", " << in1 << "\n"  << std::flush;
-                    auto cPoint = SegmentAnalyser::cut(mid, n2, std::make_shared<SDF_Cuboid>(sdf), 0.01*eps);
+                    auto cPoint = SegmentAnalyser::cut(mid, nodes[ns.y], std::make_shared<SDF_Cuboid>(sdf), 0.001*eps);
                     nodes.push_back(cPoint);
                     nodeCTs.push_back(nodeCTs[ns.y]); // nn, todo: we might linearly interpolate
                 } else if (im==in2) {
-    //                std::cout << "im==in2, \nn1: " <<n1.toString() << ", " <<  sdf.getDist(n1) << ", " << im << ", " <<in1 << "\n"  << std::flush;
-    //                std::cout << "n2: " << n2.toString() << ", " <<  sdf.getDist(n2) << ", " << im << ", " <<in2 << "\n"  << std::flush;
-                    auto cPoint = SegmentAnalyser::cut(mid, n1, std::make_shared<SDF_Cuboid>(sdf), 0.01*eps);
+                    auto cPoint = SegmentAnalyser::cut(mid, nodes[ns.x], std::make_shared<SDF_Cuboid>(sdf), 0.001*eps);
                     nodes.push_back(cPoint);
                     nodeCTs.push_back(nodeCTs[ns.x]); // nn, todo: we might linearly interpolate
                 } else { // otherwise split in mid, use cutSegments on those
-                    // std::cout << "mid\n" << std::flush;
                     nodes.push_back(mid);
-                    nodeCTs.push_back(0.5*(nodeCTs[ns.x]+nodeCTs[ns.x]));
+                    nodeCTs.push_back(0.5*(nodeCTs[ns.x]+nodeCTs[ns.y]));
                 }
                 Vector2i s1(ns.x, nodes.size()-1);
                 Vector2i s2(nodes.size()-1, ns.y);
                 int t = types_[i];
                 double r = radii_[i];
+//                std::cout <<"add segments (" << nodes[ns.x].toString() << ", " << nodes.back().toString() << "), ("
+//                    << nodes.back().toString() << ", " <<  nodes[ns.y].toString() << "\n";
                 addSegments({s1,s2}, {r,r}, {t,t});
             } else { // dont't cut
                 segments.push_back(ns);

@@ -36,7 +36,11 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 
 		double psi_s;
 		if (cells) { // soil matric potential given per cell
-			psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
+			try {
+		    psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
+			} catch(...) {
+			  std::cout << "mapping failed\n" << std::flush;
+			}
 		} else {
 			psi_s = sx.at(j-1); // segIdx = s.y-1
 		}
@@ -44,8 +48,14 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
 		double age = simTime - rs->nodeCTs[j];
 		int type = rs->types[si];
-		double kx = kx_f(age, type);
-		double  kr = kr_f(age, type);
+        double kx;
+        double  kr;
+		try {
+		    kx = kx_f(age, type);
+		    kr = kr_f(age, type);
+        } catch(...) {
+            std::cout << "conductivities failed\n" << std::flush;
+        }
 //        if (age<=0) {
 //            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
 //        }
@@ -343,10 +353,9 @@ std::vector<double> XylemFlux::segLength() const {
 }
 
 /**
- *  Sets the radial conductivity in [1 day-1], converts to [cm2 day g-1] by dividing by rho*g
+ *  Sets the radial conductivity in [1 day-1]
  */
 void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
-	// std::transform(values.begin(), values.end(), values.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
 	kr = values;
 	kr_t = age;
 	if (age.size()==0) {
@@ -365,10 +374,9 @@ void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
 
 
 /**
- *  Sets the axial conductivity in [cm3 day-1], converts to [cm5 day g-1] by dividing by rho*g
+ *  Sets the axial conductivity in [cm3 day-1]
  */
 void XylemFlux::setKx(std::vector<double> values, std::vector<double> age) {
-	// std::transform(values.begin(), values.end(), values.begin(), std::bind1st(std::multiplies<double>(),1./(rho * g)));
 	kx = values;
 	kx_t = age;
 	if (age.size()==0) {
