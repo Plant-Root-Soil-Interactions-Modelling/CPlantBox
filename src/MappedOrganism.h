@@ -34,8 +34,9 @@ public:
     void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res); ///< sets the soil, resets the mappers and maps all segments
     void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res); ///< sets an underlying rectangular grid, and cuts all segments accordingly
 
-    void mapSegments(std::vector<Vector2i> segs);
-    void addSegments(const std::vector<Vector2i>& segs, const std::vector<double>& radii,  const std::vector<int>& types); // cut and add segments
+    void mapSegments(const std::vector<Vector2i>& segs);
+    void cutSegments(); // cut and add segments
+
 
     std::map<int, int> seg2cell; // root segment to soil cell mapper
     std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
@@ -56,9 +57,13 @@ public:
     Vector3d resolution; // cells
     bool rectangularGrid = false;
 
-    const double eps = 1.e-6;
+    const double eps = 1.e-5;
 
 protected:
+
+    void addSegment(Vector2i ns, double radius,  int type, int i); // adds a single segment at index i, appends the rest if cutted
+    void add(Vector2i ns, double radius,  int type, int i); // adds without cutting, at index i, or appends if i = -1
+    double length(const Vector2i& s) const;
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
     void removeSegments(std::vector<Vector2i> segs); ///< remove segments from the mappers
