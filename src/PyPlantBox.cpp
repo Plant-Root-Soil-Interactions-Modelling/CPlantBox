@@ -92,7 +92,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<>())
             .def(py::init<int, int>())
             .def(py::init<const Vector2i&>())
-            // .def(py::init<const std::vector<int>&>())
+            .def(py::init<const std::vector<int>&>())
             .def("__str__", &Vector2i::toString)
             .def_readwrite("x", &Vector2i::x)
             .def_readwrite("y", &Vector2i::y)

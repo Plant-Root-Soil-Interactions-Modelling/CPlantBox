@@ -89,12 +89,12 @@ void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>&
 /**
  * Sets a rectangular grid, and cuts all segments along the grid cells
  */
-void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res)
+void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut)
 {
     minBound = min;
     maxBound = max;
     resolution = res;
-    rectangularGrid = true;
+    rectangularGrid = cut;
     cutSegments(); // re-add (for cutting)
     sort(); // todo only necessary
     seg2cell.clear(); // re-map all segments
