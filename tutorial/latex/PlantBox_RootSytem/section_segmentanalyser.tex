@@ -107,7 +107,7 @@ It is also possible to make use of the SegmentAnalyser class without any ohter C
 Next, we describe how to best make an animation from a CPlantBox simulation.
 
 
-\subsection{How to make an animation}
+\subsection{How to make an animation} \label{ssec:animation}
 
 In order to create an animation in Paraview we have to consider some details. The main idea is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. In this way we have to only export one vtp file. 
 

@@ -4,9 +4,9 @@
 \subsection{Installation notes}
 
 After successfully compiling CPlantBox the Python library \emph{plantbox} should be available on the system. % TODO do we have a tutorial for that?
-Additionally, you will need Python 3 to run the sripts with the additional Python packages: numpy, scipy, matplotlib, and vtk (e.g. pip3 install numpy). \\
+Additionally, you will need Python 3 to run the scripts with the Python packages: numpy, scipy, matplotlib, and vtk (for installation e.g. pip3 install numpy). \\
 
-The figures of the rootsystem were created using Paraview, and some Paraview Python scripts for convenience. % TODO
+The figures of the root system were created using Paraview (download from www.paraview.org), and some Paraview Python scripts for convenience. 
 
 \subsection{Small example}
 
@@ -20,16 +20,16 @@ Lets revise the above code in more detail:
 \begin{itemize}
  \item[2,3] We add the path to find the \emph{plantbox} module.
  \item[3] Imports the CPlantBox Python library \emph{plantbox} and name it pb.
- \item[4] Imports a auxilliary script for visualization of the rootsystem with vtk
+ \item[4] Imports a auxiliary script for visualization of the rootsystem with VTK and name it vp.
  \item[7] Constructs the root system object.
  \item[12] Opens an .xml containing parameters describing the types of root (RootRandomParameters), 
  and the type of pant (SeedRandomParameters). Alternatively, all parameter can be set or modified directly in Python 
  (see Section \ref{sec:from_scratch}).
- \item[15] Initializes the simulation: Creates the tap root the base roots 
- (i.e. all basal roots, and shoot borne roots that might emerge), creates the tropisms and passes the domain geometry to it, 
+ \item[15] Initializes the simulation: Creates the tap root and the base roots
+ (i.e. all basal roots, and shoot borne roots that might emerge). Initializes the tropisms and passing the domain geometry, 
  and creates the elongation functions. 
  \item[18] Performs the simulation. The value 30 is the simulation time in days. 
- If no simulation time is passed the simulation time is taken from the .pparam file. 
+ If no simulation time is passed the simulation time is taken from the parameter file. 
  Note that simulation results are independent from the time step, i.e. 30 simulate(1) calls should yield the same result 
  as simulate(30). 
  \item[21] Saves the resulting root system geometry in the VTK Polygonal Data format (VTP) as polylines, 
@@ -45,7 +45,7 @@ Lets revise the above code in more detail:
 This is an extension of the previous example, where the root system grows in one of two containers 
 (a soil core or rectangular rhizotron). Such geometries are important if we want to mimic experimental settings. 
 In CPlantBox the domain geometry is represented in a mesh free way using signed distance functions (SDF). 
-A SDF returns the distance to the closest boundary, with negative sign if it lies inside of the domain, 
+A SDF returns the distance of a point to its closest boundary, with negative sign if it lies inside of the domain, 
 and a positive if the point is outside.
 
 \lstinputlisting[language=Python, caption=Example 1b]{../../examples/python/example1b_container.py}
@@ -60,6 +60,7 @@ and is passed to the root system by the method setGeometry:
  see Figure \ref{fig:basicB}. Run this script in Paraview by Tools$\rightarrow$Python Shell, Run Script.
 \item[35] The geometric boundaries can currently not be visualized in the interactive rendering 
 This could be achieved in VTK by creating an iso-surface of the implicit geometry given by the SDF.
+\item[38] Interactive VTK plot. 
 \end{itemize}
 
 \begin{figure}
@@ -69,13 +70,13 @@ This could be achieved in VTK by creating an iso-surface of the implicit geometr
 \end{subfigure}
 \begin{subfigure}[c]{0.5\textwidth}
 \includegraphics[width=0.99\textwidth]{example_1b.png}
-\subcaption{Confined to soilcore (Example 1b)} \label{fig:basicB}
+\subcaption{Confined to a soil core (Example 1b)} \label{fig:basicB}
 \end{subfigure}
 \caption{Paraview visualizations of results of example 1a and 1b.} 
 \end{figure}
 
-Next, we show how to build more complex container geometries using SDF, 
-furthermore, we show an example with multiple root systems that is computed in parallel.
+Next, we show how to build more complex container geometries using SDF. 
+Furthermore, we show an example with multiple root systems that is computed in parallel.
 
 \subsection{Using SDF with set operations}
 
@@ -104,7 +105,7 @@ and then cut them out the surrounding box by taking the difference.
 \item[52] Pick one of the three geometries for your simulation.
 \item[62] Also more complex geometries can be visualized by the Paraview script, 
 however, set operations are not really performed, only the involved geometries are visualized.
-\item[65] As before we cannot visualize the container geometry in the interactive rendering, but only the roots. We give two additional arguments: The first argument 'True' indicates that an interactive window should be created, otherwise with 'False' we are only interested in the return value of the method. The second argument is the axis alignhment. Currently, the options are 'top\_view', 'side\_view' (default), or 'oblique'. 
+\item[65] We cannot visualize the container geometry in the interactive rendering, but only the roots. 
 
 \end{itemize}
 
@@ -146,7 +147,7 @@ and finally export the single file L36. The resulting geometry is shown in Figur
 
 \end{itemize}
 
-If we consider only one plant type we often simplify plot scale simulations to a single plant simulation with periodic boundary conditions. We can analyse the root geometry with an underlying periodic grid as described in Section \ref{ssec:periodic}. 
+If we consider only one plant type we often simplify plot scale simulations to a single plant simulation with periodic boundary conditions. We can analyse the root geometry with an underlying periodic grid as described using SegmentAnalyser::mapPeriodic (e.g. as in Section \ref{ssec:animation}). 
 
 \begin{figure}
 \centering

@@ -51,7 +51,7 @@ Next, we give a short layout, how the code would look like, if we take measured 
 
 \item[7-10] Creates the root system and opens the parameter file.
 
-\item[12-18] In L12 an EquidistantGrid1D is created, wich is a specialisation from SoilLookUp (in soil.hh). It represents a 1D grid as soil layers with scalar data attached to it. In L13, L14 we create exemple soil strength data. From this data we calculate the elongation scales (L15), and set it as grid data (L16). 
+\item[12-18] In L12 an EquidistantGrid1D is created, which is a specialisation from SoilLookUp (in soil.hh). It represents a 1D grid as soil layers with scalar data attached to it. In L13, L14 we create example soil strength data. From this data we calculate the elongation scales (L15), and set it as grid data (L16). 
 
 \item[L17, L18] Retrieve the elongation scale data at to points. The data is given per layer, no data interpolation is performed.
 
@@ -59,7 +59,7 @@ Next, we give a short layout, how the code would look like, if we take measured 
 
 \item[24-37] Simulation loop. If soil strength changes, the elongation scales must be calculated again (L32), and attached to the grid (L35).
 
-\item[39,40] Exports results as vtp, and creates a vtk plot. The efffect of the dense layer can not be seen in the results (between -10 and -20 cm depth, laterals will be shorter). An animation could reveal the effect. 
+\item[39,40] Exports results as vtp, and creates a vtk plot. The effect of the dense layer can not be seen in the results (between -10 and -20 cm depth, laterals will be shorter). An animation could reveal the effect. 
 
 \end{itemize}
 
@@ -75,7 +75,7 @@ Next, we give a short layout, how the code would look like, if we take measured 
 \begin{subfigure}[c]{0.3\textwidth}
 \includegraphics[width=0.99\textwidth]{example5d.png}
 \subcaption{Branching density (probabilistic model)} \label{fig:probability}
-\end{subfigure}dd
+\end{subfigure}
 \caption{Predefined root responses (Example 5a)}
 \end{figure}
 
@@ -83,9 +83,9 @@ Next, we give a short layout, how the code would look like, if we take measured 
 
 \subsection{Change of insertion angle} \label{sec:insertion_angle}
 
-The impact of nutrient concentration can influence the anlge between parent roots and laterals (ref what else).
+The impact of nutrient concentration can influence the angle between parent roots and laterals (ref what else).
 
-Analog to Example 5a two comparments are created, and the insertion andgle is scale altered accordingly.
+Analog to Example 5a two compartments are created, and the insertion angle is scale altered accordingly.
 
 \lstinputlisting[firstline=1, language=Python, caption=Example 5c]{../../examples/python/example5c_insertionangle.py}
 
@@ -106,7 +106,7 @@ The left compartment has the value $minS$, the right $maxS$, between them is a l
 
 \item[53, 54] Writes the results for Paraview visualization (see Figure \ref{fig:insertion}).
 
-\item[57] A vtk simulation of root lenghts. Press 'y' to obtain a x-z view of the root sytem to better see the effect. 
+\item[57] A vtk simulation of root lengths. Press 'y' to obtain a x-z view of the root system to better see the effect. 
 
 \end{itemize}
 

@@ -1,9 +1,7 @@
 """ 
 Tests if MappedSegments work 
 """
-
-import sys
-sys.path.append("../../../..")
+import sys; sys.path.append("../../../..")
 
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 import plantbox as pb

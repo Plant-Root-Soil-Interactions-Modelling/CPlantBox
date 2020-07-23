@@ -77,55 +77,9 @@ The following tutorial offers scripts to outline the usage of the CPlantBox Pyth
 
 \input{section_interactions.tex}
 
-% \input{section_modelcoupling.tex} % with soil models
+\input{section_modelcoupling.tex}
 
-% \input{section_growing.tex} % model coupling with dynamic roots 
-
-% \subsection{Dynamic root system grid} \label{sec:published}
-% 
-% In this section it is described how information about the last time step can be retrieved, 
-% and how we can incrementally obtain the root system from only new nodes and segments. 
-% These methods are especially important if we couple to other numerical software like DuMux
-% 
-% \lstinputlisting[firstline=1, lastline=58, language=Python, caption=Example 5b]{../../examples/python/example7b.py}
-
-
-
-% \section{Model coupling}
-% 
-% In the previous section root responses were described in a static soil. 
-% In this section we will extend this to a dynamic soil setting, where we update the soil in the simulation loop, and then update the root system iteratively for small time steps. 
-% 
-% General properties of the soil, are passed to the root model via a look up method SoilLookUp::getValue in the class SoilLookUp. 
-% In the following subsection we will first describe this metod and some implemented usefull extensions of the SoilLookUp class (Section \ref{sec:soil}), 
-% and show how we can create an interface to a generic soil in Pyhton (Section \ref{sec:usersoil}). 
-% 
-% Next, we show how we can use the soil representation to implement fully coupled models. First we discuss how to obtain a graph representation of the root system, and solve water flow within the root system. 
-% Then we discuss the example published in \cite{}. 
-% 
-% Finally, we present features that can be used to analyse the dynamic behaviour of the root system development.
-
-% \subsection{MappedSegments and MappedRootSystem} \label{sec:fullcoupling} 
-% 
-% Explain and link to paper example (to do)
-
-
-% \subsection{Coupling to 1D water content} \label{sec:fullcoupling} 
-% 
-% Explain and link to paper example (to do)
-
-
-
-% 
-% 
-% \subsection{Graph representation} \label{sec:graph} 
-% 
-% In this section we show how to build an adjacency matrix, and how to calculate fluxes within the root system.
-
- 
- 
- 
-
+\input{section_growing.tex}
 
 \bibliographystyle{apalike}
 \bibliography{references}
