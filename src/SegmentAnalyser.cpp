@@ -25,7 +25,7 @@ namespace CPlantBox {
  * @param radii     the segment radii
  */
 SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::vector<Vector2i>& segments,
-		const std::vector<double>& segCTs, const std::vector<double>& radii) :nodes(nodes), segments(segments)
+    const std::vector<double>& segCTs, const std::vector<double>& radii) :nodes(nodes), segments(segments)
 {
     assert((segments.size() == segCTs.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
     assert((segments.size() == radii.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
@@ -233,7 +233,7 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
         if (x_ && y_) { //segment is inside
             seg.push_back(s);
             if (segO.size()>0) {
-            	sO.push_back(segO.at(i));
+                sO.push_back(segO.at(i));
             }
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
@@ -251,7 +251,7 @@ void SegmentAnalyser::crop(std::shared_ptr<SignedDistanceFunction> geometry)
             Vector2i newseg(s.x,nodes.size()-1);
             seg.push_back(newseg);
             if (segO.size()>0) {
-            	sO.push_back(segO.at(i));
+                sO.push_back(segO.at(i));
             }
             for(auto iter = data.begin(); iter != data.end(); ++iter) { // copy data
                 std::string key =  iter->first;
@@ -291,7 +291,7 @@ void SegmentAnalyser::filter(std::string name, double min, double max)
         if ((d_.at(i)>=min) && (d_.at(i)<=max)) {
             seg.push_back(segments.at(i));
             if (segO.size()>0) {
-            	sO.push_back(segO.at(i));
+                sO.push_back(segO.at(i));
             }
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
@@ -367,19 +367,21 @@ void SegmentAnalyser::pack() {
  * @param eps      accuracy of intersection (default = 1.e-6 cm)
  * @return         the intersection point
  */
-Vector3d SegmentAnalyser::cut(Vector3d in, Vector3d out, std::shared_ptr<SignedDistanceFunction> geometry, double eps)
+Vector3d SegmentAnalyser::cut(Vector3d in, Vector3d out, const std::shared_ptr<SignedDistanceFunction>& geometry, double eps)
 {
+    // std::cout << out.toString() << ", " << geometry->getDist(out) << "\n";
     assert(geometry->getDist(in)<=0  && "SegmentAnalyser::cut(): in is not within domain" );
     assert(geometry->getDist(out)>=0 && "SegmentAnalyser::cut(): out is not outside domain" );
-    if (std::abs(geometry->getDist(out))>eps) {
-        Vector3d c =  in.plus(out).times(0.5); // mid
-        if (geometry->getDist(c)<0) { // in
-            return cut(c, out, geometry, eps);
-        } else { // out
-            return cut(in, c, geometry, eps);
-        }
-    } else {
-        return out;
+    Vector3d c =  in.plus(out).times(0.5); // mid
+    if (in.minus(out).length() < eps) {
+        return c;
+    }
+    if (geometry->getDist(c)<0) { // in
+        // std::cout << geometry->getDist(c) << " c, out ";
+        return cut(c, out, geometry, eps);
+    } else { // out
+        // std::cout  << geometry->getDist(c) << " in, c  ";
+        return cut(in, c, geometry, eps);
     }
 }
 
@@ -468,7 +470,7 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
             }
             // now: p1x < p2x, n1.x < n2.x
             double theta = (p2*xx - (n1.times(axis)+xx/2) )/(n2.times(axis)-n1.times(axis));
-//            std::cout << " n1.x " <<  n1.x << " n2.x " <<  n2.x << ", length: " << n2.x-n1.x << ", theta: "<< theta << " p1: "<< p1 <<", p2: " << p2 << "\n";
+            //            std::cout << " n1.x " <<  n1.x << " n2.x " <<  n2.x << ", length: " << n2.x-n1.x << ", theta: "<< theta << " p1: "<< p1 <<", p2: " << p2 << "\n";
             auto v = n2.minus(n1);
             auto x = n1.plus(v.times(theta)); // cutting point
             auto x0 = x.minus(axis.times(eps)); // less
@@ -817,15 +819,15 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
     auto ctime = getParameter("creationTime");
     os << "node1ID node2ID branchID x1 y1 z1 x2 y2 z2 radius R G B time age type organ \n";
-	int  nid1 = 0;
-	int  nid2 = 1;
+    int  nid1 = 0;
+    int  nid2 = 1;
     for (size_t i=0; i<segments.size(); i++) {
         Vector2i s = segments.at(i);
         Vector3d n1 = nodes.at(s.x);
         Vector3d n2 = nodes.at(s.y);
         std::shared_ptr<Organ> o = segO.at(i).lock();
         int organ=o->organType();
-		int branchnumber = o->getId();
+        int branchnumber = o->getId();
         double radius = o->getParameter("radius");
         double red = o->getParameter("colorR");
         double green = o->getParameter("colorG");
@@ -836,8 +838,8 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         os << std::fixed << std::setprecision(4)<< nid1 << " " << nid2 << " " << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
             radius << " " << red << " " << green << " " << blue << " " << time<< " " << age<<" " <<subType << " " << organ <<" \n";
 
-		nid1 = nid1+1;
-		nid2 = nid2+1;
+        nid1 = nid1+1;
+        nid2 = nid2+1;
     }
 }
 

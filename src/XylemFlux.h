@@ -9,7 +9,9 @@ namespace CPlantBox {
 /**
  * Hybrid solver (Meunier et al. 2017)
  *
- * Units are [cm], [g], and [day], they are fixed by choosing g, and rho
+ * Units are [cm], [g], and [day]
+ *
+ * Wraps a MappedSegments class (i.e. MappedRootSystem)
  */
 class XylemFlux
 {
