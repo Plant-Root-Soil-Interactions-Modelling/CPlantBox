@@ -298,7 +298,7 @@ Vector3d Root::getIncrement(const Vector3d& p, double sdx)
 {
     Vector3d h = heading();
     Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getRootRandomParameter()->f_tf->getHeading(p, ons, sdx, shared_from_this());
+    Vector2d ab = getRootRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());
     Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
     return sv.times(sdx);
 }
@@ -330,12 +330,14 @@ void Root::createSegments(double l, double dt, bool verbose)
         if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)) ) { // don't move a child base node
             Vector3d n2 = nodes[nn-2];
             Vector3d n1 = nodes[nn-1];
-            double olddx = n1.minus(n2).length(); // length of last segment
+            Vector3d h = n1.minus(n2);
+            double olddx = h.length(); // length of last segment
             if (olddx<dx()*0.99) { // shift node instead of creating a new node
                 shiftl = std::min(dx()-olddx, l);
                 double sdx = olddx + shiftl; // length of new segment
-                Vector3d newdxv = getIncrement(n2, sdx);
-                nodes[nn-1] = Vector3d(n2.plus(newdxv));
+                // Vector3d newdxv = getIncrement(n2, sdx);
+                h.normalize();
+                nodes[nn-1] = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
                 double et = this->calcCreationTime(length+shiftl, dt);
                 nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;

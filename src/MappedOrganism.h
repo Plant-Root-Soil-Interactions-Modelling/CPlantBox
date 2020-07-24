@@ -66,7 +66,7 @@ protected:
     double length(const Vector2i& s) const;
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
-    void removeSegments(std::vector<Vector2i> segs); ///< remove segments from the mappers
+    void removeSegments(const std::vector<Vector2i>& segs); ///< remove segments from the mappers
 
 };
 

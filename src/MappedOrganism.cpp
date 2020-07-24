@@ -122,7 +122,7 @@ void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
                 cell2seg[cellIdx] = std::vector<int>({segIdx});
             }
         } else {
-            // std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
+            std::cout << "MappedSegments::mapSegments: warning segment with mid " << mid.toString() << " exceeds domain, skipped segment \n";
         }
     }
 }
@@ -242,11 +242,11 @@ double MappedSegments::length(const Vector2i& s) const {
 /**
  * Removes segments from the mappers
  */
-void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
+void MappedSegments::removeSegments(const std::vector<Vector2i>& segs) {
     for (auto& ns : segs) {
         int cellIdx = -1;
         int segIdx = ns.y-1;
-        if (seg2cell.count(segIdx)>0) {
+        if (seg2cell.count(segIdx)>0) { // remove from seg2cell
             cellIdx = seg2cell[segIdx];
             auto it = seg2cell.find(segIdx);
             seg2cell.erase(it);
@@ -254,11 +254,11 @@ void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
             throw std::invalid_argument("MappedSegments::removeSegments: warning segment index "+ std::to_string(segIdx)+ " was not found in the seg2cell mapper");
         }
         if (cell2seg.count(cellIdx)>0) {
-            auto& segs= cell2seg[cellIdx];
+            auto& csegs= cell2seg[cellIdx];
             int c = 0;
-            for (int i=0; i<segs.size(); i++) {
-                if (segs[i] == segIdx) {
-                    segs.erase(segs.begin() + c, segs.begin() + c);
+            for (int i=0; i<csegs.size(); i++) {
+                if (csegs[i] == segIdx) {
+                    csegs.erase(csegs.begin() + c, csegs.begin() + c);
                     break; // inner for
                 }
                 c++;
@@ -272,7 +272,7 @@ void MappedSegments::removeSegments(std::vector<Vector2i> segs) {
 /**
  * Maps a point into a cell and return the cells linear index (for a equidistant rectangular domain)
  */
-int MappedSegments::soil_index_(double x, double y, double z) {
+int MappedSegments::soil_index_(double x, double y, double z) { // np.array([1, 3, 5])
     Vector3d p(x,y,z);
     std::array<double,3>  r = { resolution.x, resolution.y, resolution.z};
     auto w = maxBound.minus(minBound);
@@ -283,7 +283,7 @@ int MappedSegments::soil_index_(double x, double y, double z) {
             return -1; // point is out of domain
         }
     }
-    return std::floor(i[0]) * r[1] * r[2] + std::floor(i[1]) * r[1] + std::floor(i[2]); // a linear index not periodic
+    return std::floor(i[2]) * r[0] * r[1] + std::floor(i[1]) * r[0] + std::floor(i[0]); // a linear index not periodic
 }
 
 /**
@@ -357,7 +357,9 @@ void MappedRootSystem::simulate(double dt, bool verbose)
         nodes.at(i) = unodes[c];
         c++;
     }
-    std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
+    if (verbose) {
+        std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
+    }
     auto newnodes = this->getNewNodes(); // add nodes
     nodes.reserve(nodes.size()+newnodes.size());
     for (auto& nn : newnodes) {
@@ -368,19 +370,24 @@ void MappedRootSystem::simulate(double dt, bool verbose)
     for (auto& nct : newnode_cts) {
         nodeCTs.push_back(nct);
     }
-    std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
+    if (verbose) {
+        std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
+    }
     auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
     segments.resize(segments.size()+newsegs.size());
     for (auto& ns : newsegs) {
         segments[ns.y-1] = ns;
     }
-    std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
-    auto newsegO = this->getNewSegmentOrigins(); // add radius and type
-    std::cout << "resize(): << " << radii.size()+newsegO.size() << "\n"<< std::flush;
+    if (verbose) {
+        std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
+    }
+    auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
     radii.resize(radii.size()+newsegO.size());
     types.resize(types.size()+newsegO.size());
     c = 0;
-    std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
+    if (verbose) {
+        std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
+    }
     for (auto& so : newsegO) {
         int segIdx = newsegs[c].y-1;
         c++;
@@ -414,7 +421,6 @@ void MappedRootSystem::simulate(double dt, bool verbose)
             rSegs.push_back(s);
         }
     }
-
     MappedSegments::removeSegments(rSegs);
     MappedSegments::mapSegments(rSegs);
 }
