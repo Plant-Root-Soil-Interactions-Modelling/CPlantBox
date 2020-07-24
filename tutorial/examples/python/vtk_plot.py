@@ -12,7 +12,7 @@ to make interactive vtk plot of root systems and soil grids
 """
 
 
-def segs_to_polydata(rs, zoom_factor = 1., param_names = ["radius", "type", "creationTime"]):
+def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "creationTime"]):
     """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments 
     @param rs             A RootSystem, Plant, or SegmentAnalyser
     @param zoom_factor    The radial zoom factor, since root are sometimes too thin for vizualisation
@@ -95,33 +95,27 @@ def render_window(actor, title, scalarBar, bounds):
     ren = vtk.vtkRenderer()  # Set up window with interaction
     ren.SetBackground(colors.GetColor3d("Silver"))
 
-    renWin = vtk.vtkRenderWindow()
-    renWin.AddRenderer(ren)
-    renWin.SetSize(1000, 1000)
-    renWin.SetWindowName(title)
-
-    iren = vtk.vtkRenderWindowInteractor()
-    # iren.SetInteractorStyle(vtk.vtkInteractorStyleUnicam())  # <- better than default, but maybe we find a better one
-
+    # Actors
     if isinstance(actor, list):
         actors = actor  # plural
     else:
         actors = [actor]  # army of one
     for a in actors:
         a.GetProperty().BackfaceCullingOff()
+        # a.RotateX(-90)  # x y z -> x z y
         ren.AddActor(a)  # Add the actors to the renderer, set the background and size
 
     if scalarBar:
-        if isinstance(scalarBar, list):
-            c = 0.
-            for sb in scalarBar:  # TODO looks awful
-                x = sb.GetPosition()
-                y = (x[0] + c, x[1])
-                sb.SetPosition(y)
-                ren.AddActor2D(sb)
-                c -= 0.2
-        else:
-            ren.AddActor2D(scalarBar)
+#         if isinstance(scalarBar, list):
+#             c = 0.
+#             for sb in scalarBar:  # TODO looks awful
+#                 x = sb.GetPosition()
+#                 y = (x[0] + c, x[1])
+#                 sb.SetPosition(y)
+#                 ren.AddActor2D(sb)
+#                 c -= 0.2
+#         else:
+        ren.AddActor2D(scalarBar)
 
     axes = vtk.vtkAxesActor()
     axes.AxisLabelsOff()  # because i am too lazy to change font size
@@ -130,26 +124,37 @@ def render_window(actor, title, scalarBar, bounds):
     axes.SetUserTransform(translate)
     ren.AddActor(axes)
 
+    # Camera
     ren.ResetCamera()
     camera = ren.GetActiveCamera()
     camera.ParallelProjectionOn()
-    camera.SetPosition([100, 0, 0])
     camera.SetFocalPoint([0, 0, 0.5 * (bounds[4] + bounds[5])])
+    camera.SetPosition([200, 0, 0.5 * (bounds[4] + bounds[5])])
     camera.SetViewUp(0, 0, 1)
     camera.Azimuth(30)
     camera.Elevation(30)
     camera.OrthogonalizeViewUp()
+    camera.SetClippingRange(1, 1000)
 
+    # Render Window
+    renWin = vtk.vtkRenderWindow()  # boss
+    renWin.SetSize(1000, 1000)
+    renWin.SetWindowName(title)
+    renWin.AddRenderer(ren)
+
+    iren = vtk.vtkRenderWindowInteractor()
     iren.SetRenderWindow(renWin)
     renWin.Render()
     iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
-    iren.AddObserver('KeyPressEvent', keypress_callback_, 1.0)
+    iren.AddObserver('KeyPressEvent', lambda obj, ev :keypress_callback_(obj, ev, bounds), 1.0)
     iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
+    for a in ren.GetActors():
+        a.Modified()  #
     renWin.Render()
     return iren
 
 
-def keypress_callback_(obj, ev):
+def keypress_callback_(obj, ev, bounds):
     """ adds the functionality to make a screenshot by pressing 'g', 
     and to change view to axis aligned plots (by 'x', 'y', 'z', 'v') """
     key = obj.GetKeySym()
@@ -163,11 +168,11 @@ def keypress_callback_(obj, ev):
         ren = renWin.GetRenderers().GetItemAsObject(0)
         camera = ren.GetActiveCamera()
         if key == 'x':
-            camera.SetPosition([100, 0, 0])  #
+            camera.SetPosition([100, 0, 0.5 * (bounds[4] + bounds[5])])
             camera.SetViewUp(0, 0, 1)
             print("y-z plot")
         if key == 'y':
-            camera.SetPosition([0, 100, 0])  # s
+            camera.SetPosition([0, 100, 0.5 * (bounds[4] + bounds[5])])
             camera.SetViewUp(0, 0, 1)
             print("x-z plot")
         if key == 'z':
@@ -175,7 +180,7 @@ def keypress_callback_(obj, ev):
             camera.SetViewUp(0, 1, 0)
             print("x-y plot")
         if key == 'v':
-            camera.SetPosition([100, 0, 0])  #
+            camera.SetPosition([100, 0, 0.5 * (bounds[4] + bounds[5])])
             camera.SetViewUp(0, 0, 1)
             camera.Azimuth(30)
             camera.Elevation(30)
@@ -267,10 +272,10 @@ def plot_roots(pd, p_name, win_title = "", render = True):
     @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if isinstance(pd, pb.RootSystem):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+        pd = segs_to_polydata(pd, 1.)
 
     if isinstance(pd, pb.SegmentAnalyser):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+        pd = segs_to_polydata(pd, 1.)
 
     if win_title == "":
         win_title = p_name
@@ -293,7 +298,7 @@ def plot_roots(pd, p_name, win_title = "", render = True):
     plantActor = vtk.vtkActor()
     plantActor.SetMapper(mapper)
 
-    lut = create_lookup_table(15, 256)  # 24
+    lut = create_lookup_table()  # 24
     scalar_bar = create_scalar_bar(lut, pd, p_name)  # vtkScalarBarActor
     mapper.SetLookupTable(lut)
 
@@ -421,11 +426,12 @@ def plot_roots_and_soil(rs, pname :str, rp, s, periodic :bool, min_b, max_b, cel
     lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
     rootActor.GetMapper().SetLookupTable(lut)
     meshActors.extend([rootActor])
-    render_window(meshActors, filename, meshCBar).Start()
+    render_window(meshActors, filename, meshCBar, pd.GetBounds()).Start()
 
-    path = "results/"
-    write_vtp(path + filename + ".vtp", pd)
-    write_vtu(path + filename + ".vtu", soil_grid)
+    if filename:
+        path = "results/"
+        write_vtp(path + filename + ".vtp", pd)
+        write_vtu(path + filename + ".vtu", soil_grid)
 
 
 def plot_roots_and_soil_files(filename : str, pname :str):
@@ -442,4 +448,83 @@ def plot_roots_and_soil_files(filename : str, pname :str):
     rootActor.GetMapper().SetLookupTable(lut)
     meshActors.extend([rootActor])
     render_window(meshActors, filename, meshCBar).Start()
+
+
+class AnimateRoots:
+    """ class to make an interactive animation """
+
+    def __init__(self, rootsystem = None):
+        self.rootsystem = rootsystem
+        self.root_name = "subType"
+        # self.soil_name = "subType"
+        #
+        self.soil_data = None  # soil data
+        self.min = None
+        self.max = None
+        self.res = None
+        self.cuts = False  # Wireframe, or cuts
+        #
+        self.actors = []
+        self.iren = None
+        self.color_bar = None
+        self.bounds = None
+
+    def start(self, axis = 'x'):
+        """ creates plot and adjusts camera """
+        self.create_root_actors()
+        self.create_soil_actors()
+        self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
+        renWin = self.iren.GetRenderWindow()
+        ren = renWin.GetRenderers().GetItemAsObject(0)
+        camera = ren.GetActiveCamera()
+        if axis == 'x':
+            camera.SetPosition([100, 0, 0.5 * (self.bounds[4] + self.bounds[5])])
+            camera.SetViewUp(0, 0, 1)
+        if axis == 'y':
+            camera.SetPosition([0, 100, 0.5 * (self.bounds[4] + self.bounds[5])])
+            camera.SetViewUp(0, 0, 1)
+        if axis == 'z':
+            camera.SetPosition([0, 0, 100])
+            camera.SetViewUp(0, 1, 0)
+        if axis == 'v':
+            camera.SetPosition([100, 0, 0.5 * (self.bounds[4] + self.bounds[5])])
+            camera.SetViewUp(0, 0, 1)
+            camera.Azimuth(30)
+            camera.Elevation(30)
+
+    def update(self):
+        """ animation call back function (called every 0.1 second) """
+        renWin = self.iren.GetRenderWindow()
+        ren = renWin.GetRenderers().GetFirstRenderer()
+        for a in self.actors:
+            ren.RemoveActor(a)
+        for a in ren.GetActors2D():
+            ren.RemoveActor2D(a)
+        ren.AddActor2D(self.color_bar)
+        self.actors = []
+        self.create_root_actors()
+        self.create_soil_actors()
+        for a in self.actors:
+            ren.AddActor(a)
+
+        self.iren.Render()
+
+    def create_root_actors(self):
+        if self.rootsystem:
+           pd = segs_to_polydata(self.rootsystem, 1., [self.root_name, "radius"])
+           newRootActor, rootCBar = plot_roots(pd, self.root_name, "", False)
+           self.actors.append(newRootActor)
+           self.color_bar = rootCBar
+           self.bounds = pd.GetBounds()
+
+    def create_soil_actors(self):
+        if self.soil_data:
+            if self.cuts:
+                pass
+                # meshActor, meshCBar = plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", False):
+            else:
+                grid = uniform_grid(self.min, self.max, self.res)
+                meshActor, meshCBar = plot_mesh(grid, "", "", False)
+            self.actors.append(meshActor)
+            self.bounds = grid.GetBounds()
 

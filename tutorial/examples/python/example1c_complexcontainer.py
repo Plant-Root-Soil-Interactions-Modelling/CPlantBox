@@ -49,10 +49,10 @@ rhizotubes = pb.SDF_Union(rhizotubes_)
 rhizoTube = pb.SDF_Difference(box, rhizotubes)
 
 # Set geometry: rotatedRhizotron, splitBox, or rhizoTube
-rs.setGeometry(rotatedRhizotron)
+rs.setGeometry(splitBox)
 
 # Simulate
-rs.initialize() 
+rs.initialize()
 rs.simulate(90)  # days
 
 # Export results (as vtp)
@@ -62,4 +62,4 @@ rs.write("results/example_1c.vtp")
 rs.write("results/example_1c.py")
 
 # Plot, using vtk
-vp.plot_roots(rs, "type", True, 'oblique')
+vp.plot_roots(rs, "type")

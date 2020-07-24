@@ -16,7 +16,7 @@ rs.simulate(10., False)
 min_ = np.array([-5, -5, -15])
 max_ = np.array([9, 4, -5])
 res_ = np.array([3, 2, 5])
-rs.setRectangularGrid(pb.Vector3d(min_), pb.Vector3d(max_), pb.Vector3d(res_))  # cut and map segments
+rs.setRectangularGrid(pb.Vector3d(min_), pb.Vector3d(max_), pb.Vector3d(res_), True)  # cut and map segments
 
 """ add segment indices """
 segs = rs.segments

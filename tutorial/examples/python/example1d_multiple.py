@@ -36,4 +36,4 @@ for i, rs in enumerate(allRS):
 ana.write("results/example_1d_all.vtp")
 
 # Plot, using vtk
-vp.plot_roots(ana, "radius", True, 'oblique')
+vp.plot_roots(ana, "radius")
