@@ -26,6 +26,7 @@ add_library(CPlantBox SHARED
             external/aabbcc/AABB.cc
             # external/gauss_legendre/gauss_legendre.cpp
 	    external/brent/brent.cpp
+	    external/brent/brent2.cpp
 			)
 
 set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
@@ -66,7 +67,8 @@ pybind11_add_module(plantbox SHARED
             
 			external/tinyxml2/tinyxml2.cpp
             external/aabbcc/AABB.cc
-	    external/brent/brent.cpp	
+	    external/brent/brent.cpp
+	    external/brent/brent2.cpp
 			PyPlantBox.cpp									
 			)
 			
