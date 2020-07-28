@@ -51,7 +51,7 @@ public:
   void openXML(std::string name) { readParameters(name); } // old name
 
   /* Simulation */
-  void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before Plant::initialize())
+  void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; }  ///< optionally, sets a confining geometry (call before Plant::initialize())
   void reset(); ///< resets the plant class, keeps the organ type parameters
   void initialize(bool verbose = true) override; ///< creates the base roots, call before simulation and after setting the plant and root parameters
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
@@ -70,8 +70,8 @@ public:
 
 protected:
 
-  SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
-  SoilLookUp* soil = nullptr; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
+  std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
+  std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
 };
 

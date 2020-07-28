@@ -34,13 +34,13 @@ public:
 	 * @param n_            number of tries
 	 * @param sigma_        standard deviation of angular change [1/cm]
 	 */
-	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_): plant(plant), n(n_), sigma(sigma_), geometry(nullptr) { }
+	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_): plant(plant), n(n_), sigma(sigma_) { }
 	virtual ~Tropism() { }
 
 	virtual std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant); ///< copy object, factory method
 
 	/* parameters */
-	void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< sets a confining geometry
+	void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< sets a confining geometry
 	void setTropismParameter(double n_,double sigma_) { n=n_; sigma=sigma_; } ///< sets the tropism parameters
 
 	virtual Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> o = nullptr);
@@ -73,7 +73,7 @@ protected:
 	double n; ///< Number of trials
 	double sigma; ///< Standard deviation
 
-	SignedDistanceFunction* geometry; ///< confining geometry todo
+	std::weak_ptr<SignedDistanceFunction> geometry; ///< confining geometry todo
 	const int alphaN = 20;
 	const int betaN = 5;
 
@@ -156,7 +156,7 @@ class Hydrotropism : public Tropism
 {
 public:
 
-	Hydrotropism(std::shared_ptr<Organism> plant, double n, double sigma, SoilLookUp* soil) : Tropism(plant, n,sigma), soil(soil) { } ///< @see TropismFunction
+	Hydrotropism(std::shared_ptr<Organism> plant, double n, double sigma, std::shared_ptr<SoilLookUp> soil) : Tropism(plant, n,sigma), soil(soil) { } ///< @see TropismFunction
 
     std::shared_ptr<Tropism>  copy(std::shared_ptr<Organism> plant) override {
         auto nt = std::make_shared<Hydrotropism>(*this); // default copy constructor
@@ -169,7 +169,7 @@ public:
 
 private:
 
-	SoilLookUp* soil;
+	std::weak_ptr<SoilLookUp> soil;
 
 };
 
