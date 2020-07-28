@@ -153,7 +153,7 @@ public:
 
 
 /**
- * todo docme
+ * Product of multiple SoilLookUp::getValue
  */
 class MultiplySoilLookUps : public SoilLookUp
 {
@@ -348,7 +348,7 @@ public:
         size_t i = xgrid->map(x);
         size_t j = ygrid->map(y);
         size_t k = zgrid->map(z);
-        return k*(ny*nz)+j*z+i; // or whatever
+        return k*(nx*ny)+j*nx+i; // or whatever
     } ///< point to linear data index
 
     double getData(size_t i, size_t j, size_t k) {

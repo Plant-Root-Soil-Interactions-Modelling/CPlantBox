@@ -69,7 +69,7 @@ public:
     void writeDGF(std::ostream & os) const; ///< Writes the segments of the root system in DGF format used by DuMux
 
     // auxiliary
-    static Vector3d cut(Vector3d in, Vector3d out, std::shared_ptr<SignedDistanceFunction> geometry, double eps = 1.e-6); ///< intersects a line with  the geometry
+    static Vector3d cut(Vector3d in, Vector3d out, const std::shared_ptr<SignedDistanceFunction>& geometry, double eps = 1.e-6); ///< intersects a line with  the geometry
 
     std::vector<Vector3d> nodes; ///< nodes
     std::vector<Vector2i> segments; ///< connectivity of the nodes

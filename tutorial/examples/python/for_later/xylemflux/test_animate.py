@@ -2,7 +2,7 @@
 Tests if we can animate root growth (only roots, nos soil)
 """
 import sys
-sys.path.append("../../../..")
+sys.path.append("zzz../../../..")
 
 import plantbox as pb
 import rsml_reader as rsml

@@ -91,7 +91,7 @@ public:
     virtual int writePVPScript(std::ostream & cout, int c=1) const override;  ///< @see SignedDistanceFunction::writePVPScript
 
 private:
-    Vector3d dim; // dimensions of the boxMehrfachdefinition
+    Vector3d dim; // dimensions of the box
 };
 
 

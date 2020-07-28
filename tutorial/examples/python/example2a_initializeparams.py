@@ -1,8 +1,6 @@
 """everything from scratch (without parameter files)"""
-import sys
-sys.path.append("../../..")
+import sys; sys.path.append("../../..")
 import plantbox as pb
-import vtk_plot as vp
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -80,6 +78,3 @@ print("subType", rs.getParameter("subType"))
 print("     la", rs.getParameter("la"))
 print("la_mean", rs.getParameter("la_mean"))
 print(" radius", rs.getParameter("radius"))
-
-# Plot, using vtk
-vp.plot_roots(rs, "type", True, 'oblique')
