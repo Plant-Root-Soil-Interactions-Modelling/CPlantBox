@@ -1,12 +1,11 @@
+\newpage
+\section{Coupling growing rootsystems to numerical models} \label{sec:growing}
 
-
-\subsection{Coupling to growing root systems} \label{sec:published}
 
 In this section it is described how information about the last time step can be retrieved, 
 and how we can incrementally obtain the root system from only new nodes and segments. 
 These methods are especially important if we couple to other numerical software like DuMux
 
-% \lstinputlisting[firstline=1, lastline=58, language=Python, caption=Example 5b]{../../examples/python/example7b.py}
 
 In the previous section root responses were described in a static soil. 
 In this section we will extend this to a dynamic soil setting, where we update the soil in the simulation loop, and then update the root system iteratively for small time steps. 
@@ -15,16 +14,21 @@ General properties of the soil, are passed to the root model via a look up metho
 In the following subsection we will first describe this metod and some implemented usefull extensions of the SoilLookUp class (Section \ref{sec:soil}), 
 and show how we can create an interface to a generic soil in Pyhton (Section \ref{sec:usersoil}). 
 
-Next, we show how we can use the soil representation to implement fully coupled models. First we discuss how to obtain a graph representation of the root system, and solve water flow within the root system. 
-Then we discuss the example published in \cite{}. 
-
-Finally, we present features that can be used to analyse the dynamic behaviour of the root system development.
+\subsection{Mapping of growing roots and underlying soil} 
 
 
-\subsection{Mapping between root segments and an underlying soil}
+\lstinputlisting[firstline=1, language=Python, caption=Example 7a]{../../examples/python/example7a_mapping.py}
 
-\subsection{Coupling a static root system to DuMux} \label{sec:dumux_dyn_coupling}
+% TODO periodic !!! 
+
+\subsection{Coupling a dynamic root system to DuMux} \label{sec:dumux_dyn_coupling}
+
+Very little to do (simulate call to the root system) \\
 
 
 
+Make root growth dependent on soil (hydrotropims vs. no hydrotropism) \\
 
+the dumux binding and MPI
+
+Elongation rate according to Moacir et al \\

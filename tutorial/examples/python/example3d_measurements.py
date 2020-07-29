@@ -16,5 +16,4 @@ segs = [pb.Vector2i(s[0], s[1]) for s in segs]
 ana = pb.SegmentAnalyser(nodes, segs, cts, radii)
 
 print("length", ana.getSummed("length"))
-
 ana.write("results/example_3d.vtp", ["creationTime", "radius"])
