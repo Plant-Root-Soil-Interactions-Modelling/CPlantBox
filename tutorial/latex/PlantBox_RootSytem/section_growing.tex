@@ -19,16 +19,29 @@ and show how we can create an interface to a generic soil in Pyhton (Section \re
 
 \lstinputlisting[firstline=1, language=Python, caption=Example 7a]{../../examples/python/example7a_mapping.py}
 
-% TODO periodic !!! 
 
 \subsection{Coupling a dynamic root system to DuMux} \label{sec:dumux_dyn_coupling}
 
 Very little to do (simulate call to the root system) \\
 
+Feedback: Make root growth dependent on soil (hydrotropims vs. no hydrotropism
 
+\section{Todos}
+Topics that are not covered yet or should be improved
 
-Make root growth dependent on soil (hydrotropims vs. no hydrotropism) \\
+\begin{itemize}
 
-the dumux binding and MPI
+\item The DuMux binding and MPI
 
-Elongation rate according to Moacir et al \\
+\item Elongation rate according to Moacir et al.
+
+\item Delay based, versus length based lateral emergance.
+
+\item Better branching probability example.
+
+\item Periodicity without DuMux coupling, but with a soil 3d grid (untested, and an example is missing)
+
+\item Carbon limited root system growth
+
+\end{itemize}
+

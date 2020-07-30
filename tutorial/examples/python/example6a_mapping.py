@@ -31,7 +31,7 @@ for i, s in enumerate(segs):
 ci = rs.soil_index(0, 0, -7)
 print("Cell at [0,0,-7] has index", ci)
 try:
-    print(len(rs.cell2seg[ci]), "segments are located in this cell:")
+    print(len(rs.cell2seg[ci]), "segments in this cell:")
     print(rs.cell2seg[ci])
 except:
     print("There are no segments in this cell")

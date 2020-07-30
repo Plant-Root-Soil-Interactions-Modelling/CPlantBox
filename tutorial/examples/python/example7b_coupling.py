@@ -27,7 +27,7 @@ periodic = True
 path = "../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 loam = [0.08, 0.43, 0.04, 1.6, 50]
-initial = -659.8 + 7.5  # -659.8
+initial = -659.8 + 12.5  # -659.8
 
 trans = 6.4  # cm3 /day (sinusoidal)
 wilting_point = -15000  # cm

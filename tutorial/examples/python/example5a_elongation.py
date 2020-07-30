@@ -26,7 +26,7 @@ soilprop = pb.SoilLookUpSDF(leftC, maxS, minS, slope)  # for root elongation
 # Manually set scaling function and tropism parameters
 sigma = [0.4, 1., 1., 1., 1. ] * 2
 for p in rs.getRootRandomParameter():
-    p.dx = 0.25  # adjust resolution
+    p.dx = 0.25  # adjust resolutionx
     p.tropismS = sigma[p.subType - 1]
     p.f_se = soilprop  # 1. Scale elongation
 

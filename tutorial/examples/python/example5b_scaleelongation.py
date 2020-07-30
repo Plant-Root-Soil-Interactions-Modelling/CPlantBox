@@ -9,9 +9,9 @@ path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
-scale_elongation = pb.EquidistantGrid1D(0, -100, 100)
+scale_elongation = pb.EquidistantGrid1D(0, -50, 100)
 soil_strength = np.ones((99,))
-soil_strength[10:20] = 5  # data, with a very dense layer
+soil_strength[20:30] = 5  # data, with a very dense layer at -10 to -15 cm
 scales = np.exp(-0.4 * soil_strength)  # scales from some empirical equation (TODO)
 scale_elongation.data = scales  # set proportionality factors
 print("-3 cm ", scale_elongation.getValue(pb.Vector3d(0, 0, -3)))
@@ -22,14 +22,17 @@ for p in rs.getRootRandomParameter():  # Manually set scale elongation function
 
 rs.initialize()
 
-ana = pb.SegmentAnalyser(rs.mappedSegments())
+ana = pb.SegmentAnalyser(rs)
 anim = vp.AnimateRoots(ana)
-anim.root_name = "subType"
+anim.root_name = "creationTime"
 anim.file = "example5b"
+anim.min = np.array([-10, -10, -50])
+anim.max = np.array([10, 10, 0.])
+anim.res = np.array([1, 1, 1])
 anim.start()
 
 simtime = 60.
-dt = 1.
+dt = 0.1  # small, for animation
 for i in range(0, round(simtime / dt)):  # Simulation
 
     # update soil model (e.g. soil_strength)
@@ -42,7 +45,7 @@ for i in range(0, round(simtime / dt)):  # Simulation
 
     rs.simulate(dt, False)
 
-    ana = pb.SegmentAnalyser(rs.mappedSegments())
+    ana = pb.SegmentAnalyser(rs)
     anim.rootsystem = ana
     anim.update()
 
