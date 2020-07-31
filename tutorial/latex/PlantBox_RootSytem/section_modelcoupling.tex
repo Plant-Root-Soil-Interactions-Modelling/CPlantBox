@@ -5,28 +5,29 @@ CPlantBox is a bottom up model where no water movement or solute transport is ca
 
 In this section we consider a static root system. The additional steps that are needed for a developing root system (i.e. with a changing root geometry) are explained in the next section. 
 
-\subsection{Mapping between root segments and an underlying soil}
+\subsection{Mapping between root segments and an underlying soil} \label{ss:mapping}
 
-The classes MappedSegments and MappedRootSystem that are defined in MappedOrganism.h manage the coupling between the root system and external models or solvers. 
+The classes MappedSegments and MappedRootSystem, defined in MappedOrganism.h, manage the coupling between the root system and external models or solvers. 
 
 The RootSystem class stores the nodes of each root in an object of class Root. This is convenient for simulating the root development, but not suitable for coupling to numerical models. Commonly, numerical models need the nodes as sequential list (obtained by RootSystem::getNodes) and the information on how they are connected (e.g. RootSystem::getSegments). Additionally, some information on the segments like radius or root type is needed. Furthermore, when coupling to a soil model, we need information in which soil cell the segment is located, and vice versa, which segments are located within a specific soil cell. 
 
-The class MappedSegments helps to manage all that, and offers the data structure for sequential nodes, connections between tho nodes as segments, and the most commonly needed data such as creation time of the node, and radius or type per segment. Additionally, it has two hash maps linking segments to cells, and cells to list of segments.
+The class MappedSegments helps to manage all that, and offers the data structure for sequential nodes, connections between two nodes as segments, and the most commonly needed data such as creation time of the node, and radius or type per segment. Most important, it contains two hash maps seg2cell and cell2seg, linking segments to cells, and cells to list of segments.
 
-MappedRootSystem is derived from MappedSegments and RootSystem, i.e. can be used exact the same way as the RootSystem class, but keeps track of the lists, and (optionally) the mapping between soil grid and root system.
+MappedRootSystem is derived from MappedSegments and RootSystem, i.e. it can be used in the exact same way as the RootSystem class, but keeps track of the lists, and (optionally) the mapping between soil grid and root system.
 
 To demonstrate basic functionality we will map a root system to a soil rectangular soil grid. 
 
 \lstinputlisting[firstline=1, language=Python, caption=Example 6a]{../../examples/python/example6a_mapping.py}
+
 \begin{itemize}
 
-\item[8-12] Creation of a small root system, ten days simulation of Anagallis. Instead of the class RootSystem MappedRootSystem is used (L8). MappedRootSystem is a specialisation of the 'normal' RootSystem class and can be used in exactly the same way. 
+\item[8-12] Creation of a small root system. Instead of the class RootSystem, MappedRootSystem is used (L8). MappedRootSystem is a specialisation of the 'normal' RootSystem class and can be used in the exactly same way. 
 
-\item[16-19] We choose a small soil domain, where some roots are not inside. Calling MappedRootSystem::setRectangularGrid first cuts segments at the cell faces, and then maps the resulting segments to a soil index (creates the maps MappedRootSystem::seg2cell, and MappedRootSystem::cell2seg). The value True indicates that cutting is performed, False just maps the segments without cutting. 
+\item[16-19] We choose a small soil domain, where some roots are not inside. Calling MappedRootSystem::setRectangularGrid first cuts segments at the cell faces, and then maps the resulting segments to a soil index (creates the maps MappedRootSystem::seg2cell, and MappedRootSystem::cell2seg). The value True indicates that cutting is performed, False just maps the segment mid points without cutting. 
 
-\item[22-28] Next we create an array $x$ containing the soil indices for each segment. We use the hash map (a Python dictionary) MappedRootSystem::seg2cell to obtain the linear index of the cell, where the segment's mid point is located.
+\item[22-28] Next we create an array $x$ containing the soil indices for each segment, that will be later used for vizualisation. We use the hash map (a Python dictionary) MappedRootSystem::seg2cell to obtain the linear index of the cell, where the segment's mid point is located.
 
-\item[31-37] To demonstrate how to retrieve all segments that lie within a given cell we output the segments at the cell located around the position [0,0,-7]. In L31 we retrieve the cell index for that position. L34 and L35 print out the segment indices. Note that the map will have no entry for a given cell, if no segments are located in the cell. 
+\item[31-37] To demonstrate how to retrieve all segments that lie within a given cell, we output the segments at the cell located around the position [0,0,-7]. In L31 we retrieve the cell index for that position. L34 and L35 print out the segment indices. Note that the map will have no entry for a given cell, if no segments are located in the cell. 
 
 \item[43-48] To visualize the soil cell indices, we first create a SegmentAnalyser class. The class MappedRootSystem is derived from a RootSystem and MappedSegments. If we create a SegmentAnalyser class directly from $rs$ (L40) MappedRootSystem will be considered as RootSystem, and the resulting class will contain the original segments before cutting at the cell boundaries. The function MappedRootSystem::mappedSegments (L41) will return a reference to $rs$ but with the type MappedSegments. In this way the SegmentAnalyser class will be created including the cut segments. Next, in L42 we add the indices as data to the SegmentAnalyser class. L43, L44 produces the VTK plot, but rendering is started at a later point, since we also want to visualize the underlying soil grid.
 
@@ -34,17 +35,17 @@ To demonstrate basic functionality we will map a root system to a soil rectangul
 
 \end{itemize}
 
-More, generally, when coupling to an external solver like DuMux, we need to set the soil$\_$index function, that returns the cell index for a certain position. Additionally, periodic soil domains are already implemented. Both coupling to DuMux and periodicity will be demonstrated in Section \ref{sec:dumux_coupling}.
+More, generally, when coupling to an external solver like DuMux \citep{koch2020dumux}, we need to set the soil$\_$index function, that returns the cell index for a certain position. Additionally, periodic soil domains are already implemented. Both coupling to DuMux and periodicity will be demonstrated in Section \ref{sec:dumux_coupling}.
 
-Coupling to an unstructured grid is as simple as to a structured one. But the automatic cutting of segments to the cells is currently not implemented. That means that axial resolution should be small in order to keep the introduced error small.
+Coupling to an unstructured grid is as simple as to a structured one. But automatic cutting of segments at the cell faces is currently not implemented. That means that axial resolution should be small in order to keep the introduced error small.
 
 
 
 \subsection{Water movement within the roots} \label{ssec:xylem}
 
-Since water movement within the roots is often needed it is implemented directly in CPlantBox (in the class XylemFlux). However, usage is optional, and any other transport code can be used (e.g. if solutes are considered). XylemFlux sets up the linear system, and the sparse linear system is then solved on the Python side using scipy (class XylemFluxPython defined in xylem$\_$flux.py).
+Since water movement within the roots is often needed, it is implemented directly in CPlantBox (in the class XylemFlux) following \cite{meunier2017hybrid}. However, usage is optional, and any other transport code can be used (e.g. if solutes are considered). XylemFlux sets up the linear system, and the sparse linear system is then solved in Python using scipy (using the class XylemFluxPython defined in xylem$\_$flux.py).
 
-The following example is based on benchmark M3.1 with constant conductivities, but not with a given root system, but a simulated one.
+The following example is based on benchmark M3.1 \citep{schnepf2019call} with constant conductivities, but not with a given root system, but a simulated one.
 
 \lstinputlisting[firstline=1, language=Python, caption=Example 6b]{../../examples/python/example6b_xylemflux.py}
 \begin{itemize}
@@ -56,7 +57,7 @@ The following example is based on benchmark M3.1 with constant conductivities, b
 \item[26-31] The MappedRootSystem is wrapped with the XylemFluxPython class, which extends the XylemFlux class, which computes the xylem matric flux potential. L27, L28 sets the radial and axial conductivity. L29 retrieves the root system nodes for later visualisation. The pressure surrounding the the root system is either defined as pressure surrounding each root segment, or as soil cells, in which the root segments are located. L30, L31 sets a soil containing of one single cell with index 0. 
 
 \item[34-36] XylemFluxPython defines solvers like solve$\_$dirichlet for Dirichlet boundary condition (predefined collar matric potential), solve$\_$neumann for Neumann boundary condition (predefined collar flux), and solve which switches between Dirichlet and Neumann at some critical pressure (the plant wilting point).
-The agruments of solve$\_$dirichlet are the simulation time (to calculate age dependent conductivities), the root collar pressure head, the pressure around the root collar, the soil matric potential around the root segments or per soil cell, and a boolean value that decides if the potentials are given per soil cell (True) or per segments (False). The return value $rx$ contains the xylem matric potentials per segment. L35 calculates the fluxes into the soil (negative values mean into the root). The bool argument determines if we approximate the flux, or use the exact solution by \cite{meunier2017hybrid}.
+The arguments of solve$\_$dirichlet are the simulation time (to calculate age dependent conductivities), the root collar pressure head, the pressure around the root collar, the soil matric potential around the root segments or per soil cell, and a boolean value that decides if the potentials are given per soil cell (True) or per segments (False). The return value $rx$ contains the xylem matric potentials per segment. L35 calculates the fluxes into the soil (negative values mean into the root). The bool argument determines if we approximate the flux, or use the exact solution by \cite{meunier2017hybrid}.
 L36 determines the root collar flux.
 
 \item[39-43] Plots the results.
@@ -109,7 +110,7 @@ The next example mimics benchmark C12 \citep{schnepf2019call}, but with a static
 
 \item[17,18]  Defines a sinusoidal function for the collar boundary condition.
 
-\item[21-37] All parameters that are needed for this simulation. L25 decides if periodic boundary conditions are used, or not. L35 states the simulation time, L36 the initial root system age. L37 defines if age dependent root conductivities are used. The rooot conductivities are hard coded in the file root\_conductivities.py, that is imported in L8. Age dependent conductities can be used to mimic root growth in a predefined way, i.e. the root system is already fully grown, but the radial conductivities are turned on turing the simulation. 
+\item[21-37] All parameters that are needed for this simulation. L25 decides if periodic boundary conditions are used, or not. L35 states the simulation time, L36 the initial root system age. L37 defines if age dependent root conductivities are used. The rooot conductivities are hard coded in the file root\_conductivities.py, that is imported in L8. Age dependent conductities can be used to mimic root growth in a predefined way, i.e. the root system is already fully grown, but the radial conductivities are turned on during the simulation. 
 
 \item[41-49] Sets up the soil solver (DuMux Python binding from dumux-rosi). 
 
@@ -125,10 +126,10 @@ The next example mimics benchmark C12 \citep{schnepf2019call}, but with a static
 
 \end{itemize}
 
-With above code we can for example compare total uptake of the root system in a container, with the uptake if periodic boundary conditions are used. While the first scenario reflects the situation in a plant pot, periodic boundary conditions reflect the situation when the plant grows in the field, where the planting distance is approximated by the domain size. Figure \ref{fig:uptake} shows both situations, showing that the boundary conditions will strongly affect total water uptake. 
+With above code we can compare total root system water uptake in a container, with the uptake if periodic boundary conditions are used. While the first scenario reflects the situation in a plant pot, periodic boundary conditions reflect the situation when the plant grows in the field, where the planting distance is approximately the domain size. Figure \ref{fig:uptake} shows both situations, showing that the boundary conditions will strongly affect total water uptake, because roots are less evenly distributed in the pot scenario and water redistribution is impeded by the pot boundaries.
 
 \begin{figure}
-\begin{subfigure}[c]{0.5\textwidth}
+\begin{subfigure}[c]{0.5\textwidth} 
 \includegraphics[width=0.99\textwidth]{Figure6c.png}
 \subcaption{Confined} \label{fig:uptake_confined}
 \end{subfigure}

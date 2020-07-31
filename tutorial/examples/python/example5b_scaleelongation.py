@@ -38,7 +38,7 @@ for i in range(0, round(simtime / dt)):  # Simulation
     # update soil model (e.g. soil_strength)
 
     # update scales (e.g. from water content, soil_strength)
-    scales = np.exp(-0.4 * soil_strength)  # scales from some equation (TODO)
+    scales = np.exp(-0.4 * soil_strength)  # (TODO)
 
     # copy scales into scaling funciton
     scale_elongation.data = scales
