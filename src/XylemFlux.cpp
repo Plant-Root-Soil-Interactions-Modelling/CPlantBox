@@ -48,8 +48,8 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
 		double age = simTime - rs->nodeCTs[j];
 		int type = rs->types[si];
-        double kx;
-        double  kr;
+        double kx = 0.;
+        double  kr = 0.;
 		try {
 		    kx = kx_f(age, type);
 		    kr = kr_f(age, type);
