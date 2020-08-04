@@ -241,18 +241,18 @@ public:
  */
 class Function {
 public:
+
     /**
      * trapezoidal rule
      */
     static double quad(std::function<double(double)> f, double a, double b, int n) {
         double h = (b-a)/n;
-        double s = 0.5*f(a) + 0.5*f(b);
+        double s = h*(0.5*f(a) + 0.5*f(b));
         for (int i=1; i<n; i++) {
-            s+=f(a+i*h);
+            s+=h*f(a+i*h);
         }
         return s;
     };
-
 
 };
 
