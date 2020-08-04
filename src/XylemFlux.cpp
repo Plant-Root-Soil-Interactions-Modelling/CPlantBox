@@ -34,7 +34,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		int i = rs->segments[si].x;
 		int j = rs->segments[si].y;
 
-		double psi_s;
+		double psi_s = 0.;
 		if (cells) { // soil matric potential given per cell
 			try {
 		    psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
