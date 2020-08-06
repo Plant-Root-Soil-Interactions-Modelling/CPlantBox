@@ -21,7 +21,7 @@ maxS = 1.  # maximal
 minS = 0.002  # minimal
 slope = 1.  # [cm] linear gradient between min and max
 leftC = pb.SDF_Complement(left)
-soilprop = pb.SoilLookUpSDF(left, maxS, minS, slope)  # for branching
+soilprop = pb.SoilLookUpSDF(left, maxS, minS, slope)
 
 # Manually set scaling function and tropism parameters
 sigma = [0.4, 1., 1., 1., 1. ] * 2

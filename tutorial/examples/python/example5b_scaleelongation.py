@@ -12,13 +12,13 @@ rs.readParameters(path + name + ".xml")
 scale_elongation = pb.EquidistantGrid1D(0, -50, 100)
 soil_strength = np.ones((99,))
 soil_strength[20:30] = 5  # data, with a very dense layer at -10 to -15 cm
-scales = np.exp(-0.4 * soil_strength)  # scales from some empirical equation (TODO)
+scales = np.exp(-0.4 * soil_strength)  #  equation (TODO)
 scale_elongation.data = scales  # set proportionality factors
 print("-3 cm ", scale_elongation.getValue(pb.Vector3d(0, 0, -3)))
 print("-25 cm", scale_elongation.getValue(pb.Vector3d(0, 0, -25)))
 
-for p in rs.getRootRandomParameter():  # Manually set scale elongation function
-    p.f_se = scale_elongation
+for p in rs.getRootRandomParameter():
+    p.f_se = scale_elongation  # set scale elongation function
 
 rs.initialize()
 
