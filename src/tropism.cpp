@@ -98,8 +98,8 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
     double a = h.x;
     double b = h.y;
 
-    if (geometry!=nullptr) {
-        double d = geometry->getDist(this->getPosition(pos,old,a,b,dx));
+    if (!geometry.expired()) {
+        double d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
         double dmin = d;
 
         double bestA = a;
@@ -113,7 +113,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
             while ((d>0) && j<betaN) { // change beta
 
                 b = 2*M_PI*plant.lock()->rand(); // dice
-                d = geometry->getDist(this->getPosition(pos,old,a,b,dx));
+                d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
                 if (d<dmin) {
                     dmin = d;
                     bestA = a;
@@ -159,9 +159,9 @@ double Exotropism::tropismObjective(const Vector3d& pos, const Matrix3d& old, do
  */
 double Hydrotropism::tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o)
 {
-    assert(soil!=nullptr);
+    assert(!soil.expired());
     Vector3d newpos = this->getPosition(pos,old,a,b,dx);
-    double v = soil->getValue(newpos,o);
+    double v = soil.lock()->getValue(newpos,o);
     // std::cout << "\n" << newpos.getString() << ", = "<< v;
     return -v; ///< (-1) because we want to maximize the soil property
 }

@@ -1,12 +1,12 @@
 \newpage
-\section{Tropisms} \label{sec::tropism}
+\section{Tropisms} \label{sec:tropism}
 
-The change in root growth direction is described by tropisms. In the following we show how to implement directed growth toward higher water conent or nutrient concentration, and demonstrate how to simply make new user defined tropism rules. 
+The change in root growth direction is described by tropisms. In the following we show how to implement directed growth toward higher water content or nutrient concentration, and demonstrate how to simply make new user defined tropism rules. 
 
 
 \subsection{Hydro- and chemotropism} \label{sec:hydro}
 
-Root growth direction is influenced by soil conditions such as water content, soil strength, or nutrient concentration. In the following example we model the influence of a nutrient rhich layer to root system development
+Root growth direction is influenced by soil conditions such as water content, soil strength, or nutrient concentration. In the following example we model the influence of a nutrient rich layer to root system development
 
 \lstinputlisting[language=Python, caption=Example 4a]{../../examples/python/example4a_hydrotropism.py}
 
@@ -39,23 +39,23 @@ $minS$ outside the geometry, and linear slope with length $slope$. At the bounda
 
 
 
-\subsection{Root age dependent growth} \label{sec:usertropism}
+\subsection{Root age dependent tropism} \label{sec:usertropism}
 
-Normally, the simulation is created from a set of parameters. For tropisms these are the type of tropism $tt$, number of trials $N$ , and tortuosity $\sigma$. There are only a few predefined tropisms: 'gravi', 'plagio', 'exo', or 'hydro', but it is simple to add user defined tropisms.
+Normally, the simulation is created from a set of parameters. For tropisms these are the type of tropism $T$, number of trials $N$ , and tortuosity $\sigma$. There are only a few predefined tropisms called 'gravi', 'plagio', 'exo', or 'hydro', but it is simple to add user defined tropisms.
 The following example demonstrates how to define a root age dependent tropism, where roots first grow according to exotropism (following the inital growth direction), and after a certain age change to gravitropic growth.
 
-The new tropism class must be derived from the class Tropism. In CPlantBox tropism is realised with a random optimization process, where the 'best' direction is chosen from $N$ possible direction, according to an objective function that is minimized. Normally, it is sufficient to overwrite this Tropism::tropismObjective to change the tropsim behaviour. This can be done in Python or in C++. The classes Hydrotropism, Gravitropism, and Plagiotropism (in tropisms.h) are examples for this procedure.
+The new tropism class must be derived from the class Tropism. In CPlantBox tropism is realised with a random optimization process, where the 'best' direction is chosen from $N$ possible direction, according to an objective function that is minimized. Normally, it is sufficient to overwrite this function, called Tropism ::tropismObjective, to change the tropism behaviour. This can be done in Python or in C++. The classes Hydrotropism, Gravitropism, and Plagiotropism (in tropisms.h) are examples for this procedure.
 
-If the whole concept of random optimization is altered, Tropism::getUCHeading must be overwritten, which is only possible in C++. If the geometry model is also changed Tropism::getHeading must be overwritten.
+If the whole concept of random optimization is altered, Tropism ::getUCHeading must be overwritten, which is only possible in C++. If the geometry model is also changed Tropism::getHeading must be overwritten.
 
 The following example shows how to implement a new tropism in Python. Two new tropism are introduced:
-The first does nothing but to output the incoming arguments of the method Tropism::tropismObjective to the command line (e.g. for debugging). The second one root age depenent tropism that starts with exotropism and changes with time to gravitropism depending on the root age.
+The first does nothing but to output the incoming arguments of the method Tropism::tropismObjective to the command line (e.g. for debugging). The second one describes a root age dependent tropism that starts with exotropism and changes with root age to gravitropism.
 
 \lstinputlisting[language=Python, caption=Example 4b]{../../examples/python/example4b_usertropism.py}
 
 \begin{itemize}
 
-\item[8-19] Creates a new tropism that just writes incoming arguments of Tropism: :tropismObjective to the command line. This can be used for debugging. The new class is extended from rb.Tropism, and the method Tropism::tropismObjective is overwritten with the right number of arguments.
+\item[8-19] Creates a new tropism that just writes incoming arguments of Tropism ::tropismObjective to the command line. This can be used for debugging. The new class is extended from rb.Tropism, and the method Tropism ::tropismObjective is overwritten with the right number of arguments.
 
 \item[22-37] Again, we extend the new class from rb.Tropism. In L25-30 we define our own constructor. Doing this two things are important: (a) the constructor of the super class must be called (L26), and (b) the tropism parameters $n$, and $\sigma$ must be set (L29). 
 Furthermore, the constructor defines two tropisms: exo- and gravitropism, that are used in Tropism::tropismObjective at a later point, and a root age that dermines when to switch betwee exo- and gravitropism. \\

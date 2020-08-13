@@ -417,7 +417,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Exotropism, Tropism, std::shared_ptr<Exotropism>>(m, "Exotropism")
             .def(py::init<std::shared_ptr<Organism>,double, double>());
     py::class_<Hydrotropism, Tropism, std::shared_ptr<Hydrotropism>>(m, "Hydrotropism")
-            .def(py::init<std::shared_ptr<Organism>,double, double, SoilLookUp*>());
+            .def(py::init<std::shared_ptr<Organism>,double, double, std::shared_ptr<SoilLookUp>>());
     //    py::class_<CombinedTropism, Tropism>(m, "CombinedTropism") // Todo constructors needs some extra work (?)
     //        .def(py::init<>());
     // todo antigravi, twist ...

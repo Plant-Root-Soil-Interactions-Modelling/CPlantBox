@@ -15,7 +15,7 @@ rs.simulate(10., False)
 """ soil """
 min_ = np.array([-5, -5, -15])
 max_ = np.array([9, 4, -5])
-res_ = np.array([3, 2, 5])
+res_ = np.array([3, 1, 5])
 rs.setRectangularGrid(pb.Vector3d(min_), pb.Vector3d(max_), pb.Vector3d(res_), True)  # cut and map segments
 
 """ add segment indices """
@@ -25,13 +25,13 @@ for i, s in enumerate(segs):
     try:
         x[i] = rs.seg2cell[i]
     except:  # in case the segment is not within the domain
-        x[i] = -10
+        x[i] = -1
 
 """ infos on a specific cell"""
 ci = rs.soil_index(0, 0, -7)
 print("Cell at [0,0,-7] has index", ci)
 try:
-    print(len(rs.cell2seg[ci]), "segments are located in this cell:")
+    print(len(rs.cell2seg[ci]), "segments in this cell:")
     print(rs.cell2seg[ci])
 except:
     print("There are no segments in this cell")

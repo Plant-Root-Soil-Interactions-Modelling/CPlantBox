@@ -53,8 +53,8 @@ public:
     void writeParameters(std::ostream & os) const; ///< DEPRICATED writes root parameters
 
     /* Simulation */
-    void setGeometry(SignedDistanceFunction* geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
-    void setSoil(SoilLookUp* soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before RootSystem::initialize())
+    void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
+    void setSoil(std::shared_ptr<SoilLookUp> soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before RootSystem::initialize())
     void reset(); ///< resets the root class, keeps the root type parameters
     virtual void initialize(bool verbose = true) override { initializeLB(4,5, verbose); };
     ///< creates the base roots, call before simulation and after setting the plant and root parameters
@@ -106,8 +106,8 @@ private:
     std::shared_ptr<Seed> seed = nullptr;
     SeedSpecificParameter seedParam;
 
-    SignedDistanceFunction* geometry = new SignedDistanceFunction(); ///< Confining geometry (unconfined by default)
-    SoilLookUp* soil = nullptr; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
+    std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>(); ///< Confining geometry (unconfined by default)
+    std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
     mutable std::vector<std::shared_ptr<Root>> roots = std::vector<std::shared_ptr<Root>>(); // buffer for getRoots()
     int numberOfCrowns = 0;

@@ -272,10 +272,10 @@ def plot_roots(pd, p_name, win_title = "", render = True):
     @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if isinstance(pd, pb.RootSystem):
-        pd = segs_to_polydata(pd, 1.)
+        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
 
     if isinstance(pd, pb.SegmentAnalyser):
-        pd = segs_to_polydata(pd, 1.)
+        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
 
     if win_title == "":
         win_title = p_name
@@ -283,7 +283,7 @@ def plot_roots(pd, p_name, win_title = "", render = True):
     pd.GetPointData().SetActiveScalars("radius")  # for the the filter
     tubeFilter = vtk.vtkTubeFilter()
     tubeFilter.SetInputData(pd)
-    tubeFilter.SetNumberOfSides(9)
+    tubeFilter.SetNumberOfSides(9)  #
     tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
     tubeFilter.Update()
 
@@ -458,18 +458,23 @@ class AnimateRoots:
         self.root_name = "subType"
         # self.soil_name = "subType"
         #
-        self.soil_data = None  # soil data
         self.min = None
         self.max = None
         self.res = None
+        self.soil_data = True  # soil data
         self.cuts = False  # Wireframe, or cuts
         #
         self.actors = []
         self.iren = None
         self.color_bar = None
         self.bounds = None
+        self.file = None
 
-    def start(self, axis = 'x'):
+    def __del__(self):
+        if self.file:
+            self.writer.End()
+
+    def start(self, axis = 'x', avi_file = None):
         """ creates plot and adjusts camera """
         self.create_root_actors()
         self.create_soil_actors()
@@ -491,6 +496,18 @@ class AnimateRoots:
             camera.SetViewUp(0, 0, 1)
             camera.Azimuth(30)
             camera.Elevation(30)
+        if self.file:
+            self.windowToImageFilter = vtk.vtkWindowToImageFilter();
+            self.windowToImageFilter.SetInput(renWin)
+            self.windowToImageFilter.SetInputBufferTypeToRGB()
+            self.windowToImageFilter.ReadFrontBufferOff()  # read from the back buffer
+            self.windowToImageFilter.Update()
+            w = vtk.vtkOggTheoraWriter()
+            w.SetFileName(self.file + ".ogv")
+            w.SetInputConnection(self.windowToImageFilter.GetOutputPort())
+            # w.SetCompressorFourCC("H264")  # feeling lucky
+            w.Start()  #
+            self.writer = w
 
     def update(self):
         """ animation call back function (called every 0.1 second) """
@@ -508,6 +525,10 @@ class AnimateRoots:
             ren.AddActor(a)
 
         self.iren.Render()
+        if self.file:
+            self.windowToImageFilter.Modified()
+            self.windowToImageFilter.Update()
+            self.writer.Write()
 
     def create_root_actors(self):
         if self.rootsystem:

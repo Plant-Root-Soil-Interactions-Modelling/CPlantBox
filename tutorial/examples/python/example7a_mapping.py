@@ -5,7 +5,7 @@ import plantbox as pb
 import vtk_plot as vp
 
 """ parameters """
-sim_time = 7  # [day]
+sim_time = 14  # [day]
 rs_age = 1  # initial age
 age_dependent = False  # conductivities
 dt = 0.1  # [days] Time step must be very small
@@ -14,7 +14,7 @@ periodic = False
 """ root system """
 rs = pb.MappedRootSystem()
 path = "../../../modelparameter/rootsystem/"
-name = "Zea_mays_1_Leitner_2010"  # Zea_mays_1_Leitner_2010
+name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")
 
 """ soil """
@@ -35,7 +35,7 @@ anim = vp.AnimateRoots(ana)
 anim.min = min_
 anim.max = max_
 anim.res = res_
-anim.soil_data = 1
+anim.file = "example7a"
 anim.start()
 
 for i in range(0, N):
