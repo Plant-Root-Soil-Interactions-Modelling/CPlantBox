@@ -12,14 +12,14 @@ rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
 rs.initialize()
 rs.simulate(120)
-rs.write("results/example_3d.vtp")
+rs.write("results/example_3b.vtp")
 
 r, depth, layers = 5, 100., 100  # Soil core analysis
 soilcolumn = pb.SDF_PlantContainer(r, r, depth, False)  # in the center of the root
 soilcolumn2 = pb.SDF_RotateTranslate(soilcolumn, 0, 0, pb.Vector3d(10, 0, 0))  # shift 10 cm
 
 # pick one geometry for further analysis
-geom = soilcolumn2
+geom = soilcolumn
 
 z_ = np.linspace(0, -1 * depth, layers)
 fig, axes = plt.subplots(nrows = 1, ncols = 3, figsize = (16, 8))
@@ -46,14 +46,14 @@ ana = pb.SegmentAnalyser(rs)
 ana.crop(geom)
 ana.pack()
 rl_ = []
-axes[1].set_title('All roots in 20*20*100')
+axes[1].set_title('Soil core')
 for t in times :
     ana.filter("creationTime", 0, t)
     rl_.append(ana.distribution("length", 0., -depth, layers, True))
     axes[1].plot(np.array(rl_[-1]) / layerVolume, z_)
 axes[1].legend(["10 days", "30 days", "60 days", "120 days"])
 
-# Only laterals
+# distributions per root type
 ana = pb.SegmentAnalyser(rs)
 ana.crop(geom)
 ana.pack()
@@ -69,5 +69,5 @@ axes[2].plot(np.array(rl_[2]) / layerVolume, z_)
 axes[2].legend(["basal roots", "first order roots", "second order roots"])
 
 fig.subplots_adjust()
-plt.savefig("results/example_3b2.png")
+plt.savefig("results/example_3b.png")
 plt.show()

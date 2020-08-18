@@ -1,4 +1,4 @@
-""" coupling with DuMux as solver for the soil part, run in dumux-rosi """
+""" coupling with DuMux as solver for the soil part """
 import sys
 sys.path.append("../../../build-cmake/rosi_benchmarking/python_solver/")
 sys.path.append("../solvers/")  # for pure python solvers
@@ -21,8 +21,8 @@ def sinusoidal(t):
 """ Parameters """
 min_b = [-4., -4., -25.]
 max_b = [4., 4., 0.]
-cell_number = [8, 8, 25]  # [8, 8, 15]  # [16, 16, 30]  # [32, 32, 60]  # [8, 8, 15]
-periodic = True
+cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
+periodic = False
 
 path = "../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
@@ -33,6 +33,7 @@ trans = 6.4  # cm3 /day (sinusoidal)
 wilting_point = -15000  # cm
 
 sim_time = 7  # [day] for task b
+rs_age = 10  # root system initial age
 age_dependent = False  # conductivities
 dt = 120. / (24 * 3600)  # [days] Time step must be very small
 
@@ -52,39 +53,39 @@ rs = pb.MappedRootSystem()
 rs.readParameters(path + name + ".xml")
 if not periodic:
     sdf = pb.SDF_PlantBox(0.99 * (max_b[0] - min_b[0]), 0.99 * (max_b[1] - min_b[1]), max_b[2] - min_b[2])
-    rs.setGeometry(sdf)
-rs.initialize()
-rs.simulate(10., False)
+else :
+    sdf = pb.SDF_PlantBox(np.Inf, np.Inf, max_b[2] - min_b[2])
+rs.setGeometry(sdf)
 r = XylemFluxPython(rs)
 init_conductivities(r, age_dependent)
 
 """ Coupling (map indices) """
 picker = lambda x, y, z : s.pick([x, y, z])
 r.rs.setSoilGrid(picker)  # maps segments
-r.rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), False)
+r.rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), True)
+rs.initialize()
+rs.simulate(rs_age, False)
+r.test()  # sanity checks
 nodes = r.get_nodes()
 cci = picker(nodes[0, 0], nodes[0, 1], nodes[0, 2])  # collar cell index
-rs_age = np.max(r.get_ages())
 
-""" Numerical solution (a) """
+""" Numerical solution """
 start_time = timeit.default_timer()
-x_, y_, w_, cpx, cps = [], [], [], [], []
+x_, y_ = [], []
 sx = s.getSolutionHead()  # inital condition, solverbase.py
-
 N = round(sim_time / dt)
 t = 0.
 
 for i in range(0, N):
 
     rs.simulate(dt)
+
     rx = r.solve(rs_age + t, -trans * sinusoidal(t), sx[cci], sx, True, wilting_point)  # xylem_flux.py
     x_.append(t)
     y_.append(float(r.collar_flux(rs_age + t, rx, sx)))  # exact root collar flux
-    print(-trans * sinusoidal(t), r.collar_flux(rs_age + t, rx, sx))
 
     fluxes = r.soilFluxes(rs_age + t, rx, sx, False)
     s.setSource(fluxes)  # richards.py
-    # s.ddt = dt / 10
     s.solve(dt)
     sx = s.getSolutionHead()  # richards.py
 

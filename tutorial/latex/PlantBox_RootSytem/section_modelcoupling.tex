@@ -87,20 +87,7 @@ Putting the last two sections together, we can easily set up an example, using t
 
 The next example mimics benchmark C12 \citep{schnepf2019call}, but with a static simulated root system. The example must be run out of dumux-rosi (located in dumux-rosi/rosi$\_$benchmarking/python$\_$solver/coupled), otherwise the DuMux Python coupling is not available. 
 
-\lstinputlisting[firstline=1, language=Python, caption=Example 6b]{../../examples/python/example6c_coupling.py}
-
-\begin{figure}
-\begin{subfigure}[c]{0.5\textwidth}
-\includegraphics[width=0.99\textwidth]{example6c.png}
-\subcaption{Confined} \label{fig:example6c}
-\end{subfigure}
-\begin{subfigure}[c]{0.5\textwidth}
-\includegraphics[width=0.99\textwidth]{example6c_periodic.png}
-\subcaption{Periodic boundary condtions} \label{fig:example6c_peridodic}
-\end{subfigure}
-\caption{Water depletion due to root uptake after one week. } \label{fig:example6c}
-\end{figure}
-
+\lstinputlisting[firstline=1, language=Python, caption=Example 6c]{../../examples/python/example6c_coupling.py}
 
 \begin{itemize}
 
@@ -126,6 +113,18 @@ The next example mimics benchmark C12 \citep{schnepf2019call}, but with a static
 
 \end{itemize}
 
+\begin{figure}
+\begin{subfigure}[c]{0.5\textwidth}
+\includegraphics[width=0.99\textwidth]{example6c.png}
+\subcaption{Confined} \label{fig:example6c}
+\end{subfigure}
+\begin{subfigure}[c]{0.5\textwidth}
+\includegraphics[width=0.99\textwidth]{example6c_periodic.png}
+\subcaption{Periodic boundary condtions} \label{fig:example6c_peridodic}
+\end{subfigure}
+\caption{Water depletion due to root uptake after one week. } \label{fig:example6c}
+\end{figure}
+
 With above code we can compare total root system water uptake in a container, with the uptake if periodic boundary conditions are used. While the first scenario reflects the situation in a plant pot, periodic boundary conditions reflect the situation when the plant grows in the field, where the planting distance is approximately the domain size. Figure \ref{fig:uptake} shows both situations, showing that the boundary conditions will strongly affect total water uptake, because roots are less evenly distributed in the pot scenario and water redistribution is impeded by the pot boundaries.
 
 \begin{figure}
@@ -137,7 +136,7 @@ With above code we can compare total root system water uptake in a container, wi
 \includegraphics[width=0.99\textwidth]{Figure6c_periodic.png}
 \subcaption{Periodic boundary condtions} \label{fig:uptake_peridodic}
 \end{subfigure}
-\caption{Water uptake and cumulated uptake under} \label{fig:uptake}
+\caption{Water uptake and cumulated uptake} \label{fig:uptake}
 \end{figure}
 
 

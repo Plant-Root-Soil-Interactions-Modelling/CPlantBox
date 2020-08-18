@@ -30,17 +30,15 @@ class SoilLinear(pb.SoilLookUp):
     def __init__(self, soil):
         super(SoilLinear, self).__init__()
         self.soil = soil
+        self.points = self.soil.getDofCoordinates() / 100.
         self.update()
 
     def update(self):
-        self.points = self.soil.getDofCoordinates() / 100.
         self.sol = self.soil.getSolution()
 
-    def getValue(self, pos, organ):  # SLOW
-        p = np.array(pos)
-        p = np.expand_dims(p, axis = 0)  # make 1x3
-        v = self.soil.interpolate_(p, self.points, self.sol)
-        return v
+    def getValue(self, pos, organ):
+        p = np.expand_dims(np.array(pos), axis = 0)  # make 1x3
+        return self.soil.interpolate_(p, self.points, self.sol)
 
 
 def sinusoidal(t):
@@ -50,7 +48,7 @@ def sinusoidal(t):
 """ Parameters """
 min_b = [-4., -4., -25.]
 max_b = [4., 4., 0.]
-cell_number = [8, 8, 25]  # [8, 8, 15]  # [16, 16, 30]  # [32, 32, 60]
+cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 periodic = False
 
 path = "../modelparameter/rootsystem/"
@@ -101,14 +99,14 @@ for p in rs.getRootRandomParameter():
         p.tropismN = 2  # strength of tropism
         p.tropismS = sigma[p.subType - 1]
 
-soil = SoilNN(s)
+soil = SoilNN(s)  # SoilLinear(s)
 rs.setSoil(soil)
 
 rs.initialize()
 rs.simulate(rs_age, False)
 r.test()  # sanity checks
 nodes = r.get_nodes()
-cci = picker(nodes[0, 0], nodes[0, 1], nodes[0, 2])  # collar cell index
+cci = picker(nodes[0, 0], nodes[0, 1], nodes[0, 2])  # cell index
 
 """ Numerical solution """
 start_time = timeit.default_timer()
@@ -125,7 +123,7 @@ for i in range(0, N):
 
     rx = r.solve(rs_age + t, -trans * sinusoidal(t), sx[cci], sx, True, wilting_point)  # xylem_flux.py
     x_.append(t)
-    y_.append(float(r.collar_flux(rs_age + t, rx, sx)))  # exact root collar flux
+    y_.append(float(r.collar_flux(rs_age + t, rx, sx)))
 
     fluxes = r.soilFluxes(rs_age + t, rx, sx, False)
     s.setSource(fluxes)  # richards.py
