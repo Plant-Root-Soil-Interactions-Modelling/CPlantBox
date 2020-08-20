@@ -46,4 +46,4 @@ rs.setGeometry(layer)  # just for vizualisation
 rs.write("results/example_4a.py")
 
 # Plot, using vtk
-vp.plot_roots(rs, "type", True, 'oblique')
+vp.plot_roots(rs, "type")

@@ -165,7 +165,7 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
     if (data.count(name)) { // first, check data
         return data.at(name);
     }
-    std::vector<double> d(segO.size()); // make return vector
+    std::vector<double> d(segments.size()); // make return vector
     if (name == "length") {
         for (size_t i=0; i<d.size(); i++) {
             d.at(i) = getSegmentLength(i);
@@ -190,7 +190,7 @@ std::vector<double> SegmentAnalyser::getParameter(std::string name, double def) 
             d.at(i) = segO.at(i).lock()->getParameter(name);
         } else { // in case the segment has no origin
             if (std::isnan(def)) {
-                throw std::invalid_argument("SegmentAnalyser::getParameter: segment origin expired (segment has no onwer), "
+                throw std::invalid_argument("SegmentAnalyser::getParameter: segment origin expired (segment has no owner), "
                     "for segment index " + std::to_string(i) + ", parameter name "+name);
             } else {
                 d.at(i) = def;

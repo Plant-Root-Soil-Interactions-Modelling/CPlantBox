@@ -35,7 +35,7 @@ anim = vp.AnimateRoots(ana)
 anim.min = min_
 anim.max = max_
 anim.res = res_
-anim.file = "example7a"
+anim.file = "results/example7a"
 anim.start()
 
 for i in range(0, N):
@@ -53,8 +53,7 @@ for i in range(0, N):
 
     ana = pb.SegmentAnalyser(rs.mappedSegments())
     ana.addData("linear_index", x)
+
     anim.rootsystem = ana
     anim.root_name = "linear_index"
-
     anim.update()
-
