@@ -29,7 +29,7 @@ Root elongation rate is influenced by soil properties such as water content, tem
 \item[13-17] We create a confining box with two overlapping boxes called $left$ and $right$. These geometries are used for later analysis.
 
 \item[20-24] We define static soil properties using SDF (L23, L24) as we did in Section \ref{sec:hydro}. 
-The left compartment has the value $minS$, the right $maxS$, between them is a linear gradient of length $slope$.
+The left compartment has the value $minS$, the right $maxS$, between them is a linear gradient of length $slope$. 
 
 \item[27-31] Sets the scaling functions. L29 adjusts axial resolution and L30 tortuosity $sigma$. L31 sets the scale elongation function $f_{se}$ to the soil property (i.e. scales to $minS$ in the left, $maxS$ in the right compartment). 
 
@@ -78,13 +78,6 @@ Analog to Example 5a two compartments are created, and the insertion angle is sc
 \lstinputlisting[firstline=1, language=Python, caption=Example 5c]{../../examples/python/example5c_insertionangle.py}
 
 \begin{itemize}
-
-\item[7-10] (as before) Creates the root system and opens the parameter file.
-
-\item[13-17](as before) We create a confining box with two overlapping boxes called left and right. These geometries are used for later analysis.
-
-\item[20-24] (as before) We define a static soil properties using SDF (L23, L24) as we did in Section \ref{sec:hydro}. 
-The left compartment has the value $minS$, the right $maxS$, between them is a linear gradient of length $slope$.
 
 \item[27-32] Sets the insertion angle scaling functions to second order laterals only (L29). L20 adjusts axial resolution and, L31 tortuosity $sigma$, and L32 sets the scale insertion angle function $f_{sa}$ to the soil property. Additionally, the maximal length of second order roots is redoubled. 
 
