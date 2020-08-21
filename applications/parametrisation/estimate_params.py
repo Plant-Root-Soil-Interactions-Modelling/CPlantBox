@@ -68,8 +68,29 @@ def base_roots(polylines, properties):
             pl.append(p)
             for k in properties.keys():
                 ps.setdefault(k, []).append(properties[k][i])
-    return pl, ps           
+    return pl, ps       
 
+def laterals1(polylines, properties):
+    """
+    return only the base roots
+    """
+    pp = properties["order"] 
+    pl, ps = [], {}
+    for i, p in enumerate(polylines):
+        if pp[i] == 2:  # add if first order lateral
+            #print(properties.keys())
+            #pl.append(p)
+            for k in properties.keys():
+                try: 
+                    dummy = properties[k][i]
+                except IndexError: 
+                    dummy = None
+                if dummy is None:
+                    print('Found: First order laterals that miss some properties found')
+                else:
+                    ps.setdefault(k, []).append(properties[k][i])
+                    pl.append(p)
+    return pl, ps   
 
 def create_length(polylines, properties):
     """
@@ -205,9 +226,16 @@ def reconstruct_laterals(polylines, properties, base_polyline, snap_radius=0.5):
             if dist < snap_radius:  # TODO criteria 
                 npl.append(polylines[i])
                 for k in properties.keys():
-                    nprop.setdefault(k, []).append(properties[k][i])                
-                    nprop["parent-poly"][-1] = 0 
-                    nprop["parent-node"][-1] = nni
+                    try: 
+                        dummy = properties[k][i]
+                    except IndexError: 
+                        dummy = None
+                    if dummy is None:
+                        print('Found in reconstruct_laterals: First order laterals that miss some properties found')
+                    else:
+                        nprop.setdefault(k, []).append(properties[k][i])                
+                        nprop["parent-poly"][-1] = 0 
+                        nprop["parent-node"][-1] = nni
             else: 
                 s += 1    
                    
@@ -241,6 +269,7 @@ def analyze_zones(polylines, properties):
     for i in range(0, len(ii) - 1):  # laterals
         i0 = ii[i]
         i1 = ii[i + 1]
+        print(i0, i1)
         ln_.append(polyline_length(i0, i1, polylines[0]))        
     return lb, ln_, la
 
