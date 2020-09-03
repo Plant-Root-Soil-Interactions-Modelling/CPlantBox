@@ -34,13 +34,9 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		int i = rs->segments[si].x;
 		int j = rs->segments[si].y;
 
-		double psi_s = 0.;
+		double psi_s;
 		if (cells) { // soil matric potential given per cell
-			try {
 		    psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
-			} catch(...) {
-			  std::cout << "mapping failed\n" << std::flush;
-			}
 		} else {
 			psi_s = sx.at(j-1); // segIdx = s.y-1
 		}
@@ -167,7 +163,7 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  *
  * @return Hash map with cell indices as keys and fluxes as values [cm3/day]
  */
-std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx)
+std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx, bool cells)
 {
 	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
 	for (int si = 0; si<rs->segments.size(); si++) {
@@ -179,7 +175,12 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		    std::cout << j << " index j is broken \n"<< std::flush;
 		}
 
-		double psi_s = sx.at(si);
+		double psi_s;
+		if (cells) { // soil matric potential given per cell
+		    psi_s = sx.at(rs->seg2cell[si]);
+		} else {
+			psi_s = sx.at(si);
+		}
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segments
 		double age = simTime - rs->nodeCTs[j];
@@ -191,7 +192,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         Vector3d n2 = rs->nodes[j];
 		double l = (n2.minus(n1)).length();
 
-		double f =  -2*a*M_PI*kr; // flux is proportional to f // *rho*g
+		double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
 		double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
 
 		double tau = std::sqrt(2*a*M_PI*kr/kz); // sqrt(c) [cm-1]
@@ -211,7 +212,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
  */
 std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<double> rx, const std::vector<double>& sx, double critP, std::function<double(double)> mfp) {
 	auto outerRadii = this->segOuterRadii();
-	auto fluxes = this->segFluxes(simTime, rx, sx, false);
+	auto fluxes = this->segFluxes(simTime, rx, sx, false); //< !!!!!!!!!!!WRONG SX should be rsx
 	for (int i = 0; i<rs->segments.size(); i++) { // modify rx in case of stress
 		double q_root = fluxes.at(i); // UNITS?
 		double q_out = 0.;
@@ -285,7 +286,7 @@ std::vector<double> XylemFlux::segOuterRadii(int type) const {
  * @param segFluxes 	segment fluxes [cm3/day]
  * @return fluxes for each cell idx [cm3/day]
  */
-std::map<int,double> XylemFlux::sumSoilFluxes(const std::vector<double>& segFluxes)
+std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxes)
 {
 	std::map<int,double> fluxes;
 	for (int si = 0; si<rs->segments.size(); si++) {
