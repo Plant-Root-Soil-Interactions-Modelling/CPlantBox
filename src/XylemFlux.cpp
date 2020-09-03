@@ -206,13 +206,12 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 }
 
 /**
- * Applies source term (operator splitting)
- * Only apllies soilFluxes if not stressed according to approximation of Schröder et al.
- * If stressed applies Flux based assuming critP in xylem
+ * Calculates the matric potential at the root soil interface according to Schröder et al.
  */
-std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<double> rx, const std::vector<double>& sx, double wiltingPoint,
+std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
     std::function<double(double)> mfp, std::function<double(double)> imfp) {
 
+    std::vector<double> rsx = std::vector<double>(rx.size());
     auto lengths = this->segLength();
     auto outerRadii = this->segOuterRadii();
     auto fluxes = this->segFluxes(simTime, rx, sx, false, true); // classical sink
@@ -236,16 +235,15 @@ std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, std::vector<do
                 h = wiltingPoint;
             }
             if (p <= h) { // flux into root
-                rx[i] = h;
+                rsx[i] = h;
             } else { // flux into soil
-                rx[i] = rp; // don't use schroeder (no flux)
+                rsx[i] = rp; // don't use schroeder (no flux)
             }
         } else { // flux into soil
-            rx[i] = p; // don't use schroeder
+            rsx[i] = p; // don't use schroeder
         }
     }
-
-    return this->segFluxes(simTime, rx, sx, false, true); // fluxes due to new rx
+    return rsx; // fluxes due to new rx
 }
 
 /**
