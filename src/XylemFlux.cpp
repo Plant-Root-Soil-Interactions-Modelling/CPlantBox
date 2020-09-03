@@ -208,7 +208,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 /**
  * Calculates the matric potential at the root soil interface according to Schröder et al.
  */
-std::vector<double> XylemFlux::segFluxesSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
+std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
     std::function<double(double)> mfp, std::function<double(double)> imfp) {
 
     std::vector<double> rsx = std::vector<double>(rx.size());

@@ -787,7 +787,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
             .def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0)
 			.def("segLength",&XylemFlux::segLength)
-            .def("segFluxesSchroeder",&XylemFlux::segFluxesSchroeder)
+            .def("segSchroeder",&XylemFlux::segSchroeder)
             .def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
