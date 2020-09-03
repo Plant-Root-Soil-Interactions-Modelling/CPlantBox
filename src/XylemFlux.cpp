@@ -106,50 +106,53 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
  */
 std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx)
 {
-    std::map<int,double> fluxes;
-
-    for (int si = 0; si<rs->segments.size(); si++) {
-
-        int i = rs->segments[si].x;
-        int j = rs->segments[si].y;
-        int segIdx = j-1;
-
-        if (rs->seg2cell.count(segIdx)>0) {
-
-            int cellIdx = rs->seg2cell[segIdx];
-            double psi_s = sx.at(cellIdx);
-
-            double a = rs->radii[si]; // si is correct, with ordered and unordered segments
-            double age = simTime - rs->nodeCTs[j];
-            int type = rs->types[si];
-            double  kr = kr_f(age, type);
-            double  kz = kx_f(age, type);
-
-            auto n1 = rs->nodes[i];
-            auto n2 = rs->nodes[j];
-            double l = (n2.minus(n1)).length();
-
-            double f =  -2*a*M_PI*kr; // flux is proportional to f // *rho*g
-            double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
-
-            double tau = std::sqrt(2*a*M_PI*kr/kz); // sqrt(c) [cm-1]
-            double d = std::exp(-tau*l)-std::exp(tau*l); // det
-            double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
-
-            double flux = fExact*(!approx)+approx*fApprox;
-            // std::cout << cellIdx << ", " << fExact << ", " << fApprox << ", psi_s " << psi_s << "\n" << std::flush;
-            if (fluxes.count(cellIdx)==0) {
-                fluxes[cellIdx] = flux;
-            } else {
-                fluxes[cellIdx] += flux; // sum up fluxes per cell
-            }
-
-        } else {
-            std::cout << "XylemFlux::soilFluxes: Warning! unmapped segments with index " << segIdx << "\n";
-        }
-
-    }
-    return fluxes;
+    return sumSegFluxes(segFluxes(simTime,  rx, sx, approx, true));
+//
+//    std::map<int,double> fluxes;
+//
+//    for (int si = 0; si<rs->segments.size(); si++) {
+//
+//        int i = rs->segments[si].x;
+//        int j = rs->segments[si].y;
+//        int segIdx = j-1;
+//
+//        if (rs->seg2cell.count(segIdx)>0) {
+//
+//            int cellIdx = rs->seg2cell[segIdx];
+//            double psi_s = sx.at(cellIdx);
+//
+//            double a = rs->radii[si]; // si is correct, with ordered and unordered segments
+//            double age = simTime - rs->nodeCTs[j];
+//            int type = rs->types[si];
+//            double  kr = kr_f(age, type);
+//            double  kz = kx_f(age, type);
+//
+//            auto n1 = rs->nodes[i];
+//            auto n2 = rs->nodes[j];
+//            double l = (n2.minus(n1)).length();
+//
+//            double f =  -2*a*M_PI*kr; // flux is proportional to f // *rho*g
+//            double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
+//
+//            double tau = std::sqrt(2*a*M_PI*kr/kz); // sqrt(c) [cm-1]
+//            double d = std::exp(-tau*l)-std::exp(tau*l); // det
+//            double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
+//
+//            double flux = fExact*(!approx)+approx*fApprox;
+//
+//            // std::cout << cellIdx << ", " << fExact << ", " << fApprox << ", psi_s " << psi_s << "\n" << std::flush;
+//            if (fluxes.count(cellIdx)==0) {
+//                fluxes[cellIdx] = flux;
+//            } else {
+//                fluxes[cellIdx] += flux; // sum up fluxes per cell
+//            }
+//
+//        } else {
+//            std::cout << "XylemFlux::soilFluxes: Warning! unmapped segments with index " << segIdx << "\n";
+//        }
+//
+//    }
+//    return fluxes;
 }
 
 /**
@@ -170,10 +173,6 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
         int i = rs->segments[si].x;
         int j = rs->segments[si].y;
-
-        if (j>=rs->nodeCTs.size()) {
-            std::cout << j << " index j is broken \n"<< std::flush;
-        }
 
         double psi_s;
         if (cells) { // soil matric potential given per cell
@@ -201,6 +200,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
         double flux = fExact*(!approx)+approx*fApprox;
         fluxes[si] = flux;
+
     }
     return fluxes;
 }
@@ -306,7 +306,7 @@ std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxe
             if (fluxes.count(cellIdx)==0) {
                 fluxes[cellIdx] = segFluxes[segIdx];
             } else {
-                fluxes[cellIdx] += segFluxes[segIdx]; // sum up fluxes per cell
+                fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
             }
         }
     }
