@@ -219,7 +219,7 @@ std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<do
         int cellIdx = rs->seg2cell.at(i);
         double p = sx[cellIdx];
         double rp = rx[i];
-        double q_root = -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]);
+        double q_root = -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
         double q_out = 0.;
         double r_in = rs->radii.at(i);
         double r_out = outerRadii.at(i);
@@ -234,7 +234,7 @@ std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<do
             } else { // stress
                 h = wiltingPoint;
             }
-            if (p <= h) { // flux into root
+            if (rp <= h) { // flux into root
                 rsx[i] = h;
             } else { // flux into soil
                 rsx[i] = rp; // don't use schroeder (no flux)
