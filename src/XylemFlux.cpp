@@ -39,6 +39,10 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
             psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
         } else {
             psi_s = sx.at(j-1); // segIdx = s.y-1
+            if (si!=j-1) {
+                std::cout << "OUCH \n";
+                throw "help";
+            }
         }
 
         double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
@@ -211,18 +215,19 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
     std::function<double(double)> mfp, std::function<double(double)> imfp) {
 
-    std::vector<double> rsx = std::vector<double>(rx.size());
+    std::vector<double> rsx = std::vector<double>(rs->segments.size()); // rx is defined at the nodes, i.e. rx.size()+1 == segments.size()
     auto lengths = this->segLength();
     auto outerRadii = this->segOuterRadii();
     auto fluxes = this->segFluxes(simTime, rx, sx, false, true); // classical sink
-    for (int i = 0; i<rs->segments.size(); i++) { // modify rx in case of stress
+    for (int i = 0; i<rs->segments.size(); i++) { // calculate rsx
         int cellIdx = rs->seg2cell.at(i);
         double p = sx[cellIdx];
-        double rp = rx[i];
-        double q_root = -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
+        double rp = 0.5*(rx.at(rs->segments[i].x)+rx.at(rs->segments[i].y)); // defined at the node
+        double q_root = 0.; // -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
         double q_out = 0.;
         double r_in = rs->radii.at(i);
         double r_out = outerRadii.at(i);
+        rsx[i] = p;
         if (rp < p) { // flux into root
             double r = r_in;
             double rho = r_out/r_in;
@@ -243,7 +248,7 @@ std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<do
             rsx[i] = p; // don't use schroeder
         }
     }
-    return rsx; // fluxes due to new rx
+    return rsx; // matric potential at the soil root interface
 }
 
 /**
