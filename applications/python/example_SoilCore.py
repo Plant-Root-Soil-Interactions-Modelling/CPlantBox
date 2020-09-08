@@ -1,9 +1,9 @@
 """ Shehan's soil core example """
 
-import sys
-sys.path.append("../..")
+import sys;  sys.path.append("../..")
 import plantbox as pb
 
+print("hallo")
 import math
 import numpy as np
 
@@ -88,8 +88,8 @@ allRS = initialize_root_systems(3, 3, 17, 45)
 times = [30, 60, 90]
 simulate_rs(times, allRS)
 
-x = [ 0,1,2 ]
-y = [ 0,1,2 ]
+x = [ 0, 1, 2 ]
+y = [ 0, 1, 2 ]
 r = 2.1  # core radius (cm)
 h = 160.  # core length (cm)
 cores = soil_cores(x, y, r, h)

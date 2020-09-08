@@ -1,13 +1,19 @@
+#ifndef EXUDATIONMODEL_H
+#define EXUDATIONMODEL_H
+
+#include "external/gauss_legendre/gauss_legendre.h"
+#include "soil.h"
+#include "sdf_rs.h"
+#include "RootSystem.h"
+
 #include <functional>
 
-#include "../external/gauss_legendre/gauss_legendre.h"
-#include "../src/soil.h"
-#include "../src/sdf_rs.h"
 
+namespace CPlantBox {
 
-
-namespace CRootBox {
-
+/**
+ * docme
+ */
 class ExudationModel {
 public:
 
@@ -37,13 +43,12 @@ public:
      * Constructors
      *
      */
-    ExudationModel(double width, double depth, int n, RootSystem& rs) :ExudationModel(width, width, depth, n, n, n, rs) {
-    }
+    ExudationModel(double width, double depth, int n, std::shared_ptr<RootSystem> rs) :ExudationModel(width, width, depth, n, n, n, rs) { }
 
-    ExudationModel(double length, double width, double depth, int nx, int ny, int nz, RootSystem& rs) :grid(EquidistantGrid3D(length, width, depth, nx, ny, nz)) {
+    ExudationModel(double length, double width, double depth, int nx, int ny, int nz, std::shared_ptr<RootSystem> rs) :grid(EquidistantGrid3D(length, width, depth, nx, ny, nz)) {
 
         dx3 = (length/nx)*(width/ny)*(depth/nz); // for integration of eqn 13
-        roots = rs.getRoots();
+        roots = rs->getRoots();
 
         for (const auto& r : roots) {
             if (r->getNumberOfNodes()>1) { // started growing
@@ -197,7 +202,7 @@ public:
     }
 
     // Returns the linearly interpolated position along the root r at age a
-    static Vector3d pointAtAge(Root* r, double a) {
+    static Vector3d pointAtAge(std::shared_ptr<Root> r, double a) {
         a = std::max(0.,a);
         double et = r->getNodeCT(0)+a; // age -> emergence time
         size_t i=0;
@@ -264,7 +269,7 @@ public:
     }
 
     // Root system
-    std::vector<Root*> roots;
+    std::vector<std::shared_ptr<Root>> roots;
     std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
     std::vector<Vector3d> tip;
     std::vector<Vector3d> v; // direction from tip towards root base
@@ -275,7 +280,7 @@ public:
     // Set before integrating
     Vector3d x_ = Vector3d(); // integration point
     int n_ = 0;
-    Root* r_ = nullptr; // current root
+    std::shared_ptr<Root> r_ = nullptr; // current root
     double age_ = 0;
     Vector3d tip_ = Vector3d();
     Vector3d v_ = Vector3d();
@@ -287,3 +292,4 @@ public:
 
 }
 
+#endif

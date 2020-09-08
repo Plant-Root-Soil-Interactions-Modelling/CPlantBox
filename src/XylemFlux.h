@@ -22,12 +22,14 @@ public:
     virtual ~XylemFlux() { }
 
     void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true,
-    		const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
+        const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
 
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false); // [cm3/day]
     std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false, bool cells = false); // for each segment in [cm3/day]
     std::vector<double> segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
-    std::function<double(double)> mpf, std::function<double(double)> impf);
+        std::function<double(double)> mfp, std::function<double(double)> imfp);
+    std::vector<double> segSchroederStressedFlux(const std::vector<double>& sx, double wiltingPoint, double hc,
+        std::function<double(double)> mfp, std::function<double(double)> imfp);
 
     std::vector<double> segOuterRadii(int type = 0) const; ///< outer cylinder radii to match cell volume
     std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
@@ -67,6 +69,8 @@ protected:
     double kx_tablePerType(double age, int type) { return interp1(age, kxs_t.at(type), kxs.at(type)); }
 
     static double interp1(double ip, std::vector<double> x, std::vector<double> y);
+
+    static double schroederStress(double r, double p, double q_out, double r_in, double r_out, std::function<double(double)> mfp, std::function<double(double)> imfp);
 
 };
 
