@@ -60,6 +60,8 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
 	double beta = getphytomerId(stem_p->subType)*M_PI*getStemRandomParameter()->rotBeta +
 			M_PI*plant->rand()*getStemRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(iHeading);
+		beta = beta + getStemRandomParameter()->initBeta;
+
 	if (getStemRandomParameter()->initBeta >0 && getphytomerId(stem_p->subType)==0 ){
 		beta = beta + getStemRandomParameter()->initBeta;
 	}
@@ -219,7 +221,7 @@ void Stem::simulate(double dt, bool verbose)
 									}else
 									{
 										// terminates the loop if the stem is not organtype 2
-										break;
+										//break;
 									}
 
 								}
