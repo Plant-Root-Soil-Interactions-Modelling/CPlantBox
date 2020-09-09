@@ -14,14 +14,26 @@ def parse_rsml_(organ :ET, polylines :list, properties :dict, functions :dict, p
         polyline = []
         for p in poly[0]:  # 0 is the polyline
             n = p.attrib
-            newnode = [ float(n['x']), float(n['y']), float(n['z']) ]
+            if len(n) == 3:  # RSML is 3D
+                newnode = [ float(n['x']), float(n['y']), float(n['z']) ]
+            else:  # RSML is 2D
+                newnode = [ float(n['x']) / 116.93, 0.0, -1 * float(n['y']) / 116.93 + 10 ]  # 116.93 is resolution in pixel/cm TODO: get this info out of RSML if possible
             polyline.append(newnode)
         polylines.append(polyline)
         properties.setdefault("parent-poly", []).append(parent)
 
     for prop in organ.iterfind('properties'):
-        for p in prop:  # i.e legnth, type, etc..
-            properties.setdefault(str(p.tag), []).append(float(p.attrib['value']))
+
+        if len(list(prop)) == 2:  # special fix for broken .rsml # TODO <--------- Remove after repairs...
+            properties.setdefault('parent-node' , []).append(-1)
+
+        for p in prop:  # i.e length, type, etc..
+            if not p.attrib['value']:  # no value defined
+                properties.setdefault(str(p.tag), []).append(-99)
+            elif any(c.isalpha() for c in p.attrib['value']):
+                properties.setdefault(str(p.tag), []).append(-99)
+            else:
+                properties.setdefault(str(p.tag), []).append(float(p.attrib['value']))
 
     for funcs in organ.iterfind('functions'):
         for fun in funcs:
@@ -110,15 +122,15 @@ def plot_rsml(polylines :list, prop :list):
     polylines(list): flat list of polylines, one polyline per root 
     prop(list): a single property, list of scalar value, on per root 
     """
-    f = matplotlib.colors.Normalize(vmin=min(prop), vmax=max(prop))
+    f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
     cmap = plt.get_cmap("jet", 256)
     for i, pl in enumerate(polylines):
         nodes = np.array(pl)
-        plt.plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[i])))  # y,z plot
+        plt.plot(nodes[:, 0], nodes[:, 2], color = cmap(f(prop[i])))  # x,z plot
     plt.axis('equal')
     plt.show()
 
-    
+
 def plot_multiple_rsml(polylines :list, prop :list, times):
     """Plots the polylines in y-z axis with colors given by a root property
     TODO
@@ -127,20 +139,20 @@ def plot_multiple_rsml(polylines :list, prop :list, times):
     prop(list): a single property, list of scalar value, on per root 
     """
     n = len(polylines)
-    fig, axes = plt.subplots(1, n, figsize=(15, 7))
-    f = matplotlib.colors.Normalize(vmin=min(prop[-1]), vmax=max(prop[-1]))
+    fig, axes = plt.subplots(1, n, figsize = (15, 7))
+    f = matplotlib.colors.Normalize(vmin = min(prop[-1]), vmax = max(prop[-1]))
     cmap = plt.get_cmap("jet", 256)
-    for j in range(0, n):        
+    for j in range(0, n):
         for i, pl in enumerate(polylines[j]):
             nodes = np.array(pl)
-            if i==0:
+            if i == 0:
                 axes[j].plot(nodes[:, 1], nodes[:, 2], "r")  # y,z plot
             else:
-                axes[j].plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[j][i])))  # y,z plot
+                axes[j].plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[j][i])))  # y,z plot
         axes[j].set_xlim([-5, 5.])
         axes[j].set_ylim([-15., 0.])
-        axes[j].set_title("{} days".format(times[j]))  
-    fig.tight_layout()         
+        axes[j].set_title("{} days".format(times[j]))
+    fig.tight_layout()
     plt.show()
 
 
@@ -152,10 +164,10 @@ def plot_segs(nodes :list, segs :list, fun :list):
     segs(list): list of two integer node indices for each line segment 
     fun(list): a single function, list of scalar value, on per segment, see TODO 
     """
-    f = matplotlib.colors.Normalize(vmin=min(fun), vmax=max(fun))
+    f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
     cmap = plt.get_cmap("jet", 256)
     for i, s in enumerate(segs):
-        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color=cmap(f(fun[i])))
+        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
     plt.axis('equal')
     plt.show()
 
@@ -173,7 +185,7 @@ if __name__ == '__main__':
 
     nodes, segs = get_segments(polylines, properties)
     nodes = np.array(nodes)
-    segs = np.array(segs, dtype=np.int64)
+    segs = np.array(segs, dtype = np.int64)
 
 #     print(functions["emergence_time"]) # TODO
 #     plot_segs(nodes, segs, functions["emergence_time"])  # slow

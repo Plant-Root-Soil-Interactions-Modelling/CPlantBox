@@ -1,7 +1,7 @@
 import sys
 sys.path.append("../..")
 import plantbox as pb
-import rsml_reader_px as rsml
+import rsml_reader as rsml
 import estimate_params as es
 
 import math

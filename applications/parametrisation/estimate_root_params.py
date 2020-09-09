@@ -1,18 +1,16 @@
-import sys
-from scipy.optimize._tstutils import aps10_f
-sys.path.append("../..")
-import plantbox as pb
-
-import math
+import sys;  sys.path.append("../..")
 import numpy as np
 from scipy.optimize import minimize
+import rsml_reader as rsml
+
+import plantbox as pb
 
 
 class Root:
     """ A structure for easy analysis considering multiple measurements """
 
     def __init__(self):
-        """ creates empty root """
+        """ creates empty Root """
         self.id = -1
         self.measurements = 0  # number of measurements
         self.measurement_times = []
@@ -22,157 +20,100 @@ class Root:
         self.parent_base_length = -1
         # laterals
         self.laterals = {}
-        self.nodes = {}  #
+        self.nodes = {}
         # RSML additional data
         self.props = {}
         self.funs = {}
 
-    def order(self, i = 0):
-        if self.measurements == 0:
-            raise "Root.order: uninitialized root"
-        if self.parent:
-            return self.parent.order(i + 1)
-        else:
-            return i
-
-    def add_measurement(self, time, i, poly, prop, fun):
-        """ creates the i-th root from the polylines @param roots, expects prop['parent-poly'] """
+    def add_measurement(self, time :float, i :int, poly :np.array, prop :dict, fun :dict, roots :dict):
+        """ creates the i-th root from the polylines and adds it to the roots dictionary"""
         if self.measurements == 0:
             self.id = i
         assert self.id == i, "Root.add_measurement: root id changed"
         self.measurements += 1
         self.measurement_times.append(time)
+        self.nodes[time] = np.array([np.array(n) for n in poly[i]])  # convert to 2d numpy array
+        self.props[time] = (lambda key: prop[key][i])  # restrict to root i
+        self.funs[time] = (lambda key, j: fun[key][i][j])  # restrict to root i
+        assert self.id > -1, "Root.add_measurement: self.id has negative index"
+        roots[self.id] = self
 
-        self.props[time] = prop
-        self.funs[time] = fun
+    def initialize(self, roots :dict):
+        """ connects the roots creating parent and laterals expects prop['parent-poly'],  prop['parent-node']  """
+        t0 = self.measurement_times[0]
+        parent_id = self.props[t0]('parent-poly')
+        self.parent = roots[parent_id]  # for -1 is None
+        self.parent_node = self.props[t0]('parent-node')
+        if self.parent:
+            self.parent_base_length = self.parent.length(0, int(self.parent_node))
+            for t in self.measurement_times:
+                self.parent.laterals.setdefault(t, []).append(self)  # register laterals
+        else:
+            self.parent_base_length = 0.
+        for t in self.measurement_times[1:]:  # check integrity for following time steps
+            if self.parent:
+                assert self.parent.id == self.props[t]('parent-poly'), "Root.initialize: parent root id changed in measurements"
+                assert self.parent_node == self.props[t]('parent-node'), "Root.initialize: parent node changed in measurements"
 
-    def register_laterals(self, time, roots):
-        pass
-
-    def register_parents(self, roots):
-        """ docme """
+    def sort_laterals(self):
+        """ sorts the laterals after their parent node index """
         for t in self.measurement_times:
-            parent_id = self.props[t]['parent-poly']
-            if parent_id > -1:
-                self.parent = roots[parent_id]
-            else:
-                self.parent = None
+            l_ = []
+            for i, l in enumerate(self.laterals.setdefault(t, [])):
+                l_.append((l.parent_node, i))
+                l_.sort()
+            self.laterals[t] = [self.laterals[t][l_[j][1]] for j in range(0, len(l_))]
+#             pns = [l_[j][0] for j in range(0, len(l_))]
+#             print(pns)
+#             print([l.id for l in self.laterals[t]])
 
-
-def parse_rsml(rsml_name):
-    roots = []
-    poly, prop, fun = rsml.read_rsml(rsml_name)
-
-
-def find_base_index(poly_indices, i):
-    """
-    The index of the base, root this root with inde i is connected to
-    
-    @param poly_indices      the indices of all parent roots, usually properties["parent-poly"] 
-    @param i                 the index of this polyline
-     
-    @return index of the base root this root i is part of 
-    """
-    if poly_indices[i] == -1:
-        return i
-    else:
-        return find_base_index(poly_indices, poly_indices[i])
-
-
-def find_order(poly_indices, i, o = 1):
-    """
-    The root order of the root with index i starting with 1
-    
-    @param poly_indices      the indices of all parent roots, usually properties["parent-poly"] 
-    @param i                 the index of this polyline
-    
-    @return root order of root with index i 
-    """
-    if poly_indices[i] == -1:
-        return o
-    else:
-        return find_order(poly_indices, poly_indices[i], o + 1)
-
-
-def measurement_time(polylines, properties, functions, time):
-    """
-    Truncates the rsml data to a certain maximal time
-    """
-    pl, ps, fs = [], {}, {}
-    fet = functions["emergence_time"]
-    for i, p in enumerate(polylines):
-        if fet[i][0] <= time:  # add
-            p_ = []
-            for j, node in enumerate(p):
-                if fet[i][j] <= time:
-                    p_.append(node)
-            pl.append(p_)
-            for k in properties.keys():
-                ps.setdefault(k, []).append(properties[k][i])
-            for k in functions.keys():
-                fs.setdefault(k, []).append(functions[k][i])
-    return pl, ps, fs
-
-
-def base_roots(polylines, properties):
-    """
-    return only the base roots
-    """
-    pp = properties["parent-poly"]
-    pl, ps = [], {}
-    for i, p in enumerate(polylines):
-        if pp[i] == -1:  # add if base root
-            pl.append(p)
-            for k in properties.keys():
-                ps.setdefault(k, []).append(properties[k][i])
-    return pl, ps
-
-
-def laterals1(polylines, properties):
-    """
-    return only the base roots
-    """
-    pp = properties["order"]
-    pl, ps = [], {}
-    for i, p in enumerate(polylines):
-        if pp[i] == 2:  # add if first order lateral
-            # print(properties.keys())
-            # pl.append(p)
-            for k in properties.keys():
-                try:
-                    dummy = properties[k][i]
-                except IndexError:
-                    dummy = None
-                if dummy is None:
-                    print('Found: First order laterals that miss some properties found')
-                else:
-                    ps.setdefault(k, []).append(properties[k][i])
-                    pl.append(p)
-    return pl, ps
-
-
-def create_length(polylines, properties):
-    """
-    recalculate root lengths, and adds it to properties
-    """
-    properties["length"] = []
-    for i, p in enumerate(polylines):
+    def length(self, i0 :int = 0, iend :int = -1, t :float = -1.):
+        """ length between two indices @param i0 and @param iend at measurement @param m """
+        if t < 0:
+            t = self.measurement_times[-1]
+        if iend == -1:
+            iend = self.nodes[t].shape[0]
         l = 0.
-        for j, n1 in enumerate(p[:-1]):
-            n2 = p[j + 1]
-            l += np.linalg.norm(np.array(n2) - np.array(n1))
-        properties["length"].append(l)
+        for i in range(i0, iend - 1):
+            l += np.linalg.norm(self.nodes[t][i] - self.nodes[t][i + 1])
+        return l
+
+    def order(self, i :int = 0):
+        """ recursively determines root order """
+        assert self.id > -1, "Root.order: uninitialized root"
+        if self.parent:
+            return self.parent.order(i + 1)
+        else:
+            return i
 
 
-def create_order(polylines, properties):
-    """
-    recalculate root orders, and adds it to properties
-    """
-    properties["order"] = []
-    poly_indices = properties["parent-poly"]  # generated by read_rsml
-    for i, p in enumerate(polylines):
-        o = find_order(poly_indices, i)
-        properties["order"].append(o)
+def initialize_roots(roots):
+    """ call initialize for each root, and sort the laterals """
+    roots[-1] = None
+    for r in roots.items():
+        if r[1]:
+            r[1].initialize(roots)
+    for r in roots.items():
+        if r[1]:
+            r[1].sort_laterals()
+
+
+def parse_rsml(rsml_names, times):
+    """ creates the roots dictionary """
+    assert len(rsml_names) == len(times), "parse_rsml: length of file name list and time list must be equal"
+    roots = {}
+    for j, n in enumerate(rsml_names):
+        poly, prop, fun = rsml.read_rsml(n)
+        # use 'parent-poly', 'parent-node']
+        nor = len(poly)
+        nopp = len(prop['parent-poly'])
+        nopn = len(prop['parent-node'])
+        assert nor == nopp, "parse_rsml: wrong number of parent-poly tags"
+        assert nor == nopn, "parse_rsml: wrong number of parent-node tags"
+        for i in range(0, len(poly)):
+            r = Root()
+            r.add_measurement(times[j], i, poly, prop, fun, roots)
+    initialize_roots(roots)
 
 
 def negexp_length(t, r, k):
@@ -300,14 +241,6 @@ def reconstruct_laterals(polylines, properties, base_polyline, snap_radius = 0.5
 
     print("removed", s, "roots")
     return npl, nprop
-
-
-def polyline_length(i0, i1, polyline):
-    """ length between two indices i0 and i1 """
-    l = 0.
-    for i in range(int(i0), int(i1)):
-        l += np.linalg.norm(polyline[i] - polyline[i + 1])
-    return l
 
 
 def analyze_zones(polylines, properties):
