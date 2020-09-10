@@ -1,13 +1,16 @@
 import sys;  sys.path.append("../..")
 import numpy as np
 from scipy.optimize import minimize
+
 import rsml_reader as rsml
 
 import plantbox as pb
 
 
 class Root:
-    """ A structure for easy analysis considering multiple measurements """
+    """ A structure for easy analysis considering multiple measurements, 
+        use parse_rsml to obtain a dictionary of Root objects with root ids as keys, 
+        use initialize_roots to create linked list (parents and laterals) """
 
     def __init__(self):
         """ creates empty Root """
@@ -63,9 +66,6 @@ class Root:
                 l_.append((l.parent_node, i))
                 l_.sort()
             self.laterals[t] = [self.laterals[t][l_[j][1]] for j in range(0, len(l_))]
-#             pns = [l_[j][0] for j in range(0, len(l_))]
-#             print(pns)
-#             print([l.id for l in self.laterals[t]])
 
     def length(self, i0 :int = 0, iend :int = -1, t :float = -1.):
         """ length between two indices @param i0 and @param iend at measurement @param m """
@@ -87,8 +87,9 @@ class Root:
             return i
 
 
-def initialize_roots(roots):
-    """ call initialize for each root, and sort the laterals """
+def initialize_roots(roots :dict):
+    """ calls initialize for each root, and sorts the laterals by their parent node index, 
+    @param roots root dicitionaray """
     roots[-1] = None
     for r in roots.items():
         if r[1]:
@@ -98,8 +99,10 @@ def initialize_roots(roots):
             r[1].sort_laterals()
 
 
-def parse_rsml(rsml_names, times):
-    """ creates the roots dictionary """
+def parse_rsml(rsml_names :list, times :list):
+    """ creates the roots dictionary, 
+    @param rsml_names list of rsml names of multiple measurements of the same plant, 
+    @param times measurement times  """
     assert len(rsml_names) == len(times), "parse_rsml: length of file name list and time list must be equal"
     roots = {}
     for j, n in enumerate(rsml_names):
@@ -114,48 +117,130 @@ def parse_rsml(rsml_names, times):
             r = Root()
             r.add_measurement(times[j], i, poly, prop, fun, roots)
     initialize_roots(roots)
+    return roots
+
+
+def get_order0(roots :dict):
+    """ obtain order 0 root ids, @param roots root dicitionaray """
+    ids = []
+    for r in roots.items():
+        if r[1]:
+            if r[1].order() == 0:
+                ids.append(r[1].id)
+    return ids
+
+#
+# Estimation of parameters
+#
+
+
+def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
+    """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length, 
+    @param lengths list of root lengths [cm], 
+    @param r initial root length [cm], @param k maximal root length [cm], @param time maximal measurement time"""
+    f = lambda x: target_rate(x[0], lengths, r, k, time)
+    x0 = [time / lengths.shape[0]]
+    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
+    n = lengths.shape[0]
+    ages = np.zeros(lengths.shape)
+    for i in range(0, n):
+        ages[n - i - 1] = max(time - i * res.x[0], 0.)
+    return res, f, ages  # e.g. res.x[0], f(res.x[0])
+
+
+def estimate_order0_rrate(lengths:np.array, k :float, time :float, r0 :float = 1.):
+    """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length, 
+    @param lengths list of root lengths [cm], 
+    @param r initial root length [cm], @param k maximal root length [cm], @param time maximal measurement time"""
+    f = lambda x: target_rate(x[0], lengths, x[1], k, time)
+    x0 = [time / lengths.shape[0], r0]  # initial value
+    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
+    n = lengths.shape[0]
+    ages = np.zeros(lengths.shape)
+    for i in range(0, n):
+        ages[n - i - 1] = max(time - i * res.x[0], 0.)
+    return res, f, ages  # e.g. res.x[0], res.x[1], f(res.x)
+
+
+def estimate_r(lengths :np.array, ages :np.array, k :float):
+    """ fits initial growth rate r [cm/day], assumes maximal root lenght k as fixed (e.g. by literature value) """
+    assert len(lengths) == len(ages), "estimate_r: number of root lengths must equal number of root ages"
+    f = lambda x0: target_length(x0, k, lengths, ages)
+    x0 = [1.]  # initial value
+    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
+    return res, f  # e.g. res.x[0], f(res.x[0])
+
+
+def estimate_rk(lengths :np.array, ages :np.array):
+    """ fits initial growth rate r, and maximal root lenght k """
+    assert lengths.shape == ages.shape, "estimate_rk: number of root lengths must equal number of root ages"
+    f = lambda x0: target_length(x0[0], x0[1], lengths, ages)
+    x0 = [5., 200]  # initial value
+    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
+    return res, f  # e.g. res.x[0], res.x[1], f(res.x)
+
+
+def target_length(r :float, k :float, lengths :np.array, ages :np.array):
+    """ target function for optimization root target length [cm],
+    @param r initial root length [cm], @param k maximal root length [cm]
+    @param lengths root lengths [cm], @param ages root ages [day] corresponding to root lengths"""
+    assert lengths.shape == ages.shape, "target_length: number of root lengths must equal number of root ages"
+    sum = 0.
+    for i in range(0, lengths.shape[0]):
+        l = negexp_length(ages[i], r, k)
+        sum += (l - lengths[i]) ** 2
+    return np.sqrt(sum)
+
+
+def target_length2(r :float, k :float, lengths :np.array, ages :np.array, time :float):
+    """ target function for optimization root target length [cm] using distance between curve and point. 
+    @param r initial root length [cm], @param k maximal root length [cm]
+    @param lengths root lengths [cm], @param ages root ages [day] corresponding to root lengths"""
+    assert lengths.shape == ages.shape, "target_length: number of root lengths must equal number of root ages"
+    sum = 0.
+    for i in range(0, lengths.shape[0]):
+        f = lambda t_: (negexp_length(t_, r, k) - lengths[i]) ** 2 + (t_ - ages[i]) ** 2  # distance between curve and (lengths[i], ages[i])
+        res = minimize(f, [ages[i]], method = 'Nelder-Mead', tol = 1e-6)
+        t_ = res.x[0]
+        sum += (negexp_length(t_, r, k) - lengths[i]) ** 2 + (t_ - ages[i]) ** 2
+    return  np.sqrt(sum)
+
+
+def target_rate(rate :float, lengths :np.array, r :float, k :float, time :float):
+    """ target function for optimization a linear base root production rate [day-1],
+    @param rate linear base root production rate [day-1], @param  lengths root lengths [cm]
+    @param r initial root length [cm], @param k maximal root length [cm], @param time maximal measurement time
+     """
+    rate = max(rate, 0.)
+    n = lengths.shape[0]
+    ages = np.zeros(lengths.shape)
+    for i in range(0, n):
+        ages[n - i - 1] = max(time - i * rate, 0.)
+    x = target_length(r, k, lengths, ages)
+    # x = target_length2(r, k, lengths, ages, time)
+    return x
 
 
 def negexp_length(t, r, k):
+    """ root length [cm] according to negative exponential growth, 
+    @param t root age [day], @param r initial root growth [cm/day], @param k maximal root length [cm]"""
     return k * (1 - np.exp(-(r / k) * t))
 
 
 def negexp_age(l, r, k):
+    """ root age [day] according to negative exponential growth, 
+    @param l root length [cm], @param r initial root growth [cm/day], @param k maximal root length [cm]"""
     return -k / r * np.log(1 - l / k)
 
-
-def target(r, k, length, times):
-    """ target function for optimization for fit_taproot_r, fit_taproot_rk """
-    sum = 0.
-    for i, t in enumerate(times):
-        sim_l = negexp_length(t, r, k)
-        sum_t = 0.
-        if isinstance(length[i], float):
-            sum_t += (sim_l - length[i]) ** 2
-        else:
-            for l in length[i]:
-                sum_t += (sim_l - l) ** 2
-
-        sum += np.sqrt(sum_t)
-    return sum
-
-
-def fit_taproot_r(length, times, k):
-    """ fits initial growth rate r, assumes maximal root lenght k as fixed (e.g. literature value) """
-    assert(len(length) == len(times))
-    f = lambda x0: target(x0, k, length, times)
-    x0 = [1.]
-    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
-    return res.x[0], f(res.x[0])
-
-
-def fit_taproot_rk(length, times):
-    """ fits initial growth rate r, and maximal root lenght k """
-    assert(len(length) == len(times))
-    f = lambda x0: target(x0[0], x0[1], length, times)
-    x0 = [5., 200]
-    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
-    return res.x[0], res.x[1], f(res.x)
+#
+#
+#
+#
+#
+#
+#
+# ... old stuff
+#
 
 
 def target2(delay, times, numbers, i_n):
