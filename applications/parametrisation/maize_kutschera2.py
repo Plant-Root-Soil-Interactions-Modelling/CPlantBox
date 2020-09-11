@@ -6,50 +6,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 time = [140]  # measurement times (not in the rsml)
-name = ["Maize_Kutschera.rsml"]
+name = ["RSML/Maize_Kutschera.rsml"]
 roots = es.parse_rsml(name, time)
 
-basal_ids = np.array(es.get_order0(roots), dtype = np.int64)
-basal_lengths = np.array([roots[i].length() for i in basal_ids])
-basal_ages = np.array(time * len(basal_ids))
+# from maize_kutschera.py
+k0 = 100.  # [cm] fixed
+rate0 = 6.824382579932482  # [day-1]
+r0 = 1.5414324819206926  # [cm/day]
+basal_ids = np.array([10, 7, 1, 2, 9, 6, 8, 4, 11, 0, 12, 24, 28, 55, 142, 246, 348, 644, 709, 1042, 1298, 1442, 1807, 2203, 2567, 2666, 2768, 2794, 3018, 3383])
 
-ii = np.argsort(basal_lengths)  # sort by ascending lengths
-basal_lengths = basal_lengths[ii]
-basal_ids = basal_ids[ii]
-basal_ages = basal_ages[ii]
+# calculate la, lb, ln, a, theta
+for r in roots.items():
+    r[1].calc_params()
 
-k = 100.  # [cm] fixed
+# need to simplify this ...
+ages = np.zeros(basal_ids.shape)
+for i, _ in enumerate(basal_ids):
+    ages[basal_ids.shape[0] - i - 1] = max(time[0] - i * rate0, 0.)
+for i, id in enumerate(basal_ids):
+    et = time[0] - ages[i]
+    roots[id].set_emergence_time(et)
 
-# Method 1 (predefine initial growth rate, iteration does not improve result)
-r = 3  # [cm/day] initial
-res, _, ages1 = es.estimate_order0_rate(basal_lengths, r, k, time[0])
-rate1 = res.x[0]
-res, f1 = es.estimate_r(basal_lengths, ages1, k)
-r1 = res.x[0]
-print("prodcution rate", rate1, "growth rate", r1, "err", f1(res.x))
+for id in basal_ids:
+    roots[id].calc_growth_rate(r0, k0)
 
-# Method 2 (fit both)
-res, f2, ages2 = es.estimate_order0_rrate(basal_lengths, k, time[0], 1.)  # third is r0, unstable results
-rate2 = res.x[0]
-r2 = res.x[1]
-print("prodcution rate", rate2, "growth rate", r2, "err", f2(res.x))
-
-t_ = np.linspace(0, time[0], 200)
-y1 = es.negexp_length(t_, r1, k)
-y2 = es.negexp_length(t_, r2, k)
-
-plt.scatter(ages1, basal_lengths, label = "Method 1")
-plt.plot(t_, y1)
-plt.scatter(ages2, basal_lengths, label = "Method 2")
-plt.plot(t_, y2)
-plt.xlabel("estimated root age [day]")
-plt.ylabel("measured root length [cm]")
-plt.legend()
-plt.show()
-
-#
-# rate = 6.824382579932482, r =  1.5414324819206926
-#
+orders = np.array([r[1].order() for r in roots.items()])
+print("Number of root orders: ", np.max(orders) + 1)
 
 print("done")
 

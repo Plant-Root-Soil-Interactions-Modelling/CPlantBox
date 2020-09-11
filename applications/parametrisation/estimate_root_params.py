@@ -27,6 +27,17 @@ class Root:
         # RSML additional data
         self.props = {}
         self.funs = {}
+        # parameters
+        self.la = 0.  # of this root
+        self.lb = 0.  # of this root
+        self.ln = 0.  # of this root
+        self.a = 0.  # mean radius of this root
+        self.theta = 0.  # of this root
+        # must be set from outside
+        self.emergence_time = 0.  #
+        self.ages = {}
+        self.r = 0.  # initial growth rate (of root type)
+        self.k = 0.  # maximal root length (of root type)
 
     def add_measurement(self, time :float, i :int, poly :np.array, prop :dict, fun :dict, roots :dict):
         """ creates the i-th root from the polylines and adds it to the roots dictionary"""
@@ -45,10 +56,13 @@ class Root:
         """ connects the roots creating parent and laterals expects prop['parent-poly'],  prop['parent-node']  """
         t0 = self.measurement_times[0]
         parent_id = self.props[t0]('parent-poly')
-        self.parent = roots[parent_id]  # for -1 is None
+        if parent_id > 0:
+            self.parent = roots[parent_id]
+        else:
+            self.parent = None
         self.parent_node = self.props[t0]('parent-node')
         if self.parent:
-            self.parent_base_length = self.parent.length(0, int(self.parent_node))
+            self.parent_base_length = self.parent.length(0, self.parent_node)
             for t in self.measurement_times:
                 self.parent.laterals.setdefault(t, []).append(self)  # register laterals
         else:
@@ -59,12 +73,12 @@ class Root:
                 assert self.parent_node == self.props[t]('parent-node'), "Root.initialize: parent node changed in measurements"
 
     def sort_laterals(self):
-        """ sorts the laterals after their parent node index """
+        """ sorts the laterals after their parent node index, call initialize() for all roots first """
         for t in self.measurement_times:
             l_ = []
             for i, l in enumerate(self.laterals.setdefault(t, [])):
                 l_.append((l.parent_node, i))
-                l_.sort()
+            l_.sort()
             self.laterals[t] = [self.laterals[t][l_[j][1]] for j in range(0, len(l_))]
 
     def length(self, i0 :int = 0, iend :int = -1, t :float = -1.):
@@ -74,7 +88,7 @@ class Root:
         if iend == -1:
             iend = self.nodes[t].shape[0]
         l = 0.
-        for i in range(i0, iend - 1):
+        for i in range(int(i0), int(iend) - 1):
             l += np.linalg.norm(self.nodes[t][i] - self.nodes[t][i + 1])
         return l
 
@@ -86,11 +100,80 @@ class Root:
         else:
             return i
 
+    def set_emergence_time(self, et :float):
+        """ sets the emergance times, calculates the root ages """
+        self.emergence_time = et
+        for t in self.measurement_times:
+            self.ages[t] = max(t - et, 0.)
+
+    def calc_growth_rate(self, r :float, k :float):
+        """ sets the maximal root length [cm] and computes the root initial growth rate [cm/day], 
+        call set_emergence_time first ! """
+        self.k = k
+        r_ = []
+        for t in self.measurement_times:
+            l = self.length(0, -1, t)
+            age = self.ages[t]
+            if l > 0 and age > 0:
+                r_.append(-k / age * np.log(1 - l / k))
+            else:
+                r_.append(r)
+        self.r = np.mean(np.array(r_))
+        print(self.r)
+
+    def calc_lateral_emergence_times(self):
+        pass
+
+    def calc_params(self):
+        """ retrieves la, lb, ln, theta, a """
+        lm = self.measurement_times[-1]  # last measurement
+        la_, lb_, ln_, a_ = [], [], [], []
+        for t in self.measurement_times:
+            l = self.laterals[t]
+            if l:
+                la_.append(self.length(0, l[0].parent_node, t))
+                lb_.append(self.length(l[-1].parent_node, -1, t))
+            else:
+                la_.append(self.length(0, -1, t))
+                lb_.append(0.)
+        self.la = np.mean(np.array(la_))
+        self.lb = np.mean(np.array(lb_))
+        l = self.laterals[lm]  # ln is calculated from the last measurement
+        if l:
+            for i in range(0, len(l) - 1):
+                ln_.append(self.length(l[i].parent_node, l[i + 1].parent_node, t))
+            if len(l) - 1 == 0:
+                ln_.append(0.)
+        else :
+            ln_.append(0.)
+        self.ln = np.mean(np.array(ln_))
+        if np.isnan(self.ln):
+            print(np.array(ln_))
+            for i in range(0, len(l) - 1):
+                print(self.length(l[i].parent_node, l[i + 1].parent_node, t))
+        # print(self.la, self.lb, self.ln)
+        v1 = self.nodes[lm][1] - self.nodes[lm][0]  # theta is calculated from the last measurement
+        v1 = v1 / np.linalg.norm(v1)
+        v2 = np.array([0., 0., -1])
+        if self.parent:
+            pni = int(self.parent_node)
+            if pni > 1:
+                v2 = self.parent.nodes[lm][pni] - self.parent.nodes[lm][pni - 2]  # Kutschera file seems to store nodes twice
+                v2 = v2 / np.linalg.norm(v2)
+        self.theta = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+        # print(self.theta)
+        for t in self.measurement_times:
+            n = self.nodes[t].shape[0]
+            a = 0.
+            for i in range(0, n):
+                a += self.funs[t]('diameter', i) / n / 2.
+            a_.append(a)
+        self.a = np.mean(np.array(a_))
+
 
 def initialize_roots(roots :dict):
     """ calls initialize for each root, and sorts the laterals by their parent node index, 
     @param roots root dicitionaray """
-    roots[-1] = None
     for r in roots.items():
         if r[1]:
             r[1].initialize(roots)
@@ -100,14 +183,13 @@ def initialize_roots(roots :dict):
 
 
 def parse_rsml(rsml_names :list, times :list):
-    """ creates the roots dictionary, 
+    """ creates a root dictionary 
     @param rsml_names list of rsml names of multiple measurements of the same plant, 
     @param times measurement times  """
     assert len(rsml_names) == len(times), "parse_rsml: length of file name list and time list must be equal"
     roots = {}
     for j, n in enumerate(rsml_names):
         poly, prop, fun = rsml.read_rsml(n)
-        # use 'parent-poly', 'parent-node']
         nor = len(poly)
         nopp = len(prop['parent-poly'])
         nopn = len(prop['parent-node'])
@@ -120,8 +202,12 @@ def parse_rsml(rsml_names :list, times :list):
     return roots
 
 
-def get_order0(roots :dict):
-    """ obtain order 0 root ids, @param roots root dicitionaray """
+def merge_plants(plants :list):
+    pass
+
+
+def get_order(i :int, roots :dict):
+    """ obtain order @param i root ids from the root dicitionaray @param roots """
     ids = []
     for r in roots.items():
         if r[1]:
@@ -129,11 +215,10 @@ def get_order0(roots :dict):
                 ids.append(r[1].id)
     return ids
 
+
 #
 # Estimation of parameters
 #
-
-
 def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
     """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length, 
     @param lengths list of root lengths [cm], 
@@ -231,183 +316,4 @@ def negexp_age(l, r, k):
     """ root age [day] according to negative exponential growth, 
     @param l root length [cm], @param r initial root growth [cm/day], @param k maximal root length [cm]"""
     return -k / r * np.log(1 - l / k)
-
-#
-#
-#
-#
-#
-#
-#
-# ... old stuff
-#
-
-
-def target2(delay, times, numbers, i_n):
-    """ target function for optimization for fit_number_of_roots"""
-    sum = 0.
-    for i, t in enumerate(times):
-        sim_n = i_n + t / delay  # missing round (continious seems easier to optimize)
-        s = 0.
-        for j in range(0, len(numbers[i])):
-            s += (numbers[i][j] - sim_n) ** 2
-        sum += np.sqrt(s)
-    return sum
-
-
-def fit_number_of_roots(times, numbers, initial_number):
-    """ we fit the delay between emergence of seminals with, 
-        number_of_roots = inital_number + round(t/delay)
-    """
-    assert(len(numbers) == len(times))
-    f = lambda x0 : target2(x0, times, numbers, initial_number)
-    x0 = [1.]  # days
-    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # linear regression would be enough in this case
-    return res.x[0]
-
-# def fit_seminal_rk(length, times):
-#     """ fits initial growth rate r, and maximal root lenght k """
-#     assert(len(length.shape[0] == len(times))
-#     f = lambda x0: target(x0[0], x0[1], length, times)
-#     x0 = [5., 200]
-#     res = minimize(f, x0, method='Nelder-Mead', tol=1e-6)  # bounds and constraints are possible, but method dependent
-#     # print(x)
-#     return res.x[0], res.x[1]
-
-
-def connect(node, base_polyline):
-    """
-    connects the node to the closest point in base_polyline
-    """
-    min_dist = 1.e8  # much
-    for i, n in enumerate(base_polyline):
-        dist = np.linalg.norm(n - node)
-        if dist < min_dist:
-            min_dist = dist
-            min_i = i
-    return min_i, min_dist
-
-
-def reconstruct_laterals(polylines, properties, base_polyline, snap_radius = 0.5):
-    """
-    connect all lateal roots to the base root (all roots other than tap need will have order 1)
-    """
-    s = 0
-    npl, nprop = [], {}
-    pp = properties["parent-poly"]  # generated by read_rsml
-    pn = properties["parent-node"]  # generated by read_rsml
-    for i, pi in enumerate(pp):
-        if pi == -1:  # tap root
-            npl.append(polylines[i])
-            for k in properties.keys():
-                nprop.setdefault(k, []).append(properties[k][i])
-        elif pi == 0:  # lateral root
-            npl.append(polylines[i])
-            for k in properties.keys():
-                nprop.setdefault(k, []).append(properties[k][i])
-        elif pi > 0:  # attach to base root
-            n = np.array(polylines[i][0])
-            nni, dist = connect(n, base_polyline)
-            if dist < snap_radius:  # TODO criteria
-                npl.append(polylines[i])
-                for k in properties.keys():
-                    try:
-                        dummy = properties[k][i]
-                    except IndexError:
-                        dummy = None
-                    if dummy is None:
-                        print('Found in reconstruct_laterals: First order laterals that miss some properties found')
-                    else:
-                        nprop.setdefault(k, []).append(properties[k][i])
-                        nprop["parent-poly"][-1] = 0
-                        nprop["parent-node"][-1] = nni
-            else:
-                s += 1
-
-    print("removed", s, "roots")
-    return npl, nprop
-
-
-def analyze_zones(polylines, properties):
-    """
-    assumes polylines[0] is tap root and determines la, lb, ln
-    """
-    pni = properties["parent-node"]
-    ii = pni[1:]  # lateral parent node indices
-    ii.sort()
-#     print(ii)
-    n0 = 0
-    nl0 = ii[0]
-    lb = polyline_length(n0, nl0, polylines[0])  # length of basal zone
-    ne = ii[-1]
-    nle = len(polylines[0]) - 1
-    la = polyline_length(ne, nle, polylines[0])  # length of apical zone
-    ln_ = []
-    for i in range(0, len(ii) - 1):  # laterals
-        i0 = ii[i]
-        i1 = ii[i + 1]
-        print(i0, i1)
-        ln_.append(polyline_length(i0, i1, polylines[0]))
-    return lb, ln_, la
-
-
-def analyze_theta(polylines, properties):
-    """
-    assumes polylines[0] is tap root and determines theta
-    """
-#     print("analyze_theta")
-#     angle = np.arccos(np.clip(np.dot(np.array([0, -1]), np.array([0, -1])), -1.0, 1.0))
-#     print("down", angle)
-#     angle = np.arccos(np.clip(np.dot(np.array([0, -1]), np.array([1, 0])), -1.0, 1.0))
-#     print("90", angle)
-#     angle = np.arccos(np.clip(np.dot(np.array([0, -1]), np.array([-1, 0])), -1.0, 1.0))
-#     print("90", angle)
-    theta = []
-    pni = properties["parent-node"]
-    for i in range(1, len(polylines)):
-        j = int(pni[i])
-        if j > 0:
-            p = polylines[0][j]
-            p0 = polylines[0][j - 1]
-            if len(polylines[i]) > 2:
-                p2 = polylines[i][2]
-            else:
-                p2 = polylines[i][0]
-            v1 = p - p0
-            v2 = p2 - p
-            v1 = v1 / np.linalg.norm(v1)
-            # v1 = [0, 0, -1] # also makes sense
-            v2 = v2 / np.linalg.norm(v2)
-            angle = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
-            theta.append(angle)
-    return theta
-
-
-def create_diameters(polylines, properties, functions):
-    """ 
-    adds diameter property as mean value of the functions
-    """
-    properties["diameter"] = []
-    for i, p in enumerate(polylines):
-        d = 0.
-        for j in range(0, len(p)):
-#             print(len(p))
-#             print(len(functions["diameter"]))
-            d += functions["diameter"][i][j] / len(p) / 10.  # mm -> cm
-        properties["diameter"].append(d)
-
-
-def create_age_delay(polylines, properties, time, r0, lmax0, lad0):
-    """
-    adds estimated lateral root age to the properties, based on given tap root paraeters 
-    """
-    pni = properties["parent-node"]
-    properties.setdefault("age", []).append(time)  # tap root et =  0
-    for i in range(1, len(polylines)):
-        il = pni[i]
-        bl = polyline_length(0, il, polylines[0])  # latearal base length
-        et = negexp_age(bl, r0, lmax0) + lad0  # time the lateral emerged
-        age = max(time - et, 0.)
-        age = min(age, time)
-        properties["age"].append(age)  # tap root et =  0
 

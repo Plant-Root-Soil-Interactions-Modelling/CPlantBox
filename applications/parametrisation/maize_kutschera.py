@@ -1,16 +1,17 @@
 import sys;  sys.path.append("../..")
 """ determines growth rate and production rate and ages of the basal roots """
 
-import rsml_reader as rsml
-import estimate_root_params as es
 import numpy as np
 import matplotlib.pyplot as plt
 
+import rsml_reader as rsml
+import estimate_root_params as es
+
 time = [140]  # measurement times (not in the rsml)
-name = ["Maize_Kutschera.rsml"]
+name = ["RSML/Maize_Kutschera.rsml"]
 roots = es.parse_rsml(name, time)
 
-basal_ids = np.array(es.get_order0(roots), dtype = np.int64)
+basal_ids = np.array(es.get_order(0, roots), dtype = np.int64)
 basal_lengths = np.array([roots[i].length() for i in basal_ids])
 basal_ages = np.array(time * len(basal_ids))
 
@@ -19,6 +20,7 @@ basal_lengths = basal_lengths[ii]
 basal_ids = basal_ids[ii]
 basal_ages = basal_ages[ii]
 
+print("basal_ids", basal_ids)
 k = 100.  # [cm] fixed
 
 # Method 1 (predefine initial growth rate, iteration does not improve result)
@@ -50,6 +52,7 @@ plt.show()
 
 #
 # rate = 6.824382579932482, r =  1.5414324819206926
+# basal_ids = [10, 7, 1, 2, 9, 6, 8, 4, 11, 0, 12, 24, 28, 55, 142, 246, 348, 644, 709, 1042, 1298, 1442, 1807, 2203, 2567, 2666, 2768, 2794, 3018, 3383]
 #
 
 print("done")
