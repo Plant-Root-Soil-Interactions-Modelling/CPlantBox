@@ -119,10 +119,11 @@ class Root:
             else:
                 r_.append(r)
         self.r = np.mean(np.array(r_))
-        print(self.r)
 
     def calc_lateral_emergence_times(self):
-        pass
+        """ """
+        for l in self.laterals:
+            pass
 
     def calc_params(self):
         """ retrieves la, lb, ln, theta, a """

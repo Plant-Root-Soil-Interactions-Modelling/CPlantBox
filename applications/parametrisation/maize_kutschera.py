@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import rsml_reader as rsml
 import estimate_root_params as es
 
-time = [140]  # measurement times (not in the rsml)
+time = [75]  # measurement times (not in the rsml)
 name = ["RSML/Maize_Kutschera.rsml"]
 roots = es.parse_rsml(name, time)
 
