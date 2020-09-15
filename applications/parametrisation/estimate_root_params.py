@@ -119,11 +119,11 @@ class Root:
             else:
                 r_.append(r)
         self.r = np.mean(np.array(r_))
-
-    def calc_lateral_emergence_times(self):
-        """ """
-        for l in self.laterals:
-            pass
+        lm = self.measurement_times[-1]  # last measurement
+        for i, l in enumerate(self.laterals[lm]):
+            tl = self.length(0, l.parent_node, -1) + self.la
+            lateral_age = Root.negexp_age(tl, self.r, self.k) + self.emergence_time
+            l.set_emergence_time(lateral_age)
 
     def calc_params(self):
         """ retrieves la, lb, ln, theta, a """
@@ -171,6 +171,16 @@ class Root:
             a_.append(a)
         self.a = np.mean(np.array(a_))
 
+    def negexp_length(t, r, k):
+        """ root length [cm] according to negative exponential growth, 
+        @param t root age [day], @param r initial root growth [cm/day], @param k maximal root length [cm]"""
+        return k * (1 - np.exp(-(r / k) * t))
+
+    def negexp_age(l, r, k):
+        """ root age [day] according to negative exponential growth, 
+        @param l root length [cm], @param r initial root growth [cm/day], @param k maximal root length [cm]"""
+        return -k / r * np.log(1 - l / k)
+
 
 def initialize_roots(roots :dict):
     """ calls initialize for each root, and sorts the laterals by their parent node index, 
@@ -208,13 +218,27 @@ def merge_plants(plants :list):
 
 
 def get_order(i :int, roots :dict):
-    """ obtain order @param i root ids from the root dicitionaray @param roots """
-    ids = []
+    """ obtain a list of order @param i roots from the root dicitionaray @param roots """
+    r_ = []
     for r in roots.items():
         if r[1]:
-            if r[1].order() == 0:
-                ids.append(r[1].id)
-    return ids
+            if r[1].order() == i:
+                r_.append(r[1])
+    return r_
+
+
+def get_params(roots :list, time :float):
+    """ takes mean and std of la, lb, ln, a, theta of measurement tiem @param time """
+    # calculate la, lb, ln, a, theta
+    for r in roots:
+        r.calc_params()
+    la = np.array([r.la for r in roots])
+    lb = np.array([r.lb for r in roots])
+    ln = np.array([r.ln for r in roots])
+    a = np.array([r.a for r in roots])
+    theta = np.array([r.theta for r in roots])
+    params = [la, lb, ln, a, theta]
+    return np.array([[np.mean(p), np.std(p)] for p in params])
 
 
 #
@@ -273,7 +297,7 @@ def target_length(r :float, k :float, lengths :np.array, ages :np.array):
     assert lengths.shape == ages.shape, "target_length: number of root lengths must equal number of root ages"
     sum = 0.
     for i in range(0, lengths.shape[0]):
-        l = negexp_length(ages[i], r, k)
+        l = Root.negexp_length(ages[i], r, k)
         sum += (l - lengths[i]) ** 2
     return np.sqrt(sum)
 
@@ -285,10 +309,10 @@ def target_length2(r :float, k :float, lengths :np.array, ages :np.array, time :
     assert lengths.shape == ages.shape, "target_length: number of root lengths must equal number of root ages"
     sum = 0.
     for i in range(0, lengths.shape[0]):
-        f = lambda t_: (negexp_length(t_, r, k) - lengths[i]) ** 2 + (t_ - ages[i]) ** 2  # distance between curve and (lengths[i], ages[i])
+        f = lambda t_: (Root.negexp_length(t_, r, k) - lengths[i]) ** 2 + (t_ - ages[i]) ** 2  # distance between curve and (lengths[i], ages[i])
         res = minimize(f, [ages[i]], method = 'Nelder-Mead', tol = 1e-6)
         t_ = res.x[0]
-        sum += (negexp_length(t_, r, k) - lengths[i]) ** 2 + (t_ - ages[i]) ** 2
+        sum += (Root.negexp_length(t_, r, k) - lengths[i]) ** 2 + (t_ - ages[i]) ** 2
     return  np.sqrt(sum)
 
 
@@ -305,16 +329,4 @@ def target_rate(rate :float, lengths :np.array, r :float, k :float, time :float)
     x = target_length(r, k, lengths, ages)
     # x = target_length2(r, k, lengths, ages, time)
     return x
-
-
-def negexp_length(t, r, k):
-    """ root length [cm] according to negative exponential growth, 
-    @param t root age [day], @param r initial root growth [cm/day], @param k maximal root length [cm]"""
-    return k * (1 - np.exp(-(r / k) * t))
-
-
-def negexp_age(l, r, k):
-    """ root age [day] according to negative exponential growth, 
-    @param l root length [cm], @param r initial root growth [cm/day], @param k maximal root length [cm]"""
-    return -k / r * np.log(1 - l / k)
 
