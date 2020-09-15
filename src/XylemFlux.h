@@ -26,7 +26,7 @@ public:
 
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false); // [cm3/day]
     std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx = false, bool cells = false); // for each segment in [cm3/day]
-    std::vector<double> segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
+    std::vector<double> segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
         std::function<double(double)> mfp, std::function<double(double)> imfp);
     std::vector<double> segSchroederStressedFlux(const std::vector<double>& sx, double wiltingPoint, double hc,
         std::function<double(double)> mfp, std::function<double(double)> imfp);

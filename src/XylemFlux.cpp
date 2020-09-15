@@ -111,52 +111,6 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx)
 {
     return sumSegFluxes(segFluxes(simTime,  rx, sx, approx, true));
-    //
-    //    std::map<int,double> fluxes;
-    //
-    //    for (int si = 0; si<rs->segments.size(); si++) {
-    //
-    //        int i = rs->segments[si].x;
-    //        int j = rs->segments[si].y;
-    //        int segIdx = j-1;
-    //
-    //        if (rs->seg2cell.count(segIdx)>0) {
-    //
-    //            int cellIdx = rs->seg2cell[segIdx];
-    //            double psi_s = sx.at(cellIdx);
-    //
-    //            double a = rs->radii[si]; // si is correct, with ordered and unordered segments
-    //            double age = simTime - rs->nodeCTs[j];
-    //            int type = rs->types[si];
-    //            double  kr = kr_f(age, type);
-    //            double  kz = kx_f(age, type);
-    //
-    //            auto n1 = rs->nodes[i];
-    //            auto n2 = rs->nodes[j];
-    //            double l = (n2.minus(n1)).length();
-    //
-    //            double f =  -2*a*M_PI*kr; // flux is proportional to f // *rho*g
-    //            double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
-    //
-    //            double tau = std::sqrt(2*a*M_PI*kr/kz); // sqrt(c) [cm-1]
-    //            double d = std::exp(-tau*l)-std::exp(tau*l); // det
-    //            double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
-    //
-    //            double flux = fExact*(!approx)+approx*fApprox;
-    //
-    //            // std::cout << cellIdx << ", " << fExact << ", " << fApprox << ", psi_s " << psi_s << "\n" << std::flush;
-    //            if (fluxes.count(cellIdx)==0) {
-    //                fluxes[cellIdx] = flux;
-    //            } else {
-    //                fluxes[cellIdx] += flux; // sum up fluxes per cell
-    //            }
-    //
-    //        } else {
-    //            std::cout << "XylemFlux::soilFluxes: Warning! unmapped segments with index " << segIdx << "\n";
-    //        }
-    //
-    //    }
-    //    return fluxes;
 }
 
 /**
@@ -212,7 +166,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 /**
  * Calculates the matric potential at the root soil interface according to Schröder et al.
  */
-std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
+std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
     std::function<double(double)> mfp, std::function<double(double)> imfp) {
 
     std::vector<double> rsx = std::vector<double>(rs->segments.size()); // rx is defined at the nodes, i.e. rx.size()+1 == segments.size()
@@ -222,31 +176,15 @@ std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<do
     for (int i = 0; i<rs->segments.size(); i++) { // calculate rsx
         int cellIdx = rs->seg2cell.at(i);
         double p = sx[cellIdx];
-        double rp = 0.5*(rx.at(rs->segments[i].x)+rx.at(rs->segments[i].y)); // defined at the node
-        double q_root = 0.; // -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
+        double q_root = -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
         double q_out = 0.;
         double r_in = rs->radii.at(i);
         double r_out = outerRadii.at(i);
-        rsx[i] = p;
-        if (rp < p) { // flux into root
-            double r = r_in;
-            double rho = r_out/r_in;
-            double mfp_ = mfp(p) + (q_root*r_in-q_out*r_out)*((r*r)/(r_in*r_in)/(2*(1-rho*rho)))+
-                (rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5)) + q_out*r_out*log(r/r_out);
-            double h;
-            if (mfp_>0) { // no stress
-                h = imfp(mfp_);
-            } else { // stress
-                h = wiltingPoint;
-            }
-            if (rp <= h) { // flux into root
-                rsx[i] = h;
-            } else { // flux into soil
-                rsx[i] = rp; // don't use schroeder (no flux)
-            }
-        } else { // flux into soil
-            rsx[i] = p; // don't use schroeder
-        }
+        double r = r_in;
+        double rho = r_out/r_in;
+        double mfp_ = mfp(p) + (q_root*r_in-q_out*r_out)*((r*r)/(r_in*r_in)/(2*(1-rho*rho)))+
+            (rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5)) + q_out*r_out*log(r/r_out);
+        rsx[i] = imfp(mfp_);
     }
     return rsx; // matric potential at the soil root interface
 }
