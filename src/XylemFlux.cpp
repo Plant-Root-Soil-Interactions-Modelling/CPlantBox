@@ -164,9 +164,9 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 }
 
 /**
- * Calculates the matric potential at the root soil interface according to Schröder et al.
+ * Calculates the matric potential at the root soil interface according the steady rate approximation (Schröder et al. )
  */
-std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
+std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
     std::function<double(double)> mfp, std::function<double(double)> imfp) {
 
     std::vector<double> rsx = std::vector<double>(rs->segments.size()); // rx is defined at the nodes, i.e. rx.size()+1 == segments.size()
@@ -190,9 +190,9 @@ std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<do
 }
 
 /**
- * Calculates the stressed schroeder flux
+ * Calculates the stressed according to the steady rate approximation (Schröder et al. )
  */
-std::vector<double> XylemFlux::segSchroederStressedFlux(const std::vector<double>& sx, double wiltingPoint, double hc,
+std::vector<double> XylemFlux::segSRAStressedFlux(const std::vector<double>& sx, double wiltingPoint, double hc,
     std::function<double(double)> mpf, std::function<double(double)> impf) {
 
     const double dx = 1.e-6;
