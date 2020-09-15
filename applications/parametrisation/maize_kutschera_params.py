@@ -16,12 +16,13 @@ def insert_params(p0, p :np.array, order : int, successors :bool = True):
     p0.ln, p0.lns = p[2, 0], p[2, 1]  # [cm] inter-lateral distance (16 branching nodes)
     p0.a, p0.a_s = p[3, 0], p[3, 1]  # [cm] radius
     p0.theta, p0.thetas = p[4, 0], p[4, 1]  # [rad]
-    p0.subType = 1  # [-] index starts at 1
+    p0.subType = order + 1  # [-] index starts at 1
     if successors:
-        p0.successor = [2]  # add successors
+        p0.successor = [order + 1]  # add successors
         p0.successorP = [1]  # probability that successor emerges
 
 
+print("reading")
 time = [75]  # measurement times (not in the rsml)
 name = ["RSML/Maize_Kutschera.rsml"]
 roots = es.parse_rsml(name, time)
@@ -88,7 +89,7 @@ p1.tropismN = 2  # [-] strength of tropism
 p1.tropismS = 0.1  # [rad/cm] maximal bending
 
 p2.name = "higher order laterals"
-insert_params(p2, params2[1], 2)
+insert_params(p2, params2[1], 2, False)
 p2.r = 2  # initial growth rate
 p2.lmax = 15  # # [cm] apical zone
 p2.lmaxs = 0.15  # [cm] standard deviation of the apical zone
