@@ -56,7 +56,7 @@
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="2.8987069"/>
+        <parameter name="r" value="2.8987069" dev="1.0340717"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
@@ -90,13 +90,13 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="2.9592555"/>
+        <parameter name="lmax" value="2.9592555" dev="4.3511667"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.98886263" dev="0.95477337"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="0.44565785"/>
+        <parameter name="r" value="0.44565785" dev="0.46271667"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
@@ -130,13 +130,13 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="2.9592555"/>
+        <parameter name="lmax" value="2.9592555" dev="4.3511667"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.47411904" dev="0.29252708"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="0.44565785"/>
+        <parameter name="r" value="1"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->

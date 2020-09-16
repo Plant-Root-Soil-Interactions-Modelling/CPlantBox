@@ -53,8 +53,8 @@ params.append(es.get_params(roots_, time[-1]))
 #
 print()
 print("\nfinding production rate and growth rate of order 0")
-rate, r0 = es.estimate_set_order0_rate(roots, lmax, time[0])
-print("rate", rate, "r0", r0)
+rate, r0, r0s = es.estimate_set_order0_rate(roots, lmax, time[0])
+print("rate", rate, "r0", r0, "see", r0s)
 
 print("\nfinding growth rate and maximal length of order 1")
 order1 = es.get_order(1, roots)
@@ -62,7 +62,8 @@ lengths1 = np.array([r.length() for r in order1])  # for last measurement
 ages1 = np.array([r.ages[time[-1]] for r in order1])
 res, f = es.estimate_rk(lengths1, ages1)
 r1, lmax1 = res.x[0], res.x[1]
-print("r1", r1, "lmax1", lmax1)
+r1s, lmaxs1 = es.get_see_rk(lengths1, ages1, r1, lmax1)
+print("r1", r1, "see", r1s, "lmax1", lmax1, "see", lmaxs1)
 
 #
 # build xml
@@ -82,6 +83,7 @@ srp.delayB = rate  # [day] delay between the emergence of basal roots
 p0.name = "base roots"
 insert_params(p0, params[0], 0)  # inserts la, lb, ln, a, theta
 p0.r = r0  # [cm/day] initial growth rate
+p0.rs = r0s
 p0.lmax = lmax  # [cm] maximal root length, number of lateral branching nodes = round((lmax-lb-la)/ln) + 1
 # not based on data
 p0.dx = 0.5  # [cm] axial resolution
@@ -91,9 +93,10 @@ p0.tropismS = 0.2  # [rad/cm] maximal bending
 
 p1.name = "first order laterals"
 insert_params(p1, params[1], 1)  # inserts la, lb, ln, a, theta
-p1.r = r1  # initial growth rate
+p1.r = r1  # [cm/day] initial growth rate
+p1.rs = r1s  # standard deviation of initial growth rate
 p1.lmax = lmax1  # # [cm] apical zone
-# p1.lmaxs = 0.15  # [cm] standard deviation of the apical zone
+p1.lmaxs = lmaxs1  # # standard deviation of apical zone
 # not based on data
 p1.dx = 0.5  # [cm] axial resolution
 p1.tropismT = pb.TropismType.gravi  # exo
@@ -102,9 +105,10 @@ p1.tropismS = 0.1  # [rad/cm] maximal bending
 
 p2.name = "higher order laterals"
 insert_params(p2, params[2], 2, False)  # inserts la, lb, ln, a, theta
-p2.r = r1  # initial growth rate
+p1.r = r1  # [cm/day]  initial growth rate
+p1.rs = r1s  # standard deviation of initial growth rate
 p2.lmax = lmax1  # # [cm] apical zone
-# .lmaxs = 0.15  # [cm] standard deviation of the apical zone
+p2.lmaxs = lmaxs1  # # standard deviation of apical zone
 # not based on data
 p2.dx = 0.5  # [cm] axial resolution
 p2.tropismT = pb.TropismType.gravi  # exo

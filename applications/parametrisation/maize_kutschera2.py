@@ -29,26 +29,27 @@ res, _, ages1 = es.estimate_order0_rate(basal_lengths, r, lmax, time[0])
 rate1 = res.x[0]
 res, f1 = es.estimate_r(basal_lengths, ages1, lmax)
 r1 = res.x[0]
-print("prodcution rate", rate1, "growth rate", r1, "err", f1(res.x))
+r1s, _ = es.get_see_rk(basal_lengths, ages1, r1, lmax)
+print("prodcution rate", rate1, "growth rate", r1, "see", r1s, "err", f1(res.x))
 
 # Method 2 (fit both)
 res, f2, ages2 = es.estimate_order0_rrate(basal_lengths, lmax, time[0], 1.5)  # third is r0, unstable results
-rate2 = res.x[0]
-r2 = res.x[1]
-print("prodcution rate", rate2, "growth rate", r2, "err", f2(res.x))
+rate2, r2 = res.x[0], res.x[1]
+r2s, _ = es.get_see_rk(basal_lengths, ages1, r2, lmax)
+print("prodcution rate", rate2, "growth rate", r2, "see", r2s, "err", f2(res.x))
 
 t_ = np.linspace(0, time[0], 200)
 y1 = es.Root.negexp_length(t_, r1, lmax)
 y2 = es.Root.negexp_length(t_, r2, lmax)
 
-# plt.scatter(ages1, basal_lengths, label = "Method 1")
-# plt.plot(t_, y1)
-# plt.scatter(ages2, basal_lengths, label = "Method 2")
-# plt.plot(t_, y2)
-# plt.xlabel("estimated root age [day]")
-# plt.ylabel("measured root length [cm]")
-# plt.legend()
-# plt.show()
+plt.scatter(ages1, basal_lengths, label = "Method 1")
+plt.plot(t_, y1)
+plt.scatter(ages2, basal_lengths, label = "Method 2")
+plt.plot(t_, y2)
+plt.xlabel("estimated root age [day]")
+plt.ylabel("measured root length [cm]")
+plt.legend()
+plt.show()
 
 rate0, r0 = rate2, r2  # or rate2, r2
 
@@ -71,9 +72,9 @@ lengths1 = np.array([r.length() for r in order1])  # for one measurement
 ages1 = np.array([r.ages[time[-1]] for r in order1])
 
 res, f = es.estimate_rk(lengths1, ages1)
-r1 = res.x[0]
-k1 = res.x[1]
-print("growth rate", r1, "maximal length", k1, "err", f(res.x))
+r1, k1 = res.x[0], res.x[1]
+r1s, k1s = es.get_see_rk(lengths1, ages1, r1, k1)
+print("growth rate", r1, "see", r1s, "maximal length", k1, "see", k1s, "err", f(res.x))
 t_ = np.linspace(0, time[0], 200)
 y1 = es.Root.negexp_length(t_, r1, k1)
 

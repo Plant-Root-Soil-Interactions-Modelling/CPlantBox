@@ -212,10 +212,6 @@ def parse_rsml(rsml_names :list, times :list):
     return roots
 
 
-def merge_plants(plants :list):
-    pass
-
-
 def get_order(i :int, roots :dict):
     """ obtain a list of order @param i roots from the root dicitionaray @param roots """
     r_ = []
@@ -243,6 +239,26 @@ def get_params(roots :list, time :float):
 #
 # Estimation of parameters
 #
+def get_see_rk(lengths :np.array, ages :np.array, r :float, k :float):
+    """ returns the strandard error of the estimate for r and k (under questionable conditions) """
+    assert lengths.shape == ages.shape, "the number of measured lengths must equal measured ages"
+    r_ = lambda l, age :-k / age * np.log(1 - l / k)
+    k_ = lambda l, age : l / (1 - np.exp(-r / k * age))  # still dependent on k, but use as approximation for now
+    mr_ = []  # r by measured values l and age for a fixed k
+    mk_ = []  # k by measured values l and age for a fixed r
+    for i, l in enumerate(lengths):
+        age = ages[i]
+        if l < k and age > 0:
+            mr_.append(r_(l, age))
+        if age > 0:
+            mk_.append(k_(l, age))
+    mr_ = np.array(mr_)
+    mk_ = np.array(mk_)
+    see_r = np.sqrt(np.sum(np.square(mr_ - r * np.ones(mr_.shape))) / (mr_.shape[0] - 2))
+    see_k = np.sqrt(np.sum(np.square(mk_ - k * np.ones(mk_.shape))) / (mk_.shape[0] - 2))
+    return see_r, see_k
+
+
 def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
     basals = get_order(0, roots)
     basal_ids = np.array([r.id for r in basals], dtype = np.int64)
@@ -254,6 +270,7 @@ def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
     basal_ages = basal_ages[ii]
     res, f, ages = estimate_order0_rrate(basal_lengths, lmax, time, 1.5)  # third is r0, unstable results
     rate, r = res.x[0], res.x[1]
+    rs, _ = get_see_rk(basal_lengths, ages, r, lmax)
     ages = np.zeros(basal_ids.shape)
     for i, _ in enumerate(basal_ids):
         ages[basal_ids.shape[0] - i - 1] = max(time - i * rate, 0.)
@@ -262,7 +279,7 @@ def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
         roots[id].set_emergence_time(et)
     for id in basal_ids:  # set order 0 growth rate and maximal length
         roots[id].calc_growth_rate(r, lmax)
-    return rate, r
+    return rate, r, rs
 
 
 def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
@@ -320,7 +337,7 @@ def target_length(r :float, k :float, lengths :np.array, ages :np.array):
     for i in range(0, lengths.shape[0]):
         l = Root.negexp_length(ages[i], r, k)
         sum += (l - lengths[i]) ** 2
-    return np.sqrt(sum)
+    return np.sqrt(sum / (lengths.shape[0] - 2))  # -(k+1)
 
 
 def target_length2(r :float, k :float, lengths :np.array, ages :np.array, time :float):
@@ -334,7 +351,7 @@ def target_length2(r :float, k :float, lengths :np.array, ages :np.array, time :
         res = minimize(f, [ages[i]], method = 'Nelder-Mead', tol = 1e-6)
         t_ = res.x[0]
         sum += (Root.negexp_length(t_, r, k) - lengths[i]) ** 2 + (t_ - ages[i]) ** 2
-    return  np.sqrt(sum)
+    return  np.sqrt(sum / (lengths.shape[0] - 2))
 
 
 def target_rate(rate :float, lengths :np.array, r :float, k :float, time :float):
