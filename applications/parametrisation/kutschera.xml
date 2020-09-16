@@ -82,7 +82,7 @@
         <!--Root color, green component [0.-1.]-->
         <parameter name="colorR" value="0.60000002"/>
         <!--Root color, red component [0.-1.]-->
-        <parameter name="dx" value="0.5"/>
+        <parameter name="dx" value="0.25"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="la" value="1.2873491" dev="1.3078644"/>
         <!--Apical zone [cm]-->
@@ -104,7 +104,7 @@
         <!--Angle between root and parent root [rad]-->
         <parameter name="tropismN" value="1"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.1"/>
+        <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="successor" type="3" percentage="1"/>
         <!--Sub type of lateral roots-->
@@ -122,7 +122,7 @@
         <!--Root color, green component [0.-1.]-->
         <parameter name="colorR" value="0.60000002"/>
         <!--Root color, red component [0.-1.]-->
-        <parameter name="dx" value="0.5"/>
+        <parameter name="dx" value="0.25"/>
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="la" value="0.82467526" dev="0.74988949"/>
         <!--Apical zone [cm]-->
@@ -136,7 +136,7 @@
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="1"/>
+        <parameter name="r" value="0.44565785" dev="0.46271667"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
@@ -144,7 +144,7 @@
         <!--Angle between root and parent root [rad]-->
         <parameter name="tropismN" value="1"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.1"/>
+        <parameter name="tropismS" value="0.2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
 </plant>

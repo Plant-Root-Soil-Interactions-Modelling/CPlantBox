@@ -4,8 +4,6 @@ from scipy.optimize import minimize
 
 import rsml_reader as rsml
 
-import plantbox as pb
-
 
 class Root:
     """ A structure for easy analysis considering multiple measurements, 

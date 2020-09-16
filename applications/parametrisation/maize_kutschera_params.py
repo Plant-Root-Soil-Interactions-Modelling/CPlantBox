@@ -98,22 +98,22 @@ p1.rs = r1s  # standard deviation of initial growth rate
 p1.lmax = lmax1  # # [cm] apical zone
 p1.lmaxs = lmaxs1  # # standard deviation of apical zone
 # not based on data
-p1.dx = 0.5  # [cm] axial resolution
+p1.dx = 0.25  # [cm] axial resolution
 p1.tropismT = pb.TropismType.gravi  # exo
 p1.tropismN = 1  # [-] strength of tropism
-p1.tropismS = 0.1  # [rad/cm] maximal bending
+p1.tropismS = 0.2  # [rad/cm] maximal bending
 
 p2.name = "higher order laterals"
 insert_params(p2, params[2], 2, False)  # inserts la, lb, ln, a, theta
-p1.r = r1  # [cm/day]  initial growth rate
-p1.rs = r1s  # standard deviation of initial growth rate
+p2.r = r1  # [cm/day]  initial growth rate
+p2.rs = r1s  # standard deviation of initial growth rate
 p2.lmax = lmax1  # # [cm] apical zone
 p2.lmaxs = lmaxs1  # # standard deviation of apical zone
 # not based on data
-p2.dx = 0.5  # [cm] axial resolution
+p2.dx = 0.25  # [cm] axial resolution
 p2.tropismT = pb.TropismType.gravi  # exo
 p2.tropismN = 1  # [-] strength of tropism
-p2.tropismS = 0.1  # [rad/cm] maximal bending
+p2.tropismS = 0.2  # [rad/cm] maximal bending
 
 rs.setOrganRandomParameter(p0)
 rs.setOrganRandomParameter(p1)
