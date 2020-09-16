@@ -36,8 +36,8 @@ class Root:
         # must be set from outside
         self.emergence_time = 0.  #
         self.ages = {}
-        self.r = 0.  # initial growth rate (of root type)
-        self.k = 0.  # maximal root length (of root type)
+        self.r = -1.  # initial growth rate (of root type)
+        self.k = -1.  # maximal root length (of root type)
 
     def add_measurement(self, time :float, i :int, poly :np.array, prop :dict, fun :dict, roots :dict):
         """ creates the i-th root from the polylines and adds it to the roots dictionary"""
@@ -107,8 +107,8 @@ class Root:
             self.ages[t] = max(t - et, 0.)
 
     def calc_growth_rate(self, r :float, k :float):
-        """ sets the maximal root length [cm] and computes the root initial growth rate [cm/day], 
-        call set_emergence_time first ! """
+        """ sets the maximal root length [cm] and computes the individual root initial growth rate [cm/day], 
+        based on its emergence time, call set_emergence_time first """
         self.k = k
         r_ = []
         for t in self.measurement_times:
@@ -136,20 +136,19 @@ class Root:
                 lb_.append(self.length(l[-1].parent_node, -1, t))
             else:
                 la_.append(self.length(0, -1, t))
-                lb_.append(0.)
+                lb_.append(np.nan)
         self.la = np.mean(np.array(la_))
-        self.lb = np.mean(np.array(lb_))
+        self.lb = np.nanmean(np.array(lb_))
         l = self.laterals[lm]  # ln is calculated from the last measurement
         if l:
             for i in range(0, len(l) - 1):
                 ln_.append(self.length(l[i].parent_node, l[i + 1].parent_node, t))
             if len(l) - 1 == 0:
-                ln_.append(0.)
+                ln_.append(np.nan)
         else :
-            ln_.append(0.)
-        self.ln = np.mean(np.array(ln_))
+            ln_.append(np.nan)
+        self.ln = np.nanmean(np.array(ln_))
         if np.isnan(self.ln):
-            print(np.array(ln_))
             for i in range(0, len(l) - 1):
                 print(self.length(l[i].parent_node, l[i + 1].parent_node, t))
         # print(self.la, self.lb, self.ln)
@@ -238,12 +237,34 @@ def get_params(roots :list, time :float):
     a = np.array([r.a for r in roots])
     theta = np.array([r.theta for r in roots])
     params = [la, lb, ln, a, theta]
-    return np.array([[np.mean(p), np.std(p)] for p in params])
+    return np.array([[np.nanmean(p), np.nanstd(p)] for p in params])
 
 
 #
 # Estimation of parameters
 #
+def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
+    basals = get_order(0, roots)
+    basal_ids = np.array([r.id for r in basals], dtype = np.int64)
+    basal_lengths = np.array([r.length() for r in basals])
+    basal_ages = np.array([time] * len(basals))
+    ii = np.argsort(basal_lengths)  # sort by ascending lengths
+    basal_ids = basal_ids[ii]
+    basal_lengths = basal_lengths[ii]
+    basal_ages = basal_ages[ii]
+    res, f, ages = estimate_order0_rrate(basal_lengths, lmax, time, 1.5)  # third is r0, unstable results
+    rate, r = res.x[0], res.x[1]
+    ages = np.zeros(basal_ids.shape)
+    for i, _ in enumerate(basal_ids):
+        ages[basal_ids.shape[0] - i - 1] = max(time - i * rate, 0.)
+    for i, id in enumerate(basal_ids):
+        et = time - ages[i]
+        roots[id].set_emergence_time(et)
+    for id in basal_ids:  # set order 0 growth rate and maximal length
+        roots[id].calc_growth_rate(r, lmax)
+    return rate, r
+
+
 def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
     """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length, 
     @param lengths list of root lengths [cm], 
