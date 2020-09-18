@@ -20,5 +20,4 @@ rs.simulate(75, True)
 rs.write("kutschera.vtp")
 
 # Plot, using vtk
-vp.plot_roots(rs, "creationTime")  # "creationTime"
-
+vp.plot_roots(rs, "creationTime")  # "creationTime", "subType"
