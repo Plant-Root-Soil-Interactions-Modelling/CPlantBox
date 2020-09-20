@@ -72,11 +72,17 @@ lengths1 = np.array([r.length() for r in order1])  # for one measurement
 ages1 = np.array([r.ages[time[-1]] for r in order1])
 
 res, f = es.estimate_rk(lengths1, ages1)
-r1, k1 = res.x[0], res.x[1]
-r1s, k1s = es.get_see_rk(lengths1, ages1, r1, k1)
-print("growth rate", r1, "see", r1s, "maximal length", k1, "see", k1s, "err", f(res.x))
+r1, lmax1 = res.x[0], res.x[1]
+r1s, lmax1s = es.get_see_rk(lengths1, ages1, r1, lmax1)
+
+# lmax1 = 5
+# res, f = es.estimate_r(lengths1, ages1, lmax1)
+# r1 = res.x[0]
+# r1s, lmaxs1 = es.get_see_rk(lengths1, ages1, r1, lmax1)
+
+print("growth rate", r1, "see", r1s, "maximal length", lmax1, "see", lmax1s, "err", f(res.x))
 t_ = np.linspace(0, time[0], 200)
-y1 = es.Root.negexp_length(t_, r1, k1)
+y1 = es.Root.negexp_length(t_, r1, lmax1)
 
 plt.scatter(ages1, lengths1, label = "order 1")
 plt.plot(t_, y1, "k")

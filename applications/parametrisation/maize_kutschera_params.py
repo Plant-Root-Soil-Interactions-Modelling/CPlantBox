@@ -60,9 +60,16 @@ print("\nfinding growth rate and maximal length of order 1")
 order1 = es.get_order(1, roots)
 lengths1 = np.array([r.length() for r in order1])  # for last measurement
 ages1 = np.array([r.ages[time[-1]] for r in order1])
-res, f = es.estimate_rk(lengths1, ages1)
-r1, lmax1 = res.x[0], res.x[1]
-r1s, lmaxs1 = es.get_see_rk(lengths1, ages1, r1, lmax1)
+
+# res, f = es.estimate_rk(lengths1, ages1)
+# r1, lmax1 = res.x[0], res.x[1]
+# r1s, lmaxs1 = es.get_see_rk(lengths1, ages1, r1, lmax1)
+
+lmax1 = 5
+res, f = es.estimate_r(lengths1, ages1, lmax1)
+r1 = res.x[0]
+r1s, lmaxs1 = 0.1 * r1, 0.1 * lmax1  # es.get_see_rk(lengths1, ages1, r1, lmax1)
+
 print("r1", r1, "see", r1s, "lmax1", lmax1, "see", lmaxs1)
 
 #
@@ -75,6 +82,7 @@ p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 p2 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 srp = pb.SeedRandomParameter(rs)  # with default values
 
+srp.name = "maize kutschera"
 srp.seedPos = pb.Vector3d(0., 0., -3.)  # [cm] seed position
 srp.maxB = 100  # [-] number of basal roots (neglecting basal roots and shoot borne)
 srp.firstB = rate  # [day] first emergence of a basal root
@@ -100,8 +108,8 @@ p1.lmaxs = lmaxs1  # # standard deviation of apical zone
 # not based on data
 p1.dx = 0.25  # [cm] axial resolution
 p1.tropismT = pb.TropismType.gravi  # exo
-p1.tropismN = 1  # [-] strength of tropism
-p1.tropismS = 0.2  # [rad/cm] maximal bending
+p1.tropismN = 0.5  # [-] strength of tropism
+p1.tropismS = 0.3  # [rad/cm] maximal bending
 
 p2.name = "higher order laterals"
 insert_params(p2, params[2], 2, False)  # inserts la, lb, ln, a, theta
@@ -112,8 +120,8 @@ p2.lmaxs = lmaxs1  # # standard deviation of apical zone
 # not based on data
 p2.dx = 0.25  # [cm] axial resolution
 p2.tropismT = pb.TropismType.gravi  # exo
-p2.tropismN = 1  # [-] strength of tropism
-p2.tropismS = 0.2  # [rad/cm] maximal bending
+p2.tropismN = 0.5  # [-] strength of tropism
+p2.tropismS = 0.3  # [rad/cm] maximal bending
 
 rs.setOrganRandomParameter(p0)
 rs.setOrganRandomParameter(p1)
@@ -123,6 +131,8 @@ rs.setRootSystemParameter(srp)
 print(p0)
 print()
 print(p1)
+print()
+print(p2)
 print()
 print(srp)
 print()

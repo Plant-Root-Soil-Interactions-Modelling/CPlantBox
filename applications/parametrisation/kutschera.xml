@@ -1,5 +1,5 @@
 <plant>
-    <seed name="undefined" subType="0">
+    <seed name="maize kutschera" subType="0">
         <parameter name="maxTi" value="0"/>
         <!--Maximal number of tillers [1]-->
         <parameter name="a" value="0.1"/>
@@ -44,9 +44,9 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="0.5"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <parameter name="la" value="0.46630687" dev="1.3518646"/>
+        <parameter name="la" value="2.7817912" dev="1.8044941"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="2.7817912" dev="1.8044941"/>
+        <parameter name="lb" value="0.16245265" dev="0.33879802"/>
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="1"/>
         <!--Lateral root emergence delay [day]-->
@@ -84,27 +84,27 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="0.25"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <parameter name="la" value="1.2873491" dev="1.3078644"/>
+        <parameter name="la" value="1.6757066" dev="1.3122889"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="1.6757066" dev="1.3122889"/>
+        <parameter name="lb" value="1.5853219" dev="1.436693"/>
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="2.9592555" dev="4.3511667"/>
+        <parameter name="lmax" value="5" dev="0.5"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.98886263" dev="0.95477337"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="0.44565785" dev="0.46271667"/>
+        <parameter name="r" value="0.1469841" dev="0.01469841"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
         <parameter name="theta" value="1.1599067" dev="0.36865172"/>
         <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismN" value="0.5"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.2"/>
+        <parameter name="tropismS" value="0.30000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
         <parameter name="successor" type="3" percentage="1"/>
         <!--Sub type of lateral roots-->
@@ -124,27 +124,27 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="0.25"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <parameter name="la" value="0.82467526" dev="0.74988949"/>
+        <parameter name="la" value="1.0856551" dev="0.89419115"/>
         <!--Apical zone [cm]-->
-        <parameter name="lb" value="1.0856551" dev="0.89419115"/>
+        <parameter name="lb" value="1.0994172" dev="1.2184193"/>
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="2.9592555" dev="4.3511667"/>
+        <parameter name="lmax" value="5" dev="0.5"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.47411904" dev="0.29252708"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="0.44565785" dev="0.46271667"/>
+        <parameter name="r" value="0.1469841" dev="0.01469841"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
         <parameter name="theta" value="1.1747324" dev="0.35127264"/>
         <!--Angle between root and parent root [rad]-->
-        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismN" value="0.5"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.2"/>
+        <parameter name="tropismS" value="0.30000001"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
 </plant>
