@@ -60,10 +60,18 @@ for i in range(0, max_order + 1):
 #
 # find r and k for root order 1
 #
-order0 = es.get_order(0, roots)
-print(len(order0), "base_roots")
-for r in order0:
+
+print(len(roots_i[0]), "base_roots")
+for r in roots_i[0]:
     r.set_emergence_time(0.)
+order0 = []
+for r in roots_i[0]:
+    if r.length() > r.measurement_times[0] * 2:  # cut off young basals
+        order0.append(r)
+    else:
+        pass
+        # TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 order0_lengths = np.array([r.length() for r in order0])
 order0_ages = np.array([list(r.ages.values())[0] for r in order0])
 res, f0 = es.estimate_rk(order0_lengths, order0_ages)
@@ -105,13 +113,13 @@ print(len(order2), "2nd order roots")
 #
 # build xml
 #
-print("\nwriting m1_lupine.xml\n")
+print("\nwriting m1_maize.xml\n")
 rs = pb.RootSystem()
 p0 = pb.RootRandomParameter(rs)  # with default values,
 p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 srp = pb.SeedRandomParameter(rs)  # with default values
 
-srp.name = "m1 lupine"
+srp.name = "m1 maize"
 
 p0.name = "base roots"
 insert_params(p0, params[0], 0)  # inserts la, lb, ln, a, theta
@@ -148,7 +156,7 @@ print()
 print(srp)
 print()
 
-rs.writeParameters("m1_lupine.xml")
+rs.writeParameters("m1_maize.xml")
 
 print("done")
 
