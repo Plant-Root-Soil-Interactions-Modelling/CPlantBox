@@ -55,7 +55,7 @@ class Root:
         """ connects the roots creating parent and laterals expects prop['parent-poly'], prop['parent-node'] """
         t0 = self.measurement_times[0]
         parent_id = self.props[t0]('parent-poly')
-        if parent_id > 0:
+        if parent_id > -1:
             self.parent = roots[parent_id]
         else:
             self.parent = None
@@ -126,7 +126,7 @@ class Root:
         for t in self.measurement_times:
             if self.laterals[t]:
                 length_la = self.length(0, self.laterals[t][-1].parent_node, t)  # length - la
-                ld = self.ages[t] - Root.negexp_age(length_la, rr, self.k)
+                ld = self.ages[t] - Root.negexp_age(length_la + self.la, rr, self.k)
                 ldelay_.append(max(ld, 0.))
             else:
                 ldelay_.append(np.nan)
@@ -134,8 +134,8 @@ class Root:
         lm = self.measurement_times[-1]  # last measurement
         for i, l in enumerate(self.laterals[lm]):
             tl = self.length(0, l.parent_node, -1) + self.la
-            lateral_age = Root.negexp_age(tl, rr, self.k) + self.emergence_time
-            l.set_emergence_time(lateral_age)
+            lateral_et = Root.negexp_age(tl, rr, self.k) + self.emergence_time
+            l.set_emergence_time(lateral_et)
 
     def calc_params(self):
         """ retrieves la, lb, ln, theta, a """
@@ -164,15 +164,18 @@ class Root:
             for i in range(0, len(l) - 1):
                 print(self.length(l[i].parent_node, l[i + 1].parent_node, t))
         # print(self.la, self.lb, self.ln)
-        v1 = self.nodes[lm][1] - self.nodes[lm][0]  # theta is calculated from the last measurement
-        v1 = v1 / np.linalg.norm(v1)
-        v2 = np.array([0., 0., -1])
-        if self.parent:
-            pni = int(self.parent_node)
-            if pni > 1:
-                v2 = self.parent.nodes[lm][pni] - self.parent.nodes[lm][pni - 2]  # Kutschera file seems to store nodes twice
-                v2 = v2 / np.linalg.norm(v2)
-        self.theta = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+        if self.nodes[lm].shape[0] > 1:
+            v1 = self.nodes[lm][1] - self.nodes[lm][0]  # theta is calculated from the last measurement
+            v1 = v1 / np.linalg.norm(v1)
+            v2 = np.array([0., 0., -1])
+            if self.parent:
+                pni = int(self.parent_node)
+                if pni > 1:
+                    v2 = self.parent.nodes[lm][pni] - self.parent.nodes[lm][pni - 2]  # Kutschera file seems to store nodes twice
+                    v2 = v2 / np.linalg.norm(v2)
+            self.theta = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+        else:
+            self.theta = np.nan
         # print(self.theta)
         for t in self.measurement_times:
             n = self.nodes[t].shape[0]
@@ -270,8 +273,13 @@ def get_params(roots :list, time :float):
 
 
 def merge_measurements(root_list :list):
-    """ merges multiplie measurements of the same plant type """
-    pass
+    """ merges multiplie measurements of the same plant type, the roots must be initialized """
+    roots = {}
+    for i, r in enumerate(root_list):
+        for r_ in r.values():
+            r_.id = r_.id + i * 10000
+            roots[r_.id] = r_
+    return roots
 
 
 #
@@ -324,7 +332,9 @@ def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
 def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
     """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length, 
     @param lengths list of root lengths [cm], 
-    @param r initial root length [cm], @param k maximal root length [cm], @param time maximal measurement time"""
+    @param r initial root length [cm] 
+    @param k maximal root length [cm]
+    @param time maximal measurement time """
     f = lambda x: target_rate(x[0], lengths, r, k, time)
     x0 = [time / lengths.shape[0]]
     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent

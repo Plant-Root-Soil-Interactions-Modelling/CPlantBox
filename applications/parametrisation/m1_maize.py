@@ -24,12 +24,18 @@ def insert_params(p0, p :np.array, order : int, successors :bool = True):
         p0.successorP = [1]  # probability that successor emerges
 
 
-time = [1, 2, 3, 4, 5, 6, 8, 9]  # measurement times (not in the rsml)
-name = ["RSML/m1/dicot/lupin/lupin_d{:g}.rsml".format(a) for a in time]
+time = [1, 2, 3, 4, 5, 6, 7, 8]  # measurement times (not in the rsml)
+name1 = ["RSML/m1/monocot/maize/PL01_DAS0{:g}.rsml".format(a) for a in time]
+name2 = ["RSML/m1/monocot/maize/PL08_DAS0{:g}.rsml".format(a) for a in time]
+name3 = ["RSML/m1/monocot/maize/PL10_DAS0{:g}.rsml".format(a) for a in time]
 
 roots = []
-for i, n in enumerate(name):
-    roots.append(es.parse_rsml([n], [time[i] + 2]))  # 11 days ?
+for i, n in enumerate(name1):
+    roots.append(es.parse_rsml([n], [time[i] ]))
+for i, n in enumerate(name2):
+    roots.append(es.parse_rsml([n], [time[i] ]))
+for i, n in enumerate(name3):
+    roots.append(es.parse_rsml([n], [time[i] ]))
 roots = es.merge_measurements(roots)
 print("\nNumber of roots", len(roots.values()))
 
@@ -70,11 +76,11 @@ print("r0s", r0s, "lmaxs0", lmax0s)
 for r in order0:
     roots[r.id].calc_growth_rate(r0, lmax0)
 
-# t_ = np.linspace(0, time[-1], 200)
-# y1 = es.Root.negexp_length(t_, r0, lmax0)
-# plt.plot(t_, y1)
-# plt.scatter(order0_ages, order0_lengths)
-# plt.show()
+t_ = np.linspace(0, time[-1], 200)
+y1 = es.Root.negexp_length(t_, r0, lmax0)
+plt.plot(t_, y1)
+plt.scatter(order0_ages, order0_lengths)
+plt.show()
 
 order1 = es.get_order(1, roots)
 print(len(order1), "1st order roots")

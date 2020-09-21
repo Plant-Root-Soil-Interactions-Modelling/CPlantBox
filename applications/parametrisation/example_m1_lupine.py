@@ -1,0 +1,23 @@
+"""small example"""
+import sys; sys.path.append("../..")
+import plantbox as pb
+import vtk_plot as vp
+
+rs = pb.RootSystem()
+
+# Open plant and root parameter from a file
+path = ""
+name = "m1_lupine"
+rs.readParameters(path + name + ".xml")
+
+# Initialize
+rs.initializeLB(1, 5)  # change basal to tap
+
+# Simulate
+rs.simulate(11, True)
+
+# Export final result (as vtp)
+rs.write("m1_lupine.vtp")
+
+# Plot, using vtk
+vp.plot_roots(rs, "creationTime")  # "creationTime", "subType"
