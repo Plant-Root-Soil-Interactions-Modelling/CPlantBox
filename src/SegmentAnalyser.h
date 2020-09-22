@@ -54,6 +54,7 @@ public:
 
     // rather specialized things we want to know
     void mapPeriodic(double xx, double yy); /// maps into a periodic domain, splits up intersecting segments
+    void map2D(); ///< maps the 3d coordinates to the x-z plan (sqrt(x2+y2), 0., z)
     std::vector<std::shared_ptr<Organ>> getOrgans() const; ///< segment origins
     int getNumberOfOrgans() const; ///< number of different organs
     SegmentAnalyser foto(const Vector3d& pos, const Matrix3d& ons, double height) const; ///< takes a picture TODO unfinished, untested

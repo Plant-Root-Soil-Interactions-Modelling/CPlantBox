@@ -507,6 +507,18 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
 }
 
 /**
+ * Maps the 3d coordinates to the x-z plan (sqrt(x2+y2), 0., z)
+ */
+void SegmentAnalyser::map2D() {
+    for (size_t i=0; i<nodes.size(); i++) {
+        double x = nodes[i].x;
+        double y = nodes[i].y;
+        nodes[i].x = (-1*(x<0)+ 1*(x>=0))*std::sqrt(x*x+y*y);
+        nodes[i].y = 0.;
+    }
+}
+
+/**
  * @return The origin's of the segments, i.e. the organ's where the segments are part of (unique, no special ordering)
  */
 std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
