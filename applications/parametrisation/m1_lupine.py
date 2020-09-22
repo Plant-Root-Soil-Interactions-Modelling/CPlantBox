@@ -52,7 +52,7 @@ for i in range(0, max_order + 1):
     print()
 
 #
-# find r and k for root order 1
+# find r and k for root order 0 and order 1
 #
 order0 = es.get_order(0, roots)
 print(len(order0), "base_roots")
@@ -93,9 +93,6 @@ plt.plot(t_, y1)
 plt.scatter(order1_ages, order1_lengths)
 plt.show()
 
-order2 = es.get_order(2, roots)
-print(len(order2), "2nd order roots")
-
 #
 # build xml
 #
@@ -112,7 +109,7 @@ insert_params(p0, params[0], 0)  # inserts la, lb, ln, a, theta
 p0.r = r0  # [cm/day] initial growth rate
 p0.rs = r0s
 p0.lmax = lmax0  # [cm] maximal root length, number of lateral branching nodes = round((lmax-lb-la)/ln) + 1
-p0.lmax = lmax0s
+p0.lmaxs = lmax0s
 # not based on data
 p0.dx = 0.5  # [cm] axial resolution
 p0.tropismT = pb.TropismType.gravi  #

@@ -16,27 +16,26 @@ def set_all_sd(rs, s):
 
 
 rs = pb.RootSystem()
+# set_all_sd(rs, 0.)
 
 # Open plant and root parameter from a file
 path = ""
-name = "m1_lupine"
+name = "m1_maize"
 rs.readParameters(path + name + ".xml")
-set_all_sd(rs, 0.)
-
-# print(rs.getRootRandomParameter(0))
 print(rs.getRootRandomParameter(1))
-print(rs.getRootRandomParameter(2))
 
 # Initialize
 rs.initializeLB(1, 5)  # change basal to tap
+# rs.initialize()
 
 # Simulate
-rs.simulate(11, True)
+rs.simulate(8, True)
 ana = pb.SegmentAnalyser(rs)
+# ana.filter("subType", 1)
 # ana.map2D()
 
 # Export final result (as vtp)
-ana.write("m1_lupine.vtp")
+ana.write("m1_maize.vtp")
 
 # Plot, using vtk
-vp.plot_roots(ana, "creationTime")  # "creationTime", "subType"
+vp.plot_roots(ana, "subType")  # "creationTime", "subType"

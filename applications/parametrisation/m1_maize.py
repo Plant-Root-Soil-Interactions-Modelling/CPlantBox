@@ -58,19 +58,19 @@ for i in range(0, max_order + 1):
     print()
 
 #
-# find r and k for root order 1
+# find r and k for root order 0 and 1
 #
 
 print(len(roots_i[0]), "base_roots")
 for r in roots_i[0]:
     r.set_emergence_time(0.)
 order0 = []
+order0_basal = []
 for r in roots_i[0]:
     if r.length() > r.measurement_times[0] * 2:  # cut off young basals
         order0.append(r)
     else:
-        pass
-        # TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        order0_basal.append(r)
 
 order0_lengths = np.array([r.length() for r in order0])
 order0_ages = np.array([list(r.ages.values())[0] for r in order0])
@@ -80,14 +80,27 @@ print("r0", r0, "lmax0", lmax0)
 r0s, lmax0s = es.get_see_rk(order0_lengths, order0_ages, r0, lmax0)
 print("r0s", r0s, "lmaxs0", lmax0s)
 
+order0_basal_lengths = np.array([r.length() for r in order0_basal])
+order0_basal_ages = np.array([list(r.ages.values())[0] for r in order0_basal])
+t0, f = es.estiamte_emergance_order0(order0_basal_lengths, order0_basal_ages, r0, lmax0)
+print("estimated first basal at", t0.x[0], "days")
+for r in order0_basal:
+    r.set_emergence_time(t0.x[0])
+rate = t0.x[0]
+
 # set order 0 growth rate and maximal length
 for r in order0:
     roots[r.id].calc_growth_rate(r0, lmax0)
+for r in order0_basal:
+    r.calc_growth_rate(r0, lmax0)
 
 t_ = np.linspace(0, time[-1], 200)
 y1 = es.Root.negexp_length(t_, r0, lmax0)
 plt.plot(t_, y1)
+plt.plot(t_ + t0.x[0], y1)
 plt.scatter(order0_ages, order0_lengths)
+plt.scatter(order0_basal_ages, order0_basal_lengths)
+plt.xlim([0, time[-1]])
 plt.show()
 
 order1 = es.get_order(1, roots)
@@ -107,9 +120,6 @@ plt.plot(t_, y1)
 plt.scatter(order1_ages, order1_lengths)
 plt.show()
 
-order2 = es.get_order(2, roots)
-print(len(order2), "2nd order roots")
-
 #
 # build xml
 #
@@ -120,18 +130,24 @@ p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 srp = pb.SeedRandomParameter(rs)  # with default values
 
 srp.name = "m1 maize"
+srp.maxB = 100  # [-] number of basal roots (neglecting basal roots and shoot borne)
+srp.firstB = rate  # [day] first emergence of a basal root
+srp.delayB = rate  # [day] delay between the emergence of basal roots
 
 p0.name = "base roots"
 insert_params(p0, params[0], 0)  # inserts la, lb, ln, a, theta
 p0.r = r0  # [cm/day] initial growth rate
 p0.rs = r0s
 p0.lmax = lmax0  # [cm] maximal root length, number of lateral branching nodes = round((lmax-lb-la)/ln) + 1
-p0.lmax = lmax0s
+p0.lmaxs = lmax0s
 # not based on data
 p0.dx = 0.5  # [cm] axial resolution
 p0.tropismT = pb.TropismType.gravi  #
-p0.tropismN = 2  # [-] strength of tropism
-p0.tropismS = 0.2  # [rad/cm] maximal bending
+p0.tropismN = 0.7  # [-] strength of tropism
+p0.tropismS = 0.3  # [rad/cm] maximal bending
+# for second basal
+p0.theta = 1.5
+p0.thetas = 1
 
 p1.name = "first order laterals"
 insert_params(p1, params[1], 1, False)  # inserts la, lb, ln, a, theta

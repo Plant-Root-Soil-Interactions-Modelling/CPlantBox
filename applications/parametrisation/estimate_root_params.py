@@ -132,10 +132,13 @@ class Root:
                 ldelay_.append(np.nan)
         self.ldelay = np.nanmean(np.array(ldelay_))
         lm = self.measurement_times[-1]  # last measurement
+        print("\nRoot ", self.id)
         for i, l in enumerate(self.laterals[lm]):
             tl = self.length(0, l.parent_node, -1) + self.la
             lateral_et = Root.negexp_age(tl, rr, self.k) + self.emergence_time
             l.set_emergence_time(lateral_et)
+            print(lateral_et, l.ages[lm])
+        print("")
 
     def calc_params(self):
         """ retrieves la, lb, ln, theta, a """
@@ -329,9 +332,17 @@ def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
     return rate, r, rs
 
 
+def estiamte_emergance_order0(lengths :np.array, ages :np.array, r :float, k :float):
+    """ fits the emergance time of 2nd basal roots """
+    f = lambda x: target_length(r, k, lengths, ages - np.ones(ages.shape) * x[0])
+    x0 = [np.max(ages)]
+    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)
+    return res, f
+
+
 def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
-    """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length, 
-    @param lengths list of root lengths [cm], 
+    """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length
+    @param lengths list of root lengths [cm] 
     @param r initial root length [cm] 
     @param k maximal root length [cm]
     @param time maximal measurement time """

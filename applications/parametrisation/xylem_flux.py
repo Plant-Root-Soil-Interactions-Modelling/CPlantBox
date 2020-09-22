@@ -227,14 +227,19 @@ class XylemFluxPython(XylemFlux):
                 if 'diameter' in funcs:
                     radii_.append(funcs['diameter'][i][j] / 2)
                 else:
+                    print("XylemFluxPython.read_rsml: no diameter tag found")
                     radii_.append(0.)
                 if 'emergence_time' in funcs:
                     nodeCTs_.append(funcs['emergence_time'][i][j])
                 else:
+                    print("XylemFluxPython.read_rsml: no emergence_time tag found")
                     nodeCTs_.append(0.)
                 if 'type' in funcs:
+                    types_.append(funcs["type"][i][j])
+                elif 'type' in props:
                     types_.append(props["type"][i])
                 else:
+                    print("XylemFluxPython.read_rsml: no type tag found")
                     types_.append(0)
         nodeCTs = np.array(nodeCTs_)  # creation times per node
         radii = np.zeros((len(segs), 1))  # radii per segment
