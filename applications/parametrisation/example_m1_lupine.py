@@ -21,7 +21,7 @@ rs = pb.RootSystem()
 path = ""
 name = "m1_lupine"
 rs.readParameters(path + name + ".xml")
-set_all_sd(rs, 0.)
+# set_all_sd(rs, 0.)
 
 # print(rs.getRootRandomParameter(0))
 print(rs.getRootRandomParameter(1))
@@ -33,7 +33,7 @@ rs.initializeLB(1, 5)  # change basal to tap
 # Simulate
 rs.simulate(11, True)
 ana = pb.SegmentAnalyser(rs)
-# ana.map2D()
+ana.map2D()
 
 # Export final result (as vtp)
 ana.write("m1_lupine.vtp")

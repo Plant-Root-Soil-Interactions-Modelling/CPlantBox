@@ -27,10 +27,7 @@ def insert_params(p0, p :np.array, order : int, successors :bool = True):
 time = [1, 2, 3, 4, 5, 6, 8, 9]  # measurement times (not in the rsml)
 name = ["RSML/m1/dicot/lupin/lupin_d{:g}.rsml".format(a) for a in time]
 
-roots = []
-for i, n in enumerate(name):
-    roots.append(es.parse_rsml([n], [time[i] + 2]))  # 11 days ?
-roots = es.merge_measurements(roots)
+roots = es.parse_rsmls(name, np.array(time) + 2)
 print("\nNumber of roots", len(roots.values()))
 
 #
@@ -91,6 +88,7 @@ t_ = np.linspace(0, time[-1], 200)
 y1 = es.Root.negexp_length(t_, r1, lmax1)
 plt.plot(t_, y1)
 plt.scatter(order1_ages, order1_lengths)
+plt.xlabel("age (days)"); plt.ylabel("length (cm)")
 plt.show()
 
 #
@@ -119,9 +117,9 @@ p0.tropismS = 0.2  # [rad/cm] maximal bending
 p1.name = "first order laterals"
 insert_params(p1, params[1], 1, False)  # inserts la, lb, ln, a, theta
 p1.r = r1  # [cm/day] initial growth rate
-p1.rs = r1s  # standard deviation of initial growth rate
+p1.rs = 0.1 * r1  # r1s  # standard deviation of initial growth rate
 p1.lmax = lmax1  # # [cm] apical zone
-p1.lmaxs = lmaxs1  # # standard deviation of apical zone
+p1.lmaxs = 0  # lmaxs1  # # standard deviation of apical zone
 # not based on data
 p1.dx = 0.25  # [cm] axial resolution
 p1.tropismT = pb.TropismType.gravi  # exo

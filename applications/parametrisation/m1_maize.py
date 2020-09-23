@@ -31,11 +31,11 @@ name3 = ["RSML/m1/monocot/maize/PL10_DAS0{:g}.rsml".format(a) for a in time]
 
 roots = []
 for i, n in enumerate(name1):
-    roots.append(es.parse_rsml([n], [time[i] ]))
+    roots.append(es.parse_rsml(n, time[i]))
 for i, n in enumerate(name2):
-    roots.append(es.parse_rsml([n], [time[i] ]))
+    roots.append(es.parse_rsml(n, time[i]))
 for i, n in enumerate(name3):
-    roots.append(es.parse_rsml([n], [time[i] ]))
+    roots.append(es.parse_rsml(n, time[i]))
 roots = es.merge_measurements(roots)
 print("\nNumber of roots", len(roots.values()))
 
@@ -152,13 +152,13 @@ p0.thetas = 1
 p1.name = "first order laterals"
 insert_params(p1, params[1], 1, False)  # inserts la, lb, ln, a, theta
 p1.r = r1  # [cm/day] initial growth rate
-p1.rs = r1s  # standard deviation of initial growth rate
+p1.rs = 0.1 * r1  # r1s  # standard deviation of initial growth rate
 p1.lmax = lmax1  # # [cm] apical zone
-p1.lmaxs = lmaxs1  # # standard deviation of apical zone
+p1.lmaxs = 0  # lmaxs1  # # standard deviation of apical zone
 # not based on data
-p1.dx = 0.25  # [cm] axial resolution
+p1.dx = 0.1  # [cm] axial resolution
 p1.tropismT = pb.TropismType.gravi  # exo
-p1.tropismN = 0.5  # [-] strength of tropism
+p1.tropismN = 0.8  # [-] strength of tropism
 p1.tropismS = 0.3  # [rad/cm] maximal bending
 
 rs.setOrganRandomParameter(p0)

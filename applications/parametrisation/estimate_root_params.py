@@ -72,23 +72,25 @@ class Root:
                 assert self.parent_node == self.props[t]('parent-node'), "Root.initialize: parent node changed in measurements"
 
     def sort_laterals(self):
-        """ sorts the laterals after their parent node index, call initialize() for all roots first """
+        """ sorts the laterals after their parent node index, call initialize for all roots first """
         for t in self.measurement_times:
+            pni = np.array([l.parent_node for l in self.laterals.setdefault(t, [])])
+            ii = np.argsort(pni)
             l_ = []
-            for i, l in enumerate(self.laterals.setdefault(t, [])):
-                l_.append((l.parent_node, i))
-            l_.sort()
-            self.laterals[t] = [self.laterals[t][l_[j][1]] for j in range(0, len(l_))]
+            for i in ii:
+                 l_.append(self.laterals[t][i])
+            self.laterals[t] = l_
 
     def length(self, i0 :int = 0, iend :int = -1, t :float = -1.):
         """ length between two indices @param i0 and @param iend at measurement @param m """
         if t < 0:
             t = self.measurement_times[-1]
         if iend == -1:
-            iend = self.nodes[t].shape[0]
+            iend = self.nodes[t].shape[0] - 1
         l = 0.
-        for i in range(int(i0), int(iend) - 1):
-            l += np.linalg.norm(self.nodes[t][i] - self.nodes[t][i + 1])
+        if i0 < iend:
+            for i in range(int(i0), int(iend)):
+                l += np.linalg.norm(self.nodes[t][i] - self.nodes[t][i + 1])
         return l
 
     def order(self, i :int = 0):
@@ -132,13 +134,13 @@ class Root:
                 ldelay_.append(np.nan)
         self.ldelay = np.nanmean(np.array(ldelay_))
         lm = self.measurement_times[-1]  # last measurement
-        print("\nRoot ", self.id)
+        # print("\nRoot ", self.id)
         for i, l in enumerate(self.laterals[lm]):
             tl = self.length(0, l.parent_node, -1) + self.la
             lateral_et = Root.negexp_age(tl, rr, self.k) + self.emergence_time
             l.set_emergence_time(lateral_et)
-            print(lateral_et, l.ages[lm])
-        print("")
+            # print(lateral_et, l.ages[lm])
+        # print("")
 
     def calc_params(self):
         """ retrieves la, lb, ln, theta, a """
@@ -157,7 +159,8 @@ class Root:
         l = self.laterals[lm]  # ln is calculated from the last measurement
         if l:
             for i in range(0, len(l) - 1):
-                ln_.append(self.length(l[i].parent_node, l[i + 1].parent_node, t))
+                ln = self.length(l[i].parent_node, l[i + 1].parent_node, t)
+                ln_.append(ln)
             if len(l) - 1 == 0:
                 ln_.append(np.nan)
         else :
@@ -214,32 +217,41 @@ def connect(node, base_polyline):
     return min_i
 
 
-def parse_rsml(rsml_names :list, times :list):
-    """ creates a root dictionary 
-    @param rsml_names list of rsml names of multiple measurements of the same plant, 
-    @param times measurement times  """
-    assert len(rsml_names) == len(times), "parse_rsml: length of file name list and time list must be equal"
+def parse_rsml(rsml_name :list, time :list):
+    """ creates a root dictionary from a rsml file
+    @param rsml_name     file name 
+    @param time          measurement time  """
     roots = {}
-    for j, n in enumerate(rsml_names):
-        poly, prop, fun = rsml.read_rsml(n)
-        assert len(poly) == len(prop['parent-poly']), "parse_rsml: wrong number of parent-poly tags"
-        if not 'parent-node' in prop:  # reconstruct...
-            print("parse_rsml: no parent-node tag found, reconstructing...")
-            prop['parent-node'] = []
-            for i in range(0, len(poly)):
-                if prop['parent-poly'][i] >= 0:
-                    pni = connect(np.array(poly[i][0]), poly[prop['parent-poly'][i]])
-                else:
-                    pni = -1
-                # print("parent", prop['parent-poly'][i], "pni", pni)
-                prop['parent-node'].append(pni)
-        nopn = len(prop['parent-node'])
-        assert len(poly) == nopn, "parse_rsml: wrong number of parent-node tags"
+    poly, prop, fun = rsml.read_rsml(rsml_name)
+    assert len(poly) == len(prop['parent-poly']), "parse_rsml: wrong number of parent-poly tags"
+    if not 'parent-node' in prop:  # reconstruct...
+        print("parse_rsml: no parent-node tag found, reconstructing...")
+        prop['parent-node'] = []
         for i in range(0, len(poly)):
-            r = Root()
-            r.add_measurement(times[j], i, poly, prop, fun, roots)
+            if prop['parent-poly'][i] >= 0:
+                pni = connect(np.array(poly[i][0]), poly[prop['parent-poly'][i]])
+            else:
+                pni = -1
+            # print("parent", prop['parent-poly'][i], "pni", pni)
+            prop['parent-node'].append(pni)
+    nopn = len(prop['parent-node'])
+    assert len(poly) == nopn, "parse_rsml: wrong number of parent-node tags"
+    for i in range(0, len(poly)):
+        r = Root()
+        r.add_measurement(time, i, poly, prop, fun, roots)
     initialize_roots(roots)
     return roots
+
+
+def parse_rsmls(rsml_names :list, times :list):
+    """ creates a root dictionary from a rsml file
+    @param rsml_names    file names 
+    @param times         measurement times  """
+    assert len(rsml_names) == len(times), "parse_rsmls: number of file names must equal the number of measurement times"
+    root_list = []
+    for i, n in enumerate(rsml_names):
+        root_list.append(parse_rsml(n, times[i]))
+    return merge_measurements(root_list)
 
 
 def initialize_roots(roots :dict):

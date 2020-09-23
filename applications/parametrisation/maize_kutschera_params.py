@@ -24,8 +24,8 @@ def insert_params(p0, p :np.array, order : int, successors :bool = True):
 
 print("reading")
 lmax = 100.  # [cm] fixed
-time = [75]  # measurement times (not in the rsml)
-name = ["RSML/Maize_Kutschera.rsml"]
+time = 75  # measurement times (not in the rsml)
+name = "RSML/Maize_Kutschera.rsml"
 roots = es.parse_rsml(name, time)
 
 #
@@ -41,25 +41,25 @@ for i in range(0, max_order + 1):
 
 params = []
 for i in range(0, 2):
-    params.append(es.get_params(roots_i[i], time[-1]))
+    params.append(es.get_params(roots_i[i], time))
 
 roots_ = []
 for j in range(2, max_order + 1):  # all roots > order 1
     roots_.extend(roots_i[j])
-params.append(es.get_params(roots_, time[-1]))
+params.append(es.get_params(roots_, time))
 
 #
 # see maize_kutschera2.py
 #
 print()
 print("\nfinding production rate and growth rate of order 0")
-rate, r0, r0s = es.estimate_set_order0_rate(roots, lmax, time[0])
+rate, r0, r0s = es.estimate_set_order0_rate(roots, lmax, time)
 print("rate", rate, "r0", r0, "see", r0s)
 
 print("\nfinding growth rate and maximal length of order 1")
 order1 = es.get_order(1, roots)
 lengths1 = np.array([r.length() for r in order1])  # for last measurement
-ages1 = np.array([r.ages[time[-1]] for r in order1])
+ages1 = np.array([r.ages[time] for r in order1])
 
 # res, f = es.estimate_rk(lengths1, ages1)
 # r1, lmax1 = res.x[0], res.x[1]

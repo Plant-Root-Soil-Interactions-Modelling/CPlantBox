@@ -32,7 +32,7 @@ rs.initializeLB(1, 5)  # change basal to tap
 rs.simulate(8, True)
 ana = pb.SegmentAnalyser(rs)
 # ana.filter("subType", 1)
-# ana.map2D()
+ana.map2D()
 
 # Export final result (as vtp)
 ana.write("m1_maize.vtp")
