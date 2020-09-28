@@ -507,6 +507,39 @@ void SegmentAnalyser::mapPeriodic_(double xx, Vector3d axis, double eps) {
 }
 
 /**
+ * Maps the 3d coordinates to the x-z plan (sqrt(x2+y2), 0., z)
+ */
+void SegmentAnalyser::map2D() {
+
+    for (size_t i=0; i<segments.size(); i++) {
+        if (nodes[segments[i].x].y!=0) { // not mapped before (initial segment of base root)
+            double x0 = nodes[segments[i].y].x; // first segment decides signum of branch
+            double x = nodes[segments[i].x].x; // node 1
+            double y = nodes[segments[i].x].y;
+            nodes[segments[i].x].x = (-1*(x0<=0) + 1*(x0>0))*std::sqrt(x*x+y*y);
+            nodes[segments[i].x].y = 0.;
+            x = nodes[segments[i].y].x; // node 2
+            y = nodes[segments[i].y].y;
+            nodes[segments[i].y].x = (-1*(x0<=0) + 1*(x0>0))*std::sqrt(x*x+y*y);
+            nodes[segments[i].y].y = 0.;
+        } else { // map only node 2
+            double x = nodes[segments[i].y].x;
+            double y = nodes[segments[i].y].y;
+            double r = std::sqrt(x*x+y*y);
+            double x0;
+            if (r>0.1) {
+                x0 = nodes[segments[i].x].x;
+            } else {
+                x0 = nodes[segments[i].y].x;
+            }
+            int sgn = (-1*(x0<=0) + 1*(x0>0));
+            nodes[segments[i].y].x = sgn*r;
+            nodes[segments[i].y].y = 0.;
+        }
+    }
+}
+
+/**
  * @return The origin's of the segments, i.e. the organ's where the segments are part of (unique, no special ordering)
  */
 std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
