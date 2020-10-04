@@ -13,7 +13,7 @@
 
 The most convenient way is to use google colab, which is a Linux virtual machine with jupyter notebook interface.
 You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
-[here is the link to use it](https://colab.research.google.com/github/Plant-Root-Soil-Interactions-Modelling/CPlantBox/blob/master/tutorial/jupyter/CPlantBox_PiafMunch_Tutorial_(include_installation).ipynb).
+[here is the link to use it](b.cplantbox.com).
 
 ## or build local
 
