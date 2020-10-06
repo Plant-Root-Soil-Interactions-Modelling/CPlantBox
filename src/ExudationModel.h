@@ -76,15 +76,22 @@ public:
 
     /**
      * For each root for each grid point
+     * @param tend      final simulation time
+     * @param i0        optionally, initial root index (default = 0)
+     * @param iend      optionally, final root index (default = roots.size())
      */
-    std::vector<double> calculate(double tend) {
+    std::vector<double> calculate(double tend, int i0 = 0, int iend = -1) {
+
+        if (iend==-1) {
+            iend = roots.size();
+        }
 
         limitDomain = observationRadius>0;
 
         std::fill(grid.data.begin(), grid.data.end(), 0); // set data to zero
         g_.resize(grid.data.size()); // saves last root contribution
 
-        for (size_t ri = 0; ri< roots.size(); ri++) {
+        for (size_t ri = i0; ri< iend; ri++) {
 
             //
             // per root (passed to integrands)
@@ -155,7 +162,7 @@ public:
                 }
 
 
-            } // if ages.at(i)>0
+            } // if ages.at(i)>0d
 
         }
 
