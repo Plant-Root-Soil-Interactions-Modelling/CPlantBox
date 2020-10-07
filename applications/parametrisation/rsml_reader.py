@@ -28,18 +28,28 @@ def parse_rsml_(organ :ET, polylines :list, properties :dict, functions :dict, p
             properties.setdefault('parent-node' , []).append(-1)
 
         for p in prop:  # i.e length, type, etc..
-            if not p.attrib['value']:  # no value defined
-                properties.setdefault(str(p.tag), []).append(-99)
-            elif any(c.isalpha() for c in p.attrib['value']):
-                properties.setdefault(str(p.tag), []).append(-99)
+            if 'value' in p.attrib:  # no value defined
+                try:
+                    properties.setdefault(str(p.tag), []).append(float(p.attrib['value']))
+                except:
+                    properties.setdefault(str(p.tag), []).append(float(np.nan))
             else:
-                properties.setdefault(str(p.tag), []).append(float(p.attrib['value']))
+                try:
+                    properties.setdefault(str(p.tag), []).append(float(p.text))
+                except:
+                    properties.setdefault(str(p.tag), []).append(float(np.nan))
 
     for funcs in organ.iterfind('functions'):
         for fun in funcs:
             samples = [ ]
             for sample in fun.iterfind('sample'):
-                samples.append(float(sample.attrib['value']))
+                if 'value' in sample.attrib:
+                    samples.append(float(sample.attrib['value']))
+                else:
+                    try:
+                        samples.append(float(sample.text))
+                    except:
+                        samples.append(float(np.nan))
             functions.setdefault(str(fun.attrib['name']), []).append(samples)
 
     pi = len(polylines) - 1
@@ -99,20 +109,25 @@ def get_segments(polylines :list, props :dict) -> (list, list):
             segs.append([offset[i] + j, offset[i] + j + 1])
     return nodes, segs
 
-
-def get_parameter(polylines :list, funcs :dict, props :dict) -> (list, list, list):
-    """ Copies radii and creation times, one value per segment 
-    """
-    fdiam = funcs["diameter"]
-    fet = funcs["emergence_time"]
-    ptype = props["type"]
-    radii, cts, types = [], [], []
-    for i, p in enumerate(polylines):
-        for j in range(0, len(p)):
-            radii.append(fdiam[i][j] / 2)
-            cts.append(fet[i][j])
-            types.append(ptype[i])
-    return radii[1:], cts[1:], types[1:]
+# DEPRICATED works only with tap root systems...
+# def get_parameter(polylines :list, funcs :dict, props :dict) -> (list, list, list):
+#     """ Copies radii and creation times, one value per segment """
+#     radii, cts, types = [], [], []
+#     for i, p in enumerate(polylines):
+#         for j in range(0, len(p)):
+#             if 'diameter' in funcs:
+#                 radii.append(funcs['diameter'][i][j] / 2)
+#             else:
+#                 radii.append(0.)
+#             if 'emergence_time' in funcs:
+#                 cts.append(funcs['emergence_time'][i][j])
+#             else:
+#                 cts.append(0.)
+#             if 'type' in funcs:
+#                 types.append(props["type"][i])
+#             else:
+#                 types.append(0)
+#     return radii[1:], cts[1:], types[1:]
 
 
 def plot_rsml(polylines :list, prop :list):

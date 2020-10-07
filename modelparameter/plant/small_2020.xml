@@ -22,9 +22,9 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="2.0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="6" dev="0"/>
+    <parameter name="ln" value="5" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="27" dev="0"/>
+    <parameter name="lmax" value="90" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="1.3666666666666665" dev="0"/>
     <parameter name="r" value="2" dev="0"/>
@@ -50,7 +50,7 @@
     <!--Apical zone [cm];-->
     <parameter name="ln" value="1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="5" dev="0"/>
+    <parameter name="lmax" value="60" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="nob" value="0" dev="0"/>
     <parameter name="r" value="1.5" dev="0"/>
@@ -67,29 +67,7 @@
     <parameter name="gf" value="1"/>
 </organ>
 
-<organ type="root" name="lateral2" subType="3">
-    <parameter name="lb" value="1" dev="0"/>
-    <!--Basal zone [cm]-->
-    <parameter name="la" value="1" dev="0"/>
-    <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="1" dev="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="0" dev="0"/>
-    <parameter name="r" value="1.5" dev="0"/>
-    <parameter name="a" value="0.1" dev="0"/>
-    <parameter name="RotBeta" value="1"/>
-    <parameter name="BetaDev" value="1"/>
-    <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="2"/>
-    <parameter name="tropismN" value="2"/>
-    <parameter name="tropismS" value="0.52359900000000004"/>
-    <parameter name="dx" value="0.25"/>
-    <parameter name="theta" value="1.22173" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="1"/>
-</organ>
+
 
 <organ type="stem" name="mainstem" subType="1">
     <parameter name="lb" value="1" dev="0"/>
@@ -141,30 +119,7 @@
 
 </organ>
 
-<organ type="stem" name="tiller" subType="4">
-    <parameter name="lb" value="0.7" dev="0"/>
-    <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
-    <!--Apical zone [cm];-->
-    <parameter name="ln" value="0.7" dev="0" functiontype="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="4.1" dev="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="nob" value="2.8999999999999999" dev="0"/>
-    <parameter name="r" value="2" dev="0"/>
-    <parameter name="a" value="0.20000000000000001" dev="0.02"/>
-    <parameter name="RotBeta" value="0"/>
-    <parameter name="BetaDev" value="0"/>
-    <parameter name="InitBeta" value="1"/>
-    <parameter name="tropismT" value="0"/>
-    <parameter name="tropismN" value="1"/>
-    <parameter name="tropismS" value="0"/>
-    <parameter name="dx" value="0.25"/>
-    <parameter name="theta" value="2" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="2" percentage="1"/>
-</organ>
+
 
 <organ type="leaf" name="lateral1" subType="2">
     <parameter name="lb" value="1" dev="0"/>

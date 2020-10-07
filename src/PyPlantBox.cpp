@@ -450,6 +450,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("distribution2", (std::vector<std::vector<double>> (SegmentAnalyser::*)(std::string, double, double, double, double, int, int, bool) const) &SegmentAnalyser::distribution2) //overloads
            .def("distribution2", (std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*)(double, double, double, double, int, int) const) &SegmentAnalyser::distribution2) //overloads
            .def("mapPeriodic", &SegmentAnalyser::mapPeriodic)
+           .def("map2D", &SegmentAnalyser::map2D)
            .def("getOrgans", &SegmentAnalyser::getOrgans)
            .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
            .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
@@ -790,8 +791,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
             .def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0)
 			.def("segLength",&XylemFlux::segLength)
-            .def("segSchroeder",&XylemFlux::segSchroeder)
-            .def("segSchroederStressedFlux",&XylemFlux::segSchroederStressedFlux)
+            .def("segSRA",&XylemFlux::segSRA)
+            .def("segSRAStressedFlux",&XylemFlux::segSRAStressedFlux)
             .def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
@@ -844,7 +845,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("thresh13", &ExudationModel::thresh13)
             .def_readwrite("calc13", &ExudationModel::calc13)
             .def_readwrite("observationRadius", &ExudationModel::observationRadius)
-            .def("calculate",  &ExudationModel::calculate);
+            .def("calculate",  &ExudationModel::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
     py::enum_<ExudationModel::IntegrationType>(m, "IntegrationType")
             .value("mps_straight", ExudationModel::IntegrationType::mps_straight )
             .value("mps", ExudationModel::IntegrationType::mps )
