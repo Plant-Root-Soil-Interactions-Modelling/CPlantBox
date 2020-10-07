@@ -1,5 +1,5 @@
 """Optimization of CPlantBox Mdoel tap and basal root parameters"""
-import sys; sys.path.append("../../..")
+import sys; sys.path.append("../..")
 import numpy as np
 import matplotlib.pyplot as plt
 import vtk_plot as vp
@@ -33,13 +33,13 @@ def err (fitparams):    #parameters to be optimized
 
     soilcolumns=[soilcolumn1,soilcolumn, soilcolumn2]
 
-    with open('results/rlds/rld.pkl','rb') as f:
+    with open('rld.pkl','rb') as f:
         measured_RLD = pkl.load(f)
     real_RLD=np.reshape(measured_RLD,(measured_RLD.shape[0]*measured_RLD.shape[1]*measured_RLD.shape[2],1))
     rld=np.zeros([measured_RLD.shape[0],measured_RLD.shape[1],measured_RLD.shape[2]])
     # rld=np.zeros([len(soilcolumns),len(times),layers])
 
-    path = "../../../modelparameter/rootsystem/"
+    path = "../../modelparameter/rootsystem/"
     name = "wheat"
     
 
@@ -125,7 +125,7 @@ res = differential_evolution(err, bnds)
 print(res.x, res.fun)
 print(res)
 
-np.savetxt("results/rlds/opt_para/opt_noise.txt", np.around(res.x, decimals=9),fmt='%.9f',delimiter=',')
+np.savetxt("opt_params.txt", np.around(res.x, decimals=9),fmt='%.9f',delimiter=',')
  
 # lmaxp= 80 #cm
 # tropismNp=1 #cm 
