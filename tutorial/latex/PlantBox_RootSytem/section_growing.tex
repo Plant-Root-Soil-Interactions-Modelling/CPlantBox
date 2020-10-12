@@ -55,31 +55,7 @@ Figure \ref{fig:example7c} shows that hydrotropism will lead to increased cumula
 \caption{Water uptake a in plant pot} \label{fig:example7c}
 \end{figure}
 
-
-
-
-
-
-
-\newpage
-\section{Todos}
-Topics that are not covered yet or should be improved
-
-\begin{itemize}
-
-\item The DuMux binding and MPI
-
-\item Elongation rate according to Moacir et al.
-
-\item Delay based, versus length based lateral emeragnce.
-
-\item Better branching probability example.
-
-\item Periodicity without DuMux coupling, but with a soil 3d grid (untested, and an example is missing)
-
-\item Carbon limited root system growth
-
-\item Direct vtk animation with vp.AnimateRoots (under development...)
-
-\end{itemize}
-
+\subsection{Mimicking root growth}
+For a pre-grown root architecture, root growth can be mimicked in a dynamic soil-root interactions simulation using the creation times of the root segments. The root axial conductence $k_x$ is set equal to 0 for ``unborne" root segments with negative age. The root radial conductivity, $k_r$ needs to be equal to 0 (not just a small value) for segments with negative  age. 
+The parameter \lstinline{initialT} should be equal to 1 if one wants to mimic growth and equal to the final simulation time if not. 
+With respect to solute transport, the diffusion coefficient needs to be very small  for unborn segments (?).
