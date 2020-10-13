@@ -189,6 +189,50 @@ std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>&
     return rsx; // matric potential at the soil root interface
 }
 
+
+/**
+ * Calculates the matric potential at the root soil interface according to Schröder et al.
+ */
+std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
+    std::function<double(double)> mfp, std::function<double(double)> imfp) {
+
+    std::vector<double> rsx = std::vector<double>(rs->segments.size()); // rx is defined at the nodes, i.e. rx.size()+1 == segments.size()
+    auto lengths = this->segLength();
+    auto outerRadii = this->segOuterRadii();
+    auto fluxes = this->segFluxes(simTime, rx, sx, false, true); // classical sink
+    for (int i = 0; i<rs->segments.size(); i++) { // calculate rsx
+        int cellIdx = rs->seg2cell.at(i);
+        double p = sx[cellIdx];
+        double rp = 0.5*(rx.at(rs->segments[i].x)+rx.at(rs->segments[i].y)); // defined at the node
+        double q_root = 0.; // -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
+        double q_out = 0.;
+        double r_in = rs->radii.at(i);
+        double r_out = outerRadii.at(i);
+        rsx[i] = p;
+        if (rp < p) { // flux into root
+            double r = r_in;
+            double rho = r_out/r_in;
+            double mfp_ = mfp(p) + (q_root*r_in-q_out*r_out)*((r*r)/(r_in*r_in)/(2*(1-rho*rho)))+
+                (rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5)) + q_out*r_out*log(r/r_out);
+            double h;
+            if (mfp_>0) { // no stress
+                h = imfp(mfp_);
+            } else { // stress
+                h = wiltingPoint;
+            }
+            if (rp <= h) { // flux into root
+                rsx[i] = h;
+            } else { // flux into soil
+                rsx[i] = rp; // don't use schroeder (no flux)
+            }
+        } else { // flux into soil
+            rsx[i] = p; // don't use schroeder
+        }
+    }
+    return rsx; // matric potential at the soil root interface
+}
+
+
 /**
  * Calculates the stressed according to the steady rate approximation (Schröder et al. )
  */
