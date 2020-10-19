@@ -204,7 +204,7 @@ std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<do
         int cellIdx = rs->seg2cell.at(i);
         double p = sx[cellIdx];
         double rp = 0.5*(rx.at(rs->segments[i].x)+rx.at(rs->segments[i].y)); // defined at the node
-        double q_root = 0.; // -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
+        double q_root = -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
         double q_out = 0.;
         double r_in = rs->radii.at(i);
         double r_out = outerRadii.at(i);
@@ -237,18 +237,16 @@ std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<do
  * Calculates the stressed according to the steady rate approximation (Schröder et al. )
  */
 std::vector<double> XylemFlux::segSRAStressedFlux(const std::vector<double>& sx, double wiltingPoint, double hc,
-    std::function<double(double)> mpf, std::function<double(double)> impf) {
+    std::function<double(double)> mpf, std::function<double(double)> impf, double dx) {
 
-    const double dx = 1.e-6;
     std::vector<double> f = std::vector<double>(rs->segments.size()); // return value
     auto lengths = this->segLength();
     auto outerRadii = this->segOuterRadii();
-    for (int i = 0; i<rs->segments.size(); i++) { // calculate rsx
+    for (int i = 0; i<rs->segments.size(); i++) {
         int cellIdx = rs->seg2cell.at(i);
         double p = sx[cellIdx];
         double r_in = rs->radii.at(i);
         double r_out = outerRadii.at(i);
-
         double h1 = schroederStress(r_in + dx, p, 0., r_in, r_out, mpf, impf);
         f[i] = hc * (h1 - wiltingPoint) / dx;
         f[i] *= -2. * M_PI * r_in * lengths[i];

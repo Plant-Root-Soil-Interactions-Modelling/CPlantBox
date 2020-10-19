@@ -793,7 +793,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("segLength",&XylemFlux::segLength)
             .def("segSRA",&XylemFlux::segSRA)
             .def("segSchroeder",&XylemFlux::segSchroeder)
-            .def("segSRAStressedFlux",&XylemFlux::segSRAStressedFlux)
+            .def("segSRAStressedFlux",&XylemFlux::segSRAStressedFlux, py::arg("sx"), py::arg("wiltingPoint"), py::arg("hc"),
+                py::arg("mpf"), py::arg("impf"), py::arg("dx") = 1.e-6)
             .def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
