@@ -72,6 +72,33 @@ public:
 
         }
 
+        std::cout << "makeVoxelLists\n" << std::flush;
+        makeVoxelLists(observationRadius);
+        std::cout << "finished makeVoxelLists\n" << std::flush;
+    }
+
+    /**
+     * makes a list of voxels for each root, that lie within the observation radius of the root
+     */
+    void makeVoxelLists(double observationRadius, int i0 = 0, int iend = -1) {
+        voxelList.clear();
+        for (size_t ri = i0; ri< iend; ri++) {
+            int id = roots[ri]->getId();
+            for (size_t i = 0; i<grid.nx; i++) {
+                for(size_t j = 0; j<grid.ny; j++) {
+                    for (size_t k = 0; k<grid.nz; k++) {
+                        size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
+                        x_ = grid.getGridPoint(i,j,k);
+                        if (-sdfs[ri].getDist(x_)<observationRadius) {
+                            if (voxelList.count(id)==0) {
+                                voxelList[id]= std::vector<int>();
+                            }
+                            voxelList[id].push_back(lind);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -88,8 +115,10 @@ public:
 
         limitDomain = observationRadius>0;
 
-        std::fill(grid.data.begin(), grid.data.end(), 0); // set data to zero
+        std::fill(grid.data.begin(), grid.data.end(), 0.); // set data to zero
         g_.resize(grid.data.size()); // saves last root contribution
+
+        // std::fill(g_.begin(), g_.end(), 0.); // necessary?
 
         for (size_t ri = i0; ri< iend; ri++) {
 
@@ -111,51 +140,20 @@ public:
                     ", res "<< n_ << " \n"; // for debugging
 
                 // EQN 11
-                for (size_t i = 0; i<grid.nx; i++) {
-                    for(size_t j = 0; j<grid.ny; j++) {
-                        for (size_t k = 0; k<grid.nz; k++) {
-
-                            x_ = grid.getGridPoint(i,j,k); // integration point
-
-                            if ((!limitDomain) || (-sdfs[ri].getDist(x_)<observationRadius)) {
-
-                                size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
-
-                                // different flavors of Eqn (11)
-                                double c = eqn11(0, age_, 0, l);
-                                grid.data[lind] += c;
-                                g_[lind] = c;
-
-                            } else {
-                                size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
-                                g_[lind] = 0.;
-                            }
-
-                        }
-                    }
+                int id = r_->getId();
+                for (int lind : voxelList[id]) {
+                    // different flavors of Eqn (11)
+                      double c = eqn11(0, age_, 0, l);
+                      grid.data[lind] += c;
+                      g_[lind] = c;
                 }
 
                 // EQN 13
                 if ((st_>0) && (st_<tend)) { // has stopped growing
                     std::cout << "13!";
-                    for (size_t i = 0; i<grid.nx; i++) {
-                        std::cout << "*";
-                        for(size_t j = 0; j<grid.ny; j++) {
-                            for (size_t k = 0; k<grid.nz; k++) {
-
-                                size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
-                                if (g_[lind] > thresh13) {
-
-                                    x_ = grid.getGridPoint(i,j,k);
-                                    if ((!limitDomain) || (-sdfs[ri].getDist(x_)<observationRadius)) {
-
-                                        // Eqn (13)
-                                        grid.data[lind] += integrate13(tend);
-
-                                    }
-
-                                }
-                            }
+                    for (int lind : voxelList[id]) {
+                        if (g_[lind] > thresh13) {
+                                grid.data[lind] += integrate13(tend);
                         }
                     }
                     std::cout << "13\n";
@@ -283,6 +281,7 @@ public:
     double dx3 = 1;
     std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
     bool limitDomain = (observationRadius>0);
+    std::map<int, std::vector<int>> voxelList; // voxel list per root
 
     // Set before integrating
     Vector3d x_ = Vector3d(); // integration point
