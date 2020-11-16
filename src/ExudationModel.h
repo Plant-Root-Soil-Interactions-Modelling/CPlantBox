@@ -72,9 +72,6 @@ public:
 
         }
 
-        std::cout << "makeVoxelLists\n" << std::flush;
-        makeVoxelLists(observationRadius);
-        std::cout << "finished makeVoxelLists\n" << std::flush;
     }
 
     /**
@@ -84,6 +81,7 @@ public:
         voxelList.clear();
         for (size_t ri = i0; ri< iend; ri++) {
             int id = roots[ri]->getId();
+            std::cout << "creating voxel list for root " << id << "\n";
             for (size_t i = 0; i<grid.nx; i++) {
                 for(size_t j = 0; j<grid.ny; j++) {
                     for (size_t k = 0; k<grid.nz; k++) {
