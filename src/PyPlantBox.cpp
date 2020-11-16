@@ -847,10 +847,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("thresh13", &ExudationModel::thresh13)
             .def_readwrite("calc13", &ExudationModel::calc13)
             .def_readwrite("observationRadius", &ExudationModel::observationRadius)
-			.def("makeVoxelLists",  &ExudationModel::makeVoxelLists, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
-			    py::enum_<ExudationModel::IntegrationType>(m, "IntegrationType")
+			.def("makeVoxelLists",  &ExudationModel::makeVoxelLists, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1)
             .def("calculate",  &ExudationModel::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
-    py::enum_<ExudationModel::IntegrationType>(m, "IntegrationType")
+	py::enum_<ExudationModel::IntegrationType>(m, "IntegrationType")
             .value("mps_straight", ExudationModel::IntegrationType::mps_straight )
             .value("mps", ExudationModel::IntegrationType::mps )
             .value("mls", ExudationModel::IntegrationType::mls )
