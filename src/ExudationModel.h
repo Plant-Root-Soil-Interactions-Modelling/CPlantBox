@@ -81,7 +81,30 @@ public:
         voxelList.clear();
         for (size_t ri = i0; ri< iend; ri++) {
             int id = roots[ri]->getId();
-            std::cout << "creating voxel list for root " << id << "\n";
+
+//            // find bounding box of root id
+//            int n = roots[ri]->getNumberOfNodes();
+//            std::vector<double> x(n),y(n),z(n);
+//            for (int i=0; i<n; i++) {
+//                auto n = roots[ri]->getNode(i);
+//                x[i] = n.x;
+//                y[i] = n.y;
+//                z[i] = n.z;
+//            }
+//            auto minmaxX = std::minmax_element(x.begin(), x.end());
+//            auto minmaxY = std::minmax_element(y.begin(), y.end());
+//            auto minmaxZ = std::minmax_element(z.begin(), z.end());
+//            int minX = std::max(int(*minmaxX.first - observationRadius + 0.5),0);
+//            int minY = std::max(int(*minmaxY.first - observationRadius + 0.5),0);
+//            int minZ = std::max(int(*minmaxZ.first - observationRadius + 0.5),0);
+//            int maxX = std::min(int(*minmaxX.second - observationRadius + 0.5),(int)grid.nx);
+//            int maxY = std::min(int(*minmaxY.second - observationRadius + 0.5),(int)grid.ny);
+//            int maxZ = std::min(int(*minmaxZ.second - observationRadius + 0.5),(int)grid.nz);
+
+//            std::cout << "creating voxel list for root " << id << "\n";
+//            for (size_t i = minX; i<maxX; i++) {
+//                for(size_t j = minY; j<maxY; j++) {
+//                    for (size_t k = minZ; k<maxZ; k++) {
             for (size_t i = 0; i<grid.nx; i++) {
                 for(size_t j = 0; j<grid.ny; j++) {
                     for (size_t k = 0; k<grid.nz; k++) {
