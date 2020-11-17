@@ -166,7 +166,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 /**
  * Calculates the matric potential at the root soil interface according the steady rate approximation (Schröder et al. )
  */
-std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
+std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wilting_point,
 		std::function<double(double)> mfp, std::function<double(double)> imfp) {
 
 	std::vector<double> rsx = std::vector<double>(rs->segments.size()); // rx is defined at the nodes, i.e. rx.size()+1 == segments.size()
@@ -187,6 +187,9 @@ std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>&
 		rsx[i] = imfp(mfp_);
 		//        std::cout << "rsx " << rsx[i] << " mfp " << mfp_ <<" fluxes, " << q_root <<
 		//        		", " << p << " cm soil, " << "mfp(p) " << mfp(p) << " r: " << r_in << ", " << r_out << "\n";
+		if (rsx[i]>-1.) {
+			rsx[i] = wilting_point;
+		}
 	}
 	return rsx; // matric potential at the soil root interface
 }
