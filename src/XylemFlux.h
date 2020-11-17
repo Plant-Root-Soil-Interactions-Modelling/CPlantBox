@@ -30,12 +30,13 @@ public:
         std::function<double(double)> mfp, std::function<double(double)> imfp);
     std::vector<double> segSRAStressedFlux(const std::vector<double>& sx, double wiltingPoint, double hc,
         std::function<double(double)> mfp, std::function<double(double)> imfp, double dx = 1.e-6);
+    std::vector<double> segSRAStressedAnalyticalFlux(const std::vector<double>& sx, std::function<double(double)> mfp);
     std::vector<double> segOuterRadii(int type = 0) const; ///< outer cylinder radii to match cell volume
     std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
     std::vector<double> segLength() const; ///< calculates segment lengths
-    std::vector<double> segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
-        std::function<double(double)> mfp, std::function<double(double)> imfp) ;
+//    std::vector<double> segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
+//        std::function<double(double)> mfp, std::function<double(double)> imfp) ;
 
     std::vector<int> aI; // to assemble the sparse matrix on the Python side
     std::vector<int> aJ;
