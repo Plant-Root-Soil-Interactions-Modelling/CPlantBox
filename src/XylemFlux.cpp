@@ -54,7 +54,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
             kx = kx_f(age, type);
             kr = kr_f(age, type);
         } catch(...) {
-            std::cout << "conductivities failed\n" << std::flush;
+            std::cout << "XylemFlux::linearSystem: conductivities failed\n" << std::flush;
         }
         //        if (age<=0) {
         //            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
@@ -176,15 +176,17 @@ std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>&
     for (int i = 0; i<rs->segments.size(); i++) { // calculate rsx
         int cellIdx = rs->seg2cell.at(i);
         double p = sx[cellIdx];
-        double q_root = -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
+        double q_root = -std::min(fluxes.at(i),0.)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
         double q_out = 0.;
         double r_in = rs->radii.at(i);
         double r_out = outerRadii.at(i);
         double r = r_in;
         double rho = r_out/r_in;
-        double mfp_ = mfp(p) + (q_root*r_in-q_out*r_out)*((r*r)/(r_in*r_in)/(2*(1-rho*rho)))+
-            (rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5)) + q_out*r_out*log(r/r_out);
+        double mfp_ = mfp(p) + (q_root*r_in-q_out*r_out)*((r*r)/(r_in*r_in)/(2*(1-rho*rho))+
+            (rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5))) + q_out*r_out*log(r/r_out);
         rsx[i] = imfp(mfp_);
+//        std::cout << "rsx " << rsx[i] << " mfp " << mfp_ <<" fluxes, " << q_root <<
+//        		", " << p << " cm soil, " << "mfp(p) " << mfp(p) << " r: " << r_in << ", " << r_out << "\n";
     }
     return rsx; // matric potential at the soil root interface
 }
