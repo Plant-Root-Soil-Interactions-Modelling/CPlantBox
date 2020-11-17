@@ -181,7 +181,7 @@ public:
 							int j = (lind - k*(grid.nx*grid.ny))/grid.nx;
 							x_ = grid.getGridPoint(i,j,k);
 
-							grid.data[lind] += integrate13(tend); // needs x_!
+							grid.data[lind] += integrate13(tend, id); // needs x_!
 						}
 					}
 					std::cout << "13\n";
@@ -212,8 +212,19 @@ public:
 	}
 
 	// simplistic integration in 3d
-	double integrate13(double t) {
+	double integrate13(double t, int id) {
 		double c = 0;
+
+//		for (int lind : voxelList[id]) {
+//
+//			// k*(nx*ny)+j*nx+i, same ordering as RectilinearGrid3D
+//			int i = lind % grid.nx;
+//			int k = lind / (grid.nx*grid.ny);
+//			int j = (lind - k*(grid.nx*grid.ny))/grid.nx;
+//			Vector3d y = grid.getGridPoint(i,j,k);
+//			c += integrand13(y, lind, t)*dx3;
+//		}
+
 		for (size_t i = 0; i<grid.nx; i++) {
 			for(size_t j = 0; j<grid.ny; j++) {
 				for (size_t k = 0; k<grid.nz; k++) {
