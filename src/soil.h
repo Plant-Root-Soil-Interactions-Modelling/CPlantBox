@@ -368,6 +368,13 @@ public:
         return Vector3d(xgrid->grid[i], ygrid->grid[j], zgrid->grid[k]);
     } ///< grid point at indices
 
+    Vector3d getGridPoint(size_t lind) {
+		int i = lind % nx;
+		int k = lind / (nx*ny);
+		int j = (lind - k*nx*ny)/ nx;
+		return Vector3d(xgrid->grid[i], ygrid->grid[j], zgrid->grid[k]);
+    } ///< grid point ad linear index with ordering  k*(nx*ny)+j*nx+i
+
     Grid1D* xgrid;
     Grid1D* ygrid;
     Grid1D* zgrid;

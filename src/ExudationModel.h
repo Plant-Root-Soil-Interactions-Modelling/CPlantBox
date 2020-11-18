@@ -79,8 +79,13 @@ public:
 	 */
 	void makeVoxelLists(double observationRadius, int i0 = 0, int iend = -1) {
 		voxelList.clear();
+
+		if (iend==-1) {
+			iend = roots.size();
+		}
 		for (size_t ri = i0; ri< iend; ri++) {
 			int id = roots[ri]->getId();
+			std::cout << "make list " << id <<"/" << iend <<  "\n";
 
 			//            // find bounding box of root id
 			//            int n = roots[ri]->getNumberOfNodes();
@@ -112,9 +117,9 @@ public:
 						x_ = grid.getGridPoint(i,j,k);
 						if (-sdfs[ri].getDist(x_)<observationRadius) {
 							if (voxelList.count(id)==0) {
-								voxelList[id]= std::vector<int>();
+								voxelList[id] = std::vector<int>();
 							}
-							voxelList[id].push_back(lind);
+							voxelList.at(id).push_back(lind);
 						}
 					}
 				}
@@ -138,8 +143,7 @@ public:
 
 		std::fill(grid.data.begin(), grid.data.end(), 0.); // set data to zero
 		g_.resize(grid.data.size()); // saves last root contribution
-
-		// std::fill(g_.begin(), g_.end(), 0.); // necessary?
+		std::fill(g_.begin(), g_.end(), 0.); // necessary?
 
 		for (size_t ri = i0; ri< iend; ri++) {
 
@@ -164,7 +168,8 @@ public:
 				int id = r_->getId();
 				for (int lind : voxelList[id]) {
 					// different flavors of Eqn (11)
-					double c = eqn11(0, age_, 0, l);
+					x_ = grid.getGridPoint(lind);
+					double c = eqn11(0, age_, 0, l); // needs x_!
 					grid.data[lind] += c;
 					g_[lind] = c;
 				}
@@ -174,13 +179,7 @@ public:
 					std::cout << "13!";
 					for (int lind : voxelList[id]) {
 						if (g_[lind] > thresh13) {
-
-							// k*(nx*ny)+j*nx+i, same ordering as RectilinearGrid3D
-							int i = lind % grid.nx;
-							int k = lind / (grid.nx*grid.ny);
-							int j = (lind - k*(grid.nx*grid.ny))/grid.nx;
-							x_ = grid.getGridPoint(i,j,k);
-
+							x_ = grid.getGridPoint(lind);
 							grid.data[lind] += integrate13(tend, id); // needs x_!
 						}
 					}
@@ -212,28 +211,23 @@ public:
 	}
 
 	// simplistic integration in 3d
-	double integrate13(double t, int id) {
+	double integrate13(double t, int id) { // called for fixed x_
 		double c = 0;
 
-//		for (int lind : voxelList[id]) {
-//
-//			// k*(nx*ny)+j*nx+i, same ordering as RectilinearGrid3D
-//			int i = lind % grid.nx;
-//			int k = lind / (grid.nx*grid.ny);
-//			int j = (lind - k*(grid.nx*grid.ny))/grid.nx;
-//			Vector3d y = grid.getGridPoint(i,j,k);
-//			c += integrand13(y, lind, t)*dx3;
-//		}
-
-		for (size_t i = 0; i<grid.nx; i++) {
-			for(size_t j = 0; j<grid.ny; j++) {
-				for (size_t k = 0; k<grid.nz; k++) {
-					Vector3d y = grid.getGridPoint(i,j,k);
-					size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
-					c += integrand13(y, lind, t)*dx3;
-				}
-			}
+		for (int lind : voxelList[id]) {
+			Vector3d y = grid.getGridPoint(lind);
+			c += integrand13(y, lind, t)*dx3; // depends on (fixed) x_
 		}
+
+//		for (size_t i = 0; i<grid.nx; i++) {
+//			for(size_t j = 0; j<grid.ny; j++) {
+//				for (size_t k = 0; k<grid.nz; k++) {
+//					Vector3d y = grid.getGridPoint(i,j,k);
+//					size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
+//					c += integrand13(y, lind, t)*dx3; // depends on x_
+//				}
+//			}
+//		}
 		return c;
 	}
 

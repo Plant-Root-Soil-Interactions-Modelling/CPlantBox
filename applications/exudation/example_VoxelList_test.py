@@ -64,11 +64,18 @@ t = time.time()
 roots = rs.getPolylines()
 C = np.zeros(nx*ny*nz)
 print(len(roots))
-for i in range(0,len(roots)):
-    model.makeVoxelLists(1,i,i+1)
-    C1 = model.calculate(simtime,i,i+1)
-    C = C+C1
-print(C.sum())
+
+print("make voxel lists")
+model.makeVoxelLists(1.) # equals model.makeVoxelLists(1., 0, len(roots)) 
+print("made lists")
+
+print("calculating")
+C = model.calculate(simtime) # equals model.calculate(simtime, 0, len(roots))  
+print("done")
+
+print(type(C))
+
+
 elapsed = time.time() - t
 print("Computation took", elapsed, "s")
 
