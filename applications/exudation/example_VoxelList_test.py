@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib import ticker
 import matplotlib.colors as colors
 import plantbox as rb
+from pyevtk.hl import gridToVTK
 
 #
 # Root system
@@ -82,25 +83,35 @@ print("Computation took", elapsed, "s")
 #
 # post processing...
 #
-C = np.reshape(C, (nx, ny, nz))  # hope that works, it does not :-(, or does it?
+C_ = np.zeros((nx,ny,nz))
+C = np.reshape(C, (nz, nx, ny))  # hope that works, it does not :-(, or does it?
+for i in range(0,np.shape(C)[0]):
+    for j in range(0,np.shape(C)[1]):
+        for k in range(0,np.shape(C)[2]):
+            C_[k,j,i] = C[i,j,k]
+            
+            
+del C
+C = C_
+
 X = np.linspace(-width / 2, width / 2, nx)
 Y = np.linspace(-width / 2, width / 2, ny)
 Z = np.linspace(-depth, 0, nz)
-X_, Y_, Z_ = np.meshgrid(X, Y, Z, indexing = "ij")
+X_,Y_, Z_ = np.meshgrid(X, Y, Z, indexing = "ij")
 
-print("max" , np.max(C[:]), "min", np.min(C[:]))
+print("max" , np.max(C[:]), "min", np.min(C[:]), "sum", np.sum(C[:]))
 num_th = (C > 0).sum()  # number of points for which concentration is larger than threshold
 print("volume of concentration above threshold: ", num_th * width / nx * width / ny * depth / nz)
 print("this is", num_th / (nx * ny * nz) * 100, "% of the overall volume")
 
-# gridToVTK("./Exudates", X, Y, Z, pointData = {"Exudates":C})
+gridToVTK("./Exudates", X, Y, Z, pointData = {"Exudates":C})
 
 fig1 = plt.figure()
 ax = plt.axes()
 C_ = C[:, int(ny / 2), :]
 # levels = np.logspace(np.log10(np.max(C_)) - 5, np.log10(np.max(C_)), 100)
 levels = np.linspace(np.min(C_[:]), np.max(C_[:]))
-cs = ax.contourf(X_[:, int(ny / 2), :], Z_[:, int(ny / 2), :], C_, levels = levels, cmap = 'jet')  # , locator = ticker.LogLocator(),
+cs = ax.contourf(X_[:, int(nx / 2), :], Z_[:, int(nx / 2), :], C_, levels = levels, cmap = 'jet')  # , locator = ticker.LogLocator(),
 ax.set_xlabel('x')
 ax.set_ylabel('z')
 plt.axis('equal')
