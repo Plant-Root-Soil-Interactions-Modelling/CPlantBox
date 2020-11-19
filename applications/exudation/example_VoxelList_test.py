@@ -66,7 +66,7 @@ C = np.zeros(nx*ny*nz)
 print(len(roots))
 
 print("make voxel lists")
-model.makeVoxelLists(1.) # equals model.makeVoxelLists(1., 0, len(roots)) 
+model.makeVoxelLists() # equals model.makeVoxelLists(0, len(roots)) 
 print("made lists")
 
 print("calculating")
