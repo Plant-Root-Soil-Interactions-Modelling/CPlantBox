@@ -1,19 +1,22 @@
 import vtk
 import numpy as np
-from rsml_writer import write_rsml as write_rsml2  # to write a rsml
+from rsml_writer import write_rsml as write_rsml2  # to write a rsml (no other dependencies)
 
 """ 
 VTK Tools, by Daniel Leitner (refurbished 6/2020) 
 
-for vtk to numpy, and numpy to vtk conversions
+Used by CPlantBox and dumux-rosi 
 
-reading: vtp, vtu 
+for post-processing of vtp and vtu files
+for simpler vtk to numpy, and numpy to vtk conversions
+
+reading: vtp, vtu (see read3D_data)
 writing: vtp, vtu, msh, dgf, rsml
 """
 
 
 def vtk_points(p):
-    """ creates vtkPoints from an numpy array """
+    """ creates vtkPoints from an numpy array @param p"""
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
     da.SetNumberOfComponents(3)  # vtk point dimension is always 3
     da.SetNumberOfTuples(p.shape[0])
@@ -28,7 +31,8 @@ def vtk_points(p):
 
 
 def vtk_cells(t):
-    """ creates vtkCells from an numpy array """
+    """ creates vtkCells from an numpy array @param t, 
+    currently vtkLine, vtkTriangle, andn vtkTetra are implemented"""
     cellArray = vtk.vtkCellArray()
     for vert in t:
         if t.shape[1] == 2:
@@ -44,9 +48,12 @@ def vtk_cells(t):
 
 
 def vtk_data(d):
-    """ Creates a vtkDataArray from an numpy array, usage 
-    e.g. grid.GetCellData().SetScalars(vtk_data(celldata)), grid.GetCellData().AddArray(...)
+    """ creates a vtkDataArray from an numpy array @param d, 
+     
+    see also: grid.GetCellData().SetScalars(vtk_data(celldata)), grid.GetCellData().AddArray(...)
+    
     TODO vtkAbstractArray.SetComponentName
+    TODO auto detect number of tuples
     """
     da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
     da.SetNumberOfComponents(1)  # number of components
@@ -63,15 +70,15 @@ def vtk_data(d):
 
 
 def np_convert(x):
-    """ Converts a list of something (list of 3 floats) to a numpy array (Nx3)"""
+    """ converts a list of something (e.g. list of 3 floats) to a numpy array (Nx3)"""
     return np.array(list(map(np.array, x)))  # is there a better way?
 
 
-def np_points(polydata):
-    """ The points of vtkPolyData as numpy array """
-    Np = polydata.GetNumberOfPoints()
+def np_points(pd):
+    """ returns the points of vtkPolyData as numpy array (Nx3)"""
+    Np = pd.GetNumberOfPoints()
     z_ = np.zeros((Np, 3))
-    points = polydata.GetPoints()
+    points = pd.GetPoints()
     for i in range(0, Np):
         p = np.zeros(3,)
         points.GetPoint(i, p)
@@ -79,45 +86,49 @@ def np_points(polydata):
     return z_
 
 
-def np_cells(polydata):
-    """ The cells of vtkPolyData as numpy array  """
-    Nc = polydata.GetNumberOfCells()
-    d = polydata.GetCell(0).GetPointIds().GetNumberOfIds()
+def np_cells(pd):
+    """ returns the cells of vtkPolyData as numpy array (NxNc) 
+    all cells must have the same number of points, 
+    therefore it will not work for polylines """
+    Nc = pd.GetNumberOfCells()
+    d = pd.GetCell(0).GetPointIds().GetNumberOfIds()
     z_ = np.zeros((Nc, d))
     for i in range(0, Nc):
         p = np.zeros(d,)
-        ids = polydata.GetCell(i).GetPointIds()
+        ids = pd.GetCell(i).GetPointIds()
         for j in range(0, d):
             p[j] = ids.GetId(j)
         z_[i, :] = p
     return z_
 
 
-def np_data(polydata, data_index = 0, cell = None):
-    """ The cell or point data from vtkPolyData as numpy array 
-    @param polydata    grid as a vtkPolyData object 
-    @param data_index  index of the vtk cell or point data
-    @param cell        True = cell data, False = point data, (default) None = auto detect
-    @return cell or point data of data_index, a flag if it is cell data or not (interesting in case of auto detect)
+def np_data(pd, data_index = 0, cell = None):
+    """ returns cell or point data from vtkPolyData as numpy array 
+    @param pd          rid as a vtkPolyData object 
+    @param data_index  index of the vtk cell or point data (default = 0)
+    @param cell        True = cell data, False = point data, (default = None, is auto detect)
+    
+    @return p_, cell   cell or point data of data_index, 
+                       a flag if it is cell data or not (interesting in case of auto detect)
     """
     if cell is None:  # auto detect
         try:
-            data = polydata.GetCellData()
+            data = pd.GetCellData()
             p = data.GetArray(data_index)
-            noa = p.GetNumberOfTuples()
+            noa = p.GetNumberOfTuples()           
             cell = True
         except:
-            data = polydata.GetPointData()
+            data = pd.GetPointData()
             p = data.GetArray(data_index)
             noa = p.GetNumberOfTuples()
             cell = False
     else:  # use information
         if cell:
-            data = polydata.GetCellData()
+            data = pd.GetCellData()
             p = data.GetArray(data_index)
             noa = p.GetNumberOfTuples()
         else:
-            data = polydata.GetPointData()
+            data = pd.GetPointData()
             p = data.GetArray(data_index)
             noa = p.GetNumberOfTuples()
     p_ = np.ones(noa,)
@@ -128,7 +139,10 @@ def np_data(polydata, data_index = 0, cell = None):
 
 
 def read_vtp(name):
-    """ Opens a vtp and returns the vtkPolydata class, converts all cell data (additionally) to point data """
+    """ opens a vtp and returns the vtkPolydata class, 
+    additionally, converts all cell datato point data (to plot the root system radius must be point data)
+    @param name         including the file extension ("name.vtp") 
+    """
     reader = vtk.vtkXMLPolyDataReader()
     reader.SetFileName(name)
     reader.Update()
@@ -141,7 +155,9 @@ def read_vtp(name):
 
 
 def read_vtu(name):
-    """ Opens a vtu and returns the vtkUnstructuredGrid class """
+    """ opens a vtu and returns the vtkUnstructuredGrid class
+    @param name         file name without file extension ("name")   
+    """  
     reader = vtk.vtkXMLUnstructuredGridReader()
     reader.SetFileName(name)
     reader.Update()
@@ -150,7 +166,9 @@ def read_vtu(name):
 
 
 def read_rect_vtu(name):
-    """ Opens a vtp and returns the vtkUnstructuredGrid class """
+    """ opens a vtu and returns the vtkXMLImageDataReader class 
+    @param name         file name without file extension ("name")       
+    """
     reader = vtk.vtkXMLImageDataReader()
     reader.SetFileName(name)
     reader.Update()
@@ -159,7 +177,10 @@ def read_rect_vtu(name):
 
 
 def write_msh(name, pd):
-    """ Writes a tetraedral .msh file including cell data from vtkPolyData """
+    """ writes a tetraedral .msh file including cell data from vtkPolyData 
+    @param name          file name including the file extension ("name.msh")   
+    @param pd            grid represented as vtkPolyData object
+    """
     with open(name, "w") as f:
         # Init
         f.write("$MeshFormat\n")
@@ -199,7 +220,10 @@ def write_msh(name, pd):
 
 
 def write_dgf(name, pd):
-    """ Writes a DGF file including cell and point data from vtkPolyData """
+    """ writes a DGF file including cell and point data from vtkPolyData
+    @param name          file name including the file extension ("name.dgf")   
+    @param pd            grid represented as vtkPolyData object
+    """
     file = open(name, "w")  # write dgf
     file.write("DGF\n")
     # vertex
@@ -248,24 +272,31 @@ def write_dgf(name, pd):
 
 
 def write_vtp(name, pd):
-    """ Writes a VTP file including cell data from vtkPolyData """
+    """ Writes a VTP file including cell data from vtkPolyData 
+    @param name          file name including the file extension ("name.vtp")   
+    @param pd            grid represented as vtkPolyData object
+    """
     writer = vtk.vtkXMLPolyDataWriter()
     writer.SetFileName(name)
     writer.SetInputData(pd)
     writer.Write()
 
 
-def write_vtu(name, grid):
-    """ Writes a VTU file """
+def write_vtu(name, pd):
+    """ Writes a VTU file
+    @param name          file name including the file extension ("name.vtp")   
+    @param pd            grid represented as vtkPolyData object
+    """
     writer = vtk.vtkXMLImageDataWriter()
     writer.SetFileName(name)
-    writer.SetInputData(grid)
+    writer.SetInputData(pd)
     writer.Write()
 
 
 def write_rsml(name, pd, meta, id_ind = 5):
-    """ Writes a RMSL file from vtkPolyDat using rsml_reader.write_rsml """
-
+    """ Writes a RMSL file from vtkPolyDat using rsml_reader.write_rsml 
+    TODO get rid of meta (move to write_rsml2)
+    """
     nodes = np_points(pd)
     try:
         segs = np_cells(pd)
@@ -299,17 +330,20 @@ def write_rsml(name, pd, meta, id_ind = 5):
 
 def read3D_vtp_data(name, data_index = 0, cell = None):
     """ returns the cell or vertex data of vtp or vtu file and the corresponding coordinates
-    @param name         filename of the vtp representing a root system
-    @param cell         cell or point data 
+    @param name         filename of the vtp ("name.vtp") or vtu ("name" without file extension) 
+    @param data_index   index of cell or point data 
+    @param cell         cell data (True) or point data (False), or default auto detect (None)
+    
+    @return p_, z_      cell or point data p, at coordinates z (cell centers or grid coordinates)
     """
     if name.endswith('.vtp') or name.endswith('.VTP'):
-        polydata = read_vtp(name)
+        pd = read_vtp(name)
     else:
-        polydata = read_vtu(name)
-    points = polydata.GetPoints()
-    p_, cell = np_data(polydata, data_index, cell)
+        pd = read_vtu(name)
+    points = pd.GetPoints()
+    p_, cell = np_data(pd, data_index, cell)
     if not cell:
-        Np = polydata.GetNumberOfPoints()
+        Np = pd.GetNumberOfPoints()
         z_ = np.zeros((Np, 3))
         for i in range(0, Np):
             p = np.zeros(3,)
@@ -317,21 +351,30 @@ def read3D_vtp_data(name, data_index = 0, cell = None):
             z_[i, :] = p
         return p_, z_
     if cell:
-        Nc = polydata.GetNumberOfLines()
+        Nc = pd.GetNumberOfCells() 
         z_ = np.zeros((Nc, 3))
         for i in range(0, Nc):
-            c = polydata.GetCell(i)
+            c = pd.GetCell(i)           
             ids = c.GetPointIds()
+            n = ids.GetNumberOfIds ()
+            midz = 0.
             p1 = np.zeros(3,)
-            points.GetPoint(ids.GetId(0), p1)
-            p2 = np.zeros(3,)
-            points.GetPoint(ids.GetId(1), p2)
-            z_[i, :] = 0.5 * (p1 + p2)
+            for j in range(0, n):
+                points.GetPoint(ids.GetId(j), p1)
+                midz += p1[2] / n 
+            z_[i, :] = midz
         return p_, z_
 
 
 def read3D_vtp_data_parallel(prename, postname, n, data_index = 0):
-    """ returns the cell or vertex data of parallel vtp files """
+    """ cell or vertex data of parallel DuMux vtp, or vtu files, called by read3D_data 
+    @param prename         the first part of the filename 
+    @param postname        the name of the DuMux simulation
+    @param n               number of processes used for parallel computation
+    @param data_index      index of cell or point data
+    
+    @return d_, z_         cell or point data p, at coordinates z (cell centers or grid coordinates)
+    """
     z_ = np.ones((0, 3))
     d_ = np.ones(0,)
     for i in range(0, n):
@@ -344,7 +387,12 @@ def read3D_vtp_data_parallel(prename, postname, n, data_index = 0):
 
 
 def read3D_data(name, np = 1, data_index = 0):
-    """ Opens a vtu (parallel or not) and returns the vtkUnstructuredGrid class """
+    """ opens a vtp or vtu (parallel or not) 
+        @param np            number of processes used in parallel computation
+        @param data_index    index of cell or point data 
+        
+        @return p, z         cell or point data p, at coordinates z (cell centers or grid coordinates)    
+    """
     if np == 1:
         print("read3D_data: open single")
         return read3D_vtp_data(name + ".vtu", data_index, None)
