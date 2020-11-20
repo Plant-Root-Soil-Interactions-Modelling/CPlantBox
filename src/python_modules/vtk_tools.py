@@ -366,12 +366,13 @@ def read3D_vtp_data(name, data_index = 0, cell = None):
         return p_, z_
 
 
-def read3D_vtp_data_parallel(prename, postname, n, data_index = 0):
+def read3D_vtp_data_parallel(prename, postname, n, data_index = 0, cell = None):
     """ cell or vertex data of parallel DuMux vtp, or vtu files, called by read3D_data 
     @param prename         the first part of the filename 
     @param postname        the name of the DuMux simulation
     @param n               number of processes used for parallel computation
     @param data_index      index of cell or point data
+    @param cell         cell data (True) or point data (False), or default auto detect (None)
     
     @return d_, z_         cell or point data p, at coordinates z (cell centers or grid coordinates)
     """
@@ -380,22 +381,26 @@ def read3D_vtp_data_parallel(prename, postname, n, data_index = 0):
     for i in range(0, n):
         n_ = prename + "{:04d}-".format(i) + postname + ".vtu"
         print("opening: ", n_)
-        d, z = read3D_vtp_data(n_, data_index, None)
-        z_ = np.hstack((z_, z))
+        d, z = read3D_vtp_data(n_, data_index, cell)
+        z_ = np.vstack((z_, z))
         d_ = np.hstack((d_, d))
     return d_, z_
 
 
-def read3D_data(name, np = 1, data_index = 0):
+def read3D_data(name, np = 1, data_index = 0, cell = None):
     """ opens a vtp or vtu (parallel or not) 
         @param np            number of processes used in parallel computation
         @param data_index    index of cell or point data 
+        @param cell         cell data (True) or point data (False), or default auto detect (None)
         
         @return p, z         cell or point data p, at coordinates z (cell centers or grid coordinates)    
     """
     if np == 1:
         print("read3D_data: open single")
-        return read3D_vtp_data(name + ".vtu", data_index, None)
+        if name.endswith('.vtp') or name.endswith('.VTP'):
+            return read3D_vtp_data(name, data_index, cell)
+        else:
+            return read3D_vtp_data(name + ".vtu", data_index, cell)
     else:
         print("read3D_data: open multiple")
         return read3D_vtp_data_parallel("s{:04d}-p".format(np), name, np, data_index)
