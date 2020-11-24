@@ -1,15 +1,5 @@
 import sys; sys.path.append("../..")
 
-# Computation took 27.435727834701538 s
-# max 29.96163225689554 min 0.0 sum 1018.807994059238
-# volume of concentration above threshold:  189.46530339293474
-# this is 16.86677722498618 % of the overall volume
-
-# Computation took 28.135575532913208 s
-# max 406.35834594892395 min 0.0 sum 6237.840381419113
-# volume of concentration above threshold:  34.79822890056393
-# this is 3.097844112769486 % of the overall volume
-
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -82,18 +72,23 @@ roots = rs.getPolylines()
 print("Number of roots", len(roots))
 
 
+# #
+# # Model 1
+# #
 # t = time.time()
 # C = model.calculate(simtime)
 # elapsed = time.time() - t
 # print("Computation took", elapsed, "s")
 
+#
+# Model 2
+#
 t = time.time()
 print("make voxel lists")
-# C = np.zeros((nx*ny*nz,))
 model2.makeVoxelLists() # equals model.makeVoxelLists(0, len(roots)) 
-C = np.array(model2.calculate(simtime)) # equals model.calculate(simtime, 0, len(roots))  
-print(C.shape)
-# C = model2.addResults(C)
+# C = np.array(model2.calculate(simtime)) # equals model.calculate(simtime, 0, len(roots))  
+model2.calculate(simtime)
+C = model2.addResults(np.zeros((nx*ny*nz,)))
 elapsed = time.time() - t
 print("Computation took", elapsed, "s")
 

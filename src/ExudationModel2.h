@@ -134,9 +134,8 @@ public:
 	 * adds voxel results to solution c
 	 */
 	std::vector<double> addResults(std::vector<double>& c) {
-		for (size_t ri = i0_; ri< iend_; ri++) {
-			int id = r_->getId();
-			for (int lind : voxelList[id]) {
+		for (int lind=0; lind<n_size; lind++) {
+			if (c_.count(lind)>0) {
 				c[lind] += c_[lind];
 			}
 		}
@@ -149,7 +148,7 @@ public:
 	 * @param i0        optionally, initial root index (default = 0)
 	 * @param iend      optionally, final root index (default = roots.size())
 	 */
-	std::vector<double> calculate(double tend, int i0 = 0, int iend = -1) {
+	void calculate(double tend, int i0 = 0, int iend = -1) { // std::vector<double>
 
 		if (iend==-1) {
 			iend = roots.size();
@@ -158,10 +157,10 @@ public:
 		c_.clear();
 		g_.clear();
 
-		c_.resize(n_size);
-        g_.resize(n_size); // saves last root contribution
-        std::fill(c_.begin(), c_.end(), 0.); // set data to zero
-        std::fill(g_.begin(), g_.end(), 0.);
+		//		c_.resize(n_size);
+		//        g_.resize(n_size); // saves last root contribution
+		//        std::fill(c_.begin(), c_.end(), 0.); // set data to zero
+		//        std::fill(g_.begin(), g_.end(), 0.);
 
 		for (size_t ri = i0; ri< iend; ri++) {
 
@@ -186,9 +185,9 @@ public:
 					// different flavors of Eqn (11)
 					x_ = grid.getGridPoint(lind);
 					double c = eqn11(0, age_, 0, l); // needs x_!
-//					if (c_.count(lind)==0) {
-//						c_[lind] = 0.;
-//					}
+					if (c_.count(lind)==0) {
+						c_[lind] = 0.;
+					}
 					c_[lind] += c;
 					g_[lind] = c;
 				}
@@ -207,7 +206,7 @@ public:
 				}
 			} // if ages.at(i)>0d
 		}
-        return c_;
+		//return c_;
 	}
 
 	double eqn11(double x0, double xend, double y0, double yend) {
@@ -233,6 +232,10 @@ public:
 			Vector3d y = grid.getGridPoint(lind);
 			c += integrand13(y, lind, t)*dx3; // depends on (fixed) x_
 		}
+		//		for (int lind= 0; lind<n_size; lind++) { // full integral
+		//			Vector3d y = grid.getGridPoint(lind);
+		//			c += integrand13(y, lind, t)*dx3; // depends on (fixed) x_
+		//		}
 		return c;
 	}
 
@@ -331,10 +334,10 @@ public:
 	double st_ = 0; // stop time (eqn 13)
 
 	int n_size = 0;
-	std::vector<double> g_;
-	std::vector<double> c_;
-//	std::map<int, double> g_;  // eqn 13
-//	std::map<int, double> c_;
+	//	std::vector<double> g_;
+	//	std::vector<double> c_;
+	std::map<int, double> g_;  // eqn 13
+	std::map<int, double> c_;
 
 };
 

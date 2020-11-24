@@ -190,7 +190,7 @@ public:
             for(size_t j = 0; j<grid.ny; j++) {
                 for (size_t k = 0; k<grid.nz; k++) {
                     Vector3d y = grid.getGridPoint(i,j,k);
-                    size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
+                    size_t lind = k*(grid.nx*grid.ny)+j*grid.nx+i;
                     c += integrand13(y,lind, t)*dx3;
                 }
             }
