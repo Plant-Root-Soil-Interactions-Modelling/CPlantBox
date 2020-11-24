@@ -67,7 +67,6 @@ public:
                 double a = r->getNodeCT(r->getNumberOfNodes()-1) - r->getNodeCT(0);
                 v.push_back(base.minus(t).times(1./a));
             }
-
             sdfs.push_back(SDF_RootSystem(*r, observationRadius));
 
         }
@@ -94,8 +93,6 @@ public:
 
         for (size_t ri = i0; ri< iend; ri++) {
 
-            //
-            // per root (passed to integrands)
             r_ = roots[ri]; // eq 11
             age_ = std::min(r_->getNodeCT(r_->getNumberOfNodes()-1),tend) - r_->getNodeCT(0);
 
@@ -251,7 +248,6 @@ public:
         ExudationModel* p = (ExudationModel*) param;
         double c = -(p->R) / ( 4*(p->Dl)*t );
         double d = 8*(p->theta)*ExudationModel::to32(M_PI*p->Dl*t);
-
 
         double tl = p->r_->calcLength( p->age_-t ); // tip
         if (tl<l) { // if root smaller l

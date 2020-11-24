@@ -1,5 +1,15 @@
 import sys; sys.path.append("../..")
 
+# Computation took 27.435727834701538 s
+# max 29.96163225689554 min 0.0 sum 1018.807994059238
+# volume of concentration above threshold:  189.46530339293474
+# this is 16.86677722498618 % of the overall volume
+
+# Computation took 28.135575532913208 s
+# max 406.35834594892395 min 0.0 sum 6237.840381419113
+# volume of concentration above threshold:  34.79822890056393
+# this is 3.097844112769486 % of the overall volume
+
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +21,10 @@ from pyevtk.hl import gridToVTK
 #
 # Root system
 #
+
+# ExudationModel              old model
+# ExudationModel2             with voxelList and maps
+
 rs = rb.RootSystem()
 
 path = "../../modelparameter/rootsystem/"
@@ -45,38 +59,41 @@ print("Width", width, "Depth", depth, " at a Resolution", nx, ny, nz)
 # Model parameter
 #
 model = rb.ExudationModel(width, width, depth, nx, ny, nz, rs)
-model.Q = 4  # µg/d/tip
-model.Dl = 2.43e-6 * 3600 * 24  # cm2/d
-model.theta = 0.3
-model.R = 16.7  # 16.7  # -
-model.k = 2.60e-6 * 3600 * 24  # d-1
-model.l = 4  # cm (for line source only)
+model2 = rb.ExudationModel2(width, width, depth, nx, ny, nz, rs)
 
-#
-# Numerical parameter
-#
-model.type = rb.IntegrationType.mls;  # mps, mps_straight, mls
-model.n0 = 10  # integration points per cm
-model.thresh13 = 1.e-15;  # threshold to neglect diffusing g (eqn 13)
-model.calc13 = True;  # turns Eqn 13  on (True) and off (False)
-model.observationRadius = 2;  # limits computational domain around roots [cm]
+for m in [model, model2]:
+    m.Q = 4  # µg/d/tip
+    m.Dl = 2.43e-6 * 3600 * 24  # cm2/d
+    m.theta = 0.3
+    m.R = 16.7  # 16.7  # -
+    m.k = 2.60e-6 * 3600 * 24  # d-1
+    m.l = 4  # cm (for line source only)
+    
+    #
+    # Numerical parameter
+    #
+    m.type = rb.IntegrationType.mls;  # mps, mps_straight, mls
+    m.n0 = 10  # integration points per cm
+    m.thresh13 = 1.e-15;  # threshold to neglect diffusing g (eqn 13)
+    m.calc13 = True;  # turns Eqn 13  on (True) and off (False)
+    m.observationRadius = 2;  # limits computational domain around roots [cm]
+
+roots = rs.getPolylines()
+print("Number of roots", len(roots))
+
+
+# t = time.time()
+# C = model.calculate(simtime)
+# elapsed = time.time() - t
+# print("Computation took", elapsed, "s")
 
 t = time.time()
-roots = rs.getPolylines()
-C = np.zeros(nx*ny*nz)
-print(len(roots))
-
-# print("make voxel lists")
-# model.makeVoxelLists() # equals model.makeVoxelLists(0, len(roots)) 
-# model.calculate(simtime) # equals model.calculate(simtime, 0, len(roots))  
-# C = model.addResults(C)
-
-C = model.calculate(simtime)
-print("done")
-
-print(type(C))
-
-
+print("make voxel lists")
+# C = np.zeros((nx*ny*nz,))
+model2.makeVoxelLists() # equals model.makeVoxelLists(0, len(roots)) 
+C = np.array(model2.calculate(simtime)) # equals model.calculate(simtime, 0, len(roots))  
+print(C.shape)
+# C = model2.addResults(C)
 elapsed = time.time() - t
 print("Computation took", elapsed, "s")
 
@@ -84,7 +101,7 @@ print("Computation took", elapsed, "s")
 # post processing...
 #
 C_ = np.zeros((nx,ny,nz))
-C = np.reshape(C, (nz, nx, ny))  # hope that works, it does not :-(, or does it?
+C = np.reshape(C, (nz, ny, nx))  
 for i in range(0,np.shape(C)[0]):
     for j in range(0,np.shape(C)[1]):
         for k in range(0,np.shape(C)[2]):
@@ -99,7 +116,7 @@ Y = np.linspace(-width / 2, width / 2, ny)
 Z = np.linspace(-depth, 0, nz)
 X_,Y_, Z_ = np.meshgrid(X, Y, Z, indexing = "ij")
 
-print("max" , np.max(C[:]), "min", np.min(C[:]), "sum", np.sum(C[:]))
+print("max" , np.max(C.flat), "min", np.min(C.flat), "sum", np.sum(C.flat))
 num_th = (C > 0).sum()  # number of points for which concentration is larger than threshold
 print("volume of concentration above threshold: ", num_th * width / nx * width / ny * depth / nz)
 print("this is", num_th / (nx * ny * nz) * 100, "% of the overall volume")

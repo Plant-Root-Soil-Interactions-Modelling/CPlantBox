@@ -69,6 +69,8 @@ public:
 			}
 			sdfs.push_back(SDF_RootSystem(*r, observationRadius));
 		}
+
+		n_size = nx*ny*nz;
 	}
 
 	/**
@@ -124,7 +126,7 @@ public:
 				}
 			}
 			std::cout << "made list " << id <<"/" << iend << " length " << roots[ri]->getLength() <<
-					", vol "<< roots[ri]->getLength()*M_PI*M_PI*observationRadius << " having " << voxelList.at(id).size() << " voxels\n";
+					" cm , vol "<< roots[ri]->getLength()*M_PI*M_PI*observationRadius << " cm3, having " << voxelList.at(id).size() << " voxels\n";
 		}
 	}
 
@@ -147,7 +149,7 @@ public:
 	 * @param i0        optionally, initial root index (default = 0)
 	 * @param iend      optionally, final root index (default = roots.size())
 	 */
-	void calculate(double tend, int i0 = 0, int iend = -1) {
+	std::vector<double> calculate(double tend, int i0 = 0, int iend = -1) {
 
 		if (iend==-1) {
 			iend = roots.size();
@@ -155,6 +157,11 @@ public:
 
 		c_.clear();
 		g_.clear();
+
+		c_.resize(n_size);
+        g_.resize(n_size); // saves last root contribution
+        std::fill(c_.begin(), c_.end(), 0.); // set data to zero
+        std::fill(g_.begin(), g_.end(), 0.);
 
 		for (size_t ri = i0; ri< iend; ri++) {
 
@@ -179,9 +186,9 @@ public:
 					// different flavors of Eqn (11)
 					x_ = grid.getGridPoint(lind);
 					double c = eqn11(0, age_, 0, l); // needs x_!
-					if (c_.count(lind)==0) {
-						c_[lind] = 0.;
-					}
+//					if (c_.count(lind)==0) {
+//						c_[lind] = 0.;
+//					}
 					c_[lind] += c;
 					g_[lind] = c;
 				}
@@ -200,6 +207,7 @@ public:
 				}
 			} // if ages.at(i)>0d
 		}
+        return c_;
 	}
 
 	double eqn11(double x0, double xend, double y0, double yend) {
@@ -263,9 +271,9 @@ public:
 
 	// point source, root is represented by a single straight line (substituted)
 	static double integrandMPS_straight(double t, void* param) {
-		ExudationModel* p = (ExudationModel*) param;
+		ExudationModel2* p = (ExudationModel2*) param;
 		double c = -p->R / ( 4*p->Dl*t );
-		double d = 8*(p->theta)*ExudationModel::to32(M_PI*p->Dl*t);
+		double d = 8*(p->theta)*ExudationModel2::to32(M_PI*p->Dl*t);
 
 		Vector3d xtip = p->tip_.plus(p->v_.times(t)); // for t=0 at tip, at t=age at base, as above
 		Vector3d z = p->x_.minus(xtip);
@@ -275,17 +283,16 @@ public:
 
 	// moving line source, root is represented by a straight segments
 	static double integrandMLS(double t, double l, void* param) {
-		ExudationModel* p = (ExudationModel*) param;
+		ExudationModel2* p = (ExudationModel2*) param;
 		double c = -(p->R) / ( 4*(p->Dl)*t );
-		double d = 8*(p->theta)*ExudationModel::to32(M_PI*p->Dl*t);
-
+		double d = 8*(p->theta)*ExudationModel2::to32(M_PI*p->Dl*t);
 
 		double tl = p->r_->calcLength( p->age_-t ); // tip
 		if (tl<l) { // if root smaller l
 			return 0.;
 		}
 		double agel = p->r_->calcAge(tl-l);
-		Vector3d tipLS = p->ExudationModel::pointAtAge(p->r_, agel);
+		Vector3d tipLS = p->ExudationModel2::pointAtAge(p->r_, agel);
 		Vector3d z = p->x_.minus(tipLS);
 
 		return ((p->Q)*sqrt(p->R))/d *exp(c*z.times(z) - p->k/p->R * t); // Eqn (11)
@@ -293,11 +300,11 @@ public:
 
 	// moving point source, root is represented by a straight segments
 	static double integrandMPS(double t, void* param) {
-		ExudationModel* p = (ExudationModel*) param;
+		ExudationModel2* p = (ExudationModel2*) param;
 		double c = -p->R / ( 4*p->Dl*t );
-		double d = 8*(p->theta)*ExudationModel::to32(M_PI*p->Dl*t);
+		double d = 8*(p->theta)*ExudationModel2::to32(M_PI*p->Dl*t);
 
-		Vector3d xtip = ExudationModel::pointAtAge(p->r_, p->age_-t);
+		Vector3d xtip = ExudationModel2::pointAtAge(p->r_, p->age_-t);
 		Vector3d z = p->x_.minus(xtip);
 
 		return ((p->Q)*sqrt(p->R))/d *exp(c*z.times(z) - p->k/p->R * t); // Eqn (11)
@@ -323,8 +330,11 @@ public:
 	Vector3d v_ = Vector3d();
 	double st_ = 0; // stop time (eqn 13)
 
-	std::map<int, int> g_;  // eqn 13
-	std::map<int, int> c_;
+	int n_size = 0;
+	std::vector<double> g_;
+	std::vector<double> c_;
+//	std::map<int, double> g_;  // eqn 13
+//	std::map<int, double> c_;
 
 };
 
