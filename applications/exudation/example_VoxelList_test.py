@@ -59,19 +59,19 @@ model.type = rb.IntegrationType.mls;  # mps, mps_straight, mls
 model.n0 = 10  # integration points per cm
 model.thresh13 = 1.e-15;  # threshold to neglect diffusing g (eqn 13)
 model.calc13 = True;  # turns Eqn 13  on (True) and off (False)
-model.observationRadius = 1;  # limits computational domain around roots [cm]
+model.observationRadius = 2;  # limits computational domain around roots [cm]
 
 t = time.time()
 roots = rs.getPolylines()
 C = np.zeros(nx*ny*nz)
 print(len(roots))
 
-print("make voxel lists")
-model.makeVoxelLists() # equals model.makeVoxelLists(0, len(roots)) 
-print("made lists")
+# print("make voxel lists")
+# model.makeVoxelLists() # equals model.makeVoxelLists(0, len(roots)) 
+# model.calculate(simtime) # equals model.calculate(simtime, 0, len(roots))  
+# C = model.addResults(C)
 
-print("calculating")
-C = model.calculate(simtime) # equals model.calculate(simtime, 0, len(roots))  
+C = model.calculate(simtime)
 print("done")
 
 print(type(C))
@@ -108,9 +108,12 @@ gridToVTK("./Exudates", X, Y, Z, pointData = {"Exudates":C})
 
 fig1 = plt.figure()
 ax = plt.axes()
-C_ = C[:, int(ny / 2), :]
-# levels = np.logspace(np.log10(np.max(C_)) - 5, np.log10(np.max(C_)), 100)
+C_ = C[:, int(nx/2), :]
+# print(np.max(C_))
+# levels = np.logspace(np.log10(np.max(C_+1)) - 5, np.log10(np.max(C_)), 10)
+# print(levels)
 levels = np.linspace(np.min(C_[:]), np.max(C_[:]))
+print(levels)
 cs = ax.contourf(X_[:, int(nx / 2), :], Z_[:, int(nx / 2), :], C_, levels = levels, cmap = 'jet')  # , locator = ticker.LogLocator(),
 ax.set_xlabel('x')
 ax.set_ylabel('z')

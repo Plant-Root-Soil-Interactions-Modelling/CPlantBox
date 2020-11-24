@@ -31,6 +31,7 @@ namespace py = pybind11;
 #include "MappedOrganism.h"
 #include "XylemFlux.h"
 #include "ExudationModel.h"
+#include "ExudationModel2.h"
 
 #include "sdf_rs.h" // todo to revise ...
 
@@ -847,12 +848,35 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("thresh13", &ExudationModel::thresh13)
             .def_readwrite("calc13", &ExudationModel::calc13)
             .def_readwrite("observationRadius", &ExudationModel::observationRadius)
-			.def("makeVoxelLists",  &ExudationModel::makeVoxelLists, py::arg("i0") = 0, py::arg("iend")=-1)
-            .def("calculate",  &ExudationModel::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
+            .def("calculate", &ExudationModel::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
 	py::enum_<ExudationModel::IntegrationType>(m, "IntegrationType")
             .value("mps_straight", ExudationModel::IntegrationType::mps_straight )
             .value("mps", ExudationModel::IntegrationType::mps )
             .value("mls", ExudationModel::IntegrationType::mls )
+            .export_values();
+
+
+    py::class_<ExudationModel2, std::shared_ptr<ExudationModel2>>(m, "ExudationModel2")
+            .def(py::init<double, double, int, std::shared_ptr<RootSystem>>())
+            .def(py::init<double, double, double, int, int, int, std::shared_ptr<RootSystem>>())
+            .def_readwrite("Q", &ExudationModel2::Q)
+            .def_readwrite("Dl", &ExudationModel2::Dl)
+            .def_readwrite("theta", &ExudationModel2::theta)
+            .def_readwrite("R", &ExudationModel2::R)
+            .def_readwrite("k", &ExudationModel2::k)
+            .def_readwrite("l", &ExudationModel2::l)
+            .def_readwrite("type", &ExudationModel2::type)
+            .def_readwrite("n0", &ExudationModel2::n0)
+            .def_readwrite("thresh13", &ExudationModel2::thresh13)
+            .def_readwrite("calc13", &ExudationModel2::calc13)
+            .def_readwrite("observationRadius", &ExudationModel2::observationRadius)
+			.def("makeVoxelLists", &ExudationModel2::makeVoxelLists, py::arg("i0") = 0, py::arg("iend")=-1)
+			.def("addResults", &ExudationModel2::addResults)
+            .def("calculate", &ExudationModel2::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
+	py::enum_<ExudationModel2::IntegrationType>(m, "IntegrationType2")
+            .value("mps_straight", ExudationModel2::IntegrationType::mps_straight )
+            .value("mps", ExudationModel2::IntegrationType::mps )
+            .value("mls", ExudationModel2::IntegrationType::mls )
             .export_values();
 
     //   /*
