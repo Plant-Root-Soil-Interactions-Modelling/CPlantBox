@@ -777,16 +777,23 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
         .def("addSegments", &MappedRootSystem::rootSystem);
+    /*
+     * XylemFlux.h
+     */
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKr",&XylemFlux::setKr, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKx",&XylemFlux::setKx, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",&XylemFlux::setKrTables)
             .def("setKxTables",&XylemFlux::setKxTables)
+
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>())
-            .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
-            .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false, py::arg("cells") = false)
+            .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
+            		py::arg("soil_k") = std::vector<double>())
+            .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
+            		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
+
             .def("sumSoilFluxes",&XylemFlux::sumSegFluxes)
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
             .def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0)

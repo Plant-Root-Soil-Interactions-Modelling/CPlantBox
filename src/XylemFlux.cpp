@@ -11,10 +11,12 @@ namespace CPlantBox {
  * Assembles the linear system as sparse matrix, given by public member variables,
  * indices aI, aJ, and corresponding values aV; and load aB
  *
- * @param simTime         	[days] current simulation time is needed for age dependent conductivities,
+ * @param simTime[days] 	current simulation time, needed for age dependent conductivities,
  *                  		to calculate the age from the creation times (age = sim_time - segment creation time).
- * @param sx 				soil matric potential in the cells or around the segments
+ * @param sx [cm]			soil matric potential in the cells or around the segments, given per cell or per segment
  * @param cells 			sx per cell (true), or segments (false)
+ * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
+ *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  */
 void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k)
 {
@@ -103,18 +105,19 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
  * @param simTime   [days] current simulation time is needed for age dependent conductivities,
  *                  to calculate the age from the creation times (age = sim_time - segment creation time).
  * @param rx        [cm] root xylem matric potential
- * @param sx        [cm] soil matric potential for eadh cell
+ * @param sx        [cm] soil matric potential for each cell
  * @param approx    approximate or exact (default = false, i.e. exact)
  *
- * @return Hash map with cell indices as keys and fluxes as values [cm3/day]
+ * @return hash map with cell indices as keys and fluxes as values [cm3/day]
  */
-std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx)
+std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
+		bool approx, const std::vector<double> soil_k)
 {
-	return sumSegFluxes(segFluxes(simTime,  rx, sx, approx, true));
+	return sumSegFluxes(segFluxes(simTime,  rx, sx, approx, true, soil_k));
 }
 
 /**
- * Fluxes from root segments into soil cells
+ * Volumetric fluxes for each segment according to a given solution @param rx and @param sx
  *
  * @param simTime   [days] current simulation time is needed for age dependent conductivities,
  *                  to calculate the age from the creation times (age = sim_time - segment creation time).
@@ -122,9 +125,10 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  * @param sx        [cm] soil matric potential for each segment
  * @param approx    approximate or exact (default = false, i.e. exact)
  *
- * @return Hash map with cell indices as keys and fluxes as values [cm3/day]
+ * @return Volumetric fluxes for each segment [cm3/day]
  */
-std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, bool approx, bool cells)
+std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
+		bool approx, bool cells, const std::vector<double> soil_k)
 {
 	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
 	for (int si = 0; si<rs->segments.size(); si++) {
@@ -145,6 +149,10 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		double  kr = kr_f(age, type);
 		double  kz = kx_f(age, type);
 
+		if (soil_k.size()>0) {
+			kr = std::min(kr, soil_k[si]);
+		}
+
 		Vector3d n1 = rs->nodes[i];
 		Vector3d n2 = rs->nodes[j];
 		double l = (n2.minus(n1)).length();
@@ -159,6 +167,30 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		double flux = fExact*(!approx)+approx*fApprox;
 		fluxes[si] = flux;
 
+	}
+	return fluxes;
+}
+
+/**
+ * Sums segment fluxes over each cell
+ *
+ * @param segFluxes 	segment fluxes given per segment index [cm3/day]
+ * @return hash map with cell indices as keys and fluxes as values [cm3/day]
+ */
+std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxes)
+{
+	std::map<int,double> fluxes;
+	for (int si = 0; si<rs->segments.size(); si++) {
+		int j = rs->segments[si].y;
+		int segIdx = j-1;
+		if (rs->seg2cell.count(segIdx)>0) {
+			int cellIdx = rs->seg2cell[segIdx];
+			if (fluxes.count(cellIdx)==0) {
+				fluxes[cellIdx] = segFluxes[segIdx];
+			} else {
+				fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
+			}
+		}
 	}
 	return fluxes;
 }
@@ -193,50 +225,6 @@ std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>&
 	}
 	return rsx; // matric potential at the soil root interface
 }
-
-
-///**
-// * Calculates the matric potential at the root soil interface according to Schröder et al.
-// */
-//std::vector<double> XylemFlux::segSchroeder(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wiltingPoint,
-//    std::function<double(double)> mfp, std::function<double(double)> imfp) {
-//
-//    std::vector<double> rsx = std::vector<double>(rs->segments.size()); // rx is defined at the nodes, i.e. rx.size()+1 == segments.size()
-//    auto lengths = this->segLength();
-//    auto outerRadii = this->segOuterRadii();
-//    auto fluxes = this->segFluxes(simTime, rx, sx, false, true); // classical sink
-//    for (int i = 0; i<rs->segments.size(); i++) { // calculate rsx
-//        int cellIdx = rs->seg2cell.at(i);
-//        double p = sx[cellIdx];
-//        double rp = 0.5*(rx.at(rs->segments[i].x)+rx.at(rs->segments[i].y)); // defined at the node
-//        double q_root = -fluxes.at(i)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
-//        double q_out = 0.;
-//        double r_in = rs->radii.at(i);
-//        double r_out = outerRadii.at(i);
-//        rsx[i] = p;
-//        if (rp < p) { // flux into root
-//            double r = r_in;
-//            double rho = r_out/r_in;
-//            double mfp_ = mfp(p) + (q_root*r_in-q_out*r_out)*((r*r)/(r_in*r_in)/(2*(1-rho*rho)))+
-//                (rho*rho)/(1-(rho*rho)*(log(r_out/r)-0.5)) + q_out*r_out*log(r/r_out);
-//            double h;
-//            if (mfp_>0) { // no stress
-//                h = imfp(mfp_);
-//            } else { // stress
-//                h = wiltingPoint;
-//            }
-//            if (rp <= h) { // flux into root
-//                rsx[i] = h;
-//            } else { // flux into soil
-//                rsx[i] = rp; // don't use schroeder (no flux)
-//            }
-//        } else { // flux into soil
-//            rsx[i] = p; // don't use schroeder
-//        }
-//    }
-//    return rsx; // matric potential at the soil root interface
-//}
-
 
 /**
  * Calculates the stressed according to the steady rate approximation (Schröder et al. )
@@ -283,7 +271,8 @@ std::vector<double> XylemFlux::segSRAStressedAnalyticalFlux(const std::vector<do
 }
 
 /**
- * Calculates outer segment radii, so that the summed segment volumes per cell equal the cell volume
+ * Calculates outer segment radii [cm], so that the summed segment volumes per cell equals the cell volume
+ * @param type 			prescribed cylinder volume proportional to 0: segment volume, 1: segment surface, 2: segment length
  */
 std::vector<double> XylemFlux::segOuterRadii(int type) const {
 	auto lengths =  this->segLength();
@@ -322,35 +311,11 @@ std::vector<double> XylemFlux::segOuterRadii(int type) const {
 	return radii;
 }
 
-
-/**
- * Sums segment fluxes over each cell, @see splitSoilFluxes()
- *
- * @param segFluxes 	segment fluxes [cm3/day]
- * @return fluxes for each cell idx [cm3/day]
- */
-std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxes)
-{
-	std::map<int,double> fluxes;
-	for (int si = 0; si<rs->segments.size(); si++) {
-		int j = rs->segments[si].y;
-		int segIdx = j-1;
-		if (rs->seg2cell.count(segIdx)>0) {
-			int cellIdx = rs->seg2cell[segIdx];
-			if (fluxes.count(cellIdx)==0) {
-				fluxes[cellIdx] = segFluxes[segIdx];
-			} else {
-				fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
-			}
-		}
-	}
-	return fluxes;
-}
-
 /**
  * Splits soil fluxes per cell to the segments within the cell, so that the summed fluxes agree, @see sumSoilFluxes()
  *
  * @param soilFluxes 	cell fluxes per global index [cm3/day]
+ * @param type 			split flux proportional to 0: segment volume, 1: segment surface, 2: segment length
  * @return fluxes for each segment [cm3/day]
  */
 std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFluxes, int type) const
@@ -388,7 +353,7 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
 }
 
 /**
- * Calculates segment lengths
+ * Calculates segment lengths [cm]
  */
 std::vector<double> XylemFlux::segLength() const {
 	std::vector<double> lengths = std::vector<double>(rs->segments.size());

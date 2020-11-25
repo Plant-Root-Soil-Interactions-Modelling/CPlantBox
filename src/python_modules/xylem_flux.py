@@ -27,6 +27,9 @@ class XylemFluxPython(XylemFlux):
             super().__init__(rs)
         else:
             super().__init__(rs)
+        
+        self.seg_ind = [0] # for Neuman flux
+        self.node_ind = [0] # for Dirichlet flux
 
     def solve_neumann(self, sim_time :float, value :float, sxx, cells :bool, soil_k = []) :
         """ solves the flux equations, with a neumann boundary condtion, see solve()
@@ -45,7 +48,7 @@ class XylemFluxPython(XylemFlux):
             self.linearSystem(sim_time, sxx, cells) # C++ (see XylemFlux.cpp)
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_neumann(Q, self.aB, [0], [value])  # cm3 day-1
+        Q, b = self.bc_neumann(Q, self.aB, self.seg_ind, [value])  # cm3 day-1
         x = LA.spsolve(Q, b, use_umfpack = True)  # direct
         # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
         return x
@@ -68,7 +71,7 @@ class XylemFluxPython(XylemFlux):
         self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_dirichlet(Q, self.aB, [0], [float(value)])
+        Q, b = self.bc_dirichlet(Q, self.aB, node_ind, [float(value)])
         x = LA.spsolve(Q, b, use_umfpack = True)
         return x
 
