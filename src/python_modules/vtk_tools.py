@@ -357,12 +357,14 @@ def read3D_vtp_data(name, data_index = 0, cell = None):
             c = pd.GetCell(i)           
             ids = c.GetPointIds()
             n = ids.GetNumberOfIds ()
+            print("GetNumberOfIds: ", n)
             midz = 0.
             p1 = np.zeros(3,)
             for j in range(0, n):
                 points.GetPoint(ids.GetId(j), p1)
-                midz += p1[2] / n 
+                midz += p1 / n 
             z_[i, :] = midz
+            print(midz)            
         return p_, z_
 
 
