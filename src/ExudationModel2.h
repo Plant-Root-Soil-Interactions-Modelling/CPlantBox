@@ -148,7 +148,7 @@ public:
 	 * @param i0        optionally, initial root index (default = 0)
 	 * @param iend      optionally, final root index (default = roots.size())
 	 */
-	void calculate(double tend, int i0 = 0, int iend = -1) { // std::vector<double>
+	 std::vector<double> calculate(double tend, int i0 = 0, int iend = -1) { //
 
 		if (iend==-1) {
 			iend = roots.size();
@@ -206,7 +206,10 @@ public:
 				}
 			} // if ages.at(i)>0d
 		}
-		//return c_;
+
+		std::vector<double> c = std::vector<double>(n_size);
+		std::fill(c.begin(), c.end(), 0.);
+		return addResults(c);
 	}
 
 	double eqn11(double x0, double xend, double y0, double yend) {
