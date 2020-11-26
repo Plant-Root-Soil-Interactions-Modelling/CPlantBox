@@ -28,13 +28,13 @@ class XylemFluxPython(XylemFlux):
         else:
             super().__init__(rs)
         
-        self.seg_ind = [0] # for Neuman flux
-        self.node_ind = [0] # for Dirichlet flux
+        self.seg_ind = [0] # segment indices for Neuman flux
+        self.node_ind = [0] # node indices for Dirichlet flux
 
-    def solve_neumann(self, sim_time :float, value :float, sxx, cells :bool, soil_k = []) :
+    def solve_neumann(self, sim_time :float, value, sxx, cells :bool, soil_k = []) :
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
-            @param value [cm3 day-1]    tranpirational flux is negative 
+            @param value [cm3 day-1]    tranpirational flux is negative
             @param sxx [cm]             soil matric potentials given per segment or per soil cell
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
             @param soil_k [day-1]       optionally, soil conductivities can be prescribed per segment, 
@@ -42,28 +42,36 @@ class XylemFluxPython(XylemFlux):
             @return [cm] root xylem pressure per root system node         
          """
         # start = timeit.default_timer()
+        if isinstance(value, float):
+            n = len(self.seg_ind)
+            value = [value/n]*n
+            
         if len(soil_k) > 0:
             self.linearSystem(sim_time, sxx, cells, soil_k) # C++ (see XylemFlux.cpp)
         else:
             self.linearSystem(sim_time, sxx, cells) # C++ (see XylemFlux.cpp)
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_neumann(Q, self.aB, self.seg_ind, [value])  # cm3 day-1
+        Q, b = self.bc_neumann(Q, self.aB, self.seg_ind, value)  # cm3 day-1
         x = LA.spsolve(Q, b, use_umfpack = True)  # direct
         # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
         return x
 
-    def solve_dirichlet(self, sim_time :float, value :float, sxc :float, sxx, cells :bool, soil_k = []):
+    def solve_dirichlet(self, sim_time :float, value :list, sxc :float, sxx, cells :bool, soil_k = []):
         """ solves the flux equations, with a dirichlet boundary condtion, see solve()
             @param sim_time [day]     needed for age dependent conductivities (age = sim_time - segment creation time)
             @param scx                depricated (unused)
             @param value [cm]         root collar pressure head 
-            @param sxx [cm]             soil matric potentials given per segment or per soil cell
-            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
-            @param soil_k [day-1]       optionally, soil conductivities can be prescribed per segment, 
-                                        conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
+            @param sxx [cm]           soil matric potentials given per segment or per soil cell
+            @param cells              indicates if the matric potentials are given per cell (True) or by segments (False)
+            @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
+                                      conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node
          """
+        if isinstance(value, float):
+            n = len(self.node_ind)
+            value = [value]*n       
+         
         if len(soil_k) > 0:
             self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
         else:
@@ -71,11 +79,11 @@ class XylemFluxPython(XylemFlux):
         self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_dirichlet(Q, self.aB, node_ind, [float(value)])
+        Q, b = self.bc_dirichlet(Q, self.aB, node_ind, value)
         x = LA.spsolve(Q, b, use_umfpack = True)
         return x
 
-    def solve(self, sim_time :float, trans :float, sx :float, sxx, cells :bool, wilting_point :float, soil_k = []):
+    def solve(self, sim_time :float, trans, sx :float, sxx, cells :bool, wilting_point :float, soil_k = []):
         """ solves the flux equations using Neumann and switching to dirichlet in case wilting point is reached in root collar 
             @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
             @param trans [cm3 day-1]     transpiration rate
@@ -84,7 +92,6 @@ class XylemFluxPython(XylemFlux):
             @param sxx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
             @parm wiltingPoint [cm]      the plant wilting point   
-            @param soil_k [cm/s]         soil conductivities
             @param soil_k [day-1]       optionally, soil conductivities can be prescribed per segment, 
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node
@@ -118,22 +125,17 @@ class XylemFluxPython(XylemFlux):
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
             @param rx [cm]              root xylem matric potentials per root system node
             @param sxx [cm]             soil matric potentials given per segment or per soil cell
-            @param soil_k [day-1]       optionally, soil conductivities can be prescribed per segment, 
+            @param k_soil [day-1]       optionally, soil conductivities can be prescribed per segment, 
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil) 
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm3 day-1] volumetric flow rate at the root collar            
        """
-        for i, s in enumerate(self.rs.segments):  # find root collar, asumming node[0] is base
-            if s.x == 0:
-                seg_ind = i
-                break
+        seg_ind = self.seg_ind[0] # rename TODO in case of plant
         s = self.rs.segments[seg_ind]  # collar segment
-
         if len(k_soil) > 0:
             ksoil = k_soil[seg_ind]
         else:
-            ksoil = 1.e9
-
+            ksoil = 1.e9 # much
         i, j = int(s.x), int(s.y)  # node indices
         n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
         v = n2.minus(n1)
@@ -170,7 +172,7 @@ class XylemFluxPython(XylemFlux):
         @param final_age [day]         current root system age
         """
         cts = np.array(self.rs.nodeCTs)
-        if final_age == 0. :
+        if final_age == 0.:
             final_age = np.max(cts)
         ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
         return ages[1:]  # segment index is node index-1

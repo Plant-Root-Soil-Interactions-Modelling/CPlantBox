@@ -3,8 +3,6 @@
 
 #include <algorithm>
 
-// #include "../external/gauss_legendre/gauss_legendre.h"
-
 namespace CPlantBox {
 
 /**
