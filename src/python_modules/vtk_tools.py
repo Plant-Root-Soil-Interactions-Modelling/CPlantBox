@@ -137,6 +137,41 @@ def np_data(pd, data_index = 0, cell = None):
         p_[i] = d[0]
     return p_, cell
 
+def rebuild_grid(p, t):
+    """ Deletes unused points and updates elements
+    @param p         nodes Nx3
+    @param t         cells (as node indices) NxNc
+    """
+    pp = np.zeros(p.shape[0], dtype = "bool")  # initially all are unused
+    for t_ in t:  # find unused points
+        for n in t_:
+            pp[n] = 1  # used
+    upi = np.argwhere(pp == 0)  # unused point indices
+    for k in upi[::-1]:  # reverse
+        for i, t_ in enumerate(t):  # update triangle indices
+            for j, n in enumerate(t_):
+                if n > k:
+                    t[i][j] -= 1
+    p = np.delete(p, upi, axis = 0)  # delete unused points
+    return p, t
+
+
+def snap_to_box(p, box, eps = 1e-6):
+    """ Snap points to a bounding box 
+    @param p          nodes Nx3
+    @param box        bounding box [minx,miny,minz,maxx,maxy,maxz]
+    @param eps        snap tolerance
+    """
+    for i, p_ in enumerate(p):
+        for j in range(0, 3):
+            if p_[j] < box[j] + eps:
+                p[i, j] = box[j]
+        for j in range(3, 6):
+            if p_[j - 3] > box[j] - eps:
+                p[i, j - 3] = box[j]
+    return p
+
+
 
 def read_vtp(name):
     """ opens a vtp and returns the vtkPolydata class, 
