@@ -333,11 +333,13 @@ class RectilinearGrid3D  : public SoilLookUp
 {
 public:
 
-    RectilinearGrid3D(Grid1D* xgrid, Grid1D* ygrid, Grid1D* zgrid) :xgrid(xgrid), ygrid(ygrid), zgrid(zgrid) {
+    RectilinearGrid3D(Grid1D* xgrid, Grid1D* ygrid, Grid1D* zgrid, bool allocData = true) :xgrid(xgrid), ygrid(ygrid), zgrid(zgrid) {
         nx = xgrid->n;
         ny = ygrid->n;
         nz = zgrid->n;
-        data = std::vector<double>(nx*ny*nz);
+        if (allocData) {
+        	data = std::vector<double>(nx*ny*nz);
+        }
     }
 
     virtual ~RectilinearGrid3D() { };
@@ -368,6 +370,13 @@ public:
         return Vector3d(xgrid->grid[i], ygrid->grid[j], zgrid->grid[k]);
     } ///< grid point at indices
 
+    Vector3d getGridPoint(size_t lind) {
+		int i = lind % nx;
+		int k = lind / (nx*ny);
+		int j = (lind - k*nx*ny)/ nx;
+		return Vector3d(xgrid->grid[i], ygrid->grid[j], zgrid->grid[k]);
+    } ///< grid point ad linear index with ordering  k*(nx*ny)+j*nx+i
+
     Grid1D* xgrid;
     Grid1D* ygrid;
     Grid1D* zgrid;
@@ -385,14 +394,14 @@ class EquidistantGrid3D : public RectilinearGrid3D
 {
 public:
 
-    EquidistantGrid3D() :EquidistantGrid3D(1.,1.,1.,0,0,0) {
+    EquidistantGrid3D(bool allocData = true) :EquidistantGrid3D(1.,1.,1.,0,0,0,allocData) {
     }
 
-    EquidistantGrid3D(double length, double width, double depth, int nx, int ny, int nz)
+    EquidistantGrid3D(double length, double width, double depth, int nx, int ny, int nz, bool allocData = true)
     :RectilinearGrid3D(new EquidistantGrid1D(-length/2,length/2,nx),new EquidistantGrid1D(-width/2,width/2,ny),new EquidistantGrid1D(-depth,0.,nz)) {
     }
 
-    EquidistantGrid3D(double x0, double xe, int nx, double y0, double ye, int ny, double z0, double ze, int nz)
+    EquidistantGrid3D(double x0, double xe, int nx, double y0, double ye, int ny, double z0, double ze, int nz, bool allocData = true)
     :RectilinearGrid3D(new EquidistantGrid1D(x0,xe,nx),new EquidistantGrid1D(y0,ye,ny),new EquidistantGrid1D(z0,ze,nz)) {
     }
 

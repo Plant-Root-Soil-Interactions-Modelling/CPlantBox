@@ -12,6 +12,7 @@
 #include "Organ.h"
 #include "Root.h"
 #include "Seed.h"
+#include "seedparameter.h"
 #include "Stem.h"
 #include "Leaf.h"
 
@@ -56,6 +57,8 @@ public:
   void initialize(bool verbose = true) override; ///< creates the base roots, call before simulation and after setting the plant and root parameters
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
+  	
+  void simulate(double dt, bool verbose = false) override; 
 
   /* call back function creation */
   void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
@@ -69,9 +72,12 @@ public:
   std::vector<int> leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 protected:
+	
 
   std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
   std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
+  int numberOfCrowns = 0;	
+  SeedSpecificParameter seedParam;
 
 };
 

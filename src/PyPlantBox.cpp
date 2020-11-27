@@ -31,6 +31,7 @@ namespace py = pybind11;
 #include "MappedOrganism.h"
 #include "XylemFlux.h"
 #include "ExudationModel.h"
+#include "ExudationModel2.h"
 
 #include "sdf_rs.h" // todo to revise ...
 
@@ -702,10 +703,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
             .def("calcCreationTime", &Leaf::calcCreationTime)
             .def("calcLength", &Leaf::calcLength)
-            .def("calcAge", &Leaf::calcAge)
+            .def("calcAge", &Leaf::calcAge)	
             .def("getLeafRandomParameter", &Leaf::getLeafRandomParameter)
             .def("param", &Leaf::param)
-            .def("dx", &Leaf::dx);
+            .def("dx", &Leaf::dx);	
     /**
      * Stem.h
      */
@@ -755,8 +756,8 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<MappedSegments, std::shared_ptr<MappedSegments>>(m, "MappedSegments")
         .def(py::init<>())
-        .def(py::init<std::vector<Vector3d>, std::vector<double>, std::vector<Vector2i>, std::vector<double>, std::vector<int>>())
-        .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>>())
+        .def(py::init<std::vector<Vector3d>, std::vector<double>, std::vector<Vector2i>, std::vector<double>, std::vector<int>,  std::vector<int>>())
+        .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, std::vector<int>>())
         .def("setRadius", &MappedSegments::setRadius)
         .def("setTypes", &MappedSegments::setTypes)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
@@ -770,39 +771,32 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
         .def_readwrite("segments", &MappedSegments::segments)
         .def_readwrite("radii", &MappedSegments::radii)
-        .def_readwrite("types", &MappedSegments::types)
+        .def_readwrite("types", &MappedSegments::types)	
+        .def_readwrite("typesorgan", &MappedSegments::typesorgan)
         .def_readwrite("seg2cell", &MappedSegments::seg2cell)
         .def_readwrite("cell2seg", &MappedSegments::cell2seg);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
         .def("addSegments", &MappedRootSystem::rootSystem);
-    /*
-     * XylemFlux.h
-     */
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKr",&XylemFlux::setKr, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKx",&XylemFlux::setKx, py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",&XylemFlux::setKrTables)
             .def("setKxTables",&XylemFlux::setKxTables)
-
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>())
-            .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
-            		py::arg("soil_k") = std::vector<double>())
-            .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
-            		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
-
+            .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false)
+            .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false, py::arg("cells") = false)
             .def("sumSoilFluxes",&XylemFlux::sumSegFluxes)
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
             .def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0)
 			.def("segLength",&XylemFlux::segLength)
             .def("segSRA",&XylemFlux::segSRA)
-            //.def("segSchroeder",&XylemFlux::segSchroeder)
+            .def("segSchroeder",&XylemFlux::segSchroeder)
             .def("segSRAStressedFlux",&XylemFlux::segSRAStressedFlux, py::arg("sx"), py::arg("wiltingPoint"), py::arg("hc"),
                 py::arg("mpf"), py::arg("impf"), py::arg("dx") = 1.e-6)
-	        .def("segSRAStressedAnalyticalFlux",&XylemFlux::segSRAStressedAnalyticalFlux)
             .def_readonly("kr_f", &XylemFlux::kr_f)
             .def_readonly("kx_f", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
@@ -822,12 +816,19 @@ PYBIND11_MODULE(plantbox, m) {
             .def("reset", &Plant::reset)
             .def("openXML", &Plant::openXML)
             .def("setTropism", &Plant::setTropism)
-            .def("simulate",(void (Plant::*)(double,bool)) &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) // in Organism::simulate
+            .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false) // in Organism::simulate (now there is another one in Plant)
             .def("simulate",(void (Plant::*)()) &Plant::simulate)
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
             .def("write", &Plant::write);
+			
+	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
+			.def(py::init<>())	
+			.def("mappedSegments",  &MappedPlant::mappedSegments)	
+			.def("printnodes",  &MappedPlant::printnodes)	
+			.def("addSegments", &MappedPlant::plant);			
+
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)
             .value("gravi", Plant::TropismTypes::tt_gravi)
@@ -840,6 +841,7 @@ PYBIND11_MODULE(plantbox, m) {
              .value("negexp", Plant::GrowthFunctionTypes::gft_negexp)
              .value("linear", Plant::GrowthFunctionTypes::gft_linear)
              .export_values();
+			 
 
     py::class_<ExudationModel, std::shared_ptr<ExudationModel>>(m, "ExudationModel")
             .def(py::init<double, double, int, std::shared_ptr<RootSystem>>())
@@ -855,12 +857,38 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("thresh13", &ExudationModel::thresh13)
             .def_readwrite("calc13", &ExudationModel::calc13)
             .def_readwrite("observationRadius", &ExudationModel::observationRadius)
-            .def("calculate",  &ExudationModel::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
-    py::enum_<ExudationModel::IntegrationType>(m, "IntegrationType")
+            .def("calculate", &ExudationModel::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
+	py::enum_<ExudationModel::IntegrationType>(m, "IntegrationType")
             .value("mps_straight", ExudationModel::IntegrationType::mps_straight )
             .value("mps", ExudationModel::IntegrationType::mps )
             .value("mls", ExudationModel::IntegrationType::mls )
             .export_values();
+
+
+    py::class_<ExudationModel2, std::shared_ptr<ExudationModel2>>(m, "ExudationModel2")
+            .def(py::init<double, double, int, std::shared_ptr<RootSystem>>())
+            .def(py::init<double, double, double, int, int, int, std::shared_ptr<RootSystem>>())
+            .def_readwrite("Q", &ExudationModel2::Q)
+            .def_readwrite("Dl", &ExudationModel2::Dl)
+            .def_readwrite("theta", &ExudationModel2::theta)
+            .def_readwrite("R", &ExudationModel2::R)
+            .def_readwrite("k", &ExudationModel2::k)
+            .def_readwrite("l", &ExudationModel2::l)
+            .def_readwrite("type", &ExudationModel2::type)
+            .def_readwrite("n0", &ExudationModel2::n0)
+            .def_readwrite("thresh13", &ExudationModel2::thresh13)
+            .def_readwrite("calc13", &ExudationModel2::calc13)
+            .def_readwrite("observationRadius", &ExudationModel2::observationRadius)
+			.def("makeVoxelLists", &ExudationModel2::makeVoxelLists, py::arg("i0") = 0, py::arg("iend")=-1)
+			.def("addResults", &ExudationModel2::addResults)
+            .def("calculate", &ExudationModel2::calculate, py::arg("tend"), py::arg("i0") = 0, py::arg("iend")=-1);
+	py::enum_<ExudationModel2::IntegrationType>(m, "IntegrationType2")
+            .value("mps_straight", ExudationModel2::IntegrationType::mps_straight )
+            .value("mps", ExudationModel2::IntegrationType::mps )
+            .value("mls", ExudationModel2::IntegrationType::mls )
+            .export_values();
+
+
 
     //   /*
     //    * sdf_rs.h todo revise

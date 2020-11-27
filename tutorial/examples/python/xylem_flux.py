@@ -40,7 +40,7 @@ class XylemFluxPython(XylemFlux):
         # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
         return x
 
-    def solve_dirichlet(self, sim_time :float, value :float, sxc :float, sxx, cells :bool, soil_k = []):
+    def solve_dirichlet(self, sim_time :float, value :float,n0, sxc :float, sxx, cells :bool, soil_k = []):
         """ solves the flux equations, with a dirichlet boundary condtion,
             @param sim_time [day]     needed for age dependent conductivities (age = sim_time - segment creation time)
             @param value [cm]         root collar pressure head 
@@ -50,14 +50,13 @@ class XylemFluxPython(XylemFlux):
             self.linearSystem(sim_time, sxx, cells, soil_k)  # C++
         else:
             self.linearSystem(sim_time, sxx, cells)
-        self.linearSystem(sim_time, sxx, cells)  # C++
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_dirichlet(Q, self.aB, [0], [float(value)])
+        Q, b = self.bc_dirichlet(Q, self.aB, n0, value)
         x = LA.spsolve(Q, b, use_umfpack = True)
         return x
 
-    def solve(self, sim_time :float, trans :float, sx :float, sxx, cells :bool, wilting_point :float, soil_k = []):
+    def solve(self, sim_time :float, trans :float,n0, sx :float, sxx, cells :bool, wilting_point :float, soil_k = []):
         """ solves the flux equations using neumann and switching to dirichlet 
             in case wilting point is reached in root collar 
             @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
@@ -70,16 +69,15 @@ class XylemFluxPython(XylemFlux):
             @return [cm] root xylem pressure
         """
         eps = 1
-        x = [wilting_point - sx - 1]
 
         if sx >= wilting_point - eps:
 
-            x = self.solve_neumann(sim_time, trans, sxx, cells, soil_k)
+            x = self.solve_neumann(sim_time, trans,n0, sxx, cells, soil_k)
 
             if x[0] <= wilting_point:
                 Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
                 Q = sparse.csr_matrix(Q)
-                Q, b = self.bc_dirichlet(Q, self.aB, [0], [float(wilting_point)])
+                Q, b = self.bc_dirichlet(Q, self.aB, n0, [float(wilting_point)])
                 try:
                     x = LA.spsolve(Q, b, use_umfpack = True)
                 except:
@@ -88,10 +86,8 @@ class XylemFluxPython(XylemFlux):
                     print("b", b)
                     raise
         else:
-            print()
             print("solve_wp used Dirichlet because collar cell soil matric potential is below wilting point", sx)
-            print()
-            x = self.solve_dirichlet(sim_time, wilting_point, sx, sxx, cells, soil_k)
+            x = self.solve_dirichlet(sim_time, wilting_point,n0, sx, sxx, cells, soil_k)
 
         return x
 
@@ -102,7 +98,6 @@ class XylemFluxPython(XylemFlux):
             @param sxx [cm]           soil matric potentials 
         """  #
         for i, s in enumerate(self.rs.segments):
-            print(i, s.x)
             if s.x == 0:
                 seg_ind = i
                 break
@@ -135,6 +130,33 @@ class XylemFluxPython(XylemFlux):
         # dpdz = d[0] *sqrt(c)*exp(sqrt(c)*(-L)) + d[1] * (-sqrt(c)*exp(-sqrt(c)*(-L))) # dp/dz
         dpdz0 = d[0] * math.sqrt(c) - d[1] * math.sqrt(c)
         return -kx * (dpdz0 + v.z)  # kx [cm5 day g-1]-> [cm3 day-1] by multiplying rho*g
+        
+	#help for check
+    def get_nodes_index(self,ot):	
+        segments = self.get_segments() 	
+        nodes = self.get_nodes()	
+        typesorgan = self.get_organtypes()	
+        rootsegments = segments[typesorgan == ot]	
+        rootsegments.flatten()	
+        np.sort(rootsegments, axis=None)	
+        nodesidx =  np.unique(rootsegments)	
+        return nodesidx	
+        	
+    def get_nodes_type(self,ot):	
+        segments = self.get_segments() 	
+        nodes = self.get_nodes()	
+        typesorgan = self.get_organtypes()	
+        rootsegments = segments[typesorgan == ot]	
+        rootsegments.flatten()	
+        np.sort(rootsegments, axis=None)	
+        rootnodes =  np.unique(rootsegments)	
+        nodes = nodes[rootnodes]	
+        return nodes
+        
+    def get_organtypes(self):
+        organnumber = np.array(self.rs.typesorgan)
+        """ converts the list of Vector3d to a 2D numpy array """
+        return organnumber
 
     def get_nodes(self):
         """ converts the list of Vector3d to a 2D numpy array """

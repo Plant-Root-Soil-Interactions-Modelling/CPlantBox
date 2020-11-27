@@ -67,7 +67,6 @@ public:
                 double a = r->getNodeCT(r->getNumberOfNodes()-1) - r->getNodeCT(0);
                 v.push_back(base.minus(t).times(1./a));
             }
-
             sdfs.push_back(SDF_RootSystem(*r, observationRadius));
 
         }
@@ -88,13 +87,12 @@ public:
 
         limitDomain = observationRadius>0;
 
-        std::fill(grid.data.begin(), grid.data.end(), 0); // set data to zero
+        std::fill(grid.data.begin(), grid.data.end(), 0.); // set data to zero
         g_.resize(grid.data.size()); // saves last root contribution
+        std::fill(g_.begin(), g_.end(), 0.);
 
         for (size_t ri = i0; ri< iend; ri++) {
 
-            //
-            // per root (passed to integrands)
             r_ = roots[ri]; // eq 11
             age_ = std::min(r_->getNodeCT(r_->getNumberOfNodes()-1),tend) - r_->getNodeCT(0);
 
@@ -119,7 +117,7 @@ public:
 
                             if ((!limitDomain) || (-sdfs[ri].getDist(x_)<observationRadius)) {
 
-                                size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
+        						size_t lind = k*(grid.nx*grid.ny)+j*grid.nx+i; // k*(nx*ny)+j*nx+i, same ordering as RectilinearGrid3D
 
                                 // different flavors of Eqn (11)
                                 double c = eqn11(0, age_, 0, l);
@@ -127,7 +125,7 @@ public:
                                 g_[lind] = c;
 
                             } else {
-                                size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
+        						size_t lind = k*(grid.nx*grid.ny)+j*grid.nx+i; // k*(nx*ny)+j*nx+i, same ordering as RectilinearGrid3D
                                 g_[lind] = 0.;
                             }
 
@@ -143,7 +141,7 @@ public:
                         for(size_t j = 0; j<grid.ny; j++) {
                             for (size_t k = 0; k<grid.nz; k++) {
 
-                                size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
+        						size_t lind = k*(grid.nx*grid.ny)+j*grid.nx+i; // k*(nx*ny)+j*nx+i, same ordering as RectilinearGrid3D
                                 if (g_[lind] > thresh13) {
 
                                     x_ = grid.getGridPoint(i,j,k);
@@ -192,7 +190,7 @@ public:
             for(size_t j = 0; j<grid.ny; j++) {
                 for (size_t k = 0; k<grid.nz; k++) {
                     Vector3d y = grid.getGridPoint(i,j,k);
-                    size_t lind = i*(grid.ny*grid.nz)+j*grid.nz+k;
+                    size_t lind = k*(grid.nx*grid.ny)+j*grid.nx+i;
                     c += integrand13(y,lind, t)*dx3;
                 }
             }
@@ -250,7 +248,6 @@ public:
         ExudationModel* p = (ExudationModel*) param;
         double c = -(p->R) / ( 4*(p->Dl)*t );
         double d = 8*(p->theta)*ExudationModel::to32(M_PI*p->Dl*t);
-
 
         double tl = p->r_->calcLength( p->age_-t ); // tip
         if (tl<l) { // if root smaller l

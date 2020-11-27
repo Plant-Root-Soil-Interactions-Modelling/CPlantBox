@@ -241,7 +241,7 @@ def write_rsml(name :str, axes :list, segs :list, segdata :list, nodes :list, no
             root.write_root(plant, nodes, nodedata, Renumber = kwargs.get("Renumber", True))
     # Wrote Tree
     tree = ET.ElementTree(rsml)
-    tree.write(name, xml_declaration = True, encoding = 'utf-8', method = "xml")
+    tree.write(name)
     return 0
 
 

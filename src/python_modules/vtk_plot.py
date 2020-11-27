@@ -12,27 +12,11 @@ to make interactive vtk plot of root systems and soil grids
 """
 
 
-def solver_to_polydata(solver, min_, max_, res_):
-    """ Creates vtkPolydata from dumux-rosi solver as a structured grid
-    @param solver
-    @param min_ 
-    @param max_ 
-    @param res_
-    """
-    pd = uniform_grid(min_, max_, res_)
-    data = solver.getSolutionHead()
-    # print("Data range from {:g} to {:g}".format(np.min(data), np.max(data)))
-    data_array = vtk_data(data)
-    data_array.SetName("pressure head")
-    pd.GetCellData().AddArray(data_array)
-    return pd
-
-
 def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "creationTime"]):
     """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments 
-    @param rs             a RootSystem, Plant, or SegmentAnalyser
-    @param zoom_factor    a radial zoom factor, since root are sometimes too thin for vizualisation
-    @param param_names    parameter names of scalar fields, that are copied to the polydata object   
+    @param rs             A RootSystem, Plant, or SegmentAnalyser
+    @param zoom_factor    The radial zoom factor, since root are sometimes too thin for vizualisation
+    @param param_names    Parameter names of scalar fields, that are copied to the polydata    
     @return A vtkPolydata object of the root system
     """
     if isinstance(rs, pb.Organism):
@@ -56,7 +40,8 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
             pd.GetCellData().AddArray(data)
         else:
             print("segs_to_polydata: Warning parameter " + n + " is sikpped because of wrong size", param.shape[0], "instead of", segs.shape[0])
-    c2p = vtk.vtkCellDataToPointData()  # set cell and point data
+
+    c2p = vtk.vtkCellDataToPointData()
     c2p.SetPassCellData(True)
     c2p.SetInputData(pd)
     c2p.Update()
@@ -68,10 +53,10 @@ def uniform_grid(min_, max_, res):
     @param min_    minimum of bounding rectangle
     @param max_    maximum of bounding rectangle
     @param res_    cell resolution
-    @return A vtkUniformGrid
+    @return The vtkUniformGrid
     """
     grid = vtk.vtkUniformGrid()
-    grid.SetDimensions(int(res[0]) + 1, int(res[1]) + 1, int(res[2]) + 1)  # cells to corner points
+    grid.SetDimensions(int(res[0]) + 1, int(res[1]) + 1, int(res[2]) + 1)  # cell to point resolution
     grid.SetOrigin(min_[0], min_[1], min_[2])
     s = (max_ - min_) / res
     grid.SetSpacing(s[0], s[1], s[2])
@@ -82,7 +67,7 @@ def render_window(actor, title, scalarBar, bounds):
     """ puts a vtk actor on the stage (renders an interactive window)
     
     @param actor                    a (single) actor, or a list of actors (ensemble)
-    @param title                    window title 
+    @param title                    window title (optional)
     @param scalarBar                one or a list of vtkScalarBarActor (optional)
     @param bounds                   spatial bounds (to set axes actor, and camera position and focal point)
     @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write png
@@ -154,7 +139,6 @@ def render_window(actor, title, scalarBar, bounds):
     # Render Window
     renWin = vtk.vtkRenderWindow()  # boss
     renWin.SetSize(1000, 1000)
-    print("title", title)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
 
@@ -279,7 +263,7 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
-def plot_roots(pd, p_name :str, win_title :str = "", render :bool = True):
+def plot_roots(pd, p_name, win_title = "", render = True):
     """ plots the root system 
     @param pd         the polydata representing the root system (lines, or polylines)
     @param p_name     parameter name of the data to be visualized
@@ -288,10 +272,10 @@ def plot_roots(pd, p_name :str, win_title :str = "", render :bool = True):
     @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if isinstance(pd, pb.RootSystem):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+        pd = segs_to_polydata(pd, 1.)
 
     if isinstance(pd, pb.SegmentAnalyser):
-        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+        pd = segs_to_polydata(pd, 1.)
 
     if win_title == "":
         win_title = p_name
@@ -299,7 +283,7 @@ def plot_roots(pd, p_name :str, win_title :str = "", render :bool = True):
     pd.GetPointData().SetActiveScalars("radius")  # for the the filter
     tubeFilter = vtk.vtkTubeFilter()
     tubeFilter.SetInputData(pd)
-    tubeFilter.SetNumberOfSides(9)  #
+    tubeFilter.SetNumberOfSides(9)
     tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
     tubeFilter.Update()
 
@@ -415,7 +399,6 @@ def plot_roots_and_soil(rs, pname :str, rp, s, periodic :bool, min_b, max_b, cel
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
-    @param s
     @param rp            root parameter segment data (will be added)
     @param periodic      if yes the root system will be mapped into the domain 
     @param min_b         minimum of domain boundaries
@@ -464,7 +447,7 @@ def plot_roots_and_soil_files(filename : str, pname :str):
     lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
     rootActor.GetMapper().SetLookupTable(lut)
     meshActors.extend([rootActor])
-    render_window(meshActors, filename, meshCBar, soil_grid.GetBounds()).Start()
+    render_window(meshActors, filename, meshCBar).Start()
 
 
 class AnimateRoots:
@@ -491,7 +474,7 @@ class AnimateRoots:
         """ creates plot and adjusts camera """
         self.create_root_actors()
         self.create_soil_actors()
-        self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds) 
+        self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
         renWin = self.iren.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
         camera = ren.GetActiveCamera()

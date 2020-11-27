@@ -84,6 +84,8 @@ void Plant::initialize(bool verbose)
     auto seed = std::make_shared<Seed>(shared_from_this());
     seed->initialize(verbose);
     baseOrgans.push_back(seed);
+		
+	seedParam = SeedSpecificParameter(*seed->param());
 
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
 
@@ -177,10 +179,15 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 /**
  * Simulates plant growth for the time span defined in the root system parameters
  */
-void Plant::simulate()
-{
-    auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);
-    Organism::simulate(srp->simtime);
+	void Plant::simulate(double dt, bool verbose)	
+{	
+		
+    Organism::simulate(dt, verbose);	
+}	
+void Plant::simulate()	
+{	
+	auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);//needed ? not in the other simulate	
+    this->simulate(srp->simtime);	
 }
 
 /**
