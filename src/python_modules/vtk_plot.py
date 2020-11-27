@@ -82,7 +82,7 @@ def render_window(actor, title, scalarBar, bounds):
     """ puts a vtk actor on the stage (renders an interactive window)
     
     @param actor                    a (single) actor, or a list of actors (ensemble)
-    @param title                    window title (optional)
+    @param title                    window title 
     @param scalarBar                one or a list of vtkScalarBarActor (optional)
     @param bounds                   spatial bounds (to set axes actor, and camera position and focal point)
     @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write png
@@ -154,6 +154,7 @@ def render_window(actor, title, scalarBar, bounds):
     # Render Window
     renWin = vtk.vtkRenderWindow()  # boss
     renWin.SetSize(1000, 1000)
+    print("title", title)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
 
@@ -278,7 +279,7 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
-def plot_roots(pd, p_name, win_title = "", render = True):
+def plot_roots(pd, p_name :str, win_title :str = "", render :bool = True):
     """ plots the root system 
     @param pd         the polydata representing the root system (lines, or polylines)
     @param p_name     parameter name of the data to be visualized
@@ -490,7 +491,7 @@ class AnimateRoots:
         """ creates plot and adjusts camera """
         self.create_root_actors()
         self.create_soil_actors()
-        self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
+        self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds) 
         renWin = self.iren.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
         camera = ren.GetActiveCamera()

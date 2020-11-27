@@ -79,7 +79,7 @@ class XylemFluxPython(XylemFlux):
         self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_dirichlet(Q, self.aB, node_ind, value)
+        Q, b = self.bc_dirichlet(Q, self.aB, self.node_ind, value)
         x = LA.spsolve(Q, b, use_umfpack = True)
         return x
 
