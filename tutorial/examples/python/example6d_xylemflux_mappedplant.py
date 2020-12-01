@@ -31,7 +31,6 @@ rs.simulate(3, False)
 
 r = XylemFluxPython(rs) 
 nodes = r.get_nodes()
-print(r.get_organtypes(), r.get_organsubtypes())
 """
     we can give a kr/kx:
         constant across type: r.setKx([[kz]])
@@ -45,7 +44,7 @@ print(r.get_organtypes(), r.get_organsubtypes())
                     [[[age1, age2, age3], [agea, ageb, agec]],[[age1, age2, age3], [agea, ageb, agec]]])
 """
 
-r.setKr([[kr, 4e-2],[kr_stem],[gs]]) 
+r.setKr([[kr],[kr_stem],[gs]]) 
 r.setKx([[kz]])
 p_out = r.get_outer_matpot_matix(p_s, p_a) #create matrix to have p_a outer pressure for stem/leaves and p_s outer pressure for roots.
 leavenodes = r.get_nodes_index(4) #only takes for nodes of leaves
