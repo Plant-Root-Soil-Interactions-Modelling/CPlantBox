@@ -96,8 +96,8 @@ class XylemFluxPython(XylemFlux):
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node
         """
+            
         eps = 1
-        x = [wilting_point - sx - 1]
 
         if sx >= wilting_point - eps:
 
@@ -130,7 +130,12 @@ class XylemFluxPython(XylemFlux):
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm3 day-1] volumetric flow rate at the root collar            
        """
-        seg_ind = self.seg_ind[0] # rename TODO in case of plant
+       """
+       I changed back the collar_flux function: even for a plant, collar_flux = transpiration
+       If we use collar flux for leaves it would not give the transpiration: the transpiration = sum radial flux of the leaves,
+       and not their axial flux (?)
+       """
+        seg_ind = 0 
         s = self.rs.segments[seg_ind]  # collar segment
         if len(k_soil) > 0:
             ksoil = k_soil[seg_ind]
@@ -147,11 +152,12 @@ class XylemFluxPython(XylemFlux):
         else:
             p_s = sxx[seg_ind]
         a = self.rs.radii[seg_ind]  # radius
+        orgtype = int(self.rs.typesorgan[seg_ind])  # conductivities kr, kx
         type = int(self.rs.types[seg_ind])  # conductivities kr, kx
         age = sim_time - self.rs.nodeCTs[j]
-        kr = self.kr_f(age, type)  # c++ conductivity call back functions
+        kr = self.kr_f(age, type, orgtype)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
-        kx = self.kx_f(age, type)
+        kx = self.kx_f(age, type, orgtype)
         c = 2 * a * math.pi * kr / kx  # cm-2
         AA = np.array([[1, 1], [math.exp(math.sqrt(c) * l), math.exp(-math.sqrt(c) * l)] ])  # insert z = 0, z = l into exact solution
         bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
@@ -159,6 +165,15 @@ class XylemFluxPython(XylemFlux):
         dpdz0 = d[0] * math.sqrt(c) - d[1] * math.sqrt(c)
         return -kx * (dpdz0 + v.z)  # kx [cm5 day g-1]-> [cm3 day-1] by multiplying rho*g
 
+    def get_outer_matpot_matix(self, p_s, p_a):
+        p_out = self.get_organtypes()	
+        for i in range(0, len(p_out)):
+            if(p_out[i] == 2): #= root type
+                p_out[i] = p_s
+            else: #= stem or leaf type
+                p_out[i] = p_a
+        return p_out
+        
     def get_nodes(self):
         """ converts the list of Vector3d to a 2D numpy array """
         return np.array(list(map(lambda x: np.array(x), self.rs.nodes)))
@@ -176,9 +191,44 @@ class XylemFluxPython(XylemFlux):
             final_age = np.max(cts)
         ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
         return ages[1:]  # segment index is node index-1
+        
+    def get_nodes_index(self,ot):	
+        """ return index of nodes of type ot """
+        segments = self.get_segments() 	
+        nodes = self.get_nodes()	
+        typesorgan = self.get_organtypes()	
+        rootsegments = segments[typesorgan == ot]	
+        rootsegments.flatten()	
+        np.sort(rootsegments, axis=None)	
+        nodesidx =  np.unique(rootsegments)	
+        return nodesidx	
+        	
+    def get_nodes_type(self,ot):	
+        """ return position of nodes of type ot """
+        segments = self.get_segments() 	
+        nodes = self.get_nodes()	
+        typesorgan = self.get_organtypes()	
+        rootsegments = segments[typesorgan == ot]	
+        rootsegments.flatten()	
+        np.sort(rootsegments, axis=None)	
+        rootnodes =  np.unique(rootsegments)	
+        nodes = nodes[rootnodes]	
+        return nodes
+        
+    def get_organtypes(self):
+        """ converts the list of Vector3d to a 2D numpy array """
+        organnumber = np.array(self.rs.typesorgan)
+        return organnumber
 
+    def get_segments_index(self,ot):	
+        """ return position of nodes of type ot """
+        typesorgan = self.get_organtypes()
+        segIdx = np.array( list(range(0, len(typesorgan))))
+        otsegs = segIdx[typesorgan == ot]	
+        return otsegs
+        
     def test(self):
-        """ perfoms some sanity checks, and prints to the conole """
+        """ perfoms some sanity checks, and prints to the console """
         print("\nXylemFluxPython.test:")
         # 1 check if segment index is node index-1
         segments = self.get_segments()

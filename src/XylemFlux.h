@@ -49,29 +49,46 @@ public:
     void setKx(std::vector<double> values, std::vector<double> age); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
     void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
     void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
+    void setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
+    void setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
+    void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
+    void setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
 
-    std::function<double(double,int)> kr_f = [](double age, int type) { return 0.; };
-    std::function<double(double,int)> kx_f = [](double age, int type) { return 1.; };
+    std::function<double(double,int, int)> kr_f = [](double age, int type, int orgtype) { return 0.; };
+    std::function<double(double,int,int)> kx_f = [](double age, int type, int orgtype) { return 1.; };
 
     std::shared_ptr<CPlantBox::MappedSegments> rs;
 
-    std::vector<double> kr, kr_t;
-    std::vector<double> kx, kx_t;
-    std::vector<std::vector<double> > krs, krs_t;
-    std::vector<std::vector<double>> kxs, kxs_t;
+    std::vector<std::vector<double>> kr, kr_t;
+    std::vector<std::vector<double>> kx, kx_t;
+    std::vector<std::vector<std::vector<double>>> krs, krs_t;
+    std::vector<std::vector<std::vector<double>>> kxs, kxs_t;
 
 protected:
 
-    double kr_const(double age, int type) { return kr[0]; }
-    double kr_perType(double age, int type) { return kr.at(type); }
-    double kr_table(double age, int type) { return interp1(age, kr_t, kr); }
-    double kr_tablePerType(double age, int type) { return interp1(age, krs_t.at(type), krs.at(type)); }
+    double kr_const(double age, int type, int orgtype) { return kr.at(0).at(0); } //k constant
+    //double kr_perType(double age, int type, int orgtype) { return kr[0].at(type); } //per subtype
+    double kr_perOrgType(double age, int type, int orgtype) { return kr.at(orgtype - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
+    double kr_perType(double age, int type, int orgtype) { return kr.at(orgtype - 2).at(type); } //per subtype and organ type (goes from 2 (root) to 4 (leaf))
+    double kr_table(double age, int type, int orgtype) { return interp1(age, kr_t.at(0), kr.at(0)); } //constant for all type/subtype and age dependant
+    double kr_tablePerOrgType(double age, int type, int orgtype) { return interp1(age, krs_t.at(orgtype-2).at(0), krs.at(orgtype-2).at(0)); } //constant for all subtype but type and age dependant
+    double kr_tablePerType(double age, int type, int orgtype) { return interp1(age, krs_t.at(orgtype-2).at(type), krs.at(orgtype-2).at(type)); } //subtype, type and age dependant
 
-    double kx_const(double age, int type) { return kx[0]; }
-    double kx_perType(double age, int type) { return kx.at(type); }
-    double kx_table(double age, int type) { return interp1(age, kx_t, kx); }
-    double kx_tablePerType(double age, int type) { return interp1(age, kxs_t.at(type), kxs.at(type)); }
+    double kx_const(double age, int type, int orgtype) { return kx.at(0).at(0); } //k constant
+    //double kr_perType(double age, int type, int orgtype) { return kx[0].at(type); } //per subtype
+    double kx_perOrgType(double age, int type, int orgtype) { return kx.at(orgtype - 2)[0]; } //per organ type (goes from 2 (root) to 4 (leaf))
+    double kx_perType(double age, int type, int orgtype) { return kx.at(orgtype - 2).at(type); } //per subtype and organ type (goes from 2 (root) to 4 (leaf))
+	//kr_perType laso works for rs examples as the orgtype always = 2
+    double kx_table(double age, int type, int orgtype) { return interp1(age, kx_t[0], kx[0]); } //constant for all type/subtype and age dependant
+    double kx_tablePerOrgType(double age, int type, int orgtype) { return interp1(age, kxs_t.at(orgtype-2).at(0), kxs.at(orgtype-2).at(0)); } //constant for all subtype but type and age dependant
+    double kx_tablePerType(double age, int type, int orgtype) { return interp1(age, kxs_t.at(orgtype-2).at(type), kxs.at(orgtype-2).at(type)); } //subtype, type and age dependant
 
+/*	
+    double kx_const(double age, int type, int orgtype) { return kx[0][0]; }
+    double kx_perType(double age, int type, int orgtype) { return kx[0].at(type); }
+    double kx_table(double age, int type, int orgtype) { return interp1(age, kx_t[0], kx[0]); }
+    double kx_tablePerType(double age, int type, int orgtype) { return interp1(age, kxs_t[0].at(type), kxs[0].at(type)); }
+*/
     static double interp1(double ip, std::vector<double> x, std::vector<double> y);
 
     static double schroederStress(double r, double p, double q_out, double r_in, double r_out, std::function<double(double)> mfp, std::function<double(double)> imfp);
