@@ -1,6 +1,6 @@
 """shows the influence of tropism paramters"""
 import sys
-sys.path.append("../../..")
+sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 import plantbox as pb
 import matplotlib.pyplot as plt
 import math

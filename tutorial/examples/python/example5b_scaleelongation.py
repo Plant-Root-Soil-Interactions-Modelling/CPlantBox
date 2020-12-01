@@ -1,5 +1,5 @@
 """Scale root elongation based on EquidistantGrid1D"""
-import sys; sys.path.append("../../..")
+import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 import plantbox as pb
 import numpy as np
 import vtk_plot as vp

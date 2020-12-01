@@ -1,5 +1,5 @@
 """increase axial resolution (e.g. for animation)"""
-import sys; sys.path.append("../../..")
+import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 import plantbox as pb
 import vtk_plot as vp
 
@@ -29,4 +29,4 @@ rs.setGeometry(box)
 rs.write("results/example_3e_periodic.py")
 
 # Plot final (periodic) image, using vtk
-vp.plot_roots(ana, "creationTime", True, 'oblique')
+vp.plot_roots(ana, "creationTime")

@@ -1,6 +1,6 @@
 """root system length over time"""
 import sys
-sys.path.append("../../..")
+sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 import plantbox as pb
 
 import numpy as np

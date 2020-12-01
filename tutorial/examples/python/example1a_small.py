@@ -1,6 +1,6 @@
 """small example"""
 import sys
-sys.path.append("../../..")
+sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 import plantbox as pb
 import vtk_plot as vp
 

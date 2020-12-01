@@ -1,5 +1,5 @@
 """scales branching probability"""
-import sys; sys.path.append("../../..")
+import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 import math
 import plantbox as pb
 import vtk_plot as vp

@@ -1,7 +1,8 @@
-""" coupling with DuMux as solver for the soil part """
-import sys
-sys.path.append("../../../build-cmake/rosi_benchmarking/python_solver/")
-sys.path.append("../solvers/")  # for pure python solvers
+""" coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled """
+import sys; sys.path.append("../../../"); sys.path.append("../../../src/python_modules/") # cplantbox
+sys.path.append("../../../../dumux-rosi/build-cmake/cpp/python_binding/") # dumux python binding
+sys.path.append("../../../../dumux-rosi/python/modules/") # python wrappers 
+
 from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part
 from xylem_flux import XylemFluxPython  # Python hybrid solver
@@ -24,7 +25,7 @@ max_b = [4., 4., 0.]
 cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 periodic = False
 
-path = "../modelparameter/rootsystem/"
+path = "../../../modelparameter/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 loam = [0.08, 0.43, 0.04, 1.6, 50]
 initial = -659.8 + 12.5  # -659.8
