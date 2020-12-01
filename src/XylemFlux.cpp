@@ -2,6 +2,7 @@
 #include "XylemFlux.h"
 
 #include <algorithm>
+#include <set>
 
 namespace CPlantBox {
 
@@ -51,11 +52,33 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		int orgtype = rs->typesorgan[si];
 		double kx = 0.;
 		double  kr = 0.;
+			
+		std::vector<int> v1 = rs->types;
+		std::vector<int> v2 = rs->typesorgan;
+		size_t it =0;
+		while ( it< v1.size())
+		{
+			if (v2[it]!= orgtype)
+			{
+				v1.erase(v1.begin()+it);
+				v2.erase(v2.begin()+it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+		std::set<int> s( v1.begin(), v1.end() );
+		v1.assign( s.begin(), s.end() ); //make vector unique and sort
+		auto ind = find(v1.begin(), v1.end(), type); //find index of organ subtype
+		int index = ind - v1.begin();
+		//std::cout  << "\norgtype "<<orgtype<< " type " <<type << " position " << index;
 		try {
-			kx = kx_f(age, type,orgtype);
-			kr = kr_f(age, type,orgtype);
+			kx = kx_f(age, index,orgtype);
+			kr = kr_f(age, index,orgtype);
 		} catch(...) {
-			std::cout << "XylemFlux::linearSystem: conductivities failed\n" << std::flush;
+			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
+			std::cout  << "\n organ type "<<orgtype<< " type " <<type <<std::flush;
 		}
 		//        if (age<=0) {
 		//            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
@@ -146,8 +169,35 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		double age = simTime - rs->nodeCTs[j];
 		int type = rs->types[si];
 		int orgtype = rs->typesorgan[si];
-		double kx = kx_f(age, type, orgtype);
-		double kr = kr_f(age, type,orgtype);
+		double kx = 0.;
+		double  kr = 0.;
+			
+		std::vector<int> v1 = rs->types;
+		std::vector<int> v2 = rs->typesorgan;
+		size_t it =0;
+		while ( it< v1.size())
+		{
+			if (v2[it]!= orgtype)
+			{
+				v1.erase(v1.begin()+it);
+				v2.erase(v2.begin()+it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+		std::set<int> s( v1.begin(), v1.end() );
+		v1.assign( s.begin(), s.end() ); //make vector unique and sort
+		auto ind = find(v1.begin(), v1.end(), type); //find index of organ subtype
+		int index = ind - v1.begin();
+		try {
+			kx = kx_f(age, index,orgtype);
+			kr = kr_f(age, index,orgtype);
+		} catch(...) {
+			std::cout  << "\n organ type "<<orgtype<< " sub type " <<type <<std::flush;
+			std::cout << "XylemFlux::segFluxes: conductivities failed\n" << std::flush;
+		}
 
 		if (soil_k.size()>0) {
 			kr = std::min(kr, soil_k[si]);

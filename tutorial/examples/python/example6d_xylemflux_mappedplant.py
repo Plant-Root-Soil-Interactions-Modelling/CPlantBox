@@ -25,13 +25,27 @@ rs.readParameters(path + name + ".xml")
 soil_index = lambda x, y, z : 0
 rs.setSoilGrid(soil_index)
 rs.initialize()
-rs.simulate(simtime, False)
-rs.simulate(simtime, False) #test to see if works in case of several simulate
+rs.simulate(3, False)
+#rs.simulate(simtime, False) #test to see if works in case of several simulate
 
 
 r = XylemFluxPython(rs) 
 nodes = r.get_nodes()
-r.setKr([[kr],[kr_stem],[gs]]) 
+print(r.get_organtypes(), r.get_organsubtypes())
+"""
+    we can give a kr/kx:
+        constant across type: r.setKx([[kz]])
+        by type: r.setKx([[kz], [kz2], [kz3]])
+        by type and subtype: r.setKx([[kz, kz2], [kza, kzb], [kzd, kzf]])
+    att: the bud (from which the leaf grows) has to have a kz
+        one of the above + time dependant:
+            constant across type: r.setKx([[kz1, kz2, kr3]], [[age1, age2, age3]])
+            by type: r.setKxTables([[[kz1, kz2, kr3],[kza, kzb, krc]]], [[[age1, age2, age3], [agea, ageb, agec]]])
+            by type and subtype: r.setKxTables([[[kz1, kz2, kr3],[kza, kzb, krc]],[[kz1, kz2, kr3],[kza, kzb, krc]]],
+                    [[[age1, age2, age3], [agea, ageb, agec]],[[age1, age2, age3], [agea, ageb, agec]]])
+"""
+
+r.setKr([[kr, 4e-2],[kr_stem],[gs]]) 
 r.setKx([[kz]])
 p_out = r.get_outer_matpot_matix(p_s, p_a) #create matrix to have p_a outer pressure for stem/leaves and p_s outer pressure for roots.
 leavenodes = r.get_nodes_index(4) #only takes for nodes of leaves

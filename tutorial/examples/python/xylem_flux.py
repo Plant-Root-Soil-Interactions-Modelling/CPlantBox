@@ -227,6 +227,11 @@ class XylemFluxPython(XylemFlux):
         """ converts Vector3d to a 1D numpy array """
         organnumber = np.array(self.rs.typesorgan)
         return organnumber
+        
+    def get_organsubtypes(self):
+        """ converts Vector3d to a 1D numpy array """
+        organnumber = np.array(self.rs.types)
+        return organnumber
 
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
