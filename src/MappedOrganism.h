@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <vector>
+#include <tuple>
 
 namespace CPlantBox {
 
@@ -108,7 +109,9 @@ public:
     using Plant::Plant;
     void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
-    void printnodes(); ///< sorts segments, each segment belongs to position s.y-1
+    void printnodes(); ///< print information
+	void mapsubTypes();
+    std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding

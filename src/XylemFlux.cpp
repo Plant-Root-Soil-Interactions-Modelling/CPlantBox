@@ -53,31 +53,9 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		double kx = 0.;
 		double  kr = 0.;
 
-		int index = subType;
-
-			std::vector<int> v1 = rs->subTypes;
-			std::vector<int> v2 = rs->organTypes;
-			size_t it =0;
-			while ( it< v1.size())
-			{
-				if (v2[it]!= ot)
-				{
-					v1.erase(v1.begin()+it);
-					v2.erase(v2.begin()+it);
-				}
-				else
-				{
-					++it;
-				}
-			}
-			std::set<int> s( v1.begin(), v1.end() );
-			v1.assign( s.begin(), s.end() ); //make vector unique and sort
-			auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
-			index = ind - v1.begin();
-
 		try {
-			kx = kx_f(age, index, ot);
-			kr = kr_f(age, index, ot);
+			kx = kx_f(age, subType, ot);
+			kr = kr_f(age, subType, ot);
 		} catch(...) {
 			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
 			std::cout  << "\n organ type "<<ot<< " subtype " << subType <<std::flush;
@@ -174,32 +152,9 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		double kx = 0.;
 		double  kr = 0.;
 
-		int index = subType;
-		if (organType!=Organism::ot_root) { // move to MappedPlant
-			std::vector<int> v1 = rs->subTypes;
-			std::vector<int> v2 = rs->organTypes;
-			size_t it =0;
-			while ( it< v1.size())
-			{
-				if (v2[it]!= organType)
-				{
-					v1.erase(v1.begin()+it);
-					v2.erase(v2.begin()+it);
-				}
-				else
-				{
-					++it;
-				}
-			}
-			std::set<int> s( v1.begin(), v1.end() );
-			v1.assign( s.begin(), s.end() ); //make vector unique and sort
-			auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
-			index = ind - v1.begin();
-		}
-
 		try {
-			kx = kx_f(age, index, organType);
-			kr = kr_f(age, index, organType);
+			kx = kx_f(age, subType, organType);
+			kr = kr_f(age, subType, organType);
 		} catch(...) {
 			std::cout  << "\n organ type "<<organType<< " subType " << subType <<std::flush;
 			std::cout << "XylemFlux::segFluxes: conductivities failed\n" << std::flush;
