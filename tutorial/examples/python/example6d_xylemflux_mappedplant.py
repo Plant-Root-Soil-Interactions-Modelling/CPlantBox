@@ -55,6 +55,8 @@ rx = r.solve_dirichlet(sim_time= 0., value=p0,sxc= p_s, sxx=p_out, cells=False) 
 print("Transpiration", r.collar_flux(simtime, rx, p_out),"cm3/day")
 
 fluxes = r.segFluxes(simtime, rx, p_out, False)  # cm3/day
+print(fluxes)
+print()
 
 # plot results 
 plt.plot(rx, nodes[:, 2] , "r*")

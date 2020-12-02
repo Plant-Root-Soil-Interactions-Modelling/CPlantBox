@@ -465,20 +465,34 @@ void MappedPlant::initialize(bool verbose) {
 	Plant::initialize(verbose);
     nodes = this->getNodes();
     nodeCTs = this->getNodeCTs();
-    //segments = this->getShootSegments(); no more artificial shoot
-	//add artificial segments between shoot-born roots and basal root in the plant 
-	/* useless: no artificial shoot
-    radii.resize(segments.size());
-    std::fill(radii.begin(), radii.end(), 0.1);
-    types.resize(segments.size());
-    typesorgan.resize(segments.size());
-	std::cout << typesorgan.size();
-    std::fill(typesorgan.begin(), typesorgan.end(), 2);
-    std::fill(types.begin(), types.end(), 0);
-	*/
     mapSegments(segments);
+	mapsubTypes();
 }
 
+/**
+ * creates a map to look for the right value of kr/kx in xylem_flux
+ * organParam	map containing rgan type and subtypes, see @Organism
+ *  ot        	organType
+ *  st   		subType
+ */
+void MappedPlant::mapsubTypes(){
+	for(int ot = 0; ot < organParam.size();ot++ )
+	{
+		for(int st = 0; st < organParam[ot].size();st++ )
+		{
+			switch (ot) {
+			case 2: {st2newst[std::make_tuple(ot, st)] = st;}
+			case 3: {
+					switch(st){
+						case 1: {st2newst[std::make_tuple(ot, st)] = st; continue;}
+						case 2: {continue; }//stem of st = 2 is a bud, it desn't have a kr/kx
+						default:{ st2newst[std::make_tuple(ot, st)] = st -1 ;};
+				}}
+			case 4: {st2newst[std::make_tuple(ot+2, st)] = st - 2;};//leaf st starts with 2
+			}		
+		}
+	}
+}
 
 /**
  * Simulates the development of the organism in a time span of @param dt days.
@@ -541,6 +555,7 @@ void MappedPlant::simulate(double dt, bool verbose)
         radii[segIdx] = so->getParam()->a;
         subTypes[segIdx] = so->getParam()->subType;
         organTypes[segIdx] = so->organType();
+		subTypes[segIdx] = st2newst[std::make_tuple(organTypes[segIdx],subTypes[segIdx])];
     }
 	
     // map new segments
