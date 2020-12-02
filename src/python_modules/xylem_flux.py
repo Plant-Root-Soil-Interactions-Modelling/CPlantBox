@@ -244,7 +244,7 @@ class XylemFluxPython(XylemFlux):
                 c += 1
         print(c, "segments with length < 1.e-5 cm")
         # 3 check for type range, index should start at 0
-        types = self.rs.types
+        types = self.rs.subTypes
         if np.min(types) > 0:
             raise "Types start with an index greater than 0"
         print("{:g} different root types".format(np.max(types) + 1))

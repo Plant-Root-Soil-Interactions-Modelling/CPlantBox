@@ -33,7 +33,7 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> 
     std::vector<double> radii, std::vector<int> subTypes) : 
 	nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes)
 {
-	organTypes.resize(nodes.size());
+	organTypes.resize(segments.size());
     std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
     assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
     assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
@@ -55,7 +55,7 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i
 :nodes(nodes), segments(segs), radii(radii) {
     nodeCTs.resize(nodes.size());
     std::fill(nodeCTs.begin(), nodeCTs.end(), 0.);
-    organTypes.resize(nodes.size());
+    organTypes.resize(segments.size());
     std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
     setsubTypes(0);
     assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");

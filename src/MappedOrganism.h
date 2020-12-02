@@ -25,10 +25,8 @@ public:
 
     MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
         std::vector<double> radii, std::vector<int> subTypes, std::vector<int> organTypes); ///< for kr and kx age and type dependent
-	//for backward compatibility:
     MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
         std::vector<double> radii, std::vector<int> subTypes); ///< for kr and kx age and type dependent
-		
     MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
 	
 	

@@ -45,8 +45,8 @@ public:
     std::vector<double> aV;
     std::vector<double> aB;
 
-    void setKr(std::vector<double> values, std::vector<double> age); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
-    void setKx(std::vector<double> values, std::vector<double> age); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
+    void setKr(std::vector<double> values, std::vector<double> age = std::vector<double>(0)); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
+    void setKx(std::vector<double> values, std::vector<double> age = std::vector<double>(0)); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
     void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
     void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
     void setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age); ///< sets a callback for kr:=kr(age,type),  [1 day-1]

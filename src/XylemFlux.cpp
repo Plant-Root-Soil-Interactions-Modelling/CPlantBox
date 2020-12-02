@@ -52,26 +52,29 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		int ot = rs->organTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
-			
-		std::vector<int> v1 = rs->subTypes;
-		std::vector<int> v2 = rs->organTypes;
-		size_t it =0;
-		while ( it< v1.size())
-		{
-			if (v2[it]!= ot)
+
+		int index = subType;
+
+			std::vector<int> v1 = rs->subTypes;
+			std::vector<int> v2 = rs->organTypes;
+			size_t it =0;
+			while ( it< v1.size())
 			{
-				v1.erase(v1.begin()+it);
-				v2.erase(v2.begin()+it);
+				if (v2[it]!= ot)
+				{
+					v1.erase(v1.begin()+it);
+					v2.erase(v2.begin()+it);
+				}
+				else
+				{
+					++it;
+				}
 			}
-			else
-			{
-				++it;
-			}
-		}
-		std::set<int> s( v1.begin(), v1.end() );
-		v1.assign( s.begin(), s.end() ); //make vector unique and sort
-		auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
-		int index = ind - v1.begin();
+			std::set<int> s( v1.begin(), v1.end() );
+			v1.assign( s.begin(), s.end() ); //make vector unique and sort
+			auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
+			index = ind - v1.begin();
+
 		try {
 			kx = kx_f(age, index, ot);
 			kr = kr_f(age, index, ot);
@@ -170,26 +173,30 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		int organType = rs->organTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
-			
-		std::vector<int> v1 = rs->subTypes;
-		std::vector<int> v2 = rs->organTypes;
-		size_t it =0;
-		while ( it< v1.size())
-		{
-			if (v2[it]!= organType)
+
+		int index = subType;
+		if (organType!=Organism::ot_root) { // move to MappedPlant
+			std::vector<int> v1 = rs->subTypes;
+			std::vector<int> v2 = rs->organTypes;
+			size_t it =0;
+			while ( it< v1.size())
 			{
-				v1.erase(v1.begin()+it);
-				v2.erase(v2.begin()+it);
+				if (v2[it]!= organType)
+				{
+					v1.erase(v1.begin()+it);
+					v2.erase(v2.begin()+it);
+				}
+				else
+				{
+					++it;
+				}
 			}
-			else
-			{
-				++it;
-			}
+			std::set<int> s( v1.begin(), v1.end() );
+			v1.assign( s.begin(), s.end() ); //make vector unique and sort
+			auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
+			index = ind - v1.begin();
 		}
-		std::set<int> s( v1.begin(), v1.end() );
-		v1.assign( s.begin(), s.end() ); //make vector unique and sort
-		auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
-		int index = ind - v1.begin();
+
 		try {
 			kx = kx_f(age, index, organType);
 			kr = kr_f(age, index, organType);
@@ -421,20 +428,20 @@ std::vector<double> XylemFlux::segLength() const {
  */
 //either age or type/subtype dependent
 void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
-    kr =  {values}; //because kr is std::vector<std::vector<double>>
-    kr_t = {age};
-    if (age.size()==0) {
-        if (values.size()==1) {
-            kr_f = std::bind(&XylemFlux::kr_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-            std::cout << "Kr is constant " << values[0] << " cm2 day g-1 \n";
-        } else {
-            kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-            std::cout << "Kr is constant per type, type 0 = " << values[0] << " cm2 day g-1 \n";
-        }
-    } else {
-        kr_f  = std::bind(&XylemFlux::kr_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-        std::cout << "Kr is age dependent\n";
-    }
+	kr =  {values}; //because kr is std::vector<std::vector<double>>
+	kr_t = {age};
+	if (age.size()==0) {
+		if (values.size()==1) {
+			kr_f = std::bind(&XylemFlux::kr_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			std::cout << "Kr is constant " << values[0] << " cm2 day g-1 \n";
+		} else {
+			kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			std::cout << "Kr is constant per type, type 0 = " << values[0] << " cm2 day g-1 \n";
+		}
+	} else {
+		kr_f  = std::bind(&XylemFlux::kr_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		std::cout << "Kr is age dependent\n";
+	}
 }
 
 /**
@@ -443,10 +450,10 @@ void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
  */
 //either age or type/subtype dependent
 void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-    kr = values;
-    kr_t = age;
-    if (age.size()==0) {
-        if (values.size()==1) {
+	kr = values;
+	kr_t = age;
+	if (age.size()==0) {
+		if (values.size()==1) {
 			if (values[0].size()==1) {
 				kr_f = std::bind(&XylemFlux::kr_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kr is constant " << values[0][0] << " cm2 day g-1 \n";
@@ -454,8 +461,8 @@ void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::
 				kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kr is constant per subtype, subtype 0 = " << values[0][0] << " cm2 day g-1 \n";
 			}
-        } else {
-            if (values[0].size()==1) {
+		} else {
+			if (values[0].size()==1) {
 				kr_f = std::bind(&XylemFlux::kr_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kr is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 day g-1 \n";
 				std::cout << "organ type 3 (stem) = " << values[1][0] << " cm2 day g-1 \n";
@@ -464,11 +471,11 @@ void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::
 				kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kr is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm2 day g-1 \n";
 			}
-        }
-    } else {
-        kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-        std::cout << "Kr is equal for all organs and age dependent\n";
-    }
+		}
+	} else {
+		kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		std::cout << "Kr is equal for all organs and age dependent\n";
+	}
 }
 
 /**
@@ -477,28 +484,28 @@ void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::
  */
 //either age or type/subtype dependent
 void XylemFlux::setKx(std::vector<double> values, std::vector<double> age) {
-    kx = {values}; // because kx is std::vector<std::vector<double>>
-    kx_t = {age};
-    if (age.size()==0) {
-        if (values.size()==1) {
-            kx_f = std::bind(&XylemFlux::kx_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-            std::cout << "Kx is constant " << values[0] << " cm2 day g-1 \n";
-        } else {
-            kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-            std::cout << "Kx is constant per subtype, subtype 0 = " << values[0] << " cm2 day g-1 \n";
-        }
-    } else {
-        kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-        std::cout << "Kx is age dependent\n";
-    }
+	kx = {values}; // because kx is std::vector<std::vector<double>>
+	kx_t = {age};
+	if (age.size()==0) {
+		if (values.size()==1) {
+			kx_f = std::bind(&XylemFlux::kx_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			std::cout << "Kx is constant " << values[0] << " cm2 day g-1 \n";
+		} else {
+			kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+			std::cout << "Kx is constant per subtype, subtype 0 = " << values[0] << " cm2 day g-1 \n";
+		}
+	} else {
+		kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		std::cout << "Kx is age dependent\n";
+	}
 }
 
 //either age or type/subtype dependent
 void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-    kx = values;
-    kx_t = age;
-    if (age.size()==0) {
-        if (values.size()==1) {
+	kx = values;
+	kx_t = age;
+	if (age.size()==0) {
+		if (values.size()==1) {
 			if (values[0].size()==1) {
 				kx_f = std::bind(&XylemFlux::kx_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kx is constant " << values[0][0] << " cm2 day g-1 \n";
@@ -506,84 +513,84 @@ void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::
 				kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kx is constant per subtype, subtype 0 = " << values[0][0] << " cm2 day g-1 \n";
 			}
-        } else {
-            if (values[0].size()==1) {
+		} else {
+			if (values[0].size()==1) {
 				kx_f = std::bind(&XylemFlux::kx_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kx is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 day g-1 \n";
 			} else {
 				kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kx is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm2 day g-1 \n";
 			}
-        }
-    } else {
-        kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-        std::cout << "Kx is equal for all organs and age dependent\n";
-    }
+		}
+	} else {
+		kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		std::cout << "Kx is equal for all organs and age dependent\n";
+	}
 }
 
 /**
  *  Sets the radial conductivity in [1 day-1]
  * TODO: make deprecated
  */
- //both age and type/subtype dependent
+//both age and type/subtype dependent
 void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-    std::vector<std::vector<double> > krs_temp;
-    krs_temp.resize(0);
-    for (auto v :values) { //why do a loop and not directly put krs = temp like fore krs_t?
-        krs_temp.push_back(v);
-    }
+	std::vector<std::vector<double> > krs_temp;
+	krs_temp.resize(0);
+	for (auto v :values) { //why do a loop and not directly put krs = temp like fore krs_t?
+		krs_temp.push_back(v);
+	}
 	krs={krs_temp};
-    krs_t = {age};
-    kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    std::cout << "Kr is age dependent per root type\n";
+	krs_t = {age};
+	kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	std::cout << "Kr is age dependent per root type\n";
 }
 
 /**
  *  Sets the axial conductivity in [cm3 day-1]
  * TODO: make deprecated
  */
- //both age and type/subtype dependent
+//both age and type/subtype dependent
 void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-    std::vector<std::vector<double> > kxs_temp;
-    kxs_temp.resize(0);
-    for (auto v :values) { //why do a loop and not directly put krs = temp like fore krs_t?
-        kxs_temp.push_back(v);
-    }
+	std::vector<std::vector<double> > kxs_temp;
+	kxs_temp.resize(0);
+	for (auto v :values) { //why do a loop and not directly put krs = temp like fore krs_t?
+		kxs_temp.push_back(v);
+	}
 	kxs = {kxs_temp};
-    kxs_t = {age};
-    kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-    std::cout << "Kx is age dependent per root type\n";
+	kxs_t = {age};
+	kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	std::cout << "Kx is age dependent per root type\n";
 }
 
 /**
  *  Sets the radial conductivity in [1 day-1]
  */
- //both age and type/subtype dependent
+//both age and type/subtype dependent
 void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
 	krs = values;
-    krs_t = age;
+	krs_t = age;
 	if (age[0].size()==1) {    kr_f = std::bind(&XylemFlux::kr_tablePerOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-		std::cout << "Kr is age dependent per organ type\n";
-		
+	std::cout << "Kr is age dependent per organ type\n";
+
 	}
 	else{    kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-		std::cout << "Kr is age dependent per organ type and sub type\n";
+	std::cout << "Kr is age dependent per organ type and sub type\n";
 	}
 }
 
 /**
  *  Sets the axial conductivity in [cm3 day-1]
  */
- //both age and type/subtype dependent
+//both age and type/subtype dependent
 void XylemFlux::setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
-    kxs= values;
-    kxs_t = age;
+	kxs= values;
+	kxs_t = age;
 	if (age[0].size()==1) {    kx_f = std::bind(&XylemFlux::kx_tablePerOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-		std::cout << "Kx is age dependent per organ type\n";
-		
+	std::cout << "Kx is age dependent per organ type\n";
+
 	}
 	else{    kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-		std::cout << "Kx is age dependent per organ type and sub type\n";
+	std::cout << "Kx is age dependent per organ type and sub type\n";
 	}
 }
 
