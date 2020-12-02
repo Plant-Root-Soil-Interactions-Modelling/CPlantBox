@@ -1,5 +1,6 @@
 """ coupling with DuMux as solver for the soil part """
 import sys
+sys.path.append("../../../src/python_modules")
 sys.path.append("../../../build-cmake/rosi_benchmarking/python_solver/")
 sys.path.append("../solvers/")  # for pure python solvers
 from rosi_richards import RichardsSP  # C++ part (Dumux binding)

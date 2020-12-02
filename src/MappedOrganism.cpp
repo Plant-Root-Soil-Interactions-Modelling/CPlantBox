@@ -12,23 +12,34 @@ namespace CPlantBox {
 /**
  * A static root system, as needed for flux computations, represented as
  *
- * @param nodes     [cm]
- * @param nodeCTs   node creation times [d]
- * @param segs      describes a segment with two node indices segs.x, and segs.y [1]
- * @param radii     [cm] segment radius
- * @param types     root type or order of the segment [1]
- * @param typesorgan    organ type [1]
+ * @param nodes     	[cm]
+ * @param nodeCTs   	node creation times [d]
+ * @param segs      	describes a segment with two node indices segs.x, and segs.y [1]
+ * @param radii     	[cm] segment radius
+ * @param subTypes     	root type or order of the segment [1]
+ * @param organTypes    	organ type [1]
  */
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
-    std::vector<double> radii, std::vector<int> types, std::vector<int> typesorgan) : 
-	nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), types(types), typesorgan(typesorgan)
+    std::vector<double> radii, std::vector<int> subTypes, std::vector<int> organTypes) : 
+	nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes), organTypes(organTypes)
 {
     assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
     assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
-    assert((segments.size()==types.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and types");
-    assert((segments.size()==typesorgan.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organ types");
+    assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
+    assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organ types");
 }
 
+MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
+    std::vector<double> radii, std::vector<int> subTypes) : 
+	nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes)
+{
+	organTypes.resize(nodes.size());
+    std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
+    assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
+    assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
+    assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
+    assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organ types");
+}
 /**
  *  A static root system, as needed for flux computations.
  *
@@ -37,17 +48,19 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> 
  * @param radii     [cm] segment radius
  *
  * nodeCTs is set to 0. for all segments
- * types are set to type 0 for all segments
+ * subTypes are set to type 0 for all segments
  */
 
-MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii, std::vector<int> typesorgan)
-:nodes(nodes), segments(segs), radii(radii), typesorgan(typesorgan) {
+MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii)
+:nodes(nodes), segments(segs), radii(radii) {
     nodeCTs.resize(nodes.size());
     std::fill(nodeCTs.begin(), nodeCTs.end(), 0.);
-    setTypes(0);
+    organTypes.resize(nodes.size());
+    std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
+    setsubTypes(0);
     assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
-    assert((segments.size()==types.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and types");
-    assert((segments.size()==typesorgan.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and types");
+    assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
+    assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organTypes");
 }
 
 /**
@@ -61,9 +74,9 @@ void MappedSegments::setRadius(double a) {
 /**
  * Sets the type for all segments.
  */
-void MappedSegments::setTypes(int t) {
-    types.resize(segments.size());
-    std::fill(types.begin(), types.end(), t);
+void MappedSegments::setsubTypes(int t) {
+    subTypes.resize(segments.size());
+    std::fill(subTypes.begin(), subTypes.end(), t);
 }
 
 /**
@@ -137,11 +150,12 @@ void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
  */
 void MappedSegments::cutSegments() {
     assert(segments.size()==radii.size() && "MappedSegments::addSegments: number of segments and radii disagree!");
-    assert(segments.size()==types.size() && "MappedSegments::addSegments: number of segments and types disagree!");
+    assert(segments.size()==subTypes.size() && "MappedSegments::addSegments: number of segments and subTypes disagree!");
+    assert(segments.size()==organTypes.size() && "MappedSegments::addSegments: number of segments and organTypes disagree!");
     if (rectangularGrid) {
         int n = segments.size(); // segs.size() will change within the loop (recursive implementation)
         for (int i=0; i<n; i++ ) {
-            addSegment(segments[i], radii[i], types[i],typesorgan[i], i);
+            addSegment(segments[i], radii[i], subTypes[i], organTypes[i], i);
         }
     }
 }
@@ -151,7 +165,7 @@ void MappedSegments::cutSegments() {
  *
  * This approach may run into problems if a segment is located exactly along a face.
  */
-void MappedSegments::addSegment(Vector2i ns, double r,  int t, int typesorgan,int ii) {
+void MappedSegments::addSegment(Vector2i ns, double r,  int st, int ot, int ii) {
     Vector3d n1 = nodes[ns.x];
     Vector3d n2 = nodes[ns.y];
     Vector3d mid = (n1.plus(n2)).times(0.5);
@@ -205,36 +219,36 @@ void MappedSegments::addSegment(Vector2i ns, double r,  int t, int typesorgan,in
             Vector2i s1(ns.x, nodes.size()-1);
             Vector2i s2(nodes.size()-1, ns.y);
             if ((length(s1)<eps) ||  (length(s2)<eps)) { // if the cut segments are too small, just give up
-                add(ns, r, t,typesorgan, ii);
+                add(ns, r, st, ot, ii);
                 nodes.pop_back(); // remove cPoint
             } else {
-                addSegment(s1, r, t ,typesorgan, ii); // first segment replaces at index ii
-                addSegment(s2, r, t ,typesorgan, -1); // append second segment
+                addSegment(s1, r, st , ot, ii); // first segment replaces at index ii
+                addSegment(s2, r, st , ot, -1); // append second segment
             }
         } else { // im==in1==in2, dont't cut
             // std::cout << "ok " << ii <<": (" << ns.x <<", " << ns.y << ") [" << n1.toString() <<", "<< n2.toString() <<"\n";
-            add(ns, r, t,typesorgan, ii);
+            add(ns, r, st, ot, ii);
         }
     } else { // im==in1==in2, dont't cut
         // std::cout << "ok " << ii <<": (" << ns.x <<", " << ns.y << ") [" << n1.toString() <<", "<< n2.toString() <<"\n";
-        add(ns, r, t,typesorgan, ii);
+        add(ns, r, st, ot, ii);
     }
 }
 
 /**
  * Adds the segment at index i, or appends it, if i = -1
  */
-void MappedSegments::add(Vector2i s, double r,  int t,int typeso,  int i) {
+void MappedSegments::add(Vector2i s, double r,  int st, int ot,  int i) {
     if (i>=0) {
         segments[i] = s;
         radii[i] = r;
-        types[i] = t;
-        typesorgan[i] = typeso;
+        subTypes[i] = st;
+        organTypes[i] = ot;
     } else {
         segments.push_back(s);
         radii.push_back(r);
-        types.push_back(t);
-        typesorgan.push_back(typeso);
+        subTypes.push_back(st);
+        organTypes.push_back(ot);
     }
 }
 
@@ -298,19 +312,20 @@ int MappedSegments::soil_index_(double x, double y, double z) { // np.array([1, 
 void MappedSegments::sort() {
     auto newSegs = segments;
     auto newRadii = radii;
-    auto newTypes = types;
-    auto newTypesorgan = typesorgan;
+    auto newSubTypes = subTypes;
+    auto newTypesorgan = organTypes;
 
     for (int i=0; i<newSegs.size(); i++) {
         int ind = segments[i].y-1;
         newSegs[ind] = segments[i];
         newRadii[ind] = radii[i];
-        newTypes[ind] = types[i];
-        newTypesorgan[ind] = typesorgan[i];
+        newSubTypes[ind] = subTypes[i];
+        newTypesorgan[ind] = organTypes[i];
     }
     segments = newSegs;
     radii = newRadii;
-    types = newTypes;
+    subTypes = newSubTypes;
+	organTypes = newTypesorgan;
 }
 
 
@@ -328,10 +343,10 @@ void MappedRootSystem::initializeLB(int basaltype, int shootbornetype, bool verb
     nodeCTs = this->getNodeCTs();
     radii.resize(segments.size());
     std::fill(radii.begin(), radii.end(), 0.1);
-    types.resize(segments.size());
-    std::fill(types.begin(), types.end(), 0);
-    typesorgan.resize(segments.size());
-    std::fill(typesorgan.begin(), typesorgan.end(), 2); //root organ type = 2
+    subTypes.resize(segments.size());
+    std::fill(subTypes.begin(), subTypes.end(), 0);
+    organTypes.resize(segments.size());
+    std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //root organ type = 2
     mapSegments(segments);
 }
 
@@ -393,7 +408,8 @@ void MappedRootSystem::simulate(double dt, bool verbose)
     }
     auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
     radii.resize(radii.size()+newsegO.size());
-    types.resize(types.size()+newsegO.size());
+    subTypes.resize(subTypes.size()+newsegO.size());
+    organTypes.resize(organTypes.size()+newsegO.size());
     c = 0;
     if (verbose) {
         std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
@@ -402,7 +418,8 @@ void MappedRootSystem::simulate(double dt, bool verbose)
         int segIdx = newsegs[c].y-1;
         c++;
         radii[segIdx] = so->getParam()->a;
-        types[segIdx] = so->getParam()->subType;
+        subTypes[segIdx] = so->getParam()->subType;
+        organTypes[segIdx] = so->organType();
     }
     // map new segments
     this->mapSegments(newsegs);
@@ -510,8 +527,8 @@ void MappedPlant::simulate(double dt, bool verbose)
     }
     auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
     radii.resize(radii.size()+newsegO.size());
-    types.resize(types.size()+newsegO.size());
-    typesorgan.resize(typesorgan.size()+newsegO.size());
+    subTypes.resize(subTypes.size()+newsegO.size());
+    organTypes.resize(organTypes.size()+newsegO.size());
     c = 0;
     if (verbose) {
         std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
@@ -522,8 +539,8 @@ void MappedPlant::simulate(double dt, bool verbose)
 		vsegIdx.push_back(segIdx);
         c++;
         radii[segIdx] = so->getParam()->a;
-        types[segIdx] = so->getParam()->subType;
-        typesorgan[segIdx] = so->organType();
+        subTypes[segIdx] = so->getParam()->subType;
+        organTypes[segIdx] = so->organType();
     }
 	
     // map new segments
@@ -567,15 +584,15 @@ void MappedPlant::printnodes() {
 	}
 	std::cout << "\n nodes size \n" <<  nodes.size() << std::flush;
 	std::cout << "\n organ types \n" << std::flush;
-	for (auto to : typesorgan) {
-		std::cout << to << std::flush;
+	for (auto ot : organTypes) {
+		std::cout << ot << std::flush;
 	}
-	std::cout << "\n typesorgan size\n"<<  typesorgan.size() << std::flush;
+	std::cout << "\n organTypes size\n"<<  organTypes.size() << std::flush;
 	std::cout << "\n subtypes \n"<< std::flush;
-	for (auto to : types) {
-		std::cout << to << std::flush;
+	for (auto st : subTypes) {
+		std::cout << st << std::flush;
 	}
-	std::cout << "\n subtypes size \n"<< types.size() << std::flush;
+	std::cout << "\n subtypes size \n"<< subTypes.size() << std::flush;
 	std::cout << "\n cts \n"<< std::flush;
 	for (auto to : nodeCTs) {
 		std::cout << to << std::flush;

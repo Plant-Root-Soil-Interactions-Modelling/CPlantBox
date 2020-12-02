@@ -50,14 +50,14 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     auto sego = plant.getSegmentOrigins();
     segO = std::vector<std::weak_ptr<Organ>>(segments.size());
     auto radii = std::vector<double>(segments.size());
-    auto types = std::vector<double>(segments.size());
+    auto subType = std::vector<double>(segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
         radii[i] = segO[i].lock()->getParameter("radius");
-        types[i] = segO[i].lock()->getParameter("type");
+        subType[i] = segO[i].lock()->getParameter("type");
     }
     data["radius"] = radii;
-    data["subType"] = types;
+    data["subType"] = subType;
 }
 
 /**
@@ -69,17 +69,21 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
 {
     std::cout << "construct from MappedSegments\n";
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
-    assert((segments.size()==plant.types.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
+    assert((segments.size()==plant.subTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
+    assert((segments.size()==plant.organTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     std::vector<double> segCTs;
-    std::vector<double> typesd(plant.types.size()); // convert to double
+    std::vector<double> subTypesd(plant.subTypes.size()); // convert to double
+    std::vector<double> organTypesd(plant.organTypes.size()); // convert to double
     segCTs.reserve(plant.nodeCTs.size()-1);
     for (size_t i=0; i<segments.size(); i++) {
         segCTs.push_back(plant.nodeCTs.at(segments[i].y));
-        typesd[i] = double(plant.types[i]);
+        subTypesd[i] = double(plant.subTypes[i]);
+        organTypesd[i] = double(plant.organTypes[i]);
     }
     data["creationTime"] = segCTs;
     data["radius"] = plant.radii;
-    data["subType"] = typesd;
+    data["subType"] = subTypesd;
+    data["organType"] = organTypesd;
 }
 
 /**
@@ -137,6 +141,9 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
         if (data.count("subType")>0) {
             data["subType"].insert(data["subType"].begin(), -1.);
         }
+        if (data.count("organType")>0) {
+            data["organType"].insert(data["organType"].begin(), -1.);
+        }
     } else {
         segments.push_back(seg);
         data["creationTime"].push_back(ct);
@@ -144,6 +151,9 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
         data["radius"].push_back(radius);
         if (data.count("subType")>0) {
             data["subType"].push_back(-1.);
+        }
+        if (data.count("organType")>0) {
+            data["organType"].insert(data["organType"].begin(), -1.);
         }
     }
 }

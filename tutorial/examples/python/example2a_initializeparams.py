@@ -1,5 +1,6 @@
 """everything from scratch (without parameter files)"""
 import sys; sys.path.append("../../..")
+sys.path.append("../../../src/python_modules")
 import plantbox as pb
 
 import matplotlib.pyplot as plt

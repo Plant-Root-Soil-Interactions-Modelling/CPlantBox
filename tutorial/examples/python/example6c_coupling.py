@@ -2,6 +2,7 @@
 import sys
 sys.path.append("../../../build-cmake/rosi_benchmarking/python_solver/")
 sys.path.append("../solvers/")  # for pure python solvers
+sys.path.append("../../../src/python_modules")
 from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part
 from xylem_flux import XylemFluxPython  # Python hybrid solver

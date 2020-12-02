@@ -1,5 +1,6 @@
 """user defined tropism in python"""
 import sys; sys.path.append("../../..")
+sys.path.append("../../../src/python_modules")
 import numpy as np
 import plantbox as pb
 import vtk_plot as vp

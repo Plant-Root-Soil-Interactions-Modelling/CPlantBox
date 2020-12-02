@@ -1,5 +1,6 @@
 """ water movement within the root (static soil) """
 import sys; sys.path.append("../../..")
+sys.path.append("../../../src/python_modules")
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 import plantbox as pb
 import vtk_plot as vp

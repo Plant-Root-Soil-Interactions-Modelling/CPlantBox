@@ -756,9 +756,11 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<MappedSegments, std::shared_ptr<MappedSegments>>(m, "MappedSegments")
         .def(py::init<>())
         .def(py::init<std::vector<Vector3d>, std::vector<double>, std::vector<Vector2i>, std::vector<double>, std::vector<int>,  std::vector<int>>())
-        .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>,  std::vector<int>>())
+        .def(py::init<std::vector<Vector3d>, std::vector<double>, std::vector<Vector2i>, std::vector<double>, std::vector<int>>())
+        .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>>())
         .def("setRadius", &MappedSegments::setRadius)
-        .def("setTypes", &MappedSegments::setTypes)
+        .def("setTypes", &MappedSegments::setsubTypes) //kept for backward compatibility
+        .def("setsubTypes", &MappedSegments::setsubTypes)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d)) &MappedSegments::setSoilGrid)
         .def("setRectangularGrid", &MappedSegments::setRectangularGrid)
@@ -770,8 +772,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
         .def_readwrite("segments", &MappedSegments::segments)
         .def_readwrite("radii", &MappedSegments::radii)
-        .def_readwrite("typesorgan", &MappedSegments::typesorgan)
-        .def_readwrite("types", &MappedSegments::types)
+        .def_readwrite("organTypes", &MappedSegments::organTypes)
+        .def_readwrite("Types", &MappedSegments::subTypes) //kept for backward compatibility
+        .def_readwrite("subTypes", &MappedSegments::subTypes)
         .def_readwrite("seg2cell", &MappedSegments::seg2cell)
         .def_readwrite("cell2seg", &MappedSegments::cell2seg);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
