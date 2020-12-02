@@ -171,8 +171,8 @@ void Stem::simulate(double dt, bool verbose)
 
 				// create geometry
 				if (p.ln.size()>0) { // stem has laterals
-					std::cout<<"sim seed nC is"<< nC<<"\n";
-					std::cout<<"sim seed nZ is"<< nZ<<"\n";
+					//std::cout<<"sim seed nC is"<< nC<<"\n";
+					//std::cout<<"sim seed nZ is"<< nZ<<"\n";
 					/*
                     shoot born root
 					 */
@@ -345,7 +345,7 @@ double Stem::calcAge(double length)
  */
 void Stem::createLateral(bool silence)
 {
-	std::cout<<"lnf is = "<<getStemRandomParameter()->lnf<<"\n";
+	//std::cout<<"lnf is = "<<getStemRandomParameter()->lnf<<"\n";
 	auto sp = param(); // rename
 	int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
         double ageLN = this->calcAge(length); // age of stem when lateral node is created

@@ -24,8 +24,8 @@ public:
     MappedSegments() { }
 
     MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
-        std::vector<double> radii, std::vector<int> types); ///< for kr and kx age and type dependent
-    MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
+        std::vector<double> radii, std::vector<int> types, std::vector<int> typesorgan); ///< for kr and kx age and type dependent
+    MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii, std::vector<int> typesorgan); ///< for constant kr, and kx
 
     void setRadius(double a); ///< sets a constant radius for all segments
     void setTypes(int t); ///< sets a constant type for all segments
@@ -51,6 +51,7 @@ public:
     std::vector<Vector2i> segments; ///< connectivity of the nodes
     std::vector<double> radii; ///< radii [cm]
     std::vector<int> types; ///< types [1]
+    std::vector<int> typesorgan; ///< types of the organ[1]
 
     Vector3d minBound;
     Vector3d maxBound;
@@ -61,8 +62,8 @@ public:
 
 protected:
 
-    void addSegment(Vector2i ns, double radius,  int type, int i); // adds a single segment at index i, appends the rest if cutted
-    void add(Vector2i ns, double radius,  int type, int i); // adds without cutting, at index i, or appends if i = -1
+    void addSegment(Vector2i ns, double radius,  int type,int typeorgan, int i); // adds a single segment at index i, appends the rest if cutted
+    void add(Vector2i ns, double radius,  int type, int typeorgan, int i); // adds without cutting, at index i, or appends if i = -1
     double length(const Vector2i& s) const;
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
@@ -93,6 +94,27 @@ public:
     std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
 
 };
+
+/**
+ * Build MappedSegmentds sequentially from a Plant
+ */
+class MappedPlant : public MappedSegments, public Plant
+{
+public:
+
+    using Plant::Plant;
+    void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
+    void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
+    void printnodes(); ///< sorts segments, each segment belongs to position s.y-1
+
+    std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
+    std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
+	
+};
+
+
+
+
 
 }
 
