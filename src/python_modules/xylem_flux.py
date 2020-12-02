@@ -129,12 +129,7 @@ class XylemFluxPython(XylemFlux):
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil) 
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm3 day-1] volumetric flow rate at the root collar            
-       """
-       """
-       I changed back the collar_flux function: even for a plant, collar_flux = transpiration
-       If we use collar flux for leaves it would not give the transpiration: the transpiration = sum radial flux of the leaves,
-       and not their axial flux (?)
-       """
+        """
         seg_ind = 0 
         s = self.rs.segments[seg_ind]  # collar segment
         if len(k_soil) > 0:
