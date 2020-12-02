@@ -48,17 +48,17 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
 		double age = simTime - rs->nodeCTs[j];
-		int type = rs->types[si];
-		int orgtype = rs->typesorgan[si];
+		int subType = rs->subTypes[si];
+		int ot = rs->organTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
 			
-		std::vector<int> v1 = rs->types;
-		std::vector<int> v2 = rs->typesorgan;
+		std::vector<int> v1 = rs->subTypes;
+		std::vector<int> v2 = rs->organTypes;
 		size_t it =0;
 		while ( it< v1.size())
 		{
-			if (v2[it]!= orgtype)
+			if (v2[it]!= ot)
 			{
 				v1.erase(v1.begin()+it);
 				v2.erase(v2.begin()+it);
@@ -70,15 +70,14 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		}
 		std::set<int> s( v1.begin(), v1.end() );
 		v1.assign( s.begin(), s.end() ); //make vector unique and sort
-		auto ind = find(v1.begin(), v1.end(), type); //find index of organ subtype
+		auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
 		int index = ind - v1.begin();
-		//std::cout  << "\norgtype "<<orgtype<< " type " <<type << " position " << index;
 		try {
-			kx = kx_f(age, index,orgtype);
-			kr = kr_f(age, index,orgtype);
+			kx = kx_f(age, index, ot);
+			kr = kr_f(age, index, ot);
 		} catch(...) {
 			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
-			std::cout  << "\n organ type "<<orgtype<< " type " <<type <<std::flush;
+			std::cout  << "\n organ type "<<ot<< " subtype " << subType <<std::flush;
 		}
 		//        if (age<=0) {
 		//            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
@@ -167,17 +166,17 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segments
 		double age = simTime - rs->nodeCTs[j];
-		int type = rs->types[si];
-		int orgtype = rs->typesorgan[si];
+		int subType = rs->subTypes[si];
+		int organType = rs->organTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
 			
-		std::vector<int> v1 = rs->types;
-		std::vector<int> v2 = rs->typesorgan;
+		std::vector<int> v1 = rs->subTypes;
+		std::vector<int> v2 = rs->organTypes;
 		size_t it =0;
 		while ( it< v1.size())
 		{
-			if (v2[it]!= orgtype)
+			if (v2[it]!= organType)
 			{
 				v1.erase(v1.begin()+it);
 				v2.erase(v2.begin()+it);
@@ -189,13 +188,13 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		}
 		std::set<int> s( v1.begin(), v1.end() );
 		v1.assign( s.begin(), s.end() ); //make vector unique and sort
-		auto ind = find(v1.begin(), v1.end(), type); //find index of organ subtype
+		auto ind = find(v1.begin(), v1.end(), subType); //find index of organ subtype
 		int index = ind - v1.begin();
 		try {
-			kx = kx_f(age, index,orgtype);
-			kr = kr_f(age, index,orgtype);
+			kx = kx_f(age, index, organType);
+			kr = kr_f(age, index, organType);
 		} catch(...) {
-			std::cout  << "\n organ type "<<orgtype<< " sub type " <<type <<std::flush;
+			std::cout  << "\n organ type "<<organType<< " subType " << subType <<std::flush;
 			std::cout << "XylemFlux::segFluxes: conductivities failed\n" << std::flush;
 		}
 
