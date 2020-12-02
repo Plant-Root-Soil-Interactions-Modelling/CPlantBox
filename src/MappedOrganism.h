@@ -109,7 +109,7 @@ public:
     using Plant::Plant;
     void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
-    void printnodes(); ///< sorts segments, each segment belongs to position s.y-1
+    void printnodes(); ///< print information
 	void mapsubTypes();
     std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
