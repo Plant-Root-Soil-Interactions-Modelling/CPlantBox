@@ -177,6 +177,15 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 /**
  * Simulates plant growth for the time span defined in the root system parameters
  */
+	void Plant::simulate(double dt, bool verbose)	
+{	
+		
+    Organism::simulate(dt, verbose);	
+}
+
+/**
+ * Simulates plant growth for the time span defined in the root system parameters
+ */
 void Plant::simulate()
 {
     auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);

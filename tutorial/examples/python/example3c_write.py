@@ -1,5 +1,6 @@
 """dgf and vtp export example"""
 import sys; sys.path.append("../../..")
+sys.path.append("../../../src/python_modules")
 import plantbox as pb
 
 rs = pb.RootSystem()

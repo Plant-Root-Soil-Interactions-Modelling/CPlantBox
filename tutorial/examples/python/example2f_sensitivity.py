@@ -1,6 +1,7 @@
 """sensitivity analysis: impact of insertion angle on root tip distribution"""
 import sys
 sys.path.append("../../..")
+sys.path.append("../../../src/python_modules")
 import plantbox as pb
 
 import math

@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <vector>
+#include <tuple>
 
 namespace CPlantBox {
 
@@ -24,11 +25,14 @@ public:
     MappedSegments() { }
 
     MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
-        std::vector<double> radii, std::vector<int> types); ///< for kr and kx age and type dependent
+        std::vector<double> radii, std::vector<int> subTypes, std::vector<int> organTypes); ///< for kr and kx age and type dependent
+    MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
+        std::vector<double> radii, std::vector<int> subTypes); ///< for kr and kx age and type dependent
     MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
-
+	
+	
     void setRadius(double a); ///< sets a constant radius for all segments
-    void setTypes(int t); ///< sets a constant type for all segments
+    void setsubTypes(int t); ///< sets a constant type for all segments
 
     void setSoilGrid(const std::function<int(double,double,double)>& s); ///< sets the soil, resets the mappers and maps all segments
     void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res); ///< sets the soil, resets the mappers and maps all segments
@@ -50,7 +54,8 @@ public:
     std::vector<double> nodeCTs; ///< creation times [days]
     std::vector<Vector2i> segments; ///< connectivity of the nodes
     std::vector<double> radii; ///< radii [cm]
-    std::vector<int> types; ///< types [1]
+    std::vector<int> subTypes; ///< types [1]
+    std::vector<int> organTypes; ///< types of the organ[1]
 
     Vector3d minBound;
     Vector3d maxBound;
@@ -61,8 +66,8 @@ public:
 
 protected:
 
-    void addSegment(Vector2i ns, double radius,  int type, int i); // adds a single segment at index i, appends the rest if cutted
-    void add(Vector2i ns, double radius,  int type, int i); // adds without cutting, at index i, or appends if i = -1
+    void addSegment(Vector2i ns, double radius,  int st,int ot, int i); // adds a single segment at index i, appends the rest if cutted
+    void add(Vector2i ns, double radius,  int st, int ot, int i); // adds without cutting, at index i, or appends if i = -1
     double length(const Vector2i& s) const;
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
@@ -93,6 +98,29 @@ public:
     std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
 
 };
+
+/**
+ * Build MappedSegmentds sequentially from a Plant
+ */
+class MappedPlant : public MappedSegments, public Plant
+{
+public:
+
+    using Plant::Plant;
+    void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
+    void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
+    void printnodes(); ///< print information
+	void mapsubTypes();
+    std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
+
+    std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
+    std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
+	
+};
+
+
+
+
 
 }
 
