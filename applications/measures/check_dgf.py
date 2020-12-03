@@ -92,7 +92,10 @@ for ii in range(0,len(branches)):
     idx1 = int(prev[idxbr[ii]])
     idx2 = np.where(branch==branches[ii])
     ax.plot3D(np.append(x[idx1],x[idx2[0]-1]), np.append(y[idx1], y[idx2[0]-1]), np.append( z[idx1], z[idx2[0]-1]))
-
+    ax.set_title("Connections", fontsize=20, pad=250)
+    ax.set_xlabel("x (cm)")
+    ax.set_ylabel("y (cm)")
+    ax.set_zlabel("z (cm)")
 
 ##
 #are the orders correct??
@@ -106,6 +109,10 @@ for ii in range(0,len(branches)):
     idx2 = np.where(branch==branches[ii])
     idxcol = int(order[idxbr[ii]])
     ax.plot3D(np.append(x[idx1],x[idx2[0]-1]), np.append(y[idx1], y[idx2[0]-1]), np.append( z[idx1], z[idx2[0]-1]), color = colors[idxcol])
+    ax.set_title("Orders", fontsize=20, pad=250)
+    ax.set_xlabel("x (cm)")
+    ax.set_ylabel("y (cm)")
+    ax.set_zlabel("z (cm)")
 
 
 ##
@@ -121,6 +128,10 @@ for ii in range(0,len(branches)):
     colidx = etime[idx2[0]-1]
     colidx = colidx.astype(int)
     cs = ax.scatter3D(x[idx2[0]-1], y[idx2[0]-1], z[idx2[0]-1], c = colors[colidx])
+    ax.set_title("Emergence times (days)", fontsize=20, pad=250)
+    ax.set_xlabel("x (cm)")
+    ax.set_ylabel("y (cm)")
+    ax.set_zlabel("z (cm)")
 
 start = np.min(etime)
 mid = np.min(etime)+(np.max(etime)-np.min(etime))/2
@@ -144,6 +155,10 @@ for ii in range(0,len(branches)):
     colidx = fg[idx2[0]-1]
     colidx = colidx.astype(int)
     cs = ax.scatter3D(x[idx2[0]-1], y[idx2[0]-1], z[idx2[0]-1], c = colors[colidx])
+    ax.set_title("Radii", fontsize=20, pad=250)
+    ax.set_xlabel("x (cm)")
+    ax.set_ylabel("y (cm)")
+    ax.set_zlabel("z (cm)")
 
 start = np.min(rad)
 mid = np.min(rad)+(np.max(rad)-np.min(rad))/2
