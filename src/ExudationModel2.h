@@ -54,7 +54,7 @@ public:
 			if (r->getNumberOfNodes()>1) { // started growing
 				// time when the root stopped growing
 				double sTime = r->getNodeCT(r->getNumberOfNodes()-1);
-				if (r->isActive()) {
+				if (r->getLength()<(r->param()->getK()-0.1)) { // is active?
 					stopTime.push_back(0);
 				} else {
 					stopTime.push_back(sTime);
@@ -157,11 +157,6 @@ public:
 		c_.clear();
 		g_.clear();
 
-		//		c_.resize(n_size);
-		//        g_.resize(n_size); // saves last root contribution
-		//        std::fill(c_.begin(), c_.end(), 0.); // set data to zero
-		//        std::fill(g_.begin(), g_.end(), 0.);
-
 		for (size_t ri = i0; ri< iend; ri++) {
 
 			r_ = roots[ri];
@@ -184,7 +179,14 @@ public:
 				for (int lind : voxelList[id]) {
 					// different flavors of Eqn (11)
 					x_ = grid.getGridPoint(lind);
-					double c = eqn11(0, age_, 0, l); // needs x_!
+					double age;
+					if (st_>0) {
+						double stopAge = st_ - r_->getNodeCT(0);
+						age = std::min(age_, stopAge);
+					} else {
+						age = age_;
+					}
+					double c = eqn11(0, age, 0, l); // needs x_!
 					if (c_.count(lind)==0) {
 						c_[lind] = 0.;
 					}
@@ -204,7 +206,7 @@ public:
 					}
 					std::cout << "13\n";
 				}
-			} // if ages.at(i)>0d
+			} // if ages.at(i)>0
 		}
 
 		std::vector<double> c = std::vector<double>(n_size);
