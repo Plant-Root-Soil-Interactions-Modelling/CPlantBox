@@ -148,7 +148,7 @@ public:
 	 * @param i0        optionally, initial root index (default = 0)
 	 * @param iend      optionally, final root index (default = roots.size())
 	 */
-	 std::vector<double> calculate(double tend, int i0 = 0, int iend = -1) { //
+	std::vector<double> calculate(double tend, int i0 = 0, int iend = -1) { //
 
 		if (iend==-1) {
 			iend = roots.size();
@@ -247,9 +247,13 @@ public:
 	// integrand Eqn 13
 	double integrand13(Vector3d& y, size_t lind, double t) {
 		double dt = t-st_;
-		double c = to32(R)*g_[lind] / to32(4*Dl*M_PI*dt);
-		Vector3d z = x_.minus(y);
-		return c*exp(-R/(4*Dl*dt) * z.times(z) - k*dt/R);
+		if (dt>1.e-3) { // TODO find feasible threshold
+			double c = to32(R)*g_[lind] / to32(4*Dl*M_PI*dt);
+			Vector3d z = x_.minus(y);
+			return c*exp(-R/(4*Dl*dt) * z.times(z) - k*dt/R);
+		} else {
+			return 0.; // note that dt -> 0 => integrand13 -> 0
+		}
 	}
 
 	// Returns the linearly interpolated position along the root r at age a
