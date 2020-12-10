@@ -142,7 +142,10 @@ class XylemFluxPython(XylemFlux):
         v.normalize()  # normalized v.z is needed for qz
         if cells:
             cell_ind = self.rs.seg2cell[seg_ind]
-            p_s = sxx[cell_ind]  # soil pressure at collar segment
+            if cell_ind>=0:
+                p_s = sxx[cell_ind]  # soil pressure at collar segment
+            else:
+                p_s = self.airPressure
         else:
             p_s = sxx[seg_ind]
         a = self.rs.radii[seg_ind]  # radius

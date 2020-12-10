@@ -10,7 +10,7 @@ namespace CPlantBox {
  * Assembles the linear system as sparse matrix, given by public member variables,
  * indices aI, aJ, and corresponding values aV; and load aB
  *
- * @param simTime[days] 	current simulation time, needed for age dependent conductivities,
+ * @param simTime[day]  	current simulation time, needed for age dependent conductivities,
  *                  		to calculate the age from the creation times (age = sim_time - segment creation time).
  * @param sx [cm]			soil matric potential in the cells or around the segments, given per cell or per segment
  * @param cells 			sx per cell (true), or segments (false)
@@ -37,13 +37,14 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 
 		double psi_s;
 		if (cells) { // soil matric potential given per cell
-			psi_s = sx.at(rs->seg2cell[j-1]); // segIdx = s.y-1
-		} else {
-			psi_s = sx.at(j-1); // segIdx = s.y-1
-			if (si!=j-1) {
-				std::cout << "OUCH \n";
-				throw "help";
+			int cellIndex = rs->seg2cell[j-1];
+			if (cellIndex>=0) {
+				psi_s = sx.at(cellIndex); // j-1 =  segIdx = s.y-1
+			} else {
+				psi_s = airPressure;
 			}
+		} else {
+			psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
 		}
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
@@ -140,7 +141,12 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
 		double psi_s;
 		if (cells) { // soil matric potential given per cell
-			psi_s = sx.at(rs->seg2cell[si]);
+			int cellIndex = rs->seg2cell[j-1];
+			if (cellIndex>=0) {
+				psi_s = sx.at(cellIndex);
+			} else {
+				psi_s = airPressure;
+			}
 		} else {
 			psi_s = sx.at(si);
 		}
@@ -196,10 +202,12 @@ std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxe
 		int segIdx = j-1;
 		if (rs->seg2cell.count(segIdx)>0) {
 			int cellIdx = rs->seg2cell[segIdx];
-			if (fluxes.count(cellIdx)==0) {
-				fluxes[cellIdx] = segFluxes[segIdx];
-			} else {
-				fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
+			if (cellIdx>=0) {
+				if (fluxes.count(cellIdx)==0) {
+					fluxes[cellIdx] = segFluxes[segIdx];
+				} else {
+					fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
+				}
 			}
 		}
 	}
@@ -218,7 +226,12 @@ std::vector<double> XylemFlux::segSRA(double simTime, const std::vector<double>&
 	auto fluxes = this->segFluxes(simTime, rx, sx, false, true); // classical sink
 	for (int i = 0; i<rs->segments.size(); i++) { // calculate rsx
 		int cellIdx = rs->seg2cell.at(i);
-		double p = sx[cellIdx];
+		double p;
+		if (cellIdx>=0) {
+			p = sx[cellIdx];
+		} else {
+			p = airPressure;
+		}
 		double q_root = -std::min(fluxes.at(i),0.)/(2*rs->radii[i]*M_PI*lengths[i]); // cm3 / day -> cm / day
 		double q_out = 0.;
 		double r_in = rs->radii.at(i);
@@ -248,7 +261,12 @@ std::vector<double> XylemFlux::segSRAStressedFlux(const std::vector<double>& sx,
 	auto outerRadii = this->segOuterRadii();
 	for (int i = 0; i<rs->segments.size(); i++) {
 		int cellIdx = rs->seg2cell.at(i);
-		double p = sx[cellIdx];
+		double p;
+		if (cellIdx>=0) {
+			p = sx[cellIdx];
+		} else {
+			p = airPressure;
+		}
 		double r_in = rs->radii.at(i);
 		double r_out = outerRadii.at(i);
 		double h1 = schroederStress(r_in + dx, p, 0., r_in, r_out, mpf, impf);
@@ -269,7 +287,12 @@ std::vector<double> XylemFlux::segSRAStressedAnalyticalFlux(const std::vector<do
 	auto outerRadii = this->segOuterRadii();
 	for (int i = 0; i<rs->segments.size(); i++) {
 		int cellIdx = rs->seg2cell.at(i);
-		double p = sx[cellIdx];
+		double p;
+		if (cellIdx>=0) {
+			p = sx[cellIdx];
+		} else {
+			p = airPressure;
+		}
 		double r_in = rs->radii.at(i);
 		double r_out = outerRadii.at(i);
 		double r = r_in; // evalutation at r_in

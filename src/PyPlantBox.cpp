@@ -759,11 +759,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def(py::init<std::vector<Vector3d>, std::vector<double>, std::vector<Vector2i>, std::vector<double>, std::vector<int>>())
         .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>>())
         .def("setRadius", &MappedSegments::setRadius)
-        .def("setTypes", &MappedSegments::setsubTypes) //kept for backward compatibility
-        .def("setsubTypes", &MappedSegments::setsubTypes)
+        .def("setTypes", &MappedSegments::setSubTypes) //kept for backward compatibility
+        .def("setSubTypes", &MappedSegments::setSubTypes)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d)) &MappedSegments::setSoilGrid)
-        .def("setRectangularGrid", &MappedSegments::setRectangularGrid)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool)) &MappedSegments::setSoilGrid,
+        		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
         .def("mapSegments",  &MappedSegments::mapSegments)
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
@@ -821,7 +822,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("aB", &XylemFlux::aB)
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
-            .def_readwrite("rs", &XylemFlux::rs);
+            .def_readwrite("rs", &XylemFlux::rs)
+			.def_readwrite("airPressure", &XylemFlux::airPressure);
+
     /*
      * Plant.h
      */
@@ -843,7 +846,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def(py::init<>())	
 			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true)
-			.def("printnodes",  &MappedPlant::printnodes)	
+			.def("printNodes",  &MappedPlant::printNodes)
 			.def("addSegments", &MappedPlant::plant);			
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")

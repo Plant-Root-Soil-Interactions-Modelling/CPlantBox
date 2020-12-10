@@ -64,6 +64,8 @@ public:
     std::vector<std::vector<std::vector<double>>> krs, krs_t;
     std::vector<std::vector<std::vector<double>>> kxs, kxs_t;
 
+    double airPressure = -1000; // static air pressure
+
 protected:
 
     double kr_const(double age, int type, int orgtype) { return kr.at(0).at(0); } //k constant

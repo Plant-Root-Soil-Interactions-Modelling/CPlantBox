@@ -32,10 +32,10 @@ public:
 	
 	
     void setRadius(double a); ///< sets a constant radius for all segments
-    void setsubTypes(int t); ///< sets a constant type for all segments
+    void setSubTypes(int t); ///< sets a constant sub type for all segments
 
-    void setSoilGrid(const std::function<int(double,double,double)>& s); ///< sets the soil, resets the mappers and maps all segments
-    void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res); ///< sets the soil, resets the mappers and maps all segments
+    void setSoilGrid(const std::function<int(double,double,double)>& s); ///< sets the soil, resets the mappers, and maps all segments
+    void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res, bool cut = true); ///< sets the soil, resets the mappers, cuts and maps all segments
     void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut = true); ///< sets an underlying rectangular grid, and cuts all segments accordingly
 
     void mapSegments(const std::vector<Vector2i>& segs);
@@ -60,7 +60,7 @@ public:
     Vector3d minBound;
     Vector3d maxBound;
     Vector3d resolution; // cells
-    bool rectangularGrid = false;
+    bool cutAtGrid = false;
 
     const double eps = 1.e-5;
 
@@ -71,7 +71,7 @@ protected:
     double length(const Vector2i& s) const;
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
-    void removeSegments(const std::vector<Vector2i>& segs); ///< remove segments from the mappers
+    void unmapSegments(const std::vector<Vector2i>& segs); ///< remove segments from the mappers
 
 };
 
@@ -109,8 +109,8 @@ public:
     using Plant::Plant;
     void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
-    void printnodes(); ///< print information
-	void mapsubTypes();
+    void printNodes(); ///< print information
+	void mapSubTypes();
     std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
