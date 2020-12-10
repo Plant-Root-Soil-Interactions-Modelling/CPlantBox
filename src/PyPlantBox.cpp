@@ -854,8 +854,6 @@ PYBIND11_MODULE(plantbox, m) {
             .value("mps", ExudationModel::IntegrationType::mps )
             .value("mls", ExudationModel::IntegrationType::mls )
             .export_values();
-
-
     py::class_<ExudationModel2, std::shared_ptr<ExudationModel2>>(m, "ExudationModel2")
             .def(py::init<double, double, int, std::shared_ptr<RootSystem>>())
             .def(py::init<double, double, double, int, int, int, std::shared_ptr<RootSystem>>())
@@ -869,6 +867,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("n0", &ExudationModel2::n0)
             .def_readwrite("thresh13", &ExudationModel2::thresh13)
             .def_readwrite("calc13", &ExudationModel2::calc13)
+			.def_readwrite("eps", &ExudationModel2::eps)
             .def_readwrite("observationRadius", &ExudationModel2::observationRadius)
 			.def("makeVoxelLists", &ExudationModel2::makeVoxelLists, py::arg("i0") = 0, py::arg("iend")=-1)
 			.def("addResults", &ExudationModel2::addResults)
