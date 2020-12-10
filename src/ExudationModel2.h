@@ -38,6 +38,7 @@ public:
 	double thresh13 = 1.e-15; // threshold for Eqn 13
 	bool calc13 = true; // turns Eqn 13 on and off
 	double observationRadius = 5; //  limits computational domain around roots [cm]
+	double eps = 1.e-3; // TODO find feasible threshold
 
 	/**
 	 * Constructors
@@ -186,7 +187,12 @@ public:
 					} else {
 						age = age_;
 					}
-					double c = eqn11(0, age, 0, l); // needs x_!
+					double c;
+					if (age>eps) {
+						c = eqn11(0, age, 0, l); // needs x_!
+					} else {
+						c = 0.;
+					}
 					if (c_.count(lind)==0) {
 						c_[lind] = 0.;
 					}
@@ -247,7 +253,7 @@ public:
 	// integrand Eqn 13
 	double integrand13(Vector3d& y, size_t lind, double t) {
 		double dt = t-st_;
-		if (dt>1.e-3) { // TODO find feasible threshold
+		if (dt>eps) {
 			double c = to32(R)*g_[lind] / to32(4*Dl*M_PI*dt);
 			Vector3d z = x_.minus(y);
 			return c*exp(-R/(4*Dl*dt) * z.times(z) - k*dt/R);
