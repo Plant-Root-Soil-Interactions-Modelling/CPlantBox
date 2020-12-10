@@ -38,7 +38,7 @@ public:
 	double thresh13 = 1.e-15; // threshold for Eqn 13
 	bool calc13 = true; // turns Eqn 13 on and off
 	double observationRadius = 5; //  limits computational domain around roots [cm]
-	double eps = 1.e-3; // TODO find feasible threshold
+	double eps = 1.e-6; // minimal distance from grid point
 
 	/**
 	 * Constructors
@@ -187,12 +187,7 @@ public:
 					} else {
 						age = age_;
 					}
-					double c;
-					if (age>eps) {
-						c = eqn11(0, age, 0, l); // needs x_!
-					} else {
-						c = 0.;
-					}
+					double c = eqn11(0, age, 0, l); // needs x_!
 					if (c_.count(lind)==0) {
 						c_[lind] = 0.;
 					}
@@ -253,13 +248,11 @@ public:
 	// integrand Eqn 13
 	double integrand13(Vector3d& y, size_t lind, double t) {
 		double dt = t-st_;
-		if (dt>eps) {
-			double c = to32(R)*g_[lind] / to32(4*Dl*M_PI*dt);
-			Vector3d z = x_.minus(y);
-			return c*exp(-R/(4*Dl*dt) * z.times(z) - k*dt/R);
-		} else {
-			return 0.; // note that dt -> 0 => integrand13 -> 0
-		}
+		double c = to32(R)*g_[lind] / to32(4*Dl*M_PI*dt);
+		Vector3d z = x_.minus(y);
+		double l = z.times(z);
+		l = std::max(eps,l);
+		return c*exp(-R/(4*Dl*dt) * l - k*dt/R); // note that dt -> 0 => integrand13 -> 0 if t.times(z)>0
 	}
 
 	// Returns the linearly interpolated position along the root r at age a
@@ -296,7 +289,10 @@ public:
 		Vector3d xtip = p->tip_.plus(p->v_.times(t)); // for t=0 at tip, at t=age at base, as above
 		Vector3d z = p->x_.minus(xtip);
 
-		return ((p->Q)*sqrt(p->R))/d *exp(c*z.times(z) - p->k/p->R * t); // Eqn (11)
+		double l_ = z.times(z);
+		l_ = std::max(p->eps,l_);
+
+		return ((p->Q)*sqrt(p->R))/d *exp(c*l_- p->k/p->R * t); // Eqn (11)
 	}
 
 	// moving line source, root is represented by a straight segments
@@ -313,7 +309,10 @@ public:
 		Vector3d tipLS = p->ExudationModel2::pointAtAge(p->r_, agel);
 		Vector3d z = p->x_.minus(tipLS);
 
-		return ((p->Q)*sqrt(p->R))/d *exp(c*z.times(z) - p->k/p->R * t); // Eqn (11)
+		double l_ = z.times(z);
+		l_ = std::max(p->eps,l_);
+
+		return ((p->Q)*sqrt(p->R))/d *exp(c*l_ - p->k/p->R * t); // Eqn (11)
 	}
 
 	// moving point source, root is represented by a straight segments
@@ -325,7 +324,10 @@ public:
 		Vector3d xtip = ExudationModel2::pointAtAge(p->r_, p->age_-t);
 		Vector3d z = p->x_.minus(xtip);
 
-		return ((p->Q)*sqrt(p->R))/d *exp(c*z.times(z) - p->k/p->R * t); // Eqn (11)
+		double l_ = z.times(z);
+		l_ = std::max(p->eps,l_);
+
+		return ((p->Q)*sqrt(p->R))/d *exp(c*l_ - p->k/p->R * t); // Eqn (11)
 	}
 
 	// Root system
