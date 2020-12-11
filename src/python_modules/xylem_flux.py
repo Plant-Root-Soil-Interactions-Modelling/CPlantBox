@@ -17,6 +17,7 @@ class XylemFluxPython(XylemFlux):
         
         Calculates water movement within the xylems, assuming a constant matric potential around each xylem segment,
         given for each segment, or for each soil cell. 
+        
         The root surface flux is calculated exactly as in Meunier et al.        
     """
 
@@ -118,24 +119,29 @@ class XylemFluxPython(XylemFlux):
             x = self.solve_dirichlet(sim_time, wilting_point, sx, sxx, cells, soil_k)
 
         return x
-
-    def collar_flux(self, sim_time, rx, sxx, k_soil = [], cells = True):
-        """ returns the exact transpirational flux of the xylem model solution @param rx
+    
+    
+    def axial_flux(self, seg_ind, sim_time, rx, sxx, k_soil = [], cells = True, ij = True):
+        """ returns the exact axial flux of segment ij of xylem model solution @param rx
+            @param seg_ind              segment index 
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
             @param rx [cm]              root xylem matric potentials per root system node
             @param sxx [cm]             soil matric potentials given per segment or per soil cell
             @param k_soil [day-1]       optionally, soil conductivities can be prescribed per segment, 
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil) 
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
-            @return [cm3 day-1] volumetric flow rate at the root collar            
-        """
-        seg_ind = 0 
+            @param ij                   True: calculate axial flux in node i, False: in node j; note that they are not equal due to radial fluxes 
+            @return [cm3 day-1] axial volumetric flow rate             
+        """        
         s = self.rs.segments[seg_ind]  # collar segment
         if len(k_soil) > 0:
             ksoil = k_soil[seg_ind]
         else:
             ksoil = 1.e9 # much
-        i, j = int(s.x), int(s.y)  # node indices
+        if ij: 
+            i, j = int(s.x), int(s.y)  # node indices
+        else:
+            j, i = int(s.x), int(s.y)  
         n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
         v = n2.minus(n1)
         l = v.length()  # length of segment
@@ -160,9 +166,38 @@ class XylemFluxPython(XylemFlux):
         bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
         d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
         dpdz0 = d[0] * math.sqrt(c) - d[1] * math.sqrt(c)
-        return -kx * (dpdz0 + v.z)  # kx [cm5 day g-1]-> [cm3 day-1] by multiplying rho*g
+        f = kx * (dpdz0 + v.z)
+        if ij:
+            f = f*(-1)
+        return f  
 
+    def collar_flux(self, sim_time, rx, sxx, k_soil = [], cells = True):
+        """ returns the exact transpirational flux of the xylem model solution @param rx
+            @see axial_flux        
+        """
+        return self.axial_flux(0, sim_time, rx, sxx, k_soil, cells, True)
+
+    def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
+        """ returns the axial fluxes 
+        @see axial_flux  
+        """
+        n = len(self.rs.segments)
+        return np.array([self.axial_flux(i, sim_time, rx, sxx, k_soil, cells, True) for i in range(0, n)])
+        
+    def radial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
+        """ returns the exact radial fluxes (calls base class)
+            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
+            @param rx [cm]              root xylem matric potentials per root system node
+            @param sxx [cm]             soil matric potentials given per segment or per soil cell
+            @param k_soil [day-1]       optionally, soil conductivities can be prescribed per segment, 
+                                        conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil) 
+            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
+            @return [cm3 day-1] radial volumetric flow rate            
+        """
+        return np.array(self.segFluxes(sim_time, rx, sxx, False, cells, k_soil)) # approx = False
+        
     def get_outer_matpot_matix(self, p_s, p_a):
+        # do we stil need that one? could be replaced by return p_s*(ot==2) + p_a*(ot!=2) in the script
         p_out = self.get_organ_types()	
         for i in range(0, len(p_out)):
             if(p_out[i] == 2): #= root type
@@ -181,7 +216,7 @@ class XylemFluxPython(XylemFlux):
 
     def get_ages(self, final_age = 0.):
         """ converts the list of nodeCT to a numpy array of segment ages
-        @param final_age [day]         current root system age
+        @param final_age [day]         current root system age, (default = 0 means detect from nodeCT)
         """
         cts = np.array(self.rs.nodeCTs)
         if final_age == 0.:
@@ -190,7 +225,7 @@ class XylemFluxPython(XylemFlux):
         return ages[1:]  # segment index is node index-1
         
     def get_nodes_index(self,ot):	
-        """ return index of nodes of type ot """
+        """ return node indices of segments with organ type @param ot """
         segments = self.get_segments() 	
         nodes = self.get_nodes()	
         organTypes = self.get_organ_types()	
@@ -201,7 +236,9 @@ class XylemFluxPython(XylemFlux):
         return nodesidx	
         	
     def get_nodes_organ_type(self,ot):	
-        """ return position of nodes of type ot """
+        """ return node coordinates of segments with organ type @param ot """
+#         nodes = self.get_nodes()
+#         return nodes[self.get_nodes_index()] # should do the job?       
         segments = self.get_segments() 	
         nodes = self.get_nodes()	
         organTypes = self.get_organ_types()	
@@ -213,21 +250,19 @@ class XylemFluxPython(XylemFlux):
         return nodes
         
     def get_segments_index(self,ot):	
-        """ return position of nodes of type ot """
+        """ return node indices of organ type @param ot """
         organTypes = self.get_organ_types()
         segIdx = np.array( list(range(0, len(organTypes))))
         otsegs = segIdx[organTypes == ot]	
         return otsegs
         
     def get_organ_types(self):
-        """ converts to a 1D numpy array """
-        organnumber = np.array(self.rs.organTypes)
-        return organnumber
+        """ segment organ types as numpy array """
+        return np.array(self.rs.organTypes)
         
     def get_subtypes(self):
-        """ converts Vector3d to a 1D numpy array """
-        organnumber = np.array(self.rs.subTypes)
-        return organnumber
+        """ segment sub types as numpy array """
+        return np.array(self.rs.subTypes)
         
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
@@ -324,55 +359,4 @@ class XylemFluxPython(XylemFlux):
     def convert_(x, dtype = np.float64):
         """ not used anymore (?) """
         return np.array(list(map(lambda x: np.array(x, dtype), x)), dtype)  # is there a better way?
-
-    def linear_system(self, simTime :float):
-        """ NOT used, solve() uses the C++ equivalent XylemFlux.linearSystem (in XylemFlux.pp)         
-        assembles the linear system (for testing and comparing to XylemFlux.linearSystem)
-        """
-        Ns = len(self.rs.segments)
-        N = len(self.rs.nodes)
-
-        I = np.zeros(4 * Ns, dtype = np.int64)
-        J = np.zeros(4 * Ns, dtype = np.int64)
-        V = np.zeros(4 * Ns)
-        b = np.zeros(N)
-        k = 0
-        for s in range(0, Ns):
-
-            i, j = self.rs.segments[s].x, self.rs.segments[s].y
-
-            a = self.rs.radii[j - 1]
-
-            kx = self.kx[0]
-            kr = self.kr[0]
-
-            n1 = np.array([self.rs.nodes[i].x, self.rs.nodes[i].y, self.rs.nodes[i].z])
-            n2 = np.array([self.rs.nodes[j].x, self.rs.nodes[j].y, self.rs.nodes[j].z])
-            v = n2 - n1
-            l = np.linalg.norm(v)
-            vz = v[2] / l  # normed direction
-
-            c = 2.*a * math.pi * kr / kx  # Eqn (2)
-            d = math.exp(-math.sqrt(c) * l) - math.exp(math.sqrt(c) * l)  # Eqn (5)
-            # print(i, j, n1, n2, l, d)
-            di = 1. / d
-
-            cii = -kx * di * math.sqrt(c) * (math.exp(-math.sqrt(c) * l) + math.exp(math.sqrt(c) * l))  # Eqn 16
-            cij = 2 * kx * di * math.sqrt(c)  # Eqn 17
-            bi = kx * vz  # Eqn 18 * self.rho * self.g
-
-            b[i] += bi
-            I[k], J[k], V[k] = i, i, cii
-            k += 1
-            I[k], J[k], V[k] = i, j, cij
-            k += 1
-
-            i, j = j, i  # edge ji
-            b[i] -= bi  # Eqn 14 with changed sign
-            I[k], J[k], V[k] = i, i, cii
-            k += 1
-            I[k], J[k], V[k] = i, j, cij
-            k += 1
-
-        return I, J, V, b
-
+    
