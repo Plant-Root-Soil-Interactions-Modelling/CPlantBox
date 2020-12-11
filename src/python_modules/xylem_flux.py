@@ -157,15 +157,15 @@ class XylemFluxPython(XylemFlux):
         a = self.rs.radii[seg_ind]  # radius
         ot = int(self.rs.organTypes[seg_ind])  # conductivities kr, kx
         st = int(self.rs.subTypes[seg_ind])  # conductivities kr, kx
-        age = sim_time - self.rs.nodeCTs[j]
+        age = sim_time - self.rs.nodeCTs[int(s.y)]
         kr = self.kr_f(age, st, ot)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot)
-        c = 2 * a * math.pi * kr / kx  # cm-2
-        AA = np.array([[1, 1], [math.exp(math.sqrt(c) * l), math.exp(-math.sqrt(c) * l)] ])  # insert z = 0, z = l into exact solution
+        tau = math.sqrt(2 * a * math.pi * kr / kx)  # cm-2
+        AA = np.array([[1, 1], [math.exp(tau* l), math.exp(-tau* l)] ])          
         bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
         d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
-        dpdz0 = d[0] * math.sqrt(c) - d[1] * math.sqrt(c)
+        dpdz0 = d[0] * tau - d[1] * tau # insert z = 0, z = l into exact solution   
         f = kx * (dpdz0 + v.z)
         if ij:
             f = f*(-1)
