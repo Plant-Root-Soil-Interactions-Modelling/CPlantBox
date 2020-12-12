@@ -777,7 +777,19 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("Types", &MappedSegments::subTypes) //kept for backward compatibility
         .def_readwrite("subTypes", &MappedSegments::subTypes)
         .def_readwrite("seg2cell", &MappedSegments::seg2cell)
-        .def_readwrite("cell2seg", &MappedSegments::cell2seg);
+        .def_readwrite("cell2seg", &MappedSegments::cell2seg)
+        .def("setGsParameters",&MappedSegments::setGsParameters, py::arg("PAR") , py::arg("VPD"), 
+			py::arg("TH"), py::arg("TL"), py::arg("Topt") ,py::arg("psi1"), py::arg("psi2"), py::arg("gmax") )
+        .def("calcGs",&MappedSegments::calcGs, py::arg("PAR") , py::arg("VPD"), py::arg("Tair"), py::arg("p_leaf"))
+        .def_readwrite("gs", &MappedSegments::gs)
+        .def_readwrite("p_PAR", &MappedSegments::p_PAR)
+        .def_readwrite("p_VPD", &MappedSegments::p_VPD)
+        .def_readwrite("p_TH", &MappedSegments::p_TH)
+        .def_readwrite("p_TL", &MappedSegments::p_TL)
+        .def_readwrite("p_Topt", &MappedSegments::p_Topt)
+        .def_readwrite("p_psi1", &MappedSegments::p_psi1)
+        .def_readwrite("p_psi2", &MappedSegments::p_psi2)
+        .def_readwrite("p_gmax", &MappedSegments::p_gmax);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)

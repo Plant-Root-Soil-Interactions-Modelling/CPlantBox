@@ -30,15 +30,17 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 	std::fill(aI.begin(), aI.end(), 0);
 	std::fill(aJ.begin(), aJ.end(), 0);
 	size_t k=0;
+	size_t numleaf = 0;
 	for (int si = 0; si<Ns; si++) {
 
 		int i = rs->segments[si].x;
 		int j = rs->segments[si].y;
 
 		double psi_s;
+		int organType = rs->organTypes[si];
 		if (cells) { // soil matric potential given per cell
-			int cellIndex = rs->seg2cell[j-1];
-			if (cellIndex>=0) {
+			if (rs->nodes[j].z<0) {
+				int cellIndex = rs->seg2cell[j-1];
 				psi_s = sx.at(cellIndex); // j-1 =  segIdx = s.y-1
 			} else {
 				psi_s = airPressure;
@@ -46,20 +48,20 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		} else {
 			psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
 		}
-
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
 		double age = simTime - rs->nodeCTs[j];
 		int subType = rs->subTypes[si];
-		int ot = rs->organTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
 
+		
 		try {
-			kx = kx_f(age, subType, ot);
-			kr = kr_f(age, subType, ot);
+			kx = kx_f(age, subType, organType);
+			if(rs->gs.size()>0 && organType == 4){kr = rs->gs.at(numleaf);numleaf += 1;}
+			else{kr = kr_f(age, subType, organType);}
 		} catch(...) {
 			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
-			std::cout  << "\n organ type "<<ot<< " subtype " << subType <<std::flush;
+			std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
 		}
 		//        if (age<=0) {
 		//            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
@@ -134,6 +136,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		bool approx, bool cells, const std::vector<double> soil_k)
 {
 	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
+	size_t numleaf = 0;
 	for (int si = 0; si<rs->segments.size(); si++) {
 
 		int i = rs->segments[si].x;
@@ -141,31 +144,31 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
 		double psi_s;
 		if (cells) { // soil matric potential given per cell
-			int cellIndex = rs->seg2cell[j-1];
-			if (cellIndex>=0) {
-				psi_s = sx.at(cellIndex);
+			if (rs->nodes[j].z<0) {
+				int cellIndex = rs->seg2cell[j-1];
+				psi_s = sx.at(cellIndex); // j-1 =  segIdx = s.y-1
 			} else {
 				psi_s = airPressure;
 			}
 		} else {
-			psi_s = sx.at(si);
+			psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
 		}
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segments
 		double age = simTime - rs->nodeCTs[j];
-		int subType = rs->subTypes[si];
 		int organType = rs->organTypes[si];
+		int subType = rs->subTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
 
 		try {
 			kx = kx_f(age, subType, organType);
-			kr = kr_f(age, subType, organType);
+			if(rs->gs.size()>0 && organType == 4){kr = rs->gs.at(numleaf);numleaf += 1;}
+			else{kr = kr_f(age, subType, organType);}
 		} catch(...) {
-			std::cout  << "\n organ type "<<organType<< " subType " << subType <<std::flush;
-			std::cout << "XylemFlux::segFluxes: conductivities failed\n" << std::flush;
+			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
+			std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
 		}
-
 		if (soil_k.size()>0) {
 			kr = std::min(kr, soil_k[si]);
 		}
@@ -443,8 +446,8 @@ void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::
 			if (values[0].size()==1) {
 				kr_f = std::bind(&XylemFlux::kr_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kr is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 day g-1 \n";
-				std::cout << "organ type 3 (stem) = " << values[1][0] << " cm2 day g-1 \n";
-				std::cout << "organ type 4 (leaf) = " << values[2][0] << " cm2 day g-1 \n";
+				//std::cout << "organ type 3 (stem) = " << values[1][0] << " cm2 day g-1 \n";
+				//std::cout << "organ type 4 (leaf) = " << values[2][0] << " cm2 day g-1 \n";
 			} else {
 				kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				std::cout << "Kr is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm2 day g-1 \n";
