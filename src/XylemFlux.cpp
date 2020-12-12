@@ -166,7 +166,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 			if(rs->gs.size()>0 && organType == 4){kr = rs->gs.at(numleaf);numleaf += 1;}
 			else{kr = kr_f(age, subType, organType);}
 		} catch(...) {
-			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
+			std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
 			std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
 		}
 		if (soil_k.size()>0) {
