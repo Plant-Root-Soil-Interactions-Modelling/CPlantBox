@@ -357,55 +357,6 @@ void MappedSegments::sort() {
 }
 
 
-/**
- * sets the parameters for the calculation of gs and of the transpiration rate
- *see lobet et al 2014 (planetMaiz )
- */
-void MappedSegments::setGsParameters(float PAR, float VPD, float TH, float TL, float Topt, float psi1, float psi2, float gmax) {
-    p_PAR = PAR; //[µmol/m2/sec]
-	p_VPD = VPD;//MPa
-	p_TH = TH;//*C
-	p_TL = TL;//*C
-	p_Topt = Topt;//*C
-	p_psi1 = psi1;//MPa
-	p_psi2 = psi2;//MPa
-	p_gmax = gmax;//cm3/day
-}
-
-/**
- * fills the stomatal conductance vector
- * size = number of leaf segments
- * vector is ordered like the leaf segments
- * 
- **/ 
-void MappedSegments::calcGs(float PAR, float VPD, float Tair,  std::vector<double> p_leaf) {
-    size_t length_leaf = std::count(organTypes.begin(), organTypes.end(), 4);
-	gs.resize(length_leaf);
-	float par ; //[µmol/m2/sec]
-	float vpd; //[MPa]
-	float tair ; //°C
-	float p_l; //1 cm of water = 0.0000978 MPa
-	for (int si = 0; si<length_leaf; si++) 
-	{
-		
-		par = PAR; //[µmol/m2/sec]
-		vpd = VPD; //[MPa]
-		tair = Tair; //°C
-		if(p_leaf.size() >1){p_l = p_leaf[si]*0.0000978;}		
-		else{p_l = p_leaf[0]*0.0000978;} //1 cm of water = 0.0000978 MPa	 
-		
-		float F_PAR = par/p_PAR;//make max = 1
-		float F_VPD = std::exp(-p_VPD*vpd);//make max = 1
-		float powTair = (p_TH - p_Topt)/(p_Topt - p_TL);
-		float F_Tair = std::pow(((tair-p_TL)*(p_TH - tair))/((p_Topt - p_TL)*(p_TH - p_Topt)), powTair);
-		float F_pleaf = std::exp(-pow(-p_l/p_psi1, p_psi2));
-		float F_all = F_pleaf * F_Tair *F_VPD * F_PAR;
-		gs[si] = p_gmax * F_all ; // //cm3/day  
-	}
-	
-}
-
-
 
 /**
  * Overridden, to map initial shoot segments (@see RootSystem::initialize).
@@ -705,6 +656,54 @@ void MappedPlant::printNodes() {
 		std::cout << to.toString() << std::flush;
 	}
 	std::cout << "\n segments size \n"<< segments.size() << std::flush;
+}
+
+/**
+ * sets the parameters for the calculation of gs and of the transpiration rate
+ *see lobet et al 2014 (planetMaiz )
+ */
+void MappedPlant::setGsParameters(float PAR, float VPD, float TH, float TL, float Topt, float psi1, float psi2, float gmax) {
+    p_PAR = PAR; //[µmol/m2/sec]
+	p_VPD = VPD;//MPa
+	p_TH = TH;//*C
+	p_TL = TL;//*C
+	p_Topt = Topt;//*C
+	p_psi1 = psi1;//MPa
+	p_psi2 = psi2;//MPa
+	p_gmax = gmax;//cm3/day
+}
+
+/**
+ * fills the stomatal conductance vector
+ * size = number of leaf segments
+ * vector is ordered like the leaf segments
+ * 
+ **/ 
+void MappedPlant::calcGs(float PAR, float VPD, float Tair,  std::vector<double> p_leaf) {
+    size_t length_leaf = std::count(organTypes.begin(), organTypes.end(), 4);
+	gs.resize(length_leaf);
+	float par ; //[µmol/m2/sec]
+	float vpd; //[MPa]
+	float tair ; //°C
+	float p_l; //1 cm of water = 0.0000978 MPa
+	for (int si = 0; si<length_leaf; si++) 
+	{
+		
+		par = PAR; //[µmol/m2/sec]
+		vpd = VPD; //[MPa]
+		tair = Tair; //°C
+		if(p_leaf.size() >1){p_l = p_leaf[si]*0.0000978;}		
+		else{p_l = p_leaf[0]*0.0000978;} //1 cm of water = 0.0000978 MPa	 
+		
+		float F_PAR = par/p_PAR;//make max = 1
+		float F_VPD = std::exp(-p_VPD*vpd);//make max = 1
+		float powTair = (p_TH - p_Topt)/(p_Topt - p_TL);
+		float F_Tair = std::pow(((tair-p_TL)*(p_TH - tair))/((p_Topt - p_TL)*(p_TH - p_Topt)), powTair);
+		float F_pleaf = std::exp(-pow(-p_l/p_psi1, p_psi2));
+		float F_all = F_pleaf * F_Tair *F_VPD * F_PAR;
+		gs[si] = p_gmax * F_all ; // //cm3/day  
+	}
+	
 }
 
 

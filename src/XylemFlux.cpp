@@ -5,6 +5,8 @@
 #include <set>
 
 namespace CPlantBox {
+	
+
 
 /**
  * Assembles the linear system as sparse matrix, given by public member variables,
@@ -17,8 +19,9 @@ namespace CPlantBox {
  * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
  *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  */
-void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k)
+void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k, const std::vector<double> gs)
 {
+	
 	int Ns = rs->segments.size(); // number of segments
 	aI.resize(4*Ns);
 	aJ.resize(4*Ns);
@@ -57,7 +60,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		
 		try {
 			kx = kx_f(age, subType, organType);
-			if(rs->gs.size()>0 && organType == 4){kr = rs->gs.at(numleaf);numleaf += 1;}
+			if(gs.size()>0 && organType == 4){kr = gs.at(numleaf);numleaf += 1;}
 			else{kr = kr_f(age, subType, organType);}
 		} catch(...) {
 			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
@@ -133,7 +136,7 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  * @return Volumetric fluxes for each segment [cm3/day]
  */
 std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-		bool approx, bool cells, const std::vector<double> soil_k)
+		bool approx, bool cells, const std::vector<double> soil_k, const std::vector<double> gs)
 {
 	std::vector<double> fluxes = std::vector<double>(rs->segments.size());
 	size_t numleaf = 0;
@@ -163,7 +166,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
 		try {
 			kx = kx_f(age, subType, organType);
-			if(rs->gs.size()>0 && organType == 4){kr = rs->gs.at(numleaf);numleaf += 1;}
+			if(gs.size()>0 && organType == 4){kr = gs.at(numleaf);numleaf += 1;}
 			else{kr = kr_f(age, subType, organType);}
 		} catch(...) {
 			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
