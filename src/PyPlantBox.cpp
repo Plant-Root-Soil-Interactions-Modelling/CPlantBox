@@ -777,19 +777,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("Types", &MappedSegments::subTypes) //kept for backward compatibility
         .def_readwrite("subTypes", &MappedSegments::subTypes)
         .def_readwrite("seg2cell", &MappedSegments::seg2cell)
-        .def_readwrite("cell2seg", &MappedSegments::cell2seg)
-        .def("setGsParameters",&MappedSegments::setGsParameters, py::arg("PAR") , py::arg("VPD"), 
-			py::arg("TH"), py::arg("TL"), py::arg("Topt") ,py::arg("psi1"), py::arg("psi2"), py::arg("gmax") )
-        .def("calcGs",&MappedSegments::calcGs, py::arg("PAR") , py::arg("VPD"), py::arg("Tair"), py::arg("p_leaf"))
-        .def_readwrite("gs", &MappedSegments::gs)
-        .def_readwrite("p_PAR", &MappedSegments::p_PAR)
-        .def_readwrite("p_VPD", &MappedSegments::p_VPD)
-        .def_readwrite("p_TH", &MappedSegments::p_TH)
-        .def_readwrite("p_TL", &MappedSegments::p_TL)
-        .def_readwrite("p_Topt", &MappedSegments::p_Topt)
-        .def_readwrite("p_psi1", &MappedSegments::p_psi1)
-        .def_readwrite("p_psi2", &MappedSegments::p_psi2)
-        .def_readwrite("p_gmax", &MappedSegments::p_gmax);
+        .def_readwrite("cell2seg", &MappedSegments::cell2seg);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
@@ -799,6 +787,7 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>>())
             .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&XylemFlux::setKrTables))
@@ -811,11 +800,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKxTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKxTables))
 
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
-            		py::arg("soil_k") = std::vector<double>())
+            		py::arg("soil_k") = std::vector<double>(), py::arg("gs") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
             		py::arg("soil_k") = std::vector<double>())
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
-            		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
+            		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>(), py::arg("gs") = std::vector<double>())
 
             .def("sumSoilFluxes",&XylemFlux::sumSegFluxes)
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
@@ -859,7 +848,19 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
-			.def("addSegments", &MappedPlant::plant);			
+			.def("addSegments", &MappedPlant::plant)
+			.def("setGsParameters",&MappedPlant::setGsParameters, py::arg("PAR") , py::arg("VPD"), 
+				py::arg("TH"), py::arg("TL"), py::arg("Topt") ,py::arg("psi1"), py::arg("psi2"), py::arg("gmax") )
+			.def("calcGs",&MappedPlant::calcGs, py::arg("PAR") , py::arg("VPD"), py::arg("Tair"), py::arg("p_leaf"))
+			.def_readwrite("gs", &MappedPlant::gs)
+			.def_readwrite("p_PAR", &MappedPlant::p_PAR)
+			.def_readwrite("p_VPD", &MappedPlant::p_VPD)
+			.def_readwrite("p_TH", &MappedPlant::p_TH)
+			.def_readwrite("p_TL", &MappedPlant::p_TL)
+			.def_readwrite("p_Topt", &MappedPlant::p_Topt)
+			.def_readwrite("p_psi1", &MappedPlant::p_psi1)
+			.def_readwrite("p_psi2", &MappedPlant::p_psi2)
+			.def_readwrite("p_gmax", &MappedPlant::p_gmax);	
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

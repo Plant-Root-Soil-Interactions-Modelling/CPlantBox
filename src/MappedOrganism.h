@@ -65,20 +65,6 @@ public:
     const double eps = 1.e-5;
 	
 	
-	void setGsParameters(float PAR, float VPD, float TH, float TL, float Topt, float psi1, float psi2, float gmax);//set parameters fo calculation of stomatale conductance
-	void calcGs(float PAR , float VPD , float Tair , 
-		 std::vector<double> p_leaf= std::vector<double>()) ; 
-	
-	float p_PAR;//parameters to solve the equation from PlanetMaiz for stomatale conductance
-	float p_VPD;
-	float p_TH ;
-	float p_TL;
-	float p_Topt;
-	float p_psi1;
-	float p_psi2 ;
-	float p_gmax;
-	std::vector<double> gs; //stomatal conductance for each leaf segment
-
 protected:
 
     void addSegment(Vector2i ns, double radius,  int st,int ot, int i); // adds a single segment at index i, appends the rest if cutted
@@ -130,7 +116,19 @@ public:
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
+	void setGsParameters(float PAR, float VPD, float TH, float TL, float Topt, float psi1, float psi2, float gmax);//set parameters fo calculation of stomatale conductance
+	void calcGs(float PAR , float VPD , float Tair , 
+		 std::vector<double> p_leaf= std::vector<double>()) ; 
 	
+	float p_PAR;//parameters to solve the equation from PlanetMaiz for stomatale conductance
+	float p_VPD;
+	float p_TH ;
+	float p_TL;
+	float p_Topt;
+	float p_psi1;
+	float p_psi2 ;
+	float p_gmax;
+	std::vector<double> gs; //stomatal conductance for each leaf segment
 };
 
 

@@ -17,19 +17,19 @@ p_a =  -1000  #static air water potential
 simtime = 14.0  # [day] for task b
 k_soil = []
 
-""" root system """
-rs = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
+# root system 
+pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
 path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
 name = "manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
-rs.readParameters(path + name + ".xml")
+pl.readParameters(path + name + ".xml")
 soil_index = lambda x, y, z : 0
-rs.setSoilGrid(soil_index)
-rs.initialize()
-rs.simulate(simtime, False)
+pl.setSoilGrid(soil_index)
+pl.initialize()
+pl.simulate(simtime, False)
 #rs.simulate(simtime, False) #test to see if works in case of several simulate
 
 
-r = XylemFluxPython(rs) 
+r = XylemFluxPython(pl) 
 nodes = r.get_nodes()
 tiproots, tipstem, tipleaf = r.get_organ_nodes_tips() #end node of end segment of each organ
 node_tips = np.concatenate((tiproots, tipstem, tipleaf))
@@ -44,10 +44,10 @@ r.airPressure = p_a
 # Numerical solution 
 r.seg_ind = seg_tips # segment indices for Neumann b.c.
 r.node_ind = node_tips
-r.rs.setGsParameters(PAR = 502, VPD= 0.03,TH=50, TL=10,  Topt=28, psi1=1.1, psi2=5, gmax =gmax)
-rx = r.solve_neumann_gs( sim_time = simtime,sxx=[p_s], cells = True, PAR=350,VPD = 10,Tair=20,p_linit = [p_s],  soil_k = [])
-fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
-r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False)
+pl.setGsParameters(PAR = 502, VPD= 0.03,TH=50, TL=10,  Topt=28, psi1=1.1, psi2=5, gmax =gmax)
+rx = r.solve_neumann_gs( sim_time = simtime,sxx=[p_s], cells = True, PAR=350,VPD = 10,Tair=20,p_linit = [p_s],plant=pl,  soil_k = [])
+fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True, pl.gs)  # cm3/day
+r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False, gs = pl.gs)
 
 
 # plot results 
