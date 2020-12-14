@@ -116,7 +116,6 @@ public:
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
-	float coucou;
 	void setGsParameters(float PAR, float VPD, float TH, float TL, float Topt, float psi1, float psi2, float gmax);//set parameters fo calculation of stomatale conductance
 	void calcGs(float PAR , float VPD , float Tair , 
 		 std::vector<double> p_leaf= std::vector<double>()) ; 
