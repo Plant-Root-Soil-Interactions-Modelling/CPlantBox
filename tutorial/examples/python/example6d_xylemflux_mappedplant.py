@@ -14,8 +14,9 @@ kr_stem = 1.e-20  # radial conductivity of stem  [1/day], set to almost 0
 gs = 0.03  # radial conductivity of leaves = stomatal conductivity [1/day]
 p_s = -200  # static soil pressure [cm]
 p_a = -1000 #static air pressure
-p0 = -500  # dircichlet bc at top
-simtime = 14  # [day] for task b
+#p0 = -500  # dircichlet bc at top
+simtime = 14.0  # [day] for task b
+k_soil = []
 
 """ root system """
 rs = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
@@ -31,6 +32,10 @@ rs.simulate(3, False)
 
 r = XylemFluxPython(rs) 
 nodes = r.get_nodes()
+tiproots, tipstem, tipleaf = r.get_organ_nodes_tips() #end node of end segment of each organ
+node_tips = np.concatenate((tiproots, tipstem, tipleaf))
+tiproots, tipstem, tipleaf = r.get_organ_segments_tips() #end segment of each organ
+seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
 """
     we can give a kr/kx:
         constant across type: r.setKx([[kz]])
@@ -46,17 +51,15 @@ nodes = r.get_nodes()
 
 r.setKr([[kr],[kr_stem],[gs]]) 
 r.setKx([[kz]])
-p_out = r.get_outer_matpot_matix(p_s, p_a) #create matrix to have p_a outer pressure for stem/leaves and p_s outer pressure for roots.
-leavenodes = r.get_nodes_index(4) #only takes for nodes of leaves
-# Numerical solution 
-r.node_ind = r.get_nodes_index(4)
-r.seg_ind = r.get_segments_index(4)
-rx = r.solve_dirichlet(sim_time= 0., value=p0,sxc= p_s, sxx=p_out, cells=False) #water matric pot given per segment
-print("Transpiration", r.collar_flux(simtime, rx, p_out),"cm3/day")
+r.airPressure = p_a
 
-fluxes = r.segFluxes(simtime, rx, p_out, False)  # cm3/day
-print(fluxes)
-print()
+# Numerical solution 
+r.seg_ind = seg_tips # segment indices for Neumann b.c.
+r.node_ind = node_tips
+rx = r.solve_neumann(sim_time= simtime, value=0, sxx=[p_s], cells=True) #water matric pot given per segment
+fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
+r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True)#r.segFluxes(simtime, rx, p_out, False)  # cm3/day
+
 
 # plot results 
 plt.plot(rx, nodes[:, 2] , "r*")

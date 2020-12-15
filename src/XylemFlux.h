@@ -18,16 +18,18 @@ class XylemFlux
 {
 public:
 
-    XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs) :rs(rs) { }
+    XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs){}
 
     virtual ~XylemFlux() { }
 
     void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true,
-        const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
+        const std::vector<double> soil_k = std::vector<double>(),
+		const std::vector<double> gs = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
     		bool approx = false, const std::vector<double> soil_k = std::vector<double>()); // [cm3/day]
     std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-    		bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>()); // for each segment in [cm3/day]
+    		bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>(), 
+			const std::vector<double> gs = std::vector<double>()); // for each segment in [cm3/day]
     std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
 
     std::vector<double> segSRA(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wilting_point,
@@ -54,10 +56,12 @@ public:
     void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
     void setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
 
+    //std::function<double()> org_f = [=]{ return 0.; };
     std::function<double(double,int, int)> kr_f = [](double age, int type, int orgtype) { return 0.; };
     std::function<double(double,int,int)> kx_f = [](double age, int type, int orgtype) { return 1.; };
 
     std::shared_ptr<CPlantBox::MappedSegments> rs;
+    //std::shared_ptr<CPlantBox::MappedPlant> pl;
 
     std::vector<std::vector<double>> kr, kr_t;
     std::vector<std::vector<double>> kx, kx_t;
@@ -68,6 +72,11 @@ public:
 
 protected:
 
+    //std::shared_ptr<CPlantBox::MappedSegments> return_rs() { return rs; } 
+    //std::shared_ptr<CPlantBox::MappedSegments> return_pl() { return pl; } 
+	//bool is_plant = false;
+	
+	
     double kr_const(double age, int type, int orgtype) { return kr.at(0).at(0); } //k constant
     //double kr_perType(double age, int type, int orgtype) { return kr[0].at(type); } //per subtype
     double kr_perOrgType(double age, int type, int orgtype) { return kr.at(orgtype - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
@@ -85,12 +94,6 @@ protected:
     double kx_tablePerOrgType(double age, int type, int orgtype) { return interp1(age, kxs_t.at(orgtype-2).at(0), kxs.at(orgtype-2).at(0)); } //constant for all subtype but type and age dependant
     double kx_tablePerType(double age, int type, int orgtype) { return interp1(age, kxs_t.at(orgtype-2).at(type), kxs.at(orgtype-2).at(type)); } //subtype, type and age dependant
 
-/*	
-    double kx_const(double age, int type, int orgtype) { return kx[0][0]; }
-    double kx_perType(double age, int type, int orgtype) { return kx[0].at(type); }
-    double kx_table(double age, int type, int orgtype) { return interp1(age, kx_t[0], kx[0]); }
-    double kx_tablePerType(double age, int type, int orgtype) { return interp1(age, kxs_t[0].at(type), kxs[0].at(type)); }
-*/
     static double interp1(double ip, std::vector<double> x, std::vector<double> y);
 
     static double schroederStress(double r, double p, double q_out, double r_in, double r_out, std::function<double(double)> mfp, std::function<double(double)> imfp);
