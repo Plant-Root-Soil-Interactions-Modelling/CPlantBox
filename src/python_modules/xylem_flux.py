@@ -177,7 +177,7 @@ class XylemFluxPython(XylemFlux):
         else:
             ksoil = 1.e9 # much
         #node x and y of stem and leave segments are revers with regards to the nodes x and y of roots. 
-        if sum(((not ij) ,(ot == 4) or (ot == 3)) )== 1: #check if only one of the condition is true 
+        if not ij: #check if only one of the condition is true  sum(((not ij) ,(ot == 4) or (ot == 3)) )== 1
             j, i = int(s.x), int(s.y)  # node indices
         else:
             i, j = int(s.x), int(s.y)  
@@ -187,7 +187,7 @@ class XylemFluxPython(XylemFlux):
         v.normalize()  # normalized v.z is needed for qz
         if cells:
             cell_ind = self.rs.seg2cell[seg_ind]
-            if nodes[s.y].z < 0: #y node belowground
+            if cell_ind >= 0: #y node belowground
                 p_s = sxx[cell_ind]  # soil pressure at collar segment
             else:
                 p_s = self.airPressure
@@ -297,10 +297,10 @@ class XylemFluxPython(XylemFlux):
         get_y_node = lambda vec : vec[1]
         get_x_node = lambda vec : vec[0]
         get_nodetype = lambda y : organTypes[y  -1]
-        nodesy = np.array([get_y_node(xi) for xi in segments])
-        nodesx = np.array([get_x_node(xi) for xi in segments])
+        nodesy = np.array([get_y_node(xi) for xi in segments], dtype = np.int64)
+        nodesx = np.array([get_x_node(xi) for xi in segments], dtype = np.int64)
         nodesy = np.setdiff1d(nodesy,nodesx) #select all the nodes which belong to tip of an organ
-        nodes_type= np.array([get_nodetype(xi) for xi in nodesy])
+        nodes_type= np.array([get_nodetype(xi) for xi in nodesy], dtype = np.int64)
         tiproots = np.intersect1d(np.where(nodes_type ==2, nodesy, -1),nodesy) #take root tips
         tipstem = np.intersect1d(np.where(nodes_type ==3, nodesy, -1),nodesy) #take stem tips
         tipleaf = np.intersect1d(np.where(nodes_type ==4, nodesy, -1),nodesy) #take leaf tips
@@ -309,9 +309,9 @@ class XylemFluxPython(XylemFlux):
     def get_organ_segments_tips(self):	
         """ return index of segments at the end of each organ """
         tiproots, tipstems, tipleaves= self.get_organ_nodes_tips() 
-        tiproots = tiproots - np.ones(tiproots.shape)  #segIndx = seg.y -1
-        tipstems = tipstems - np.ones(tipstems.shape)  #segIndx = seg.y -1
-        tipleaves = tipleaves - np.ones(tipleaves.shape)  #segIndx = seg.y -1
+        tiproots = tiproots - np.ones(tiproots.shape, dtype = np.int64)  #segIndx = seg.y -1
+        tipstems = tipstems - np.ones(tipstems.shape, dtype = np.int64)  #segIndx = seg.y -1
+        tipleaves = tipleaves - np.ones(tipleaves.shape, dtype = np.int64)  #segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
         
     def test(self):
@@ -468,7 +468,7 @@ class XylemFluxPython(XylemFlux):
         @return Q, b, the updated matrix, and rhs vector                 
         """
         for c in range(0, len(n0)):
-            b[n0[c]] += f[c]
+            b[int(n0[c])] += f[c]
         return Q, b
 
     @staticmethod

@@ -42,8 +42,8 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		double psi_s;
 		int organType = rs->organTypes[si];
 		if (cells) { // soil matric potential given per cell
-			if (rs->nodes[j].z<0) {
-				int cellIndex = rs->seg2cell[j-1];
+			int cellIndex = rs->seg2cell[j-1];
+			if (cellIndex>=0) {
 				psi_s = sx.at(cellIndex); // j-1 =  segIdx = s.y-1
 			} else {
 				psi_s = airPressure;
@@ -147,8 +147,8 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
 		double psi_s;
 		if (cells) { // soil matric potential given per cell
-			if (rs->nodes[j].z<0) {
-				int cellIndex = rs->seg2cell[j-1];
+			int cellIndex = rs->seg2cell[j-1];
+			if (cellIndex>=0) {
 				psi_s = sx.at(cellIndex); // j-1 =  segIdx = s.y-1
 			} else {
 				psi_s = airPressure;
