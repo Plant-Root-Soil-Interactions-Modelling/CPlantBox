@@ -122,41 +122,9 @@ class XylemFluxPython(XylemFlux):
 
         return x
 
-    def solve_neumann_gs(self, sim_time :float,sxx, cells :bool, PAR: float,VPD: float,Tair: float, p_linit:list, plant,  soil_k = []) :
-        """ solves the flux equations, with a neumann boundary condtion, see solve()
-            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
-            @param sxx [cm]             soil matric potentials given per segment or per soil cell
-            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
-            @param soil_k [day-1]       optionally, soil conductivities can be prescribed per segment, 
-                                        conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
-            @return [cm] root xylem pressure per root system node         
-         """
-        organTypes = self.get_organ_types()
-        leaf_nodes = self.get_nodes_index(4)
-        stop = False
-        diff = 0
-        loop = 0
-        p_l = p_linit 
-        Indx = np.concatenate((self.get_organ_nodes_tips()))
-        value = np.full(len(Indx), 0) #set 0 axial fux at tip of stems, roots and leaves
-        x_old = np.full(len(self.rs.nodes), 0)
-        while(stop != True):    
-            plant.calcGs(PAR, VPD, Tair,  p_l) 
-            self.linearSystem(sim_time, sxx, cells, soil_k, plant.gs) # C++ (see XylemFlux.cpp)
-            Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-            Q = sparse.csr_matrix(Q)
-            Q, b = self.bc_neumann(Q, self.aB, Indx, value)  # cm3 day-1
-            x = LA.spsolve(Q, b, use_umfpack = True)  # direct
-            p_l = x[leaf_nodes]
-            diff = sum(np.sqrt((x-x_old)**2))
-            x_old = x
-            if(loop > 1000 or diff < 1.e-5):
-                stop = True
-            loop +=1
-        print('gs and rx computation module stopped after {} trials. Sum of absolute diference between rx calculated at the last two trials: {}'.format(loop, diff))
-        return x
 
-    def axial_flux(self, seg_ind, sim_time, rx, sxx, k_soil = [], cells = True, ij = True, gs = []):
+
+    def axial_flux(self, seg_ind, sim_time, rx, sxx, k_soil = [], cells = True, ij = True):
         """ returns the exact axial flux of segment ij of xylem model solution @param rx
             @param seg_ind              segment index 
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
@@ -170,6 +138,7 @@ class XylemFluxPython(XylemFlux):
         """        
         s = self.rs.segments[seg_ind] 
         nodes = self.rs.nodes
+        numleaf = 0
         organTypes = self.get_organ_types() # collar segment
         ot = int(organTypes[seg_ind])  # conductivities kr, kx
         if len(k_soil) > 0:
@@ -199,12 +168,10 @@ class XylemFluxPython(XylemFlux):
         a = self.rs.radii[seg_ind]  # radius
         st = int(self.rs.subTypes[seg_ind])  # conductivities kr, kx
         age = sim_time - self.rs.nodeCTs[int(s.y)]
-        if ot == 4 and len(gs)>0:#to know which x-th leaf segment it is, to fetch the right gs value 
+        if ot == 4 and len(self.gs)>0:#to know which x-th leaf segment it is, to fetch the right gs value 
                 indices = [i for i, x in enumerate(organTypes) if x == 4]
                 numleaf = indices.index(seg_ind)
-                kr = gs[numleaf]
-        else :
-            kr = self.kr_f(age, st, ot)   # c++ conductivity call back functions
+        kr = self.kr_f(age, st, ot,numleaf)   # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot)
         tau = math.sqrt(2 * a * math.pi * kr / kx)  # cm-2
@@ -223,14 +190,14 @@ class XylemFluxPython(XylemFlux):
         """
         return self.axial_flux(0, sim_time, rx, sxx, k_soil, cells, True)
 
-    def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True, gs =[]):
+    def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the axial fluxes 
         @see axial_flux  
         """
         n = len(self.rs.segments)
-        return np.array([self.axial_flux(i, sim_time, rx, sxx, k_soil, cells, True, gs) for i in range(0, n)])
+        return np.array([self.axial_flux(i, sim_time, rx, sxx, k_soil, cells, True) for i in range(0, n)])
         
-    def radial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True, gs = []):
+    def radial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the exact radial fluxes (calls base class)
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
             @param rx [cm]              root xylem matric potentials per root system node
@@ -240,7 +207,7 @@ class XylemFluxPython(XylemFlux):
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm3 day-1] radial volumetric flow rate            
         """
-        return np.array(self.segFluxes(sim_time, rx, sxx, False, cells, k_soil, gs)) # approx = False
+        return np.array(self.segFluxes(sim_time, rx, sxx, False, cells, k_soil)) # approx = False
         
         
     def get_nodes(self):
@@ -344,7 +311,7 @@ class XylemFluxPython(XylemFlux):
         print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))
         print()
         
-    def summarize_fluxes(self, fluxes, sim_time, rx, p_s,k_soil = [], cells=False, show_matrices = False, gs =[]):
+    def summarize_fluxes(self, fluxes, sim_time, rx, p_s,k_soil = [], cells=False, show_matrices = False):
         """gives an overview of the radial and axial water flux. allows us to check that the water balance is about 0
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
             @param rx [cm]              root xylem matric potentials per root system node
@@ -359,8 +326,8 @@ class XylemFluxPython(XylemFlux):
         organTypes = np.array(self.rs.organTypes)
         sumfluxes = [sum(np.where(organTypes == 2, fluxes,0)),sum(np.where(organTypes == 3, fluxes,0)), sum(np.where(organTypes == 4, fluxes,0))]	
         tipsegroots, tipsegstems, tipsegleaves= self.get_organ_segments_tips() 
-        axialfluxes_j = np.array([self.axial_flux(i, sim_time, rx=rx,sxx= p_s,k_soil= k_soil,ij = True, cells = cells, gs = gs) for i in range(0, len(self.rs.segments))]) 
-        axialfluxes_i = -np.array([self.axial_flux(i, sim_time, rx=rx,sxx= p_s,k_soil= k_soil,ij = False, cells = cells,gs = gs) for i in range(0, len(self.rs.segments))])
+        axialfluxes_j = np.array([self.axial_flux(i, sim_time, rx=rx,sxx= p_s,k_soil= k_soil,ij = True, cells = cells) for i in range(0, len(self.rs.segments))]) 
+        axialfluxes_i = -np.array([self.axial_flux(i, sim_time, rx=rx,sxx= p_s,k_soil= k_soil,ij = False, cells = cells) for i in range(0, len(self.rs.segments))])
         
         balance = -axialfluxes_i-axialfluxes_j+fluxes
         if show_matrices :
