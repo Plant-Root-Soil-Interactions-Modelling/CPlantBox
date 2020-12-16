@@ -177,7 +177,7 @@ class XylemFluxPython(XylemFlux):
         else:
             ksoil = 1.e9 # much
         #node x and y of stem and leave segments are revers with regards to the nodes x and y of roots. 
-        if not ij: #check if only one of the condition is true  sum(((not ij) ,(ot == 4) or (ot == 3)) )== 1
+        if sum(((not ij) ,(ot == 4) or (ot == 3)) )== 1: #check if only one of the condition is true  
             j, i = int(s.x), int(s.y)  # node indices
         else:
             i, j = int(s.x), int(s.y)  
@@ -188,7 +188,10 @@ class XylemFluxPython(XylemFlux):
         if cells:
             cell_ind = self.rs.seg2cell[seg_ind]
             if cell_ind >= 0: #y node belowground
-                p_s = sxx[cell_ind]  # soil pressure at collar segment
+                if len(sxx) > 1:
+                    p_s = sxx[cell_ind]  # soil pressure at collar segment
+                else:
+                    p_s = sxx[0]
             else:
                 p_s = self.airPressure
         else:
