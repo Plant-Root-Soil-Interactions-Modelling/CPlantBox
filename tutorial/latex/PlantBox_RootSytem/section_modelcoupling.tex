@@ -80,10 +80,49 @@ It is possible to set conductivties per root type (see XylemFlux::setKr, and set
 \caption{Calculated xylem matric potential (cm)} 
 \end{figure}
 
+\subsection{Stomatal modul} \label{ssec:stomatal}
+
+The following example presents the stomatal modul (see file example6e$\_$xylemflux$\_$variable$\_$gs.py). The actual evapotranspiration (ETa) of the plant is determined according to environmental parameters, root and leaf surface, and maximal stomatal conductance (gmax). 
+\lstinputlisting[firstline=1, language=Python, caption=Example 6e]{../../examples/python/example6e_xylemflux_variable_gs.py}
+\begin{itemize}
+
+\item[11-19] Part of the parameters that will be used later on.
+
+\item[18-23] The root system (similar to last section). 
+
+\item[21-25] Creation of the plant object, definition of the grid and simulation of the plant growth.
+
+\item[38-42] Set the parameters for the calculation of the actual leaves radial conductivity (gs) and ETa using the equations of [TOADD].
+
+\item[44-48] Get the plant nodes and tips to set the Neumann boundary conditions (i.e. 0 axial flux is set at the plant nod tips (i.e: water only enters/leaves the plant by radial flux)
+
+\item[51] Solve the water flux using the Neumann boundary conditions. The program then loops on the calculation of ETa, xylem potential, and gs until convergence or after having done 1000 loops. p$\_$linit and gmax are respectively the initial leaf xylem potential and initial leaf radial conductivity used in the loop.
+
+\item[52] Calculation of the radial fluxes of each plant segment.
+
+\item[53] Gives an overview of the water fluxes in the plant. If show$\_$matrices = True, the matrices with the axial and radial water fluxes for each plant segment is shown.
+
+\item[62-72] Plots the results (see Figure \ref{fig:stomata} and \ref{fig:stomatb}).
+
+\item[75-78] Creates the VTP file, which can then be opened in Paraview.
+
+\end{itemize}
+
+\begin{figure}
+\begin{subfigure}[c]{0.5\textwidth}
+\includegraphics[width=0.99\textwidth]{example6e.png}
+\subcaption{Calculated xylem matric potential (cm)} \label{fig:stomata}
+\end{subfigure}
+\begin{subfigure}[c]{0.5\textwidth}
+\includegraphics[width=0.99\textwidth]{example6e_2.png}
+\subcaption{Radial water fluxes} \label{fig:stomatb}
+\end{subfigure}
+\caption{xylem potential and radial water fluxes per segment} 
+\end{figure}
 
 \subsection{Coupling a static root system to DuMux} \label{sec:dumux_coupling}
 
-Putting the last two sections together, we can easily set up an example, using the classic sink term in the soil model, similar as in \citep{leitner2014impact} based on \citep{doussan1998modelling}. For solving the Richards equation we use DuMux \citep{koch2020dumux}.
+Putting the sections \ref{ss:mapping} and \ref{ssec:xylem} together, we can easily set up an example, using the classic sink term in the soil model, similar as in \citep{leitner2014impact} based on \citep{doussan1998modelling}. For solving the Richards equation we use DuMux \citep{koch2020dumux}.
 
 The next example mimics benchmark C12 \citep{schnepf2019call}, but with a static simulated root system. The example must be run out of dumux-rosi (located in dumux-rosi/rosi$\_$benchmarking/python$\_$solver/coupled), otherwise the DuMux Python coupling is not available. 
 
