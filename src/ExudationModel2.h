@@ -172,7 +172,16 @@ public:
 				st_ = stopTime[ri]; // eq 13
 				st_ *= calc13;
 
-				std::cout << "Root #" << ri << "/" << roots.size() << ", age "<< age_ << ", stopped "<< st_ <<
+				double age;
+				if (st_>0) {
+					double stopAge = st_ - r_->getNodeCT(0);
+					age = std::min(age_, stopAge);
+				} else {
+					age = age_;
+				}
+
+				std::cout << "Root #" << ri << "/" << roots.size() << ", age_ "<< age_ <<  ", age "<< age <<
+						", st_ "<< st_ << ", nodeCT(0) "<< r_->getNodeCT(0) << ", tend "<< tend <<
 						", res "<< n_ << " \n"; // for debugging
 
 				// EQN 11
@@ -180,13 +189,6 @@ public:
 				for (int lind : voxelList[id]) {
 					// different flavors of Eqn (11)
 					x_ = grid.getGridPoint(lind);
-					double age;
-					if (st_>0) {
-						double stopAge = st_ - r_->getNodeCT(0);
-						age = std::min(age_, stopAge);
-					} else {
-						age = age_;
-					}
 					double c = eqn11(0, age, 0, l); // needs x_!
 					if (c_.count(lind)==0) {
 						c_[lind] = 0.;
@@ -196,11 +198,10 @@ public:
 				}
 
 				// EQN 13
-				if ((st_>0) && (st_<tend)) { // has stopped growing
+				if ((st_>0+1.e-10) && (st_+1.e-10<tend)) { // has stopped growing
 					std::cout << "13!";
 					for (int lind : voxelList[id]) {
-
-						if (g_[lind] > thresh13) { // is this really for each root, and not cumulative for all roots?
+						if (g_[lind] > thresh13) {
 							x_ = grid.getGridPoint(lind);
 							c_[lind] += integrate13(tend, id); // needs x_!
 						}
@@ -232,11 +233,11 @@ public:
 	}
 
 	// simplistic integration in 3d
-	double integrate13(double t, int id) { // called for fixed x_
+	double integrate13(double tend, int id) { // called for fixed x_
 		double c = 0;
 		for (int lind : voxelList[id]) {
 			Vector3d y = grid.getGridPoint(lind);
-			c += integrand13(y, lind, t)*dx3; // depends on (fixed) x_
+			c += integrand13(y, lind, tend)*dx3; // depends on (fixed) x_
 		}
 		//		for (int lind= 0; lind<n_size; lind++) { // full integral
 		//			Vector3d y = grid.getGridPoint(lind);
@@ -246,8 +247,8 @@ public:
 	}
 
 	// integrand Eqn 13
-	double integrand13(Vector3d& y, size_t lind, double t) {
-		double dt = t-st_;
+	double integrand13(Vector3d& y, size_t lind, double tend) {
+		double dt = tend-st_;
 		double c = to32(R)*g_[lind] / to32(4*Dl*M_PI*dt);
 		Vector3d z = x_.minus(y);
 		double l = z.times(z);
