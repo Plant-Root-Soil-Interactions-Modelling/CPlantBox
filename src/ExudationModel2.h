@@ -187,7 +187,6 @@ public:
 				// EQN 11
 				int id = r_->getId();
 				for (int lind : voxelList[id]) {
-					// different flavors of Eqn (11)
 					x_ = grid.getGridPoint(lind);
 					double c = eqn11(0, age, 0, l); // needs x_!
 					if (c_.count(lind)==0) {
@@ -203,14 +202,13 @@ public:
 					for (int lind : voxelList[id]) {
 						if (g_[lind] > thresh13) {
 							x_ = grid.getGridPoint(lind);
-							c_[lind] += integrate13(tend, id); // needs x_!
+							c_[lind] += integrate13(tend, id) - g_[lind]; // needs x_! tend
 						}
 					}
 					std::cout << "13\n";
 				}
 			} // if ages.at(i)>0
 		}
-
 		std::vector<double> c = std::vector<double>(n_size);
 		std::fill(c.begin(), c.end(), 0.);
 		return addResults(c);
@@ -232,28 +230,26 @@ public:
 		return 0.;
 	}
 
-	// simplistic integration in 3d
+	// simplistic integration in 3d at point x_
 	double integrate13(double tend, int id) { // called for fixed x_
 		double c = 0;
+		double scale = 0;
 		for (int lind : voxelList[id]) {
 			Vector3d y = grid.getGridPoint(lind);
-			c += integrand13(y, lind, tend)*dx3; // depends on (fixed) x_
+			c += integrand13(y, lind, tend, scale)*dx3; // depends on (fixed) x_
 		}
-		//		for (int lind= 0; lind<n_size; lind++) { // full integral
-		//			Vector3d y = grid.getGridPoint(lind);
-		//			c += integrand13(y, lind, t)*dx3; // depends on (fixed) x_
-		//		}
-		return c;
+		return c/scale; // scale integral to achieve mass balance for diffusion
 	}
 
-	// integrand Eqn 13
-	double integrand13(Vector3d& y, size_t lind, double tend) {
+	// integrand Eqn 13,
+	double integrand13(Vector3d& y, size_t lind, double tend, double& scale) {
 		double dt = tend-st_;
-		double c = to32(R)*g_[lind] / to32(4*Dl*M_PI*dt);
+		double c = to32(R) / to32(4*Dl*M_PI*dt);
 		Vector3d z = x_.minus(y);
 		double l = z.times(z);
 		l = std::max(eps,l);
-		return c*exp(-R/(4*Dl*dt) * l - k*dt/R); // note that dt -> 0 => integrand13 -> 0 if t.times(z)>0
+		scale += dx3*c*exp(-R/(4*Dl*dt) * l); // fundamental solution analytically adds up to 1
+		return g_[lind]*c*exp(-R/(4*Dl*dt) * l - k*dt/R);
 	}
 
 	// Returns the linearly interpolated position along the root r at age a
@@ -336,7 +332,7 @@ public:
 	std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
 	std::vector<Vector3d> tip;
 	std::vector<Vector3d> v; // direction from tip towards root base
-	double dx3 = 1;
+	double dx3;
 	std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
 	std::map<int, std::vector<int>> voxelList; // voxel list per root
 	int i0_ = 0;
@@ -351,9 +347,7 @@ public:
 	Vector3d v_ = Vector3d();
 	double st_ = 0; // stop time (eqn 13)
 
-	int n_size = 0;
-	//	std::vector<double> g_;
-	//	std::vector<double> c_;
+	int n_size; // number of voxels in all domain
 	std::map<int, double> g_;  // eqn 13
 	std::map<int, double> c_;
 
