@@ -223,6 +223,12 @@ double Organ::getParameter(std::string name) const {
     if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
     if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
+    if (name=="parent-node") {
+    	if (this->parent.expired()) {
+    		return -1; // to indicate it is base root
+    	}
+    	return parentNI;
+    } // local parent node index where this lateral emerges
     // organ member functions
 	if (name=="organType") { return organType(); }
     if (name=="numberOfChildren") { return children.size(); }
