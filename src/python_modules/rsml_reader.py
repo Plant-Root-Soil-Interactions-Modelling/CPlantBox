@@ -106,8 +106,9 @@ def get_parameter(polylines :list, funcs :dict, props :dict) -> (list, list, lis
         if "subType" in props:
             ptype_p = True
             ptype = props["subType"]
-        ptype_p = False
-        ptype = funcs["type"]  # otherwise we are in trouble
+        else:
+            ptype_p = False
+            ptype = funcs["type"]  # otherwise we are in trouble
     if "emergence_time" in funcs:
         fet = funcs["emergence_time"]
     else: 
