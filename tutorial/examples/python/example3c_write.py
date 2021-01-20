@@ -1,4 +1,4 @@
-"""dgf and vtp export example"""
+"""dgf and vtp, and rsml export example"""
 import sys; sys.path.append("../../..")
 sys.path.append("../../../src/python_modules")
 import plantbox as pb
@@ -19,3 +19,7 @@ for s in aseg:
 
 ana.write("results/example_3c.vtp", ["radius", "surface"])
 ana.write("results/example_3c.dgf")
+
+# segment analyser cannot write rsml files becasue rsml is based on polylines, not segments
+# use RootSystem::write to export a RSML
+rs.write("results/example_3c.rsml")
