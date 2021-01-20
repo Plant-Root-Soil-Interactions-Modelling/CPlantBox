@@ -217,6 +217,7 @@ double Organ::getParameter(std::string name) const {
 	if (name=="subType") { return this->param_->subType; }
     if (name=="a") { return param_->a; } // root radius [cm]
 	if (name=="radius") { return this->param_->a; } // root radius [cm]
+	if (name=="diameter") { return 2.*this->param_->a; } // root diameter [cm]
 	// organ member variables
     if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
     if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]

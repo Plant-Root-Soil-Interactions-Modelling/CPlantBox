@@ -91,23 +91,39 @@ def get_segments(polylines :list, props :dict) -> (list, list):
 
 
 def get_parameter(polylines :list, funcs :dict, props :dict) -> (list, list, list):
-    """ Copies radii and creation times, one value per segment 
-    """
-    fdiam = funcs["diameter"]
-    fet = funcs["emergence_time"]
+    """ Copies radius, creation times, and types one value per segment 
+    """    
+    if "diameter" in props:
+        fdiam_p = True
+        fdiam = props["diameter"]
+    else:
+        fdiam_p = False
+        fdiam = funcs["diameter"]
     if "type" in props:
+        ptype_p = True
         ptype = props["type"]
     else:
+        if "subType" in props:
+            ptype_p = True
+            ptype = props["subType"]
+        ptype_p = False
         ptype = funcs["type"]  # otherwise we are in trouble
-    radii, cts, types = [], [], []
+    if "emergence_time" in funcs:
+        fet = funcs["emergence_time"]
+    else: 
+        fet = funcs["node_creation_time"] # otherwise we are in trouble
+    radii, cts, types = [], [], [] # copy stuff    
     for i, p in enumerate(polylines):
         for j in range(0, len(p)):
-            radii.append(fdiam[i][j] / 2.)
-            cts.append(fet[i][j])
-            if "type" in props:
+            if fdiam_p:
+                radii.append(fdiam[i] / 2.)
+            else:
+                radii.append(fdiam[i][j] / 2.)
+            if ptype_p:
                 types.append(ptype[i])
             else:
-                types.append(ptype[i][j])
+                types.append(ptype[i][j])                
+            cts.append(fet[i][j])        
     return radii[1:], cts[1:], types[1:]
 
 
