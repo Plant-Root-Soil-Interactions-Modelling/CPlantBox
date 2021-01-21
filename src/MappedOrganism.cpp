@@ -129,12 +129,15 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
 	maxBound = max;
 	resolution = res;
 	cutAtGrid = cut;
+	std::cout << "setRectangularGrid: cutSegments \n" << std::flush;
 	if (cutAtGrid) {
 		cutSegments(); // re-add (for cutting)
 	}
+	std::cout << "setRectangularGrid: sort \n" << std::flush;
 	sort(); // todo should not be necessary, or only in case of cutting?
 	seg2cell.clear(); // re-map all segments
 	cell2seg.clear();
+	std::cout << "setRectangularGrid: map \n" << std::flush;
 	mapSegments(segments);
 }
 
@@ -152,6 +155,10 @@ void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
 		int cellIdx = soil_index(mid.x,mid.y,mid.z);
 		if ((cellIdx<0) && (firstWarning))  {
 			std::cout << "MappedSegments::mapSegments: some segments exceed the soil domain, they are mapped to cell index -1 \n";
+			std::cout << ns.toString() << "\n";
+			std::cout << mid.toString() << "\n";
+			std::cout << nodes[ns.x].toString() << "\n";
+			std::cout << nodes[ns.y].toString() << "\n";
 			firstWarning = false;
 		}
 		int segIdx = ns.y-1; // this is unique in a tree like structured

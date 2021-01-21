@@ -60,6 +60,23 @@ def read_rsml(name :str) -> (list, dict, dict):
     return polylines, properties, functions
 
 
+def artificial_shoot(polylines, properties, functions):
+    """ inserts an artificial shoot, with functions and properties of the the first polyline """ 
+    polylines.insert(0, [[0, 0, -0.1], [0, 0, -3.]])
+    for key, v in properties.items():
+        properties[key].insert(0, properties[key][0])
+    for key, v in functions.items():        
+        functions[key].insert(0, [functions[key][0][0], functions[key][0][1]])    
+    for i, p in enumerate(polylines):  # add one to the parent poly indices 
+        properties["parent-poly"][i] += 1
+    properties["parent-poly"][0] = -1
+    properties["parent-node"][0] = -1
+    for i, p in enumerate(polylines):
+        if properties["parent-node"][i] < 0:
+            properties["parent-node"][i] = 1
+    return polylines, properties, functions
+
+
 def get_segments(polylines :list, props :dict) -> (list, list):
     """ Converts the polylines to a list of nodes and an index list of line segments
         
@@ -84,6 +101,7 @@ def get_segments(polylines :list, props :dict) -> (list, list):
         # print(i , "pn", ni, "parent", pi, len(polylines[pi]))
         assert ni < len(polylines[pi]), "parent node index exceeds number of parent nodes"
         if (pi >= 0):
+            # print("pi", pi, "ni", ni, "s", [offset[pi] + ni, offset[i]])
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
             segs.append([offset[i] + j, offset[i] + j + 1])
@@ -112,8 +130,8 @@ def get_parameter(polylines :list, funcs :dict, props :dict) -> (list, list, lis
     if "emergence_time" in funcs:
         fet = funcs["emergence_time"]
     else: 
-        fet = funcs["node_creation_time"] # otherwise we are in trouble
-    radii, cts, types = [], [], [] # copy stuff    
+        fet = funcs["node_creation_time"]  # otherwise we are in trouble
+    radii, cts, types = [], [], []  # copy stuff    
     for i, p in enumerate(polylines):
         for j in range(0, len(p)):
             if fdiam_p:
@@ -135,11 +153,11 @@ def plot_rsml(polylines :list, prop :list):
     polylines(list): flat list of polylines, one polyline per root 
     prop(list): a single property, list of scalar value, on per root 
     """
-    f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
+    f = matplotlib.colors.Normalize(vmin=min(prop), vmax=max(prop))
     cmap = plt.get_cmap("jet", 256)
     for i, pl in enumerate(polylines):
         nodes = np.array(pl)
-        plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
+        plt.plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[i])))
     plt.axis('equal')
     plt.show()
 
@@ -152,28 +170,34 @@ def plot_segs(nodes :list, segs :list, fun :list):
     segs(list): list of two integer node indices for each line segment 
     fun(list): a single function, list of scalar value, on per segment, see TODO 
     """
-    f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
+    f = matplotlib.colors.Normalize(vmin=min(fun), vmax=max(fun))
     cmap = plt.get_cmap("jet", 256)
+    print("Segments")
     for i, s in enumerate(segs):
-        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
+        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color=cmap(f(fun[i])))
     plt.axis('equal')
     plt.show()
 
 
 if __name__ == '__main__':
+    
+    fname = "../../../dumux-rosi/grids/RootSystem.rsml"
+    # fname = "../../tutorial/examples/python/results/example_3c.rsml"  # run example3c_write.py first (in tutorial/examples/python/)
 
-    polylines, properties, functions = read_rsml("../../grids/RootSystem.rsml")
+    polylines, properties, functions = read_rsml(fname)
+    polylines, properties, functions = artificial_shoot(polylines, properties, functions)  # for multiple base roots, add artificial root 
+    
     print("Properties:")
     for key, v in properties.items() :
         print("\t", key, len(properties[key]))
     print("Functions:")
     for key, v in functions.items() :
         print("\t", key, len(functions[key]))
-    plot_rsml(polylines, properties["type"])
+    plot_rsml(polylines, properties["parent-node"])
 
     nodes, segs = get_segments(polylines, properties)
     nodes = np.array(nodes)
-    segs = np.array(segs, dtype = np.int64)
-
-#     print(functions["emergence_time"]) # TODO
-#     plot_segs(nodes, segs, functions["emergence_time"])  # slow
+    segs = np.array(segs, dtype=np.int64)
+        
+    radii, cts, types = get_parameter(polylines, functions, properties)
+    plot_segs(nodes, segs, cts)  # slow

@@ -5,10 +5,10 @@ import plantbox as pb
 
 rs = pb.RootSystem()
 path = "../../../modelparameter/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
+name = "Anagallis_femina_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"  # "Anagallis_femina_Leitner_2010"  # 
 rs.readParameters(path + name + ".xml")
 rs.initialize()
-rs.simulate(15, True)
+rs.simulate(30, True)
 
 ana = pb.SegmentAnalyser(rs)
 
