@@ -262,4 +262,4 @@ if __name__ == "__main__":
     write_rsml("test.xml", axis, segs, types, nodes, [age], meta)
 
     print("done")
-
+    

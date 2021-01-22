@@ -62,7 +62,7 @@ def read_rsml(name :str) -> (list, dict, dict):
 
 def artificial_shoot(polylines, properties, functions):
     """ inserts an artificial shoot, with functions and properties of the the first polyline """ 
-    polylines.insert(0, [[0, 0, -0.1], [0, 0, -3.]])
+    polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.]])
     for key, v in properties.items():
         properties[key].insert(0, properties[key][0])
     for key, v in functions.items():        
@@ -181,8 +181,8 @@ def plot_segs(nodes :list, segs :list, fun :list):
 
 if __name__ == '__main__':
     
-    fname = "../../../dumux-rosi/grids/RootSystem.rsml"
-    # fname = "../../tutorial/examples/python/results/example_3c.rsml"  # run example3c_write.py first (in tutorial/examples/python/)
+    # fname = "../../../dumux-rosi/grids/RootSystem.rsml"
+    fname = "../../tutorial/examples/python/results/example_3c.rsml"  # run example3c_write.py first (in tutorial/examples/python/)
 
     polylines, properties, functions = read_rsml(fname)
     polylines, properties, functions = artificial_shoot(polylines, properties, functions)  # for multiple base roots, add artificial root 
