@@ -353,7 +353,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("randn", &Organism::randn)
             //        .def_readwrite("seed_nC_", &Organism::seed_nC_)
             //        .def_readwrite("seed_nZ_", &Organism::seed_nZ_)
-
             .def("__str__",&Organism::toString);
 
 
@@ -400,6 +399,23 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("n", &EquidistantGrid1D::n)
             .def_readwrite("grid", &EquidistantGrid1D::grid)
             .def_readwrite("data", &EquidistantGrid1D::data);
+    py::class_<RectilinearGrid3D, SoilLookUp, std::shared_ptr<RectilinearGrid3D>>(m, "RectilinearGrid3D")
+            .def(py::init<Grid1D*,Grid1D*,Grid1D*>())
+            .def("map",&RectilinearGrid3D::map)
+			.def("getData",&RectilinearGrid3D::getData)
+			.def("setData",&RectilinearGrid3D::setData)
+			.def("getGridPoint",&RectilinearGrid3D::getGridPoint)
+            .def_readwrite("xgrid", &RectilinearGrid3D::xgrid)
+            .def_readwrite("ygrid", &RectilinearGrid3D::ygrid)
+            .def_readwrite("zgrid", &RectilinearGrid3D::zgrid)
+            .def_readwrite("nx", &RectilinearGrid3D::nx)
+            .def_readwrite("ny", &RectilinearGrid3D::ny)
+            .def_readwrite("nz", &RectilinearGrid3D::nz)
+            .def_readwrite("data", &RectilinearGrid3D::data);
+    py::class_<EquidistantGrid3D, RectilinearGrid3D, std::shared_ptr<EquidistantGrid3D>>(m, "EquidistantGrid3D")
+		.def(py::init<>())
+		.def(py::init<double, double, double, int, int, int>())
+		.def(py::init<double, double, int, double, double, int, double, double, int>());
     /**
      * tropism.h
      */

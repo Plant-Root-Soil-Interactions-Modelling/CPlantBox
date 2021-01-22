@@ -36,12 +36,31 @@ times = [73, 72, 71, 46, 45]    # (shooting=45,46) and (flowering= 71,72,73)
 
 # Make a root length distribution along the soil profile wall 
 
+# Define bulk denistitis in slit
+scale_elongation = pb.EquidistantGrid3D(right-left, 100, top-bot, 1, m, n)
+bulk_density = np.ones((1, m, n))
+zi0 = int(30/((top-bot)/n))
+zi1 = int(50/((top-bot)/n))
+bulk_density[0,:,0:zi0] =  1.7 # 0 - 30 cm 
+bulk_density[0,:,zi0:zi1] =  1.786 # 30 - 50 cm
+bulk_density[0,:,zi0:-1] =  1.786 # 50 - 100 cm (?)
+# slit
+yi0 = int(30/((top-bot)/n))
+bulk_density[0,0:yi0,0:zi0] =  1.26 # 0 - 30 cm 
+bulk_density[0,0:yi0,zi0:zi1] =  1.4 # 30 - 50 cm, shall we interpolate between this values?
+bulk_density[0,0:yi0,zi0:-1] =  1.786 # 50 - 100 cm (?)
+
+scales = np.exp(-0.4 * bulk_density)  #  equation TODO, see Mondrage et al.
+scale_elongation.data = np.array(scales.flat) # set proportionality factors
+
 # Initializes N*M root systems
 allRS = []
 for i in range(0, N):
     for j in range(0, M):
         rs = pb.RootSystem()
         rs.readParameters(path + name + ".xml")
+        for p in rs.getRootRandomParameter(): # set scale elongation function for all root ypes
+            p.f_se = scale_elongation          
         rs.getRootSystemParameter().seedPos = pb.Vector3d(distr * i, distp * j, -3.)  # cm
         rs.initialize(False)
         allRS.append(rs)
@@ -51,6 +70,11 @@ time = 0
 dt = 1 # day
 while time < simtime: # for future coupling with dynamic water movement 
     print("day", time)
+    
+    # update scales (e.g. from water content, soil_strength)
+    scales = np.exp(-0.4 * bulk_density)  
+    scale_elongation.data = np.array(scales.flat)
+        
     for rs in allRS:
         rs.simulate(dt)
     time += dt
