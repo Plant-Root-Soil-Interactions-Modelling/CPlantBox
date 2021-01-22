@@ -5,8 +5,12 @@ import plantbox as pb
 
 rs = pb.RootSystem()
 path = "../../../modelparameter/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"  # "Anagallis_femina_Leitner_2010"  # 
+name = "wheat" # "Brassica_napus_a_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"  # "Anagallis_femina_Leitner_2010"  # 
 rs.readParameters(path + name + ".xml")
+
+rhizotron = pb.SDF_PlantBox(8, 8, 15)
+rs.setGeometry(rhizotron)  # soilcore, or rhizotron
+
 rs.initialize()
 rs.simulate(30, True)
 
