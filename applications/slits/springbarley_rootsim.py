@@ -150,7 +150,7 @@ data_shooting1 = np.array([np.array(l) for l in rld])
 # print(data_shooting1.shape)
 
 x = X  # rename
-y = Y
+y = np.linspace(top, bot, n)  # upside down
 levels = np.linspace(0, 4, 21)
 X, Y = np.meshgrid(x, y)
 
