@@ -348,6 +348,8 @@ public:
         size_t i = xgrid->map(x);
         size_t j = ygrid->map(y);
         size_t k = zgrid->map(z);
+//        std::cout << "RectilinearGrid3D::map: " << i << ", " << ", " << j << ", " << k <<
+//        		" = " << k*(nx*ny)+j*nx+i << "; " << nx << ", " << ny << "\n";
         return k*(nx*ny)+j*nx+i; // or whatever
     } ///< point to linear data index
 
