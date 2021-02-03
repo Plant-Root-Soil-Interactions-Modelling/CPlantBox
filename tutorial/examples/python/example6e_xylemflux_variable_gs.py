@@ -59,13 +59,36 @@ r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = Fal
 
 
 # plot results 
-plt.plot(rx, nodes[:, 2] , "r*")
+fig, ax = plt.subplots()
+name = ["root", "stem", "leaf"]
+color = ['tab:blue', 'tab:orange', 'tab:green']
+for ndType in [2, 3, 4]:
+    y = r.get_nodes_organ_type(ndType)#coordinates
+    x = rx[r.get_nodes_index(ndType)]
+    ax.scatter(x, y[:,2], c=color[ndType-2],  label=name[ndType-2],
+               alpha=0.3, edgecolors='none')
+
+ax.legend()
+ax.grid(True)
 plt.xlabel("Xylem pressure (cm)")
 plt.ylabel("Depth (cm)")
 plt.title("Xylem matric potential (cm)")
 plt.show()
 
-plt.plot(fluxes, nodes[1:, 2] , "r*")
+
+fig, ax = plt.subplots()
+name = ["root", "stem", "leaf"]
+color = ['tab:blue', 'tab:orange', 'tab:green']
+for ndType in [2, 3, 4]:
+    segIdx = r.get_segments_index(ndType)
+    nodesy = segIdx + np.ones(segIdx.shape, dtype = np.int64)
+    y = nodes[nodesy]#coordinates
+    x = fluxes[segIdx]
+    ax.scatter(x, y[:,2], c=color[ndType-2],  label=name[ndType-2],
+               alpha=0.3, edgecolors='none')
+
+ax.legend()
+ax.grid(True)
 plt.xlabel("Fluxes")
 plt.ylabel("Depth (cm)")
 plt.title("water fluxes")
