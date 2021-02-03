@@ -368,7 +368,7 @@ void MappedSegments::sort() {
 /**
  * Overridden, to map initial shoot segments (@see RootSystem::initialize).
  *
- * Shoot segments have per default radii = 0.1 cm, types = 1, orgtype = 2
+ * Shoot segments have per default radii = 0.1 cm, types = 0, orgtype = 2
  * This can be changed by directly accessing the member variables.
  */
 void MappedRootSystem::initializeLB(int basaltype, int shootbornetype, bool verbose) {
@@ -380,7 +380,7 @@ void MappedRootSystem::initializeLB(int basaltype, int shootbornetype, bool verb
 	radii.resize(segments.size());
 	std::fill(radii.begin(), radii.end(), 0.1);
 	subTypes.resize(segments.size());
-	std::fill(subTypes.begin(), subTypes.end(), 1);
+	std::fill(subTypes.begin(), subTypes.end(), 0);
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //root organ type = 2
 	mapSegments(segments);
