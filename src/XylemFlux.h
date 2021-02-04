@@ -36,7 +36,7 @@ public:
         std::function<double(double)> mfp, std::function<double(double)> imfp, double dx = 1.e-6);
     std::vector<double> segSRAStressedAnalyticalFlux(const std::vector<double>& sx, std::function<double(double)> mfp);
 
-    std::vector<double> segOuterRadii(int type = 0) const; ///< outer cylinder radii to match cell volume
+    std::vector<double> segOuterRadii(int type = 0, const std::vector<double>& vols = std::vector<double>(0)) const; ///< outer cylinder radii to match cell volume
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
     std::vector<double> segLength() const; ///< calculates segment lengths [cm]
 

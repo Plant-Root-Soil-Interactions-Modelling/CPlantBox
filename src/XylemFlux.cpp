@@ -323,16 +323,22 @@ std::vector<double> XylemFlux::segSRAStressedAnalyticalFlux(const std::vector<do
 /**
  * Calculates outer segment radii [cm], so that the summed segment volumes per cell equals the cell volume
  * @param type 			prescribed cylinder volume proportional to 0: segment volume, 1: segment surface, 2: segment length
+ * @param vols 			(optional) in case of non-equidistant grids, volumes per cell must be defined
  */
-std::vector<double> XylemFlux::segOuterRadii(int type) const {
+std::vector<double> XylemFlux::segOuterRadii(int type, const std::vector<double>& vols) const {
+	double cellVolume;
 	auto lengths =  this->segLength();
 	auto width = rs->maxBound.minus(rs->minBound);
-	double cellVolume = width.x*width.y*width.z/rs->resolution.x/rs->resolution.y/rs->resolution.z; // TODO only true for equidistant rectangular grid
 	std::vector<double> radii = std::vector<double>(rs->segments.size());
 	std::fill(radii.begin(), radii.end(), 0.);
 	auto& map = rs->cell2seg;
 	for(auto iter = map.begin(); iter != map.end(); ++iter) {
 		int cellId =  iter->first;
+		if (vols.size()==0) {
+			cellVolume = width.x*width.y*width.z/rs->resolution.x/rs->resolution.y/rs->resolution.z;
+		} else {
+			cellVolume = vols.at(cellId);
+		}
 		auto segs = map.at(cellId);
 		double v = 0.;  // calculate sum of root volumes or surfaces over cell
 		for (int i : segs) {

@@ -824,7 +824,7 @@ PYBIND11_MODULE(plantbox, m) {
 
             .def("sumSoilFluxes",&XylemFlux::sumSegFluxes)
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
-            .def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0)
+            .def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
 			.def("segLength",&XylemFlux::segLength)
             .def("segSRA",&XylemFlux::segSRA)
             //.def("segSchroeder",&XylemFlux::segSchroeder)
