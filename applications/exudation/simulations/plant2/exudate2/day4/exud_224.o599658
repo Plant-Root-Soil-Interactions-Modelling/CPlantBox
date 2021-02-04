@@ -1,0 +1,30 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Organism::simulate: from 2 to 3 days
+Organism::simulate: from 3 to 4 days
+Width 40 Depth 35  at a Resolution 400 400 350
+make voxel lists
+Computation took 2000.761330127716 s
+made list 1/21 length 6.4 cm , vol 31.5827 cm3, having 6161 voxels
+made list 20/21 length 2.29055 cm , vol 11.3034 cm3, having 3000 voxels
+made list 21/21 length 2.1863 cm , vol 10.789 cm3, having 2875 voxels
+made list 27/21 length 1.34683 cm , vol 6.64632 cm3, having 1866 voxels
+made list 28/21 length 0.684578 cm , vol 3.37826 cm3, having 1342 voxels
+made list 2/21 length 6.2272 cm , vol 30.73 cm3, having 5934 voxels
+made list 18/21 length 2.29055 cm , vol 11.3034 cm3, having 1812 voxels
+made list 19/21 length 2.29055 cm , vol 11.3034 cm3, having 2474 voxels
+made list 22/21 length 1.59238 cm , vol 7.85808 cm3, having 1400 voxels
+made list 23/21 length 1.00652 cm , vol 4.96699 cm3, having 1505 voxels
+made list 24/21 length 0.96144 cm , vol 4.74451 cm3, having 1365 voxels
+made list 25/21 length 0.352756 cm , vol 1.74078 cm3, having 913 voxels
+made list 3/21 length 4.96864 cm , vol 24.5193 cm3, having 5058 voxels
+made list 4/21 length 3.71008 cm , vol 18.3085 cm3, having 3738 voxels
+made list 26/21 length 2.29055 cm , vol 11.3034 cm3, having 2465 voxels
+made list 35/21 length 2.1586 cm , vol 10.6522 cm3, having 1854 voxels
+made list 36/21 length 1.38164 cm , vol 6.81814 cm3, having 2180 voxels
+made list 37/21 length 0.611867 cm , vol 3.01944 cm3, having 1181 voxels
+made list 50/21 length 0.119066 cm , vol 0.587566 cm3, having 759 voxels
+made list 5/21 length 2.45152 cm , vol 12.0978 cm3, having 2305 voxels
+made list 6/21 length 1.19296 cm , vol 5.88702 cm3, having 1127 voxels
+writing VTP... ../vtp/day04.vtp

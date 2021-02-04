@@ -1,0 +1,6 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Width 20 Depth 45  at a Resolution 200 200 450
+Computation took 45.0906286239624 s
+writing VTP... ../vtp/day02.vtp

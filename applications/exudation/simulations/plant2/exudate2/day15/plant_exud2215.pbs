@@ -1,0 +1,14 @@
+
+#!/bin/sh
+#PBS -N exud_2215
+#PBS -l nodes=1:ppn=2,walltime=30:00:00,vmem=240gb
+#PBS -q openmp
+#PBS -M m.landl@fz-juelich.de
+#PBS -m e
+
+cd /home/m.landl/CPlantBox/applications/exudation/simulations/plant2/exudate2/day15
+module load python-3.8
+module load dumux 
+python3 example_exudate.py
+
+

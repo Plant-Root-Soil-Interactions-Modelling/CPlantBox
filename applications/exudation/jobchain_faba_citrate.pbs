@@ -1,0 +1,47 @@
+#!/bin/bash
+#submit a chain of jobs
+
+
+
+
+
+cc=13
+while [ $cc -le 20 ];
+do
+
+
+    cd /home/m.landl/CPlantBox/applications/exudation/simulations/plant1/exudate1/day$cc/	
+    cat <<EOF> plant_exud11$cc.pbs
+
+#!/bin/sh
+#PBS -N exud_11$cc
+#PBS -l nodes=1:ppn=2,walltime=100:00:00,vmem=120gb
+#PBS -q openmp
+#PBS -M m.landl@fz-juelich.de
+#PBS -m e
+
+cd /home/m.landl/CPlantBox/applications/exudation/simulations/plant1/exudate1/day$cc
+module load python-3.8
+module load dumux 
+python3 example_exudate.py
+
+
+EOF
+
+    if [ -f ../vtp/day$cc.vtp ];  then 
+	 echo "wrong"
+	 let cc=$cc+1
+    else
+	/usr/bin/qsub plant_exud11$cc.pbs
+	cd /home/m.landl/CPlantBox/applications/exudation/simulations/plant1/exudate1/day$cc/
+
+	while  [ ! -f ../vtp/day$cc.vtp ]; 
+	do 
+	    sleep 30
+	    echo "in the loop"
+	done
+	let cc=$cc+1
+    fi
+
+done	
+

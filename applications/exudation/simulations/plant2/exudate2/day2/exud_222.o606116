@@ -1,0 +1,11 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Width 40 Depth 35  at a Resolution 400 400 350
+make voxel lists
+Computation took 411.7999789714813 s
+made list 1/4 length 3.2 cm , vol 15.7914 cm3, having 3230 voxels
+made list 2/4 length 3.0272 cm , vol 14.9386 cm3, having 3021 voxels
+made list 3/4 length 1.76864 cm , vol 8.72789 cm3, having 1989 voxels
+made list 4/4 length 0.51008 cm , vol 2.51714 cm3, having 746 voxels
+writing VTP... ../vtp/day02.vtp

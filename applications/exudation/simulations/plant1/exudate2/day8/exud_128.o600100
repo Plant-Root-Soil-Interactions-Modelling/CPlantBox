@@ -1,0 +1,67 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Organism::simulate: from 2 to 3 days
+Organism::simulate: from 3 to 4 days
+Organism::simulate: from 4 to 5 days
+Organism::simulate: from 5 to 6 days
+Organism::simulate: from 6 to 7 days
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 7 to 8 days
+Width 20 Depth 45  at a Resolution 200 200 450
+make voxel lists
+Computation took 1565.0668840408325 s
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+made list 1/48 length 16.568 cm , vol 81.7598 cm3, having 23072 voxels
+made list 2/48 length 2.55604 cm , vol 12.6135 cm3, having 3101 voxels
+made list 56/48 length 1.28673 cm , vol 6.34975 cm3, having 1862 voxels
+made list 57/48 length 0.714496 cm , vol 3.5259 cm3, having 1365 voxels
+made list 3/48 length 2.58938 cm , vol 12.7781 cm3, having 3221 voxels
+made list 58/48 length 1.39388 cm , vol 6.8785 cm3, having 2076 voxels
+made list 59/48 length 0.955642 cm , vol 4.71591 cm3, having 1570 voxels
+made list 4/48 length 1.94557 cm , vol 9.60099 cm3, having 2636 voxels
+made list 60/48 length 1.28625 cm , vol 6.34737 cm3, having 1946 voxels
+made list 61/48 length 0.813701 cm , vol 4.01545 cm3, having 1537 voxels
+made list 5/48 length 2.14242 cm , vol 10.5724 cm3, having 2662 voxels
+made list 62/48 length 1.13555 cm , vol 5.6037 cm3, having 1773 voxels
+made list 63/48 length 0.922384 cm , vol 4.55178 cm3, having 1622 voxels
+made list 6/48 length 1.89922 cm , vol 9.37227 cm3, having 2476 voxels
+made list 64/48 length 0.943354 cm , vol 4.65527 cm3, having 1579 voxels
+made list 65/48 length 0.864874 cm , vol 4.26798 cm3, having 1466 voxels
+made list 7/48 length 1.69843 cm , vol 8.38143 cm3, having 2193 voxels
+made list 79/48 length 0.769051 cm , vol 3.79511 cm3, having 1356 voxels
+made list 8/48 length 1.40138 cm , vol 6.91555 cm3, having 2011 voxels
+made list 81/48 length 0.520452 cm , vol 2.56833 cm3, having 1165 voxels
+made list 9/48 length 1.4979 cm , vol 7.39183 cm3, having 2085 voxels
+made list 83/48 length 0.487185 cm , vol 2.40416 cm3, having 1184 voxels
+made list 10/48 length 1.60126 cm , vol 7.90192 cm3, having 2189 voxels
+made list 85/48 length 0.498311 cm , vol 2.45906 cm3, having 1105 voxels
+made list 11/48 length 1.35545 cm , vol 6.68889 cm3, having 2005 voxels
+made list 87/48 length 0.351484 cm , vol 1.73451 cm3, having 1032 voxels
+made list 12/48 length 1.29424 cm , vol 6.38684 cm3, having 1932 voxels
+made list 89/48 length 0.249489 cm , vol 1.23118 cm3, having 938 voxels
+made list 13/48 length 0.958379 cm , vol 4.72941 cm3, having 1526 voxels
+made list 14/48 length 0.927239 cm , vol 4.57574 cm3, having 1597 voxels
+made list 15/48 length 0.942228 cm , vol 4.64971 cm3, having 1541 voxels
+made list 16/48 length 0.837686 cm , vol 4.13381 cm3, having 1477 voxels
+made list 17/48 length 0.789623 cm , vol 3.89663 cm3, having 1353 voxels
+made list 18/48 length 0.731156 cm , vol 3.60811 cm3, having 1325 voxels
+made list 19/48 length 0.629117 cm , vol 3.10457 cm3, having 1334 voxels
+made list 20/48 length 0.801595 cm , vol 3.95571 cm3, having 1466 voxels
+made list 21/48 length 0.676927 cm , vol 3.3405 cm3, having 1373 voxels
+made list 22/48 length 0.651731 cm , vol 3.21616 cm3, having 1303 voxels
+made list 23/48 length 0.680516 cm , vol 3.35821 cm3, having 1255 voxels
+made list 24/48 length 0.725025 cm , vol 3.57786 cm3, having 1326 voxels
+made list 25/48 length 0.453677 cm , vol 2.23881 cm3, having 1063 voxels
+made list 26/48 length 0.486981 cm , vol 2.40315 cm3, having 1166 voxels
+made list 27/48 length 0.359119 cm , vol 1.77218 cm3, having 983 voxels
+made list 28/48 length 0.273281 cm , vol 1.34859 cm3, having 889 voxels
+made list 29/48 length 0.214835 cm , vol 1.06017 cm3, having 949 voxels
+made list 30/48 length 0.0322805 cm , vol 0.159298 cm3, having 690 voxels
+made list 31/48 length 0.0285873 cm , vol 0.141073 cm3, having 700 voxels
+made list 32/48 length 0.0297748 cm , vol 0.146933 cm3, having 653 voxels
+writing VTP... ../vtp/day08.vtp

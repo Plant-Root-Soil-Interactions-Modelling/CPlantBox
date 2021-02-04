@@ -1,0 +1,24 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Organism::simulate: from 2 to 3 days
+Organism::simulate: from 3 to 4 days
+Organism::simulate: from 4 to 5 days
+Organism::simulate: from 5 to 6 days
+Organism::simulate: from 6 to 7 days
+Organism::simulate: from 7 to 8 days
+Organism::simulate: from 8 to 9 days
+Organism::simulate: from 9 to 10 days
+Organism::simulate: from 10 to 11 days
+Organism::simulate: from 11 to 12 days
+Organism::simulate: from 12 to 13 days
+Organism::simulate: from 13 to 14 days
+Organism::simulate: from 14 to 15 days
+Could not respect geometry boundaries 
+Organism::simulate: from 15 to 16 days
+Organism::simulate: from 16 to 17 days
+Organism::simulate: from 17 to 18 days
+Organism::simulate: from 18 to 19 days
+Organism::simulate: from 19 to 20 days
+Organism::simulate: from 20 to 21 days
+Width 40 Depth 35  at a Resolution 400 400 350

@@ -1,0 +1,240 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Organism::simulate: from 2 to 3 days
+Organism::simulate: from 3 to 4 days
+Organism::simulate: from 4 to 5 days
+Organism::simulate: from 5 to 6 days
+Organism::simulate: from 6 to 7 days
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 7 to 8 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 8 to 9 days
+skipped small segment (2.77556e-17 < 1e-06) 
+skipped small segment (8.32667e-17 < 1e-06) 
+skipped small segment (2.77556e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (2.06998e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (2.03982e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.84684e-16 < 1e-06) 
+Organism::simulate: from 9 to 10 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (8.32667e-17 < 1e-06) 
+skipped small segment (1.66533e-16 < 1e-06) 
+skipped small segment (1.66533e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (3.33067e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 10 to 11 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (8.32667e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+Organism::simulate: from 11 to 12 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.38778e-16 < 1e-06) 
+skipped small segment (2.0714e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+made list 1/181 length 24.852 cm , vol 147.168 cm3, having 45468 voxels
+made list 2/181 length 6.18924 cm , vol 36.6512 cm3, having 9286 voxels
+made list 56/181 length 3.63015 cm , vol 21.4969 cm3, having 5825 voxels
+made list 57/181 length 3.57248 cm , vol 21.1554 cm3, having 5829 voxels
+made list 3/181 length 6.26999 cm , vol 37.1294 cm3, having 9627 voxels
+made list 58/181 length 4.39459 cm , vol 26.0237 cm3, having 5721 voxels
+made list 59/181 length 3.92818 cm , vol 23.2618 cm3, having 6229 voxels
+made list 4/181 length 4.83653 cm , vol 28.6408 cm3, having 7736 voxels
+made list 60/181 length 3.45691 cm , vol 20.471 cm3, having 4916 voxels
+made list 61/181 length 3.87561 cm , vol 22.9504 cm3, having 6473 voxels
+made list 5/181 length 5.40149 cm , vol 31.9863 cm3, having 8162 voxels
+made list 62/181 length 3.96867 cm , vol 23.5015 cm3, having 6393 voxels
+made list 63/181 length 4.53652 cm , vol 26.8642 cm3, having 6703 voxels
+made list 6/181 length 5.06367 cm , vol 29.9858 cm3, having 7792 voxels
+made list 64/181 length 4.12703 cm , vol 24.4393 cm3, having 6563 voxels
+made list 65/181 length 3.24754 cm , vol 19.2312 cm3, having 5295 voxels
+made list 7/181 length 4.60384 cm , vol 27.2629 cm3, having 6934 voxels
+made list 79/181 length 3.62395 cm , vol 21.4602 cm3, having 5725 voxels
+made list 80/181 length 3.52055 cm , vol 20.8479 cm3, having 5858 voxels
+made list 8/181 length 4.14208 cm , vol 24.5284 cm3, having 6589 voxels
+made list 81/181 length 4.07418 cm , vol 24.1263 cm3, having 6448 voxels
+made list 82/181 length 3.28862 cm , vol 19.4744 cm3, having 5371 voxels
+made list 9/181 length 4.57902 cm , vol 27.1158 cm3, having 7113 voxels
+made list 83/181 length 3.50201 cm , vol 20.7381 cm3, having 5863 voxels
+made list 84/181 length 3.04475 cm , vol 18.0303 cm3, having 5118 voxels
+made list 10/181 length 5.15296 cm , vol 30.5146 cm3, having 7889 voxels
+made list 85/181 length 3.44185 cm , vol 20.3818 cm3, having 5494 voxels
+made list 86/181 length 2.78885 cm , vol 16.5149 cm3, having 4726 voxels
+made list 11/181 length 4.84984 cm , vol 28.7196 cm3, having 7598 voxels
+made list 87/181 length 3.80685 cm , vol 22.5433 cm3, having 6190 voxels
+made list 88/181 length 3.35307 cm , vol 19.8561 cm3, having 5399 voxels
+made list 12/181 length 5.26644 cm , vol 31.1866 cm3, having 8115 voxels
+made list 89/181 length 3.61751 cm , vol 21.422 cm3, having 5931 voxels
+made list 90/181 length 3.20048 cm , vol 18.9525 cm3, having 5384 voxels
+made list 13/181 length 4.14615 cm , vol 24.5525 cm3, having 6424 voxels
+made list 101/181 length 3.00711 cm , vol 17.8074 cm3, having 5289 voxels
+made list 102/181 length 2.09994 cm , vol 12.4353 cm3, having 3926 voxels
+made list 14/181 length 4.19855 cm , vol 24.8628 cm3, having 6762 voxels
+made list 103/181 length 3.02186 cm , vol 17.8947 cm3, having 4958 voxels
+made list 104/181 length 2.43342 cm , vol 14.4102 cm3, having 4376 voxels
+made list 15/181 length 4.26644 cm , vol 25.2648 cm3, having 6621 voxels
+made list 105/181 length 3.19659 cm , vol 18.9295 cm3, having 5453 voxels
+made list 106/181 length 2.63512 cm , vol 15.6045 cm3, having 4784 voxels
+made list 16/181 length 4.20859 cm , vol 24.9223 cm3, having 6670 voxels
+made list 107/181 length 3.54009 cm , vol 20.9636 cm3, having 5667 voxels
+made list 108/181 length 2.08843 cm , vol 12.3672 cm3, having 3863 voxels
+made list 17/181 length 3.96713 cm , vol 23.4924 cm3, having 6070 voxels
+made list 109/181 length 2.48828 cm , vol 14.735 cm3, having 4341 voxels
+made list 110/181 length 2.83246 cm , vol 16.7732 cm3, having 4819 voxels
+made list 18/181 length 3.75792 cm , vol 22.2535 cm3, having 5918 voxels
+made list 111/181 length 3.06998 cm , vol 18.1797 cm3, having 5058 voxels
+made list 112/181 length 2.79671 cm , vol 16.5614 cm3, having 4692 voxels
+made list 19/181 length 3.34147 cm , vol 19.7874 cm3, having 5620 voxels
+made list 113/181 length 2.42775 cm , vol 14.3765 cm3, having 4393 voxels
+made list 114/181 length 2.23299 cm , vol 13.2232 cm3, having 4072 voxels
+made list 20/181 length 4.25758 cm , vol 25.2124 cm3, having 6818 voxels
+made list 115/181 length 3.12927 cm , vol 18.5308 cm3, having 5317 voxels
+made list 116/181 length 2.37173 cm , vol 14.0448 cm3, having 4160 voxels
+made list 21/181 length 3.68601 cm , vol 21.8277 cm3, having 6113 voxels
+made list 117/181 length 2.783 cm , vol 16.4803 cm3, having 4769 voxels
+made list 118/181 length 2.44636 cm , vol 14.4868 cm3, having 4344 voxels
+made list 22/181 length 3.60562 cm , vol 21.3516 cm3, having 5869 voxels
+made list 119/181 length 2.92914 cm , vol 17.3457 cm3, having 5095 voxels
+made list 120/181 length 2.75596 cm , vol 16.3201 cm3, having 4593 voxels
+made list 23/181 length 3.76488 cm , vol 22.2947 cm3, having 5871 voxels
+made list 121/181 length 2.96111 cm , vol 17.535 cm3, having 4892 voxels
+made list 122/181 length 2.71488 cm , vol 16.0769 cm3, having 4785 voxels
+made list 24/181 length 4.26636 cm , vol 25.2644 cm3, having 6542 voxels
+made list 123/181 length 3.27617 cm , vol 19.4007 cm3, having 5312 voxels
+made list 124/181 length 2.25685 cm , vol 13.3645 cm3, having 3915 voxels
+made list 25/181 length 3.26726 cm , vol 19.3479 cm3, having 5282 voxels
+made list 125/181 length 2.4711 cm , vol 14.6332 cm3, having 4291 voxels
+made list 126/181 length 2.81144 cm , vol 16.6487 cm3, having 4871 voxels
+made list 26/181 length 4.53679 cm , vol 26.8658 cm3, having 7165 voxels
+made list 127/181 length 2.64469 cm , vol 15.6612 cm3, having 4520 voxels
+made list 128/181 length 2.31686 cm , vol 13.7199 cm3, having 4063 voxels
+made list 27/181 length 4.13531 cm , vol 24.4883 cm3, having 6412 voxels
+made list 129/181 length 2.96669 cm , vol 17.568 cm3, having 5012 voxels
+made list 130/181 length 2.42728 cm , vol 14.3738 cm3, having 4356 voxels
+made list 28/181 length 3.1469 cm , vol 18.6352 cm3, having 5034 voxels
+made list 145/181 length 2.65583 cm , vol 15.7272 cm3, having 4581 voxels
+made list 146/181 length 1.49659 cm , vol 8.86244 cm3, having 2993 voxels
+made list 29/181 length 3.61223 cm , vol 21.3908 cm3, having 6118 voxels
+made list 131/181 length 2.42358 cm , vol 14.3519 cm3, having 4139 voxels
+made list 132/181 length 2.49523 cm , vol 14.7762 cm3, having 4518 voxels
+made list 30/181 length 3.49277 cm , vol 20.6834 cm3, having 5597 voxels
+made list 147/181 length 2.52492 cm , vol 14.952 cm3, having 4254 voxels
+made list 148/181 length 1.68678 cm , vol 9.9887 cm3, having 3359 voxels
+made list 31/181 length 3.09356 cm , vol 18.3193 cm3, having 5102 voxels
+made list 149/181 length 2.18276 cm , vol 12.9258 cm3, having 4151 voxels
+made list 150/181 length 1.90157 cm , vol 11.2606 cm3, having 3696 voxels
+made list 32/181 length 3.22248 cm , vol 19.0827 cm3, having 5099 voxels
+made list 151/181 length 2.60097 cm , vol 15.4023 cm3, having 4647 voxels
+made list 152/181 length 1.84592 cm , vol 10.9311 cm3, having 3648 voxels
+made list 33/181 length 2.92721 cm , vol 17.3342 cm3, having 4867 voxels
+made list 153/181 length 2.09264 cm , vol 12.3921 cm3, having 3826 voxels
+made list 154/181 length 1.78882 cm , vol 10.593 cm3, having 3413 voxels
+made list 34/181 length 3.16322 cm , vol 18.7318 cm3, having 5310 voxels
+made list 155/181 length 2.54196 cm , vol 15.0529 cm3, having 4585 voxels
+made list 156/181 length 1.44328 cm , vol 8.54677 cm3, having 2951 voxels
+made list 35/181 length 3.6155 cm , vol 21.4101 cm3, having 5723 voxels
+made list 157/181 length 2.20852 cm , vol 13.0783 cm3, having 3973 voxels
+made list 158/181 length 1.7159 cm , vol 10.1611 cm3, having 3298 voxels
+made list 36/181 length 2.86441 cm , vol 16.9623 cm3, having 5146 voxels
+made list 159/181 length 2.34589 cm , vol 13.8918 cm3, having 4175 voxels
+made list 160/181 length 1.75005 cm , vol 10.3634 cm3, having 3567 voxels
+made list 37/181 length 3.00503 cm , vol 17.7951 cm3, having 5110 voxels
+made list 161/181 length 1.96627 cm , vol 11.6438 cm3, having 3812 voxels
+made list 162/181 length 2.20862 cm , vol 13.079 cm3, having 4127 voxels
+made list 38/181 length 2.96641 cm , vol 17.5664 cm3, having 5038 voxels
+made list 163/181 length 1.88747 cm , vol 11.1772 cm3, having 3586 voxels
+made list 164/181 length 1.67196 cm , vol 9.90093 cm3, having 3274 voxels
+made list 39/181 length 2.69068 cm , vol 15.9336 cm3, having 4733 voxels
+made list 165/181 length 1.51558 cm , vol 8.97489 cm3, having 3117 voxels
+made list 166/181 length 1.67487 cm , vol 9.91819 cm3, having 3276 voxels
+made list 40/181 length 2.28948 cm , vol 13.5577 cm3, having 4183 voxels
+made list 174/181 length 1.44322 cm , vol 8.54641 cm3, having 2997 voxels
+made list 175/181 length 0.835289 cm , vol 4.94639 cm3, having 2193 voxels
+made list 41/181 length 2.39731 cm , vol 14.1963 cm3, having 4231 voxels
+made list 176/181 length 1.2795 cm , vol 7.57687 cm3, having 2697 voxels
+made list 177/181 length 0.873797 cm , vol 5.17442 cm3, having 2201 voxels
+made list 42/181 length 2.73475 cm , vol 16.1945 cm3, having 4852 voxels
+made list 178/181 length 1.32941 cm , vol 7.87243 cm3, having 2832 voxels
+made list 179/181 length 0.738784 cm , vol 4.3749 cm3, having 2102 voxels
+made list 43/181 length 2.12753 cm , vol 12.5987 cm3, having 3993 voxels
+made list 180/181 length 1.37038 cm , vol 8.11506 cm3, having 2957 voxels
+made list 181/181 length 0.810011 cm , vol 4.79669 cm3, having 2181 voxels
+made list 44/181 length 2.03585 cm , vol 12.0558 cm3, having 3610 voxels
+made list 182/181 length 1.04072 cm , vol 6.16289 cm3, having 2581 voxels
+made list 183/181 length 0.860294 cm , vol 5.09446 cm3, having 2315 voxels
+made list 45/181 length 2.30278 cm , vol 13.6365 cm3, having 4189 voxels
+made list 184/181 length 1.17352 cm , vol 6.94929 cm3, having 2698 voxels
+made list 185/181 length 0.860967 cm , vol 5.09844 cm3, having 2145 voxels
+made list 46/181 length 2.64822 cm , vol 15.6821 cm3, having 4758 voxels
+made list 186/181 length 1.04418 cm , vol 6.18337 cm3, having 2456 voxels
+made list 187/181 length 0.904449 cm , vol 5.35593 cm3, having 2368 voxels
+made list 47/181 length 1.91425 cm , vol 11.3357 cm3, having 3804 voxels
+made list 188/181 length 0.85361 cm , vol 5.05488 cm3, having 2265 voxels
+made list 189/181 length 0.800242 cm , vol 4.73884 cm3, having 2255 voxels
+made list 48/181 length 1.9217 cm , vol 11.3798 cm3, having 3649 voxels
+made list 190/181 length 0.901746 cm , vol 5.33992 cm3, having 2302 voxels
+made list 191/181 length 0.788197 cm , vol 4.66752 cm3, having 2184 voxels
+made list 49/181 length 1.86563 cm , vol 11.0478 cm3, having 3595 voxels
+made list 206/181 length 0.715551 cm , vol 4.23732 cm3, having 2098 voxels
+made list 50/181 length 1.60302 cm , vol 9.49272 cm3, having 3353 voxels
+made list 208/181 length 0.564917 cm , vol 3.3453 cm3, having 1873 voxels
+made list 51/181 length 1.60426 cm , vol 9.50002 cm3, having 3467 voxels
+made list 210/181 length 0.641496 cm , vol 3.79879 cm3, having 1971 voxels
+made list 52/181 length 1.66532 cm , vol 9.86164 cm3, having 3333 voxels
+made list 212/181 length 0.749852 cm , vol 4.44044 cm3, having 2035 voxels
+made list 53/181 length 1.61694 cm , vol 9.57516 cm3, having 3254 voxels
+made list 214/181 length 0.725892 cm , vol 4.29856 cm3, having 2128 voxels
+made list 54/181 length 1.5332 cm , vol 9.07924 cm3, having 3130 voxels
+made list 216/181 length 0.456293 cm , vol 2.70206 cm3, having 1776 voxels
+made list 55/181 length 1.21855 cm , vol 7.21597 cm3, having 2671 voxels
+made list 218/181 length 0.289087 cm , vol 1.71191 cm3, having 1520 voxels
+made list 66/181 length 1.27927 cm , vol 7.57554 cm3, having 2823 voxels
+made list 220/181 length 0.271397 cm , vol 1.60715 cm3, having 1544 voxels
+made list 67/181 length 1.09661 cm , vol 6.49387 cm3, having 2425 voxels
+made list 222/181 length 0.106609 cm , vol 0.631315 cm3, having 1273 voxels
+made list 68/181 length 1.11001 cm , vol 6.57323 cm3, having 2532 voxels
+made list 224/181 length 0.105145 cm , vol 0.622641 cm3, having 1269 voxels
+made list 69/181 length 1.122 cm , vol 6.64419 cm3, having 2597 voxels
+made list 226/181 length 0.10578Width 20 Depth 45  at a Resolution 200 200 450
+make voxel lists
+Computation took 17089.270609140396 s
+8 cm , vol 0.626453 cm3, having 1325 voxels
+made list 70/181 length 0.985351 cm , vol 5.83502 cm3, having 2501 voxels
+made list 71/181 length 0.709532 cm , vol 4.20168 cm3, having 2155 voxels
+made list 72/181 length 0.752908 cm , vol 4.45854 cm3, having 2145 voxels
+made list 73/181 length 0.64932 cm , vol 3.84512 cm3, having 2056 voxels
+made list 74/181 length 0.588549 cm , vol 3.48525 cm3, having 1970 voxels
+made list 75/181 length 0.473296 cm , vol 2.80275 cm3, having 1795 voxels
+made list 76/181 length 0.531812 cm , vol 3.14927 cm3, having 1812 voxels
+made list 77/181 length 0.505521 cm , vol 2.99357 cm3, having 1702 voxels
+made list 78/181 length 0.478032 cm , vol 2.83079 cm3, having 1750 voxels
+made list 91/181 length 0.430845 cm , vol 2.55136 cm3, having 1704 voxels
+made list 92/181 length 0.405472 cm , vol 2.40111 cm3, having 1682 voxels
+made list 93/181 length 0.389983 cm , vol 2.30939 cm3, having 1622 voxels
+made list 94/181 length 0.14564 cm , vol 0.862447 cm3, having 1365 voxels
+made list 95/181 length 0.0433619 cm , vol 0.256779 cm3, having 1208 voxels
+made list 96/181 length 0.0249923 cm , vol 0.147999 cm3, having 1206 voxels
+made list 97/181 length 0.0254269 cm , vol 0.150572 cm3, having 1180 voxels
+made list 98/181 length 0.0193527 cm , vol 0.114602 cm3, having 1156 voxels
+writing VTP... ../vtp/day12.vtp

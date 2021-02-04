@@ -1,0 +1,1877 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Organism::simulate: from 2 to 3 days
+Organism::simulate: from 3 to 4 days
+Organism::simulate: from 4 to 5 days
+Organism::simulate: from 5 to 6 days
+Organism::simulate: from 6 to 7 days
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 7 to 8 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 8 to 9 days
+skipped small segment (2.77556e-17 < 1e-06) 
+skipped small segment (8.32667e-17 < 1e-06) 
+skipped small segment (2.77556e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (2.06998e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (2.03982e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.84684e-16 < 1e-06) 
+Organism::simulate: from 9 to 10 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (8.32667e-17 < 1e-06) 
+skipped small segment (1.66533e-16 < 1e-06) 
+skipped small segment (1.66533e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (3.33067e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 10 to 11 days
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (8.32667e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+Organism::simulate: from 11 to 12 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.38778e-16 < 1e-06) 
+skipped small segment (2.0714e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+Organism::simulate: from 12 to 13 days
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+Organism::simulate: from 13 to 14 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (3.88578e-16 < 1e-06) 
+skipped small segment (1.66533e-16 < 1e-06) 
+skipped small segment (1.92652e-16 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 14 to 15 days
+skipped small segment (6.66134e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.82293e-16 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+Organism::simulate: from 15 to 16 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.27356e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (3.33067e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 16 to 17 days
+skipped small segment (6.66134e-16 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+skipped small segment (2.77556e-16 < 1e-06) 
+skipped small segment (6.66134e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 17 to 18 days
+skipped small segment (6.10623e-16 < 1e-06) 
+skipped small segment (5.55112e-16 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+skipped small segment (9.4369e-16 < 1e-06) 
+skipped small segment (5.55112e-16 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+skipped small segment (1.38778e-16 < 1e-06) 
+skipped small segment (2.77556e-17 < 1e-06) 
+skipped small segment (2.09545e-16 < 1e-06) 
+skipped small segment (2.77556e-17 < 1e-06) 
+skipped small segment (2.77556e-17 < 1e-06) 
+skipped small segment (3.33067e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.89225e-16 < 1e-06) 
+Organism::simulate: from 18 to 19 days
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+Organism::simulate: from 19 to 20 days
+skipped small segment (3.33067e-16 < 1e-06) 
+skipped small segment (7.21645e-16 < 1e-06) 
+skipped small segment (8.88178e-16 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (6.66134e-16 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+skipped small segment (5.55112e-16 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (5.55112e-17 < 1e-06) 
+skipped small segment (1.8241e-16 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+Organism::simulate: from 20 to 21 days
+skipped small segment (4.996e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (2.77556e-16 < 1e-06) 
+skipped small segment (4.44089e-16 < 1e-06) 
+skipped small segment (5.55112e-16 < 1e-06) 
+skipped small segment (1.11022e-16 < 1e-06) 
+skipped small segment (2.22045e-16 < 1e-06) 
+made list 1/482 length 43.491 cm , vol 343.391 cm3, having 4479 voxels
+made list 2/482 length 8 cm , vol 63.1655 cm3, having 724 voxels
+made list 56/482 length 3.63015 cm , vol 28.6625 cm3, having 369 voxels
+made list 57/482 length 3.98637 cm , vol 31.4751 cm3, having 410 voxels
+made list 3/482 length 8 cm , vol 63.1655 cm3, having 744 voxels
+made list 58/482 length 4.39459 cm , vol 34.6983 cm3, having 371 voxels
+made list 59/482 length 3.92818 cm , vol 31.0157 cm3, having 402 voxels
+made list 4/482 length 8 cm , vol 63.1655 cm3, having 742 voxels
+made list 60/482 length 3.45691 cm , vol 27.2947 cm3, having 326 voxels
+made list 61/482 length 3.87561 cm , vol 30.6006 cm3, having 410 voxels
+made list 5/482 length 8 cm , vol 63.1655 cm3, having 714 voxels
+made list 62/482 length 3.96867 cm , vol 31.3354 cm3, having 409 voxels
+made list 63/482 length 4.53652 cm , vol 35.8189 cm3, having 412 voxels
+made list 6/482 length 8 cm , vol 63.1655 cm3, having 725 voxels
+made list 64/482 length 4.12703 cm , vol 32.5857 cm3, having 425 voxels
+made list 65/482 length 3.24754 cm , vol 25.6416 cm3, having 335 voxels
+made list 7/482 length 8 cm , vol 63.1655 cm3, having 711 voxels
+made list 79/482 length 3.62395 cm , vol 28.6136 cm3, having 375 voxels
+made list 80/482 length 3.75653 cm , vol 29.6603 cm3, having 390 voxels
+made list 8/482 length 8 cm , vol 63.1655 cm3, having 738 voxels
+made list 81/482 length 4.16946 cm , vol 32.9207 cm3, having 416 voxels
+made list 82/482 length 3.63414 cm , vol 28.6941 cm3, having 373 voxels
+made list 9/482 length 8 cm , vol 63.1655 cm3, having 716 voxels
+made list 83/482 length 3.59936 cm , vol 28.4194 cm3, having 384 voxels
+made list 84/482 length 3.92128 cm , vol 30.9612 cm3, having 400 voxels
+made list 10/482 length 8 cm , vol 63.1655 cm3, having 710 voxels
+made list 85/482 length 4.08371 cm , vol 32.2436 cm3, having 405 voxels
+made list 86/482 length 2.96702 cm , vol 23.4267 cm3, having 323 voxels
+made list 11/482 length 8 cm , vol 63.1655 cm3, having 739 voxels
+made list 87/482 length 4.34462 cm , vol 34.3038 cm3, having 438 voxels
+made list 88/482 length 3.57658 cm , vol 28.2395 cm3, having 364 voxels
+made list 12/482 length 8 cm , vol 63.1655 cm3, having 736 voxels
+made list 89/482 length 3.83435 cm , vol 30.2748 cm3, having 402 voxels
+made list 90/482 length 4.341 cm , vol 34.2752 cm3, having 451 voxels
+made list 13/482 length 8 cm , vol 63.1655 cm3, having 708 voxels
+made list 101/482 length 3.46149 cm , vol 27.3308 cm3, having 373 voxels
+made list 102/482 length 3.59312 cm , vol 28.3701 cm3, having 376 voxels
+made list 14/482 length 8 cm , vol 63.1655 cm3, having 739 voxels
+made list 103/482 length 3.29641 cm , vol 26.0274 cm3, having 362 voxels
+made list 104/482 length 4.12708 cm , vol 32.5861 cm3, having 420 voxels
+made list 15/482 length 8 cm , vol 63.1655 cm3, having 715 voxels
+made list 105/482 length 3.83136 cm , vol 30.2512 cm3, having 410 voxels
+made list 106/482 length 3.95429 cm , vol 31.2219 cm3, having 419 voxels
+made list 16/482 length 8 cm , vol 63.1655 cm3, having 722 voxels
+made list 107/482 length 4.33412 cm , vol 34.2209 cm3, having 434 voxels
+made list 108/482 length 4.05186 cm , vol 31.9922 cm3, having 410 voxels
+made list 17/482 length 8 cm , vol 63.1655 cm3, having 703 voxels
+made list 109/482 length 4.11094 cm , vol 32.4587 cm3, having 406 voxels
+made list 110/482 length 3.76575 cm , vol 29.7332 cm3, having 387 voxels
+made list 18/482 length 8 cm , vol 63.1655 cm3, having 701 voxels
+made list 111/482 length 4.09539 cm , vol 32.3359 cm3, having 404 voxels
+made list 112/482 length 3.35781 cm , vol 26.5122 cm3, having 344 voxels
+made list 19/482 length 8 cm , vol 63.1655 cm3, having 741 voxels
+made list 113/482 length 4.46883 cm , vol 35.2845 cm3, having 440 voxels
+made list 114/482 length 3.98765 cm , vol 31.4852 cm3, having 408 voxels
+made list 20/482 length 8 cm , vol 63.1655 cm3, having 720 voxels
+made list 115/482 length 4.61899 cm , vol 36.4701 cm3, having 469 voxels
+made list 116/482 length 3.67722 cm , vol 29.0342 cm3, having 380 voxels
+made list 21/482 length 8 cm , vol 63.1655 cm3, having 733 voxels
+made list 117/482 length 4.52613 cm , vol 35.7369 cm3, having 444 voxels
+made list 118/482 length 4.02933 cm , vol 31.8143 cm3, having 410 voxels
+made list 22/482 length 8 cm , vol 63.1655 cm3, having 731 voxels
+made list 119/482 length 3.55816 cm , vol 28.0941 cm3, having 377 voxels
+made list 120/482 length 4.80613 cm , vol 37.9477 cm3, having 462 voxels
+made list 23/482 length 8 cm , vol 63.1655 cm3, having 706 voxels
+made list 121/482 length 4.76319 cm , vol 37.6087 cm3, having 457 voxels
+made list 122/482 length 3.78327 cm , vol 29.8715 cm3, having 387 voxels
+made list 24/482 length 8 cm , vol 63.1655 cm3, having 704 voxels
+made list 123/482 length 3.81109 cm , vol 30.0912 cm3, having 385 voxels
+made list 124/482 length 3.73145 cm , vol 29.4623 cm3, having 372 voxels
+made list 25/482 length 8 cm , vol 63.1655 cm3, having 711 voxels
+made list 125/482 length 4.17614 cm , vol 32.9735 cm3, having 408 voxels
+made list 126/482 length 4.08771 cm , vol 32.2753 cm3, having 413 voxels
+made list 26/482 length 8 cm , vol 63.1655 cm3, having 740 voxels
+made list 127/482 length 3.97763 cm , vol 31.4061 cm3, having 400 voxels
+made list 128/482 length 3.78951 cm , vol 29.9208 cm3, having 386 voxels
+made list 27/482 length 8 cm , vol 63.1655 cm3, having 709 voxels
+made list 129/482 length 4.37246 cm , vol 34.5235 cm3, having 438 voxels
+made list 130/482 length 4.11534 cm , vol 32.4935 cm3, having 407 voxels
+made list 28/482 length 8 cm , vol 63.1655 cm3, having 696 voxels
+made list 145/482 length 3.94556 cm , vol 31.1529 cm3, having 394 voxels
+made list 146/482 length 4.13347 cm , vol 32.6366 cm3, having 407 voxels
+made list 29/482 length 8 cm , vol 63.1655 cm3, having 746 voxels
+made list 131/482 length 3.88648 cm , vol 30.6864 cm3, having 382 voxels
+made list 132/482 length 3.5884 cm , vol 28.3329 cm3, having 381 voxels
+made list 30/482 length 8 cm , vol 63.1655 cm3, having 712 voxels
+made list 147/482 length 3.83895 cm , vol 30.3111 cm3, having 378 voxels
+made list 148/482 length 3.948 cm , vol 31.1721 cm3, having 404 voxels
+made list 31/482 length 8 cm , vol 63.1655 cm3, having 703 voxels
+made list 149/482 length 3.68923 cm , vol 29.129 cm3, having 395 voxels
+made list 150/482 length 4.03698 cm , vol 31.8747 cm3, having 424 voxels
+made list 32/482 length 8 cm , vol 63.1655 cm3, having 698 voxels
+made list 151/482 length 3.71157 cm , vol 29.3054 cm3, having 391 voxels
+made list 152/482 length 3.67686 cm , vol 29.0313 cm3, having 394 voxels
+made list 33/482 length 8 cm , vol 63.1655 cm3, having 706 voxels
+made list 153/482 length 3.60275 cm , vol 28.4462 cm3, having 370 voxels
+made list 154/482 length 3.83081 cm , vol 30.2469 cm3, having 385 voxels
+made list 34/482 length 8 cm , vol 63.1655 cm3, having 727 voxels
+made list 155/482 length 4.07555 cm , vol 32.1792 cm3, having 425 voxels
+made list 156/482 length 4.52999 cm , vol 35.7673 cm3, having 441 voxels
+made list 35/482 length 8 cm , vol 63.1655 cm3, having 714 voxels
+made list 157/482 length 3.26004 cm , vol 25.7403 cm3, having 339 voxels
+made list 158/482 length 2.98924 cm , vol 23.6021 cm3, having 320 voxels
+made list 36/482 length 8 cm , vol 63.1655 cm3, having 759 voxels
+made list 159/482 length 3.67615 cm , vol 29.0257 cm3, having 384 voxels
+made list 160/482 length 4.40044 cm , vol 34.7445 cm3, having 444 voxels
+made list 37/482 length 8 cm , vol 63.1655 cm3, having 724 voxels
+made list 161/482 length 4.31108 cm , vol 34.0389 cm3, having 447 voxels
+made list 162/482 length 3.99947 cm , vol 31.5785 cm3, having 406 voxels
+made list 38/482 length 8 cm , vol 63.1655 cm3, having 724 voxels
+made list 163/482 length 3.33544 cm , vol 26.3356 cm3, having 352 voxels
+made list 164/482 length 3.30152 cm , vol 26.0677 cm3, having 353 voxels
+made list 39/482 length 8 cm , vol 63.1655 cm3, having 723 voxels
+made list 165/482 length 3.8415 cm , vol 30.3312 cm3, having 402 voxels
+made list 166/482 length 4.45937 cm , vol 35.2097 cm3, having 437 voxels
+made list 40/482 length 8 cm , vol 63.1655 cm3, having 720 voxels
+made list 174/482 length 3.75599 cm , vol 29.6561 cm3, having 385 voxels
+made list 175/482 length 3.84389 cm , vol 30.3501 cm3, having 390 voxels
+made list 41/482 length 8 cm , vol 63.1655 cm3, having 729 voxels
+made list 176/482 length 4.20979 cm , vol 33.2392 cm3, having 411 voxels
+made list 177/482 length 4.26588 cm , vol 33.682 cm3, having 423 voxels
+made list 42/482 length 8 cm , vol 63.1655 cm3, having 745 voxels
+made list 178/482 length 4.20363 cm , vol 33.1905 cm3, having 419 voxels
+made list 179/482 length 3.98609 cm , vol 31.4729 cm3, having 407 voxels
+made list 43/482 length 8 cm , vol 63.1655 cm3, having 740 voxels
+made list 180/482 length 3.67896 cm , vol 29.0479 cm3, having 379 voxels
+made list 181/482 length 3.99833 cm , vol 31.5695 cm3, having 404 voxels
+made list 44/482 length 8 cm , vol 63.1655 cm3, having 701 voxels
+made list 182/482 length 3.86613 cm , vol 30.5257 cm3, having 407 voxels
+made list 183/482 length 3.63116 cm , vol 28.6705 cm3, having 375 voxels
+made list 45/482 length 8 cm , vol 63.1655 cm3, having 731 voxels
+made list 184/482 length 4.60341 cm , vol 36.347 cm3, having 458 voxels
+made list 185/482 length 3.88891 cm , vol 30.7056 cm3, having 384 voxels
+made list 46/482 length 8 cm , vol 63.1655 cm3, having 730 voxels
+made list 186/482 length 3.93636 cm , vol 31.0802 cm3, having 399 voxels
+made list 187/482 length 4.23482 cm , vol 33.4368 cm3, having 430 voxels
+made list 47/482 length 8 cm , vol 63.1655 cm3, having 750 voxels
+made list 188/482 length 4.32268 cm , vol 34.1305 cm3, having 439 voxels
+made list 189/482 length 3.46662 cm , vol 27.3714 cm3, having 381 voxels
+made list 48/482 length 8 cm , vol 63.1655 cm3, having 723 voxels
+made list 190/482 length 4.5715 cm , vol 36.0951 cm3, having 446 voxels
+made list 191/482 length 4.776 cm , vol 37.7098 cm3, having 474 voxels
+made list 49/482 length 8 cm , vol 63.1655 cm3, having 717 voxels
+made list 206/482 length 4.08018 cm , vol 32.2158 cm3, having 420 voxels
+made list 207/482 length 4.32515 cm , vol 34.15 cm3, having 428 voxels
+made list 50/482 length 8 cm , vol 63.1655 cm3, having 742 voxels
+made list 208/482 length 4.13447 cm , vol 32.6444 cm3, having 426 voxels
+made list 209/482 length 3.88553 cm , vol 30.6789 cm3, having 388 voxels
+made list 51/482 length 8 cm , vol 63.1655 cm3, having 758 voxels
+made list 210/482 length 3.99006 cm , vol 31.5043 cm3, having 400 voxels
+made list 211/482 length 3.27427 cm , vol 25.8526 cm3, having 336 voxels
+made list 52/482 length 8 cm , vol 63.1655 cm3, having 722 voxels
+made list 212/482 length 4.42261 cm , vol 34.9195 cm3, having 430 voxels
+made list 213/482 length 3.45584 cm , vol 27.2862 cm3, having 358 voxels
+made list 53/482 length 8 cm , vol 63.1655 cm3, having 732 voxels
+made list 214/482 length 4.33379 cm , vol 34.2183 cm3, having 449 voxels
+made list 215/482 length 3.52085 cm , vol 27.7995 cm3, having 357 voxels
+made list 54/482 length 8 cm , vol 63.1655 cm3, having 716 voxels
+made list 216/482 length 4.00445 cm , vol 31.6179 cm3, having 414 voxels
+made list 217/482 length 4.43194 cm , vol 34.9932 cm3, having 456 voxels
+made list 55/482 length 7.63428 cm , vol 60.2779 cm3, having 687 voxels
+made list 218/482 length 4.06081 cm , vol 32.0629 cm3, having 420 voxels
+made list 219/482 length 4.3496 cm , vol 34.3431 cm3, having 427 voxels
+made list 66/482 length 8 cm , vol 63.1655 cm3, having 727 voxels
+made list 220/482 length 4.20755 cm , vol 33.2215 cm3, having 434 voxels
+made list 221/482 length 4.17118 cm , vol 32.9343 cm3, having 419 voxels
+made list 67/482 length 8 cm , vol 63.1655 cm3, having 699 voxels
+made list 222/482 length 3.61346 cm , vol 28.5307 cm3, having 372 voxels
+made list 223/482 length 3.72173 cm , vol 29.3856 cm3, having 396 voxels
+made list 68/482 length 8 cm , vol 63.1655 cm3, having 712 voxels
+made list 224/482 length 4.12272 cm , vol 32.5517 cm3, having 407 voxels
+made list 225/482 length 3.87086 cm , vol 30.5631 cm3, having 407 voxels
+made list 69/482 length 8 cm , vol 63.1655 cm3, having 730 voxels
+made list 226/482 length 3.29665 cm , vol 26.0293 cm3, having 369 voxels
+made list 227/482 length 3.42018 cm , vol 27.0047 cm3, having 383 voxels
+made list 70/482 length 8 cm , vol 63.1655 cm3, having 744 voxels
+made list 246/482 length 3.51288 cm , vol 27.7366 cm3, having 382 voxels
+made list 247/482 length 4.77511 cm , vol 37.7028 cm3, having 473 voxels
+made list 71/482 length 7.22599 cm , vol 57.0541 cm3, having 686 voxels
+made list 248/482 length 3.74334 cm , vol 29.5562 cm3, having 383 voxels
+made list 249/482 length 3.58429 cm , vol 28.3004 cm3, having 361 voxels
+made list 72/482 length 8 cm , vol 63.1655 cm3, having 740 voxels
+made list 250/482 length 3.93686 cm , vol 31.0842 cm3, having 404 voxels
+made list 251/482 length 3.84996 cm , vol 30.3981 cm3, having 399 voxels
+made list 73/482 length 7.15691 cm , vol 56.5087 cm3, having 670 voxels
+made list 252/482 length 3.98454 cm , vol 31.4607 cm3, having 406 voxels
+made list 253/482 length 4.70772 cm , vol 37.1707 cm3, having 455 voxels
+made list 74/482 length 8 cm , vol 63.1655 cm3, having 743 voxels
+made list 254/482 length 4.15257 cm , vol 32.7874 cm3, having 409 voxels
+made list 255/482 length 4.06153 cm , vol 32.0686 cm3, having 405 voxels
+made list 75/482 length 7.67319 cm , vol 60.5851 cm3, having 712 voxels
+made list 256/482 length 3.9932 cm , vol 31.5291 cm3, having 421 voxels
+made list 257/482 length 4.89277 cm , vol 38.6318 cm3, having 473 voxels
+made list 76/482 length 8 cm , vol 63.1655 cm3, having 720 voxels
+made list 258/482 length 4.6703 cm , vol 36.8752 cm3, having 460 voxels
+made list 259/482 length 2.85429 cm , vol 22.5366 cm3, having 317 voxels
+made list 77/482 length 8 cm , vol 63.1655 cm3, having 704 voxels
+made list 260/482 length 3.62053 cm , vol 28.5865 cm3, having 375 voxels
+made list 261/482 length 3.87068 cm , vol 30.5616 cm3, having 395 voxels
+made list 78/482 length 7.81715 cm , vol 61.7217 cm3, having 704 voxels
+made list 262/482 length 4.19937 cm , vol 33.1569 cm3, having 418 voxels
+made list 263/482 length 3.85489 cm , vol 30.437 cm3, having 403 voxels
+made list 91/482 length 8 cm , vol 63.1655 cm3, having 727 voxels
+made list 264/482 length 4.7168 cm , vol 37.2424 cm3, having 482 voxels
+made list 265/482 length 4.22216 cm , vol 33.3368 cm3, having 415 voxels
+made list 92/482 length 7.86181 cm , vol 62.0744 cm3, having 721 voxels
+made list 266/482 length 4.11654 cm , vol 32.5029 cm3, having 413 voxels
+made list 267/482 length 3.511 cm , vol 27.7217 cm3, having 364 voxels
+made list 93/482 length 8 cm , vol 63.1655 cm3, having 705 voxels
+made list 268/482 length 3.85163 cm , vol 30.4113 cm3, having 402 voxels
+made list 269/482 length 4.43795 cm , vol 35.0406 cm3, having 445 voxels
+made list 94/482 length 7.05653 cm , vol 55.7161 cm3, having 669 voxels
+made list 280/482 length 3.73075 cm , vol 29.4569 cm3, having 383 voxels
+made list 281/482 length 4.26544 cm , vol 33.6785 cm3, having 437 voxels
+made list 95/482 length 7.90317 cm , vol 62.4009 cm3, having 718 voxels
+made list 282/482 length 4.05978 cm , vol 32.0548 cm3, having 405 voxels
+made list 283/482 length 4.02203 cm , vol 31.7566 cm3, having 410 voxels
+made list 96/482 length 6.94473 cm , vol 54.8334 cm3, having 661 voxels
+made list 284/482 length 3.62659 cm , vol 28.6344 cm3, having 378 voxels
+made list 285/482 length 3.53037 cm , vol 27.8747 cm3, having 369 voxels
+made list 97/482 length 7.06654 cm , vol 55.7952 cm3, having 661 voxels
+made list 286/482 length 4.26541 cm , vol 33.6783 cm3, having 439 voxels
+made list 287/482 length 4.58799 cm , vol 36.2253 cm3, having 461 voxels
+made list 98/482 length 8 cm , vol 63.1655 cm3, having 728 voxels
+made list 270/482 length 3.3771 cm , vol 26.6645 cm3, having 340 voxels
+made list 271/482 length 3.60079 cm , vol 28.4307 cm3, having 377 voxels
+made list 99/482 length 7.51105 cm , vol 59.3049 cm3, having 668 voxels
+made list 288/482 length 3.99521 cm , vol 31.5449 cm3, having 410 voxels
+made list 289/482 length 4.24042 cm , vol 33.481 cm3, having 425 voxels
+made list 100/482 length 7.34684 cm , vol 58.0083 cm3, having 692 voxels
+made list 290/482 length 3.52468 cm , vol 27.8298 cm3, having 376 voxels
+made list 291/482 length 4.88272 cm , vol 38.5524 cm3, having 482 voxels
+made list 133/482 length 6.85029 cm , vol 54.0877 cm3, having 620 voxels
+made list 292/482 length 3.76259 cm , vol 29.7083 cm3, having 388 voxels
+made list 293/482 length 3.79611 cm , vol 29.9729 cm3, having 395 voxels
+made list 134/482 length 6.49067 cm , vol 51.2483 cm3, having 612 voxels
+made list 294/482 length 4.48407 cm , vol 35.4048 cm3, having 452 voxels
+made list 295/482 length 3.89388 cm , vol 30.7448 cm3, having 401 voxels
+made list 135/482 length 6.88234 cm , vol 54.3408 cm3, having 631 voxels
+made list 296/482 length 3.72662 cm , vol 29.4242 cm3, having 372 voxels
+made list 297/482 length 4.09981 cm , vol 32.3708 cm3, having 415 voxels
+made list 136/482 length 5.79879 cm , vol 45.7854 cm3, having 558 voxels
+made list 312/482 length 5.23487 cm , vol 41.3329 cm3, having 519 voxels
+made list 313/482 length 4.47248 cm , vol 35.3133 cm3, having 448 voxels
+made list 137/482 length 5.76002 cm , vol 45.4793 cm3, having 541 voxels
+made list 314/482 length 4.25401 cm , vol 33.5883 cm3, having 428 voxels
+made list 315/482 length 4.35887 cm , vol 34.4162 cm3, having 442 voxels
+made list 138/482 length 6.76867 cm , vol 53.4433 cm3, having 629 voxels
+made list 316/482 length 4.0215 cm , vol 31.7525 cm3, having 406 voxels
+made list 317/482 length 3.89447 cm , vol 30.7495 cm3, having 417 voxels
+made list 139/482 length 6.19831 cm , vol 48.9399 cm3, having 595 voxels
+made list 318/482 length 3.95736 cm , vol 31.2461 cm3, having 396 voxels
+made list 319/482 length 3.59956 cm , vol 28.421 cm3, having 378 voxels
+made list 140/482 length 7.43795 cm , vol 58.7277 cm3, having 671 voxels
+made list 320/482 length 4.10522 cm , vol 32.4135 cm3, having 410 voxels
+made list 321/482 length 3.96191 cm , vol 31.282 cm3, having 397 voxels
+made list 141/482 length 6.52709 cm , vol 51.5358 cm3, having 615 voxels
+made list 322/482 length 3.83381 cm , vol 30.2705 cm3, having 392 voxels
+made list 323/482 length 4.06666 cm , vol 32.1091 cm3, having 415 voxels
+made list 142/482 length 7.60419 cm , vol 60.0403 cm3, having 706 voxels
+made list 324/482 length 3.30494 cm , vol 26.0947 cm3, having 344 voxels
+made list 325/482 length 4.00595 cm , vol 31.6298 cm3, having 410 voxels
+made list 143/482 length 6.44148 cm , vol 50.8599 cm3, having 610 voxels
+made list 326/482 length 3.22151 cm , vol 25.436 cm3, having 360 voxels
+made list 327/482 length 3.33036 cm , vol 26.2955 cm3, having 355 voxels
+made list 144/482 length 6.9312 cm , vol 54.7266 cm3, having 627 voxels
+made list 328/482 length 4.20098 cm , vol 33.1696 cm3, having 408 voxels
+made list 329/482 length 3.70087 cm , vol 29.2209 cm3, having 378 voxels
+made list 167/482 length 6.50225 cm , vol 51.3397 cm3, having 631 voxels
+made list 330/482 length 3.6781 cm , vol 29.0411 cm3, having 389 voxels
+made list 331/482 length 3.72793 cm , vol 29.4346 cm3, having 384 voxels
+made list 168/482 length 6.12793 cm , vol 48.3842 cm3, having 574 voxels
+made list 332/482 length 3.52713 cm , vol 27.8491 cm3, having 361 voxels
+made list 333/482 length 4.16213 cm , vol 32.8628 cm3, having 430 voxels
+made list 169/482 length 6.21696 cm , vol 49.0871 cm3, having 565 voxels
+made list 340/482 length 4.07876 cm , vol 32.2046 cm3, having 417 voxels
+made list 341/482 length 4.08602 cm , vol 32.2619 cm3, having 440 voxels
+made list 170/482 length 6.36589 cm , vol 50.263 cm3, having 601 voxels
+made list 342/482 length 4.43552 cm , vol 35.0215 cm3, having 450 voxels
+made list 343/482 length 3.88307 cm , vol 30.6595 cm3, having 380 voxels
+made list 171/482 length 6.63823 cm , vol 52.4134 cm3, having 632 voxels
+made list 344/482 length 4.55799 cm , vol 35.9884 cm3, having 441 voxels
+made list 345/482 length 3.39443 cm , vol 26.8014 cm3, having 356 voxels
+made list 172/482 length 6.24025 cm , vol 49.271 cm3, having 601 voxels
+made list 346/482 length 3.44085 cm , vol 27.1679 cm3, having 359 voxels
+made list 347/482 length 3.76525 cm , vol 29.7293 cm3, having 379 voxels
+made list 173/482 length 6.60707 cm , vol 52.1673 cm3, having 608 voxels
+made list 348/482 length 4.17902 cm , vol 32.9962 cm3, having 414 voxels
+made list 349/482 length 4.0675 cm , vol 32.1157 cm3, having 410 voxels
+made list 192/482 length 5.42674 cm , vol 42.8478 cm3, having 512 voxels
+made list 350/482 length 3.53444 cm , vol 27.9068 cm3, having 364 voxels
+made list 351/482 length 3.51035 cm , vol 27.7166 cm3, having 362 voxels
+made list 193/482 length 3.69041 cm , vol 29.1383 cm3, having 388 voxels
+made list 364/482 length 3.64588 cm , vol 28.7867 cm3, having 368 voxels
+made list 365/482 length 3.03384 cm , vol 23.9542 cm3, having 320 voxels
+made list 194/482 length 4.72933 cm , vol 37.3413 cm3, having 467 voxels
+made list 352/482 length 3.30397 cm , vol 26.0871 cm3, having 342 voxels
+made list 353/482 length 4.13948 cm , vol 32.684 cm3, having 412 voxels
+made list 195/482 length 4.51298 cm , vol 35.6331 cm3, having 460 voxels
+made list 366/482 length 3.84088 cm , vol 30.3264 cm3, having 393 voxels
+made list 367/482 length 3.29803 cm , vol 26.0402 cm3, having 341 voxels
+made list 196/482 length 4.76958 cm , vol 37.6591 cm3, having 477 voxels
+made list 368/482 length 3.74137 cm , vol 29.5407 cm3, having 407 voxels
+made list 369/482 length 3.29749 cm , vol 26.036 cm3, having 360 voxels
+made list 197/482 length 4.84139 cm , vol 38.2261 cm3, having 479 voxels
+made list 370/482 length 3.76265 cm , vol 29.7087 cm3, having 391 voxels
+made list 371/482 length 3.48637 cm , vol 27.5273 cm3, having 375 voxels
+made list 198/482 length 4.05762 cm , vol 32.0377 cm3, having 410 voxels
+made list 372/482 length 2.90652 cm , vol 22.9489 cm3, having 332 voxels
+made list 373/482 length 3.64413 cm , vol 28.7729 cm3, having 387 voxels
+made list 199/482 length 4.64858 cm , vol 36.7037 cm3, having 451 voxels
+made list 374/482 length 3.43941 cm , vol 27.1565 cm3, having 360 voxels
+made list 375/482 length 3.20828 cm , vol 25.3315 cm3, having 345 voxels
+made list 200/482 length 4.55432 cm , vol 35.9594 cm3, having 457 voxels
+made list 376/482 length 3.47033 cm , vol 27.4006 cm3, having 365 voxels
+made list 377/482 length 2.92053 cm , vol 23.0595 cm3, having 327 voxels
+made list 201/482 length 5.20948 cm , vol 41.1324 cm3, having 507 voxels
+made list 378/482 length 3.90724 cm , vol 30.8503 cm3, having 400 voxels
+made list 379/482 length 3.36257 cm , vol 26.5498 cm3, having 362 voxels
+made list 202/482 length 5.42562 cm , vol 42.839 cm3, having 510 voxels
+made list 380/482 length 3.68198 cm , vol 29.0717 cm3, having 381 voxels
+made list 381/482 length 3.4723 cm , vol 27.4162 cm3, having 376 voxels
+made list 203/482 length 4.4764 cm , vol 35.3442 cm3, having 434 voxels
+made list 382/482 length 3.20661 cm , vol 25.3184 cm3, having 339 voxels
+made list 383/482 length 3.08932 cm , vol 24.3923 cm3, having 334 voxels
+made list 204/482 length 4.20553 cm , vol 33.2055 cm3, having 420 voxels
+made list 384/482 length 3.80931 cm , vol 30.0771 cm3, having 379 voxels
+made list 385/482 length 2.92058 cm , vol 23.0599 cm3, having 325 voxels
+made list 205/482 length 4.98203 cm , vol 39.3365 cm3, having 483 voxels
+made list 386/482 length 3.62933 cm , vol 28.656 cm3, having 376 voxels
+made list 387/482 length 3.68043 cm , vol 29.0595 cm3, having 379 voxels
+made list 228/482 length 5.02162 cm , vol 39.6491 cm3, having 496 voxels
+made list 388/482 length 3.78472 cm , vol 29.883 cm3, having 393 voxels
+made list 389/482 length 2.88373 cm , vol 22.769 cm3, having 329 voxels
+made list 229/482 length 4.0988 cm , vol 32.3628 cm3, having 424 voxels
+made list 390/482 length 3.15541 cm , vol 24.9141 cm3, having 337 voxels
+made list 391/482 length 3.1984 cm , vol 25.2536 cm3, having 343 voxels
+made list 230/482 length 3.07782 cm , vol 24.3015 cm3, having 347 voxels
+made list 402/482 length 2.98728 cm , vol 23.5866 cm3, having 323 voxels
+made list 403/482 length 2.65974 cm , vol 21.0005 cm3, having 300 voxels
+made list 231/482 length 4.13539 cm , vol 32.6518 cm3, having 424 voxels
+made list 392/482 length 3.60161 cm , vol 28.4372 cm3, having 381 voxels
+made list 393/482 length 3.19972 cm , vol 25.264 cm3, having 338 voxels
+made list 232/482 length 4.14917 cm , vol 32.7606 cm3, having 427 voxels
+made list 404/482 length 3.3425 cm , vol 26.3913 cm3, having 362 voxels
+made list 405/482 length 2.7352 cm , vol 21.5962 cm3, having 317 voxels
+made list 233/482 length 4.60258 cm , vol 36.3405 cm3, having 472 voxels
+made list 406/482 length 3.03666 cm , vol 23.9765 cm3, having 330 voxels
+made list 407/482 length 2.40769 cm , vol 19.0103 cm3, having 273 voxels
+made list 234/482 length 4.40505 cm , vol 34.7809 cm3, having 438 voxels
+made list 408/482 length 3.06585 cm , vol 24.207 cm3, having 338 voxels
+made list 409/482 length 2.57022 cm , vol 20.2936 cm3, having 304 voxels
+made list 235/482 length 3.97915 cm , vol 31.4181 cm3, having 408 voxels
+made list 410/482 length 3.44003 cm , vol 27.1614 cm3, having 367 voxels
+made list 411/482 length 2.27371 cm , vol 17.9525 cm3, having 266 voxels
+made list 236/482 length 4.4768 cm , vol 35.3474 cm3, having 435 voxels
+made list 412/482 length 3.09365 cm , vol 24.4265 cm3, having 337 voxels
+made list 413/482 length 2.59867 cm , vol 20.5183 cm3, having 315 voxels
+made list 237/482 length 3.89254 cm , vol 30.7343 cm3, having 401 voxels
+made list 414/482 length 2.87814 cm , vol 22.7249 cm3, having 331 voxels
+made list 415/482 length 2.67475 cm , vol 21.119 cm3, having 305 voxels
+made list 238/482 length 4.22491 cm , vol 33.3585 cm3, having 434 voxels
+made list 416/482 length 3.18609 cm , vol 25.1564 cm3, having 346 voxels
+made list 417/482 length 2.83112 cm , vol 22.3537 cm3, having 315 voxels
+made list 239/482 length 4.01525 cm , vol 31.7031 cm3, having 409 voxels
+made list 418/482 length 3.58485 cm , vol 28.3049 cm3, having 378 voxels
+made list 419/482 length 2.47768 cm , vol 19.563 cm3, having 300 voxels
+made list 240/482 length 4.78439 cm , vol 37.776 cm3, having 482 voxels
+made list 420/482 length 3.42958 cm , vol 27.0789 cm3, having 366 voxels
+made list 421/482 length 2.51687 cm , vol 19.8724 cm3, having 292 voxels
+made list 241/482 length 3.58013 cm , vol 28.2676 cm3, having 371 voxels
+made list 422/482 length 2.75351 cm , vol 21.7409 cm3, having 300 voxels
+made list 423/482 length 2.06569 cm , vol 16.3101 cm3, having 260 voxels
+made list 242/482 length 3.73239 cm , vol 29.4697 cm3, having 402 voxels
+made list 424/482 length 2.90211 cm , vol 22.9141 cm3, having 312 voxels
+made list 425/482 length 2.74422 cm , vol 21.6675 cm3, having 316 voxels
+made list 243/482 length 3.82631 cm , vol 30.2114 cm3, having 398 voxels
+made list 426/482 length 2.91406 cm , vol 23.0085 cm3, having 332 voxels
+made list 427/482 length 2.4634 cm , vol 19.4502 cm3, having 278 voxels
+made list 244/482 length 3.64732 cm , vol 28.7981 cm3, having 364 voxels
+made list 428/482 length 3.10368 cm , vol 24.5056 cm3, having 336 voxels
+made list 429/482 length 2.57042 cm , vol 20.2952 cm3, having 283 voxels
+made list 245/482 length 4.11012 cm , vol 32.4522 cm3, having 419 voxels
+made list 430/482 length 3.04463 cm , vol 24.0395 cm3, having 325 voxels
+made list 431/482 length 2.1793 cm , vol 17.207 cm3, having 257 voxels
+made list 272/482 length 3.73504 cm , vol 29.4907 cm3, having 377 voxels
+made list 432/482 length 2.36881 cm , vol 18.7034 cm3, having 291 voxels
+made list 433/482 length 2.55658 cm , vol 20.186 cm3, having 292 voxels
+made list 273/482 length 4.4358 cm , vol 35.0237 cm3, having 436 voxels
+made list 434/482 length 3.40547 cm , vol 26.8885 cm3, having 359 voxels
+made list 435/482 length 2.29652 cm , vol 18.1326 cm3, having 268 voxels
+made list 274/482 length 4.00059 cm , vol 31.5874 cm3, having 416 voxels
+made list 436/482 length 2.66018 cm , vol 21.0039 cm3, having 307 voxels
+made list 437/482 length 2.24639 cm , vol 17.7368 cm3, having 273 voxels
+made list 275/482 length 3.50626 cm , vol 27.6843 cm3, having 350 voxels
+made list 450/482 length 2.4714 cm , vol 19.5134 cm3, having 284 voxels
+made list 451/482 length 1.42885 cm , vol 11.2817 cm3, having 199 voxels
+made list 276/482 length 3.81826 cm , vol 30.1478 cm3, having 385 voxels
+made list 452/482 length 2.22278 cm , vol 17.5504 cm3, having 261 voxels
+made list 453/482 length 1.43779 cm , vol 11.3523 cm3, having 206 voxels
+made list 277/482 length 2.89026 cm , vol 22.8206 cm3, having 327 voxels
+made list 454/482 length 2.06819 cm , vol 16.3297 cm3, having 259 voxels
+made list 455/482 length 1.52876 cm , vol 12.0706 cm3, having 215 voxels
+made list 278/482 length 3.61834 cm , vol 28.5693 cm3, having 390 voxels
+made list 456/482 length 2.28215 cm , vol 18.0191 cm3, having 276 voxels
+made list 457/482 length 1.64452 cm , vol 12.9846 cm3, having 228 voxels
+made list 279/482 length 2.48832 cm , vol 19.647 cm3, having 291 voxels
+made list 458/482 length 1.77045 cm , vol 13.9789 cm3, having 224 voxels
+made list 459/482 length 1.80589 cm , vol 14.2587 cm3, having 232 voxels
+made list 298/482 length 2.83146 cm , vol 22.3563 cm3, having 311 voxels
+made list 460/482 length 1.89708 cm , vol 14.9787 cm3, having 244 voxels
+made list 461/482 length 1.42769 cm , vol 11.2726 cm3, having 206 voxels
+made list 299/482 length 2.87219 cm , vol 22.6779 cm3, having 332 voxels
+made list 462/482 length 1.70716 cm , vol 13.4792 cm3, having 219 voxels
+made list 463/482 length 1.94952 cm , vol 15.3928 cm3, having 253 voxels
+made list 300/482 length 2.44272 cm , vol 19.2869 cm3, having 286 voxels
+made list 464/482 length 1.61122 cm , vol 12.7217 cm3, having 214 voxels
+made list 465/482 length 1.51715 cm , vol 11.9789 cm3, having 220 voxels
+made list 301/482 length 2.73759 cm , vol 21.6151 cm3, having 305 voxels
+made list 466/482 length 1.92724 cm , vol 15.2169 cm3, having 248 voxels
+made list 467/482 length 1.63891 cm , vol 12.9403 cm3, having 217 voxels
+made list 302/482 length 2.47564 cm , vol 19.5469 cm3, having 285 voxels
+made list 478/482 length 1.76582 cm , vol 13.9424 cm3, having 227 voxels
+made list 479/482 length 0.893366 cm , vol 7.05374 cm3, having 160 voxels
+made list 303/482 length 2.61958 cm , vol 20.6833 cm3, having 300 voxels
+made list 480/482 length 1.41795 cm , vol 11.1957 cm3, having 206 voxels
+made list 481/482 length 0.854346 cm , vol 6.74564 cm3, having 157 voxels
+made list 304/482 length 2.47751 cm , vol 19.5616 cm3, having 286 voxels
+made list 482/482 length 1.12069 cm , vol 8.8486 cm3, having 177 voxels
+made list 483/482 length 0.892701 cm , vol 7.04849 cm3, having 155 voxels
+made list 305/482 length 2.02406 cm , vol 15.9813 cm3, having 250 voxels
+made list 484/482 length 1.47757 cm , vol 11.6664 cm3, having 209 voxels
+made list 485/482 length 0.903917 cm , vol 7.13704 cm3, having 157 voxels
+made list 306/482 length 2.79526 cm , vol 22.0704 cm3, having 311 voxels
+made list 486/482 length 1.64722 cm , vol 13.006 cm3, having 219 voxels
+made list 487/482 length 0.81194 cm , vol 6.41082 cm3, having 152 voxels
+made list 307/482 length 2.24099 cm , vol 17.6942 cm3, having 255 voxels
+made list 488/482 length 1.12897 cm , vol 8.91396 cm3, having 179 voxels
+made list 489/482 length 0.8408 cm , vol 6.63869 cm3, having 151 voxels
+made list 308/482 length 3.08238 cm , vol 24.3375 cm3, having 326 voxels
+made list 490/482 length 1.56438 cm , vol 12.3519 cm3, having 213 voxels
+made list 491/482 length 0.821502 cm , vol 6.48632 cm3, having 156 voxels
+made list 309/482 length 2.12217 cm , vol 16.756 cm3, having 260 voxels
+made list 492/482 length 1.28135 cm , vol 10.1171 cm3, having 194 voxels
+made list 493/482 length 0.894466 cm , vol 7.06242 cm3, having 166 voxels
+made list 310/482 length 2.54059 cm , vol 20.0597 cm3, having 288 voxels
+made list 494/482 length 1.47242 cm , vol 11.6258 cm3, having 213 voxels
+made list 495/482 length 0.765299 cm , vol 6.04256 cm3, having 150 voxels
+made list 311/482 length 2.15642 cm , vol 17.0264 cm3, having 256 voxels
+made list 496/482 length 0.983695 cm , vol 7.76695 cm3, having 168 voxels
+made list 497/482 length 0.771697 cm , vol 6.09308 cm3, having 153 voxels
+made list 334/482 length 2.1571 cm , vol 17.0318 cm3, having 257 voxels
+made list 498/482 length 1.08294 cm , vol 8.55054 cm3, having 174 voxels
+made list 499/482 length 0.683818 cm , vol 5.39921 cm3, having 144 voxels
+made list 335/482 length 1.91128 cm , vol 15.0908 cm3, having 245 voxels
+made list 500/482 length 1.05957 cm , vol 8.36606 cm3, having 174 voxels
+made list 501/482 length 0.804155 cm , vol 6.34935 cm3, having 160 voxels
+made list 336/482 length 2.03144 cm , vol 16.0396 cm3, having 250 voxels
+made list 502/482 length 0.972264 cm , vol 7.67669 cm3, having 166 voxels
+made list 503/482 length 0.76014 cm , vol 6.00182 cm3, having 147 voxels
+made list 337/482 length 1.66704 cm , vol 13.1624 cm3, having 220 voxels
+made list 516/482 length 0.60879 cm , vol 4.80682 cm3, having 137 voxels
+made list 338/482 length 1.07895 cm , vol 8.51905 cm3, having 170 voxels
+made list 518/482 length 0.126031 cm , vol 0.995102 cm3, having 101 voxels
+made list 339/482 length 1.46721 cm , vol 11.5846 cm3, having 205 voxels
+made list 520/482 length 0.373485 cm , vol 2.94892 cm3, having 122 voxels
+made list 354/482 length 0.998163 cm , vol 7.88118 cm3, having 170 voxels
+made list 355/482 length 1.28054 cm , vol 10.1108 cm3, having 195 voxels
+made list 522/482 length 0.231774 cm , vol 1.83001 cm3, having 110 voxels
+made list 356/482 length 0.959857 cm , vol 7.57873 cm3, having 164 voxels
+made list 357/482 length 0.887132 cm , vol 7.00452 cm3, having 165 voxels
+made list 358/482 length 0.814793 cm , vol 6.43335 cm3, having 155 voxels
+made list 359/482 length 0.94411 cm , vol 7.45439 cm3, having 160 voxels
+made list 360/482 length 0.76705 cm , vol 6.05639 cm3, having 148 voxels
+made list 361/482 length 0.718481 cm , vol 5.6729 cm3, having 141 voxels
+made list 362/482 length 0.675114 cm , vol 5.33049 cm3, having 138 voxels
+made list 363/482 length 0.436376 cm , vol 3.44549 cm3, having 132 voxels
+made list 394/482 length 0.35122 cm , vol 2.77312 cm3, having 120 voxels
+made list 395/482 length 0.49967 cm , vol 3.94524 cm3, having 131 voxels
+made list 396/482 length 0.292925 cm , vol 2.31284 cm3, having 112 voxels
+made list 397/482 length 0.258209 cm , vol 2.03874 cm3, having 116 voxels
+made list 398/482 length 0.215305 cm , vol 1.69998 cm3, having 107 voxels
+Root #0/482, age 21, stopped 0, res 869 
+Root #1/482, age 8.80765, stopped 13.9936, res 160 
+13!13
+Root #2/482, age 4.83311, stopped 11.12, res 72 
+13!13
+Root #3/482, age 5.57928, stopped 12.5793, res 79 
+13!13
+Root #4/482, age 8.69421, stopped 13.8801, res 160 
+13!13
+Root #5/482, age 5.44581, stopped 11.7185, res 87 
+13!13
+Root #6/482, age 4.11052, stopped 11.1105, res 78 
+13!13
+Root #7/482, age 11.069, stopped 16.3771, res 160 
+13!13
+Root #8/482, age 3.51621, stopped 10.2079, res 69 
+13!13
+Root #9/482, age 4.76294, stopped 11.7629, res 77 
+13!13
+Root #10/482, age 9.81875, stopped 15.1893, res 160 
+13!13
+Root #11/482, age 4.9004, stopped 11.4983, res 79 
+13!13
+Root #12/482, age 4.91825, stopped 11.9183, res 90 
+13!13
+Root #13/482, age 10.1123, stopped 15.7116, res 160 
+13!13
+Root #14/482, age 4.97267, stopped 11.836, res 82 
+13!13
+Root #15/482, age 3.75493, stopped 10.7549, res 64 
+13!13
+Root #16/482, age 11.0139, stopped 16.6756, res 160 
+13!13
+Root #17/482, age 4.53111, stopped 11.5695, res 72 
+13!13
+Root #18/482, age 4.26811, stopped 12.2681, res 75 
+13!13
+Root #19/482, age 11.6758, stopped 17.6306, res 160 
+13!13
+Root #20/482, age 4.69306, stopped 12.1072, res 83 
+13!13
+Root #21/482, age 4.42026, stopped 12.4203, res 72 
+13!13
+Root #22/482, age 10.3858, stopped 16.4412, res 160 
+13!13
+Root #23/482, age 4.77555, stopped 12.1292, res 71 
+13!13
+Root #24/482, age 5.15154, stopped 13.1515, res 78 
+13!13
+Root #25/482, age 9.00979, stopped 15.2064, res 160 
+13!13
+Root #26/482, age 5.54938, stopped 12.8722, res 81 
+13!13
+Root #27/482, age 4.25554, stopped 12.2555, res 59 
+13!13
+Root #28/482, age 9.15755, stopped 15.606, res 160 
+13!13
+Root #29/482, age 5.02942, stopped 12.6225, res 86 
+13!13
+Root #30/482, age 4.26662, stopped 12.2666, res 71 
+13!13
+Root #31/482, age 8.05599, stopped 14.7527, res 160 
+13!13
+Root #32/482, age 4.55383, stopped 12.2575, res 76 
+13!13
+Root #33/482, age 5.42544, stopped 13.4254, res 86 
+13!13
+Root #34/482, age 10.0384, stopped 16.8358, res 160 
+13!13
+Root #35/482, age 4.54429, stopped 12.5965, res 69 
+13!13
+Root #36/482, age 5.13318, stopped 14.1332, res 71 
+13!13
+Root #37/482, age 9.782, stopped 16.6482, res 160 
+13!13
+Root #38/482, age 4.26637, stopped 12.3553, res 65 
+13!13
+Root #39/482, age 5.08799, stopped 14.088, res 82 
+13!13
+Root #40/482, age 9.62635, stopped 16.4926, res 160 
+13!13
+Root #41/482, age 4.71098, stopped 12.7805, res 76 
+13!13
+Root #42/482, age 4.50184, stopped 13.5018, res 79 
+13!13
+Root #43/482, age 9.493, stopped 16.499, res 160 
+13!13
+Root #44/482, age 4.66137, stopped 12.854, res 86 
+13!13
+Root #45/482, age 5.82044, stopped 14.8204, res 81 
+13!13
+Root #46/482, age 10.0708, stopped 17.0768, res 160 
+13!13
+Root #47/482, age 6.17096, stopped 14.4358, res 82 
+13!13
+Root #48/482, age 3.9885, stopped 12.9885, res 75 
+13!13
+Root #49/482, age 10.5723, stopped 17.6061, res 160 
+13!13
+Root #50/482, age 4.86209, stopped 13.2174, res 81 
+13!13
+Root #51/482, age 3.60189, stopped 12.6019, res 67 
+13!13
+Root #52/482, age 11.7979, stopped 18.8701, res 160 
+13!13
+Root #53/482, age 6.35613, stopped 14.9031, res 89 
+13!13
+Root #54/482, age 5.35738, stopped 14.3574, res 79 
+13!13
+Root #55/482, age 9.25929, stopped 16.3315, res 160 
+13!13
+Root #56/482, age 5.56528, stopped 13.7949, res 92 
+13!13
+Root #57/482, age 4.65131, stopped 13.6513, res 73 
+13!13
+Root #58/482, age 10.6345, stopped 17.7346, res 160 
+13!13
+Root #59/482, age 5.80694, stopped 14.2364, res 90 
+13!13
+Root #60/482, age 4.94121, stopped 13.9412, res 80 
+13!13
+Root #61/482, age 10.8332, stopped 17.9507, res 160 
+13!13
+Root #62/482, age 4.2861, stopped 12.7577, res 71 
+13!13
+Root #63/482, age 5.23173, stopped 14.2317, res 96 
+13!13
+Root #64/482, age 10.3749, stopped 17.4924, res 160 
+13!13
+Root #65/482, age 5.76785, stopped 14.1822, res 95 
+13!13
+Root #66/482, age 4.1806, stopped 13.1806, res 75 
+13!13
+Root #67/482, age 9.03613, stopped 16.2172, res 160 
+13!13
+Root #68/482, age 4.29181, stopped 12.6024, res 76 
+13!13
+Root #69/482, age 4.96016, stopped 13.9602, res 74 
+13!13
+Root #70/482, age 11.3734, stopped 18.7284, res 160 
+13!13
+Root #71/482, age 5.44738, stopped 14.2241, res 83 
+13!13
+Root #72/482, age 4.36187, stopped 13.3619, res 81 
+13!13
+Root #73/482, age 7.90161, stopped 15.4206, res 160 
+13!13
+Root #74/482, age 5.25394, stopped 13.7607, res 79 
+13!13
+Root #75/482, age 4.90687, stopped 13.9069, res 75 
+13!13
+Root #76/482, age 8.47415, stopped 16.0937, res 160 
+13!13
+Root #77/482, age 4.89486, stopped 13.5737, res 87 
+13!13
+Root #78/482, age 5.08636, stopped 14.0864, res 82 
+13!13
+Root #79/482, age 11.1358, stopped 18.7554, res 160 
+13!13
+Root #80/482, age 4.43967, stopped 13.4512, res 78 
+13!13
+Root #81/482, age 5.52386, stopped 15.5239, res 82 
+13!13
+Root #82/482, age 9.41898, stopped 17.166, res 160 
+13!13
+Root #83/482, age 4.93202, stopped 13.8565, res 77 
+13!13
+Root #84/482, age 4.31431, stopped 13.3143, res 71 
+13!13
+Root #85/482, age 9.24725, stopped 17.2099, res 160 
+13!13
+Root #86/482, age 4.38096, stopped 13.4996, res 76 
+13!13
+Root #87/482, age 4.68111, stopped 14.6811, res 78 
+13!13
+Root #88/482, age 10.4406, stopped 18.4032, res 160 
+13!13
+Root #89/482, age 4.61796, stopped 13.8857, res 73 
+13!13
+Root #90/482, age 4.24595, stopped 14.246, res 80 
+13!13
+Root #91/482, age 10.0229, stopped 17.9856, res 160 
+13!13
+Root #92/482, age 3.97339, stopped 13.1889, res 74 
+13!13
+Root #93/482, age 3.98376, stopped 13.9838, res 73 
+13!13
+Root #94/482, age 10.5342, stopped 18.6797, res 160 
+13!13
+Root #95/482, age 4.36897, stopped 13.8313, res 72 
+13!13
+Root #96/482, age 4.28305, stopped 14.2831, res 76 
+13!13
+Root #97/482, age 9.52619, stopped 17.7595, res 160 
+13!13
+Root #98/482, age 4.12997, stopped 13.5541, res 81 
+13!13
+Root #99/482, age 6.27734, stopped 16.2773, res 90 
+13!13
+Root #100/482, age 8.25795, stopped 16.5259, res 160 
+13!13
+Root #101/482, age 3.98527, stopped 13.2854, res 65 
+13!13
+Root #102/482, age 3.48417, stopped 13.4842, res 59 
+13!13
+Root #103/482, age 10.1768, stopped 18.533, res 160 
+13!13
+Root #104/482, age 3.71663, stopped 13.3449, res 73 
+13!13
+Root #105/482, age 5.02893, stopped 15.0289, res 88 
+13!13
+Root #106/482, age 9.39935, stopped 17.8687, res 160 
+13!13
+Root #107/482, age 5.16503, stopped 14.8093, res 86 
+13!13
+Root #108/482, age 3.62168, stopped 13.6217, res 79 
+13!13
+Root #109/482, age 9.52172, stopped 17.991, res 160 
+13!13
+Root #110/482, age 4.13591, stopped 13.7955, res 66 
+13!13
+Root #111/482, age 3.94929, stopped 13.9493, res 66 
+13!13
+Root #112/482, age 9.73876, stopped 18.4633, res 160 
+13!13
+Root #113/482, age 5.21673, stopped 15.1586, res 76 
+13!13
+Root #114/482, age 5.32503, stopped 15.325, res 89 
+13!13
+Root #115/482, age 10.3113, stopped 19.3604, res 160 
+13!13
+Root #116/482, age 4.32543, stopped 14.6634, res 75 
+13!13
+Root #117/482, age 4.60187, stopped 15.6019, res 76 
+13!13
+Root #118/482, age 9.76455, stopped 18.8385, res 160 
+13!13
+Root #119/482, age 5.61148, stopped 15.906, res 84 
+13!13
+Root #120/482, age 4.882, stopped 15.882, res 85 
+13!13
+Root #121/482, age 7.93844, stopped 17.2247, res 160 
+13!13
+Root #122/482, age 5.44312, stopped 15.7217, res 84 
+13!13
+Root #123/482, age 5.39547, stopped 16.3955, res 79 
+13!13
+Root #124/482, age 10.2041, stopped 19.4904, res 160 
+13!13
+Root #125/482, age 3.86099, stopped 14.4228, res 73 
+13!13
+Root #126/482, age 4.93614, stopped 15.9361, res 79 
+13!13
+Root #127/482, age 9.91278, stopped 19.3902, res 160 
+13!13
+Root #128/482, age 4.76808, stopped 15.4846, res 77 
+13!13
+Root #129/482, age 4.22083, stopped 15.2208, res 72 
+13!13
+Root #130/482, age 8.76335, stopped 18.2408, res 160 
+13!13
+Root #131/482, age 5.59811, stopped 16.171, res 92 
+13!13
+Root #132/482, age 4.51691, stopped 15.5169, res 77 
+13!13
+Root #133/482, age 7.34416, stopped 16.913, res 160 
+13!13
+Root #134/482, age 5.7041, stopped 16.191, res 78 
+13!13
+Root #135/482, age 4.68222, stopped 15.6822, res 84 
+13!13
+Root #136/482, age 9.66311, stopped 19.3509, res 160 
+13!13
+Root #137/482, age 5.59223, stopped 16.4879, res 86 
+13!13
+Root #138/482, age 4.33197, stopped 15.332, res 69 
+13!13
+Root #139/482, age 9.29796, stopped 19.0645, res 160 
+13!13
+Root #140/482, age 5.43077, stopped 16.3595, res 91 
+13!13
+Root #141/482, age 6.0594, stopped 17.0594, res 95 
+13!13
+Root #142/482, age 8.7626, stopped 18.7191, res 160 
+13!13
+Root #143/482, age 5.4065, stopped 16.4583, res 81 
+13!13
+Root #144/482, age 4.91942, stopped 16.9194, res 86 
+13!13
+Root #145/482, age 9.8593, stopped 19.8837, res 160 
+13!13
+Root #146/482, age 5.43906, stopped 16.6959, res 82 
+13!13
+Root #147/482, age 5.15042, stopped 17.1504, res 77 
+13!13
+Root #148/482, age 9.83274, stopped 19.861, res 160 
+13!13
+Root #149/482, age 4.61946, stopped 15.8768, res 79 
+13!13
+Root #150/482, age 4, stopped 16, res 65 
+13!13
+Root #151/482, age 9.13093, stopped 19.2302, res 160 
+13!13
+Root #152/482, age 4.47878, stopped 15.7194, res 88 
+13!13
+Root #153/482, age 4.35016, stopped 16.3502, res 69 
+13!13
+Root #154/482, age 9.22344, stopped 19.3592, res 160 
+13!13
+Root #155/482, age 4.24664, stopped 15.5353, res 86 
+13!13
+Root #156/482, age 3.7742, stopped 15.7742, res 70 
+13!13
+Root #157/482, age 9.33865, stopped 19.5489, res 160 
+13!13
+Root #158/482, age 5.46238, stopped 16.84, res 80 
+13!13
+Root #159/482, age 4.6527, stopped 16.6527, res 88 
+13!13
+Root #160/482, age 10.7094, stopped 0, res 152 
+Root #161/482, age 4.30658, stopped 16, res 81 
+13!13
+Root #162/482, age 5.03911, stopped 17.0391, res 86 
+13!13
+Root #163/482, age 8.89043, stopped 19.4688, res 160 
+13!13
+Root #164/482, age 4.81154, stopped 16.5012, res 84 
+13!13
+Root #165/482, age 6.08368, stopped 18.0837, res 83 
+13!13
+Root #166/482, age 9.97482, stopped 20.6075, res 160 
+13!13
+Root #167/482, age 4.0829, stopped 15.9624, res 72 
+13!13
+Root #168/482, age 4.43164, stopped 16.4316, res 74 
+13!13
+Root #169/482, age 9.05037, stopped 19.7946, res 160 
+13!13
+Root #170/482, age 4.87994, stopped 16.7555, res 82 
+13!13
+Root #171/482, age 5.4991, stopped 17.4991, res 77 
+13!13
+Root #172/482, age 8.95368, stopped 19.6979, res 160 
+13!13
+Root #173/482, age 4.2549, stopped 16.1184, res 65 
+13!13
+Root #174/482, age 3.84171, stopped 15.8417, res 68 
+13!13
+Root #175/482, age 9.55567, stopped 20.3787, res 160 
+13!13
+Root #176/482, age 3.89426, stopped 15.9118, res 70 
+13!13
+Root #177/482, age 5.45582, stopped 18.4558, res 95 
+13!13
+Root #178/482, age 9.97995, stopped 0, res 144 
+Root #179/482, age 5.2128, stopped 17.614, res 74 
+13!13
+Root #180/482, age 5.1436, stopped 18.1436, res 71 
+13!13
+Root #181/482, age 9.86438, stopped 20.936, res 160 
+13!13
+Root #182/482, age 5.00864, stopped 17.3133, res 78 
+13!13
+Root #183/482, age 3.82814, stopped 16.8281, res 76 
+13!13
+Root #184/482, age 9.89801, stopped 0, res 143 
+Root #185/482, age 4.71981, stopped 17.2048, res 79 
+13!13
+Root #186/482, age 5.99653, stopped 18.9965, res 94 
+13!13
+Root #187/482, age 9.70603, stopped 20.992, res 160 
+13!13
+Root #188/482, age 4.45941, stopped 16.9586, res 83 
+13!13
+Root #189/482, age 4.06025, stopped 17.0603, res 81 
+13!13
+Root #190/482, age 9.59163, stopped 0, res 153 
+Root #191/482, age 5.82768, stopped 18.4861, res 79 
+13!13
+Root #192/482, age 6.22527, stopped 19.2253, res 97 
+13!13
+Root #193/482, age 8.8185, stopped 20.2323, res 160 
+13!13
+Root #194/482, age 6.38593, stopped 18.902, res 93 
+13!13
+Root #195/482, age 3.68356, stopped 16.6836, res 57 
+13!13
+Root #196/482, age 9.27706, stopped 20.6908, res 160 
+13!13
+Root #197/482, age 4.39888, stopped 16.9723, res 72 
+13!13
+Root #198/482, age 4.77008, stopped 17.7701, res 77 
+13!13
+Root #199/482, age 9.58621, stopped 0, res 156 
+Root #200/482, age 5.69893, stopped 18.339, res 83 
+13!13
+Root #201/482, age 5, stopped 18, res 77 
+13!13
+Root #202/482, age 9.08764, stopped 20.5982, res 160 
+13!13
+Root #203/482, age 5.47238, stopped 18.1189, res 94 
+13!13
+Root #204/482, age 5.27356, stopped 18.2736, res 84 
+13!13
+Root #205/482, age 9.48942, stopped 0, res 157 
+Root #206/482, age 4.89127, stopped 17.6089, res 82 
+13!13
+Root #207/482, age 4.57855, stopped 17.5786, res 70 
+13!13
+Root #208/482, age 9.30033, stopped 20.847, res 160 
+13!13
+Root #209/482, age 4.63028, stopped 17.3395, res 77 
+13!13
+Root #210/482, age 5.10766, stopped 18.1077, res 88 
+13!13
+Root #211/482, age 9.18967, stopped 0, res 141 
+Root #212/482, age 4.34179, stopped 17.4544, res 74 
+13!13
+Root #213/482, age 5.50846, stopped 19.5085, res 85 
+13!13
+Root #214/482, age 9.04965, stopped 0, res 158 
+Root #215/482, age 5.09881, stopped 18.1942, res 81 
+13!13
+Root #216/482, age 5.29012, stopped 19.2901, res 80 
+13!13
+Root #217/482, age 9.03251, stopped 0, res 138 
+Root #218/482, age 4.73188, stopped 18, res 72 
+13!13
+Root #219/482, age 4.19704, stopped 18.197, res 70 
+13!13
+Root #220/482, age 9.0325, stopped 0, res 141 
+Root #221/482, age 5.26406, stopped 18.5098, res 85 
+13!13
+Root #222/482, age 5.18161, stopped 19.1816, res 91 
+13!13
+Root #223/482, age 7.98111, stopped 19.9618, res 160 
+13!13
+Root #224/482, age 3.82852, stopped 16.8069, res 67 
+13!13
+Root #225/482, age 4.50081, stopped 17.5008, res 72 
+13!13
+Root #226/482, age 8.78916, stopped 0, res 150 
+Root #227/482, age 4.80064, stopped 18.1816, res 79 
+13!13
+Root #228/482, age 4.44531, stopped 18.4453, res 84 
+13!13
+Root #229/482, age 8.68339, stopped 0, res 146 
+Root #230/482, age 3.71538, stopped 17.2139, res 70 
+13!13
+Root #231/482, age 5.62767, stopped 19.6277, res 97 
+13!13
+Root #232/482, age 8.52217, stopped 0, res 137 
+Root #233/482, age 4.91274, stopped 18.6346, res 75 
+13!13
+Root #234/482, age 4.53255, stopped 18.5326, res 75 
+13!13
+Root #235/482, age 8.41153, stopped 0, res 129 
+Root #236/482, age 4.64399, stopped 18.5284, res 89 
+13!13
+Root #237/482, age 5.40526, stopped 19.4053, res 77 
+13!13
+Root #238/482, age 8.25996, stopped 0, res 137 
+Root #239/482, age 4.60375, stopped 18.544, res 74 
+13!13
+Root #240/482, age 4.80917, stopped 18.8092, res 81 
+13!13
+Root #241/482, age 8.14211, stopped 0, res 115 
+Root #242/482, age 5.37083, stopped 19.6328, res 104 
+13!13
+Root #243/482, age 5.92844, stopped 20.9284, res 89 
+13!13
+Root #244/482, age 8.07076, stopped 0, res 115 
+Root #245/482, age 5.401, stopped 19.7314, res 85 
+13!13
+Root #246/482, age 5.15489, stopped 20.1549, res 87 
+13!13
+Root #247/482, age 7.96295, stopped 0, res 135 
+Root #248/482, age 5.10377, stopped 19.3173, res 80 
+13!13
+Root #249/482, age 5.45282, stopped 20.4528, res 77 
+13!13
+Root #250/482, age 7.93314, stopped 0, res 123 
+Root #251/482, age 4.7894, stopped 19.1361, res 79 
+13!13
+Root #252/482, age 4.32592, stopped 19.3259, res 71 
+13!13
+Root #253/482, age 7.67047, stopped 0, res 148 
+Root #254/482, age 6.15519, stopped 20.516, res 82 
+13!13
+Root #255/482, age 5.48882, stopped 20.4888, res 79 
+13!13
+Root #256/482, age 7.67047, stopped 0, res 130 
+Root #257/482, age 4.00999, stopped 18.5147, res 76 
+13!13
+Root #258/482, age 4.66267, stopped 19.6627, res 81 
+13!13
+Root #259/482, age 7.67046, stopped 0, res 152 
+Root #260/482, age 5.16272, stopped 19.501, res 66 
+13!13
+Root #261/482, age 5.20232, stopped 20.2023, res 80 
+13!13
+Root #262/482, age 7.67046, stopped 0, res 128 
+Root #263/482, age 4.47967, stopped 19, res 64 
+13!13
+Root #264/482, age 4.46421, stopped 19.4642, res 66 
+13!13
+Root #265/482, age 7.58527, stopped 0, res 138 
+Root #266/482, age 5.30709, stopped 19.8162, res 84 
+13!13
+Root #267/482, age 4.5079, stopped 19.5079, res 74 
+13!13
+Root #268/482, age 7.46011, stopped 0, res 130 
+Root #269/482, age 4.50791, stopped 19.1951, res 73 
+13!13
+Root #270/482, age 4.82213, stopped 19.8221, res 74 
+13!13
+Root #271/482, age 7.33768, stopped 0, res 122 
+Root #272/482, age 4.00067, stopped 18.8604, res 70 
+13!13
+Root #273/482, age 4.3883, stopped 19.3883, res 83 
+13!13
+Root #274/482, age 7.0377, stopped 0, res 124 
+Root #275/482, age 4.81037, stopped 19.9047, res 81 
+13!13
+Root #276/482, age 4.27036, stopped 20.2704, res 81 
+13!13
+Root #277/482, age 7.02006, stopped 0, res 127 
+Root #278/482, age 5.39983, stopped 20.4825, res 88 
+13!13
+Root #279/482, age 4.21014, stopped 20.2101, res 77 
+13!13
+Root #280/482, age 7.02005, stopped 0, res 132 
+Root #281/482, age 4.67578, stopped 19.7132, res 91 
+13!13
+Root #282/482, age 3.31715, stopped 19.3172, res 67 
+13!13
+Root #283/482, age 6.9975, stopped 0, res 124 
+Root #284/482, age 4.47844, stopped 19.6023, res 68 
+13!13
+Root #285/482, age 4.68348, stopped 20.6835, res 75 
+13!13
+Root #286/482, age 6.66992, stopped 0, res 132 
+Root #287/482, age 4.98527, stopped 20.3249, res 83 
+13!13
+Root #288/482, age 4.76553, stopped 20.7655, res 81 
+13!13
+Root #289/482, age 6.39895, stopped 0, res 108 
+Root #290/482, age 4.14172, stopped 19.9219, res 70 
+13!13
+Root #291/482, age 4.57654, stopped 20.5765, res 70 
+13!13
+Root #292/482, age 6.35012, stopped 0, res 73 
+Root #293/482, age 4.28204, stopped 20.6526, res 72 
+13!13
+Root #294/482, age 4, stopped 0, res 60 
+Root #295/482, age 6.35011, stopped 0, res 94 
+Root #296/482, age 3.83782, stopped 19.8304, res 66 
+13!13
+Root #297/482, age 5, stopped 0, res 82 
+Root #298/482, age 6.35011, stopped 0, res 90 
+Root #299/482, age 4.94303, stopped 0, res 76 
+Root #300/482, age 4, stopped 0, res 65 
+Root #301/482, age 6.21761, stopped 0, res 95 
+Root #302/482, age 3.98715, stopped 20.0731, res 74 
+13!13
+Root #303/482, age 4, stopped 0, res 65 
+Root #304/482, age 6.10447, stopped 0, res 96 
+Root #305/482, age 4.04987, stopped 20.2063, res 75 
+13!13
+Root #306/482, age 3.91053, stopped 20.9105, res 69 
+13!13
+Root #307/482, age 5.95031, stopped 0, res 81 
+Root #308/482, age 3.95687, stopped 20.473, res 58 
+13!13
+Root #309/482, age 4, stopped 0, res 72 
+Root #310/482, age 5.95031, stopped 0, res 92 
+Root #311/482, age 3.67028, stopped 20, res 68 
+13!13
+Root #312/482, age 4, stopped 0, res 64 
+Root #313/482, age 5.9503, stopped 0, res 91 
+Root #314/482, age 4.64378, stopped 0, res 69 
+Root #315/482, age 4, stopped 0, res 58 
+Root #316/482, age 5.94949, stopped 0, res 104 
+Root #317/482, age 4.80744, stopped 0, res 78 
+Root #318/482, age 4, stopped 0, res 67 
+Root #319/482, age 5.94949, stopped 0, res 108 
+Root #320/482, age 4.24069, stopped 20.3878, res 73 
+13!13
+Root #321/482, age 4, stopped 0, res 69 
+Root #322/482, age 5.69389, stopped 0, res 89 
+Root #323/482, age 4.42191, stopped 0, res 64 
+Root #324/482, age 3.73879,Width 20 Depth 45  at a Resolution 66 66 150
+make voxel lists
+start check
+5706.027709626548 0
+4325.741380357154 1
+1261.2404580494633 2
+1752.640929969121 3
+4181.897404930432 4
+1690.13456091516 5
+1101.2076673873398 6
+5586.815478696877 7
+823.8771835163274 8
+1418.8023714990259 9
+4907.331999740858 10
+1373.3838727626294 11
+1769.7155114678512 12
+5236.349776644088 13
+1442.8787536232396 14
+1052.7906583308607 15
+5494.126207832945 16
+1170.8896146464356 17
+1433.6717726639642 18
+5792.915353563058 19
+1526.9820349506576 20
+1259.4723398914614 21
+5332.104928063838 22
+1307.8322807288653 23
+1521.3253054903903 24
+4824.751520204948 25
+1715.7944743873893 26
+910.8506440509752 27
+4599.79162017005 28
+1740.9526469145533 29
+1319.2387262105728 30
+4090.6050705642097 31
+1304.5227091466018 32
+1674.2194678709327 33
+5227.042662901998 34
+1231.5742436492035 35
+1441.9159390317973 36
+4997.5205048060825 37
+925.3848182809677 38
+1736.9633490040264 39
+4974.850555510133 40
+1235.177773656627 41
+1311.4037913544191 42
+4761.923711603903 43
+1672.429782928929 44
+1920.059903652858 45
+5088.468599853951 46
+2317.5957795775857 47
+1183.4171342502163 48
+5866.4028081578435 49
+1636.5712395902704 50
+1001.897393006751 51
+6489.983512408232 52
+2341.9011136361237 53
+1851.7275761282458 54
+5060.583241985226 55
+1978.5051400145533 56
+1406.7095503887422 57
+5767.292354868459 58
+2126.30293940668 59
+1536.838756876758 60
+5621.83737066944 61
+1175.652767933173 62
+1917.2373943342375 63
+5606.415586803973 64
+2177.9567776357585 65
+1323.9824078344454 66
+4775.185424899783 67
+1382.0061378090613 68
+1508.3814403914864 69
+6199.8703052583005 70
+2074.3659938571786 71
+1472.6579193945258 72
+4135.2700005511315 73
+1752.1194727827024 74
+1451.3963441827293 75
+4798.40129067517 76
+1666.0035410681419 77
+1843.7468259558425 78
+6291.7416390919725 79
+1375.4356647776349 80
+1925.1737873715117 81
+5201.087971543455 82
+1766.886259261589 83
+1178.8304379717517 84
+4914.106491590716 85
+1277.54561277651 86
+1456.142656664018 87
+6177.824754727264 88
+1444.3204752414165 89
+1272.3730186837665 90
+5378.966079670594 91
+1310.8709365239501 92
+1289.85803819802 93
+5872.866769379828 94
+1278.9465127992455 95
+1388.260601328547 96
+5240.276642883133 97
+1296.1545771589922 98
+2382.2865289951133 99
+4367.94526147346 100
+1231.76007667175 101
+1004.4702580286391 102
+5602.209630871114 103
+1127.3024935494386 104
+2084.5501639026156 105
+5163.314050459977 106
+1773.253107757895 107
+1554.350140987522 108
+5322.969737240856 109
+1069.1170281510285 110
+1093.2036336682902 111
+5690.705411768323 112
+1576.7724895862596 113
+1914.833146363266 114
+6421.510349196652 115
+1325.1957878523488 116
+1471.1654390384408 117
+5604.450352025651 118
+1976.0659605673088 119
+1788.5631116007382 120
+4460.235265378219 121
+1904.215224436172 122
+1834.8507666386413 123
+5926.702627377036 124
+1381.0985030688298 125
+1817.3854720105362 126
+5920.030268094611 127
+1563.3055852442835 128
+1342.319392466374 129
+4962.0105316530335 130
+2186.663713827804 131
+1504.2145256522172 132
+4225.953093753924 133
+1957.6648494531116 134
+1704.660019162326 135
+5920.6163713403075 136
+2230.349163673447 137
+1253.6399790958917 138
+5514.0022711521315 139
+2186.3926067323514 140
+2497.848922526419 141
+5210.80890516378 142
+1901.6347108831046 143
+1853.031813281802 144
+6248.78113132426 145
+1946.9572569284046 146
+1926.3507494180321 147
+6196.632836884538 148
+1788.380876868758 149
+1274.896831910286 150
+5520.797250459352 151
+1725.1394497489086 152
+1373.7556559073412 153
+5265.1228039284415 154
+1366.8689771854145 155
+1251.6137381014996 156
+5859.0673646885025 157
+1885.5317900731873 158
+1950.4762353428803 159
+3407.4811020774514 160
+1375.8689747494277 161
+1902.694312703493 162
+5438.961025646904 163
+1726.19666761591 164
+2418.0904422750564 165
+11066.300874263505 166
+1412.5728168813205 167
+1289.188002452647 168
+5874.2431389845 169
+1967.4332610204706 170
+1983.5394298977556 171
+5656.708187514619 172
+1219.3253521818904 173
+1089.3855877254405 174
+7146.668144729251 175
+1064.891927984798 176
+2421.719588971421 177
+2922.1588160327133 178
+1716.7332935662134 179
+1819.2958529026869 180
+120810.23419035262 181
+1981.0298602095168 182
+1433.381225508197 183
+3084.5723320929305 184
+1871.3711893774525 185
+2765.898017760885 186
+2594993.921992741 187
+1689.9888177047933 188
+1612.8362586798137 189
+3023.8107844548845 190
+2132.862510133678 191
+3253.874764782684 192
+6137.023377914586 193
+3027.9185061774338 194
+961.6351105177882 195
+13128.976140504625 196
+1609.3636110325458 197
+1732.3784493508333 198
+3129.8527895989278 199
+2042.357635321842 200
+1820.5199787345123 201
+9996.976190997306 202
+2467.334699018089 203
+2383.103834936562 204
+3048.8072847098683 205
+1781.625912354876 206
+1530.8950473158632 207
+33285.85617392964 208
+1702.7886000007559 209
+2060.09658286556 210
+2818.555635326419 211
+1477.1844274941577 212
+2312.6120038207873 213
+3009.4063431007276 214
+1988.8815022806045 215
+2042.38050571839 216
+2751.409928422567 217
+1711.0440664543726 218
+1478.2852997252228 219
+2741.564493917873 220
+2503.461764044956 221
+2321.8223702009777 222
+5289.689626962241 223
+1427.8239902405883 224
+1579.1364476489016 225
+2866.162243372371 226
+1936.899869169644 227
+1820.585260680783 228
+2659.5569898356275 229
+1209.6780911339802 230
+3036.001319212762 231
+2649.982243256353 232
+1797.6887085608155 233
+1727.2778802512264 234
+2486.490628843239 235
+1937.8388458659083 236
+2112.075276285748 237
+2698.687640355744 238
+1755.7687753240352 239
+1787.2130905142565 240
+2407.4591169827245 241
+2742.171959131595 242
+45537.821551855726 243
+2274.31281161809 244
+2391.331622293627 245
+2495.1479858615116 246
+2480.597185429962 247
+2083.114887836858 248
+2895.6369510728805 249
+2438.0503350215627 250
+1894.0366851041058 251
+1773.2371663325273 252
+2670.7624860183128 253
+3782.594421399117 254
+3007.4856441822226 255
+2428.4348445835913 256
+1601.8411800658166 257
+2175.9661307213614 258
+2639.142977666895 259
+1681.4289718484747 260
+2342.551366179143 261
+2379.5881133726375 262
+1458.540903683618 263
+1437.6664673887565 264
+2518.8613231360823 265
+2801.050407864699 266
+1678.7950332552414 267
+2363.1080929721516 268
+1750.5194132923268 269
+2152.203801075923 270
+2276.9496617966674 271
+1436.36633110653 272
+1812.0978264136322 273
+2172.5093367212226 274
+2010.9738906443833 275
+2163.516029300652 276
+2220.6475542393873 277
+3152.8374935853544 278
+2070.176935592756 279
+2313.13574966762 280
+2179.5646145884325 281
+1096.2031464987535 282
+2251.5185876002897 283
+1775.2418814836808 284
+4219.188299668823 285
+2198.4980961606743 286
+2782.0563791502036 287
+6807.178372642768 288
+1973.8164424119173 289
+2097.5859344318133 290
+2910.2209777404883 291
+1306.7155223098707 292
+3729.2420939007316 293
+711.9921131504079 294
+1575.9325161304093 295
+1597.7898315504563 296
+1219.3912703657836 297
+1527.275237010155 298
+1123.1424451053354 299
+754.9395684148184 300
+1496.59880764333 301
+1469.0394202751856 302
+738.5428218244487 303
+1663.8595699015846 304
+1826.7421208071341 305
+16325.622907487377 306
+1257.9996451174438 307
+1765.9495199474088 308
+818.5655509037401 309
+1384.3065753846897 310
+1268.2670741087347 311
+737.8463923008161 312
+1440.4311867461997 313
+876.8967300747959 314
+639.641735770017 315
+1818.2817111297277 316
+1006.0274788935046 317
+680.6110856120613 318
+2021.969026033655 319
+2438.8629991501743 320
+762.2821364578799 321
+1429.5237278147633 322
+871.8052818114957 323
+3436.7472586920962 324
+1425.5058982748965 325
+909.3238548964207 326
+708.3647313849398 327
+1392.7468071925061 328
+957.4968421183977 329
+823.6768268771291 330
+1402.0758042256036 331
+4320.271929425556 332
+647.6611320630832 333
+1104.7966634980698 334
+815.0651695164692 335
+649.6087787199416 336
+884.3317395523653 337
+675.7365105227345 338
+430.22736152334636 339
+1200.5413845570067 340
+794.6553576806175 341
+719.2412714563619 342
+1105.6487040070056 343
+1.9805897954241996e+24 344
+442.3107229851486 345
+1228.7532601980743 346
+785.9306639521435 347
+464.44633445772257 348
+1251.5968795545662 349
+666.5304090216086 350
+419.87926355640565 351
+1078.1595440236763 352
+739.4467238401674 353
+431.95913331456507 354
+1249.6414021228143 355
+656.7675463374906 356
+373.70546404842594 357
+1048.2703831906072 358
+581.3094370025805 359
+518.9556155545548 360
+1125.3134347721857 361
+726.6935410383757 362
+486.1461960336121 363
+1065.7358866515133 364
+751.2262120675952 stopped 20.7388, res 61 
+13!13
+Root #325/482, age 5.64786, stopped 0, res 84 
+Root #326/482, age 4.3049, stopped 0, res 76 
+Root #327/482, age 4, stopped 0, res 58 
+Root #328/482, age 5.64786, stopped 0, res 99 
+Root #329/482, age 4.51421, stopped 0, res 72 
+Root #330/482, age 4, stopped 0, res 73 
+Root #331/482, age 5.43954, stopped 0, res 100 
+Root #332/482, age 4.09678, stopped 20.7405, res 75 
+13!13
+Root #333/482, age 4, stopped 0, res 57 
+Root #334/482, age 5.37568, stopped 0, res 81 
+Root #335/482, age 4.06415, stopped 0, res 63 
+Root #336/482, age 4, stopped 0, res 63 
+Root #337/482, age 5.37567, stopped 0, res 61 
+Root #338/482, age 3.62909, stopped 0, res 59 
+Root #339/482, age 3, stopped 0, res 53 
+Root #340/482, age 5.29643, stopped 0, res 82 
+Root #341/482, age 4.01567, stopped 0, res 72 
+Root #342/482, age 4, stopped 0, res 63 
+Root #343/482, age 5.17061, stopped 0, res 82 
+Root #344/482, age 3.92443, stopped 21, res 66 
+13!13
+Root #345/482, age 3, stopped 0, res 54 
+Root #346/482, age 5.05656, stopped 0, res 92 
+Root #347/482, age 3.95792, stopped 0, res 60 
+Root #348/482, age 3, stopped 0, res 48 
+Root #349/482, age 5.05656, stopped 0, res 88 
+Root #350/482, age 3.90866, stopped 0, res 61 
+Root #351/482, age 3, stopped 0, res 51 
+Root #352/482, age 5.00901, stopped 0, res 79 
+Root #353/482, age 3.7502, stopped 0, res 68 
+Root #354/482, age 3, stopped 0, res 45 
+Root #355/482, age 5.00901, stopped 0, res 89 
+Root #356/482, age 3.89013, stopped 0, res 61 
+Root #357/482, age 3, stopped 0, res 51 
+Root #358/482, age 5.009, stopped 0, res 77 
+Root #359/482, age 3.72218, stopped 0, res 57 
+Root #360/482, age 3, stopped 0, res 53 
+Root #361/482, age 4.94886, stopped 0, res 84 
+Root #362/482, age 3.77751, stopped 0, res 63 
+Root #363/482, age 3, stopped 0, res 56 
+Root #364/482, age 4.92539, stopped 0, res 80 
+Root #365/482, age 3.69872, stopped 0, res 71 
+Root #366/482, age 3, stopped 0, res 49 
+Root #367/482, age 4.92538, stopped 0, res 95 
+Root #368/482, age 3.89591, stopped 0, res 68 
+Root #369/482, age 3, stopped 0, res 50 
+Root #370/482, age 4.71828, stopped 0, res 71 
+Root #371/482, age 3.40037, stopped 0, res 55 
+Root #372/482, age 3, stopped 0, res 41 
+Root #373/482, age 4.71827, stopped 0, res 74 
+Root #374/482, age 3.45413, stopped 0, res 58 
+Root #375/482, age 3, stopped 0, res 54 
+Root #376/482, age 4.65736, stopped 0, res 76 
+Root #377/482, age 3.44017, stopped 0, res 58 
+Root #378/482, age 3, stopped 0, res 49 
+Root #379/482, age 4.62669, stopped 0, res 72 
+Root #380/482, age 3.35817, stopped 0, res 62 
+Root #381/482, age 3, stopped 0, res 51 
+Root #382/482, age 4.59485, stopped 0, res 82 
+Root #383/482, age 3.47692, stopped 0, res 60 
+Root #384/482, age 3, stopped 0, res 43 
+Root #385/482, age 4.40429, stopped 0, res 74 
+Root #386/482, age 3.22511, stopped 0, res 47 
+Root #387/482, age 3, stopped 0, res 51 
+Root #388/482, age 4.33968, stopped 0, res 88 
+Root #389/482, age 3.36135, stopped 0, res 68 
+Root #390/482, age 3, stopped 0, res 45 
+Root #391/482, age 4.24853, stopped 0, res 80 
+Root #392/482, age 3.18656, stopped 0, res 53 
+Root #393/482, age 3, stopped 0, res 44 
+Root #394/482, age 4.10979, stopped 0, res 70 
+Root #395/482, age 2.93766, stopped 0, res 49 
+Root #396/482, age 2, stopped 0, res 28 
+Root #397/482, age 3.88748, stopped 0, res 76 
+Root #398/482, age 2.86935, stopped 0, res 44 
+Root #399/482, age 2, stopped 0, res 28 
+Root #400/482, age 3.76175, stopped 0, res 57 
+Root #401/482, age 2.46022, stopped 0, res 41 
+Root #402/482, age 2, stopped 0, res 30 
+Root #403/482, age 3.75643, stopped 0, res 72 
+Root #404/482, age 2.71826, stopped 0, res 45 
+Root #405/482, age 2, stopped 0, res 32 
+Root #406/482, age 3.68061, stopped 0, res 49 
+Root #407/482, age 2.20145, stopped 0, res 35 
+Root #408/482, age 2, stopped 0, res 36 
+Root #409/482, age 3.50857, stopped 0, res 56 
+Root #410/482, age 2.26943, stopped 0, res 37 
+Root #411/482, age 2, stopped 0, res 28 
+Root #412/482, age 3.50856, stopped 0, res 57 
+Root #413/482, age 2.287, stopped 0, res 34 
+Root #414/482, age 2, stopped 0, res 38 
+ 365
+397.6817413747425 366
+1219.90921715773 367
+912.264688554139 368
+474.5255147766622 369
+986.8879415255167 370
+568.3972358919962 371
+377.83750142435775 372
+962.0055856395303 373
+614.9869673377315 374
+440.72287060444734 375
+946.4426404471217 376
+579.4475940019819 377
+437.36950596720874 378
+975.4015674077025 379
+592.4651816542657 380
+457.5728871418606 381
+908.7915368719318 382
+565.9153815511004 383
+423.73377077921896 384
+953.1105739139554 385
+481.66071706255764 386
+441.6058315149306 387
+999.5102824927145 388
+694.7168222686055 389
+387.25327978671874 390
+985.8432509217748 391
+497.55962447331945 392
+392.50360476873567 393
+1108.843380047064 394
+429.4125964535073 395
+156.06369486617558 396
+966.9774071784763 397
+367.05813558492247 398
+136.74297493290013 399
+569.2136656593333 400
+261.43021955031065 401
+131.6209036969957 402
+764.540700260378 403
+329.2374164997496 404
+215.8298005394102 405
+540.0172060480877 406
+264.48102461291785 407
+162.3981250076471 408
+558.0501965317306 409
+203.3943546609485 410
+199.73728982966716 411
+558.2734162328824 412
+206.1260754615123 413
+263.3301892592553 414
+491.36239685221295 415
+173.58128541999167 416
+137.15643219268514 417
+503.2759796747968 418
+214.3334789393753 419
+188.67686444742074 420
+436.2002449100199 421
+205.32864163670908 422
+34.57951603618134 423
+428.6883434670031 424
+145.29864988149302 425
+44.86359981959757 426
+375.30651067878523 427
+133.06397815661703 428
+46.93961463753625 429
+365.63868957908164 430
+106.67252438258592 431
+42.39744887383881 432
+506.2679482716639 433
+168.7470177535854 434
+70.27463795065063 435
+538.5250560933389 436
+123.81415737563871 437
+121.09858008006962 438
+527.2486623836688 439
+152.85851988855407 440
+37.4813188276811 441
+272.4653670500919 442
+111.559232775479 443
+30.798399651383132 444
+361.1570775953552 445
+153.01987191314043 446
+42.07674306851323 447
+391.8883367860552 448
+109.59244716484375 449
+57.50649776932409 450
+368.4810433921332 451
+79.29931823200937 452
+30.847493213678742 453
+254.603427623272 454
+151.02402899917735 455
+54.30194697820038 456
+266.93751101739497 457
+55.358530796898854 458
+73.5515458892863 459
+218.25739214935842 460
+17.448759128713153 461
+215.3916405988528 462
+0.0 463
+150.6967302170139 464
+3.5214741142953683 465
+65.5240256760063 466
+112.04863407862851 467
+0.0 468
+115.78515334726364 469
+84.33999383622076 470
+74.19650906780966 471
+96.19362423632309 472
+115.46024878025855 473
+41.16560073303534 474
+36.31222683559752 475
+11.44000482950829 476
+6.2636240703272525 477
+2.8567403950217667 478
+6.168237944933018e-21 479
+2.0372538814857858e-17 480
+0.0 481
+end check
+Root #415/482, age 3.38979, stopped 0, res 48 
+Root #416/482, age 2.00208, stopped 0, res 32 
+Root #417/482, age 2, stopped 0, res 30 
+Root #418/482, age 3.25159, stopped 0, res 54 
+Root #419/482, age 2.06383, stopped 0, res 38 
+Root #420/482, age 2, stopped 0, res 32 
+Root #421/482, age 3.16929, stopped 0, res 49 
+Root #422/482, age 1.8891, stopped 0, res 35 
+Root #423/482, age 1, stopped 0, res 17 
+Root #424/482, age 3.03791, stopped 0, res 52 
+Root #425/482, age 1.87822, stopped 0, res 28 
+Root #426/482, age 1, stopped 0, res 17 
+Root #427/482, age 3.03318, stopped 0, res 49 
+Root #428/482, age 1.80889, stopped 0, res 22 
+Root #429/482, age 1, stopped 0, res 17 
+Root #430/482, age 3.03103, stopped 0, res 40 
+Root #431/482, age 1.53353, stopped 0, res 29 
+Root #432/482, age 1, stopped 0, res 18 
+Root #433/482, age 2.91685, stopped 0, res 55 
+Root #434/482, age 1.87335, stopped 0, res 32 
+Root #435/482, age 1, stopped 0, res 16 
+Root #436/482, age 2.91684, stopped 0, res 44 
+Root #437/482, age 1.61526, stopped 0, res 22 
+Root #438/482, age 1, stopped 0, res 16 
+Root #439/482, age 2.79001, stopped 0, res 61 
+Root #440/482, age 1.88486, stopped 0, res 31 
+Root #441/482, age 1, stopped 0, res 16 
+Root #442/482, age 2.7194, stopped 0, res 42 
+Root #443/482, age 1.43798, stopped 0, res 25 
+Root #444/482, age 1, stopped 0, res 17 
+Root #445/482, age 2.70639, stopped 0, res 50 
+Root #446/482, age 1.64113, stopped 0, res 29 
+Root #447/482, age 1, stopped 0, res 15 
+Root #448/482, age 2.60324, stopped 0, res 43 
+Root #449/482, age 1.39604, stopped 0, res 19 
+Root #450/482, age 1, stopped 0, res 15 
+Root #451/482, age 2.52948, stopped 0, res 43 
+Root #452/482, age 1.35685, stopped 0, res 21 
+Root #453/482, age 1, stopped 0, res 13 
+Root #454/482, age 2.52838, stopped 0, res 38 
+Root #455/482, age 1.2055, stopped 0, res 21 
+Root #456/482, age 1, stopped 0, res 16 
+Root #457/482, age 2.36607, stopped 0, res 40 
+Root #458/482, age 1.20134, stopped 0, res 19 
+Root #459/482, age 1, stopped 0, res 15 
+Root #460/482, age 2.05077, stopped 0, res 33 
+Root #461/482, age 0.820585, stopped 0, res 12 
+Root #462/482, age 1.9275, stopped 0, res 21 
+Root #463/482, age 0.141041, stopped 0, res 2 
+Root #464/482, age 1.78265, stopped 0, res 29 
+Root #465/482, age 0.567655, stopped 0, res 7 
+Root #466/482, age 1.48881, stopped 0, res 19 
+Root #467/482, age 1.43936, stopped 0, res 25 
+Root #468/482, age 0.315335, stopped 0, res 4 
+Root #469/482, age 1.19765, stopped 0, res 19 
+Root #470/482, age 1.03912, stopped 0, res 17 
+Root #471/482, age 1.03912, stopped 0, res 16 
+Root #472/482, age 1.03911, stopped 0, res 18 
+Root #473/482, age 0.917861, stopped 0, res 15 
+Root #474/482, age 0.8743, stopped 0, res 14 
+Root #475/482, age 0.76998, stopped 0, res 13 
+Root #476/482, age 0.615077, stopped 0, res 8 
+Root #477/482, age 0.5146, stopped 0, res 7 
+Root #478/482, age 0.514595, stopped 0, res 9 
+Root #479/482, age 0.334283, stopped 0, res 5 
+Root #480/482, age 0.278692, stopped 0, res 5 
+Root #481/482, age 0.25397, stopped 0, res 4 

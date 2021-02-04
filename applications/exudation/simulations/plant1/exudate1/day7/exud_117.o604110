@@ -1,0 +1,34 @@
+Seed::initialize: RootSystem 
+Organism::simulate: from 0 to 1 days
+Organism::simulate: from 1 to 2 days
+Organism::simulate: from 2 to 3 days
+Organism::simulate: from 3 to 4 days
+Organism::simulate: from 4 to 5 days
+Organism::simulate: from 5 to 6 days
+Organism::simulate: from 6 to 7 days
+Width 20 Depth 45  at a Resolution 200 200 450
+make voxel lists
+Computation took 3900.525279045105 s
+skipped small segment (0 < 1e-06) 
+skipped small segment (0 < 1e-06) 
+made list 1/20 length 14.497 cm , vol 114.464 cm3, having 44182 voxels
+made list 2/20 length 1.64773 cm , vol 13.01 cm3, having 6245 voxels
+made list 56/20 length 0.53563 cm , vol 4.22916 cm3, having 3698 voxels
+made list 3/20 length 1.66923 cm , vol 13.1797 cm3, having 6442 voxels
+made list 58/20 length 0.586909 cm , vol 4.63405 cm3, having 3956 voxels
+made list 4/20 length 1.22283 cm , vol 9.65507 cm3, having 5443 voxels
+made list 60/20 length 0.303112 cm , vol 2.39328 cm3, having 3286 voxels
+made list 5/20 length 1.32765 cm , vol 10.4827 cm3, having 5467 voxels
+made list 62/20 length 0.325678 cm , vol 2.57145 cm3, having 3305 voxels
+made list 6/20 length 1.10811 cm , vol 8.74925 cm3, having 5028 voxels
+made list 64/20 length 0.113412 cm , vol 0.895464 cm3, having 2805 voxels
+made list 7/20 length 0.972079 cm , vol 7.67523 cm3, having 4565 voxels
+made list 8/20 length 0.716207 cm , vol 5.65494 cm3, having 4155 voxels
+made list 9/20 length 0.727619 cm , vol 5.74505 cm3, having 4150 voxels
+made list 10/20 length 0.713342 cm , vol 5.63232 cm3, having 4146 voxels
+made list 11/20 length 0.481857 cm , vol 3.80459 cm3, having 3670 voxels
+made list 12/20 length 0.301194 cm , vol 2.37814 cm3, having 3253 voxels
+made list 13/20 length 0.161436 cm , vol 1.27465 cm3, having 2830 voxels
+made list 14/20 length 0.10941 cm , vol 0.863871 cm3, having 2837 voxels
+made list 15/20 length 0.111176 cm , vol 0.877807 cm3, having 2736 voxels
+writing VTP... ../vtp/day07.vtp
