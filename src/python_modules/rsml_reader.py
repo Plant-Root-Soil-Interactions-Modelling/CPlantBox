@@ -8,7 +8,7 @@ RSML Reader, by Daniel Leitner (2019)
 """
 
 
-def parse_rsml_(organ :ET, polylines :list, properties :dict, functions :dict, parent :int) -> (list, dict, dict):
+def parse_rsml_(organ:ET, polylines:list, properties:dict, functions:dict, parent:int) -> (list, dict, dict):
     """ Recursivly parses the rsml file, used by read_rsml """
     for poly in organ.iterfind('geometry'):  # only one
         polyline = []
@@ -37,7 +37,7 @@ def parse_rsml_(organ :ET, polylines :list, properties :dict, functions :dict, p
     return polylines, properties, functions
 
 
-def read_rsml(name :str) -> (list, dict, dict):
+def read_rsml(name:str) -> (list, dict, dict):
     """Parses the RSML file into:
 
     Args:
@@ -61,11 +61,13 @@ def read_rsml(name :str) -> (list, dict, dict):
 
 
 def artificial_shoot(polylines, properties, functions):
-    """ inserts an artificial shoot, with functions and properties of the the first polyline """ 
+    """ inserts an artificial shoot, with functions and properties of the the first polyline 
+    
+    """ 
     polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.]])
     for key, v in properties.items():
         properties[key].insert(0, properties[key][0])
-    for key, v in functions.items():        
+    for key, v in functions.items(): 
         functions[key].insert(0, [functions[key][0][0], functions[key][0][1]])    
     for i, p in enumerate(polylines):  # add one to the parent poly indices 
         properties["parent-poly"][i] += 1
@@ -77,7 +79,7 @@ def artificial_shoot(polylines, properties, functions):
     return polylines, properties, functions
 
 
-def get_segments(polylines :list, props :dict) -> (list, list):
+def get_segments(polylines:list, props:dict) -> (list, list):
     """ Converts the polylines to a list of nodes and an index list of line segments
         
     Args:
@@ -108,8 +110,22 @@ def get_segments(polylines :list, props :dict) -> (list, list):
     return nodes, segs
 
 
-def get_parameter(polylines :list, funcs :dict, props :dict) -> (list, list, list):
+def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
     """ Copies radius, creation times, and types one value per segment 
+        
+        Args:
+        polylines(list): flat list of polylines, one polyline per root
+        funcs(dict): dictionary of functions
+        props(dict): dictionary of properties     
+        
+        Returns:
+        radius, creation time, type (per segment)
+        
+        software calls parameters different names, get_parameter expects:
+         
+        radius          calculated from "diameter" in properties or functions 
+        creation times  "emergence_times" or "node_creation_time" in functions
+        type            "type" or "subType" in properties, or "type" in functions    
     """    
     if "diameter" in props:
         fdiam_p = True
@@ -143,10 +159,10 @@ def get_parameter(polylines :list, funcs :dict, props :dict) -> (list, list, lis
             else:
                 types.append(ptype[i][j])                
             cts.append(fet[i][j])        
-    return radii[1:], cts[1:], types[1:]
+    return radii[1:], cts[1:], types[1:]  # for tap root systems only! add an artificial shoot in case of fibrous root system
 
 
-def plot_rsml(polylines :list, prop :list):
+def plot_rsml(polylines:list, prop:list):
     """Plots the polylines in y-z axis with colors given by a root property
 
     Args:
@@ -162,7 +178,7 @@ def plot_rsml(polylines :list, prop :list):
     plt.show()
 
 
-def plot_segs(nodes :list, segs :list, fun :list):
+def plot_segs(nodes:list, segs:list, fun:list):
     """Plots the segments in y-z axis (rather slow)
     
     Args:
@@ -188,10 +204,10 @@ if __name__ == '__main__':
     polylines, properties, functions = artificial_shoot(polylines, properties, functions)  # for multiple base roots, add artificial root 
     
     print("Properties:")
-    for key, v in properties.items() :
+    for key, v in properties.items():
         print("\t", key, len(properties[key]))
     print("Functions:")
-    for key, v in functions.items() :
+    for key, v in functions.items():
         print("\t", key, len(functions[key]))
     plot_rsml(polylines, properties["parent-node"])
 
