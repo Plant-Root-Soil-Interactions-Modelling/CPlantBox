@@ -121,18 +121,20 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         Returns:
         radius, creation time, type (per segment)
         
-        software calls parameters different names, get_parameter expects:
+        different rsml writer call parameters different names, get_parameter expects:
          
         radius          calculated from "diameter" in properties or functions 
         creation times  "emergence_times" or "node_creation_time" in functions
-        type            "type" or "subType" in properties, or "type" in functions    
+        type            "type" or "subType" in properties, or "type" in functions
+        
+        otherwise an exception is thrown    
     """    
     if "diameter" in props:
         fdiam_p = True
         fdiam = props["diameter"]
     else:
         fdiam_p = False
-        fdiam = funcs["diameter"]
+        fdiam = funcs["diameter"]  # otherwise we are in trouble
     if "type" in props:
         ptype_p = True
         ptype = props["type"]
