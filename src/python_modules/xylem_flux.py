@@ -354,6 +354,17 @@ class XylemFluxPython(XylemFlux):
         print("Artifical shoot kx = {:g}, kr = {:g} ".format(self.kx_f(1, 0, 2), self.kr_f(1, 0, 2, 0)))
         plt.show()
         
+        
+    def kr_f(self, age, st, ot= 2 , numleaf=2):
+        """ for backwards compatibility """
+        kr = self.kr_f_cpp(age, st, ot, numleaf )
+        return kr
+        
+    def kx_f(self, age, st, ot=2):
+        """ for backwards compatibility """
+        kx = self.kx_f_cpp(age, st, ot)
+        return kx
+        
     def summarize_fluxes(self, fluxes, sim_time, rx, p_s, k_soil=[], cells=False, show_matrices=False):
         """gives an overview of the radial and axial water flux. allows us to check that the water balance is about 0
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
