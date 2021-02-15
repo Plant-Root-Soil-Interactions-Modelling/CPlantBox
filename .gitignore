@@ -31,7 +31,7 @@ Codeblocks
 *.toc
 
 # CMake
-.cmake
+*.cmake
 CMakeFiles
 Makefile
 *CMakeCache*
@@ -39,6 +39,9 @@ Makefile
 # something pythoon related
 *.pyc
 __pycache__
+
+# pyenv
+.python-version
 
 # Others
 .pydevproject
@@ -48,3 +51,4 @@ Debug/
 
 # Jupyter notebook
 tutorial/jupyter/.ipynb_checkpoints/
+.ipynb_checkpoints/
