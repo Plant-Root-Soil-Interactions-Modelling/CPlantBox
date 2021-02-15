@@ -308,7 +308,7 @@ class XylemFluxPython(XylemFlux):
         # print(self.get_organ_types())
         
     def plot_conductivities(self):
-        """
+        """ plots conductivity 
         """
         axes_age = np.linspace(0, 100, 500)
         lateral_age = np.linspace(0, 25, 125)
@@ -351,7 +351,13 @@ class XylemFluxPython(XylemFlux):
         ax4.set_title("Laterals")
         ax4.set_xlabel("age [day]")
         ax4.set_ylabel("radial conductance [day$^{-1}$]")
+        print()
         print("Artifical shoot kx = {:g}, kr = {:g} ".format(self.kx_f(1, 0, 2), self.kr_f(1, 0, 2, 0)))
+        for st in range(1, 5):
+            print("SubType {:g} for negative age: kx = {:g}, kr = {:g}".format(st, self.kx_f(-1, st, 2), self.kr_f(-1, st, 2, 0)))
+        print("SubType 2 old : kx = {:g}, kr = {:g}".format(self.kx_f(100, 2, 2), self.kr_f(100, 2, 2, 0)))
+        print("")
+        
         plt.show()
         
     def summarize_fluxes(self, fluxes, sim_time, rx, p_s, k_soil=[], cells=False, show_matrices=False):
