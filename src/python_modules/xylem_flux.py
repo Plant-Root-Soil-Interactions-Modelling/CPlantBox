@@ -313,20 +313,16 @@ class XylemFluxPython(XylemFlux):
         # print(self.get_organ_types())
         
     def plot_conductivities(self):
-        """ plots conductivity - TODO make 
-        """
-        axes_age = np.linspace(0, 100, 500)
-        lateral_age = np.linspace(0, 25, 125)
-                
+        """ plots conductivity  """
+        axes_age = np.linspace(-5, 100, 500)
+        lateral_age = np.linspace(-2, 25, 125)                
         axes_str = ["tap root", "basal", "shoot borne"]    
         axes_ind = [1, 4, 5]
         axes_cols = ["r", "g:", "b--"]    
         lateral_str = ["1st order laterals", "2nd order laterals"]
         lateral_ind = [2, 3]
-        lateral_cols = ["r", "g:"]    
-        
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)        
-        
+        lateral_cols = ["r", "g:"]            
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 10))                
         for j, st in enumerate(axes_ind): 
             kx_ = [ self.kx_f(axes_age[i], st, 2) for i in range(0, len(axes_age)) ]            
             ax1.plot(axes_age, kx_, axes_cols[j])
@@ -341,7 +337,6 @@ class XylemFluxPython(XylemFlux):
         ax2.set_title("Laterals")
         ax2.set_xlabel("age [day]")
         ax2.set_ylabel("axial conductance [cm$^3$ day$^{-1}$]")
-
         for j, st in enumerate(axes_ind): 
             kr_ = [ self.kr_f(axes_age[i], st, 2, 0) for i in range(0, len(axes_age)) ]            
             ax3.plot(axes_age, kr_, axes_cols[j])
@@ -361,8 +356,7 @@ class XylemFluxPython(XylemFlux):
         for st in range(1, 5):
             print("SubType {:g} for negative age: kx = {:g}, kr = {:g}".format(st, self.kx_f(-1, st, 2), self.kr_f(-1, st, 2, 0)))
         print("SubType 2 old : kx = {:g}, kr = {:g}".format(self.kx_f(100, 2, 2), self.kr_f(100, 2, 2, 0)))
-        print("")
-        
+        print("")        
         plt.show()
         
     def kr_f(self, age, st, ot=2 , numleaf=2):

@@ -86,7 +86,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		auto v = n2.minus(n1);
 		double l = v.length();
 		if (l<1.e-5) {
-			std::cout << "segment length smaller 1.e-5 \n"; // quick fix?
+			// std::cout << "segment length smaller 1.e-5 \n"; // quick fix?
 			l = 1.e-5;
 		}
 		double vz = v.z / l; // normed direction
