@@ -11,6 +11,11 @@ from plantbox import XylemFlux
 import rsml_reader as rsml  # todo
 
 
+def sinusoidal(t):
+    """ sinusoidal function (used for transpiration) """
+    return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.  
+
+
 class XylemFluxPython(XylemFlux):
     """  Hybrid flux solver (following Meunier et al.)
     
@@ -23,7 +28,7 @@ class XylemFluxPython(XylemFlux):
     """
 
     def __init__(self, rs):
-        """ @param rs is either a pb.MappedRootSystem or a string containing a rsml filename"""
+        """ @param rs is either a pb.MappedRootSystem, pb.MappedSegments, or a string containing a rsml filename"""
         if isinstance(rs, str):
             rs = self.read_rsml(rs)
             super().__init__(rs)
@@ -300,7 +305,7 @@ class XylemFluxPython(XylemFlux):
         types = self.rs.subTypes
         if np.min(types) > 0:
             print("Warning: types start with index", np.min(types), "> 0 !")
-        print("{:g} different root types".format(np.max(types) + 1))
+        print("{:g} different root types".format(np.max(types) - np.min(types) + 1))
         # 4 Print segment age range
         ages = self.get_ages()    
         print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))        
@@ -308,7 +313,7 @@ class XylemFluxPython(XylemFlux):
         # print(self.get_organ_types())
         
     def plot_conductivities(self):
-        """ plots conductivity 
+        """ plots conductivity - TODO make 
         """
         axes_age = np.linspace(0, 100, 500)
         lateral_age = np.linspace(0, 25, 125)
@@ -360,10 +365,9 @@ class XylemFluxPython(XylemFlux):
         
         plt.show()
         
-        
-    def kr_f(self, age, st, ot= 2 , numleaf=2):
+    def kr_f(self, age, st, ot=2 , numleaf=2):
         """ for backwards compatibility """
-        kr = self.kr_f_cpp(age, st, ot, numleaf )
+        kr = self.kr_f_cpp(age, st, ot, numleaf)
         return kr
         
     def kx_f(self, age, st, ot=2):
@@ -438,7 +442,7 @@ class XylemFluxPython(XylemFlux):
         return fluxes
 
     @staticmethod
-    def read_rsml(file_name:str):
+    def read_rsml(file_name:str, verbose=True):
         """ reads an RSML file and converts to MappedSegments with units [cm]
         @file_name     the file name of the rsml, including file extension (e.g. "test.rsml" ) 
         @return a CPlantBox MappedSegments object
@@ -449,11 +453,13 @@ class XylemFluxPython(XylemFlux):
             if props["parent-poly"][i] < 0:
                 bn += 1
         if bn > 1: 
-            print("XylemFlux.read_rsml: added an artificial shoot")
             polylines, props, funcs = rsml.artificial_shoot(polylines, props, funcs)        
+            if verbose: 
+                print("XylemFluxPython.read_rsml: added an artificial shoot")
         nodes, segs = rsml.get_segments(polylines, props)
-        radii, seg_ct, types = rsml.get_parameter(polylines, funcs, props)
-        print("XylemFluxPython.read_rsml: read rsml with", len(nodes), "nodes and", len(radii), "radii")
+        radii, seg_ct, types = rsml.get_parameter(polylines, funcs, props)        
+        if verbose: 
+            print("XylemFluxPython.read_rsml: read rsml with", len(nodes), "nodes and", len(segs), "segments")        
         nodes = np.array(nodes)  # for slicing in the plots
         nodes2 = []  # Conversions...
         for n in nodes:
@@ -465,6 +471,10 @@ class XylemFluxPython(XylemFlux):
             segs2.append(pb.Vector2i(int(s[0]), int(s[1])))
         radii = np.array(radii)
         types = np.array(types, dtype=np.int64) - 1  # index must start with 0
+        if verbose:
+            print("                           nodeCTs [{:g}, {:g}] days".format(np.min(nodeCTs), np.max(nodeCTs)))
+            print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
+            print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))        
         return pb.MappedSegments(nodes2, nodeCTs, segs2, radii, types)  # root system grid
 
     @staticmethod

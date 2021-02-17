@@ -785,6 +785,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
         .def("sort",&MappedSegments::sort)
+        .def("segOuterRadii",&MappedSegments::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
+		.def("segLength",&MappedSegments::segLength)
         .def_readwrite("nodes", &MappedSegments::nodes)
         .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
         .def_readwrite("segments", &MappedSegments::segments)

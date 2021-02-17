@@ -129,15 +129,15 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
 	maxBound = max;
 	resolution = res;
 	cutAtGrid = cut;
-	std::cout << "setRectangularGrid: cutSegments \n" << std::flush;
+	// std::cout << "setRectangularGrid: cutSegments \n" << std::flush;
 	if (cutAtGrid) {
 		cutSegments(); // re-add (for cutting)
 	}
-	std::cout << "setRectangularGrid: sort \n" << std::flush;
+	// std::cout << "setRectangularGrid: sort \n" << std::flush;
 	sort(); // todo should not be necessary, or only in case of cutting?
 	seg2cell.clear(); // re-map all segments
 	cell2seg.clear();
-	std::cout << "setRectangularGrid: map \n" << std::flush;
+	// std::cout << "setRectangularGrid: map \n" << std::flush;
 	mapSegments(segments);
 }
 
@@ -251,6 +251,7 @@ void MappedSegments::addSegment(Vector2i ns, double r,  int st, int ot, int ii) 
 			if ((length(s1)<eps) ||  (length(s2)<eps)) { // if the cut segments are too small, just give up
 				add(ns, r, st, ot, ii);
 				nodes.pop_back(); // remove cPoint
+				nodeCTs.pop_back();
 			} else {
 				addSegment(s1, r, st , ot, ii); // first segment replaces at index ii
 				addSegment(s2, r, st , ot, -1); // append second segment
@@ -362,6 +363,66 @@ void MappedSegments::sort() {
 	subTypes = newSubTypes;
 	organTypes = newTypesorgan;
 }
+
+/**
+ * Calculates outer segment radii [cm], so that the summed segment volumes per cell equals the cell volume
+ * @param type 			prescribed cylinder volume proportional to 0: segment volume, 1: segment surface, 2: segment length
+ * @param vols 			(optional) in case of non-equidistant grids, volumes per cell must be defined
+ */
+std::vector<double> MappedSegments::segOuterRadii(int type, const std::vector<double>& vols) const {
+	double cellVolume;
+	auto lengths =  this->segLength();
+	auto width = maxBound.minus(minBound);
+	std::vector<double> outer_radii = std::vector<double>(segments.size());
+	std::fill(outer_radii.begin(), outer_radii.end(), 0.);
+	for(auto iter = cell2seg.begin(); iter != cell2seg.end(); ++iter) {
+		int cellId =  iter->first;
+		if (vols.size()==0) {
+			cellVolume = width.x*width.y*width.z/resolution.x/resolution.y/resolution.z;
+		} else {
+			cellVolume = vols.at(cellId);
+		}
+		auto segs = cell2seg.at(cellId);
+		double v = 0.;  // calculate sum of root volumes or surfaces over cell
+		for (int i : segs) {
+			if (type==0) { // volume
+				v += M_PI*(radii[i]*radii[i])*lengths[i];
+			} else if (type==1) { // surface
+				v += 2*M_PI*radii[i]*lengths[i];
+			} else if (type==2) { // length
+				v += lengths[i];
+			}
+		}
+		for (int i : segs) { // calculate outer radius
+			double l = lengths[i];
+			double t =0.; // proportionality factor (must sum up to == 1 over cell)
+			if (type==0) { // volume
+				t = M_PI*(radii[i]*radii[i])*l/v;
+			} else if (type==1) { // surface
+				t = 2*M_PI*radii[i]*l/v;
+			} else if (type==2) { // length
+				t = l/v;
+			}
+			double targetV = t * cellVolume;  // target volume
+			outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
+		}
+	}
+	return outer_radii;
+}
+
+/**
+ * Calculates segment lengths [cm]
+ */
+std::vector<double> MappedSegments::segLength() const {
+	std::vector<double> lengths = std::vector<double>(segments.size());
+	for(int i=0; i<lengths.size(); i++) {
+		auto n1 = nodes[segments[i].x];
+		auto n2 = nodes[segments[i].y];
+		lengths[i] = (n2.minus(n1)).length();
+	}
+	return lengths;
+}
+
 
 
 

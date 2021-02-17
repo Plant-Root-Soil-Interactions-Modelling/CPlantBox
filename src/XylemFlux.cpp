@@ -65,7 +65,6 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		int subType = rs->subTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
-
 		
 		try {
 			kx = kx_f(age, subType, organType);
@@ -320,52 +319,7 @@ std::vector<double> XylemFlux::segSRAStressedAnalyticalFlux(const std::vector<do
 	return f;
 }
 
-/**
- * Calculates outer segment radii [cm], so that the summed segment volumes per cell equals the cell volume
- * @param type 			prescribed cylinder volume proportional to 0: segment volume, 1: segment surface, 2: segment length
- * @param vols 			(optional) in case of non-equidistant grids, volumes per cell must be defined
- */
-std::vector<double> XylemFlux::segOuterRadii(int type, const std::vector<double>& vols) const {
-	double cellVolume;
-	auto lengths =  this->segLength();
-	auto width = rs->maxBound.minus(rs->minBound);
-	std::vector<double> radii = std::vector<double>(rs->segments.size());
-	std::fill(radii.begin(), radii.end(), 0.);
-	auto& map = rs->cell2seg;
-	for(auto iter = map.begin(); iter != map.end(); ++iter) {
-		int cellId =  iter->first;
-		if (vols.size()==0) {
-			cellVolume = width.x*width.y*width.z/rs->resolution.x/rs->resolution.y/rs->resolution.z;
-		} else {
-			cellVolume = vols.at(cellId);
-		}
-		auto segs = map.at(cellId);
-		double v = 0.;  // calculate sum of root volumes or surfaces over cell
-		for (int i : segs) {
-			if (type==0) { // volume
-				v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
-			} else if (type==1) { // surface
-				v += 2*M_PI*rs->radii[i]*lengths[i];
-			} else if (type==2) { // length
-				v += lengths[i];
-			}
-		}
-		for (int i : segs) { // calculate outer radius
-			double l = lengths[i];
-			double t =0.; // proportionality factor (must sum up to == 1 over cell)
-			if (type==0) { // volume
-				t = M_PI*(rs->radii[i]*rs->radii[i])*l/v;
-			} else if (type==1) { // surface
-				t = 2*M_PI*rs->radii[i]*l/v;
-			} else if (type==2) { // length
-				t = l/v;
-			}
-			double targetV = t * cellVolume;  // target volume
-			radii[i] = sqrt(targetV/(M_PI*l)+rs->radii[i]*rs->radii[i]);
-		}
-	}
-	return radii;
-}
+
 
 /**
  * Splits soil fluxes per cell to the segments within the cell, so that the summed fluxes agree, @see sumSoilFluxes()
@@ -407,20 +361,6 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
 	}
 	return fluxes;
 }
-
-/**
- * Calculates segment lengths [cm]
- */
-std::vector<double> XylemFlux::segLength() const {
-	std::vector<double> lengths = std::vector<double>(rs->segments.size());
-	for(int i=0; i<lengths.size(); i++) {
-		auto n1 = rs->nodes[rs->segments[i].x];
-		auto n2 = rs->nodes[rs->segments[i].y];
-		lengths[i] = (n2.minus(n1)).length();
-	}
-	return lengths;
-}
-
 
 /**
  *  Sets the radial conductivity in [1 day-1]
