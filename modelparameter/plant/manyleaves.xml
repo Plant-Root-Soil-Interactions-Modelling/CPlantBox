@@ -44,7 +44,7 @@
     <!--Apical zone [cm];-->
     <parameter name="ln" value="1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="10" dev="0"/>
+    <parameter name="lmax" value="5" dev="0"/>
     <parameter name="r" value="4" dev="0"/>
     <parameter name="a" value="0.20000000000000001" dev="0"/>
     <parameter name="tropismT" value="1"/>

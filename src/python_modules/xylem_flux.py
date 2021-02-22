@@ -170,9 +170,11 @@ class XylemFluxPython(XylemFlux):
         a = self.rs.radii[seg_ind]  # radius
         st = int(self.rs.subTypes[seg_ind])  # conductivities kr, kx
         age = sim_time - self.rs.nodeCTs[int(s.y)]
-        if ot == 4 and len(self.gs) > 0:  # to know which x-th leaf segment it is, to fetch the right gs value 
+        if ot == 4:#to know which x-th leaf segment it is, to fetch the right gs value 
                 indices = [i for i, x in enumerate(organTypes) if x == 4]
                 numleaf = indices.index(seg_ind)
+                if self.pg[0] !=0:
+                    p_s = self.pg[numleaf]
         kr = self.kr_f(age, st, ot, numleaf)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot)
@@ -284,6 +286,16 @@ class XylemFluxPython(XylemFlux):
         tipleaves = tipleaves - np.ones(tipleaves.shape, dtype=np.int64)  # segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
         
+    def kr_f(self, age, st, ot= 2 , numleaf=2):
+        """ for backwards compatibility """
+        kr = self.kr_f_cpp(age, st, ot, numleaf )
+        return kr
+        
+    def kx_f(self, age, st, ot=2):
+        """ for backwards compatibility """
+        kx = self.kx_f_cpp(age, st, ot)
+        return kx
+                
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
         print("\nXylemFluxPython.test:")

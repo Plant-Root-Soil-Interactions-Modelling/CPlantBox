@@ -12,6 +12,7 @@ XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs)
 {
 	size_t length_leaf = std::count(rs->organTypes.begin(), rs->organTypes.end(), 4);
 	gs.resize(length_leaf);
+	pg.resize(length_leaf);
 
 }
 
@@ -60,6 +61,9 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		} else {
 			psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
 		}
+		if (organType == 4 && pg.at(0)!= 0){
+			psi_s = pg.at(numleaf);
+		}
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
 		double age = simTime - rs->nodeCTs[j];
 		int subType = rs->subTypes[si];
@@ -73,7 +77,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 			std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
 			std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
 		}
-		if(organType == 4){numleaf +=1;}
+		if(organType == 4){numleaf +=1;	}
 		//        if (age<=0) {
 		//            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
 		//        }
@@ -152,6 +156,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
 		int i = rs->segments[si].x;
 		int j = rs->segments[si].y;
+		int organType = rs->organTypes[si];
 
 		double psi_s;
 		if (cells) { // soil matric potential given per cell
@@ -165,10 +170,13 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		} else {
 			psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
 		}
+		
+		if (organType == 4 && pg.at(0)!= 0){
+			psi_s = pg.at(numleaf);
+		}
 
 		double a = rs->radii[si]; // si is correct, with ordered and unordered segments
 		double age = simTime - rs->nodeCTs[j];
-		int organType = rs->organTypes[si];
 		int subType = rs->subTypes[si];
 		double kx = 0.;
 		double  kr = 0.;

@@ -4,6 +4,7 @@ from xylem_flux import XylemFluxPython  # Python hybrid solver
 from Leuning import Leuning
 import plantbox as pb
 import vtk_plot as vp
+import math
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,21 +13,30 @@ import matplotlib.pyplot as plt
 kz = 4.32e-1  # axial conductivity [cm^3/day] 
 kr = 1.728e-4  # radial conductivity of roots [1/day]
 kr_stem = 1.e-20  # radial conductivity of stem  [1/day], set to almost 0
-gmax = 0.0864 #  cm3/day radial conductivity of leaves = stomatal conductivity [1/day]
+gmax = 0.004 #  cm3/day radial conductivity between xylem and guard cell
 p_s = -200  # static water potential (saturation) 33kPa in cm
-p_a =  -1000  #static air water potential 
+#p_g = -2000 # water potential of the guard cell
+RH = 0.5 # relative humidity
+TairC = 20
+p_a =  -1000  #default outer water potential 
 simtime = 14.0  # [day] for task b
 k_soil = []
+Q = 0#900e-6 # mol quanta m-2 s-1 light, example from leuning1995
+cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
+TairK = TairC + 273.15
+
+
+es = 0.61078 * math.exp(17.27 * TairC / (TairC + 237.3)) 
+ea = es * RH 
+VPD = es - ea 
+
 
 # root system 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
 path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
 name = "manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
-Ds = 3 #kPa VPD, example from Dewar2002
-Q = 900e-6 # mol quanta m-2 s-1 light, example from leuning1995
-Tair = 20 + 273.15
-cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
+
 
 """ soil """
 min_ = np.array([-5, -5, -15])
@@ -48,15 +58,16 @@ tiproots, tipstem, tipleaf = r.get_organ_segments_tips() #end segment of each or
 seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
 
 
-r.setKr([[kr],[kr_stem],[gmax]]) #gmax will be changed by the leuning function 
+r.setKr([[kr],[kr_stem],[gmax]]) 
 r.setKx([[kz]])
 r.airPressure = p_a
 
 # Numerical solution 
 r.seg_ind = seg_tips # segment indices for Neumann b.c.
 r.node_ind = node_tips
-rx = r.solve_leuning( sim_time = simtime,sxx=[p_s], cells = True, Qlight = Q,VPD = Ds,Tl = Tair,p_linit = p_s,
-ci_init = cs,  soil_k = [], log = True)
+rx = r.solve_leuning(sim_time = simtime,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
+Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = True)
+
 
 fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
 r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False)
