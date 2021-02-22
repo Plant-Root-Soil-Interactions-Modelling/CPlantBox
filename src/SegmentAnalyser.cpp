@@ -330,7 +330,9 @@ void SegmentAnalyser::filter(std::string name, double value)
     for (size_t i=0; i<segments.size(); i++) {
         if (d_.at(i)==value) {
             seg.push_back(segments.at(i));
-            sO.push_back(segO.at(i));
+            if (segO.size()>0) {
+                sO.push_back(segO.at(i));
+            }
             for(auto iter = data.begin(); iter != data.end(); ++iter) {
                 std::string key =  iter->first;
                 ndata[key].push_back(data[key].at(i));

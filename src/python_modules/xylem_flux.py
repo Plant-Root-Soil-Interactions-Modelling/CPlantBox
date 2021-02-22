@@ -4,10 +4,16 @@ import math
 import numpy as np
 from scipy import sparse
 import scipy.sparse.linalg as LA
+import matplotlib.pyplot as plt
 
 import plantbox as pb
 from plantbox import XylemFlux
 import rsml_reader as rsml  # todo
+
+
+def sinusoidal(t):
+    """ sinusoidal function (used for transpiration) """
+    return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.  
 
 
 class XylemFluxPython(XylemFlux):
@@ -22,7 +28,7 @@ class XylemFluxPython(XylemFlux):
     """
 
     def __init__(self, rs):
-        """ @param rs is either a pb.MappedRootSystem or a string containing a rsml filename"""
+        """ @param rs is either a pb.MappedRootSystem, pb.MappedSegments, or a string containing a rsml filename"""
         if isinstance(rs, str):
             rs = self.read_rsml(rs)
             super().__init__(rs)
@@ -32,7 +38,7 @@ class XylemFluxPython(XylemFlux):
         self.seg_ind = [0]  # segment indices for Neuman flux
         self.node_ind = [0]  # node indices for Dirichlet flux
 
-    def solve_neumann(self, sim_time :float, value, sxx, cells :bool, soil_k=[]) :
+    def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k=[]):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
             @param value [cm3 day-1]    tranpirational flux is negative
@@ -58,7 +64,7 @@ class XylemFluxPython(XylemFlux):
         # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
         return x
 
-    def solve_dirichlet(self, sim_time :float, value :list, sxc :float, sxx, cells :bool, soil_k=[]):
+    def solve_dirichlet(self, sim_time:float, value:list, sxc:float, sxx, cells:bool, soil_k=[]):
         """ solves the flux equations, with a dirichlet boundary condtion, see solve()
             @param sim_time [day]     needed for age dependent conductivities (age = sim_time - segment creation time)
             @param scx                depricated (unused)
@@ -84,7 +90,7 @@ class XylemFluxPython(XylemFlux):
         x = LA.spsolve(Q, b, use_umfpack=True)
         return x
 
-    def solve(self, sim_time :float, trans :list, sx :float, sxx, cells :bool, wilting_point :float, soil_k=[]):
+    def solve(self, sim_time:float, trans:list, sx:float, sxx, cells:bool, wilting_point:float, soil_k=[]):
         """ solves the flux equations using Neumann and switching to dirichlet in case wilting point is reached in root collar 
             @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
             @param trans [cm3 day-1]     transpiration rate
@@ -178,7 +184,7 @@ class XylemFluxPython(XylemFlux):
         d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
         dpdz0 = d[0] * tau - d[1] * tau  # insert z = 0, z = l into exact solution   
         f = kx * (dpdz0 + v.z)
-        if ij :
+        if ij:
             f = f * (-1)
         return f  
 
@@ -260,9 +266,9 @@ class XylemFluxPython(XylemFlux):
         """ return index of nodes at the end of each organ """
         organTypes = self.get_organ_types()
         segments = self.get_segments() 	
-        get_y_node = lambda vec : vec[1]
-        get_x_node = lambda vec : vec[0]
-        get_nodetype = lambda y : organTypes[y - 1]
+        get_y_node = lambda vec: vec[1]
+        get_x_node = lambda vec: vec[0]
+        get_nodetype = lambda y: organTypes[y - 1]
         nodesy = np.array([get_y_node(xi) for xi in segments], dtype=np.int64)
         nodesx = np.array([get_x_node(xi) for xi in segments], dtype=np.int64)
         nodesy = np.setdiff1d(nodesy, nodesx)  # select all the nodes which belong to tip of an organ
@@ -311,11 +317,69 @@ class XylemFluxPython(XylemFlux):
         types = self.rs.subTypes
         if np.min(types) > 0:
             print("Warning: types start with index", np.min(types), "> 0 !")
-        print("{:g} different root types".format(np.max(types) + 1))
+        print("{:g} different root types".format(np.max(types) - np.min(types) + 1))
         # 4 Print segment age range
-        ages = self.get_ages()
-        print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))
+        ages = self.get_ages()    
+        print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))        
         print()
+        # print(self.get_organ_types())
+        
+    def plot_conductivities(self):
+        """ plots conductivity  """
+        axes_age = np.linspace(-5, 100, 500)
+        lateral_age = np.linspace(-2, 25, 125)                
+        axes_str = ["tap root", "basal", "shoot borne"]    
+        axes_ind = [1, 4, 5]
+        axes_cols = ["r", "g:", "b--"]    
+        lateral_str = ["1st order laterals", "2nd order laterals"]
+        lateral_ind = [2, 3]
+        lateral_cols = ["r", "g:"]            
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 10))                
+        for j, st in enumerate(axes_ind): 
+            kx_ = [ self.kx_f(axes_age[i], st, 2) for i in range(0, len(axes_age)) ]            
+            ax1.plot(axes_age, kx_, axes_cols[j])
+        ax1.legend(axes_str)
+        ax1.set_title("Axis")
+        ax1.set_xlabel("age [day]")
+        ax1.set_ylabel("axial conductance [cm$^3$ day$^{-1}$]")
+        for j, st in enumerate(lateral_ind): 
+            kx_ = [ self.kx_f(lateral_age[i], st, 2) for i in range(0, len(lateral_age)) ]            
+            ax2.plot(lateral_age, kx_, axes_cols[j])
+        ax2.legend(lateral_str)
+        ax2.set_title("Laterals")
+        ax2.set_xlabel("age [day]")
+        ax2.set_ylabel("axial conductance [cm$^3$ day$^{-1}$]")
+        for j, st in enumerate(axes_ind): 
+            kr_ = [ self.kr_f(axes_age[i], st, 2, 0) for i in range(0, len(axes_age)) ]            
+            ax3.plot(axes_age, kr_, axes_cols[j])
+        ax3.legend(axes_str)
+        ax3.set_title("Axis")
+        ax3.set_xlabel("age [day]")
+        ax3.set_ylabel("radial conductance [day$^{-1}$]")
+        for j, st in enumerate(lateral_ind): 
+            kr_ = [ self.kr_f(lateral_age[i], st, 2, 0) for i in range(0, len(lateral_age)) ]            
+            ax4.plot(lateral_age, kr_, axes_cols[j])
+        ax4.legend(lateral_str)
+        ax4.set_title("Laterals")
+        ax4.set_xlabel("age [day]")
+        ax4.set_ylabel("radial conductance [day$^{-1}$]")
+        print()
+        print("Artifical shoot kx = {:g}, kr = {:g} ".format(self.kx_f(1, 0, 2), self.kr_f(1, 0, 2, 0)))
+        for st in range(1, 5):
+            print("SubType {:g} for negative age: kx = {:g}, kr = {:g}".format(st, self.kx_f(-1, st, 2), self.kr_f(-1, st, 2, 0)))
+        print("SubType 2 old : kx = {:g}, kr = {:g}".format(self.kx_f(100, 2, 2), self.kr_f(100, 2, 2, 0)))
+        print("")        
+        plt.show()
+        
+    def kr_f(self, age, st, ot=2 , numleaf=2):
+        """ for backwards compatibility """
+        kr = self.kr_f_cpp(age, st, ot, numleaf)
+        return kr
+        
+    def kx_f(self, age, st, ot=2):
+        """ for backwards compatibility """
+        kx = self.kx_f_cpp(age, st, ot)
+        return kx
         
     def summarize_fluxes(self, fluxes, sim_time, rx, p_s, k_soil=[], cells=False, show_matrices=False):
         """gives an overview of the radial and axial water flux. allows us to check that the water balance is about 0
@@ -336,7 +400,7 @@ class XylemFluxPython(XylemFlux):
         axialfluxes_i = -np.array([self.axial_flux(i, sim_time, rx=rx, sxx=p_s, k_soil=k_soil, ij=False, cells=cells) for i in range(0, len(self.rs.segments))])
         
         balance = -axialfluxes_i - axialfluxes_j + fluxes
-        if show_matrices :
+        if show_matrices:
             print("matrix of radial fluxes per segments  (<0 leaving segment) :")
             print(-np.array(fluxes))
             print("axial water flux at segment i node (<0 leaving segment) :")
@@ -362,14 +426,14 @@ class XylemFluxPython(XylemFlux):
         # check that for each node, influx = out flux:
         organTypes = self.get_organ_types()
         segments = self.get_segments() 	
-        get_y_node = lambda vec : np.array(vec)[1]
-        get_x_node = lambda vec : np.array(vec)[0]
-        get_nodetype = lambda y : organTypes[y - 1]
+        get_y_node = lambda vec: np.array(vec)[1]
+        get_x_node = lambda vec: np.array(vec)[0]
+        get_nodetype = lambda y: organTypes[y - 1]
         nodesy = np.array([get_y_node(xi) for xi in segments])
         nodesx = np.array([get_x_node(xi) for xi in segments])
         nodeflux = np.full(len(self.get_nodes()), math.nan)
         nodes = np.arange(len(self.get_nodes()))
-        for nd in range(len(nodeflux)) :
+        for nd in range(len(nodeflux)):
             fluxseg_roots_bellow = axialfluxes_j[np.logical_and((nodesx == nd), (organTypes == 2))]  # upper root flux where node is upper node
             fluxseg_roots_above = axialfluxes_i[np.logical_and((nodesy == nd), (organTypes == 2))]  # lower root flux where node is lower node
             fluxseg_stemsleaves_bellow = axialfluxes_j[np.logical_and((nodesy == nd), (organTypes > 2))]  # upper root flux where node is upper node
@@ -384,7 +448,7 @@ class XylemFluxPython(XylemFlux):
         return fluxes
 
     @staticmethod
-    def read_rsml(file_name :str):
+    def read_rsml(file_name:str, verbose=True):
         """ reads an RSML file and converts to MappedSegments with units [cm]
         @file_name     the file name of the rsml, including file extension (e.g. "test.rsml" ) 
         @return a CPlantBox MappedSegments object
@@ -395,11 +459,13 @@ class XylemFluxPython(XylemFlux):
             if props["parent-poly"][i] < 0:
                 bn += 1
         if bn > 1: 
-            print("XylemFlux.read_rsml: added an artificial shoot")
             polylines, props, funcs = rsml.artificial_shoot(polylines, props, funcs)        
+            if verbose: 
+                print("XylemFluxPython.read_rsml: added an artificial shoot")
         nodes, segs = rsml.get_segments(polylines, props)
-        radii, seg_ct, types = rsml.get_parameter(polylines, funcs, props)
-        print("XylemFluxPython.read_rsml: read rsml with", len(nodes), "nodes and", len(radii), "radii")
+        radii, seg_ct, types = rsml.get_parameter(polylines, funcs, props)        
+        if verbose: 
+            print("XylemFluxPython.read_rsml: read rsml with", len(nodes), "nodes and", len(segs), "segments")        
         nodes = np.array(nodes)  # for slicing in the plots
         nodes2 = []  # Conversions...
         for n in nodes:
@@ -411,6 +477,10 @@ class XylemFluxPython(XylemFlux):
             segs2.append(pb.Vector2i(int(s[0]), int(s[1])))
         radii = np.array(radii)
         types = np.array(types, dtype=np.int64) - 1  # index must start with 0
+        if verbose:
+            print("                           nodeCTs [{:g}, {:g}] days".format(np.min(nodeCTs), np.max(nodeCTs)))
+            print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
+            print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))        
         return pb.MappedSegments(nodes2, nodeCTs, segs2, radii, types)  # root system grid
 
     @staticmethod

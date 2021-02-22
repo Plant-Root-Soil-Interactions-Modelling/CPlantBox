@@ -3,6 +3,7 @@ import math
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning) 
 
+
 import numpy as np
 from scipy import sparse
 import scipy.sparse.linalg as LA
@@ -87,6 +88,7 @@ class Leuning(XylemFluxPython):
         'theta': 0.9,
         }
     
+
     def solve_leuning(self, sim_time :float,sxx, cells :bool, Qlight ,VPD: float,Tl, p_linit,ci_init,cs,  soil_k = [], N= [], log = True) :
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]           needed for age dependent conductivities (age = sim_time - segment creation time)
@@ -277,7 +279,7 @@ class Leuning(XylemFluxPython):
                 ', Jrefmax '+ repr(Jrefmax)+', Jmax '+ repr(Jmax)+', J '+ repr(J))
                 logfile.close()
             
-    def calcGs( self,VPD_input, p_l_input, Tl_input):
+    def calcGs( self,VPD_input, p_l_input, Tl_in
         """ fills the stomatal conductance vector
             @param VPD_input [kPa]          vapour pressure deficit
             @param p_l_input [cm]           leaf matric poential (mean or per leaf segment)
@@ -416,4 +418,3 @@ class Leuning(XylemFluxPython):
             psig = -(E/(-f*(1./(tau*d))*(2.-np.exp(-tau*l)-np.exp(tau*l))) - (rxi + rxj))/2 
             pg.append(psig)
         self.pg = pg
-        
