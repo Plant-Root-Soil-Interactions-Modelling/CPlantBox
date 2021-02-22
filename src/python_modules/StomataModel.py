@@ -57,6 +57,7 @@ class StomataModel(XylemFluxPython):
         x_old = np.full(len(self.rs.nodes), 0)
         while(stop != True):    
             self.calcGs(PAR, VPD, Tair,  p_l) 
+            print("gs", self.gs)
             self.linearSystem(sim_time, sxx, cells, soil_k) # C++ (see XylemFlux.cpp)
             Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
             Q = sparse.csr_matrix(Q)

@@ -831,8 +831,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("segSRAStressedFlux",&XylemFlux::segSRAStressedFlux, py::arg("sx"), py::arg("wiltingPoint"), py::arg("hc"),
                 py::arg("mpf"), py::arg("impf"), py::arg("dx") = 1.e-6)
 	        .def("segSRAStressedAnalyticalFlux",&XylemFlux::segSRAStressedAnalyticalFlux)
-            .def_readonly("kr_f", &XylemFlux::kr_f)
-            .def_readonly("kx_f", &XylemFlux::kx_f)
+            .def_readonly("kr_f_cpp", &XylemFlux::kr_f)
+            .def_readonly("kx_f_cpp", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)
             .def_readwrite("aV", &XylemFlux::aV)
@@ -841,7 +841,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
 			.def_readwrite("airPressure", &XylemFlux::airPressure)
-			.def_readwrite("gs", &XylemFlux::gs);
+			.def_readwrite("gs", &XylemFlux::gs)
+			.def_readwrite("pg", &XylemFlux::pg);
 
     /*
      * Plant.h
@@ -850,6 +851,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<>())
             .def("getSeed", &Plant::getSeed)
             .def("setGeometry", &Plant::setGeometry)
+            .def("setSoil", &Plant::setSoil)
             .def("reset", &Plant::reset)
             .def("openXML", &Plant::openXML)
             .def("setTropism", &Plant::setTropism)
