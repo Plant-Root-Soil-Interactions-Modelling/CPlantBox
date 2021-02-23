@@ -279,7 +279,7 @@ class Leuning(XylemFluxPython):
                 ', Jrefmax '+ repr(Jrefmax)+', Jmax '+ repr(Jmax)+', J '+ repr(J))
                 logfile.close()
             
-    def calcGs( self,VPD_input, p_l_input, Tl_in
+    def calcGs( self,VPD_input, p_l_input, Tl_input):
         """ fills the stomatal conductance vector
             @param VPD_input [kPa]          vapour pressure deficit
             @param p_l_input [cm]           leaf matric poential (mean or per leaf segment)
