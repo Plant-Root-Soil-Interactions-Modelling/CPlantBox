@@ -21,7 +21,7 @@ TairC = 20
 p_a =  -1000  #default outer water potential 
 simtime = 14.0  # [day] for task b
 k_soil = []
-Q = 0#900e-6 # mol quanta m-2 s-1 light, example from leuning1995
+Q = 900e-6 # mol quanta m-2 s-1 light, example from leuning1995
 cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
 TairK = TairC + 273.15
 
