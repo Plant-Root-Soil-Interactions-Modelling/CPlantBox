@@ -284,6 +284,41 @@ class XylemFluxPython(XylemFlux):
         tipleaves = tipleaves - np.ones(tipleaves.shape, dtype=np.int64)  # segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
         
+    def get_suf(self, sim_time):
+        """ returns the surface uptake fraction of the root system at simulation time @param sim_time [day]
+            (suf is constant for age independent conductivities)  """
+        segs = self.rs.segments
+        nodes = self.rs.nodes
+        p_s = np.zeros((len(segs),))
+        for i, s in enumerate(segs):
+            p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)                  
+        rx = self.solve_neumann(sim_time, -1.e7, p_s, False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
+        fluxes = self.segFluxes(sim_time, rx, p_s, False, True)  # cm3/day, simTime,  rx,  sx,  approx, cells
+        return np.array(fluxes) / -1.e7  # [1]
+        
+    def get_krs(self, sim_time):
+        """ root system conductivity [cm2/day] """
+        segs = self.rs.segments
+        nodes = self.rs.nodes
+        p_s = np.zeros((len(segs),))
+        for i, s in enumerate(segs):
+            p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)         
+        rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, False)   
+        jc = -self.collar_flux(sim_time, rx, p_s, [], False)  # collar_flux(self, sim_time, rx, sxx, k_soil=[], cells=True):
+        return jc / (-500 - (rx[0] + 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z)))    
+        
+    def get_eswp(self, sim_time, p_s):
+        """ calculates the equivalent soil water potential at simulation time @param sim_time [day] for 
+        the soil matric potential [cm] given per cell """        
+        segs = self.rs.segments
+        nodes = self.rs.nodes
+        seg2cell = self.rs.seg2cell
+        suf = self.get_suf(sim_time)
+        eswp = 0.
+        for i, s in enumerate(segs):
+            eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
+        return eswp
+        
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
         print("\nXylemFluxPython.test:")
