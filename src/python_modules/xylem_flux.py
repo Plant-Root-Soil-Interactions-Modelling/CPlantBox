@@ -285,7 +285,7 @@ class XylemFluxPython(XylemFlux):
         return tiproots, tipstems, tipleaves
         
     def get_suf(self, sim_time):
-        """ returns the surface uptake fraction of the root system at simulation time @param sim_time [day]
+        """ calculates the surface uptake fraction of the root system at simulation time @param sim_time [day]
             (suf is constant for age independent conductivities)  """
         segs = self.rs.segments
         nodes = self.rs.nodes
@@ -297,7 +297,7 @@ class XylemFluxPython(XylemFlux):
         return np.array(fluxes) / -1.e7  # [1]
         
     def get_krs(self, sim_time):
-        """ root system conductivity [cm2/day] """
+        """ calculatets root system conductivity [cm2/day] """
         segs = self.rs.segments
         nodes = self.rs.nodes
         p_s = np.zeros((len(segs),))
