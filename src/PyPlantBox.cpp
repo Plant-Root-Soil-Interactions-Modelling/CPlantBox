@@ -843,7 +843,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
 			.def_readwrite("airPressure", &XylemFlux::airPressure)
-			.def_readwrite("gs", &XylemFlux::gs);
+			.def_readwrite("gs", &XylemFlux::gs)
+			.def_readwrite("pg", &XylemFlux::pg);
 
     /*
      * Plant.h
@@ -852,6 +853,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<>())
             .def("getSeed", &Plant::getSeed)
             .def("setGeometry", &Plant::setGeometry)
+            .def("setSoil", &Plant::setSoil)
             .def("reset", &Plant::reset)
             .def("openXML", &Plant::openXML)
             .def("setTropism", &Plant::setTropism)

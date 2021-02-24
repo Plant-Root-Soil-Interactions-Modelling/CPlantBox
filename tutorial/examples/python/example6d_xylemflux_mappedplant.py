@@ -13,7 +13,7 @@ kr = 1.728e-4  # radial conductivity of roots [1/day]
 kr_stem = 1.e-20  # radial conductivity of stem  [1/day], set to almost 0
 gs = 0.03  # radial conductivity of leaves = stomatal conductivity [1/day]
 p_s = -200  # static soil pressure [cm]
-p_a = -1000 #static air pressure
+p_a = -100000 #static air pressure
 #p0 = -500  # dircichlet bc at top
 simtime = 14.0  # [day] for task b
 k_soil = []

@@ -42,7 +42,7 @@ def pressure_head(theta, sp):
     return -pow(pow((sp.theta_S - sp.theta_R) / (theta - sp.theta_R), (1. / sp.m)) - 1., 1. / sp.n) / sp.alpha
 
 
-def specific_moisture_storage(h, sp):
+def specific_moisture_storage(h, sp): #soil water retention function (Cw(h))
     """ returns the specific moisture storage according to the van genuchten model """
 #     h = np.minimum(h, np.zeros(h.shape))
 #     h = np.maximum(h, np.ones(h.shape) * -30000.)
