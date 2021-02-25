@@ -287,7 +287,7 @@ class XylemFluxPython(XylemFlux):
         return tiproots, tipstems, tipleaves
         
     def get_suf(self, sim_time):
-        """ calculates the surface uptake fraction of the root system at simulation time @param sim_time [day]
+        """ calculates the surface uptake fraction [1] of the root system at simulation time @param sim_time [day]
             (suf is constant for age independent conductivities)  """
         segs = self.rs.segments
         nodes = self.rs.nodes
@@ -299,7 +299,7 @@ class XylemFluxPython(XylemFlux):
         return np.array(fluxes) / -1.e7  # [1]
         
     def get_krs(self, sim_time):
-        """ calculatets root system conductivity [cm2/day] """
+        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
         segs = self.rs.segments
         nodes = self.rs.nodes
         p_s = np.zeros((len(segs),))
@@ -310,8 +310,8 @@ class XylemFluxPython(XylemFlux):
         return jc / (-500 - (rx[0] + 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z)))    
         
     def get_eswp(self, sim_time, p_s):
-        """ calculates the equivalent soil water potential at simulation time @param sim_time [day] for 
-        the soil matric potential [cm] given per cell """        
+        """ calculates the equivalent soil water potential [cm] at simulation time @param sim_time [day] for 
+        the soil matric potential @param p_s [cm] given per cell """        
         segs = self.rs.segments
         nodes = self.rs.nodes
         seg2cell = self.rs.seg2cell
@@ -322,14 +322,12 @@ class XylemFluxPython(XylemFlux):
         return eswp
         
     def kr_f(self, age, st, ot=2 , numleaf=2):
-        """ for backwards compatibility """
-        kr = self.kr_f_cpp(age, st, ot, numleaf)
-        return kr
+        """ root radial conductivity [1 day-1] for backwards compatibility """
+        return self.kr_f_cpp(age, st, ot, numleaf)  # kr_f_cpp is XylemFlux::kr_f
         
     def kx_f(self, age, st, ot=2):
-        """ for backwards compatibility """
-        kx = self.kx_f_cpp(age, st, ot)
-        return kx
+        """ root axial conductivity [cm3 day-1]  for backwards compatibility """
+        return self.kx_f_cpp(age, st, ot)  # kx_f_cpp is XylemFlux::kx_f
                 
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
@@ -405,16 +403,6 @@ class XylemFluxPython(XylemFlux):
         print("SubType 2 old : kx = {:g}, kr = {:g}".format(self.kx_f(100, 2, 2), self.kr_f(100, 2, 2, 0)))
         print("")        
         plt.show()
-        
-    def kr_f(self, age, st, ot=2 , numleaf=2):
-        """ for backwards compatibility """
-        kr = self.kr_f_cpp(age, st, ot, numleaf)
-        return kr
-        
-    def kx_f(self, age, st, ot=2):
-        """ for backwards compatibility """
-        kx = self.kx_f_cpp(age, st, ot)
-        return kx
         
     def summarize_fluxes(self, fluxes, sim_time, rx, p_s, k_soil=[], cells=False, show_matrices=False):
         """gives an overview of the radial and axial water flux. allows us to check that the water balance is about 0
