@@ -38,11 +38,11 @@ class Parameters:
 
 def pressure_head(theta, sp):
     """ returns pressure head at a given volumetric water content according to the van genuchten model """
-    theta = min(theta, sp.theta_S)  # saturated water conent is the maximum
+    theta = np.minimum(theta, sp.theta_S)  # saturated water conent is the maximum
     return -pow(pow((sp.theta_S - sp.theta_R) / (theta - sp.theta_R), (1. / sp.m)) - 1., 1. / sp.n) / sp.alpha
 
 
-def specific_moisture_storage(h, sp): #soil water retention function (Cw(h))
+def specific_moisture_storage(h, sp):  # soil water retention function (Cw(h))
     """ returns the specific moisture storage according to the van genuchten model """
 #     h = np.minimum(h, np.zeros(h.shape))
 #     h = np.maximum(h, np.ones(h.shape) * -30000.)
