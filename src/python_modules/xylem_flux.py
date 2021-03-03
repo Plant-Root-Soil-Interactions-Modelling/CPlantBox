@@ -294,8 +294,8 @@ class XylemFluxPython(XylemFlux):
         p_s = np.zeros((len(segs),))
         for i, s in enumerate(segs):
             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)                  
-        rx = self.solve_neumann(sim_time, -1.e7, p_s, False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
-        fluxes = self.segFluxes(sim_time, rx, p_s, False, True)  # cm3/day, simTime,  rx,  sx,  approx, cells
+        rx = self.solve_neumann(sim_time, -1.e7, p_s, False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes              
+        fluxes = self.segFluxes(sim_time, rx, p_s, False, False)  # cm3/day, simTime,  rx,  sx,  approx, cells
         return np.array(fluxes) / -1.e7  # [1]
         
     def get_krs(self, sim_time):
