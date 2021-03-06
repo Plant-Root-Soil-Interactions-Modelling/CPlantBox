@@ -30,13 +30,11 @@ es = 0.61078 * math.exp(17.27 * TairC / (TairC + 237.3))
 ea = es * RH 
 VPD = es - ea 
 
-
 # root system 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
 path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
 name = "manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
-
 
 """ soil """
 min_ = np.array([-5, -5, -15])
@@ -68,10 +66,8 @@ r.node_ind = node_tips
 rx = r.solve_leuning(sim_time = simtime,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
 Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = True)
 
-
 fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
 r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False)
-
 
 # plot results 
 fig, ax = plt.subplots()
@@ -113,5 +109,5 @@ plt.show()
 ana = pb.SegmentAnalyser(r.rs)
 ana.addData("rx", rx)
 ana.addData("fluxes",fluxes)  # cut off for vizualisation
-ana.write("results/example_6e.vtp", ["radius", "surface", "rx", "fluxes"]) #
+ana.write("results/example_6f.vtp", ["radius", "surface", "rx", "fluxes"]) #
 #vp.plot_roots(ana, "rx", "Xylem matric potential (cm)")  # "fluxes"

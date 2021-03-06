@@ -3,7 +3,6 @@ import math
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning) 
 
-
 import numpy as np
 from scipy import sparse
 import scipy.sparse.linalg as LA
@@ -42,7 +41,7 @@ class Leuning(XylemFluxPython):
         self.gco2 =  []# stomatal aperture for CO2
         self.Nc = 0 # in % or g N per g DM
         self.Param = { #list of parameters in alphabetical order. TODO: delete the useless parameters
-        'a1' :6, #(-) fitting parameter for gco2
+        'a1' :3,#6, #(-) fitting parameter for gco2
         'a2': 1.6,#(-)
         'a3':1.7,
         'alpha': 0.2,
@@ -53,6 +52,7 @@ class Leuning(XylemFluxPython):
         'bnc': 0.44,
         'brn' : -1.5075,
         'c': 7.72*5, #added *5 with regards to Lu2020
+        'Chl/N': 3.7,
         'cs':350e-6, #example from Dewar2002
         'd': 0.04,
         'D0': 1.67, #kPa
@@ -66,10 +66,12 @@ class Leuning(XylemFluxPython):
         'Edv': 220000,
         'FRN': 0.28,
         'fwr': 1e-15, #to avoid fw and gco2 of 0
-        'g0': 0.01,
+        'g0': 0.0,
         'gamma0': 28e-6,
         'gamma1': 0.0509,
         'gamma2': 0.001,
+        'JmaxrefChl1':2.78,
+        'JmaxrefChl2':18.45,
         'Kc_ref': 302e-6,
         'Ko_ref': 256e-3,
         'Mh2o': 18,
@@ -83,13 +85,14 @@ class Leuning(XylemFluxPython):
         'rho_h2o': 1,
         'rho_p': 0.35,
         'S': 700,
-        'sh': 1e10,
+        'sh': 0.001,
         'Tref': 293.2,
         'theta': 0.9,
+        'VcmaxrefChl1':1.28/2,#otherwise value too high
+        'VcmaxrefChl2':8.33/2,#otherwise value too high
         }
     
-
-    def solve_leuning(self, sim_time :float,sxx, cells :bool, Qlight ,VPD: float,Tl, p_linit,ci_init,cs,  soil_k = [], N= [], log = True) :
+    def solve_leuning(self, sim_time :float,sxx, cells :bool, Qlight ,VPD: float,Tl, p_linit,ci_init,cs, soil_k = [], N= [], log = True) :
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]           needed for age dependent conductivities (age = sim_time - segment creation time)
             @param sxx [cm]                 soil matric potentials given per segment or per soil cell
@@ -144,6 +147,7 @@ class Leuning(XylemFluxPython):
                 logfile.write("*" * 120)
                 logfile.write('\nLoop n°'+repr(loop))
                 logfile.close()
+            #self.calcGbl(Tl,V, log = log)
             self.calcAn(Qlight, Tl, log=log) 
             self.calcGs(VPD,  p_l,  Tl)  #also computes E and Jw
             self.calcCi() 
@@ -219,13 +223,9 @@ class Leuning(XylemFluxPython):
             ##Vc25max
             mass = (math.pi * pow(radii_leaf[si],2) * length_leaf[si])* self.Param['rho_p'] #in g
             Area = 0.0001 * (2 * math.pi * radii_leaf[si]* length_leaf[si] + 2 * math.pi * pow(radii_leaf[si] , 2)) 
-            Np = (self.Nc/100) * mass / Area #in g/m2, Eq 21
-            #F_LNR = max((self.Param['arn'] + self.Param['brn']/Np)*0.16, 0) #Eq 16, set a minimum
-            F_LNR = self.Param['FRN']
-            Rub = F_LNR*Np*6.25 #g/m² #Eq 15
-            Rub_mol = Rub * (1e6/55000) # in micromol/m² #Eq 14
-            K25cat = self.Param['c']/(1 + self.Param['d']*Rub_mol*8) #Eq 13
-            Vcrefmax = K25cat * (8/550) * F_LNR * Np * 6.25 * 0.001  #Eq 12
+            Np = ((self.Nc/100) * mass / Area)/14 #in mol/m2
+            Chl = self.Param['Chl/N']*Np*893.51/10 #chlorophyll a content in microg cm-2, evans1989 
+            Vcrefmax = (self.Param['VcmaxrefChl1']*Chl + self.Param['VcmaxrefChl2'])*1e-6 #mol m-2 s-1
             ##Vcmax
             expo1 = np.exp(self.Param['Eav'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/Tl))
             expo2 = np.exp((self.Param['S'] * Tl - self.Param['Edv'])/(self.Param['R'] * Tl))
@@ -237,6 +237,7 @@ class Leuning(XylemFluxPython):
             Vc = min(max(Vcmax * (ci - delta) / (ci + Kc*(1 + self.Param['oi']/Ko)),0),Vcmax) #Eq 8
             #electron transport rate
             ##Jrefmax
+            #Jrefmax = (self.Param['JmaxrefChl1']*Chl + self.Param['JmaxrefChl2'])*1e-6
             Jrefmax = Vcrefmax * self.Param['a3'] #Eq 25
             ##Jmax
             expo1 = np.exp(self.Param['Eaj'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/Tl))
@@ -257,11 +258,14 @@ class Leuning(XylemFluxPython):
             J2  = ((-coefb- math.sqrt(dis))/(2*coefa))
             J =  J2
             ##Vj
-            Vj = np.maximum(J/4 * (ci - delta)/ (ci - 2 * delta), 0) #Eq 22
+            eps = 0
+            if(ci == 2 * delta): # to avoid a division by 0
+                eps = 0.001*delta
+            Vj = np.maximum(J/4 * (ci - delta)/ (ci - 2 * delta+eps), 0) #Eq 22
             
             #An and Rd
             Rd = self.Param['Rd_ref'] * np.exp(self.Param['Eard']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/Tl))
-            An = max(min(Vc, Vj) - Rd, 0) #Eq 6
+            An = min(Vc, Vj) - Rd #Eq 6
             #print('Q ',An, Q, Vj, J2, coefa, coefb, coefc, Jmax, math.sqrt(dis))
             deltagco2 = (delta + Kc*Rd*(1 + self.Param['oi']/Ko)/Vcmax)/(1-Rd/Vcmax)
             #print('ref',Vcmax, Ko, Kc,  ci, delta,ci - delta, ci - 2 * delta)
@@ -274,7 +278,7 @@ class Leuning(XylemFluxPython):
             if log:
                 logfile = open('solve_leuning.txt', "a")
                 logfile.write('\nleaf seg n°' +repr(si))
-                logfile.write('Vcrefmax '+ repr(Vcrefmax)+', Vcmax '+ repr(Vcmax)+
+                logfile.write(' Chl '+repr(Chl)+' Vcrefmax '+ repr(Vcrefmax)+', Vcmax '+ repr(Vcmax)+
                 ', Ko '+ repr(Ko)+', Kc '+ repr(Kc)+ ', Γ* '+ repr(delta)+ 
                 ', Jrefmax '+ repr(Jrefmax)+', Jmax '+ repr(Jmax)+', J '+ repr(J))
                 logfile.close()
@@ -365,12 +369,7 @@ class Leuning(XylemFluxPython):
         """
         self.ci = []
         for si in range(len(self.get_segments_index(4))) :
-            if (self.fw[si] == self.Param['fwr']): #or (self.An[si] == 0):
-                ci = 0.0001*self.Param['cs']
-            else: 
-                ci = self.Param['cs'] - self.An[si]/self.gco2[si]  #Eq 26
-                ci = min(max(ci, 0.0001*self.Param['cs']),  self.Param['cs'])
-            
+            ci = (self.Param['cs']*self.Param['a1']*self.fw[si] +self.deltagco2[si])/(1+self.Param['a1']*self.fw[si]) #Eq 26
             self.ci.append(ci)
             
     def calcPsig( self,age, p_l_input):
@@ -399,18 +398,6 @@ class Leuning(XylemFluxPython):
             kr = self.kr_f(age, st, 4,leafn)
             kx = self.kx_f(age, st, 4)
             a = seg_radii[seg_ind]
-            '''
-            psitk = -1*10197.2
-            psixk = -2*10197.2
-            meanrx = (rxi+ rxj)/2
-            print('meanrx ', meanrx, psitk, psixk, kr, (meanrx - psixk)/(psitk-psixk))
-            if meanrx < psitk:
-                if meanrx < psixk:
-                    kr = 0
-                else:
-                    kr = kr * (meanrx - psixk)/(psitk-psixk)
-            print('kr2 ', kr)
-            '''
             l = seg_length[seg_ind]
             f = -2*a*math.pi*kr
             tau = np.sqrt(2*a*math.pi*kr/kx)
@@ -418,3 +405,5 @@ class Leuning(XylemFluxPython):
             psig = -(E/(-f*(1./(tau*d))*(2.-np.exp(-tau*l)-np.exp(tau*l))) - (rxi + rxj))/2 
             pg.append(psig)
         self.pg = pg
+        
+        
