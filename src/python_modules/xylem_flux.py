@@ -307,7 +307,7 @@ class XylemFluxPython(XylemFlux):
             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)         
         rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, False)   
         jc = -self.collar_flux(sim_time, rx, p_s, [], False)  # collar_flux(self, sim_time, rx, sxx, k_soil=[], cells=True):
-        return jc / (-500 - (rx[0] + 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z)))    
+        return jc / (-500 - (rx[0] + 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z))), jc    
         
     def get_eswp(self, sim_time, p_s):
         """ calculates the equivalent soil water potential [cm] at simulation time @param sim_time [day] for 

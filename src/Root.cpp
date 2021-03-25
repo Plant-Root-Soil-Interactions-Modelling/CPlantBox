@@ -205,6 +205,9 @@ double Root::calcCreationTime(double length, double dt)
 {
     assert(length >= 0 && "Root::getCreationTime() negative length");
     double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+    if (age_>1.e8) { // in case length reaches max_length calcAge returns 1.e9
+    	age = calcAge(length-dx()/10.);
+    }
     double a = std::max(age_, age-dt);
     a = std::min(a, age); // a in [age-dt, age]
     return a+nodeCTs[0];

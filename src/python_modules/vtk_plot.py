@@ -28,7 +28,7 @@ def solver_to_polydata(solver, min_, max_, res_):
     return pd
 
 
-def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "creationTime"]):
+def segs_to_polydata(rs, zoom_factor=1., param_names=["age", "radius", "type", "creationTime"]):
     """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments 
     @param rs             a RootSystem, Plant, or SegmentAnalyser
     @param zoom_factor    a radial zoom factor, since root are sometimes too thin for vizualisation
@@ -162,7 +162,7 @@ def render_window(actor, title, scalarBar, bounds):
     iren.SetRenderWindow(renWin)
     renWin.Render()
     iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
-    iren.AddObserver('KeyPressEvent', lambda obj, ev :keypress_callback_(obj, ev, bounds), 1.0)
+    iren.AddObserver('KeyPressEvent', lambda obj, ev:keypress_callback_(obj, ev, bounds), 1.0)
     iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
     for a in ren.GetActors():
         a.Modified()  #
@@ -221,7 +221,7 @@ def write_png(renWin, fileName):
     writer.Write()
 
 
-def create_lookup_table(tableIdx = 15, numberOfColors = 256):
+def create_lookup_table(tableIdx=15, numberOfColors=256):
     """ creates a color lookup table 
     @param tableIdx          index of the predefined color table, see VTKColorSeriesPatches.html
     @param numberOfColors    number of colors interpolated from the predefined table
@@ -244,7 +244,7 @@ def create_lookup_table(tableIdx = 15, numberOfColors = 256):
     return lut
 
 
-def create_scalar_bar(lut, grid = None, p_name = ""):
+def create_scalar_bar(lut, grid=None, p_name=""):
     """ creates a vtkScalarBarActor, for a vtkLookupTable, sets hte active scalar to p_name
     @param lut         vtkLookupTable
     @param grid        the grid the scalar bar will be used on (to automatically determine the scalar range)
@@ -279,9 +279,9 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
-def plot_roots(pd, p_name :str, win_title :str = "", render :bool = True):
+def plot_roots(pd, p_name:str, win_title:str="", render:bool=True):
     """ plots the root system 
-    @param pd         the polydata representing the root system (lines, or polylines)
+    @param pd         RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
     @param p_name     parameter name of the data to be visualized
     @param win_title  the windows titles (optionally, defaults to p_name)
     @param render     render in a new interactive window (default = True)
@@ -323,7 +323,7 @@ def plot_roots(pd, p_name :str, win_title :str = "", render :bool = True):
     return plantActor, scalar_bar
 
 
-def plot_mesh(grid, p_name, win_title = "", render = True):
+def plot_mesh(grid, p_name, win_title="", render=True):
     """ Plots the grid as wireframe
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
@@ -353,7 +353,7 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
     return meshActor, scalar_bar
 
 
-def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True):
+def plot_mesh_cuts(grid, p_name, nz=3, win_title="", render=True):
     """ plots orthogonal nz vertical cuts z[:-1] (xy-planes), with z = linspace(min_z, max_z, nz+1), 
     and two additonal sclices at x=0 (yz-plane), y=0 (xz-plane)          
     @param grid         some vtk grid (structured or unstructured)
@@ -411,7 +411,7 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True):
     return actors, scalar_bar
 
 
-def plot_roots_and_soil(rs, pname :str, rp, s, periodic :bool, min_b, max_b, cell_number, filename :str):
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -451,7 +451,7 @@ def plot_roots_and_soil(rs, pname :str, rp, s, periodic :bool, min_b, max_b, cel
         write_vtu(path + filename + ".vtu", soil_grid)
 
 
-def plot_roots_and_soil_files(filename : str, pname :str):
+def plot_roots_and_soil_files(filename: str, pname:str):
     """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil() 
     @param filename      file name (without extension)
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")    
@@ -470,7 +470,7 @@ def plot_roots_and_soil_files(filename : str, pname :str):
 class AnimateRoots:
     """ class to make an interactive animation """
 
-    def __init__(self, rootsystem = None):
+    def __init__(self, rootsystem=None):
         self.rootsystem = rootsystem
         self.root_name = "subType"
         # self.soil_name = "subType"
@@ -487,7 +487,7 @@ class AnimateRoots:
         self.bounds = None
         self.avi_name = None
 
-    def start(self, axis = 'x', avi_file = None):
+    def start(self, axis='x', avi_file=None):
         """ creates plot and adjusts camera """
         self.create_root_actors()
         self.create_soil_actors()
