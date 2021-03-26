@@ -204,12 +204,13 @@ void Root::simulate(double dt, bool verbose)
 double Root::calcCreationTime(double length, double dt)
 {
     assert(length >= 0 && "Root::getCreationTime() negative length");
-    double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
-    if (age_>1.e8) { // in case length reaches max_length calcAge returns 1.e9
-    	age = calcAge(length-dx()/10.);
-    }
-    double a = std::max(age_, age-dt);
+    double age_ = calcAge(std::max(length-dx()/10.,0.)); // root age as if grown unimpeded (lower than real age)
+    double a = std::max(age_, age-dt /*old age*/);
     a = std::min(a, age); // a in [age-dt, age]
+//    if ((a+nodeCTs[0]) > 59.9) { // for debugging
+//    	std::cout << length << " cm, " << dt << ", calcAge " << age_ << ", age-dt " << age-dt << ", " << a+nodeCTs[0] << ", " <<nodeCTs[0] << "\n";
+//    	std::cout << param()->getK() << ", [" << param()->la <<", " << param()->getK()-param()->la-param()->lb<< ", " << param()->lb << "], " << param()->ln.size() << "\n";;
+//    }
     return a+nodeCTs[0];
 }
 
@@ -378,6 +379,9 @@ void Root::createSegments(double l, double dt, bool verbose)
         double et = this->calcCreationTime(length+shiftl+sl, dt);
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
+        if (et> 59.9) {
+        	std::cout << "sdx " << sdx << ", " << dx() <<"\n";;
+        }
         addNode(newnode, et);
     }
 }

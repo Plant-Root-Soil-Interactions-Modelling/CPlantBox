@@ -89,7 +89,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
         lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
         la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
 
-        int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
+        int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches +1
         double sum_ln = nob_*ln; // mean length of lateral zone
         for (int i = 0; i<nob_-1; i++) { // create inter-root distances
         	double z = ((double)i+0.5)*ln; // regular position along root lateral zone

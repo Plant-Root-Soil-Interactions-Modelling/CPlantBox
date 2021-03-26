@@ -62,8 +62,8 @@ public:
 
     std::shared_ptr<CPlantBox::MappedSegments> rs;
 
-    std::vector<std::vector<double>> kr, kr_t;
-    std::vector<std::vector<double>> kx, kx_t;
+    std::vector<std::vector<double>> kr, kr_t; //  [1 day-1]
+    std::vector<std::vector<double>> kx, kx_t; // [cm3 day-1]
     std::vector<std::vector<std::vector<double>>> krs, krs_t;
     std::vector<std::vector<std::vector<double>>> kxs, kxs_t;
 

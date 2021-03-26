@@ -43,7 +43,8 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ>  parent, int ot, int st, double delay,
 		Vector3d iheading, double pbl, int pni)
 :iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),
-  param_(plant->getOrganRandomParameter(ot, st)->realize()), age(-delay)
+  param_(plant->getOrganRandomParameter(ot, st)->realize()), /* root parameters are diced in the getOrganRandomParameter class */
+  age(-delay)
 { }
 
 /*
@@ -131,6 +132,7 @@ void Organ::addNode(Vector3d n, int id, double t)
 	nodes.push_back(n); // node
 	nodeIds.push_back(id); // new unique id
 	nodeCTs.push_back(t); // exact creation time
+	// std::cout << "creation time "<< nodeCTs[0] << ", " << t << ", "<< nodeCTs.size() << "\n";
 }
 
 /**
