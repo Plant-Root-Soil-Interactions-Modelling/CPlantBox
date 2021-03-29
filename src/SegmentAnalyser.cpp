@@ -863,29 +863,20 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types
 void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
     auto ctime = getParameter("creationTime");
-    os << "node1ID node2ID branchID x1 y1 z1 x2 y2 z2 radius R G B time age type organ \n";
-    int  nid1 = 0;
-    int  nid2 = 1;
+    os << "node1ID node2ID branchID x1 y1 z1 x2 y2 z2 radius time age type organ parent_node_id \n";
     for (size_t i=0; i<segments.size(); i++) {
-        Vector2i s = segments.at(i);
-        Vector3d n1 = nodes.at(s.x);
-        Vector3d n2 = nodes.at(s.y);
         std::shared_ptr<Organ> o = segO.at(i).lock();
         int organ=o->organType();
         int branchnumber = o->getId();
+        Vector2i s = segments.at(i);
+        Vector3d n1 = nodes.at(s.x);
+        Vector3d n2 = nodes.at(s.y);
         double radius = o->getParameter("radius");
-        double red = o->getParameter("colorR");
-        double green = o->getParameter("colorG");
-        double blue = o->getParameter("colorB");
         double time = ctime[i];
         double age = o->getParameter("age");
         int subType = o->getParameter("subType");
-        os << std::fixed << std::setprecision(4)<< nid1 << " " << nid2 << " " << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " <<
-            radius << " " << red << " " << green << " " << blue << " " << time<< " " << age<<" " <<subType << " " << organ <<" \n";
-
-        nid1 = nid1+1;
-        nid2 = nid2+1;
-    }
+        os << std::fixed << std::setprecision(4)<< s.x << " " << s.y << " " << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " << radius << " " << time<< " " << age<<" " <<subType << " " << organ <<" \n";
+    }      
 }
 
 /**
