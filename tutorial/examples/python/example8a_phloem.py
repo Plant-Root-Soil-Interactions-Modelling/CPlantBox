@@ -1,3 +1,6 @@
+from fipy import *
+
+from fipy.tools import numerix as np
 import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 from phloem_flux import PhloemFluxPython
@@ -5,15 +8,8 @@ import plantbox as pb
 import vtk_plot as vp
 import math
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-from fipy import Variable, FaceVariable, CellVariable, Grid1D, ExplicitDiffusionTerm, TransientTerm, DiffusionTerm, Viewer, VTKCellViewer
-from fipy.tools import numerix as np
-
 
 np.set_printoptions(threshold=sys.maxsize)
-
 # plant 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
 path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
@@ -31,14 +27,36 @@ pl.simulate(14, False)
 
 phl = PhloemFluxPython(pl)
 segs = pl.getPolylines() #segments regrouped per organ
+phl.An = np.linspace(600.,1000., len(phl.get_segments_index(4)))
+print(phl.An)
 phl.mp2mesh(segs) #creates grid
 
-###print fipy grid
-vw = VTKCellViewer(vars=(phl.phi))
-vw.plot(filename="results/example_8a.vtk")
+R = T= medPhi = kz = mu= 1. #TODO redefine
+phl.osmoCoeff = R * T* medPhi* (kz/mu) 
+phl.setD() #update D
 
-#compare with reference
-ana = pb.SegmentAnalyser(phl.rs)
-ana.write("results/example_8a_ref.vtp") 
+
+steps = 10000
+timeStepDuration = 0.1
+eqX =TransientTerm() ==  DiffusionTerm(coeff= phl.D) + phl.Source - ImplicitSourceTerm( phl.exteriorCoeff.divergence ) #+((phl.mesh.faces&leafface ) * fluxBottom).divergence - ImplicitSourceTerm(exteriorCoeff.divergence)
+#negative fr implicit source term?
+for _ in range(steps):
+    print('step: ', _)
+    eqX.solve(var=phl.phi, dt=timeStepDuration) 
+    phl.phi.updateOld()
+    res = 1e+10
+    loop = 0
+    while res > 1e-4 and loop < 1000:
+        res =  eqX.sweep(var=phl.phi,dt= timeStepDuration)
+        #print(res)
+        loop += 1
+    if res > 1e-4:
+        print('no convergence! res: ', res)
+        break
+    if __name__ == '__main__' and _%1000 ==0:
+        #print(_)
+        #print(phl.phi)
+        vw = VTKCellViewer(vars=(phl.phi))
+        vw.plot(filename="results/%s_example8a.vtk" %(_))
 
 
