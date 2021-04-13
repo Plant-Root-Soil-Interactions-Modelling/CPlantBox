@@ -4,9 +4,12 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "MappedOrganism.h"
-
+#include <algorithm>
 #include <iomanip>
 #include <istream>
+#include <iostream>
+#include <string>
+
 #include <fstream>
 #include <set>
 #include <math.h>
@@ -863,6 +866,21 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types
 void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
     auto ctime = getParameter("creationTime");
+    std::vector< std::tuple<double,  // creation time 0
+                            int,  // node1ID 1
+                            int,  // node2ID 2
+                            int,  // branchID 3
+                            double, // x1 4
+                            double, // y1 5
+                            double, // z1 6
+                            double, // x2 7
+                            double, // y2 8
+                            double, // z2 9
+                            double, // radius 10
+                            double, // age 11
+                            int,    // subtype 12
+                            int    //organ 13
+                            > > ctime_seg;
     os << "node1ID node2ID branchID x1 y1 z1 x2 y2 z2 radius time age type organ parent_node_id \n";
     for (size_t i=0; i<segments.size(); i++) {
         std::shared_ptr<Organ> o = segO.at(i).lock();
@@ -871,12 +889,42 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         Vector2i s = segments.at(i);
         Vector3d n1 = nodes.at(s.x);
         Vector3d n2 = nodes.at(s.y);
+        int x = s.x;
+        int y = s.y;
         double radius = o->getParameter("radius");
         double time = ctime[i];
         double age = o->getParameter("age");
         int subType = o->getParameter("subType");
-        os << std::fixed << std::setprecision(4)<< s.x << " " << s.y << " " << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " << radius << " " << time<< " " << age<<" " <<subType << " " << organ <<" \n";
-    }      
+
+        ctime_seg.push_back( std::make_tuple(time, x, y, branchnumber, n1.x, n1.y, n1.z, n2.x, n2.y, n2.z, radius, age, subType, organ  ));
+//        auto parent_id = std::find_if(segments.begin(), segments.end(), [y](const Vector2i s_){return s_.x == y; });
+//        if (parent_id != segments.end())
+//          int index = std::distance(begin(segments), parent_id);
+//        else
+//           int index = 0;
+//         std::string parent_node_id = std::to_string(index);
+
+        }
+        std::sort(ctime_seg.begin(), ctime_seg.end()); // sort based on the time
+        for (size_t i=0; i<segments.size(); i++) { // write output
+        //int parent_node_id = std::find(segments.y, segments.y, s.at(i).x);
+        os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i])
+                                         << " " << std::get<2>(ctime_seg[i])
+                                         << " " << std::get<3>(ctime_seg[i])
+                                         << " " << std::get<4>(ctime_seg[i])
+                                         << " " << std::get<5>(ctime_seg[i])
+                                         << " " << std::get<6>(ctime_seg[i])
+                                         << " " << std::get<7>(ctime_seg[i])
+                                         << " " << std::get<8>(ctime_seg[i])
+                                         << " " << std::get<9>(ctime_seg[i])
+                                         << " " << std::get<10>(ctime_seg[i])
+                                         << " " << std::get<0>(ctime_seg[i])
+                                         << " " << std::get<11>(ctime_seg[i])
+                                         << " " << std::get<12>(ctime_seg[i])
+                                         << " " << std::get<13>(ctime_seg[i]) << " " <<" \n";
+//for debug//        os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i]) << " " << std::get<2>(ctime_seg[i]) << " " << std::get<0>(ctime_seg[i]) <<" "  << "\n"; << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " << radius << " " << std::get<1>(ctime_seg[i])<< " " << age<<" " <<subType<< " " <<organ << " " <<" \n";
+
+        }
 }
 
 /**
