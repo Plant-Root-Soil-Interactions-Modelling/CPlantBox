@@ -562,6 +562,7 @@ void MappedPlant::initialize(bool verbose) {
 	nodeCTs = this->getNodeCTs();
 	mapSegments(segments);
 	mapSubTypes();
+	plantParam = this->organParam;
 }
 
 /**

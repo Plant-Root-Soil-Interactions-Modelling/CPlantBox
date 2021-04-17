@@ -65,6 +65,7 @@ public:
     bool cutAtGrid = false;
 
     const double eps = 1.e-5;
+    std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
 	
 	
 protected:
@@ -118,6 +119,7 @@ public:
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
+	
 
 };
 
