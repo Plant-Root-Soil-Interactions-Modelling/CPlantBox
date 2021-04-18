@@ -54,13 +54,16 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     segO = std::vector<std::weak_ptr<Organ>>(segments.size());
     auto radii = std::vector<double>(segments.size());
     auto subType = std::vector<double>(segments.size());
+    auto id = std::vector<double>(segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
         radii[i] = segO[i].lock()->getParameter("radius");
         subType[i] = segO[i].lock()->getParameter("type");
+        id[i] = segO[i].lock()->getParameter("id");
     }
     data["radius"] = radii;
     data["subType"] = subType;
+    data["id"] = id;
 }
 
 /**
@@ -879,7 +882,8 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
                             double, // radius 10
                             double, // age 11
                             int,    // subtype 12
-                            int    //organ 13
+                            int,    //organ 13
+                            int    //organid 14
                             > > ctime_seg;
     os << "node1ID node2ID branchID x1 y1 z1 x2 y2 z2 radius time age type organ parent_node_id \n";
     for (size_t i=0; i<segments.size(); i++) {
@@ -895,8 +899,8 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         double time = ctime[i];
         double age = o->getParameter("age");
         int subType = o->getParameter("subType");
-
-        ctime_seg.push_back( std::make_tuple(time, x, y, branchnumber, n1.x, n1.y, n1.z, n2.x, n2.y, n2.z, radius, age, subType, organ  ));
+        int id = o->getParameter("id");
+        ctime_seg.push_back( std::make_tuple(time, x, y, branchnumber, n1.x, n1.y, n1.z, n2.x, n2.y, n2.z, radius, age, subType, organ, id  ));
 //        auto parent_id = std::find_if(segments.begin(), segments.end(), [y](const Vector2i s_){return s_.x == y; });
 //        if (parent_id != segments.end())
 //          int index = std::distance(begin(segments), parent_id);
@@ -921,7 +925,8 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
                                          << " " << std::get<0>(ctime_seg[i])
                                          << " " << std::get<11>(ctime_seg[i])
                                          << " " << std::get<12>(ctime_seg[i])
-                                         << " " << std::get<13>(ctime_seg[i]) << " " <<" \n";
+                                         << " " << std::get<13>(ctime_seg[i])
+                                         << " " << std::get<14>(ctime_seg[i])<< " " <<" \n";
 //for debug//        os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i]) << " " << std::get<2>(ctime_seg[i]) << " " << std::get<0>(ctime_seg[i]) <<" "  << "\n"; << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " << radius << " " << std::get<1>(ctime_seg[i])<< " " << age<<" " <<subType<< " " <<organ << " " <<" \n";
 
         }
