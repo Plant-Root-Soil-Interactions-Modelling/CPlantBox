@@ -112,7 +112,7 @@ logfilergS = open('results/rgSink_9a.txt', "w")
 
 
 phl.phi.updateOld()
-dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * phl.osmoCoeff) *2
+dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * phl.intCoeff) *2
 steps = 100
 growthSteps = []
 issue = []
@@ -221,6 +221,7 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         issueLoop = np.append(issueLoop, [loop])
     
     phl.phi.updateOld()
+    print(phl.intCoeff)
     cumulRm.setValue(cumulRm.value + phl.Rm.value * dt* phl.mesh.cellVolumes)
     cumulAn.setValue(cumulAn.value + phl.Source.value * dt* phl.mesh.cellVolumes)
     cumulGr.setValue(cumulGr.value + phl.GrSink.value * dt* phl.mesh.cellVolumes)
@@ -268,6 +269,8 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         logfilerg.write('\n'+repr(phl.Gr.value)[7:-2])
         print('no convergence at step(s) ',issue, ' res: ', issueRes, ' loops ', issueLoop)
         print('became bigger at step(s) ',growthSteps)
+        if(sum(phl.phi[np.where(phl.phi < 0 )[0]]) != 0):
+            break
 
     phiOld = phl.phi.copy()
     cumulOutOld = cumulOut.copy()
