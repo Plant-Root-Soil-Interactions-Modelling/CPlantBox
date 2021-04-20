@@ -70,34 +70,11 @@ class PhloemFluxPython(Leuning):
         self.intCoeff = 100.
         self.intCoeff1 = 100.
 
-    def mp2mesh(self, segs): #create an old2newNodeID map?
+    def mp2mesh(self, segs, TairK = 293): #create an old2newNodeID map?
         """ Converts a mappedPlant into a network of 1D grids            
             outputs: 
             creates mesh and stores it in self.mesh
-            fills self.phi => allows for visualization of the mesh with vtk
-        """
-        vertices = np.array([]) #containes x,y,z coords of each vertex
-        cells = np.array([]) #contains ID of the faces on each cell. here 1D => 1face == 1 vertex
-        nodes = self.get_nodes() 
-        newNodeID = 0
-        facesNorm = {} #map face to normal vector
-        organTypes = self.get_organ_types()
-        subTypes = self.get_subtypes()
-        nOld = nodes[0]
-        radiiCells = np.array([])
-        radiiVertices = np.array([])
-        length = np.array([])
-        tempOrgGr = np.array([])
-        tempOrgLength = np.array([])    
-        
-        
-        
-        for segnum, seg in enumerate(segs):
-        """ Converts a mappedPlant into a network of 1D grids            
-            outputs: 
-            creates mesh and stores it in self.mesh
-            fills self.phi => allows for visualization of the mesh with vtk
-        """
+            fills self.phi => allows for visualization of the mesh with vtk"""
         self.TairK = TairK
         vertices = np.array([]) #containes x,y,z coords of each vertex
         cells = np.array([[],[],[]], dtype=np.int64) #contains ID of the faces on each cell. here 1D => 1face == 1 vertex
@@ -204,12 +181,12 @@ class PhloemFluxPython(Leuning):
         sucroseDensity = 1.59 #g/cm³, https://pubchem.ncbi.nlm.nih.gov/compound/Sucrose#section=Density
         sucroseMolarMass = 342.3 #g/mol https://pubchem.ncbi.nlm.nih.gov/compound/Sucrose
         sucroseMolarVolume = sucroseMolarMass/sucroseDensity #cm³/mol
-        self.VolFractSucrose = np.minimum(np.full(len(self.phi.faceValue),0.65),np.array(self.phi.faceValue* sucroseMolarVolume) ) #[mol/cm³] / [cm³/mol] = cm³/cm³ * sucroseMolarVolume
+        self.VolFractSucrose = np.array(self.phi.faceValue* sucroseMolarVolume)#np.minimum(np.full(len(self.phi.faceValue),0.65),np.array(self.phi.faceValue* sucroseMolarVolume) ) #[mol/cm³] / [cm³/mol] = cm³/cm³ * sucroseMolarVolume
         #print(len(np.full(len(self.phi.faceValue),0.65)),len(self.phi.faceValue * sucroseMolarVolume),self.VolFractSucrose)
         self.phloemViscosity = waterViscosity * np.exp((4.68 * 0.956 * self.VolFractSucrose)/(1 - 0.956 * self.VolFractSucrose))
         R = self.Param['R'] * 1e6 # Pa * mL /(K mol)
         self.intCoeff =self.phloemConductivity/self.phloemViscosity * R * self.TairK #(self.osmoCoeff)
-
+        #so far, fraction is still too high
 
     def setAnSource(self): #sourceterm in leaf segment
         self.Source = CellVariable(name = 'An', mesh = self.mesh, value = 0.)

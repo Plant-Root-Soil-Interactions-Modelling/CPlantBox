@@ -6,7 +6,7 @@ from fipy.tools import numerix
 class Mesh1Dmod(mesh1D.Mesh1D):
     """ adapted mesh1D to axcept 3D network
     """
-    def __init__(self, facesNorm, radiiVertices, radiiCells, length, vertexCoords, faceVertexIDs, cellFaceIDs):
+    def __init__(self, radiiVertices, radiiCells, length, vertexCoords, faceVertexIDs, cellFaceIDs, facesNorm = []):
         self.facesNorm = facesNorm
         self.radiiVertices = radiiVertices
         self.radiiCells = radiiCells

@@ -221,7 +221,7 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         issueLoop = np.append(issueLoop, [loop])
     
     phl.phi.updateOld()
-    print(phl.intCoeff)
+    #print(phl.VolFractSucrose)
     cumulRm.setValue(cumulRm.value + phl.Rm.value * dt* phl.mesh.cellVolumes)
     cumulAn.setValue(cumulAn.value + phl.Source.value * dt* phl.mesh.cellVolumes)
     cumulGr.setValue(cumulGr.value + phl.GrSink.value * dt* phl.mesh.cellVolumes)
