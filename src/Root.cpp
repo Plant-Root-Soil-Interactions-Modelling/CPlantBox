@@ -133,6 +133,7 @@ void Root::simulate(double dt, bool verbose)
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.); // length increment
+				std::cout<<"\nroot::simulate scale "<<id<<" "<<length<<" "<<targetlength<<" "<<scale<<std::endl;
                 // std::cout << "Root::simulate: " << dt_ << ", " << e <<  ", " << scale <<"\n"; // for debugging
 
                 // create geometry
@@ -223,7 +224,7 @@ double Root::calcCreationTime(double length, double dt)
 double Root::calcLength(double age)
 {
     assert(age >= 0 && "Root::calcLength() negative root age");
-    return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
+    return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this(), CW_Gr, length);
 }
 
 /**
@@ -235,7 +236,7 @@ double Root::calcLength(double age)
 double Root::calcAge(double length)
 {
     assert(length >= 0 && "Root::calcAge() negative root length");
-    return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this());
+    return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this(), CW_dt, age);
 }
 
 /**
@@ -424,6 +425,22 @@ double Root::getParameter(std::string name) const
     if (name=="surface") { return 2*param()->a*M_PI*getLength(); } // root surface [cm^2]
     return Organ::getParameter(name); // pass to base class
 }
+
+/**
+ * set parameter for water and C limited growth
+ *
+ * 
+ */
+/**
+*void Stem::setGrowthParameter(std::string name, double param)
+*{
+*	if (name=="CW_Gr") {getStemRandomParameter()->f_gf->CW_Gr = param; } // length growtn (cm)
+*	if (name=="CW_dt") { getStemRandomParameter()->f_gf->CW_dt = param; } // time step
+*	if (name=="CW_age"){  getStemfRandomParameter()->f_gf->CW_age = param; }  //old organ age
+*	if (name=="CW_length"){ getStemRandomParameter()->f_gf->CW_length = param; } // old organ length
+*}
+**/
+
 
 /**
  * @return The number of emerged lateral roots (i.e. number of children with age>0)

@@ -35,7 +35,7 @@ public:
 	void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 
 	double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
-
+	//void setGrowthParameter(std::string name, double param); //set parameter for water and C limited growth
     std::string toString() const override;
 
 	/* exact from analytical equations */

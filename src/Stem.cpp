@@ -324,7 +324,7 @@ double Stem::calcCreationTime(double length)
 double Stem::calcLength(double age)
 {
 	assert(age>=0 && "Stem::calcLength() negative root age");
-	return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,param()->getK(),shared_from_this());
+	return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,param()->getK(),shared_from_this(), CW_Gr, length);
 }
 
 /**
@@ -335,8 +335,25 @@ double Stem::calcLength(double age)
 double Stem::calcAge(double length)
 {
 	assert(length>=0 && "Stem::calcAge() negative root age");
-	return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
+	return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this(), CW_dt, age);
 }
+
+
+
+/**
+ * set parameter for water and C limited growth
+ *
+ * 
+ */
+/**
+*void Stem::setGrowthParameter(std::string name, double param)
+*{
+*	if (name=="CW_Gr") {getStemRandomParameter()->f_gf->CW_Gr = param; } // length growtn (cm)
+*	if (name=="CW_dt") { getStemRandomParameter()->f_gf->CW_dt = param; } // time step
+*	if (name=="CW_age"){  getStemfRandomParameter()->f_gf->CW_age = param; }  //old organ age
+*	if (name=="CW_length"){ getStemRandomParameter()->f_gf->CW_length = param; } // old organ length
+*}
+**/
 
 /**
  * Creates a new lateral by calling Stem::createNewstem().

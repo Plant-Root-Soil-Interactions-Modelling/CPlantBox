@@ -35,9 +35,9 @@ public:
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
     void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
+	//void setGrowthParameter(std::string name, double param); //set parameter for water and C limited growth
 
     double getParameter(std::string name) const override; ///< returns an organ parameter
-
     std::string toString() const override;
 
     /* exact from analytical equations */

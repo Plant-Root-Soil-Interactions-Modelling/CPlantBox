@@ -275,7 +275,7 @@ double Leaf::calcLength(double age)
 	//    if (name()  == "maize1eaf"){
 	assert(age>=0  && "Leaf::calcLength() negative root age");
 	//return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
-	return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
+	return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,param()->getK(),shared_from_this(), CW_Gr, length);
 	//	}else {
 	//assert(age>=0);
 	//	    return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
@@ -294,13 +294,27 @@ double Leaf::calcAge(double length)
 	//     if ( name() == "maize1eaf"){
 	assert(length>=0 && "Leaf::calcAge() negative root length");
 	//std::cout<<"length subtype is"<<getLeafRandomParameter()->subType<<"\n";
-	return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
+	return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,param()->getK(),shared_from_this(), CW_dt, age);
 	//        return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
 	//        }else {
 	//assert(age>=0);
 	//	    return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
 	//	    }
 }
+/**
+ * set parameter for water and C limited growth
+ *
+ * 
+ */
+/**
+*void Stem::setGrowthParameter(std::string name, double param)
+*{
+*	if (name=="CW_Gr") {getStemRandomParameter()->f_gf->CW_Gr = param; } // length growtn (cm)
+*	if (name=="CW_dt") { getStemRandomParameter()->f_gf->CW_dt = param; } // time step
+*	if (name=="CW_age"){  getStemfRandomParameter()->f_gf->CW_age = param; }  //old organ age
+*	if (name=="CW_length"){ getStemRandomParameter()->f_gf->CW_length = param; } // old organ length
+*}
+**/
 
 /**
  *

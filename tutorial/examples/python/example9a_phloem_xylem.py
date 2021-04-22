@@ -66,8 +66,8 @@ VPD = es - ea
 
 """ Parameters phloem """
 """ soil """
-min_ = np.array([-5, -5, -15])
-max_ = np.array([9, 4, 0])
+min_ = np.array([-50, -50, -150])
+max_ = np.array([90, 40, 10])
 res_ = np.array([5, 5, 5])
 pl.setRectangularGrid(pb.Vector3d(min_), pb.Vector3d(max_), pb.Vector3d(res_), True)  # cut and map segments
 
@@ -113,11 +113,12 @@ logfilergS = open('results/rgSink_9a.txt', "w")
 
 phl.phi.updateOld()
 dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * phl.intCoeff) *2
-steps = 100
+steps = 2
 growthSteps = []
 issue = []
 issueRes = []
 issueLoop = []
+
 for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for growth
 
 
@@ -208,11 +209,9 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     #sys.stdout = sys.__stdout__
     
     print('step ', _, start + _ * dt, dt)
-    
     while res > max(1e-3, 1e-3 * max(phl.phi)) and loop < 1000 and resOld != res:
         resOld = res
         res =  eq.sweep(dt= dt)
-        #res =  eq1.sweep(dt= dt)
         loop += 1
     if res > max(1e-3, 1e-3 * max(phl.phi)) :
         print('no convergence! res: ', res)
@@ -221,13 +220,12 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         issueLoop = np.append(issueLoop, [loop])
     
     phl.phi.updateOld()
-    #print(phl.VolFractSucrose)
     cumulRm.setValue(cumulRm.value + phl.Rm.value * dt* phl.mesh.cellVolumes)
     cumulAn.setValue(cumulAn.value + phl.Source.value * dt* phl.mesh.cellVolumes)
     cumulGr.setValue(cumulGr.value + phl.GrSink.value * dt* phl.mesh.cellVolumes)
     cumulOut.setValue(cumulOut.value + phl.outFlow.value * dt* phl.mesh.cellVolumes)
     
-    if _ % 1 == 0: #choose how often get output       
+    if _ % 1000 == 0: #choose how often get output       
         ####
         #
         # copy of phi
@@ -238,6 +236,9 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         reorderedOutFlow = np.array([x for _,x in sorted(zip(phl.cellsID,cumulOut))])
         reorderedRm = np.array([x for _,x in sorted(zip(phl.cellsID,cumulRm))])
         reorderedGrSink = np.array([x for _,x in sorted(zip(phl.cellsID,cumulGr))])
+        orgNum = np.array([phl.newCell2organID[xi] for xi in phl.newCell2organID])
+        print('orgnur ',orgNum)
+        reorderedorgNum = np.array([x for _,x in sorted(zip(phl.cellsID,orgNum))])
         ana = pb.SegmentAnalyser(phl.rs)
         ana.addData("phi",  np.around(reorderedPhi, 5))
         ana.addData("outFlow",  np.around(reorderedOutFlow, 5))
@@ -245,7 +246,8 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         ana.addData("GrSink",  np.around(reorderedGrSink, 5))
         ana.addData("rx", phl.Px)
         ana.addData("fluxes", fluxes) 
-        ana.write("results/%s_example9a.vtp" %(_), ["radius", "surface", "phi", "outFlow", "Rm", "GrSink", "rx","fluxes",])
+        ana.addData("orgNr", reorderedorgNum) 
+        ana.write("results/%s_example9a.vtp" %(_), ["radius", "surface", "phi", "outFlow", "Rm", "GrSink", "rx","fluxes","orgNr"])
         
         
         ####
@@ -269,8 +271,8 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         logfilerg.write('\n'+repr(phl.Gr.value)[7:-2])
         print('no convergence at step(s) ',issue, ' res: ', issueRes, ' loops ', issueLoop)
         print('became bigger at step(s) ',growthSteps)
-        if(sum(phl.phi[np.where(phl.phi < 0 )[0]]) != 0):
-            break
+    if(sum(phl.phi[np.where(phl.phi < 0 )[0]]) != 0):
+        break
 
     phiOld = phl.phi.copy()
     cumulOutOld = cumulOut.copy()
@@ -279,7 +281,10 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     cumulAnOld = cumulAn.copy()
     cellVolumeOld = phl.mesh.cellVolumes
     cellsIDOld = phl.cellsID
-    #pl.CWLimitedGrowth = np.array([x for _,x in sorted(zip(phl.cellsID,phl.Growth))])
+    print(type(phl.organGr) , type(dt))
+    organGr = phl.organGr * dt
+    print(organGr , dt)
+    pl.setCWLimGr(organGr , dt)
 
 
 logfilermM.close()

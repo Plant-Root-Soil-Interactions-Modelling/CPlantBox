@@ -32,8 +32,9 @@ class PhloemFluxPython(Leuning):
         super().__init__(rs)
         self.new2oldNodeID = {} #map to get MappedPlant node-ID from grid node-ID
         self.old2newNodeID = {} #map to get grid node-ID from MappedPlant node-ID 
-        self.new2organID ={} #for grwth rate evaluation
+        self.newCell2organID ={} #for grwth rate evaluation
         self.organ2oldNodeID ={} #for growth rate evaluation
+        self.organ2newCellID ={} #for growth rate evaluation
         self.oldNode2organID ={} #for growth rate evaluation
         self.mesh = [] #to store grid
         self.phi = [] # to store solution
@@ -96,7 +97,6 @@ class PhloemFluxPython(Leuning):
             for j, n in enumerate(seg):
                 oldNodeID = np.where(np.all(nodes == n, axis=1))[0][0] #find index of n in the node matrix == node ID in the MappedPlant object
                                     
-                self.new2organID[newNodeID] = segnum    
                 
                 self.new2oldNodeID[newNodeID] =  oldNodeID
                 temp = self.old2newNodeID.get(oldNodeID,np.array([], dtype=np.int64))
@@ -107,8 +107,12 @@ class PhloemFluxPython(Leuning):
                 if j > 0: #not first node of organ
                     ot = int(organTypes[oldNodeID - 1]) 
                     st = int(subTypes[oldNodeID -1])
-                    
                     radiiCells = np.concatenate((radiiCells, [self.rs.radii[oldNodeID - 1]]))
+                    
+                    
+                    self.newCell2organID[newNodeID] = segnum    
+                    temp = self.organ2newCellID.get(segnum,np.array([], dtype=np.int64))
+                    self.organ2newCellID[segnum ] = np.append(temp, np.array([newNodeID], dtype=np.int64))
                     
                     self.orgLengthThr = np.concatenate((self.orgLengthThr, [self.rs.organParam[ot][st + 2*(ot==4)].getParameter('lmax')]))
                     self.maxGrowth = np.concatenate((self.maxGrowth, [self.rs.organParam[ot][st + 2*(ot==4)].getParameter('r')]))
@@ -120,28 +124,14 @@ class PhloemFluxPython(Leuning):
                     length = np.concatenate( (length, [norm(nOld - n)]))           
                     length_org =  np.concatenate( (length_org, [norm(nOld - n)]))
                     
-                    cells = np.hstack((cells, np.array((np.array([newNodeID - 1]),np.array([newNodeID]),np.array([-1]))).reshape(3,1)))        
-                    #if cells.size == 0 : #first organ of the plant
-                     #   cells =  np.array((np.array([newNodeID - 1]),np.array([newNodeID]),np.array([-1]))) #nodes should be ordered. so seg n goes between nodes j-1 and j
-                        #facesNorm[newNodeID] = normal
-                        #facesNorm[newNodeID - 1] = -normal #replace value for all node except for the one at the tip of organs
+                    cells = np.hstack((cells, np.array((np.array([newNodeID - 1]),np.array([newNodeID]),np.array([-1]))).reshape(3,1)))       
                         
-                    #elif(ot <3):
-                        #facesNorm[newNodeID - 1] = -normal #replace value for all node except for the one at the tip of organs
-                        #facesNorm[newNodeID] = normal
-                        
-                    #else: #stem of leaf
-                        #facesNorm[newNodeID] = normal
                 elif segnum > 0:      
                     if oldNodeID == 0: #if node 0 (root collar): only case where seg linked with to the x node of parent segment 
                         seg_parent = np.where([self.new2oldNodeID[xi] for xi in cells[0]] == self.new2oldNodeID[newNodeID])[0][0]
-                        #facesNorm[newNodeID] = facesNorm[0]
                         
                     else: #seg linked with to the y node of parent segment
                         seg_parent = np.where([self.new2oldNodeID[xi] for xi in cells[1]] == self.new2oldNodeID[newNodeID])[0][0]
-                        #if(ot == 4):
-                         #   facesNorm[newNodeID] = facesNorm[cells[0,seg_parent]]                       
-                    
                     cells[2,seg_parent] = newNodeID #add node to parent seg to link with child branch
                 
                 newNodeID += 1
@@ -157,13 +147,20 @@ class PhloemFluxPython(Leuning):
             else:
                 vertices = np.hstack((vertices, nodes_coord))
                 
-        self.orgLength = np.array([tempOrgLength[self.new2organID[xi]] for xi in cells[1]])
+        
+        self.orgGr = np.full(segnum +1, 0.)
+        print('temporglength ', tempOrgLength)
+        self.orgLength = np.array([tempOrgLength[self.newCell2organID[xi]] for xi in cells[1]])
         
         self.faces = np.array((np.arange(0, vertices[0].size),), dtype=np.int64) 
         cells = MA.masked_values(cells, -1)
+        
         self.mesh = Mesh1Dmod( radiiVertices = radiiVertices, 
-            radiiCells = radiiCells,length = length, vertexCoords=vertices, faceVertexIDs=self.faces, cellFaceIDs=cells)
+            radiiCells = radiiCells,length = length, vertexCoords=vertices, 
+            faceVertexIDs=self.faces, cellFaceIDs=cells)
                 
+        
+        
         self.phi = CellVariable(name="solution variable", mesh=self.mesh,value = 0., hasOld = True)
                 
         
@@ -174,7 +171,7 @@ class PhloemFluxPython(Leuning):
         outFlowMax = rootCells*self.phi*self.radConductivity * (self.mesh.radiiCells**2)*self.mesh.length* self.satisfaction #reset for security 
         self.outFlow = outFlowMax * (self.phi - outFlowMax > 0) * (self.phi > 0) + self.phi * (self.phi - outFlowMax <= 0)* (self.phi > 0)
 
-    def setintCoeff(self): #use to get right value of k/mu* RT
+    def _setintCoeff(self): #use to get right value of k/mu* RT
         #self.intCoeff1 = FaceVariable(name = 'diffusion coefficient', mesh = self.mesh, value = self.Param['R'] * 273)
         
         waterViscosity = 2.414e-5 * (10**(247.8/(self.TairK - 140))) #in [Pa.s = N-s/m^2] https://www.engineersedge.com/physics/water__density_viscosity_specific_weight_13146.htm
@@ -188,7 +185,7 @@ class PhloemFluxPython(Leuning):
         self.intCoeff =self.phloemConductivity/self.phloemViscosity * R * self.TairK #(self.osmoCoeff)
         #so far, fraction is still too high
 
-    def setAnSource(self): #sourceterm in leaf segment
+    def _setAnSource(self): #sourceterm in leaf segment
         self.Source = CellVariable(name = 'An', mesh = self.mesh, value = 0.)
         # find seg index with leaf, should be ordered like the An vector
         nodeYLeaf = self.get_segments_index(4) + 1 #ynode_index of leaves
@@ -198,31 +195,38 @@ class PhloemFluxPython(Leuning):
                 sucrose = an * 1e9 *60*60 *24/ 12 #nano_mol sucrose m-2 d-1
                 self.Source.constrain(sucrose* surfaceSide /self.mesh.cellVolumes, where= self.mesh.cellFaceIDs[1] == nodeYLeaf_newID[i]) #0 node = y node for stem
       
-    def setRmSink(self): # Daudet 2002: Rm = (k1 + k2 * C)Sr. 
+    def _setRmSink(self): # Daudet 2002: Rm = (k1 + k2 * C)Sr. 
         self.RmMax = self.rhoC * self.mesh.cellVolumes * (self.phi * self.k1 + self.k2 )
         self.Rm = (self.phi > 0)*( self.RmMax * (self.phi - self.RmMax >0 )+ (self.phi )* (self.phi - self.RmMax <= 0 ) )#*(self.phi >0)#*(self.phi> self.phiThrGrowth))
        
         self.CSat = (self.Rm == self.RmMax) 
        
-    def setGrSink(self): #Rg + C allocation = Grsink = growth * (1/GrowEff)
+    def _setGrSink(self): #Rg + C allocation = Grsink = growth * (1/GrowEff)
     
-        #length, phi and rx :  factor from 0 to 1      
-        
+        #length and rx :  factor from 0 to 1              
         rxFactor = ((self.rxCells - self.rxThrMin)/(self.rxThrMax - self.rxThrMin)) *(self.rxCells > self.rxThrMin)
         lengthFactor = (self.orgLength*(-self.orgLength + self.orgLengthThr)/((self.orgLengthThr**2)/2)) * (self.orgLength < self.orgLengthThr)
-        #self.phiFactor1 = (self.phi > self.phiThrMin)*((np.minimum(self.phi, self.phiThrMax) - self.phiThrMin)/(self.phiThrMax - self.phiThrMin))
-    
-        self.Gr =  ((self.maxGrowth*np.pi * self.mesh.radiiCells**2)*self.rhoC /self.GrEff)* (self.mesh.length/self.orgLength) *  rxFactor * lengthFactor * self.CSat #* abs(self.phiFactor1)
+        maxCconcentationNeeded = (((self.maxGrowth*np.pi * self.mesh.radiiCells**2)*self.rhoC /self.GrEff))/self.mesh.cellVolumes
+        self.Gr =  maxCconcentationNeeded* (self.mesh.length/self.orgLength) *  rxFactor * lengthFactor * self.CSat #* abs(self.phiFactor1)
         
         self.phiFactor2 = ((self.phi - self.Gr) > self.phiThrMin)  
         self.GrSink =  (self.phi > self.phiThrMin)*((self.Gr  * self.phiFactor2 + (self.phi - self.phiThrMin) * (~self.phiFactor2)))
         
-        self.Growth = self.GrSink / self.rhoC * self.GrEff
+        self.Growth0 = self.GrSink / self.rhoC * self.GrEff * self.mesh.cellVolumes #get increase in cm³
+        self.Growth = self.Growth0 /(np.pi * self.mesh.radiiCells**2)#get length increase (cm)
         self.satisfaction = self.CSat * (self.GrSink == self.Gr)
+
+    @property        
+    def organGr(self):#per cell not node
+        for cellNum, cellID in enumerate(self.mesh.cellFaceIDs[1]):
+            self.orgGr[self.newCell2organID[cellID]] += self.Growth[cellNum]
+        return self.orgGr
+    
+    
         
     def resetValues(self):
-        self.setAnSource()
-        self.setintCoeff()
-        self.setRmSink()
-        self.setGrSink()
+        self._setAnSource()
+        self._setintCoeff()
+        self._setRmSink()
+        self._setGrSink()
         self._setOutflow()

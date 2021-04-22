@@ -35,6 +35,7 @@ public:
     int organType() const override { return Organism::ot_root; }; ///< returns the organs type
 
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
+	//void setGrowthParameter(std::string name, double param); //set parameter for water and C limited growth
 
     double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
     int getNumberOfLaterals() const; ///< the number of emerged laterals (i.e. number of children with age>0)

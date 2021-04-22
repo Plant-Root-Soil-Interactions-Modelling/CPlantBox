@@ -109,6 +109,8 @@ public:
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
     virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
     virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
+	
+	void setCWLimGr(std::vector<double> CWLimitedGr, double CW_dt); ///< growth as defined by phloem module.
 
 protected:
 
