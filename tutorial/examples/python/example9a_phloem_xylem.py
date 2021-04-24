@@ -113,7 +113,7 @@ logfilergS = open('results/rgSink_9a.txt', "w")
 
 phl.phi.updateOld()
 dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * phl.intCoeff) *2
-steps = 2
+steps = 200
 growthSteps = []
 issue = []
 issueRes = []
@@ -225,7 +225,7 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     cumulGr.setValue(cumulGr.value + phl.GrSink.value * dt* phl.mesh.cellVolumes)
     cumulOut.setValue(cumulOut.value + phl.outFlow.value * dt* phl.mesh.cellVolumes)
     
-    if _ % 1000 == 0: #choose how often get output       
+    if _ % 1 == 0: #choose how often get output       
         ####
         #
         # copy of phi
@@ -237,7 +237,6 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         reorderedRm = np.array([x for _,x in sorted(zip(phl.cellsID,cumulRm))])
         reorderedGrSink = np.array([x for _,x in sorted(zip(phl.cellsID,cumulGr))])
         orgNum = np.array([phl.newCell2organID[xi] for xi in phl.newCell2organID])
-        print('orgnur ',orgNum)
         reorderedorgNum = np.array([x for _,x in sorted(zip(phl.cellsID,orgNum))])
         ana = pb.SegmentAnalyser(phl.rs)
         ana.addData("phi",  np.around(reorderedPhi, 5))

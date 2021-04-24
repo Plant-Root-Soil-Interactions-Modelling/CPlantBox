@@ -87,8 +87,11 @@ class PhloemFluxPython(Leuning):
         radiiVertices = np.array([])
         length = np.array([])
         tempOrgLength = np.array([])    
-        
-        
+        newNodeID_prev = -1
+        nodes_x_coord = np.array([], dtype=np.float64)#np.array([xi[0] for xi in seg], dtype=np.float64) 
+        nodes_y_coord = np.array([], dtype=np.float64)# np.array([xi[1] for xi in seg], dtype=np.float64) 
+        nodes_z_coord = np.array([], dtype=np.float64)# np.array([xi[2] for xi in seg], dtype=np.float64) 
+        #print("\n")
         
         for segnum, seg in enumerate(segs):
             length_org = np.array([])
@@ -96,8 +99,13 @@ class PhloemFluxPython(Leuning):
                 
             for j, n in enumerate(seg):
                 oldNodeID = np.where(np.all(nodes == n, axis=1))[0][0] #find index of n in the node matrix == node ID in the MappedPlant object
+                #print(segnum, j,n, newNodeID, oldNodeID, newNodeID_prev)
                                     
-                
+                if(oldNodeID ==0 and segnum != 0): #do not do it for first node of stem (newnodeId = )
+                    newNodeID_prev = 0
+                    nOld = n
+                    #print('pass ')
+                    continue
                 self.new2oldNodeID[newNodeID] =  oldNodeID
                 temp = self.old2newNodeID.get(oldNodeID,np.array([], dtype=np.int64))
                 self.old2newNodeID[oldNodeID] = np.append(temp, np.array([newNodeID], dtype=np.int64))
@@ -118,43 +126,46 @@ class PhloemFluxPython(Leuning):
                     self.maxGrowth = np.concatenate((self.maxGrowth, [self.rs.organParam[ot][st + 2*(ot==4)].getParameter('r')]))
                     
                     if(not isinstance(self.Px, float)):
-                        self.rxCells = np.concatenate((self.rxCells[self.rxCells < 1], [np.minimum(self.rxThrMax, np.mean((self.Px[oldNodeID], self.Px[self.new2oldNodeID[newNodeID - 1]])))]))
+                        self.rxCells = np.concatenate((self.rxCells[self.rxCells < 1], [np.minimum(self.rxThrMax, np.mean((self.Px[oldNodeID], self.Px[self.new2oldNodeID[newNodeID_prev]])))]))
                         
                     
                     length = np.concatenate( (length, [norm(nOld - n)]))           
                     length_org =  np.concatenate( (length_org, [norm(nOld - n)]))
                     
-                    cells = np.hstack((cells, np.array((np.array([newNodeID - 1]),np.array([newNodeID]),np.array([-1]))).reshape(3,1)))       
+                    cells = np.hstack((cells, np.array((np.array([newNodeID_prev]),np.array([newNodeID]),np.array([-1]))).reshape(3,1)))       
                         
                 elif segnum > 0:      
-                    if oldNodeID == 0: #if node 0 (root collar): only case where seg linked with to the x node of parent segment 
-                        seg_parent = np.where([self.new2oldNodeID[xi] for xi in cells[0]] == self.new2oldNodeID[newNodeID])[0][0]
-                        
-                    else: #seg linked with to the y node of parent segment
-                        seg_parent = np.where([self.new2oldNodeID[xi] for xi in cells[1]] == self.new2oldNodeID[newNodeID])[0][0]
+                    #if oldNodeID == 0: #if node 0 (root collar): only case where seg linked with to the x node of parent segment 
+                    #    seg_parent = np.where([self.new2oldNodeID[xi] for xi in cells[0]] == self.new2oldNodeID[newNodeID])[0][0]
+                     #   
+                    #else: #seg linked with to the y node of parent segment
+                       # seg_parent = np.where([self.new2oldNodeID[xi] for xi in cells[1]] == self.new2oldNodeID[newNodeID])[0][0]
+                    #print('parents',self.new2oldNodeID[newNodeID])
+                    seg_parent = np.where([self.new2oldNodeID[xi] for xi in cells[1]] == self.new2oldNodeID[newNodeID])[0][0]
                     cells[2,seg_parent] = newNodeID #add node to parent seg to link with child branch
                 
+                newNodeID_prev = newNodeID
                 newNodeID += 1
                 nOld = n    
-                
+                nodes_x_coord = np.append( nodes_x_coord, n[0])#np.array([xi[0] for xi in seg], dtype=np.float64) 
+                nodes_y_coord = np.append( nodes_y_coord, n[1])# np.array([xi[1] for xi in seg], dtype=np.float64) 
+                nodes_z_coord = np.append( nodes_z_coord, n[2])# np.array([xi[2] for xi in seg], dtype=np.float64) 
+                nodes_coord =  np.vstack((nodes_x_coord,nodes_y_coord,nodes_z_coord)) #change how coords are stored 
             tempOrgLength = np.append(tempOrgLength, sum(length_org))
-            nodes_x_coord = np.array([xi[0] for xi in seg], dtype=np.float64) 
-            nodes_y_coord = np.array([xi[1] for xi in seg], dtype=np.float64) 
-            nodes_z_coord = np.array([xi[2] for xi in seg], dtype=np.float64) 
-            nodes_coord =  np.vstack((nodes_x_coord,nodes_y_coord,nodes_z_coord)) #change how coords are stored 
-            if vertices.size ==0:
-                vertices = nodes_coord
-            else:
-                vertices = np.hstack((vertices, nodes_coord))
+            
+            #if vertices.size ==0:
                 
-        
+            #else:
+             #   vertices = np.hstack((vertices, nodes_coord))
+                
+        vertices = nodes_coord
         self.orgGr = np.full(segnum +1, 0.)
-        print('temporglength ', tempOrgLength)
+        #print('temporglength ', tempOrgLength)
         self.orgLength = np.array([tempOrgLength[self.newCell2organID[xi]] for xi in cells[1]])
         
-        self.faces = np.array((np.arange(0, vertices[0].size),), dtype=np.int64) 
+        self.faces = np.array((np.arange(0,  max(cells[1]) + 1),), dtype=np.int64) 
         cells = MA.masked_values(cells, -1)
-        
+        #print('cells ', cells, max(cells[1]), self.faces, len(vertices[0]))
         self.mesh = Mesh1Dmod( radiiVertices = radiiVertices, 
             radiiCells = radiiCells,length = length, vertexCoords=vertices, 
             faceVertexIDs=self.faces, cellFaceIDs=cells)
