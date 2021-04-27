@@ -58,7 +58,7 @@ class Mesh1Dmod(mesh1D.Mesh1D):
         return self.interiorFaces|self.exteriorFaces
         
     @property
-    def _cellDistances(self): #default funciton gave wrong results fr some reason
+    def _cellDistances(self): #default function gave wrong results for some reason
         distance = np.take(self.length/2,self._adjacentCellIDs[0] ) \
             + self.interiorFaces * np.take(self.length/2,self._adjacentCellIDs[1] )
         return distance

@@ -798,7 +798,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("cell2seg", &MappedSegments::cell2seg)
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
-        .def_readwrite("resolution", &MappedSegments::resolution);
+        .def_readwrite("resolution", &MappedSegments::resolution)
+		.def_readwrite("organParam", &MappedSegments::plantParam);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
