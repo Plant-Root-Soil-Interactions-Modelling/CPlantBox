@@ -379,9 +379,6 @@ void Root::createSegments(double l, double dt, bool verbose)
         double et = this->calcCreationTime(length+shiftl+sl, dt);
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
-        if (et> 59.9) {
-        	std::cout << "sdx " << sdx << ", " << dx() <<"\n";;
-        }
         addNode(newnode, et);
     }
 }
