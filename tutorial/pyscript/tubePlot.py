@@ -1,3 +1,23 @@
+#
+# same as rsTubePlot.py but meant to be started with paraview --script=tubePlot.py
+# copy file to temp.vtp first (I don't know how I can pass arguments)
+#
+
+# trace generated using paraview version 5.7.0
+#
+# To ensure correct image size when batch processing, please search 
+# for and uncomment the line `# renderView*.ViewSize = [*,*]`
+
+#### import the simple module from the paraview
+from paraview.simple import *
+#### disable automatic camera reset on 'Show'
+paraview.simple._DisableFirstRenderCameraReset()
+
+# create a new 'XML PolyData Reader'
+example_1avtp = XMLPolyDataReader(FileName=['temp.vtp'])
+example_1avtp.CellArrayStatus = ['radius', 'subType', 'creationTime']
+example_1avtp.PointArrayStatus = ['time']
+
 # trace generated using paraview version 5.7.0
 #
 # To ensure correct image size when batch processing, please search 
