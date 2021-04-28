@@ -426,7 +426,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     ana = pb.SegmentAnalyser(rs)
     ana.addData(pname, rp)
     if periodic:
-        w = max_b - min_b
+        w = np.array(max_b) - np.array(min_b)
         ana.mapPeriodic(w[0], w[1])
     pd = segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", pname])
 

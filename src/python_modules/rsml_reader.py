@@ -64,7 +64,7 @@ def artificial_shoot(polylines, properties, functions):
     """ inserts an artificial shoot, with functions and properties of the the first polyline 
     
     """ 
-    polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.]])
+    polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.9]])
     for key, v in properties.items():
         properties[key].insert(0, properties[key][0])
     for key, v in functions.items(): 
