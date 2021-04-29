@@ -664,6 +664,18 @@ tinyxml2:: XMLElement* Organism::getRSMLScene(tinyxml2::XMLDocument& xmlDoc) con
 {
     tinyxml2:: XMLElement* scene = xmlDoc.NewElement("scene");
     tinyxml2:: XMLElement* plant = xmlDoc.NewElement("plant");
+
+//	auto p = plant.lock();
+//	auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
+//	bool plantBox = stemP.size()>0;
+//	if (verbose) {
+//		if (plantBox) {
+//			std::cout << "Seed::initialize: Plant \n";
+//		} else {
+//			std::cout << "Seed::initialize: RootSystem \n";
+//		}
+//	}
+
     scene->InsertEndChild(plant);
     for (auto& o: baseOrgans) {
         o->writeRSML(xmlDoc, plant);

@@ -354,8 +354,12 @@ class XylemFluxPython(XylemFlux):
         # 4 Print segment age range
         ages = self.get_ages()    
         print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))        
+        # 4 check for unmapped indices 
+        map = self.rs.seg2cell
+        for seg_id, cell_id in map.items():
+            if cell_id < 0:
+                print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!")        
         print()
-        # print(self.get_organ_types())
         
     def plot_conductivities(self):
         """ plots conductivity  """

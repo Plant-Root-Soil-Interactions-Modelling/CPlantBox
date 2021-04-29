@@ -149,18 +149,9 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
  * @param segs      the (new) segments that need to be mapped
  */
 void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
-	bool firstWarning = true;
 	for (auto& ns : segs) {
 		Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
 		int cellIdx = soil_index(mid.x,mid.y,mid.z);
-		if ((cellIdx<0) && (firstWarning))  {
-			std::cout << "MappedSegments::mapSegments: some segments exceed the soil domain, they are mapped to cell index -1 \n";
-			std::cout << ns.toString() << "\n";
-			std::cout << mid.toString() << "\n";
-			std::cout << nodes[ns.x].toString() << "\n";
-			std::cout << nodes[ns.y].toString() << "\n";
-			firstWarning = false;
-		}
 		int segIdx = ns.y-1; // this is unique in a tree like structured
 		seg2cell[segIdx] = cellIdx;
 		if (cell2seg.count(cellIdx)>0) {
