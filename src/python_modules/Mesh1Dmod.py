@@ -53,6 +53,10 @@ class Mesh1Dmod(mesh1D.Mesh1D):
         faceTangents1 = np.vstack((np.zeros((n,)), np.ones((n,)), np.zeros((n,))))
         return faceTangents1, faceTangents2
         
+    def _calcCellCenters(self): #otherwise, wrong cellCenter for cell with 3 faces
+        tmp = numerix.take(self._faceCenters, self.cellFaceIDs[:-1], axis=1)
+        return MA.filled(MA.average(tmp, 1))  
+        
     @property
     def faces(self):
         return self.interiorFaces|self.exteriorFaces
