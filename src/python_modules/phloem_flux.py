@@ -18,6 +18,7 @@ import numpy as np
 from fipy.meshes import mesh1D
 from fipy.tools.numerix import MA
 from Mesh1Dmod import Mesh1Dmod
+from cellVariablemod import cellVariablemod
 from scipy.linalg import norm
 from fipy.meshes.nonUniformGrid2D import NonUniformGrid2D as Grid2D
 

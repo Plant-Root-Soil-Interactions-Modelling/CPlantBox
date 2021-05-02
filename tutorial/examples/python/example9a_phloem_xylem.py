@@ -280,7 +280,6 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     cumulAnOld = cumulAn.copy()
     cellVolumeOld = phl.mesh.cellVolumes
     cellsIDOld = phl.cellsID
-    print(type(phl.organGr) , type(dt))
     organGr = phl.organGr * dt
     print(organGr , dt)
     pl.setCWLimGr(organGr , dt)
