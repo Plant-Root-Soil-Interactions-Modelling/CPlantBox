@@ -1,0 +1,3 @@
+6 1 [0.2 0.2 0.2 0.2 0.2 0.2] 0.2 [[0.0], [-1.1999999999999997]]
+                print('mesh stem', len(length_org), 1, length_org,  0.2)
+                mesh = Grid2D(ny = len(length_org),nx = 1, dy = length_org, dx = 0.2) 

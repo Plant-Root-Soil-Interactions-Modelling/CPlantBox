@@ -1,0 +1,86 @@
+I wish to represent a diffusion in a 2D network (diffusion coefficient dependent on the value of phi) and a set phi input rate in a specific cell (so not a BC on a face). This seems like a very simple scenario, however, I must be doing something wrong as I get very odd results when computing this example:
+ ```
+from fipy import *
+from fipy.meshes.nonUniformGrid1D import NonUniformGrid1D as Grid1D
+from fipy.meshes.nonUniformGrid2D import NonUniformGrid2D as Grid2D
+from fipy.tools import numerix as np
+
+ny = 6 
+nx = 1 
+dy = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2] 
+dx = 0.2 
+translate = [[0.0], [-1.2]]
+meshes = Grid2D(ny = ny,nx = nx, dy = dy, dx = dx) + translate
+
+
+nx = 2 
+ny = 1 
+dx = [0.05, 0.05]
+dy = 0.2 
+translate = [[0.2], [-0.2]] 
+mesh = Grid2D(ny = ny,nx = nx, dy = dy, dx = dx) + translate
+
+meshes = meshes + mesh
+
+nx = 2 
+ny = 1 
+dx = [0.05 ,0.05]
+dy = 0.2 
+translate = [[0.2], [-0.6]] 
+mesh = Grid2D(ny = ny,nx = nx, dy = dy, dx = dx) + translate
+
+meshes = meshes + mesh
+
+nx = 2 
+ny = 1 
+dx = [0.05, 0.05]
+dy = 0.2 
+translate = [[0.2], [-1.0]] 
+mesh = Grid2D(ny = ny,nx = nx, dy = dy, dx = dx) + translate
+
+meshes = meshes + mesh
+
+ny = 3 
+nx = 1 
+dy = [0.2 ,0.2, 0.2]
+dx = 0.2 
+mesh = Grid2D(ny = ny,nx = nx, dy = dy, dx = dx) 
+
+meshes = meshes + mesh
+
+
+ny = 1 
+nx = 1 
+dx = [1.]
+dy = 0.2 
+translate = [[0.2], [0.2]]
+mesh = Grid2D(ny = ny,nx = nx, dy = dy, dx = dx) + translate
+
+meshes = meshes + mesh
+vol = meshes.cellVolumes
+phi = CellVariable(mesh= meshes, value = 0., hasOld = True)
+Source = CellVariable(mesh= meshes, value = 0.)
+Source.constrain(10., where = abs(vol - 0.2) < 0.001) 
+#addition of Source * dt to meshes at each step on the selected cell
+dt = 1e-6#0.9*( min(meshes.cellVolumes) ** 2) / (2 *max(Source.faceValue ))
+
+cumulatedIn = 0. # cumulated input
+eq = (TransientTerm(var = phi) == DiffusionTerm(var = phi,coeff= phi.faceValue)+ Source )
+steps = 3
+for _ in range(steps):
+    print('steps ', _, dt)
+    res= 1e5
+    loop =0 
+    while (res > 1e-3* max(abs(Source.value)) or res > 1e-3* max(abs(phi.value)) )and loop < 1000:
+            res =  eq.sweep(dt= dt)
+            loop += 1
+            print('res: ',res)
+            print('maxRes: ',1e-3* max(abs(Source.value)) , 1e-3* max(abs(phi.value)) )
+    cumulatedIn += sum(Source * dt * meshes.cellVolumes)
+    phi.updateOld
+    print('mass balance ', sum(phi * meshes.cellVolumes) - cumulatedIn,'\nphi content in mesh ', sum(phi * meshes.cellVolumes))
+    print('phi matrix\n', phi)
+```
+The content of phi remains constant instead of increasing.
+Could someone explain the source of the problem?
+

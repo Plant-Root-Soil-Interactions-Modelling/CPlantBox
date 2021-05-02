@@ -113,13 +113,14 @@ logfilergS = open('results/rgSink_9a.txt', "w")
 
 phl.phi.updateOld()
 dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * phl.intCoeff) *2
-steps = 2
+steps = 200
 growthSteps = []
 issue = []
 issueRes = []
 issueLoop = []
-
+phiConcentrationError = []
 for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for growth
+    print('step ', _, start + _ * dt, dt)
 
 
     #sys.stdout = NullIO()  
@@ -208,24 +209,22 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     
     #sys.stdout = sys.__stdout__
     
-    print('step ', _, start + _ * dt, dt)
-    while res > max(1e-3, 1e-3 * max(phl.phi)) and loop < 1000 and resOld != res:
+    while res > max(1e-5, 1e-5* max(phl.phi)) and loop < 1000 and resOld != res:
         resOld = res
         res =  eq.sweep(dt= dt)
         loop += 1
-    if res > max(1e-3, 1e-3 * max(phl.phi)) :
+    if res > max(1e-5, 1e-5 * max(phl.phi)) :
         print('no convergence! res: ', res)
         issue = np.append(issue, [_])
         issueRes = np.append(issueRes, [res])
         issueLoop = np.append(issueLoop, [loop])
-    
     phl.phi.updateOld()
     cumulRm.setValue(cumulRm.value + phl.Rm.value * dt* phl.mesh.cellVolumes)
     cumulAn.setValue(cumulAn.value + phl.Source.value * dt* phl.mesh.cellVolumes)
     cumulGr.setValue(cumulGr.value + phl.GrSink.value * dt* phl.mesh.cellVolumes)
     cumulOut.setValue(cumulOut.value + phl.outFlow.value * dt* phl.mesh.cellVolumes)
     
-    if _ % 1000 == 0: #choose how often get output       
+    if _ % 1 == 0: #choose how often get output       
         ####
         #
         # copy of phi
@@ -237,7 +236,6 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         reorderedRm = np.array([x for _,x in sorted(zip(phl.cellsID,cumulRm))])
         reorderedGrSink = np.array([x for _,x in sorted(zip(phl.cellsID,cumulGr))])
         orgNum = np.array([phl.newCell2organID[xi] for xi in phl.newCell2organID])
-        print('orgnur ',orgNum)
         reorderedorgNum = np.array([x for _,x in sorted(zip(phl.cellsID,orgNum))])
         ana = pb.SegmentAnalyser(phl.rs)
         ana.addData("phi",  np.around(reorderedPhi, 5))
@@ -257,11 +255,12 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         ####
         
         phimin = phl.phi * (phl.phi < 0 )
-        print('sink priority check ',phl.phi[np.where(phl.phi < 0 )[0]],np.where(phl.phi < 0 )[0],sum(phl.GrSink * (~phl.CSat)),sum(phl.outFlow*~phl.satisfaction)) #tip of stem negative at the beginning
-        
+        print('sink priority check ',sum(phl.GrSink * (~phl.CSat)),sum(phl.outFlow*~phl.satisfaction)) #tip of stem negative at the beginning
+        print('sucrose concentration < 0 at ',phl.phi[np.where(phl.phi < 0 )[0]],np.where(phl.phi < 0 )[0], ' sucrose vol. fraction > 0.65 at ',np.where(phl.VolFractSucrose > 0.65 )[0])
+
         print('cumulated loading: ', sum(cumulAn), 'cumulated growth sink: ',sum(cumulGr), 'cumulated maintenance sink: ',sum(cumulRm), 'cumulated outflow: ',sum(cumulOut),'total C content in plant: ',sum(phl.phi* phl.mesh.cellVolumes))
         print('C_plant - C_Sink + C_source :',-sum(cumulAn) + sum(phl.phi* phl.mesh.cellVolumes) + sum(cumulGr)+ sum(cumulRm)+ sum(cumulOut))
-        print('check if value updates ',sum(phl.CSat), sum(phl.RmMax), sum(phl.Rm), sum(phl.Gr), sum(phl.GrSink), sum(phl.outFlow)) #check if value updates
+        #print('check if value updates ',sum(phl.CSat), sum(phl.RmMax), sum(phl.Rm), sum(phl.Gr), sum(phl.GrSink), sum(phl.outFlow)) #check if value updates
         #print( 'Growth sink in segments with C limitation for maintenance (should be 0): ',) #check if value updates
         
         logfilephi.write('\n'+repr(phl.phi.value)[7:-2])
@@ -270,8 +269,11 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         logfilergS.write('\n'+repr(phl.GrSink.value)[7:-2])
         logfilerg.write('\n'+repr(phl.Gr.value)[7:-2])
         print('no convergence at step(s) ',issue, ' res: ', issueRes, ' loops ', issueLoop)
-        print('became bigger at step(s) ',growthSteps)
-    if(sum(phl.phi[np.where(phl.phi < 0 )[0]]) != 0):
+        print('phi value error at step(s) ',phiConcentrationError)
+        #print('became bigger at step(s) ',growthSteps)
+    
+    if(sum(abs(phl.GrSink * (~phl.CSat)))+sum(abs(phl.outFlow*~phl.satisfaction))\
+        + sum(abs(phl.phi[np.where(phl.phi < 0 )[0]]))+sum(abs(phl.VolFractSucrose[np.where(phl.VolFractSucrose> 0.65 )[0]])) != 0):
         break
 
     phiOld = phl.phi.copy()
@@ -281,7 +283,6 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     cumulAnOld = cumulAn.copy()
     cellVolumeOld = phl.mesh.cellVolumes
     cellsIDOld = phl.cellsID
-    print(type(phl.organGr) , type(dt))
     organGr = phl.organGr * dt
     print(organGr , dt)
     pl.setCWLimGr(organGr , dt)
