@@ -223,7 +223,7 @@ double Root::calcCreationTime(double length, double dt)
 double Root::calcLength(double age)
 {
     assert(age >= 0 && "Root::calcLength() negative root age");
-    return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
+    return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this(), CW_Gr, length);
 }
 
 /**
@@ -235,7 +235,7 @@ double Root::calcLength(double age)
 double Root::calcAge(double length)
 {
     assert(length >= 0 && "Root::calcAge() negative root length");
-    return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this());
+    return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this(), CW_dt, age);
 }
 
 /**

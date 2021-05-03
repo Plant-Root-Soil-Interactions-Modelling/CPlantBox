@@ -348,6 +348,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNodeIndex", &Organism::getNodeIndex)
 
             .def("setMinDx", &Organism::setMinDx)
+            .def("setCWLimGr", (void (Organism::*)(std::vector<double>, double)) &Organism::setCWLimGr, py::arg("CWLimGr"), py::arg("CW_dt"))
             .def("setSeed", &Organism::setSeed)
             .def("rand", &Organism::rand)
             .def("randn", &Organism::randn)
@@ -886,6 +887,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::enum_<Plant::GrowthFunctionTypes>(m, "GrowthFunctionType")
              .value("negexp", Plant::GrowthFunctionTypes::gft_negexp)
              .value("linear", Plant::GrowthFunctionTypes::gft_linear)
+             .value("CWLim", Plant::GrowthFunctionTypes::gft_CWLim)
              .export_values();
 
     py::class_<ExudationModel, std::shared_ptr<ExudationModel>>(m, "ExudationModel")

@@ -275,7 +275,7 @@ double Leaf::calcLength(double age)
 	//    if (name()  == "maize1eaf"){
 	assert(age>=0  && "Leaf::calcLength() negative root age");
 	//return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
-	return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
+	return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,param()->getK(),shared_from_this(), CW_Gr, length);
 	//	}else {
 	//assert(age>=0);
 	//	    return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
@@ -294,7 +294,7 @@ double Leaf::calcAge(double length)
 	//     if ( name() == "maize1eaf"){
 	assert(length>=0 && "Leaf::calcAge() negative root length");
 	//std::cout<<"length subtype is"<<getLeafRandomParameter()->subType<<"\n";
-	return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
+	return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,param()->getK(),shared_from_this(), CW_dt, age);
 	//        return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
 	//        }else {
 	//assert(age>=0);
