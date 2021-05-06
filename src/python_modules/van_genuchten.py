@@ -83,7 +83,7 @@ def matric_flux_potential(h, sp):
     """ returns the matric flux potential [cm2/day] for a matric potential [cm]"""
     hmin = -1.e6
     K = lambda h: hydraulic_conductivity(h, sp)  # integrand 
-    MFP, _ = integrate.quad(K, hmin, h, epsabs=1.e-10, epsrel=1.e-6,)
+    MFP, _ = integrate.quad(K, hmin, h)
     return MFP
 
 
