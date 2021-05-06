@@ -35,6 +35,7 @@ print()
 r = XylemFluxPython(rs)
 r.setKr([kr])  # or use setKrTables, see XylemFlux.h
 r.setKx([kz])
+r.test()
 
 """ numerical solution of transpiration -1 cm3/day"""
 suf = r.get_suf(0.)
