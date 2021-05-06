@@ -46,8 +46,10 @@ def init_conductivities(r, age_dependent:bool=False):
                       [kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0]])  # [1/day]
 
 
-def init_conductivities_growth(r, age_dependent:bool=False):
-    """ same as init_conductivities but with a 1 day slope if segments emerge"""
+def init_conductivities_growth(r, age_dependent:bool=False, dt=1):
+    """ same as init_conductivities but with a 1 day slope if segments emerge
+        @param dt     time span after emergence to reach full kr value
+    """
         
     # values for age indepenent case
     kx_const_ = 4.32e-2  # [cm3/day]
@@ -58,14 +60,11 @@ def init_conductivities_growth(r, age_dependent:bool=False):
     kr1 = np.array([[-1e4, 1.e-9], [0., 1.e-9], [0, 4.11e-03], [1, 3.89e-03], [2, 3.67e-03], [3, 3.47e-03], [4, 3.28e-03], [5, 3.10e-03], [6, 2.93e-03], [7, 2.77e-03], [8, 2.62e-03], [9, 2.48e-03], [10, 2.34e-03], [11, 2.21e-03], [12, 2.09e-03], [13, 1.98e-03], [14, 1.87e-03], [15, 1.77e-03], [16, 1.67e-03], [17, 1.58e-03]])
     
     for i in range(2, kr0.shape[0]):
-        kr0[i, 1] += 1
-        kr1[i, 1] += 1
+        kr0[i, 0] = kr0[i, 0] + dt
+        kr1[i, 0] = kr1[i, 0] + dt
     
     kx0 = np.array([[0, 6.74e-02], [2, 7.48e-02], [4, 8.30e-02], [6, 9.21e-02], [8, 1.02e-01], [10, 1.13e-01], [12, 1.26e-01], [14, 1.40e-01], [16, 1.55e-01], [18, 1.72e-01], [20, 1.91e-01], [22, 2.12e-01], [24, 2.35e-01], [26, 2.61e-01], [28, 2.90e-01], [30, 3.21e-01], [32, 3.57e-01]])
     kx1 = np.array([[0, 4.07e-04], [1, 5.00e-04], [2, 6.15e-04], [3, 7.56e-04], [4, 9.30e-04], [5, 1.14e-03], [6, 1.41e-03], [7, 1.73e-03], [8, 2.12e-03], [9, 2.61e-03], [10, 3.21e-03], [11, 3.95e-03], [12, 4.86e-03], [13, 5.97e-03], [14, 7.34e-03], [15, 9.03e-03], [16, 1.11e-02], [17, 1.36e-02]])
-    for i in range(2, kx0.shape[0]):
-        kx0[i, 1] += 1
-        kx1[i, 1] += 1
 
     if age_dependent:
         r.setKrTables([kr0[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1]],
@@ -74,7 +73,7 @@ def init_conductivities_growth(r, age_dependent:bool=False):
                       [kx0[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0]])  # [1/day]
 
     else:  # we set it as table to be able to make the rootsystem grow in a predefined way
-        kr = np.array([[-1e4, 1.e-9], [0., 1.e-9], [0., kr_const_], [1e4, kr_const_]])
+        kr = np.array([[-1e4, 1.e-9], [0., 1.e-9], [dt, kr_const_], [1e4, kr_const_]])
         kx = np.array([[0, kx_const_], [1e4, kx_const_]])
         r.setKrTables([kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1]],
                       [kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0]])  # [cm^3/day]
