@@ -348,7 +348,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNodeIndex", &Organism::getNodeIndex)
 
             .def("setMinDx", &Organism::setMinDx)
-            .def("setCWLimGr", (void (Organism::*)(std::vector<double>, double)) &Organism::setCWLimGr, py::arg("CWLimGr"), py::arg("CW_dt"))
             .def("setSeed", &Organism::setSeed)
             .def("rand", &Organism::rand)
             .def("randn", &Organism::randn)
@@ -874,7 +873,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
-			.def("addSegments", &MappedPlant::plant);	
+			.def("addSegments", &MappedPlant::plant)
+            .def("setCWGr", (void (MappedPlant::*)(std::vector<double>)) &MappedPlant::setCWGr, py::arg("CWGr"));	
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

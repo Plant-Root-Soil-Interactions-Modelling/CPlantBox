@@ -155,6 +155,7 @@ void Organism::simulate(double dt, bool verbose)
     if (verbose) {
         std::cout << "Organism::simulate: from "<< simtime << " to " << simtime+dt << " days" << std::endl;
     }
+	this->dt = dt;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto& r : baseOrgans) {

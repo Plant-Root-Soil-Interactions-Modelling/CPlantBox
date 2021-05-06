@@ -42,6 +42,7 @@ public:
 	double calcCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
 	double calcLength(double age); ///< analytical length of the stem
 	double calcAge(double length); ///< analytical age of the stem
+	void setCWGr(std::map<int, double> Gr) override { getLeafRandomParameter()->f_gf->setCWGr(Gr); };// water and carbon limited growth of growth function n°3
 
 	/* abbreviations */
 	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
