@@ -110,6 +110,8 @@ public:
     virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
     virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
 
+	void setCWLimGr(std::vector<double> CWLimitedGr, double CW_dt); ///< growth as defined by phloem module.
+	
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;

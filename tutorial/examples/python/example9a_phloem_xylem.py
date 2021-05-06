@@ -5,11 +5,13 @@ from fipy.tools import numerix as np
 import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 from phloem_flux import PhloemFluxPython
+from CellVariablemod import CellVariablemod
 import plantbox as pb
 import vtk_plot as vp
 import math
 import os
 from io import StringIO
+
 
 home_dir = os.getcwd()
 dir_name = "/results"
@@ -26,7 +28,6 @@ for item in test:
         
 np.set_printoptions(threshold=sys.maxsize)
 
-
 class NullIO(StringIO):
     def write(self, txt):
        pass
@@ -37,10 +38,11 @@ class NullIO(StringIO):
 #
 ####################### 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
+
 path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
-name = "manyleaves"#"smallPlant"# "oneroot" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
+name = "oneroot_mgiraud" #"manyleaves"#"smallPlant"# "oneroot" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
-start = 3.#5 #1.275
+start =1. #5. # 3.#1.275
 
 """ Parameters xylem"""
 kz = 4.32e-1  # axial conductivity [cm^3/day] 
@@ -66,11 +68,10 @@ VPD = es - ea
 
 """ Parameters phloem """
 """ soil """
-min_ = np.array([-5, -5, -15])
-max_ = np.array([9, 4, 0])
+min_ = np.array([-50, -50, -150])
+max_ = np.array([90, 40, 10])
 res_ = np.array([5, 5, 5])
 pl.setRectangularGrid(pb.Vector3d(min_), pb.Vector3d(max_), pb.Vector3d(res_), True)  # cut and map segments
-
 pl.initialize()
 pl.simulate(start, False)
 phl = PhloemFluxPython(pl)
@@ -101,7 +102,10 @@ cumulOutOld = CellVariable(mesh = phl.mesh, value=0.)
 cumulGrOld = CellVariable(mesh = phl.mesh, value=0.)
 cumulRmOld = CellVariable(mesh = phl.mesh, value=0.)
 cumulAnOld = CellVariable(mesh = phl.mesh, value=0.)
-phiOld = CellVariable(mesh = phl.mesh, value=0., hasOld = True)
+dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * 100) *2
+phl.resetValues()    
+phiOld = CellVariablemod(mesh = phl.mesh, value=0., hasOld = True)#180 * dt*0.1
+
 cellVolumeOld = phl.mesh.cellVolumes
 
 logfilermM = open('results/rmMax_9a.txt', "w")
@@ -109,16 +113,28 @@ logfilerm = open('results/rm_9a.txt', "w")
 logfilephi = open('results/phi_9a.txt', "w")
 logfilerg = open('results/rg_9a.txt', "w")
 logfilergS = open('results/rgSink_9a.txt', "w")
+logfileOut = open('results/outFow_9a.txt', "w")
 
 
 phl.phi.updateOld()
-dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * phl.osmoCoeff) *2
-steps = 100
 growthSteps = []
 issue = []
 issueRes = []
 issueLoop = []
+phiConcentrationError = []
+
+
+phl.cellsID = [phl.new2oldNodeID[xi] - 1 for xi in phl.mesh.cellFaceIDs[1] ]
+
+print('IDs \n',  phl.mesh.cellFaceIDs)
+print('IDs \n',  phl.cellsID)
+
+steps = 1
+timeSpanLeuning = 10 * 60 #time in seconds between to evaluatio of the gs operture/xylem flow
+timeSinceLastLeuning = np.inf
+
 for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for growth
+    print('step ', _, start + _ * dt, dt)
 
 
     #sys.stdout = NullIO()  
@@ -130,30 +146,34 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     pl.simulate(dt , False)
     phl = PhloemFluxPython(pl)
     segs = pl.getPolylines() #segments regrouped per organ
+    timeSinceLastLeuning += dt
     
-    
-    ####
-    #
-    # xylem
-    #
-    ####
-    
-    nodes = phl.get_nodes()
-    tiproots, tipstem, tipleaf = phl.get_organ_nodes_tips() #end node of end segment of each organ
-    node_tips = np.concatenate((tiproots, tipstem, tipleaf))
-    tiproots, tipstem, tipleaf = phl.get_organ_segments_tips() #end segment of each organ
-    seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
+    if (timeSinceLastLeuning > timeSpanLeuning):
+        ####
+        #
+        # xylem
+        #
+        ####
+        
+        nodes = phl.get_nodes()
+        tiproots, tipstem, tipleaf = phl.get_organ_nodes_tips() #end node of end segment of each organ
+        node_tips = np.concatenate((tiproots, tipstem, tipleaf))
+        tiproots, tipstem, tipleaf = phl.get_organ_segments_tips() #end segment of each organ
+        seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
 
 
-    phl.setKr([[kr],[kr_stem],[gmax]]) 
-    phl.setKx([[kz]])
-    phl.airPressure = p_a
+        phl.setKr([[kr],[kr_stem],[gmax]]) 
+        phl.setKx([[kz]])
+        phl.airPressure = p_a
 
-    phl.seg_ind = seg_tips # segment indices for Neumann b.c.
-    phl.node_ind = node_tips
-    phl.Px = phl.solve_leuning( sim_time = dt,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
-        Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = False)
-    fluxes = phl.radial_fluxes(dt, phl.Px, [p_s], k_soil, True)  # cm3/day
+        phl.seg_ind = seg_tips # segment indices for Neumann b.c.
+        phl.node_ind = node_tips
+        rx = phl.solve_leuning( sim_time = dt,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
+            Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = False)
+        fluxes = phl.radial_fluxes(dt, rx, [p_s], k_soil, True)  # cm3/day
+        
+        timeSinceLastLeuning = 0
+    phl.Px = rx
     
     ####
     #
@@ -169,7 +189,7 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         orderedCPhi = np.concatenate((np.array([x for _,x in sorted(zip(cellsIDOld, CphiOld))]), np.full(len(phl.phi.value)-len(phiOld),0.)))        
         orderedCPhiNew = np.take(orderedCPhi, phl.cellsID)/phl.mesh.cellVolumes
         growthSteps = np.append(growthSteps, [_])
-        phl.phi = CellVariable(mesh = phl.mesh, value= orderedCPhiNew , hasOld =True)
+        phl.phi = CellVariablemod(mesh = phl.mesh, value= orderedCPhiNew , hasOld =True)
         
         phl.phi.updateOld()
         
@@ -190,7 +210,7 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         cumulAn = CellVariable(mesh = phl.mesh, value= orderedcumulAnNew)
     
     else: 
-        phl.phi = CellVariable(mesh = phl.mesh, value= phiOld.value * cellVolumeOld/phl.mesh.cellVolumes, hasOld =True)
+        phl.phi = CellVariablemod(mesh = phl.mesh, value= phiOld.value * cellVolumeOld/phl.mesh.cellVolumes, hasOld =True)
         cumulOut = cumulOutOld
         cumulGr =cumulGrOld
         cumulRm = cumulRmOld
@@ -198,8 +218,8 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         
     phl.resetValues()    
     
-    eq = TransientTerm(var = phl.phi) == DiffusionTerm(var = phl.phi,coeff= phl.intCoeff * phl.phi.faceValue)\
-        - phl.Rm   - phl.GrSink + phl.Source - phl.outFlow
+    eq = TransientTerm(var = phl.phi) == (phl.phi.faceValue * phl.phi.faceGrad*phl.intCoeff ).divergence\
+        - phl.Rm   - phl.GrSink + phl.Source - phl.outFlow #add intcoef
     
     res = 1e+10
     resOld = 2e+10
@@ -207,26 +227,22 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     
     #sys.stdout = sys.__stdout__
     
-    print('step ', _, start + _ * dt, dt)
-    
-    while res > max(1e-3, 1e-3 * max(phl.phi)) and loop < 1000 and resOld != res:
+    while res > max(1e-5, 1e-5* max(phl.phi)) and loop < 1000 and resOld != res:
         resOld = res
         res =  eq.sweep(dt= dt)
-        #res =  eq1.sweep(dt= dt)
         loop += 1
-    if res > max(1e-3, 1e-3 * max(phl.phi)) :
+    if res > max(1e-5, 1e-5 * max(phl.phi)) :
         print('no convergence! res: ', res)
         issue = np.append(issue, [_])
         issueRes = np.append(issueRes, [res])
         issueLoop = np.append(issueLoop, [loop])
-    
     phl.phi.updateOld()
     cumulRm.setValue(cumulRm.value + phl.Rm.value * dt* phl.mesh.cellVolumes)
     cumulAn.setValue(cumulAn.value + phl.Source.value * dt* phl.mesh.cellVolumes)
     cumulGr.setValue(cumulGr.value + phl.GrSink.value * dt* phl.mesh.cellVolumes)
     cumulOut.setValue(cumulOut.value + phl.outFlow.value * dt* phl.mesh.cellVolumes)
     
-    if _ % 1 == 0: #choose how often get output       
+    if _ % 100 == 0: #choose how often get output       
         ####
         #
         # copy of phi
@@ -237,14 +253,17 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         reorderedOutFlow = np.array([x for _,x in sorted(zip(phl.cellsID,cumulOut))])
         reorderedRm = np.array([x for _,x in sorted(zip(phl.cellsID,cumulRm))])
         reorderedGrSink = np.array([x for _,x in sorted(zip(phl.cellsID,cumulGr))])
+        orgNum = np.array([phl.newCell2organID[xi] for xi in phl.newCell2organID])
+        reorderedorgNum = np.array([x for _,x in sorted(zip(phl.cellsID,orgNum))])
         ana = pb.SegmentAnalyser(phl.rs)
-        ana.addData("phi",  np.around(reorderedPhi, 5))
-        ana.addData("outFlow",  np.around(reorderedOutFlow, 5))
-        ana.addData("Rm",  np.around(reorderedRm, 5))
-        ana.addData("GrSink",  np.around(reorderedGrSink, 5))
+        ana.addData("phi",  np.around(reorderedPhi/phl.mesh.cellVolumes, 5))
+        ana.addData("outFlow",  np.around(reorderedOutFlow/phl.mesh.cellVolumes, 5))
+        ana.addData("Rm",  np.around(reorderedRm/phl.mesh.cellVolumes, 5))
+        ana.addData("GrSink",  np.around(reorderedGrSink/phl.mesh.cellVolumes, 5))
         ana.addData("rx", phl.Px)
         ana.addData("fluxes", fluxes) 
-        ana.write("results/%s_example9a.vtp" %(_), ["radius", "surface", "phi", "outFlow", "Rm", "GrSink", "rx","fluxes",])
+        ana.addData("orgNr", reorderedorgNum) 
+        ana.write("results/%s_example9a.vtp" %(_), ["radius", "surface", "phi", "outFlow", "Rm", "GrSink", "rx","fluxes","orgNr"])
         
         
         ####
@@ -254,21 +273,29 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         ####
         
         phimin = phl.phi * (phl.phi < 0 )
-        print('sink priority check ',phl.phi[np.where(phl.phi < 0 )[0]],np.where(phl.phi < 0 )[0],sum(phl.GrSink * (~phl.CSat)),sum(phl.outFlow*~phl.satisfaction)) #tip of stem negative at the beginning
-        
+        print('sink priority check ',sum(phl.GrSink * (~phl.CSat)),sum(phl.outFlow*~phl.satisfaction)) #tip of stem negative at the beginning
+        print('sucrose concentration < 0 at ',phl.phi[np.where(phl.phi < 0 )[0]],np.where(phl.phi < 0 )[0], ' sucrose vol. fraction > 0.65 at ',len(np.where(phl.VolFractSucrose > 0.65 )[0]))
+
         print('cumulated loading: ', sum(cumulAn), 'cumulated growth sink: ',sum(cumulGr), 'cumulated maintenance sink: ',sum(cumulRm), 'cumulated outflow: ',sum(cumulOut),'total C content in plant: ',sum(phl.phi* phl.mesh.cellVolumes))
         print('C_plant - C_Sink + C_source :',-sum(cumulAn) + sum(phl.phi* phl.mesh.cellVolumes) + sum(cumulGr)+ sum(cumulRm)+ sum(cumulOut))
-        print('check if value updates ',sum(phl.CSat), sum(phl.RmMax), sum(phl.Rm), sum(phl.Gr), sum(phl.GrSink), sum(phl.outFlow)) #check if value updates
+        #print('check if value updates ',sum(phl.CSat), sum(phl.RmMax), sum(phl.Rm), sum(phl.Gr), sum(phl.GrSink), sum(phl.outFlow)) #check if value updates
         #print( 'Growth sink in segments with C limitation for maintenance (should be 0): ',) #check if value updates
         
         logfilephi.write('\n'+repr(phl.phi.value)[7:-2])
-        logfilerm.write('\n'+repr(phl.Rm.value)[7:-2])
-        logfilermM.write('\n'+repr(phl.RmMax.value)[7:-2])
-        logfilergS.write('\n'+repr(phl.GrSink.value)[7:-2])
-        logfilerg.write('\n'+repr(phl.Gr.value)[7:-2])
+        logfilerm.write('\n'+repr(phl.Rm.value/phl.mesh.cellVolumes)[7:-2])
+        logfilermM.write('\n'+repr(phl.RmMax.value/phl.mesh.cellVolumes)[7:-2])
+        logfilergS.write('\n'+repr(phl.GrSink.value/phl.mesh.cellVolumes)[7:-2])
+        logfilerg.write('\n'+repr(phl.Gr.value/phl.mesh.cellVolumes)[7:-2])
+        logfileOut.write('\n'+repr(phl.outFlow.value/phl.mesh.cellVolumes)[7:-2])
         print('no convergence at step(s) ',issue, ' res: ', issueRes, ' loops ', issueLoop)
-        print('became bigger at step(s) ',growthSteps)
-
+        print('phi value error at step(s) ',phiConcentrationError)
+        #print('became bigger at step(s) ',growthSteps)
+    
+    if(sum(abs(phl.GrSink * (~phl.CSat)))+sum(abs(phl.outFlow*~phl.satisfaction))\
+        + sum(abs(phl.phi[np.where(phl.phi < 0 )[0]]))+sum(abs(phl.VolFractSucrose[np.where(phl.VolFractSucrose> 0.65 )[0]])) != 0):
+        pass
+        #break
+    dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * max(100,max((phl.phi.faceValue*phl.intCoeff).value)  ))
     phiOld = phl.phi.copy()
     cumulOutOld = cumulOut.copy()
     cumulGrOld = cumulGr.copy()
@@ -276,7 +303,11 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     cumulAnOld = cumulAn.copy()
     cellVolumeOld = phl.mesh.cellVolumes
     cellsIDOld = phl.cellsID
-    #pl.CWLimitedGrowth = np.array([x for _,x in sorted(zip(phl.cellsID,phl.Growth))])
+    organGr = phl.organGr * dt
+    print('growth per segment :',organGr ,'\ndt :', dt)
+    pl.setCWLimGr(organGr , dt)
+    print('\nC konz > 0 ',len(np.where(phl.phi!=0)[0]), 'tot num seg ', len(phl.phi))
+    print(phl.phi)#,'\n', phl.phi.faceValue , phl.phi.faceGrad[2],'\n',(phl.phi.faceValue * phl.phi.faceGrad*phl.intCoeff ).divergence )
 
 
 logfilermM.close()
@@ -284,3 +315,4 @@ logfilerm.close()
 logfilephi.close()
 logfilerg.close()
 logfilergS.close()
+logfileOut.close()

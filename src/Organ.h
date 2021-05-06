@@ -94,6 +94,9 @@ public:
     int parentNI; ///< parent node index
     double insertionAngle=0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa
 
+	double CW_Gr = -1.;
+	double CW_dt = -1.;
+	
 protected:
 
     /* up and down the organ tree */
