@@ -32,14 +32,14 @@ public:
     std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
 
-    /** experimental fluxes, SRA = steady rate assumption (todo move to another place) **/
+    /** experimental fluxes, SRA = steady rate assumption (TODO move to another place) **/
     std::vector<double> segSRA(double simTime, const std::vector<double>& rx, const std::vector<double>& sx, double wilting_point,
         std::function<double(double)> mfp, std::function<double(double)> imfp);
     std::vector<double> segSRAStressedFlux(const std::vector<double>& sx, double wiltingPoint, double hc,
         std::function<double(double)> mfp, std::function<double(double)> imfp, double dx = 1.e-6);
     std::vector<double> segSRAStressedAnalyticalFlux(const std::vector<double>& sx, std::function<double(double)> mfp);
 
-    /** moved these to MappedSegments **/
+    /** moved these to MappedSegments (TODO check for dependency and remove )**/
     std::vector<double> segOuterRadii(int type = 0, const std::vector<double>& vols = std::vector<double>(0)) const { return rs->segOuterRadii(type, vols); } ///< outer cylinder radii to match cell volume
     std::vector<double> segLength() const { return rs->segLength(); }  ///< calculates segment lengths [cm]
 

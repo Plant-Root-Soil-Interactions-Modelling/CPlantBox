@@ -475,59 +475,60 @@ void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::
 }
 
 /**
- *  Sets the radial conductivity in [1 day-1]
- * TODO: make deprecated
+ * Sets the radial conductivity in [1 day-1]
+ *	@param values 			kr values for age (its linearly interpolated between these values) for each root type
+ *	@param age 				ages for the given values for each root type
+ *
+ * TODO: make deprecated (i would leave it in for now, used in pyhton_modules/root_conductivities.py)
  */
 //both age and type/subtype dependent
 void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-	std::vector<std::vector<double> > krs_temp;
-	krs_temp.resize(0);
-	for (auto v :values) { //why do a loop and not directly put krs = temp like fore krs_t?
-		krs_temp.push_back(v);
-	}
-	krs={krs_temp};
-	krs_t = {age};
+	krs= { values };
+	krs_t = { age };
 	kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 	std::cout << "Kr is age dependent per root type\n";
 }
 
 /**
  *  Sets the axial conductivity in [cm3 day-1]
- * TODO: make deprecated
+ *	@param values 			kx values for age (its linearly interpolated between these values) for each root type
+ *	@param age 				ages for the given values for each root type
+ *
+ * TODO: make deprecated (i would leave it in for now, used in pyhton_modules/root_conductivities.py)
  */
 //both age and type/subtype dependent
 void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-	std::vector<std::vector<double> > kxs_temp;
-	kxs_temp.resize(0);
-	for (auto v :values) { //why do a loop and not directly put krs = temp like fore krs_t?
-		kxs_temp.push_back(v);
-	}
-	kxs = {kxs_temp};
+	kxs = {values};
 	kxs_t = {age};
 	kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 	std::cout << "Kx is age dependent per root type\n";
 }
 
 /**
- *  Sets the radial conductivity in [1 day-1]
+ *  Sets the radial conductivity in [1 day-1] age, organ type and sub-type dependent
+ *
+ *	@param values 			kr values for age (its linearly interpolated between these values) for each organ type and each sub-type
+ *	@param age 				ages for the given values for each organ type and for each sub type
  */
-//both age and type/subtype dependent
 void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
 	krs = values;
 	krs_t = age;
-	if (age[0].size()==1) {kr_f = std::bind(&XylemFlux::kr_tablePerOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-	std::cout << "Kr is age dependent per organ type\n";
-
+	if (age[0].size()==1) {
+		kr_f = std::bind(&XylemFlux::kr_tablePerOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		std::cout << "Kr is age dependent per organ type\n";
 	}
-	else{    kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-	std::cout << "Kr is age dependent per organ type and sub type\n";
+	else{
+		kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		std::cout << "Kr is age dependent per organ type and sub type\n";
 	}
 }
 
 /**
- *  Sets the axial conductivity in [cm3 day-1]
+ *  Sets the axial conductivity in [cm3 day-1] age, organ type and sub-type dependent
+ *
+ *	@param values 			kx values for age (its linearly interpolated between these values) for each organ type and each sub type
+ *	@param age 				ages for the given values for each organ type and for each sub-type
  */
-//both age and type/subtype dependent
 void XylemFlux::setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
 	kxs= values;
 	kxs_t = age;
