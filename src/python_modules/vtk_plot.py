@@ -411,7 +411,7 @@ def plot_mesh_cuts(grid, p_name, nz=3, win_title="", render=True):
     return actors, scalar_bar
 
 
-def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str):
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str, sol_ind=0):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -430,6 +430,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         ana.mapPeriodic(w[0], w[1])
     pd = segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", pname])
 
+    pname_mesh = pname
     soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
     soil_water_content = vtk_data(np.array(s.getWaterContent()))
     soil_water_content.SetName("water content")
@@ -437,9 +438,14 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     soil_pressure = vtk_data(np.array(s.getSolutionHead()))
     soil_pressure.SetName("pressure head")  # in macroscopic soil
     soil_grid.GetCellData().AddArray(soil_pressure)
+    if sol_ind > 0:
+        d = vtk_data(np.array(s.getSolution(sol_ind)))
+        pname_mesh = "solute" + str(sol_ind)
+        d.SetName(pname_mesh)  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(d)
 
     rootActor, rootCBar = plot_roots(pd, pname, "", False)
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname, 7, "", False)
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
     lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
     rootActor.GetMapper().SetLookupTable(lut)
     meshActors.extend([rootActor])
@@ -449,6 +455,22 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         path = "results/"
         write_vtp(path + filename + ".vtp", pd)
         write_vtu(path + filename + ".vtu", soil_grid)
+
+
+def write_soil(filename, s, min_b, max_b, cell_number, solutes=[]):
+    """ TODO """
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(s.getWaterContent()))
+    soil_water_content.SetName("water content")
+    soil_grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    soil_grid.GetCellData().AddArray(soil_pressure)
+    for i, s_ in enumerate(solutes):
+        d = vtk_data(np.array(s.getSolution(i + 1)))
+        d.SetName(s_)  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(d)                
+    write_vtu(filename + ".vtu", soil_grid)
 
 
 def plot_roots_and_soil_files(filename: str, pname:str):
