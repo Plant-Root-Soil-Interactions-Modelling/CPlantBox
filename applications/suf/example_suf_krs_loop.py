@@ -23,9 +23,9 @@ kr0 = np.array([[-154, 0.], [0, 1.e-12], [1e20, 1.e-12]])
 kz0 = np.array([[-154, 0.], [0, 1.], [1e20, 1.]])
 
 # Doussan et al. TODO distance to age
-kr1 = np.array([[-1e4, 1.e-12], [0., 1.e-12], [0, 2.55e-6], [12.5, 2.55e-6], [20.9, 8.9e-7], [44.6, 8.9e-7], [62.7, 2.1e-7], [100, 2.1e-7]])  # negative values must be samll for kr
-kr2 = np.array([[-1e4, 1.e-12], [0., 1.e-12], [0, 2.e-4], [10, 2.e-4], [15, 3.e-5], [20, 3.e-5]])
-kr3 = np.array([[-1e4, 1.e-12], [0., 1.e-12], [0, 2.e-4], [10, 2.e-4], [15, 3.e-5], [20, 3.e-5]])
+kr1 = np.array([[-1e4, 1.e-12], [0., 1.e-12], [0., 2.55e-6], [12.5, 2.55e-6], [20.9, 8.9e-7], [44.6, 8.9e-7], [62.7, 2.1e-7], [100, 2.1e-7]])  # negative values must be samll for kr
+kr2 = np.array([[-1e4, 1.e-12], [0., 1.e-12], [0., 2.e-4], [10, 2.e-4], [15, 3.e-5], [20, 3.e-5]])
+kr3 = np.array([[-1e4, 1.e-12], [0., 1.e-12], [0., 2.e-4], [10, 2.e-4], [15, 3.e-5], [20, 3.e-5]])
 kz1 = np.array([[0, 2.3148e-4], [18.3, 2.3148e-4], [27.8, 4.0509e-3], [36.4, 4.0509e-3], [51.1, 5.752278e-2], [100, 5.752278e-2]])
 kz2 = np.array([[0, 1.e-6], [9, 2.e-4], [13, 6.e-4], [20, 6.e-4]])
 kz3 = np.array([[0, 1.e-6], [9, 2.e-4], [13, 6.e-4], [20, 6.e-4]])
@@ -100,8 +100,7 @@ simtime += 1
 for t in range(10, simtime):
           
     suf = r.get_suf(t)
-    eswp = -500  # cm    
-    krs = r.get_krs(t)    
+    krs, _ = r.get_krs(t)    
     krs_.append(krs)
     
     if t > 10 and t % 10 == 0:
@@ -109,9 +108,10 @@ for t in range(10, simtime):
         suf_.append(suf)
 
 time = np.linspace(10, simtime, simtime - 10)
-plt.plot(time, krs_)
+plt.plot(time, krs_, label="krs")
 plt.xlabel("simulation time")
 plt.ylabel("root system conductance $krs$ $[cm^2 d^{-1}]$")
+plt.legend()
 plt.show()
 
 """ SUF plot """
