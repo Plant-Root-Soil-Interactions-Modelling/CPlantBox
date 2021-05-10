@@ -120,6 +120,7 @@ public:
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 	
+	void setCWGr(std::vector<double> CWGr); ///< growth as defined by phloem module.
 
 };
 

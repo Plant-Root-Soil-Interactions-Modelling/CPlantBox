@@ -57,6 +57,7 @@ public:
     virtual void initialize(bool verbose = true); ///< overwrite for initialization jobs
     virtual void simulate(double dt, bool verbose = false); ///< calls the base organs simulate methods
     double getSimTime() const { return simtime; } ///< returns the current simulation time
+    double getDt() const { return dt; } ///< returns the current simulation duration/time step
 
     /* as sequential list */
     std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1) const; ///< sequential list of organs
@@ -110,7 +111,6 @@ public:
     virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
     virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
 
-	void setCWLimGr(std::vector<double> CWLimitedGr, double CW_dt); ///< growth as defined by phloem module.
 	
 protected:
 
@@ -123,6 +123,7 @@ protected:
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
 
     double simtime = 0;
+	double dt = 0;
     int organId = -1;
     int nodeId = -1;
     int oldNumberOfNodes = 0;

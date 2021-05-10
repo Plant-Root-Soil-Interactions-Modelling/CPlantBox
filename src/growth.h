@@ -2,10 +2,10 @@
 #define GROWTH_H
 
 #include <memory>
+#include "Organ.h"
+#include "Organism.h"
 
 namespace CPlantBox {
-
-class Organ;
 
 /**
  * Abstract base class to all growth functions: currently LinearGrowth and ExponentialGrowth
@@ -15,6 +15,8 @@ class GrowthFunction
 public:
     virtual ~GrowthFunction() {};
 
+    virtual void setCWGr(std::map<int, double> Gr) 
+    { throw std::runtime_error( "setCWGr() not implemented" );  } ///< function to be only called if CWLimitedGrowth is set
     /**
      * Returns root length at root age t
      *
@@ -25,7 +27,7 @@ public:
      *
      * \return      organ length [cm] at specific age
      */
-    virtual double getLength(double t, double r, double k, std::shared_ptr<Organ> o, double CWGr =-1., double CWLength =-1.) const
+    virtual double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const
     { throw std::runtime_error( "getLength() not implemented" ); return 0; } ///< Returns root length at root age t
 
     /**
@@ -38,7 +40,7 @@ public:
      *
      * \return      organ age [day] at specific length
      */
-    virtual double getAge(double l, double r, double k, std::shared_ptr<Organ> o, double CWdt=-1, double CWage=-1) const
+    virtual double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const
     { throw std::runtime_error( "getAge() not implemented" ); return 0; } ///< Returns the age of a root of length l
 
 
@@ -54,9 +56,9 @@ class LinearGrowth : public GrowthFunction
 {
 public:
 
-    double getLength(double t, double r, double k, std::shared_ptr<Organ> o, double CWGr =-1., double CWLength =-1.) const override { return std::min(k,r*t); } ///< @copydoc GrowthFunction::getLegngth
+    double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { return std::min(k,r*t); } ///< @copydoc GrowthFunction::getLegngth
 
-    double getAge(double l, double r, double k, std::shared_ptr<Organ> o, double CWdt=-1, double CWage=-1)  const override { return l/r; } ///< @copydoc GrowthFunction::getAge
+    double getAge(double l, double r, double k, std::shared_ptr<Organ> o)  const override { return l/r; } ///< @copydoc GrowthFunction::getAge
 
     std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<LinearGrowth>(*this); } ///< @copydoc GrowthFunction::copy
 
@@ -70,9 +72,9 @@ class ExponentialGrowth : public GrowthFunction
 {
 public:
 
-    double getLength(double t, double r, double k, std::shared_ptr<Organ> o, double CWGr =-1., double CWLength =-1.) const override { return k*(1-exp(-(r/k)*t)); } ///< @copydoc GrowthFunction::getLegngth
+    double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { return k*(1-exp(-(r/k)*t)); } ///< @copydoc GrowthFunction::getLegngth
 
-    double getAge(double l, double r, double k, std::shared_ptr<Organ> o, double CWdt=-1, double CWage=-1) const override { ///< @copydoc GrowthFunction::getAge
+    double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override { ///< @copydoc GrowthFunction::getAge
 
         double age = - k/r*log(1-l/k);
         if (std::isfinite(age)) { // the age can not be computed when root length approaches max length
@@ -93,23 +95,26 @@ public:
 class CWLimitedGrowth : public LinearGrowth
 {
 public:
-    double getLength(double t, double r, double k, std::shared_ptr<Organ> o, double CWGr =-1., double CWLength =-1.) const override { 
-		double CW_Gr= CWGr;
-		double CW_length = CWLength;
-		//double CW_length= o->getParameter("length");
-		if (CW_Gr == -1.){
+	std::map<int, double> CW_Gr; //map linking organ id to growth during time step 
+    void setCWGr(std::map<int, double> Gr) override { 
+		CW_Gr = Gr;} ///
+    double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { 
+		if (CW_Gr.empty()){
 			double length = LinearGrowth::getLength(t, r, k, o);
 			return length;
-		} else {return CW_Gr + CW_length; }
+		} else {
+			double length = o->getParameter("length");
+			return CW_Gr.at(o->getId()  ) + length; }
 	}		///< @copydoc GrowthFunction::getLegngth
 
-    double getAge(double l, double r, double k, std::shared_ptr<Organ> o, double CWdt=-1, double CWage=-1) const override {
-		double CW_dt= CWdt;
-		double CW_age= CWage;
-		if ( CW_dt == -1){
+    double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
+		if ( CW_Gr.empty()){
 			double age = LinearGrowth::getAge(l, r, k, o);
 			return age;
-		} else {return CW_age + CW_dt;}
+		} else {
+			double dt = o->getOrganism()->getDt();
+			double age = o->getParameter("age");
+			return age + dt;}
 	}
 
     std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<CWLimitedGrowth>(*this); }
@@ -117,5 +122,6 @@ public:
 };
 
 } // end namespace CPlantBox
+
 
 #endif

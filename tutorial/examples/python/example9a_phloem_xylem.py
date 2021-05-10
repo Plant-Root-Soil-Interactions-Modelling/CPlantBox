@@ -129,14 +129,14 @@ phl.cellsID = [phl.new2oldNodeID[xi] - 1 for xi in phl.mesh.cellFaceIDs[1] ]
 print('IDs \n',  phl.mesh.cellFaceIDs)
 print('IDs \n',  phl.cellsID)
 
-steps = 1
+steps = 5
 timeSpanLeuning = 10 * 60 #time in seconds between to evaluatio of the gs operture/xylem flow
 timeSinceLastLeuning = np.inf
 
 for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for growth
     print('step ', _, start + _ * dt, dt)
 
-
+    print('len sum ', sum(phl.mesh.length) )
     #sys.stdout = NullIO()  
     ####
     #
@@ -148,31 +148,31 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     segs = pl.getPolylines() #segments regrouped per organ
     timeSinceLastLeuning += dt
     
-    if (timeSinceLastLeuning > timeSpanLeuning):
-        ####
-        #
-        # xylem
-        #
-        ####
+    #if (timeSinceLastLeuning > timeSpanLeuning or cellVolumeOld != phl.mesh.cellVolumes ):
+    ####
+    #
+    # xylem
+    #
+    ####
+    
+    nodes = phl.get_nodes()
+    tiproots, tipstem, tipleaf = phl.get_organ_nodes_tips() #end node of end segment of each organ
+    node_tips = np.concatenate((tiproots, tipstem, tipleaf))
+    tiproots, tipstem, tipleaf = phl.get_organ_segments_tips() #end segment of each organ
+    seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
+
+
+    phl.setKr([[kr],[kr_stem],[gmax]]) 
+    phl.setKx([[kz]])
+    phl.airPressure = p_a
+
+    phl.seg_ind = seg_tips # segment indices for Neumann b.c.
+    phl.node_ind = node_tips
+    rx = phl.solve_leuning( sim_time = dt,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
+        Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = False)
+    fluxes = phl.radial_fluxes(dt, rx, [p_s], k_soil, True)  # cm3/day
         
-        nodes = phl.get_nodes()
-        tiproots, tipstem, tipleaf = phl.get_organ_nodes_tips() #end node of end segment of each organ
-        node_tips = np.concatenate((tiproots, tipstem, tipleaf))
-        tiproots, tipstem, tipleaf = phl.get_organ_segments_tips() #end segment of each organ
-        seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
-
-
-        phl.setKr([[kr],[kr_stem],[gmax]]) 
-        phl.setKx([[kz]])
-        phl.airPressure = p_a
-
-        phl.seg_ind = seg_tips # segment indices for Neumann b.c.
-        phl.node_ind = node_tips
-        rx = phl.solve_leuning( sim_time = dt,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
-            Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = False)
-        fluxes = phl.radial_fluxes(dt, rx, [p_s], k_soil, True)  # cm3/day
-        
-        timeSinceLastLeuning = 0
+        #timeSinceLastLeuning = 0
     phl.Px = rx
     
     ####
@@ -226,11 +226,14 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     loop = 0
     
     #sys.stdout = sys.__stdout__
-    
+    #if update dt, do it here (after simulate)
+    #because growth during simuate is for dt of the phloem model
     while res > max(1e-5, 1e-5* max(phl.phi)) and loop < 1000 and resOld != res:
         resOld = res
         res =  eq.sweep(dt= dt)
         loop += 1
+        #print(res)
+        #print(phl.phi.faceValue , phl.intCoeff)
     if res > max(1e-5, 1e-5 * max(phl.phi)) :
         print('no convergence! res: ', res)
         issue = np.append(issue, [_])
@@ -291,11 +294,10 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
         print('phi value error at step(s) ',phiConcentrationError)
         #print('became bigger at step(s) ',growthSteps)
     
-    if(sum(abs(phl.GrSink * (~phl.CSat)))+sum(abs(phl.outFlow*~phl.satisfaction))\
-        + sum(abs(phl.phi[np.where(phl.phi < 0 )[0]]))+sum(abs(phl.VolFractSucrose[np.where(phl.VolFractSucrose> 0.65 )[0]])) != 0):
-        pass
-        #break
-    dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * max(100,max((phl.phi.faceValue*phl.intCoeff).value)  ))
+    #if(sum(abs(phl.GrSink * (~phl.CSat)))+sum(abs(phl.outFlow*~phl.satisfaction))\
+    #    + sum(abs(phl.phi[np.where(phl.phi < 0 )[0]]))+sum(abs(phl.VolFractSucrose[np.where(phl.VolFractSucrose> 0.65 )[0]])) != 0):
+     #   break
+    #dt =  0.9 * min(phl.mesh.length) ** 2 / (2 * max(100,max((phl.phi.faceValue*phl.intCoeff).value)  ))
     phiOld = phl.phi.copy()
     cumulOutOld = cumulOut.copy()
     cumulGrOld = cumulGr.copy()
@@ -304,11 +306,10 @@ for _ in range(steps):#TODO: add effect of gr on growth + add psi factor for gro
     cellVolumeOld = phl.mesh.cellVolumes
     cellsIDOld = phl.cellsID
     organGr = phl.organGr * dt
-    print('growth per segment :',organGr ,'\ndt :', dt)
-    pl.setCWLimGr(organGr , dt)
-    print('\nC konz > 0 ',len(np.where(phl.phi!=0)[0]), 'tot num seg ', len(phl.phi))
-    print(phl.phi)#,'\n', phl.phi.faceValue , phl.phi.faceGrad[2],'\n',(phl.phi.faceValue * phl.phi.faceGrad*phl.intCoeff ).divergence )
-
+    print('growth per segment :',np.arange(len(organGr))/100 ,'\ndt :', dt)
+    pl.setCWGr(np.arange(len(organGr))/100 ) #for testing
+    #print('\nC konz > 0 ',len(np.where(phl.phi!=0)[0]), 'tot num seg ', len(phl.phi))
+    #print(phl.phi,'\n', phl.phi.faceValue , '\n',phl.phi.faceGrad[2], '\n',phl.intCoeff)
 
 logfilermM.close()
 logfilerm.close()

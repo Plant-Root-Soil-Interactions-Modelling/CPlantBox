@@ -324,7 +324,7 @@ double Stem::calcCreationTime(double length)
 double Stem::calcLength(double age)
 {
 	assert(age>=0 && "Stem::calcLength() negative root age");
-	return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,param()->getK(),shared_from_this(), CW_Gr, length);
+	return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,param()->getK(),shared_from_this());
 }
 
 /**
@@ -335,7 +335,7 @@ double Stem::calcLength(double age)
 double Stem::calcAge(double length)
 {
 	assert(length>=0 && "Stem::calcAge() negative root age");
-	return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this(), CW_dt, age);
+	return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
 }
 
 /**

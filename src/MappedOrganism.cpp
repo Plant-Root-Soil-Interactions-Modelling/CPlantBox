@@ -682,6 +682,36 @@ void MappedPlant::simulate(double dt, bool verbose)
 	MappedSegments::mapSegments(rSegs);
 }
 
+
+
+/**
+ * define the grwth rate of each organ according to value given by phloem module
+ *	Does not overright the r (initial growth rate) parameter
+ * @param CWLimitedGr        growth of each organ during time step
+ * @param CW_dt        		 time step
+ * 
+ */
+void MappedPlant::setCWGr(std::vector<double> CWGr)
+{
+    auto organs = this->getOrgans(-1);  
+	std::map<int, double> newCWGr;
+	int num = 0;
+	if ( CWGr.size()  == organs.size()){ //gives -1 of no Gr was given and the value otherwise.
+		      
+		for (const auto& r : organs) {
+		newCWGr.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
+		num = num + 1;
+			if(num == CWGr.size()){
+				r->setCWGr(newCWGr);
+			}
+		}
+	}else { //gives -1 of no Gr was given and the value otherwise.
+		std::cout << "Organism::setCWLimGr error: length for gowth vector different to number of organs";
+	}
+    
+}
+
+
 /**
 *Gives an overview of the mappedplant object (for debugging)
 *

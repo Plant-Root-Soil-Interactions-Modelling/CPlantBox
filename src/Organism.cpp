@@ -155,6 +155,7 @@ void Organism::simulate(double dt, bool verbose)
     if (verbose) {
         std::cout << "Organism::simulate: from "<< simtime << " to " << simtime+dt << " days" << std::endl;
     }
+	this->dt = dt;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto& r : baseOrgans) {
@@ -508,34 +509,6 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
 }
 
 
-
-/**
- * define the grwth rate of each organ according to value given by phloem module
- *	Does not overright the r (initial growth rate) parameter
- * @param CWLimitedGr        growth of each organ during time step
- * @param CW_dt        		 time step
- * 
- */
-void Organism::setCWLimGr(std::vector<double> CWLimitedGr, double CW_dt)
-{
-    auto organs = getOrgans(-1);        
-	int num = 0;// CWLimitedGr is already in the right order
-    for (const auto& r : organs) {
-		if ( CWLimitedGr.size()  == organs.size()){ //gives -1 of no Gr was given and the value otherwise.
-			//std::cout << "\n"<<num<<" "<<r->CW_Gr<<" "<<r->CW_dt;
-			r->CW_Gr = CWLimitedGr.at(num);
-			r->CW_dt = CW_dt;
-			//std::cout << "\n"<<r->CW_Gr<<" "<<r->CW_dt;
-			//r->setGrowthParameter("CW_Gr", CWLimitedGr.at(num)) ;
-			//r->setGrowthParameter("CW_dt", CW_dt) ;
-			//r->setGrowthParameter("CW_age", r->getParameter("age"));
-			//r->setGrowthParameter("CW_length", r->getParameter("length"))  ;
-			num = num + 1;
-		}else { //gives -1 of no Gr was given and the value otherwise.
-			std::cout << "Organism::setCWLimGr error: length for gowth vector different to number of organs";
-		}
-    }
-}
 
 /**
  * @return Quick info about the object for debugging
