@@ -14,7 +14,9 @@ class GrowthFunction
 {
 public:
 	virtual ~GrowthFunction() {};
-
+	
+	std::map<int, double> CW_Gr;
+	
 	/**
 	 * Returns root length at root age t
 	 *
@@ -94,24 +96,19 @@ class CWLimitedGrowth : public LinearGrowth
 {
 public:
 
-	std::map<int, double> CW_Gr; //map linking organ id to growth during time step 
-
-	void setCWGr(std::map<int, double> Gr) {
-		CW_Gr = Gr;
-	}
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override {
-		if (CW_Gr.empty()){
+		if (this->CW_Gr.empty()){
 			double length = LinearGrowth::getLength(t, r, k, o);
 			return length;
 		} else {
 			double length = o->getLength(); // o->getParameter("length");
-			return CW_Gr.at(o->getId()  ) + length;
+			return this->CW_Gr.at(o->getId()  ) + length;
 		}
 	} ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
-		if ( CW_Gr.empty()){
+		if ( this->CW_Gr.empty()){
 			double age = LinearGrowth::getAge(l, r, k, o);
 			return age;
 		} else {

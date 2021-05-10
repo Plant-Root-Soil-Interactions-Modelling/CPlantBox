@@ -40,9 +40,9 @@ class NullIO(StringIO):
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
 
 path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
-name = "oneroot_mgiraud" #"manyleaves"#"smallPlant"# "oneroot" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
+name = "smallPlant_mgiraud"#"oneroot_mgiraud" #"manyleaves"# "oneroot" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
-start =1. #5. # 3.#1.275
+start =2. # 3.#1.275
 
 """ Parameters xylem"""
 kz = 4.32e-1  # axial conductivity [cm^3/day] 

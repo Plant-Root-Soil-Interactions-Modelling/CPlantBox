@@ -120,8 +120,6 @@ public:
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 	
 	void setCWGr(std::vector<double> CWGr); ///< growth as defined by phloem module.
-
-	std::map<int, double> cWGr;
     std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
 };

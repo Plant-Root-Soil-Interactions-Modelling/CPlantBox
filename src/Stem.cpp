@@ -324,6 +324,7 @@ double Stem::calcCreationTime(double length)
 double Stem::calcLength(double age)
 {
 	assert(age>=0 && "Stem::calcLength() negative root age");
+	std::cout<<"stem calclength\n";
 	return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,param()->getK(),shared_from_this());
 }
 
