@@ -17,6 +17,8 @@
 namespace CPlantBox {
 
 class Organism; // forward declaration
+class GrowthFunction;
+class ExponentialGrowth;
 
 /**
  * Parameters for a specific organ
@@ -77,6 +79,7 @@ public:
     double as = 0.; 		///< Standard deviation root radius [cm]
 
     std::weak_ptr<Organism> plant;
+    std::shared_ptr<GrowthFunction> f_gf;
 
 protected:
 
@@ -85,7 +88,6 @@ protected:
     std::map<std::string, int*> iparam; ///< Parameters with type double that can be read and written
     std::map<std::string, double*> param_sd; ///< Deviations of parameters
     std::map<std::string, std::string> description; ///< Parameter descriptions
-
 };
 
 } // namespace

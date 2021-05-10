@@ -21,13 +21,13 @@ namespace CPlantBox {
  */
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
 		std::vector<double> radii, std::vector<int> subTypes, std::vector<int> organTypes) :
-							nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes), organTypes(organTypes)
-{
+									nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes), organTypes(organTypes)
+									{
 	assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
 	assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organ types");
-}
+									}
 
 /**
  * A static root system, as needed for flux computations, represented as
@@ -40,7 +40,7 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> 
  */
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
 		std::vector<double> radii, std::vector<int> subTypes) :
-							nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes)
+									nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes)
 {
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
@@ -685,38 +685,35 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 
 /**
- * define the grwth rate of each organ according to value given by phloem module
- *	Does not overright the r (initial growth rate) parameter
+ * define the growth rate of each organ according to value given by phloem module
+ * Does not overright the r (initial growth rate) parameter
  * @param CWLimitedGr        growth of each organ during time step
  * @param CW_dt        		 time step
  * 
  */
 void MappedPlant::setCWGr(std::vector<double> CWGr)
 {
-    auto organs = this->getOrgans(-1);  
-	std::map<int, double> newCWGr;
+	auto organs = this->getOrgans(-1);
+
 	int num = 0;
-	if ( CWGr.size()  == organs.size()){ //gives -1 of no Gr was given and the value otherwise.
-		      
+	if ( CWGr.size()  == organs.size() ){ //gives -1 of no Gr was given and the value otherwise.
 		for (const auto& r : organs) {
-		newCWGr.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-		num = num + 1;
-			if(num == CWGr.size()){
-				r->setCWGr(newCWGr);
+			cWGr.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
+			num = num + 1;
+			if(num == CWGr.size()){ // isn't that always the case?
+				std::dynamic_pointer_cast<CWLimitedGrowth>(r->getOrganRandomParameter()->f_gf)->setCWGr(cWGr); // TODO pass pointer to cWGr
+//				r->setCWGr(newCWGr);
 			}
 		}
-	}else { //gives -1 of no Gr was given and the value otherwise.
-		std::cout << "Organism::setCWLimGr error: length for gowth vector different to number of organs";
+	} else { //gives -1 of no Gr was given and the value otherwise.
+		std::cout << "Organism::setCWLimGr error: length for growth vector different to number of organs";
 	}
-    
 }
 
-
 /**
-*Gives an overview of the mappedplant object (for debugging)
-*
-**/
-
+ *Gives an overview of the mappedplant object (for debugging)
+ *
+ **/
 void MappedPlant::printNodes() {
 
 	std::cout << "\n MappedPlant::printnodes \n"<< std::flush;
