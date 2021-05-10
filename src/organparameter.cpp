@@ -2,6 +2,7 @@
 #include "organparameter.h"
 
 #include "Organism.h"
+#include "growth.h"
 
 #include <limits>
 #include <iostream>
@@ -27,6 +28,7 @@ std::string OrganSpecificParameter::toString() const
 OrganRandomParameter::OrganRandomParameter(std::shared_ptr<Organism> p): plant(p)
 {
     bindParameters();
+    f_gf = std::make_shared<ExponentialGrowth>(); ///< growth function
 }
 
 /**

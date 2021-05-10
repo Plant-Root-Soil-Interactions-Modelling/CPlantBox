@@ -179,7 +179,7 @@ class PhloemFluxPython(Leuning):
         vertices = np.vstack((nodes_x_coord,nodes_y_coord,nodes_z_coord)) #change how coords are stored  
         self.orgGr = np.full(segnum +1, 0.)
         self.orgLength = np.array([tempOrgLength[self.newCell2organID[xi]] for xi in cells[1]])
-        
+        print("orrglength ", self.orgLength)
         self.faces = np.array((np.arange(0,  max(cells[1]) + 1),), dtype=np.int64) 
         cells = MA.masked_values(cells, -1)
         self.mesh = Mesh1Dmod( radiiVertices = radiiVertices, 

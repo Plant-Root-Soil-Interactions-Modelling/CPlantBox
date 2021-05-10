@@ -2,7 +2,7 @@
 #include "MappedOrganism.h"
 
 #include "SegmentAnalyser.h"
-
+#include "growth.h"
 #include <algorithm>
 #include <functional>
 #include <cmath>
@@ -21,13 +21,13 @@ namespace CPlantBox {
  */
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
 		std::vector<double> radii, std::vector<int> subTypes, std::vector<int> organTypes) :
-							nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes), organTypes(organTypes)
-{
+									nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes), organTypes(organTypes)
+									{
 	assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
 	assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organ types");
-}
+									}
 
 /**
  * A static root system, as needed for flux computations, represented as
@@ -40,7 +40,7 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> 
  */
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
 		std::vector<double> radii, std::vector<int> subTypes) :
-							nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes)
+									nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes)
 {
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
@@ -685,38 +685,42 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 
 /**
- * define the grwth rate of each organ according to value given by phloem module
- *	Does not overright the r (initial growth rate) parameter
- * @param CWLimitedGr        growth of each organ during time step
- * @param CW_dt        		 time step
+ * define the growth rate of each organ according to value given by phloem module
+ * Does not overright the r (initial growth rate) parameter
+ * @param CWGr        growth of each organ during time step
  * 
  */
 void MappedPlant::setCWGr(std::vector<double> CWGr)
 {
-    auto organs = this->getOrgans(-1);  
-	std::map<int, double> newCWGr;
+	auto organs = this->getOrgans(-1);
+	std::map<int, double> cWGrRoot; //set cWGr in this function instead of in Mappedorganism.h : cWGr is then reset to empy every tim efunction is called
+	// + no need for mapped organism to keep cWGr in memory. just has to be in growth function
+	std::map<int, double> cWGrStem;
+	std::map<int, double> cWGrLeaf; 	
 	int num = 0;
-	if ( CWGr.size()  == organs.size()){ //gives -1 of no Gr was given and the value otherwise.
-		      
-		for (const auto& r : organs) {
-		newCWGr.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-		num = num + 1;
-			if(num == CWGr.size()){
-				r->setCWGr(newCWGr);
-			}
+	for (const auto& r : organs) {
+		if(r->organType() == 2){//each organ type has it s own growth function (and thus CW_Gr map)
+			cWGrRoot.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
+			r->getOrganRandomParameter()->f_gf->CW_Gr = cWGrRoot;
+			//Hard to say when reached the last root organ. so re-write CW_Gr for each iteration.
 		}
-	}else { //gives -1 of no Gr was given and the value otherwise.
-		std::cout << "Organism::setCWLimGr error: length for gowth vector different to number of organs";
-	}
-    
+		if(r->organType() == 3){
+			cWGrStem.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
+			r->getOrganRandomParameter()->f_gf->CW_Gr = cWGrStem;
+		}
+		if(r->organType() == 4){
+			cWGrLeaf.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
+			r->getOrganRandomParameter()->f_gf->CW_Gr = cWGrLeaf;
+		}
+		num = num + 1;		
+	}	
 }
 
 
 /**
-*Gives an overview of the mappedplant object (for debugging)
-*
-**/
-
+ *Gives an overview of the mappedplant object (for debugging)
+ *
+ **/
 void MappedPlant::printNodes() {
 
 	std::cout << "\n MappedPlant::printnodes \n"<< std::flush;
