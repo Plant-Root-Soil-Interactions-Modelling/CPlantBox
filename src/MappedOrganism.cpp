@@ -709,7 +709,7 @@ void MappedPlant::setCWGr(std::vector<double> CWGr)
 		}
 		num = num + 1;		
 	}	
-	for (auto orp : getOrganRandomParameter(ot_root)) { // each maps is copied for each sub type; or (todo), we oculd pass a pointer, and keep maps in this class
+	for (auto orp : getOrganRandomParameter(ot_root)) { // each maps is copied for each sub type; or (todo), we could pass a pointer, and keep maps in this class
 		orp->f_gf->CW_Gr = cWGrRoot;
 	}
 	for (auto orp : getOrganRandomParameter(ot_stem)) {
