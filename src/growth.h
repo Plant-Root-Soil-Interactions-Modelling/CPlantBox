@@ -103,7 +103,7 @@ public:
 			return length;
 		} else {
 			double length = o->getLength(); // o->getParameter("length");
-			return this->CW_Gr.at(o->getId()  ) + length;
+			return this->CW_Gr.find(o->getId())->second+ length;
 		}
 	} ///< @copydoc GrowthFunction::getLegngth
 
