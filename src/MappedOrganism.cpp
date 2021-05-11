@@ -694,26 +694,30 @@ void MappedPlant::setCWGr(std::vector<double> CWGr)
 {
 	auto organs = this->getOrgans(-1);
 	std::map<int, double> cWGrRoot; //set cWGr in this function instead of in Mappedorganism.h : cWGr is then reset to empy every tim efunction is called
-	// + no need for mapped organism to keep cWGr in memory. just has to be in growth function
-	std::map<int, double> cWGrStem;
+	std::map<int, double> cWGrStem; // + no need for mapped organism to keep cWGr in memory. just has to be in growth function
 	std::map<int, double> cWGrLeaf; 	
 	int num = 0;
 	for (const auto& r : organs) {
-		if(r->organType() == 2){//each organ type has it s own growth function (and thus CW_Gr map)
+		if(r->organType() == ot_root){//each organ type has it s own growth function (and thus CW_Gr map)
 			cWGrRoot.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-			r->getOrganRandomParameter()->f_gf->CW_Gr = cWGrRoot;
-			//Hard to say when reached the last root organ. so re-write CW_Gr for each iteration.
 		}
-		if(r->organType() == 3){
+		if(r->organType() == ot_stem){
 			cWGrStem.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-			r->getOrganRandomParameter()->f_gf->CW_Gr = cWGrStem;
 		}
-		if(r->organType() == 4){
+		if(r->organType() == ot_leaf){
 			cWGrLeaf.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-			r->getOrganRandomParameter()->f_gf->CW_Gr = cWGrLeaf;
 		}
 		num = num + 1;		
 	}	
+	for (auto orp : getOrganRandomParameter(ot_root)) { // each maps is copied for each sub type; or (todo), we oculd pass a pointer, and keep maps in this class
+		orp->f_gf->CW_Gr = cWGrRoot;
+	}
+	for (auto orp : getOrganRandomParameter(ot_stem)) {
+		orp->f_gf->CW_Gr = cWGrStem;
+	}
+	for (auto orp : getOrganRandomParameter(ot_leaf)) {
+		orp->f_gf->CW_Gr = cWGrLeaf;
+	}
 }
 
 
