@@ -67,6 +67,15 @@ class _FaceGradVariablemod(_FaceGradVariable):
 
         
 class _ArithmeticCellToFaceVariablemod(_ArithmeticCellToFaceVariable):
+    if inline.doInline:
+        def _calcValue_(self, alpha, id1, id2):
+            raise Exception("cellVariablemod::_ArithmeticCellToFaceVariablemod unexpected not inline calculation")
+    else:
+        def _calcValue_(self, alpha, id1, id2):
+            cell1 = numerix.take(self.var, id1, axis=-1)
+            cell2 = numerix.take(self.var, id2, axis=-1)
+            return (cell2 - cell1) * alpha + cell1
+            
     @property
     def _variableClass(self):
         return FaceVariablemod
@@ -77,6 +86,7 @@ class _ArithmeticCellToFaceVariablemod(_ArithmeticCellToFaceVariable):
         result.
         """
         return FaceVariablemod
+
             
     @property
     def divergence(self): 
