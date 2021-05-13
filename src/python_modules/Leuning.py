@@ -65,7 +65,7 @@ class Leuning(XylemFluxPython):
         'Edj':  220000,
         'Edv': 220000,
         'FRN': 0.28,
-        'fwr': 1e-15, #to avoid fw and gco2 of 0
+        'fwr': 9.308*1e-2, #parametrised with data from corso2020
         'g0': 0.0,
         'gamma0': 28e-6,
         'gamma1': 0.0509,
@@ -79,13 +79,13 @@ class Leuning(XylemFluxPython):
         'oi': 210e-3,
         'Patm' : 101,#kPa
         'pi_g0': -1000,#kpa
-        'p_lcrit': -5500,
+        'p_lcrit': -0.869,
         'R': 8.31,
         'Rd_ref': 0.32e-6,
         'rho_h2o': 1,
         'rho_p': 0.35,
         'S': 700,
-        'sh': 0.001,
+        'sh': 3.765*1e-4,
         'Tref': 293.2,
         'theta': 0.9,
         'VcmaxrefChl1':1.28/2,#otherwise value too high
@@ -318,7 +318,7 @@ class Leuning(XylemFluxPython):
             else:
                 ci = self.ci[si]
             TairC = Tl - 273.15
-            fw = self.Param['fwr'] + (1- self.Param['fwr'])*np.exp(-np.exp(-self.Param['sh']*(p_l - self.Param['p_lcrit']))) #Eq 5
+            fw = self.Param['fwr'] + (1- self.Param['fwr'])*np.exp(-np.exp(-self.Param['sh']*(p_l/10228 - self.Param['p_lcrit'])*10228)) #Eq 5
             p_LMPa = p_l*0.0000978
             sf = 4.9
             pref = -1.2
