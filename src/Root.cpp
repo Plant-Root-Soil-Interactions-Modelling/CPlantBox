@@ -330,14 +330,12 @@ void Root::createSegments(double l, double dt, bool verbose)
     int nn = nodes.size();
     if (firstCall) { // first call of createSegments (in Root::simulate)
         firstCall = false;
-		std::cout<<"root create segment first call "<<nn<<" "<<children.empty()<<" "<<(children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)); 
-        if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)) ) { // don't move a child base node
+		if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)) ) { // don't move a child base node
             Vector3d n2 = nodes[nn-2];
             Vector3d n1 = nodes[nn-1];
             Vector3d h = n1.minus(n2);
             double olddx = h.length(); // length of last segment
-			std::cout<<"olddx "<<olddx<<" "<<dx()*0.99<<" "<<(olddx<dx()*0.99)<<std::endl; 
-            if (olddx<dx()*0.99) { // shift node instead of creating a new node
+			if (olddx<dx()*0.99) { // shift node instead of creating a new node
                 shiftl = std::min(dx()-olddx, l);
                 double sdx = olddx + shiftl; // length of new segment
                 // Vector3d newdxv = getIncrement(n2, sdx);
