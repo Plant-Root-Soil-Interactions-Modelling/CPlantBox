@@ -50,6 +50,7 @@ public:
     std::shared_ptr<const StemSpecificParameter> param() const; ///< root parameter
 	std::shared_ptr<Plant> getPlant();
     double dx() const; ///< returns the axial resolution
+	double dxMin() const{return getStemRandomParameter()->dxMin; }; ///< returns the min axial resolution
 
     int shootborneType = 5;
 
@@ -68,7 +69,7 @@ protected:
     void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
 
     bool firstCall = true;
-    const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
+    //const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 
 };
 

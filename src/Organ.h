@@ -111,6 +111,7 @@ protected:
     bool active = true; ///< true: active, false: organ stopped growing
     double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
+	double epsilonDx = 0; //growth increment too small to be added to organ. kept in memory and added to growth of next simulation step
 
     /* node data */
     std::vector<Vector3d> nodes; ///< nodes of the organ [cm]

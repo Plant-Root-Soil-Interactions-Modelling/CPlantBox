@@ -132,28 +132,27 @@ void Root::simulate(double dt, bool verbose)
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
-                double dl = std::max(scale*e, 0.); // length increment
-                // std::cout << "Root::simulate: " << dt_ << ", " << e <<  ", " << scale <<"\n"; // for debugging
-
+                double dl = std::max(scale*e, 0.)+ this->epsilonDx;//  length increment = calculated length + increment from last time step too small to be added
+                
                 // create geometry
-                if (p.ln.size()>0) { // root has children
+                if (p.ln.size()>0 ) { // root has children and length at end simulation > lb + la
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
                             createSegments(dl,dt_,verbose);
-                            length+=dl;
+                            length+=dl- this->epsilonDx;
                             dl=0;
                         } else {
                             double ddx = p.lb-length;
                             createSegments(ddx,dt_,verbose);
-                            dl-=ddx; // ddx already has been created
-                            length=p.lb;
+                            dl-=ddx- this->epsilonDx; // ddx already has been created
+                            length=p.lb- this->epsilonDx;
                         }
                     }
+                    double s = p.lb; // summed length
                     /* branching zone */
                     if ((dl>0)&&(length>=p.lb)) {
-                        double s = p.lb; // summed length
-                        for (size_t i=0; ((i<p.ln.size()) && (dl>0)); i++) {
+                        for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<s) {
                                 if (i==children.size()) { // new lateral
@@ -161,29 +160,29 @@ void Root::simulate(double dt, bool verbose)
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
                                     createSegments(dl,dt_,verbose);
-                                    length+=dl;
+                                    length+=dl- this->epsilonDx;
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
                                     createSegments(ddx,dt_,verbose);
-                                    dl-=ddx;
-                                    length=s;
+                                    dl-=ddx- this->epsilonDx;
+                                    length=s- this->epsilonDx;
                                 }
                             }
                         }
-                        if (p.ln.size()==children.size()) { // new lateral (the last one)
+                        if (p.ln.size()==children.size()&& (length>=s)){
                             createLateral(dt_, verbose);
                         }
                     }
                     /* apical zone */
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);
-                        length+=dl;
+                        length+=dl- this->epsilonDx;
                     }
                 } else { // no laterals
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);
-                        length+=dl;
+                        length+=dl- this->epsilonDx;
                     }
                 } // if lateralgetLengths
             } // if active
@@ -331,11 +330,13 @@ void Root::createSegments(double l, double dt, bool verbose)
     int nn = nodes.size();
     if (firstCall) { // first call of createSegments (in Root::simulate)
         firstCall = false;
+		std::cout<<"root create segment first call "<<nn<<" "<<children.empty()<<" "<<(children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)); 
         if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)) ) { // don't move a child base node
             Vector3d n2 = nodes[nn-2];
             Vector3d n1 = nodes[nn-1];
             Vector3d h = n1.minus(n2);
             double olddx = h.length(); // length of last segment
+			std::cout<<"olddx "<<olddx<<" "<<dx()*0.99<<" "<<(olddx<dx()*0.99)<<std::endl; 
             if (olddx<dx()*0.99) { // shift node instead of creating a new node
                 shiftl = std::min(dx()-olddx, l);
                 double sdx = olddx + shiftl; // length of new segment
@@ -366,10 +367,11 @@ void Root::createSegments(double l, double dt, bool verbose)
             sdx = dx();
         } else { // last segment
             sdx = l-n*dx();
-            if (sdx<plant.lock()->getMinDx()) { // quit if l is too small
+            if (sdx<dxMin()) { //plant.lock()->getMinDx()) { // quit if l is too small
                 if (verbose) {
-                    std::cout << "skipped small segment ("<< sdx <<" < "<< plant.lock()->getMinDx() << ") \n";
+					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
                 }
+				this->epsilonDx = sdx;
                 return;
             }
         }

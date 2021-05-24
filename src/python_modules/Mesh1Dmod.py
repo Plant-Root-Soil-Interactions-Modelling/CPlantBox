@@ -81,6 +81,8 @@ class Mesh1Dmod(mesh1D.Mesh1D):
         
     @property
     def _cellDistances(self): #default function gave wrong results for some reason
+        #for internal faces: distance between cell center on each side
+        #exernal faces : distance between face and internal cell center
         distance = np.take(self.length/2,self._adjacentCellIDs[0] ) \
             + self.interiorFaces * np.take(self.length/2,self._adjacentCellIDs[1] )
         return distance

@@ -167,8 +167,7 @@ void Stem::simulate(double dt, bool verbose)
 				double targetlength = calcLength(age_+dt_);
 				double e = targetlength-length; // unimpeded elongation in time step dt
 				double scale = getStemRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
-				double dl = std::max(scale*e, 0.); // length increment
-
+				double dl = std::max(scale*e, 0.)+ this->epsilonDx;//   // length increment = calculated length + increment from last time step too small to be added
 				// create geometry
 				if (p.ln.size()>0) { // stem has laterals
 					//std::cout<<"sim seed nC is"<< nC<<"\n";
@@ -179,15 +178,15 @@ void Stem::simulate(double dt, bool verbose)
 					if ((dl>0)&&(length< nZ)) {
 						if (length+dl <= nZ) {
 							createSegments(dl,verbose);
-							length+=dl;
+							length+=dl - this->epsilonDx;//take out length not yet added
 							dl=0;
 						} else {
 							double ddx = nZ - length;
-							createSegments(dl,verbose);
+							createSegments(ddx,verbose);//should it not be ddx here?
 
-							dl-=ddx; // ddx already has been created
+							dl-=ddx- this->epsilonDx; // ddx already has been created
 							shootBorneRootGrow(verbose);
-							length = nZ;
+							length = nZ- this->epsilonDx;
 						}
 
 
@@ -197,13 +196,13 @@ void Stem::simulate(double dt, bool verbose)
 					if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
 						if (length+dl<=p.lb) {
 							createSegments(dl,verbose);
-							length+=dl;
+							length+=dl- this->epsilonDx;
 							dl=0;
 						} else {
 							double ddx = p.lb-length;
 							createSegments(ddx,verbose);
-							dl-=ddx; // ddx already has been created
-							length=p.lb;
+							dl-=ddx- this->epsilonDx; // ddx already has been created
+							length=p.lb- this->epsilonDx;
 						}
 					}
 					/* branching zone */
@@ -227,13 +226,13 @@ void Stem::simulate(double dt, bool verbose)
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
 									createSegments(dl,verbose);
-									length+=dl;
+									length+=dl- this->epsilonDx;
 									dl=0;
 								} else { // grow over inter-lateral distance i
 									double ddx = s-length;
 									createSegments(ddx,verbose);
-									dl-=ddx;
-									length=s;
+									dl-=ddx- this->epsilonDx;
+									length=s- this->epsilonDx;
 								}
 							}
 						}
@@ -244,7 +243,7 @@ void Stem::simulate(double dt, bool verbose)
 					/* apical zone */
 					if (dl>0) {
 						createSegments(dl,verbose);
-						length+=dl;
+						length+=dl- this->epsilonDx;
 					} else {
 						//if (p.subType == 3) {
 
@@ -253,7 +252,7 @@ void Stem::simulate(double dt, bool verbose)
 				} else { // no laterals
 					if (dl>0) {
 						createSegments(dl,verbose);
-						length+=dl;
+						length+=dl- this->epsilonDx;
 						leafGrow(verbose, nodes.back());
 					}
 				} // if lateralgetLengths
@@ -635,10 +634,12 @@ void Stem::createSegments(double l, bool verbose)
 			sdx = dx();
 		} else { // last segment
 			sdx = l-n*dx();
-			if (sdx<smallDx) { // quit if l is too small
+			std::cout<<"\nstem::createsegment "<<sdx<<" "<<dxMin()<<" "<<this->epsilonDx;
+			if (sdx<dxMin()) { // quit if l is too small
 				if (verbose) {
-					std::cout << "skipped small segment ("<< sdx <<" < "<< smallDx << ") \n";
+					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
 				}
+				this->epsilonDx = sdx;
 				return;
 			}
 		}

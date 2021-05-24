@@ -155,7 +155,7 @@ void Leaf::simulate(double dt, bool verbose)
 				double targetlength = calcLength(age_+dt_);
 				double e = targetlength-length; // unimpeded elongation in time step dt
 				double scale = getLeafRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
-				double dl = std::max(scale*e, 0.); // length increment
+				double dl = std::max(scale*e, 0.)+ this->epsilonDx;// length increment = calculated length + increment from last time step too small to be added
 
 				// create geometry
 				if (p.ln.size()>0) { // leaf has laterals
@@ -163,18 +163,18 @@ void Leaf::simulate(double dt, bool verbose)
 					if ((dl>0)&&(length<p.lb)) { // length is the current length of the leaf
 						if (length+dl<=p.lb) {
 							createSegments(dl,verbose);
-							length+=dl;
+							length+=dl- this->epsilonDx;
 							dl=0;
 						} else {
 							double ddx = p.lb-length;
 							createSegments(ddx,verbose);
-							dl-=ddx; // ddx already has been created
-							length=p.lb;
+							dl-=ddx- this->epsilonDx; // ddx already has been created
+							length=p.lb- this->epsilonDx;
 						}
 					}
+					double s = p.lb; // summed length
 					/* branching zone */
 					if ((dl>0)&&(length>=p.lb)) {
-						double s = p.lb; // summed length
 						for (size_t i=0; ((i<p.ln.size()) && (dl>0)); i++) {
 							s+=p.ln.at(i);
 							if (length<s) {
@@ -183,29 +183,29 @@ void Leaf::simulate(double dt, bool verbose)
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
 									createSegments(dl,verbose);
-									length+=dl;
+									length+=dl- this->epsilonDx;
 									dl=0;
 								} else { // grow over inter-lateral distance i
 									double ddx = s-length;
 									createSegments(ddx,verbose);
-									dl-=ddx;
-									length=s;
+									dl-=ddx- this->epsilonDx;
+									length=s- this->epsilonDx;
 								}
 							}
 						}
-						if (p.ln.size()==children.size()) { // new lateral (the last one)
+						if (p.ln.size()==children.size()&& (length>=s)) { // new lateral (the last one)
 							createLateral(verbose);
 						}
 					}
 					/* apical zone */
 					if (dl>0) {
-						createSegments(dl,verbose);
-						length+=dl;
+						createSegments(dl,verbose);//y not with dt_?
+						length+=dl- this->epsilonDx;
 					}
 				} else { // no laterals
 					if (dl>0) {
 						createSegments(dl,verbose);
-						length+=dl;
+						length+=dl- this->epsilonDx;
 					}
 				} // if lateralgetLengths
 			} // if active
@@ -510,10 +510,11 @@ void Leaf::createSegments(double l, bool verbose)
 			sdx = dx();
 		} else { // last segment
 			sdx = l-n*dx();
-			if (sdx<smallDx) { // quit if l is too small
+			if (sdx<dxMin()) { // quit if l is too small
 				if (verbose) {
-					std::cout << "skipped small segment ("<< sdx <<" < "<< smallDx << ") \n";
+					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
 				}
+				this->epsilonDx = sdx;
 				return;
 			}
 		}
@@ -542,6 +543,7 @@ double Leaf::dx() const
 {
 	return getLeafRandomParameter()->dx;
 }
+
 
 /**
  * @return The LeafTypeParameter from the plant
