@@ -153,7 +153,7 @@ def render_window(actor, title, scalarBar, bounds):
 
     # Render Window
     renWin = vtk.vtkRenderWindow()  # boss
-    renWin.SetSize(1000, 1000)
+    renWin.SetSize(1200, 1000)
     print("title", title)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
@@ -350,7 +350,7 @@ def plot_mesh(grid, p_name, win_title="", render=True):
 
     if render:
         render_window(meshActor, win_title, scalar_bar, grid.GetBounds()).Start()
-    return meshActor, scalar_bar
+    return [meshActor], scalar_bar
 
 
 def plot_mesh_cuts(grid, p_name, nz=3, win_title="", render=True):
@@ -409,6 +409,49 @@ def plot_mesh_cuts(grid, p_name, nz=3, win_title="", render=True):
         render_window(actors, win_title, scalar_bar, grid.GetBounds()).Start()
 
     return actors, scalar_bar
+
+
+def plot_mesh_yz(s, p_name , min_b, max_b, cell_number, x=-4, render=False):
+    """ TODO """
+    grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(s.getWaterContent()))
+    soil_water_content.SetName("water content")
+    grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    grid.GetCellData().AddArray(soil_pressure)    
+    bounds = grid.GetBounds()
+    p = vtk.vtkPlane()
+    p.SetOrigin(x, 0, 0)
+    p.SetNormal(1, 0, 0)
+    
+    lut = create_lookup_table()
+    scalar_bar = create_scalar_bar(lut, grid, p_name)    
+    
+    actors = []  # create cutter, mappers, and actors
+    cutter = vtk.vtkCutter()
+    cutter.SetInputData(grid)
+    # cutter.SetInputConnection(tubeFilter.GetOutputPort()) # for root system (tube plot)
+    cutter.SetCutFunction(p)
+    cutter.Update()
+    m = vtk.vtkDataSetMapper()
+    m.SetInputConnection(cutter.GetOutputPort())
+    m.Update()    
+    m.SetArrayName(p_name)
+    m.SelectColorArray(p_name)
+    m.UseLookupTableScalarRangeOn()
+    m.SetLookupTable(lut)
+    m.SetColorModeToMapScalars();
+    a = vtk.vtkActor()  # create plane actor
+#         a.GetProperty().SetColor(1.0, 1, 0)
+#         a.GetProperty().SetLineWidth(2)
+    a.SetMapper(m)
+    actors.append(a)
+
+    if render:
+        render_window(actors, win_title, scalar_bar, grid.GetBounds()).Start()
+
+    return actors, scalar_bar, grid
 
 
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str, sol_ind=0):
@@ -501,6 +544,7 @@ class AnimateRoots:
         self.max = None
         self.res = None
         self.soil_data = True  # soil data
+        self.soil = None
         self.cuts = False  # Wireframe, or cuts
         #
         self.actors = []
@@ -508,6 +552,7 @@ class AnimateRoots:
         self.color_bar = None
         self.bounds = None
         self.avi_name = None
+        self.fram_c = 0
 
     def start(self, axis='x', avi_file=None):
         """ creates plot and adjusts camera """
@@ -531,8 +576,6 @@ class AnimateRoots:
             camera.SetViewUp(0, 0, 1)
             camera.Azimuth(30)
             camera.Elevation(30)
-        if avi_file:
-            pass
 
     def update(self):
         """ animation call back function (called every 0.1 second) """
@@ -550,6 +593,10 @@ class AnimateRoots:
             ren.AddActor(a)
 
         self.iren.Render()
+        if self.avi_name:
+            write_png(renWin, self.avi_name + str(self.fram_c))
+            print("saved", self.avi_name + str(self.fram_c) + ".png")
+            self.fram_c = self.fram_c + 1
 
     def create_root_actors(self):
         if self.rootsystem:
@@ -562,11 +609,13 @@ class AnimateRoots:
     def create_soil_actors(self):
         if self.soil_data:
             if self.cuts:
-                pass
                 # meshActor, meshCBar = plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", False):
-            else:
+                meshActor, meshCBar, grid = plot_mesh_yz(self.soil, "pressure head", self.min, self.max, self.res)  
+                self.color_bar = meshCBar
+            else: 
                 grid = uniform_grid(self.min, self.max, self.res)
                 meshActor, meshCBar = plot_mesh(grid, "", "", False)
-            self.actors.append(meshActor)
+                
+            self.actors.extend(meshActor)
             self.bounds = grid.GetBounds()
 
