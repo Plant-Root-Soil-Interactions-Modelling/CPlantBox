@@ -204,7 +204,7 @@ void Root::simulate(double dt, bool verbose)
 double Root::calcCreationTime(double length, double dt)
 {
     assert(length >= 0 && "Root::getCreationTime() negative length");
-    double age_ = calcAge(std::max(length-dx()/10.,0.)); // root age as if grown unimpeded (lower than real age)
+    double age_ = calcAge(std::max(length,0.)); // root age as if grown unimpeded (lower than real age)
     double a = std::max(age_, age-dt /*old age*/);
     a = std::min(a, age); // a in [age-dt, age]
 //    if ((a+nodeCTs[0]) > 59.9) { // for debugging

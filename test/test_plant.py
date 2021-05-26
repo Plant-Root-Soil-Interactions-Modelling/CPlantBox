@@ -1,6 +1,5 @@
 import unittest
-import sys
-sys.path.append("..")
+import sys; sys.path.append("..")
 import plantbox as pb
 from rsml import *
 
@@ -49,11 +48,11 @@ class TestPlant(unittest.TestCase):
         p.openXML(path + "Heliantus_Pagès_2013.xml")
         p.initialize()
         p.simulate(76)
-        nodes = np.array([np.array(a)/100 for a in p.getNodes()]) # convert to numpy array, and from cm to m 
+        nodes = np.array([np.array(a) / 100 for a in p.getNodes()])  # convert to numpy array, and from cm to m 
         print(nodes.shape)         
-        rseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.root)]) # root system segments
+        rseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.root)])  # root system segments
         print(rseg.shape)
-        sseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.stem)]) # stem system segments
+        sseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.stem)])  # stem system segments
         print(sseg.shape)
 #         lseg = v2ai(plant.getNodesOrganType())
         l = np.array([ o.getParameter("organType") for o in p.getSegmentOrigins()])        

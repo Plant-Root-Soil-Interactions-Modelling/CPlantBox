@@ -2,10 +2,12 @@
 Copyright 2019, Forschungszentrum Jülich GmbH, licensed under GNU GPLv3
 @authors Daniel Leitner, Andrea Schnepf, Xiaoran Zhou
 """
+
+""" TODO """
+
 import unittest
-import sys
+import sys; sys.path.append("..")
 import numpy as np
-sys.path.append("..")
 import plantbox as pb
 
 

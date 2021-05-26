@@ -1,6 +1,5 @@
 import unittest
-import sys
-sys.path.append("..")
+import sys; sys.path.append("..")
 import plantbox as pb
 from rsml import *
 

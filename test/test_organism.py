@@ -1,9 +1,8 @@
 import unittest
-import sys
-sys.path.append("..")
+import sys; sys.path.append("..")
 import plantbox as pb
 import matplotlib.pyplot as plt
-from rsml import *
+from rsml import *  # TODO replace reader
 
 
 class TestOrganism(unittest.TestCase):

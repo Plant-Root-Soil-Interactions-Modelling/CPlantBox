@@ -1,7 +1,6 @@
 import unittest
-import sys
+import sys; sys.path.append("..")
 import numpy as np
-sys.path.append("..")
 import plantbox as pb
 
 
@@ -163,6 +162,7 @@ class TestRoot(unittest.TestCase):
         self.assertEqual(type, type_, "getParameter: unexpected root sub types")
         self.assertEqual(order, type_, "getParameter: unexpected root order")  # +1, because of artificial parent root
         for i in range(0, nol):
+            # print(i, nol, age[i], simtime - ct[i])
             self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree") 
 
     def test_dynamics(self):

@@ -1,8 +1,5 @@
 import unittest
-import sys
-sys.path.append("..")
-import plantbox as pb
-from rsml import *
+import sys; sys.path.append("..")import plantbox as pb
 
 
 class TestLeafParameter(unittest.TestCase):
