@@ -2,7 +2,6 @@
 #ifndef ROOTSYSTEM_H_
 #define ROOTSYSTEM_H_
 
-#include <stack>
 #include <fstream>
 
 #include "soil.h"
@@ -112,7 +111,7 @@ private:
     mutable std::vector<std::shared_ptr<Root>> roots = std::vector<std::shared_ptr<Root>>(); // buffer for getRoots()
     int numberOfCrowns = 0;
 
-    std::stack<RootSystemState> stateStack;
+    std::vector<RootSystemState> stateStack;
 };
 
 

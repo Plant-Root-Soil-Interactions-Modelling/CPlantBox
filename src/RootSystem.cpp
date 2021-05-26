@@ -475,7 +475,7 @@ std::vector<Vector2i> RootSystem::getShootSegments() const
  */
 void RootSystem::push()
 {
-    stateStack.push(RootSystemState(*this));
+    stateStack.push_back(RootSystemState(*this));
 }
 
 /**
@@ -483,9 +483,9 @@ void RootSystem::push()
  */
 void RootSystem::pop()
 {
-    RootSystemState& rss = stateStack.top();
+    RootSystemState& rss = stateStack.back();
     rss.restore(*this);
-    stateStack.pop();
+    stateStack.pop_back();
 }
 
 /**
