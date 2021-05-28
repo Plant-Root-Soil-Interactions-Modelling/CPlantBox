@@ -314,6 +314,7 @@ void RootRandomParameter::bindParameters()
     bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");
     bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
+    bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
     bindParameter("theta", &theta, "Angle between root and parent root [rad]", &thetas);
     bindParameter("rlt", &rlt, "Root life time [day]", &rlts);
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);

@@ -98,6 +98,7 @@ public:
     double tropismN = 1.;   ///< Root tropism parameter (number of trials)
     double tropismS = 0.2;  ///< Root tropism parameter (mean value of expected changeg) [1/cm]
     double dx = 0.25; 		///< Maximal segment size [cm]
+	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
     double theta = 1.22; 	///< Angle between root and parent root (rad)
     double thetas= 0.; 	    ///< Standard deviation angle between root and parent root (rad)
     double rlt = 1e9;		///< Root life time (days)
