@@ -78,46 +78,108 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     auto p = plant.lock();
     //& std::cout << "StemTypeParameter::realize(): subType " << subType << "\n" << std::flush;
     double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
-    double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-    std::vector<double> ln_; // stores the inter-distances
+    double res = lb_ - floor(lb_/dx)* dx;	
+	if(res < dxMin){
+		if(res <= dxMin/2){ lb_ -= res;
+		}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
+		this->lb=lb_;
+	}	
+	
+	double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+    res = la_-floor(la_ / dx)*dx;	
+	if(res < dxMin && res != 0){
+		if(res <= dxMin/2){ la_ -= res;
+		}else{la_ =  floor(la_ / dx)*dx + dxMin;}
+		this->la=la_;
+	}	
+	
+	if(ln < dxMin*0.99 ){
+		std::cout<<"\nStemRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
+		ln = dxMin;
+	}
+	
+	std::vector<double> ln_; // stores the inter-distances
     int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
     	switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d = std::max(ln +p->randn()*lns,1e-5); //Normal function of equal internode distance
+			double d = std::max(ln +p->randn()*lns,dxMin); //Normal function of equal internode distance
+			res = d -floor(d / dx)*dx;
+			if(res < dxMin && res != 0){
+				if(res <= dxMin/2){d -= res;
+				}else{d = floor(d / dx)*dx + dxMin;}
+				
+				} //make ln compatible with dx() and dxMin().
+			
 			ln_.push_back(d);
 
 
 		};break;
 		case 1: //  nodes distance increase linearly
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-5); //std::max(  );//ln +p->randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) +p->randn()*lns,dxMin); //std::max(  );//ln +p->randn()*lns,1e-9);
+			res = d -floor(d / dx)*dx;
+			if(res < dxMin && res != 0){
+				if(res <= dxMin/2){d -= res;
+				}else{d = floor(d / dx)*dx + dxMin;}
+				
+				} //make ln compatible with dx() and dxMin().
+			
 			ln_.push_back(d);
 			ln_.push_back(0);
 
 		};break;
 		case 2: //nodes distance decrease linearly
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  std::max(ln*(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
+			double d =  std::max(ln*(1+i) +p->randn()*lns,dxMin); //std::max(  );//ln +p->randn()*lns,1e-9);
+			res = d -floor(d / dx)*dx;
+			if(res < dxMin && res != 0){
+				if(res <= dxMin/2){d -= res;
+				}else{d = floor(d / dx)*dx + dxMin;}
+				
+				} //make ln compatible with dx() and dxMin().
+			
 			ln_.push_back(d);
 
 		};break;
 		case 3: //nodes distance decrease exponential
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
-			double d =  std::max(ln +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
+			double d =  std::max(ln +p->randn()*lns,dxMin); //std::max(  );//ln +p->randn()*lns,1e-9);
+			res = d -floor(d / dx)*dx;
+			if(res < dxMin && res != 0){
+				if(res <= dxMin/2){d -= res;
+				}else{d = floor(d / dx)*dx + dxMin;}
+				
+				} //make ln compatible with dx() and dxMin().
+			
 			ln_.push_back(d);
 
 		};break;
 
 		case 4://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln/(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
+			double d =  std::max(ln/(1+i) +p->randn()*lns,dxMin); //std::max(  );//ln +p->randn()*lns,1e-9);
+			res = d -floor(d / dx)*dx;
+			if(res < dxMin && res != 0){
+				if(res <= dxMin/2){d -= res;
+				}else{d = floor(d / dx)*dx + dxMin;}
+				
+				} //make ln compatible with dx() and dxMin().
+			
 			ln_.push_back(d);
 			ln_.push_back(0);
 		}; break;
 		case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
-			double d =  std::max(ln/(1+i) +p->randn()*lns,1e-9); //std::max(  );//ln +p->randn()*lns,1e-9);
+			double d =  std::max(ln/(1+i) +p->randn()*lns,dxMin); //std::max(  );//ln +p->randn()*lns,1e-9);
+			res = d -floor(d / dx)*dx;
+			if(res < dxMin && res != 0){
+				std::cout<<"\ntest "<< dxMin/2;
+				if(res <= dxMin/2){d -= res;
+				}else{d = floor(d / dx)*dx + dxMin;}
+				
+				} //make ln compatible with dx() and dxMin().
+				
 			ln_.push_back(d);
 		};break;
 default:

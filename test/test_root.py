@@ -2,6 +2,7 @@ import unittest
 import sys; sys.path.append("..")
 import numpy as np
 import plantbox as pb
+from scipy.linalg import norm
 
 
 def rootAge(l, r, k):  # root age at a certain length
@@ -178,6 +179,86 @@ class TestRoot(unittest.TestCase):
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
         dx = r.getRootRandomParameter().dx
         self.assertEqual(r.getNumberOfNodes() - non, round(2.4 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth
+
+    def root_example_rrp2(self):
+        """ an example used in the tests below, a main root with laterals """
+        self.plant = pb.RootSystem()  # store organism (not owned by Organ, or OrganRandomParameter)
+        p0 = pb.RootRandomParameter(self.plant)
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln,p0.lnk, p0.r, p0.dx, p0.dxMin = "taproot", 1, 0.95, 0.8, 10., 1.05,0.01, 0.8, 0.25, 0.2
+        p0.successor = [2]
+        p0.successorP = [1.]
+        p1 = pb.RootRandomParameter(self.plant)
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx = "lateral", 2, 2., 2., 2.
+        
+        self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
+        self.plant.setOrganRandomParameter(p1)
+        srp = pb.SeedRandomParameter(self.plant)
+        self.plant.setOrganRandomParameter(srp)
+        
+        print("root p0, initial parameters: lmax = ", p0.lmax, ", lb = ",p0.lb,", la = ",p0.la,  ", ln = ",p0.ln)
+        param0 = p0.realize()  # set up root by hand (without a root system)
+        print("root p0, realized parameters: lmax = ", sum((sum(param0.ln), param0.lb,param0.la)),", lb = ", param0.lb,", la = ", param0.la, ", mean ln = ",np.mean(param0.ln))
+        if((param0.lb % p0.dx > 0) and (param0.lb % p0.dx < p0.dxMin*0.99) ):
+            print("lb value does not fit with dx and dxMin")
+            print(param0.lb % p0.dx)
+        if((param0.la % p0.dx > 0) and (param0.la % p0.dx < p0.dxMin*0.99)):
+            print("la value does not fit with dx and dxMin")
+            print(param0.la % p0.dx)
+        if(any([(lni % p0.dx > 0 and  lni % p0.dx < p0.dxMin*0.99) for lni in param0.ln])):
+            print("ln value does not fit with dx and dxMin")
+            
+        param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
+        parentroot = pb.Root(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
+        parentroot.setOrganism(self.plant)
+        parentroot.addNode(pb.Vector3d(0, 0, -1), 0)  # there is no nullptr in Python
+        
+        self.parentroot = parentroot  # store parent (not owned by child Organ)
+        self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0, 0)
+        self.root.setOrganism(self.plant)
+        self.p0 = p0
+        
+    def root_dxMin_test(self, dt):
+        """ simulates a single root and checks length against analytic length """
+        self.root_example_rrp2()
+        nl, nl_th, non = [], [], []
+        tot_dt = 0
+        k = self.root.param().getK()  # maximal root length
+        lb = self.root.param().lb
+        la = self.root.param().la
+        effectiveLa = la - np.mean(self.root.param().ln)/2
+        ln = np.concatenate((np.array([lb]), np.array(self.root.param().ln)))
+        ln = np.cumsum(ln)
+        for t in dt:
+            self.root.simulate(t , True)
+            tot_dt += t
+            nl.append(self.root.getParameter("length"))
+            l_th = rootLength(tot_dt, self.p0.r, k)  # analytical root length
+            res = l_th % self.p0.dx
+            
+            if(res < self.p0.dxMin * 0.99):
+                l_th -= res
+            nl_th.append(l_th)
+            non.append(self.root.getNumberOfNodes())
+            # length from geometry
+            poly = np.zeros((non[-1], 3))  #
+            for i in range(0, non[-1]):
+                v = self.root.getNode(i)
+                poly[i, 0] = v.x
+                poly[i, 1] = v.y
+                poly[i, 2] = v.z
+            d = np.diff(poly, axis=0)
+            length_segments = np.array([round(norm(di),6) for di in d])
+            if(np.min(length_segments) < self.p0.dxMin*0.99):
+                print("minimum segment length ", np.min(length_segments), " below dxMin ",self.p0.dxMin )
+            if( self.p0.dx < np.max(length_segments)*0.99):
+                print("maximum segment length ", np.max(length_segments), " above dx ",self.p0.dx )
+            if(len(np.where(ln<=(l_th - effectiveLa))[0]) != self.root.getParameter("numberOfLaterals")):
+                print("\n\n\nnumeric and analytic number of laterals different: ",ln,l_th , effectiveLa,l_th - effectiveLa,len(np.where(ln<=(l_th - effectiveLa))[0]), self.root.getParameter("numberOfLaterals"))
+            
+            
+        for i in range(0, len(dt)):
+            self.assertAlmostEqual(nl_th[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
+        print("end of test")
 
 
 if __name__ == '__main__':

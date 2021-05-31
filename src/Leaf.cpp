@@ -144,7 +144,7 @@ void Leaf::simulate(double dt, bool verbose)
 			if (active) {
 
 				// length increment
-				double age_ = calcAge(length); // leaf age as if grown unimpeded (lower than real age)
+				double age_ = calcAge(length+ this->epsilonDx); // leaf age as if grown unimpeded (lower than real age)
 				double dt_; // time step
 				if (age<dt) { // the leaf emerged in this time step, adjust time step
 					dt_= age;
@@ -155,7 +155,7 @@ void Leaf::simulate(double dt, bool verbose)
 				double targetlength = calcLength(age_+dt_);
 				double e = targetlength-length; // unimpeded elongation in time step dt
 				double scale = getLeafRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
-				double dl = std::max(scale*e, 0.)+ this->epsilonDx;// length increment = calculated length + increment from last time step too small to be added
+				double dl = std::max(scale*e, 0.);// length increment = calculated length + increment from last time step too small to be added
 
 				// create geometry
 				if (p.ln.size()>0) { // leaf has laterals
@@ -168,8 +168,11 @@ void Leaf::simulate(double dt, bool verbose)
 						} else {
 							double ddx = p.lb-length;
 							createSegments(ddx,verbose);
-							dl-=ddx- this->epsilonDx; // ddx already has been created
-							length=p.lb- this->epsilonDx;
+							dl-=ddx; // ddx already has been created
+							length=p.lb;
+							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+								throw std::runtime_error("Leaf::simulate: p.lb - length < dxMin");
+							}
 						}
 					}
 					double s = p.lb; // summed length
@@ -188,8 +191,11 @@ void Leaf::simulate(double dt, bool verbose)
 								} else { // grow over inter-lateral distance i
 									double ddx = s-length;
 									createSegments(ddx,verbose);
-									dl-=ddx- this->epsilonDx;
-									length=s- this->epsilonDx;
+									dl-=ddx;
+									length=s;
+									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+										throw std::runtime_error( "Leaf::simulate: p.ln.at(i) - length < dxMin");
+									}
 								}
 							}
 						}
@@ -209,7 +215,7 @@ void Leaf::simulate(double dt, bool verbose)
 					}
 				} // if lateralgetLengths
 			} // if active
-			active = length<(p.getK()-dx()/10); // become inactive, if final length is nearly reached
+			active = length<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
 		}
 	} // if alive
 
@@ -510,13 +516,14 @@ void Leaf::createSegments(double l, bool verbose)
 			sdx = dx();
 		} else { // last segment
 			sdx = l-n*dx();
-			if (sdx<dxMin()) { // quit if l is too small
-				if (verbose) {
-					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
+			if (sdx<dxMin()*0.99) { // quit if l is too small
+				if (verbose&& sdx != 0) {
+					std::cout <<  "Leaf::createSegments(): length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
 				}
 				this->epsilonDx = sdx;
 				return;
 			}
+			this->epsilonDx = 0; //no residual
 		}
 		sl += sdx;
 		Vector3d newdx = getIncrement(nodes.back(), sdx);

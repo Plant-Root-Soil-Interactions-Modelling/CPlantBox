@@ -121,7 +121,7 @@ void Root::simulate(double dt, bool verbose)
             if (active) {
 
                 // length increment
-                double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+                double age_ = calcAge(length+ this->epsilonDx); // root age as if grown unimpeded (lower than real age)
                 double dt_; // time step
                 if (age<dt) { // the root emerged in this time step, adjust time step
                     dt_= age;
@@ -132,7 +132,7 @@ void Root::simulate(double dt, bool verbose)
                 double targetlength = calcLength(age_+dt_);
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
-                double dl = std::max(scale*e, 0.)+ this->epsilonDx;//  length increment = calculated length + increment from last time step too small to be added
+                double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                 
                 // create geometry
                 if (p.ln.size()>0 ) { // root has children 
@@ -145,13 +145,16 @@ void Root::simulate(double dt, bool verbose)
                         } else {
                             double ddx = p.lb-length;
                             createSegments(ddx,dt_,verbose);
-                            dl-=ddx- this->epsilonDx; // ddx already has been created
-                            length=p.lb- this->epsilonDx;
+                            dl-=ddx; // ddx already has been created
+                            length=p.lb;
+							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+								throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
+							}
                         }
                     }
-                    double s = p.lb; // summed length
                     /* branching zone */
                     if ((dl>0)&&(length>=p.lb)) {
+						double s = p.lb; // summed length
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<s) {
@@ -165,8 +168,11 @@ void Root::simulate(double dt, bool verbose)
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
                                     createSegments(ddx,dt_,verbose);
-                                    dl-=ddx- this->epsilonDx;
-                                    length=s- this->epsilonDx;
+                                    dl-=ddx;
+                                    length=s;
+									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
+									}
                                 }
                             }
                         }
@@ -186,7 +192,7 @@ void Root::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
-            active = length<(p.getK()-dx()/10); // become inactive, if final length is nearly reached
+            active = length<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
         }
     } // if alive
 
@@ -365,13 +371,14 @@ void Root::createSegments(double l, double dt, bool verbose)
             sdx = dx();
         } else { // last segment
             sdx = l-n*dx();
-            if (sdx<dxMin()) { //plant.lock()->getMinDx()) { // quit if l is too small
-                if (verbose) {
-					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
+            if (sdx<dxMin()*0.99) { //plant.lock()->getMinDx()) { // quit if l is too small
+                if (verbose&& sdx != 0) {
+					std::cout <<"Root::createSegments(): length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
                 }
 				this->epsilonDx = sdx;
                 return;
             }
+			this->epsilonDx = 0; //no residual
         }
         sl += sdx;
         Vector3d newdx = getIncrement(nodes.back(), sdx);
