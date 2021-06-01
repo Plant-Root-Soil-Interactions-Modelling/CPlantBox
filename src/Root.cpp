@@ -122,6 +122,7 @@ void Root::simulate(double dt, bool verbose)
 
                 // length increment
                 double age_ = calcAge(length+ this->epsilonDx); // root age as if grown unimpeded (lower than real age)
+                length -= this->epsilonDx; // epsilonDx has not been created before, but will in this run
                 this->epsilonDx = 0.; // now it is "spent" into age_ (no need for -this->epsilonDx in the following)
                 double dt_; // time step
                 if (age<dt) { // the root emerged in this time step, adjust time step
@@ -173,7 +174,7 @@ void Root::simulate(double dt, bool verbose)
                                     length=s;
 //									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
 //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
-//									}
+//									} // this could happen, if the tip ends in this section
                                 }
                             }
                         }
