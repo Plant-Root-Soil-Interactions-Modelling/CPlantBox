@@ -121,9 +121,7 @@ void Root::simulate(double dt, bool verbose)
             if (active) {
 
                 // length increment
-                double age_ = calcAge(length+ this->epsilonDx); // root age as if grown unimpeded (lower than real age)
-                length -= this->epsilonDx; // epsilonDx has not been created before, but will in this run
-                this->epsilonDx = 0.; // now it is "spent" into age_ (no need for -this->epsilonDx in the following)
+                double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
                 double dt_; // time step
                 if (age<dt) { // the root emerged in this time step, adjust time step
                     dt_= age;
@@ -131,7 +129,9 @@ void Root::simulate(double dt, bool verbose)
                     dt_=dt;
                 }
 
-                double targetlength = calcLength(age_+dt_);
+                double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
+                this->epsilonDx = 0.; // now it is "spent" targetlength (no need for -this->epsilonDx in the following)
+
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
