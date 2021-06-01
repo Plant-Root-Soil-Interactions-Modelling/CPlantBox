@@ -102,7 +102,7 @@ public:
 			double length = LinearGrowth::getLength(t, r, k, o);
 			return length;
 		} else {
-			double length = o->getLength(); // o->getParameter("length");
+			double length = o->getLength()  + o->getEpsilon(); // o->getParameter("length");
 			return this->CW_Gr.find(o->getId())->second+ length;
 		}
 	} ///< @copydoc GrowthFunction::getLegngth

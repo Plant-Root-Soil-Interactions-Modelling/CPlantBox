@@ -83,12 +83,38 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 
     	lb_ = 0;
         la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
+		double res = la_-floor(la_ / dx)*dx;
+		if(res < dxMin && res != 0){
+			if(res <= dxMin/2){ la_ -= res;
+			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
+			this->la=la_;
+		}			//make la_ compatible with dx() and dxMin()
 
     } else { // laterals
 
         lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
-        la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-
+        double res = lb_ - floor(lb_/dx)* dx;
+		
+		if(res < dxMin && res != 0){
+			if(res <= dxMin/2){ lb_ -= res;
+			}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
+			this->lb=lb_;
+		}	
+		
+		la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+		res = la_-floor(la_ / dx)*dx;
+		
+		if(res < dxMin && res != 0){
+			if(res <= dxMin/2){ la_ -= res;
+			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
+			this->la=la_;
+		}
+		
+		if(ln < dxMin*0.99 ){
+			std::cout<<"\nRootRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
+			ln = dxMin;
+		}
+		
         int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches +1
         double sum_ln = nob_*ln; // mean length of lateral zone
         for (int i = 0; i<nob_-1; i++) { // create inter-root distances
@@ -96,7 +122,14 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
         	double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
         	double pf = (ln + f) / ln; // we scale lns by the change in percentage
             double d = std::max(ln + f + pf*p->randn()*lns, 1.e-5); // miminum is 1.e-5
-            ln_.push_back(d);
+            res = d -floor(d / dx)*dx;
+			if(res < dxMin && res != 0){
+				if(res <= dxMin/2){d -= res;
+				}else{d = floor(d / dx)*dx + dxMin;}
+				
+				} //make ln compatible with dx() and dxMin().
+			
+			ln_.push_back(d);
         }
     }
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation

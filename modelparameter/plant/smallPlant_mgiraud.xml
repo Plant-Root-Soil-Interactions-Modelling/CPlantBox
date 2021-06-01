@@ -21,16 +21,17 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="2.0" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="0"/>
+    <parameter name="ln" value="0.1" dev="0"/>
+    <parameter name="lnk" value="-0.01" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="50" dev="0"/>
-    <parameter name="r" value="4" dev="0"/>
+    <parameter name="lmax" value="10" dev="0"/>
+    <parameter name="r" value="0.3" dev="0"/>
     <parameter name="a" value="0.30000000000000001" dev="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.261799"/>
     <parameter name="dx" value="0.25"/>
-    <parameter name="dxMin" value="0.1"/>
+    <parameter name="dxMin" value="0.2"/>
     <parameter name="theta" value="1" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
@@ -63,10 +64,10 @@
     <!--Basal zone [cm]-->
     <parameter name="la" value="0.25" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="0" functiontype="0"/>
+    <parameter name="ln" value="0.4" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="5" dev="0"/>
-    <parameter name="r" value="2" dev="0"/>
+    <parameter name="r" value="0.3" dev="0"/>
     <parameter name="a" value="0.50000000000000001" dev="0"/>
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="0"/>
@@ -115,7 +116,7 @@
     <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="2" dev="0"/>
-    <parameter name="r" value="2" dev="0"/>
+    <parameter name="r" value="0.3" dev="0"/>
     <parameter name="a" value="0.10000000000000001" dev="0"/>
     <parameter name="RotBeta" value="1"/>
     <parameter name="BetaDev" value="0"/>
@@ -123,7 +124,7 @@
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="3"/>
     <parameter name="tropismS" value="0"/>
-    <parameter name="dx" value="2"/>
+    <parameter name="dx" value="0.25"/>
     <parameter name="dxMin" value="0.2"/>
     <parameter name="theta" value="0.3" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>

@@ -156,7 +156,7 @@ void Stem::simulate(double dt, bool verbose)
 			if (active) {
 
 				// length increment
-				double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+				double age_ = calcAge(length+ this->epsilonDx); // root age as if grown unimpeded (lower than real age)
 				double dt_; // time step
 				if (age<dt) { // the root emerged in this time step, adjust time step
 					dt_= age;
@@ -167,7 +167,7 @@ void Stem::simulate(double dt, bool verbose)
 				double targetlength = calcLength(age_+dt_);
 				double e = targetlength-length; // unimpeded elongation in time step dt
 				double scale = getStemRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
-				double dl = std::max(scale*e, 0.)+ this->epsilonDx;//   // length increment = calculated length + increment from last time step too small to be added
+				double dl = std::max(scale*e, 0.);//   // length increment = calculated length + increment from last time step too small to be added
 				// create geometry
 				if (p.ln.size()>0) { // stem has laterals
 					//std::cout<<"sim seed nC is"<< nC<<"\n";
@@ -187,6 +187,10 @@ void Stem::simulate(double dt, bool verbose)
 							dl-=ddx- this->epsilonDx; // ddx already has been created
 							shootBorneRootGrow(verbose);
 							length = nZ- this->epsilonDx;
+							if(this->epsilonDx != 0){//change nz to adapt to dxMin
+								std::cout<<"Stem::simulate: nZ - length < dxMin. set nZ = length"<<std::endl;
+								nZ = length;
+							}
 						}
 
 
@@ -201,8 +205,11 @@ void Stem::simulate(double dt, bool verbose)
 						} else {
 							double ddx = p.lb-length;
 							createSegments(ddx,verbose);
-							dl-=ddx- this->epsilonDx; // ddx already has been created
-							length=p.lb- this->epsilonDx;
+							dl-=ddx; // ddx already has been created
+							length=p.lb;
+							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+								throw std::runtime_error("Stem::simulate: p.lb - length < dxMin");
+							}
 						}
 					}
 					/* branching zone */
@@ -231,12 +238,15 @@ void Stem::simulate(double dt, bool verbose)
 								} else { // grow over inter-lateral distance i
 									double ddx = s-length;
 									createSegments(ddx,verbose);
-									dl-=ddx- this->epsilonDx;
-									length=s- this->epsilonDx;
+									dl-=ddx;
+									length=s;
+									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+										throw std::runtime_error( "Stem::simulate: p.ln.at(i) - length < dxMin");
+									}
 								}
 							}
 						}
-						if (p.ln.size()==children.size()-additional_childern) { // new lateral (the last one)
+						if (p.ln.size()==children.size()-additional_childern && (length>=s)) { // new lateral (the last one)
 							createLateral(verbose);
 						}
 					}
@@ -257,7 +267,7 @@ void Stem::simulate(double dt, bool verbose)
 					}
 				} // if lateralgetLengths
 			} // if active
-			active = length<(p.getK()-dx()/10); // become inactive, if final length is nearly reached
+			active = length<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
 		}
 	} // if alive
 }
@@ -505,8 +515,8 @@ void Stem::shootBorneRootGrow(bool verbose)
 	int nC = getPlant()->getSeed()->param()->nC;
 	double nZ = getPlant()->getSeed()->param()->nz;
 	if ( nC>0 ) { // only if there are any shootborne roots && (p_seed->firstSB+p_seed->delaySB<maxT)
-		std::cout<<"seed nC is"<< nC <<"\n";
-		std::cout<<"seed nZ is"<< nZ <<"\n";
+		std::cout<<"seed nC is "<< nC <<"\n";
+		std::cout<<"seed nZ is "<< nZ <<"\n";
 		double ageLN = this->calcAge(length); // age of stem when lateral node is created
 		double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
@@ -516,7 +526,7 @@ void Stem::shootBorneRootGrow(bool verbose)
 			auto shootBorneRoot = std::make_shared<Root>(plant.lock() , shootborneType, ons.times(Vector3d::rotAB(0,beta)), delay ,shared_from_this(), length, nodes.size() - 1);
 			children.push_back(shootBorneRoot);
 			shootBorneRoot->simulate(age-ageLN,verbose);
-			std::cout<<"root grow number"<<i<<"\n";
+			std::cout<<"root grow number "<<i<<"\n";
 		}
 	}
 
@@ -635,13 +645,14 @@ void Stem::createSegments(double l, bool verbose)
 		} else { // last segment
 			sdx = l-n*dx();
 			std::cout<<"\nstem::createsegment "<<sdx<<" "<<dxMin()<<" "<<this->epsilonDx;
-			if (sdx<dxMin()) { // quit if l is too small
-				if (verbose) {
+			if (sdx<dxMin()*0.99 ) { // quit if l is too small
+				if (verbose&& sdx != 0) {
 					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
 				}
 				this->epsilonDx = sdx;
 				return;
 			}
+			this->epsilonDx = 0; //no residual
 		}
 		sl += sdx;
 		Vector3d newdx = getIncrement(nodes.back(), sdx);
