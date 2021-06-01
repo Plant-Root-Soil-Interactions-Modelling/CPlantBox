@@ -122,6 +122,7 @@ void Root::simulate(double dt, bool verbose)
 
                 // length increment
                 double age_ = calcAge(length+ this->epsilonDx); // root age as if grown unimpeded (lower than real age)
+                this->epsilonDx = 0.; // now it is "spent" into age_ (no need for -this->epsilonDx in the following)
                 double dt_; // time step
                 if (age<dt) { // the root emerged in this time step, adjust time step
                     dt_= age;
@@ -140,16 +141,16 @@ void Root::simulate(double dt, bool verbose)
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
                             createSegments(dl,dt_,verbose);
-                            length+=dl- this->epsilonDx;
+                            length+=dl; // - this->epsilonDx;
                             dl=0;
                         } else {
                             double ddx = p.lb-length;
                             createSegments(ddx,dt_,verbose);
                             dl-=ddx; // ddx already has been created
                             length=p.lb;
-							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-								throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
-							}
+//							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+//								throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
+//							} // this could happen, if the tip ends in this section
                         }
                     }
                     /* branching zone */
@@ -163,16 +164,16 @@ void Root::simulate(double dt, bool verbose)
                                 }
                                 if (length+dl<=s) { // finish within inter-lateral distance i
                                     createSegments(dl,dt_,verbose);
-                                    length+=dl- this->epsilonDx;
+                                    length+=dl; //- this->epsilonDx;
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
                                     createSegments(ddx,dt_,verbose);
                                     dl-=ddx;
                                     length=s;
-									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
-									}
+//									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+//										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
+//									}
                                 }
                             }
                         }
@@ -183,12 +184,12 @@ void Root::simulate(double dt, bool verbose)
                     /* apical zone */
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);
-                        length+=dl- this->epsilonDx;
+                        length+=dl; // - this->epsilonDx;
                     }
                 } else { // no laterals
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);
-                        length+=dl- this->epsilonDx;
+                        length+=dl; //- this->epsilonDx;
                     }
                 } // if lateralgetLengths
             } // if active
