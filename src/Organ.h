@@ -64,6 +64,7 @@ public:
     bool isActive() const { return active; } ///< checks if active
     double getAge() const { return age; } ///< return age of the organ
     double getLength() const { return length; } ///< returns length of the organ
+	double getEpsilon() const { return epsilonDx; } ///return stored growth not yet added because too small
 	virtual void setCWGr(std::map<int, double> Gr){ throw std::runtime_error( "organ::setCWGr() not implemented" ); }// water and carbon limited growth of growth function n°3
 
     /* geometry */
