@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-One click install script for dumux
+One click install script for dumux-rosi
 """
 import os
 import sys
@@ -93,8 +93,8 @@ show_message("(1/3) Step completed. All prerequistes found.")
 #################################################################
 #################################################################
 # make a new folder containing everything
-os.makedirs("./DUMUX2", exist_ok=True)
-os.chdir("DUMUX2")
+os.makedirs("./DUMUX", exist_ok=True)
+os.chdir("DUMUX")
 
 show_message("(2/3) Cloning repositories. This may take a while. Make sure to be connected to the internet...")
 
