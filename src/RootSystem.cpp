@@ -666,7 +666,7 @@ void RootSystemState::restore(RootSystem& rs)
  *
  * @param r        the root to be stored
  */
-RootState::RootState(const Root& r): alive(r.alive), active(r.active), age(r.age), length(r.length), old_non(r.oldNumberOfNodes)
+RootState::RootState(const Root& r): alive(r.alive), active(r.active), age(r.age), length(r.getLength()), old_non(r.oldNumberOfNodes)
 {
     lNode = r.nodes.back();
     lNodeId = r.nodeIds.back();
