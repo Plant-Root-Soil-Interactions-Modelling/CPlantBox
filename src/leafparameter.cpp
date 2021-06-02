@@ -94,8 +94,8 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		this->la=la_;
 	}
 	
-	if(ln < dxMin*0.99 ){
-		std::cout<<"\ninter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
+	if(ln < dxMin*0.99 && ln !=0){
+		std::cout<<"\nLeafRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
 		ln = dxMin;
 	}
 	

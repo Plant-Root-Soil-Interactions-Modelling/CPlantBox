@@ -144,7 +144,7 @@ void Leaf::simulate(double dt, bool verbose)
 			if (active) {
 
 				// length increment
-				double age_ = calcAge(length+ this->epsilonDx); // leaf age as if grown unimpeded (lower than real age)
+				double age_ = calcAge(length); // leaf age as if grown unimpeded (lower than real age)
 				double dt_; // time step
 				if (age<dt) { // the leaf emerged in this time step, adjust time step
 					dt_= age;
@@ -152,27 +152,28 @@ void Leaf::simulate(double dt, bool verbose)
 					dt_=dt;
 				}
 
-				double targetlength = calcLength(age_+dt_);
+				double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
+                this->epsilonDx = 0.; // now it is "spent" targetlength (no need for -this->epsilonDx in the following)
+
 				double e = targetlength-length; // unimpeded elongation in time step dt
 				double scale = getLeafRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
 				double dl = std::max(scale*e, 0.);// length increment = calculated length + increment from last time step too small to be added
-
 				// create geometry
 				if (p.ln.size()>0) { // leaf has laterals
 					/* basal zone */
 					if ((dl>0)&&(length<p.lb)) { // length is the current length of the leaf
 						if (length+dl<=p.lb) {
 							createSegments(dl,verbose);
-							length+=dl- this->epsilonDx;
+							length+=dl;//- this->epsilonDx;
 							dl=0;
 						} else {
 							double ddx = p.lb-length;
 							createSegments(ddx,verbose);
 							dl-=ddx; // ddx already has been created
 							length=p.lb;
-							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-								throw std::runtime_error("Leaf::simulate: p.lb - length < dxMin");
-							}
+							//if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+							//	throw std::runtime_error("Leaf::simulate: p.lb - length < dxMin");
+							//}
 						}
 					}
 					double s = p.lb; // summed length
@@ -186,36 +187,36 @@ void Leaf::simulate(double dt, bool verbose)
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
 									createSegments(dl,verbose);
-									length+=dl- this->epsilonDx;
+									length+=dl;//- this->epsilonDx;
 									dl=0;
 								} else { // grow over inter-lateral distance i
 									double ddx = s-length;
 									createSegments(ddx,verbose);
 									dl-=ddx;
 									length=s;
-									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-										throw std::runtime_error( "Leaf::simulate: p.ln.at(i) - length < dxMin");
-									}
+									//if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+									//	throw std::runtime_error( "Leaf::simulate: p.ln.at(i) - length < dxMin");
+									//}
 								}
 							}
 						}
-						if (p.ln.size()==children.size()&& (length>=s)) { // new lateral (the last one)
+						if (p.ln.size()==children.size()&& (getLength()>=s)) { // new lateral (the last one)
 							createLateral(verbose);
 						}
 					}
 					/* apical zone */
 					if (dl>0) {
 						createSegments(dl,verbose);//y not with dt_?
-						length+=dl- this->epsilonDx;
+						length+=dl;//- this->epsilonDx;
 					}
 				} else { // no laterals
 					if (dl>0) {
 						createSegments(dl,verbose);
-						length+=dl- this->epsilonDx;
+						length+=dl;//- this->epsilonDx;
 					}
 				} // if lateralgetLengths
 			} // if active
-			active = length<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
+			active = getLength()<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
 		}
 	} // if alive
 
@@ -345,77 +346,77 @@ void Leaf::createLateral(bool silence)
 	if (lt>0) {
 
 		if (getLeafRandomParameter()->lnf==2&& lt>0) {
-			double ageLN = this->calcAge(length); // age of Leaf when lateral node is created
-			double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+			double ageLN = this->calcAge(getLength()); // age of Leaf when lateral node is created
+			double ageLG = this->calcAge(getLength()+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
 			Vector3d h = heading(); // current heading
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
+			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral->setRelativeOrigin(nodes.back());
 			children.push_back(lateral);
 			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-			auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
+			auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral2->setRelativeOrigin(nodes.back());
 			children.push_back(lateral2);
 			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 		}
 		else if (getLeafRandomParameter()->lnf==3&& lt>0) { //ln equal and both side leaf
-			double ageLN = this->calcAge(length); // age of Leaf when lateral node is created
-			double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+			double ageLN = this->calcAge(getLength()); // age of Leaf when lateral node is created
+			double ageLG = this->calcAge(getLength()+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
 			Vector3d h = heading(); // current heading
-			auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), length, nodes.size() - 1);
+			auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral->setRelativeOrigin(nodes.back());
 			children.push_back(lateral);
 			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-			auto lateral2 = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), length, nodes.size() - 1);
+			auto lateral2 = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral2->setRelativeOrigin(nodes.back());
 			children.push_back(lateral2);
 			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 		}
 		else if (getLeafRandomParameter()->lnf==4 && lt>0) {//ln exponential decreasing and one side leaf
-			double ageLN = this->calcAge(length); // age of Leaf when lateral node is created
-			double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+			double ageLN = this->calcAge(getLength()); // age of Leaf when lateral node is created
+			double ageLG = this->calcAge(getLength()+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
 			Vector3d h = heading(); // current heading
-			auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), length, nodes.size() - 1);
+			auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, h, delay, shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral->setRelativeOrigin(nodes.back());
 			children.push_back(lateral);
 			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
 		} else if (getLeafRandomParameter()->lnf==5&& lt>0) { //ln exponential decreasing and both side leaf
-			double ageLN = this->calcAge(length); // age of Leaf when lateral node is created
-			double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+			double ageLN = this->calcAge(getLength()); // age of Leaf when lateral node is created
+			double ageLG = this->calcAge(getLength()+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
 			Vector3d h = heading(); // current heading
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay,  shared_from_this(), length, nodes.size() - 1);
+			auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay,  shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral->setRelativeOrigin(nodes.back());
 			children.push_back(lateral);
 			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 
 			addleafphytomerID(getLeafRandomParameter()->subType);
 
-			auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay,  shared_from_this(), length, nodes.size() - 1);
+			auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt, h, delay,  shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral2->setRelativeOrigin(nodes.back());
 			children.push_back(lateral2);
 			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 		} else if (lt>0) {
-			double ageLN = this->calcAge(length); // age of Leaf when lateral node is created
-			double ageLG = this->calcAge(length+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+			double ageLN = this->calcAge(getLength()); // age of Leaf when lateral node is created
+			double ageLG = this->calcAge(getLength()+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
 			Vector3d h = heading(); // current heading
 
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), length, nodes.size() - 1);
+			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), getLength(), nodes.size() - 1);
 			//		lateral->setRelativeOrigin(nodes.back());
 			children.push_back(lateral);
 			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 		}else {
 
 
-			double ageLN = this->calcAge(length); // age of leaf when lateral node is created
-			double ageLG = this->calcAge(length+param()->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
+			double ageLN = this->calcAge(getLength()); // age of leaf when lateral node is created
+			double ageLG = this->calcAge(getLength()+param()->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
 			Vector3d h = heading(); // current heading
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), nodes.size()-1, length);
+			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(), nodes.size()-1, getLength());
 			//		lateral->setRelativeOrigin(nodes.back());
 			children.push_back(lateral);
 			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
@@ -492,7 +493,7 @@ void Leaf::createSegments(double l, bool verbose)
 				double sdx = olddx + shiftl; // length of new segment
 				Vector3d newdxv = getIncrement(n2, sdx);
 				nodes[nn-1] = Vector3d(n2.plus(newdxv));
-				double et = this->calcCreationTime(length+shiftl);
+				double et = this->calcCreationTime(getLength()+shiftl);
 				nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 				moved = true;
 				l -= shiftl;
@@ -528,7 +529,7 @@ void Leaf::createSegments(double l, bool verbose)
 		sl += sdx;
 		Vector3d newdx = getIncrement(nodes.back(), sdx);
 		Vector3d newnode = Vector3d(nodes.back().plus(newdx));
-		double et = this->calcCreationTime(length+shiftl+sl);
+		double et = this->calcCreationTime(getLength()+shiftl+sl);
 		// in case of impeded growth the node emergence time is not exact anymore,
 		// but might break down to temporal resolution
 		addNode(newnode, et);

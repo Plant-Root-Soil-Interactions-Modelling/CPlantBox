@@ -178,7 +178,7 @@ void Root::simulate(double dt, bool verbose)
                                 }
                             }
                         }
-                        if (p.ln.size()==children.size()&& (length>=s)){
+                        if (p.ln.size()==children.size()&& (getLength()>=s)){
                             createLateral(dt_, verbose);
                         }
                     }
@@ -194,7 +194,7 @@ void Root::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
-            active = length<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
+            active = getLength()<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
         }
     } // if alive
 
@@ -272,13 +272,13 @@ void Root::createLateral(double dt, bool verbose)
 {
     int lt = getRootRandomParameter()->getLateralType(nodes.back());
     if (lt>0) {
-        double ageLN = this->calcAge(length); // age of root when lateral node is created
+        double ageLN = this->calcAge(getLength()); // age of root when lateral node is created
         ageLN = std::max(ageLN, age-dt);
         double meanLn = getRootRandomParameter()->ln; // mean inter-lateral distance
         double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-        double ageLG = this->calcAge(length+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+        double ageLG = this->calcAge(getLength()+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
-        auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), length, nodes.size()-1);
+        auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), getLength(), nodes.size()-1);
         children.push_back(lateral);
         lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
     }
@@ -349,7 +349,7 @@ void Root::createSegments(double l, double dt, bool verbose)
                 // Vector3d newdxv = getIncrement(n2, sdx);
                 h.normalize();
                 nodes[nn-1] = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
-                double et = this->calcCreationTime(length+shiftl, dt);
+                double et = this->calcCreationTime(getLength()+shiftl, dt);
                 nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
@@ -385,7 +385,7 @@ void Root::createSegments(double l, double dt, bool verbose)
         sl += sdx;
         Vector3d newdx = getIncrement(nodes.back(), sdx);
         Vector3d newnode = Vector3d(nodes.back().plus(newdx));
-        double et = this->calcCreationTime(length+shiftl+sl, dt);
+        double et = this->calcCreationTime(getLength()+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
         addNode(newnode, et);

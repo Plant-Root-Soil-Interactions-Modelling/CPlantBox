@@ -76,7 +76,6 @@ std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<
 std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 {
     auto p = plant.lock();
-    //& std::cout << "StemTypeParameter::realize(): subType " << subType << "\n" << std::flush;
     double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
     double res = lb_ - floor(lb_/dx)* dx;	
 	if(res < dxMin){
@@ -93,7 +92,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 		this->la=la_;
 	}	
 	
-	if(ln < dxMin*0.99 ){
+	if(ln < dxMin*0.99 && ln !=0){
 		std::cout<<"\nStemRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
 		ln = dxMin;
 	}

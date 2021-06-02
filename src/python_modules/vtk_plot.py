@@ -293,6 +293,9 @@ def plot_roots(pd, p_name:str, win_title:str="", render:bool=True):
     if isinstance(pd, pb.SegmentAnalyser):
         pd = segs_to_polydata(pd, 1., [p_name, "radius"])
 
+    if isinstance(pd, pb.MappedPlant):
+        pd = segs_to_polydata(pd, 1., [p_name, "radius"])
+        
     if win_title == "":
         win_title = p_name
 
