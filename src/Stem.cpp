@@ -644,7 +644,6 @@ void Stem::createSegments(double l, bool verbose)
 			sdx = dx();
 		} else { // last segment
 			sdx = l-n*dx();
-			std::cout<<"\nstem::createsegment "<<sdx<<" "<<dxMin()<<" "<<this->epsilonDx;
 			if (sdx<dxMin()*0.99 ) { // quit if l is too small
 				if (verbose&& sdx != 0) {
 					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
