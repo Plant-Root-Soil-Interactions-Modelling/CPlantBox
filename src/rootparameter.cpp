@@ -110,7 +110,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 			this->la=la_;
 		}
 		
-		if(ln < dxMin*0.99 ){
+		if(ln < dxMin*0.99 && ln != 0){
 			std::cout<<"\nRootRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
 			ln = dxMin;
 		}
