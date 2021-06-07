@@ -20,7 +20,7 @@ pl.initialize()
 pl.simulate(30, True)
 
 #post processing
-"""
+
 segs = pl.getPolylines() 
 for segnum, seg in enumerate(segs):#go through each organ
     seg = np.array(list(map(lambda x: np.array(x), seg))) # converts the list of Vector3d to a numpy array. shape: (num_nodes, 3)
@@ -29,7 +29,7 @@ for segnum, seg in enumerate(segs):#go through each organ
     print(seg)
     print(length_segments)
  
-"""           
+           
 
 # Export final result (as vtp)
 pl.write("results/example_1a.vtp")

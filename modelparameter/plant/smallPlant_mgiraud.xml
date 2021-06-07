@@ -47,7 +47,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="5" dev="0"/>
     <parameter name="r" value="0.3" dev="0"/>
-    <parameter name="a" value="0.50000000000000001" dev="0"/>
+    <parameter name="a" value="0.050000000000000001" dev="0"/>
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="1"/>

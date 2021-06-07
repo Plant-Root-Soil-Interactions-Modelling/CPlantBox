@@ -63,7 +63,7 @@ class PhloemFluxPython(Leuning):
         self.maxGrowth = np.array([])
         #change again according to data of xiaoran
         self.phloemConductivity = 1.118e-12*1e4  #k in cm2 . see cpp PIA_munch file  1e-11#
-        self.phloemViscosity = 1e-3
+        self.phloemViscosity = 1.7e-3 #Pa s-1 , cf Zhou 2020
         self.TairK = 293
         self.VolFractSucrose = np.array([])
         self.intCoeff = 100.
@@ -267,7 +267,13 @@ class PhloemFluxPython(Leuning):
         
         self.totalSinkFactor = (self.RmMax + self.Gr)/(self.phi+(self.RmMax + self.Gr)*1e3)#)/self.phi )* ((self.RmMax + self.Gr )/self.phi <= 0.8) + 0.8 * ((self.RmMax + self.Gr )/self.phi >= 0.8))*(self.phi>0)
         
-
+    def get_nodes_child_base(self):
+        segments = self.get_segments() 	
+        nodesx =[xi[0] for xi in segments] #take x node of all the segments
+        unique, counts = np.unique(nodesx, return_counts=True)
+        N3 = unique[np.logical_and(counts > 1 , unique != 0)] #take index of node which are at the base of 2 segment exept for seed node => all nodes linking 3 segments
+        return(N3)
+        
 def GetTime(seconds):
     sec = timedelta(seconds=int(seconds))
     d = datetime(1,1,1) + sec
