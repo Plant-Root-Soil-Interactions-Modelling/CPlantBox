@@ -271,7 +271,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("isAlive",&Organ::isAlive)
             .def("isActive",&Organ::isActive)
             .def("getAge",&Organ::getAge)
-            .def("getLength",&Organ::getLength)
+            .def("getLength",&Organ::getLength,py::arg("realized"))
 
             .def("getNumberOfNodes",&Organ::getNumberOfNodes)
             .def("getNode",&Organ::getNode)

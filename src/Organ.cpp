@@ -68,6 +68,19 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
 }
 
 /**
+ * @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin()) 
+ *					TRUE:	get realized organ length, dependent from spatial resolution (dx() and dxMin())
+ *					DEFAULT = TRUE
+ * @return 			The chosen type of organ length (realized or theoretica).
+ */
+double Organ::getLength(bool realized) const
+{
+	if (realized) {
+		return length - this->epsilonDx;
+	} else {return length;}
+}
+
+/**
  * @return The organ type, which is a coarse classification of the organs.
  * Currently there are: ot_organ (for unspecified organs) = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, and ot_leaf = 4.
  * There can be different classes with the same organ type.
@@ -239,7 +252,7 @@ double Organ::getParameter(std::string name) const {
 	if (name=="alive") { return isAlive(); }
 	if (name=="active") { return isActive(); }
 	if (name=="age") { return getAge(); }
-    if (name=="length") { return getLength(); }
+    if (name=="length") { return getLength(true); } //realized organ length, dependent on dxMin and dx
     if (name=="getNumberOfNodes") { return getNumberOfNodes(); }
     if (name=="getNumberOfSegments") { return getNumberOfSegments(); }
     if (name=="hasMoved") { return hasMoved(); }
@@ -337,7 +350,8 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
 std::string Organ::toString() const
 {
 	std::stringstream str;
-	str << "Organ #"<< getId() <<": sub type "<< param_->subType << ", length " << getLength() << " cm, age " << getAge()
+	str << "Organ #"<< getId() <<": sub type "<< param_->subType << ", realized length " << getLength(true) 
+					<< "cm , theoretic length " << getLength(false) << "cm , age " << getAge()
     				<< " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes()
 					<< ", with "<< children.size() << " children";
 	return str.str();
