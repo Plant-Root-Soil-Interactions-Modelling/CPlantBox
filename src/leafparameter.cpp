@@ -364,4 +364,72 @@ void LeafRandomParameter::bindParameters()
 	description["successorP"] = "Probability of each sub type to occur";
 }
 
+/**
+ * resamples incoming leaf geometry (radial star domain) to N y-coordinates axis (2d xy)
+ * and normalizes (see normalize())
+ */
+void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std::vector<double> l, int N) {
+	leafGeometry.resize(N);
+	auto y_ = Function::linspace(0., leafLength(), N);
+	for (int i = 0; i<N; i++) {
+		leafGeometry[i] = intersections(y_[i], phi, l);
+	}
+	normalizeLeafNodes();
+}
+
+/**
+ * resamples incoming leaf geometry
+ */
+void LeafRandomParameter::createLeafGeometry(std::vector<double> y, std::vector<double> l, int N) {
+	leafGeometry.resize(N);
+	auto y_ = Function::linspace(0., leafLength(), N);
+	for (int i = 0; i<N; i++) {
+		leafGeometry[i].push_back(Function::interp1(y_[i], y, l));
+	}
+	normalizeLeafNodes();
+}
+
+// normalizes points to obtain a leaf area of 1, assuming a length of 1
+void LeafRandomParameter::normalizeLeafNodes() {
+	double s = 0.;
+	for (int i = 0; i< leafGeometry.size(); i++) { // TODO area from non-convex points
+		s += leafGeometry[i].back();
+	}
+//	s = 2*s; // leaf area (leafNodexX describes only half a leaf)
+//	for (int i = 0; i< leafGeometry.size(); i++) {
+//		leafGeometry[i].back() = leafGeometry[i].back()/s;
+//	}
+
+}
+
+
+
+/**
+ * returns the intersection of a horizontal line at y-coordinate with the leaf geometry
+ */
+std::vector<double> LeafRandomParameter::intersections(double y, std::vector<double> phi, std::vector<double> l) {
+	int N = 1000; // high resolution, since we just use nearest neighbor to find the zero
+	double midy = leafMid();
+	std::vector<double> ix;
+	bool below = true;
+	for (int i = 0; i<N; i++) {
+		double p = (double)i/(N-1)*M_PI - M_PI/2.; // [-pi/2, pi/2]
+		double l_ = Function::interp1(p, phi,l);
+		if (below) {
+			if (l_*sin(p)+midy>=y) {
+				below = false;
+				ix.push_back(l_*cos(p));
+			}
+		} else {
+			if (l_*sin(p)+midy<=y) {
+				below = true;
+				ix.push_back(l_*cos(p));
+			}
+		}
+	}
+	return ix;
+}
+
+
+
 } // end namespace CPlantBox

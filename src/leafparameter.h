@@ -52,6 +52,10 @@ public:
 	LeafRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
 	virtual ~LeafRandomParameter() { };
 
+    void createLeafGeometry(std::vector<double> y, std::vector<double> l, int N); // create normalized leaf geometry
+    void createLeafRadialGeometry(std::vector<double> phi, std::vector<double> l, int N); // create normalized leaf geometry from a radial parameterization
+    std::vector<std::vector<double>> getLeafGeometry() { return leafGeometry; }
+
 	std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
 
 	std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific leaf from the leaf parameter set
@@ -59,6 +63,8 @@ public:
 	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on leaf parameter set
     double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
     double nobs() const; ///< returns the standard deviation of number of branches [1]
+    double leafLength() { return lmax-lb; }; // lb represents the leaf base
+    double leafMid() { return lmax-la-lb; }; //
 
 	std::string toString(bool verbose = true) const override; ///< writes parameter to a string
 
@@ -108,6 +114,10 @@ public:
 protected:
 
     void bindParameters(); ///<sets up class introspectionbindParameters
+
+    std::vector<std::vector<double>> leafGeometry; // normalized x - coordinates per along the normalized mid vein
+    std::vector<double> intersections(double y, std::vector<double> phi, std::vector<double> l); ///< returns the intersection of a horizontal line at y-coordinate with the leaf geometry
+    void normalizeLeafNodes(); ///< scales leaf area to 1
 
 };
 

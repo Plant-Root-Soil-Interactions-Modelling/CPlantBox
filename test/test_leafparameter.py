@@ -1,5 +1,8 @@
 import unittest
-import sys; sys.path.append("..")import plantbox as pb
+import sys; sys.path.append("..")import numpy as np
+import matplotlib.pyplot as plt
+
+import plantbox as pb
 
 
 class TestLeafParameter(unittest.TestCase):
@@ -8,10 +11,10 @@ class TestLeafParameter(unittest.TestCase):
         self.plant = pb.Organism()
         self.lrp = pb.LeafRandomParameter(self.plant)
         self.lrp.la = 1.5
-        self.lrp.lb = 5.5
+        self.lrp.lb = 6
         self.lrp.ln = 1.25
         self.lrp.lns = 0.12
-        self.lrp.lmax = 7 * self.lrp.ln + self.lrp.la + self.lrp.lb
+        self.lrp.lmax = 3 * self.lrp.ln + self.lrp.la + self.lrp.lb
         self.lrp.subType = 1
 
     def add_successors(self):
@@ -101,6 +104,50 @@ class TestLeafParameter(unittest.TestCase):
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
         self.assertEqual(len(p.ln) + 1, self.lrp.nob(), "realize: internodal distances +1 should be  number of laterals")
         # print(p)
+
+    def test_radial_leaf_geometry(self):
+        self.plant = pb.Organism()
+        lrp = pb.LeafRandomParameter(self.plant)
+        lrp.la = 3.5
+        lrp.lb = 1.
+        lrp.ln = 3.
+        lrp.lmax = lrp.la + lrp.lb + lrp.ln  
+        """ radial geometry """
+        phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+        l = np.array([3, 2.2, 1.7, 2, 3.5])
+        N = 15  # N is rather high for testing
+        lrp.createLeafRadialGeometry(phi, l, N)  
+        self.assertEqual(lrp.leafMid(), 3., "unexpected leaf mid")
+        self.assertEqual(lrp.leafLength(), 6.5, "unexpected leaf length")        
+        y_ = np.linspace(0, lrp.leafLength(), N)
+        geom = lrp.getLeafGeometry()
+        x_ = np.array([ x[-1] for x in geom])
+        self.assertEqual(x_.shape[0], y_.shape[0], "leaf geometry has wrong size");
+#         plt.plot(x_, y_, "g-*")
+#         plt.plot(-x_, y_, "g-*")
+#         plt.show()
+    
+    def test_leaf_geometry(self):
+        self.plant = pb.Organism()
+        lrp = pb.LeafRandomParameter(self.plant)
+        lrp.la = 3.5
+        lrp.lb = 1.
+        lrp.ln = 3.
+        lrp.lmax = lrp.la + lrp.lb + lrp.ln  
+        """ radial geometry """
+        phi = np.array([-3, -3 * 0.7, 0., 3.5 * 0.7, 3.5]) / 180. * np.pi
+        l = np.array([0., 2.2 * 0.7, 1.7, 2.*0.7, 0.])
+        N = 15  # N is rather high for testing
+        lrp.createLeafGeometry(phi, l, N)  
+        self.assertEqual(lrp.leafMid(), 3., "unexpected leaf mid")
+        self.assertEqual(lrp.leafLength(), 6.5, "unexpected leaf length")        
+        y_ = np.linspace(0, lrp.leafLength(), N)
+        geom = lrp.getLeafGeometry()
+        x_ = np.array([ x[-1] for x in geom])
+        self.assertEqual(x_.shape[0], y_.shape[0], "leaf geometry has wrong size");
+        plt.plot(x_, y_, "g-*")
+        plt.plot(-x_, y_, "g-*")
+        plt.show()        
 
 
 if __name__ == '__main__':

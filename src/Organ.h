@@ -65,9 +65,8 @@ public:
     double getAge() const { return age; } ///< return age of the organ
     double getLength(bool realized = true) const; ///< returns length of the organ (realized => dependant on dx() and dxMin())
 	double getEpsilon() const { return epsilonDx; } ///return stored growth not yet added because too small
-	virtual void setCWGr(std::map<int, double> Gr){ throw std::runtime_error( "organ::setCWGr() not implemented" ); }// water and carbon limited growth of growth function n°3
 
-    /* geometry */
+	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
     Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ

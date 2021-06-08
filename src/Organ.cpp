@@ -77,7 +77,9 @@ double Organ::getLength(bool realized) const
 {
 	if (realized) {
 		return length - this->epsilonDx;
-	} else {return length;}
+	} else {
+		return length;
+	}
 }
 
 /**
