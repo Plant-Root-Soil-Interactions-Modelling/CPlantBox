@@ -77,18 +77,16 @@ protected:
     double kr_const(double age, int type, int orgtype, int numleaf) { if (orgtype == 4 && gs.at(0) > 0 ){return gs.at(numleaf);} else {return kr.at(0).at(0); } }//k constant
     double kr_perOrgType(double age, int type, int orgtype, int numleaf) { if (orgtype == 4&& gs.at(0)> 0 ) {return gs.at(numleaf);} else { return kr.at(orgtype - 2).at(0); }} //per organ type (goes from 2 (root) to 4 (leaf))
     double kr_perType(double age, int type, int orgtype, int numleaf) { if (orgtype == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return kr.at(orgtype - 2).at(type); }}//per subtype and organ type (goes from 2 (root) to 4 (leaf))
-    double kr_table(double age, int type, int orgtype, int numleaf) { if (orgtype == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return interp1(age, kr_t.at(0), kr.at(0)); }} //constant for all type/subtype and age dependant
-	double kr_tablePerOrgType(double age, int type, int orgtype, int numleaf){ if (orgtype == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else  { return interp1(age, krs_t.at(orgtype-2).at(0), krs.at(orgtype-2).at(0)); } }//constant for all subtype but type and age dependant
-	double kr_tablePerType(double age, int type, int orgtype, int numleaf) { if (orgtype == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return interp1(age, krs_t.at(orgtype-2).at(type), krs.at(orgtype-2).at(type)); }} //subtype, type and age dependant
+    double kr_table(double age, int type, int orgtype, int numleaf) { if (orgtype == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return Function::interp1(age, kr_t.at(0), kr.at(0)); }} //constant for all type/subtype and age dependant
+	double kr_tablePerOrgType(double age, int type, int orgtype, int numleaf){ if (orgtype == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else  { return Function::interp1(age, krs_t.at(orgtype-2).at(0), krs.at(orgtype-2).at(0)); } }//constant for all subtype but type and age dependant
+	double kr_tablePerType(double age, int type, int orgtype, int numleaf) { if (orgtype == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return Function::interp1(age, krs_t.at(orgtype-2).at(type), krs.at(orgtype-2).at(type)); }} //subtype, type and age dependant
 
     double kx_const(double age, int type, int orgtype) { return kx.at(0).at(0); } //k constant
     double kx_perOrgType(double age, int type, int orgtype) { return kx.at(orgtype - 2)[0]; } //per organ type (goes from 2 (root) to 4 (leaf))
     double kx_perType(double age, int type, int orgtype) { return kx.at(orgtype - 2).at(type); } //per subtype and organ type (goes from 2 (root) to 4 (leaf))
-	double kx_table(double age, int type, int orgtype) { return interp1(age, kx_t[0], kx[0]); } //constant for all type/subtype and age dependant
-    double kx_tablePerOrgType(double age, int type, int orgtype) { return interp1(age, kxs_t.at(orgtype-2).at(0), kxs.at(orgtype-2).at(0)); } //constant for all subtype but type and age dependant
-    double kx_tablePerType(double age, int type, int orgtype) { return interp1(age, kxs_t.at(orgtype-2).at(type), kxs.at(orgtype-2).at(type)); } //subtype, type and age dependant
-
-    static double interp1(double ip, std::vector<double> x, std::vector<double> y);
+	double kx_table(double age, int type, int orgtype) { return Function::interp1(age, kx_t[0], kx[0]); } //constant for all type/subtype and age dependant
+    double kx_tablePerOrgType(double age, int type, int orgtype) { return Function::interp1(age, kxs_t.at(orgtype-2).at(0), kxs.at(orgtype-2).at(0)); } //constant for all subtype but type and age dependant
+    double kx_tablePerType(double age, int type, int orgtype) { return Function::interp1(age, kxs_t.at(orgtype-2).at(type), kxs.at(orgtype-2).at(type)); } //subtype, type and age dependant
 
     static double schroederStress(double r, double p, double q_out, double r_in, double r_out, std::function<double(double)> mfp, std::function<double(double)> imfp);
 

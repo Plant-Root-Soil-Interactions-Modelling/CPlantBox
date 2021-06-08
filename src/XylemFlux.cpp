@@ -542,22 +542,6 @@ void XylemFlux::setKxTables(std::vector<std::vector<std::vector<double>>> values
 }
 
 /**
- * Linear interpolation
- */
-double XylemFlux::interp1(double ip, std::vector<double> x, std::vector<double> y) {
-	if (ip > x.back()) return y.back(); // check bounds
-	if (ip < x[0]) return y[0];
-
-	// if we are within bounds find the index of the lower bound
-	const auto lookUpIndex = std::distance(x.begin(), std::lower_bound(x.begin(), x.end(), ip));
-	if (lookUpIndex == 0) {
-		return y[0];
-	}
-	double ip_ = (ip - x[lookUpIndex-1])/(x[lookUpIndex] - x[lookUpIndex-1]);
-	return y[lookUpIndex-1]*(1.0 - ip_)  + y[lookUpIndex]*ip_;
-}
-
-/**
  * Matric potential at position @param r, in case of stress
  */
 double XylemFlux::schroederStress(double r, double p, double q_out, double r_in,double  r_out, std::function<double(double)> mfp, std::function<double(double)> imfp) {
