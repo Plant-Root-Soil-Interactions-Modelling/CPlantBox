@@ -11,66 +11,88 @@ VTK Plot, by Daniel Leitner (refurbished 06/2020)
 to make interactive vtk plot of root systems and soil grids
 """
 
-"""
-creates a leaf as vtkPolygon
-"""
+
+def plot_leaf(leaf):
+    """
+        plots a single leaf in an interactive window (for debugging leafs)
+    """    
+    leaf_points = vtk.vtkPoints()     
+    leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
+    create_leaf(leaf, leaf_points, leaf_polys)
+    polyData = vtk.vtkPolyData()
+    polyData.SetPoints(leaf_points)
+    polyData.SetPolys(leaf_polys)
+    colors = vtk.vtkNamedColors()
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(polyData)
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper);
+    actor.GetProperty().SetColor(colors.GetColor3d("Green"))
+    render_window([actor], "plot_plant", [], [-10, 10, -10, 10, -10, 10]).Start()
 
 
-def create_leaf():
-    pass
+def plot_plant(plant, p_name):
+    """
+        plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons 
+    """    
+    # plant as tube plot
+    # plot_roots(plant, p_name)
+    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data 
+    tube_plot_actor, color_bar = plot_roots(pd, p_name, "", render=False)   
+    
+    # leafes as polygons
+    leaf_points = vtk.vtkPoints()     
+    leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
+ 
+    leafes = plant.getOrgans(pb.leaf)
+    for l in leafes:
+        create_leaf(l, leaf_points, leaf_polys)
+ 
+    polyData = vtk.vtkPolyData()
+    polyData.SetPoints(leaf_points)
+    polyData.SetPolys(leaf_polys)
+ 
+    colors = vtk.vtkNamedColors()
+    
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(polyData)
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper);
+    actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
-# int main(int, char*[])
-# {
-#   vtkNew<vtkNamedColors> colors;
-# 
-#   // Setup four points
-#   vtkNew<vtkPoints> points;
-#   points->InsertNextPoint(0.0, 0.0, 0.0);
-#   points->InsertNextPoint(1.0, 0.0, 0.0);
-#   points->InsertNextPoint(1.0, 1.0, 0.0);
-#   points->InsertNextPoint(0.0, 1.0, 0.0);
-# 
-#   // Create the polygon
-#   vtkNew<vtkPolygon> polygon;
-#   polygon->GetPointIds()->SetNumberOfIds(4); // make a quad
-#   polygon->GetPointIds()->SetId(0, 0);
-#   polygon->GetPointIds()->SetId(1, 1);
-#   polygon->GetPointIds()->SetId(2, 2);
-#   polygon->GetPointIds()->SetId(3, 3);
-# 
-#   // Add the polygon to a list of polygons
-#   vtkNew<vtkCellArray> polygons;
-#   polygons->InsertNextCell(polygon);
-# 
-#   // Create a PolyData
-#   vtkNew<vtkPolyData> polygonPolyData;
-#   polygonPolyData->SetPoints(points);
-#   polygonPolyData->SetPolys(polygons);
-# 
-#   // Create a mapper and actor
-#   vtkNew<vtkPolyDataMapper> mapper;
-#   mapper->SetInputData(polygonPolyData);
-# 
-#   vtkNew<vtkActor> actor;
-#   actor->SetMapper(mapper);
-#   actor->GetProperty()->SetColor(colors->GetColor3d("Silver").GetData());
-# 
-#   // Visualize
-#   vtkNew<vtkRenderer> renderer;
-#   vtkNew<vtkRenderWindow> renderWindow;
-#   renderWindow->SetWindowName("Polygon");
-#   renderWindow->AddRenderer(renderer);
-#   vtkNew<vtkRenderWindowInteractor> renderWindowInteractor;
-#   renderWindowInteractor->SetRenderWindow(renderWindow);
-# 
-#   renderer->AddActor(actor);
-#   renderer->SetBackground(colors->GetColor3d("Salmon").GetData());
-#   renderWindow->Render();
-#   renderWindowInteractor->Start();
-# 
-#   return EXIT_SUCCESS;
-# }
+    render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start()
 
+  
+def create_leaf(leaf, leaf_points, leaf_polys):
+
+    offs = leaf_points.GetNumberOfPoints() 
+ 
+    for i in range(0, leaf.getNumberOfNodes() - 1):  # 
+          
+        ln1 = leaf.getLeafVis(i)        
+        ln2 = leaf.getLeafVis(i + 1)
+        
+        if len(ln1) > 0 and len(ln2) > 0:
+            n1 = leaf.getNode(i)
+            n2 = leaf.getNode(i + 1)  
+            quad1 = vtk.vtkPolygon()
+            quad2 = vtk.vtkPolygon()
+            quad1.GetPointIds().SetNumberOfIds(4)    
+            quad2.GetPointIds().SetNumberOfIds(4)    
+            for j in range(0, 4):
+                quad1.GetPointIds().SetId(j, offs + j)
+                quad2.GetPointIds().SetId(j, offs + j + 4)
+            
+            for j in range(0, 2):
+                leaf_points.InsertNextPoint(n1.x, n1.y, n1.z)
+                leaf_points.InsertNextPoint(ln1[j].x, ln1[j].y, ln1[j].z)
+                leaf_points.InsertNextPoint(ln2[j].x, ln2[j].y, ln2[j].z)
+                leaf_points.InsertNextPoint(n2.x, n2.y, n2.z)                    
+            offs += 8
+    
+            leaf_polys.InsertNextCell(quad1)
+            leaf_polys.InsertNextCell(quad2)
+    
 
 def solver_to_polydata(solver, min_, max_, res_):
     """ Creates vtkPolydata from dumux-rosi solver as a structured grid

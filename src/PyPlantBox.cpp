@@ -274,6 +274,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getLength",&Organ::getLength,py::arg("realized"))
 
             .def("getNumberOfNodes",&Organ::getNumberOfNodes)
+			.def("getNumberOfSegments",&Organ::getNumberOfSegments)
             .def("getNode",&Organ::getNode)
             .def("getNodeId",&Organ::getNodeId)
             .def("getNodeCT",&Organ::getNodeCT)
@@ -579,12 +580,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>>())
 			.def("createLeafGeometry",&LeafRandomParameter::createLeafGeometry)
 			.def("createLeafRadialGeometry",&LeafRandomParameter::createLeafRadialGeometry)
-			.def("getLeafGeometry",&LeafRandomParameter::getLeafGeometry)
             .def("getLateralType",&LeafRandomParameter::getLateralType)
             .def("nob",&LeafRandomParameter::nob)
             .def("nobs",&LeafRandomParameter::nobs)
             .def("leafLength",&LeafRandomParameter::leafLength)
             .def("leafMid",&LeafRandomParameter::leafMid)
+			.def_readwrite("leafGeometry", &LeafRandomParameter::leafGeometry)
             .def_readwrite("lb", &LeafRandomParameter::lb)
             .def_readwrite("lbs", &LeafRandomParameter::lbs)
             .def_readwrite("la", &LeafRandomParameter::la)
@@ -594,8 +595,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("lnf", &LeafRandomParameter::lnf)
             .def_readwrite("lmax", &LeafRandomParameter::lmax)
             .def_readwrite("lmaxs", &LeafRandomParameter::lmaxs)
-            .def_readwrite("k", &LeafRandomParameter::k)
-            .def_readwrite("ks", &LeafRandomParameter::ks)
+            .def_readwrite("areaMax", &LeafRandomParameter::areaMax)
+            .def_readwrite("areaMaxs", &LeafRandomParameter::areaMaxs)
             .def_readwrite("r", &LeafRandomParameter::r)
             .def_readwrite("rs", &LeafRandomParameter::rs)
             .def_readwrite("a", &LeafRandomParameter::a)
@@ -622,7 +623,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp);
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool>())
             .def_readwrite("lb", &LeafSpecificParameter::lb)
             .def_readwrite("la", &LeafSpecificParameter::la)
             .def_readwrite("ln", &LeafSpecificParameter::ln)
@@ -630,7 +631,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a", &LeafSpecificParameter::a)
             .def_readwrite("theta", &LeafSpecificParameter::theta)
             .def_readwrite("rlt", &LeafSpecificParameter::rlt)
-            .def("getK",&LeafSpecificParameter::getK)
+            .def_readwrite("leafArea", &LeafSpecificParameter::leafArea)
+            .def_readwrite("laterals", &LeafSpecificParameter::laterals)
+			.def("getK",&LeafSpecificParameter::getK)
             .def("nob",&LeafSpecificParameter::nob);
     /*
      * stemparameter.h
@@ -724,6 +727,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Leaf, Organ, std::shared_ptr<Leaf>>(m, "Leaf")
             .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+			.def("getLeafVis", &Leaf::getLeafVis)
             .def("calcCreationTime", &Leaf::calcCreationTime)
             .def("calcLength", &Leaf::calcLength)
             .def("calcAge", &Leaf::calcAge)
@@ -822,8 +826,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&XylemFlux::setKrTables))
             .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&XylemFlux::setKxTables))
-			
-			
             .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0))
             .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0))
             .def("setKrTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKrTables))

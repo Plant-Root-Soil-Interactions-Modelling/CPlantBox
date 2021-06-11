@@ -24,16 +24,13 @@ namespace CPlantBox {
  */
 Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
 		Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
-:Organ(id, param, alive, active, age, length, iheading, pbl, pni, moved,  oldNON )
-{ }
+		:Organ(id, param, alive, active, age, length, iheading, pbl, pni, moved,  oldNON )
+		 { }
 
 /**
  * Constructor
- * This is a Copy Paste of the Leaf.cpp but it works independently, it has its own parameter file (in .lParam file) tropism, f_gf function, txt and vtp writing syleaf.
- * All of those can be modified to fit the real f_gf of the Plant.
- *
  * Typically called by the Plant::Plant(), or Leaf::createNewLeaf().
- * For leaf the initial node and node emergence time (netime) must be set from outside
+ * For leaf the initial node (in nodes) and node emergence time (in nodeCTs) must be set from outside
  *
  * @param plant 		points to the plant
  * @param parent 		points to the parent organ
@@ -44,34 +41,32 @@ Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bo
  * @param pbl			parent base length
  */
 Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay,  std::shared_ptr<Organ> parent, double pbl, int pni)
-:Organ(plant, parent,Organism::ot_leaf, type, delay, iheading, pbl, pni)
+:Organ(plant, parent, Organism::ot_leaf, type, delay, iheading, pbl, pni)
 {
 	assert(parent!=nullptr && "Leaf::Leaf parent must be set");
-	//  std::cout << "Leaf pni = "<< pni<< std::endl;
 	//  std::cout << "Organism* plant ="<< plant <<" "<< parent<<std::endl;
 	// std::cout <<", "<< std::static_pointer_cast<const LeafSpecificParameter>(param_)->toString() << "\n";
 	// std::cout <<"subtype ="<<param()->subType <<"getleafphytomerID =" <<getleafphytomerID(param()->subType)<< "\n";
-	auto leaf_p = this->param();
-	addleafphytomerID(leaf_p->subType);
-	double beta = getleafphytomerID(leaf_p->subType)*M_PI*getLeafRandomParameter()->rotBeta
+	addleafphytomerID(param()->subType);
+
+	double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->rotBeta
 			+ M_PI*plant->rand()*getLeafRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	Matrix3d ons = Matrix3d::ons(iheading);
 	//	if (getLeafRandomParameter()->InitBeta >0 && getleafphytomerID(param()->subType)==0 ){
 	beta = beta + getLeafRandomParameter()->initBeta;
 	//	}
 
-	if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==2 )
-	{beta = beta + getLeafRandomParameter()->initBeta*M_PI;}
-	else if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==3 )
-	{beta = beta + getLeafRandomParameter()->initBeta*M_PI + M_PI;}
-	//ons.times(Matrix3d::rotX(beta));
+	if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==2) {
+		beta = beta + getLeafRandomParameter()->initBeta*M_PI;
+	} else if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==3) {
+		beta = beta + getLeafRandomParameter()->initBeta*M_PI + M_PI;
+	}
 
-	double theta = M_PI*leaf_p ->theta;
+	double theta = M_PI*param()->theta;
 	if (parent->organType()!=Organism::ot_seed) { // scale if not a base leaf
 		double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
 		theta *= scale;
 	}
-	//ons.times(Matrix3d::rotZ(theta));
 	this->iHeading = ons.times(Vector3d::rotAB(theta,beta)); // new initial heading
 
 	// initial node
@@ -79,6 +74,7 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double 
 		// assert(pni+1 == parent->getNumberOfNodes() && "at object creation always at last node"); // ?????
 		addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
 	}
+
 }
 
 /**
@@ -134,7 +130,7 @@ void Leaf::simulate(double dt, bool verbose)
 			}
 		}
 
-		if (age>0) { // unborn  leafs have no children
+		if (age>0) { // unborn leafs have no children
 
 			// children first (lateral leafs grow even if base leaf is inactive)
 			for (auto l:children) {
@@ -153,7 +149,7 @@ void Leaf::simulate(double dt, bool verbose)
 				}
 
 				double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
-                this->epsilonDx = 0.; // now it is "spent" targetlength (no need for -this->epsilonDx in the following)
+				this->epsilonDx = 0.; // now it is "spent" targetlength (no need for -this->epsilonDx in the following)
 
 				double e = targetlength-length; // unimpeded elongation in time step dt
 				double scale = getLeafRandomParameter()->f_sa->getValue(nodes.back(),shared_from_this());
@@ -256,6 +252,82 @@ double Leaf::getParameter(std::string name) const {
 	return Organ::getParameter(name);
 }
 
+
+/**
+ * in case there are no lateral leafs return leaf surface area [cm2]
+ */
+double Leaf::leafArea()
+{
+	if (param()->laterals) {
+		return 0.;
+	} else {
+		return param()->leafArea; // TODO use in L303; update
+	}
+};
+
+/**
+ * indicates if the node is in the leaf surface are and should be viusalized as polygon
+ *
+ * leaf base (false), branched leaf (false), or leaf surface area (true)
+ */
+bool Leaf::nodeLeafVis(double l)
+{
+	if (param()->laterals) {
+		return false;
+	} else {
+		return l >= param()->lb; // true if not in basal zone
+	}
+}
+
+
+/**
+ * scales unit leaf shape to the specific leaf,
+ * and returns leaf shape coordinates per node (normally 2 points, for convex domain it could be more points)
+ * see ... how to obtain a quad form that
+ */
+std::vector<Vector3d> Leaf::getLeafVis(int i)
+{
+	double l = 0.; // length until node i
+	for (int j = 0; j<i; j++) {
+		l += getNode(j+1).minus(getNode(j)).length();
+	}
+	if (nodeLeafVis(l)) {
+		auto lrp = getLeafRandomParameter();
+		auto lg = lrp->leafGeometry;
+		int n = lg.size();
+		if (n>0) {
+			std::vector<Vector3d> coords;
+			double area_ = param()->leafArea * (leafLength()/param()->leafLength()); // maximal area is reached if maximal leaf length is reached
+			double a  = area_ / leafLength(); // scale radius
+			int ind = int( ((l - param()->lb) /leafLength())*(n-1) + 0.5); // index within precomputed normalized geometry
+			auto x_ = lg.at(ind); // could be more than one point for non-convex geometries
+			Vector3d x1;
+			if (i==0) { // first node
+				x1 = iHeading;
+			} else if (i==nodes.size()-1) { // last node
+				x1 = getNode(i-1).minus(getNode(i));
+			} else { // inner node
+				x1 = getNode(i+1).minus(getNode(i-1));
+			}
+			x1.normalize();
+			Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs
+			y1.normalize();
+			for (double x :x_) {
+				coords.push_back(getNode(i).plus(y1.times(x*a)));
+			}
+			for (double x :x_) {
+				coords.push_back(getNode(i).minus(y1.times(x*a)));
+			}
+			return coords;
+		} else {
+			std::cout << "Leaf::getLeafVis: WARNING leaf geometry was not set \n";
+			return std::vector<Vector3d>();
+		}
+	} else { // no need for polygonal visualisation
+		return std::vector<Vector3d>();
+	}
+}
+
 /**
  * Analytical creation (=emergence) time of a node at a length along the leaf
  *
@@ -330,7 +402,7 @@ int Leaf::getleafphytomerID(int subtype)
  */
 void Leaf::addleafphytomerID(int subtype)
 {
-	getPlant()->leafphytomerID[subtype]++;
+	getPlant()->leafphytomerID.at(subtype)++;
 }
 
 /**
@@ -358,8 +430,8 @@ void Leaf::createLateral(bool silence)
 			//		lateral2->setRelativeOrigin(nodes.back());
 			children.push_back(lateral2);
 			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		}
-		else if (getLeafRandomParameter()->lnf==3&& lt>0) { //ln equal and both side leaf
+
+		} else if (getLeafRandomParameter()->lnf==3&& lt>0) { //ln equal and both side leaf
 			double ageLN = this->calcAge(getLength(true)); // age of Leaf when lateral node is created
 			double ageLG = this->calcAge(getLength(true)+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
@@ -372,8 +444,8 @@ void Leaf::createLateral(bool silence)
 			//		lateral2->setRelativeOrigin(nodes.back());
 			children.push_back(lateral2);
 			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		}
-		else if (getLeafRandomParameter()->lnf==4 && lt>0) {//ln exponential decreasing and one side leaf
+
+		} else if (getLeafRandomParameter()->lnf==4 && lt>0) {//ln exponential decreasing and one side leaf
 			double ageLN = this->calcAge(getLength(true)); // age of Leaf when lateral node is created
 			double ageLG = this->calcAge(getLength(true)+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
@@ -399,6 +471,7 @@ void Leaf::createLateral(bool silence)
 			//		lateral2->setRelativeOrigin(nodes.back());
 			children.push_back(lateral2);
 			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
+
 		} else if (lt>0) {
 			double ageLN = this->calcAge(getLength(true)); // age of Leaf when lateral node is created
 			double ageLG = this->calcAge(getLength(true)+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
@@ -409,9 +482,7 @@ void Leaf::createLateral(bool silence)
 			//		lateral->setRelativeOrigin(nodes.back());
 			children.push_back(lateral);
 			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		}else {
-
-
+		} else {
 			double ageLN = this->calcAge(getLength(true)); // age of leaf when lateral node is created
 			double ageLG = this->calcAge(getLength(true)+param()->la); // age of the leaf, when the lateral starts growing (i.e when the apical zone is developed)
 			double delay = ageLG-ageLN; // time the lateral has to wait
@@ -536,12 +607,12 @@ void Leaf::createSegments(double l, bool verbose)
 	}
 }
 
-
 /**
  *
  */
-std::shared_ptr<Plant> Leaf::getPlant() {
-	return std::static_pointer_cast<Plant>(plant.lock());
+std::shared_ptr<Plant> Leaf::getPlant()
+{
+	return std::dynamic_pointer_cast<Plant>(plant.lock());
 }
 
 /**
@@ -551,7 +622,6 @@ double Leaf::dx() const
 {
 	return getLeafRandomParameter()->dx;
 }
-
 
 /**
  * @return The LeafTypeParameter from the plant

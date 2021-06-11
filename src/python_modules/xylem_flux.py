@@ -334,6 +334,7 @@ class XylemFluxPython(XylemFlux):
         print("\nXylemFluxPython.test:")
         # 1 check if segment index is node index-1
         segments = self.get_segments()
+        nodes = self.get_nodes()
         for i, s_ in enumerate(segments):
             if i != s_[1] - 1:
                 raise "Segment indices are mixed up"
@@ -358,7 +359,7 @@ class XylemFluxPython(XylemFlux):
         map = self.rs.seg2cell
         for seg_id, cell_id in map.items():
             if cell_id < 0:
-                print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!")        
+                print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])        
         print()
         
     def plot_conductivities(self):

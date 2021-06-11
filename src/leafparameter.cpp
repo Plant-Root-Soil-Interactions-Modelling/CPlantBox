@@ -14,7 +14,7 @@ namespace CPlantBox {
  * @return Mean maximal leaf length of this leaf type
  */
 double LeafSpecificParameter::getK() const {
-	double l = std::accumulate(ln.begin(), ln.end(), 0.);
+	double l = std::accumulate(ln.begin(), ln.end(), 0.); // branchning zone
 	return l+la+lb;
 }
 
@@ -56,7 +56,7 @@ LeafRandomParameter::LeafRandomParameter(std::shared_ptr<Organism> plant) :Organ
  */
 std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<Organism> plant)
 {
-    // std::cout << "LeafRandomParameter::copy\n"<< std::flush;
+	// std::cout << "LeafRandomParameter::copy\n"<< std::flush;
 	auto r = std::make_shared<LeafRandomParameter>(*this); // copy constructor breaks class introspection
 	r->plant = plant;
 	r->bindParameters(); // fix class introspection
@@ -76,16 +76,19 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
-    auto p = plant.lock();
+	auto p = plant.lock();
 	// type does not change
 	double lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
 	double res = lb_ - floor(lb_/dx)* dx;	
-	if(res < dxMin){
-		if(res <= dxMin/2){ lb_ -= res;
-		}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
+	if (res < dxMin) {
+		if (res <= dxMin/2){
+			lb_ -= res;
+		} else {
+			lb_ =  floor(lb_ / dx)*dx + dxMin;
+		}
 		this->lb=lb_;
 	}	
-	
+
 	double la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
 	res = la_-floor(la_ / dx)*dx;	
 	if(res < dxMin && res != 0){
@@ -93,12 +96,12 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		}else{la_ =  floor(la_ / dx)*dx + dxMin;}
 		this->la=la_;
 	}
-	
-	if(ln < dxMin*0.99 && ln !=0){
+
+	if (ln < dxMin*0.99 && ln !=0){
 		std::cout<<"\nLeafRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
 		ln = dxMin;
 	}
-	
+
 	std::vector<double> ln_; // stores the inter-distances
 
 	// stores the inter-distances
@@ -111,9 +114,9 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
-				} //make ln compatible with dx() and dxMin().
-			
+
+			} //make ln compatible with dx() and dxMin().
+
 			ln_.push_back(d);
 		}
 		break;
@@ -125,9 +128,9 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
-				} //make ln compatible with dx() and dxMin().
-			
+
+			} //make ln compatible with dx() and dxMin().
+
 			ln_.push_back(d);
 			ln_.push_back(0);
 		}
@@ -140,9 +143,9 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
-				} //make ln compatible with dx() and dxMin().
-			
+
+			} //make ln compatible with dx() and dxMin().
+
 			ln_.push_back(d);
 		}
 		break;
@@ -154,9 +157,9 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
-				} //make ln compatible with dx() and dxMin().
-			
+
+			} //make ln compatible with dx() and dxMin().
+
 			ln_.push_back(d);
 		}
 		break;
@@ -168,9 +171,9 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
-				} //make ln compatible with dx() and dxMin().
-			
+
+			} //make ln compatible with dx() and dxMin().
+
 			ln_.push_back(d);
 			ln_.push_back(0);
 		}
@@ -183,20 +186,21 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
-				} //make ln compatible with dx() and dxMin().
-			
+
+			} //make ln compatible with dx() and dxMin().
+
 			ln_.push_back(d);
 		}
 		break;
 	default:
 		throw 1; // TODO make a nice one
 	}
-	double r_ = std::max(r + p->randn()*rs,double(0)); // initial elongation
-	double a_ = std::max(a + p->randn()*as,double(0)); // radius
-	double theta_ = std::max(theta + p->randn()*thetas,double(0)); // initial elongation
-	double rlt_ = std::max(rlt + p->randn()*rlts,double(0)); // leaf life time
-	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
+	double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
+	double a_ = std::max(a + p->randn()*as, 0.); // radius
+	double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
+	double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // leaf life time
+	double leafArea_ = std::max(areaMax + p->randn()*areaMaxs, 0.); // radius
+	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, successor.size()>0);
 }
 
 /**
@@ -237,14 +241,14 @@ int LeafRandomParameter::getLateralType(const Vector3d& pos)
  */
 double LeafRandomParameter::nobs() const
 {
-    double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
-    if (la>0) {
-        nobs -= (las/la - lns/ln)*la/ln;
-    }
-    if (lb>0) {
-        nobs -= (lbs/lb - lns/ln)*lb/ln;
-    }
-    return std::max(nobs,0.);
+	double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+	if (la>0) {
+		nobs -= (las/la - lns/ln)*la/ln;
+	}
+	if (lb>0) {
+		nobs -= (lbs/lb - lns/ln)*lb/ln;
+	}
+	return std::max(nobs,0.);
 }
 
 /**
@@ -340,21 +344,21 @@ tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
  */
 void LeafRandomParameter::bindParameters()
 {
-    OrganRandomParameter::bindParameters();
+	OrganRandomParameter::bindParameters();
 	bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
 	bindParameter("la", &la, "Apical zone [cm]", &las);
 	bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
-    bindParameter("lmax", &lmax, "Maximal stem length [cm]", &lmaxs);
+	bindParameter("lmax", &lmax, "Maximal stem length [cm]", &lmaxs);
+	bindParameter("areaMax", &areaMax, "Maximal leaf area [cm2]", &areaMaxs);
 	bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-	bindParameter("a", &a, "Leaf width [cm]", &as);
-    bindParameter("RotBeta", &rotBeta, "RevRotation of the leaf"); /// todo improve description, start lower letter
-    bindParameter("BetaDev", &betaDev, "RevRotation deviation"); /// todo improve description, start lower letter
-    bindParameter("InitBeta", &initBeta, "Initial RevRotation"); /// todo improve description, start lower letter
+	bindParameter("RotBeta", &rotBeta, "RevRotation of the leaf"); /// todo improve description, start lower letter
+	bindParameter("BetaDev", &betaDev, "RevRotation deviation"); /// todo improve description, start lower letter
+	bindParameter("InitBeta", &initBeta, "Initial RevRotation"); /// todo improve description, start lower letter
 	bindParameter("tropismT", &tropismT, "Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
 	bindParameter("tropismN", &tropismN, "Number of trials of leaf tropism");
 	bindParameter("tropismS", &tropismS, "Mean value of expected change of leaf tropism [1/cm]");
 	bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
-    bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
+	bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
 	bindParameter("theta", &theta, "Angle between leaf and parent leaf [rad]", &thetas);
 	bindParameter("rlt", &rlt, "Leaf life time [day]", &rlts);
 	bindParameter("gf", &gf, "Growth function number [1]", &rlts);
@@ -372,7 +376,8 @@ void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std:
 	leafGeometry.resize(N);
 	auto y_ = Function::linspace(0., leafLength(), N);
 	for (int i = 0; i<N; i++) {
-		leafGeometry[i] = intersections(y_[i], phi, l);
+		std::vector<double> x = intersections(y_[i], phi, l);
+		leafGeometry.at(i) = x;
 	}
 	normalizeLeafNodes();
 }
@@ -381,28 +386,32 @@ void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std:
  * resamples incoming leaf geometry
  */
 void LeafRandomParameter::createLeafGeometry(std::vector<double> y, std::vector<double> l, int N) {
+	double midy = leafMid();
 	leafGeometry.resize(N);
-	auto y_ = Function::linspace(0., leafLength(), N);
+	auto y_ = Function::linspace(-midy, leafLength()-midy, N);
 	for (int i = 0; i<N; i++) {
-		leafGeometry[i].push_back(Function::interp1(y_[i], y, l));
+		leafGeometry.at(i).push_back(Function::interp1(y_[i], y, l));
 	}
 	normalizeLeafNodes();
 }
 
-// normalizes points to obtain a leaf area of 1, assuming a length of 1
+/**
+ *  normalizes points to obtain a leaf area of 1, assuming a length of 1
+ */
 void LeafRandomParameter::normalizeLeafNodes() {
 	double s = 0.;
 	for (int i = 0; i< leafGeometry.size(); i++) { // TODO area from non-convex points
-		s += leafGeometry[i].back();
+		if (leafGeometry.at(i).size()>0) {
+			s += leafGeometry.at(i).back();
+		}
 	}
-//	s = 2*s; // leaf area (leafNodexX describes only half a leaf)
-//	for (int i = 0; i< leafGeometry.size(); i++) {
-//		leafGeometry[i].back() = leafGeometry[i].back()/s;
-//	}
-
+	s = 2*s/leafGeometry.size(); // leaf area (leafNodexX describes only half a leaf)
+	for (int i = 0; i< leafGeometry.size(); i++) {
+		if (leafGeometry.at(i).size()>0) {
+			leafGeometry.at(i).back() = leafGeometry.at(i).back()/s;
+		}
+	}
 }
-
-
 
 /**
  * returns the intersection of a horizontal line at y-coordinate with the leaf geometry
@@ -410,11 +419,11 @@ void LeafRandomParameter::normalizeLeafNodes() {
 std::vector<double> LeafRandomParameter::intersections(double y, std::vector<double> phi, std::vector<double> l) {
 	int N = 1000; // high resolution, since we just use nearest neighbor to find the zero
 	double midy = leafMid();
-	std::vector<double> ix;
+	std::vector<double> ix = std::vector<double>();
 	bool below = true;
 	for (int i = 0; i<N; i++) {
 		double p = (double)i/(N-1)*M_PI - M_PI/2.; // [-pi/2, pi/2]
-		double l_ = Function::interp1(p, phi,l);
+		double l_ = Function::interp1(p, phi, l);
 		if (below) {
 			if (l_*sin(p)+midy>=y) {
 				below = false;
@@ -429,7 +438,5 @@ std::vector<double> LeafRandomParameter::intersections(double y, std::vector<dou
 	}
 	return ix;
 }
-
-
 
 } // end namespace CPlantBox

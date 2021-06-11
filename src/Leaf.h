@@ -35,6 +35,11 @@ public:
 	void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 
 	double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
+    double leafLength() { return std::max(getLength(false)-param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
+    double leafCenter() { return std::max(getLength(false)-param()->la-param()->lb, 0.); }; ///< center of the radial parametrisation
+    double leafArea(); ///< returns the leaf surface area, or sum child-leaf areas [cm2]
+    bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
+	std::vector<Vector3d> getLeafVis(int i); // per node
 
     std::string toString() const override;
 
@@ -48,7 +53,7 @@ public:
 	std::shared_ptr<const LeafSpecificParameter> param() const; ///< root parameter
 	std::shared_ptr<Plant> getPlant();
 	double dx() const; ///< returns the max axial resolution
-	double dxMin() const{return getLeafRandomParameter()->dxMin; }; ///< returns the min axial resolution
+	double dxMin() const { return getLeafRandomParameter()->dxMin; }; ///< returns the min axial resolution
 
     int getParentChildrenCount() {
     	return getParent()->getNumberOfChildren();
@@ -56,8 +61,8 @@ public:
 
 protected:
 
-    void minusPhytomerId(int subtype);
     int getleafphytomerID(int subtype);
+    void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);
 
     void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()

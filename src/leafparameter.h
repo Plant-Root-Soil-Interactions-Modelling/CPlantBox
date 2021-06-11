@@ -11,7 +11,9 @@
 #include <vector>
 
 namespace CPlantBox {
+
 class Organism;
+
 /**
  * Parameters of a single leaf (created by LeafSpecificParameter)
  */
@@ -20,21 +22,24 @@ class LeafSpecificParameter : public OrganSpecificParameter
 public:
 
 	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
-	LeafSpecificParameter(int subType, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
-		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln)  { }; ///< Constructor setting all parameters
+	LeafSpecificParameter(int subType, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, double leafArea, bool laterals):
+		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), theta(theta), rlt(rlt), leafArea(leafArea), laterals(laterals), ln(ln)   { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
 	 */
-	double lb = 0.; 		///< Basal zone of leaf vein [cm]
+	double lb = 0.; 		///< Basal zone of leaf (leaf-stem) [cm]
 	double la = 0.;			///< Apical zone of leaf vein [cm];
 	double r = 0.;			///< Initial growth rate [cm day-1]
 	double theta = 0.; 		///< Branching angle between veins [rad]
 	double rlt = 0.;		///< Leaf life time [day]
-	std::vector<double> ln = std::vector<double>();    ///< Inter-lateral distances [cm]
+	double leafArea = 0.; 	///< Leaf area [cm2]
+	bool laterals = false;  ///< Indicates if lateral leafs exist
+	std::vector<double> ln = std::vector<double>(); ///< Inter-lateral distances (if laterals) or mid for radial parametrisation (if there are no laterals) [cm]
 
 	int nob() const { return ln.size(); }
-	double getK() const; ///< Returns the exact maximal leaf length of this realization [cm]
+	double getK() const; ///< Returns the exact maximal leaf length (including leaf stem) of this realization [cm]
+	double leafLength() const { return getK()-lb; }; ///< Returns the exact maximal leaf length (excluding leaf stem) of this realization [cm]
 
 	std::string toString() const override;
 
@@ -54,7 +59,6 @@ public:
 
     void createLeafGeometry(std::vector<double> y, std::vector<double> l, int N); // create normalized leaf geometry
     void createLeafRadialGeometry(std::vector<double> phi, std::vector<double> l, int N); // create normalized leaf geometry from a radial parameterization
-    std::vector<std::vector<double>> getLeafGeometry() { return leafGeometry; }
 
 	std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
 
@@ -81,14 +85,12 @@ public:
 	double ln = 1.; 	///< Inter-lateral distance [cm]
 	double lns = 0.;  	///< Standard deviation inter-lateral distance [cm]
 	int lnf = 0; 		///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
-	double k = 10.;			///< Maximal leaf length [cm]
-	double ks =0.;			///< Standard deviation maxial leaf length [cm]
     double lmax = 0.;       ///< Maximal stem length [cm]
     double lmaxs = 0.;      ///< Standard deviation of maximal stem length [cm]
-	double r = 1.;			///< Initial growth rate [cm day-1]
+    double areaMax = 10.; 	///< maximal leaf area (reached when stem length reaches lmax) [cm2]
+    double areaMaxs = 0.; 	///< Standard deviation of maximal leaf area [cm2]
+    double r = 1.;			///< Initial growth rate [cm day-1]
 	double rs = 0.;			///< Standard deviation initial growth rate [cm day-1]
-	double a = 0.1; 		///< Leaf width [cm]
-	double as = 0.; 		///< Standard deviation leaf width [cm]
 	double rotBeta = 0.6;	///< Radial rotation (roll) (rad)
 	double betaDev = 0.2;	///< Deviation of radial rotation (rad)
 	double initBeta = 0.2;	///< Initial radial rotation (rad)
@@ -109,13 +111,13 @@ public:
     std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
-    std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth
+    std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability function
+
+    std::vector<std::vector<double>> leafGeometry; // normalized x - coordinates per along the normalized mid vein
 
 protected:
 
     void bindParameters(); ///<sets up class introspectionbindParameters
-
-    std::vector<std::vector<double>> leafGeometry; // normalized x - coordinates per along the normalized mid vein
     std::vector<double> intersections(double y, std::vector<double> phi, std::vector<double> l); ///< returns the intersection of a horizontal line at y-coordinate with the leaf geometry
     void normalizeLeafNodes(); ///< scales leaf area to 1
 

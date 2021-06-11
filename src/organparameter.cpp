@@ -301,7 +301,7 @@ void OrganRandomParameter::bindParameters()
 {
     bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4)");
     bindParameter("subType", &subType, "Unique identifier of this sub type");
-    bindParameter("a", &a, "Root radius [cm]", &as);
+    bindParameter("a", &a, "radius [cm]", &as);
     // other parameters (descriptions only)
     description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
 }
