@@ -631,7 +631,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a", &LeafSpecificParameter::a)
             .def_readwrite("theta", &LeafSpecificParameter::theta)
             .def_readwrite("rlt", &LeafSpecificParameter::rlt)
-            .def_readwrite("leafArea", &LeafSpecificParameter::leafArea)
+            .def_readwrite("leafArea", &LeafSpecificParameter::areaMax)
             .def_readwrite("laterals", &LeafSpecificParameter::laterals)
 			.def("getK",&LeafSpecificParameter::getK)
             .def("nob",&LeafSpecificParameter::nob);
@@ -728,6 +728,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
 			.def("getLeafVis", &Leaf::getLeafVis)
+			.def("getLeafVisX", &Leaf::getLeafVisX)
             .def("calcCreationTime", &Leaf::calcCreationTime)
             .def("calcLength", &Leaf::calcLength)
             .def("calcAge", &Leaf::calcAge)

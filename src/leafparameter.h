@@ -23,7 +23,7 @@ public:
 
 	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
 	LeafSpecificParameter(int subType, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, double leafArea, bool laterals):
-		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), theta(theta), rlt(rlt), leafArea(leafArea), laterals(laterals), ln(ln)   { }; ///< Constructor setting all parameters
+		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals), ln(ln)   { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
@@ -33,7 +33,7 @@ public:
 	double r = 0.;			///< Initial growth rate [cm day-1]
 	double theta = 0.; 		///< Branching angle between veins [rad]
 	double rlt = 0.;		///< Leaf life time [day]
-	double leafArea = 0.; 	///< Leaf area [cm2]
+	double areaMax = 0.; 	///< Leaf area [cm2]
 	bool laterals = false;  ///< Indicates if lateral leafs exist
 	std::vector<double> ln = std::vector<double>(); ///< Inter-lateral distances (if laterals) or mid for radial parametrisation (if there are no laterals) [cm]
 
@@ -104,8 +104,13 @@ public:
 	double rlt = 1.e9;		///< Leaf life time (days)
 	double rlts = 0.;		///< Standard deviation of leaf life time (days)
 	int gf = 1;				///< Growth function (1=negative exponential, 2=linear)
-	std::vector<int> successor;			///< Lateral types [1]
-	std::vector<double> successorP; 	///< Probabiltities of lateral type to emerge (sum of values == 1) [1]
+	std::vector<int> successor = {};			///< Lateral types [1]
+	std::vector<double> successorP = {}; 	///< Probabiltities of lateral type to emerge (sum of values == 1) [1]
+
+	/* describes the plant geometry */
+	std::vector<double> leafGeometryPhi= {};
+	std::vector<double> leafGeometryX= {};
+	int parametrisationType = 0; // 0 .. radial, 1..along main axis
 
 	/* call back functions */
     std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
@@ -116,6 +121,8 @@ public:
     std::vector<std::vector<double>> leafGeometry; // normalized x - coordinates per along the normalized mid vein
 
 protected:
+
+	int geometryN = 100; // leaf geometry resolution (not in XML)
 
     void bindParameters(); ///<sets up class introspectionbindParameters
     std::vector<double> intersections(double y, std::vector<double> phi, std::vector<double> l); ///< returns the intersection of a horizontal line at y-coordinate with the leaf geometry

@@ -44,7 +44,7 @@ class TestLeaf(unittest.TestCase):
           
         phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
         l = np.array([3, 2.2, 1.7, 2, 3.5])
-        N = 105  # N is rather high for testing
+        N = 100  # N is rather high for testing
         p0.createLeafRadialGeometry(phi, l, N)            
 #         y = np.array([-3, -3 * 0.7, 0., 3.5 * 0.7, 3.5])
 #         l = np.array([0., 2.2 * 0.7, 1.7, 1.8 * 0.7, 0.])

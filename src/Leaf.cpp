@@ -261,7 +261,7 @@ double Leaf::leafArea()
 	if (param()->laterals) {
 		return 0.;
 	} else {
-		return param()->leafArea; // TODO use in L303; update
+		return param()->areaMax * (leafLength()/param()->leafLength());
 	}
 };
 
@@ -279,28 +279,50 @@ bool Leaf::nodeLeafVis(double l)
 	}
 }
 
-
 /**
- * scales unit leaf shape to the specific leaf,
- * and returns leaf shape coordinates per node (normally 2 points, for convex domain it could be more points)
- * see ... how to obtain a quad form that
+ * node position along leaf axis
  */
-std::vector<Vector3d> Leaf::getLeafVis(int i)
+double Leaf::nodeLeafPos(int i)
 {
 	double l = 0.; // length until node i
 	for (int j = 0; j<i; j++) {
 		l += getNode(j+1).minus(getNode(j)).length();
 	}
+	return l;
+}
+
+/**
+ * parametrisation x value, at poition l along the leaf axis
+ */
+std::vector<double> Leaf::getLeafVisX_(double l) {
+	auto& lg = getLeafRandomParameter()->leafGeometry;
+	int n = lg.size();
+	int ind = int( ((l - param()->lb) /leafLength())*(n-1) + 0.5); // index within precomputed normalized geometry
+	auto x_ = lg.at(ind); // could be more than one point for non-convex geometries
+	return x_;
+}
+
+/**
+ * for Python binding
+ */
+std::vector<double> Leaf::getLeafVisX(int i) {
+	return getLeafVisX_(nodeLeafPos(i));
+}
+
+/**
+ * Scales unit leaf shape to the specific leaf,
+ * and returns leaf shape coordinates per node (normally 2 points, for convex domain it could be more points)
+ * see used by vtk_plot.py to create a polygon representation of the leaf area
+ */
+std::vector<Vector3d> Leaf::getLeafVis(int i)
+{
+	double l = nodeLeafPos(i);
 	if (nodeLeafVis(l)) {
-		auto lrp = getLeafRandomParameter();
-		auto lg = lrp->leafGeometry;
+		auto& lg = getLeafRandomParameter()->leafGeometry;
 		int n = lg.size();
 		if (n>0) {
 			std::vector<Vector3d> coords;
-			double area_ = param()->leafArea * (leafLength()/param()->leafLength()); // maximal area is reached if maximal leaf length is reached
-			double a  = area_ / leafLength(); // scale radius
-			int ind = int( ((l - param()->lb) /leafLength())*(n-1) + 0.5); // index within precomputed normalized geometry
-			auto x_ = lg.at(ind); // could be more than one point for non-convex geometries
+			auto x_ = getLeafVisX_(l);
 			Vector3d x1;
 			if (i==0) { // first node
 				x1 = iHeading;
@@ -312,6 +334,7 @@ std::vector<Vector3d> Leaf::getLeafVis(int i)
 			x1.normalize();
 			Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs
 			y1.normalize();
+			double a  = leafArea() / leafLength(); // scale radius
 			for (double x :x_) {
 				coords.push_back(getNode(i).plus(y1.times(x*a)));
 			}

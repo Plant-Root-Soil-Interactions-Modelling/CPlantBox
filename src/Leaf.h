@@ -37,8 +37,8 @@ public:
 	double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
     double leafLength() { return std::max(getLength(false)-param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
     double leafCenter() { return std::max(getLength(false)-param()->la-param()->lb, 0.); }; ///< center of the radial parametrisation
-    double leafArea(); ///< returns the leaf surface area, or sum child-leaf areas [cm2]
-    bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
+    double leafArea(); ///< returns the leaf surface area, zero if there are lateral-leafs [cm2]
+	std::vector<double> getLeafVisX(int i);
 	std::vector<Vector3d> getLeafVis(int i); // per node
 
     std::string toString() const override;
@@ -70,6 +70,10 @@ protected:
     Vector3d heading() const; /// current heading of the root tip
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
 	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
+
+    bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
+	std::vector<double> getLeafVisX_(double l);
+	double nodeLeafPos(int i);
 
     bool firstCall = true;
     //const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)

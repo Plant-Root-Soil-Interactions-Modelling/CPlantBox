@@ -40,23 +40,34 @@ plant.setOrganRandomParameter(stem_rp)
 leaf_rp = pb.LeafRandomParameter(plant)
 leaf_rp.subType = 2
 leaf_rp.lmax = 10
+
+leaf_rp.tropismS = 0.
      
 leaf_rp.theta = 20. / np.pi
 
 # Mint
-leaf_rp.la, leaf_rp.lb, leaf_rp.lmax, leaf_rp.ln, leaf_rp.r, leaf_rp.dx = 3.5, 1., 7.5, 3, 1, 0.5  
-phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-l = np.array([3, 2.2, 1.7, 2, 3.5])
-N = 30  # N is rather high for testing
-leaf_rp.createLeafRadialGeometry(phi, l, N)    
+# leaf_rp.la, leaf_rp.lb, leaf_rp.lmax, leaf_rp.ln, leaf_rp.r, leaf_rp.dx = 3.5, 1., 7.5, 3, 1, 0.5  
+# phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+# l = np.array([3, 2.2, 1.7, 2, 3.5])
+# N = 30  # N is rather high for testing
+# leaf_rp.createLeafRadialGeometry(phi, l, N)    
 
-# # Pasley (non convex - TODO)
+# Pasley (non convex - TODO)
 # leaf_rp.la, leaf_rp.lb, leaf_rp.lmax, leaf_rp.ln, leaf_rp.r, leaf_rp.dx = 5.4, 4.3, 5.4 + 4.3 + 0.8, 0.8, 1, 0.5
 # phi = np.array([-90, -45, -25, -15, 0, 10, 20, 30, 40, 45, 55, 60, 65, 90]) / 180. * np.pi
 # l = np.array([0.8, 0.5, 1.5, 2, 2.6, 2, 2.6, 2.7, 3.1, 3.3, 2.6, 3.3, 3.8, 5.4])
 # assert(l.shape == phi.shape)
 # N = 200  # N is rather high for testing
 # leaf_rp.createLeafRadialGeometry(phi, l, N)    
+
+leaf_rp.la, leaf_rp.lb, leaf_rp.lmax, leaf_rp.ln, leaf_rp.r, leaf_rp.dx = 5, 1, 11, 5, 1, 0.25
+phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
+l = np.array([5., 2, 5, 2, 5, 2, 5, 2, 5])
+assert(l.shape == phi.shape)
+N = 200  # N is rather high for testing
+leaf_rp.createLeafRadialGeometry(phi, l, N)   
+
+leaf_rp.areaMax = 50  # cm2
 
 plant.setOrganRandomParameter(leaf_rp)        
 

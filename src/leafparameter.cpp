@@ -7,6 +7,7 @@
 #include <iostream>
 #include <chrono>
 #include <assert.h>
+#include <algorithm>
 
 namespace CPlantBox {
 
@@ -24,10 +25,12 @@ double LeafSpecificParameter::getK() const {
 std::string LeafSpecificParameter::toString() const
 {
 	std::stringstream str;
+	str << "Leaf" << std::endl;
 	str << "subType\t" << subType << std::endl;
 	str << "lb\t" << lb << std::endl << "la\t" << la << std::endl;
 	str << "r\t" << r << std::endl << "a\t" << a << std::endl;
 	str << "theta\t" << theta << std::endl << "rlt\t" << rlt << std::endl;
+	str << "areaMax\t" << areaMax << std::endl << "laterals\t" << laterals << std::endl;
 	str << "ln\t";
 	for (int i=0; i<ln.size(); i++) {
 		str << ln[i] << " ";
@@ -303,8 +306,24 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 	if  ((p_<1) && (p_!=0))  {
 		std::cout << "LeafRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
 	}
-	assert(successor.size()==successorP.size() &&
-			"LeafTypeParameter::readXML: Successor sub type and probability vector does not have the same size" );
+	leafGeometryPhi.resize(0);
+	leafGeometryX.resize(0);
+	while(p) {
+		std::string key = p->Attribute("name");
+		if (key.compare("leafGeometry")==0)  {
+			successor.push_back(p->IntAttribute("phi"));
+			successorP.push_back(p->DoubleAttribute("x"));
+		}
+		p = p->NextSiblingElement("parameter");
+	}
+	// create geometry
+	if (parametrisationType==0) {
+		createLeafRadialGeometry(leafGeometryPhi, leafGeometryX, geometryN);
+	} else if (parametrisationType==1) {
+		createLeafGeometry(leafGeometryPhi, leafGeometryX, geometryN);
+	} else {
+		std::cout << "LeafRandomParameter::readXML: Warning! unknown parametrisation type, could not create leaf geometry \n";
+	}
 }
 
 /**
@@ -335,6 +354,18 @@ tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
 	if ((p_<1) && (p_!=0)) {
 		std::cout << "LeafRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
 	}
+	for (int i = 0; i<leafGeometryPhi.size(); i++) {
+		tinyxml2::XMLElement* p = doc.NewElement("parameter");
+		p->SetAttribute("name", "leafGeometry");
+		p->SetAttribute("phi", leafGeometryPhi[i]);
+		p->SetAttribute("x", leafGeometryX[i]);
+		element->InsertEndChild(p);
+		if (comments) {
+			std::string str = description.at("leafGeometry");
+			tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
+			element->InsertEndChild(c);
+		}
+	}
 	return element;
 }
 
@@ -361,11 +392,14 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
 	bindParameter("theta", &theta, "Angle between leaf and parent leaf [rad]", &thetas);
 	bindParameter("rlt", &rlt, "Leaf life time [day]", &rlts);
-	bindParameter("gf", &gf, "Growth function number [1]", &rlts);
+	bindParameter("gf", &gf, "Growth function number [1]");
 	bindParameter("lnf", &lnf, "Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)");
+	bindParameter("parametrisationType", &parametrisationType, "Leaf geometry parametrisation type");
 	// other parameters (descriptions only)
 	description["successor"] = "Sub type of lateral leaf veins";
 	description["successorP"] = "Probability of each sub type to occur";
+	description["leafGeometryPhi"] = "Leaf geometry parametrisation parameter";
+	description["leafGeometryX"] = "Leaf geometry parametrisation";
 }
 
 /**
@@ -373,26 +407,35 @@ void LeafRandomParameter::bindParameters()
  * and normalizes (see normalize())
  */
 void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std::vector<double> l, int N) {
-	leafGeometry.resize(N);
-	auto y_ = Function::linspace(0., leafLength(), N);
-	for (int i = 0; i<N; i++) {
-		std::vector<double> x = intersections(y_[i], phi, l);
-		leafGeometry.at(i) = x;
+	if (phi.size()>0 && (l.size()==l.size())) {
+		leafGeometry.resize(N);
+		auto y_ = Function::linspace(0., leafLength(), N);
+		for (int i = 0; i<N; i++) {
+			std::vector<double> x = intersections(y_[i], phi, l);
+			std::sort(x.begin(), x.end());
+			leafGeometry.at(i) = x;
+		}
+		normalizeLeafNodes();
+	} else {
+		std::cout << "LeafRandomParameter::createLeafRadialGeometry: Warning! parametrisation vectors y and l are empty or differ in size\n";
 	}
-	normalizeLeafNodes();
 }
 
 /**
  * resamples incoming leaf geometry
  */
 void LeafRandomParameter::createLeafGeometry(std::vector<double> y, std::vector<double> l, int N) {
-	double midy = leafMid();
-	leafGeometry.resize(N);
-	auto y_ = Function::linspace(-midy, leafLength()-midy, N);
-	for (int i = 0; i<N; i++) {
-		leafGeometry.at(i).push_back(Function::interp1(y_[i], y, l));
+	if (y.size()>0 && (y.size()==l.size())) {
+		double midy = leafMid();
+		leafGeometry.resize(N);
+		auto y_ = Function::linspace(-midy, leafLength()-midy, N);
+		for (int i = 0; i<N; i++) {
+			leafGeometry.at(i).push_back(Function::interp1(y_[i], y, l));
+		}
+		normalizeLeafNodes();
+	} else {
+		std::cout << "LeafRandomParameter::createLeafGeometry: Warning! parametrisation vectors y and l are empty or differ in size\n";
 	}
-	normalizeLeafNodes();
 }
 
 /**
@@ -400,15 +443,17 @@ void LeafRandomParameter::createLeafGeometry(std::vector<double> y, std::vector<
  */
 void LeafRandomParameter::normalizeLeafNodes() {
 	double s = 0.;
-	for (int i = 0; i< leafGeometry.size(); i++) { // TODO area from non-convex points
-		if (leafGeometry.at(i).size()>0) {
-			s += leafGeometry.at(i).back();
+	for (int i = 0; i< leafGeometry.size(); i++) {
+		auto g = leafGeometry.at(i);
+		for (auto g_ : g) {
+			s += g_;
 		}
 	}
-	s = 2*s/leafGeometry.size(); // leaf area (leafNodexX describes only half a leaf)
+	s = 2*s/leafGeometry.size(); // leaf area (leafGeometry describes only half a leaf)
 	for (int i = 0; i< leafGeometry.size(); i++) {
-		if (leafGeometry.at(i).size()>0) {
-			leafGeometry.at(i).back() = leafGeometry.at(i).back()/s;
+		auto& g = leafGeometry.at(i);
+		for (auto& g_ : g) {
+			g_ = g_/s;
 		}
 	}
 }

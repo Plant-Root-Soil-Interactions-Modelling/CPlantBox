@@ -111,31 +111,51 @@ class TestLeafParameter(unittest.TestCase):
 
     def test_radial_leaf_geometry(self):
         """ tests if a radial leaf geometry can be set"""
+        
         self.plant = pb.Organism()
         lrp = pb.LeafRandomParameter(self.plant)
         lrp.la = 3.5
         lrp.lb = 1.
         lrp.ln = 3.
         lrp.lmax = lrp.la + lrp.lb + lrp.ln  
-        lrp.areaMax = 10  
-        """ radial geometry """
-        phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-        l = np.array([3, 2.2, 1.7, 2, 3.5])
-        N = 105  # N is rather high for testing
-        lrp.createLeafRadialGeometry(phi, l, N)  
-        self.assertEqual(lrp.leafMid(), 3., "unexpected leaf mid")
-        self.assertEqual(lrp.leafLength(), 6.5, "unexpected leaf length")        
-        y_ = np.linspace(0, lrp.leafLength(), N)
+        lrp.areaMax = 50  
+#         """ radial geometry """
+#         phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+#         l = np.array([3, 2.2, 1.7, 2, 3.5])
+#         N = 105  # N is rather high for testing                
+#         lrp.createLeafRadialGeometry(phi, l, N)
+        
+        lrp.la, lrp.lb, lrp.lmax, lrp.ln, lrp.r, lrp.dx = 5, 1, 11, 5, 1, 0.5
+        phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
+        l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
+        assert(l.shape == phi.shape)
+        N = 500  # N is rather high for testing
+        lrp.createLeafRadialGeometry(phi, l, N)          
+           
+        # self.assertEqual(lrp.leafMid(), 3., "unexpected leaf mid")
+        # self.assertEqual(lrp.leafLength(), 6.5, "unexpected leaf length")        
+        yy = np.linspace(0, lrp.leafLength(), N)
         geom = lrp.leafGeometry
-        x_ = np.array([ x[-1] for x in geom])
-        self.assertEqual(x_.shape[0], y_.shape[0], "leaf geometry has wrong size");
+
+        x_, y_ = [], []
+        for i, x in enumerate(geom):
+#             if len(x) > 1:
+#                 print(len(x), x, [yy[i]] * len(x))
+#             if len(x) == 1:
+#                 print(len(x), x, [yy[i]] * len(x))
+            x_.extend(x)
+            y_.extend([yy[i]] * len(x))        
+        x_ = np.array(x_)
+        y_ = np.array(y_)
+        
+        # self.assertEqual(x_.shape[0], y_.shape[0], "leaf geometry has wrong size");
         a = lrp.areaMax / lrp.leafLength()  
-        self.assertAlmostEqual(2 * np.sum(x_) / N * a * lrp.leafLength(), lrp.areaMax , 2, "xml: value unexpected")     
-#         plt.plot(x_ * a, y_, "g-*")
-#         plt.plot(-x_ * a, y_, "g-*")
-#         plt.ylim([0, 7])
-#         plt.xlim([-2, 2])      
-#         plt.show()
+        # self.assertAlmostEqual(2 * np.sum(x_) / N * a * lrp.leafLength(), lrp.areaMax , 2, "xml: value unexpected")     
+        plt.plot(x_ * a, y_, "g*")
+        plt.plot(-x_ * a, y_, "g*")
+        plt.ylim([0, 10])
+        plt.xlim([-7.5, 7.5])      
+        plt.show()
      
     def test_leaf_geometry(self):
         """ tests if a leaf geometry can be set"""
@@ -159,11 +179,11 @@ class TestLeafParameter(unittest.TestCase):
         self.assertEqual(x_.shape[0], y_.shape[0], "leaf geometry has wrong size");
         a = lrp.areaMax / lrp.leafLength()  
         self.assertAlmostEqual(2 * np.sum(x_) / N * a * lrp.leafLength(), lrp.areaMax , 2, "xml: value unexpected")     
-        plt.plot(x_ * a, y_, "g-*")
-        plt.plot(-x_ * a, y_, "g-*")
-        plt.ylim([0, 7])
-        plt.xlim([-2, 2])
-        plt.show()   
+#         plt.plot(x_ * a, y_, "g-*")
+#         plt.plot(-x_ * a, y_, "g-*")
+#         plt.ylim([0, 7])
+#         plt.xlim([-2, 2])
+#         plt.show()   
 
 
 if __name__ == '__main__':

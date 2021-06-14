@@ -65,34 +65,61 @@ def plot_plant(plant, p_name):
   
 def create_leaf(leaf, leaf_points, leaf_polys):
 
-    offs = leaf_points.GetNumberOfPoints() 
+    offs = leaf_points.GetNumberOfPoints()     
  
     for i in range(0, leaf.getNumberOfNodes() - 1):  # 
           
         ln1 = leaf.getLeafVis(i)        
         ln2 = leaf.getLeafVis(i + 1)
         
-        if len(ln1) > 0 and len(ln2) > 0:
+        if len(ln1) > 0 or len(ln2) > 0:
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)  
-            quad1 = vtk.vtkPolygon()
-            quad2 = vtk.vtkPolygon()
-            quad1.GetPointIds().SetNumberOfIds(4)    
-            quad2.GetPointIds().SetNumberOfIds(4)    
-            for j in range(0, 4):
-                quad1.GetPointIds().SetId(j, offs + j)
-                quad2.GetPointIds().SetId(j, offs + j + 4)
+
+            if len(ln1) > 0 and len(ln2) == 0: 
+                print(" 2 -> 0")
+            if len(ln1) == 0 and len(ln2) > 0: 
+                print(" 0 -> 2")
             
-            for j in range(0, 2):
-                leaf_points.InsertNextPoint(n1.x, n1.y, n1.z)
-                leaf_points.InsertNextPoint(ln1[j].x, ln1[j].y, ln1[j].z)
-                leaf_points.InsertNextPoint(ln2[j].x, ln2[j].y, ln2[j].z)
-                leaf_points.InsertNextPoint(n2.x, n2.y, n2.z)                    
-            offs += 8
-    
-            leaf_polys.InsertNextCell(quad1)
-            leaf_polys.InsertNextCell(quad2)
-    
+            if len(ln1) == 2 and len(ln2) == 2:  # normal case    
+                offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
+                offs = add_quad_(n1, ln1[1], ln2[1], n2, leaf_points, leaf_polys, offs)
+            elif len(ln1) == 6 and len(ln2) == 6:  # convex case         
+                offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
+                offs = add_quad_(ln1[1], ln1[2], ln2[2], ln2[1], leaf_points, leaf_polys, offs)
+                offs = add_quad_(n1, ln1[3], ln2[3], n2, leaf_points, leaf_polys, offs)  
+                offs = add_quad_(ln1[4], ln1[5], ln2[5], ln2[4], leaf_points, leaf_polys, offs)
+            elif len(ln1) == 2 and len(ln2) == 6:  # normal to convex case      
+                x1 = leaf.getLeafVisX(i)
+                x2 = leaf.getLeafVisX(i + 1)            
+                offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
+                offs = add_quad_(n1, ln1[1], ln2[3], n2, leaf_points, leaf_polys, offs)
+                if x2[1] <= x1[0]:
+                    offs = add_quad_(ln1[0], ln1[0], ln2[1], ln2[2], leaf_points, leaf_polys, offs)
+                    offs = add_quad_(ln1[1], ln1[1], ln2[4], ln2[5], leaf_points, leaf_polys, offs)                    
+            elif len(ln1) == 6 and len(ln2) == 2:  # convex to normal case                                  
+                x1 = leaf.getLeafVisX(i)
+                x2 = leaf.getLeafVisX(i + 1)
+                offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
+                offs = add_quad_(n1, ln1[3], ln2[1], n2, leaf_points, leaf_polys, offs)                
+                if x1[1] <= x2[0]:
+                    offs = add_quad_(ln1[1], ln1[2], ln2[0], ln2[0], leaf_points, leaf_polys, offs)
+                    offs = add_quad_(ln1[4], ln1[5], ln2[1], ln2[1], leaf_points, leaf_polys, offs)
+
+
+def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
+    q = vtk.vtkPolygon() 
+    q.GetPointIds().SetNumberOfIds(4)     
+    for j in range(0, 4):
+        q.GetPointIds().SetId(j, offs + j)     
+    leaf_points.InsertNextPoint(a.x, a.y, a.z)
+    leaf_points.InsertNextPoint(b.x, b.y, b.z)
+    leaf_points.InsertNextPoint(c.x, c.y, c.z)
+    leaf_points.InsertNextPoint(d.x, d.y, d.z)   
+    leaf_polys.InsertNextCell(q) 
+    offs += 4
+    return offs                    
+
 
 def solver_to_polydata(solver, min_, max_, res_):
     """ Creates vtkPolydata from dumux-rosi solver as a structured grid
