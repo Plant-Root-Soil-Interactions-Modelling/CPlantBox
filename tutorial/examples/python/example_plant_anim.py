@@ -4,6 +4,7 @@ import numpy as np;
 
 import plantbox as pb
 import vtk_plot as vp
+from astropy.units import dd
 
 plant = pb.Plant()
 
@@ -19,14 +20,14 @@ name = "0"  # CPlantBox_test_leaf_tree00
 plant.readParameters(path + name + ".xml")
 
 # print radii
-print("leafs")
+print("\nleafs")
 for p in plant.getOrganRandomParameter(pb.leaf):
     p.a = 0.05
     p.a_s = 0
     if (p.subType > 0): 
         print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())        
         if (p.subType == 3): 
-            print(p)
+            # print(p)
             
             p.la, p.lb, p.lmax, p.ln, = 3.5, 1., 7.5, 3  
             p.areaMax = 10  # cm2
@@ -52,14 +53,17 @@ for p in plant.getOrganRandomParameter(pb.leaf):
         else:
             p.a = p.a * 3
     
-print("stem")
+print("\nstem")
 for p in plant.getOrganRandomParameter(pb.stem):
-    if (p.subType > 0): 
-        print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())
+    print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())  
+    if (p.subType == 1): 
         p.a = p.a / 2
         p.a = 0.2
-        p.a_s = 0
-    
+        p.a_s = 0     
+        p.lmax = 30
+        p.la = 3
+        p.ln = 1
+
 print("roots")
 for p in plant.getOrganRandomParameter(pb.root):
     if (p.subType > 0): 
@@ -69,7 +73,7 @@ for p in plant.getOrganRandomParameter(pb.root):
         p.a = 0.05
         p.a_s = 0
 
-soil = pb.SDF_PlantContainer(1.e6, 1.e6, 1.e6, False)
+# soil = pb.SDF_PlantContainer(1.e6, 1.e6, 1.e6, False)
 # plant.setGeometry(soil)
 
 # increase resolution
@@ -79,15 +83,26 @@ for p in plant.getOrganRandomParameter(pb.root):
 # Initialize
 plant.initialize()
 
-# Simulate
-plant.simulate(30, True)
+dt = 0.1
+N = 400
+min_ = np.array([-20, -20, -50])
+max_ = np.array([20, 20, 30.])
 
-# Export final result (as vtp)
-plant.write("results/example_plant.vtp")
+# test = plant.getOrgans(pb.leaf)
+# print("test")
 
-ana = pb.SegmentAnalyser(plant)
-ana.write("results/example_plant_segs.vtp")
+anim = vp.AnimateRoots(plant)
+anim.min = min_
+anim.max = max_
+anim.res = [1, 1, 1]
+anim.file = "results/example_plant"
+anim.avi_name = "results/example_"
+anim.plant = True
+anim.start()
 
-# Plot, using vtk
-vp.plot_plant(plant, "organType")
+for i in range(0, N):
+
+    plant.simulate(dt, False)
+    anim.root_name = "organType"
+    anim.update()
 

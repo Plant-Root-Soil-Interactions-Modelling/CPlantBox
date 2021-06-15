@@ -17,6 +17,9 @@ rs.initialize()
 # Simulate
 rs.simulate(30, True)
 
+for o in rs.getOrgans():
+    print(o.param())
+
 # Export final result (as vtp)
 rs.write("results/example_1a.vtp")
 

@@ -31,12 +31,11 @@ def plot_leaf(leaf):
     render_window([actor], "plot_plant", [], [-10, 10, -10, 10, -10, 10]).Start()
 
 
-def plot_plant(plant, p_name):
+def plot_plant(plant, p_name, render=True):
     """
         plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons 
     """    
     # plant as tube plot
-    # plot_roots(plant, p_name)
     pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data 
     tube_plot_actor, color_bar = plot_roots(pd, p_name, "", render=False)   
     
@@ -60,7 +59,9 @@ def plot_plant(plant, p_name):
     actor.SetMapper(mapper);
     actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
-    render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start()
+    if render:
+        render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start()
+    return [tube_plot_actor, actor], color_bar
 
   
 def create_leaf(leaf, leaf_points, leaf_polys):
@@ -76,10 +77,10 @@ def create_leaf(leaf, leaf_points, leaf_polys):
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)  
 
-            if len(ln1) > 0 and len(ln2) == 0: 
-                print(" 2 -> 0")
-            if len(ln1) == 0 and len(ln2) > 0: 
-                print(" 0 -> 2")
+#             if len(ln1) > 0 and len(ln2) == 0: 
+#                 print(" 2 -> 0")
+#             if len(ln1) == 0 and len(ln2) > 0: 
+#                 print(" 0 -> 2")
             
             if len(ln1) == 2 and len(ln2) == 2:  # normal case    
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
@@ -371,6 +372,8 @@ def create_scalar_bar(lut, grid=None, p_name=""):
             grid.GetPointData().SetActiveScalars(p_name)
             if a:
                 range = a.GetRange()
+        if p_name == "organType":  # fix range for for organType  
+            range = [ 2, 4]                
         lut.SetTableRange(range)
 
     scalarBar = vtk.vtkScalarBarActor()
@@ -658,6 +661,7 @@ class AnimateRoots:
         self.soil_data = True  # soil data
         self.soil = None
         self.cuts = False  # Wireframe, or cuts
+        self.plant = False  # use plot_roots or plot_plant
         #
         self.actors = []
         self.iren = None
@@ -713,11 +717,19 @@ class AnimateRoots:
     def create_root_actors(self):
         if self.rootsystem:
            pd = segs_to_polydata(self.rootsystem, 1., [self.root_name, "radius"])
-           newRootActor, rootCBar = plot_roots(pd, self.root_name, "", False)
-           self.actors.append(newRootActor)
+           
+           if self.plant:
+               newRootActor, rootCBar = plot_plant(self.rootsystem, self.root_name, False)
+           else:
+               newRootActor, rootCBar = plot_roots(pd, self.root_name, "", False)                                
+           if isinstance(newRootActor, list):
+               for a in newRootActor:
+                   self.actors.append(a)
+           else:
+               self.actors.append(newRootActor)
            self.color_bar = rootCBar
            self.bounds = pd.GetBounds()
-
+    
     def create_soil_actors(self):
         if self.soil_data:
             if self.cuts:

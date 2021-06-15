@@ -22,8 +22,7 @@ for p in rs.getRootRandomParameter():
 
 rs.initialize()
 
-ana = pb.SegmentAnalyser(rs)
-anim = vp.AnimateRoots(ana)
+anim = vp.AnimateRoots(rs)
 anim.root_name = "creationTime"
 anim.file = "example5b"
 anim.min = np.array([-10, -10, -50])
@@ -45,8 +44,6 @@ for i in range(0, round(simtime / dt)):  # Simulation
 
     rs.simulate(dt, False)
 
-    ana = pb.SegmentAnalyser(rs)
-    anim.rootsystem = ana
     anim.update()
 
 rs.write("../results/example_5b.vtp")

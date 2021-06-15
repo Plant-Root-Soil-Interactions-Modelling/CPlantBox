@@ -30,8 +30,7 @@ rs.initialize()
 rs.simulate(rs_age, False)
 N = round(sim_time / dt)
 
-ana = pb.SegmentAnalyser(rs.mappedSegments())
-anim = vp.AnimateRoots(ana)
+anim = vp.AnimateRoots(rs)
 anim.min = min_
 anim.max = max_
 anim.res = res_
