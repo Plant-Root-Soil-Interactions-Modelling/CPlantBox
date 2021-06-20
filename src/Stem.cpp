@@ -185,13 +185,13 @@ void Stem::simulate(double dt, bool verbose)
 					if ((dl>0)&&(length< nZ)) {
 						if (length+dl <= nZ) {
 							createSegments(dl,verbose);
-							length+=dl ;//- this->epsilonDx;//take out length not yet added
+							length+=dl ;
 							dl=0;
 						} else {
 							double ddx = nZ - length;
 							createSegments(ddx,verbose);//should it not be ddx here?
 
-							dl-=ddx;//- this->epsilonDx; // ddx already has been created
+							dl-=ddx;
 							shootBorneRootGrow(verbose);
 							length = nZ;
 						}
@@ -203,7 +203,7 @@ void Stem::simulate(double dt, bool verbose)
 					if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
 						if (length+dl<=p.lb) {
 							createSegments(dl,verbose);
-							length+=dl;//- this->epsilonDx;
+							length+=dl;
 							dl=0;
 						} else {
 							double ddx = p.lb-length;
@@ -236,7 +236,7 @@ void Stem::simulate(double dt, bool verbose)
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
 									createSegments(dl,verbose);
-									length+=dl- this->epsilonDx;
+									length+=dl;
 									dl=0;
 								} else { // grow over inter-lateral distance i
 									double ddx = s-length;
