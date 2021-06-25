@@ -144,7 +144,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
             ptype = props["subType"]
         else:
             ptype_p = False
-            ptype = funcs["type"]  # otherwise we are in trouble
+            ptype = funcs["type"]  # otherwise we are in trouble           
     if "emergence_time" in funcs:
         fet = funcs["emergence_time"]
     else: 
@@ -155,7 +155,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
             if fdiam_p:
                 radii.append(fdiam[i] / 2.)
             else:
-                radii.append(fdiam[i][j] / 2.)
+                radii.append(fdiam[i][j] / 2.)            
             if ptype_p:
                 types.append(ptype[i])
             else:

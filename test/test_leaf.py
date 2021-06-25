@@ -56,11 +56,11 @@ class TestLeaf(unittest.TestCase):
         # because we cannot pass a nullptr to pb.Leaf(...) L48
         param0 = p0.realize()  # set up leaf by hand (without a leaf syleaf)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-        parentleaf = pb.Leaf(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
+        parentleaf = pb.Leaf(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, False, 0)  # takes ownership of param0
         parentleaf.setOrganism(plant)     
         parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python   
 
-        leaf = pb.Leaf(plant, p0.subType, pb.Vector3d(0, 0, -1), 0, parentleaf , 0, 0)
+        leaf = pb.Leaf(plant, p0.subType, pb.Vector3d(0, 0, -1), 0, parentleaf , 0)
         leaf.setOrganism(plant)
         
         leaf.simulate(7)

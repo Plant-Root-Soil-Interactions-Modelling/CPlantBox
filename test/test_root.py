@@ -41,12 +41,12 @@ class TestRoot(unittest.TestCase):
         
         param0 = p0.realize()  # set up root by hand (without a root system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-        parentroot = pb.Root(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
+        parentroot = pb.Root(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
         
         self.parentroot = parentroot  # store parent (not owned by child Organ)
-        self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0, 0)
+        self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0)
         self.root.setOrganism(self.plant)
 
     def root_length_test(self, dt, l, subDt):
@@ -79,11 +79,11 @@ class TestRoot(unittest.TestCase):
         self.root_example_rrp()
         # 1. constructor from scratch
         param = self.p0.realize()
-        root = pb.Root(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)
+        root = pb.Root(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, False, 0)
         root.setOrganism(self.plant)
         root.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        root2 = pb.Root(self.plant, self.p1.subType, pb.Vector3d(0, 0, -1), 0, root, 0, 0)
+        root2 = pb.Root(self.plant, self.p1.subType, pb.Vector3d(0, 0, -1), 0, root, 0)
         root.addChild(root2)
         # 3. deep copy (with a factory function)
         plant2 = pb.Organism()
@@ -184,7 +184,7 @@ class TestRoot(unittest.TestCase):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.RootSystem()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.RootRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln,p0.lnk, p0.r, p0.dx, p0.dxMin = "taproot", 1, 0.95, 0.8, 10., 1.05,0.01, 0.8, 0.25, 0.2
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.lnk, p0.r, p0.dx, p0.dxMin = "taproot", 1, 0.95, 0.8, 10., 1.05, 0.01, 0.8, 0.25, 0.2
         p0.successor = [2]
         p0.successorP = [1.]
         p1 = pb.RootRandomParameter(self.plant)
@@ -195,16 +195,16 @@ class TestRoot(unittest.TestCase):
         srp = pb.SeedRandomParameter(self.plant)
         self.plant.setOrganRandomParameter(srp)
         
-        print("root p0, initial parameters: lmax = ", p0.lmax, ", lb = ",p0.lb,", la = ",p0.la,  ", ln = ",p0.ln)
+        print("root p0, initial parameters: lmax = ", p0.lmax, ", lb = ", p0.lb, ", la = ", p0.la, ", ln = ", p0.ln)
         param0 = p0.realize()  # set up root by hand (without a root system)
-        print("root p0, realized parameters: lmax = ", sum((sum(param0.ln), param0.lb,param0.la)),", lb = ", param0.lb,", la = ", param0.la, ", mean ln = ",np.mean(param0.ln))
-        if((param0.lb % p0.dx > 0) and (param0.lb % p0.dx < p0.dxMin*0.99) ):
+        print("root p0, realized parameters: lmax = ", sum((sum(param0.ln), param0.lb, param0.la)), ", lb = ", param0.lb, ", la = ", param0.la, ", mean ln = ", np.mean(param0.ln))
+        if((param0.lb % p0.dx > 0) and (param0.lb % p0.dx < p0.dxMin * 0.99)):
             print("lb value does not fit with dx and dxMin")
             print(param0.lb % p0.dx)
-        if((param0.la % p0.dx > 0) and (param0.la % p0.dx < p0.dxMin*0.99)):
+        if((param0.la % p0.dx > 0) and (param0.la % p0.dx < p0.dxMin * 0.99)):
             print("la value does not fit with dx and dxMin")
             print(param0.la % p0.dx)
-        if(any([(lni % p0.dx > 0 and  lni % p0.dx < p0.dxMin*0.99) for lni in param0.ln])):
+        if(any([(lni % p0.dx > 0 and  lni % p0.dx < p0.dxMin * 0.99) for lni in param0.ln])):
             print("ln value does not fit with dx and dxMin")
             
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
@@ -225,7 +225,7 @@ class TestRoot(unittest.TestCase):
         k = self.root.param().getK()  # maximal root length
         lb = self.root.param().lb
         la = self.root.param().la
-        effectiveLa = la - np.mean(self.root.param().ln)/2
+        effectiveLa = la - np.mean(self.root.param().ln) / 2
         ln = np.concatenate((np.array([lb]), np.array(self.root.param().ln)))
         ln = np.cumsum(ln)
         for t in dt:
@@ -247,14 +247,13 @@ class TestRoot(unittest.TestCase):
                 poly[i, 1] = v.y
                 poly[i, 2] = v.z
             d = np.diff(poly, axis=0)
-            length_segments = np.array([round(norm(di),6) for di in d])
-            if(np.min(length_segments) < self.p0.dxMin*0.99):
-                print("minimum segment length ", np.min(length_segments), " below dxMin ",self.p0.dxMin )
-            if( self.p0.dx < np.max(length_segments)*0.99):
-                print("maximum segment length ", np.max(length_segments), " above dx ",self.p0.dx )
-            if(len(np.where(ln<=(l_th - effectiveLa))[0]) != self.root.getParameter("numberOfLaterals")):
-                print("\n\n\nnumeric and analytic number of laterals different: ",ln,l_th , effectiveLa,l_th - effectiveLa,len(np.where(ln<=(l_th - effectiveLa))[0]), self.root.getParameter("numberOfLaterals"))
-            
+            length_segments = np.array([round(norm(di), 6) for di in d])
+            if(np.min(length_segments) < self.p0.dxMin * 0.99):
+                print("minimum segment length ", np.min(length_segments), " below dxMin ", self.p0.dxMin)
+            if(self.p0.dx < np.max(length_segments) * 0.99):
+                print("maximum segment length ", np.max(length_segments), " above dx ", self.p0.dx)
+            if(len(np.where(ln <= (l_th - effectiveLa))[0]) != self.root.getParameter("numberOfLaterals")):
+                print("\n\n\nnumeric and analytic number of laterals different: ", ln, l_th , effectiveLa, l_th - effectiveLa, len(np.where(ln <= (l_th - effectiveLa))[0]), self.root.getParameter("numberOfLaterals"))
             
         for i in range(0, len(dt)):
             self.assertAlmostEqual(nl_th[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))

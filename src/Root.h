@@ -26,8 +26,8 @@ class Root :public Organ
 public:
 
     Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        Vector3d iheading, double pbl, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
-    Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
+        Vector3d iheading, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
+    Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
     virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
@@ -56,7 +56,6 @@ protected:
 
     virtual void createLateral(double dt, bool silence); ///< creates a new lateral, called by Root::simulate()
 
-    Vector3d heading() const; ///< current growth direction of the root
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
     void createSegments(double l, double dt, bool silence); ///< creates segments of length l, called by Root::simulate()
 

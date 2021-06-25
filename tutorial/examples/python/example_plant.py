@@ -9,7 +9,7 @@ plant = pb.Plant()
 
 # Open plant and root parameter from a file
 path = "../../../modelparameter/plant/"
-name = "0"  # CPlantBox_test_leaf_tree00
+name = "0"  # 0 , CPlantBox_test_leaf_tree00
 
 # LEAFS smallPlant_mgiraud "manyleaves"
 # NO LEAFS "CPlantBox_test_leaf_tree22"  # "chicon_entire"  # "Anagallis_femina_leaf_shape"  # "Anagallis_femina_Leitner_2010"

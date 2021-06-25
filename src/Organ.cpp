@@ -23,12 +23,14 @@ namespace CPlantBox {
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
 Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active,
-		double age, double length, Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
-:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(), parent(), id(id), param_(param), alive(alive), active(active), age(age),
+		double age, double length, Matrix3d iHeading, int pni, bool moved, int oldNON)
+:iHeading(iHeading), parentNI(pni), plant(), parent(), id(id), param_(param), alive(alive), active(active), age(age),
  length(length), moved(moved), oldNumberOfNodes(oldNON)
 { }
 
 /**
+ * TODO update all code doc
+ *
  * The constructor is used for simulation.
  * The organ parameters are chosen from random distributions within the the OrganTypeParameter class.
  * The next organ id is retrieved from the plant,
@@ -40,9 +42,9 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  * @param st        sub type of the organ type, e.g. different root types
  * @param delay     time delay in days when the organ will start to grow
  */
-Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ>  parent, int ot, int st, double delay,
-		Vector3d iheading, double pbl, int pni)
-:iHeading(iheading), parentBaseLength(pbl), parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),
+Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int ot, int st, double delay,
+		Matrix3d iHeading, int pni)
+:iHeading(iHeading), parentNI(pni), plant(plant), parent(parent), id(plant->getOrganIndex()),
   param_(plant->getOrganRandomParameter(ot, st)->realize()), /* root parameters are diced in the getOrganRandomParameter class */
   age(-delay)
 { }
@@ -81,6 +83,19 @@ double Organ::getLength(bool realized) const
 		return length;
 	}
 }
+
+/**
+ * TODO
+ */
+double Organ::getLength(int i) const
+{
+	double l = 0.; // length until node i
+	for (int j = 0; j<i; j++) {
+		l += nodes.at(j+1).minus(nodes.at(j)).length(); // relative length equals absolute length
+	}
+	return l;
+}
+
 
 /**
  * @return The organ type, which is a coarse classification of the organs.
@@ -236,10 +251,9 @@ double Organ::getParameter(std::string name) const {
 	if (name=="radius") { return this->param_->a; } // root radius [cm]
 	if (name=="diameter") { return 2.*this->param_->a; } // root diameter [cm]
 	// organ member variables
-    if (name=="iHeadingX") { return iHeading.x; } // root initial heading x - coordinate [cm]
-    if (name=="iHeadingY") { return iHeading.y; } // root initial heading y - coordinate [cm]
-    if (name=="iHeadingZ") { return iHeading.z; } // root initial heading z - coordinate [cm]
-    if (name=="parentBaseLength") { return parentBaseLength; } // length of parent root where the lateral emerges [cm]
+    if (name=="iHeadingX") { return iHeading.column(0).x; } // root initial heading x - coordinate [cm]
+    if (name=="iHeadingY") { return iHeading.column(0).y; } // root initial heading y - coordinate [cm]
+    if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm] TODO will be relative
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
     if (name=="parent-node") {
     	if (this->parent.expired()) {
@@ -357,6 +371,21 @@ std::string Organ::toString() const
     				<< " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes()
 					<< ", with "<< children.size() << " children";
 	return str.str();
+}
+
+/**
+ * @return Current heading of the organ tip in the relative or absolute coordinate system
+ */
+Vector3d Organ::heading() const
+{
+	if (nodes.size()>1) {
+		int n = nodes.size();
+		Vector3d h = getNode(n-1).minus(getNode(n-2));
+		h.normalize();
+		return h;
+	} else {
+		return iHeading.column(0);
+	}
 }
 
 }

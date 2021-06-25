@@ -9,11 +9,19 @@ namespace CPlantBox {
 /**
  * todo docme
  */
+Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, bool moved, int oldNON)
+		:Organ(id, param, alive, active, age, length, Matrix3d(Vector3d(0,0,1), Vector3d(0,1,0), Vector3d(1,0,0)), 0, moved, oldNON)
+{ }
+
+
+/**
+ * todo docme
+ */
 Seed::Seed(std::shared_ptr<Organism> plant)
-:Organ(plant, nullptr, Organism::ot_seed, 0, 0., Vector3d(), 0., 0)
+		:Organ(plant, nullptr, Organism::ot_seed, 0, 0.,
+				Matrix3d(Vector3d(0,0,1), Vector3d(0,1,0), Vector3d(1,0,0)), 0)
 {
-	// realize() is called in Organ constructor
-	addNode(param()->seedPos, 0.);
+	addNode(param()->seedPos, 0.); // realize() is called in Organ constructor
 }
 
 /**
@@ -140,9 +148,9 @@ void Seed::initialize(bool verbose)
 	 */
 	if (plantBox) { // i.e. if a stem is defined
 		// Stem
-		Vector3d isheading(0, 0, 1);//Initial Stem heading
-		std::shared_ptr<Organ> mainstem = createStem(plant.lock(), mainStemType, isheading, 0.); // main stem has subtype 1
-		mainstem->addNode(getNode(0), getNodeId(0), 0);
+		Matrix3d isHeading(Vector3d(0, 0, 1), Vector3d(0, 1, 0), Vector3d(1, 0, 0)); // initial Stem heading
+		std::shared_ptr<Organ> mainstem = createStem(plant.lock(), mainStemType, isHeading, 0.); // main stem has subtype 1
+		mainstem->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 		children.push_back(mainstem);
 		// Optional tillers
 		if (sp->maxTil>0) {
@@ -162,8 +170,8 @@ void Seed::initialize(bool verbose)
 			}
 			double delay = sp->firstB;
 			for (int i=0; i<maxTi; i++) {
-				std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType, isheading, delay);
-				tiller->addNode(getNode(0), getNodeId(0), 0);
+				std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType, isHeading, delay);
+				tiller->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 				children.push_back(tiller);
 				delay += sp->delayB;
 			}
@@ -217,15 +225,15 @@ std::string Seed::toString() const
  */
 std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay)
 {
-	return std::make_shared<Root>(plant, type, heading, delay, shared_from_this(), 0, 0);
+	return std::make_shared<Root>(plant, type, heading, delay, shared_from_this(), 0);
 }
 
 /**
  * todo doc// overwrite if you want to change the types
  */
-std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay)
+std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay)
 {
-	return std::make_shared<Stem>(plant, type, heading, delay, shared_from_this(), 0, 0);
+	return std::make_shared<Stem>(plant, type, iHeading, delay, shared_from_this(), 0);
 }
 
 } // namespace CPlantBox

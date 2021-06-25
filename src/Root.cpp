@@ -21,8 +21,8 @@ namespace CPlantBox {
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-    Vector3d iheading, double pbl, int pni, bool moved, int oldNON)
- :Organ(id, param, alive, active, age, length, iheading, pbl, pni, moved,  oldNON )
+    Vector3d iHeading, int pni, bool moved, int oldNON)
+ :Organ(id, param, alive, active, age, length, Matrix3d::ons(iHeading), pni, moved,  oldNON )
 {
     insertionAngle = this->param()->theta;
 }
@@ -40,8 +40,8 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni)
-    :Organ(rs, parent, Organism::ot_root, type, delay, heading, pbl, pni) // <- OrganRandomParameter::realize() is called here
+Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d iHeading_, double delay, std::shared_ptr<Organ> parent, int pni)
+    :Organ(rs, parent, Organism::ot_root, type, delay, Matrix3d::ons(iHeading_), pni) // <- OrganRandomParameter::realize() is called here
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
@@ -51,9 +51,9 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double dela
         theta*=scale;
     }
     insertionAngle = theta;
-    iHeading = Matrix3d::ons(heading).times(Vector3d::rotAB(theta,beta)); // new initial heading
+    Vector3d newHeading = iHeading.times(Vector3d::rotAB(theta,beta));
+    iHeading = Matrix3d::ons(newHeading); // new initial heading
     if (parent->organType()!=Organism::ot_seed) { // the first node of the base roots must be created in RootSystem::initialize()
-        // assert(pni+1 == parent->getNumberOfNodes() && "Root::Root: at object creation always at last node");
         addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
     }
 }
@@ -279,23 +279,9 @@ void Root::createLateral(double dt, bool verbose)
         double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
         double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
         double delay = ageLG-ageLN; // time the lateral has to wait
-        auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), getLength(true), nodes.size()-1);
+        auto lateral = std::make_shared<Root>(plant.lock(), lt,  heading(), delay,  shared_from_this(), nodes.size()-1);
         children.push_back(lateral);
         lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
-    }
-}
-
-/**
- * @return Current root heading
- */
-Vector3d Root::heading() const
-{
-    if (nodes.size()>1) {
-        auto h = nodes.back().minus(nodes.at(nodes.size()-2)); // a->b = b-a
-        h.normalize();
-        return h;
-    } else {
-        return iHeading;
     }
 }
 
@@ -455,7 +441,7 @@ std::string Root::toString() const
     std::string str = Organ::toString();
     str.replace(0, 5, "Root");
     std::stringstream newstring;
-    newstring << "; initial heading: " << iHeading.toString() << ", parent base length " << parentBaseLength << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << iHeading.toString() << ", parent node index" << parentNI << ".";
     return str+newstring.str();
 }
 

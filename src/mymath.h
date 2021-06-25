@@ -144,6 +144,11 @@ public:
 		double sa = sin(a);
 		return Matrix3d(ca,-sa,0,sa,ca,0,0,0,1);
 	} ///< Creates a rotation matrix around the Z-axis
+	static Matrix3d rotAB(double a, double b) { ///< Rx(b)*Rz(a)
+		auto rxb = rotX(b);
+		rxb.times(rotZ(a));
+		return rxb;
+	};
 
 	/**
 	 * Creates an orthonormal system (ONS) around the vector v
@@ -239,7 +244,7 @@ public:
 
 
 /**
- *
+ * usefull
  */
 class Function {
 public:

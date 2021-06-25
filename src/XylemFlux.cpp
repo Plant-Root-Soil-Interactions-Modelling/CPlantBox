@@ -5,16 +5,16 @@
 #include <set>
 
 namespace CPlantBox {
-	
+
 
 
 XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs)
-{
+		{
 	size_t length_leaf = std::count(rs->organTypes.begin(), rs->organTypes.end(), 4);
 	gs.resize(length_leaf);
 	pg.resize(length_leaf);
 
-}
+		}
 
 
 /**
@@ -30,7 +30,7 @@ XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs)
  */
 void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k)
 {
-	
+
 	int Ns = rs->segments.size(); // number of segments
 	aI.resize(4*Ns);
 	aJ.resize(4*Ns);
@@ -53,8 +53,11 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		if (cells) { // soil matric potential given per cell
 			int cellIndex = rs->seg2cell[j-1];
 			if (cellIndex>=0) {
-				if(sx.size()>1){psi_s = sx.at(cellIndex);}
-				else{psi_s = sx.at(0);}
+				if(sx.size()>1) {
+					psi_s = sx.at(cellIndex);
+				} else {
+					psi_s = sx.at(0);
+				}
 			} else {
 				psi_s = airPressure;
 			}
@@ -69,7 +72,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 		int subType = rs->subTypes[si];
 		double kx = 0.;
 		double  kr = 0.;
-		
+
 		try {
 			kx = kx_f(age, subType, organType);
 			kr = kr_f(age, subType, organType, numleaf);
@@ -170,7 +173,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 		} else {
 			psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
 		}
-		
+
 		if (organType == 4 && pg.at(0)!= 0){
 			psi_s = pg.at(numleaf);
 		}

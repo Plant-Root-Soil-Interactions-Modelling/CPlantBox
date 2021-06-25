@@ -251,8 +251,8 @@ PYBIND11_MODULE(plantbox, m) {
      * Organ.h
      */
     py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ")
-            .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, Vector3d, double, int>())
-            .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+            .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, Matrix3d, int>())
+            .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
             .def("copy",&Organ::copy)
             .def("organType",&Organ::organType)
             .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
@@ -271,8 +271,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("isAlive",&Organ::isAlive)
             .def("isActive",&Organ::isActive)
             .def("getAge",&Organ::getAge)
-            .def("getLength",&Organ::getLength,py::arg("realized"))
-
+            .def("getLength", (double (Organ::*)(bool realized) const) &Organ::getLength, py::arg("realized") = true)
+            .def("getLength", (double (Organ::*)(int i) const) &Organ::getLength)
             .def("getNumberOfNodes",&Organ::getNumberOfNodes)
 			.def("getNumberOfSegments",&Organ::getNumberOfSegments)
             .def("getNode",&Organ::getNode)
@@ -291,7 +291,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("__str__",&Organ::toString)
 
             .def_readwrite("iHeading", &Organ::iHeading)
-            .def_readwrite("parentBaseLength", &Organ::parentBaseLength)
             .def_readwrite("parentNI", &Organ::parentNI);
 
     /*
@@ -694,8 +693,8 @@ PYBIND11_MODULE(plantbox, m) {
      * Root.h
      */
     py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
-            .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
-            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+            .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
 			.def("getNumberOfLaterals", &Root::getNumberOfLaterals)
 			.def("calcCreationTime", &Root::calcCreationTime)
             .def("calcLength", &Root::calcLength)
@@ -725,8 +724,8 @@ PYBIND11_MODULE(plantbox, m) {
      * Leaf.h
      */
     py::class_<Leaf, Organ, std::shared_ptr<Leaf>>(m, "Leaf")
-            .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
-            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+            .def(py::init<std::shared_ptr<Organism>, int, Matrix3d, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
 			.def("getLeafVis", &Leaf::getLeafVis)
 			.def("getLeafVisX", &Leaf::getLeafVisX)
             .def("calcCreationTime", &Leaf::calcCreationTime)
@@ -739,8 +738,8 @@ PYBIND11_MODULE(plantbox, m) {
      * Stem.h
      */
     py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
-           .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, double, int>())
-           .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, double, int, bool, int>())
+           .def(py::init<std::shared_ptr<Organism>, int, Matrix3d, double, std::shared_ptr<Organ>, int>())
+           .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
            .def("calcCreationTime", &Stem::calcCreationTime)
            .def("calcLength", &Stem::calcLength)
            .def("calcAge", &Stem::calcAge)

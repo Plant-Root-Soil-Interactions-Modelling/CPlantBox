@@ -35,9 +35,9 @@ class Organ : public std::enable_shared_from_this<Organ>
 public:
 
     Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-    		Vector3d iheading, double pbl, int pni, bool moved = false, int oldNON = 0); ///< creates everything from scratch
+    		Matrix3d iHeading, int pni, bool moved = false, int oldNON = 0); ///< creates everything from scratch
     Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
-    		Vector3d iheading, double pbl, int pni); ///< used within simulation
+    		Matrix3d iHeading, int pni); ///< used within simulation
     virtual ~Organ() { }
 
     virtual std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant); ///< deep copies the organ tree
@@ -48,13 +48,17 @@ public:
     virtual void simulate(double dt, bool verbose = false); ///< grow for a time span of @param dt
 
     /* tree */
-    void setParent(std::shared_ptr<Organ> p) { parent = p; } ///< sets parent organ
-    std::shared_ptr<Organ> getParent() const { return parent.lock(); } ///< parent organ
     void setOrganism(std::shared_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
     std::shared_ptr<Organism> getOrganism() const { return plant.lock(); } ///< parent organism
+    void setParent(std::shared_ptr<Organ> p) { parent = p; } ///< sets parent organ
+    std::shared_ptr<Organ> getParent() const { return parent.lock(); } ///< parent organ
     void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
     int getNumberOfChildren() { return children.size(); } ///< number of children
     std::shared_ptr<Organ> getChild(int i) { return children.at(i); } /// child with index @param i
+
+
+    Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< absolute coordinate of the organs origin
+    // Matrix3d getHeading() const
 
     /* parameters */
     int getId() const { return id; } ///< unique organ id
@@ -63,13 +67,14 @@ public:
     bool isAlive() const { return alive; } ///< checks if alive
     bool isActive() const { return active; } ///< checks if active
     double getAge() const { return age; } ///< return age of the organ
-    double getLength(bool realized = true) const; ///< returns length of the organ (realized => dependant on dx() and dxMin())
-	double getEpsilon() const { return epsilonDx; } ///return stored growth not yet added because too small
+    double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
+    double getLength(int i) const; ///< length of the organ up to node index i
+	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
 
 	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
-    Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ
+    virtual Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ, absolute coordinates per defaul
     int getNodeId(int i) const { return nodeIds.at(i); } ///< global node index of the i-th node, i is called the local node index
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
     void addNode(Vector3d n, double t); //< adds a node to the root
@@ -90,8 +95,7 @@ public:
     void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
 
     /* Parameters that are constant over the organ life time*/
-    Vector3d iHeading; ///< the initial heading of the root, when it was created
-    double parentBaseLength; ///< length [cm]
+    Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
     int parentNI; ///< parent node index
     double insertionAngle=0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa
 	
@@ -121,6 +125,9 @@ protected:
     /* last time step */
     bool moved = false; ///< nodes moved during last time step
     int oldNumberOfNodes = 0; ///< number of nodes at the end of previous time step
+
+    /* useful */
+    Vector3d heading() const; /// current (absolute) heading of the organs tip
 
 };
 
