@@ -56,7 +56,6 @@ public:
     int getNumberOfChildren() { return children.size(); } ///< number of children
     std::shared_ptr<Organ> getChild(int i) { return children.at(i); } /// child with index @param i
 
-
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< absolute coordinate of the organs origin
     // Matrix3d getHeading() const
 
@@ -68,7 +67,7 @@ public:
     bool isActive() const { return active; } ///< checks if active
     double getAge() const { return age; } ///< return age of the organ
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
-    double getLength(int i) const; ///< length of the organ up to node index i
+    double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
 
 	/* geometry */
@@ -97,7 +96,6 @@ public:
     /* Parameters that are constant over the organ life time*/
     Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
     int parentNI; ///< parent node index
-    double insertionAngle=0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa
 	
 protected:
 
@@ -115,7 +113,7 @@ protected:
     bool active = true; ///< true: active, false: organ stopped growing
     double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
-	double epsilonDx = 0; //growth increment too small to be added to organ. kept in memory and added to growth of next simulation step
+	double epsilonDx = 0; ///< growth increment too small to be added to organ. kept in memory and added to growth of next simulation step
 
     /* node data */
     std::vector<Vector3d> nodes; ///< nodes of the organ [cm]
@@ -127,7 +125,7 @@ protected:
     int oldNumberOfNodes = 0; ///< number of nodes at the end of previous time step
 
     /* useful */
-    Vector3d heading() const; /// current (absolute) heading of the organs tip
+    Vector3d heading() const; ///< current (absolute) heading of the organs tip
 
 };
 

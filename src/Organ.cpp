@@ -19,6 +19,8 @@ namespace CPlantBox {
  * @param active    indicates if the organ is active (@see Organ::isActive)
  * @param age       the current age of the organ (@see Organ::getAge)
  * @param length    the current length of the organ (@see Organ::getLength)
+ * @param iHeading TODO
+ * @param pni
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
@@ -41,6 +43,8 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
  * @param ot        organ type
  * @param st        sub type of the organ type, e.g. different root types
  * @param delay     time delay in days when the organ will start to grow
+ * @param iHeading TODO
+ * @param pni
  */
 Organ::Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int ot, int st, double delay,
 		Matrix3d iHeading, int pni)
@@ -73,7 +77,7 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
  * @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin()) 
  *					TRUE:	get realized organ length, dependent from spatial resolution (dx() and dxMin())
  *					DEFAULT = TRUE
- * @return 			The chosen type of organ length (realized or theoretica).
+ * @return 			The chosen type of organ length (realized or theoretical).
  */
 double Organ::getLength(bool realized) const
 {
@@ -85,7 +89,7 @@ double Organ::getLength(bool realized) const
 }
 
 /**
- * TODO
+ * @return the organs length from start node up to the node with index @param i.
  */
 double Organ::getLength(int i) const
 {
@@ -96,9 +100,10 @@ double Organ::getLength(int i) const
 	return l;
 }
 
-
 /**
- * @return The organ type, which is a coarse classification of the organs.
+ * @return The organ type, which is a coarse classification of the organs,
+ * for a string representation see see Organism::organTypeNames
+ *
  * Currently there are: ot_organ (for unspecified organs) = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, and ot_leaf = 4.
  * There can be different classes with the same organ type.
  */
@@ -245,7 +250,7 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
  * @return The parameter value, if unknown NaN
  */
 double Organ::getParameter(std::string name) const {
-    // specific
+    // specific parameters
 	if (name=="subType") { return this->param_->subType; }
     if (name=="a") { return param_->a; } // root radius [cm]
 	if (name=="radius") { return this->param_->a; } // root radius [cm]
@@ -255,12 +260,12 @@ double Organ::getParameter(std::string name) const {
     if (name=="iHeadingY") { return iHeading.column(0).y; } // root initial heading y - coordinate [cm]
     if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm] TODO will be relative
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
-    if (name=="parent-node") {
+    if (name=="parent-node") { // local parent node index where this lateral emerges
     	if (this->parent.expired()) {
     		return -1; // to indicate it is base root
     	}
     	return parentNI;
-    } // local parent node index where this lateral emerges
+    }
     // organ member functions
 	if (name=="organType") { return organType(); }
     if (name=="numberOfChildren") { return children.size(); }
@@ -269,8 +274,8 @@ double Organ::getParameter(std::string name) const {
 	if (name=="active") { return isActive(); }
 	if (name=="age") { return getAge(); }
     if (name=="length") { return getLength(true); } //realized organ length, dependent on dxMin and dx
-    if (name=="getNumberOfNodes") { return getNumberOfNodes(); }
-    if (name=="getNumberOfSegments") { return getNumberOfSegments(); }
+    if (name=="numberOfNodes") { return getNumberOfNodes(); }
+    if (name=="numberOfSegments") { return getNumberOfSegments(); }
     if (name=="hasMoved") { return hasMoved(); }
     if (name=="oldNumberOfNodes") { return getOldNumberOfNodes(); }
     // further
@@ -285,7 +290,6 @@ double Organ::getParameter(std::string name) const {
 		return o;
 	}
 	if (name=="one") { return 1; } // e.g. for counting the organs
-    if (name=="numberOfNodes") { return getNodeCT(0); }
     return this->getOrganRandomParameter()->getParameter(name); // ask the random parameter
 }
 
@@ -374,7 +378,7 @@ std::string Organ::toString() const
 }
 
 /**
- * @return Current heading of the organ tip in the relative or absolute coordinate system
+ * @return Current absolute heading of the organ tip, based on initial heading, or last two nodes
  */
 Vector3d Organ::heading() const
 {

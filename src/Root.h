@@ -52,6 +52,8 @@ public:
     double dx() const { return getRootRandomParameter()->dx; } ///< returns the axial resolution
 	double dxMin() const{return getRootRandomParameter()->dxMin; }; ///< returns the min axial resolution
 
+    double insertionAngle=0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
+
 protected:
 
     virtual void createLateral(double dt, bool silence); ///< creates a new lateral, called by Root::simulate()

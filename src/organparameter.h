@@ -10,8 +10,8 @@
 #include "external/tinyxml2/tinyxml2.h"
 
 /**
- * This file describes the classes OrganSpecificParameter and RootRandomParameter.
- * OrganSpecificParameter are drawn from the RootRandomParameter class
+ * This file describes the classes OrganSpecificParameter and OrganRandomParameter.
+ * OrganSpecificParameter are drawn from the OrganRandomParameter class
  */
 
 namespace CPlantBox {
@@ -43,7 +43,7 @@ public:
  *
  * Organizes parameters in hash-maps for scalar double and scalar int values.
  * For this reason derived classes getParameter(), toString(), readXML(), and writeXML() should work out of the box.
- * For other parameter types the methods must be overwritten, see RootTypeParameters.
+ * For other parameter types the methods must be overwritten, see e.g. RootRandomParameter.
  *
  * The factory function copy() has to be overwritten for each specialization.
  */
@@ -77,6 +77,8 @@ public:
     int subType = 0;
     double a = 0.1; 		///< Root radius [cm]
     double as = 0.; 		///< Standard deviation root radius [cm]
+    double dx = 0.25; 		///< Maximal segment size [cm]
+	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 
     std::weak_ptr<Organism> plant;
     std::shared_ptr<GrowthFunction> f_gf;
