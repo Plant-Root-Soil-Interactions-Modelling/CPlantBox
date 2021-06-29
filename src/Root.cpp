@@ -438,11 +438,9 @@ int Root::getNumberOfLaterals() const {
  */
 std::string Root::toString() const
 {
-    std::string str = Organ::toString();
-    str.replace(0, 5, "Root");
     std::stringstream newstring;
     newstring << "; initial heading: " << iHeading.toString() << ", parent node index" << parentNI << ".";
-    return str+newstring.str();
+    return  Organ::toString()+newstring.str();
 }
 
 } // end namespace CPlantBox

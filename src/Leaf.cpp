@@ -271,7 +271,7 @@ bool Leaf::nodeLeafVis(double l)
 }
 
 /**
- * parametrisation x value, at poition l along the leaf axis
+ * Parameterization x value, at position l along the leaf axis
  */
 std::vector<double> Leaf::getLeafVisX_(double l) {
 	auto& lg = getLeafRandomParameter()->leafGeometry;
@@ -302,14 +302,7 @@ std::vector<Vector3d> Leaf::getLeafVis(int i)
 		if (n>0) {
 			std::vector<Vector3d> coords;
 			auto x_ = getLeafVisX_(l);
-			Vector3d x1;
-			if (i==0) { // first node
-				x1 = iHeading.column(0);
-			} else if (i==nodes.size()-1) { // last node
-				x1 = getNode(i-1).minus(getNode(i));
-			} else { // inner node
-				x1 = getNode(i+1).minus(getNode(i-1));
-			}
+			Vector3d x1= iHeading.column(0);
 			x1.normalize();
 			Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs
 			y1.normalize();
@@ -561,21 +554,6 @@ void Leaf::createSegments(double l, bool verbose)
 	}
 }
 
-/**
- *
- */
-std::shared_ptr<Plant> Leaf::getPlant()
-{
-	return std::dynamic_pointer_cast<Plant>(plant.lock());
-}
-
-/**
- *
- */
-double Leaf::dx() const
-{
-	return getLeafRandomParameter()->dx;
-}
 
 /**
  * @return The LeafTypeParameter from the plant
@@ -599,11 +577,9 @@ std::shared_ptr<const LeafSpecificParameter>  Leaf::param() const
  */
 std::string Leaf::toString() const
 {
-	std::string str = Organ::toString();
-	str.replace(0, 5, "Leaf");
 	std::stringstream newstring;
-	newstring << "; initial heading: " << iHeading.toString()  << ", parent node index" << parentNI << ".";
-	return str+newstring.str();
+	newstring << "; initial heading: " << iHeading.column(0).toString()  << ", parent node index " << parentNI << ".";
+	return  Organ::toString()+newstring.str();
 }
 
 /**

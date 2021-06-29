@@ -55,9 +55,6 @@ public:
 	/* abbreviations */
 	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
 	std::shared_ptr<const LeafSpecificParameter> param() const; ///< root parameter
-	std::shared_ptr<Plant> getPlant();
-	double dx() const; ///< returns the max axial resolution
-	double dxMin() const { return getLeafRandomParameter()->dxMin; }; ///< returns the min axial resolution
 
 	/* orientation */
 	Matrix3d inv; // inverse matrix of M
@@ -80,7 +77,6 @@ protected:
 	std::vector<double> getLeafVisX_(double l);
 
     bool firstCall = true;
-    //const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 };
 
 } // namespace CPlantBox

@@ -50,15 +50,10 @@ public:
     /* abbreviations */
     std::shared_ptr<StemRandomParameter> getStemRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const StemSpecificParameter> param() const; ///< root parameter
-	std::shared_ptr<Plant> getPlant();
-    double dx() const; ///< returns the axial resolution
-	double dxMin() const{return getStemRandomParameter()->dxMin; }; ///< returns the min axial resolution
 
     int shootborneType = 5;
 
 	/* orientation */
-	Vector3d iHeading2; // local coordinate system M is [iHeading1, iHeading2, iHeading3]
-	Vector3d iHeading3;
 	Matrix3d inv; // inverse matrix of M
 
 protected:

@@ -2,6 +2,7 @@
 #include "Organ.h"
 
 #include "Organism.h"
+#include "Plant.h"
 #include <iostream>
 
 #include "organparameter.h"
@@ -31,8 +32,6 @@ Organ::Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool a
 { }
 
 /**
- * TODO update all code doc
- *
  * The constructor is used for simulation.
  * The organ parameters are chosen from random distributions within the the OrganTypeParameter class.
  * The next organ id is retrieved from the plant,
@@ -142,6 +141,14 @@ void Organ::simulate(double dt, bool verbose)
 	}
 }
 
+/**
+ *
+ */
+std::shared_ptr<Plant> Organ::getPlant() const
+{
+	return std::dynamic_pointer_cast<Plant>(plant.lock());
+}
+
 /*
  * Adds a subsequent organ (e.g. a lateral root)
  *
@@ -205,6 +212,23 @@ std::vector<Vector2i> Organ::getSegments() const
 }
 
 /**
+ * returns the maximal axial resolution
+ */
+double Organ::dx() const
+{
+	return getOrganRandomParameter()->dx;
+}
+
+/**
+ * returns the minimal axial resolution,
+ * length overhead is stored in epsilon and realized in the next simulation step (see Organ::getEpsilon)
+ */
+double Organ::dxMin() const
+{
+	return getOrganRandomParameter()->dxMin;
+}
+
+/**
  * Returns the organs as sequential list, copies only organs with more than one node.
  *
  * @param ot        the expected organ type, where -1 denotes all organ types (default).
@@ -250,7 +274,7 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
  * @return The parameter value, if unknown NaN
  */
 double Organ::getParameter(std::string name) const {
-    // specific parameters
+	// specific parameters
 	if (name=="subType") { return this->param_->subType; }
     if (name=="a") { return param_->a; } // root radius [cm]
 	if (name=="radius") { return this->param_->a; } // root radius [cm]
@@ -258,7 +282,7 @@ double Organ::getParameter(std::string name) const {
 	// organ member variables
     if (name=="iHeadingX") { return iHeading.column(0).x; } // root initial heading x - coordinate [cm]
     if (name=="iHeadingY") { return iHeading.column(0).y; } // root initial heading y - coordinate [cm]
-    if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm] TODO will be relative
+    if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm]
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
     if (name=="parent-node") { // local parent node index where this lateral emerges
     	if (this->parent.expired()) {
@@ -267,7 +291,7 @@ double Organ::getParameter(std::string name) const {
     	return parentNI;
     }
     // organ member functions
-	if (name=="organType") { return organType(); }
+	if (name=="organType") { return this->organType(); }
     if (name=="numberOfChildren") { return children.size(); }
 	if (name=="id") { return getId(); }
 	if (name=="alive") { return isAlive(); }
@@ -370,8 +394,9 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
 std::string Organ::toString() const
 {
 	std::stringstream str;
-	str << "Organ #"<< getId() <<": sub type "<< param_->subType << ", realized length " << getLength(true) 
-					<< "cm , theoretic length " << getLength(false) << "cm , age " << getAge()
+	str << Organism::organTypeNames.at(this->organType()) << " #"<< getId() <<": sub type "<< param_->subType
+					<< ", realized length " << getLength(true)
+					<< " cm , theoretic length " << getLength(false) << " cm , age " << getAge()
     				<< " days, alive " << isAlive() << ", active " << isActive() << ", number of nodes " << this->getNumberOfNodes()
 					<< ", with "<< children.size() << " children";
 	return str.str();

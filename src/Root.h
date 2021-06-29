@@ -49,8 +49,6 @@ public:
     /* Abbreviations */
     std::shared_ptr<RootRandomParameter> getRootRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const RootSpecificParameter> param() const; ///< root parameter
-    double dx() const { return getRootRandomParameter()->dx; } ///< returns the axial resolution
-	double dxMin() const{return getRootRandomParameter()->dxMin; }; ///< returns the min axial resolution
 
     double insertionAngle=0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
 

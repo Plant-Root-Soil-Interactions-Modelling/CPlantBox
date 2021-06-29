@@ -212,12 +212,9 @@ int Seed::getParamSubType(int organtype, std::string str)
  */
 std::string Seed::toString() const
 {
-	std::string str = Organ::toString();
-	str.replace(0, 5, "Seed");
 	std::stringstream newstring;
 	newstring << "; maximal number of basals: " << param()->maxB << ", of shootborne " << param()->nC  << ", of tillers " << param()->maxTil << ".";
-	str.replace(str.size()-1, 1, newstring.str());
-	return str;
+	return Organ::toString() + newstring.str();
 }
 
 /**

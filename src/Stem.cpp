@@ -633,22 +633,6 @@ void Stem::createSegments(double l, bool verbose)
 }
 
 /**
- *
- */
-std::shared_ptr<Plant> Stem::getPlant() {
-	return std::static_pointer_cast<Plant>(plant.lock());
-}
-
-
-/**
- *
- */
-double Stem::dx() const
-{
-	return getStemRandomParameter()->dx;
-}
-
-/**
  * @return The RootTypeParameter from the plant
  */
 std::shared_ptr<StemRandomParameter> Stem::getStemRandomParameter() const
@@ -670,11 +654,9 @@ std::shared_ptr<const StemSpecificParameter> Stem::param() const
  */
 std::string Stem::toString() const
 {
-	std::string str = Organ::toString();
-	str.replace(0, 5, "Stem");
 	std::stringstream newstring;
 	newstring << "; initial heading: " << iHeading.toString() << ", parent node index" << parentNI << ".";
-	return str+newstring.str();
+	return Organ::toString()+newstring.str();
 }
 
 /**
