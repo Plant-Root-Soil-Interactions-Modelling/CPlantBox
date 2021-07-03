@@ -537,7 +537,15 @@ class XylemFluxPython(XylemFlux):
             Q[i, i] = 1
             b[i] = d[c]
         return Q, b
-
+    
+    def get_meanSegZ(self):	
+        """ mean z value """
+        segments = self.get_segments() 	
+        nodes = self.get_nodes() 	
+        get_z_coord = lambda vec : nodes[vec[1], 2]*0.5+nodes[vec[0], 2]*0.5
+        meanz = np.array([get_z_coord(xi) for xi in segments], dtype=np.float64)
+        return meanz
+        
     @staticmethod
     def bc_neumann(Q, b, n0, f):
         """ prescribes a Neumann boundary condition for the root system Qx=b

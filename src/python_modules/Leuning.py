@@ -159,11 +159,13 @@ class Leuning(XylemFluxPython):
             x = LA.spsolve(Q, b, use_umfpack = True)  # direct
             self.x = x
             p_l = x[leaf_nodes]
-            diff = sum(np.sqrt((x-x_old)**2))
+            diff = max(abs(x-x_old))
             x_old = x
-            if(loop > 1000 or diff < 1.e-5):
+            print("max error (cm): ", diff, ", loop n°",loop)
+            if(loop > 1000 or (max(abs(diff/x) > 0.01)+ max(abs(diff/x) > 0.01) ==0)):
                 stop = True
             if log:
+                
                 logfile = open('solve_leuning.txt', "a")
                 logfile.write('\nAn (mol CO2 m-2 s-1) matrix: \n' +repr(self.An))
                 logfile.write('\nRd (mol CO2 m-2 s-1) matrix: \n' +repr(self.Rd))
@@ -179,7 +181,8 @@ class Leuning(XylemFluxPython):
                 logfile.write('\nE (cm3 d-1) matrix'+ repr(self.E)+'\n')
                 logfile.write('\np_l (cm) matrix'+ repr(p_l)+'\n')
                 logfile.close()
-        print('leuning computation module stopped after {} trials. Sum of absolute difference between leaf matric potential calculated at the last two trials: {}'.format(loop, diff))
+        res = max((max(abs(diff/x)), max(abs(diff/x))))
+        print('leuning computation module stopped after {} trials. Sum of absolute difference between leaf matric potential calculated at the last two trials: {}\nmax error in a cell:{}'.format(loop, diff,res))
         if log:
             logfile = open('solve_leuning.txt', "a")
             logfile.write('leuning computation module stopped after {} trials. Sum of absolute difference between leaf matric potential calculated at the last two trials: {}'.format(loop, diff))

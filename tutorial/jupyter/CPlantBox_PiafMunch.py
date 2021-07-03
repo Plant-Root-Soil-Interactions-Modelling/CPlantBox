@@ -78,7 +78,7 @@ def visual_plant(plant1):
 	return fig
 
 def CPlantBox_PiafMunch(name, time, output = "test_output"):
-	plant = pb.Plant()
+	plant = pb.MappedPlant()
 	plant.openXML("../../modelparameter/plant/" + name)
 	seeds = plant.getOrganRandomParameter(pb.OrganTypes.seed)
 	roots = plant.getOrganRandomParameter(pb.OrganTypes.root)
@@ -376,7 +376,7 @@ def convert( plant ):
 
 
 
-def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_cnt, Soil_water, k1, name='mg_test.ini', time=100, nodes_r_xyl = 0.005, vml = 0.000143136, vol_st =2.6e-05, vmu = 2.82627e+95, r_phl_mb = 0.027157 , r_trsv = 100/5000): #function of creating parameters of PiafMunch
+def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_cnt, Soil_water = -0.6,  name='mg_test.ini', time=100, nodes_r_xyl = 0.005, vml = 0.000143136, vol_st =2.6e-05, vmu = 2.82627e+95, r_phl_mb = 0.027157 , r_trsv = 100/5000): #function of creating parameters of PiafMunch
 	Nt = len(nodes_organtype) #total number of nodes, here the 0 and 1st node are the same, so minus 1
 	Nc = len(node_connection) #total number of connections
 	position_switch=[1,0]
@@ -534,10 +534,10 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 	Vmax = np.zeros(len(nodes_organtype)) # kinetic parameter / starch Synthesis
 	C_targ = np.zeros(len(nodes_organtype)) #kinetic parameter / starch/sugar equilibrium. (regul. par. sugar conc.)			 (mmol / ml)
 	kHyd = np.zeros(len(nodes_organtype))
-	# k1 = np.zeros(len(nodes_organtype))
+	k1 = np.zeros(len(nodes_organtype))
 	k2 = np.zeros(len(nodes_organtype))
-	# k3 = np.zeros(len(nodes_organtype))
-	k3 = Soil_water
+	k3 = np.zeros(len(nodes_organtype))
+	#k3 = Soil_water
 	StructC = np.zeros(len(nodes_organtype))
 	vol_ST = np.zeros(len(nodes_organtype))
 	volPhlApo = np.zeros(len(nodes_organtype))
@@ -571,7 +571,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 			kHyd[i]	   = 0
 			#k1[i]		 = 0
 			k2[i]		 = 0	 #
-			#k3[i]		 = 0
+			k3[i]		 = -0.6
 			StructC[i]	= 0	  #different in source, sink or connection of piafmunch2
 			vol_ST[i]	 = vol_st
 			volPhlApo[i]  = 2.6e-05
@@ -591,8 +591,8 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 			C_targ[i]	 =	 0.1	 #different in source, sink or connection of piafmunch2
 			kHyd[i]	   = 0
 			#k1[i]		 = 0
-			k2[i]		 = 0	 #manually set it to 0.4
-			#k3[i]		 = 0
+			k2[i]		 = 0.4	 #manually set it to 0.4
+			k3[i]		 = -0.6
 			StructC[i]	= 1	  #different in source, sink or connection of piafmunch2
 			vol_ST[i]	 = vol_st
 			volPhlApo[i]  = 2.6e-05
@@ -613,7 +613,7 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 			kHyd[i]	   = 0
 			#k1[i]		 = 0
 			k2[i]		 = 0
-			#k3[i]		 = 0
+			k3[i]		 = -0.6
 			StructC[i]	= 1	  #different in source, sink or connection of piafmunch2
 			vol_ST[i]	 = vol_st #ml
 			volPhlApo[i]  = 2.6e-05
@@ -798,10 +798,14 @@ def write_PiafMunch_parameter(node_connection, nodes_organtype, nodes_r_st, unq_
 
 	f.write('******** CARBON Lateral FLUX - RELATED PARAMETERS *********\n')	
 	f.write("{:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s}  {:s} \n".format('node#','kML(M)','vML(mmol/h)','kMU(M)','vMU(mmol/h)', 'kMParMb(M)','vMParMb(mmol/h)','kM(M)','Vmax(M/h)','C_targ(M)','kHyd(h-1)','k1(h-1)','k2','k3(h-1)','StructC','vol_ST(ml)','volPhlApo,ml','volParApo,ml','k_Lockhart','P_thr(MPa)','vol_Sympl_max,ml' ))	
+	i =1
+	print(( k3[i+1], StructC[i+1], vol_ST[i+1], volPhlApo[i+1], volParApo[i+1], k_Lockhart[i+1], P_thr[i+1],
+    vol_Sympl_max[i+1]))
+	
 	for i in range(-1,len(nodes_organtype)-1):
 		f.write("{:.0f}  {:e}  {:e} {:e} {:e} {:e}  {:e}  {:e} {:e} {:e} {:e}  {:e}  {:e} {:e} {:e} {:e}  {:e}  {:e} {:e} {:e} {:e}\n"
 		.format(nodes_organtype[i+1][0],kML[i+1], vML[i+1], kMU[i+1], vMU[i+1], kMParMb[i+1], vMParMb[i+1], kM[i+1], Vmax[i+1], C_targ[i+1], kHyd[i+1], 
-		k1[i+1], k2[i+1], k3[i+1], StructC[i+1], vol_ST[i+1], volPhlApo[i+1], volParApo[i+1], k_Lockhart[i+1], P_thr[i+1], vol_Sympl_max[i+1]))
+		k1[i+1], k2[i+1], -0.6, StructC[i+1], vol_ST[i+1], volPhlApo[i+1], volParApo[i+1], k_Lockhart[i+1], P_thr[i+1], vol_Sympl_max[i+1]))
 	f.write('\n')
 	# print(k1)
 

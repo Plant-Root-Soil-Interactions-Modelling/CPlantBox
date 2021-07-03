@@ -122,7 +122,6 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			double d =  std::max(ln*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
-				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
@@ -137,7 +136,6 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			double d =  std::max(ln*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
-				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
@@ -151,7 +149,6 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			double d =  std::max(ln + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
-				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
@@ -165,7 +162,6 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			double d =  std::max(ln/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
-				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
@@ -180,7 +176,6 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			double d =  std::max(ln/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
-				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
@@ -196,6 +191,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	double a_ = std::max(a + p->randn()*as,double(0)); // radius
 	double theta_ = std::max(theta + p->randn()*thetas,double(0)); // initial elongation
 	double rlt_ = std::max(rlt + p->randn()*rlts,double(0)); // leaf life time
+	
 	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
 }
 

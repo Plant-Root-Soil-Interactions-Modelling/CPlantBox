@@ -24,7 +24,8 @@ k_soil = []
 Q = 900e-6 # mol quanta m-2 s-1 light, example from leuning1995
 cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
 TairK = TairC + 273.15
-
+p_linit = -27000
+ci_init = cs * 0.3
 
 es = 0.61078 * math.exp(17.27 * TairC / (TairC + 237.3)) 
 ea = es * RH 
@@ -33,7 +34,7 @@ VPD = es - ea
 # root system 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
 path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
-name = "manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
+name = "morning_glory_7m"#"Triticum_aestivum_a_Bingham_2011"#"manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
 
 """ soil """
@@ -64,10 +65,11 @@ r.airPressure = p_a
 r.seg_ind = seg_tips # segment indices for Neumann b.c.
 r.node_ind = node_tips
 rx = r.solve_leuning(sim_time = simtime,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
-Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = True)
+Tl = TairK,p_linit = p_linit,ci_init = ci_init,cs=cs, soil_k = [], log = True)
 
 fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
-r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False)
+#r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False)
+#very slow for big plants
 
 # plot results 
 fig, ax = plt.subplots()

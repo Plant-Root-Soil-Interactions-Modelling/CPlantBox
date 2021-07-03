@@ -76,30 +76,47 @@ std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<
 std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 {
     auto p = plant.lock();
-    double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
-    double res = lb_ - floor(lb_/dx)* dx;	
-	if(res < dxMin){
-		if(res <= dxMin/2){ lb_ -= res;
-		}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
-		this->lb=lb_;
-	}	
-	
-	double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-    res = la_-floor(la_ / dx)*dx;	
-	if(res < dxMin && res != 0){
-		if(res <= dxMin/2){ la_ -= res;
-		}else{la_ =  floor(la_ / dx)*dx + dxMin;}
-		this->la=la_;
-	}	
-	
-	if(ln < dxMin*0.99 && ln !=0){
-		std::cout<<"\nStemRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
-		ln = dxMin;
-	}
-	
-	std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
-    	switch(lnf) {
+    double lb_;
+    double la_;
+    std::vector<double> ln_; // stores the inter-distances
+	int nob_ = 0;
+	double res;
+	if (ln==0) { // no laterals
+
+    	lb_ = 0;
+        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
+		res = la_-floor(la_ / dx)*dx;
+		if(res < dxMin && res != 0){
+			if(res <= dxMin/2){ la_ -= res;
+			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
+			this->la=la_;
+		}			//make la_ compatible with dx() and dxMin()
+
+    } else { // laterals
+		lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
+		res = lb_ - floor(lb_/dx)* dx;	
+		if(res < dxMin){
+			if(res <= dxMin/2){ lb_ -= res;
+			}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
+			this->lb=lb_;
+		}	
+		
+		la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+		res = la_-floor(la_ / dx)*dx;	
+		if(res < dxMin && res != 0){
+			if(res <= dxMin/2){ la_ -= res;
+			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
+			this->la=la_;
+		}	
+		
+		if(ln < dxMin*0.99 ){
+			std::cout<<"\nStemRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
+			ln = dxMin;
+		}
+		
+		nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
+		std::cout<<"nob_ "<<nob_<<std::endl;
+		switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
 			double d = std::max(ln +p->randn()*lns,dxMin); //Normal function of equal internode distance
@@ -109,12 +126,12 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
 				} //make ln compatible with dx() and dxMin().
-			
 			ln_.push_back(d);
-
+			std::cout<<"stem parameter d "<<d<<" "<<ln_.size()<<std::endl;
 
 		};break;
 		case 1: //  nodes distance increase linearly
+		
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
 			double d =  std::max(ln*(1+i) +p->randn()*lns,dxMin); //std::max(  );//ln +p->randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
@@ -173,7 +190,6 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 			double d =  std::max(ln/(1+i) +p->randn()*lns,dxMin); //std::max(  );//ln +p->randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
-				std::cout<<"\ntest "<< dxMin/2;
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
@@ -181,13 +197,16 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 				
 			ln_.push_back(d);
 		};break;
-default:
-		throw 0; // TODO make a nice one
+		default:
+			throw 0; // TODO make a nice one
+		}
 	}
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.); // radius
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // stem life time
+	std::cout<<lb<<" "<<la_<<" "<<ln<<" "<<nob_<<std::endl;
+	std::cout<<"ln_ "<<ln_.size()<<std::endl;
     return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
 }
 
@@ -229,6 +248,7 @@ int StemRandomParameter::getLateralType(const Vector3d& pos)
  */
 double StemRandomParameter::nobs() const
 {
+	
     double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
     if (la>0) {
         nobs -= (las/la - lns/ln)*la/ln;

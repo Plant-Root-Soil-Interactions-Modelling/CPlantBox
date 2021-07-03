@@ -29,6 +29,22 @@ class Mesh1Dmod(mesh1D.Mesh1D):
         self.radiiCells = radiiCells
         self.length = length
         super(Mesh1Dmod, self).__init__(vertexCoords=vertexCoords, faceVertexIDs=faceVertexIDs, cellFaceIDs=cellFaceIDs)
+        self.weightedNodeFaces = self._calcWeightedNodeFaces()
+
+    def _calcWeightedNodeFaces(self): #adapt? what is this for?
+        
+        maskedValues = np.vstack(( [not isinstance(xi, np.int64) for xi in self.cellFaceIDs[0]],
+            [not isinstance(xi, np.int64) for xi in self.cellFaceIDs[1]],
+            [not isinstance(xi, np.int64) for xi in self.cellFaceIDs[2]],
+            [not isinstance(xi, np.int64) for xi in self.cellFaceIDs[3]]))
+        fA = np.take(self._faceAreas,self.cellFaceIDs)
+        fA[maskedValues] = 0
+        fAt = fA.copy()
+        fA[0] = fAt[0]/(fAt[0]+fAt[2])
+        fA[1] = fAt[1]/(fAt[1]+fAt[3])
+        fA[2] = fAt[2]/(fAt[0]+fAt[2])
+        fA[3] = fAt[3]/(fAt[1]+fAt[3])
+        return fA
 
     def _calcScaleArea(self): #adapt? what is this for?
         return 1.
@@ -87,6 +103,6 @@ class Mesh1Dmod(mesh1D.Mesh1D):
             + self.interiorFaces * np.take(self.length/2,self._adjacentCellIDs[1] )
         return distance
         
-        
+
         
         
