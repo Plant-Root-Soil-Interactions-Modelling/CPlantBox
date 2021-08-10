@@ -150,6 +150,9 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
         if (data.count("organType")>0) {
             data["organType"].insert(data["organType"].begin(), -1.);
         }
+        if (data.count("id")>0) {
+            data["id"].insert(data["id"].begin(), -1.);
+        }
     } else {
         segments.push_back(seg);
         data["creationTime"].push_back(ct);
@@ -159,7 +162,11 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
             data["subType"].push_back(-1.);
         }
         if (data.count("organType")>0) {
-            data["organType"].insert(data["organType"].begin(), -1.);
+            //data["organType"].insert(data["organType"].begin(), -1.);
+            data["organType"].push_back(-1.);
+        }
+        if (data.count("id")>0) {
+            data["id"].push_back(-1.);
         }
     }
 }
