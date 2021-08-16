@@ -106,7 +106,6 @@ class TestLeafParameter(unittest.TestCase):
         self.assertEqual(p.a, 0.1, "realize: unexpected value for radius")
         self.assertEqual(len(p.ln) + 1, self.lrp.nob(), "realize: internodal distances +1 should be  number of laterals")
         self.assertEqual(p.leafArea, 10., "realize: unexpected value for leaf area")
-
         # print(p)
 
     def test_radial_leaf_geometry(self):
@@ -179,11 +178,11 @@ class TestLeafParameter(unittest.TestCase):
         self.assertEqual(x_.shape[0], y_.shape[0], "leaf geometry has wrong size");
         a = lrp.areaMax / lrp.leafLength()  
         self.assertAlmostEqual(2 * np.sum(x_) / N * a * lrp.leafLength(), lrp.areaMax , 2, "xml: value unexpected")     
-#         plt.plot(x_ * a, y_, "g-*")
-#         plt.plot(-x_ * a, y_, "g-*")
-#         plt.ylim([0, 7])
-#         plt.xlim([-2, 2])
-#         plt.show()   
+        plt.plot(x_ * a, y_, "g-*")
+        plt.plot(-x_ * a, y_, "g-*")
+        plt.ylim([0, 7])
+        plt.xlim([-2, 2])
+        plt.show()   
 
 
 if __name__ == '__main__':

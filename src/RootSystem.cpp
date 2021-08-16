@@ -208,7 +208,7 @@ void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
     	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay) override {
-    		return std::make_shared<RootDelay>(plant, type, heading, delay, shared_from_this(), 0, 0);
+    		return std::make_shared<RootDelay>(plant, type, heading, delay, shared_from_this(), 0);
     	};
     };
 

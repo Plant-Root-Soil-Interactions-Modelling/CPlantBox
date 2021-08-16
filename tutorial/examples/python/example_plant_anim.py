@@ -25,7 +25,13 @@ for p in plant.getOrganRandomParameter(pb.leaf):
     p.a = 0.05
     p.a_s = 0
     if (p.subType > 0): 
-        print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())        
+        print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())    
+        
+        if (p.subType == 2): 
+            p.tropismT = 1
+            p.tropismN = 5
+            p.tropismS = 0.01  # 0.3
+            
         if (p.subType == 3): 
             # print(p)
             

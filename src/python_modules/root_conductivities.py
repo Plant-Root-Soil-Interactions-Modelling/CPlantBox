@@ -81,19 +81,38 @@ def init_conductivities_growth(r, age_dependent:bool=False, dt=1):
                       [kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0]])  # [1/day]
         
         
-def init_conductivities_scanrio_jan(r): 
-#     *** Hydraulic conductivities**************************
-# nLr(i)
-# 6 4 4
-# (ageLr(1,i),LrRoot(1,i),i=1,nLr(1..3))
-# 0.0 0.000181  8. 0.000181 10 0.0000648 18 0.0000648 25 0.0000173 300 0.0000173
-# 0.0 0.000181  10. 0.000181 16 0.0000173 300 0.0000173
-# 0.0 0.000181  10. 0.000181 16 0.0000173 300 0.0000173
-# 
-# nKh(i)
-# 6 7 7
-# (ageKh(1,i),KhRoot(1,i),i=1,nKh(1..3))
-# 0.0 0.0000864  5. 0.00173 12. 0.0295 15. 0.0295  20. 0.432 300. 0.432
-# 0.0 0.0000864  5. 0.0000864 10. 0.0000864  12. 0.0006048 20. 0.0006048 23. 0.00173 300. 0.00173
-# 0.0 0.0000864  5. 0.0000864 10. 0.0000864  12. 0.0006048 20. 0.0006048 23. 0.00173 300. 0.00173       
-        pass
+def init_conductivities_scenario_jan(r): 
+    """ Hydraulic conductivities - for Jans scenarios """
+    
+    # radial values # [cm^3/day] 
+    # (ageLr(1,i),LrRoot(1,i),i=1,nLr(1..3))
+    kr0 = np.array([[0., 0.000181], [8., 0.000181], [10, 0.0000648], [18, 0.0000648], [25, 0.0000173], [300, 0.0000173]])
+    kr1 = np.array([[0., 0.000181], [10., 0.000181], [16, 0.0000173], [300, 0.0000173]])
+    kr2 = np.array([[0., 0.000181], [10., 0.000181], [16, 0.0000173], [300, 0.0000173]])
+     
+    # axial values # [1/day]
+    # (ageKh(1,i),KhRoot(1,i),i=1,nKh(1..3))
+    kx0 = np.array([[0., 0.0000864], [5., 0.00173], [12., 0.0295], [15., 0.0295], [20., 0.432], [300., 0.432]])
+    kx1 = np.array([[0., 0.0000864], [5., 0.0000864], [10., 0.0000864], [12., 0.0006048], [20., 0.0006048], [23., 0.00173], [300., 0.00173]])
+    kx2 = np.array([[0., 0.0000864], [5., 0.0000864], [10., 0.0000864], [12., 0.0006048], [20., 0.0006048], [23., 0.00173], [300., 0.00173]])
+    
+    # first entry twice, because rsml starts at type 1 
+    r.setKrTables([kr0[:, 1], kr1[:, 1], kr2[:, 1]], [kr0[:, 0], kr1[:, 0], kr2[:, 0]])  # values, age      
+    r.setKxTables([kx0[:, 1], kx1[:, 1], kx2[:, 1]], [kx0[:, 0], kx1[:, 0], kx2[:, 0]])  # values, age      
+           
+           
+def init_conductivities_scenario_jan_const(r): 
+        """ Hydraulic conductivities - for Jans scenarios, BUT with constanct kr (if we use a lookup table) """     
+
+        # kr_const = 6.48e-5
+        kr_const = 1.73e-4  # in case of table look up, the values must agree         
+        kr = np.array([[0., kr_const], [1e4, kr_const]])
+        r.setKrTables([kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1]],
+                      [kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0]])  # [cm^3/day]        
+        # first entry twice, because rsml starts at type 1 
+
+        kx_const = 2.95e-2  # [cm3/day]       
+        kx = np.array([[0., kx_const], [1e4, kx_const]])
+        
+        r.setKxTables([kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1]],
+                      [kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0]])  # values, age        

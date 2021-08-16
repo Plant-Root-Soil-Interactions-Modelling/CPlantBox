@@ -26,8 +26,8 @@ public:
     static std::vector<int> phytomerId;
 
     Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        Vector3d iheading, double pbl, int pni, bool moved = false, int oldNON = 0);
-    Stem(std::shared_ptr<Organism> plant, int type, Vector3d iheading, double delay, std::shared_ptr<Organ> parent, double pbl, int pni); ///< used within simulation
+    		Matrix3d iHeading, int pni, bool moved = false, int oldNON = 0);
+    Stem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
     virtual ~Stem() { };
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;   ///< deep copies the root tree
@@ -35,6 +35,8 @@ public:
     int organType() const override { return Organism::ot_stem; } ///< returns the organs type
 
     void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
+
+    Vector3d getNode(int i) const override { return rel2abs(nodes.at(i)); } ///< i-th node of the organ
 
     double getParameter(std::string name) const override; ///< returns an organ parameter
 
@@ -48,28 +50,29 @@ public:
     /* abbreviations */
     std::shared_ptr<StemRandomParameter> getStemRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const StemSpecificParameter> param() const; ///< root parameter
-	std::shared_ptr<Plant> getPlant();
-    double dx() const; ///< returns the axial resolution
-	double dxMin() const{return getStemRandomParameter()->dxMin; }; ///< returns the min axial resolution
 
     int shootborneType = 5;
 
+	/* orientation */
+	Matrix3d inv; // inverse matrix of M
+
 protected:
+
+    Vector3d rel2abs(const Vector3d& n) const;
+	Vector3d abs2rel(const Vector3d& n) const;
 
     void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
     int getphytomerId(int subtype) { return phytomerId[subtype]; }
     void addPhytomerId(int subtype) { phytomerId[subtype]++;  }
 
     void createLateral(bool silence); ///< creates a new lateral, called by Stem::simulate()
-    void leafGrow(bool silence, Vector3d bud);
+    void leafGrow(bool silence);
     void shootBorneRootGrow(bool silence);
 
-    Vector3d heading() const; /// current heading of the root tip
     virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
     void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
 
     bool firstCall = true;
-    //const double smallDx = 1e-6; ///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 
 };
 

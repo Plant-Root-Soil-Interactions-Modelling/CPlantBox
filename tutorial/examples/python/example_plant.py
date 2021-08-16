@@ -9,7 +9,7 @@ plant = pb.Plant()
 
 # Open plant and root parameter from a file
 path = "../../../modelparameter/plant/"
-name = "0"  # CPlantBox_test_leaf_tree00
+name = "0"  # 0 , CPlantBox_test_leaf_tree00
 
 # LEAFS smallPlant_mgiraud "manyleaves"
 # NO LEAFS "CPlantBox_test_leaf_tree22"  # "chicon_entire"  # "Anagallis_femina_leaf_shape"  # "Anagallis_femina_Leitner_2010"
@@ -25,7 +25,7 @@ for p in plant.getOrganRandomParameter(pb.leaf):
     p.a_s = 0
     if (p.subType > 0): 
         print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())        
-        if (p.subType == 3): 
+        if (p.subType > 2): 
             print(p)
             
             p.la, p.lb, p.lmax, p.ln, = 3.5, 1., 7.5, 3  
@@ -47,7 +47,7 @@ for p in plant.getOrganRandomParameter(pb.leaf):
             
             p.tropismT = 1
             p.tropismN = 5
-            p.tropismS = 0.1  # 0.3
+            p.tropismS = 0.1
    
         else:
             p.a = p.a * 3

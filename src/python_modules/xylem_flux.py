@@ -331,7 +331,7 @@ class XylemFluxPython(XylemFlux):
                 
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
-        print("\nXylemFluxPython.test:")
+        print("\nXylemFluxPython.test():")
         # 1 check if segment index is node index-1
         segments = self.get_segments()
         nodes = self.get_nodes()
@@ -339,6 +339,11 @@ class XylemFluxPython(XylemFlux):
             if i != s_[1] - 1:
                 raise "Segment indices are mixed up"
         print(len(segments), "segments")
+        # 1b check if there are multiple basal roots (TODO)
+        print("Segment 0", segments[0])
+        for s in segments[1:]:
+            if s[0] == 0:
+                print("warning multiple segments emerge from node 0")        
         # 2 check for very small segments
         seg_length = self.segLength()
         c = 0
@@ -351,7 +356,7 @@ class XylemFluxPython(XylemFlux):
         types = self.rs.subTypes
         if np.min(types) > 0:
             print("Warning: types start with index", np.min(types), "> 0 !")
-        print("{:g} different root types".format(np.max(types) - np.min(types) + 1))
+        print("{:g} different root types from {:g} to {:g}".format(np.max(types) - np.min(types) + 1, np.min(types), np.max(types)))
         # 4 Print segment age range
         ages = self.get_ages()    
         print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))        
@@ -504,11 +509,12 @@ class XylemFluxPython(XylemFlux):
             nodeCTs[s[1]] = seg_ct[i]
             segs2.append(pb.Vector2i(int(s[0]), int(s[1])))
         radii = np.array(radii)
-        types = np.array(types, dtype=np.int64) - 1  # index must start with 0
+        types = np.array(types, dtype=np.int64) - 1  # index should start with 0
         if verbose:
             print("                           nodeCTs [{:g}, {:g}] days".format(np.min(nodeCTs), np.max(nodeCTs)))
             print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
-            print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))        
+            print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))    
+            print()    
         return pb.MappedSegments(nodes2, nodeCTs, segs2, radii, types)  # root system grid
 
     @staticmethod

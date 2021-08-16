@@ -38,6 +38,7 @@ class TestLeaf(unittest.TestCase):
 
     def test_leaf(self):
         """ leaf without lateral leafs """
+        ons = pb.Matrix3d(pb.Vector3d(0., 0., 1.), pb.Vector3d(0., 1., 0.), pb.Vector3d(1., 0., 0.))
         plant = pb.Plant()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.LeafRandomParameter(plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "leaf", 1, 3.5, 1., 7.5, 3, 1, 0.1   
@@ -56,15 +57,17 @@ class TestLeaf(unittest.TestCase):
         # because we cannot pass a nullptr to pb.Leaf(...) L48
         param0 = p0.realize()  # set up leaf by hand (without a leaf syleaf)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-        parentleaf = pb.Leaf(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
+        parentleaf = pb.Leaf(1, param0, True, True, 0., 0., ons, 0, False, 0)  # takes ownership of param0
         parentleaf.setOrganism(plant)     
         parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python   
 
-        leaf = pb.Leaf(plant, p0.subType, pb.Vector3d(0, 0, -1), 0, parentleaf , 0, 0)
+        print("alive")
+        leaf = pb.Leaf(plant, p0.subType, ons, 0, parentleaf , 0)
+        print("alive")
         leaf.setOrganism(plant)
-        
+        print("alive")
         leaf.simulate(7)
-        
+        print("alive")
         vp.plot_leaf(leaf)
         
 #         nodes = []

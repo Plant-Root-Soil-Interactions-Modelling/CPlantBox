@@ -344,8 +344,6 @@ void StemRandomParameter::bindParmeters()
     bindParameter("tropismT", &tropismT, "Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of stem tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of stem tropism [1/cm]");
-    bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
-    bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
     bindParameter("theta", &theta, "Angle between stem and parent stem [rad]", &thetas);
     bindParameter("rlt", &rlt, "Stem life time [day]", &rlts);
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);

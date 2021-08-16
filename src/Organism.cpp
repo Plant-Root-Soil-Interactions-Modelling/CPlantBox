@@ -508,8 +508,6 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
     return so;
 }
 
-
-
 /**
  * @return Quick info about the object for debugging
  */

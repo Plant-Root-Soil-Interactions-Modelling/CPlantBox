@@ -18,9 +18,8 @@ class Seed : public Organ
 {
 public:
 
-    Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        bool moved= false, int oldNON = 0)
-	:Organ(id, param, alive, active, age, length, Vector3d(), 0., 0, moved, oldNON) { }; ///< creates everything from scratch
+    Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age,
+    		double length, bool moved = false, int oldNON = 0); ///< creates everything from scratch
     Seed(std::shared_ptr<Organism> plant); ///< used within simulation
     virtual ~Seed() { };
 
@@ -39,7 +38,7 @@ public:
     std::vector<std::shared_ptr<Organ>> copyBaseOrgans(); ///< shallow copy of the childs
 
     virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay); ///< overwrite if you want to change class types
-    virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay); ///< overwrite if you want to change class types
+    virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay); ///< overwrite if you want to change class types
 
     // default positions (unused) (TODO) make nicer
     int tapType = 1;

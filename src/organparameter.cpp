@@ -16,7 +16,7 @@ namespace CPlantBox {
 std::string OrganSpecificParameter::toString() const
 {
     std::stringstream str;
-    str << "subType\t" << subType << std::endl;
+    str << "subType " << subType << ", radius " << a << " cm " << std::endl;
     return str.str();
 }
 
@@ -302,6 +302,8 @@ void OrganRandomParameter::bindParameters()
     bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4)");
     bindParameter("subType", &subType, "Unique identifier of this sub type");
     bindParameter("a", &a, "radius [cm]", &as);
+    bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
+    bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
     // other parameters (descriptions only)
     description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
 }

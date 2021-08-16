@@ -97,8 +97,6 @@ public:
 	int tropismT = 1;		///< Leaf tropism parameter (Type)
 	double tropismN = 1.;	///< Leaf tropism parameter (number of trials)
 	double tropismS = 0.2;	///< Leaf tropism parameter (mean value of expected changeg) [1/cm]
-	double dx = 0.25; 		///< Maximal segment size [cm]
-	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 	double theta = 1.22;	///< Angle between leafvein and parent leafvein (rad)
 	double thetas = 0.; 	///< Standard deviation angle between leafvein and parent leafvein (rad)
 	double rlt = 1.e9;		///< Leaf life time (days)
