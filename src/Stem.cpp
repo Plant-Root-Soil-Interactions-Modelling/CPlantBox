@@ -58,11 +58,11 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 	addPhytomerId(p->subType);
 	double beta = getphytomerId(p->subType)*M_PI*getStemRandomParameter()->rotBeta +
 			M_PI*plant->rand()*getStemRandomParameter()->betaDev;
-	beta = beta + getStemRandomParameter()->initBeta;
+	beta = beta + getStemRandomParameter()->initBeta*M_PI;
 	if (getStemRandomParameter()->initBeta >0 && getphytomerId(p->subType)==0 ){
-		beta = beta + getStemRandomParameter()->initBeta;
+		beta = beta + getStemRandomParameter()->initBeta*M_PI;
 	}
-	double theta = M_PI*p->theta;
+	double theta = p->theta;//M_PI*p->theta;
 	if (parent->organType()!=Organism::ot_seed) { // scale if not a base root
 		double scale = getStemRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
 		theta *= scale;
@@ -249,12 +249,15 @@ void Stem::simulate(double dt, bool verbose)
 						}
 						if (p.ln.size()==children.size()-additional_childern && (getLength(true)>=s)) { // new lateral (the last one)
 							createLateral(verbose);
+							if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2){
+											leafGrow(verbose);
+							}
 						}
 					}
 					/* apical zone */
 					if (dl>0) {
 						createSegments(dl,verbose);
-						length+=dl;//- this->epsilonDx;
+						length+=dl;
 					} else {
 						//if (p.subType == 3) {
 
@@ -263,8 +266,8 @@ void Stem::simulate(double dt, bool verbose)
 				} else { // no laterals
 					if (dl>0) {
 						createSegments(dl,verbose);
-						length+=dl;//- this->epsilonDx;
-						leafGrow(verbose);
+						length+=dl;
+						//leafGrow(verbose); there should be no laterals (so no leaves)
 					}
 				} // if lateralgetLengths
 			} // if active
@@ -354,8 +357,10 @@ void Stem::createLateral(bool silence)
 	//std::cout<<"lnf is = "<<getStemRandomParameter()->lnf<<"\n";
 	auto sp = param(); // rename
 	int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));//if lt ==2, don't add lateral as leaf is added instead
+	double meanLn = getStemRandomParameter()->ln; // mean inter-lateral distance
+    double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
 	double ageLN = this->calcAge(getLength(true)); // age of stem when lateral node is created
-	double ageLG = this->calcAge(getLength(true)+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+	double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 	double delay = ageLG-ageLN; // time the lateral has to wait
 	Vector3d h_ = heading();
 	Matrix3d h = Matrix3d::ons(h_); // current heading in absolute coordinates TODO (revise??)
@@ -412,8 +417,10 @@ void Stem::leafGrow(bool silence)
 	//int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
 	//  	std::cout << "LeafGrow createLateral()\n";
 	//  	std::cout << "LeafGrow type " << lt << "\n";
-	double ageLN = this->calcAge(getLength(true)); // age of stem when lateral node is created
-	double ageLG = this->calcAge(getLength(true)+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+	double meanLn = getStemRandomParameter()->ln; // mean inter-lateral distance
+	double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+    double ageLN = this->calcAge(getLength(true)); // age of stem when lateral node is created
+	double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
 	double delay = ageLG-ageLN; // time the lateral has to wait
 	Vector3d h_ = heading();
 	Matrix3d h = Matrix3d::ons(h_); // current heading in absolute coordinates TODO (revise??)

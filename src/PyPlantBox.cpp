@@ -872,7 +872,7 @@ PYBIND11_MODULE(plantbox, m) {
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
 			.def(py::init<>())	
 			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
-            .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true)
+            .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("addSegments", &MappedPlant::plant)
             .def("setCWGr", (void (MappedPlant::*)(std::vector<double>)) &MappedPlant::setCWGr, py::arg("CWGr"));	

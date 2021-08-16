@@ -22,7 +22,7 @@ for s in aseg:
     ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
 
 ana.write("results/example_3c.vtp", ["radius", "surface"])
-# ana.write("results/example_3c.dgf")
+ana.write("results/example_3c.dgf")
 
 # segment analyser cannot write rsml files becasue rsml is based on polylines, not segments
 # use RootSystem::write to export a RSML

@@ -111,7 +111,7 @@ class MappedPlant : public MappedSegments, public Plant
 public:
 
     using Plant::Plant;
-    void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
+    void initialize(bool verbose = true, bool stochastic = true); ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
     void printNodes(); ///< print information
 	void mapSubTypes();
@@ -122,6 +122,9 @@ public:
 	void setCWGr(std::vector<double> CWGr); ///< growth as defined by phloem module.
     std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
+    virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
+    virtual double randn() override {if(stochastic){return ND(gen);} else {return 0.5; } }  ///< normally distributed random number (0,1)
+	bool stochastic = true;
 };
 
 

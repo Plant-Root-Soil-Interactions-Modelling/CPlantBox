@@ -49,13 +49,13 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 	addleafphytomerID(param()->subType);
 	double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->rotBeta
 			+ M_PI*plant->rand()*getLeafRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
-	beta = beta + getLeafRandomParameter()->initBeta;
+	beta = beta + getLeafRandomParameter()->initBeta*M_PI;
 	if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==2) {
 		beta = beta + getLeafRandomParameter()->initBeta*M_PI;
 	} else if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==3) {
 		beta = beta + getLeafRandomParameter()->initBeta*M_PI + M_PI;
 	}
-	double theta = M_PI*param()->theta;
+	double theta = param()->theta;//M_PI*param()->theta;
 	if (parent->organType()!=Organism::ot_seed) { // scale if not a base leaf
 		double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
 		theta *= scale;
@@ -414,7 +414,9 @@ void Leaf::createLateral(bool silence)
 
 		int lnf = getLeafRandomParameter()->lnf;
 		double ageLN = this->calcAge(getLength(true)); // age of Leaf when lateral node is created
-		double ageLG = this->calcAge(getLength(true)+param()->la); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
+		double meanLn = getLeafRandomParameter()->ln; // mean inter-lateral distance
+		double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+		double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
 		Vector3d h_ = heading();
 		Matrix3d h = Matrix3d::ons(h_); // current heading in absolute coordinates TODO (revise??)

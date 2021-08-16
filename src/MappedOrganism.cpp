@@ -545,9 +545,10 @@ void MappedRootSystem::simulate(double dt, bool verbose)
  * initialization of mappedplant
  *
  */
-void MappedPlant::initialize(bool verbose) {
+void MappedPlant::initialize(bool verbose, bool stochastic) {
 	reset(); // just in case
 	std::cout << "MappedPlant::initialize \n" << std::flush;
+	this->stochastic = stochastic;
 	Plant::initialize(verbose);
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();
