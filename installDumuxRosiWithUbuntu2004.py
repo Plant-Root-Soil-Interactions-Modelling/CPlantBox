@@ -2,6 +2,7 @@
 
 """
 One click install script for dumux-rosi
+adapted from installdumux.py of the Dumux developers
 """
 import os
 import sys
