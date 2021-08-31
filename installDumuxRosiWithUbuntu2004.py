@@ -54,7 +54,7 @@ show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n o
 ## (1/3) Check some prerequistes
 #################################################################
 #################################################################
-programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran','python3.7'] 
+programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran','python3'] 
 show_message("(1/3) (a) Checking ubuntu prerequistes: " + " ".join(programs) + "...")
 
 # check some prerequistes
@@ -62,6 +62,13 @@ error = []
 for program in programs:
     try:
         output2 = subprocess.run([program, "--version"], capture_output=True)
+        if program == 'python3':
+            start_str = len("b'Python ")
+            end_str = start_str+3
+            pythonVersion = float(str(output2.stdout)[start_str:end_str])
+            if pythonVersion < 3.7:
+                error.append(program)
+		print("update python to at least version 3.7")
     except FileNotFoundError:
         error.append(program)
         
