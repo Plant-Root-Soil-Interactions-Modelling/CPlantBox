@@ -159,7 +159,7 @@ void Stem::simulate(double dt, bool verbose)
 			if (active) {
 
 				// length increment
-				double age_ = calcAge(length+ this->epsilonDx); // root age as if grown unimpeded (lower than real age)
+				double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
 				double dt_; // time step
 				if (age<dt) { // the root emerged in this time step, adjust time step
 					dt_= age;
