@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plant name="maize" filetype="parameters">
 <organ type="seed" subType="0">
-    <parameter name="seedPos.x" value="0"/>
-    <parameter name="seedPos.y" value="0"/>
-    <parameter name="seedPos.z" value="0"/>
+    <parameter name="seedPos.x" value="5"/>
+    <parameter name="seedPos.y" value="4"/>
+    <parameter name="seedPos.z" value="-3"/>
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
