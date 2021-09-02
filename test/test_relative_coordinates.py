@@ -29,9 +29,16 @@ class TestRelCoord(unittest.TestCase):
         pl.readParameters(path + name + ".xml") 
                 
         pl.initialize(stochastic = False)
-        pl.simulate(100, False)
+        dt = 1
+        steps = 100
+        for step in range(steps):
+            pl.simulate(1, False)
         pl.write("testCoord.vtp")
-        
+        params = pl.organParam
+        seedPosx = params[1][0].seedPos.x
+        seedPosy = params[1][0].seedPos.y
+        seedPosz = params[1][0].seedPos.z
+        #print(params[1][0].seedPos)
         roots = pl.getOrgans(2)
         leaves = pl.getOrgans(4)
         #stems = pl.getOrgans(3)
@@ -57,14 +64,15 @@ class TestRelCoord(unittest.TestCase):
         
         for i in range(0, len(rootTipsX)):
             #print(rootTipsX[i], leafTipsX[i])
-            self.assertAlmostEqual(rootTipsX[i], -leafTipsX[i], 10, "tip of 3rd lat root and leaf n°"+ str(i) +" not symetric")
+            self.assertAlmostEqual(rootTipsX[i]-seedPosx, -(leafTipsX[i]-seedPosx), 10, "tip of 3rd lat root and leaf n°"+ str(i) +" not symetric")
         for i in range(0, len(rootTipsY)):
             #print(rootTipsY[i]*10**16, leafTipsY[i]*10**16)
             self.assertAlmostEqual(rootTipsY[i]*10**16, leafTipsY[i]*10**16, 10,  "tip of 3rd lat root and leaf n°"+ str(i) +" not symetric")
         for i in range(0, len(rootTipsZ)):
-            #print(rootTipsZ[i], leafTipsZ[i])
-            self.assertAlmostEqual(rootTipsZ[i], -leafTipsZ[i], 10,  "tip of 3rd lat root and leaf n°"+ str(i) +" not symetric")
+            #print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
+            self.assertAlmostEqual(rootTipsZ[i]-seedPosz, -(leafTipsZ[i]-seedPosz), 10,  "tip of 3rd lat root and leaf n°"+ str(i) +" not symetric")
         
 test = TestRelCoord()
 test.test_coord()
+
 
