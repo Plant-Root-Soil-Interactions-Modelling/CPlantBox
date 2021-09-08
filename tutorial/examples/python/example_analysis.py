@@ -1,5 +1,7 @@
 """ analysis and plots a root system """
 import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import numpy as np
+
 import plantbox as pb
 import vtk_plot as vp
 from xylem_flux import XylemFluxPython
@@ -36,6 +38,18 @@ for s in aseg:
 ana.write("results/Moraes2018_{:s}days.dgf".format(str(simtime)))
 # r = XylemFluxPython(rs)  # just for test
 # r.test()
+
+nodes = ana.nodes
+segs = ana.segments
+print("Number of nodes", len(nodes))
+print("Number of segments", len(segs))
+minx = np.min([n.x for n in nodes])
+maxx = np.max([n.x for n in nodes])
+miny = np.min([n.y for n in nodes])
+maxy = np.max([n.y for n in nodes])
+minz = np.min([n.z for n in nodes])
+maxz = np.max([n.z for n in nodes])
+print("Bounding box", minx, maxx, miny, maxy, minz, maxz)
 
 # Plot, using vtk
 print("\n4. Plot")
