@@ -1,4 +1,3 @@
-"""small example"""
 import sys
 sys.path.append("../../../../..")
 import plantbox as pb
