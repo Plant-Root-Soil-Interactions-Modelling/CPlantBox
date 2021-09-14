@@ -1,0 +1,96 @@
+\hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear}{}\section{C\+Plant\+Box\+:\+:Soil\+Look\+Up1\+Dlinear Class Reference}
+\label{classCPlantBox_1_1SoilLookUp1Dlinear}\index{C\+Plant\+Box\+::\+Soil\+Look\+Up1\+Dlinear@{C\+Plant\+Box\+::\+Soil\+Look\+Up1\+Dlinear}}
+
+
+{\ttfamily \#include $<$soil.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Soil\+Look\+Up1\+Dlinear\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=249pt]{classCPlantBox_1_1SoilLookUp1Dlinear__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Soil\+Look\+Up1\+Dlinear\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=249pt]{classCPlantBox_1_1SoilLookUp1Dlinear__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_aea2977104009690dc9e84ee691786b04}\label{classCPlantBox_1_1SoilLookUp1Dlinear_aea2977104009690dc9e84ee691786b04}} 
+{\bfseries Soil\+Look\+Up1\+Dlinear} (double a, double b, size\+\_\+t n)
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_ab6aa21f531b94c6cf51035f284eaf1e4}\label{classCPlantBox_1_1SoilLookUp1Dlinear_ab6aa21f531b94c6cf51035f284eaf1e4}} 
+void {\bfseries set\+Data} (std\+::vector$<$ double $>$ \&data\+\_\+)
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_aabf6cd414dce412ff38a2fb0abee95a3}\label{classCPlantBox_1_1SoilLookUp1Dlinear_aabf6cd414dce412ff38a2fb0abee95a3}} 
+double {\bfseries map\+IZ} (size\+\_\+t i) const
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_ac76a01708047a46d00e486d1bbf55053}\label{classCPlantBox_1_1SoilLookUp1Dlinear_ac76a01708047a46d00e486d1bbf55053}} 
+size\+\_\+t {\bfseries map\+ZI} (double z) const
+\item 
+virtual double \hyperlink{classCPlantBox_1_1SoilLookUp1Dlinear_ae2d2ada13590b9b118f207f647652db8}{get\+Value} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$root=nullptr) const override
+\begin{DoxyCompactList}\small\item\em Returns a scalar property of the soil, 1. per default. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_a533fb76f35407f118f36b3ca4339a79c}\label{classCPlantBox_1_1SoilLookUp1Dlinear_a533fb76f35407f118f36b3ca4339a79c}} 
+virtual std\+::string \hyperlink{classCPlantBox_1_1SoilLookUp1Dlinear_a533fb76f35407f118f36b3ca4339a79c}{to\+String} () const
+\begin{DoxyCompactList}\small\item\em Quick info about the object for debugging. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_ab1017c25e42639470742da19c3f7bb55}\label{classCPlantBox_1_1SoilLookUp1Dlinear_ab1017c25e42639470742da19c3f7bb55}} 
+double {\bfseries a}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_a6c637904f737b79692565b6ee9f3f229}\label{classCPlantBox_1_1SoilLookUp1Dlinear_a6c637904f737b79692565b6ee9f3f229}} 
+double {\bfseries b}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_a355a6fbef5a8e411922fdbce9aec84b6}\label{classCPlantBox_1_1SoilLookUp1Dlinear_a355a6fbef5a8e411922fdbce9aec84b6}} 
+size\+\_\+t {\bfseries n}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_a6e85d93cebb2f80ad82bd60f65d7c9aa}\label{classCPlantBox_1_1SoilLookUp1Dlinear_a6e85d93cebb2f80ad82bd60f65d7c9aa}} 
+std\+::vector$<$ double $>$ \hyperlink{classCPlantBox_1_1SoilLookUp1Dlinear_a6e85d93cebb2f80ad82bd60f65d7c9aa}{data}
+\begin{DoxyCompactList}\small\item\em look up data \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+1D linear look up 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1SoilLookUp1Dlinear_ae2d2ada13590b9b118f207f647652db8}\label{classCPlantBox_1_1SoilLookUp1Dlinear_ae2d2ada13590b9b118f207f647652db8}} 
+\index{C\+Plant\+Box\+::\+Soil\+Look\+Up1\+Dlinear@{C\+Plant\+Box\+::\+Soil\+Look\+Up1\+Dlinear}!get\+Value@{get\+Value}}
+\index{get\+Value@{get\+Value}!C\+Plant\+Box\+::\+Soil\+Look\+Up1\+Dlinear@{C\+Plant\+Box\+::\+Soil\+Look\+Up1\+Dlinear}}
+\subsubsection{\texorpdfstring{get\+Value()}{getValue()}}
+{\footnotesize\ttfamily virtual double C\+Plant\+Box\+::\+Soil\+Look\+Up1\+Dlinear\+::get\+Value (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{root = {\ttfamily nullptr} }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Returns a scalar property of the soil, 1. per default. 
+
+Returns a scalar property of the soil scaled from 0..1
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & position \mbox{[}cm\mbox{]}, (normally, root-\/$>$get\+Node(root-\/$>$get\+Number\+Of\+Nodes()-\/1)) \\
+\hline
+{\em root} & the root that wants to know the scalar property in some situation this might be usefull (e.\+g. could increase look up speed from a unstructured mesh) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+scalar soil property 
+\end{DoxyReturn}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1SoilLookUp_a46ace0d168532b6eb9bec8e6a1d64814}{C\+Plant\+Box\+::\+Soil\+Look\+Up}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/soil.\+h\end{DoxyCompactItemize}

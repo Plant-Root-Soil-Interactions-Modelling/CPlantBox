@@ -1,0 +1,98 @@
+\hypertarget{classCPlantBox_1_1ConfinedTropism}{}\section{C\+Plant\+Box\+:\+:Confined\+Tropism Class Reference}
+\label{classCPlantBox_1_1ConfinedTropism}\index{C\+Plant\+Box\+::\+Confined\+Tropism@{C\+Plant\+Box\+::\+Confined\+Tropism}}
+
+
+{\ttfamily \#include $<$Root\+Tropism.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Confined\+Tropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=234pt]{classCPlantBox_1_1ConfinedTropism__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Confined\+Tropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=234pt]{classCPlantBox_1_1ConfinedTropism__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1ConfinedTropism_a7d90df6c52e1efe154e8e1d9f34a44fb}{Confined\+Tropism} (\hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} $\ast$base\+Tropism, \hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$geometry)
+\item 
+virtual \hyperlink{classCPlantBox_1_1Vector2d}{Vector2d} \hyperlink{classCPlantBox_1_1ConfinedTropism_abc56888ea510bc66369c36df3d43ce42}{get\+Heading} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$root) override
+\begin{DoxyCompactList}\small\item\em changes base\+Tropism-\/$>$\hyperlink{classCPlantBox_1_1ConfinedTropism_abc56888ea510bc66369c36df3d43ce42}{get\+Heading()} in case geometric boundaries are hit \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1ConfinedTropism_ad0687d23227c9e52af8873a6d8ab8065}\label{classCPlantBox_1_1ConfinedTropism_ad0687d23227c9e52af8873a6d8ab8065}} 
+virtual \hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} $\ast$ \hyperlink{classCPlantBox_1_1ConfinedTropism_ad0687d23227c9e52af8873a6d8ab8065}{copy} () override
+\begin{DoxyCompactList}\small\item\em copy constructor \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1ConfinedTropism_aaa264e2b61755ecaf9baf5f6c43487e0}\label{classCPlantBox_1_1ConfinedTropism_aaa264e2b61755ecaf9baf5f6c43487e0}} 
+virtual double \hyperlink{classCPlantBox_1_1ConfinedTropism_aaa264e2b61755ecaf9baf5f6c43487e0}{tropism\+Objective} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$root) override
+\begin{DoxyCompactList}\small\item\em this mehtod is not called, instead base\+Tropism-\/$>$\hyperlink{classCPlantBox_1_1ConfinedTropism_aaa264e2b61755ecaf9baf5f6c43487e0}{tropism\+Objective()} is used by get\+Heading \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Confines root growth to a geometry 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1ConfinedTropism_a7d90df6c52e1efe154e8e1d9f34a44fb}\label{classCPlantBox_1_1ConfinedTropism_a7d90df6c52e1efe154e8e1d9f34a44fb}} 
+\index{C\+Plant\+Box\+::\+Confined\+Tropism@{C\+Plant\+Box\+::\+Confined\+Tropism}!Confined\+Tropism@{Confined\+Tropism}}
+\index{Confined\+Tropism@{Confined\+Tropism}!C\+Plant\+Box\+::\+Confined\+Tropism@{C\+Plant\+Box\+::\+Confined\+Tropism}}
+\subsubsection{\texorpdfstring{Confined\+Tropism()}{ConfinedTropism()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Confined\+Tropism\+::\+Confined\+Tropism (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} $\ast$}]{base\+Tropism,  }\item[{\hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$}]{geometry }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\hyperlink{classCPlantBox_1_1ConfinedTropism}{Confined\+Tropism} confines a tropism to a geometry given by a signed distance function
+
+
+\begin{DoxyParams}{Parameters}
+{\em base\+Tropism} & the underlying tropism \\
+\hline
+{\em geometry} & geometry, e.\+g. of a plant container or an obstacle \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1ConfinedTropism_abc56888ea510bc66369c36df3d43ce42}\label{classCPlantBox_1_1ConfinedTropism_abc56888ea510bc66369c36df3d43ce42}} 
+\index{C\+Plant\+Box\+::\+Confined\+Tropism@{C\+Plant\+Box\+::\+Confined\+Tropism}!get\+Heading@{get\+Heading}}
+\index{get\+Heading@{get\+Heading}!C\+Plant\+Box\+::\+Confined\+Tropism@{C\+Plant\+Box\+::\+Confined\+Tropism}}
+\subsubsection{\texorpdfstring{get\+Heading()}{getHeading()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Vector2d}{Vector2d} C\+Plant\+Box\+::\+Confined\+Tropism\+::get\+Heading (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{root }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+changes base\+Tropism-\/$>$\hyperlink{classCPlantBox_1_1ConfinedTropism_abc56888ea510bc66369c36df3d43ce42}{get\+Heading()} in case geometric boundaries are hit 
+
+Inside the geometric domaint base\+Tropism\+::get\+Heading() is returned. In case geometric boundaries are hit, the rotations are modified, so that growth stays inside the domain.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & root tip postion \\
+\hline
+{\em old} & rotation matrix, heading is old(\+:,1) \\
+\hline
+{\em dx} & distance to look ahead (e.\+g in case of hydrotropism) \\
+\hline
+{\em root} & points to the root that called \hyperlink{classCPlantBox_1_1ConfinedTropism_abc56888ea510bc66369c36df3d43ce42}{get\+Heading()}, just in case something else is needed (i.\+e. iheading for exotropism)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the rotations alpha and beta 
+\end{DoxyReturn}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{C\+Plant\+Box\+::\+Tropism\+Function}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Root\+Tropism.\+h\item 
+src/Root\+Tropism.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,349 @@
+\hypertarget{classCPlantBox_1_1Root}{}\section{C\+Plant\+Box\+:\+:Root Class Reference}
+\label{classCPlantBox_1_1Root}\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+
+
+{\ttfamily \#include $<$Root.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Root\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=182pt]{classCPlantBox_1_1Root__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Root\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1Root__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1Root_a9192f7ecf7ee409e8089365175b53f25}{Root} (\hyperlink{classCPlantBox_1_1Plant}{Plant} $\ast$\hyperlink{classCPlantBox_1_1Organ_ac614456886ab270c6fd2617403e0f306}{plant}, \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$\hyperlink{classCPlantBox_1_1Organ_a8ad90078d5ef859bd2ab71700854e286}{parent}, int subtype, double delay, \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} iheading, int pni, double pbl)
+\begin{DoxyCompactList}\small\item\em typically called by constructor of Root\+System, or Root\+::create\+Laterals() \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a94270c0a8bece399bc44f4161d8c85fd}\label{classCPlantBox_1_1Root_a94270c0a8bece399bc44f4161d8c85fd}} 
+{\bfseries Root} (const \hyperlink{classCPlantBox_1_1Organ}{Organ} \&r, \hyperlink{classCPlantBox_1_1Plant}{Plant} \&\hyperlink{classCPlantBox_1_1Organ_ac614456886ab270c6fd2617403e0f306}{plant})
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a878211cbc8aea4127b288ffc82222f02}\label{classCPlantBox_1_1Root_a878211cbc8aea4127b288ffc82222f02}} 
+virtual int \hyperlink{classCPlantBox_1_1Root_a878211cbc8aea4127b288ffc82222f02}{organ\+Type} () const override
+\begin{DoxyCompactList}\small\item\em returns the organs type, overwrite for each organ \end{DoxyCompactList}\item 
+virtual void \hyperlink{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}{simulate} (double dt, bool silence=false) override
+\begin{DoxyCompactList}\small\item\em root growth for a time span of \end{DoxyCompactList}\item 
+virtual double \hyperlink{classCPlantBox_1_1Root_a23fac3d7c3b15e5f270d76b56c693ab9}{get\+Scalar} (std\+::string name) const override
+\begin{DoxyCompactList}\small\item\em returns an organ parameter of Plant\+::\+Scalar\+Type \end{DoxyCompactList}\item 
+double \hyperlink{classCPlantBox_1_1Root_a80123f9e090ef2b04686d488418d3466}{get\+Creation\+Time} (double lenght)
+\begin{DoxyCompactList}\small\item\em analytical creation (=emergence) time of a node at a length \end{DoxyCompactList}\item 
+double \hyperlink{classCPlantBox_1_1Root_a3501e66ef57a4ecc04fb2130a9d5aa17}{get\+Length} (double \hyperlink{classCPlantBox_1_1Organ_a4f17f0bfe7f03eedf4138fd8fe51376d}{age})
+\begin{DoxyCompactList}\small\item\em analytical length of the root \end{DoxyCompactList}\item 
+double \hyperlink{classCPlantBox_1_1Root_af9d9bff1f62c49b6d472584c0969fbb1}{get\+Age} (double \hyperlink{classCPlantBox_1_1Organ_a94f5b16aa7ebc3912501051281fe88dc}{length})
+\begin{DoxyCompactList}\small\item\em analytical age of the root \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a195c7b712cf32e6593eafb9ca1f69c2a}\label{classCPlantBox_1_1Root_a195c7b712cf32e6593eafb9ca1f69c2a}} 
+\hyperlink{classCPlantBox_1_1RootParameter}{Root\+Parameter} $\ast$ \hyperlink{classCPlantBox_1_1Root_a195c7b712cf32e6593eafb9ca1f69c2a}{r\+Param} () const
+\begin{DoxyCompactList}\small\item\em type cast \end{DoxyCompactList}\item 
+\hyperlink{classCPlantBox_1_1RootRandomOrganParameter}{Root\+Random\+Organ\+Parameter} $\ast$ \hyperlink{classCPlantBox_1_1Root_aeb5347a24006bd11fd6917a8ade87694}{t\+Param} () const
+\item 
+double \hyperlink{classCPlantBox_1_1Root_ae81c1b69f5d3cef73b957d887b531ebc}{dx} () const
+\begin{DoxyCompactList}\small\item\em returns the axial resolution \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a6b007090bde2be93fdedb4c76b6f171a}\label{classCPlantBox_1_1Root_a6b007090bde2be93fdedb4c76b6f171a}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} {\bfseries heading} () const
+\item 
+void \hyperlink{classCPlantBox_1_1Root_accf492ad0fa522fccc43588d1cde4610}{write\+R\+S\+ML} (std\+::ostream \&cout, std\+::string indent) const
+\begin{DoxyCompactList}\small\item\em current heading of the root tip \end{DoxyCompactList}\item 
+std\+::string \hyperlink{classCPlantBox_1_1Root_a389312a40582e21c1eaa6c5ebb927f2e}{to\+String} () const
+\item 
+void \hyperlink{classCPlantBox_1_1Root_aa527dd6491af6dec3a3016eef66acc40}{add\+Node} (\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} n, double t)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a84d07e9b762851c8e7a2d0208e3fff46}\label{classCPlantBox_1_1Root_a84d07e9b762851c8e7a2d0208e3fff46}} 
+double \hyperlink{classCPlantBox_1_1Root_a84d07e9b762851c8e7a2d0208e3fff46}{parent\+\_\+base\+\_\+length}
+\begin{DoxyCompactList}\small\item\em length \mbox{[}cm\mbox{]} \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_ac8c6cf81eee87f26287dbed81a052bf9}\label{classCPlantBox_1_1Root_ac8c6cf81eee87f26287dbed81a052bf9}} 
+int \hyperlink{classCPlantBox_1_1Root_ac8c6cf81eee87f26287dbed81a052bf9}{parent\+\_\+ni}
+\begin{DoxyCompactList}\small\item\em parent node index \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a0820234809bb45cec6773bd84ae69575}\label{classCPlantBox_1_1Root_a0820234809bb45cec6773bd84ae69575}} 
+int {\bfseries pni}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a8fc18cb23e776c5bf0dfcf03391c0f79}\label{classCPlantBox_1_1Root_a8fc18cb23e776c5bf0dfcf03391c0f79}} 
+double {\bfseries pbl}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a41b690dc6568fed06e8ec3bbcf0e628e}\label{classCPlantBox_1_1Root_a41b690dc6568fed06e8ec3bbcf0e628e}} 
+const double \hyperlink{classCPlantBox_1_1Root_a41b690dc6568fed06e8ec3bbcf0e628e}{small\+Dx} = 1e-\/6
+\begin{DoxyCompactList}\small\item\em threshold value, smaller segments will be skipped (otherwise root tip direction can become NaN) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a92f98515bfb7e7e205a6737c11477895}\label{classCPlantBox_1_1Root_a92f98515bfb7e7e205a6737c11477895}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} {\bfseries initial\+Heading}
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classCPlantBox_1_1Root_ade05f972f0110970749e0cee9a29bd8c}{create\+Segments} (double l, bool silence)
+\begin{DoxyCompactList}\small\item\em creates segments of length l, called by \hyperlink{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}{Root\+::simulate()} \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a116746eecadec26edb328f620c7bbb1c}\label{classCPlantBox_1_1Root_a116746eecadec26edb328f620c7bbb1c}} 
+virtual \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Root_a116746eecadec26edb328f620c7bbb1c}{get\+Increment} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&p, double sdx)
+\begin{DoxyCompactList}\small\item\em called by create\+Segments, to determine growth direction \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1Root_a67997bf9a5ad9f38ea9b109e9d4ef253}{create\+Lateral} (bool silence)
+\begin{DoxyCompactList}\small\item\em creates a new lateral, called by \hyperlink{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}{Root\+::simulate()} \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Root_ad30a8f260973de5bbe2c7a9458539559}\label{classCPlantBox_1_1Root_ad30a8f260973de5bbe2c7a9458539559}} 
+int {\bfseries old\+\_\+non} = 0
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+\hyperlink{classCPlantBox_1_1Root}{Root}
+
+Describes a single root, by a vector of nodes representing the root. The method \hyperlink{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}{simulate()} creates new nodes of this root, and lateral roots in the root\textquotesingle{}s branching zone.
+
+Since roots in soil cannot move the roots nodes are represented by absolute coordinates, in contrast to other organs like \hyperlink{classCPlantBox_1_1Leaf}{Leaf} or \hyperlink{classCPlantBox_1_1Stem}{Stem}. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a9192f7ecf7ee409e8089365175b53f25}\label{classCPlantBox_1_1Root_a9192f7ecf7ee409e8089365175b53f25}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!Root@{Root}}
+\index{Root@{Root}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{Root()}{Root()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Root\+::\+Root (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1Plant}{Plant} $\ast$}]{plant,  }\item[{\hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{parent,  }\item[{int}]{subtype,  }\item[{double}]{delay,  }\item[{\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d}}]{iheading,  }\item[{int}]{pni,  }\item[{double}]{pbl }\end{DoxyParamCaption})}
+
+
+
+typically called by constructor of Root\+System, or Root\+::create\+Laterals() 
+
+Constructor
+
+Typically called by the Root\+System\+::\+Root\+System(), or Root\+::create\+New\+Root(). For base roots the initial node and node emergence time (netime) must be set from outside
+
+
+\begin{DoxyParams}{Parameters}
+{\em plant} & points to the plant \\
+\hline
+{\em parent} & points to the parent organ \\
+\hline
+{\em subtype} & root type \\
+\hline
+{\em delay} & delay in order to give the apical zone to develop \\
+\hline
+{\em iheading} & relative heading (within parent organ) \\
+\hline
+{\em pni} & parent node index \\
+\hline
+{\em pbl} & parent base length \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_aa527dd6491af6dec3a3016eef66acc40}\label{classCPlantBox_1_1Root_aa527dd6491af6dec3a3016eef66acc40}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!add\+Node@{add\+Node}}
+\index{add\+Node@{add\+Node}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{add\+Node()}{addNode()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Root\+::add\+Node (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d}}]{n,  }\item[{double}]{t }\end{DoxyParamCaption})}
+
+Adds the next node to the root.
+
+Add nodes only with this function! For simplicity nodes can not be deleted, and roots can only become deactivated by dying
+
+
+\begin{DoxyParams}{Parameters}
+{\em n} & the new node \\
+\hline
+{\em t} & exact creation time of the node \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a67997bf9a5ad9f38ea9b109e9d4ef253}\label{classCPlantBox_1_1Root_a67997bf9a5ad9f38ea9b109e9d4ef253}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!create\+Lateral@{create\+Lateral}}
+\index{create\+Lateral@{create\+Lateral}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{create\+Lateral()}{createLateral()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Root\+::create\+Lateral (\begin{DoxyParamCaption}\item[{bool}]{silence }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+creates a new lateral, called by \hyperlink{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}{Root\+::simulate()} 
+
+Creates a new lateral by calling Root\+System\+::create\+New\+Root().
+
+Overwrite this method to implement more sezialized root classes. \mbox{\Hypertarget{classCPlantBox_1_1Root_ade05f972f0110970749e0cee9a29bd8c}\label{classCPlantBox_1_1Root_ade05f972f0110970749e0cee9a29bd8c}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!create\+Segments@{create\+Segments}}
+\index{create\+Segments@{create\+Segments}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{create\+Segments()}{createSegments()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Root\+::create\+Segments (\begin{DoxyParamCaption}\item[{double}]{l,  }\item[{bool}]{silence }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+creates segments of length l, called by \hyperlink{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}{Root\+::simulate()} 
+
+Creates nodes and node emergence times for length l, and updates the root heading
+
+Cecks that each new segments length is $<$= dx but $>$= ddx
+
+
+\begin{DoxyParams}{Parameters}
+{\em l} & length the root growth \mbox{[}cm\mbox{]} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_ae81c1b69f5d3cef73b957d887b531ebc}\label{classCPlantBox_1_1Root_ae81c1b69f5d3cef73b957d887b531ebc}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!dx@{dx}}
+\index{dx@{dx}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{dx()}{dx()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Root\+::dx (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+returns the axial resolution 
+
+Axial resolution \mbox{\Hypertarget{classCPlantBox_1_1Root_af9d9bff1f62c49b6d472584c0969fbb1}\label{classCPlantBox_1_1Root_af9d9bff1f62c49b6d472584c0969fbb1}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!get\+Age@{get\+Age}}
+\index{get\+Age@{get\+Age}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{get\+Age()}{getAge()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Root\+::get\+Age (\begin{DoxyParamCaption}\item[{double}]{length }\end{DoxyParamCaption})}
+
+
+
+analytical age of the root 
+
+Analytical age of the root at a given length
+
+
+\begin{DoxyParams}{Parameters}
+{\em length} & length of the root \mbox{[}cm\mbox{]} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a80123f9e090ef2b04686d488418d3466}\label{classCPlantBox_1_1Root_a80123f9e090ef2b04686d488418d3466}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!get\+Creation\+Time@{get\+Creation\+Time}}
+\index{get\+Creation\+Time@{get\+Creation\+Time}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{get\+Creation\+Time()}{getCreationTime()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Root\+::get\+Creation\+Time (\begin{DoxyParamCaption}\item[{double}]{length }\end{DoxyParamCaption})}
+
+
+
+analytical creation (=emergence) time of a node at a length 
+
+Analytical creation (=emergence) time of a node at a length along the root
+
+
+\begin{DoxyParams}{Parameters}
+{\em length} & length of the root \mbox{[}cm\mbox{]} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a3501e66ef57a4ecc04fb2130a9d5aa17}\label{classCPlantBox_1_1Root_a3501e66ef57a4ecc04fb2130a9d5aa17}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!get\+Length@{get\+Length}}
+\index{get\+Length@{get\+Length}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{get\+Length()}{getLength()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Root\+::get\+Length (\begin{DoxyParamCaption}\item[{double}]{age }\end{DoxyParamCaption})}
+
+
+
+analytical length of the root 
+
+Analytical length of the root at a given age
+
+
+\begin{DoxyParams}{Parameters}
+{\em age} & age of the root \mbox{[}day\mbox{]} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a23fac3d7c3b15e5f270d76b56c693ab9}\label{classCPlantBox_1_1Root_a23fac3d7c3b15e5f270d76b56c693ab9}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!get\+Scalar@{get\+Scalar}}
+\index{get\+Scalar@{get\+Scalar}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{get\+Scalar()}{getScalar()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Root\+::get\+Scalar (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+returns an organ parameter of Plant\+::\+Scalar\+Type 
+
+Returns the parameter called 
+\begin{DoxyParams}{Parameters}
+{\em name} & \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1Organ_adf7d115c625341e0f6d291c750b05e5c}{C\+Plant\+Box\+::\+Organ}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}\label{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!simulate@{simulate}}
+\index{simulate@{simulate}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{simulate()}{simulate()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Root\+::simulate (\begin{DoxyParamCaption}\item[{double}]{dt,  }\item[{bool}]{silence = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+root growth for a time span of 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dt} & \\
+\hline
+\end{DoxyParams}
+Copies the root tree Simulates growth of this root for a time span dt
+
+
+\begin{DoxyParams}{Parameters}
+{\em dt} & time step \mbox{[}day\mbox{]} \\
+\hline
+{\em silence} & indicates if status messages are written to the console (cout) (default = false) \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1Organ_acf519fc6730c0adbb2a82b7702ff7a28}{C\+Plant\+Box\+::\+Organ}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1Root_a389312a40582e21c1eaa6c5ebb927f2e}\label{classCPlantBox_1_1Root_a389312a40582e21c1eaa6c5ebb927f2e}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!to\+String@{to\+String}}
+\index{to\+String@{to\+String}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{to\+String()}{toString()}}
+{\footnotesize\ttfamily std\+::string C\+Plant\+Box\+::\+Root\+::to\+String (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Quick info about the object for debugging 
+
+Reimplemented from \hyperlink{classCPlantBox_1_1Organ_a9f823aebd19519096e899e65604f239f}{C\+Plant\+Box\+::\+Organ}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1Root_aeb5347a24006bd11fd6917a8ade87694}\label{classCPlantBox_1_1Root_aeb5347a24006bd11fd6917a8ade87694}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!t\+Param@{t\+Param}}
+\index{t\+Param@{t\+Param}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{t\+Param()}{tParam()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1RootRandomOrganParameter}{Root\+Random\+Organ\+Parameter} $\ast$ C\+Plant\+Box\+::\+Root\+::t\+Param (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+Shortcut for the \hyperlink{classCPlantBox_1_1OrganRandomOrganParameter}{Organ\+Random\+Organ\+Parameter} (\begin{DoxySeeAlso}{See also}
+also \hyperlink{classCPlantBox_1_1Root_a195c7b712cf32e6593eafb9ca1f69c2a}{r\+Param()} ) 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{classCPlantBox_1_1Root_accf492ad0fa522fccc43588d1cde4610}\label{classCPlantBox_1_1Root_accf492ad0fa522fccc43588d1cde4610}} 
+\index{C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}!write\+R\+S\+ML@{write\+R\+S\+ML}}
+\index{write\+R\+S\+ML@{write\+R\+S\+ML}!C\+Plant\+Box\+::\+Root@{C\+Plant\+Box\+::\+Root}}
+\subsubsection{\texorpdfstring{write\+R\+S\+M\+L()}{writeRSML()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Root\+::write\+R\+S\+ML (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{cout,  }\item[{std\+::string}]{indent }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+current heading of the root tip 
+
+writes a R\+S\+ML root tag
+
+writes R\+S\+ML root tag
+
+
+\begin{DoxyParams}{Parameters}
+{\em cout} & typically a file out stream \\
+\hline
+{\em indent} & we care for looks \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1Organ_acdad546c90e915b61ac3606f1f841ba1}{C\+Plant\+Box\+::\+Organ}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Root.\+h\item 
+src/Root.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,54 @@
+# build system clutter
+build-*
+Testing
+*.so
+src/CMakeFiles/
+src/Makefile
+src/cmake_install.cmake
+test/__pycache__/
+
+# auto-saved files
+*~
+
+# hidden files
+.cproject
+.project
+
+# Codeblocks
+*.cbp
+Codeblocks
+
+# latex clutter
+*.pdf
+*.aux
+*.blg
+*.log
+*.bbl
+*.dvi
+*.idx
+*.out
+*.tdo
+*.toc
+
+# CMake
+*.cmake
+CMakeFiles
+Makefile
+*CMakeCache*
+
+# something pythoon related
+*.pyc
+__pycache__
+
+# pyenv
+.python-version
+
+# Others
+.pydevproject
+.settings/
+Debug/
+*.vtp
+
+# Jupyter notebook
+tutorial/jupyter/.ipynb_checkpoints/
+.ipynb_checkpoints/

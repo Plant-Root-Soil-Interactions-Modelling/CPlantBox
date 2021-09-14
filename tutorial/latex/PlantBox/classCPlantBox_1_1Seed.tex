@@ -1,0 +1,93 @@
+\hypertarget{classCPlantBox_1_1Seed}{}\section{C\+Plant\+Box\+:\+:Seed Class Reference}
+\label{classCPlantBox_1_1Seed}\index{C\+Plant\+Box\+::\+Seed@{C\+Plant\+Box\+::\+Seed}}
+
+
+{\ttfamily \#include $<$Seed.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Seed\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=182pt]{classCPlantBox_1_1Seed__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Seed\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1Seed__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a49db517a941122aa79df6ba8434ee141}\label{classCPlantBox_1_1Seed_a49db517a941122aa79df6ba8434ee141}} 
+{\bfseries Seed} (\hyperlink{classCPlantBox_1_1Plant}{Plant} $\ast$\hyperlink{classCPlantBox_1_1Organ_ac614456886ab270c6fd2617403e0f306}{plant})
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_ab9e6531b8ab252af9c0b2da83ae98972}\label{classCPlantBox_1_1Seed_ab9e6531b8ab252af9c0b2da83ae98972}} 
+virtual int \hyperlink{classCPlantBox_1_1Seed_ab9e6531b8ab252af9c0b2da83ae98972}{organ\+Type} () const override
+\begin{DoxyCompactList}\small\item\em returns the organs type, overwrite for each organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a377d61d05f475309ea482f5ec381e639}\label{classCPlantBox_1_1Seed_a377d61d05f475309ea482f5ec381e639}} 
+virtual \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} {\bfseries get\+Relative\+Origin} () const override
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a983f6a136c582505b960472561562639}\label{classCPlantBox_1_1Seed_a983f6a136c582505b960472561562639}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Seed_a983f6a136c582505b960472561562639}{getseed\+Pos} (\hyperlink{classCPlantBox_1_1SeedParameter}{Seed\+Parameter} $\ast$sparam) const
+\begin{DoxyCompactList}\small\item\em the relative position within the parent organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_ac0c7819ea4ffe0d425908fd52b76efba}\label{classCPlantBox_1_1Seed_ac0c7819ea4ffe0d425908fd52b76efba}} 
+virtual void \hyperlink{classCPlantBox_1_1Seed_ac0c7819ea4ffe0d425908fd52b76efba}{set\+Relative\+Origin} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&o) override
+\begin{DoxyCompactList}\small\item\em the relative position within the parent organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a448f63c8fb85ee64dfd04b2008915a02}\label{classCPlantBox_1_1Seed_a448f63c8fb85ee64dfd04b2008915a02}} 
+virtual \hyperlink{classCPlantBox_1_1SeedParameter}{Seed\+Parameter} $\ast$ \hyperlink{classCPlantBox_1_1Seed_a448f63c8fb85ee64dfd04b2008915a02}{initializeparam} ()
+\begin{DoxyCompactList}\small\item\em the relative position within the parent organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a203f63a931d9e408cc8b5df1c41dfb98}\label{classCPlantBox_1_1Seed_a203f63a931d9e408cc8b5df1c41dfb98}} 
+virtual void {\bfseries initialize} (\hyperlink{classCPlantBox_1_1SeedParameter}{Seed\+Parameter} $\ast$sparam)
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_abffd84c1b6904f93b69368f811baeb37}\label{classCPlantBox_1_1Seed_abffd84c1b6904f93b69368f811baeb37}} 
+virtual void \hyperlink{classCPlantBox_1_1Seed_abffd84c1b6904f93b69368f811baeb37}{set\+Relative\+Heading} (const \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \&m) override
+\begin{DoxyCompactList}\small\item\em the heading in the parent organ \end{DoxyCompactList}\item 
+virtual std\+::string \hyperlink{classCPlantBox_1_1Seed_a83a1493777594b1e92d31d6d3db4258b}{to\+String} () const override
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_adf587d9e6b6a4f93c9c481a8ec1c8db8}\label{classCPlantBox_1_1Seed_adf587d9e6b6a4f93c9c481a8ec1c8db8}} 
+const int {\bfseries basal\+Type} = 4
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a69a614d5837c8809a259bf42a17ede1a}\label{classCPlantBox_1_1Seed_a69a614d5837c8809a259bf42a17ede1a}} 
+const int {\bfseries tiller\+Type} = 4
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_aae71d925df2703af8a5b1a7e568fb645}\label{classCPlantBox_1_1Seed_aae71d925df2703af8a5b1a7e568fb645}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} {\bfseries seed\+\_\+pos}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a9eefe2e378afaf99d9e5637840a6c082}\label{classCPlantBox_1_1Seed_a9eefe2e378afaf99d9e5637840a6c082}} 
+\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} {\bfseries A}
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+\hyperlink{classCPlantBox_1_1Seed}{Seed}
+
+the main organ of the plant, simulate calls the simulate method of the stem, and base roots 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Seed_a83a1493777594b1e92d31d6d3db4258b}\label{classCPlantBox_1_1Seed_a83a1493777594b1e92d31d6d3db4258b}} 
+\index{C\+Plant\+Box\+::\+Seed@{C\+Plant\+Box\+::\+Seed}!to\+String@{to\+String}}
+\index{to\+String@{to\+String}!C\+Plant\+Box\+::\+Seed@{C\+Plant\+Box\+::\+Seed}}
+\subsubsection{\texorpdfstring{to\+String()}{toString()}}
+{\footnotesize\ttfamily std\+::string C\+Plant\+Box\+::\+Seed\+::to\+String (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+Quick info about the object for debugging 
+
+Reimplemented from \hyperlink{classCPlantBox_1_1Organ_a9f823aebd19519096e899e65604f239f}{C\+Plant\+Box\+::\+Organ}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Seed.\+h\item 
+src/Seed.\+cpp\end{DoxyCompactItemize}

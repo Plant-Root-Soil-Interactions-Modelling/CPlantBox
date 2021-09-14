@@ -1,0 +1,110 @@
+\hypertarget{classCPlantBox_1_1Matrix3d}{}\section{C\+Plant\+Box\+:\+:Matrix3d Class Reference}
+\label{classCPlantBox_1_1Matrix3d}\index{C\+Plant\+Box\+::\+Matrix3d@{C\+Plant\+Box\+::\+Matrix3d}}
+
+
+{\ttfamily \#include $<$mymath.\+h$>$}
+
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Matrix3d\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=196pt]{classCPlantBox_1_1Matrix3d__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_aba20b85af0ce770d0ac0aba44b7ebb94}\label{classCPlantBox_1_1Matrix3d_aba20b85af0ce770d0ac0aba44b7ebb94}} 
+\hyperlink{classCPlantBox_1_1Matrix3d_aba20b85af0ce770d0ac0aba44b7ebb94}{Matrix3d} ()
+\begin{DoxyCompactList}\small\item\em Default constructor (identity matrix) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a1a0f7c0db69375fbaf99f7354366d5da}\label{classCPlantBox_1_1Matrix3d_a1a0f7c0db69375fbaf99f7354366d5da}} 
+\hyperlink{classCPlantBox_1_1Matrix3d_a1a0f7c0db69375fbaf99f7354366d5da}{Matrix3d} (double m11, double m12, double m13, double m21, double m22, double m23, double m31, double m32, double m33)
+\begin{DoxyCompactList}\small\item\em Constructor passing nine doubles as 3x3 matrix entries. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a660dff2581b4f427acfff025f7655fc7}\label{classCPlantBox_1_1Matrix3d_a660dff2581b4f427acfff025f7655fc7}} 
+\hyperlink{classCPlantBox_1_1Matrix3d_a660dff2581b4f427acfff025f7655fc7}{Matrix3d} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&c1, const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&c2, const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&c3)
+\begin{DoxyCompactList}\small\item\em Constructs the matrix from three column vectors. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_af7de6b14f07dc9d6968a53d3ef14c360}\label{classCPlantBox_1_1Matrix3d_af7de6b14f07dc9d6968a53d3ef14c360}} 
+\hyperlink{classCPlantBox_1_1Matrix3d_af7de6b14f07dc9d6968a53d3ef14c360}{Matrix3d} (const \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \&m)
+\begin{DoxyCompactList}\small\item\em Copy constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a1e695998373d052aeae94cccd8b7fa16}\label{classCPlantBox_1_1Matrix3d_a1e695998373d052aeae94cccd8b7fa16}} 
+double \hyperlink{classCPlantBox_1_1Matrix3d_a1e695998373d052aeae94cccd8b7fa16}{det} () const
+\begin{DoxyCompactList}\small\item\em determinant of the matrix \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a6b51e2a2d5ca24cd5199ac0c4990fb44}\label{classCPlantBox_1_1Matrix3d_a6b51e2a2d5ca24cd5199ac0c4990fb44}} 
+\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \hyperlink{classCPlantBox_1_1Matrix3d_a6b51e2a2d5ca24cd5199ac0c4990fb44}{inverse} () const
+\begin{DoxyCompactList}\small\item\em calculates the inverse of the matrix \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a4db104d3e5afe1b5737a26f70663a595}\label{classCPlantBox_1_1Matrix3d_a4db104d3e5afe1b5737a26f70663a595}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Matrix3d_a4db104d3e5afe1b5737a26f70663a595}{column} (int i) const
+\begin{DoxyCompactList}\small\item\em returns the i-\/th column of the matrix (i=0..2) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_ae015fb90aa09bafd9f3dde759dd5642d}\label{classCPlantBox_1_1Matrix3d_ae015fb90aa09bafd9f3dde759dd5642d}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Matrix3d_ae015fb90aa09bafd9f3dde759dd5642d}{row} (int i) const
+\begin{DoxyCompactList}\small\item\em returns the i-\/th row of the matrix (i=0..2) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_aff198f7d945f7b429932678e21b5b62b}\label{classCPlantBox_1_1Matrix3d_aff198f7d945f7b429932678e21b5b62b}} 
+void \hyperlink{classCPlantBox_1_1Matrix3d_aff198f7d945f7b429932678e21b5b62b}{times} (const \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \&m)
+\begin{DoxyCompactList}\small\item\em Multiplies matrix m from right. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_afc3f908f0e56f1a7b377857dbf8bb5af}\label{classCPlantBox_1_1Matrix3d_afc3f908f0e56f1a7b377857dbf8bb5af}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Matrix3d_afc3f908f0e56f1a7b377857dbf8bb5af}{times} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&v) const
+\begin{DoxyCompactList}\small\item\em Multiplies vector v from right. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a7843cea2ad51b889eed45f7892aec1f5}\label{classCPlantBox_1_1Matrix3d_a7843cea2ad51b889eed45f7892aec1f5}} 
+std\+::string \hyperlink{classCPlantBox_1_1Matrix3d_a7843cea2ad51b889eed45f7892aec1f5}{to\+String} () const
+\begin{DoxyCompactList}\small\item\em creates a string representing the 3x3 matrix \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a8895aef9fc0ba32151a046247f10766f}\label{classCPlantBox_1_1Matrix3d_a8895aef9fc0ba32151a046247f10766f}} 
+static \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \hyperlink{classCPlantBox_1_1Matrix3d_a8895aef9fc0ba32151a046247f10766f}{rotX} (double a)
+\begin{DoxyCompactList}\small\item\em Creates a rotation matrix around the X-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_abaf49f5d175678190505ad23e74e53e7}\label{classCPlantBox_1_1Matrix3d_abaf49f5d175678190505ad23e74e53e7}} 
+static \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \hyperlink{classCPlantBox_1_1Matrix3d_abaf49f5d175678190505ad23e74e53e7}{rotY} (double a)
+\begin{DoxyCompactList}\small\item\em Creates a rotation matrix around the Y-\/axis. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_aed1b8c6635dde507caf90d01eb5e02d4}\label{classCPlantBox_1_1Matrix3d_aed1b8c6635dde507caf90d01eb5e02d4}} 
+static \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \hyperlink{classCPlantBox_1_1Matrix3d_aed1b8c6635dde507caf90d01eb5e02d4}{rotZ} (double a)
+\begin{DoxyCompactList}\small\item\em Creates a rotation matrix around the Z-\/axis. \end{DoxyCompactList}\item 
+static \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \hyperlink{classCPlantBox_1_1Matrix3d_a65224dd4969719c7fc8072c6a913f4c8}{ons} (\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&v, int vec\+\_\+pos=0)
+\begin{DoxyCompactList}\small\item\em Creates an orthonormal system (O\+NS) around the vector v. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_ab35ef40d84f9ee9ec992e0f7868c6edf}\label{classCPlantBox_1_1Matrix3d_ab35ef40d84f9ee9ec992e0f7868c6edf}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Matrix3d_ab35ef40d84f9ee9ec992e0f7868c6edf}{r0}
+\begin{DoxyCompactList}\small\item\em row 1 \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a68c25f556d573979743a8ed12adb68ed}\label{classCPlantBox_1_1Matrix3d_a68c25f556d573979743a8ed12adb68ed}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Matrix3d_a68c25f556d573979743a8ed12adb68ed}{r1}
+\begin{DoxyCompactList}\small\item\em row 2 \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a426ed493e511b936e0008384db09deca}\label{classCPlantBox_1_1Matrix3d_a426ed493e511b936e0008384db09deca}} 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Matrix3d_a426ed493e511b936e0008384db09deca}{r2}
+\begin{DoxyCompactList}\small\item\em row 3 \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+3x3 Matrix class, compatible with \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} for basic linear algebra (i.\+e. exactly the operations needed for C\+Root\+Box) 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Matrix3d_a65224dd4969719c7fc8072c6a913f4c8}\label{classCPlantBox_1_1Matrix3d_a65224dd4969719c7fc8072c6a913f4c8}} 
+\index{C\+Plant\+Box\+::\+Matrix3d@{C\+Plant\+Box\+::\+Matrix3d}!ons@{ons}}
+\index{ons@{ons}!C\+Plant\+Box\+::\+Matrix3d@{C\+Plant\+Box\+::\+Matrix3d}}
+\subsubsection{\texorpdfstring{ons()}{ons()}}
+{\footnotesize\ttfamily static \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} C\+Plant\+Box\+::\+Matrix3d\+::ons (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{v,  }\item[{int}]{vec\+\_\+pos = {\ttfamily 0} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+
+
+Creates an orthonormal system (O\+NS) around the vector v. 
+
+Creates an orthonormal system (O\+NS) around the vector v
+
+Remark\+: This is not unique, in Rootbox the O\+NS is rotated around a random angle to make it truly random. This is likely to be not optimal, but I guess it is fast enough anyway.
+
+
+\begin{DoxyParams}{Parameters}
+{\em v} & vector, that will be normalized and then be the first column of the resulting O\+NS\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+three orthonormal column vectors 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/mymath.\+h\end{DoxyCompactItemize}

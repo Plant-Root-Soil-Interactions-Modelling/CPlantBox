@@ -1,0 +1,97 @@
+\hypertarget{classCPlantBox_1_1CombinedLeafTropism}{}\section{C\+Plant\+Box\+:\+:Combined\+Leaf\+Tropism Class Reference}
+\label{classCPlantBox_1_1CombinedLeafTropism}\index{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism@{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism}}
+
+
+{\ttfamily \#include $<$Leaf\+Tropism.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Combined\+Leaf\+Tropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{classCPlantBox_1_1CombinedLeafTropism__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Combined\+Leaf\+Tropism\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{classCPlantBox_1_1CombinedLeafTropism__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1CombinedLeafTropism_a864af63cb3897d5d7793f23df84f9049}\label{classCPlantBox_1_1CombinedLeafTropism_a864af63cb3897d5d7793f23df84f9049}} 
+\hyperlink{classCPlantBox_1_1CombinedLeafTropism_a864af63cb3897d5d7793f23df84f9049}{Combined\+Leaf\+Tropism} (double \hyperlink{classCPlantBox_1_1LeafTropismFunction_a21d8d756f8b9f6015b546def33b01c89}{n}, double \hyperlink{classCPlantBox_1_1LeafTropismFunction_a82a3dc11056a65501bc4535749c304b6}{sigma}, std\+::vector$<$ \hyperlink{classCPlantBox_1_1LeafTropismFunction}{Leaf\+Tropism\+Function} $\ast$$>$ tropisms\+\_\+, std\+::vector$<$ double $>$ weights\+\_\+)
+\begin{DoxyCompactList}\small\item\em linearly comibines the objective functions of multiple tropisms \end{DoxyCompactList}\item 
+\hyperlink{classCPlantBox_1_1CombinedLeafTropism_a932f5340663a5785b31f4013fe0132aa}{Combined\+Leaf\+Tropism} (double \hyperlink{classCPlantBox_1_1LeafTropismFunction_a21d8d756f8b9f6015b546def33b01c89}{n}, double \hyperlink{classCPlantBox_1_1LeafTropismFunction_a82a3dc11056a65501bc4535749c304b6}{sigma}, \hyperlink{classCPlantBox_1_1LeafTropismFunction}{Leaf\+Tropism\+Function} $\ast$t1, double w1, \hyperlink{classCPlantBox_1_1LeafTropismFunction}{Leaf\+Tropism\+Function} $\ast$t2, double w2)
+\begin{DoxyCompactList}\small\item\em linearly comibines the objective functions of two tropism funcitons \end{DoxyCompactList}\item 
+virtual double \hyperlink{classCPlantBox_1_1CombinedLeafTropism_aec7a53f31265f6c10a8666d0d8647aa5}{leaftropism\+Objective} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$leaf) override
+\begin{DoxyCompactList}\small\item\em \hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading()} minimizes this function, \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Detailed Description}
+Combined tropisms, creates a linear combination of the respective objective functions 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1CombinedLeafTropism_a932f5340663a5785b31f4013fe0132aa}\label{classCPlantBox_1_1CombinedLeafTropism_a932f5340663a5785b31f4013fe0132aa}} 
+\index{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism@{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism}!Combined\+Leaf\+Tropism@{Combined\+Leaf\+Tropism}}
+\index{Combined\+Leaf\+Tropism@{Combined\+Leaf\+Tropism}!C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism@{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism}}
+\subsubsection{\texorpdfstring{Combined\+Leaf\+Tropism()}{CombinedLeafTropism()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism\+::\+Combined\+Leaf\+Tropism (\begin{DoxyParamCaption}\item[{double}]{n,  }\item[{double}]{sigma,  }\item[{\hyperlink{classCPlantBox_1_1LeafTropismFunction}{Leaf\+Tropism\+Function} $\ast$}]{t1,  }\item[{double}]{w1,  }\item[{\hyperlink{classCPlantBox_1_1LeafTropismFunction}{Leaf\+Tropism\+Function} $\ast$}]{t2,  }\item[{double}]{w2 }\end{DoxyParamCaption})}
+
+
+
+linearly comibines the objective functions of two tropism funcitons 
+
+Constructs a combined tropism with two tropsims, the new objective funciton is (t1-\/$>$tropism\+Objective()$\ast$w1)+(t2-\/$>$tropism\+Objective()$\ast$w2)
+
+
+\begin{DoxyParams}{Parameters}
+{\em n} & number of tries \\
+\hline
+{\em sigma} & standard deviation of angular change \mbox{[}1/cm\mbox{]} \\
+\hline
+{\em t1} & first tropism \\
+\hline
+{\em w1} & first weight \\
+\hline
+{\em t2} & first tropism \\
+\hline
+{\em w2} & first weight \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1CombinedLeafTropism_aec7a53f31265f6c10a8666d0d8647aa5}\label{classCPlantBox_1_1CombinedLeafTropism_aec7a53f31265f6c10a8666d0d8647aa5}} 
+\index{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism@{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism}!leaftropism\+Objective@{leaftropism\+Objective}}
+\index{leaftropism\+Objective@{leaftropism\+Objective}!C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism@{C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism}}
+\subsubsection{\texorpdfstring{leaftropism\+Objective()}{leaftropismObjective()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Combined\+Leaf\+Tropism\+::leaftropism\+Objective (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{a,  }\item[{double}]{b,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{leaf }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+\hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading()} minimizes this function, 
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function}
+\end{DoxySeeAlso}
+\hyperlink{classCPlantBox_1_1LeafTropismFunction_a1440868221a834474e34e3a503a74572}{get\+Heading()} minimizes this function, \begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1TropismFunction_a4f2c79fff55d1398c98a070dd8ebbe08}{Tropism\+Function\+::tropism\+Objective} 
+\end{DoxySeeAlso}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1LeafTropismFunction_ab89f5f7e80103d80681bc8cadc220dba}{C\+Plant\+Box\+::\+Leaf\+Tropism\+Function}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Leaf\+Tropism.\+h\item 
+src/Leaf\+Tropism.\+cpp\end{DoxyCompactItemize}

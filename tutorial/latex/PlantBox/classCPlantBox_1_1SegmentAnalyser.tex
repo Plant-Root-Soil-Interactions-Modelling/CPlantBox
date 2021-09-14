@@ -1,0 +1,684 @@
+\hypertarget{classCPlantBox_1_1SegmentAnalyser}{}\section{C\+Plant\+Box\+:\+:Segment\+Analyser Class Reference}
+\label{classCPlantBox_1_1SegmentAnalyser}\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+
+
+{\ttfamily \#include $<$analysis.\+h$>$}
+
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Segment\+Analyser\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1SegmentAnalyser__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1SegmentAnalyser_aa90925db52f92b3875e19897a1319059}{Segment\+Analyser} (const \hyperlink{classCPlantBox_1_1Plant}{Plant} \&rs)
+\begin{DoxyCompactList}\small\item\em creates an empty object (use Analysis\+S\+D\+F\+::add\+Segments) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a3c27c772f78633f3c40aa61fcb05e0e4}\label{classCPlantBox_1_1SegmentAnalyser_a3c27c772f78633f3c40aa61fcb05e0e4}} 
+\hyperlink{classCPlantBox_1_1SegmentAnalyser_a3c27c772f78633f3c40aa61fcb05e0e4}{Segment\+Analyser} (const \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} \&a)
+\begin{DoxyCompactList}\small\item\em copy constructor, does not copy user data \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_a3ff7165b8d0201bddee92b3338b95839}{add\+Segments} (const \hyperlink{classCPlantBox_1_1Plant}{Plant} \&rs)
+\begin{DoxyCompactList}\small\item\em nothing to do here \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_ac374e94bd9eddf2e7c6dd840e13d125d}{add\+Segments} (const \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} \&a)
+\begin{DoxyCompactList}\small\item\em adds the segments \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_ad36ee62a998e34484b96b2c12ec92fca}{crop} (\hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$geometry)
+\begin{DoxyCompactList}\small\item\em crops the data to a geometry \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_a23c673b6bca999d2ed47059e3e708f86}{filter} (std\+::string pname, double min, double max)
+\begin{DoxyCompactList}\small\item\em filters the segments to the data \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_add2f750bb9f709e0bc0d9d187ad03277}{filter} (std\+::string name, double value)
+\begin{DoxyCompactList}\small\item\em filters the segments to the data \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_a488c906a2b685e6e50d990c2bb617607}{pack} ()
+\begin{DoxyCompactList}\small\item\em sorts the nodes and deletes unused nodes \end{DoxyCompactList}\item 
+std\+::vector$<$ double $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a00b162007d72a6ba4adf48972cd0f9bf}{get\+Scalar} (std\+::string name) const
+\begin{DoxyCompactList}\small\item\em Returns a specific parameter per segment. \end{DoxyCompactList}\item 
+double \hyperlink{classCPlantBox_1_1SegmentAnalyser_aa223aa2a58d0eb0b910ccfe03877b78e}{get\+Segment\+Length} (int i) const
+\begin{DoxyCompactList}\small\item\em returns the length of a segment \end{DoxyCompactList}\item 
+double \hyperlink{classCPlantBox_1_1SegmentAnalyser_a77c317cdd72d22e4e2181761b59dab76}{get\+Summed} (std\+::string pname) const
+\begin{DoxyCompactList}\small\item\em Sums up the parameter. \end{DoxyCompactList}\item 
+double \hyperlink{classCPlantBox_1_1SegmentAnalyser_a1eab5114bd706b4942721d1f8deea328}{get\+Summed} (std\+::string pname, \hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$geometry) const
+\begin{DoxyCompactList}\small\item\em Sums up the parameter within the geometry. \end{DoxyCompactList}\item 
+std\+::vector$<$ double $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a847f313257ffd7a8442d2aecd12e34d2}{distribution} (std\+::string pname, double top, double bot, int n, bool exact=false) const
+\begin{DoxyCompactList}\small\item\em vertical distribution of a parameter \end{DoxyCompactList}\item 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a4353b3748dc58d4f8eda3d1e7a61aa41}{distribution} (double top, double bot, int n) const
+\begin{DoxyCompactList}\small\item\em vertical distribution of a parameter \end{DoxyCompactList}\item 
+std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a45dc325035b8e48fc86a8aed7d4bab16}{distribution2} (std\+::string pname, double top, double bot, double left, double right, int n, int m, bool exact=false) const
+\begin{DoxyCompactList}\small\item\em 2d distribution (x,z) of a parameter \end{DoxyCompactList}\item 
+std\+::vector$<$ std\+::vector$<$ \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} $>$ $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_ac693f16057e5b053d5397d66d0bff50c}{distribution2} (double top, double bot, double left, double right, int n, int m) const
+\begin{DoxyCompactList}\small\item\em 2d distribution (x,z) of a parameter \end{DoxyCompactList}\item 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a5b0a0f95ee7b03e64554eec01fb51b7c}{get\+Roots} () const
+\begin{DoxyCompactList}\small\item\em segment origins \end{DoxyCompactList}\item 
+int \hyperlink{classCPlantBox_1_1SegmentAnalyser_a4edbc03e22d117f24b437735d2ef1bd1}{get\+Number\+Of\+Roots} () const
+\begin{DoxyCompactList}\small\item\em number of different roots \end{DoxyCompactList}\item 
+\hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} \hyperlink{classCPlantBox_1_1SegmentAnalyser_a1fab801299f985363e46a4eb6e37e7dd}{foto} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, const \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \&ons, double height) const
+\begin{DoxyCompactList}\small\item\em takes a picture T\+O\+DO unfinished, untested \end{DoxyCompactList}\item 
+\hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} \hyperlink{classCPlantBox_1_1SegmentAnalyser_a777f3abc5ed7a351ca228e1bf7da0957}{cut} (const \hyperlink{classCPlantBox_1_1SDF__HalfPlane}{S\+D\+F\+\_\+\+Half\+Plane} \&plane) const
+\begin{DoxyCompactList}\small\item\em returns the segments intersecting with a plane (e.\+g. for trenches) \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_acfe719897fa503aa9af4b1d906f9d051}{add\+User\+Data} (std\+::vector$<$ double $>$ data, std\+::string name)
+\begin{DoxyCompactList}\small\item\em adds user data that are written int the V\+TP file, \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a39063b19c632b1809febe4219228123a}\label{classCPlantBox_1_1SegmentAnalyser_a39063b19c632b1809febe4219228123a}} 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_a39063b19c632b1809febe4219228123a}{clear\+User\+Data} ()
+\begin{DoxyCompactList}\small\item\em resets the user data \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_a2d01686f47050ae3362d61d34390fd4b}{write} (std\+::string name)
+\begin{DoxyCompactList}\small\item\em writes simulation results (type is determined from file extension in name) \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_a491635f641d9f9ce71bf3efee352ff66}{write\+V\+TP} (std\+::ostream \&os, std\+::vector$<$ std\+::string $>$ type\+Names=\{\char`\"{}radius\char`\"{}\}) const
+\begin{DoxyCompactList}\small\item\em writes a V\+TP file \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_add6618a9caceaadc37b9e52deaa2bec6}{write\+R\+B\+Segments} (std\+::ostream \&os) const
+\begin{DoxyCompactList}\small\item\em Writes the segments of the root system, mimics the Matlab script get\+Segments() \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1SegmentAnalyser_abda97405b2591f633f44ca5856befeab}{write\+D\+GF} (std\+::ostream \&os) const
+\begin{DoxyCompactList}\small\item\em Writes the segments of the root system in D\+GF format used by Du\+Mux. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1SegmentAnalyser_ab9474e1bfdccb361c6ab7ee2c7ec7dc4}{cut} (\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} in, \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} out, \hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$geometry)
+\begin{DoxyCompactList}\small\item\em intersects a line with the geometry \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_af1915a3ee3e595934adb74f244bce23c}\label{classCPlantBox_1_1SegmentAnalyser_af1915a3ee3e595934adb74f244bce23c}} 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_af1915a3ee3e595934adb74f244bce23c}{nodes}
+\begin{DoxyCompactList}\small\item\em nodes \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a2647967365df14fad069aeee7e66ced6}\label{classCPlantBox_1_1SegmentAnalyser_a2647967365df14fad069aeee7e66ced6}} 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Vector2i}{Vector2i} $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a2647967365df14fad069aeee7e66ced6}{segments}
+\begin{DoxyCompactList}\small\item\em connectivity of the nodes \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a66d616181eb43c1ad5779951979d5507}\label{classCPlantBox_1_1SegmentAnalyser_a66d616181eb43c1ad5779951979d5507}} 
+std\+::vector$<$ double $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a66d616181eb43c1ad5779951979d5507}{ctimes}
+\begin{DoxyCompactList}\small\item\em creation times of the segments \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_acb1edf5ccbf713dd5315cb8f87882050}\label{classCPlantBox_1_1SegmentAnalyser_acb1edf5ccbf713dd5315cb8f87882050}} 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_acb1edf5ccbf713dd5315cb8f87882050}{segO}
+\begin{DoxyCompactList}\small\item\em to look up things \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a68ea16b452b6b65bdb3eff352d5a2341}\label{classCPlantBox_1_1SegmentAnalyser_a68ea16b452b6b65bdb3eff352d5a2341}} 
+std\+::vector$<$ std\+::vector$<$ double $>$ $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a68ea16b452b6b65bdb3eff352d5a2341}{user\+Data}
+\begin{DoxyCompactList}\small\item\em user data attached to the segments (for vtp file), e.\+g. flux, pressure, etc. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a77a045487660790d602c82821b8c8ec2}\label{classCPlantBox_1_1SegmentAnalyser_a77a045487660790d602c82821b8c8ec2}} 
+std\+::vector$<$ std\+::string $>$ \hyperlink{classCPlantBox_1_1SegmentAnalyser_a77a045487660790d602c82821b8c8ec2}{user\+Data\+Names}
+\begin{DoxyCompactList}\small\item\em names of the data added, e.\+g. \char`\"{}\+Flux\char`\"{}, \char`\"{}\+Pressure\char`\"{}, etc. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_af6fac7a28aae94fa6bf39b21d1efb613}\label{classCPlantBox_1_1SegmentAnalyser_af6fac7a28aae94fa6bf39b21d1efb613}} 
+const \hyperlink{classCPlantBox_1_1Plant}{Plant} $\ast$ {\bfseries rs} = nullptr
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Meshfree analysis of the root system based on signed distance functions. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_aa90925db52f92b3875e19897a1319059}\label{classCPlantBox_1_1SegmentAnalyser_aa90925db52f92b3875e19897a1319059}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!Segment\+Analyser@{Segment\+Analyser}}
+\index{Segment\+Analyser@{Segment\+Analyser}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{Segment\+Analyser()}{SegmentAnalyser()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Segment\+Analyser\+::\+Segment\+Analyser (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Plant}{Plant} \&}]{rs }\end{DoxyParamCaption})}
+
+
+
+creates an empty object (use Analysis\+S\+D\+F\+::add\+Segments) 
+
+creates an analyser object containing the segments from the root system
+
+Copies the segments of the roots system into the analysis class
+
+
+\begin{DoxyParams}{Parameters}
+{\em rs} & the root system that is analysed \\
+\hline
+\end{DoxyParams}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a3ff7165b8d0201bddee92b3338b95839}\label{classCPlantBox_1_1SegmentAnalyser_a3ff7165b8d0201bddee92b3338b95839}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!add\+Segments@{add\+Segments}}
+\index{add\+Segments@{add\+Segments}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{add\+Segments()}{addSegments()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::add\+Segments (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Plant}{Plant} \&}]{rs }\end{DoxyParamCaption})}
+
+
+
+nothing to do here 
+
+adds the segments
+
+Adds all segmentes from root system 
+\begin{DoxyParams}{Parameters}
+{\em rs} & to the analysis. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_ac374e94bd9eddf2e7c6dd840e13d125d}\label{classCPlantBox_1_1SegmentAnalyser_ac374e94bd9eddf2e7c6dd840e13d125d}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!add\+Segments@{add\+Segments}}
+\index{add\+Segments@{add\+Segments}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{add\+Segments()}{addSegments()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::add\+Segments (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} \&}]{a }\end{DoxyParamCaption})}
+
+
+
+adds the segments 
+
+Adds all segments from the analyser 
+\begin{DoxyParams}{Parameters}
+{\em a} & to this analysis. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_acfe719897fa503aa9af4b1d906f9d051}\label{classCPlantBox_1_1SegmentAnalyser_acfe719897fa503aa9af4b1d906f9d051}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!add\+User\+Data@{add\+User\+Data}}
+\index{add\+User\+Data@{add\+User\+Data}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{add\+User\+Data()}{addUserData()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::add\+User\+Data (\begin{DoxyParamCaption}\item[{std\+::vector$<$ double $>$}]{data,  }\item[{std\+::string}]{name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+adds user data that are written int the V\+TP file, 
+
+\begin{DoxySeeAlso}{See also}
+\hyperlink{classCPlantBox_1_1SegmentAnalyser_a491635f641d9f9ce71bf3efee352ff66}{Segment\+Analyser\+::write\+V\+TP} 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_ad36ee62a998e34484b96b2c12ec92fca}\label{classCPlantBox_1_1SegmentAnalyser_ad36ee62a998e34484b96b2c12ec92fca}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!crop@{crop}}
+\index{crop@{crop}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{crop()}{crop()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::crop (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$}]{geometry }\end{DoxyParamCaption})}
+
+
+
+crops the data to a geometry 
+
+Crops the segments with some geometry
+
+
+\begin{DoxyParams}{Parameters}
+{\em geometry} & signed distance function of the geometry \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a777f3abc5ed7a351ca228e1bf7da0957}\label{classCPlantBox_1_1SegmentAnalyser_a777f3abc5ed7a351ca228e1bf7da0957}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!cut@{cut}}
+\index{cut@{cut}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{cut()}{cut()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} C\+Plant\+Box\+::\+Segment\+Analyser\+::cut (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1SDF__HalfPlane}{S\+D\+F\+\_\+\+Half\+Plane} \&}]{plane }\end{DoxyParamCaption}) const}
+
+
+
+returns the segments intersecting with a plane (e.\+g. for trenches) 
+
+Keeps the segments that intersect with a plane
+
+
+\begin{DoxyParams}{Parameters}
+{\em plane} & half plane \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_ab9474e1bfdccb361c6ab7ee2c7ec7dc4}\label{classCPlantBox_1_1SegmentAnalyser_ab9474e1bfdccb361c6ab7ee2c7ec7dc4}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!cut@{cut}}
+\index{cut@{cut}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{cut()}{cut()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} C\+Plant\+Box\+::\+Segment\+Analyser\+::cut (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d}}]{in,  }\item[{\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d}}]{out,  }\item[{\hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$}]{geometry }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+intersects a line with the geometry 
+
+Numerically computes the intersection point
+
+
+\begin{DoxyParams}{Parameters}
+{\em in} & the node within the domain \\
+\hline
+{\em out} & the node outside of the domain \\
+\hline
+{\em geometry} & signed distance function of the geometry \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the intersection point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a847f313257ffd7a8442d2aecd12e34d2}\label{classCPlantBox_1_1SegmentAnalyser_a847f313257ffd7a8442d2aecd12e34d2}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!distribution@{distribution}}
+\index{distribution@{distribution}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{distribution()}{distribution()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily std\+::vector$<$ double $>$ C\+Plant\+Box\+::\+Segment\+Analyser\+::distribution (\begin{DoxyParamCaption}\item[{std\+::string}]{pname,  }\item[{double}]{top,  }\item[{double}]{bot,  }\item[{int}]{n,  }\item[{bool}]{exact = {\ttfamily false} }\end{DoxyParamCaption}) const}
+
+
+
+vertical distribution of a parameter 
+
+Creates a vertical distribution of the parameter of type 
+\begin{DoxyParams}{Parameters}
+{\em st} & (\\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type)
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em st} & parameter type \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em top} & vertical top position (cm) \\
+\hline
+{\em bot} & vertical bot position (cm) \\
+\hline
+{\em n} & number of layers (each with a height of (bot-\/top)/n ) \\
+\hline
+{\em exact} & calculates the intersection with the layer boundaries (true), only based on segment midpoints (false) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector of size 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em n} & containing the summed parameter in this layer \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a4353b3748dc58d4f8eda3d1e7a61aa41}\label{classCPlantBox_1_1SegmentAnalyser_a4353b3748dc58d4f8eda3d1e7a61aa41}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!distribution@{distribution}}
+\index{distribution@{distribution}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{distribution()}{distribution()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily std\+::vector$<$ \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} $>$ C\+Plant\+Box\+::\+Segment\+Analyser\+::distribution (\begin{DoxyParamCaption}\item[{double}]{top,  }\item[{double}]{bot,  }\item[{int}]{n }\end{DoxyParamCaption}) const}
+
+
+
+vertical distribution of a parameter 
+
+Creates a vertical distribution
+
+
+\begin{DoxyParams}{Parameters}
+{\em top} & vertical top position (cm) \\
+\hline
+{\em bot} & vertical bot position (cm) \\
+\hline
+{\em n} & number of layers (each with a height of (bot-\/top)/n ) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector of size 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em n} & containing an Analysis object of the layers (cropped exactly) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a45dc325035b8e48fc86a8aed7d4bab16}\label{classCPlantBox_1_1SegmentAnalyser_a45dc325035b8e48fc86a8aed7d4bab16}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!distribution2@{distribution2}}
+\index{distribution2@{distribution2}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{distribution2()}{distribution2()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily std\+::vector$<$ std\+::vector$<$ double $>$ $>$ C\+Plant\+Box\+::\+Segment\+Analyser\+::distribution2 (\begin{DoxyParamCaption}\item[{std\+::string}]{pname,  }\item[{double}]{top,  }\item[{double}]{bot,  }\item[{double}]{left,  }\item[{double}]{right,  }\item[{int}]{n,  }\item[{int}]{m,  }\item[{bool}]{exact = {\ttfamily false} }\end{DoxyParamCaption}) const}
+
+
+
+2d distribution (x,z) of a parameter 
+
+Creates a two-\/dimensional distribution of the parameter of type 
+\begin{DoxyParams}{Parameters}
+{\em st} & (\\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type)
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em st} & parameter type \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em top} & vertical top position (cm) \\
+\hline
+{\em bot} & vertical bot position (cm) \\
+\hline
+{\em left} & left along x-\/axis (cm) \\
+\hline
+{\em right} & right along x-\/axis (cm) \\
+\hline
+{\em n} & number of vertical grid elements (each with height of (bot-\/top)/n ) \\
+\hline
+{\em m} & number of horizontal grid elements (each with length of (right-\/left)/m) \\
+\hline
+{\em exact} & calculates the intersection with the layer boundaries (true), only based on segment midpoints (false) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector of size 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em n} & containing the summed parameter in this layer \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_ac693f16057e5b053d5397d66d0bff50c}\label{classCPlantBox_1_1SegmentAnalyser_ac693f16057e5b053d5397d66d0bff50c}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!distribution2@{distribution2}}
+\index{distribution2@{distribution2}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{distribution2()}{distribution2()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily std\+::vector$<$ std\+::vector$<$ \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} $>$ $>$ C\+Plant\+Box\+::\+Segment\+Analyser\+::distribution2 (\begin{DoxyParamCaption}\item[{double}]{top,  }\item[{double}]{bot,  }\item[{double}]{left,  }\item[{double}]{right,  }\item[{int}]{n,  }\item[{int}]{m }\end{DoxyParamCaption}) const}
+
+
+
+2d distribution (x,z) of a parameter 
+
+Creates a vertical distribution
+
+
+\begin{DoxyParams}{Parameters}
+{\em top} & vertical top position (cm) \\
+\hline
+{\em bot} & vertical bot position (cm) \\
+\hline
+{\em left} & left along x-\/axis (cm) \\
+\hline
+{\em right} & right along x-\/axis (cm) \\
+\hline
+{\em n} & number of vertical grid elements (each with height of (bot-\/top)/n ) \\
+\hline
+{\em m} & number of horizontal grid elements (each with length of (right-\/left)/m) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Vector of size 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em n} & containing the summed parameter in this layer \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a23c673b6bca999d2ed47059e3e708f86}\label{classCPlantBox_1_1SegmentAnalyser_a23c673b6bca999d2ed47059e3e708f86}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!filter@{filter}}
+\index{filter@{filter}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{filter()}{filter()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::filter (\begin{DoxyParamCaption}\item[{std\+::string}]{pname,  }\item[{double}]{min,  }\item[{double}]{max }\end{DoxyParamCaption})}
+
+
+
+filters the segments to the data 
+
+\begin{DoxySeeAlso}{See also}
+Analysis\+S\+D\+F\+::get\+Scalar
+\end{DoxySeeAlso}
+Filters the segments to the ones, where data is within \mbox{[}min,max\mbox{]}, \begin{DoxySeeAlso}{See also}
+Analysis\+S\+D\+F\+::get\+Data, i.\+e. all other \hyperlink{classCPlantBox_1_1SegmentAnalyser_a2647967365df14fad069aeee7e66ced6}{segments} are deleted.
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em st} & parameter type \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em min} & minimal value \\
+\hline
+{\em max} & maximal value \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_add2f750bb9f709e0bc0d9d187ad03277}\label{classCPlantBox_1_1SegmentAnalyser_add2f750bb9f709e0bc0d9d187ad03277}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!filter@{filter}}
+\index{filter@{filter}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{filter()}{filter()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::filter (\begin{DoxyParamCaption}\item[{std\+::string}]{pname,  }\item[{double}]{value }\end{DoxyParamCaption})}
+
+
+
+filters the segments to the data 
+
+\begin{DoxySeeAlso}{See also}
+Analysis\+S\+D\+F\+::get\+Scalar
+\end{DoxySeeAlso}
+Filters the segments to the ones, where data equals value, \begin{DoxySeeAlso}{See also}
+Analysis\+S\+D\+F\+::get\+Data, i.\+e. all other \hyperlink{classCPlantBox_1_1SegmentAnalyser_a2647967365df14fad069aeee7e66ced6}{segments} are deleted.
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em st} & parameter type \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em value} & parameter value of the segments that are kept \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a1fab801299f985363e46a4eb6e37e7dd}\label{classCPlantBox_1_1SegmentAnalyser_a1fab801299f985363e46a4eb6e37e7dd}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!foto@{foto}}
+\index{foto@{foto}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{foto()}{foto()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1SegmentAnalyser}{Segment\+Analyser} C\+Plant\+Box\+::\+Segment\+Analyser\+::foto (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{const \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \&}]{ons,  }\item[{double}]{fl }\end{DoxyParamCaption}) const}
+
+
+
+takes a picture T\+O\+DO unfinished, untested 
+
+Projects the segments to an image plane (todo verify this code)
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & position of camera \\
+\hline
+{\em ons} & orthonormal system, row 1 is orthogonal to the image plane given by \mbox{[}row 2,row 3\mbox{]} \\
+\hline
+{\em fl} & focal length, alpha = 2$\ast$arctan(d/(2$\ast$fl)), were alpha is the angle of field, and d the image diagonal\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The image segments in the x-\/y plane (z=0) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a4edbc03e22d117f24b437735d2ef1bd1}\label{classCPlantBox_1_1SegmentAnalyser_a4edbc03e22d117f24b437735d2ef1bd1}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!get\+Number\+Of\+Roots@{get\+Number\+Of\+Roots}}
+\index{get\+Number\+Of\+Roots@{get\+Number\+Of\+Roots}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{get\+Number\+Of\+Roots()}{getNumberOfRoots()}}
+{\footnotesize\ttfamily int C\+Plant\+Box\+::\+Segment\+Analyser\+::get\+Number\+Of\+Roots (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+number of different roots 
+
+\begin{DoxyReturn}{Returns}
+The number of roots 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a5b0a0f95ee7b03e64554eec01fb51b7c}\label{classCPlantBox_1_1SegmentAnalyser_a5b0a0f95ee7b03e64554eec01fb51b7c}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!get\+Roots@{get\+Roots}}
+\index{get\+Roots@{get\+Roots}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{get\+Roots()}{getRoots()}}
+{\footnotesize\ttfamily std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ $>$ C\+Plant\+Box\+::\+Segment\+Analyser\+::get\+Roots (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+segment origins 
+
+Return the unique origins of the segments \mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a00b162007d72a6ba4adf48972cd0f9bf}\label{classCPlantBox_1_1SegmentAnalyser_a00b162007d72a6ba4adf48972cd0f9bf}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!get\+Scalar@{get\+Scalar}}
+\index{get\+Scalar@{get\+Scalar}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{get\+Scalar()}{getScalar()}}
+{\footnotesize\ttfamily std\+::vector$<$ double $>$ C\+Plant\+Box\+::\+Segment\+Analyser\+::get\+Scalar (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption}) const}
+
+
+
+Returns a specific parameter per segment. 
+
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type
+\end{DoxySeeAlso}
+Returns a specific parameter per root segment
+
+
+\begin{DoxyParams}{Parameters}
+{\em st} & parameter type \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type per segment 
+\end{DoxySeeAlso}
+\begin{DoxyReturn}{Returns}
+vector containing parameter value per segment 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_aa223aa2a58d0eb0b910ccfe03877b78e}\label{classCPlantBox_1_1SegmentAnalyser_aa223aa2a58d0eb0b910ccfe03877b78e}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!get\+Segment\+Length@{get\+Segment\+Length}}
+\index{get\+Segment\+Length@{get\+Segment\+Length}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{get\+Segment\+Length()}{getSegmentLength()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Segment\+Analyser\+::get\+Segment\+Length (\begin{DoxyParamCaption}\item[{int}]{i }\end{DoxyParamCaption}) const}
+
+
+
+returns the length of a segment 
+
+Returns the length of a segment
+
+
+\begin{DoxyParams}{Parameters}
+{\em i} & index of the segment \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the length of segment i 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a77c317cdd72d22e4e2181761b59dab76}\label{classCPlantBox_1_1SegmentAnalyser_a77c317cdd72d22e4e2181761b59dab76}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!get\+Summed@{get\+Summed}}
+\index{get\+Summed@{get\+Summed}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{get\+Summed()}{getSummed()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Segment\+Analyser\+::get\+Summed (\begin{DoxyParamCaption}\item[{std\+::string}]{pname }\end{DoxyParamCaption}) const}
+
+
+
+Sums up the parameter. 
+
+\begin{DoxyReturn}{Returns}
+The summed parameter of type 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em st} & (\\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type) 
+\end{DoxySeeAlso}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a1eab5114bd706b4942721d1f8deea328}\label{classCPlantBox_1_1SegmentAnalyser_a1eab5114bd706b4942721d1f8deea328}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!get\+Summed@{get\+Summed}}
+\index{get\+Summed@{get\+Summed}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{get\+Summed()}{getSummed()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Segment\+Analyser\+::get\+Summed (\begin{DoxyParamCaption}\item[{std\+::string}]{pname,  }\item[{\hyperlink{classCPlantBox_1_1SignedDistanceFunction}{Signed\+Distance\+Function} $\ast$}]{g }\end{DoxyParamCaption}) const}
+
+
+
+Sums up the parameter within the geometry. 
+
+\begin{DoxyReturn}{Returns}
+The summed parameter of type 
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em st} & (\\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type), that is within geometry 
+\end{DoxySeeAlso}
+
+\begin{DoxyParams}{Parameters}
+{\em g} & based on the segment mid point (i.\+e. not exact). To sum exactly, first crop to the geometry, then run Segment\+Analyser\+::get\+Summed(st). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a488c906a2b685e6e50d990c2bb617607}\label{classCPlantBox_1_1SegmentAnalyser_a488c906a2b685e6e50d990c2bb617607}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!pack@{pack}}
+\index{pack@{pack}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{pack()}{pack()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::pack (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+sorts the nodes and deletes unused nodes 
+
+Sorts nodes and deletes unused nodes. This can save a lot of memory, since Analysis\+S\+D\+F\+::crop and Analysis\+S\+D\+F\+::filter only delete segments, not unused nodes \mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a2d01686f47050ae3362d61d34390fd4b}\label{classCPlantBox_1_1SegmentAnalyser_a2d01686f47050ae3362d61d34390fd4b}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!write@{write}}
+\index{write@{write}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{write()}{write()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::write (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})}
+
+
+
+writes simulation results (type is determined from file extension in name) 
+
+Exports the simulation results with the type from the extension in name (that must be lower case)
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & file name e.\+g. output.\+vtp \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_abda97405b2591f633f44ca5856befeab}\label{classCPlantBox_1_1SegmentAnalyser_abda97405b2591f633f44ca5856befeab}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!write\+D\+GF@{write\+D\+GF}}
+\index{write\+D\+GF@{write\+D\+GF}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{write\+D\+G\+F()}{writeDGF()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::write\+D\+GF (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{os }\end{DoxyParamCaption}) const}
+
+
+
+Writes the segments of the root system in D\+GF format used by Du\+Mux. 
+
+Writes the (line)segments of the root system in dgf format used by Du\+Mux
+
+
+\begin{DoxyParams}{Parameters}
+{\em os} & typically a file out stream \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_add6618a9caceaadc37b9e52deaa2bec6}\label{classCPlantBox_1_1SegmentAnalyser_add6618a9caceaadc37b9e52deaa2bec6}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!write\+R\+B\+Segments@{write\+R\+B\+Segments}}
+\index{write\+R\+B\+Segments@{write\+R\+B\+Segments}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{write\+R\+B\+Segments()}{writeRBSegments()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::write\+R\+B\+Segments (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{os }\end{DoxyParamCaption}) const}
+
+
+
+Writes the segments of the root system, mimics the Matlab script get\+Segments() 
+
+Writes the (line)segments of the root system, and mimics the Matlab script get\+Segments() of Root\+Box
+
+
+\begin{DoxyParams}{Parameters}
+{\em os} & typically a file out stream \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1SegmentAnalyser_a491635f641d9f9ce71bf3efee352ff66}\label{classCPlantBox_1_1SegmentAnalyser_a491635f641d9f9ce71bf3efee352ff66}} 
+\index{C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}!write\+V\+TP@{write\+V\+TP}}
+\index{write\+V\+TP@{write\+V\+TP}!C\+Plant\+Box\+::\+Segment\+Analyser@{C\+Plant\+Box\+::\+Segment\+Analyser}}
+\subsubsection{\texorpdfstring{write\+V\+T\+P()}{writeVTP()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Segment\+Analyser\+::write\+V\+TP (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{os,  }\item[{std\+::vector$<$ std\+::string $>$}]{type\+Names = {\ttfamily \{\char`\"{}radius\char`\"{}\}} }\end{DoxyParamCaption}) const}
+
+
+
+writes a V\+TP file 
+
+Writes a V\+TP file with 
+\begin{DoxyParams}{Parameters}
+{\em types} & data per segment.\\
+\hline
+{\em os} & typically a file out stream \\
+\hline
+{\em types} & multiple parameter types (\\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+Root\+System\+::\+Scalar\+Type) that are saved in the V\+TP file, additionally, all userdata is saved per default 
+\end{DoxySeeAlso}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/analysis.\+h\item 
+src/analysis.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,71 @@
+\hypertarget{classCPlantBox_1_1Tropism__Wrap}{}\section{C\+Plant\+Box\+:\+:Tropism\+\_\+\+Wrap Class Reference}
+\label{classCPlantBox_1_1Tropism__Wrap}\index{C\+Plant\+Box\+::\+Tropism\+\_\+\+Wrap@{C\+Plant\+Box\+::\+Tropism\+\_\+\+Wrap}}
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Tropism\+\_\+\+Wrap\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1Tropism__Wrap__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Tropism\+\_\+\+Wrap\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1Tropism__Wrap__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual double \hyperlink{classCPlantBox_1_1Tropism__Wrap_a00aba49f282f1013a15f9244c263be09}{tropism\+Objective} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&pos, \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} old, double a, double b, double dx, const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$root) override
+\begin{DoxyCompactList}\small\item\em The objective function of the random optimization of \hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Tropism__Wrap_a84796c520e67c80f59f40002ccd44802}\label{classCPlantBox_1_1Tropism__Wrap_a84796c520e67c80f59f40002ccd44802}} 
+virtual \hyperlink{classCPlantBox_1_1TropismFunction}{Tropism\+Function} $\ast$ \hyperlink{classCPlantBox_1_1Tropism__Wrap_a84796c520e67c80f59f40002ccd44802}{copy} () override
+\begin{DoxyCompactList}\small\item\em factory method \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Tropism__Wrap_a00aba49f282f1013a15f9244c263be09}\label{classCPlantBox_1_1Tropism__Wrap_a00aba49f282f1013a15f9244c263be09}} 
+\index{C\+Plant\+Box\+::\+Tropism\+\_\+\+Wrap@{C\+Plant\+Box\+::\+Tropism\+\_\+\+Wrap}!tropism\+Objective@{tropism\+Objective}}
+\index{tropism\+Objective@{tropism\+Objective}!C\+Plant\+Box\+::\+Tropism\+\_\+\+Wrap@{C\+Plant\+Box\+::\+Tropism\+\_\+\+Wrap}}
+\subsubsection{\texorpdfstring{tropism\+Objective()}{tropismObjective()}}
+{\footnotesize\ttfamily virtual double C\+Plant\+Box\+::\+Tropism\+\_\+\+Wrap\+::tropism\+Objective (\begin{DoxyParamCaption}\item[{const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&}]{pos,  }\item[{\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d}}]{old,  }\item[{double}]{a,  }\item[{double}]{b,  }\item[{double}]{dx,  }\item[{const \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{root }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+The objective function of the random optimization of \hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()}. 
+
+The objective function of the random optimization of \hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()}. Overwrite this function to implement a tropism.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pos} & current root tip position \\
+\hline
+{\em old} & rotation matrix, old(\+:,1) is the root tip heading \\
+\hline
+{\em a} & rotation angle alpha (angular change) \\
+\hline
+{\em b} & rotation angle beta (radial change) \\
+\hline
+{\em dx} & small ditance to look ahead \\
+\hline
+{\em root} & points to the root that called get\+Heading, just in case something else is needed (i.\+e. iheading for exotropism)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the value minimized by \hyperlink{classCPlantBox_1_1TropismFunction_adb52b88734a94fe1365a00e02c7e6be5}{get\+Heading()}, it should be in \mbox{[}0,1\mbox{]}, in this way combination of various tropisms will be easier 
+\end{DoxyReturn}
+
+
+Reimplemented from \hyperlink{classCPlantBox_1_1TropismFunction_a4f2c79fff55d1398c98a070dd8ebbe08}{C\+Plant\+Box\+::\+Tropism\+Function}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/Python\+Plant.\+cpp\end{DoxyCompactItemize}

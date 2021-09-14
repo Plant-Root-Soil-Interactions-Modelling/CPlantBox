@@ -1,0 +1,361 @@
+\hypertarget{classCPlantBox_1_1Organ}{}\section{C\+Plant\+Box\+:\+:Organ Class Reference}
+\label{classCPlantBox_1_1Organ}\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+
+
+{\ttfamily \#include $<$Organ.\+h$>$}
+
+
+
+Inheritance diagram for C\+Plant\+Box\+:\+:Organ\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1Organ__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for C\+Plant\+Box\+:\+:Organ\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classCPlantBox_1_1Organ__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a9161d0ffc2c515aa584d795367158482}\label{classCPlantBox_1_1Organ_a9161d0ffc2c515aa584d795367158482}} 
+enum {\bfseries Organ\+Types} \{ \newline
+{\bfseries ot\+\_\+seed} = 1, 
+{\bfseries ot\+\_\+root} = 2, 
+{\bfseries ot\+\_\+stem} = 4, 
+{\bfseries ot\+\_\+leafe} = 8, 
+\newline
+{\bfseries ot\+\_\+shoot} = ot\+\_\+stem $\vert$ ot\+\_\+leafe, 
+{\bfseries ot\+\_\+organ} = ot\+\_\+seed $\vert$ ot\+\_\+root $\vert$ ot\+\_\+stem $\vert$ ot\+\_\+leafe
+ \}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_ada94ab02398ad46f1f377c54459e81f2}\label{classCPlantBox_1_1Organ_ada94ab02398ad46f1f377c54459e81f2}} 
+enum {\bfseries Tropism\+Types} \{ {\bfseries tt\+\_\+plagio} = 0, 
+{\bfseries tt\+\_\+gravi} = 1, 
+{\bfseries tt\+\_\+exo} = 2, 
+{\bfseries tt\+\_\+hydro} = 3
+ \}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a1e30e0dfd37b88380c06a1739e63b985}\label{classCPlantBox_1_1Organ_a1e30e0dfd37b88380c06a1739e63b985}} 
+enum {\bfseries Growth\+Function\+Types} \{ {\bfseries gft\+\_\+negexp} = 1, 
+{\bfseries gft\+\_\+linear} = 2
+ \}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a72af68e2ca57d20c3a46a7d527f7e1e1}\label{classCPlantBox_1_1Organ_a72af68e2ca57d20c3a46a7d527f7e1e1}} 
+enum {\bfseries Scalar\+Types} \{ \newline
+{\bfseries st\+\_\+type} = 0, 
+{\bfseries st\+\_\+radius} = 1, 
+{\bfseries st\+\_\+order} = 2, 
+{\bfseries st\+\_\+time} = 3, 
+\newline
+{\bfseries st\+\_\+length} = 4, 
+{\bfseries st\+\_\+surface} = 5, 
+{\bfseries st\+\_\+volume} = 6, 
+{\bfseries st\+\_\+one} = 7, 
+\newline
+{\bfseries st\+\_\+userdata1} = 8, 
+{\bfseries st\+\_\+userdata2} = 9, 
+{\bfseries st\+\_\+userdata3} = 10, 
+{\bfseries st\+\_\+parenttype} = 11, 
+\newline
+{\bfseries st\+\_\+lb} = 12, 
+{\bfseries st\+\_\+la} = 13, 
+{\bfseries st\+\_\+nob} = 14, 
+{\bfseries st\+\_\+r} = 15, 
+\newline
+{\bfseries st\+\_\+theta} = 16, 
+{\bfseries st\+\_\+rlt} = 17, 
+{\bfseries st\+\_\+meanln} = 18, 
+{\bfseries st\+\_\+sdln} = 19
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classCPlantBox_1_1Organ_a7cc5635a2b9a20facab79a78e7a4eb48}{Organ} (\hyperlink{classCPlantBox_1_1Plant}{Plant} $\ast$\hyperlink{classCPlantBox_1_1Organ_ac614456886ab270c6fd2617403e0f306}{plant}, \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$\hyperlink{classCPlantBox_1_1Organ_a8ad90078d5ef859bd2ab71700854e286}{parent}, int subtype, double delay)
+\item 
+virtual \hyperlink{classCPlantBox_1_1Organ_a0c6757c6789c3508696ce3253f81aaa3}{$\sim$\+Organ} ()
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_abb608537d6c6d8888407eacdadca5518}\label{classCPlantBox_1_1Organ_abb608537d6c6d8888407eacdadca5518}} 
+virtual int \hyperlink{classCPlantBox_1_1Organ_abb608537d6c6d8888407eacdadca5518}{organ\+Type} () const
+\begin{DoxyCompactList}\small\item\em returns the organs type, overwrite for each organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a9046ebc480f02addf40388aebae7ecc1}\label{classCPlantBox_1_1Organ_a9046ebc480f02addf40388aebae7ecc1}} 
+virtual \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} {\bfseries get\+Relative\+Origin} () const
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a7c2299c7e83d9da1591d63bc5c7d2b17}\label{classCPlantBox_1_1Organ_a7c2299c7e83d9da1591d63bc5c7d2b17}} 
+virtual void \hyperlink{classCPlantBox_1_1Organ_a7c2299c7e83d9da1591d63bc5c7d2b17}{set\+Relative\+Origin} (const \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \&o)
+\begin{DoxyCompactList}\small\item\em the relative position within the parent organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_aa2a305a167faaca52f01f19eb894143f}\label{classCPlantBox_1_1Organ_aa2a305a167faaca52f01f19eb894143f}} 
+virtual \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \hyperlink{classCPlantBox_1_1Organ_aa2a305a167faaca52f01f19eb894143f}{get\+Relative\+Heading} () const
+\begin{DoxyCompactList}\small\item\em the relative position within the parent organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a96ebcecf9a2acda92d3dd1d435ee64ff}\label{classCPlantBox_1_1Organ_a96ebcecf9a2acda92d3dd1d435ee64ff}} 
+virtual void \hyperlink{classCPlantBox_1_1Organ_a96ebcecf9a2acda92d3dd1d435ee64ff}{set\+Relative\+Heading} (const \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \&m)
+\begin{DoxyCompactList}\small\item\em the heading in the parent organ \end{DoxyCompactList}\item 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Organ_ac18526b4b44a40392a1f5db5ff2f6c72}{get\+Origin} () const
+\begin{DoxyCompactList}\small\item\em the heading in the parent organ \end{DoxyCompactList}\item 
+\hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} \hyperlink{classCPlantBox_1_1Organ_a3436c97a754ba2b8633e0f47df3604d5}{get\+Heading} () const
+\begin{DoxyCompactList}\small\item\em absolute heading of the organ \end{DoxyCompactList}\item 
+\hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} \hyperlink{classCPlantBox_1_1Organ_a17438f54d1d07af58867a4d257225e87}{get\+Node} (int i) const
+\begin{DoxyCompactList}\small\item\em i-\/th node of the organ in absolute coordinates \end{DoxyCompactList}\item 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} $>$ \hyperlink{classCPlantBox_1_1Organ_af990e5df473327cb2cdb6293d5117419}{get\+Nodes} () const
+\item 
+\hyperlink{classCPlantBox_1_1OrganRandomOrganParameter}{Organ\+Random\+Organ\+Parameter} $\ast$ \hyperlink{classCPlantBox_1_1Organ_aa6668fc995d856d1a06c92af06155f00}{get\+Organ\+Random\+Organ\+Parameter} () const
+\begin{DoxyCompactList}\small\item\em converts all relative nodes to absolute coordinates \end{DoxyCompactList}\item 
+virtual void \hyperlink{classCPlantBox_1_1Organ_acf519fc6730c0adbb2a82b7702ff7a28}{simulate} (double dt, bool silence=false)
+\begin{DoxyCompactList}\small\item\em growth for a time span of \end{DoxyCompactList}\item 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ $>$ \hyperlink{classCPlantBox_1_1Organ_aee7e856229fd2ac996c0033aacead4c1}{get\+Organs} (unsigned int otype)
+\begin{DoxyCompactList}\small\item\em the organ including successors in a sequential vector \end{DoxyCompactList}\item 
+void \hyperlink{classCPlantBox_1_1Organ_a96e286dd479eca6b338630225939c636}{get\+Organs} (unsigned int otype, std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$$>$ \&v)
+\begin{DoxyCompactList}\small\item\em the organ including successors in a sequential vector \end{DoxyCompactList}\item 
+virtual double \hyperlink{classCPlantBox_1_1Organ_adf7d115c625341e0f6d291c750b05e5c}{get\+Scalar} (std\+::string name) const
+\begin{DoxyCompactList}\small\item\em returns an organ parameter of Plant\+::\+Scalar\+Type \end{DoxyCompactList}\item 
+virtual std\+::string \hyperlink{classCPlantBox_1_1Organ_a9f823aebd19519096e899e65604f239f}{to\+String} () const
+\item 
+virtual void \hyperlink{classCPlantBox_1_1Organ_acdad546c90e915b61ac3606f1f841ba1}{write\+R\+S\+ML} (std\+::ostream \&cout, std\+::string indent) const
+\begin{DoxyCompactList}\small\item\em writes a R\+S\+ML root tag \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_aa13c0f14d524c6fde4ee768b086f558f}\label{classCPlantBox_1_1Organ_aa13c0f14d524c6fde4ee768b086f558f}} 
+size\+\_\+t \hyperlink{classCPlantBox_1_1Organ_aa13c0f14d524c6fde4ee768b086f558f}{get\+Number\+Of\+Nodes} () const
+\begin{DoxyCompactList}\small\item\em number of nodes of the organ \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a8de3325c509c106596dacf095f00b67f}\label{classCPlantBox_1_1Organ_a8de3325c509c106596dacf095f00b67f}} 
+int \hyperlink{classCPlantBox_1_1Organ_a8de3325c509c106596dacf095f00b67f}{get\+Node\+ID} (int i) const
+\begin{DoxyCompactList}\small\item\em unique identifier of i-\/th node \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a84501e4b05c160ea826ee673889605da}\label{classCPlantBox_1_1Organ_a84501e4b05c160ea826ee673889605da}} 
+double \hyperlink{classCPlantBox_1_1Organ_a84501e4b05c160ea826ee673889605da}{get\+Node\+CT} (int i) const
+\begin{DoxyCompactList}\small\item\em creation time of i-\/th node \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a27f2f56687057a06300739bf877a92d9}\label{classCPlantBox_1_1Organ_a27f2f56687057a06300739bf877a92d9}} 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ $>$ {\bfseries get\+Children} (unsigned int otype)
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_ac614456886ab270c6fd2617403e0f306}\label{classCPlantBox_1_1Organ_ac614456886ab270c6fd2617403e0f306}} 
+\hyperlink{classCPlantBox_1_1Plant}{Plant} $\ast$ \hyperlink{classCPlantBox_1_1Organ_ac614456886ab270c6fd2617403e0f306}{plant}
+\begin{DoxyCompactList}\small\item\em the plant of which this organ is part of \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a8ad90078d5ef859bd2ab71700854e286}\label{classCPlantBox_1_1Organ_a8ad90078d5ef859bd2ab71700854e286}} 
+\hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ \hyperlink{classCPlantBox_1_1Organ_a8ad90078d5ef859bd2ab71700854e286}{parent}
+\begin{DoxyCompactList}\small\item\em pointer to the parent organ (equals nullptr if it has no parent) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_ab664ce01c2d6a2f4090408b8b1d438dd}\label{classCPlantBox_1_1Organ_ab664ce01c2d6a2f4090408b8b1d438dd}} 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ $>$ \hyperlink{classCPlantBox_1_1Organ_ab664ce01c2d6a2f4090408b8b1d438dd}{children}
+\begin{DoxyCompactList}\small\item\em the successive organs \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a4c567a27db0b5e4262067f4cbbf59553}\label{classCPlantBox_1_1Organ_a4c567a27db0b5e4262067f4cbbf59553}} 
+int \hyperlink{classCPlantBox_1_1Organ_a4c567a27db0b5e4262067f4cbbf59553}{id}
+\begin{DoxyCompactList}\small\item\em unique organ id, (not used so far) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a59ba6de6ced8b8d7b20788bd7656cee2}\label{classCPlantBox_1_1Organ_a59ba6de6ced8b8d7b20788bd7656cee2}} 
+\hyperlink{classCPlantBox_1_1SpecificOrganParamter}{Specific\+Organ\+Paramter} $\ast$ \hyperlink{classCPlantBox_1_1Organ_a59ba6de6ced8b8d7b20788bd7656cee2}{param} = nullptr
+\begin{DoxyCompactList}\small\item\em the parameters of this root \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a0889e6bf6d670b945de355dbc6e96965}\label{classCPlantBox_1_1Organ_a0889e6bf6d670b945de355dbc6e96965}} 
+bool \hyperlink{classCPlantBox_1_1Organ_a0889e6bf6d670b945de355dbc6e96965}{alive} = 1
+\begin{DoxyCompactList}\small\item\em true\+: alive, false\+: dead \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a37cba2abb3c4052d7e69b57019589b78}\label{classCPlantBox_1_1Organ_a37cba2abb3c4052d7e69b57019589b78}} 
+bool \hyperlink{classCPlantBox_1_1Organ_a37cba2abb3c4052d7e69b57019589b78}{active} = 1
+\begin{DoxyCompactList}\small\item\em true\+: active, false\+: root stopped growing \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a4f17f0bfe7f03eedf4138fd8fe51376d}\label{classCPlantBox_1_1Organ_a4f17f0bfe7f03eedf4138fd8fe51376d}} 
+double \hyperlink{classCPlantBox_1_1Organ_a4f17f0bfe7f03eedf4138fd8fe51376d}{age} = 0
+\begin{DoxyCompactList}\small\item\em current age \mbox{[}days\mbox{]} \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a94f5b16aa7ebc3912501051281fe88dc}\label{classCPlantBox_1_1Organ_a94f5b16aa7ebc3912501051281fe88dc}} 
+double \hyperlink{classCPlantBox_1_1Organ_a94f5b16aa7ebc3912501051281fe88dc}{length} = 0
+\begin{DoxyCompactList}\small\item\em actual length \mbox{[}cm\mbox{]} of the root. might differ from get\+Length(age) in case of impeded root growth \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a3c27ae9dcbe4f4f8a0f07450d8c4ac14}\label{classCPlantBox_1_1Organ_a3c27ae9dcbe4f4f8a0f07450d8c4ac14}} 
+std\+::vector$<$ \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} $>$ \hyperlink{classCPlantBox_1_1Organ_a3c27ae9dcbe4f4f8a0f07450d8c4ac14}{r\+\_\+nodes}
+\begin{DoxyCompactList}\small\item\em relative nodes of the root \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_ab9e80fa3f95812af2ee720719f8457df}\label{classCPlantBox_1_1Organ_ab9e80fa3f95812af2ee720719f8457df}} 
+std\+::vector$<$ int $>$ \hyperlink{classCPlantBox_1_1Organ_ab9e80fa3f95812af2ee720719f8457df}{node\+I\+Ds}
+\begin{DoxyCompactList}\small\item\em unique node identifier \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a2fad84a9d24de4c66d706510a9c50d09}\label{classCPlantBox_1_1Organ_a2fad84a9d24de4c66d706510a9c50d09}} 
+std\+::vector$<$ double $>$ \hyperlink{classCPlantBox_1_1Organ_a2fad84a9d24de4c66d706510a9c50d09}{nctimes}
+\begin{DoxyCompactList}\small\item\em node creation times \mbox{[}days\mbox{]} \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a6df035488e363a748e220eb766c0776d}\label{classCPlantBox_1_1Organ_a6df035488e363a748e220eb766c0776d}} 
+static const std\+::vector$<$ std\+::string $>$ \hyperlink{classCPlantBox_1_1Organ_a6df035488e363a748e220eb766c0776d}{scalar\+Type\+Names}
+\begin{DoxyCompactList}\small\item\em the corresponding names \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{classCPlantBox_1_1Organ}{Organ}
+
+Base class of seed, root, shoot and leaf 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a7cc5635a2b9a20facab79a78e7a4eb48}\label{classCPlantBox_1_1Organ_a7cc5635a2b9a20facab79a78e7a4eb48}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!Organ@{Organ}}
+\index{Organ@{Organ}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{Organ()}{Organ()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Organ\+::\+Organ (\begin{DoxyParamCaption}\item[{\hyperlink{classCPlantBox_1_1Plant}{Plant} $\ast$}]{plant,  }\item[{\hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$}]{parent,  }\item[{int}]{subtype,  }\item[{double}]{delay }\end{DoxyParamCaption})}
+
+Constructor \mbox{\Hypertarget{classCPlantBox_1_1Organ_a0c6757c6789c3508696ce3253f81aaa3}\label{classCPlantBox_1_1Organ_a0c6757c6789c3508696ce3253f81aaa3}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!````~Organ@{$\sim$\+Organ}}
+\index{````~Organ@{$\sim$\+Organ}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{$\sim$\+Organ()}{~Organ()}}
+{\footnotesize\ttfamily C\+Plant\+Box\+::\+Organ\+::$\sim$\+Organ (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Destructor, tell the kids (bad news) 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a3436c97a754ba2b8633e0f47df3604d5}\label{classCPlantBox_1_1Organ_a3436c97a754ba2b8633e0f47df3604d5}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Heading@{get\+Heading}}
+\index{get\+Heading@{get\+Heading}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Heading()}{getHeading()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Matrix3d}{Matrix3d} C\+Plant\+Box\+::\+Organ\+::get\+Heading (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+absolute heading of the organ 
+
+Absolute organ heading Hn =(A0$\ast$\+A1$\ast$..An), where H is the absolute Heading, and A are the relative headings \mbox{\Hypertarget{classCPlantBox_1_1Organ_a17438f54d1d07af58867a4d257225e87}\label{classCPlantBox_1_1Organ_a17438f54d1d07af58867a4d257225e87}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Node@{get\+Node}}
+\index{get\+Node@{get\+Node}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Node()}{getNode()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} C\+Plant\+Box\+::\+Organ\+::get\+Node (\begin{DoxyParamCaption}\item[{int}]{i }\end{DoxyParamCaption}) const}
+
+
+
+i-\/th node of the organ in absolute coordinates 
+
+Computes the absolute node coordinate (A$\ast$x+o) \mbox{\Hypertarget{classCPlantBox_1_1Organ_af990e5df473327cb2cdb6293d5117419}\label{classCPlantBox_1_1Organ_af990e5df473327cb2cdb6293d5117419}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Nodes@{get\+Nodes}}
+\index{get\+Nodes@{get\+Nodes}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Nodes()}{getNodes()}}
+{\footnotesize\ttfamily std\+::vector$<$ \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} $>$ C\+Plant\+Box\+::\+Organ\+::get\+Nodes (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+Computes the absolute node coordinates for all relative coordinates (A$\ast$x\+\_\+i+o) \mbox{\Hypertarget{classCPlantBox_1_1Organ_aa6668fc995d856d1a06c92af06155f00}\label{classCPlantBox_1_1Organ_aa6668fc995d856d1a06c92af06155f00}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Organ\+Random\+Organ\+Parameter@{get\+Organ\+Random\+Organ\+Parameter}}
+\index{get\+Organ\+Random\+Organ\+Parameter@{get\+Organ\+Random\+Organ\+Parameter}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Organ\+Random\+Organ\+Parameter()}{getOrganRandomOrganParameter()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1OrganRandomOrganParameter}{Organ\+Random\+Organ\+Parameter} $\ast$ C\+Plant\+Box\+::\+Organ\+::get\+Organ\+Random\+Organ\+Parameter (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+converts all relative nodes to absolute coordinates 
+
+organ type parameter
+
+Asks the plant for the organ type parameter \mbox{\Hypertarget{classCPlantBox_1_1Organ_aee7e856229fd2ac996c0033aacead4c1}\label{classCPlantBox_1_1Organ_aee7e856229fd2ac996c0033aacead4c1}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Organs@{get\+Organs}}
+\index{get\+Organs@{get\+Organs}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Organs()}{getOrgans()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$ $>$ C\+Plant\+Box\+::\+Organ\+::get\+Organs (\begin{DoxyParamCaption}\item[{unsigned int}]{otype }\end{DoxyParamCaption})}
+
+
+
+the organ including successors in a sequential vector 
+
+Returns the organs as sequential list, copies only organs with more than 1 node.
+
+\begin{DoxyReturn}{Returns}
+sequential list of organs 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a96e286dd479eca6b338630225939c636}\label{classCPlantBox_1_1Organ_a96e286dd479eca6b338630225939c636}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Organs@{get\+Organs}}
+\index{get\+Organs@{get\+Organs}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Organs()}{getOrgans()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Organ\+::get\+Organs (\begin{DoxyParamCaption}\item[{unsigned int}]{otype,  }\item[{std\+::vector$<$ \hyperlink{classCPlantBox_1_1Organ}{Organ} $\ast$$>$ \&}]{v }\end{DoxyParamCaption})}
+
+
+
+the organ including successors in a sequential vector 
+
+Returns the organs as sequential list, copies only organs with more than 1 node.
+
+
+\begin{DoxyParams}{Parameters}
+{\em v} & adds the organ sub tree to this vector \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_ac18526b4b44a40392a1f5db5ff2f6c72}\label{classCPlantBox_1_1Organ_ac18526b4b44a40392a1f5db5ff2f6c72}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Origin@{get\+Origin}}
+\index{get\+Origin@{get\+Origin}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Origin()}{getOrigin()}}
+{\footnotesize\ttfamily \hyperlink{classCPlantBox_1_1Vector3d}{Vector3d} C\+Plant\+Box\+::\+Organ\+::get\+Origin (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+the heading in the parent organ 
+
+absolute coordinates of the organ origin
+
+The organ origin in absolute coordinates p\+\_\+abs = A0(p1+\+A1(p2+\+A2(p3+... A(n-\/1)(pn ) )))), where A are the relative headings, p are the relative origins \mbox{\Hypertarget{classCPlantBox_1_1Organ_adf7d115c625341e0f6d291c750b05e5c}\label{classCPlantBox_1_1Organ_adf7d115c625341e0f6d291c750b05e5c}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!get\+Scalar@{get\+Scalar}}
+\index{get\+Scalar@{get\+Scalar}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{get\+Scalar()}{getScalar()}}
+{\footnotesize\ttfamily double C\+Plant\+Box\+::\+Organ\+::get\+Scalar (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+returns an organ parameter of Plant\+::\+Scalar\+Type 
+
+Returns the parameter called 
+\begin{DoxyParams}{Parameters}
+{\em name} & \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented in \hyperlink{classCPlantBox_1_1Root_a23fac3d7c3b15e5f270d76b56c693ab9}{C\+Plant\+Box\+::\+Root}, \hyperlink{classCPlantBox_1_1Stem_ace47428771936118b0775ca9d23e5f4f}{C\+Plant\+Box\+::\+Stem}, and \hyperlink{classCPlantBox_1_1Leaf_a97bb6cc92a59f0d137eb6b497b5d376e}{C\+Plant\+Box\+::\+Leaf}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_acf519fc6730c0adbb2a82b7702ff7a28}\label{classCPlantBox_1_1Organ_acf519fc6730c0adbb2a82b7702ff7a28}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!simulate@{simulate}}
+\index{simulate@{simulate}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{simulate()}{simulate()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Organ\+::simulate (\begin{DoxyParamCaption}\item[{double}]{dt,  }\item[{bool}]{silence = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+growth for a time span of 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dt} & \\
+\hline
+\end{DoxyParams}
+Calls suborgans (children) 
+
+Reimplemented in \hyperlink{classCPlantBox_1_1Root_af2fa9d229ab05897214e0ec224f0ae71}{C\+Plant\+Box\+::\+Root}, \hyperlink{classCPlantBox_1_1Stem_ad2f7f8607fe02dbe2f4d4335248cf90b}{C\+Plant\+Box\+::\+Stem}, and \hyperlink{classCPlantBox_1_1Leaf_ac8f35a92020107f44059b995e44af5d6}{C\+Plant\+Box\+::\+Leaf}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_a9f823aebd19519096e899e65604f239f}\label{classCPlantBox_1_1Organ_a9f823aebd19519096e899e65604f239f}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!to\+String@{to\+String}}
+\index{to\+String@{to\+String}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{to\+String()}{toString()}}
+{\footnotesize\ttfamily std\+::string C\+Plant\+Box\+::\+Organ\+::to\+String (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [virtual]}}
+
+Quick info about the object for debugging T\+O\+DO change param to param or param 
+
+Reimplemented in \hyperlink{classCPlantBox_1_1Root_a389312a40582e21c1eaa6c5ebb927f2e}{C\+Plant\+Box\+::\+Root}, \hyperlink{classCPlantBox_1_1Leaf_a7c09270825fa8f874dcf409969dbb554}{C\+Plant\+Box\+::\+Leaf}, \hyperlink{classCPlantBox_1_1Stem_a08ed9dc10ef3ea13c90bc326e6cc989b}{C\+Plant\+Box\+::\+Stem}, and \hyperlink{classCPlantBox_1_1Seed_a83a1493777594b1e92d31d6d3db4258b}{C\+Plant\+Box\+::\+Seed}.
+
+\mbox{\Hypertarget{classCPlantBox_1_1Organ_acdad546c90e915b61ac3606f1f841ba1}\label{classCPlantBox_1_1Organ_acdad546c90e915b61ac3606f1f841ba1}} 
+\index{C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}!write\+R\+S\+ML@{write\+R\+S\+ML}}
+\index{write\+R\+S\+ML@{write\+R\+S\+ML}!C\+Plant\+Box\+::\+Organ@{C\+Plant\+Box\+::\+Organ}}
+\subsubsection{\texorpdfstring{write\+R\+S\+M\+L()}{writeRSML()}}
+{\footnotesize\ttfamily void C\+Plant\+Box\+::\+Organ\+::write\+R\+S\+ML (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{cout,  }\item[{std\+::string}]{indent }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [virtual]}}
+
+
+
+writes a R\+S\+ML root tag 
+
+writes R\+S\+ML root tag (todo update for general organs)
+
+
+\begin{DoxyParams}{Parameters}
+{\em cout} & typically a file out stream \\
+\hline
+{\em indent} & we care for looks \\
+\hline
+\end{DoxyParams}
+
+
+Reimplemented in \hyperlink{classCPlantBox_1_1Root_accf492ad0fa522fccc43588d1cde4610}{C\+Plant\+Box\+::\+Root}, \hyperlink{classCPlantBox_1_1Leaf_a0b5fbb524de825790da55551a212d4a0}{C\+Plant\+Box\+::\+Leaf}, and \hyperlink{classCPlantBox_1_1Stem_ae4087e7edf3b51619d6e8fd03a3c9ec8}{C\+Plant\+Box\+::\+Stem}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Organ.\+h\item 
+src/Organ.\+cpp\end{DoxyCompactItemize}
