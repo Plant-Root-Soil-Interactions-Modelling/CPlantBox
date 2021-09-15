@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "example_exudate_test.py", line 98, in <module>
-    print("Computation took", elapsed, "s")
-NameError: name 'elapsed' is not defined

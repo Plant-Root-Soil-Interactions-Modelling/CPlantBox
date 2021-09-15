@@ -1,4 +1,0 @@
-  File "example_exudate.py", line 135
-    print(ords[r][i])
-                    ^
-TabError: inconsistent use of tabs and spaces in indentation

@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "example_exudate.py", line 101, in <module>
-    segnum[i] = len(ords[r][i])
-TypeError: object of type 'numpy.int64' has no len()

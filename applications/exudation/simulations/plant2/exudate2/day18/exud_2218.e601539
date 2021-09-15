@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "example_exudate.py", line 98, in <module>
-    C = np.zeros((nx*ny*nz,))
-MemoryError: Unable to allocate 427. MiB for an array with shape (56000000,) and data type float64

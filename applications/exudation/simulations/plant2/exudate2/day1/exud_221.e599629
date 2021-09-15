@@ -1,4 +1,0 @@
-  File "example_exudate.py", line 177
-    rs.write("../vtp/day"+("{:02d}".format(ii+1)) + ".vtp")                                                      
-    ^
-IndentationError: unexpected indent

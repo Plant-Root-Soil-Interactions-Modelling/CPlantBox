@@ -1,4 +1,0 @@
-  File "example_exudate.py", line 114
-    print("Computation took", elapsed, "50
-                                         ^
-SyntaxError: EOL while scanning string literal

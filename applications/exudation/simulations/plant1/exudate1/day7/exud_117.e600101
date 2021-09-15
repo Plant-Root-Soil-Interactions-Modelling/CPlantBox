@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "example_exudate.py", line 132, in <module>
-    p = multiprocessing.Process(target=calc_model, args=(ords[r][i],ords[r][i+1],q,))
-IndexError: index 1 is out of bounds for axis 0 with size 1

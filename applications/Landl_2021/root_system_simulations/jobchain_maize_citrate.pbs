@@ -1,0 +1,44 @@
+#!/bin/bash
+#submit a chain of jobs
+
+
+
+
+
+cc=1
+while [ $cc -le 10 ];
+do
+
+
+    cd CPlantBox/applications/Landl_2021/root_system_simulations/simulations/plant2/exudate1/day$cc/
+    cat <<EOF> plant_exud21$cc.pbs
+
+#!/bin/sh
+#PBS -N exud_21$cc
+#PBS -l nodes=1:ppn=2,walltime=40:00:00,vmem=240gb
+#PBS -q openmp
+#PBS -m e
+
+cd CPlantBox/applications/Landl_2021/root_system_simulations/simulations/plant2/exudate1/day$cc/
+module load python-3.8
+module load dumux 
+python3 example_exudate.py
+
+
+EOF
+    if [ -f ../vtp/day0$cc.vtp ];  then 
+	 echo "wrong"
+	 let cc=$cc+1
+    else
+	/usr/bin/qsub plant_exud21$cc.pbs
+	cd CPlantBox/applications/Landl_2021/root_system_simulations/simulations/plant2/exudate1/day$cc/
+
+	while  [ ! -f ../vtp/day0$cc.vtp ]; 
+	do 
+	    sleep 30
+	    echo "in the loop"
+	done
+	let cc=$cc+1
+    fi
+done	
+

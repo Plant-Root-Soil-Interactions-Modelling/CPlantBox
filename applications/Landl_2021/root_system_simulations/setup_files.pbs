@@ -1,0 +1,38 @@
+#!/bin/bash
+#submit a chain of jobs
+
+
+
+aa=1
+while [ $aa -le 2 ]; 
+do
+
+    bb=1
+    while [ $bb -le 2 ];
+    do
+
+
+	cd /CPlantBox/applications/Landl_2021/root_system_simulations/simulations/plant$aa/exudate$bb/	
+
+	cc=1
+	while [ $cc -le 21 ];
+	do 
+	    if [ ! -d day$cc ]; then 
+		mkdir -p day$cc;
+	    fi
+	    cp -r example_exudate.py day$cc/example_exudate.py
+	    rm -r day$cc/plantbox.cpython-37m-x86_64-linux-gnu.so
+	    rm -r day$cc/libCPlantBox.so
+	    cp -r ~/CPlantBox/libCPlantBox.so day$cc/libCPlantBox.so
+	    cp -r ~/CPlantBox/plantbox.cpython-38-x86_64-linux-gnu.so day$cc/plantbox.cpython-38-x86_64-linux-gnu.so
+
+
+	    let cc=$cc+1
+	done
+
+	let bb=$bb+1
+     done
+     let aa=$aa+1
+
+done
+

@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "example_exudate.py", line 130, in <module>
-    C += add
-ValueError: non-broadcastable output operand with shape (18000000,) doesn't match the broadcast shape (1,18000000)

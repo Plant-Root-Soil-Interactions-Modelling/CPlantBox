@@ -1,8 +1,0 @@
-Seed::initialize: RootSystem 
-Organism::simulate: from 0 to 1 days
-Organism::simulate: from 1 to 2 days
-Organism::simulate: from 2 to 3 days
-Organism::simulate: from 3 to 4 days
-Organism::simulate: from 4 to 5 days
-Organism::simulate: from 5 to 6 days
-Width 20 Depth 45  at a Resolution 200 200 450

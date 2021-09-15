@@ -1,0 +1,13 @@
+
+#!/bin/sh
+#PBS -N single_faba_mucilage_gr
+#PBS -l nodes=1:ppn=1,walltime=1000:00:00,pvmem=10gb
+#PBS -q batch
+#PBS -m e
+
+cd CPlantBox/applications/Landl_2021/single_root_growth/
+module load python-3.8
+module load dumux 
+python3 scenario2_faba_mucilage.py
+	
+	

@@ -1,4 +1,0 @@
-Traceback (most recent call last):
-  File "example_exudate.py", line 64, in <module>
-    model = rb.ExudationModel2(width, width, depth, nx, ny, nz, rs)
-AttributeError: module 'plantbox' has no attribute 'ExudationModel2'

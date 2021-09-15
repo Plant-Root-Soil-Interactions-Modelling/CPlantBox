@@ -1,2 +1,0 @@
-/var/spool/torque/mom_priv/jobs/593564.master.SC: line 1: syntax error near unexpected token `"../../../../.."'
-/var/spool/torque/mom_priv/jobs/593564.master.SC: line 1: `import sys; sys.path.append("../../../../..")'
