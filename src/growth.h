@@ -98,17 +98,17 @@ public:
 
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override {
-		if (this->CW_Gr.empty()){
+		if ((this->CW_Gr.empty()) || (CW_Gr.count(o->getId()) ==0)){
 			double length = LinearGrowth::getLength(t, r, k, o);
 			return length;
 		} else {
-			double length = o->getLength(true) ; // o->getParameter("length");
+			double length = o->getLength(false) ; // o->getParameter("length");
 			return this->CW_Gr.find(o->getId())->second+ length;
 		}
 	} ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
-		if ( this->CW_Gr.empty()){
+		if ((this->CW_Gr.empty()) || (CW_Gr.count(o->getId()) ==0)){
 			double age = LinearGrowth::getAge(l, r, k, o);
 			return age;
 		} else {
