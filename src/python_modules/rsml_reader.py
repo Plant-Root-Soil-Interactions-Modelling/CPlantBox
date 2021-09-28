@@ -129,12 +129,19 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         
         otherwise an exception is thrown    
     """    
+    radius = False
     if "diameter" in props:
         fdiam_p = True
         fdiam = props["diameter"]
     else:
         fdiam_p = False
-        fdiam = funcs["diameter"]  # otherwise we are in trouble
+        if "diameter" in funcs: 
+            fdiam = funcs["diameter"]  
+        elif "radius" in funcs:
+            fdiam = funcs["radius"]  # otherwise we are in trouble
+            radius = True
+        else:
+            raise("rsml_reader.get_parameter() no diameter or radius function found")         
     if "type" in props:
         ptype_p = True
         ptype = props["type"]
@@ -155,7 +162,10 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
             if fdiam_p:
                 radii.append(fdiam[i] / 2.)
             else:
-                radii.append(fdiam[i][j] / 2.)            
+                if radius: 
+                    radii.append(fdiam[i][j])
+                else:
+                    radii.append(fdiam[i][j] / 2.)                      
             if ptype_p:
                 types.append(ptype[i])
             else:

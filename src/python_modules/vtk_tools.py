@@ -1,6 +1,7 @@
 import vtk
 import numpy as np
 from rsml_writer import write_rsml as write_rsml2  # to write a rsml (no other dependencies)
+from rsml_writer import Metadata
 
 """ 
 VTK Tools, by Daniel Leitner (refurbished 6/2020) 
@@ -92,7 +93,7 @@ def np_cells(pd):
     therefore it will not work for polylines """
     Nc = pd.GetNumberOfCells()
     d = pd.GetCell(0).GetPointIds().GetNumberOfIds()
-    z_ = np.zeros((Nc, d))
+    z_ = np.zeros((Nc, d), dtype=np.int64)
     for i in range(0, Nc):
         p = np.zeros(d,)
         ids = pd.GetCell(i).GetPointIds()
@@ -328,9 +329,12 @@ def write_vtu(name, pd):
     writer.Write()
 
 
-def write_rsml(name, pd, meta, id_ind=5):
+def write_rsml(filename, pd, id_ind):
     """ Writes a RMSL file from vtkPolyData using rsml_reader.write_rsml 
-    TODO get rid of meta (move to write_rsml2)
+    uses RSML function tags to store all vtk node or cell data    
+    @param filename      output file name
+    @param pd            vtk poly data file consisting of line segments
+    @param id_ind        data array of order, or branch number, or something const along each branch (>=-1)
     """
     nodes = np_points(pd)
     try:
@@ -338,29 +342,37 @@ def write_rsml(name, pd, meta, id_ind=5):
     except:
         print("write_rsml error: write rsml expects a root system represented as line segments, propably the file consists of polylines")
 
-    n = pd.GetPointData().GetNumberOfArrays()
-    print("Node Data", n)
-    node_data = np.zeros((n, nodes.shape[0]))
-    for i in range(0, n):
-        node_data [i,:], _ = np_data(pd, i, False)
+    n0 = pd.GetPointData().GetNumberOfArrays()
+    n1 = pd.GetCellData().GetNumberOfArrays()
+    data = np.zeros((n0 + n1, nodes.shape[0]))
+    names = []
+    print("Node Data", n0)
+    vtk_node_data = pd.GetPointData()    
+    for i in range(0, n0):
+        name = vtk_node_data.GetArray(i).GetName()
+        names.append(name)          
+        data[i,:], _ = np_data(pd, i, False)
+        print("\t", name, "\t[", np.min(data[i,:]), ", ", np.max(data[i,:]), "]")
 
-    n = pd.GetCellData().GetNumberOfArrays()
-    print("Cell Data", n)
-    seg_data = np.zeros((n, segs.shape[0]))
-    for i in range(0, n):
-        print(i)
-        seg_data[i,:], _ = np_data(pd, i, True)
+    print("Cell Data", n1)
+    vtk_cell_data = pd.GetCellData()
+    for i in range(0, n1):
+        name = vtk_cell_data.GetArray(i).GetName()
+        names.append(name)
+        seg_data, _ = np_data(pd, i, True)
+        for j in range(0, segs.shape[0]):  # convert point to cell data
+            data[i, segs[j, 1]] = seg_data[j] 
+        if i == id_ind:
+            ids = np.array(seg_data, dtype=int) + 2  # needs to be >0 for reconstruction!
+        print("\t", name, "\t[", np.min(data[i, 1:]), ", ", np.max(data[i, 1:]), "]")    
+    
+    print("Reconstruct from:", names[id_ind])  # should be orders 
+    print("Segments", segs.shape)
+    print("Nodes", nodes.shape)
 
-    ids = np.array(seg_data[id_ind,:], dtype=int) + 2
-    segs = np.array(segs, dtype=int)
-
-    print("Orders:", ids)
-    print("Segments")
-    print(segs)
-    print("Nodes")
-    print(nodes)
-
-    write_rsml2(name, [0], segs, ids, nodes, node_data, meta, Renumber=True)
+    meta = Metadata()
+    meta.set_fun_names(names)
+    write_rsml2(filename, [0], segs, ids, nodes, data, meta, Renumber=True)
 
 
 def read3D_vtp_data(name, data_index=0, cell=None):
