@@ -79,36 +79,49 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
+	bool laterals = false;
 	auto p = plant.lock();
-	// type does not change
-	double lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
-	double res = lb_ - floor(lb_/dx)* dx;	
-	if (res < dxMin) {
-		if (res <= dxMin/2){
-			lb_ -= res;
-		} else {
-			lb_ =  floor(lb_ / dx)*dx + dxMin;
-		}
+	double lb_;
+    double la_;
+    std::vector<double> ln_; // stores the inter-distances
+	double res;
+	int nob_ = 0;
+	
+	if (successor.size()==0) { // no laterals
+
+    	lb_ = 0;
+        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
+		res = la_-floor(la_ / dx)*dx;
+		if(res < dxMin && res != 0){
+			if(res <= dxMin/2){ la_ -= res;
+			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
+			this->la=la_;
+		}			//make la_ compatible with dx() and dxMin()
+
+    } else {
+	laterals = true;
+    lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
+    double res = lb_ - floor(lb_/dx)* dx;	
+	if(res < dxMin){
+		if(res <= dxMin/2){ lb_ -= res;
+		}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
 		this->lb=lb_;
 	}	
-
-	double la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
-	res = la_-floor(la_ / dx)*dx;	
+	
+	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+    res = la_-floor(la_ / dx)*dx;	
 	if(res < dxMin && res != 0){
 		if(res <= dxMin/2){ la_ -= res;
 		}else{la_ =  floor(la_ / dx)*dx + dxMin;}
 		this->la=la_;
-	}
-
-	if (ln < dxMin*0.99 && ln !=0){
-		std::cout<<"\nLeafRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
+	}	
+	
+	if(ln < dxMin*0.99 && ln !=0){
+		std::cout<<"\nStemRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
 		ln = dxMin;
 	}
-
-	std::vector<double> ln_; // stores the inter-distances
-
-	// stores the inter-distances
-	int nob_ = std::max(round(nob() + p->randn()*nobs()),double(0)); // maximal number of leafs
+	
+    nob_ = std::max(round(nob() + p->randn()*nobs()), 1.);// maximal number of leafs
 	switch(lnf) {
 	case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
@@ -197,13 +210,13 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		break;
 	default:
 		throw 1; // TODO make a nice one
-	}
+	}}
 	double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
 	double a_ = std::max(a + p->randn()*as, 0.); // radius
 	double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
 	double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // leaf life time
 	double leafArea_ = std::max(areaMax + p->randn()*areaMaxs, 0.); // radius
-	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, successor.size()>0);
+	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, laterals);
 }
 
 /**
@@ -388,6 +401,7 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("tropismT", &tropismT, "Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
 	bindParameter("tropismN", &tropismN, "Number of trials of leaf tropism");
 	bindParameter("tropismS", &tropismS, "Mean value of expected change of leaf tropism [1/cm]");
+	bindParameter("tropismAge", &tropismAge, "Age at which organ switch tropism", &tropismAges);
 	bindParameter("theta", &theta, "Angle between leaf and parent leaf [rad]", &thetas);
 	bindParameter("rlt", &rlt, "Leaf life time [day]", &rlts);
 	bindParameter("gf", &gf, "Growth function number [1]");

@@ -75,8 +75,28 @@ std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 {
+    
     auto p = plant.lock();
-    double lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
+    double lb_;
+    double la_;
+    std::vector<double> ln_; // stores the inter-distances
+	double res;
+	int nob_ = 0;
+	bool laterals = false;
+	if (successor.size()==0) { // no laterals
+
+    	lb_ = 0;
+        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
+		res = la_-floor(la_ / dx)*dx;
+		if(res < dxMin && res != 0){
+			if(res <= dxMin/2){ la_ -= res;
+			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
+			this->la=la_;
+		}			//make la_ compatible with dx() and dxMin()
+
+    } else {
+	laterals = true;
+    lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
     double res = lb_ - floor(lb_/dx)* dx;	
 	if(res < dxMin){
 		if(res <= dxMin/2){ lb_ -= res;
@@ -84,7 +104,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 		this->lb=lb_;
 	}	
 	
-	double la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
     res = la_-floor(la_ / dx)*dx;	
 	if(res < dxMin && res != 0){
 		if(res <= dxMin/2){ la_ -= res;
@@ -97,8 +117,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 		ln = dxMin;
 	}
 	
-	std::vector<double> ln_; // stores the inter-distances
-    int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
+    nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches
     	switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
@@ -183,12 +202,13 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 		};break;
 default:
 		throw 0; // TODO make a nice one
-	}
+	}}
+	std::cout<<"stem parameter realize "<<ln_.size()<<" "<<lb_<<" "<<la_<<std::endl;
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.); // radius
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // stem life time
-    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_);
+    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_,laterals, this->nodalGrowth, delayNG, delayNGs);
 }
 
 /**
@@ -344,9 +364,12 @@ void StemRandomParameter::bindParmeters()
     bindParameter("tropismT", &tropismT, "Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of stem tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of stem tropism [1/cm]");
+    bindParameter("tropismAge", &tropismAge, "Age at which organ switch tropism", &tropismAges);
     bindParameter("theta", &theta, "Angle between stem and parent stem [rad]", &thetas);
     bindParameter("rlt", &rlt, "Stem life time [day]", &rlts);
     bindParameter("gf", &gf, "Growth function number [1]", &rlts);
+    bindParameter("nodalGrowth", &nodalGrowth, "wether to implement nodal growth [bool]");
+    bindParameter("delayNG", &delayNG, "delay between stem creation and start of nodal growth", &delayNGs);
     // other parameters (descriptions only)
     description["successor"] = "Sub type of lateral stems";
     description["successorP"] = "Probability of each sub type to occur";

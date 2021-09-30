@@ -25,9 +25,12 @@ class RootSpecificParameter :public OrganSpecificParameter
 
 public:
 
-    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
-    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt):
-        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln) { }; ///< Constructor setting all parameters
+    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0., false) { } ///< Default constructor
+    RootSpecificParameter(int type, double lb, double la, 
+	const std::vector<double>& ln, double r, double a, 
+	double theta, double rlt, bool laterals = false):
+        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), 
+		theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
 
     /*
      * RootBox parameters per single root
@@ -38,8 +41,9 @@ public:
     double theta;           ///< Angle between root and parent root [rad]
     double rlt;             ///< Root life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
+	bool laterals = false;
 
-    int nob() const { return ln.size()+1; } ///< return the maximal number of lateral branching nodes [1]
+    int nob() const { return ln.size() + laterals; } ///< return the maximal number of lateral branching nodes [1]
     double getK() const; ///< Returns the exact maximal root length of this realization [cm]
 
     std::string toString() const override; ///< for debugging

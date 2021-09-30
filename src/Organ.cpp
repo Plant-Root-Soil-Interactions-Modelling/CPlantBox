@@ -169,12 +169,40 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  * @param id       global node index
  * @param t        exact creation time of the node
  */
-void Organ::addNode(Vector3d n, int id, double t)
+void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
-	nodes.push_back(n); // node
-	nodeIds.push_back(id); // new unique id
-	nodeCTs.push_back(t); // exact creation time
-	// std::cout << "creation time "<< nodeCTs[0] << ", " << t << ", "<< nodeCTs.size() << "\n";
+	
+	if(!shift){
+		nodes.push_back(n); // node
+		nodeIds.push_back(id); // new unique id
+		nodeCTs.push_back(t); // exact creation time
+	}
+	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?) 
+		nodes.insert(nodes.begin() + index, n);
+		nodeIds.push_back(id); 
+		nodeCTs.insert(nodeCTs.begin() + index-1, t);
+		for(auto kid : children){
+			if(kid->parentNI >= index-1){
+				kid->moveOrigin(kid->parentNI + 1);
+				}
+			
+		}
+		
+	}
+	}
+	
+	
+
+/**
+ * change idx of node linking to parent organ (in case of internodal growth)
+ *
+ * @param idx      new idx
+ */
+void Organ::moveOrigin(int idx)
+{
+	this->parentNI = idx;
+	nodeIds.at(0) = getParent()->getNodeId(idx);
+	
 }
 
 /**
@@ -185,9 +213,9 @@ void Organ::addNode(Vector3d n, int id, double t)
  * @param n        the new node
  * @param t        exact creation time of the node
  */
-void Organ::addNode(Vector3d n, double t)
+void Organ::addNode(Vector3d n, double t, size_t index, bool shift)
 {
-	addNode(n,plant.lock()->getNodeIndex(),t);
+	addNode(n,plant.lock()->getNodeIndex(),t, index = index, shift = shift);
 }
 
 /**

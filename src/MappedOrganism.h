@@ -111,6 +111,10 @@ class MappedPlant : public MappedSegments, public Plant
 public:
 
     using Plant::Plant;
+	
+    MappedPlant(double seednum = 0): Plant(seednum){}; ///< constructor
+    virtual ~MappedPlant() { }; ///< destructor
+	
     void initialize(bool verbose = true, bool stochastic = true); ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
     void printNodes(); ///< print information

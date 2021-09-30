@@ -26,8 +26,10 @@ class StemSpecificParameter :public OrganSpecificParameter
 public:
 
     StemSpecificParameter(): StemSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
-    StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt):
-        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln) { } ///< Constructor setting all parameters
+    StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt,
+	 bool laterals= false, int nodalGrowth = 0, double delayNG = 0., double delayNGs = 0.):
+        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), 
+		laterals(laterals), nodalGrowth(bool(nodalGrowth)), delayNG(delayNG), delayNGs(delayNGs) { } ///< Constructor setting all parameters
 
     /*
      * StemBox parameters per single stem
@@ -38,8 +40,12 @@ public:
     double theta;           ///< Angle between stem and parent stem [rad]
     double rlt;             ///< Stem life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
+	bool laterals = false;
+	bool nodalGrowth;			///< whether to implement the internodal growth [1] (see @stem::simulate)
+	double delayNG;
+	double delayNGs;
 
-    int nob() const { return ln.size(); } ///< return the maximal number of lateral branches [1]
+    int nob() const { return ln.size() + laterals; } ///< return the maximal number of lateral branches [1]
     double getK() const; ///< Returns the exact maximal stem length of this realization [cm]
 
     std::string toString() const override; ///< for debugging
@@ -96,11 +102,16 @@ public:
     int tropismT = 1;	    ///< Stem tropism parameter (Type)
     double tropismN = 1.;   ///< Stem tropism parameter (number of trials)
     double tropismS = 0.2;  ///< Stem tropism parameter (mean value of expected changeg) [1/cm]
+    double tropismAge = 0.;	///< Leaf tropism parameter (age when switch tropism)
+	double tropismAges = 0.;///< Leaf tropism parameter (age when switch tropism, standard deviation)
     double theta = 1.22; 	///< Angle between stem and parent stem (rad)
     double thetas= 0.; 	    ///< Standard deviation angle between stem and parent stem (rad)
     double rlt = 1e9;		///< Stem life time (days)
     double rlts = 0.;	    ///< Standard deviation stem life time (days)
     int gf = 1;			    ///< Growth function (1=negative exponential, 2=linear)
+    int nodalGrowth = 0;		///< whether to implement the internodal growth (see @stem::simulate)
+	double delayNG = 0.;		///< delay between stem creation and start of nodal growth [day]
+	double delayNGs = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
     std::vector<int> successor = std::vector<int>(0);			///< Lateral types [1]
     std::vector<double> successorP = std::vector<double>(0);  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]
 

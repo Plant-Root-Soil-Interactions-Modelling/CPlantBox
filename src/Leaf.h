@@ -24,7 +24,7 @@ class Leaf : public Organ
 public:
 
     Leaf(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        Matrix3d iHeading, int pni, bool moved = false, int oldNON = 0);
+        Matrix3d iHeading, int pni, bool moved, int oldNON = 0);
 	Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
 	virtual ~Leaf() { };
 
@@ -34,7 +34,7 @@ public:
 
 	void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 
-    Vector3d getNode(int i) const override { return rel2abs(nodes.at(i)); } ///< i-th node of the organ
+    Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
 
 	double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
 
@@ -56,13 +56,18 @@ public:
 	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
 	std::shared_ptr<const LeafSpecificParameter> param() const; ///< root parameter
 
-	/* orientation */
-	Matrix3d inv; // inverse matrix of M
+	/* useful */
+    Vector3d heading(int n)  const override; ///< current (absolute) heading of the organs at node n
+    Vector3d heading() const override {return heading( -1 ); } 
+	
+    void rel2abs() override;
+	void abs2rel() override;
+	Vector3d getiHeading() const;
+	bool hasMoved() const override { return true; }; ///< have any nodes moved during the last simulate call
 
 protected:
 
-    Vector3d rel2abs(const Vector3d& n) const;
-	Vector3d abs2rel(const Vector3d& n) const;
+	Vector3d partialIHeading;
 
     int getleafphytomerID(int subtype);
     void minusPhytomerId(int subtype);
@@ -70,12 +75,12 @@ protected:
 
     void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 
-    virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
+    Vector3d getIncrement(const Vector3d& p, double sdx, int n=-1); ///< called by createSegments, to determine growth direction
 	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
 
     bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 	std::vector<double> getLeafVisX_(double l);
-
+	bool ageDependentTropism = false;
     bool firstCall = true;
 };
 

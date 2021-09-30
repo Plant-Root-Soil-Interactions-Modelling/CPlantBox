@@ -32,6 +32,7 @@ public:
 
     int subType = -1; ///< sub type of the organ
     double a = 0.; ///< radius of the organ [cm]
+	bool nodalGrowth = false;			///< whether to implement the internodal growth [1] (see @stem::simulate)
 
     virtual std::string toString() const; ///< quick info for debugging
 

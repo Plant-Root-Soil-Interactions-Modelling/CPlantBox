@@ -602,10 +602,12 @@ void MappedPlant::simulate(double dt, bool verbose)
 	Plant::simulate( dt,  verbose);
 	auto uni = this->getUpdatedNodeIndices(); // move nodes
 	auto unodes = this->getUpdatedNodes();
+	auto uncts = this->getUpdatedNodeCTs();
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
 	int c = 0;
 	for (int i : uni) {
 		nodes.at(i) = unodes[c];
+		nodeCTs.at(i) = uncts[c];
 		c++;
 	}
 

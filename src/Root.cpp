@@ -195,7 +195,7 @@ void Root::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
-            active = getLength(true)<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
+            active = getLength(false)<=(p.getK()*0.99); // become inactive, if final length is nearly reached
         }
     } // if alive
 

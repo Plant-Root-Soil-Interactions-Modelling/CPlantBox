@@ -18,7 +18,8 @@ std::string SeedSpecificParameter::toString() const
     str << "seedPos\t" << seedPos.toString() << std::endl;
     str << "firstB\t" << firstB << std::endl << "delayB\t" << delayB << std::endl << "maxB\t" << maxB << std::endl;
     str << "nC\t" << nC << std::endl << "firstSB\t" << firstSB << std::endl << "delaySB\t" << delaySB << std::endl;
-    str << "delayRC\t" << delayRC << std::endl << "nz\t" << nz << std::endl << "maxTil\t" << maxTil << std::endl;
+    str << "delayRC\t" << delayRC << std::endl << "nz\t" << nz << std::endl ;
+	str << "firstTi\t" << firstTi << std::endl << "delayTi\t" << delayTi << std::endl<< "maxTil\t" << maxTil << std::endl;
     str << "simtime\t" << simtime << std::endl;
     return str.str();
 }
@@ -61,6 +62,8 @@ std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
     Vector3d sP = seedPos.plus(Vector3d(p->randn()*seedPoss.x, p->randn()*seedPoss.y, p->randn()*seedPoss.z));
     double fB = std::max(firstB + p->randn()*firstBs, 0.);
     double dB = std::max(delayB + p->randn()*delayBs, 0.);
+															 
+															 
     int mB = (int)(std::max(maxB + p->randn()*maxBs, 0.) +0.5);
     double nC_ = std::max(nC + p->randn()*nCs, 0.);
 
@@ -70,8 +73,10 @@ std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
     double nz_ = std::max(nz , 0.);
 
     double st = std::max(simtime + p->randn()*simtimes, 0.);
+    double fTi = std::max(firstTi + p->randn()*firstTis, 0.);
+    double dTi = std::max(delayTi + p->randn()*delayTis, 0.);
     int maxtil = std::max(maxTil + p->randn()*maxTils, 0.);
-    return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st);
+    return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st,fTi, dTi);
 }
 
 /**
@@ -117,6 +122,8 @@ void SeedRandomParameter::bindParameters()
     bindParameter("delaySB", &delaySB, "Time delay between the shoot borne roots [day]", &delaySBs);
     bindParameter("delayRC", &delayRC, "Delay between the root crowns [day]", &delayRCs);
     bindParameter("nz", &nz, "Distance between the root crowns along the shoot [cm]", &nzs );
+    bindParameter("firstTi", &firstTi, "Emergence of first tiller [day]", &firstTis);
+    bindParameter("delayTi", &delayTi, "Time delay between the tillers [day]", &delayTis);
     bindParameter("maxTi", &maxTil, "Maximal number of tillers [1]", &maxTils);
     bindParameter("simulationTime", &simtime, "Recommended final simulation time  [day]", &simtimes );
 }

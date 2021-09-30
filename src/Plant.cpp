@@ -12,7 +12,7 @@ namespace CPlantBox {
 /*
  * todo doc me
  */
-Plant::Plant(): Organism()
+Plant::Plant(double seednum ): Organism(seednum)
 { }
 
 /**
@@ -111,7 +111,8 @@ void Plant::initCallbacks()
     // Create tropisms and growth functions per random leaf parameter
     for (auto& p_otp :organParam[Organism::ot_leaf]) {
         auto rp = std::static_pointer_cast<LeafRandomParameter>(p_otp.second);
-        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
+		double Tage =  rp->tropismAge +  rp->tropismAges * randn();
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, Tage);
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
         auto gf_ = this->createGrowthFunction(rp->gf);
@@ -121,7 +122,8 @@ void Plant::initCallbacks()
     // Create tropisms and growth functions per random stem parameter
     for (auto& p_otp :organParam[Organism::ot_stem]) {
         auto rp = std::static_pointer_cast<StemRandomParameter>(p_otp.second);
-        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
+		double Tage =  rp->tropismAge +  rp->tropismAges * randn();
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS, Tage);
         tropism->setGeometry(geometry);
         rp->f_tf = tropism; // set new one
         auto gf_ = this->createGrowthFunction(rp->gf);
@@ -179,8 +181,9 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  */
 	void Plant::simulate(double dt, bool verbose)	
 {	
-		
+	abs2rel();
     Organism::simulate(dt, verbose);	
+	rel2abs();
 }
 
 /**
@@ -188,9 +191,46 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  */
 void Plant::simulate()
 {
+	abs2rel();
     auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);
     Organism::simulate(srp->simtime);
+	rel2abs();
 }
+
+/**
+ * go from to absolute to relative value for aboveground organs
+ */
+void Plant::abs2rel()	
+{	
+	auto s = getSeed();
+	for (int i = 0; i< s->getNumberOfChildren();i++) {
+		auto child = s->getChild(i);
+		if(child->organType() >2){ //if aboveground-organ
+			child->abs2rel();
+		}
+		
+    }
+	
+}
+
+
+/**
+ * add tropism for aboveground organs
+ */
+void Plant::rel2abs()	
+{	
+	auto s = getSeed();
+	for (int i = 0; i< s->getNumberOfChildren();i++) {
+		auto child = s->getChild(i);
+		if(child->organType() >2){ //if aboveground-organ
+			child->rel2abs();
+		}
+		
+    }
+	
+}
+
+
 
 /**
  * Creates a specific tropism from the tropism type index.
@@ -201,7 +241,7 @@ void Plant::simulate()
  * @param sigma     tropism parameter (passsed to the tropism class)
  * @return          the tropism class containing with the callback functions
  */
-std::shared_ptr<Tropism> Plant::createTropismFunction(int tt, double N, double sigma) {
+std::shared_ptr<Tropism> Plant::createTropismFunction(int tt, double N, double sigma, double ageSwitch) {
     // std::cout << "Creating (" << tt << ", " << N << ", " << sigma <<")\n";
     switch (tt) {
     case tt_plagio: return std::make_shared<Plagiotropism>(shared_from_this(),N,sigma);
@@ -214,6 +254,7 @@ std::shared_ptr<Tropism> Plant::createTropismFunction(int tt, double N, double s
     }
     case tt_twist:  return std::make_shared<TwistTropism>(shared_from_this(),N,sigma);
     case tt_antigravi: return std::make_shared<AntiGravitropism>(shared_from_this(),N,sigma);
+     case tt_antigravi2gravi: return std::make_shared<AntiGravi2Gravitropism>(shared_from_this(),N,sigma, ageSwitch);
     default: throw std::invalid_argument( "Plant::createTropismFunction() tropism type not implemented" );
     }
 }

@@ -41,7 +41,7 @@ public:
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
-    Organism(); ///< constructor
+    Organism(double seednum  = 0.); ///< constructor
     virtual ~Organism() { }; ///< destructor
 
     virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism

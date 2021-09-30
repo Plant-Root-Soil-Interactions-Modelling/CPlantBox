@@ -285,8 +285,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("getNode",&Organ::getNode)
             .def("getNodeId",&Organ::getNodeId)
             .def("getNodeCT",&Organ::getNodeCT)
-            .def("addNode",(void (Organ::*)(Vector3d n, double t)) &Organ::addNode) // overloads
-            .def("addNode",(void (Organ::*)(Vector3d n, int id, double t)) &Organ::addNode) // overloads
+            .def("addNode",(void (Organ::*)(Vector3d n, double t, size_t index, bool shift)) &Organ::addNode) // overloads
+            .def("addNode",(void (Organ::*)(Vector3d n, int id, double t, size_t index, bool shift)) &Organ::addNode) // overloads
             .def("getSegments",&Organ::getSegments)
             .def("dx",&Organ::dx)
             .def("dxMin",&Organ::dxMin)
@@ -306,7 +306,7 @@ PYBIND11_MODULE(plantbox, m) {
      * Organism.h
      */
     py::class_<Organism, std::shared_ptr<Organism>>(m, "Organism")
-            .def(py::init<>())
+            .def(py::init<double>(),  py::arg("seednum") = 0)
             .def("copy", &Organism::copy)
             .def("organTypeNumber", &Organism::organTypeNumber)
             .def("organTypeName", &Organism::organTypeName)
@@ -855,13 +855,14 @@ PYBIND11_MODULE(plantbox, m) {
      * Plant.h
      */
     py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
-            .def(py::init<>())
+            .def(py::init<double>(),  py::arg("seednum") = 0)
             .def("getSeed", &Plant::getSeed)
             .def("setGeometry", &Plant::setGeometry)
             .def("setSoil", &Plant::setSoil)
             .def("reset", &Plant::reset)
             .def("openXML", &Plant::openXML)
             .def("setTropism", &Plant::setTropism)
+            .def("initialize", &Plant::initialize, py::arg("verbose") = true)
             .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false) 
             .def("simulate",(void (Plant::*)()) &Plant::simulate)
             .def("initCallbacks", &Plant::initCallbacks)
@@ -870,7 +871,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("write", &Plant::write);
 			
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
-			.def(py::init<>())	
+			.def(py::init<double>(),  py::arg("seednum") = 0)	
 			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)

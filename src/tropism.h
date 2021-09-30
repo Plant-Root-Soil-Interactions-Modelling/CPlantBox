@@ -3,6 +3,7 @@
 #define TROPISM_H
 
 #include "mymath.h"
+#include "Organ.h"
 
 #include <memory>
 #include <chrono>
@@ -13,7 +14,7 @@ namespace CPlantBox {
 
 class SoilLookUp;
 class SignedDistanceFunction;
-class Organ;
+//class Organ;
 class Organism;
 
 /**
@@ -34,7 +35,10 @@ public:
 	 * @param n_            number of tries
 	 * @param sigma_        standard deviation of angular change [1/cm]
 	 */
-	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_): plant(plant), n(n_), sigma(sigma_) { }
+	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_, double ageSwitch_ = 0):
+	ageSwitch(ageSwitch_),
+	plant(plant), n(n_), 
+	sigma(sigma_) { }
 	virtual ~Tropism() { }
 
 	virtual std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant); ///< copy object, factory method
@@ -65,6 +69,7 @@ public:
 
 	static Vector3d getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx);
 	///< Auxiliary function: Applies angles a and b and goes dx [cm] into the new direction
+	double ageSwitch;
 
 protected:
 
@@ -257,6 +262,33 @@ public:
 
 	virtual double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> stem) override {
 		return  -0.5*(old.times(Vector3d::rotAB(a,b)).z+1.); // negative values point downwards, tranformed to 0..1
+	}
+	///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
+
+};
+
+
+/**
+ * for wheat leaves. start by growing straight and then fall to the side.
+ */
+class AntiGravi2Gravitropism : public Tropism
+{
+public:
+
+	AntiGravi2Gravitropism(std::shared_ptr<Organism> plant, double n, double sigma, double ageSwitch = 0) : 
+	Tropism(plant, n,sigma,ageSwitch) { } ///< @see TropismFunction
+
+	
+    std::shared_ptr<Tropism>  copy(std::shared_ptr<Organism> plant) override {
+        auto nt = std::make_shared<AntiGravi2Gravitropism>(*this); // default copy constructor
+        nt->plant = plant;
+        return nt;
+    } ///< copy constructor
+
+
+	virtual double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o) override {
+		return  -0.5*(old.times(Vector3d::rotAB(a,b)).z+1.)*(o->getAge()<ageSwitch) 
+		+ 0.5*(old.times(Vector3d::rotAB(a,b)).z+1.)*(o->getAge()>=ageSwitch); // negative values point downwards, tranformed to 0..1
 	}
 	///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
 

@@ -78,6 +78,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double lb_;
     double la_;
     std::vector<double> ln_; // stores the inter-distances
+	bool hasKid = false;
 
     if (successor.size()==0) { // no laterals
 
@@ -91,6 +92,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 		}			//make la_ compatible with dx() and dxMin()
 
     } else { // laterals
+		hasKid = true;
 
         lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
         double res = lb_ - floor(lb_/dx)* dx;
@@ -137,7 +139,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
 
-    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
+    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hasKid);
 }
 
 /**
