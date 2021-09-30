@@ -6,6 +6,7 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "Root.h"
+#include <stdlib.h>
 
 namespace CPlantBox {
 
@@ -47,7 +48,7 @@ Vector3d Tropism::getPosition(const Vector3d& pos, const Matrix3d& old, double a
  */
 Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o)
 {
-    auto p = plant.lock();
+	auto p = plant.lock();
     double a = sigma*p->randn()*sqrt(dx);
     double b = p->rand()*2*M_PI;
     double v;
@@ -93,7 +94,6 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
  */
 Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o)
 {
-    // std::cout << "n " << n << ", " << sigma << "\n";
     Vector2d h = this->getUCHeading(pos, old, dx, o);
     double a = h.x;
     double b = h.y;

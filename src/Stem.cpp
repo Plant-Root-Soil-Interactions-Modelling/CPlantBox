@@ -261,14 +261,11 @@ void Stem::simulate(double dt, bool verbose)
 							double currentInternodeDistance = getLength(nn) - p.lb;
 							double maxInternodeDistance = p.getK()-p.la - p.lb;
 							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);
-							std::cout<<"nodal growth! "<<currentInternodeDistance<<" "<<maxInternodeDistance<<" "<<length
-							<<" "<<dl<<" "<<ddx<<std::endl;
-						
+							
 							if(ddx > 0){
 								internodalGrowth(ddx, verbose);
 								dl -= ddx;
 							length += ddx;
-							std::cout<<"nodal growth! "<<length<<" "<<dl<<std::endl;
 								
 							}
 						}
@@ -292,7 +289,6 @@ void Stem::simulate(double dt, bool verbose)
 									
 				this->epsilonDx = dl;//targetlength + e - length;
 				length += this->epsilonDx;//go back to having length = theoratical length
-				std::cout<<"too long "<<this->epsilonDx<<" "<<length<<" "<<dl<<std::endl;
 			}
 			} // if active
 			active  = getLength(false)<=(p.getK()*0.99); // become inactive, if final length is nearly reached
@@ -313,31 +309,24 @@ void Stem::internodalGrowth(double dl, bool verbose)
 	double dlMeanPhyto = dl/p.ln.size(); //in the mean time, grow all together
 	std::vector<double> lnToGrow = p.ln;
 	double missing = 0;
-	std::cout<<"Stem::internodalGrowth part1 "<<dlMeanPhyto<<std::endl;
-	for (size_t i=1; i<=p.ln.size(); i++) { //how to find were the kids are?
+	for (size_t i=1; i<=p.ln.size(); i++) { 
 		int nn1 = children.at(i-1)->parentNI;
 		double length1 = getLength(nn1);
 		int nn2 = children.at(i)->parentNI;
 		lnToGrow[i]= p.ln.at(i-1) -( getLength(nn2) - length1 ) ;//-dlMeanPhyto
 		missing += std::max(dlMeanPhyto -lnToGrow[i],0.);
 		
-		std::cout<<"		"<<length1<<" "
-		<<getLength(nn2)<<" "<<dlMeanPhyto<<" "<<p.ln.at(i-1)
-		<<" "<<lnToGrow[i]<<" "<<missing<<std::endl;
 	}
-	std::cout<<"Stem::internodalGrowth part2"<<std::endl;
 	for (size_t i=1; i<=p.ln.size(); i++) {
 		double dl = dlMeanPhyto;
 		if(lnToGrow[i]>dlMeanPhyto){
 			dl = std::min(missing,lnToGrow[i]-dlMeanPhyto )+dlMeanPhyto;
 			missing -= dl - dlMeanPhyto;
 		}
-		std::cout<<"		"<<dl<<" "<<missing<<lnToGrow[i]<<" "<<i<<std::endl;
-		std::cout<<"go 2 create seg"<<std::endl;
+		
 		createSegments(dl,verbose, i );
 	}
-	if(missing != 0){//this sould not happen as computed dl to be <= sum(lnToGrow)
-		std::cout<<"\n missing = "<<missing<<std::endl<<std::flush;
+	if(missing > 1e-6){//this sould not happen as computed dl to be <= sum(lnToGrow)
 		throw std::runtime_error( "Stem::internodalGrowth length left to grow");
 	}
 }
@@ -422,7 +411,6 @@ double Stem::calcAge(double length)
  */
 void Stem::createLateral(bool silence)
 {
-	//std::cout<<"lnf is = "<<getStemRandomParameter()->lnf<<"\n";
 	auto sp = param(); // rename
 	int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));//if lt ==2, don't add lateral as leaf is added instead
 	double meanLn = getStemRandomParameter()->ln; // mean inter-lateral distance
@@ -717,7 +705,9 @@ void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 				if (verbose&& sdx != 0) {
 					std::cout << "length increment below dx threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
 				}
-				this->epsilonDx = sdx;
+				if( PhytoIdx >= 0){
+					this->epsilonDx += sdx;
+				}else{this->epsilonDx = sdx;}
 				return;
 			}
 			this->epsilonDx = 0; //no residual

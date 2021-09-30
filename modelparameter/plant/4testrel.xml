@@ -7,7 +7,7 @@
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
-    <parameter name="maxTi" value="3" dev="0"/>
+    <parameter name="maxTi" value="0" dev="0"/>
     <parameter name="firstTi" value="3" dev="0"/>
     <parameter name="delayTi" value="1" dev="0"/>
     <parameter name="nC" value="0"/>
@@ -90,7 +90,7 @@
     <!--Apical zone [cm];-->
     <parameter name="ln" value="4" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="9" dev="0"/>
+    <parameter name="lmax" value="10" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.20000000000000001" dev="0"/>
@@ -98,10 +98,10 @@
     <parameter name="BetaDev" value="10"/>
     <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
-    <parameter name="tropismN" value="1"/>
-    <parameter name="tropismS" value="0"/>
-    <parameter name="dx" value="4"/>
-    <parameter name="dxMin" value="1e-6"/>
+    <parameter name="tropismN" value="18"/>
+    <parameter name="tropismS" value="0.1"/>
+    <parameter name="dx" value="1"/>
+    <parameter name="dxMin" value="0.5"/>
     <parameter name="theta" value="0.2" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
@@ -125,9 +125,9 @@
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="10"/>
     <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="1"/>
+    <parameter name="tropismT" value="4"/>
     <parameter name="tropismN" value="1"/>
-    <parameter name="tropismS" value="0"/>
+    <parameter name="tropismS" value="0.1"/>
     <parameter name="dx" value="4"/>
     <parameter name="dxMin" value="1"/>
     <parameter name="theta" value="0.2" dev="0"/>

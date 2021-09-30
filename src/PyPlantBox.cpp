@@ -52,10 +52,10 @@ public:
     { PYBIND11_OVERLOAD( std::shared_ptr<Tropism>, Tropism, copy, plant); }
 
     Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> organ = nullptr) override
-    { PYBIND11_OVERLOAD( Vector2d, Tropism, getHeading, pos, old, dx, organ ); }
+    { PYBIND11_OVERLOAD( Vector2d, Tropism, getHeading, pos, old, dx, organ); }
 
     Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> organ) override
-    { PYBIND11_OVERLOAD( Vector2d, Tropism, getUCHeading, pos, old, dx, organ ); }
+    { PYBIND11_OVERLOAD( Vector2d, Tropism, getUCHeading, pos, old, dx, organ); }
 
     double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> organ = nullptr) override
     { PYBIND11_OVERLOAD( double, Tropism, tropismObjective, pos, old, a, b, dx, organ ); }

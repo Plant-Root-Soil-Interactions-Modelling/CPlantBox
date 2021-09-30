@@ -1,7 +1,7 @@
 
 
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules");sys.path.append("../src/cython_modules")
-sys.path.append("/home/rbtlm2004/CPlantBoxinline/src");sys.path.append("/home/rbtlm2004/CPlantBoxinline/src/python_modules")
+import sys; sys.path.append(".."); sys.path.append("../src/python_modules");sys.path.append("../src")
+#sys.path.append("/home/rbtlm2004/CPlantBoxinline/src");sys.path.append("/home/rbtlm2004/CPlantBoxinline/src/python_modules")
 #sys.path.append("/home/rbtlm2004/miniconda3/envs/MYFIPYENV/lib/python3.8/site-packages/fipy_changed")
 
 import plantbox as pb
@@ -36,7 +36,7 @@ for item in test:
 #
 ####################### 
 #random.seed(10)
-pl = pb.Plant(seednum = 1)
+pl = pb.MappedPlant(seednum = 1)
 #take care of MappedPlant afterwards
 path = "../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
 name = "4testrel"# "Triticum_aestivum_adapted_2021"# "Triticum_aestivum_adapted_2021"#"22ss"#"small_2020"
@@ -46,13 +46,8 @@ steps =35
 pl.initialize(verbose = True)
 
 for step in range(steps):
-    print("\n\n\nstep n°", step)
-    pl.simulate(dt, True)
-    orgs = pl.getOrgans()
-    for i, o in enumerate(orgs):
-        print()
-        print("org ",i)
-        
+    #print("\n\n\nstep n°", step)
+    pl.simulate(dt, False)      
      
     ana = pb.SegmentAnalyser(pl)
     ana.write("%s_example10b.vtp" %(step))
