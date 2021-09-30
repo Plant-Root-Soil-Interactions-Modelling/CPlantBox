@@ -203,7 +203,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 default:
 		throw 0; // TODO make a nice one
 	}}
-	std::cout<<"stem parameter realize "<<ln_.size()<<" "<<lb_<<" "<<la_<<std::endl;
+	
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.); // radius
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
