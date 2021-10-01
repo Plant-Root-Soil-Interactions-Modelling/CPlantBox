@@ -21,11 +21,7 @@ class NullIO(StringIO):
 
 test = os.listdir(os.getcwd())       
 for item in test:
-    if item.endswith("10b.txt"):
-        os.remove(os.path.join(item))
-    if item.endswith("10b.vtk"):
-        os.remove(os.path.join( item))
-    if item.endswith("10b.vtp"):
+    if item.endswith("NodalGrowth.vtp"):
         os.remove(os.path.join(item))
 
     
@@ -50,5 +46,5 @@ for step in range(steps):
     pl.simulate(dt, False)      
      
     ana = pb.SegmentAnalyser(pl)
-    ana.write("%s_example10b.vtp" %(step))
+    ana.write("%s_NodalGrowth.vtp" %(step))
 
