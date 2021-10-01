@@ -261,7 +261,7 @@ void Stem::simulate(double dt, bool verbose)
 							double currentInternodeDistance = getLength(nn) - p.lb;
 							double maxInternodeDistance = p.getK()-p.la - p.lb;
 							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);
-							
+
 							if(ddx > 0){
 								internodalGrowth(ddx, verbose);
 								dl -= ddx;
@@ -310,6 +310,7 @@ void Stem::internodalGrowth(double dl, bool verbose)
 	std::vector<double> lnToGrow = p.ln;
 	double missing = 0;
 	for (size_t i=1; i<=p.ln.size(); i++) { 
+
 		int nn1 = children.at(i-1)->parentNI;
 		double length1 = getLength(nn1);
 		int nn2 = children.at(i)->parentNI;
@@ -317,6 +318,7 @@ void Stem::internodalGrowth(double dl, bool verbose)
 		missing += std::max(dlMeanPhyto -lnToGrow[i],0.);
 		
 	}
+
 	for (size_t i=1; i<=p.ln.size(); i++) {
 		double dl = dlMeanPhyto;
 		if(lnToGrow[i]>dlMeanPhyto){
@@ -327,6 +329,7 @@ void Stem::internodalGrowth(double dl, bool verbose)
 		createSegments(dl,verbose, i );
 	}
 	if(missing > 1e-6){//this sould not happen as computed dl to be <= sum(lnToGrow)
+
 		throw std::runtime_error( "Stem::internodalGrowth length left to grow");
 	}
 }
