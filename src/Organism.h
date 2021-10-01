@@ -110,7 +110,8 @@ public:
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
     virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
     virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
-
+	double getSeedVal(){return seed_val;}
+	
 	
 protected:
 
@@ -133,6 +134,7 @@ protected:
     int rsmlSkip = 0; // skips points
     double minDx = 1.e-6; ///< threshold value, smaller segments will be skipped, otherwise root tip direction can become NaN
 
+	double seed_val;
     std::mt19937 gen;
     std::uniform_real_distribution<double> UD;
     std::normal_distribution<double> ND;
