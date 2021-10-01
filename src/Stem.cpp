@@ -606,7 +606,7 @@ Vector3d Stem::getIncrement(const Vector3d& p, double sdx, int n)
 {
 	Vector3d h = heading(n);
 	Matrix3d ons = Matrix3d::ons(h);
-	Vector2d ab = getStemRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());
+	Vector2d ab = getStemRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this(), n+1);
 	Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
 	return sv.times(sdx);
 }

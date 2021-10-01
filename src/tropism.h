@@ -4,18 +4,20 @@
 
 #include "mymath.h"
 #include "Organ.h"
+#include "Organism.h"
 
 #include <memory>
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <random>
 
 namespace CPlantBox {
 
 class SoilLookUp;
 class SignedDistanceFunction;
 //class Organ;
-class Organism;
+//class Organism;
 
 /**
  * Base class for all tropism functions, e.g. Gravitropism, Plagiotropism, Exotropism...
@@ -47,9 +49,9 @@ public:
 	void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< sets a confining geometry
 	void setTropismParameter(double n_,double sigma_) { n=n_; sigma=sigma_; } ///< sets the tropism parameters
 
-	virtual Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> o = nullptr);
+	virtual Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> o = nullptr, int nodeIdx = -1);
 	///< constrained heading, dices n times and takes the best shot (according to the objective function)
-	virtual Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o);
+	virtual Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o, int nodeIdx);
 	///< Get unconfined heading (called by getHeading)
 
 	/**
@@ -81,6 +83,11 @@ protected:
 	std::weak_ptr<SignedDistanceFunction> geometry; ///< confining geometry todo
 	const int alphaN = 20;
 	const int betaN = 5;
+    double randn(int nNode) {if(nNode > 0){ return ND(gen);}else{return plant.lock()->randn();}; } ///< normally distributed random number (0,1)
+    double rand(int nNode) {if(nNode > 0){ return UD(gen);}else{return plant.lock()->randn();}; } ///< uniformly distributed random number (0,1)
+	std::normal_distribution<double> ND;
+    std::uniform_real_distribution<double> UD;
+	std::mt19937 gen;
 
 };
 
@@ -236,7 +243,7 @@ public:
 	double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> stem) override {
 		//    old.times(Matrix3d::rotX(b));
 		//    old.times(Matrix3d::rotZ(a));
-		return  -0.9*(old.times(Vector3d::rotAB(a+0.5*rand(),b+0.5*rand())).z+1.); // negative values point downwards, tranformed to 0..1
+		return  -0.9*(old.times(Vector3d::rotAB(a+0.5*rand(-1),b+0.5*rand(-1))).z+1.); // negative values point downwards, tranformed to 0..1
 	}
 	///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
 

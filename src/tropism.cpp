@@ -3,10 +3,9 @@
 
 #include "soil.h"
 #include "sdf.h"
-#include "Organ.h"
-#include "Organism.h"
 #include "Root.h"
 #include <stdlib.h>
+#include <cstdlib>
 
 namespace CPlantBox {
 
@@ -46,17 +45,16 @@ Vector3d Tropism::getPosition(const Vector3d& pos, const Matrix3d& old, double a
  *
  * \return             angle alpha and beta
  */
-Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o)
+Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o, int nodeIdx)
 {
-	auto p = plant.lock();
-    double a = sigma*p->randn()*sqrt(dx);
-    double b = p->rand()*2*M_PI;
+	
+    double a = sigma*randn(nodeIdx)*sqrt(dx);
+    double b =randn(nodeIdx)*2*M_PI;
     double v;
-
     double n_=n*sqrt(dx);
     if (n_>0) {
         double dn = n_-floor(n_);
-        if (p->rand()<dn) {
+        if (rand(nodeIdx)<dn) {
             n_ = ceil(n_);
         } else {
             n_ = floor(n_);
@@ -65,8 +63,8 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
         double bestB = b;
         double bestV = this->tropismObjective(pos,old,a,b,dx,o);
         for (int i=0; i<n_; i++) {
-            b = p->rand()*2*M_PI;
-            a = sigma*p->randn()*sqrt(dx);
+            b = randn(nodeIdx)*2*M_PI;
+            a = sigma*randn(nodeIdx)*sqrt(dx);
             v = this->tropismObjective(pos,old,a,b,dx,o);
             if (v<bestV) {
                 bestV=v;
@@ -92,9 +90,11 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
  *
  * \return           the rotations alpha and beta
  */
-Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o)
+Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o, int nodeIdx)
 {
-    Vector2d h = this->getUCHeading(pos, old, dx, o);
+	
+	if(nodeIdx > 0 ){gen =  std::mt19937(plant.lock()->getSeedVal() + nodeIdx + o->getId());}
+    Vector2d h = this->getUCHeading(pos, old, dx, o, nodeIdx);
     double a = h.x;
     double b = h.y;
 
@@ -112,7 +112,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
             j=0;
             while ((d>0) && j<betaN) { // change beta
 
-                b = 2*M_PI*plant.lock()->rand(); // dice
+                b = 2*M_PI*rand(nodeIdx); // dice
                 d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
                 if (d<dmin) {
                     dmin = d;

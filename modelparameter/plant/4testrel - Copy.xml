@@ -7,7 +7,7 @@
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
-    <parameter name="maxTi" value="3" dev="0"/>
+    <parameter name="maxTi" value="0" dev="0"/>
     <parameter name="firstTi" value="3" dev="0"/>
     <parameter name="delayTi" value="1" dev="0"/>
     <parameter name="nC" value="0"/>
@@ -100,8 +100,8 @@
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="18"/>
     <parameter name="tropismS" value="0.1"/>
-    <parameter name="dx" value="0.5"/>
-    <parameter name="dxMin" value="0.1"/>
+    <parameter name="dx" value="1"/>
+    <parameter name="dxMin" value="0.5"/>
     <parameter name="theta" value="0.2" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>

@@ -20,11 +20,11 @@ int Organism::instances = 0; // number of instances
  */
 Organism::Organism(double seednum)
 {
-    instances++;
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count()+instances;
-    	if(seednum >0){
-		gen = std::mt19937(seednum);
-	}else{ gen = std::mt19937(seed);}
+    instances++; 
+	if(seednum >0){
+		seed_val = seednum;
+	}else{ seed_val = std::chrono::system_clock::now().time_since_epoch().count()+instances;}
+	gen = std::mt19937(seed_val);
 };
 
 
