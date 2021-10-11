@@ -116,12 +116,12 @@ void SegmentAnalyser::addSegments(const SegmentAnalyser& a)
     }
     segments.insert(segments.end(),ns.begin(),ns.end()); // copy segments
     segO.insert(segO.end(),a.segO.begin(),a.segO.end());// copy origins
-    assert(segments.size() == segO.size() && "SegmentAnalyser::addSegments(): Unequal vector sizes" );
-    for(auto iter = data.begin(); iter != data.end(); ++iter) {
+    assert(segments.size() == segO.size() && "SegmentAnalyser::addSegments(): Unequal vector sizes, segments and segment origins" );
+    for (auto iter = data.begin(); iter != data.end(); ++iter) {
         std::string key =  iter->first;
         if (a.data.count(key)>=0) {
             data[key].insert(data[key].end(),a.data.at(key).begin(),a.data.at(key).end());
-            assert(segments.size() == data[key].size() && "SegmentAnalyser::addSegments(): Unequal vector sizes" );
+            assert(segments.size() == data[key].size() && "SegmentAnalyser::addSegments(): Unequal vector sizes, segments and data" );
         } else {
             data.erase(key);
         }
@@ -144,30 +144,27 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
         data["creationTime"].insert(data["creationTime"].begin(),ct);
         segO.insert(segO.begin(),std::weak_ptr<Organ>()); // expired
         data["radius"].insert(data["radius"].begin(),radius);
-        if (data.count("subType")>0) {
-            data["subType"].insert(data["subType"].begin(), -1.);
-        }
-        if (data.count("organType")>0) {
-            data["organType"].insert(data["organType"].begin(), -1.);
-        }
-        if (data.count("id")>0) {
-            data["id"].insert(data["id"].begin(), -1.);
+        for (auto iter = data.begin(); iter != data.end(); ++iter) { // insert -1 for all other data
+            std::string key =  iter->first;
+            if (data[key].size() < segments.size()) {
+                data[key].insert(data[key].begin(), -1.);
+            }
         }
     } else {
         segments.push_back(seg);
         data["creationTime"].push_back(ct);
         segO.push_back(std::weak_ptr<Organ>()); // expired
         data["radius"].push_back(radius);
-        if (data.count("subType")>0) {
-            data["subType"].push_back(-1.);
+        for (auto iter = data.begin(); iter != data.end(); ++iter) { // push -1 for all other data
+            std::string key =  iter->first;
+            if (data[key].size() < segments.size()) {
+                data[key].push_back(-1.);
+            }
         }
-        if (data.count("organType")>0) {
-            //data["organType"].insert(data["organType"].begin(), -1.);
-			data["organType"].push_back(-1.);
-        }
-        if (data.count("id")>0) {
-            data["id"].push_back(-1.);
-        }
+    }
+    for (auto iter = data.begin(); iter != data.end(); ++iter) { // check again if all data sizes are correct
+        std::string key =  iter->first;
+        assert(segments.size() == data[key].size() && "SegmentAnalyser::addSegment(): Unequal vector sizes, segments and data" );
     }
 }
 
@@ -877,21 +874,21 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
 {
     auto ctime = getParameter("creationTime");
     std::vector< std::tuple<double,  // creation time 0
-                            int,  // node1ID 1
-                            int,  // node2ID 2
-                            int,  // branchID 3
-                            double, // x1 4
-                            double, // y1 5
-                            double, // z1 6
-                            double, // x2 7
-                            double, // y2 8
-                            double, // z2 9
-                            double, // radius 10
-                            double, // age 11
-                            int,    // subtype 12
-                            int,    //organ 13
-                            int    //organid 14
-                            > > ctime_seg;
+    int,  // node1ID 1
+    int,  // node2ID 2
+    int,  // branchID 3
+    double, // x1 4
+    double, // y1 5
+    double, // z1 6
+    double, // x2 7
+    double, // y2 8
+    double, // z2 9
+    double, // radius 10
+    double, // age 11
+    int,    // subtype 12
+    int,    //organ 13
+    int    //organid 14
+    > > ctime_seg;
     os << "node1ID node2ID branchID x1 y1 z1 x2 y2 z2 radius time age type organ parent_node_id \n";
     for (size_t i=0; i<segments.size(); i++) {
         std::shared_ptr<Organ> o = segO.at(i).lock();
@@ -908,35 +905,35 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
         int subType = o->getParameter("subType");
         int id = o->getParameter("id");
         ctime_seg.push_back( std::make_tuple(time, x, y, branchnumber, n1.x, n1.y, n1.z, n2.x, n2.y, n2.z, radius, age, subType, organ, id  ));
-//        auto parent_id = std::find_if(segments.begin(), segments.end(), [y](const Vector2i s_){return s_.x == y; });
-//        if (parent_id != segments.end())
-//          int index = std::distance(begin(segments), parent_id);
-//        else
-//           int index = 0;
-//         std::string parent_node_id = std::to_string(index);
+        //        auto parent_id = std::find_if(segments.begin(), segments.end(), [y](const Vector2i s_){return s_.x == y; });
+        //        if (parent_id != segments.end())
+        //          int index = std::distance(begin(segments), parent_id);
+        //        else
+        //           int index = 0;
+        //         std::string parent_node_id = std::to_string(index);
 
-        }
-        std::sort(ctime_seg.begin(), ctime_seg.end()); // sort based on the time
-        for (size_t i=0; i<segments.size(); i++) { // write output
+    }
+    std::sort(ctime_seg.begin(), ctime_seg.end()); // sort based on the time
+    for (size_t i=0; i<segments.size(); i++) { // write output
         //int parent_node_id = std::find(segments.y, segments.y, s.at(i).x);
         os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i])
-                                         << " " << std::get<2>(ctime_seg[i])
-                                         << " " << std::get<3>(ctime_seg[i])
-                                         << " " << std::get<4>(ctime_seg[i])
-                                         << " " << std::get<5>(ctime_seg[i])
-                                         << " " << std::get<6>(ctime_seg[i])
-                                         << " " << std::get<7>(ctime_seg[i])
-                                         << " " << std::get<8>(ctime_seg[i])
-                                         << " " << std::get<9>(ctime_seg[i])
-                                         << " " << std::get<10>(ctime_seg[i])
-                                         << " " << std::get<0>(ctime_seg[i])
-                                         << " " << std::get<11>(ctime_seg[i])
-                                         << " " << std::get<12>(ctime_seg[i])
-                                         << " " << std::get<13>(ctime_seg[i])
-                                         << " " << std::get<14>(ctime_seg[i])<< " " <<" \n";
-//for debug//        os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i]) << " " << std::get<2>(ctime_seg[i]) << " " << std::get<0>(ctime_seg[i]) <<" "  << "\n"; << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " << radius << " " << std::get<1>(ctime_seg[i])<< " " << age<<" " <<subType<< " " <<organ << " " <<" \n";
+                                                     << " " << std::get<2>(ctime_seg[i])
+                                                     << " " << std::get<3>(ctime_seg[i])
+                                                     << " " << std::get<4>(ctime_seg[i])
+                                                     << " " << std::get<5>(ctime_seg[i])
+                                                     << " " << std::get<6>(ctime_seg[i])
+                                                     << " " << std::get<7>(ctime_seg[i])
+                                                     << " " << std::get<8>(ctime_seg[i])
+                                                     << " " << std::get<9>(ctime_seg[i])
+                                                     << " " << std::get<10>(ctime_seg[i])
+                                                     << " " << std::get<0>(ctime_seg[i])
+                                                     << " " << std::get<11>(ctime_seg[i])
+                                                     << " " << std::get<12>(ctime_seg[i])
+                                                     << " " << std::get<13>(ctime_seg[i])
+                                                     << " " << std::get<14>(ctime_seg[i])<< " " <<" \n";
+        //for debug//        os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i]) << " " << std::get<2>(ctime_seg[i]) << " " << std::get<0>(ctime_seg[i]) <<" "  << "\n"; << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " << radius << " " << std::get<1>(ctime_seg[i])<< " " << age<<" " <<subType<< " " <<organ << " " <<" \n";
 
-        }
+    }
 }
 
 /**
