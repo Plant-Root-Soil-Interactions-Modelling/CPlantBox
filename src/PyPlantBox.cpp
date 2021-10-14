@@ -466,6 +466,8 @@ PYBIND11_MODULE(plantbox, m) {
            .def("filter", (void (SegmentAnalyser::*)(std::string, double, double)) &SegmentAnalyser::filter) //overloads
            .def("filter", (void (SegmentAnalyser::*)(std::string, double)) &SegmentAnalyser::filter) //overloads
            .def("pack", &SegmentAnalyser::pack)
+           .def("getMinBounds", &SegmentAnalyser::getMinBounds)
+           .def("getMaxBounds", &SegmentAnalyser::getMaxBounds)
            .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN())
            .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
            .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) &SegmentAnalyser::getSummed) //overloads
@@ -825,6 +827,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKxValues", &XylemFlux::setKxValues)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>())
+            .def("linearSystem_detached",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
+                    py::arg("soil_k") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
             		py::arg("soil_k") = std::vector<double>())
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
