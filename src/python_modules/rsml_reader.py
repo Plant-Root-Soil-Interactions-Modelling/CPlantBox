@@ -63,13 +63,13 @@ def read_rsml(name:str) -> (list, dict, dict):
 def artificial_shoot(polylines, properties, functions):
     """ inserts an artificial shoot, with functions and properties of the the first polyline 
     
-    """ 
+    """
     polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.9]])
     for key, v in properties.items():
         properties[key].insert(0, properties[key][0])
-    for key, v in functions.items(): 
-        functions[key].insert(0, [functions[key][0][0], functions[key][0][1]])    
-    for i, p in enumerate(polylines):  # add one to the parent poly indices 
+    for key, v in functions.items():
+        functions[key].insert(0, [functions[key][0][0], functions[key][0][1]])
+    for i, p in enumerate(polylines):  # add one to the parent poly indices
         properties["parent-poly"][i] += 1
     properties["parent-poly"][0] = -1
     properties["parent-node"][0] = -1
@@ -107,11 +107,11 @@ def get_segments(polylines:list, props:dict) -> (list, list):
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
             segs.append([offset[i] + j, offset[i] + j + 1])
-    return nodes, segs
+    return np.array(nodes), np.array(segs, dtype = np.int64)
 
 
 def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
-    """ Copies radius, creation times, and types one value per segment 
+    """ Copies radius, creation times, and types one value per node 
         
         Args:
         polylines(list): flat list of polylines, one polyline per root
@@ -119,59 +119,85 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         props(dict): dictionary of properties     
         
         Returns:
-        radius, creation time, type (per segment)
+        radius, creation time, type (per node)
         
-        different rsml writer call parameters different names, get_parameter expects:
-         
-        radius          calculated from "diameter" in properties or functions 
-        creation times  "emergence_times" or "node_creation_time" in functions
-        type            "type" or "subType" in properties, or "type" in functions
+        different rsml writer call parameters different names, get_parameter expect the ones in the list below
+        functions are checked first, then properties, if not found NaN values are set.       
         
-        otherwise an exception is thrown    
-    """    
-    radius = False
-    if "diameter" in props:
-        fdiam_p = True
-        fdiam = props["diameter"]
-    else:
-        fdiam_p = False
-        if "diameter" in funcs: 
-            fdiam = funcs["diameter"]  
-        elif "radius" in funcs:
-            fdiam = funcs["radius"]  # otherwise we are in trouble
+    """
+    radius_names = ["radius", "radii"]  # add more where needed
+    diam_names = ["diameter", "diam"]
+    type_names = ["type", "subType", "order"]
+    ct_names = ["creation_time", "creationTime", "emergence_time", "emergenceTime", "node_creation_time", "nodeCreationTime" ]
+
+    diam_p = False
+    diam = None
+    for n in radius_names:
+        if n in funcs:
             radius = True
-        else:
-            raise("rsml_reader.get_parameter() no diameter or radius function found")         
-    if "type" in props:
-        ptype_p = True
-        ptype = props["type"]
-    else:
-        if "subType" in props:
-            ptype_p = True
-            ptype = props["subType"]
-        else:
-            ptype_p = False
-            ptype = funcs["type"]  # otherwise we are in trouble           
-    if "emergence_time" in funcs:
-        fet = funcs["emergence_time"]
-    else: 
-        fet = funcs["node_creation_time"]  # otherwise we are in trouble
-    radii, cts, types = [], [], []  # copy stuff    
+            diam = funcs[n]
+    if diam == None:
+        for n in radius_names:
+            if n in props:
+                radius = True
+                diam = props[n]
+                diam_p = True
+    if diam == None:
+        for n in diam_names:
+            if n in funcs:
+                radius = False
+                diam = funcs[n]
+    if diam == None:
+        for n in diam_names:
+            if n in props:
+                radius = False
+                diam = props[n]
+                diam_p = True
+
+    type_p = False
+    type_ = None
+    for n in type_names:
+        if n in funcs:
+            type_ = funcs[n]
+    if type_ == None:
+        for n in type_names:
+            if n in props:
+                type_ = props[n]
+                type_p = True
+    et = None
+    for n in ct_names:
+        if n in funcs:
+            et = funcs[n]
+
+    radii, types, cts = [], [], []  # copy stuff
     for i, p in enumerate(polylines):
         for j in range(0, len(p)):
-            if fdiam_p:
-                radii.append(fdiam[i] / 2.)
-            else:
-                if radius: 
-                    radii.append(fdiam[i][j])
+            if diam is not None:
+                if diam_p:
+                    if radius:
+                        radii.append(diam[i])
+                    else:
+                        radii.append(diam[i] / 2.)
                 else:
-                    radii.append(fdiam[i][j] / 2.)                      
-            if ptype_p:
-                types.append(ptype[i])
+                    if radius:
+                        radii.append(diam[i][j])
+                    else:
+                        radii.append(diam[i][j] / 2.)
             else:
-                types.append(ptype[i][j])                
-            cts.append(fet[i][j])        
-    return radii[1:], cts[1:], types[1:]  # for tap root systems only! add an artificial shoot in case of fibrous root system
+                radii.append(np.NaN)
+            if type_ is not None:
+                if type_p:
+                    types.append(type_[i])
+                else:
+                    types.append(type_Ä[i][j])
+            else:
+                types.append(np.NaN)
+            if et is not None:
+                cts.append(et[i][j])
+            else:
+                cts.append(np.NaN)
+
+    return radii, cts, types
 
 
 def plot_rsml(polylines:list, prop:list):
@@ -181,11 +207,11 @@ def plot_rsml(polylines:list, prop:list):
     polylines(list): flat list of polylines, one polyline per root 
     prop(list): a single property, list of scalar value, on per root 
     """
-    f = matplotlib.colors.Normalize(vmin=min(prop), vmax=max(prop))
+    f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
     cmap = plt.get_cmap("jet", 256)
     for i, pl in enumerate(polylines):
         nodes = np.array(pl)
-        plt.plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[i])))
+        plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
     plt.axis('equal')
     plt.show()
 
@@ -198,23 +224,23 @@ def plot_segs(nodes:list, segs:list, fun:list):
     segs(list): list of two integer node indices for each line segment 
     fun(list): a single function, list of scalar value, on per segment, see TODO 
     """
-    f = matplotlib.colors.Normalize(vmin=min(fun), vmax=max(fun))
+    f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
     cmap = plt.get_cmap("jet", 256)
     print("Segments")
     for i, s in enumerate(segs):
-        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color=cmap(f(fun[i])))
+        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
     plt.axis('equal')
     plt.show()
 
 
 if __name__ == '__main__':
-    
+
     # fname = "../../../dumux-rosi/grids/RootSystem.rsml"
     fname = "../../tutorial/examples/python/results/example_3c.rsml"  # run example3c_write.py first (in tutorial/examples/python/)
 
     polylines, properties, functions = read_rsml(fname)
-    polylines, properties, functions = artificial_shoot(polylines, properties, functions)  # for multiple base roots, add artificial root 
-    
+    polylines, properties, functions = artificial_shoot(polylines, properties, functions)  # for multiple base roots, add artificial root
+
     print("Properties:")
     for key, v in properties.items():
         print("\t", key, len(properties[key]))
@@ -225,7 +251,7 @@ if __name__ == '__main__':
 
     nodes, segs = get_segments(polylines, properties)
     nodes = np.array(nodes)
-    segs = np.array(segs, dtype=np.int64)
-        
+    segs = np.array(segs, dtype = np.int64)
+
     radii, cts, types = get_parameter(polylines, functions, properties)
     plot_segs(nodes, segs, cts)  # slow
