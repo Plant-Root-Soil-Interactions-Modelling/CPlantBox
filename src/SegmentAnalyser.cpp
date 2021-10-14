@@ -380,6 +380,49 @@ void SegmentAnalyser::pack() {
     nodes = newnodes; // kabum!
 }
 
+
+/**
+ * Calculates the minimum of node coordinates
+ * (e.g. minimum corner of bounding box)
+ * value not cached
+ */
+Vector3d SegmentAnalyser::getMinBounds() {
+    Vector3d min_ = Vector3d(1.e9, 1.e9, 1.e9); // much
+    for (const auto& n : nodes) {
+        if (n.x<min_.x) {
+            min_.x = n.x;
+        }
+        if (n.y<min_.y) {
+            min_.y = n.y;
+        }
+        if (n.z<min_.z) {
+            min_.z = n.z;
+        }
+    }
+    return min_;
+}
+
+/**
+ * Calculates the maximum of node coordinates
+ * (e.g. maximum corner of bounding box)
+ * value not cached
+ */
+Vector3d SegmentAnalyser::getMaxBounds() {
+    Vector3d max_ = Vector3d(-1.e9, -1.e9, -1.e9); // litte
+    for (const auto& n : nodes) {
+        if (n.x>max_.x) {
+            max_.x = n.x;
+        }
+        if (n.y>max_.y) {
+            max_.y = n.y;
+        }
+        if (n.z>max_.z) {
+            max_.z = n.z;
+        }
+    }
+    return max_;
+}
+
 /**
  * Numerically computes the intersection point
  *
