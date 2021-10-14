@@ -25,6 +25,9 @@ public:
     void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true,
         const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
 
+    void linearSystem_detached(double simTime, const std::vector<double>& sx, bool cells = true,
+        const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
+
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
     		bool approx = false, const std::vector<double> soil_k = std::vector<double>()); // [cm3/day]
     std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
