@@ -384,7 +384,8 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
 /**
  * @return the indices of the nodes that were moved during the last time step,
  * update the node coordinates using Organism::getUpdatedNodes(),
- * and creation times using Organism::getUpdatedNodeCTs(,
+ * and creation times using Organism::getUpdatedNodeCTs(),
+ * for stem and leaves, assume that all the old nodes need to be updated
  */
 std::vector<int> Organism::getUpdatedNodeIndices() const
 {
@@ -407,6 +408,7 @@ std::vector<int> Organism::getUpdatedNodeIndices() const
 /**
  * @return the new coordinates of nodes that were updated during the last time step,
  * corresponding to Organism::getUpdatedNodeIndices
+ * for stem and leaves, assume that all the old nodes need to be updated
  */
 std::vector<Vector3d> Organism::getUpdatedNodes() const
 {
@@ -428,6 +430,7 @@ std::vector<Vector3d> Organism::getUpdatedNodes() const
 /**
  * @return the new creation times of nodes that were updated during the last time step,
  * corresponding to Organism::getUpdatedNodeIndices
+ * for stem and leaves, assume that all the old nodes need to be updated
  */
 std::vector<double> Organism::getUpdatedNodeCTs() const
 {
