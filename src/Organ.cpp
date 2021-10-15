@@ -168,20 +168,24 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  * @param n        new node
  * @param id       global node index
  * @param t        exact creation time of the node
+ * @param index	   position were new node is to be added
+ * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
 	
-	if(!shift){
+	if(!shift){//node added at the end of organ
 		nodes.push_back(n); // node
 		nodeIds.push_back(id); // new unique id
 		nodeCTs.push_back(t); // exact creation time
 	}
 	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?) 
-		nodes.insert(nodes.begin() + index, n);
-		nodeIds.push_back(id); 
+		nodes.insert(nodes.begin() + index, n);//add the node at index
+		//add a global index. 
+		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
+		nodeIds.push_back(id);  
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
-		for(auto kid : children){
+		for(auto kid : children){//if carries children after the added node, update their "parent node index"
 			if(kid->parentNI >= index-1){
 				kid->moveOrigin(kid->parentNI + 1);
 				}
@@ -212,10 +216,12 @@ void Organ::moveOrigin(int idx)
  *
  * @param n        the new node
  * @param t        exact creation time of the node
+ * @param index	   position were new node is to be added
+ * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
 void Organ::addNode(Vector3d n, double t, size_t index, bool shift)
 {
-	addNode(n,plant.lock()->getNodeIndex(),t, index = index, shift = shift);
+	addNode(n,plant.lock()->getNodeIndex(),t, index, shift);
 }
 
 /**
