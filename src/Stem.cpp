@@ -53,7 +53,7 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 	so it is disabled and rerolled to old heading*/
 	assert(parent!=nullptr && "Stem::Stem parent must be set");
 	auto p = this->param();
-	this->delayNG = p->delayNG + p->delayNGs * plant->randn();
+	this->delayNG = p->delayNG + p->delayNGs * plant->randn();//delay between basal growth elongation and internodal growth
 	addPhytomerId(p->subType);
 	double beta = getphytomerId(p->subType)*M_PI*getStemRandomParameter()->rotBeta +
 			M_PI*plant->rand()*getStemRandomParameter()->betaDev;
@@ -161,10 +161,10 @@ void Stem::simulate(double dt, bool verbose)
 				} else {
 					dt_=dt;
 				}
-				if((length >= p.lb) && (delayNG >0)&& p.nodalGrowth){
+				if((length >= p.lb) && (delayNG >0)&& p.nodalGrowth){//stop growth until the nodal growth delay is "spent"
 					double wait = std::min(delayNG, dt_ );
 					delayNG -= wait;
-					dt_ -= wait ;
+					dt_ -= wait ;//until end of nodal growth delay, dt_ ==0, giving dl == this->epsilonDx. 
 				} 
 				double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
 				double e = targetlength-length; // unimpeded elongation in time step dt
