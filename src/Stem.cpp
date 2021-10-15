@@ -215,6 +215,8 @@ void Stem::simulate(double dt, bool verbose)
 					/* branching zone */
 					if ((((dl>0)&&(p.nodalGrowth==0))||(((p.nodalGrowth==1))))&&(children.size()<p.ln.size())&&(length>=p.lb)) {
 						double s = p.lb; // summed length
+						//do elongation if their is still growth to be done (dl > 0) of if we have stem nodal growth (in which case enough nodes are created
+						//to carry the laterals)
 						for (size_t i=0; ((i<p.ln.size()) && ((dl>0)||(p.nodalGrowth))); i++) {
 							if((p.nodalGrowth==0)){s+=p.ln.at(i);
 							}else{s+=this->dxMin();}//smallest distance if internodal growth to create the nodes and the laterals, and then growth
@@ -232,7 +234,7 @@ void Stem::simulate(double dt, bool verbose)
 									}
 
 								}
-								if (length+dl<=s&&p.nodalGrowth==0) { // finish within inter-lateral distance i
+								if (length+dl<=s&&p.nodalGrowth==0) { // finish within inter-lateral distance i. onyl used in case of non-nodal growth
 									createSegments(dl,verbose);
 									length+=dl;
 									dl=0;
@@ -255,12 +257,12 @@ void Stem::simulate(double dt, bool verbose)
 							}
 						}
 					}
-					
+					//internodal elongation, if the basal zone of the stem is created and still has to grow
 					if(((p.nodalGrowth==1)&&(dl>0))&&(length>=p.lb)){
-							int nn = children.at(p.ln.size())->parentNI;
-							double currentInternodeDistance = getLength(nn) - p.lb;
-							double maxInternodeDistance = p.getK()-p.la - p.lb;
-							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);
+							int nn = children.at(p.ln.size())->parentNI; //node carrying the last lateral == end of branching zone
+							double currentInternodeDistance = getLength(nn) - p.lb; //actual length of branching zone
+							double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
+							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone 
 
 							if(ddx > 0){
 								internodalGrowth(ddx, verbose);
@@ -306,21 +308,26 @@ void Stem::simulate(double dt, bool verbose)
 void Stem::internodalGrowth(double dl, bool verbose)
 {
 	const StemSpecificParameter& p = *param(); // rename
-	double dlMeanPhyto = dl/p.ln.size(); //in the mean time, grow all together
+	double dlMeanPhyto = dl/p.ln.size(); //divid the total growth of the branching zone between the phytomere. currently, growth divided equally
 	std::vector<double> lnToGrow = p.ln;
 	double missing = 0;
 	for (size_t i=1; i<=p.ln.size(); i++) { 
 
-		int nn1 = children.at(i-1)->parentNI;
+		int nn1 = children.at(i-1)->parentNI; //node at the beginning of phytomere
 		double length1 = getLength(nn1);
-		int nn2 = children.at(i)->parentNI;
-		lnToGrow[i]= p.ln.at(i-1) -( getLength(nn2) - length1 ) ;//-dlMeanPhyto
-		missing += std::max(dlMeanPhyto -lnToGrow[i],0.);
+		int nn2 = children.at(i)->parentNI; //node at end of phytomere
+		lnToGrow[i]= p.ln.at(i-1) -( getLength(nn2) - length1 ) ;//difference between maximum and current length of the phytomere
+		//if the length increase that the phytomere can do is inferior to the mean length to be added to each phytomere, 
+		//the difference is kept in memory to be later given to another phytomere
+		//this way we keep the predefined total growth of the branching zone
+		missing += std::max(dlMeanPhyto -lnToGrow[i],0.);  
 		
 	}
 
 	for (size_t i=1; i<=p.ln.size(); i++) {
 		double dl = dlMeanPhyto;
+		//if the phytomere can do a growth superior to the mean phytomere growth, we add the value of "missing" 
+		//(i.e., length left to grow to get the predefined total growth of the branching zone)
 		if(lnToGrow[i]>dlMeanPhyto){
 			dl = std::min(missing,lnToGrow[i]-dlMeanPhyto )+dlMeanPhyto;
 			missing -= dl - dlMeanPhyto;
@@ -423,7 +430,7 @@ void Stem::createLateral(bool silence)
 	double delay = ageLG-ageLN; // time the lateral has to wait
 	Matrix3d h = Matrix3d();//::ons(h_); // current heading in absolute coordinates TODO (revise??)
 	int lnf = getStemRandomParameter()->lnf;
-	double dtlat = (delay)*(1-int(sp->nodalGrowth)) + 0*int(sp->nodalGrowth);
+	double dtlat = (delay)*(1-int(sp->nodalGrowth)) + 0*int(sp->nodalGrowth);//if we have nodal growth, the laterals grow even if the apical zone of the stem is not yet formed
 																		  
 	if (lnf == 2&& lt !=2) {
 		auto lateral = std::make_shared<Stem>(plant.lock(), lt, h, dtlat, shared_from_this(),  nodes.size() - 1);
@@ -482,7 +489,8 @@ void Stem::leafGrow(bool silence)
 	Matrix3d h = Matrix3d();//::ons(h_); // current heading in absolute coordinates TODO (revise??)
 	int lt =2;
 	int lnf = getStemRandomParameter()->lnf;
-	double dtLeaf = (delay)*(1-int(sp.nodalGrowth)) + 0*int(sp.nodalGrowth);
+	double dtLeaf = (delay)*(1-int(sp.nodalGrowth)) + 0*int(sp.nodalGrowth);//if we have nodal growth, the laterals grow even if the apical zone of the stem is not yet formed
+										
 	if (lnf==2) {
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, dtLeaf, shared_from_this(), nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
@@ -616,7 +624,7 @@ Vector3d Stem::getIncrement(const Vector3d& p, double sdx, int n)
 
 
 /**
- * @return Current absolute heading of the organ at node n, based on initial heading, or segment before
+ * @return Current absolute heading of the organ at node n, based on initial heading, or direction of the segment going from node n-1 to node n
  */
 Vector3d Stem::heading(int n ) const
 {
@@ -654,6 +662,7 @@ Vector3d Stem::getiHeading()  const
  *
  *  @param l        total length of the segments that are created [cm]
  *  @param verbose  turns console output on or off
+ *  @param PhytoIdx index of the phytomere to grow. default = -1
  */
 void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 {
@@ -668,15 +677,15 @@ void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 	// shift first node to axial resolution
 	double shiftl = 0; // length produced by shift
 	int nn = nodes.size();
-	if( PhytoIdx >= 0){
+	if( PhytoIdx >= 0){ //if we are doing internodal growth,  PhytoIdx >= 0.
 		auto o = children.at(PhytoIdx);
-		nn = o->parentNI +1;
+		nn = o->parentNI +1; //shift the last node of the phytomere n° PhytoIdx instead of the last node of the organ
 	}
 	if (firstCall||(PhytoIdx >= 0)) { // first call of createSegments (in Root::simulate)
 		firstCall = false;
 
 
-		if ((nn>1)  ) { // don't move a child base node
+		if ((nn>1)  ) { // don't move the first node of organ
 			Vector3d h = nodes[nn-1];
 			double olddx = h.length(); // length of last segment
 			if (olddx<dx()*0.99) { // shift node instead of creating a new node
@@ -720,8 +729,8 @@ void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 		double et = this->calcCreationTime(getLength(true)+shiftl+sl);
 		// in case of impeded growth the node emergence time is not exact anymore,
 		// but might break down to temporal resolution
-		bool shift = (PhytoIdx >= 0); //node will be insterted between 2 nodes
-		addNode( newnode, et, size_t(nn+i), shift);//nn: at which idx add the new node
+		bool shift = (PhytoIdx >= 0); //node will be insterted between 2 nodes. only happens if we have internodal growth (PhytoIdx >= 0)
+		addNode( newnode, et, size_t(nn+i), shift);//nn + i: idx at which to the new node
 
 	}
 }
@@ -754,21 +763,21 @@ double Stem::getLength(bool realized) const
 }
 
 /**
- * @return the position of the node with index @param i.
+ * convert the nodes' positions from relative to absolute coordinates
  */
 void Stem::rel2abs() 
 {
 	
-	nodes[0] = getOrigin();
+	nodes[0] = getOrigin(); //recompute postiion of the first node
 	
 	const StemSpecificParameter& p = *param(); // rename
 	for(size_t i=1; i<nodes.size(); i++){
 		Vector3d newdx = nodes[i];
 		if((i>=oldNumberOfNodes)||(p.nodalGrowth && active)){
 			double sdx = nodes[i].length();
-			newdx = getIncrement(nodes[i-1], sdx, i-1);
+			newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
 		}
-		nodes[i] = nodes[i-1].plus(newdx);
+		nodes[i] = nodes[i-1].plus(newdx); //replace relative by absolute position
 		
 		
 	}
@@ -781,7 +790,7 @@ void Stem::rel2abs()
 }
 
 /**
- * @return the position of the node with index @param i.
+ *  convert the nodes' positions from absolute to relative coordinates
  */
 void Stem::abs2rel()
 {
