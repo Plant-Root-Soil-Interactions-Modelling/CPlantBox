@@ -773,7 +773,7 @@ void Stem::rel2abs()
 	const StemSpecificParameter& p = *param(); // rename
 	for(size_t i=1; i<nodes.size(); i++){
 		Vector3d newdx = nodes[i];
-		if((i>=oldNumberOfNodes)||(p.nodalGrowth && active)){
+		if((i>=oldNumberOfNodes)||(p.nodalGrowth && active)){//if we have a new node or have nodal growth, need to update the tropism effect
 			double sdx = nodes[i].length();
 			newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
 		}
