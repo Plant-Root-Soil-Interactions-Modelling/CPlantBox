@@ -443,6 +443,8 @@ void Leaf::rel2abs()
 	nodes[0] = getOrigin();
 	for(size_t i=1; i<nodes.size(); i++){
 		Vector3d newdx = nodes[i];
+		//if new node or has an age-dependent tropism + reached age at which tropism changes. Might need to update the conditions if do new tropism functions
+		//i.e., gradual change according to age
 		if((i>= oldNumberOfNodes )|| (ageDependentTropism&& (age > getLeafRandomParameter()->f_tf->ageSwitch))){
 			double sdx = nodes[i].length();
 			newdx = getIncrement(nodes[i-1], sdx, i-1);
