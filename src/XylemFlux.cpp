@@ -60,7 +60,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
                 psi_s = airPressure;
             }
         } else {
-            psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
+            psi_s = sx.at(si); // j-1 = segIdx = s.y-1
         }
         if (organType == 4 && pg.at(0)!= 0){
             psi_s = pg.at(numleaf);
@@ -288,7 +288,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
                 psi_s = airPressure;
             }
         } else {
-            psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
+            psi_s = sx.at(si); // j-1 = segIdx = s.y-1
         }
 
         if (organType == 4 && pg.at(0)!= 0){
