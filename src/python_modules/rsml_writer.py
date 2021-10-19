@@ -4,14 +4,14 @@ from scipy import sparse
 import numpy as np
 
 """ 
-RSML Writer, by Daniel Leitner (9/2019) 
+RSML Writer, by Daniel Leitner (2019-2021) 
 """
 
 
 class Property:
-    """RSML property tag helper class, for property meta data description """
+    """RSML property tag helper class, for property and function meta data description """
 
-    def __init__(self, label :str, type_ :str, unit :str, data :list):
+    def __init__(self, label:str, type_:str, unit:str, data:list):
         """
         Args:
         label(str): name of the property 
@@ -24,7 +24,7 @@ class Property:
         self.unit = unit
         self.data = data
 
-    def write_property(self, basetag :ET.Element):
+    def write_property(self, basetag:ET.Element):
         """ adds the rsml property tag to the basetag 
         
         Args:
@@ -50,9 +50,8 @@ class Metadata:
         self.time_sequence_index = "1/1"
         self.time_sequence_unified = "true"
         self.properties = []
-        self.func_names = []
 
-    def add_property(self, prop :Property):
+    def add_property(self, prop:Property):
         """ add a property description 
         
         Args:
@@ -60,16 +59,8 @@ class Metadata:
         """
         self.properties.append(prop)
 
-    def set_fun_names(self, names :list):
-        """ adds function names to the meta data
-        
-        Args:
-        names(list) : list of strings containing the function names
-        """
-        self.func_names = names
-
-    def write_meta(self, basetag :ET.Element):
-        """Adds the rsml metadata tag to the basetag
+    def write_meta(self, basetag:ET.Element):
+        """ adds the rsml metadata tag to the basetag
         
             Args:
             basetag(ET.Element): base tag in the xml element tree
@@ -92,6 +83,13 @@ class Metadata:
         ET.SubElement(time_seq, "label").text = self.time_sequence_label
         ET.SubElement(time_seq, "index").text = self.time_sequence_index
         ET.SubElement(time_seq, "unified").text = self.time_sequence_unified
+
+    def read_meta(self, metadata_tag: ET.Element):
+        """ reads from RSML metadata tag 
+        """
+        # <unit>inch</unit>
+        # <resolution>300.0</resolution>
+        pass
 
 
 class LinkedPolylines:
@@ -157,7 +155,7 @@ class LinkedPolylines:
                 fun.append(ET.Element("sample", dict(value = str(nodedata[i][p]))))
 
 
-def follow_(i0 :int, i :int, A) -> LinkedPolylines:
+def follow_(i0:int, i:int, A) -> LinkedPolylines:
     """ Recursively follows the roots
     
     Args:
@@ -167,7 +165,7 @@ def follow_(i0 :int, i :int, A) -> LinkedPolylines:
     Returns: 
         LinkedPolyline: representing the root system
     """
-    _, j_ = A[i, :].nonzero()
+    _, j_ = A[i,:].nonzero()
 
     if len(j_) > 0:  # if there is at least another segment
 
@@ -188,14 +186,14 @@ def follow_(i0 :int, i :int, A) -> LinkedPolylines:
                     newlines.laterals.append(follow_(len(newlines.polyline) - 1, j, A))  # follow lateral
             if not done:
                 i = newlines.polyline[-1]  # jump to next node
-                _, j_ = A[i, :].nonzero()
+                _, j_ = A[i,:].nonzero()
 
         return newlines
     else:
         return []
 
 
-def segs2polylines(axes :list, segs :list, segdata :list) -> list:
+def segs2polylines(axes:list, segs:list, segdata:list) -> list:
     """ Converts a root system represented by nodes and segments into a linked polyline representation.
     
     Args:
@@ -214,7 +212,7 @@ def segs2polylines(axes :list, segs :list, segdata :list) -> list:
     return polylines
 
 
-def write_rsml(name :str, axes :list, segs :list, segdata :list, nodes :list, nodedata :list, meta :Metadata, **kwargs):
+def write_rsml(name:str, axes:list, segs:list, segdata:list, nodes:list, nodedata:list, meta:Metadata, **kwargs):
     """ RSML writer
     
     Args:
@@ -262,4 +260,3 @@ if __name__ == "__main__":
     write_rsml("test.xml", axis, segs, types, nodes, [age], meta)
 
     print("done")
-    

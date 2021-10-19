@@ -3,8 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
 
+from rsml_writer import Metadata
+
 """ 
-RSML Reader, by Daniel Leitner (2019) 
+RSML Reader, by Daniel Leitner (2019-2021) 
 """
 
 
@@ -14,20 +16,28 @@ def parse_rsml_(organ:ET, polylines:list, properties:dict, functions:dict, paren
         polyline = []
         for p in poly[0]:  # 0 is the polyline
             n = p.attrib
-            newnode = [ float(n['x']), float(n['y']), float(n['z']) ]
+            if 'z' in n:
+                newnode = [ float(n['x']), float(n['y']), float(n['z']) ]
+            else:
+                newnode = [ 0., float(n['x']), float(n['y']) ]
             polyline.append(newnode)
         polylines.append(polyline)
         properties.setdefault("parent-poly", []).append(parent)
 
     for prop in organ.iterfind('properties'):
         for p in prop:  # i.e legnth, type, etc..
-            properties.setdefault(str(p.tag), []).append(float(p.attrib['value']))
-
+            if 'value' in p.attrib:
+                properties.setdefault(str(p.tag), []).append(float(p.attrib['value']))
+            else:
+                properties.setdefault(str(p.tag), []).append(float(p.text))
     for funcs in organ.iterfind('functions'):
         for fun in funcs:
             samples = [ ]
             for sample in fun.iterfind('sample'):
-                samples.append(float(sample.attrib['value']))
+                if 'value' in sample.attrib:
+                    samples.append(float(sample.attrib['value']))
+                else:
+                    samples.append(float(sample.text))
             functions.setdefault(str(fun.attrib['name']), []).append(samples)
 
     pi = len(polylines) - 1
@@ -37,7 +47,7 @@ def parse_rsml_(organ:ET, polylines:list, properties:dict, functions:dict, paren
     return polylines, properties, functions
 
 
-def read_rsml(name:str) -> (list, dict, dict):
+def read_rsml(name:str) -> (list, dict, dict, Metadata):
     """Parses the RSML file into:
 
     Args:
@@ -50,6 +60,10 @@ def read_rsml(name:str) -> (list, dict, dict):
     (3) a dictionary of functions     
     """
     root = ET.parse(name).getroot()
+
+    metadata = Metadata()
+    metadata.read_meta(root[0])
+
     plant = root[1][0]
     polylines = []
     properties = { }
@@ -57,12 +71,11 @@ def read_rsml(name:str) -> (list, dict, dict):
     for elem in plant.iterfind('root'):
         (polylines, properties, functions) = parse_rsml_(elem, polylines, properties, functions, -1)
 
-    return polylines, properties, functions
+    return polylines, properties, functions, metadata
 
 
 def artificial_shoot(polylines, properties, functions):
-    """ inserts an artificial shoot, with functions and properties of the the first polyline 
-    
+    """ inserts an artificial shoot, with functions and properties of the the first polyline     
     """
     polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.9]])
     for key, v in properties.items():
@@ -107,7 +120,7 @@ def get_segments(polylines:list, props:dict) -> (list, list):
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
             segs.append([offset[i] + j, offset[i] + j + 1])
-    return np.array(nodes), np.array(segs, dtype=np.int64)
+    return np.array(nodes), np.array(segs, dtype = np.int64)
 
 
 def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
@@ -215,11 +228,11 @@ def plot_rsml(polylines:list, prop:list):
     polylines(list): flat list of polylines, one polyline per root 
     prop(list): a single property, list of scalar value, on per root 
     """
-    f = matplotlib.colors.Normalize(vmin=min(prop), vmax=max(prop))
+    f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
     cmap = plt.get_cmap("jet", 256)
     for i, pl in enumerate(polylines):
         nodes = np.array(pl)
-        plt.plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[i])))
+        plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
     plt.axis('equal')
     plt.show()
 
@@ -232,11 +245,11 @@ def plot_segs(nodes:list, segs:list, fun:list):
     segs(list): list of two integer node indices for each line segment 
     fun(list): a single function, list of scalar value, on per segment, see TODO 
     """
-    f = matplotlib.colors.Normalize(vmin=min(fun), vmax=max(fun))
+    f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
     cmap = plt.get_cmap("jet", 256)
     print("Segments")
     for i, s in enumerate(segs):
-        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color=cmap(f(fun[i])))
+        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
     plt.axis('equal')
     plt.show()
 
@@ -246,7 +259,7 @@ if __name__ == '__main__':
     # fname = "../../../dumux-rosi/grids/RootSystem.rsml"
     fname = "../../tutorial/examples/python/results/example_3c.rsml"  # run example3c_write.py first (in tutorial/examples/python/)
 
-    polylines, properties, functions = read_rsml(fname)
+    polylines, properties, functions, _ = read_rsml(fname)
     polylines, properties, functions = artificial_shoot(polylines, properties, functions)  # for multiple base roots, add artificial root
 
     print("Properties:")
@@ -259,7 +272,7 @@ if __name__ == '__main__':
 
     nodes, segs = get_segments(polylines, properties)
     nodes = np.array(nodes)
-    segs = np.array(segs, dtype=np.int64)
+    segs = np.array(segs, dtype = np.int64)
 
     radii, cts, types = get_parameter(polylines, functions, properties)
     plot_segs(nodes, segs, cts)  # slow
