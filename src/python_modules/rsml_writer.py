@@ -50,6 +50,21 @@ class Metadata:
         self.time_sequence_index = "1/1"
         self.time_sequence_unified = "true"
         self.properties = []
+        self.func_names = []
+        self.set_scale_()
+
+    def set_scale_(self):
+        if self.unit == "cm":
+            to_cm = 1.
+        elif self.unit == "inch":
+            to_cm = 2.54
+        elif self.unit == "m":
+            to_cm = 100.
+        elif self.unit == "mm":
+            to_cm = 0.1
+        else:
+            raise "Metadata.set_scale_: do not know unit " + self.unit
+        self.scale_to_cm = to_cm / float(self.resolution)
 
     def add_property(self, prop:Property):
         """ add a property description 
@@ -58,6 +73,14 @@ class Metadata:
         prop(Property): the meta-data desription of a property
         """
         self.properties.append(prop)
+
+    def set_fun_names(self, names:list):
+        """ adds function names to the meta data
+        
+        Args:
+        names(list) : list of strings containing the function names
+        """
+        self.func_names = names
 
     def write_meta(self, basetag:ET.Element):
         """ adds the rsml metadata tag to the basetag
@@ -86,10 +109,16 @@ class Metadata:
 
     def read_meta(self, metadata_tag: ET.Element):
         """ reads from RSML metadata tag 
+        
+            Currently, only 'unit' and 'resolution' are read (TODO)
+        
         """
-        # <unit>inch</unit>
-        # <resolution>300.0</resolution>
-        pass
+        for unit in metadata_tag.iterfind('unit'):
+            self.unit = unit.text
+        self.resolution = 1  # default
+        for res in metadata_tag.iterfind('resolution'):
+            self.resolution = res.text
+        self.set_scale_()
 
 
 class LinkedPolylines:

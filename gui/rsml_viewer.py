@@ -30,8 +30,7 @@ canvas3 = None
 
 """ data """
 fname = None
-polylines, properties, functions = None, None, None  # open_rsml
-metadata = None
+polylines, properties, functions, metadata = None, None, None, None  # open_rsml
 radii, cts, types = None, None, None
 analyser = None  # convert_to_analyser
 max_ct = 0.
@@ -40,17 +39,32 @@ mapped_segments = None
 
 def open_rsml(fname):
     """ opens an rsml file """
-    global polylines, properties, functions
+    global polylines, properties, functions, metadata
     global radii, cts, types
     polylines, properties, functions, metadata = rsml_reader.read_rsml(fname)
     radii, cts, types = rsml_reader.get_parameter(polylines, functions, properties)  # paramter per node
+
+
+def scale_polylines_(scale):
+    """ scales coordinates """
+    global polylines
+    if polylines is not None:
+        for i in range(0, len(polylines)):
+            for j in range(0, len(polylines[i])):
+                for k in range(0, 3):
+                    polylines[i][j][k] *= scale
+    else:
+        tkinter.messagebox.showwarning("Warning", "Open RSML file first")
 
 
 def convert_to_analyser():
     """ converts the polylines to a SegmentAnalyser object,
         converts the SegmentAnalyser to a mapped segments object """
     global analyser, max_ct, mapped_segments
-    if ("parent-node" in properties) and ("parent-poly" in properties):
+    global cts
+    global subTypes
+    if "parent-poly" in properties:
+        scale_polylines_(metadata.scale_to_cm)
         nodes, segs = rsml_reader.get_segments(polylines, properties)  # fetch nodes and segments
         segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
         segCTs = np.zeros((segs.shape[0], 1))
@@ -64,7 +78,11 @@ def convert_to_analyser():
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
         analyser = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
         analyser.addData("subType", subTypes)
-        mapped_segments = pb.MappedSegments(nodes_, cts, segs_, segRadii, subTypes)
+        if np.isnan(cts[0]):
+            cts = np.zeros((len(nodes_),))
+        if np.isnan(subTypes[0]):
+            subTypes = np.ones((len(segs_),), dtype = np.int64)
+        mapped_segments = pb.MappedSegments(nodes_, np.array(cts), segs_, np.array(segRadii), np.array(subTypes))
     else:
         print(properties.keys())
         tkinter.messagebox.showwarning("Warning", "'parent-node' and or 'parent-poly' property is missing, cannot create SegmentAnalyser")
@@ -77,7 +95,7 @@ def update_info():
         c += 1
         for p in pl:
             c += 1
-    lstr = "\nFilename \nNumber of roots \nNumber of nodes \nBounding box"
+    lstr = "\nFilename \nNumber of roots \nNumber of nodes \nBounding box\n"
     rstr = "\n" + fname + "\n{:g}\n{:g}\n{:s}-{:s}\n".format(len(polylines), c, str(analyser.getMinBounds()), str(analyser.getMaxBounds()))
     label_general_l.set(lstr)
     label_general_r.set(rstr)
@@ -180,9 +198,9 @@ def update_all():
     if polylines is not None:
         convert_to_analyser()
         update_info()
-        update_profile()
-        update_development()
-        update_hydraulics()
+        # update_profile()
+        # update_development()
+        # update_hydraulics()
 
 
 def file_open():
@@ -191,39 +209,9 @@ def file_open():
     fname = tkinter.filedialog.askopenfilename(title = 'Please select a RSML root system',
                                               filetypes = [('Image Files', ['.rsml', '.RSML', '.xml'])])
     if isinstance(fname, str):
-        open_rsml(fname)
-        update_all()
-
-
-def edit_scale01():
-    """ scales coordinates """
-    global polylines
-    if analyser is not None:
-        for i in range(0, len(polylines)):
-            for j in range(0, len(polylines[i])):
-                for k in range(0, 3):
-                    polylines[i][j][k] *= 0.1
-        for i in range(0, len(radii)):
-            radii[i] *= 0.1
-
-        update_all()
-    else:
-        tkinter.messagebox.showwarning("Warning", "Open RSML file first")
-
-
-def edit_scale10():
-    """ scales coordinates """
-    global polylines
-    if analyser is not None:
-        for i in range(0, len(polylines)):
-            for j in range(0, len(polylines[i])):
-                for k in range(0, 3):
-                    polylines[i][j][k] *= 10
-        for i in range(0, len(radii)):
-            radii[i] *= 10
-        update_all()
-    else:
-        tkinter.messagebox.showwarning("Warning", "Open RSML file first")
+        if fname:
+            open_rsml(fname)
+            update_all()
 
 
 def view_vtk_plot(name):
@@ -271,11 +259,6 @@ menu_file.add_command(label = "Open...", command = file_open)
 menu_file.add_separator()
 menu_file.add_command(label = "Exit", command = _quit)
 menu.add_cascade(label = "File", menu = menu_file)
-
-menu_edit = tkinter.Menu(menu, tearoff = 0)
-menu_edit.add_command(label = "mm->cm (/10)", command = edit_scale01)
-menu_edit.add_command(label = "m->cm (*10)", command = edit_scale10)
-menu.add_cascade(label = "Edit", menu = menu_edit)
 
 menu_view = tkinter.Menu(menu, tearoff = 0)
 menu_view.add_command(label = "Type...", command = view_vtk_plot_subtype)

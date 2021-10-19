@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
+from scipy.spatial import distance
 
 from rsml_writer import Metadata
 
@@ -106,6 +107,8 @@ def get_segments(polylines:list, props:dict) -> (list, list):
     """
     nodes, offset, segs = [], [], []
     offset.append(0)  # global node index at each polyline
+    if not "parent-node" in props:
+        add_parent_nodes(polylines, props)
     for p in polylines:
         for n in p:
             nodes.append(n)
@@ -121,6 +124,19 @@ def get_segments(polylines:list, props:dict) -> (list, list):
         for j in range(0, len(p) - 1):
             segs.append([offset[i] + j, offset[i] + j + 1])
     return np.array(nodes), np.array(segs, dtype = np.int64)
+
+
+def add_parent_nodes(polylines, props):
+    """ adds the parent-node property, by minimizing the distance to the first point of the lateral """
+    props["parent-node"] = [None] * len(polylines)  # empty list
+    for i, p in enumerate(polylines):
+        x = np.array([p[0]])
+        pi = props["parent-poly"][i]
+        if (pi >= 0):
+            y = np.array(polylines[pi])
+            props["parent-node"][i] = np.argmin(distance.cdist(x, y))
+        else:
+            props["parent-node"][i] = -1
 
 
 def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
