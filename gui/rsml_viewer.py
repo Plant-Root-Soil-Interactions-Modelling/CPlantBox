@@ -81,7 +81,7 @@ def convert_to_analyser():
         if np.isnan(cts[0]):
             cts = np.zeros((len(nodes_),))
         if np.isnan(subTypes[0]):
-            subTypes = np.ones((len(segs_),), dtype = np.int64)
+            subTypes = np.ones((len(segs_),), dtype=np.int64)
         mapped_segments = pb.MappedSegments(nodes_, np.array(cts), segs_, np.array(segRadii), np.array(subTypes))
     else:
         print(properties.keys())
@@ -126,7 +126,7 @@ def update_profile():
     n = int(np.ceil(-analyser.getMinBounds().z))
     z_ = np.linspace(-0.5, -n + 0.5, n)
     d = analyser.distribution(type_str[j], 0., float(-n), int(n), True)
-    ax.plot(d, z_, "-*", label = "total")
+    ax.plot(d, z_, "-*", label="total")
     max_type = int(np.max(analyser.data["subType"]))
     for i in range(0, max_type + 1):
         ana = pb.SegmentAnalyser(analyser)  # copy
@@ -134,7 +134,7 @@ def update_profile():
         segn = len(ana.segments)
         if segn > 0:
             d = ana.distribution(type_str[j], 0., float(-n), int(n), True)
-            ax.plot(d, z_, "-*", label = "type {:g}".format(i))
+            ax.plot(d, z_, "-*", label="type {:g}".format(i))
     ax.set_ylabel("Depth (cm)")
     ax.set_xlabel("Root system " + type_str[j] + " per 1 cm layer " + unit_str[j])
     ax.legend()
@@ -147,8 +147,8 @@ def update_development():
     ax2.clear()
     weights = [analyser.getSegmentLength(i) for i in range(0, len(analyser.segments))]
     cts = np.array(analyser.data["creationTime"])
-    l_, t_ = np.histogram(cts, 100, weights = weights)
-    ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label = "total")
+    l_, t_ = np.histogram(cts, 100, weights=weights)
+    ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label="total")
     max_type = int(np.max(analyser.data["subType"]))
     for i in range(0, max_type + 1):
         ana = pb.SegmentAnalyser(analyser)  # copy
@@ -157,8 +157,8 @@ def update_development():
         if n > 0:
             weights = [ana.getSegmentLength(ii) for ii in range(0, n)]
             cts = np.array(ana.data["creationTime"])
-            l_, t_ = np.histogram(cts, 100, weights = weights)
-            ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label = "type {:g}".format(i))
+            l_, t_ = np.histogram(cts, 100, weights=weights)
+            ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label="type {:g}".format(i))
     ax2.set_xlabel("Time (days)")
     ax2.set_ylabel("Root system " + type_str[j] + " " + unit_str[j])
     ax2.legend()
@@ -177,7 +177,7 @@ def update_hydraulics():
     n = int(np.ceil(-analyser.getMinBounds().z))
     z_ = np.linspace(-0.5, -n + 0.5, n)
     d = analyser.distribution("SUF", 0., float(-n), int(n), True)
-    ax3.plot(d, z_, "-*", label = "total")
+    ax3.plot(d, z_, "-*", label="total")
     max_type = int(np.max(analyser.data["subType"]))
     for i in range(0, max_type + 1):
         ana = pb.SegmentAnalyser(analyser)  # copy
@@ -185,7 +185,7 @@ def update_hydraulics():
         segn = len(ana.segments)
         if segn > 0:
             d = ana.distribution("SUF", 0., float(-n), int(n), True)
-            ax3.plot(d, z_, "-*", label = "type {:g}".format(i))
+            ax3.plot(d, z_, "-*", label="type {:g}".format(i))
     ax3.set_title("Root system krs {:g}".format(krs))
     ax3.set_ylabel("Depth (cm)")
     ax3.set_xlabel("Root system surface uptake fraction (SUF) (1)")
@@ -198,16 +198,16 @@ def update_all():
     if polylines is not None:
         convert_to_analyser()
         update_info()
-        # update_profile()
-        # update_development()
-        # update_hydraulics()
+        update_profile()
+        update_development()
+        update_hydraulics()
 
 
 def file_open():
     """ file menu item """
     global fname
-    fname = tkinter.filedialog.askopenfilename(title = 'Please select a RSML root system',
-                                              filetypes = [('Image Files', ['.rsml', '.RSML', '.xml'])])
+    fname = tkinter.filedialog.askopenfilename(title='Please select a RSML root system',
+                                              filetypes=[('Image Files', ['.rsml', '.RSML', '.xml'])])
     if isinstance(fname, str):
         if fname:
             open_rsml(fname)
@@ -254,69 +254,69 @@ root = tkinter.Tk()
 root.wm_title("RSML Viewer")
 root.geometry("850x800")
 menu = tkinter.Menu(root)
-menu_file = tkinter.Menu(menu, tearoff = 0)
-menu_file.add_command(label = "Open...", command = file_open)
+menu_file = tkinter.Menu(menu, tearoff=0)
+menu_file.add_command(label="Open...", command=file_open)
 menu_file.add_separator()
-menu_file.add_command(label = "Exit", command = _quit)
-menu.add_cascade(label = "File", menu = menu_file)
+menu_file.add_command(label="Exit", command=_quit)
+menu.add_cascade(label="File", menu=menu_file)
 
-menu_view = tkinter.Menu(menu, tearoff = 0)
-menu_view.add_command(label = "Type...", command = view_vtk_plot_subtype)
-menu_view.add_command(label = "Creation Time...", command = view_vtk_plot_creationtime)
-menu_view.add_command(label = "SUF...", command = view_vtk_plot_suf)
-menu_view.add_command(label = "Animation...", command = view_vtk_anim)
+menu_view = tkinter.Menu(menu, tearoff=0)
+menu_view.add_command(label="Type...", command=view_vtk_plot_subtype)
+menu_view.add_command(label="Creation Time...", command=view_vtk_plot_creationtime)
+menu_view.add_command(label="SUF...", command=view_vtk_plot_suf)
+menu_view.add_command(label="Animation...", command=view_vtk_anim)
 menu_view.add_separator()
-menu_view.add_command(label = "About...", command = view_about)
-menu.add_cascade(label = "View", menu = menu_view)
-root.config(menu = menu)
+menu_view.add_command(label="About...", command=view_about)
+menu.add_cascade(label="View", menu=menu_view)
+root.config(menu=menu)
 
 tabControl = ttk.Notebook(root)
 tab_info = ttk.Frame(tabControl)
 tab_depth = ttk.Frame(tabControl)
 tab_development = ttk.Frame(tabControl)
 tab_suf = ttk.Frame(tabControl)
-tabControl.add(tab_info, text = 'Information')
-tabControl.add(tab_depth, text = 'Depth  profile')
-tabControl.add(tab_development, text = 'Development')
-tabControl.add(tab_suf, text = 'Hydraulic properties')
-tabControl.pack(expand = 1, fill = "both")
+tabControl.add(tab_info, text='Information')
+tabControl.add(tab_depth, text='Depth  profile')
+tabControl.add(tab_development, text='Development')
+tabControl.add(tab_suf, text='Hydraulic properties')
+tabControl.pack(expand=1, fill="both")
 
 # tab_info
-lf_general = ttk.LabelFrame(tab_info, text = 'General')
-lf_general.grid(column = 0, row = 0, padx = 20, pady = 10)
-lf_prop = ttk.LabelFrame(tab_info, text = 'Properties (values per root)')
-lf_prop.grid(column = 0, row = 1, padx = 20, pady = 10)
-lf_fun = ttk.LabelFrame(tab_info, text = 'Functions (values per node)')
-lf_fun.grid(column = 0, row = 2, padx = 20, pady = 10)
+lf_general = ttk.LabelFrame(tab_info, text='General')
+lf_general.grid(column=0, row=0, padx=20, pady=10)
+lf_prop = ttk.LabelFrame(tab_info, text='Properties (values per root)')
+lf_prop.grid(column=0, row=1, padx=20, pady=10)
+lf_fun = ttk.LabelFrame(tab_info, text='Functions (values per node)')
+lf_fun.grid(column=0, row=2, padx=20, pady=10)
 label_general_l = tkinter.StringVar()
 label_general_r = tkinter.StringVar()
-ttk.Label(lf_general, textvariable = label_general_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-ttk.Label(lf_general, textvariable = label_general_r, anchor = "w", width = 70).grid(column = 1, row = 0)
+ttk.Label(lf_general, textvariable=label_general_l, anchor="w", width=30).grid(column=0, row=0)
+ttk.Label(lf_general, textvariable=label_general_r, anchor="w", width=70).grid(column=1, row=0)
 label_prop_l = tkinter.StringVar()
 label_prop_r = tkinter.StringVar()
-ttk.Label(lf_prop, textvariable = label_prop_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-ttk.Label(lf_prop, textvariable = label_prop_r, anchor = "w", width = 70).grid(column = 1, row = 0)
+ttk.Label(lf_prop, textvariable=label_prop_l, anchor="w", width=30).grid(column=0, row=0)
+ttk.Label(lf_prop, textvariable=label_prop_r, anchor="w", width=70).grid(column=1, row=0)
 label_fun_l = tkinter.StringVar()
 label_fun_r = tkinter.StringVar()
-ttk.Label(lf_fun, textvariable = label_fun_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-ttk.Label(lf_fun, textvariable = label_fun_r, anchor = "w", width = 70).grid(column = 1, row = 0)
+ttk.Label(lf_fun, textvariable=label_fun_l, anchor="w", width=30).grid(column=0, row=0)
+ttk.Label(lf_fun, textvariable=label_fun_r, anchor="w", width=70).grid(column=1, row=0)
 
 # tab_profile
-fig, ax = plt.subplots(1, 1, figsize = (15, 10))
-canvas = FigureCanvasTkAgg(fig, master = tab_depth)  # A tk.DrawingArea.
+fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+canvas = FigureCanvasTkAgg(fig, master=tab_depth)  # A tk.DrawingArea.
 canvas.draw()
-canvas.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
+canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
 # tab_development
-fig2, ax2 = plt.subplots(1, 1, figsize = (15, 10))
-canvas2 = FigureCanvasTkAgg(fig2, master = tab_development)  # A tk.DrawingArea.
+fig2, ax2 = plt.subplots(1, 1, figsize=(15, 10))
+canvas2 = FigureCanvasTkAgg(fig2, master=tab_development)  # A tk.DrawingArea.
 canvas2.draw()
-canvas2.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
+canvas2.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
 # hydraulic properties
-fig3, ax3 = plt.subplots(1, 1, figsize = (15, 10))
-canvas3 = FigureCanvasTkAgg(fig3, master = tab_suf)  # A tk.DrawingArea.
+fig3, ax3 = plt.subplots(1, 1, figsize=(15, 10))
+canvas3 = FigureCanvasTkAgg(fig3, master=tab_suf)  # A tk.DrawingArea.
 canvas3.draw()
-canvas3.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
+canvas3.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
 tkinter.mainloop()
