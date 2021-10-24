@@ -22,8 +22,12 @@ class LeafSpecificParameter : public OrganSpecificParameter
 public:
 
 	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
-	LeafSpecificParameter(int subType, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, double leafArea, bool laterals):
-		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals), ln(ln)   { }; ///< Constructor setting all parameters
+	LeafSpecificParameter(int subType, double lb, double la, 
+	const std::vector<double>& ln, double r, double a, double theta, 
+	double rlt, double leafArea, bool laterals):
+		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), 
+		theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals), 
+		ln(ln)   { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
@@ -34,10 +38,10 @@ public:
 	double theta = 0.; 		///< Branching angle between veins [rad]
 	double rlt = 0.;		///< Leaf life time [day]
 	double areaMax = 0.; 	///< Leaf area [cm2]
-	bool laterals = false;  ///< Indicates if lateral leafs exist
+	bool laterals = false;  ///< Indicates if lateral leaves exist
 	std::vector<double> ln = std::vector<double>(); ///< Inter-lateral distances (if laterals) or mid for radial parametrisation (if there are no laterals) [cm]
 
-	int nob() const { return ln.size(); }
+	int nob() const { return ln.size() + laterals; } //number of laterals = number of phytomers + 1
 	double getK() const; ///< Returns the exact maximal leaf length (including leaf stem) of this realization [cm]
 	double leafLength() const { return getK()-lb; }; ///< Returns the exact maximal leaf length (excluding leaf stem) of this realization [cm]
 
@@ -97,6 +101,8 @@ public:
 	int tropismT = 1;		///< Leaf tropism parameter (Type)
 	double tropismN = 1.;	///< Leaf tropism parameter (number of trials)
 	double tropismS = 0.2;	///< Leaf tropism parameter (mean value of expected changeg) [1/cm]
+	double tropismAge = 0.;	///< Leaf tropism parameter (age when switch tropism)
+	double tropismAges = 0.;///< Leaf tropism parameter (age when switch tropism, standard deviation)
 	double theta = 1.22;	///< Angle between leafvein and parent leafvein (rad)
 	double thetas = 0.; 	///< Standard deviation angle between leafvein and parent leafvein (rad)
 	double rlt = 1.e9;		///< Leaf life time (days)

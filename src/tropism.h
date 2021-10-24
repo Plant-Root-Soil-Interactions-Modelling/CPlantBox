@@ -3,18 +3,19 @@
 #define TROPISM_H
 
 #include "mymath.h"
+#include "Organ.h"
+#include "Organism.h"
 
 #include <memory>
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <random>
 
 namespace CPlantBox {
 
 class SoilLookUp;
 class SignedDistanceFunction;
-class Organ;
-class Organism;
 
 /**
  * Base class for all tropism functions, e.g. Gravitropism, Plagiotropism, Exotropism...
@@ -34,7 +35,8 @@ public:
 	 * @param n_            number of tries
 	 * @param sigma_        standard deviation of angular change [1/cm]
 	 */
-	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_): plant(plant), n(n_), sigma(sigma_) { }
+	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_, double ageSwitch_ = 0): 
+	ageSwitch(ageSwitch_),plant(plant), n(n_), sigma(sigma_) { }
 	virtual ~Tropism() { }
 
 	virtual std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant); ///< copy object, factory method
@@ -43,9 +45,9 @@ public:
 	void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< sets a confining geometry
 	void setTropismParameter(double n_,double sigma_) { n=n_; sigma=sigma_; } ///< sets the tropism parameters
 
-	virtual Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> o = nullptr);
+	virtual Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> o = nullptr, int nodeIdx = -1);
 	///< constrained heading, dices n times and takes the best shot (according to the objective function)
-	virtual Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o);
+	virtual Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o, int nodeIdx );
 	///< Get unconfined heading (called by getHeading)
 
 	/**
@@ -65,6 +67,7 @@ public:
 
 	static Vector3d getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx);
 	///< Auxiliary function: Applies angles a and b and goes dx [cm] into the new direction
+	double ageSwitch;			  
 
 protected:
 
@@ -76,6 +79,11 @@ protected:
 	std::weak_ptr<SignedDistanceFunction> geometry; ///< confining geometry todo
 	const int alphaN = 20;
 	const int betaN = 5;
+    double randn(int nNode) {if((nNode > 0)&&(plant.lock()->getStochastic())){ return ND(gen);}else{return plant.lock()->randn();}; } ///< normally distributed random number (0,1)
+    double rand(int nNode) {if((nNode > 0)&&(plant.lock()->getStochastic())){ return UD(gen);}else{return plant.lock()->randn();}; } ///< uniformly distributed random number (0,1)
+	std::normal_distribution<double> ND;
+    std::uniform_real_distribution<double> UD;
+	std::mt19937 gen; ///<random number generator
 
 };
 
@@ -231,7 +239,7 @@ public:
 	double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> stem) override {
 		//    old.times(Matrix3d::rotX(b));
 		//    old.times(Matrix3d::rotZ(a));
-		return  -0.9*(old.times(Vector3d::rotAB(a+0.5*rand(),b+0.5*rand())).z+1.); // negative values point downwards, tranformed to 0..1
+		return  -0.9*(old.times(Vector3d::rotAB(a+0.5*rand(-1),b+0.5*rand(-1))).z+1.); // negative values point downwards, tranformed to 0..1
 	}
 	///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
 
@@ -261,6 +269,34 @@ public:
 	///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
 
 };
+
+
+/**
+ * for wheat leaves. start by growing straight and then fall to the side.
+ */
+class AntiGravi2Gravitropism : public Tropism
+{
+public:
+
+	AntiGravi2Gravitropism(std::shared_ptr<Organism> plant, double n, double sigma, double ageSwitch = 0) : 
+	Tropism(plant, n,sigma,ageSwitch) { } ///< @see TropismFunction
+
+	
+    std::shared_ptr<Tropism>  copy(std::shared_ptr<Organism> plant) override {
+        auto nt = std::make_shared<AntiGravi2Gravitropism>(*this); // default copy constructor
+        nt->plant = plant;
+        return nt;
+    } ///< copy constructor
+
+
+	virtual double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o) override {
+		return  -0.5*(old.times(Vector3d::rotAB(a,b)).z+1.)*(o->getAge()<ageSwitch) 
+		+ 0.5*(old.times(Vector3d::rotAB(a,b)).z+1.)*(o->getAge()>=ageSwitch); // negative values point downwards, tranformed to 0..1
+	}
+	///< TropismFunction::getHeading minimizes this function, @see TropismFunction::getHeading and @see TropismFunction::tropismObjective
+
+};
+
 
 } // end namespace CPlantBox
 

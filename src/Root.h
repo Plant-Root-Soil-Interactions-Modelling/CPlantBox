@@ -37,8 +37,6 @@ public:
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
     double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
-    int getNumberOfLaterals() const; ///< the number of emerged laterals (i.e. number of children with age>0)
-
     std::string toString() const override;
 
     /* From analytical equations */

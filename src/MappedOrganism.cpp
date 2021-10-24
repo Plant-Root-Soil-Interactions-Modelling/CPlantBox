@@ -543,13 +543,15 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 
 /**
  * initialization of mappedplant
- *
+ * @param verbose 		indicates if status is written to the console (cout) (default = false)
+ * @param stochastic 	keep stochasticity in simulation? (default = true)
  */
 void MappedPlant::initialize(bool verbose, bool stochastic) {
 	reset(); // just in case
 	std::cout << "MappedPlant::initialize \n" << std::flush;
 	this->stochastic = stochastic;
 	Plant::initialize(verbose);
+	Plant::setStochastic(stochastic);
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();
 	mapSegments(segments);
@@ -602,10 +604,12 @@ void MappedPlant::simulate(double dt, bool verbose)
 	Plant::simulate( dt,  verbose);
 	auto uni = this->getUpdatedNodeIndices(); // move nodes
 	auto unodes = this->getUpdatedNodes();
+	auto uncts = this->getUpdatedNodeCTs();
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
 	int c = 0;
 	for (int i : uni) {
 		nodes.at(i) = unodes[c];
+		nodeCTs.at(i) = uncts[c];
 		c++;
 	}
 

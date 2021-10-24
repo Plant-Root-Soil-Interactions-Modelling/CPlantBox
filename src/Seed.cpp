@@ -165,15 +165,12 @@ void Seed::initialize(bool verbose)
 				p->setOrganRandomParameter(tillParam);
 			}
 			int maxTi = sp->maxTil;
-			if (sp->delayB>0) {
-				maxTi = std::min(maxTi,int(std::ceil((maxT-sp->firstB)/sp->delayB))); // maximal for simtime maxT
-			}
-			double delay = sp->firstB;
+			double delay = sp->firstTi;
 			for (int i=0; i<maxTi; i++) {
 				std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType, isHeading, delay);
 				tiller->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 				children.push_back(tiller);
-				delay += sp->delayB;
+				delay += sp->delayTi;
 			}
 		}
 	}

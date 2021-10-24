@@ -168,13 +168,42 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  * @param n        new node
  * @param id       global node index
  * @param t        exact creation time of the node
+ * @param index	   position were new node is to be added
+ * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
-void Organ::addNode(Vector3d n, int id, double t)
+void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
-	nodes.push_back(n); // node
-	nodeIds.push_back(id); // new unique id
-	nodeCTs.push_back(t); // exact creation time
-	// std::cout << "creation time "<< nodeCTs[0] << ", " << t << ", "<< nodeCTs.size() << "\n";
+	if(!shift){//node added at the end of organ										
+		nodes.push_back(n); // node
+		nodeIds.push_back(id); // new unique id
+		nodeCTs.push_back(t); // exact creation time
+	}
+	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?) 
+		nodes.insert(nodes.begin() + index, n);//add the node at index
+		//add a global index. 
+		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
+		nodeIds.push_back(id);  
+		nodeCTs.insert(nodeCTs.begin() + index-1, t);
+		for(auto kid : children){//if carries children after the added node, update their "parent node index"
+			if(kid->parentNI >= index-1){
+				kid->moveOrigin(kid->parentNI + 1);
+				}
+			
+		}
+		
+	}
+}
+
+/**
+ * change idx of node linking to parent organ (in case of internodal growth)
+ * @see Organ::addNode
+ * @param idx      new idx
+ */
+void Organ::moveOrigin(int idx)
+{
+	this->parentNI = idx;
+	nodeIds.at(0) = getParent()->getNodeId(idx);
+	
 }
 
 /**
@@ -184,10 +213,12 @@ void Organ::addNode(Vector3d n, int id, double t)
  *
  * @param n        the new node
  * @param t        exact creation time of the node
+ * @param index	   position were new node is to be added
+ * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
  */
-void Organ::addNode(Vector3d n, double t)
+void Organ::addNode(Vector3d n, double t, size_t index, bool shift)
 {
-	addNode(n,plant.lock()->getNodeIndex(),t);
+	addNode(n,plant.lock()->getNodeIndex(),t, index, shift);
 }
 
 /**
@@ -264,6 +295,21 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
 }
 
 /**
+ * @return The number of emerged laterals (i.e. number of children with age>0)
+ * @see Organ::getNumberOfChildren
+ * needed for the test files
+ */
+int Organ::getNumberOfLaterals() const {
+	int nol = 0;
+	for (auto& c : children)  {
+		if (c->getAge()>0) { // born
+			nol ++;
+		}
+	}
+	return nol;
+}
+
+/**
  * Returns a single scalar parameter called @param name of the organ.
  * This method is for post processing, since it is flexible but slow.
  * Overwrite to add more parameters for specific organs.
@@ -298,10 +344,12 @@ double Organ::getParameter(std::string name) const {
 	if (name=="active") { return isActive(); }
 	if (name=="age") { return getAge(); }
     if (name=="length") { return getLength(true); } //realized organ length, dependent on dxMin and dx
+	if (name=="lengthTh") { return getLength(false); } //theoratical organ length, dependent on dxMin and dx
     if (name=="numberOfNodes") { return getNumberOfNodes(); }
     if (name=="numberOfSegments") { return getNumberOfSegments(); }
     if (name=="hasMoved") { return hasMoved(); }
     if (name=="oldNumberOfNodes") { return getOldNumberOfNodes(); }
+	if (name=="numberOfLaterals") { return getNumberOfLaterals(); }
     // further
     if (name=="creationTime") { return getNodeCT(0); }
 	if (name=="order") { // count how often it is possible to move up

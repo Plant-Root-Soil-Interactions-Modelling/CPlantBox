@@ -3,7 +3,7 @@
         <version>1</version>
         <unit>cm</unit>
         <resolution>1</resolution>
-        <last-modified>27-3-2020</last-modified>
+        <last-modified>20-10-2021</last-modified>
         <software>OrganicBox</software>
     </metadata>
     <scene>
@@ -22,6 +22,8 @@
                     <subType value="0"/>
                     <length value="15"/>
                     <age value="0"/>
+                    <parent-node value="-1"/>
+                    <diameter value="0.2"/>
                 </properties>
                 <root ID="1">
                     <geometry>
@@ -34,6 +36,8 @@
                         <subType value="0"/>
                         <length value="0"/>
                         <age value="-4"/>
+                        <parent-node value="0"/>
+                        <diameter value="0.2"/>
                     </properties>
                     <functions>
                         <function domain="polyline" name="node_creation_time">
@@ -55,6 +59,8 @@
                         <subType value="0"/>
                         <length value="0"/>
                         <age value="-3"/>
+                        <parent-node value="0"/>
+                        <diameter value="0.2"/>
                     </properties>
                     <functions>
                         <function domain="polyline" name="node_creation_time">

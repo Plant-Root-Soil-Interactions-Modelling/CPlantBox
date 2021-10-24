@@ -111,6 +111,9 @@ class MappedPlant : public MappedSegments, public Plant
 public:
 
     using Plant::Plant;
+	MappedPlant(double seednum = 0): Plant(seednum){}; ///< constructor
+    virtual ~MappedPlant() { }; ///< destructor
+	
     void initialize(bool verbose = true, bool stochastic = true); ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
     void printNodes(); ///< print information
@@ -124,7 +127,7 @@ public:
 
     virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
     virtual double randn() override {if(stochastic){return ND(gen);} else {return 0.5; } }  ///< normally distributed random number (0,1)
-	bool stochastic = true;
+	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
 };
 
 
