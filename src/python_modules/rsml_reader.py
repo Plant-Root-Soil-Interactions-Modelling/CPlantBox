@@ -123,7 +123,7 @@ def get_segments(polylines:list, props:dict) -> (list, list):
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
             segs.append([offset[i] + j, offset[i] + j + 1])
-    return np.array(nodes), np.array(segs, dtype=np.int64)
+    return np.array(nodes), np.array(segs, dtype = np.int64)
 
 
 def add_parent_nodes(polylines, props):
@@ -159,52 +159,58 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
     type_names = ["type", "subType", "order"]
     ct_names = ["creation_time", "creationTime", "emergence_time", "emergenceTime", "node_creation_time", "nodeCreationTime" ]
 
+    tag_names = []
     print()
     diam_p = False
     diam = None
     for n in radius_names:
         if n in funcs:
-            print("get_parameter(): function '" + n + "' for radius")
+            tag_names.append(n)
             radius = True
             diam = funcs[n]
     if diam == None:
         for n in radius_names:
             if n in props:
-                print("get_parameter(): property '" + n + "' for radius")
+                tag_names.append(n)
                 radius = True
                 diam = props[n]
                 diam_p = True
     if diam == None:
         for n in diam_names:
             if n in funcs:
-                print("get_parameter(): function '" + n + "' for diameter")
+                tag_names.append(n)
                 radius = False
                 diam = funcs[n]
     if diam == None:
         for n in diam_names:
             if n in props:
-                print("get_parameter(): property '" + n + "' for diameter")
+                tag_names.append(n)
                 radius = False
                 diam = props[n]
                 diam_p = True
-
+    if diam == None:  # nothing found
+        tag_names.append("")
+    et = None
+    for n in ct_names:
+        if n in funcs:
+            tag_names.append(n)
+            et = funcs[n]
+    if et == None:  # nothing found
+        tag_names.append("")
     type_p = False
     type_ = None
     for n in type_names:
         if n in funcs:
-            print("get_parameter(): function '" + n + "' for subType")
+            tag_names.append(n)
             type_ = funcs[n]
     if type_ == None:
         for n in type_names:
             if n in props:
-                print("get_parameter(): property '" + n + "' for subType")
+                tag_names.append(n)
                 type_ = props[n]
                 type_p = True
-    et = None
-    for n in ct_names:
-        if n in funcs:
-            print("get_parameter(): function '" + n + "' for creationTime")
-            et = funcs[n]
+    if type_ == None:  # nothing found
+        tag_names.append("")
 
     radii, types, cts = [], [], []  # copy stuff
     for i, p in enumerate(polylines):
@@ -234,7 +240,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
             else:
                 cts.append(np.NaN)
     print()
-    return radii, cts, types
+    return radii, cts, types, tag_names
 
 
 def plot_rsml(polylines:list, prop:list):
@@ -244,11 +250,11 @@ def plot_rsml(polylines:list, prop:list):
     polylines(list): flat list of polylines, one polyline per root 
     prop(list): a single property, list of scalar value, on per root 
     """
-    f = matplotlib.colors.Normalize(vmin=min(prop), vmax=max(prop))
+    f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
     cmap = plt.get_cmap("jet", 256)
     for i, pl in enumerate(polylines):
         nodes = np.array(pl)
-        plt.plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[i])))
+        plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
     plt.axis('equal')
     plt.show()
 
@@ -261,11 +267,11 @@ def plot_segs(nodes:list, segs:list, fun:list):
     segs(list): list of two integer node indices for each line segment 
     fun(list): a single function, list of scalar value, on per segment, see TODO 
     """
-    f = matplotlib.colors.Normalize(vmin=min(fun), vmax=max(fun))
+    f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
     cmap = plt.get_cmap("jet", 256)
     print("Segments")
     for i, s in enumerate(segs):
-        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color=cmap(f(fun[i])))
+        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
     plt.axis('equal')
     plt.show()
 
@@ -288,7 +294,7 @@ if __name__ == '__main__':
 
     nodes, segs = get_segments(polylines, properties)
     nodes = np.array(nodes)
-    segs = np.array(segs, dtype=np.int64)
+    segs = np.array(segs, dtype = np.int64)
 
-    radii, cts, types = get_parameter(polylines, functions, properties)
+    radii, cts, types, tag_names = get_parameter(polylines, functions, properties)
     plot_segs(nodes, segs, cts)  # slow

@@ -49,12 +49,14 @@ class Metadata:
         self.time_sequence_label = "artifical"
         self.time_sequence_index = "1/1"
         self.time_sequence_unified = "true"
-        self.properties = []
+        self.properties = {}
         self.func_names = []
         self.set_scale_()
 
     def set_scale_(self):
         if self.unit == "cm":
+            to_cm = 1.
+        elif self.unit == "pixel" or self.unit == "px":
             to_cm = 1.
         elif self.unit == "inch":
             to_cm = 2.54
@@ -63,6 +65,7 @@ class Metadata:
         elif self.unit == "mm":
             to_cm = 0.1
         else:
+            print(self.unit)
             raise "Metadata.set_scale_: do not know unit " + self.unit
         self.scale_to_cm = to_cm / float(self.resolution)
 
@@ -72,7 +75,7 @@ class Metadata:
         Args:
         prop(Property): the meta-data desription of a property
         """
-        self.properties.append(prop)
+        self.properties[prop.label] = prop
 
     def set_fun_names(self, names:list):
         """ adds function names to the meta data
@@ -99,7 +102,7 @@ class Metadata:
             ET.SubElement(image, "label").text = self.image_label
         # Properties
         prop_defs = ET.SubElement(metadata, "property-definitions")
-        for p in self.properties:
+        for p in self.properties.values():
             p.write_property(prop_defs)
         time_seq = ET.SubElement(metadata, "time-sequence")
         # Time Sequence
@@ -119,6 +122,22 @@ class Metadata:
         for res in metadata_tag.iterfind('resolution'):
             self.resolution = res.text
         self.set_scale_()
+        self.software = "unknown"
+        for s in metadata_tag.iterfind('software'):
+            self.software = s.text
+        for pd in metadata_tag.iterfind('property-definitions'):
+            for p in pd:
+                label = ""
+                for l in p.iterfind('label'):
+                    label = l.text
+                type_ = ""
+                for v in p.iterfind('type'):
+                    type_ = v.text
+                unit = "1"
+                for u in p.iterfind('unit'):
+                    unit = u.text
+                if label:
+                    self.add_property(Property(label, type_, unit, []))
 
 
 class LinkedPolylines:
@@ -170,7 +189,7 @@ class LinkedPolylines:
             pl.append(ET.Element("Point", dict(x = str(x_), y = str(y_), z = str(z_))))
         # Properties
         properties = ET.SubElement(root, "properties")  # defined by root
-        for p in meta.properties:
+        for p in meta.properties.values():
             properties.append(ET.Element(p.label, dict(value = str(p.data[self.branchnumber - 1]))))
         properties.append(ET.Element("parent-node", dict(value = str(self.parent_node))))
         for r in self.laterals:
@@ -285,7 +304,5 @@ if __name__ == "__main__":
     meta = Metadata()
     meta.add_property(Property("Radius", "float", "cm", [a_tap, a_lateral]))
     meta.set_fun_names(["Age"])
-
     write_rsml("test.xml", axis, segs, types, nodes, [age], meta)
-
     print("done")
