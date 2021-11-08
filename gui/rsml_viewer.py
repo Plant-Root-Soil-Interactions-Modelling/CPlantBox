@@ -26,8 +26,11 @@ class App:
         menu_file = tkinter.Menu(menu, tearoff=0)
         menu_file.add_command(label="Open...", command=self.file_open)
         menu_file.add_separator()
-        menu_file.add_command(label="Exit", command=self._quit)
+        menu_file.add_command(label="Exit", command=self.file_quit)
         menu.add_cascade(label="File", menu=menu_file)
+        menu_edit = tkinter.Menu(menu, tearoff=0)
+        menu_edit.add_command(label="Add shoot", command=self.edit_add_shoot)        
+        menu.add_cascade(label="Edit", menu=menu_edit)        
         menu_view = tkinter.Menu(menu, tearoff=0)
         menu_view.add_command(label="Type...", command=self.view_vtk_plot_subtype)
         menu_view.add_command(label="Creation Time...", command=self.view_vtk_plot_creationtime)
@@ -187,7 +190,8 @@ class App:
 
     def update_hydraulics(self, event):
         """ updates hydraulic properties plot """
-        viewer_plots.plot_suf(self.data.analyser, self.data.mapped_segments,
+        node_indices = self.data.get_base_node_indices()
+        viewer_plots.plot_suf(self.data.analyser, self.data.mapped_segments, node_indices,
                               self.data.max_ct, self.ax3, self.combo3.current())
         self.canvas3.draw()
 
@@ -228,6 +232,34 @@ class App:
             canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
             tkinter.mainloop()
 
+    def file_open(self):
+        """ menu item: open rsml file """
+        global fname
+        fname = tkinter.filedialog.askopenfilename(title='Please select a RSML root system',
+                                                  filetypes=[('Image Files', ['.rsml', '.RSML', '.xml'])])
+        if isinstance(fname, str):
+            if fname:
+                self.data.open_rsml(fname)
+                self.update_all()
+
+    def file_quit(self):
+        """ menu item: quits application """
+        self.root.quit()  # stops mainloop
+        self.root.destroy()  # this is necessary on Windows to prevent
+
+    def edit_add_shoot(self):
+        """ adds an artifical shoot """
+        if self.data.exists():
+            bni = self.data.get_base_node_indices()
+            if len(bni) > 1:
+                self.data.add_artificial_shoot()
+                self.update_all()                 
+            else:
+                tkinter.messagebox.showwarning("Warning", "only one base root, nothing to connect")                    
+        else:
+            tkinter.messagebox.showwarning("Warning", "Open RSML file first")        
+        pass
+
     def view_vtk_plot_subtype(self):
         """ menu item """
         self.view_vtk_plot("subType")
@@ -247,21 +279,6 @@ class App:
     def view_about(self):
         """ menu item: view about dialog """
         tkinter.messagebox.showinfo("About", "RSML Viewer \nby Daniel Leitner, 2021 \n\nPart of CPlantBox")
-
-    def _quit(self):
-        """ menu item: quits application """
-        self.root.quit()  # stops mainloop
-        self.root.destroy()  # this is necessary on Windows to prevent
-
-    def file_open(self):
-        """ menu item: open rsml file """
-        global fname
-        fname = tkinter.filedialog.askopenfilename(title='Please select a RSML root system',
-                                                  filetypes=[('Image Files', ['.rsml', '.RSML', '.xml'])])
-        if isinstance(fname, str):
-            if fname:
-                self.data.open_rsml(fname)
-                self.update_all()
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ class XylemFluxPython(XylemFlux):
         else:
             super().__init__(rs)
 
-        self.seg_ind = [0]  # segment indices for Neuman flux
+        self.seg_ind = [0]  # node indices for Neuman flux (TODO confusing name)
         self.node_ind = [0]  # node indices for Dirichlet flux
 
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k=[]):

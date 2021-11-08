@@ -24,6 +24,8 @@ class XylemFluxDetached(XylemFluxPython):
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node         
          """
+        print("neumann detached")
+         
         # start = timeit.default_timer()
         if isinstance(value, (float, int)):
             n = len(self.seg_ind)
@@ -51,7 +53,9 @@ class XylemFluxDetached(XylemFluxPython):
             @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
                                       conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node
-         """
+        """
+        print("dirichlet detached") 
+         
         if isinstance(value, (float, int)):
             n = len(self.node_ind)
             value = [value] * n
