@@ -56,7 +56,7 @@ class DataModel:
         """ 
         automatically scales coordinates and creation times, see rsml_writer.Metadata, and self.scales_
         """
-        if self.polylines is not None:
+        if self.exists():
             scale = self.metadata.scale_to_cm  # default length scales
             # radii
             if self.tagnames[0]:
@@ -64,9 +64,9 @@ class DataModel:
                     r_scale = self.scales_[self.metadata.properties[self.tagnames[0]].unit]
                     print("radius length scale", r_scale)
                 else:  # assume same scaling as polylines
-                    r_scale = scale
+                    r_scale = 1
             else:  # assume same scaling as polylines
-                r_scale = scale
+                r_scale = 1
             if self.metadata.software == "smartroot":
                 r_scale = scale
                 print("DataModel.scale_rsml() radius length scale (smartroot)", r_scale)
@@ -104,7 +104,7 @@ class DataModel:
                 segCTs[i] = self.cts[s[1] - 1]
                 subTypes[i] = self.types[s[1] - 1]
             if np.isnan(subTypes[0]):
-                subTypes = np.ones((len(segs),), dtype = np.int64)
+                subTypes = np.ones((len(segs),), dtype=np.int64)
             self.max_ct = np.max(segCTs)
             segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
             nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
