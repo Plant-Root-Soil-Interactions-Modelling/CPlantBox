@@ -57,13 +57,13 @@ class DataModel:
     def scale_polylines_(self):
         """ 
         scales nodes, see rsml_writer.Metadata, and self.scale_to_cm 
-        """      
+        """
         scale = self.metadata.scale_to_cm  # default length scales
         for i in range(0, len(self.polylines)):
             for j in range(0, len(self.polylines[i])):
                 for k in range(0, 3):
                     self.polylines[i][j][k] *= scale
-                    
+
     def check_polylines_2d_(self):
         """ 
         converts 2d image coordinates to 3d coordinates
@@ -72,31 +72,33 @@ class DataModel:
         maxz = np.max(nodes[:, 2])
         minz = np.min(nodes[:, 2])
         if maxz >= 0 and minz >= 0:  # image coordinates in px often start in lower left corner
-            print("DataModel.check_polylines_2d_() assuming image coordinates, y-centered and z-flipped ")
+            print("DataModel.check_polylines_2d_(): assuming image coordinates, y-centered and z-flipped ")
             miny = np.min(nodes[:, 1])
             yy = np.max(nodes[:, 1]) - miny
             for pl in self.polylines:  # both are references
                 for node in pl:
                     node[2] = -node[2]
-                    node[1] = node[1] - miny - yy / 2  
+                    node[1] = node[1] - miny - yy / 2
 
     def scale_selected_(self):
         """ 
         scales radius and creation times, see rsml_writer.Metadata, and self.scale_to_cm
+        shifts types, in a way they start at zero
         """
         scale = self.metadata.scale_to_cm  # default length scales
         # radii
+        extra_str = ""
         if self.tagnames[0]:
             if self.tagnames[0] in self.metadata.properties:
                 r_scale = self.scales_[self.metadata.properties[self.tagnames[0]].unit]
-                print("radius length scale", r_scale)
             else:  # assume same scaling as polylines
-                r_scale = 1
+                r_scale = scale
         else:  # assume same scaling as polylines
-            r_scale = 1
+            r_scale = scale
         if self.metadata.software == "smartroot":
             r_scale = scale
-            print("DataModel.scale_rsml() radius length scale (smartroot)", r_scale)
+            extra_str = " (smartroot)"
+        print("DataModel.scale_selected_():radius length scale" + extra_str, r_scale)
         for i in range (0, len(self.radii)):
             self.radii[i] *= r_scale
         # creation times
@@ -107,6 +109,10 @@ class DataModel:
                 print("DataModel.scale_rsml() temporal scale", r_scale)
         for i in range (0, len(self.cts)):
             self.cts[i] *= cts_scale
+        # types
+        min_types = np.min(self.types)
+        for i in range (0, len(self.types)):
+            self.types[i] -= min_types
 
     def convert_to_analyser_(self):
         """ 
@@ -123,7 +129,7 @@ class DataModel:
             segCTs[i] = self.cts[s[1]]
             subTypes[i] = self.types[s[1]]
         if np.isnan(subTypes[0]):
-            subTypes = np.ones((len(segs),), dtype=np.int64)
+            subTypes = np.ones((len(segs),), dtype = np.int64)
         self.max_ct = np.max(segCTs)
         segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
@@ -144,37 +150,41 @@ class DataModel:
         return bni
 
     def add_artificial_shoot(self):
-        nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # just to find mid of base 
+        """
+        adds a 1 cm shoot element, connecting all base roots
+        the type for looking up conductivities is set to 10 
+        """
+        nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # just to find mid of base
         bni = self.get_base_node_indices()
         mid = np.zeros(nodes[0].shape)
         for i in bni:
             print(nodes[i])
             mid += nodes[i,:] / len(bni)
-        rsml_reader.artificial_shoot(self.polylines, self.properties, self.functions)  # append artifial shoot (default values)                
+        rsml_reader.artificial_shoot(self.polylines, self.properties, self.functions)  # append artifial shoot (default values)
         radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)  # paramter per node
         # change default values from artificial shoot
         collar = mid.copy()
-        collar[2] += 1  # cm shoot length
-        types[0] = 5
-        types[1] = 5   
-#         print("mid ", mid, " cm")     
+        mid[2] += 0.1  # shift a bit up
+        collar[2] += 1.1  # 1 cm shoot length
+        types[0] = 10
+        types[1] = 10
+#         print("mid ", mid, " cm")
 #         print("collar ", collar, " cm")
-#         print("seg", str(segs[0]))     
+#         print("seg", str(segs[0]))
         self.polylines[0][0] = collar
-        self.polylines[0][1] = mid        
-        self.set_selected(radii, cts, types, tagnames)        
+        self.polylines[0][1] = mid
+        self.set_selected(radii, cts, types, tagnames)
         self.scale_selected_()
         self.radii[0] = 0.1  # cm
         self.radii[1] = 0.1  # cm
         self.convert_to_analyser_()
-#         print("mid ", str(self.analyser.nodes[1]), " cm")     
+#         print("mid ", str(self.analyser.nodes[1]), " cm")
 #         print("collar ", str(self.analyser.nodes[0]), " cm")
-#         
-#         print("seg 0", str(self.analyser.segments[0]))  
-#         print("radius", str(self.analyser.data["radius"][0]))         
-#         print("type", str(self.analyser.data["subType"][0]))         
-# 
-#         print("seg 1", str(self.analyser.segments[1]))  
-#         print("radius", str(self.analyser.data["radius"][1]))         
-#         print("type", str(self.analyser.data["subType"][1]))         
-  
+#
+#         print("seg 0", str(self.analyser.segments[0]))
+#         print("radius", str(self.analyser.data["radius"][0]))
+#         print("type", str(self.analyser.data["subType"][0]))
+#
+#         print("seg 1", str(self.analyser.segments[1]))
+#         print("radius", str(self.analyser.data["radius"][1]))
+#         print("type", str(self.analyser.data["subType"][1]))

@@ -28,11 +28,11 @@ def parse_rsml_(organ:ET, polylines:list, properties:dict, functions:dict, paren
 
     for prop in organ.iterfind('properties'):
         for p in prop:  # i.e legnth, type, etc..
-            if 'value' in p.attrib: 
+            if 'value' in p.attrib:
                 try:
                     properties.setdefault(str(p.tag), []).append(float(p.attrib['value']))
                 except:
-                    properties.setdefault(str(p.tag), []).append(np.nan)                    
+                    properties.setdefault(str(p.tag), []).append(np.nan)
             else:
                 properties.setdefault(str(p.tag), []).append(float(p.text))
     for funcs in organ.iterfind('functions'):
@@ -126,7 +126,7 @@ def get_segments(polylines:list, props:dict) -> (list, list):
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
             segs.append([offset[i] + j, offset[i] + j + 1])
-    return np.array(nodes), np.array(segs, dtype=np.int64)
+    return np.array(nodes), np.array(segs, dtype = np.int64)
 
 
 def add_parent_nodes(polylines, props):
@@ -140,6 +140,15 @@ def add_parent_nodes(polylines, props):
             props["parent-node"][i] = np.argmin(distance.cdist(x, y))
         else:
             props["parent-node"][i] = -1
+
+
+def age_to_creationtime(age):
+    """ ages per polyline as list of list """
+    maxage = 0.
+    for pl in age:
+        for a in pl:
+            maxage = max(maxage, a)
+    return [[maxage - a for a in pl] for pl in age]
 
 
 def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
@@ -157,14 +166,15 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         functions are checked first, then properties, if not found NaN values are set.       
         
     """
-    radius_names = ["radius", "radii"]  # add more where needed
+    radius_names = ["radius", "radii"]  # add more, where needed
     diam_names = ["diameter", "diameters", "diam"]
     type_names = ["type", "types", "subType", "subTypes", "order", "orders"]
-    ct_names = ["creation_time", "creationTime", "emergence_time", "emergenceTime", "node_creation_time", "nodeCreationTime" ]
+    ct_names = ["creation_time", "creationTime", "emergence_time", "emergenceTime", "node_creation_time", "nodeCreationTime"]
+    age_names = ["age"]
 
     tag_names = []
     diam = None
-    for n in radius_names:  # search for radius 
+    for n in radius_names:  # search for radius
         if n in funcs:  # in functions
             tag_names.append(n)
             radius = True
@@ -178,7 +188,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
             diam_p = True
             break
     if diam == None:  # nothing found yet
-        for n in diam_names:  # search for diameter 
+        for n in diam_names:  # search for diameter
             if n in funcs:  # in functions
                 tag_names.append(n)
                 radius = False
@@ -193,17 +203,24 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
                 break
     if diam == None:  # nothing found
         tag_names.append("")
+
     et = None
     for n in ct_names:  # search for creation times
         if n in funcs:  # only in functions
             tag_names.append(n)
             et = funcs[n]
             break
+    if et == None:  # nothing found yet
+        for n in age_names:  # search for creation times
+            if n in funcs:  # only in functions
+                tag_names.append(n)
+                et = age_to_creationtime(funcs[n])
+                break
     if et == None:  # nothing found
         tag_names.append("")
 
     type_ = None
-    for n in type_names:  # search for types 
+    for n in type_names:  # search for types
         if n in funcs:  # in functions
             tag_names.append(n)
             type_ = funcs[n]
@@ -218,9 +235,9 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         type_ = get_root_orders(props)
         type_p = True
         props["order"] = type_
-        tag_names.append("order")  # the asterisk indicates that it is added    
+        tag_names.append("order")  # the asterisk indicates that it is added
     # copy to "per node"
-    radii, types, cts = [], [], []  
+    radii, types, cts = [], [], []
     for i, p in enumerate(polylines):
         for j in range(0, len(p)):
             if diam is not None:
@@ -251,7 +268,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
     return radii, cts, types, tag_names
 
 
-def order_(pp, i, c=0):
+def order_(pp, i, c = 0):
     """ 
     recursively finds the root order, seee get_root_orders()
     """
@@ -279,11 +296,11 @@ def plot_rsml(polylines:list, prop:list):
     polylines(list): flat list of polylines, one polyline per root 
     prop(list): a single property, list of scalar value, on per root 
     """
-    f = matplotlib.colors.Normalize(vmin=min(prop), vmax=max(prop))
+    f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
     cmap = plt.get_cmap("jet", 256)
     for i, pl in enumerate(polylines):
         nodes = np.array(pl)
-        plt.plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[i])))
+        plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
     plt.axis('equal')
     plt.show()
 
@@ -296,11 +313,11 @@ def plot_segs(nodes:list, segs:list, fun:list):
     segs(list): list of two integer node indices for each line segment 
     fun(list): a single function, list of scalar value, on per segment, see TODO 
     """
-    f = matplotlib.colors.Normalize(vmin=min(fun), vmax=max(fun))
+    f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
     cmap = plt.get_cmap("jet", 256)
     print("Segments")
     for i, s in enumerate(segs):
-        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color=cmap(f(fun[i])))
+        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
     plt.axis('equal')
     plt.show()
 
@@ -323,7 +340,7 @@ if __name__ == '__main__':
 
     nodes, segs = get_segments(polylines, properties)
     nodes = np.array(nodes)
-    segs = np.array(segs, dtype=np.int64)
+    segs = np.array(segs, dtype = np.int64)
 
     radii, cts, types, tag_names = get_parameter(polylines, functions, properties)
     plot_segs(nodes, segs, cts)  # slow
