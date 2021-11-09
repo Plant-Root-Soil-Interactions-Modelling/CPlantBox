@@ -22,12 +22,12 @@ namespace CPlantBox {
 MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
 		std::vector<double> radii, std::vector<int> subTypes, std::vector<int> organTypes) :
 									nodes(nodes), nodeCTs(nodeCTs), segments(segs), radii(radii), subTypes(subTypes), organTypes(organTypes)
-									{
+{
 	assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
 	assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organ types");
-									}
+}
 
 /**
  * A static root system, as needed for flux computations, represented as
@@ -583,7 +583,7 @@ void MappedPlant::mapSubTypes(){
 				st2newst[std::make_tuple(ot+2, st)] = st - 2;
 				break;
 			} //leaf st starts with 2
-			}		
+			}
 		}
 	}
 }
@@ -689,14 +689,14 @@ void MappedPlant::simulate(double dt, bool verbose)
  * define the growth rate of each organ according to value given by phloem module
  * Does not overright the r (initial growth rate) parameter
  * @param CWGr        growth of each organ during time step
- * 
+ *
  */
 void MappedPlant::setCWGr(std::vector<double> CWGr)
 {
 	auto organs = this->getOrgans(-1);
 	std::map<int, double> cWGrRoot; //set cWGr in this function instead of in Mappedorganism.h : cWGr is then reset to empy every tim efunction is called
 	std::map<int, double> cWGrStem; // + no need for mapped organism to keep cWGr in memory. just has to be in growth function
-	std::map<int, double> cWGrLeaf; 	
+	std::map<int, double> cWGrLeaf;
 	int num = 0;
 	for (const auto& r : organs) {
 		if(r->organType() == ot_root){//each organ type has it s own growth function (and thus CW_Gr map)
@@ -708,8 +708,8 @@ void MappedPlant::setCWGr(std::vector<double> CWGr)
 		if(r->organType() == ot_leaf){
 			cWGrLeaf.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
 		}
-		num = num + 1;		
-	}	
+		num = num + 1;
+	}
 	for (auto orp : getOrganRandomParameter(ot_root)) { // each maps is copied for each sub type; or (todo), we could pass a pointer, and keep maps in this class
 		orp->f_gf->CW_Gr = cWGrRoot;
 	}

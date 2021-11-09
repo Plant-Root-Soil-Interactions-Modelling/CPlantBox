@@ -70,6 +70,7 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
     
     analyser             pb.SegmentAnalyser class
     mapped_segments      pb.MappedSegments class
+    node_ind             node indices of base roots
     max_ct               maximal creation time  
     ax3                  matplotlib axis
     j                    scenario hard coded in viewer_conductivities.py
@@ -105,4 +106,35 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
     ax3.set_ylabel("Depth (cm)")
     ax3.set_xlabel("Root system surface uptake fraction (SUF) per 1 cm layer (1)")
     ax3.legend()
+
+
+def plot_krs(analyser, mapped_segments, node_ind, max_ct, ax, j):
+    """ 
+    plots suf versus depth per root type 
+    
+    analyser             pb.SegmentAnalyser class
+    mapped_segments      pb.MappedSegments class
+    node_ind             node indices of base roots
+    max_ct               maximal creation time  
+    ax                  matplotlib axis
+    j                    scenario hard coded in viewer_conductivities.py
+    """
+    ax.clear()
+    r = xylem_flux.XylemFluxPython(mapped_segments)
+    if j == 0:
+        viewer_conductivities.init_constant_scenario1(r)
+    elif j == 1:
+        viewer_conductivities.init_constant_scenario2(r)
+    elif j == 2:
+        viewer_conductivities.init_dynamic_scenario1(r)
+    elif j == 3:
+        viewer_conductivities.init_dynamic_scenario2(r)
+    t_ = np.linspace(1, np.ceil(max_ct), np.ceil(max_ct))
+    krs_ = []
+    for t in t_:
+        krs, _ = r.get_krs(t)
+        krs_.append(krs)
+    ax.plot(t_, krs_)
+    ax.set_xlabel("Time (days)")
+    ax.set_ylabel("Root system conductivity Krs")
 

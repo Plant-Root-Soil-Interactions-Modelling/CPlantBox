@@ -109,6 +109,19 @@ class App:
         self.canvas3 = FigureCanvasTkAgg(fig3, master = tab_suf)  # A tk.DrawingArea.
         self.canvas3.draw()
         self.canvas3.get_tk_widget().pack(side = tkinter.BOTTOM, fill = tkinter.BOTH, expand = 1)
+        # hydraulic development
+        tab_krs_frame = tkinter.Frame(tab_krs)
+        self.combo4 = ttk.Combobox(tab_krs_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
+        self.combo4.pack(side = tkinter.LEFT, pady = 5, padx = 10)
+        self.combo4.current(0)
+        self.combo4.bind("<<ComboboxSelected>>", self.update_krs)
+        button2 = tkinter.Button(tab_krs_frame, text = "plot conductivities", command = self.plot_conductivities)
+        button2.pack(side = tkinter.LEFT, pady = 5, padx = 10)
+        tab_krs_frame.pack(side = tkinter.TOP)
+        fig4, self.ax4 = plt.subplots(1, 1, figsize = (15, 10))
+        self.canvas4 = FigureCanvasTkAgg(fig4, master = tab_krs)  # A tk.DrawingArea.
+        self.canvas4.draw()
+        self.canvas4.get_tk_widget().pack(side = tkinter.BOTTOM, fill = tkinter.BOTH, expand = 1)
 
     def update_info(self):
         """ update info tab """
@@ -195,6 +208,13 @@ class App:
                               self.data.max_ct, self.ax3, self.combo3.current())
         self.canvas3.draw()
 
+    def update_krs(self, event):
+        """ updates hydraulic properties plot """
+        node_indices = self.data.get_base_node_indices()
+        viewer_plots.plot_krs(self.data.analyser, self.data.mapped_segments, node_indices,
+                              self.data.max_ct, self.ax4, self.combo4.current())
+        self.canvas4.draw()
+
     def view_vtk_plot(self, name):
         """ vtk plot coloring name """
         if self.data.exists():
@@ -209,6 +229,7 @@ class App:
             self.update_profile(None)
             self.update_development(None)
             self.update_hydraulics(None)
+            self.update_krs(None)
 
     def plot_conductivities(self):
         """ button """
