@@ -19,7 +19,7 @@ def plot_depth_profile(analyser, ax, j:int):
     n = int(np.ceil(-analyser.getMinBounds().z))
     z_ = np.linspace(-0.5, -n + 0.5, n)
     d = analyser.distribution(type_str[j], 0., float(-n), int(n), True)
-    ax.plot(d, z_, "-*", label="total")
+    ax.plot(d, z_, "-*", label = "total")
     max_type = int(np.max(analyser.data["subType"]))
     for i in range(0, max_type + 1):
         ana = pb.SegmentAnalyser(analyser)  # copy
@@ -27,7 +27,7 @@ def plot_depth_profile(analyser, ax, j:int):
         segn = len(ana.segments)
         if segn > 0:
             d = ana.distribution(type_str[j], 0., float(-n), int(n), True)
-            ax.plot(d, z_, "-*", label="type {:g}".format(i))
+            ax.plot(d, z_, "-*", label = "type {:g}".format(i))
     ax.set_ylabel("Depth (cm)")
     ax.set_xlabel("Root system " + type_str[j] + " per 1 cm layer " + unit_str[j])
     ax.legend()
@@ -45,8 +45,8 @@ def plot_rootsystem_development(analyser, ax2, j):
     weights = [analyser.getSegmentLength(i) for i in range(0, len(analyser.segments))]
     cts = np.array(analyser.data["creationTime"])
     try:
-        l_, t_ = np.histogram(cts, 100, weights=weights)
-        ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label="total")
+        l_, t_ = np.histogram(cts, 100, weights = weights)
+        ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label = "total")
         max_type = int(np.max(analyser.data["subType"]))
         for i in range(0, max_type + 1):
             ana = pb.SegmentAnalyser(analyser)  # copy
@@ -55,8 +55,8 @@ def plot_rootsystem_development(analyser, ax2, j):
             if n > 0:
                 weights = [ana.getSegmentLength(ii) for ii in range(0, n)]
                 cts = np.array(ana.data["creationTime"])
-                l_, t_ = np.histogram(cts, 100, weights=weights)
-                ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label="type {:g}".format(i))
+                l_, t_ = np.histogram(cts, 100, weights = weights)
+                ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label = "type {:g}".format(i))
         ax2.legend()
     except:
         pass
@@ -83,8 +83,8 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
     elif j == 2:
         viewer_conductivities.init_dynamic_scenario1(r)
     elif j == 3:
-        viewer_conductivities.init_dynamic_scenario2(r)        
-    r.seg_ind = node_ind    
+        viewer_conductivities.init_dynamic_scenario2(r)
+    r.seg_ind = node_ind
     krs, _ = r.get_krs(max_ct)  # TODO move to a label
     # nop = len(node_ind)  # number of plants (we might want to multiply suf by it?)
     suf = r.get_suf(max_ct)
@@ -92,7 +92,7 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
     n = int(np.ceil(-analyser.getMinBounds().z))
     z_ = np.linspace(-0.5, -n + 0.5, n)
     d = analyser.distribution("SUF", 0., float(-n), int(n), True)
-    ax3.plot(d, z_, "-*", label="total")
+    ax3.plot(d, z_, "-*", label = "total")
     max_type = int(np.max(analyser.data["subType"]))
     for i in range(0, max_type + 1):
         ana = pb.SegmentAnalyser(analyser)  # copy
@@ -100,9 +100,9 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
         segn = len(ana.segments)
         if segn > 0:
             d = ana.distribution("SUF", 0., float(-n), int(n), True)
-            ax3.plot(d, z_, "-*", label="type {:g}".format(i))
+            ax3.plot(d, z_, "-*", label = "type {:g}".format(i))
     ax3.set_title("Root system krs {:g}".format(krs))
     ax3.set_ylabel("Depth (cm)")
-    ax3.set_xlabel("Root system surface uptake fraction (SUF) (1)")
+    ax3.set_xlabel("Root system surface uptake fraction (SUF) per 1 cm layer (1)")
     ax3.legend()
 

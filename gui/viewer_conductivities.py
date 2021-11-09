@@ -46,7 +46,7 @@ def init_constant_scenario1(r):
     kx_values = [kx[:, 1]] * 10  # for subtype 0 to 9
     kx_times = [kx[:, 0]] * 10
 
-    # add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
+    add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
     r.setKrTables(kr_values, kr_times)  # [cm3/day]
     r.setKxTables(kx_values, kx_times)  # [1/day]
 
@@ -75,7 +75,7 @@ def init_constant_scenario2(r):
     kx_times = [kx0_[:, 0]]
     kx_times.extend([kx1_[:, 0]] * 9)
 
-    # add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
+    add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
     r.setKrTables(kr_values, kr_times)  # [cm3/day]
     r.setKxTables(kx_values, kx_times)  # [1/day]
 
@@ -123,7 +123,7 @@ def init_dynamic_scenario2(r):
     kx_times = [kx0_[:, 0]]
     kx_times.extend([kx1_[:, 0]] * 9)
 
-    # add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
+    add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times)
     r.setKrTables(kr_values, kr_times)  # [cm3/day]
     r.setKxTables(kx_values, kx_times)  # [1/day]
 

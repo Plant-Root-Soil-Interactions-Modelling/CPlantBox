@@ -158,7 +158,6 @@ class DataModel:
         bni = self.get_base_node_indices()
         mid = np.zeros(nodes[0].shape)
         for i in bni:
-            print(nodes[i])
             mid += nodes[i,:] / len(bni)
         rsml_reader.artificial_shoot(self.polylines, self.properties, self.functions)  # append artifial shoot (default values)
         radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)  # paramter per node

@@ -193,7 +193,6 @@ class App:
         node_indices = self.data.get_base_node_indices()
         viewer_plots.plot_suf(self.data.analyser, self.data.mapped_segments, node_indices,
                               self.data.max_ct, self.ax3, self.combo3.current())
-        print(self.combo3.current())
         self.canvas3.draw()
 
     def view_vtk_plot(self, name):
@@ -210,7 +209,6 @@ class App:
             self.update_profile(None)
             self.update_development(None)
             self.update_hydraulics(None)
-            print(self.data.max_ct)
 
     def plot_conductivities(self):
         """ button """
