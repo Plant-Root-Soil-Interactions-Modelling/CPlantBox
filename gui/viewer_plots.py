@@ -92,7 +92,7 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
     analyser.addData("SUF", suf)
     n = int(np.ceil(-analyser.getMinBounds().z))
     z_ = np.linspace(-0.5, -n + 0.5, n)
-    d = analyser.distribution("SUF", 0., float(-n), int(n), True)
+    d = analyser.distribution("SUF", 0., float(-n), int(n), False)  # False!!!
     ax3.plot(d, z_, "-*", label = "total")
     max_type = int(np.max(analyser.data["subType"]))
     for i in range(0, max_type + 1):
@@ -100,7 +100,7 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
         ana.filter("subType", i)
         segn = len(ana.segments)
         if segn > 0:
-            d = ana.distribution("SUF", 0., float(-n), int(n), True)
+            d = ana.distribution("SUF", 0., float(-n), int(n), False)
             ax3.plot(d, z_, "-*", label = "type {:g}".format(i))
     ax3.set_title("Root system krs {:g}".format(krs))
     ax3.set_ylabel("Depth (cm)")

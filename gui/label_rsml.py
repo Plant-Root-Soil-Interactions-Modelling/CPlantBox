@@ -41,17 +41,18 @@ def label_file(file, artificial_shoot, scenario_index):
     r.seg_ind = node_ind
     krs, _ = r.get_krs(data.max_ct)
     nop = len(node_ind)  # number of plants (we might want to multiply suf by it?)
+    nop = 1
     suf = r.get_suf(data.max_ct) * nop
     data.analyser.addData("SUF", suf)
     n = int(np.ceil(-data.analyser.getMinBounds().z))
-    suf_ = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, True)  # mm layers
+    suf_ = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, False)  # mm layers
     return suf_, krs
 
 
 def write_csv(file, suf_, krs, si):
     """ writes an xls sheet containing suf """
     file_csv = file.rsplit('.', 1)[0] + '_suf' + str(si) + '.csv'
-    print("krs {:g}, suf from {:g} to {:g}, nan encountert {:g}".format(krs, np.min(suf_), np.max(suf_), np.sum(np.isnan(suf_))))
+    print("krs {:g}, suf from {:g} to {:g}, sums up to {:g}".format(krs, np.min(suf_), np.max(suf_), np.sum(suf_)))
     suf_ = np.insert(suf_, 0, krs)
     df = pd.DataFrame(suf_)
     df.to_csv(file_csv, index = False, header = False)
