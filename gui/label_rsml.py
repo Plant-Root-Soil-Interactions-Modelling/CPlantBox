@@ -56,7 +56,7 @@ def write_csv(file, suf_, krs, si):
     suf_ = np.insert(suf_, 0, krs)
     df = pd.DataFrame(suf_)
     df.to_csv(file_csv, index = False, header = False)
-    print("done. \n")
+    print("done. \n\n")
 
 
 if __name__ == '__main__':
@@ -101,7 +101,7 @@ if __name__ == '__main__':
                 if filename.endswith('.rsml'):
 
                     file_path = os.path.join(root, filename)
-                    print('\t- file %s (full path: %s)' % (filename, file_path))
+                    print('file %s (full path: %s)\n' % (filename, file_path))
 
                     suf_, krs = label_file(file_path, artificial_shoot, scenario_index)
                     write_csv(file_path, suf_, krs, scenario_index)
