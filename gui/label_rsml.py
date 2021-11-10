@@ -4,11 +4,23 @@ import os
 import pandas as pd
 import numpy as np
 
+import viewer_conductivities
 import viewer_data
 import xylem_flux
 
+"""
+creates a csv file per rsml file containing krs values, and suf values per 1 mm layers
 
-def label_file(file, artificial_shoot,):
+expected three arguments: file path, artifical shoot (true/false), scenario index (1-4)
+
+e.g. 
+python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/maize true 1
+python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/dicot false 1
+
+"""
+
+
+def label_file(file, artificial_shoot, scenario_index):
     """ opens rsml and computes krs and suf """
     data = viewer_data.DataModel()
     data.open_rsml(file)  # same as in gui (to check)
@@ -25,25 +37,25 @@ def label_file(file, artificial_shoot,):
         viewer_conductivities.init_dynamic_scenario1(r)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(r)
+    node_ind = data.get_base_node_indices()
     r.seg_ind = node_ind
-
     krs, _ = r.get_krs(data.max_ct)
     nop = len(node_ind)  # number of plants (we might want to multiply suf by it?)
-    suf = r.get_suf(max_ct) * nop
-
+    suf = r.get_suf(data.max_ct) * nop
     data.analyser.addData("SUF", suf)
-    n = int(np.ceil(-analyser.getMinBounds().z))
-    d = analyser.distribution("SUF", 0., float(-n), int(n), True)
-    # z_ = np.linspace(-0.5, -n + 0.5, n)
-    # ax.plot(d, z_, "-*", label = "total")
-    return suf, krs
+    n = int(np.ceil(-data.analyser.getMinBounds().z))
+    suf_ = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, True)  # mm layers
+    return suf_, krs
 
 
-def write_xls(file, suf, krs):
+def write_csv(file, suf_, krs, si):
     """ writes an xls sheet containing suf """
-    file_xls = file.rsplit('.', 1)[0] + '.xls'
-    # df1 = pd.DataFrame(np.transpose(np.array(psi_x_)))
-    # df1.to_excel(file1, index = False, header = False)
+    file_csv = file.rsplit('.', 1)[0] + '_suf' + str(si) + '.csv'
+    print("krs {:g}, suf from {:g} to {:g}, nan encountert {:g}".format(krs, np.min(suf_), np.max(suf_), np.sum(np.isnan(suf_))))
+    suf_ = np.insert(suf_, 0, krs)
+    df = pd.DataFrame(suf_)
+    df.to_csv(file_csv, index = False, header = False)
+    print("done. \n")
 
 
 if __name__ == '__main__':
@@ -74,9 +86,9 @@ if __name__ == '__main__':
 
     """ walk the files """
     for root, subdirs, files in os.walk(walk_dir):
-        print('--\nroot = ' + root)
+        # print('--\nroot = ' + root)
         list_file_path = os.path.join(root, 'my-directory-list.txt')
-        print('list_file_path = ' + list_file_path)
+        # print('list_file_path = ' + list_file_path)
 
         with open(list_file_path, 'wb') as list_file:
 
@@ -90,5 +102,6 @@ if __name__ == '__main__':
                     file_path = os.path.join(root, filename)
                     print('\t- file %s (full path: %s)' % (filename, file_path))
 
-                    label_file(file_path, artificial_shoot, scenario_index)
+                    suf_, krs = label_file(file_path, artificial_shoot, scenario_index)
+                    write_csv(file_path, suf_, krs, scenario_index)
 

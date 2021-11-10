@@ -140,7 +140,7 @@ class App:
         max_str = str(self.data.analyser.getMaxBounds())
         metadata = self.data.metadata
         rstr = "\n{:s}\n{:s}\n{:g}\n{:g}\n{:g}\n{:s}".format(metadata.software, fname, brc, len(self.data.polylines), c, min_str)
-        rstr += "- {:s}\n{:s}\n{:s} dots per {:s}\n".format(max_str + " (cm)", metadata.unit, str(metadata.resolution), metadata.unit)
+        rstr += "- {:s}\n{:s}\n{:s} (dots per {:s})\n".format(max_str + " (cm)", metadata.unit, str(metadata.resolution), metadata.unit)
         self.label_general_l.set(lstr)
         self.label_general_r.set(rstr)
         # label_prop
