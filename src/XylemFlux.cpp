@@ -214,7 +214,7 @@ void XylemFlux::linearSystem_detached(double simTime, const std::vector<double>&
         double cij = 2 * kx * idelta * tau;  // Eqn 17
         double bi = kx * vz; //  # Eqn 18
 
-        i = rs->segments[0].y; // <---------------------------------- that' it (everything gets connected to the first segment)
+        i = rs->segments[0].x; // <---------------------------------- that' it (everything gets connected to the first node)
 
         aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
         aI[k] = i; aJ[k]= i; aV[k] = cii;
