@@ -21,7 +21,7 @@ def add_shoot_conductivity(kr_values, kr_times, kx_values, kx_times):
     # assert len(kr_values) == 10 and len(kr_times) == 10, "Size of kr should be 10 (i.e. subTypes 0 to 9) since artifical shoot is expected to have subType 10"
     # assert len(kx_values) == 10 and len(kx_times) == 10, "Size of kx should be 10 (i.e. subTypes 0 to 9) since artifical shoot is expected to have subType 10"
 
-    kx_shoot = np.array([[0., 1.], [1.e4, 1.]])  # big
+    kx_shoot = np.array([[0., 1. ], [1.e4, 1. ]])  # big
     kr_shoot = np.array([[0., 1.e-13], [1.e4, 1.e-13]])  # very small
 
     kr_values.extend([kr_shoot[:, 1]])

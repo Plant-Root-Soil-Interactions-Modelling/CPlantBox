@@ -86,7 +86,7 @@ protected:
 	double kx_table(int si,double age, int type, int organType) { return Function::interp1(age, kx_t[0], kx[0]); } //constant for all type/subtype and age dependant
     double kx_tablePerOrgType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(0), kxs.at(organType-2).at(0)); } //constant for all subtype but type and age dependant
     double kx_tablePerType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(type), kxs.at(organType-2).at(type)); } //subtype, type and age dependant
-    double kx_valuePerSegment(int si, double age, int type, int organType, int numleaf) { return kr.at(0).at(si); };
+    double kx_valuePerSegment(int si, double age, int type, int organType) { return kx.at(0).at(si); };
 
 };
 

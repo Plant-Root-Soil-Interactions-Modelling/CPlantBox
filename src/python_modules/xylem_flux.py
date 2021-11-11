@@ -303,9 +303,7 @@ class XylemFluxPython(XylemFlux):
         return np.array(fluxes) / -1.e7  # [1]
 
     def get_mean_suf_depth(self, sim_time):
-        """ 
-        mean depth of water uptake based suf  
-        """
+        """  mean depth [cm] of water uptake based suf """
         suf = self.get_suf(sim_time)
         segs = self.rs.segments
         nodes = self.rs.nodes
@@ -323,8 +321,9 @@ class XylemFluxPython(XylemFlux):
         for i, s in enumerate(segs):
             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
         rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
-        jc = -self.collar_flux(sim_time, rx, p_s, [], cells = False)  # collar_flux(self, sim_time, rx, sxx, k_soil=[], cells=True):
-        return jc / (-500 - (rx[0] + 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z))), jc
+        jc = -self.collar_flux(sim_time, rx, p_s, [], cells = False)  # collar_flux(self, sim_time, rx, sxx, k_soil=[], cells=True) [cm3 day-1]
+        krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[0])
+        return krs , jc
 
     def get_eswp(self, sim_time, p_s):
         """ calculates the equivalent soil water potential [cm] at simulation time @param sim_time [day] for 

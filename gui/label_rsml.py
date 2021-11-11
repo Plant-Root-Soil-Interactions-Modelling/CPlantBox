@@ -46,13 +46,16 @@ def label_file(file, artificial_shoot, scenario_index):
     data.analyser.addData("SUF", suf)
     n = int(np.ceil(-data.analyser.getMinBounds().z))
     suf_ = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, False)  # mm layers
-    return suf_, krs
+    depth = r.get_mean_suf_depth(data.max_ct)
+    print("depth: ", depth, "cm")
+    return suf_, krs, depth
 
 
-def write_csv(file, suf_, krs, si):
+def write_csv(file, suf_, krs, si, depth):
     """ writes an xls sheet containing suf """
     file_csv = file.rsplit('.', 1)[0] + '_suf' + str(si) + '.csv'
     print("krs {:g}, suf from {:g} to {:g}, sums up to {:g}".format(krs, np.min(suf_), np.max(suf_), np.sum(suf_)))
+    suf_ = np.insert(suf_, 0, depth)
     suf_ = np.insert(suf_, 0, krs)
     df = pd.DataFrame(suf_)
     df.to_csv(file_csv, index = False, header = False)
@@ -103,6 +106,6 @@ if __name__ == '__main__':
                     file_path = os.path.join(root, filename)
                     print('file %s (full path: %s)\n' % (filename, file_path))
 
-                    suf_, krs = label_file(file_path, artificial_shoot, scenario_index)
-                    write_csv(file_path, suf_, krs, scenario_index)
+                    suf_, krs, depth = label_file(file_path, artificial_shoot, scenario_index)
+                    write_csv(file_path, suf_, krs, scenario_index, depth)
 
