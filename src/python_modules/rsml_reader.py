@@ -5,7 +5,6 @@ import numpy as np
 from scipy.spatial import distance
 
 from rsml_writer import Metadata
-from openpyxl.styles.builtins import accent_1_20
 
 """ 
 RSML Reader, by Daniel Leitner (2019-2021) 
