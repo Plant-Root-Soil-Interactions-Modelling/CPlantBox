@@ -510,7 +510,7 @@ class XylemFluxPython(XylemFlux):
             if props["parent-poly"][i] < 0:
                 bn += 1
         if bn > 1:
-            polylines, props, funcs = rsml.artificial_shoot(polylines, props, funcs)
+            rsml.artificial_shoot(polylines, props, funcs)
             if verbose:
                 print("XylemFluxPython.read_rsml: added an artificial shoot")
         nodes, segs = rsml.get_segments(polylines, props)
