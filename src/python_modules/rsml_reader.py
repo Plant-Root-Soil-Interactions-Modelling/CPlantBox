@@ -117,16 +117,14 @@ def get_segments(polylines:list, props:dict) -> (list, list):
             nodes.append(n)
         offset.append(offset[-1] + len(p))
     for i, p in enumerate(polylines):
-        ni = props["parent-node"][i]
         pi = props["parent-poly"][i]
-        # print(i , "pn", ni, "parent", pi, len(polylines[pi]))
-        if (pi >= 0):
-            # print("pi", pi, "ni", ni, "s", [offset[pi] + ni, offset[i]])
+        if (pi >= 0):  # not a base root
+            ni = props["parent-node"][i]
             assert ni < len(polylines[pi]), "parent node index exceeds number of parent nodes"
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
             segs.append([offset[i] + j, offset[i] + j + 1])
-    return np.array(nodes), np.array(segs, dtype=np.int64)
+    return np.array(nodes), np.array(segs, dtype = np.int64)
 
 
 def add_parent_nodes(polylines, props):
@@ -268,7 +266,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
     return radii, cts, types, tag_names
 
 
-def order_(pp, i, c=0):
+def order_(pp, i, c = 0):
     """ 
     recursively finds the root order, seee get_root_orders()
     """
@@ -296,11 +294,11 @@ def plot_rsml(polylines:list, prop:list):
     polylines(list): flat list of polylines, one polyline per root 
     prop(list): a single property, list of scalar value, on per root 
     """
-    f = matplotlib.colors.Normalize(vmin=min(prop), vmax=max(prop))
+    f = matplotlib.colors.Normalize(vmin = min(prop), vmax = max(prop))
     cmap = plt.get_cmap("jet", 256)
     for i, pl in enumerate(polylines):
         nodes = np.array(pl)
-        plt.plot(nodes[:, 1], nodes[:, 2], color=cmap(f(prop[i])))
+        plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
     plt.axis('equal')
     plt.show()
 
@@ -313,11 +311,11 @@ def plot_segs(nodes:list, segs:list, fun:list):
     segs(list): list of two integer node indices for each line segment 
     fun(list): a single function, list of scalar value, on per segment, see TODO 
     """
-    f = matplotlib.colors.Normalize(vmin=min(fun), vmax=max(fun))
+    f = matplotlib.colors.Normalize(vmin = min(fun), vmax = max(fun))
     cmap = plt.get_cmap("jet", 256)
     print("Segments")
     for i, s in enumerate(segs):
-        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color=cmap(f(fun[i])))
+        plt.plot([nodes[s[0], 1], nodes[s[1], 1]], [nodes[s[0], 2], nodes[s[1], 2]], color = cmap(f(fun[i])))
     plt.axis('equal')
     plt.show()
 
@@ -340,7 +338,7 @@ if __name__ == '__main__':
 
     nodes, segs = get_segments(polylines, properties)
     nodes = np.array(nodes)
-    segs = np.array(segs, dtype=np.int64)
+    segs = np.array(segs, dtype = np.int64)
 
     radii, cts, types, tag_names = get_parameter(polylines, functions, properties)
     plot_segs(nodes, segs, cts)  # slow

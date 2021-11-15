@@ -97,8 +97,8 @@ public:
 
     /* Parameters that are constant over the organ life time*/
     Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
-    int parentNI; ///< parent node index
-	
+    int parentNI; ///< local parent node index
+
 protected:
 
     /* up and down the organ tree */

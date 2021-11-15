@@ -73,7 +73,7 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
 }
 
 /**
- * @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin()) 
+ * @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin())
  *					TRUE:	get realized organ length, dependent from spatial resolution (dx() and dxMin())
  *					DEFAULT = TRUE
  * @return 			The chosen type of organ length (realized or theoretical).
@@ -172,7 +172,7 @@ void Organ::addChild(std::shared_ptr<Organ> c)
 void Organ::addNode(Vector3d n, int id, double t)
 {
 	nodes.push_back(n); // node
-	nodeIds.push_back(id); // new unique id
+	nodeIds.push_back(id); //unique id
 	nodeCTs.push_back(t); // exact creation time
 	// std::cout << "creation time "<< nodeCTs[0] << ", " << t << ", "<< nodeCTs.size() << "\n";
 }
@@ -284,11 +284,16 @@ double Organ::getParameter(std::string name) const {
     if (name=="iHeadingY") { return iHeading.column(0).y; } // root initial heading y - coordinate [cm]
     if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm]
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
-    if (name=="parent-node") { // local parent node index where this lateral emerges
-    	if (this->parent.expired()) {
-    		return -1; // to indicate it is base root
+    if (name=="parent-node") { // local parent node index for RSML (higher order roots are missing the first node)
+        if (this->parent.lock()->organType()==Organism::ot_seed) { // if it is base root
+    		return -1;
     	}
-    	return parentNI;
+        auto p = this->parent.lock();
+        if (p->parent.lock()->organType()==Organism::ot_seed){ // if parent is base root
+            return parentNI;
+        } else {
+            return parentNI-1; // higher order roots are missing the first node
+        }
     }
     // organ member functions
 	if (name=="organType") { return this->organType(); }

@@ -1,7 +1,7 @@
 import unittest
-import sys; sys.path.append("..")
+import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
 import plantbox as pb
-from rsml import *
+from rsml_reader import *
 
 
 def rootAge(l, r, k):  # root age at a certain length
@@ -194,13 +194,13 @@ class TestRootSystem(unittest.TestCase):
         N = round(simtime / dt)
         nodes = np.array((list(map(np.array, rs.getNodes()))))
         nodeCTs = np.array(rs.getNodeCTs())
-        seg = np.array([], dtype=np.int64).reshape(0, 2)
+        seg = np.array([], dtype = np.int64).reshape(0, 2)
         cts = rs.getSegmentCTs()
         nonm = 0
         for i in range(0, N):
             rs.simulate(dt, False)
             # MOVE NODES
-            uni = np.array((list(map(np.array, rs.getUpdatedNodeIndices()))), dtype=np.int64)
+            uni = np.array((list(map(np.array, rs.getUpdatedNodeIndices()))), dtype = np.int64)
             unodes = np.array((list(map(np.array, rs.getUpdatedNodes()))))
             ucts = np.array(rs.getUpdatedNodeCTs())
             if len(uni) > 0:
@@ -210,7 +210,7 @@ class TestRootSystem(unittest.TestCase):
             # NEW NODES
             newnodes = np.array((list(map(np.array, rs.getNewNodes()))))
             newcts = np.array(rs.getNewNodeCTs())
-            newsegs = np.array((list(map(np.array, rs.getNewSegments()))), dtype=np.int64)
+            newsegs = np.array((list(map(np.array, rs.getNewSegments()))), dtype = np.int64)
             if len(newnodes) != 0:
                 nodes = np.vstack((nodes, newnodes))
                 nodeCTs = np.append(nodeCTs, newcts)
@@ -220,7 +220,7 @@ class TestRootSystem(unittest.TestCase):
 
         nodes_ = np.array((list(map(np.array, rs.getNodes()))))
         nodeCTs_ = np.array(rs.getNodeCTs())
-        seg_ = np.array((list(map(np.array, rs.getSegments()))), dtype=np.int64)
+        seg_ = np.array((list(map(np.array, rs.getSegments()))), dtype = np.int64)
         self.assertEqual(nodes_.shape, nodes.shape, "incremental growth: node lists are not equal")
         self.assertEqual(nodeCTs_.shape, nodeCTs.shape, "incremental growth: node lists are not equal")
         self.assertEqual(seg_.shape, seg.shape, "incremental growth: node lists are not equal")
@@ -228,8 +228,8 @@ class TestRootSystem(unittest.TestCase):
         self.assertEqual(uneq, 0, "incremental growth: node lists are not equal")
         uneq = np.sum(nodeCTs_ != nodeCTs)
         self.assertEqual(uneq, 0, "incremental growth: node creation time lists are not equal")
-        seg = np.sort(seg, axis=0)  # per default along the last axis
-        seg_ = np.sort(seg_, axis=0)
+        seg = np.sort(seg, axis = 0)  # per default along the last axis
+        seg_ = np.sort(seg_, axis = 0)
         uneq = np.sum(seg_ != seg) / 2
         self.assertEqual(uneq, 0, "incremental growth: segment lists are not equal")
 
@@ -241,7 +241,7 @@ class TestRootSystem(unittest.TestCase):
         self.rs.simulate(simtime)
         name = "test_rootsystem"
         self.rs.writeRSML(name + ".rsml")
-        pl, props, funcs = read_rsml(name + ".rsml")
+        pl, props, funcs, _ = read_rsml(name + ".rsml")
         self.assertEqual(len(pl), 18, "number of roots is wrong")
         self.assertEqual(list(props.keys()), ['parent-poly', 'organType', 'subType', 'length', 'age', 'parent-node', 'diameter'], "properties names are unexpected")
         self.assertEqual(list(funcs.keys()), ['node_creation_time', 'node_index'], "function names are unexpected")

@@ -1,10 +1,8 @@
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
-
 import unittest
-import matplotlib.pyplot as plt
-
+import sys; sys.path.append(".."); sys.append("../src/python_modules")
 import plantbox as pb
-from rsml_reader import *
+import matplotlib.pyplot as plt
+from rsml import *  # TODO replace reader
 
 
 class TestOrganism(unittest.TestCase):
@@ -18,8 +16,8 @@ class TestOrganism(unittest.TestCase):
         op = otp.realize()
         self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., self.ons, 0, False, 0)
         self.hand.setOrganism(self.human1)
-        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4, self.ons, 2)  # delayedfor 4 days
-        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3, self.ons, 3)  # delayed for 3 days
+        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4, self.ons, 0)  # delayedfor 4 days
+        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3, self.ons, 0)  # delayed for 3 days
         self.hand.addChild(self.thumb)
         self.hand.addChild(self.little_finger)
         self.human1.addOrgan(self.hand)
@@ -27,15 +25,15 @@ class TestOrganism(unittest.TestCase):
     def add_nodes(self):
         """ used in the tests below, adds nodes to the hand example """
         self.hand.addNode(pb.Vector3d(0, 0, 0), 0)
-        self.hand.addNode(pb.Vector3d(0, 0, -1.5), 0)
-        self.hand.addNode(pb.Vector3d(0, -1, -1.6), 0)  # thumb
-        self.hand.addNode(pb.Vector3d(0, 1, -1.6), 0)  # little finger
+        self.hand.addNode(pb.Vector3d(0, 0, 1.5), 0)
+        self.hand.addNode(pb.Vector3d(0, -1, 1.6), 0)  # thumb
+        self.hand.addNode(pb.Vector3d(0, 1, 1.6), 0)  # little finger
         thumb = self.hand.getNodeId(2)
         lf = self.hand.getNodeId(3)
-        self.thumb.addNode(pb.Vector3d(0, -1, -1.6), thumb, 4)
-        self.thumb.addNode(pb.Vector3d(0, -2, -2.5), 4)
-        self.little_finger.addNode(pb.Vector3d(0, 1, -1.6), lf, 3)
-        self.little_finger.addNode(pb.Vector3d(0, 1.7, -2.5), 3)
+        self.thumb.addNode(pb.Vector3d(0, -1, 1.6), thumb, 4)
+        self.thumb.addNode(pb.Vector3d(0, -2, 2.5), 4)
+        self.little_finger.addNode(pb.Vector3d(0, 1, 1.6), lf, 3)
+        self.little_finger.addNode(pb.Vector3d(0, 1.7, 2.5), 3)
 
     def test_copy(self):
         """ checks if the organism is properly copied """
@@ -134,8 +132,8 @@ class TestOrganism(unittest.TestCase):
         self.hand_example()
         self.add_nodes()
         self.human1.writeRSML("organism.rsml")
-        pl, props, funcs, _ = read_rsml("organism.rsml")
-        pl2 = [[[0.0, 0.0, 0.0], [0.0, 0.0, -1.5], [0.0, -1.0, -1.6], [0.0, 1.0, -1.6]], [[0.0, -2.0, -2.5]], [[0.0, 1.7, -2.5]]]
+        pl, props, funcs = read_rsml("organism.rsml")
+        pl2 = [[[0.0, 0.0, 0.0], [0.0, 0.0, 1.5], [0.0, -1.0, 1.6], [0.0, 1.0, 1.6]], [[0.0, -2.0, 2.5]], [[0.0, 1.7, 2.5]]]
         self.assertEqual(pl, pl2, "rsml: polylines are not equal")
         self.assertEqual(props["age"], [0, -4, -3] , "rsml: polylines are not equal")
 
