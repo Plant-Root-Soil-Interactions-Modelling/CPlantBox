@@ -179,7 +179,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
             diam = funcs[n]
             diam_p = False
             break
-        if n in props:  # and in properties
+        elif n in props:  # and in properties
             tag_names.append(n)
             radius = True
             diam = props[n]
@@ -193,7 +193,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
                 diam = funcs[n]
                 diam_p = False
                 break
-            if n in props:  # and in properties
+            elif n in props:  # and in properties
                 tag_names.append(n)
                 radius = False
                 diam = props[n]
@@ -224,7 +224,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
             type_ = funcs[n]
             type_p = False
             break
-        if n in props:  # and in properties
+        elif n in props:  # and in properties
             tag_names.append(n)
             type_ = props[n]
             type_p = True
@@ -233,8 +233,8 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         type_ = get_root_orders(props)
         type_p = True
         props["order"] = type_
-        tag_names.append("order")  # the asterisk indicates that it is added
-    # copy to "per node"
+        tag_names.append("order")
+
     radii, types, cts = [], [], []
     for i, p in enumerate(polylines):
         for j in range(0, len(p)):
