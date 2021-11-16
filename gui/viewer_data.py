@@ -165,8 +165,6 @@ class DataModel:
         collar = mid.copy()
         mid[2] += 0.1  # shift a bit up
         collar[2] += 1.1  # 1 cm shoot length
-        types[0] = 10
-        types[1] = 10
 #         print("mid ", mid, " cm")
 #         print("collar ", collar, " cm")
 #         print("seg", str(segs[0]))
@@ -176,6 +174,8 @@ class DataModel:
         self.scale_selected_()
         self.radii[0] = 0.1  # cm
         self.radii[1] = 0.1  # cm
+        self.types[0] = 10
+        self.types[1] = 10
         self.convert_to_analyser_()
 #         print("mid ", str(self.analyser.nodes[1]), " cm")
 #         print("collar ", str(self.analyser.nodes[0]), " cm")
