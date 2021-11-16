@@ -95,6 +95,7 @@ def artificial_shoot(polylines, properties, functions):
     properties["parent-node"][0] = -1
     for i, p in enumerate(polylines):
         if properties["parent-node"][i] < 0:
+            # print("<0", i, "= pi ", properties["parent-poly"][i])
             properties["parent-node"][i] = 1
 
 
@@ -123,8 +124,12 @@ def get_segments(polylines:list, props:dict) -> (list, list):
         pi = props["parent-poly"][i]
         if (pi >= 0):  # not a base root
             ni = int(props["parent-node"][i])
-            # print(pi, len(polylines[pi]), ni)
+            # print(i, pi, len(polylines[pi]), ni)
+            # print(polylines[i])
             # print(polylines[pi])
+            # print(props["subType"][i])
+            # print(props["subType"][pi])
+
             assert ni < len(polylines[pi]), "parent node index exceeds number of parent nodes"
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):

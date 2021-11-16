@@ -298,7 +298,8 @@ double Organ::getParameter(std::string name) const {
         if (p->parent.lock()->organType()==Organism::ot_seed){ // if parent is base root
             return parentNI;
         } else {
-            return parentNI-1; // higher order roots are missing the first node
+            return std::max(parentNI-1,0); // higher order roots are missing the first node
+            // TODO for 0 this can be negative... (belongs to other branch in rsml)
         }
     }
     // organ member functions

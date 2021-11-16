@@ -38,7 +38,7 @@ def init_constant_scenario1(r):
     kr_const = 1.73e-4  # [1/day]
 
     # make an age dependent table from the values
-    kr = np.array([[-1e4, 0.], [1.e-9, 1.e-9], [0., kr_const], [1e4, kr_const]])  # 0 for negative age
+    kr = np.array([[-1e4, 0.], [-1.e-9, 1.e-9], [0., kr_const], [1e4, kr_const]])  # 0 for negative age
     kx = np.array([[0, kx_const], [1e4, kx_const]])
 
     kr_values = [kr[:, 1]] * 10  # for subtype 0 to 9
