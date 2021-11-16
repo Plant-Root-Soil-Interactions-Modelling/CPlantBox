@@ -75,6 +75,9 @@ def read_rsml(name:str) -> (list, dict, dict, Metadata):
     for elem in plant.iterfind('root'):
         (polylines, properties, functions) = parse_rsml_(elem, polylines, properties, functions, -1)
 
+    if metadata.software == "RSWMS":
+         del properties['parent-node']  # they are something unexpected
+
     return polylines, properties, functions, metadata
 
 
@@ -165,7 +168,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         
     """
     radius_names = ["radius", "radii", "Radius", "Radii"]  # add more, where needed
-    diam_names = ["diameter", "diameters", "diam", "Diameter", "Diameters"]
+    diam_names = ["diameter", "diameters", "diam", "Diameter", "Diameters", "rootDiameter"]
     type_names = ["type", "types", "subType", "subTypes", "order", "orders"]
     ct_names = ["creation_time", "creationTime", "emergence_time", "emergenceTime", "node_creation_time", "nodeCreationTime"]
     age_names = ["age", "Age"]
