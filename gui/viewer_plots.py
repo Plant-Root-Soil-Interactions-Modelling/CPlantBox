@@ -42,7 +42,13 @@ def plot_rootsystem_development(analyser, ax2, j):
     type_str = ["length", "surface", "volume"]
     unit_str = ["(cm)", "(cm$^2$)", "(cm$^3$)"]
     ax2.clear()
-    weights = [analyser.getSegmentLength(i) for i in range(0, len(analyser.segments))]
+    radii = analyser.data["radius"]  # copy once
+    if j == 0:
+        weights = [analyser.getSegmentLength(i) for i in range(0, len(analyser.segments))]
+    elif j == 1:
+        weights = [2 * np.pi * radii[i] * analyser.getSegmentLength(i) for i in range(0, len(analyser.segments))]
+    elif j == 2:
+        weights = [np.pi * radii[i] * radii[i] * analyser.getSegmentLength(i) for i in range(0, len(analyser.segments))]
     cts = np.array(analyser.data["creationTime"])
     try:
         l_, t_ = np.histogram(cts, 100, weights = weights)
@@ -53,7 +59,13 @@ def plot_rootsystem_development(analyser, ax2, j):
             ana.filter("subType", i)
             n = len(ana.segments)
             if n > 0:
-                weights = [ana.getSegmentLength(ii) for ii in range(0, n)]
+                radii = ana.data["radius"]  # copy once
+                if j == 0:
+                    weights = [ana.getSegmentLength(i) for i in range(0, len(ana.segments))]
+                elif j == 1:
+                    weights = [2 * np.pi * radii[i] * ana.getSegmentLength(i) for i in range(0, len(ana.segments))]
+                elif j == 2:
+                    weights = [np.pi * radii[i] * radii[i] * ana.getSegmentLength(i) for i in range(0, len(ana.segments))]
                 cts = np.array(ana.data["creationTime"])
                 l_, t_ = np.histogram(cts, 100, weights = weights)
                 ax2.plot(0.5 * (t_[1:] + t_[:-1]), np.cumsum(l_), "-", label = "type {:g}".format(i))
