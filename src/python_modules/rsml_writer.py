@@ -147,6 +147,7 @@ class LinkedPolylines:
         polylines(list of int): holds the node indices of this polyline
         lateral(list of LinkedPolyLines) references to the laterals roots, last element is an empty list
         data(list of list of float): optionally, holds additional data per root for rsml properties       
+        base_root (bool): if it is a base root, or not
         bc(static int): branch counter
         metadata(static Metadata): meta data of the root system, to look up rsml property and function names
     """
@@ -159,6 +160,7 @@ class LinkedPolylines:
         self.parent_node = -1
         self.polyline = []
         self.laterals = []
+        self.base_root = False
 
     @staticmethod
     def set_metadata(meta):
@@ -175,9 +177,9 @@ class LinkedPolylines:
         meta = LinkedPolylines.metadata  # rename
         LinkedPolylines.bc += 1
         if kwargs.get("Renumber", True):
-            root = ET.SubElement(basetag, "root", ID=str(LinkedPolylines.bc))
+            root = ET.SubElement(basetag, "root", ID = str(LinkedPolylines.bc))
         else:
-            root = ET.SubElement(basetag, "root", ID=str(self.branchnumber))
+            root = ET.SubElement(basetag, "root", ID = str(self.branchnumber))
         # Geometry
         geom = ET.SubElement(root, "geometry")
         pl = ET.SubElement(geom, "polyline")
@@ -185,21 +187,24 @@ class LinkedPolylines:
             x_ = nodes[p, 0]
             y_ = nodes[p, 1]
             z_ = nodes[p, 2]
-            pl.append(ET.Element("Point", dict(x=str(x_), y=str(y_), z=str(z_))))
+            pl.append(ET.Element("Point", dict(x = str(x_), y = str(y_), z = str(z_))))
         # Properties
         properties = ET.SubElement(root, "properties")  # defined by root
         for p in meta.properties.values():
-            properties.append(ET.Element(p.label, dict(value=str(p.data[self.branchnumber - 1]))))
-        properties.append(ET.Element("parent-node", dict(value=str(self.parent_node))))
+            properties.append(ET.Element(p.label, dict(value = str(p.data[self.branchnumber - 1]))))
+        if self.base_root:
+            properties.append(ET.Element("parent-node", dict(value = str(self.parent_node))))
+        else:
+            properties.append(ET.Element("parent-node", dict(value = str(self.parent_node - 1))))
         for r in self.laterals:
             if r:  # ends with an empty list
-                r.write_root(root, nodes, nodedata, Renumber=kwargs.get("Renumber", True))
+                r.write_root(root, nodes, nodedata, Renumber = kwargs.get("Renumber", True))
         # Functions
         funcs = ET.SubElement(root, "functions")
         for i, n in enumerate(meta.func_names):
-            fun = ET.SubElement(funcs, "functions", dict(domain="polyline", name=n))  # defined by node
+            fun = ET.SubElement(funcs, "functions", dict(domain = "polyline", name = n))  # defined by node
             for p in self.polyline:
-                fun.append(ET.Element("sample", dict(value=str(nodedata[i][p]))))
+                fun.append(ET.Element("sample", dict(value = str(nodedata[i][p]))))
 
 
 def follow_(i0:int, i:int, A) -> LinkedPolylines:
@@ -252,10 +257,11 @@ def segs2polylines(axes:list, segs:list, segdata:list) -> list:
         A list of LinkedPolyline: representing the root system axes    
     """
     n = max(max(segs[:, 0]), max(segs[:, 1])) + 1
-    A = sparse.csr_matrix((segdata, (segs[:, 0], segs[:, 1])), dtype=np.int64, shape=(n, n))
+    A = sparse.csr_matrix((segdata, (segs[:, 0], segs[:, 1])), dtype = np.int64, shape = (n, n))
     polylines = []
     for a in axes:
         polylines.append(follow_(-1, a, A))
+        polylines[-1].base_root = True  # follow_ adds subtree, main axis is last (?)
     return polylines
 
 
@@ -283,10 +289,10 @@ def write_rsml(name:str, axes:list, segs:list, segdata:list, nodes:list, nodedat
     plant = ET.SubElement(scene, "plant")
     for root in polylines:
         if root:
-            root.write_root(plant, nodes, nodedata, Renumber=kwargs.get("Renumber", True))
+            root.write_root(plant, nodes, nodedata, Renumber = kwargs.get("Renumber", True))
     # Wrote Tree
     tree = ET.ElementTree(rsml)
-    tree.write(name, xml_declaration=True, encoding='utf-8', method="xml")
+    tree.write(name, xml_declaration = True, encoding = 'utf-8', method = "xml")
     return 0
 
 
@@ -301,7 +307,7 @@ if __name__ == "__main__":
     a_lateral = 0.1  # lateral root radius (cm)
 
     meta = Metadata()
-    meta.add_property(Property("Radius", "float", "cm", [a_tap, a_lateral]))
-    meta.set_fun_names(["Age"])
+    meta.add_property(Property("radius", "float", "cm", [a_tap, a_lateral]))
+    meta.set_fun_names(["age"])
     write_rsml("test.xml", axis, segs, types, nodes, [age], meta)
     print("done")

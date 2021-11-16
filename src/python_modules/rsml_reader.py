@@ -168,7 +168,7 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
     diam_names = ["diameter", "diameters", "diam", "Diameter", "Diameters"]
     type_names = ["type", "types", "subType", "subTypes", "order", "orders"]
     ct_names = ["creation_time", "creationTime", "emergence_time", "emergenceTime", "node_creation_time", "nodeCreationTime"]
-    age_names = ["age"]
+    age_names = ["age", "Age"]
 
     tag_names = []
     diam = None
