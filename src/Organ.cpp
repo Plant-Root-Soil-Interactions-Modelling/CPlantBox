@@ -285,10 +285,16 @@ double Organ::getParameter(std::string name) const {
     if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm]
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
     if (name=="parent-node") { // local parent node index for RSML (higher order roots are missing the first node)
+        if (this->parent.expired()) {
+            return -1;
+        }
         if (this->parent.lock()->organType()==Organism::ot_seed) { // if it is base root
     		return -1;
     	}
         auto p = this->parent.lock();
+        if (p->parent.expired()) { // if parent is base root
+            return parentNI;
+        }
         if (p->parent.lock()->organType()==Organism::ot_seed){ // if parent is base root
             return parentNI;
         } else {
