@@ -348,7 +348,19 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
 		tinyxml2::XMLElement* geometry = doc.NewElement("geometry");
 		organ->InsertEndChild(geometry);
 		tinyxml2::XMLElement* polyline = doc.NewElement("polyline");
-		int o = (!this->parent.expired()); // baseRoot = 0, others = 1
+
+
+		int o;
+		if (this->parent.expired()) { // baseRoot = 0, others = 1
+		    // std::cout << this->toString() << std::flush;
+		    o = 0;
+		} else {
+		    if (this->parent.lock()->organType()==Organism::ot_seed) {
+		        o = 0;
+		    } else {
+		        o = 1;
+		    }
+		}
 		for (int i = o; i<getNumberOfNodes(); i+=nn) {
 			auto n = getNode(i);
 			tinyxml2::XMLElement* p = doc.NewElement("point");

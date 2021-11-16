@@ -9,11 +9,11 @@ namespace CPlantBox {
 
 
 XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs)
-    {
+{
     size_t length_leaf = std::count(rs->organTypes.begin(), rs->organTypes.end(), 4);
     gs.resize(length_leaf);
     pg.resize(length_leaf);
-    }
+}
 
 
 /**

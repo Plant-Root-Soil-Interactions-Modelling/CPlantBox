@@ -84,7 +84,7 @@ def read_rsml(name:str) -> (list, dict, dict, Metadata):
 def artificial_shoot(polylines, properties, functions):
     """ inserts an artificial shoot, with functions and properties of the the first polyline     
     """
-    polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.9]])
+    polylines.insert(0, [[0, 0, -0.1], [0, 0, -2.9]])  # artificial shoot
     for key, v in properties.items():
         properties[key].insert(0, properties[key][0])
     for key, v in functions.items():
@@ -122,7 +122,9 @@ def get_segments(polylines:list, props:dict) -> (list, list):
     for i, p in enumerate(polylines):
         pi = props["parent-poly"][i]
         if (pi >= 0):  # not a base root
-            ni = props["parent-node"][i]
+            ni = int(props["parent-node"][i])
+            # print(pi, len(polylines[pi]), ni)
+            # print(polylines[pi])
             assert ni < len(polylines[pi]), "parent node index exceeds number of parent nodes"
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):
