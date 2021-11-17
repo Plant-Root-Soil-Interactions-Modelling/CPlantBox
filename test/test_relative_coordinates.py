@@ -4,10 +4,11 @@ Copyright 2019, Forschungszentrum Jülich GmbH, licensed under GNU GPLv3
 
 """
 Objective: 
-Make a plant grow where the root system (global coordinate) is supposed to be symetric
-to the aboveground part according to the ground (surface where (x, y, 0))
+Make a plant grow where the root system (absolute coordinates) is supposed to be symetric
+to the aboveground part (relative coordinates during Plant::simulate()) 
+according to the ground (surface where (x, y, 0))
 it is assumed that if node at the tip of leaves and 3rd root lateral have symetric coordinates, 
-then the rest of the root system is simetric to the aboveground organs.
+then the rest of the root system is symetric to the aboveground organs.
 
 """
 
@@ -27,13 +28,13 @@ class TestRelCoord(unittest.TestCase):
         path = "../modelparameter/plant/"  
         name = "test_relcoord"
         pl.readParameters(path + name + ".xml") 
-                
+        #stochastic = False => thus rand() always give 0.5 for Tropism. => result only change according to sigma        
         pl.initialize(stochastic = False)
         dt = 1
         steps = 100
         for step in range(steps):
             pl.simulate(1, False)
-        pl.write("testCoord.vtp")
+        pl.write("test_relcoord.vtp")
         params = pl.organParam
         seedPosx = params[1][0].seedPos.x
         seedPosy = params[1][0].seedPos.y
@@ -72,7 +73,8 @@ class TestRelCoord(unittest.TestCase):
             #print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
             self.assertAlmostEqual(rootTipsZ[i]-seedPosz, -(leafTipsZ[i]-seedPosz), 10,  "tip of 3rd lat root and leaf n°"+ str(i) +" not symetric")
         
-test = TestRelCoord()
-test.test_coord()
+
+if __name__ == '__main__':
+    unittest.main()
 
 

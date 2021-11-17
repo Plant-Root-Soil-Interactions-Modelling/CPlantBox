@@ -1,5 +1,6 @@
 import unittest
-import sys; sys.path.append("..")import numpy as np
+import sys; sys.path.append("..")
+import numpy as np
 import matplotlib.pyplot as plt
 
 import plantbox as pb
@@ -100,6 +101,7 @@ class TestLeafParameter(unittest.TestCase):
     def test_realize(self):
         """ calls realize """
         self.leaf_example()
+        self.add_successors()
         p = self.lrp.realize()
         self.assertEqual(p.__class__.__name__, "LeafSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, 1, "realize: unexpected sub type")

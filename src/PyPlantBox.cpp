@@ -51,11 +51,11 @@ public:
     std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant) override
     { PYBIND11_OVERLOAD( std::shared_ptr<Tropism>, Tropism, copy, plant); }
 
-    Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> organ = nullptr) override
-    { PYBIND11_OVERLOAD( Vector2d, Tropism, getHeading, pos, old, dx, organ ); }
+    Vector2d getHeading(const Vector3d& pos, const Matrix3d& old,  double dx, const std::shared_ptr<Organ> organ = nullptr, int nodeIdx = -1) override
+    { PYBIND11_OVERLOAD( Vector2d, Tropism, getHeading, pos, old, dx, organ, nodeIdx ); }
 
-    Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> organ) override
-    { PYBIND11_OVERLOAD( Vector2d, Tropism, getUCHeading, pos, old, dx, organ ); }
+    Vector2d getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> organ, int nodeIdx) override
+    { PYBIND11_OVERLOAD( Vector2d, Tropism, getUCHeading, pos, old, dx, organ, nodeIdx ); }
 
     double tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> organ = nullptr) override
     { PYBIND11_OVERLOAD( double, Tropism, tropismObjective, pos, old, a, b, dx, organ ); }
@@ -260,8 +260,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("copy",&Organ::copy)
             .def("organType",&Organ::organType)
             .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
-
-            .def("setParent",&Organ::setParent)
+			.def("getNumberOfLaterals", &Organ::getNumberOfLaterals)
+			.def("setParent",&Organ::setParent)
             .def("getParent",&Organ::getParent)
             .def("setOrganism",&Organ::setOrganism)
             .def("getOrganism",&Organ::getOrganism)
@@ -285,8 +285,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("getNode",&Organ::getNode)
             .def("getNodeId",&Organ::getNodeId)
             .def("getNodeCT",&Organ::getNodeCT)
-            .def("addNode",(void (Organ::*)(Vector3d n, double t)) &Organ::addNode) // overloads
-            .def("addNode",(void (Organ::*)(Vector3d n, int id, double t)) &Organ::addNode) // overloads
+            .def("addNode",(void (Organ::*)(Vector3d n, double t)) &Organ::addNode,  py::arg("n"), py::arg("t")) // overloads
+            .def("addNode",(void (Organ::*)(Vector3d n, int id, double t)) &Organ::addNode,  py::arg("n"),  py::arg("id"),py::arg("t")) // overloads
             .def("getSegments",&Organ::getSegments)
             .def("dx",&Organ::dx)
             .def("dxMin",&Organ::dxMin)
@@ -306,7 +306,7 @@ PYBIND11_MODULE(plantbox, m) {
      * Organism.h
      */
     py::class_<Organism, std::shared_ptr<Organism>>(m, "Organism")
-            .def(py::init<>())
+            .def(py::init<double>(),  py::arg("seednum") = 0)
             .def("copy", &Organism::copy)
             .def("organTypeNumber", &Organism::organTypeNumber)
             .def("organTypeName", &Organism::organTypeName)
@@ -672,7 +672,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("f_tf", &StemRandomParameter::f_tf)
             .def_readwrite("f_se", &StemRandomParameter::f_se)
             .def_readwrite("f_sa", &StemRandomParameter::f_sa)
-            .def_readwrite("f_sbp", &StemRandomParameter::f_sbp);
+            .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
+            .def_readwrite("nodalGrowth", &StemRandomParameter::nodalGrowth)
+            .def_readwrite("delayNG", &StemRandomParameter::delayNG)
+            .def_readwrite("delayNGs", &StemRandomParameter::delayNGs)
+            .def_readwrite("delayLat", &StemRandomParameter::delayLat)
+            .def_readwrite("delayLats", &StemRandomParameter::delayLats);
     py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
@@ -684,14 +689,15 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("theta", &StemSpecificParameter::theta)
             .def_readwrite("rlt", &StemSpecificParameter::rlt)
             .def("getK",&StemSpecificParameter::getK)
-            .def("nob", &StemSpecificParameter::nob);
+            .def("nob", &StemSpecificParameter::nob)
+            .def_readwrite("delayLat", &StemSpecificParameter::delayLat)
+            .def_readwrite("delayNG", &StemSpecificParameter::delayNG);
     /**
      * Root.h
      */
     py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
             .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
-			.def("getNumberOfLaterals", &Root::getNumberOfLaterals)
 			.def("calcCreationTime", &Root::calcCreationTime)
             .def("calcLength", &Root::calcLength)
             .def("calcAge", &Root::calcAge)
@@ -854,9 +860,10 @@ PYBIND11_MODULE(plantbox, m) {
      * Plant.h
      */
     py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
-            .def(py::init<>())
+            .def(py::init<double>(),  py::arg("seednum")=0)
             .def("getSeed", &Plant::getSeed)
-            .def("setGeometry", &Plant::setGeometry)
+            .def("initialize", &Plant::initialize, py::arg("verbose") = true, py::arg("test") = false)
+			.def("setGeometry", &Plant::setGeometry)
             .def("setSoil", &Plant::setSoil)
             .def("reset", &Plant::reset)
             .def("openXML", &Plant::openXML)
@@ -868,9 +875,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def("createGrowthFunction", &Plant::createGrowthFunction)
             .def("write", &Plant::write);
 
-	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")
-			.def(py::init<>())
-			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)
+			
+	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
+			.def(py::init<double>(),  py::arg("seednum")=0)	
+			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
+
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("addSegments", &MappedPlant::plant)

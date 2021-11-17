@@ -16,12 +16,15 @@ int Organism::instances = 0; // number of instances
 
 /**
  * Constructs organism, initializes random number generator
+ * @param seednum    option to set seed (for creation of random number) default = 0.
  */
-Organism::Organism()
+Organism::Organism(double seednum)
 {
     instances++;
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count()+instances;
-    gen = std::mt19937(seed);
+	if(seednum >0){
+		seed_val = seednum;
+	}else{ seed_val = std::chrono::system_clock::now().time_since_epoch().count()+instances;}
+    gen = std::mt19937(seed_val);
 };
 
 
@@ -174,7 +177,6 @@ void Organism::simulate(double dt, bool verbose)
 std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot) const
 {
     auto organs = std::vector<std::shared_ptr<Organ>>(0);
-    // std::cout << "Organism::getOrgans: getNumberOfOrgans() " << getNumberOfOrgans() << "\n" << std::flush;
     organs.reserve(getNumberOfOrgans()); // just for speed up
     for (const auto& o : this->baseOrgans) {
         o->getOrgans(ot, organs);
@@ -283,13 +285,13 @@ std::vector<std::vector<double>> Organism::getPolylineCTs(int ot) const
 std::vector<Vector3d> Organism::getNodes() const
 {
     auto organs = getOrgans();
-    std::vector<Vector3d> nv = std::vector<Vector3d>(getNumberOfNodes()); // reserve big enough vector
-    for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
-        nv.at(o->getNodeId(0)) = o->getNode(0);
+	std::vector<Vector3d> nv = std::vector<Vector3d>(getNumberOfNodes()); // reserve big enough vector
+	for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
+		nv.at(o->getNodeId(0)) = o->getNode(0);
     }
-    for (const auto& o : organs) { // copy all organ nodes
-        for (size_t i = 1; i<o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
-            nv.at(o->getNodeId(i)) = o->getNode(i);
+	for (const auto& o : organs) { // copy all organ nodes
+		for (size_t i = 1; i<o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
+			nv.at(o->getNodeId(i)) = o->getNode(i);
         }
     }
     return nv;
@@ -381,15 +383,21 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
 /**
  * @return the indices of the nodes that were moved during the last time step,
  * update the node coordinates using Organism::getUpdatedNodes(),
- * and creation times using Organism::getUpdatedNodeCTs(,
+ * and creation times using Organism::getUpdatedNodeCTs()
+ * for stem and leaves, assume that all the old nodes need to be updated
  */
 std::vector<int> Organism::getUpdatedNodeIndices() const
 {
     auto organs = this->getOrgans();
     std::vector<int> ni = std::vector<int>(0);
     for (const auto& o : organs) {
-        if (o->hasMoved()) {
-            ni.push_back(o->getNodeId(o->getOldNumberOfNodes()-1));
+        if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
+			if((o->organType() >2)){//is stem or leaf
+				int onon =  o->getOldNumberOfNodes();//because of tropism and internodal growth, all nodes can move
+				for(int i = 1; i < onon; i++){
+					ni.push_back(o->getNodeId(i));
+				}
+			}else{ni.push_back(o->getNodeId(o->getOldNumberOfNodes()-1));}
         }
     }
     return ni;
@@ -398,14 +406,20 @@ std::vector<int> Organism::getUpdatedNodeIndices() const
 /**
  * @return the new coordinates of nodes that were updated during the last time step,
  * corresponding to Organism::getUpdatedNodeIndices
+ * for stem and leaves, assume that all the old nodes need to be updated
  */
 std::vector<Vector3d> Organism::getUpdatedNodes() const
 {
     auto organs = this->getOrgans();
     std::vector<Vector3d> nv = std::vector<Vector3d>(0);
     for (const auto& o : organs) {
-        if (o->hasMoved()) {
-            nv.push_back(o->getNode(o->getOldNumberOfNodes()-1));
+        if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
+			if((o->organType() > 2)){
+				int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
+				for(int i = 1; i < onon; i++){
+					nv.push_back(o->getNode(i));
+				}
+			}else{nv.push_back(o->getNode(o->getOldNumberOfNodes()-1));}
         }
     }
     return nv;
@@ -420,8 +434,13 @@ std::vector<double> Organism::getUpdatedNodeCTs() const
     auto organs = this->getOrgans();
     std::vector<double> nv = std::vector<double>(0);
     for (const auto& o : organs) {
-        if (o->hasMoved()) {
-            nv.push_back(o->getNodeCT(o->getOldNumberOfNodes()-1));
+        if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
+			if((o->organType() > 2)){
+				int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
+				for(int i = 1; i < onon; i++){
+					nv.push_back(o->getNodeCT(i));
+				}
+			}else{nv.push_back(o->getNodeCT(o->getOldNumberOfNodes()-1));}
         }
     }
     return nv;

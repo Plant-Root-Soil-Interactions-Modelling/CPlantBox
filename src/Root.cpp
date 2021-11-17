@@ -195,7 +195,7 @@ void Root::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
-            active = getLength(true)<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
+            active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
 
@@ -399,8 +399,6 @@ double Root::getParameter(std::string name) const
     if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
     if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
-    // member functions
-    if (name=="numberOfLaterals") { return getNumberOfLaterals(); }
     // further
     if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
@@ -418,19 +416,6 @@ double Root::getParameter(std::string name) const
     return Organ::getParameter(name); // pass to base class
 }
 
-/**
- * @return The number of emerged lateral roots (i.e. number of children with age>0)
- * @see Organ::getNumberOfChildren
- */
-int Root::getNumberOfLaterals() const {
-	int nol = 0;
-	for (auto& c : children)  {
-		if (c->getAge()>0) { // born
-			nol ++;
-		}
-	}
-	return nol;
-}
 
 /**
  * @return Quick info about the object for debugging

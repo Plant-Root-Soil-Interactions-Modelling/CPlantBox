@@ -24,9 +24,9 @@ class SeedSpecificParameter :public OrganSpecificParameter
 public:
     SeedSpecificParameter():SeedSpecificParameter(0,Vector3d(0.,0.,-3), 1.e9, 1.e9, 0, 0., 1.e9, 1.e9, 1.e9, 1., 0, 30.) { }; ///< Default constructor
     SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
-        double nz, int maxtil, double simtime):
+        double nz, int maxtil, double simtime,  double fTi = 0., double dTi = 0.):
             OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
-            delayRC(dRC), nz(nz), maxTil(maxtil), simtime(simtime) {  };
+            delayRC(dRC), nz(nz), maxTil(maxtil), firstTi(fTi), delayTi(dTi),  simtime(simtime) {  };
     virtual ~SeedSpecificParameter() { };
 
     /*
@@ -45,7 +45,10 @@ public:
     double delaySB;     ///< Time delay between the shoot borne roots [day]
     double delayRC;     ///< Delay between the root crowns [day]
     double nz;          ///< Distance between the root crowns along the shoot [cm]
+    //Tillers 
     int maxTil;         ///< maximal number of tillers
+	double firstTi;     ///< First emergence of a shoot borne root [day]
+    double delayTi;     ///< Time delay between the shoot borne roots [day]
 
     //Simulation parameters
     double simtime;     ///< recommended final simulation time
@@ -99,6 +102,10 @@ public:
     // Stem parameters
     int maxTil = 0;        ///< Maximal number of tillers
     double maxTils = 0.;   ///< Standard deviation of tillers
+	double firstTi = 1.e9;  ///< Mean emergence of first basal root [day]
+    double firstTis = 0.;   ///< Standard deviation of emergence of first basal root [day]
+    double delayTi = 1.e9;  ///< Mean time delay between the basal roots [day]
+    double delayTis = 0.;   ///< Standard deviation of time delay between the basal roots [day]
 
     // Simulation parameters
     double simtime = 30.;  ///< Mean recommended final simulation time
