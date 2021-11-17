@@ -569,6 +569,7 @@ void Leaf::createSegments(double l, bool verbose)
 			if (olddx<dx()*0.99) { // shift node instead of creating a new node
 				shiftl = std::min(dx()-olddx, l);
 				double sdx = olddx + shiftl; // length of new segment
+				h.normalize();  
 				nodes[nn-1] = h.times(sdx);
 				double et = this->calcCreationTime(getLength(true)+shiftl);
 				nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution

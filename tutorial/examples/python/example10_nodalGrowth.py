@@ -1,8 +1,10 @@
 
 
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules");sys.path.append("../src")
+import sys; 
+sys.path.append("../../..");sys.path.append(".."); 
+sys.path.append("../src/python_modules");
+sys.path.append("../src")
 import plantbox as pb
-import vtk_plot as vp
 
 import math
 import os
@@ -48,5 +50,5 @@ for step in range(steps):
     print("\n\n\nstep n°", step)
     pl.simulate(dt, True)
     ana = pb.SegmentAnalyser(pl)
-    ana.write("results/%s_example_10.vtp" %(step))
+    ana.write("results/example_10_%s.vtp" %(step))
 
