@@ -10,7 +10,7 @@ from itertools import zip_longest
 import math
 
 path = "../../modelparameter/rootsystem/"
-name = "Moraesetal_2020"  # ""
+name = "Glycine_max_Moraes2020_opt2"  # ""
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
@@ -42,7 +42,7 @@ print(v_)
 
 volume_ = [t_, v_]
 export_data = zip_longest(*volume_, fillvalue = '')
-with open("results/" + name + "/" + "volume.csv", "w") as f:
+with open("results/" + name + "/" + name + "_volume.csv", "w") as f:
 	writer = csv.writer(f)
 	writer.writerow(("x", "y"))
 	writer.writerows(export_data)
@@ -53,6 +53,6 @@ ax1.plot(t_, v_)
 ax1.set_xlabel("Time [days]")
 ax1.set_ylabel(" Rootsystem volume [cm^3]")
 ax1.legend(["total"])
-plt.savefig("results/" + name + "/" + "volume.pdf")
+plt.savefig("results/" + name + "/" + name + "_volume.pdf")
 
 plt.show()

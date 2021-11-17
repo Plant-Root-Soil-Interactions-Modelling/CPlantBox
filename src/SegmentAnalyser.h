@@ -41,6 +41,8 @@ public:
     void filter(std::string name, double min, double max); ///< filters the segments to the data @see AnalysisSDF::getParameter
     void filter(std::string name, double value); ///< filters the segments to the data @see AnalysisSDF::getParameter
     void pack(); ///< sorts the nodes and deletes unused nodes
+    Vector3d getMinBounds(); ///< get minimum of node coordinates (e.g. minimum corner of bounding box)
+    Vector3d getMaxBounds(); ///< get maximum of node coordinates (e.g. maximum corner of bounding box)
 
     // some things we might want to know
     std::vector<double> getParameter(std::string name, double def = std::numeric_limits<double>::quiet_NaN()) const; ///< Returns a specific parameter per segment @see RootSystem::ScalarType
@@ -60,7 +62,7 @@ public:
     int getNumberOfOrgans() const; ///< number of different organs
     SegmentAnalyser foto(const Vector3d& pos, const Matrix3d& ons, double height) const; ///< takes a picture TODO unfinished, untested
     SegmentAnalyser cut(const SDF_HalfPlane& plane) const; ///< returns the segments intersecting with a plane (e.g. for trenches)
-	
+
 
     // User data for export or distributions
     void addData(std::string name, std::vector<double> data); ///< adds user data that are written into the VTP file, @see SegmentAnalyser::writeVTP

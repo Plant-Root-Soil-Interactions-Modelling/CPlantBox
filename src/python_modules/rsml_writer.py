@@ -4,14 +4,14 @@ from scipy import sparse
 import numpy as np
 
 """ 
-RSML Writer, by Daniel Leitner (9/2019) 
+RSML Writer, by Daniel Leitner (2019-2021) 
 """
 
 
 class Property:
-    """RSML property tag helper class, for property meta data description """
+    """RSML property tag helper class, for property and function meta data description """
 
-    def __init__(self, label :str, type_ :str, unit :str, data :list):
+    def __init__(self, label:str, type_:str, unit:str, data:list):
         """
         Args:
         label(str): name of the property 
@@ -24,7 +24,7 @@ class Property:
         self.unit = unit
         self.data = data
 
-    def write_property(self, basetag :ET.Element):
+    def write_property(self, basetag:ET.Element):
         """ adds the rsml property tag to the basetag 
         
         Args:
@@ -42,25 +42,43 @@ class Metadata:
 
     def __init__(self):
         self.unit = "cm"
-        self.resolution = "37.95"
+        self.resolution = "1"
         self.last_modified = datetime.date.today().strftime("%d-%B-%Y")
         self.software = "Daniel's friendly RSML converter"
         self.image_label = ""  # if available put source image name here
         self.time_sequence_label = "artifical"
         self.time_sequence_index = "1/1"
         self.time_sequence_unified = "true"
-        self.properties = []
+        self.properties = {}
         self.func_names = []
+        self.scale_to_cm = 1.
+        self.set_scale_()
 
-    def add_property(self, prop :Property):
+    def set_scale_(self):
+        if self.unit == "cm":
+            to_cm = 1.
+        elif self.unit == "pixel" or self.unit == "px":
+            to_cm = 1.
+        elif self.unit == "inch":
+            to_cm = 2.54
+        elif self.unit == "m":
+            to_cm = 100.
+        elif self.unit == "mm":
+            to_cm = 0.1
+        else:
+            print(self.unit)
+            raise "Metadata.set_scale_: do not know unit " + self.unit
+        self.scale_to_cm = to_cm / float(self.resolution)
+
+    def add_property(self, prop:Property):
         """ add a property description 
         
         Args:
         prop(Property): the meta-data desription of a property
         """
-        self.properties.append(prop)
+        self.properties[prop.label] = prop
 
-    def set_fun_names(self, names :list):
+    def set_fun_names(self, names:list):
         """ adds function names to the meta data
         
         Args:
@@ -68,8 +86,8 @@ class Metadata:
         """
         self.func_names = names
 
-    def write_meta(self, basetag :ET.Element):
-        """Adds the rsml metadata tag to the basetag
+    def write_meta(self, basetag:ET.Element):
+        """ adds the rsml metadata tag to the basetag
         
             Args:
             basetag(ET.Element): base tag in the xml element tree
@@ -85,13 +103,40 @@ class Metadata:
             ET.SubElement(image, "label").text = self.image_label
         # Properties
         prop_defs = ET.SubElement(metadata, "property-definitions")
-        for p in self.properties:
+        for p in self.properties.values():
             p.write_property(prop_defs)
         time_seq = ET.SubElement(metadata, "time-sequence")
         # Time Sequence
         ET.SubElement(time_seq, "label").text = self.time_sequence_label
         ET.SubElement(time_seq, "index").text = self.time_sequence_index
         ET.SubElement(time_seq, "unified").text = self.time_sequence_unified
+
+    def read_meta(self, metadata_tag: ET.Element):
+        """ reads from RSML metadata tag         
+            Currently, only 'unit' and 'resolution' are read (TODO)        
+        """
+        for unit in metadata_tag.iterfind('unit'):
+            self.unit = unit.text
+        self.resolution = 1  # default
+        for res in metadata_tag.iterfind('resolution'):
+            self.resolution = res.text
+        self.set_scale_()
+        self.software = "unknown"
+        for s in metadata_tag.iterfind('software'):
+            self.software = s.text
+        for pd in metadata_tag.iterfind('property-definitions'):
+            for p in pd:
+                label = ""
+                for l in p.iterfind('label'):
+                    label = l.text
+                type_ = ""
+                for v in p.iterfind('type'):
+                    type_ = v.text
+                unit = "1"
+                for u in p.iterfind('unit'):
+                    unit = u.text
+                if label:
+                    self.add_property(Property(label, type_, unit, []))
 
 
 class LinkedPolylines:
@@ -102,6 +147,7 @@ class LinkedPolylines:
         polylines(list of int): holds the node indices of this polyline
         lateral(list of LinkedPolyLines) references to the laterals roots, last element is an empty list
         data(list of list of float): optionally, holds additional data per root for rsml properties       
+        base_root (bool): if it is a base root, or not
         bc(static int): branch counter
         metadata(static Metadata): meta data of the root system, to look up rsml property and function names
     """
@@ -114,6 +160,7 @@ class LinkedPolylines:
         self.parent_node = -1
         self.polyline = []
         self.laterals = []
+        self.base_root = False
 
     @staticmethod
     def set_metadata(meta):
@@ -143,9 +190,12 @@ class LinkedPolylines:
             pl.append(ET.Element("Point", dict(x = str(x_), y = str(y_), z = str(z_))))
         # Properties
         properties = ET.SubElement(root, "properties")  # defined by root
-        for p in meta.properties:
+        for p in meta.properties.values():
             properties.append(ET.Element(p.label, dict(value = str(p.data[self.branchnumber - 1]))))
-        properties.append(ET.Element("parent-node", dict(value = str(self.parent_node))))
+        if self.base_root:
+            properties.append(ET.Element("parent-node", dict(value = str(self.parent_node))))
+        else:
+            properties.append(ET.Element("parent-node", dict(value = str(self.parent_node - 1))))
         for r in self.laterals:
             if r:  # ends with an empty list
                 r.write_root(root, nodes, nodedata, Renumber = kwargs.get("Renumber", True))
@@ -157,7 +207,7 @@ class LinkedPolylines:
                 fun.append(ET.Element("sample", dict(value = str(nodedata[i][p]))))
 
 
-def follow_(i0 :int, i :int, A) -> LinkedPolylines:
+def follow_(i0:int, i:int, A) -> LinkedPolylines:
     """ Recursively follows the roots
     
     Args:
@@ -167,7 +217,7 @@ def follow_(i0 :int, i :int, A) -> LinkedPolylines:
     Returns: 
         LinkedPolyline: representing the root system
     """
-    _, j_ = A[i, :].nonzero()
+    _, j_ = A[i,:].nonzero()
 
     if len(j_) > 0:  # if there is at least another segment
 
@@ -188,14 +238,14 @@ def follow_(i0 :int, i :int, A) -> LinkedPolylines:
                     newlines.laterals.append(follow_(len(newlines.polyline) - 1, j, A))  # follow lateral
             if not done:
                 i = newlines.polyline[-1]  # jump to next node
-                _, j_ = A[i, :].nonzero()
+                _, j_ = A[i,:].nonzero()
 
         return newlines
     else:
         return []
 
 
-def segs2polylines(axes :list, segs :list, segdata :list) -> list:
+def segs2polylines(axes:list, segs:list, segdata:list) -> list:
     """ Converts a root system represented by nodes and segments into a linked polyline representation.
     
     Args:
@@ -211,10 +261,11 @@ def segs2polylines(axes :list, segs :list, segdata :list) -> list:
     polylines = []
     for a in axes:
         polylines.append(follow_(-1, a, A))
+        polylines[-1].base_root = True  # follow_ adds subtree, main axis is last (?)
     return polylines
 
 
-def write_rsml(name :str, axes :list, segs :list, segdata :list, nodes :list, nodedata :list, meta :Metadata, **kwargs):
+def write_rsml(name:str, axes:list, segs:list, segdata:list, nodes:list, nodedata:list, meta:Metadata, **kwargs):
     """ RSML writer
     
     Args:
@@ -256,10 +307,7 @@ if __name__ == "__main__":
     a_lateral = 0.1  # lateral root radius (cm)
 
     meta = Metadata()
-    meta.add_property(Property("Radius", "float", "cm", [a_tap, a_lateral]))
-    meta.set_fun_names(["Age"])
-
+    meta.add_property(Property("radius", "float", "cm", [a_tap, a_lateral]))
+    meta.set_fun_names(["age"])
     write_rsml("test.xml", axis, segs, types, nodes, [age], meta)
-
     print("done")
-    

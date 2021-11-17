@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 path = "../../modelparameter/rootsystem/"
-name = "Moraesetal_2020"  # ""
+name = "Glycine_max_Moraes2020_opt2"  
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
@@ -62,8 +62,8 @@ plt.savefig("results/" + name + "/" + "segments.pdf")
 fig, ax3 = plt.subplots()
 ana = pb.SegmentAnalyser(rs)
 length = np.array(ana.getParameter("length"))
-print(length)
-print(min(length))
+print("Length: ", length)
+print("Minimum length: ", min(length))
 bins=[0, 0.001, 0.005, 0.01, 0.1, 0.2, 0.3, 0.4]
 hist, binEdges = np.histogram(length, bins)
 ax3.bar(range(len(hist)),hist,width=1,align='center',tick_label=
@@ -72,14 +72,14 @@ ax3.set_xlabel("segment length (cm)")
 ax3.set_ylabel("number of segments")
 plt.savefig("results/" + name + "/" + "_histo.pdf")
 
-# frequency plot of segment length
+# frequency plot of segment radius
 fig, ax4 = plt.subplots()
 ana = pb.SegmentAnalyser(rs)
-length = np.array(ana.getParameter("radius"))
-print(length)
-print(min(length))
+radius = np.array(ana.getParameter("radius"))
+print("Radius: ", radius)
+print("Minimum radius: ", min(radius))
 bins=[0, 0.01, 0.02, 0.04, 0.08, 0.2]
-hist, binEdges = np.histogram(length, bins)
+hist, binEdges = np.histogram(radius, bins)
 ax4.bar(range(len(hist)),hist,width=1,align='center',tick_label=
         ['{} - {}'.format(bins[i],bins[i+1]) for i,j in enumerate(hist)])
 ax4.set_xlabel("segment radius (cm)")

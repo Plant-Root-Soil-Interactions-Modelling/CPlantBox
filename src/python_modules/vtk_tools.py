@@ -93,7 +93,7 @@ def np_cells(pd):
     therefore it will not work for polylines """
     Nc = pd.GetNumberOfCells()
     d = pd.GetCell(0).GetPointIds().GetNumberOfIds()
-    z_ = np.zeros((Nc, d), dtype=np.int64)
+    z_ = np.zeros((Nc, d), dtype = np.int64)
     for i in range(0, Nc):
         p = np.zeros(d,)
         ids = pd.GetCell(i).GetPointIds()
@@ -103,7 +103,7 @@ def np_cells(pd):
     return z_
 
 
-def np_data(pd, data_index=0, cell=None):
+def np_data(pd, data_index = 0, cell = None):
     """ returns cell or point data from vtkPolyData as numpy array 
     @param pd          rid as a vtkPolyData object 
     @param data_index  index of the vtk cell or point data (default = 0)
@@ -116,7 +116,7 @@ def np_data(pd, data_index=0, cell=None):
         try:
             data = pd.GetCellData()
             p = data.GetArray(data_index)
-            noa = p.GetNumberOfTuples()           
+            noa = p.GetNumberOfTuples()
             cell = True
         except:
             data = pd.GetPointData()
@@ -144,7 +144,7 @@ def rebuild_grid(p, t):
     @param p         nodes Nx3
     @param t         cells (as node indices) NxNc
     """
-    pp = np.zeros(p.shape[0], dtype="bool")  # initially all are unused
+    pp = np.zeros(p.shape[0], dtype = "bool")  # initially all are unused
     for t_ in t:  # find unused points
         for n in t_:
             pp[n] = 1  # used
@@ -154,11 +154,11 @@ def rebuild_grid(p, t):
             for j, n in enumerate(t_):
                 if n > k:
                     t[i][j] -= 1
-    p = np.delete(p, upi, axis=0)  # delete unused points
+    p = np.delete(p, upi, axis = 0)  # delete unused points
     return p, t
 
 
-def snap_to_box(p, box, eps=1e-6):
+def snap_to_box(p, box, eps = 1e-6):
     """ Snap points to a bounding box 
     @param p          nodes Nx3
     @param box        bounding box [minx,miny,minz,maxx,maxy,maxz]
@@ -193,7 +193,7 @@ def read_vtp(name):
 def read_vtu(name):
     """ opens a vtu and returns the vtkUnstructuredGrid class
     @param name         file name without file extension ("name")   
-    """  
+    """
     reader = vtk.vtkXMLUnstructuredGridReader()
     reader.SetFileName(name)
     reader.Update()
@@ -231,7 +231,7 @@ def write_msh(name, pd):
             f.write('{:d} {:08.6f} {:08.6f} {:08.6f}\n'.format(i + 1, p[0], p[1], p[2]))  # node number, x, y, z
         f.write("$EndNodes\n")
         # Cells
-        ind = np.zeros(4, dtype=int)
+        ind = np.zeros(4, dtype = int)
         nc = pd.GetNumberOfCells()
         cdata = pd.GetCellData()
         dn = cdata.GetNumberOfArrays()
@@ -342,40 +342,47 @@ def write_rsml(filename, pd, id_ind):
     except:
         print("write_rsml error: write rsml expects a root system represented as line segments, propably the file consists of polylines")
 
-    n0 = pd.GetPointData().GetNumberOfArrays()
-    n1 = pd.GetCellData().GetNumberOfArrays()
-    data = np.zeros((n0 + n1, nodes.shape[0]))
+    n0 = pd.GetCellData().GetNumberOfArrays()
+    n1 = pd.GetPointData().GetNumberOfArrays()
+    data = -1 * np.ones((n0 + n1, nodes.shape[0]))  # -1 indicates not set
     names = []
-    print("Node Data", n0)
-    vtk_node_data = pd.GetPointData()    
-    for i in range(0, n0):
-        name = vtk_node_data.GetArray(i).GetName()
-        names.append(name)          
-        data[i,:], _ = np_data(pd, i, False)
-        print("\t", name, "\t[", np.min(data[i,:]), ", ", np.max(data[i,:]), "]")
 
-    print("Cell Data", n1)
     vtk_cell_data = pd.GetCellData()
-    for i in range(0, n1):
+    print("Cell Data (translated to rsml functions)", n0)
+    for i in range(0, n0):
         name = vtk_cell_data.GetArray(i).GetName()
         names.append(name)
         seg_data, _ = np_data(pd, i, True)
         for j in range(0, segs.shape[0]):  # convert point to cell data
-            data[i, segs[j, 1]] = seg_data[j] 
+            data[i, segs[j, 1]] = seg_data[j]
         if i == id_ind:
-            ids = np.array(seg_data, dtype=int) + 2  # needs to be >0 for reconstruction!
-        print("\t", name, "\t[", np.min(data[i, 1:]), ", ", np.max(data[i, 1:]), "]")    
-    
-    print("Reconstruct from:", names[id_ind])  # should be orders 
+            ids = np.array(seg_data, dtype = int) + 2  # needs to be >0 for reconstruction!
+        print("\t", name, "\t[", np.min(data[i, 1:]), ", ", np.max(data[i, 1:]), "]")
+
+    for i in range(0, n0):  # the first nodes of base polylines need to be set
+        for j in range(0, nodes.shape[0]):
+            if data[i, j] < 0:
+                data[i, j] = data[i, j + 1]
+
+    print("Node data (rsml functions)", n1)
+    vtk_node_data = pd.GetPointData()
+    for i in range(0, n1):
+        name = vtk_node_data.GetArray(i).GetName()
+        if not name in names:  # only, if not available as cel data
+            names.append(name)
+            data[i,:], _ = np_data(pd, i, False)
+            print("\t", name, "\t[", np.min(data[i,:]), ", ", np.max(data[i,:]), "]")
+
+    print("Reconstruct from:", names[id_ind])  # should be orders
     print("Segments", segs.shape)
     print("Nodes", nodes.shape)
 
     meta = Metadata()
     meta.set_fun_names(names)
-    write_rsml2(filename, [0], segs, ids, nodes, data, meta, Renumber=True)
+    write_rsml2(filename, [0], segs, ids, nodes, data, meta, Renumber = True)
 
 
-def read3D_vtp_data(name, data_index=0, cell=None):
+def read3D_vtp_data(name, data_index = 0, cell = None):
     """ returns the cell or vertex data of vtp or vtu file and the corresponding coordinates
     @param name         filename of the vtp ("name.vtp") or vtu ("name" without file extension) 
     @param data_index   index of cell or point data 
@@ -398,22 +405,22 @@ def read3D_vtp_data(name, data_index=0, cell=None):
             z_[i,:] = p
         return p_, z_
     if cell:
-        Nc = pd.GetNumberOfCells() 
+        Nc = pd.GetNumberOfCells()
         z_ = np.zeros((Nc, 3))
         for i in range(0, Nc):
-            c = pd.GetCell(i)           
+            c = pd.GetCell(i)
             ids = c.GetPointIds()
             n = ids.GetNumberOfIds ()
             midz = 0.
             p1 = np.zeros(3,)
             for j in range(0, n):
                 points.GetPoint(ids.GetId(j), p1)
-                midz += p1 / n 
-            z_[i,:] = midz       
+                midz += p1 / n
+            z_[i,:] = midz
         return p_, z_
 
 
-def read3D_vtp_data_parallel(prename, postname, n, data_index=0, cell=None):
+def read3D_vtp_data_parallel(prename, postname, n, data_index = 0, cell = None):
     """ cell or vertex data of parallel DuMux vtp, or vtu files, called by read3D_data 
     @param prename         the first part of the filename 
     @param postname        the name of the DuMux simulation
@@ -434,7 +441,7 @@ def read3D_vtp_data_parallel(prename, postname, n, data_index=0, cell=None):
     return d_, z_
 
 
-def read3D_data(name, np=1, data_index=0, cell=None):
+def read3D_data(name, np = 1, data_index = 0, cell = None):
     """ opens a vtp or vtu (parallel or not) 
         @param np            number of processes used in parallel computation
         @param data_index    index of cell or point data 

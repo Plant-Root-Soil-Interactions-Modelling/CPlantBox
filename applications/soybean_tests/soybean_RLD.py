@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 path = "../../modelparameter/rootsystem/"
-name = "Moraesetal_2020"
+name = "Glycine_max_Moraes2020_opt2"
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
@@ -22,24 +22,14 @@ rs.setGeometry(soil_layer)
 
 rs.setSeed(2)
 rs.initialize()
-
 rs.simulate(154, True)
-
-ana = pb.SegmentAnalyser(rs)
-aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-for s in aseg:
-    print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-
-ana.write("results/" + name + "/" + name + "_154days.vtp")
-ana.write("results/" + name + "/" + name + "_154days.dgf")
 
 depth, layers = 150, 30
 z_ = np.linspace(0, -1 * depth, layers)
 #fig, axes = plt.subplots(nrows = 1, ncols = 1, figsize = (16, 8))
 img = plt.imread("soybean_2020.png")
 fig, axes = plt.subplots(figsize = (6, 8))
-axes.imshow(img, extent=[0, 40, -150, 0])
+axes.imshow(img, extent=[0, 37, -100, 0])
 # Make a root length distribution
 ana = pb.SegmentAnalyser(rs)
 ana.mapPeriodic(37, 6)

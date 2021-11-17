@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #from vtk_tools import *
 
 path = "../../modelparameter/rootsystem/"
-name = "Moraesetal_2020"  # ""
+name = "Glycine_max_Moraes2020_opt2"  # ""
 
 rs = pb.RootSystem()
 rs.readParameters(path + name + ".xml")
@@ -24,138 +24,48 @@ rs.setGeometry(soil_layer)
 rs.setSeed(2)
 rs.initialize()
 
-rs.simulate(1, True)
-rs.write("results/" + name + "/" + "1days.vtp")
+rs.simulate(7)
 ana = pb.SegmentAnalyser(rs)
 aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
 for s in aseg:
-    # print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
+    print("Shoot segment", s)
+    ana.addSegment(s, 0., 0.2, True)  # ct, radius, insert first
     vt = rs.getSummed("volume")
 print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "1days.dgf")
-
-l = np.array(ana.getParameter("length"))
-print("Min ", np.min(l))
-
-rs.simulate(6, True)
-rs.write("results/" + name + "/" + "7days.vtp")
-ana = pb.SegmentAnalyser(rs)
-aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-for s in aseg:
-    # print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-    vt = rs.getSummed("volume")
-print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "7days.dgf")
-
-l = np.array(ana.getParameter("length"))
-print("Min ", np.min(l))
-
-rs.simulate(7, True)
-rs.write("results/" + name + "/" + "14days.vtp")
-ana = pb.SegmentAnalyser(rs)
-aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-for s in aseg:
-    # print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-    vt = rs.getSummed("volume")
-print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "14days.dgf")
-
-l = np.array(ana.getParameter("length"))
-print("Min ", np.min(l))
-
-rs.simulate(7, True)
-rs.write("results/" + name + "/" + "21days.vtp")
-ana = pb.SegmentAnalyser(rs)
-aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-for s in aseg:
-    # print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-    vt = rs.getSummed("volume")
-print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "21days.dgf")
+ana.write("results/" + name + "/" + name +  "_7days.vtp")
+ana.write("results/" + name + "/" + name + "_7days.dgf")
 
 l = np.array(ana.getParameter("length"))
 print("Min length", np.min(l))
 a = np.array(ana.getParameter("radius"))
 print("Min radius", np.min(a))
 
-rs.simulate(9)
-rs.write("results/" + name + "/" + "30days.vtp")
+rs.simulate(7)
 ana = pb.SegmentAnalyser(rs)
 aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
 for s in aseg:
     print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
+    ana.addSegment(s, 0., 0.2, True)  # ct, radius, insert first
     vt = rs.getSummed("volume")
 print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "30days.dgf")
+ana.write("results/" + name + "/" + name +  "_14days.vtp")
+ana.write("results/" + name + "/" + name + "_14days.dgf")
 
 l = np.array(ana.getParameter("length"))
 print("Min length", np.min(l))
 a = np.array(ana.getParameter("radius"))
 print("Min radius", np.min(a))
 
-rs.simulate(15)
-rs.write("results/" + name + "/" + "45days.vtp")
+rs.simulate(140)
 ana = pb.SegmentAnalyser(rs)
 aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
 for s in aseg:
     print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
+    ana.addSegment(s, 0., 0.2, True)  # ct, radius, insert first
     vt = rs.getSummed("volume")
 print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "45days.dgf")
-
-l = np.array(ana.getParameter("length"))
-print("Min length", np.min(l))
-a = np.array(ana.getParameter("radius"))
-print("Min radius", np.min(a))
-
-rs.simulate(15)
-rs.write("results/" + name + "/" + "60days.vtp")
-ana = pb.SegmentAnalyser(rs)
-aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-for s in aseg:
-    print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-    vt = rs.getSummed("volume")
-print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "60days.dgf")
-
-l = np.array(ana.getParameter("length"))
-print("Min length", np.min(l))
-a = np.array(ana.getParameter("radius"))
-print("Min radius", np.min(a))
-
-rs.simulate(30)
-rs.write("results/" + name + "/" + "90days.vtp")
-ana = pb.SegmentAnalyser(rs)
-aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-for s in aseg:
-    print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-    vt = rs.getSummed("volume")
-print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "90days.dgf")
-
-l = np.array(ana.getParameter("length"))
-print("Min length", np.min(l))
-a = np.array(ana.getParameter("radius"))
-print("Min radius", np.min(a))
-
-rs.simulate(64)
-rs.write("results/" + name + "/" + "154days.vtp")
-ana = pb.SegmentAnalyser(rs)
-aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-for s in aseg:
-    print("Shoot segment", s)
-    ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-    vt = rs.getSummed("volume")
-print("Volume (cm3)", vt)
-ana.write("results/" + name + "/" + "154days.dgf")
+ana.write("results/" + name + "/" + name +  "_154days.vtp")
+ana.write("results/" + name + "/" + name + "_154days.dgf")
 
 l = np.array(ana.getParameter("length"))
 print("Min length", np.min(l))

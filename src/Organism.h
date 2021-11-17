@@ -109,12 +109,14 @@ public:
 
     /* random number generator */
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
+
     virtual double rand() {if(stochastic){return UD(gen); } else {return 0.5; } }  ///< uniformly distributed random number (0,1)
     virtual double randn() {if(stochastic){return ND(gen); } else {return 0.5; } }  ///< normally distributed random number (0,1)
 	double getSeedVal(){return seed_val;}
 	void setStochastic(bool stochastic_){stochastic = stochastic_;}
 	bool getStochastic(){return stochastic;}
 	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism								
+
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;

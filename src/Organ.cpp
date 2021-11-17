@@ -73,7 +73,7 @@ std::shared_ptr<Organ> Organ::copy(std::shared_ptr<Organism>  p)
 }
 
 /**
- * @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin()) 
+ * @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin())
  *					TRUE:	get realized organ length, dependent from spatial resolution (dx() and dxMin())
  *					DEFAULT = TRUE
  * @return 			The chosen type of organ length (realized or theoretical).
@@ -175,7 +175,7 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
 	if(!shift){//node added at the end of organ										
 		nodes.push_back(n); // node
-		nodeIds.push_back(id); // new unique id
+		nodeIds.push_back(id); //unique id
 		nodeCTs.push_back(t); // exact creation time
 	}
 	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?) 
@@ -330,11 +330,23 @@ double Organ::getParameter(std::string name) const {
     if (name=="iHeadingY") { return iHeading.column(0).y; } // root initial heading y - coordinate [cm]
     if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm]
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
-    if (name=="parent-node") { // local parent node index where this lateral emerges
-    	if (this->parent.expired()) {
-    		return -1; // to indicate it is base root
+    if (name=="parent-node") { // local parent node index for RSML (higher order roots are missing the first node)
+        if (this->parent.expired()) {
+            return -1;
+        }
+        if (this->parent.lock()->organType()==Organism::ot_seed) { // if it is base root
+    		return -1;
     	}
-    	return parentNI;
+        auto p = this->parent.lock();
+        if (p->parent.expired()) { // if parent is base root
+            return parentNI;
+        }
+        if (p->parent.lock()->organType()==Organism::ot_seed){ // if parent is base root
+            return parentNI;
+        } else {
+            return std::max(parentNI-1,0); // higher order roots are missing the first node
+            // TODO for 0 this can be negative... (belongs to other branch in rsml)
+        }
     }
     // organ member functions
 	if (name=="organType") { return this->organType(); }
@@ -385,7 +397,19 @@ void Organ::writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) 
 		tinyxml2::XMLElement* geometry = doc.NewElement("geometry");
 		organ->InsertEndChild(geometry);
 		tinyxml2::XMLElement* polyline = doc.NewElement("polyline");
-		int o = (!this->parent.expired()); // baseRoot = 0, others = 1
+
+
+		int o;
+		if (this->parent.expired()) { // baseRoot = 0, others = 1
+		    // std::cout << this->toString() << std::flush;
+		    o = 0;
+		} else {
+		    if (this->parent.lock()->organType()==Organism::ot_seed) {
+		        o = 0;
+		    } else {
+		        o = 1;
+		    }
+		}
 		for (int i = o; i<getNumberOfNodes(); i+=nn) {
 			auto n = getNode(i);
 			tinyxml2::XMLElement* p = doc.NewElement("point");

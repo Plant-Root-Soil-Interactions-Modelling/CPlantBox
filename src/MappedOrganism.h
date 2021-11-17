@@ -29,8 +29,8 @@ public:
     MappedSegments(std::vector<Vector3d> nodes, std::vector<double> nodeCTs, std::vector<Vector2i> segs,
         std::vector<double> radii, std::vector<int> subTypes); ///< for kr and kx age and type dependent
     MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
-	
-	
+
+
     void setRadius(double a); ///< sets a constant radius for all segments
     void setSubTypes(int t); ///< sets a constant sub type for all segments
 
@@ -66,8 +66,8 @@ public:
 
     const double eps = 1.e-5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
-	
-	
+
+
 protected:
 
     void addSegment(Vector2i ns, double radius,  int st,int ot, int i); // adds a single segment at index i, appends the rest if cutted
@@ -121,7 +121,7 @@ public:
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
-	
+
 	void setCWGr(std::vector<double> CWGr); ///< growth as defined by phloem module.
     std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
@@ -129,10 +129,6 @@ public:
     virtual double randn() override {if(stochastic){return ND(gen);} else {return 0.5; } }  ///< normally distributed random number (0,1)
 	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
 };
-
-
-
-
 
 }
 

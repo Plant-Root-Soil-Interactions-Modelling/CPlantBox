@@ -1,6 +1,5 @@
 import unittest
-import sys
-sys.path.append("..")import plantbox as pb
+import sys; sys.path.append("..")import plantbox as pb
 
 
 class TestOrgan(unittest.TestCase):
@@ -42,10 +41,10 @@ class TestOrgan(unittest.TestCase):
         human1.setOrganRandomParameter(otp)
         op = otp.realize()
         # 1. constructor from scratch
-        hand = pb.Organ(human1.getOrganIndex(), op, True, True, 0., 15., ons, 0, False, 0) 
+        hand = pb.Organ(human1.getOrganIndex(), op, True, True, 0., 15., ons, 0, False, 0)
         hand.setOrganism(human1)
-        # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)        
-        thumb = pb.Organ(human1, hand, 0, 0, 4, ons, 0)        
+        # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
+        thumb = pb.Organ(human1, hand, 0, 0, 4, ons, 0)
         little_finger = pb.Organ(human1, hand, 0, 0, 3, ons, 0)
         hand.addChild(thumb)
         hand.addChild(little_finger)

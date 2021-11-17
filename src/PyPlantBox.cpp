@@ -466,6 +466,8 @@ PYBIND11_MODULE(plantbox, m) {
            .def("filter", (void (SegmentAnalyser::*)(std::string, double, double)) &SegmentAnalyser::filter) //overloads
            .def("filter", (void (SegmentAnalyser::*)(std::string, double)) &SegmentAnalyser::filter) //overloads
            .def("pack", &SegmentAnalyser::pack)
+           .def("getMinBounds", &SegmentAnalyser::getMinBounds)
+           .def("getMaxBounds", &SegmentAnalyser::getMaxBounds)
            .def("getParameter", &SegmentAnalyser::getParameter, py::arg("name"), py::arg("def") = std::numeric_limits<double>::quiet_NaN())
            .def("getSegmentLength", &SegmentAnalyser::getSegmentLength)
            .def("getSummed", (double (SegmentAnalyser::*)(std::string) const) &SegmentAnalyser::getSummed) //overloads
@@ -827,24 +829,21 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0))
             .def("setKrTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKrTables))
             .def("setKxTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKxTables))
-
+            .def("setKrValues", &XylemFlux::setKrValues)
+            .def("setKxValues", &XylemFlux::setKxValues)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>())
+            .def("linearSystem_detached",&XylemFlux::linearSystem_detached, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
+                    py::arg("soil_k") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
             		py::arg("soil_k") = std::vector<double>())
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
             		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
-
-            .def("sumSoilFluxes",&XylemFlux::sumSegFluxes)
+            .def("sumSegFluxes",&XylemFlux::sumSegFluxes)
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
-            .def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
+			.def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
 			.def("segLength",&XylemFlux::segLength)
-            .def("segSRA",&XylemFlux::segSRA)
-            //.def("segSchroeder",&XylemFlux::segSchroeder)
-            .def("segSRAStressedFlux",&XylemFlux::segSRAStressedFlux, py::arg("sx"), py::arg("wiltingPoint"), py::arg("hc"),
-                py::arg("mpf"), py::arg("impf"), py::arg("dx") = 1.e-6)
-	        .def("segSRAStressedAnalyticalFlux",&XylemFlux::segSRAStressedAnalyticalFlux)
-            .def_readonly("kr_f_cpp", &XylemFlux::kr_f)
+			.def_readonly("kr_f_cpp", &XylemFlux::kr_f)
             .def_readonly("kx_f_cpp", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)
@@ -869,20 +868,22 @@ PYBIND11_MODULE(plantbox, m) {
             .def("reset", &Plant::reset)
             .def("openXML", &Plant::openXML)
             .def("setTropism", &Plant::setTropism)
-            .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false) 
+            .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false)
             .def("simulate",(void (Plant::*)()) &Plant::simulate)
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
             .def("write", &Plant::write);
+
 			
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
 			.def(py::init<double>(),  py::arg("seednum")=0)	
 			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
+
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("addSegments", &MappedPlant::plant)
-            .def("setCWGr", (void (MappedPlant::*)(std::vector<double>)) &MappedPlant::setCWGr, py::arg("CWGr"));	
+            .def("setCWGr", (void (MappedPlant::*)(std::vector<double>)) &MappedPlant::setCWGr, py::arg("CWGr"));
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

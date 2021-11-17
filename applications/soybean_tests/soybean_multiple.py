@@ -5,13 +5,13 @@ import plantbox as pb
 import vtk_plot as vp
 
 path = "../../modelparameter/rootsystem/"
-name = "Moraesetal_2020"
+name = "Glycine_max_Moraes2020_opt2"
 
 simtime = 154
 N = 17  # number of columns
 M = 3  # number of rows
-dist = 37  # inter-row distance [cm]
-distp = 5  # inter-plant distance within the rows [cm]
+dist = 38  # inter-row distance [cm]
+distp = 6  # inter-plant distance within the rows [cm]
 
 # Initializes N*M root systems
 allRS = []
