@@ -344,7 +344,7 @@ def write_rsml(filename, pd, id_ind):
 
     n0 = pd.GetCellData().GetNumberOfArrays()
     n1 = pd.GetPointData().GetNumberOfArrays()
-    data = np.zeros((n0 + n1, nodes.shape[0]))
+    data = -1 * np.ones((n0 + n1, nodes.shape[0]))  # -1 indicates not set
     names = []
 
     vtk_cell_data = pd.GetCellData()
@@ -359,6 +359,11 @@ def write_rsml(filename, pd, id_ind):
             ids = np.array(seg_data, dtype = int) + 2  # needs to be >0 for reconstruction!
         print("\t", name, "\t[", np.min(data[i, 1:]), ", ", np.max(data[i, 1:]), "]")
 
+    for i in range(0, n0):  # the first nodes of base polylines need to be set
+        for j in range(0, nodes.shape[0]):
+            if data[i, j] < 0:
+                data[i, j] = data[i, j + 1]
+
     print("Node data (rsml functions)", n1)
     vtk_node_data = pd.GetPointData()
     for i in range(0, n1):
@@ -371,6 +376,7 @@ def write_rsml(filename, pd, id_ind):
     print("Reconstruct from:", names[id_ind])  # should be orders
     print("Segments", segs.shape)
     print("Nodes", nodes.shape)
+
     meta = Metadata()
     meta.set_fun_names(names)
     write_rsml2(filename, [0], segs, ids, nodes, data, meta, Renumber = True)
