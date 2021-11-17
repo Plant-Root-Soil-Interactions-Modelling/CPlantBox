@@ -1,7 +1,8 @@
 import sys; sys.path.append("../src/python_modules/"); sys.path.append("../")
 
-import rsml_reader
 import plantbox as pb
+import rsml_reader
+import xylem_flux
 
 import numpy as np
 
@@ -17,8 +18,10 @@ class DataModel:
         self.metadata = None  # from rsml
         self.radii, self.cts, self.types, self.tagnames = None, None, None, None  # selected from rsml
         self.analyser = None  # created by convert_to_analyser
-        self.mapped_segments = None  # created by convert_to_analyser
+        self.xylem_flux = None  # created by convert_to_analyser
         self.max_ct = 0.  # created by convert_to_analyser
+        self.base_nodes = [0]  # base nodes
+        self.base_segs = [0]  # emerging segments from base nodes
         # add more where needed, key = cm *value (for length), and key = day * value (for time)
         self.scales_ = {"pixel":1, "px":1, "dots": 1,
                    "cm": 1, "mm": 0.1, "dm": 10., "m": 100,
@@ -116,7 +119,11 @@ class DataModel:
 
     def convert_to_analyser_(self):
         """ 
-        converts the polylines to a SegmentAnalyser and a MappedSegments object, and stores max_ct 
+        converts the polylines to a SegmentAnalyser and a MappedSegments object, and stores max_ct   
+        
+        uses:
+        properties["parent-poly"], properties["parent-nodes"]
+        radii, cts, types                    
         """
         nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # fetch nodes and segments
         segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
@@ -135,7 +142,11 @@ class DataModel:
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
         self.analyser = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
         self.analyser.addData("subType", subTypes)
-        self.mapped_segments = pb.MappedSegments(self.analyser.nodes, np.array(self.cts), segs_, np.array(segRadii), np.array(subTypes))
+        ms = pb.MappedSegments(self.analyser.nodes, np.array(self.cts), segs_, np.array(segRadii), np.array(subTypes))
+        self.xylem_flux = xylem_flux.XylemFluxPython(ms)
+        self.base_nodes = self.get_base_node_indices()
+        self.xylem_flux.dirichlet_ind = self.base_nodes
+        self.base_segs = self.xylem_flux.find_base_segments()
 
     def get_base_node_indices(self):
         """
@@ -154,11 +165,22 @@ class DataModel:
         adds a 1 cm shoot element, connecting all base roots
         the type for looking up conductivities is set to 10 
         """
+        radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)
+        # print("before ADD SHOOT")
+        # print(self.polylines)
+        # print(self.properties["parent-poly"])
+        # print(self.properties["parent-node"])
+        # print("radii", radii)
+        # print("cts", cts)
+        # print("types", types)
+
         nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # just to find mid of base
         bni = self.get_base_node_indices()
+        print("base node indices ", bni)
         mid = np.zeros(nodes[0].shape)
         for i in bni:
             mid += nodes[i,:] / len(bni)
+        print("mid", mid)
         rsml_reader.artificial_shoot(self.polylines, self.properties, self.functions)  # append artifial shoot (default values)
         radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)  # paramter per node
         # change default values from artificial shoot
@@ -176,7 +198,17 @@ class DataModel:
         self.radii[1] = 0.1  # cm
         self.types[0] = 10
         self.types[1] = 10
+
+        # print("after ADD SHOOT")
+        # print(self.polylines)
+        # print(self.properties["parent-poly"])
+        # print(self.properties["parent-node"])
+        # print("radii", radii)
+        # print("cts", cts)
+        # print("types", types)
+
         self.convert_to_analyser_()
+
 #         print("mid ", str(self.analyser.nodes[1]), " cm")
 #         print("collar ", str(self.analyser.nodes[0]), " cm")
 #

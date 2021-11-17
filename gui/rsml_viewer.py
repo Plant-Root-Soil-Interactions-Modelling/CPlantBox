@@ -204,15 +204,13 @@ class App:
     def update_hydraulics(self, event):
         """ updates hydraulic properties plot """
         node_indices = self.data.get_base_node_indices()
-        viewer_plots.plot_suf(self.data.analyser, self.data.mapped_segments, node_indices,
-                              self.data.max_ct, self.ax3, self.combo3.current())
+        viewer_plots.plot_suf(self.data, self.ax3, self.combo3.current())
         self.canvas3.draw()
 
     def update_krs(self, event):
         """ updates hydraulic properties plot """
         node_indices = self.data.get_base_node_indices()
-        viewer_plots.plot_krs(self.data.analyser, self.data.mapped_segments, node_indices,
-                              self.data.max_ct, self.ax4, self.combo4.current())
+        viewer_plots.plot_krs(self.data, self.ax4, self.combo4.current())
         self.canvas4.draw()
 
     def view_vtk_plot(self, name):
@@ -237,7 +235,7 @@ class App:
             j = self.combo3.current()
             root = tkinter.Tk()
             root.wm_title("Root conductivities")
-            r = xylem_flux.XylemFluxPython(self.data.mapped_segments)
+            r = self.data.xylem_flux  # rename
             if j == 0:
                 viewer_conductivities.init_constant_scenario1(r)
             elif j == 1:

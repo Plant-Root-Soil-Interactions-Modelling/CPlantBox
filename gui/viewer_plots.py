@@ -76,39 +76,33 @@ def plot_rootsystem_development(analyser, ax2, j):
     ax2.set_ylabel("Root system " + type_str[j] + " " + unit_str[j])
 
 
-def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
+def plot_suf(data, ax3, j):
     """ 
     plots suf versus depth per root type 
     
-    analyser             pb.SegmentAnalyser class
-    mapped_segments      pb.MappedSegments class
-    node_ind             node indices of base roots
-    max_ct               maximal creation time  
+    data                 DataModel (in viewer_data.poy)
     ax3                  matplotlib axis
     j                    scenario hard coded in viewer_conductivities.py
     """
     ax3.clear()
-    r = xylem_flux.XylemFluxPython(mapped_segments)
     if j == 0:
-        viewer_conductivities.init_constant_scenario1(r)
+        viewer_conductivities.init_constant_scenario1(data.xylem_flux)
     elif j == 1:
-        viewer_conductivities.init_constant_scenario2(r)
+        viewer_conductivities.init_constant_scenario2(data.xylem_flux)
     elif j == 2:
-        viewer_conductivities.init_dynamic_scenario1(r)
+        viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
-        viewer_conductivities.init_dynamic_scenario2(r)
-    r.seg_ind = node_ind
-    krs, _ = r.get_krs(max_ct)  # TODO move to a label
-    # nop = len(node_ind)  # number of plants (we might want to multiply suf by it?)
-    suf = r.get_suf(max_ct)
-    analyser.addData("SUF", suf)
-    n = int(np.ceil(-analyser.getMinBounds().z))
+        viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+    krs, _ = data.xylem_flux.get_krs(data.max_ct, data.base_segs)
+    suf = data.xylem_flux.get_suf(data.max_ct)
+    data.analyser.addData("SUF", suf)
+    n = int(np.ceil(-data.analyser.getMinBounds().z))
     z_ = np.linspace(-0.5, -n + 0.5, n)
-    d = analyser.distribution("SUF", 0., float(-n), int(n), False)  # False!!!
+    d = data.analyser.distribution("SUF", 0., float(-n), int(n), False)  # False!!!
     ax3.plot(d, z_, "-*", label = "total")
-    max_type = int(np.max(analyser.data["subType"]))
+    max_type = int(np.max(data.analyser.data["subType"]))
     for i in range(0, max_type + 1):
-        ana = pb.SegmentAnalyser(analyser)  # copy
+        ana = pb.SegmentAnalyser(data.analyser)  # copy
         ana.filter("subType", i)
         segn = len(ana.segments)
         if segn > 0:
@@ -120,31 +114,27 @@ def plot_suf(analyser, mapped_segments, node_ind, max_ct, ax3, j):
     ax3.legend()
 
 
-def plot_krs(analyser, mapped_segments, node_ind, max_ct, ax, j):
+def plot_krs(data, ax, j):
     """ 
     plots suf versus depth per root type 
     
-    analyser             pb.SegmentAnalyser class
-    mapped_segments      pb.MappedSegments class
-    node_ind             node indices of base roots
-    max_ct               maximal creation time  
-    ax                  matplotlib axis
+    data                 DataModel (in viewer_data.poy)
+    ax                   matplotlib axis
     j                    scenario hard coded in viewer_conductivities.py
     """
     ax.clear()
-    r = xylem_flux.XylemFluxPython(mapped_segments)
     if j == 0:
-        viewer_conductivities.init_constant_scenario1(r)
+        viewer_conductivities.init_constant_scenario1(data.xylem_flux)
     elif j == 1:
-        viewer_conductivities.init_constant_scenario2(r)
+        viewer_conductivities.init_constant_scenario2(data.xylem_flux)
     elif j == 2:
-        viewer_conductivities.init_dynamic_scenario1(r)
+        viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
-        viewer_conductivities.init_dynamic_scenario2(r)
-    t_ = np.linspace(1, np.ceil(max_ct), np.ceil(max_ct))
+        viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+    t_ = np.linspace(1, np.ceil(data.max_ct), np.ceil(data.max_ct))
     krs_ = []
     for t in t_:
-        krs, _ = r.get_krs(t)
+        krs, _ = data.xylem_flux.get_krs(t, data.base_segs)
         krs_.append(krs)
     ax.plot(t_, krs_)
     ax.set_xlabel("Time (days)")

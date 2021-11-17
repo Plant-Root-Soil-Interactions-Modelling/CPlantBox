@@ -91,12 +91,11 @@ def artificial_shoot(polylines, properties, functions):
         functions[key].insert(0, [functions[key][0][0], functions[key][0][1]])
     for i, p in enumerate(polylines):  # add one to the parent poly indices
         properties["parent-poly"][i] += 1
+    for i, p in enumerate(polylines):
+        if properties["parent-poly"][i] == 0:
+            properties["parent-node"][i] = 1
     properties["parent-poly"][0] = -1
     properties["parent-node"][0] = -1
-    for i, p in enumerate(polylines):
-        if properties["parent-node"][i] < 0:
-            # print("<0", i, "= pi ", properties["parent-poly"][i])
-            properties["parent-node"][i] = 1
 
 
 def get_segments(polylines:list, props:dict) -> (list, list):
@@ -114,7 +113,7 @@ def get_segments(polylines:list, props:dict) -> (list, list):
     nodes, offset, segs = [], [], []
     offset.append(0)  # global node index at each polyline
     if not "parent-node" in props:
-        print("get_segments(): no 'parent-node' tag found using nearest node")
+        print("rsml_reader.get_segments(): no 'parent-node' tag found using nearest node")
         add_parent_nodes(polylines, props)
     for p in polylines:
         for n in p:
@@ -129,7 +128,6 @@ def get_segments(polylines:list, props:dict) -> (list, list):
             # print(polylines[pi])
             # print(props["subType"][i])
             # print(props["subType"][pi])
-
             assert ni < len(polylines[pi]), "parent node index exceeds number of parent nodes"
             segs.append([offset[pi] + ni, offset[i]])
         for j in range(0, len(p) - 1):

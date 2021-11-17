@@ -35,8 +35,8 @@ class XylemFluxPython(XylemFlux):
         else:
             super().__init__(rs)
 
-        self.seg_ind = [0]  # node indices for Neuman flux (TODO confusing name)
-        self.node_ind = [0]  # node indices for Dirichlet flux
+        self.neumann_ind = [0]  # node indices for Neumann flux
+        self.dirichlet_ind = [0]  # node indices for Dirichlet flux
 
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
@@ -50,7 +50,7 @@ class XylemFluxPython(XylemFlux):
          """
         # start = timeit.default_timer()
         if isinstance(value, (float, int)):
-            n = len(self.seg_ind)
+            n = len(self.neumann_ind)
             value = [value / n] * n
 
         if len(soil_k) > 0:
@@ -60,7 +60,7 @@ class XylemFluxPython(XylemFlux):
 
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_neumann(Q, self.aB, self.seg_ind, value)  # cm3 day-1
+        Q, b = self.bc_neumann(Q, self.aB, self.neumann_ind, value)  # cm3 day-1
         x = LA.spsolve(Q, b, use_umfpack = True)  # direct
         # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
         return x
@@ -77,7 +77,7 @@ class XylemFluxPython(XylemFlux):
             @return [cm] root xylem pressure per root system node
          """
         if isinstance(value, (float, int)):
-            n = len(self.node_ind)
+            n = len(self.dirichlet_ind)
             value = [value] * n
 
         if len(soil_k) > 0:
@@ -87,7 +87,7 @@ class XylemFluxPython(XylemFlux):
 
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
-        Q, b = self.bc_dirichlet(Q, self.aB, self.node_ind, value)
+        Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, value)
         x = LA.spsolve(Q, b, use_umfpack = True)
         return x
 
@@ -313,15 +313,31 @@ class XylemFluxPython(XylemFlux):
             z_ += z * suf[i]
         return z_
 
-    def get_krs(self, sim_time):
-        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
+    def find_base_segments(self):
+        """ return all segment indices emerging from intial nodes given in self.dirichlet_ind
+        (slow for large root systesms)
+        """
+        s_ = []
+        segs = self.rs.segments
+        for i, s in enumerate(segs):
+            if s.x in self.dirichlet_ind:
+                s_.append(i)
+        print("XylemFluxPython.find_base_segments(): base segment indices for node indics", self.dirichlet_ind, "are", s_)
+        return s_
+
+    def get_krs(self, sim_time, seg_ind = [0]):
+        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] 
+        if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments        
+        """
         segs = self.rs.segments
         nodes = self.rs.nodes
         p_s = np.zeros((len(segs),))
         for i, s in enumerate(segs):
             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
         rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
-        jc = -self.collar_flux(sim_time, rx, p_s, [], cells = False)  # collar_flux(self, sim_time, rx, sxx, k_soil=[], cells=True) [cm3 day-1]
+        jc = 0
+        for i in seg_ind:
+            jc -= self.axial_flux(i, sim_time, rx, p_s, [], cells = False, ij = True)
         krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[0])
         return krs , jc
 
