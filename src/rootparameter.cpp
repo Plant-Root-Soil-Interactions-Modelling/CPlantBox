@@ -74,16 +74,20 @@ std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 {
-    auto p = plant.lock();
+    bool hasLaterals = successor.size()>0;
+	auto p = plant.lock();
+	//define the parameters outside fo the if functions:
     double lb_;
     double la_;
+	double res;
     std::vector<double> ln_; // stores the inter-distances
-
-    if (successor.size()==0) { // no laterals
-
+	if (dx <= dxMin){
+		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
+		this->dxMin = dx/2;}
+	if (!hasLaterals) { // no laterals
     	lb_ = 0;
         la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
-		double res = la_-floor(la_ / dx)*dx;
+		res = la_-floor(la_ / dx)*dx;
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ la_ -= res;
 			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
@@ -137,7 +141,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
 
-    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_);
+    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hasLaterals);
 }
 
 /**

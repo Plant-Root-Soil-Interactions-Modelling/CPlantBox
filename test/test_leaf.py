@@ -61,13 +61,9 @@ class TestLeaf(unittest.TestCase):
         parentleaf.setOrganism(plant)     
         parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python   
 
-        print("alive")
         leaf = pb.Leaf(plant, p0.subType, ons, 0, parentleaf , 0)
-        print("alive")
         leaf.setOrganism(plant)
-        print("alive")
         leaf.simulate(7)
-        print("alive")
         vp.plot_leaf(leaf)
         
 #         nodes = []

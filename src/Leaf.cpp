@@ -10,24 +10,22 @@ namespace CPlantBox {
  * The organ tree must be created, @see Organ::setPlant, Organ::setParent, Organ::addChild
  * Organ geometry must be created, @see Organ::addNode, ensure that this->getNodeId(0) == parent->getNodeId(pni)
  *
- * @param id        the organ's unique id (@see Organ::getId)
- * @param param     the organs parameters set, ownership transfers to the organ
- * @param alive     indicates if the organ is alive (@see Organ::isAlive)
- * @param active    indicates if the organ is active (@see Organ::isActive)
- * @param age       the current age of the organ (@see Organ::getAge)
- * @param length    the current length of the organ (@see Organ::getLength)
- * @param iheading  the initial heading of this leaf
- * @param pbl       base length of the parent leaf, where this leaf emerges
- * @param pni       local node index, where this leaf emerges
- * @param moved     indicates if nodes were moved in the previous time step (default = false)
- * @param oldNON    the number of nodes of the previous time step (default = 0)
+ * @param id        	the organ's unique id (@see Organ::getId)
+ * @param param     	the organs parameters set, ownership transfers to the organ
+ * @param alive     	indicates if the organ is alive (@see Organ::isAlive)
+ * @param active    	indicates if the organ is active (@see Organ::isActive)
+ * @param age       	the current age of the organ (@see Organ::getAge)
+ * @param length    	the current length of the organ (@see Organ::getLength)
+ * @param iheading  	the initial heading of this leaf
+ * @param pbl       	base length of the parent leaf, where this leaf emerges
+ * @param pni       	local node index, where this leaf emerges
+ * @deprecated moved	as long as stem is active, nodes are assumed to have moved (@see Organism::getUpdatedNodes)
+ * @param oldNON    	the number of nodes of the previous time step (default = 0)
  */
 Leaf::Leaf(int id, const std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
 		Matrix3d iHeading,int pni, bool moved, int oldNON)
 		:Organ(id, param, alive, active, age, length, iHeading, pni, moved,  oldNON )
-{
-	inv = this->iHeading.inverse();
-}
+{}
 
 /**
  * Constructor
@@ -47,6 +45,8 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 {
 	assert(parent!=nullptr && "Leaf::Leaf parent must be set");
 	addleafphytomerID(param()->subType);
+	ageDependentTropism = getLeafRandomParameter()->f_tf->ageSwitch > 0;
+																	 
 	double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->rotBeta
 			+ M_PI*plant->rand()*getLeafRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	beta = beta + getLeafRandomParameter()->initBeta*M_PI;
@@ -55,22 +55,28 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 	} else if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==3) {
 		beta = beta + getLeafRandomParameter()->initBeta*M_PI + M_PI;
 	}
-	double theta = param()->theta;//M_PI*param()->theta;
+	double theta = param()->theta;
 	if (parent->organType()!=Organism::ot_seed) { // scale if not a base leaf
 		double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
 		theta *= scale;
 	}
-
-	auto heading = iHeading.column(0);
-	Vector3d new_heading = Matrix3d::ons(heading).times(Vector3d::rotAB(theta,beta));
-	this->iHeading = Matrix3d::ons(new_heading);
-	//this->iHeading.times(Matrix3d::rotAB(theta,beta)); // new initial heading
-
-	if (parent->organType()!=Organism::ot_seed) { // initial node
-		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
-	}
-	inv = this->iHeading.inverse();
-}
+	//used when computing actual heading, @see LEaf::getIHeading
+	this->partialIHeading = Vector3d::rotAB(theta,beta);
+	
+	if (parent->organType()!=Organism::ot_seed) { // if not base organ
+	
+		double creationTime;
+		if (parent->organType()==Organism::ot_stem) {
+			//if lateral of stem, initial creation time: 
+			//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
+			// @see stem::leafGrow
+			if (parent->getNumberOfChildren() == 0){creationTime = parent->getNodeCT(pni)+delay;
+			}else{creationTime = parent->getChild(0)->getParameter("creationTime") + delay;}
+		}else{
+			creationTime = parent->getNodeCT(pni)+delay;
+		}
+		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);//create first node. relative coordinate = (0,0,0)
+}}
 
 /**
  * Deep copies the organ into the new plant @param rs.
@@ -100,7 +106,6 @@ std::shared_ptr<Organ> Leaf::copy(std::shared_ptr<Organism> p)
 void Leaf::simulate(double dt, bool verbose)
 {
 	firstCall = true;
-	moved = false;
 	oldNumberOfNodes = nodes.size();
 
 	const LeafSpecificParameter& p = *param(); // rename
@@ -116,7 +121,8 @@ void Leaf::simulate(double dt, bool verbose)
 
 		// probabilistic branching model (todo test)
 		if ((age>0) && (age-dt<=0)) { // the leaf emerges in this time step
-			double P = getLeafRandomParameter()->f_sbp->getValue(rel2abs(nodes.back()),shared_from_this());
+			//currently, does not use absolute coordinates for these function. 
+			double P = getLeafRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
 			if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
 				double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
 				if (plant.lock()->rand()>p) { // not rand()<p
@@ -145,8 +151,7 @@ void Leaf::simulate(double dt, bool verbose)
 
 				double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
 				double e = targetlength-length; // unimpeded elongation in time step dt
-				double scale = getLeafRandomParameter()->f_sa->getValue(rel2abs(nodes.back()),shared_from_this());
-				double dl = std::max(scale*e, 0.);// length increment = calculated length + increment from last time step too small to be added
+				double dl = std::max(e, 0.);// length increment = calculated length + increment from last time step too small to be added
 				length = getLength();
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				// create geometry
@@ -155,16 +160,13 @@ void Leaf::simulate(double dt, bool verbose)
 					if ((dl>0)&&(length<p.lb)) { // length is the current length of the leaf
 						if (length+dl<=p.lb) {
 							createSegments(dl,verbose);
-							length+=dl;//- this->epsilonDx;
+							length+=dl;
 							dl=0;
 						} else {
 							double ddx = p.lb-length;
 							createSegments(ddx,verbose);
 							dl-=ddx; // ddx already has been created
 							length=p.lb;
-							//if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-							//	throw std::runtime_error("Leaf::simulate: p.lb - length < dxMin");
-							//}
 						}
 					}
 					double s = p.lb; // summed length
@@ -185,9 +187,6 @@ void Leaf::simulate(double dt, bool verbose)
 									createSegments(ddx,verbose);
 									dl-=ddx;
 									length=s;
-									//if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-									//	throw std::runtime_error( "Leaf::simulate: p.ln.at(i) - length < dxMin");
-									//}
 								}
 							}
 						}
@@ -207,7 +206,8 @@ void Leaf::simulate(double dt, bool verbose)
 					}
 				} // if lateralgetLengths
 			} // if active
-			active = getLength(true)<(p.getK()- this->dxMin()); // become inactive, if final length is nearly reached
+			//level of precision = 1e-10 to not create an error in the test files
+			active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
 		}
 	} // if alive
 
@@ -344,16 +344,8 @@ double Leaf::calcCreationTime(double length)
  */
 double Leaf::calcLength(double age)
 {
-	//    std::string organ_name = std::string(getLeafRandomParameter()->organName);
-	//    //std::cout<<"organName is "<<name()<<"\n";
-	//    if (name()  == "maize1eaf"){
 	assert(age>=0  && "Leaf::calcLength() negative root age");
-	//return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
 	return getLeafRandomParameter()->f_gf->getLength(age,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
-	//	}else {
-	//assert(age>=0);
-	//	    return getLeafRandomParameter()->f_gf->LeafgetLength(age,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
-	//	    }
 }
 
 /**
@@ -363,17 +355,8 @@ double Leaf::calcLength(double age)
  */
 double Leaf::calcAge(double length)
 {
-	//    std::string organ_name = std::string(getLeafRandomParameter()->organName);
-	//    //std::cout<<getLeafRandomParameter()->name<< "\n";
-	//     if ( name() == "maize1eaf"){
 	assert(length>=0 && "Leaf::calcAge() negative root length");
-	//std::cout<<"length subtype is"<<getLeafRandomParameter()->subType<<"\n";
 	return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,param()->getK(),shared_from_this());
-	//        return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getleafphytomerID(getLeafRandomParameter()->subType)*3,this);
-	//        }else {
-	//assert(age>=0);
-	//	    return getLeafRandomParameter()->f_gf->LeafgetAge(length,getLeafRandomParameter()->r,getLeafRandomParameter()->getK(),this);
-	//	    }
 }
 
 /**
@@ -418,8 +401,7 @@ void Leaf::createLateral(bool silence)
 		double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
 		double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
 		double delay = ageLG-ageLN; // time the lateral has to wait
-		Vector3d h_ = heading();
-		Matrix3d h = Matrix3d::ons(h_); // current heading in absolute coordinates TODO (revise??)
+		Matrix3d h = Matrix3d(); //heading not need anymore
 		if (lnf==2&& lt>0) {
 			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, h, delay, shared_from_this(),nodes.size() - 1);
 			children.push_back(lateral);
@@ -458,22 +440,105 @@ void Leaf::createLateral(bool silence)
 	}
 }
 
+/**
+ * computes absolute coordinates from relative coordinates
+ * when this function is called, the parent organ has already
+ * its absolute coordinates
+ * called by @see Plant::rel2abs
+ */
+void Leaf::rel2abs() 
+{
+	double ageSwitch = getLeafRandomParameter()->f_tf->ageSwitch; //rename
+	bool tropismChange = (age > ageSwitch);
+	nodes[0] = getOrigin();//get absolute coordinates of first node via coordinates of parent
+	for(size_t i=1; i<nodes.size(); i++){
+		Vector3d newdx = nodes[i];
+		//if new node or has an age-dependent tropism + reached age at which tropism changes. Might need to update the conditions if do new tropism functions
+		//i.e., gradual change according to age
+		if((i>= oldNumberOfNodes )|| (this->ageDependentTropism&& tropismChange)){
+			double sdx = nodes[i].length();
+			newdx = getIncrement(nodes[i-1], sdx, i-1);
+		}
+		nodes[i] = nodes[i-1].plus(newdx);
+		
+	}
+	if(this->ageDependentTropism && tropismChange){
+		this->ageDependentTropism = false; //switch done
+	}
+	for(size_t i=0; i<children.size(); i++){
+		(children[i])->rel2abs();
+	}//if carries children, update their coordinates from relative to absolute
+	
+	
+}
+
+/**
+ * computes relative coordinates from absolute coordinates
+ * when this function is called, the parent organ has already
+ * its relative coordinates
+ * called by @see Plant::abs2rel
+ */
+void Leaf::abs2rel()
+{
+	for (int j = nodes.size(); j>1; j--) {
+		nodes[j-1] = nodes.at(j-1).minus(nodes.at(j-2));
+		}
+	nodes[0] = Vector3d(0.,0.,0.);
+	for(size_t i=0; i<children.size(); i++){
+		(children[i])->abs2rel();
+	}//if carry children, update their pos
+	
+}
 
 /**
  * Returns the increment of the next segments
  *
  *  @param p       coordinates of previous node (in absolute coordinates)
  *  @param sdx     length of next segment [cm]
+ *  @param n       index at which new node is to be inserted
  *  @return        the vector representing the increment
  */
-Vector3d Leaf::getIncrement(const Vector3d& p, double sdx)
+Vector3d Leaf::getIncrement(const Vector3d& p, double sdx, int n)
 {
-	Vector3d h = heading();
+	Vector3d h = heading(n);
 	Matrix3d ons = Matrix3d::ons(h);
-	Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, sdx,shared_from_this());
-	Vector3d sv = inv.times(ons.times(Vector3d::rotAB(ab.x,ab.y)));
+	//use dx() rather rhan sdx to compute heading
+	//to make tropism independante from growth rate
+	Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
+	Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
 	return sv.times(sdx);
 }
+
+
+/**
+ * @return Current absolute heading of the organ at node n, based on initial heading, or segment before
+ */
+Vector3d Leaf::heading(int n) const
+{
+	if(n<0){n=nodes.size()-1 ;}
+	if ((nodes.size()>1)&&(n>0)) {
+		n = std::min(int(nodes.size()),n);
+		Vector3d h = getNode(n).minus(getNode(n-1));
+		h.normalize();
+		return h;
+	} else {
+		return getiHeading();
+	}
+}
+
+
+/**
+ * @return Current absolute heading of the organ at node n, based on initial heading, or segment before
+ */
+Vector3d Leaf::getiHeading()  const
+{
+	Vector3d vIHeading = getParent()->heading(parentNI);
+	Matrix3d iHeading = Matrix3d::ons(vIHeading);
+	auto heading = iHeading.column(0);
+	Vector3d new_heading = Matrix3d::ons(heading).times(this->partialIHeading);
+	return Matrix3d::ons(new_heading).column(0);
+}
+
 
 /**
  *  Creates nodes and node emergence times for a length l
@@ -498,40 +563,27 @@ void Leaf::createSegments(double l, bool verbose)
 	int nn = nodes.size();
 	if (firstCall) { // first call of createSegments (in Leaf::simulate)
 		firstCall = false;
-
-		int pni = -1;
-		if (!children.empty()) {
-			auto o = children.back();
-			pni = o->parentNI;
-		}
-		if ((nn>1) && (children.empty() || (nn-1 != pni)) ) { // don't move a child base node
-			Vector3d n2 = nodes[nn-2];
-			Vector3d n1 = nodes[nn-1];
-			double olddx = n1.minus(n2).length(); // length of last segment
+		if (nn>1){ // don't move first node of organ
+			Vector3d h = nodes[nn-1];
+			double olddx = h.length(); // length of last segment
 			if (olddx<dx()*0.99) { // shift node instead of creating a new node
 				shiftl = std::min(dx()-olddx, l);
 				double sdx = olddx + shiftl; // length of new segment
-				Vector3d newdxv = getIncrement(rel2abs(n2), sdx);
-				nodes[nn-1] = Vector3d(n2.plus(newdxv));
+				h.normalize();  
+				nodes[nn-1] = h.times(sdx);
 				double et = this->calcCreationTime(getLength(true)+shiftl);
 				nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
-				moved = true;
 				l -= shiftl;
 				if (l<=0) { // ==0 should be enough
 					return;
 				}
-			} else {
-				moved = false;
 			}
-		} else {
-			moved = false;
 		}
 	}
 	// create n+1 new nodes
 	double sl = 0; // summed length of created segment
 	int n = floor(l/dx());
 	for (int i = 0; i < n + 1; i++) {
-
 		double sdx; // segment length (<=dx)
 		if (i<n) {  // normal case
 			sdx = dx();
@@ -547,8 +599,7 @@ void Leaf::createSegments(double l, bool verbose)
 			this->epsilonDx = 0; //no residual
 		}
 		sl += sdx;
-		Vector3d newdx = getIncrement(rel2abs(nodes.back()), sdx);
-		Vector3d newnode = Vector3d(nodes.back().plus(newdx));
+		Vector3d newnode = Vector3d(sdx, 0., 0.);//set relative position (@see rel2abs for addition of tropism)
 		double et = this->calcCreationTime(getLength(true)+shiftl+sl);
 		// in case of impeded growth the node emergence time is not exact anymore,
 		// but might break down to temporal resolution
@@ -583,22 +634,4 @@ std::string Leaf::toString() const
 	newstring << "; initial heading: " << iHeading.column(0).toString()  << ", parent node index " << parentNI << ".";
 	return  Organ::toString()+newstring.str();
 }
-
-/**
- *
- */
-Vector3d Leaf::rel2abs(const Vector3d& n) const
-{
-	return getOrigin().plus(iHeading.times(n));
-}
-
-/**
- *
- */
-Vector3d Leaf::abs2rel(const Vector3d& n) const
-{
-	Vector3d x = n.minus(getOrigin());
-	return inv.times(x);
-}
-
 } // namespace CPlantBox

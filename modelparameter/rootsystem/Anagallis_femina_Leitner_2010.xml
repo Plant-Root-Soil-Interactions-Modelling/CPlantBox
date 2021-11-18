@@ -66,7 +66,7 @@
     <root name="1storderlaterals" subType="2">
         <parameter name="gf" value="1"/>
         <!--Growth function number [1]-->
-        <parameter name="tropismT" value="0"/>
+        <parameter name="tropismT" value="1"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
         <parameter name="a" value="0.029999999"/>
         <!--Root radius [cm]-->

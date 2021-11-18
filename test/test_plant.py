@@ -1,7 +1,7 @@
 import unittest
-import sys; sys.path.append("..")
+import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
 import plantbox as pb
-from rsml import *
+from rsml_reader import *
 
 path = "../modelparameter/plant/"
 

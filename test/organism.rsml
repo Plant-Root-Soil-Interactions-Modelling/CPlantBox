@@ -3,7 +3,7 @@
         <version>1</version>
         <unit>cm</unit>
         <resolution>1</resolution>
-        <last-modified>27-3-2020</last-modified>
+        <last-modified>17-11-2021</last-modified>
         <software>OrganicBox</software>
     </metadata>
     <scene>
@@ -12,9 +12,9 @@
                 <geometry>
                     <polyline>
                         <point x="0" y="0" z="0"/>
-                        <point x="0" y="0" z="1.5"/>
-                        <point x="0" y="-1" z="1.6"/>
-                        <point x="0" y="1" z="1.6"/>
+                        <point x="0" y="0" z="-1.5"/>
+                        <point x="0" y="-1" z="-1.6"/>
+                        <point x="0" y="1" z="-1.6"/>
                     </polyline>
                 </geometry>
                 <properties>
@@ -22,11 +22,13 @@
                     <subType value="0"/>
                     <length value="15"/>
                     <age value="0"/>
+                    <parent-node value="-1"/>
+                    <diameter value="0.2"/>
                 </properties>
                 <root ID="1">
                     <geometry>
                         <polyline>
-                            <point x="0" y="-2" z="2.5"/>
+                            <point x="0" y="-2" z="-2.5"/>
                         </polyline>
                     </geometry>
                     <properties>
@@ -34,6 +36,8 @@
                         <subType value="0"/>
                         <length value="0"/>
                         <age value="-4"/>
+                        <parent-node value="2"/>
+                        <diameter value="0.2"/>
                     </properties>
                     <functions>
                         <function domain="polyline" name="node_creation_time">
@@ -47,7 +51,7 @@
                 <root ID="2">
                     <geometry>
                         <polyline>
-                            <point x="0" y="1.7" z="2.5"/>
+                            <point x="0" y="1.7" z="-2.5"/>
                         </polyline>
                     </geometry>
                     <properties>
@@ -55,6 +59,8 @@
                         <subType value="0"/>
                         <length value="0"/>
                         <age value="-3"/>
+                        <parent-node value="3"/>
+                        <diameter value="0.2"/>
                     </properties>
                     <functions>
                         <function domain="polyline" name="node_creation_time">

@@ -50,7 +50,7 @@
     <parameter name="a" value="0.03" dev="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
-    <parameter name="tropismS" value="0.1"/>
+    <parameter name="tropismS" value="1"/>
     <parameter name="dx" value="0.5"/>
     <parameter name="theta" value="1" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
@@ -70,8 +70,8 @@
     <parameter name="lmax" value="2" dev="0"/>
     <parameter name="r" value="140" dev="0"/>
     <parameter name="a" value="0.03" dev="0"/>
-    <parameter name="tropismT" value="5"/>
-    <parameter name="tropismN" value="1000"/>
+    <parameter name="tropismT" value="1"/>
+    <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="10"/>
     <parameter name="dx" value="0.5"/>
     <parameter name="theta" value="1" dev="0"/>
@@ -94,7 +94,7 @@
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="1"/>
-    <parameter name="tropismT" value="0"/>
+    <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0"/>
     <parameter name="dx" value="0.5"/>
@@ -118,9 +118,9 @@
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="1"/>
-    <parameter name="tropismT" value="4"/>
+    <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
-    <parameter name="tropismS" value="0.1"/>
+    <parameter name="tropismS" value="1"/>
     <parameter name="dx" value="0.5"/>
     <parameter name="theta" value="1" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
@@ -141,7 +141,7 @@
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="1"/>
+    <parameter name="tropismT" value="3"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0"/>
     <parameter name="dx" value="1"/>
@@ -166,8 +166,8 @@
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="1"/>
-    <parameter name="tropismT" value="5"/>
-    <parameter name="tropismN" value="1000"/>
+    <parameter name="tropismT" value="1"/>
+    <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="10"/>
     <parameter name="dx" value="0.5"/>
     <parameter name="theta" value="1" dev="0"/>

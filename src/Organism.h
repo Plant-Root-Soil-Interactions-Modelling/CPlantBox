@@ -11,6 +11,7 @@
 #include <map>
 #include <array>
 #include <memory>
+#include <iostream>
 
 namespace CPlantBox {
 
@@ -41,7 +42,7 @@ public:
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
-    Organism(); ///< constructor
+    Organism(double seednum  = 0.); ///< constructor
     virtual ~Organism() { }; ///< destructor
 
     virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism
@@ -108,17 +109,20 @@ public:
 
     /* random number generator */
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
-    virtual double rand() { return UD(gen); } ///< uniformly distributed random number (0,1)
-    virtual double randn() { return ND(gen); } ///< normally distributed random number (0,1)
 
+    virtual double rand() {if(stochastic){return UD(gen); } else {return 0.5; } }  ///< uniformly distributed random number (0,1)
+    virtual double randn() {if(stochastic){return ND(gen); } else {return 0.5; } }  ///< normally distributed random number (0,1)
+	double getSeedVal(){return seed_val;}
+	void setStochastic(bool stochastic_){stochastic = stochastic_;}
+	bool getStochastic(){return stochastic;}
+	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism								
 
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
     virtual tinyxml2:: XMLElement* getRSMLScene(tinyxml2::XMLDocument& doc) const;
 
-    std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the root system
-
+    
     static const int numberOfOrganTypes = 5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
 
@@ -133,9 +137,11 @@ protected:
     int rsmlSkip = 0; // skips points
     double minDx = 1.e-6; ///< threshold value, smaller segments will be skipped, otherwise root tip direction can become NaN
 
+	double seed_val;///<value to use as seed, keep in memory to send to tropism			 
     std::mt19937 gen;
     std::uniform_real_distribution<double> UD;
     std::normal_distribution<double> ND;
+	bool stochastic = true;///<  wether to implement stochasticity
 
 };
 
