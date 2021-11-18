@@ -126,21 +126,21 @@ class App:
     def update_info(self):
         """ update info tab """
         # label_general
-        brc = 0  # base root counter
         c = 0  # node counter
         pp = self.data.properties["parent-poly"]
         for i, pl in enumerate(self.data.polylines):
-            if pp[i] < 0:
-                brc += 1
             c += 1
             for p in pl:
                 c += 1
-        lstr = "\nSoftware\nFilename \nNumber of base roots \nNumber of roots\nNumber of nodes \nBounding box \nUnit (length scale)\nResolution \n"
+        lstr = "\nSoftware\nFilename \nNumber of plant\nNumber of base roots\nNumber of roots\nNumber of nodes\n"
+        lstr += "Bounding box \nUnit (length scale)\nResolution\n"
         min_str = str(self.data.analyser.getMinBounds())
         max_str = str(self.data.analyser.getMaxBounds())
         metadata = self.data.metadata
-        rstr = "\n{:s}\n{:s}\n{:g}\n{:g}\n{:g}\n{:s}".format(metadata.software, fname, brc, len(self.data.polylines), c, min_str)
-        rstr += "- {:s}\n{:s}\n{:s} (dots per {:s})\n".format(max_str + " (cm)", metadata.unit, str(metadata.resolution), metadata.unit)
+        nop = len(self.data.base_nodes)
+        nobr = len(self.data.base_segs)
+        rstr = "\n{:s}\n{:s}\n{:g}\n{:g}\n{:g}\n".format(metadata.software, fname, nop, nobr, len(self.data.polylines), c)
+        rstr += "{:s} - {:s}\n{:s}\n{:s} (dots per {:s})\n".format(min_str, max_str + " (cm)", metadata.unit, str(metadata.resolution), metadata.unit)
         self.label_general_l.set(lstr)
         self.label_general_r.set(rstr)
         # label_prop

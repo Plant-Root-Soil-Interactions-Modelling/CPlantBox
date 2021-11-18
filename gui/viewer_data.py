@@ -138,6 +138,9 @@ class DataModel:
         if np.isnan(subTypes[0]):
             subTypes = np.ones((len(segs),), dtype = np.int64)
         self.max_ct = np.max(segCTs)
+        print("max ct")
+        print(self.max_ct)
+        print(np.argmax(segCTs))
         segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
         self.analyser = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
@@ -166,6 +169,15 @@ class DataModel:
         the type for looking up conductivities is set to 10 
         """
         radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)
+        nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # just to find mid of base
+
+        bni = self.get_base_node_indices()
+        print("DataModel.add_artificial_shoot() base node indices are", bni)
+        mid = np.zeros(nodes[0].shape)
+        for i in bni:
+            mid += nodes[i,:] / len(bni)
+        print("DataModel.add_artificial_shoot() mid point is", mid)
+
         # print("before ADD SHOOT")
         # print(self.polylines)
         # print(self.properties["parent-poly"])
@@ -173,23 +185,13 @@ class DataModel:
         # print("radii", radii)
         # print("cts", cts)
         # print("types", types)
-
-        nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # just to find mid of base
-        bni = self.get_base_node_indices()
-        print("base node indices ", bni)
-        mid = np.zeros(nodes[0].shape)
-        for i in bni:
-            mid += nodes[i,:] / len(bni)
-        print("mid", mid)
         rsml_reader.artificial_shoot(self.polylines, self.properties, self.functions)  # append artifial shoot (default values)
+
         radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)  # paramter per node
         # change default values from artificial shoot
         collar = mid.copy()
         mid[2] += 0.1  # shift a bit up
         collar[2] += 1.1  # 1 cm shoot length
-#         print("mid ", mid, " cm")
-#         print("collar ", collar, " cm")
-#         print("seg", str(segs[0]))
         self.polylines[0][0] = collar
         self.polylines[0][1] = mid
         self.set_selected(radii, cts, types, tagnames)
@@ -198,7 +200,6 @@ class DataModel:
         self.radii[1] = 0.1  # cm
         self.types[0] = 10
         self.types[1] = 10
-
         # print("after ADD SHOOT")
         # print(self.polylines)
         # print(self.properties["parent-poly"])
@@ -206,12 +207,11 @@ class DataModel:
         # print("radii", radii)
         # print("cts", cts)
         # print("types", types)
-
         self.convert_to_analyser_()
 
 #         print("mid ", str(self.analyser.nodes[1]), " cm")
 #         print("collar ", str(self.analyser.nodes[0]), " cm")
-#
+
 #         print("seg 0", str(self.analyser.segments[0]))
 #         print("radius", str(self.analyser.data["radius"][0]))
 #         print("type", str(self.analyser.data["subType"][0]))

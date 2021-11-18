@@ -77,7 +77,13 @@ protected:
     double kr_perType(int si,double age, int type, int organType, int numleaf) { if (organType == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return kr.at(organType - 2).at(type); }}//per subtype and organ type (goes from 2 (root) to 4 (leaf))
     double kr_table(int si,double age, int type, int organType, int numleaf) { if (organType == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return Function::interp1(age, kr_t.at(0), kr.at(0)); }} //constant for all type/subtype and age dependant
 	double kr_tablePerOrgType(int si,double age, int type, int organType, int numleaf){ if (organType == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else  { return Function::interp1(age, krs_t.at(organType-2).at(0), krs.at(organType-2).at(0)); } }//constant for all subtype but type and age dependant
-	double kr_tablePerType(int si,double age, int type, int organType, int numleaf) { if (organType == 4&& gs.at(0) > 0 ) {return gs.at(numleaf);} else { return Function::interp1(age, krs_t.at(organType-2).at(type), krs.at(organType-2).at(type)); }} //subtype, type and age dependant
+	double kr_tablePerType(int si,double age, int type, int organType, int numleaf) {
+	    if (organType == 4&& gs.at(0) > 0 ) {
+	        return gs.at(numleaf);
+	    } else {
+	        return Function::interp1(age, krs_t.at(organType-2).at(type), krs.at(organType-2).at(type));
+	    }
+	} //subtype, type and age dependant
 	double kr_valuePerSegment(int si, double age, int type, int organType, int numleaf) { return kr.at(0).at(si); }
 
     double kx_const(int si,double age, int type, int organType) { return kx.at(0).at(0); } //k constant
