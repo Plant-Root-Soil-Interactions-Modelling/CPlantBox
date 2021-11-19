@@ -172,11 +172,11 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
         functions are checked first, then properties, if not found NaN values are set.       
         
     """
-    radius_names = ["radius", "radii", "Radius", "Radii"]  # add more, where needed
+    radius_names = ["radius", "radii", "Radius", "Radii", "radius [m]"]  # add more, where needed
     diam_names = ["diameter", "diameters", "diam", "Diameter", "Diameters", "rootDiameter"]
     type_names = ["type", "types", "subType", "subTypes", "order", "orders"]
     ct_names = ["creation_time", "creationTime", "emergence_time", "emergenceTime", "node_creation_time", "nodeCreationTime"]
-    age_names = ["age", "Age"]
+    age_names = ["age", "Age", "age [d]"]
 
     tag_names = []
     diam = None

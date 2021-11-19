@@ -329,7 +329,7 @@ def write_vtu(name, pd):
     writer.Write()
 
 
-def write_rsml(filename, pd, id_ind):
+def write_rsml(filename, pd, id_ind, meta = None):
     """ Writes a RMSL file from vtkPolyData using rsml_reader.write_rsml 
     uses RSML function tags to store all vtk node or cell data    
     @param filename      output file name
@@ -344,7 +344,7 @@ def write_rsml(filename, pd, id_ind):
 
     n0 = pd.GetCellData().GetNumberOfArrays()
     n1 = pd.GetPointData().GetNumberOfArrays()
-    data = -1 * np.ones((n0 + n1, nodes.shape[0]))  # -1 indicates not set
+    data = -1 * np.ones((n0, nodes.shape[0]))  # -1 indicates not set
     names = []
 
     vtk_cell_data = pd.GetCellData()
@@ -360,7 +360,7 @@ def write_rsml(filename, pd, id_ind):
         print("\t", name, "\t[", np.min(data[i, 1:]), ", ", np.max(data[i, 1:]), "]")
 
     for i in range(0, n0):  # the first nodes of base polylines need to be set
-        for j in range(0, nodes.shape[0]):
+        for j in range(0, nodes.shape[0] - 1):
             if data[i, j] < 0:
                 data[i, j] = data[i, j + 1]
 
@@ -368,17 +368,20 @@ def write_rsml(filename, pd, id_ind):
     vtk_node_data = pd.GetPointData()
     for i in range(0, n1):
         name = vtk_node_data.GetArray(i).GetName()
-        if not name in names:  # only, if not available as cel data
+        if name and (not name in names):  # only, if not available as cell data
             names.append(name)
-            data[i,:], _ = np_data(pd, i, False)
+            f, _ = np_data(pd, i, False)
+            data = np.vstack(data, f)
             print("\t", name, "\t[", np.min(data[i,:]), ", ", np.max(data[i,:]), "]")
 
-    print("Reconstruct from:", names[id_ind])  # should be orders
-    print("Segments", segs.shape)
+    print("\nReconstruct from:", names[id_ind])  # should be orders
+    print("\nSegments", segs.shape)
     print("Nodes", nodes.shape)
 
-    meta = Metadata()
+    if not meta:
+        meta = Metadata()
     meta.set_fun_names(names)
+
     write_rsml2(filename, [0], segs, ids, nodes, data, meta, Renumber = True)
 
 

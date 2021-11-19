@@ -138,9 +138,6 @@ class DataModel:
         if np.isnan(subTypes[0]):
             subTypes = np.ones((len(segs),), dtype = np.int64)
         self.max_ct = np.max(segCTs)
-        print("max ct")
-        print(self.max_ct)
-        print(np.argmax(segCTs))
         segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
         self.analyser = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)

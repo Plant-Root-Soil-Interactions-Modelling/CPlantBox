@@ -191,7 +191,8 @@ class LinkedPolylines:
         # Properties
         properties = ET.SubElement(root, "properties")  # defined by root
         for p in meta.properties.values():
-            properties.append(ET.Element(p.label, dict(value = str(p.data[self.branchnumber - 1]))))
+            if p.data:
+                properties.append(ET.Element(p.label, dict(value = str(p.data[self.branchnumber - 1]))))
         if self.base_root:
             properties.append(ET.Element("parent-node", dict(value = str(self.parent_node))))
         else:
