@@ -145,7 +145,8 @@ class DataModel:
         ms = pb.MappedSegments(self.analyser.nodes, np.array(self.cts), segs_, np.array(segRadii), np.array(subTypes))
         self.xylem_flux = xylem_flux.XylemFluxPython(ms)
         self.base_nodes = self.get_base_node_indices()
-        self.xylem_flux.dirichlet_ind = self.base_nodes
+        self.xylem_flux.neumann_ind = self.base_nodes  # needed for suf
+        self.xylem_flux.dirichlet_ind = self.base_nodes  # needed for krs
         self.base_segs = self.xylem_flux.find_base_segments()
 
     def get_base_node_indices(self):
