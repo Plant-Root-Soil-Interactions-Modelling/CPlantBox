@@ -174,7 +174,7 @@ void Stem::simulate(double dt, bool verbose)
 				length = getLength();
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				// create geometry
-				if (p.ln.size()>0) { // stem has laterals
+				if (p.laterals) { // stem has laterals
 					//std::cout<<"sim seed nC is"<< nC<<"\n";
 					//std::cout<<"sim seed nZ is"<< nZ<<"\n";
 					/*
