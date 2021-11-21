@@ -882,7 +882,7 @@ PYBIND11_MODULE(plantbox, m) {
 
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
-			.def("addSegments", &MappedPlant::plant)
+			.def("plant", &MappedPlant::plant)
             .def("setCWGr", (void (MappedPlant::*)(std::vector<double>)) &MappedPlant::setCWGr, py::arg("CWGr"));
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
