@@ -155,7 +155,7 @@ void Leaf::simulate(double dt, bool verbose)
 				length = getLength();
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				// create geometry
-				if (p.ln.size()>0) { // leaf has laterals
+				if (p.laterals) { // leaf has laterals
 					/* basal zone */
 					if ((dl>0)&&(length<p.lb)) { // length is the current length of the leaf
 						if (length+dl<=p.lb) {
