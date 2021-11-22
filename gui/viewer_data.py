@@ -27,8 +27,8 @@ class DataModel:
         self.analyser = None  # created by convert_to_xylem_flux_
         self.xylem_flux = None  # created by convert_to_xylem_flux_
         self.max_ct = 0.  # created by convert_to_xylem_flux_
-        self.base_nodes = [0]  # base nodes (of roots or multiple plants)
-        self.base_segs = [0]  # emerging segments from base nodes
+        self.base_nodes = [0]  # base nodes indices (of roots or multiple plants)
+        self.base_segs = [0]  # emerging segment indices from base nodes
 
         # add more where needed: key = cm *value (for length), and key = day * value (for time)
         self.scales_ = {"pixel":1, "px":1, "dots": 1,
