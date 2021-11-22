@@ -8,21 +8,29 @@ import numpy as np
 
 
 class DataModel:
-    """ MVC """
+    """ 
+    Model in the sense of model view controller (MVC), stores most that is presented in the view
+    
+    * manages the reading of rsml DataModel.open_rsml
+    * can add an artifical shoot, see DataModel.add_artificial_shoot
+    
+    Rest of the methods should not be called directly          
+    """
 
     def __init__(self):
-        self.fname = None  # file name
-        self.polylines = None  # from rsml
-        self.properties = None  # from rsml
-        self.functions = None  # from rsml
-        self.metadata = None  # from rsml
+        self.fname = None  # file name (str)
+        self.polylines = None  # from rsml (list of list of list)
+        self.properties = None  # from rsml (dict of list) value per root
+        self.functions = None  # from rsml (dict of list of list) value per node
+        self.metadata = None  # from rsml (rsml_writer.Metadata)
         self.radii, self.cts, self.types, self.tagnames = None, None, None, None  # selected from rsml
-        self.analyser = None  # created by convert_to_analyser
-        self.xylem_flux = None  # created by convert_to_analyser
-        self.max_ct = 0.  # created by convert_to_analyser
-        self.base_nodes = [0]  # base nodes
+        self.analyser = None  # created by convert_to_xylem_flux_
+        self.xylem_flux = None  # created by convert_to_xylem_flux_
+        self.max_ct = 0.  # created by convert_to_xylem_flux_
+        self.base_nodes = [0]  # base nodes (of roots or multiple plants)
         self.base_segs = [0]  # emerging segments from base nodes
-        # add more where needed, key = cm *value (for length), and key = day * value (for time)
+
+        # add more where needed: key = cm *value (for length), and key = day * value (for time)
         self.scales_ = {"pixel":1, "px":1, "dots": 1,
                    "cm": 1, "mm": 0.1, "dm": 10., "m": 100,
                    "h": 1. / 24., "s": 1 / (24.*3600), "sec": 1 / (24.*3600), "d": 1., "day": 1, "days": 1}
@@ -32,7 +40,7 @@ class DataModel:
         return self.polylines is not None
 
     def set_rsml(self, polylines, properties, functions, metadata):
-        """ setter for rmsl fields """
+        """ setter for rsml fields """
         self.polylines = polylines
         self.properties = properties
         self.functions = functions
@@ -46,16 +54,22 @@ class DataModel:
         self.tagnames = tagnames
 
     def open_rsml(self, fname):
-        """ opens an rsml file into self.data """
+        """ 
+        opens an rsml file into self.data, using rsml_reader (in CPlantBox/src/python_modules)  
+             
+        * converts units to cm and day 
+        * if necessary converts 2d -> 3d, 
+        * creates an analyser (pb.SegmentAnalyser) and a xylem_flux (pb.XylemFluxPython) object 
+        """
         polylines, properties, functions, metadata = rsml_reader.read_rsml(fname)
         print("DataModel.open_rsml(): scale to cm", metadata.scale_to_cm)
         self.set_rsml(polylines, properties, functions, metadata)
-        self.scale_polylines_()
-        self.check_polylines_2d_()
+        self.scale_polylines_()  # converts units
+        self.check_polylines_2d_()  # 2d -> 3d
         radii, cts, types, tagnames = rsml_reader.get_parameter(polylines, functions, properties)  # paramter per node
         self.set_selected(radii, cts, types, tagnames)
-        self.scale_selected_()
-        self.convert_to_analyser_()
+        self.scale_selected_()  # converts units of special fields radii, cts, types
+        self.convert_to_xylem_flux_()
 
     def scale_polylines_(self):
         """ 
@@ -109,7 +123,7 @@ class DataModel:
         if self.tagnames[1]:
             if self.tagnames[1] in self.metadata.properties:
                 cts_scale = self.scales_[self.metadata.properties[self.tagnames[1]].unit]
-                print("DataModel.scale_rsml() temporal scale", r_scale)
+                print("DataModel.scale_rsml() temporal scale", cts_scale)
         for i in range (0, len(self.cts)):
             self.cts[i] *= cts_scale
         # types
@@ -117,7 +131,7 @@ class DataModel:
         for i in range (0, len(self.types)):
             self.types[i] -= min_types
 
-    def convert_to_analyser_(self):
+    def convert_to_xylem_flux_(self):
         """ 
         converts the polylines to a SegmentAnalyser and a MappedSegments object, and stores max_ct   
         
@@ -144,12 +158,12 @@ class DataModel:
         self.analyser.addData("subType", subTypes)
         ms = pb.MappedSegments(self.analyser.nodes, np.array(self.cts), segs_, np.array(segRadii), np.array(subTypes))
         self.xylem_flux = xylem_flux.XylemFluxPython(ms)
-        self.base_nodes = self.get_base_node_indices()
+        self.base_nodes = self.get_base_node_indices_()
         self.xylem_flux.neumann_ind = self.base_nodes  # needed for suf
         self.xylem_flux.dirichlet_ind = self.base_nodes  # needed for krs
         self.base_segs = self.xylem_flux.find_base_segments()
 
-    def get_base_node_indices(self):
+    def get_base_node_indices_(self):
         """
         get all node indices of base roots
         """
@@ -169,7 +183,7 @@ class DataModel:
         radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)
         nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # just to find mid of base
 
-        bni = self.get_base_node_indices()
+        bni = self.base_nodes
         print("DataModel.add_artificial_shoot() base node indices are", bni)
         mid = np.zeros(nodes[0].shape)
         for i in bni:
@@ -205,7 +219,7 @@ class DataModel:
         # print("radii", radii)
         # print("cts", cts)
         # print("types", types)
-        self.convert_to_analyser_()
+        self.convert_to_xylem_flux_()
 
 #         print("mid ", str(self.analyser.nodes[1]), " cm")
 #         print("collar ", str(self.analyser.nodes[0]), " cm")

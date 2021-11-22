@@ -93,6 +93,7 @@ def plot_suf(data, ax3, j):
         viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+
     krs, _ = data.xylem_flux.get_krs(data.max_ct, data.base_segs)
     suf = data.xylem_flux.get_suf(data.max_ct)
     data.analyser.addData("SUF", suf)
@@ -131,6 +132,7 @@ def plot_krs(data, ax, j):
         viewer_conductivities.init_dynamic_scenario1(data.xylem_flux)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
+
     t_ = np.linspace(1, np.ceil(data.max_ct), np.ceil(data.max_ct))
     krs_ = []
     for t in t_:

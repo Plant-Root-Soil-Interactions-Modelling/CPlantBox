@@ -264,7 +264,6 @@ def render_window(actor, title, scalarBar, bounds):
     # Render Window
     renWin = vtk.vtkRenderWindow()  # boss
     renWin.SetSize(1200, 1000)
-    print("title", title)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
 

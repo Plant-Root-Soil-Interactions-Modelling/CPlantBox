@@ -203,13 +203,11 @@ class App:
 
     def update_hydraulics(self, event):
         """ updates hydraulic properties plot """
-        node_indices = self.data.get_base_node_indices()
         viewer_plots.plot_suf(self.data, self.ax3, self.combo3.current())
         self.canvas3.draw()
 
     def update_krs(self, event):
         """ updates hydraulic properties plot """
-        node_indices = self.data.get_base_node_indices()
         viewer_plots.plot_krs(self.data, self.ax4, self.combo4.current())
         self.canvas4.draw()
 
@@ -268,7 +266,7 @@ class App:
     def edit_add_shoot(self):
         """ adds an artifical shoot """
         if self.data.exists():
-            bni = self.data.get_base_node_indices()
+            bni = self.data.base_nodes
             if len(bni) > 1:
                 self.data.add_artificial_shoot()
                 self.update_all()
