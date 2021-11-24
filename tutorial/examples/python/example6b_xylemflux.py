@@ -24,14 +24,16 @@ rs.simulate(simtime, False)
 
 """ root problem """
 r = XylemFluxPython(rs)
-r.setKr([kr])
-r.setKx([kz])
+r.setKr([kr * 0, kr, kr , kr, kr, kr])
+r.setKx([kz, kz, kz, kz, kz, kz])
 nodes = r.get_nodes()
-soil_index = lambda x, y, z : 0
+soil_index = lambda x, y, z: 0
 r.rs.setSoilGrid(soil_index)
 
 """ Numerical solution """
-rx = r.solve_dirichlet(0., p0, p_s, [p_s], True)
+rx = r.solve_dirichlet(simtime, p0, p_s, [p_s], True)
+# trans = -1.185
+# rx = r.solve_neumann(simtime, trans, [p_s], True)
 fluxes = r.segFluxes(simtime, rx, -200 * np.ones(rx.shape), False)  # cm3/day
 print("Transpiration", r.collar_flux(simtime, rx, [p_s]), "cm3/day")
 
@@ -46,4 +48,4 @@ plt.show()
 ana = pb.SegmentAnalyser(r.rs)
 ana.addData("rx", rx)
 ana.addData("fluxes", np.maximum(fluxes, -1.e-3))  # cut off for vizualisation
-vp.plot_roots(ana, "rx", "Xylem matric potential (cm)")  # "fluxes"
+vp.plot_roots(ana, "rx", "Xylem matric potential (cm)")  # "fluxes", subType

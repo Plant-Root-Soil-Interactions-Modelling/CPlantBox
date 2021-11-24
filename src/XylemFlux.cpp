@@ -62,7 +62,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         } else {
             psi_s = sx.at(si); // j-1 = segIdx = s.y-1
         }
-        if (organType == 4 && pg.at(0)!= 0){
+        if (organType == 4 && pg.at(0)!= 0) {
             psi_s = pg.at(numleaf);
         }
         double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
@@ -82,9 +82,11 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         if(organType == 4) {
             numleaf +=1;
         }
+
         //        if (age<=0) {
         //            std::cout << si << ", " << j <<" age leq 0 " << age << ", " << kx <<  ", " << kr << ", time "<< simTime << ", " << rs->nodeCTs[j] << "\n";
         //        }
+
         if (soil_k.size()>0) {
             kr = std::min(kr, soil_k[si]);
         }
@@ -99,13 +101,21 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         }
         double vz = v.z / l; // normed direction
 
-        double tau = std::sqrt(2.*a * M_PI * kr / kx); // Eqn (2)
-        double delta = std::exp(-tau * l) - std::exp(tau * l); // Eqn (5)
-        double idelta = 1. / delta;
+        double cii, cij, bi;
 
-        double cii = -kx * idelta * tau * (std::exp(-tau * l) + std::exp(tau * l)); // Eqn (16)
-        double cij = 2 * kx * idelta * tau;  // Eqn 17
-        double bi = kx * vz; //  # Eqn 18
+        if (a*kr>1.e-16) {
+            double tau = std::sqrt(2.*a * M_PI * kr / kx); // Eqn (6)
+            double delta = std::exp(-tau * l) - std::exp(tau * l); // Eqn (12)
+            double idelta = 1. / delta;
+            cii = -kx * idelta * tau * (std::exp(-tau * l) + std::exp(tau * l)); // Eqn (23)
+            cij = 2 * kx * idelta * tau;  // Eqn 24
+            bi = kx * vz; //  # Eqn 25
+        } else { // solution for a=0, or kr = 0
+            cii = kx/l;
+            cij = -kx/l;
+            bi = kx * vz;
+            psi_s = 0;
+        }
 
         aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
         aI[k] = i; aJ[k]= i; aV[k] = cii;

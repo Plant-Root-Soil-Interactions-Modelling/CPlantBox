@@ -61,6 +61,10 @@ class XylemFluxPython(XylemFlux):
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csr_matrix(Q)
         Q, b = self.bc_neumann(Q, self.aB, self.neumann_ind, value)  # cm3 day-1
+
+        # plt.spy(Q)
+        # plt.show()
+
         x = LA.spsolve(Q, b, use_umfpack = True)  # direct
         # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
         return x
@@ -144,8 +148,8 @@ class XylemFluxPython(XylemFlux):
         s = self.rs.segments[seg_ind]
         nodes = self.rs.nodes
         numleaf = 0
-        organTypes = self.get_organ_types()  # collar segment
-        ot = int(organTypes[seg_ind])  # conductivities kr, kx
+        organTypes = self.get_organ_types()
+        ot = int(organTypes[seg_ind])  # for conductivities kr, kx
         if len(k_soil) > 0:
             ksoil = k_soil[seg_ind]
         else:
@@ -182,14 +186,19 @@ class XylemFluxPython(XylemFlux):
         kr = self.kr_f(age, st, ot, numleaf, seg_ind)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot, seg_ind)
-        tau = math.sqrt(2 * a * math.pi * kr / kx)  # cm-2
-        AA = np.array([[1, 1], [math.exp(tau * l), math.exp(-tau * l)] ])
-        bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
-        d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
-        dpdz0 = d[0] * tau - d[1] * tau  # insert z = 0, z = l into exact solution
+        if a * kr > 1.e-16:
+            tau = math.sqrt(2 * a * math.pi * kr / kx)  # cm-2
+            AA = np.array([[1, 1], [math.exp(tau * l), math.exp(-tau * l)] ])
+            bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
+            d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
+            dpdz0 = d[0] * tau - d[1] * tau  # insert z = 0, z = l into exact solution
+        else:  # solution for kr = 0, or a = 0
+            dpdz0 = (rx[j] - rx[i]) / l
+
         f = kx * (dpdz0 + v.z)
         if ij:
             f = f * (-1)
+
         return f
 
     def collar_flux(self, sim_time, rx, sxx, k_soil = [], cells = True):
