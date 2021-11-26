@@ -326,19 +326,23 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
             numleaf +=1;
         }
 
-        Vector3d n1 = rs->nodes[i];
-        Vector3d n2 = rs->nodes[j];
-        double l = (n2.minus(n1)).length();
+        if (a*kr<=1.e-16) { // only relevant for exact solution
+            fluxes[si] = 0.;
+        } else {
+            Vector3d n1 = rs->nodes[i];
+            Vector3d n2 = rs->nodes[j];
+            double l = (n2.minus(n1)).length();
 
-        double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
-        double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
+            double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
+            double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
 
-        double tau = std::sqrt(2*a*M_PI*kr/kx); // sqrt(c) [cm-1]
-        double d = std::exp(-tau*l)-std::exp(tau*l); // det
-        double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
+            double tau = std::sqrt(2*a*M_PI*kr/kx); // sqrt(c) [cm-1]
+            double d = std::exp(-tau*l)-std::exp(tau*l); // det
+            double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
 
-        double flux = fExact*(!approx)+approx*fApprox;
-        fluxes[si] = flux;
+            double flux = fExact*(!approx)+approx*fApprox;
+            fluxes[si] = flux;
+        }
 
     }
     return fluxes;

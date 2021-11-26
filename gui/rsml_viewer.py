@@ -13,6 +13,9 @@ from matplotlib.backend_bases import key_press_handler  # Implement the default 
 import matplotlib.pyplot as plt
 import numpy as np
 
+""" TODO animation, and optional remesh and RSML (re)write would be nice, writing artifical shoot(?!) """
+""" log file """
+
 
 class App:
 
@@ -30,10 +33,12 @@ class App:
         menu.add_cascade(label = "File", menu = menu_file)
         menu_edit = tkinter.Menu(menu, tearoff = 0)
         menu_edit.add_command(label = "Add shoot", command = self.edit_add_shoot)
+        menu_edit.add_command(label = "Add creation time", command = self.edit_add_creation_times)
         menu.add_cascade(label = "Edit", menu = menu_edit)
         menu_view = tkinter.Menu(menu, tearoff = 0)
         menu_view.add_command(label = "Type...", command = self.view_vtk_plot_subtype)
-        menu_view.add_command(label = "Creation Time...", command = self.view_vtk_plot_creationtime)
+        menu_view.add_command(label = "Segment length...", command = self.view_vtk_plot_length)
+        menu_view.add_command(label = "Creation time...", command = self.view_vtk_plot_creationtime)
         menu_view.add_command(label = "SUF...", command = self.view_vtk_plot_suf)
         menu_view.add_command(label = "Animation...", command = self.view_vtk_anim)
         menu_view.add_separator()
@@ -271,7 +276,23 @@ class App:
                 self.data.add_artificial_shoot()
                 self.update_all()
             else:
-                tkinter.messagebox.showwarning("Warning", "Only a single base root (nothing to connect)")
+                tkinter.messagebox.showwarning("Warning", "Only a single base node (no roots to connect)")
+        else:
+            tkinter.messagebox.showwarning("Warning", "Open RSML file first")
+
+    def edit_add_creation_times(self):
+        """ adds creation times by interpolation """
+        if self.data.exists():
+            if not self.data.tagnames[1]:
+                max_ct = tkinter.simpledialog.askstring("Creation time interpolation", "Final root system age \nin days?")
+                # try:
+                self.data.max_ct = float(max_ct)
+                self.data.add_creation_times()
+                self.update_all()
+                # except:
+                #     tkinter.messagebox.showerror("Error", "Something went wrong")
+            else:
+                tkinter.messagebox.showwarning("Warning", "Creation times are aready set by tag " + self.data.tagnames[1])
         else:
             tkinter.messagebox.showwarning("Warning", "Open RSML file first")
         pass
@@ -279,6 +300,10 @@ class App:
     def view_vtk_plot_subtype(self):
         """ menu item """
         self.view_vtk_plot("subType")
+
+    def view_vtk_plot_length(self):
+        """ menu item """
+        self.view_vtk_plot("length")
 
     def view_vtk_plot_creationtime(self):
         """ menu item """

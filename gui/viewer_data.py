@@ -180,25 +180,16 @@ class DataModel:
         adds a 1 cm shoot element, connecting all base roots
         the type for looking up conductivities is set to 10 
         """
-        radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)
-        nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # just to find mid of base
-
+        nodes = self.analyser.nodes
         bni = self.base_nodes
         print("DataModel.add_artificial_shoot() base node indices are", bni)
-        mid = np.zeros(nodes[0].shape)
+        mid = np.zeros((3,))
         for i in bni:
-            mid += nodes[i,:] / len(bni)
+            mid += np.array([nodes[i].x, nodes[i].y, nodes[i].z])
+        mid /= len(bni)
         print("DataModel.add_artificial_shoot() mid point is", mid)
 
-        # print("before ADD SHOOT")
-        # print(self.polylines)
-        # print(self.properties["parent-poly"])
-        # print(self.properties["parent-node"])
-        # print("radii", radii)
-        # print("cts", cts)
-        # print("types", types)
         rsml_reader.artificial_shoot(self.polylines, self.properties, self.functions)  # append artifial shoot (default values)
-
         radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)  # paramter per node
         # change default values from artificial shoot
         collar = mid.copy()
@@ -220,14 +211,64 @@ class DataModel:
         # print("cts", cts)
         # print("types", types)
         self.convert_to_xylem_flux_()
-
 #         print("mid ", str(self.analyser.nodes[1]), " cm")
 #         print("collar ", str(self.analyser.nodes[0]), " cm")
-
 #         print("seg 0", str(self.analyser.segments[0]))
 #         print("radius", str(self.analyser.data["radius"][0]))
 #         print("type", str(self.analyser.data["subType"][0]))
-#
 #         print("seg 1", str(self.analyser.segments[1]))
 #         print("radius", str(self.analyser.data["radius"][1]))
 #         print("type", str(self.analyser.data["subType"][1]))
+
+    def add_creation_times(self):
+        """
+        lineary interpolates creation times assuming a lateral delay time of one day
+        """
+        pl_ = self.polylines  # rename
+        self.functions["creation_time"] = [None] * len(pl_)
+        for i, pl in enumerate(pl_):
+            if self.properties["parent-poly"][i] == -1:
+                self.functions["creation_time"][i] = np.zeros((len(pl,)))
+                if not (i == 0 and len(pl) == 2):  # not artifical shoot, else [0,0] is fine
+                    ct = self.functions["creation_time"][i]  # rename
+                    lt = self.get_length_(pl)
+                    l = 0
+                    ct[0] = 0
+                    for j in range(0, len(pl) - 1):
+                        l += np.linalg.norm(np.array(pl[j + 1]) - np.array(pl[j]))
+                        ct[j + 1] = self.max_ct * (l / lt)
+        for i, pl in enumerate(pl_):
+            if self.functions["creation_time"][i] is None:
+                self.add_creation_times_(i)
+        radii, cts, types, tagnames = rsml_reader.get_parameter(self.polylines, self.functions, self.properties)  # paramter per node
+        self.set_selected(radii, cts, types, tagnames)
+        self.scale_selected_()
+        self.convert_to_xylem_flux_()
+
+    def add_creation_times_(self, i):
+        """ 
+        recursive funtion called by add_creation_times, 
+        interpolates a single polyline assuming a lateral delay time of one day
+        """
+        ppi = self.properties["parent-poly"][i]
+        if self.functions["creation_time"][ppi] is None:
+            print(ppi, self.functions["creation_time"][ppi])
+            self.add_creation_times_(ppi)  # label parent first
+        pl = self.polylines[i]
+        self.functions["creation_time"][i] = np.zeros((len(pl),))
+        ct = self.functions["creation_time"][i]  # rename
+        lt = self.get_length_(pl)
+        pni = self.properties["parent-node"][i]
+        # print("Root", i, "Parent", ppi, "node index", pni)
+        ct[0] = self.functions["creation_time"][ppi][pni]  #  + 1  # 1 day
+        l = 0.
+        for j in range(0, len(pl) - 1):
+            l += np.linalg.norm(np.array(pl[j + 1]) - np.array(pl[j]))
+            ct[j + 1] = ct[0] + (self.max_ct - ct[0]) * (l / lt)
+
+    def get_length_(self, pl):
+        """ polyline length """
+        lt = 0
+        for j in range(0, len(pl) - 1):
+            lt += np.linalg.norm(np.array(pl[j + 1]) - np.array(pl[j]))
+        return lt
