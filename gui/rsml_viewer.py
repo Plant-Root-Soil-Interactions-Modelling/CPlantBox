@@ -1,7 +1,7 @@
 import sys; sys.path.append("../src/python_modules/"); sys.path.append("../")
 
 import vtk_plot as vp
-from viewer_data import DataModel
+from viewer_data import ViewerDataModel
 import viewer_plots
 import viewer_conductivities
 import xylem_flux
@@ -20,7 +20,7 @@ import numpy as np
 class App:
 
     def __init__(self, root):
-        self.data = DataModel()
+        self.data = ViewerDataModel()
         self.root = root
         self.root.wm_title("RSML Viewer")
         self.root.geometry("850x800")

@@ -7,7 +7,7 @@ from scipy.spatial import distance
 from rsml_writer import Metadata
 
 """ 
-RSML Reader, by Daniel Leitner (2019-2021) 
+RSML Reader, by Daniel Leitner (2019-2021), see also rsml_data.py
 """
 
 
@@ -52,7 +52,7 @@ def parse_rsml_(organ:ET, polylines:list, properties:dict, functions:dict, paren
 
 
 def read_rsml(name:str) -> (list, dict, dict, Metadata):
-    """Parses the RSML file into:
+    """ Parses the RSML file into:
 
     Args:
     name(str): file name of the rsml file
