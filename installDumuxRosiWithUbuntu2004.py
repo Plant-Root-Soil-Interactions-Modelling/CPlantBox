@@ -54,7 +54,7 @@ show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n o
 ## (1/3) Check some prerequistes
 #################################################################
 #################################################################
-programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran','python3', 'python3-vtk7'] 
+programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran','python3'] 
 show_message("(1/3) (a) Checking ubuntu prerequistes: " + " ".join(programs) + "...")
 
 # check some prerequistes
