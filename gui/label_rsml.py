@@ -3,31 +3,32 @@ import sys; sys.path.append("../src/python_modules/"); sys.path.append("../")
 import os
 import pandas as pd
 import numpy as np
+import argparse
 
 import viewer_conductivities
-import viewer_data
+from viewer_data import ViewerDataModel
 import xylem_flux
 
 """
 creates a csv file per rsml file containing krs values, and suf values per 1 mm layers
 
-expected three arguments: file path, artifical shoot (true/false), scenario index (1-4)
+expected three arguments: file path, scenario index (1-4), (optionally, --shoot, only use for measured monocots)
 
 e.g. 
-python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/maize true 1
-python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/dicot false 1
+python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/maize 1
+python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/dicot 1
 
 """
 
 
 def label_file(file, artificial_shoot, scenario_index):
     """ opens rsml and computes krs and suf """
-    data = viewer_data.DataModel()
+    data = ViewerDataModel()
     data.open_rsml(file)  # same as in gui (to check)
     if artificial_shoot:
         data.add_artificial_shoot()
 
-    r = xylem_flux.XylemFluxPython(data.mapped_segments)
+    r = data.xylem_flux
     j = scenario_index - 1
     if j == 0:
         viewer_conductivities.init_constant_scenario1(r)
@@ -37,10 +38,9 @@ def label_file(file, artificial_shoot, scenario_index):
         viewer_conductivities.init_dynamic_scenario1(r)
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(r)
-    node_ind = data.get_base_node_indices()
-    r.seg_ind = node_ind
-    krs, _ = r.get_krs(data.max_ct)
-    nop = len(node_ind)  # number of plants (we might want to multiply suf by it?)
+
+    krs, _ = data.xylem_flux.get_krs(data.max_ct, data.base_segs)
+    nop = len(data.base_nodes)  # number of plants (we might want to multiply suf by it?)
     nop = 1
     suf = r.get_suf(data.max_ct) * nop
     data.analyser.addData("SUF", suf)
@@ -65,26 +65,27 @@ def write_csv(file, suf_, krs, si, depth):
 if __name__ == '__main__':
 
     """ parse arguments """
-    try:
-        walk_dir = sys.argv[1]
-        print('walk_dir = ' + walk_dir)
-        # If your current working directory may change during script execution, it's recommended to
-        # immediately convert program arguments to an absolute path. Then the variable root below will
-        # be an absolute path as well. Example:
-        # walk_dir = os.path.abspath(walk_dir)
-        print('walk_dir (absolute) = ' + os.path.abspath(walk_dir))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file_path', type = str, help = 'file path')
+    parser.add_argument('scenario_index', type = int, help = 'scenario index (1-4)')
+    parser.add_argument('--shoot', action = 'store_true', help = 'adds an artificial shoot')
+    args = parser.parse_args()
 
-        artificial_shoot = bool(sys.argv[2])
-        print("Artifical shoot", str(artificial_shoot))
+    walk_dir = args.file_path
+    print('walk_dir = ' + walk_dir)
 
-        scenario_index = int(sys.argv[3])
-        print("Scenario index {:g}, see file viewer_conductivities.py".format(scenario_index))
+    # If your current working directory may change during script execution, it's recommended to
+    # immediately convert program arguments to an absolute path. Then the variable root below will
+    # be an absolute path as well. Example:
+    # walk_dir = os.path.abspath(walk_dir)
+    print('walk_dir (absolute) = ' + os.path.abspath(walk_dir))
+    artificial_shoot = args.shoot
 
-        if scenario_index < 1 or scenario_index > 4:
-            raise
-    except:
-        print("Expected three arguments: file path, artifical shoot (true/false), scenario index (1-4)")
-        sys.exit(0)
+    scenario_index = args.scenario_index
+    print("Scenario index {:g}, see file viewer_conductivities.py".format(scenario_index))
+
+    if scenario_index < 1 or scenario_index > 4:
+        raise
 
     print()
 

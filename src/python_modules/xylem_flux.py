@@ -307,9 +307,11 @@ class XylemFluxPython(XylemFlux):
         p_s = np.zeros((len(segs),))
         for i, s in enumerate(segs):
             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
-        rx = self.solve_neumann(sim_time, -1.e7, p_s, False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
-        fluxes = self.segFluxes(sim_time, rx, p_s, False, False)  # cm3/day, simTime,  rx,  sx,  approx, cells
-        return np.array(fluxes) / -1.e7  # [1]
+        rx = self.solve_neumann(sim_time, -1.e5, p_s, False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
+        # print("rx ", np.min(rx), np.max(rx), np.mean(rx))
+        fluxes = self.segFluxes(sim_time, rx, p_s, approx = False, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
+        # print("fluxes ", np.min(fluxes), np.max(fluxes), np.mean(fluxes))
+        return np.array(fluxes) / -1.e5  # [1]
 
     def get_mean_suf_depth(self, sim_time):
         """  mean depth [cm] of water uptake based suf """

@@ -9,11 +9,11 @@ namespace CPlantBox {
 
 
 XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs)
-{
+            {
     size_t length_leaf = std::count(rs->organTypes.begin(), rs->organTypes.end(), 4);
     gs.resize(length_leaf);
     pg.resize(length_leaf);
-}
+            }
 
 
 /**
@@ -96,8 +96,8 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         auto v = n2.minus(n1);
         double l = v.length();
         if (l<1.e-5) {
-            std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n"; // quick fix?
-            l = 1.e-5;
+            // std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
+            l = 1.e-5; // valid quick fix? (also in segFluxes)
         }
         double vz = v.z / l; // normed direction
 
@@ -326,13 +326,13 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
             numleaf +=1;
         }
 
-        if (a*kr<=1.e-16) { // only relevant for exact solution
-            fluxes[si] = 0.;
-        } else {
+        if (a*kr>1.e-16) { // only relevant for exact solution
             Vector3d n1 = rs->nodes[i];
             Vector3d n2 = rs->nodes[j];
             double l = (n2.minus(n1)).length();
-
+            if (l<1.e-5) { // cut off like in XylemFlux::linearSystem
+                l = 1.e-5;
+            }
             double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
             double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
 
@@ -342,8 +342,9 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
             double flux = fExact*(!approx)+approx*fApprox;
             fluxes[si] = flux;
+        } else {
+            fluxes[si] = 0.;
         }
-
     }
     return fluxes;
 }
