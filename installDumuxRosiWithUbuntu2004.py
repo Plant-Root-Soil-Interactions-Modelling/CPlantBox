@@ -86,7 +86,7 @@ if len(error) > 0:
 import pip
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py'] 
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py', 'astropy'] 
 show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
@@ -157,10 +157,10 @@ if not os.path.exists("dumux"):
 else:
     print("-- Skip cloning dumux because the folder already exists.")
 
-if not os.path.exists("dumux-course"):
-    git_clone('https://git.iws.uni-stuttgart.de/dumux-repositories/dumux-course.git', "releases/{}".format(dumux_version))
-else:
-    print("-- Skip cloning dumux-course because the folder already exists.")
+#if not os.path.exists("dumux-course"):
+ #   git_clone('https://git.iws.uni-stuttgart.de/dumux-repositories/dumux-course.git', "releases/{}".format(dumux_version))
+#else:
+ #   print("-- Skip cloning dumux-course because the folder already exists.")
 
 
 # dumux-rosi
