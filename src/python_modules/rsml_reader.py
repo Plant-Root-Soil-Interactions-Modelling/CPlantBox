@@ -274,6 +274,24 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
     return radii, cts, types, tag_names
 
 
+def get_property(name:str, polylines:list, props:dict) -> (list):
+    """ Copies a rsml property to one value per node 
+        
+        Args:
+        name(str): name of the rsml properyt
+        polylines(list): flat list of polylines, one polyline per root
+        props(dict): dictionary of properties     
+        
+        Returns:
+        the property converted to per node        
+    """
+    p = []
+    for i, p in enumerate(polylines):
+        for j in range(0, len(p)):
+            p.append(props[name])
+    return p
+
+
 def order_(pp, i, c = 0):
     """ 
     recursively finds the root order, seee get_root_orders()
