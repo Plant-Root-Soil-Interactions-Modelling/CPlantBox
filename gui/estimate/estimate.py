@@ -1,4 +1,4 @@
-import sys; sys.path.append("../src/python_modules/"); sys.path.append("../")
+import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import vtk_plot as vp
 from viewer_data import ViewerDataModel

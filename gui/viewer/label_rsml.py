@@ -1,4 +1,4 @@
-import sys; sys.path.append("../src/python_modules/"); sys.path.append("../")
+import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import os
 import pandas as pd
@@ -17,6 +17,9 @@ expected three arguments: file path, scenario index (1-4), (optionally, --shoot,
 e.g. 
 python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/maize 1
 python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/dicot 1
+
+python3 label_rsml.py ~/Downloads/second+round/monocot/maize 1
+python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 
 """
 

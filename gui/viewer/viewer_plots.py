@@ -1,4 +1,4 @@
-import sys; sys.path.append("../src/python_modules/"); sys.path.append("../")
+import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import plantbox as pb
 import xylem_flux
