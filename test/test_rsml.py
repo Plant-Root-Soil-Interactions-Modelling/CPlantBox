@@ -1,8 +1,8 @@
 import unittest
-import sys; sys.path.append(".."); sys.append("../src/python_modules")
+import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
 import plantbox as pb
 import matplotlib.pyplot as plt
-from rsml import *  # TODO replace reader
+from rsml_reader import *
 
 
 class TestOrganism(unittest.TestCase):
@@ -132,7 +132,7 @@ class TestOrganism(unittest.TestCase):
         self.hand_example()
         self.add_nodes()
         self.human1.writeRSML("organism.rsml")
-        pl, props, funcs = read_rsml("organism.rsml")
+        pl, props, funcs, _ = read_rsml("organism.rsml")
         pl2 = [[[0.0, 0.0, 0.0], [0.0, 0.0, 1.5], [0.0, -1.0, 1.6], [0.0, 1.0, 1.6]], [[0.0, -2.0, 2.5]], [[0.0, 1.7, 2.5]]]
         self.assertEqual(pl, pl2, "rsml: polylines are not equal")
         self.assertEqual(props["age"], [0, -4, -3] , "rsml: polylines are not equal")

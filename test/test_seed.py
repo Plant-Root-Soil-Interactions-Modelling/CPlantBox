@@ -1,8 +1,8 @@
 import unittest
-import sys
-sys.path.append("..")
+import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
 import plantbox as pb
-import numpy as np
+import matplotlib.pyplot as plt
+from rsml_reader import *
 
 
 class TestRoot(unittest.TestCase):

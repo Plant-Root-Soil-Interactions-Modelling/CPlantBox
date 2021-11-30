@@ -1,6 +1,5 @@
 import unittest
-import sys
-sys.path.append(".."); sys.path.append("../src/python_modules")
+import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
 import plantbox as pb
 from rsml_reader import *
 
@@ -16,7 +15,6 @@ class TestStemParameter(unittest.TestCase):
         self.srp.lns = 0.12
         self.srp.lmax = 7 * self.srp.ln + self.srp.la + self.srp.lb
         # print(self.srp.las)
-
 
         self.srp.successor = [4, 5, 6]
         self.srp.successorP = [0.4, 0.1, 0.5]
@@ -88,7 +86,7 @@ class TestStemParameter(unittest.TestCase):
         otp2.readXML("stem.xml")
         self.assertEqual(otp2.name, otp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, otp.organType, "xml: value unexpected")
-        
+
         self.assertEqual(otp2.subType, otp.subType, "xml: value unexpected")
         self.assertEqual(otp2.lmax, otp.lmax, "xml: value unexpected")  # value
         self.assertEqual(otp2.nob(), otp.nob(), "xml: value unexpected")  # value
@@ -105,7 +103,7 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(p.__class__.__name__, "StemSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, -1, "realize: unexpected sub type")
         self.assertEqual(p.a, 0.1, "realize: unexpected value")
-        self.assertEqual(len(p.ln)+1 , self.srp.nob(), "realize: internodal distances +1 should be  number of laterals")
+        self.assertEqual(len(p.ln) + 1 , self.srp.nob(), "realize: internodal distances +1 should be  number of laterals")
         # print(p)
 
 
