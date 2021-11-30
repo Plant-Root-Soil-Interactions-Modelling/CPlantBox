@@ -68,7 +68,7 @@ for program in programs:
             pythonVersion = float(str(output2.stdout)[start_str:end_str])
             if pythonVersion < 3.7:
                 error.append(program)
-		print("update python to at least version 3.7")
+                print("update python to at least version 3.7")
     except FileNotFoundError:
         error.append(program)
         
