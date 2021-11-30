@@ -137,7 +137,8 @@ def plot_krs(data, ax, j):
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(data.xylem_flux)
 
-    t_ = np.linspace(1, np.ceil(data.max_ct), np.ceil(data.max_ct))
+    t = int(np.ceil(data.max_ct))
+    t_ = np.linspace(1, t, t)
     krs_ = []
     for t in t_:
         krs, _ = data.xylem_flux.get_krs(t, data.base_segs)
