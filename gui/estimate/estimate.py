@@ -93,7 +93,7 @@ class App:
         fname = self.data.folder_name
         nof = len(self.data.rsmls)
         brc = 0
-        for root in self.data.base_roots_indices:
+        for root in self.data.base_root_indices:
             for _ in root:
                 brc += 1
         lc = 0
@@ -149,7 +149,7 @@ class App:
 
     def update_baseroots(self, event):
         """ updates base roots scatter plot """
-        estimate_plots.plot_baseroots(self.data, self.ax, self.combo.current())
+        estimate_plots.plot_baseroots(self.data, self.ax)
         self.canvas.draw()
 
     def update_all(self):

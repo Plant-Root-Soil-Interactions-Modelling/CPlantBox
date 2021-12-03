@@ -4,21 +4,27 @@ import numpy as np
 import plantbox as pb
 
 
-def baseroots(data):
+def plot_baseroots(data, ax):
     """ 
-    analyser     EstimateDataModel
+    data     EstimateDataModel
     """
-    col = ["r*", "g*", "b*", "m*", "c*"] * 10
+    for j in range(0, len(data.times)):  # plants
 
-    for j in range(0, len(data.times)):
-        bri = data.base_root_indices[i]
-        for i in bri:  # len(names)
-            lengths = properties[i][j]["length"]
-            ages = properties[i][j]["age"]
-            for k in range(1, len(polylines[i][j])):  # skip tap root
-                age_.append(data.times[j])
-                l_.append(lengths[k])
-        plt.plot(l_, age_, col[j])  # scatter plot
-    plt.ylabel("Root age [day]")
-    plt.xlabel("Measured root length [cm]")
+        bri = data.base_root_indices[j]
+
+        l_, age_ = [], []
+        i = bri[0]  # tap roots
+        age_.append(data.times[j])
+        l_.append(data.rsmls[j].properties["length"][i])
+        ax.plot(age_, l_, "r*")  # scatter plot
+
+        l_, age_ = [], []
+        for i in bri[1:]:  # other base roots
+            print(i)
+            age_.append(data.times[j])
+            l_.append(data.rsmls[j].properties["length"][i])
+        ax.plot(age_, l_, "b*")  # scatter plot
+
+    ax.set_xlabel("Root age [day]")
+    ax.set_ylabel("Measured root length [cm]")
 
