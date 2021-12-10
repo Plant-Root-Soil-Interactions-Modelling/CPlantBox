@@ -72,11 +72,20 @@ class App:
                                                        "Monocot linear model", "Monocot linear model (fixed lmax)"], width = 30)
         self.combo1.pack(pady = 10)
         self.combo1.current(0)
-        self.combo1.bind("<<ComboboxSelected>>", self.update_baseroots)
+        self.combo1.bind("<<ComboboxSelected>>", self.update_params)
         fig, self.ax = plt.subplots(1, 1, figsize = (7, 7))
         self.canvas = FigureCanvasTkAgg(fig, master = tab_base)  # A tk.DrawingArea.
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
+       # tab_laterals
+        self.combo2 = ttk.Combobox(tab_laterals, values = [ "per order", "per RSML type tag", "per clustering"], width = 30)
+        self.combo2.pack(pady = 10)
+        self.combo2.current(0)
+        self.combo2.bind("<<ComboboxSelected>>", self.update_params)
+        fig2, self.ax2 = plt.subplots(1, 1, figsize = (7, 7))
+        self.canvas2 = FigureCanvasTkAgg(fig, master = tab_laterals)  # A tk.DrawingArea.
+        self.canvas2.draw()
+        self.canvas2.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
         # tab_base_parameters
         lf_basal_params = ttk.LabelFrame(tab_base_params, text = 'Tap and basal root parameters [mean, sd]')
         lf_basal_params.grid(column = 0, row = 0, padx = 20, pady = 10)
@@ -165,23 +174,18 @@ class App:
         self.label_basal_params_l.set(lstr)
         self.label_basal_params_r.set(rstr)
 
-    def update_baseroots(self, event):
-        """ updates base roots scatter plot """
+    def update_params(self, event):
+        """ updates parameter calibration and base and lateral plots """
         estimate_plots.plot_baseroots(self.data, self.combo1.current(), self.ax)
         self.canvas.draw()
-
-    def update_baseroot_params(self, event):
-        """ update parameters for basal roots """
-        self.data.create_params()
-        self.data.create_base_params(self.combo1.current())
+        self.data.create_params(self.combo1.current(), self.combo2.current())
+        self.update_parameters()
 
     def update_all(self):
         """ updates the view """
         if self.data.exists():
             self.update_info()
-            self.update_baseroots(None)
-            self.update_baseroot_params(None)
-            self.update_parameters()
+            self.update_params(None)
 
     def file_open(self):
         """ menu item: open rsml file """

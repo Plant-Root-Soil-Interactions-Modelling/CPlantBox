@@ -25,8 +25,6 @@ class EstimateDataModel:
         self.root_indices = []
         self.folder_name = ""
         self.file_names = []  # for debugging
-        self.fit_r0 = 1.
-        self.fit_k0 = 100.
 
     def open_folder(self, folder_name):
         """ see RsmlData.open_rsml() in src/python_modules/rsml_data.py                
@@ -110,61 +108,16 @@ class EstimateDataModel:
                         n2 = p[j + 1]
                         l += np.linalg.norm(np.array(n2) - np.array(n1))
                     self.rsmls[k].properties["length"].append(l)
-
         else:
             print("EstimateDataModel.create_length: 'length' tag is already available")
 
-    def set_rk(self, r, k):
-        """ sets initial elongation rate and maximal root length (derived by curve fitting)
-            sets the actual elongation rates of the basal root (to reduce noise)
-        """
-        self.fit_r0 = r
-        self.fit_k0 = k
-        # add r as drawn from the distribution
-        for i, j_ in enumerate(self.base_root_indices):
-            for j in j_:
-                l = self.rsmls[i].properties["length"][j]
-                t = self.times[i]
-                r = negexp_rate(l, k, t)
-                self.estimates[i][(j, "r")] = r
-
-    def pick_order(self, root_order):
-        """
-        """
-        indices = []
-        for i, data in enumerate(self.rsmls):  # plants
-            indices.append([])
-            for j, _ in enumerate(data.polylines):
-                o = data.properties["orders"][j]
-                if o == root_order:  # add if of right topological order
-                    indices[-1].append(j)
-        return indices
-
-    def pick_kids(self, measurement_index, base_root_index):
-        """ returns the indices of all roots that are directly connected with 
-        root @param index base_root in measurement @param measurement_index
-        """
-        ppi = np.array(self.rsmls[measurement_index].properties["parent-poly"])
-        # print(base_root_index)
-        # print("ppi", ppi)
-        kids_indices = np.array(np.argwhere(ppi == base_root_index * np.ones(ppi.shape)), dtype = np.int64)
-        return kids_indices
-
-    def create_params(self):
+    def create_params(self, base_method, calibration_method):
         """
         """
         self.estimate_zones_(self.root_indices)
-
-    def create_base_params(self, method_index):
-        """
-        """
         p = self.parameters[0]
-        if method_index < 2:  # tap and basals are treated the same way (multiple dicots)
-            self.aggregate_parameters(self.base_root_indices, target_type = 0)
-            p.lmax = self.fit_k0
-            # p.ks # TODO e.g. self.fit_k0[1] see
-            p.r = self.fit_r0
-            # p.rs # TODO
+        if base_method < 2:  # tap and basals are treated the same way (multiple dicots)
+            self.aggregate_parameters_(self.base_root_indices, target_type = 0)
 
         for i, j_ in enumerate(self.base_root_indices):
             for j in j_:
@@ -174,30 +127,19 @@ class EstimateDataModel:
         indices = self.base_root_indices  # starting with base roots indices, then is ascending topological order
         while len(indices) > 0:
             print("computing order ", order)
-            self.compute_age(indices)
+            self.add_r_(indices, calibration_method, order)
+            self.compute_age(indices, order)
+
+            # TODO lateral callibration ..., to obtain new r, k for laterals
+
             order += 1
             indices = self.pick_order(order)
-
-    def compute_age(self, indices):
-        for i, j_ in enumerate(indices):
-            for j in j_:
-                t = self.estimates[i][(j, "age")]
-                kids = self.pick_kids(i, j)
-                if len(kids) > 0:  # add estimated age
-                    for k in kids[:, 0]:  # kids
-                        print("age", i, j)
-                        r = self.estimates[i][(j, "r")]
-                        la = self.estimates[i][(j, "la")]
-                        il = self.rsmls[i].properties["parent-node"][k]
-                        bl = polyline_length(0, il, self.rsmls[i].polylines[j])  # latearal base length
-                        bl_la = min(bl + la, self.fit_k0 * 0.99)
-                        et = negexp_age(bl_la, r, p.lmax)  # time the lateral emerged
-                        age = max(t - et, 0.)
-                        age = min(age, t)
-                        self.estimates[i][(j, "age")] = age  # tap root et =  0
+            print("new length", len(indices))  # TODO change while criteria [[],[],[]] will pass
 
     def estimate_zones_(self, indices):
-        """
+        """ creates lb, ln, la per root (if possible)
+        todo theta, r
+        see aggregate_parameters, to obtain mean and sd 
         """
         for i, j_ in enumerate(indices):
             for j in j_:
@@ -221,11 +163,10 @@ class EstimateDataModel:
                     self.estimates[i][(j, "lb")] = lb
                     self.estimates[i][(j, "ln")] = ln_
                     self.estimates[i][(j, "la")] = la
-                else:
-                    pass  # nothing to do
 
-    def aggregate_parameters(self, indices, target_type):
-        """
+    def aggregate_parameters_(self, indices, target_type):
+        """ aggregates the individual root parameters into mean and sd, 
+        and adds it to the parameters (of type list of RootRandomParameters) at index target_type  
         """
         la_, lb_, ln_ = [], [], []
         # a_, theta
@@ -248,4 +189,55 @@ class EstimateDataModel:
         p.lbs = np.std(lb_)
         p.ln = np.mean(ln_)
         p.lns = np.std(ln_)
+
+    def compute_age(self, indices, target_type):
+        p = self.parameters[target_type]
+        for i, j_ in enumerate(indices):
+            for j in j_:
+                t = self.estimates[i][(j, "age")]
+                kids = self.pick_kids(i, j)
+                if len(kids) > 0:  # add estimated age
+                    for k in kids[:, 0]:  # kids
+                        # print("age", i, j)
+                        r = self.estimates[i][(j, "r")]
+                        la = self.estimates[i][(j, "la")]
+                        il = self.rsmls[i].properties["parent-node"][k]
+                        bl = polyline_length(0, il, self.rsmls[i].polylines[j])  # latearal base length
+                        bl_la = min(bl + la, p.lmax * 0.99)
+                        et = negexp_age(max(bl_la, 0.), r, p.lmax)  # time the lateral emerged
+                        age = max(t - et, 0.)
+                        age = min(age, t)
+                        self.estimates[i][(k, "age")] = age  # tap root et =  0
+
+    def add_r_(self, indices, calibration_method, target_type):
+        # add r as drawn from the distribution
+        p = self.parameters[target_type]
+        for i, j_ in enumerate(indices):
+            for j in j_:
+                l = self.rsmls[i].properties["length"][j]
+                t = self.times[i]
+                r = negexp_rate(l, p.lmax, t)
+                self.estimates[i][(j, "r")] = r
+
+    def pick_order(self, root_order, order_tag = "order"):
+        """
+        """
+        indices = []
+        for i, data in enumerate(self.rsmls):  # plants
+            indices.append([])
+            for j, _ in enumerate(data.polylines):
+                o = data.properties[order_tag][j]
+                if o == root_order:  # add if of right topological order
+                    indices[-1].append(j)
+        return indices
+
+    def pick_kids(self, measurement_index, base_root_index):
+        """ returns the indices of all roots that are directly connected with 
+        root @param index base_root in measurement @param measurement_index
+        """
+        ppi = np.array(self.rsmls[measurement_index].properties["parent-poly"])
+        # print(base_root_index)
+        # print("ppi", ppi)
+        kids_indices = np.array(np.argwhere(ppi == base_root_index * np.ones(ppi.shape)), dtype = np.int64)
+        return kids_indices
 

@@ -8,11 +8,17 @@ def negexp_length(t, r, k):
 
 
 def negexp_age(l, r, k):
-    return -k / r * np.log(1 - l / k)
+    try:
+        return -k / r * np.log(1 - l / k)
+    except:
+        return 0.
 
 
 def negexp_rate(l, k, t):
-    return -k / t * np.log(1 - l / k)
+    try:
+        return -k / t * np.log(1 - l / k)
+    except:
+        return 1.e-9  # if k = 0 growth is probably slow
 
 
 def target_length(r:float, k:float, lengths:np.array, ages:np.array):

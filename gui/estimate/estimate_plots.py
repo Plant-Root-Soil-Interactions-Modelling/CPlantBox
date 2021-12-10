@@ -69,7 +69,8 @@ def plot_baseroots(data, index, ax):
         print(res)
         print(res.x[0])
 
-    data.set_rk(r, k)
+    data.parameters[0].r = r
+    data.parameters[0].lmax = k
 
     # plotting fit
     max_time = np.max(data.times) - 0.5
