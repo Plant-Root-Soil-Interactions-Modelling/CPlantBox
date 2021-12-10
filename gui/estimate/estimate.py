@@ -38,9 +38,9 @@ class App:
         tab_lateral_params = ttk.Frame(tabControl)
         tabControl.add(tab_info, text = 'Information')
         tabControl.add(tab_base, text = 'Base roots')
-        tabControl.add(tab_base_params, text = 'Parameters')
         tabControl.add(tab_laterals, text = 'Laterals')
-        tabControl.add(tab_lateral_params, text = 'Parameters')
+        tabControl.add(tab_base_params, text = 'Base parameters')
+        tabControl.add(tab_lateral_params, text = 'Lateral parameters')
         tabControl.pack(expand = 1, fill = "both")
         # tab_info
         lf_general = ttk.LabelFrame(tab_info, text = 'General')
@@ -68,7 +68,8 @@ class App:
         ttk.Label(lf_use, textvariable = self.label_use_l, anchor = "w", width = 30).grid(column = 0, row = 0)
         ttk.Label(lf_use, textvariable = self.label_use_r, anchor = "w", width = 70).grid(column = 1, row = 0)
         # tab_base
-        self.combo1 = ttk.Combobox(tab_base, values = [ "Length", "Surface", "Volume"])
+        self.combo1 = ttk.Combobox(tab_base, values = [ "Multiple dicots", "Multiple dicots (fixed lmax)",
+                                                       "Monocot linear model", "Monocot linear model (fixed lmax)"], width = 30)
         self.combo1.pack(pady = 10)
         self.combo1.current(0)
         self.combo1.bind("<<ComboboxSelected>>", self.update_baseroots)
@@ -76,15 +77,13 @@ class App:
         self.canvas = FigureCanvasTkAgg(fig, master = tab_base)  # A tk.DrawingArea.
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
-        # tab_development
-        # self.combo2 = ttk.Combobox(tab_development, values = [ "Length", "Surface", "Volume"])
-        # self.combo2.pack(pady = 10)
-        # self.combo2.current(0)
-        # self.combo2.bind("<<ComboboxSelected>>", self.update_development)
-        # fig2, self.ax2 = plt.subplots(1, 1, figsize = (15, 10))
-        # self.canvas2 = FigureCanvasTkAgg(fig2, master = tab_development)  # A tk.DrawingArea.
-        # self.canvas2.draw()
-        # self.canvas2.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
+        # tab_base_parameters
+        lf_basal_params = ttk.LabelFrame(tab_base_params, text = 'Tap and basal root parameters [mean, sd]')
+        lf_basal_params.grid(column = 0, row = 0, padx = 20, pady = 10)
+        self.label_basal_params_l = tkinter.StringVar()
+        self.label_basal_params_r = tkinter.StringVar()
+        ttk.Label(lf_basal_params, textvariable = self.label_basal_params_l, anchor = "w", width = 50).grid(column = 0, row = 0)
+        ttk.Label(lf_basal_params, textvariable = self.label_basal_params_r, anchor = "w", width = 50).grid(column = 1, row = 0)
 
     def update_info(self):
         """ update info tab """
@@ -129,34 +128,60 @@ class App:
         self.label_fun_l.set(lstr)
         self.label_fun_r.set(rstr)
         # label_using
-        # tagnames = self.data.tagnames
-        # rstr = "\n"
-        # lstr = "\nRadius \nCreation time \nTypes \n"
-        # if tagnames[0]:
-        #     rstr += "from tag '{:s}' within [{:g}, {:g}] cm\n".format(tagnames[0], np.min(self.data.radii), np.max(self.data.radii))
-        # else:
-        #     rstr += "not found\n"
-        # if tagnames[1]:
-        #     rstr += "from tag '{:s}' within [{:g}, {:g}] days\n".format(tagnames[1], np.min(self.data.cts), np.max(self.data.cts))
-        # else:
-        #     rstr += "not found\n"
-        # if tagnames[2]:
-        #     rstr += "from tag '{:s}' within [{:g}, {:g}]\n".format(tagnames[2], np.min(self.data.types), np.max(self.data.types))
-        # else:
-        #     rstr += "not found\n"  # , derived from root order
-        # self.label_use_l.set(lstr)
-        # self.label_use_r.set(rstr)
+        tagnames = self.data.rsmls[0].tagnames
+        rstr = "\n"
+        lstr = "\nRadius \nCreation time \nTypes \n"
+        if tagnames[0]:
+            rstr += "from tag '{:s}' within [{:g}, {:g}] cm\n".format(tagnames[0], np.min(self.data.rsmls[0].radii), np.max(self.data.rsmls[0].radii))
+        else:
+            rstr += "not found\n"
+        if tagnames[1]:
+            rstr += "from tag '{:s}' within [{:g}, {:g}] days\n".format(tagnames[1], np.min(self.data.rsmls[0].cts), np.max(self.data.rsmls[0].cts))
+        else:
+            rstr += "not found\n"
+        if tagnames[2]:
+            rstr += "from tag '{:s}' within [{:g}, {:g}]\n".format(tagnames[2], np.min(self.data.rsmls[0].types), np.max(self.data.rsmls[0].types))
+        else:
+            rstr += "not found\n"  # , derived from root order
+        self.label_use_l.set(lstr)
+        self.label_use_r.set(rstr)
+
+    def update_parameters(self):
+        """ update first parameter tap """
+        p = self.data.parameters[0]
+        lstr = "\nInitial growth rate [cm day-1]\nMaximal root length [cm]\n\n"
+        lstr += "Basal zone [cm]\nApical zone [cm]\nInter-lateral distance [cm]\n\n"
+        lstr += "Root radius [cm]\nAngle between root and parent root [deg]\n"
+        lstr += "Lateral subtypes (type, propability; ...)\n"
+        # int tropismT = 1;        ///< Root tropism parameter (Type)
+        # double tropismN = 1.;   ///< Root tropism parameter (number of trials)
+        # double tropismS = 0.2;  ///< Root tropism parameter (mean value of expected changeg) [1/cm]
+        # double ldelay = 1.;     ///< Lateral root emergence delay [day], only used by RootDelay, @see RootDelay, RootSystem::initializeDB
+        # double ldelays = 0.;     ///< Standard deviation of lateral root emergence delay [day]
+        rstr = "\n[{:g}, {:g}]\n[{:g}, {:g}]\n\n".format(p.r, p.rs, p.lmax, p.lmaxs)
+        rstr += "[{:g}, {:g}]\n[{:g}, {:g}]\n[{:g}, {:g}]\n\n".format(p.lb, p.lbs, p.la, p.las, p.ln, p.lns)
+        rstr += "[{:g}, {:g}]\n[{:g}, {:g}]\n".format(p.a, p.a_s, p.theta, p.thetas)
+        rstr += "\n"
+        self.label_basal_params_l.set(lstr)
+        self.label_basal_params_r.set(rstr)
 
     def update_baseroots(self, event):
         """ updates base roots scatter plot """
-        estimate_plots.plot_baseroots(self.data, self.ax)
+        estimate_plots.plot_baseroots(self.data, self.combo1.current(), self.ax)
         self.canvas.draw()
+
+    def update_baseroot_params(self, event):
+        """ update parameters for basal roots """
+        self.data.create_params()
+        self.data.create_base_params(self.combo1.current())
 
     def update_all(self):
         """ updates the view """
         if self.data.exists():
             self.update_info()
             self.update_baseroots(None)
+            self.update_baseroot_params(None)
+            self.update_parameters()
 
     def file_open(self):
         """ menu item: open rsml file """
