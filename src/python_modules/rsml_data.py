@@ -11,6 +11,8 @@ class RsmlData:
     * automatically converts units to cm and day 
     * if necessary converts 2d -> 3d 
     * automatically detects xml tags for radii, creation times, and subTypes, and converts to per node    
+    
+    used by the different GUIS in CPlantBox/gui
     """
 
     def __init__(self):

@@ -38,7 +38,7 @@ def init_conductivities(r, age_dependent:bool = False):
                       [kx0[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0]])  # [1/day]
 
     else:  # we set it as table to be able to make the rootsystem grow in a predefined way
-        kr = np.array([[-1e4, 1.e-9], [0., 1.e-9], [0., kr_const_], [1e4, kr_const_]])
+        kr = np.array([[-1e4, 1.e-9], [-1.e-9, 1.e-9], [0., kr_const_], [1e4, kr_const_]])
         kx = np.array([[0, kx_const_], [1e4, kx_const_]])
         r.setKrTables([kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1]],
                       [kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0]])  # [cm^3/day]
@@ -120,7 +120,7 @@ def init_conductivities_scenario_jan_const(r):
 
 def init_singleroot_contkrkx(r):
     """ Hydraulic conductivities - for Jans scenarios, BUT with constanct kr (if we use a lookup table) """
-    kr_const = 2.843148e-5 / (2 * np.pi * 0.05 * 0.5)  # in case of table look up, the values must agree
+    kr_const = 2.843148e-5 / (2 * np.pi * 0.05 * 0.5)  # in case of table look up, the values must agree, = 0.00018100042
 
     print(kr_const)
     kr = np.array([[0., kr_const], [1e4, kr_const]])

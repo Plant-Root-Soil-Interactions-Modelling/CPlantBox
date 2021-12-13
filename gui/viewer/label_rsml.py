@@ -12,19 +12,22 @@ import xylem_flux
 """
 creates a csv file per rsml file containing krs values, and suf values per 1 mm layers
 
-expected three arguments: file path, scenario index (1-4), (optionally, --shoot, only use for measured monocots)
+expected three arguments: file path, scenario index (1-4), (optionally, --shoot, only use for measured monocots; --split, for multiple dicots)
 
 e.g. 
-python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/maize 1
-python3 label_rsml.py ~/workspace/DUMUX/CPlantBox/gui/dicot 1
-
 python3 label_rsml.py ~/Downloads/second+round/monocot/maize 1
 python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 
+python3 label_rsml.py Benchmarking_ 1
+python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
+
+python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
+
+python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/monocot/ 1 --shoot
 """
 
 
-def label_file(file, artificial_shoot, scenario_index):
+def label_file(file, artificial_shoot, split, scenario_index):
     """ opens rsml and computes krs and suf """
     data = ViewerDataModel()
     data.open_rsml(file)  # same as in gui (to check)
@@ -42,21 +45,38 @@ def label_file(file, artificial_shoot, scenario_index):
     elif j == 3:
         viewer_conductivities.init_dynamic_scenario2(r)
 
-    krs, _ = data.xylem_flux.get_krs(data.max_ct, data.base_segs)
-    nop = len(data.base_nodes)  # number of plants (we might want to multiply suf by it?)
-    nop = 1
-    suf = r.get_suf(data.max_ct) * nop
-    data.analyser.addData("SUF", suf)
-    n = int(np.ceil(-data.analyser.getMinBounds().z))
-    suf_ = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, False)  # mm layers
-    depth = r.get_mean_suf_depth(data.max_ct)
+    if split:
+        n = data.data.base_segs
+        krs = [] * n
+        for i in range(0, n):
+            krs[i], _ = data.xylem_flux.get_krs(data.max_ct, [data.base_segs[i]])
+
+        suf = r.get_suf(data.max_ct) * nop
+        data.analyser.addData("SUF", suf)
+        n = int(np.ceil(-data.analyser.getMinBounds().z))
+        suf_ = np.zeros((1, int(n) * 10))
+        suf_[0,:] = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, False)  # mm layers
+        depth = r.get_mean_suf_depth(data.max_ct)
+    else:
+        krs0, _ = data.xylem_flux.get_krs(data.max_ct, data.base_segs)
+        krs = [krs0]
+        suf = r.get_suf(data.max_ct)
+        data.analyser.addData("SUF", suf)
+        n = int(np.ceil(-data.analyser.getMinBounds().z))
+        suf_ = np.zeros((1, int(n) * 10))
+        suf_[0,:] = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, False)  # mm layers
+        depth0 = r.get_mean_suf_depth(data.max_ct)
+        depth = [depth0]
     print("depth: ", depth, "cm")
     return suf_, krs, depth
 
 
-def write_csv(file, suf_, krs, si, depth):
+def write_csv(file, suf_, krs, si, depth, split, ind = 0):
     """ writes an xls sheet containing suf """
-    file_csv = file.rsplit('.', 1)[0] + '_suf' + str(si) + '.csv'
+    if split:
+        file_csv = file.rsplit('.', 1)[0] + '_suf' + str(si) + '_' + str(ind) + '.csv'
+    else:
+        file_csv = file.rsplit('.', 1)[0] + '_suf' + str(si) + '.csv'
     print("krs {:g}, suf from {:g} to {:g}, sums up to {:g}".format(krs, np.min(suf_), np.max(suf_), np.sum(suf_)))
     suf_ = np.insert(suf_, 0, depth)
     suf_ = np.insert(suf_, 0, krs)
@@ -72,6 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('file_path', type = str, help = 'file path')
     parser.add_argument('scenario_index', type = int, help = 'scenario index (1-4)')
     parser.add_argument('--shoot', action = 'store_true', help = 'adds an artificial shoot')
+    parser.add_argument('--split', action = 'store_true', help = 'adds an artificial shoot')
     args = parser.parse_args()
 
     walk_dir = args.file_path
@@ -83,6 +104,7 @@ if __name__ == '__main__':
     # walk_dir = os.path.abspath(walk_dir)
     print('walk_dir (absolute) = ' + os.path.abspath(walk_dir))
     artificial_shoot = args.shoot
+    split = args.split
 
     scenario_index = args.scenario_index
     print("Scenario index {:g}, see file viewer_conductivities.py".format(scenario_index))
@@ -110,6 +132,10 @@ if __name__ == '__main__':
                     file_path = os.path.join(root, filename)
                     print('file %s (full path: %s)\n' % (filename, file_path))
 
-                    suf_, krs, depth = label_file(file_path, artificial_shoot, scenario_index)
-                    write_csv(file_path, suf_, krs, scenario_index, depth)
+                    suf_, krs, depth = label_file(file_path, artificial_shoot, split, scenario_index)
+                    if len(krs) > 1:
+                        for i in range(0, len(krs)):
+                            write_csv(file_path, suf_[i,:], krs[i], scenario_index, depth[i], split, i)
+                    else:
+                        write_csv(file_path, suf_[0,:], krs[0], scenario_index, depth[0], split)
 

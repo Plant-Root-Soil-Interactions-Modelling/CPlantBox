@@ -308,9 +308,9 @@ class XylemFluxPython(XylemFlux):
         for i, s in enumerate(segs):
             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
         rx = self.solve_neumann(sim_time, -1.e5, p_s, False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
-        # print("rx ", np.min(rx), np.max(rx), np.mean(rx))
+        print("rx ", np.min(rx), np.max(rx), np.mean(rx))
         fluxes = self.segFluxes(sim_time, rx, p_s, approx = False, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
-        # print("fluxes ", np.min(fluxes), np.max(fluxes), np.mean(fluxes))
+        # print("fluxes ", np.min(fluxes) / -1.e5, np.max(fluxes) / -1.e5, np.mean(fluxes) / -1.e5)
         return np.array(fluxes) / -1.e5  # [1]
 
     def get_mean_suf_depth(self, sim_time):
