@@ -8,8 +8,9 @@ from estimate_params import *
 def plot_baseroots(data, index, ax):
     """ 
     data     EstimateDataModel
+    index    base method index
     """
-    ax.clear()  # plotting raw data
+    ax.clear()
 
     # tap root data
     length_tap, age_tap = [], []
@@ -69,9 +70,6 @@ def plot_baseroots(data, index, ax):
         print(res)
         print(res.x[0])
 
-    data.parameters[0].r = r
-    data.parameters[0].lmax = k
-
     # plotting fit
     max_time = np.max(data.times) - 0.5
     t_ = np.linspace(0, max_time, 200)
@@ -81,3 +79,29 @@ def plot_baseroots(data, index, ax):
     ax.set_ylabel("Measured root length [cm]")
     ax.legend()
 
+
+def plot_laterals(data, base_method, calibration_method, ax):
+    """
+    """
+    col_ = ["y*", "r*", "b*", "g*", "c*", "m*"] * 2
+    ax.clear()
+
+    order = 1
+    indices = data.pick_order(order)
+    c = np.array([len(x) for x in indices])
+
+    while np.sum(c) > 0:
+        age_ = []
+        l_ = []
+        for i, j_ in enumerate(indices):
+            for j in j_:
+                age_.append(data.estimates[i][(j, "age")])
+                l_.append(data.rsmls[i].properties["length"][j])
+        ax.plot(age_, l_, col_[order], label = "{:g} order lateras".format(order))
+        order += 1
+        indices = data.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
+        c = np.array([len(x) for x in indices])
+
+    ax.set_xlabel("Estimated root age [day]")
+    ax.set_ylabel("Measured root length [cm]")
+    ax.legend()

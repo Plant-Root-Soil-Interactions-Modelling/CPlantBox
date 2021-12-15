@@ -308,7 +308,7 @@ class XylemFluxPython(XylemFlux):
         for i, s in enumerate(segs):
             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
         rx = self.solve_neumann(sim_time, -1.e5, p_s, False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
-        print("rx ", np.min(rx), np.max(rx), np.mean(rx))
+        # print("rx", np.min(rx), np.max(rx), np.mean(rx))
         fluxes = self.segFluxes(sim_time, rx, p_s, approx = False, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
         # print("fluxes ", np.min(fluxes) / -1.e5, np.max(fluxes) / -1.e5, np.mean(fluxes) / -1.e5)
         return np.array(fluxes) / -1.e5  # [1]
@@ -349,7 +349,7 @@ class XylemFluxPython(XylemFlux):
         jc = 0
         for i in seg_ind:
             jc -= self.axial_flux(i, sim_time, rx, p_s, [], cells = False, ij = True)
-        krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[0])
+        krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[self.dirichlet_ind[0]])
         return krs , jc
 
     def get_eswp(self, sim_time, p_s):

@@ -24,6 +24,7 @@ python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 
 python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/monocot/ 1 --shoot
+python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/dicot/ 1 --split
 """
 
 
@@ -46,19 +47,39 @@ def label_file(file, artificial_shoot, split, scenario_index):
         viewer_conductivities.init_dynamic_scenario2(r)
 
     if split:
-        n = data.data.base_segs
-        krs = [] * n
-        for i in range(0, n):
-            krs[i], _ = data.xylem_flux.get_krs(data.max_ct, [data.base_segs[i]])
 
-        suf = r.get_suf(data.max_ct) * nop
-        data.analyser.addData("SUF", suf)
-        n = int(np.ceil(-data.analyser.getMinBounds().z))
-        suf_ = np.zeros((1, int(n) * 10))
-        suf_[0,:] = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, False)  # mm layers
-        depth = r.get_mean_suf_depth(data.max_ct)
+        # ViewerDataModel
+        # data.base_nodes  # base nodes indices (of roots or multiple plants)
+        # data.base_segs  # emerging segment indices from base nodes
+
+        # XylemFluxPython
+        # r.neumann_ind  # node indices for Neumann flux
+        # r.dirichlet_ind  # node indices for Dirichlet flux
+        # print(data.base_segs)
+        # print(data.base_nodes)
+
+        assert len(data.base_segs) == len(data.base_nodes), "base segments must emerge from different nodes"
+        n = len(data.base_segs)
+        krs = [None] * n
+        depth = [None] * n
+
+        for i in range(0, n):
+
+            r.dirichlet_ind = [ data.base_nodes[i] ]  # krs is based on dirichlet boundary condition
+            krs[i], _ = r.get_krs(data.max_ct, [data.base_segs[i]])
+
+            r.neumann_ind = [data.base_nodes[i]]  # suf is based on neumann boundary condititon
+            suf = r.get_suf(data.max_ct)
+            data.analyser.addData("SUF", suf)
+            if i == 0:
+                n2 = int(np.ceil(-data.analyser.getMinBounds().z))
+                suf_ = np.zeros((n, int(n2) * 10))
+            suf_[i,:] = data.analyser.distribution("SUF", 0., float(-n2), int(n2) * 10, False)  # mm layers
+
+            depth[i] = r.get_mean_suf_depth(data.max_ct)  # mean depth is based on suf, i.e. based on neumann bc
     else:
-        krs0, _ = data.xylem_flux.get_krs(data.max_ct, data.base_segs)
+
+        krs0, _ = r.get_krs(data.max_ct, data.base_segs)
         krs = [krs0]
         suf = r.get_suf(data.max_ct)
         data.analyser.addData("SUF", suf)
@@ -67,6 +88,7 @@ def label_file(file, artificial_shoot, split, scenario_index):
         suf_[0,:] = data.analyser.distribution("SUF", 0., float(-n), int(n) * 10, False)  # mm layers
         depth0 = r.get_mean_suf_depth(data.max_ct)
         depth = [depth0]
+
     print("depth: ", depth, "cm")
     return suf_, krs, depth
 

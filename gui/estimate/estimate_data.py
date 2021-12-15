@@ -51,7 +51,7 @@ class EstimateDataModel:
                     except:
                         print("filename", filename)
                         self.times.append(0)
-        self.estimates = [{}] * len(self.times)
+        self.estimates = [None] * len(self.times)
         plant = pb.Plant()  # dummy parameter
         self.parameters = [pb.RootRandomParameter(plant) for _ in range(0, 10)]
         self.create_length()  # add a length tag to properties
@@ -114,6 +114,9 @@ class EstimateDataModel:
     def create_params(self, base_method, calibration_method):
         """
         """
+        for i in range(0, len(self.times)):  # first make new estimates
+            self.estimates[i] = {}
+
         self.estimate_zones_(self.root_indices)
         p = self.parameters[0]
         if base_method < 2:  # tap and basals are treated the same way (multiple dicots)
@@ -121,24 +124,34 @@ class EstimateDataModel:
 
         for i, j_ in enumerate(self.base_root_indices):
             for j in j_:
+                # print("setting", i, j, self.times[i])
                 self.estimates[i][(j, "age")] = self.times[i]
 
-        order = 0
+        order = 0  # age must be estimated for intitial indices (!)
         indices = self.base_root_indices  # starting with base roots indices, then is ascending topological order
-        while len(indices) > 0:
-            print("computing order ", order)
-            self.add_r_(indices, calibration_method, order)
-            self.compute_age(indices, order)
+        c = np.array([len(x) for x in indices])
 
-            # TODO lateral callibration ..., to obtain new r, k for laterals
+        while np.sum(c) > 0:
+            # print("computing order ", order)
+
+            # 1. fit (r, lmax), based on age, into target_type = order
+            self.fit_root_length_(indices, base_method, target_type = order)
+
+            # 2. add individual r, for less noise
+            self.add_r_(indices, order)
+
+            # 3. calculate next iteration ages
+            self.compute_age(indices, order)  # age for the next iteration, aggregate_parameters_ must be called before
 
             order += 1
-            indices = self.pick_order(order)
-            print("new length", len(indices))  # TODO change while criteria [[],[],[]] will pass
+
+            indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
+            c = np.array([len(x) for x in indices])
+            # print("new length", np.sum(c), "at order", order, "indices", c)  # TODO change while criteria [[],[],[]] will pass
 
     def estimate_zones_(self, indices):
         """ creates lb, ln, la per root (if possible)
-        todo theta, r
+        todo theta, a
         see aggregate_parameters, to obtain mean and sd 
         """
         for i, j_ in enumerate(indices):
@@ -191,10 +204,14 @@ class EstimateDataModel:
         p.lns = np.std(ln_)
 
     def compute_age(self, indices, target_type):
+        """ assumes the target_type has already a given age, and a fitted r, lmax;  
+            calculates the age estimate of lateral roots            
+        """
         p = self.parameters[target_type]
         for i, j_ in enumerate(indices):
             for j in j_:
-                t = self.estimates[i][(j, "age")]
+                t = self.estimates[i][(j, "age")]  # parent root age
+                # print(i, j, t)
                 kids = self.pick_kids(i, j)
                 if len(kids) > 0:  # add estimated age
                     for k in kids[:, 0]:  # kids
@@ -203,14 +220,60 @@ class EstimateDataModel:
                         la = self.estimates[i][(j, "la")]
                         il = self.rsmls[i].properties["parent-node"][k]
                         bl = polyline_length(0, il, self.rsmls[i].polylines[j])  # latearal base length
-                        bl_la = min(bl + la, p.lmax * 0.99)
+                        bl_la = min(bl + la, p.lmax * 0.99)  # + la
                         et = negexp_age(max(bl_la, 0.), r, p.lmax)  # time the lateral emerged
                         age = max(t - et, 0.)
                         age = min(age, t)
+                        # print("order", target_type, "root age", t, "length", p.lmax, "bl_la", bl_la, la, bl, "resulting age", age)
+
+                        if (k, "age") in self.estimates[i]:
+                            print("oh no...")
+                            print("root", i, j, "kid", k)
+                            print(kids[:, 0])
+                            print(self.estimates[i][(k, "age")])
+                            input()
+
                         self.estimates[i][(k, "age")] = age  # tap root et =  0
 
-    def add_r_(self, indices, calibration_method, target_type):
-        # add r as drawn from the distribution
+    def fit_root_length_(self, indices, base_method, target_type):
+        """ adds an estimate using base_method of r and lmax into target_type 
+        """
+        length_, age_ = [], []
+        for i, j_ in enumerate(indices):
+            for j in j_:
+                age = self.estimates[i][(j, "age")]
+                l = self.rsmls[i].properties["length"][j]
+                age_.append(age)  # for fitting
+                length_.append(l)  # for fitting
+        length_ = np.array(length_)
+        age_ = np.array(age_)
+
+        if base_method == 0:
+            r, k, res = fit_taproot_rk(length_, age_)
+            print("order", target_type, "r", r, "k", k, "res", res)
+        elif base_method == 1:
+            k = 100
+            r, res = fit_taproot_r(length_, age_, k)
+            print("order", target_type, "r", r, "k", k, "res", res)
+
+        # elif base_method == 2:  # TODO
+        #     r, k, res_ = fit_taproot_rk(length_tap, age_tap)
+        #     res, f = estiamte_emergance_order0(np.array(length_basals), np.array(age_basals), r, k)
+        #     print(res)
+        #     print(res.x[0])
+        #
+        # elif base_method == 3:  # TODO
+        #     k = 100
+        #     r, res_ = fit_taproot_r(length_tap, age_tap, k)
+        #     res, f = estiamte_emergance_order0(np.array(length_basals), np.array(age_basals), r, k)
+        #     print(res)
+        #     print(res.x[0])
+
+        self.parameters[target_type].r = r
+        self.parameters[target_type].lmax = k
+
+    def add_r_(self, indices, target_type):
+        """ add r as drawn from the distribution, (r, lmax) must be fitted first """
         p = self.parameters[target_type]
         for i, j_ in enumerate(indices):
             for j in j_:
@@ -239,5 +302,8 @@ class EstimateDataModel:
         # print(base_root_index)
         # print("ppi", ppi)
         kids_indices = np.array(np.argwhere(ppi == base_root_index * np.ones(ppi.shape)), dtype = np.int64)
+        # print(kids_indices[:, 0])
+        # if len(kids_indices[:, 0]):
+        #     input()
         return kids_indices
 

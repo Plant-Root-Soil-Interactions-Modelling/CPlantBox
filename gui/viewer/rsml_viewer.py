@@ -40,6 +40,7 @@ class App:
         menu_view.add_command(label = "Segment length...", command = self.view_vtk_plot_length)
         menu_view.add_command(label = "Creation time...", command = self.view_vtk_plot_creationtime)
         menu_view.add_command(label = "SUF...", command = self.view_vtk_plot_suf)
+        menu_view.add_command(label = "Multiple SUF...", command = self.view_vtk_plot_multiple_suf)
         menu_view.add_command(label = "Animation...", command = self.view_vtk_anim)
         menu_view.add_separator()
         menu_view.add_command(label = "About...", command = self.view_about)
@@ -308,6 +309,24 @@ class App:
     def view_vtk_plot_creationtime(self):
         """ menu item """
         self.view_vtk_plot("creationTime")
+
+    def view_vtk_plot_multiple_suf(self):
+        """ menu item """
+        r = self.data.xylem_flux
+        if len(self.data.base_segs) == len(self.data.base_nodes):
+            n = len(self.data.base_segs)
+            krs = [None] * n
+            depth = [None] * n
+            for i in range(0, n):
+                r.dirichlet_ind = [ self.data.base_nodes[i] ]  # krs is based on dirichlet boundary condition
+                krs[i], _ = r.get_krs(self.data.max_ct, [self.data.base_segs[i]])
+                print("plot for base segment", self.data.base_segs[i], "krs", krs)  #
+                r.neumann_ind = [self.data.base_nodes[i]]  # suf is based on neumann boundary condititon
+                suf = r.get_suf(self.data.max_ct)
+                self.data.analyser.addData("SUF", suf)
+                self.view_vtk_plot("SUF")
+        else:
+            tkinter.messagebox.showwarning("Warning", "Only implemented for multiple dicots emerging from different nodes")
 
     def view_vtk_plot_suf(self):
         """ menu item """

@@ -70,20 +70,27 @@ class App:
         # tab_base
         self.combo1 = ttk.Combobox(tab_base, values = [ "Multiple dicots", "Multiple dicots (fixed lmax)",
                                                        "Monocot linear model", "Monocot linear model (fixed lmax)"], width = 30)
-        self.combo1.pack(pady = 10)
+        self.combo1.pack(pady = 10, side = tkinter.TOP)
         self.combo1.current(0)
         self.combo1.bind("<<ComboboxSelected>>", self.update_params)
+        # self.entry1 = ttk.Entry(tab_base, width = 20)
+        # self.entry1.pack(pady = 10, expand = 1, side = tkinter.RIGHT)
+        # self.entry2 = ttk.Entry(tab_base, width = 20)
+        # self.entry2.pack(pady = 10, expand = 1, side = tkinter.RIGHT)
+        # self.entry3 = ttk.Entry(tab_base, width = 20)
+        # self.entry3.pack(pady = 10, expand = 1, side = tkinter.RIGHT)
+
         fig, self.ax = plt.subplots(1, 1, figsize = (7, 7))
         self.canvas = FigureCanvasTkAgg(fig, master = tab_base)  # A tk.DrawingArea.
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
+        self.canvas.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1, side = tkinter.BOTTOM)
        # tab_laterals
         self.combo2 = ttk.Combobox(tab_laterals, values = [ "per order", "per RSML type tag", "per clustering"], width = 30)
         self.combo2.pack(pady = 10)
         self.combo2.current(0)
         self.combo2.bind("<<ComboboxSelected>>", self.update_params)
         fig2, self.ax2 = plt.subplots(1, 1, figsize = (7, 7))
-        self.canvas2 = FigureCanvasTkAgg(fig, master = tab_laterals)  # A tk.DrawingArea.
+        self.canvas2 = FigureCanvasTkAgg(fig2, master = tab_laterals)  # A tk.DrawingArea.
         self.canvas2.draw()
         self.canvas2.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
         # tab_base_parameters
@@ -178,8 +185,10 @@ class App:
         """ updates parameter calibration and base and lateral plots """
         estimate_plots.plot_baseroots(self.data, self.combo1.current(), self.ax)
         self.canvas.draw()
+        self.canvas2.draw()
         self.data.create_params(self.combo1.current(), self.combo2.current())
         self.update_parameters()
+        estimate_plots.plot_laterals(self.data, self.combo1.current(), self.combo2.current(), self.ax2)
 
     def update_all(self):
         """ updates the view """
