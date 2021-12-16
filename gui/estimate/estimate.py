@@ -18,17 +18,17 @@ class App:
         self.data = EstimateDataModel()
         self.root = root
         self.root.wm_title("Estimate")
-        self.root.geometry("850x800")
+        self.root.geometry("1200x800")
         # Menu
         menu = tkinter.Menu(root)
-        menu_file = tkinter.Menu(menu, tearoff = 0)
-        menu_file.add_command(label = "Open folder...", command = self.file_open)
-        menu_file.add_command(label = "Save parameters...", command = self.file_save)
+        menu_file = tkinter.Menu(menu, tearoff=0)
+        menu_file.add_command(label="Open folder...", command=self.file_open)
+        menu_file.add_command(label="Save parameters...", command=self.file_save)
         menu_file.add_separator()
-        menu_file.add_command(label = "Exit", command = self.file_quit)
-        menu.add_cascade(label = "File", menu = menu_file)
-        menu_view = tkinter.Menu(menu, tearoff = 0)
-        self.root.config(menu = menu)
+        menu_file.add_command(label="Exit", command=self.file_quit)
+        menu.add_cascade(label="File", menu=menu_file)
+        menu_view = tkinter.Menu(menu, tearoff=0)
+        self.root.config(menu=menu)
         # Tabs
         tabControl = ttk.Notebook(self.root)
         tab_info = ttk.Frame(tabControl)
@@ -36,70 +36,89 @@ class App:
         tab_laterals = ttk.Frame(tabControl)
         tab_base_params = ttk.Frame(tabControl)
         tab_lateral_params = ttk.Frame(tabControl)
-        tabControl.add(tab_info, text = 'Information')
-        tabControl.add(tab_base, text = 'Base roots')
-        tabControl.add(tab_laterals, text = 'Laterals')
-        tabControl.add(tab_base_params, text = 'Base parameters')
-        tabControl.add(tab_lateral_params, text = 'Lateral parameters')
-        tabControl.pack(expand = 1, fill = "both")
+        tabControl.add(tab_info, text='Information')
+        tabControl.add(tab_base, text='Base roots')
+        tabControl.add(tab_laterals, text='Laterals')
+        tabControl.add(tab_base_params, text='Base parameters')
+        tabControl.add(tab_lateral_params, text='Lateral parameters')
+        tabControl.pack(expand=1, fill="both")
         # tab_info
-        lf_general = ttk.LabelFrame(tab_info, text = 'General')
-        lf_general.grid(column = 0, row = 0, padx = 20, pady = 10)
-        lf_prop = ttk.LabelFrame(tab_info, text = 'Properties (values per root)')
-        lf_prop.grid(column = 0, row = 1, padx = 20, pady = 10)
-        lf_fun = ttk.LabelFrame(tab_info, text = 'Functions (values per node)')
-        lf_fun.grid(column = 0, row = 2, padx = 20, pady = 10)
-        lf_use = ttk.LabelFrame(tab_info, text = 'Using')
-        lf_use.grid(column = 0, row = 3, padx = 20, pady = 10)
+        lf_general = ttk.LabelFrame(tab_info, text='General')
+        lf_general.grid(column=0, row=0, padx=20, pady=10)
+        lf_prop = ttk.LabelFrame(tab_info, text='Properties (values per root)')
+        lf_prop.grid(column=0, row=1, padx=20, pady=10)
+        lf_fun = ttk.LabelFrame(tab_info, text='Functions (values per node)')
+        lf_fun.grid(column=0, row=2, padx=20, pady=10)
+        lf_use = ttk.LabelFrame(tab_info, text='Using')
+        lf_use.grid(column=0, row=3, padx=20, pady=10)
         self.label_general_l = tkinter.StringVar()
         self.label_general_r = tkinter.StringVar()
-        ttk.Label(lf_general, textvariable = self.label_general_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_general, textvariable = self.label_general_r, anchor = "w", width = 70).grid(column = 1, row = 0)
+        ttk.Label(lf_general, textvariable=self.label_general_l, anchor="w", width=30).grid(column=0, row=0)
+        ttk.Label(lf_general, textvariable=self.label_general_r, anchor="w", width=70).grid(column=1, row=0)
         self.label_prop_l = tkinter.StringVar()
         self.label_prop_r = tkinter.StringVar()
-        ttk.Label(lf_prop, textvariable = self.label_prop_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_prop, textvariable = self.label_prop_r, anchor = "w", width = 70).grid(column = 1, row = 0)
+        ttk.Label(lf_prop, textvariable=self.label_prop_l, anchor="w", width=30).grid(column=0, row=0)
+        ttk.Label(lf_prop, textvariable=self.label_prop_r, anchor="w", width=70).grid(column=1, row=0)
         self.label_fun_l = tkinter.StringVar()
         self.label_fun_r = tkinter.StringVar()
-        ttk.Label(lf_fun, textvariable = self.label_fun_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_fun, textvariable = self.label_fun_r, anchor = "w", width = 70).grid(column = 1, row = 0)
+        ttk.Label(lf_fun, textvariable=self.label_fun_l, anchor="w", width=30).grid(column=0, row=0)
+        ttk.Label(lf_fun, textvariable=self.label_fun_r, anchor="w", width=70).grid(column=1, row=0)
         self.label_use_l = tkinter.StringVar()
         self.label_use_r = tkinter.StringVar()
-        ttk.Label(lf_use, textvariable = self.label_use_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_use, textvariable = self.label_use_r, anchor = "w", width = 70).grid(column = 1, row = 0)
+        ttk.Label(lf_use, textvariable=self.label_use_l, anchor="w", width=30).grid(column=0, row=0)
+        ttk.Label(lf_use, textvariable=self.label_use_r, anchor="w", width=70).grid(column=1, row=0)
         # tab_base
-        self.combo1 = ttk.Combobox(tab_base, values = [ "Multiple dicots", "Multiple dicots (fixed lmax)",
-                                                       "Monocot linear model", "Monocot linear model (fixed lmax)"], width = 30)
-        self.combo1.pack(pady = 10, side = tkinter.TOP)
+        self.tab_base_top_frame = ttk.Frame(tab_base)
+        self.tab_base_top_frame.pack(side=tkinter.TOP)
+        self.combo1 = ttk.Combobox(self.tab_base_top_frame, values=[ "Multiple dicots", "Multiple dicots (fixed lmax)",
+                                                       "Monocot linear model", "Monocot linear model (fixed lmax)"], width=30)
+        self.combo1.pack(pady=10, side=tkinter.LEFT, expand=1)
         self.combo1.current(0)
-        self.combo1.bind("<<ComboboxSelected>>", self.update_params)
-        # self.entry1 = ttk.Entry(tab_base, width = 20)
-        # self.entry1.pack(pady = 10, expand = 1, side = tkinter.RIGHT)
-        # self.entry2 = ttk.Entry(tab_base, width = 20)
-        # self.entry2.pack(pady = 10, expand = 1, side = tkinter.RIGHT)
-        # self.entry3 = ttk.Entry(tab_base, width = 20)
-        # self.entry3.pack(pady = 10, expand = 1, side = tkinter.RIGHT)
-
-        fig, self.ax = plt.subplots(1, 1, figsize = (7, 7))
-        self.canvas = FigureCanvasTkAgg(fig, master = tab_base)  # A tk.DrawingArea.
+        self.combo1.bind("<<ComboboxSelected>>", self.update_all)
+        self.label1 = ttk.Label(self.tab_base_top_frame, text="lmax 0 order roots")
+        self.label1.pack(padx=10, expand=1, side=tkinter.LEFT)
+        self.lmax0 = tkinter.StringVar()
+        self.lmax0.set("100")
+        self.entry1 = ttk.Entry(self.tab_base_top_frame, textvariable=self.lmax0, width=20)
+        self.entry1.pack(pady=10, expand=1, side=tkinter.LEFT)
+        self.lmax1 = tkinter.StringVar()
+        self.lmax1.set("50")
+        self.label2 = ttk.Label(self.tab_base_top_frame, text="1st order")
+        self.label2.pack(padx=10, expand=1, side=tkinter.LEFT)
+        self.entry2 = ttk.Entry(self.tab_base_top_frame, textvariable=self.lmax1, width=20)
+        self.entry2.pack(pady=10, expand=1, side=tkinter.LEFT)
+        self.lmax2 = tkinter.StringVar()
+        self.lmax2.set("10")
+        self.label3 = ttk.Label(self.tab_base_top_frame, text="2nd order")
+        self.label3.pack(padx=10, expand=1, side=tkinter.LEFT)        
+        self.entry3 = ttk.Entry(self.tab_base_top_frame, textvariable=self.lmax2, width=20)
+        self.entry3.pack(pady=10, expand=1, side=tkinter.LEFT)
+        fig, self.ax = plt.subplots(1, 1, figsize=(7, 7))
+        self.canvas = FigureCanvasTkAgg(fig, master=tab_base)  # A tk.DrawingArea.
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1, side = tkinter.BOTTOM)
+        self.canvas.get_tk_widget().pack(fill=tkinter.BOTH, expand=1, side=tkinter.BOTTOM)
        # tab_laterals
-        self.combo2 = ttk.Combobox(tab_laterals, values = [ "per order", "per RSML type tag", "per clustering"], width = 30)
-        self.combo2.pack(pady = 10)
+        self.combo2 = ttk.Combobox(tab_laterals, values=[ "per order", "per RSML type tag", "per clustering"], width=30)
+        self.combo2.pack(pady=10)
         self.combo2.current(0)
-        self.combo2.bind("<<ComboboxSelected>>", self.update_params)
-        fig2, self.ax2 = plt.subplots(1, 1, figsize = (7, 7))
-        self.canvas2 = FigureCanvasTkAgg(fig2, master = tab_laterals)  # A tk.DrawingArea.
+        self.combo2.bind("<<ComboboxSelected>>", self.update_all)
+        fig2, self.ax2 = plt.subplots(1, 1, figsize=(7, 7))
+        self.canvas2 = FigureCanvasTkAgg(fig2, master=tab_laterals)  # A tk.DrawingArea.
         self.canvas2.draw()
-        self.canvas2.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
+        self.canvas2.get_tk_widget().pack(fill=tkinter.BOTH, expand=1)
         # tab_base_parameters
-        lf_basal_params = ttk.LabelFrame(tab_base_params, text = 'Tap and basal root parameters [mean, sd]')
-        lf_basal_params.grid(column = 0, row = 0, padx = 20, pady = 10)
+        lf_basal_params = ttk.LabelFrame(tab_base_params, text='Tap and basal root parameters [mean, sd]')
+        lf_basal_params.grid(column=0, row=0, padx=20, pady=10)
         self.label_basal_params_l = tkinter.StringVar()
         self.label_basal_params_r = tkinter.StringVar()
-        ttk.Label(lf_basal_params, textvariable = self.label_basal_params_l, anchor = "w", width = 50).grid(column = 0, row = 0)
-        ttk.Label(lf_basal_params, textvariable = self.label_basal_params_r, anchor = "w", width = 50).grid(column = 1, row = 0)
+        ttk.Label(lf_basal_params, textvariable=self.label_basal_params_l, anchor="w", width=50).grid(column=0, row=0)
+        ttk.Label(lf_basal_params, textvariable=self.label_basal_params_r, anchor="w", width=50).grid(column=1, row=0)
+
+    def parse_gui(self):
+        """ converts values of Entry fields into CPlantbox lmax parameter """
+        self.data.parameters[0].lmax = float(self.lmax0.get())
+        self.data.parameters[1].lmax = float(self.lmax1.get())
+        self.data.parameters[2].lmax = float(self.lmax2.get())
 
     def update_info(self):
         """ update info tab """
@@ -162,7 +181,7 @@ class App:
         self.label_use_l.set(lstr)
         self.label_use_r.set(rstr)
 
-    def update_parameters(self):
+    def update_parameters_tap(self):
         """ update first parameter tap """
         p = self.data.parameters[0]
         lstr = "\nInitial growth rate [cm day-1]\nMaximal root length [cm]\n\n"
@@ -181,24 +200,21 @@ class App:
         self.label_basal_params_l.set(lstr)
         self.label_basal_params_r.set(rstr)
 
-    def update_params(self, event):
-        """ updates parameter calibration and base and lateral plots """
-        estimate_plots.plot_baseroots(self.data, self.combo1.current(), self.ax)
-        self.canvas.draw()
-        self.canvas2.draw()
-        self.data.create_params(self.combo1.current(), self.combo2.current())
-        self.update_parameters()
-        estimate_plots.plot_laterals(self.data, self.combo1.current(), self.combo2.current(), self.ax2)
-
-    def update_all(self):
+    def update_all(self, event=None):
         """ updates the view """
         if self.data.exists():
+            self.parse_gui()
             self.update_info()
-            self.update_params(None)
+            self.update_parameters_tap()
+            self.data.create_params(self.combo1.current(), self.combo2.current())  # does the fitting for the current settings        
+            estimate_plots.plot_baseroots(self.data, self.combo1.current(), self.ax)
+            estimate_plots.plot_laterals(self.data, self.combo1.current(), self.combo2.current(), self.ax2)
+            self.canvas.draw()
+            self.canvas2.draw()
 
     def file_open(self):
         """ menu item: open rsml file """
-        fname = tkinter.filedialog.askdirectory(mustexist = True)
+        fname = tkinter.filedialog.askdirectory(mustexist=True)
         if isinstance(fname, str):
             if fname:
                 self.data.open_folder(fname)

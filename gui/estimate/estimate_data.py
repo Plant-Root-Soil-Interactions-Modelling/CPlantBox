@@ -120,7 +120,7 @@ class EstimateDataModel:
         self.estimate_zones_(self.root_indices)
         p = self.parameters[0]
         if base_method < 2:  # tap and basals are treated the same way (multiple dicots)
-            self.aggregate_parameters_(self.base_root_indices, target_type = 0)
+            self.aggregate_parameters_(self.base_root_indices, target_type=0)
 
         for i, j_ in enumerate(self.base_root_indices):
             for j in j_:
@@ -135,7 +135,7 @@ class EstimateDataModel:
             # print("computing order ", order)
 
             # 1. fit (r, lmax), based on age, into target_type = order
-            self.fit_root_length_(indices, base_method, target_type = order)
+            self.fit_root_length_(indices, base_method, target_type=order)
 
             # 2. add individual r, for less noise
             self.add_r_(indices, order)
@@ -252,7 +252,7 @@ class EstimateDataModel:
             r, k, res = fit_taproot_rk(length_, age_)
             print("order", target_type, "r", r, "k", k, "res", res)
         elif base_method == 1:
-            k = 100
+            k = self.parameters[target_type].lmax
             r, res = fit_taproot_r(length_, age_, k)
             print("order", target_type, "r", r, "k", k, "res", res)
 
@@ -279,10 +279,11 @@ class EstimateDataModel:
             for j in j_:
                 l = self.rsmls[i].properties["length"][j]
                 t = self.times[i]
-                r = negexp_rate(l, p.lmax, t)
+                l = min(l, p.lmax)  # 
+                r = negexp_rate(l * 0.99, p.lmax, t)
                 self.estimates[i][(j, "r")] = r
 
-    def pick_order(self, root_order, order_tag = "order"):
+    def pick_order(self, root_order, order_tag="order"):
         """
         """
         indices = []
@@ -301,7 +302,7 @@ class EstimateDataModel:
         ppi = np.array(self.rsmls[measurement_index].properties["parent-poly"])
         # print(base_root_index)
         # print("ppi", ppi)
-        kids_indices = np.array(np.argwhere(ppi == base_root_index * np.ones(ppi.shape)), dtype = np.int64)
+        kids_indices = np.array(np.argwhere(ppi == base_root_index * np.ones(ppi.shape)), dtype=np.int64)
         # print(kids_indices[:, 0])
         # if len(kids_indices[:, 0]):
         #     input()
