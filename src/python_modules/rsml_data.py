@@ -54,7 +54,7 @@ class RsmlData:
         self.types = types
         self.tagnames = tagnames
 
-    def open_rsml(self, fname):
+    def open_rsml(self, fname, shift_z = False):
         """ opens an rsml file into self.data, using rsml_reader (in CPlantBox/src/python_modules)              
         converts units to cm and day 
         if necessary converts 2d -> 3d, 
@@ -63,7 +63,7 @@ class RsmlData:
         print("DataModel.open_rsml(): scale to cm", metadata.scale_to_cm)
         self.set_rsml(polylines, properties, functions, metadata)
         self.scale_polylines_()  # converts units
-        self.check_polylines_2d_()  # 2d -> 3d
+        self.check_polylines_2d_(shift_z)  # 2d -> 3d
         radii, cts, types, tagnames = rsml_reader.get_parameter(polylines, functions, properties)  # paramter per node
         self.set_selected(radii, cts, types, tagnames)
         self.scale_selected_()  # converts units of special fields radii, cts, types
@@ -77,8 +77,9 @@ class RsmlData:
                 for k in range(0, 3):
                     self.polylines[i][j][k] *= scale
 
-    def check_polylines_2d_(self):
+    def check_polylines_2d_(self, shift_z = False):
         """  converts 2d image coordinates to 3d coordinates
+            shift_z determines if the roots system seed is shifted to -3 cm
         """
         nodes, segs = rsml_reader.get_segments(self.polylines, self.properties)  # fetch nodes and segments
         maxz = np.max(nodes[:, 2])
@@ -87,10 +88,17 @@ class RsmlData:
             print("DataModel.check_polylines_2d_(): assuming image coordinates, y-centered and z-flipped ")
             miny = np.min(nodes[:, 1])
             yy = np.max(nodes[:, 1]) - miny
-            for pl in self.polylines:  # both are references
+            for pl in self.polylines:  # both (pl and node) are references
                 for node in pl:
                     node[2] = -node[2]
                     node[1] = node[1] - miny - yy / 2
+        if shift_z:
+            print("DataModel.check_polylines_2d_(): root system seed is shifted to (x,y,-3) ")
+            z = self.polylines[0][0][2]
+            print("z", z)
+            for pl in self.polylines:  # both (pl and node) are references
+                for node in pl:
+                    node[2] = node[2] - z + (-3)
 
     def scale_selected_(self):
         """  scales radius and creation times, see rsml_writer.Metadata, and self.scale_to_cm

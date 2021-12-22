@@ -24,11 +24,11 @@ class ViewerDataModel(RsmlData):
         self.base_nodes = [0]  # base nodes indices (of roots or multiple plants)
         self.base_segs = [0]  # emerging segment indices from base nodes
 
-    def open_rsml(self, fname):
+    def open_rsml(self, fname, z_shift = False):
         """ see RsmlData.open_rsml() in src/python_modules/rsml_data.py                
         Additionally, creates an analyser (pb.SegmentAnalyser) and a xylem_flux (pb.XylemFluxPython) object 
         """
-        RsmlData.open_rsml(self, fname)
+        RsmlData.open_rsml(self, fname, z_shift)
         self.convert_to_xylem_flux_()
 
     def convert_to_xylem_flux_(self):

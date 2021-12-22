@@ -45,7 +45,7 @@ def fit_taproot_r(length, times, k):
 def fit_taproot_rk(length, times):
     """ fits initial growth rate r, and maximal root lenght k """
     assert(len(length) == len(times))
-    f = lambda x0: target_length(x0[0], x0[1], np.array(length), np.array(times))
+    f = lambda x: target_length(x[0], x[1], np.array(length), np.array(times))
     x0 = [5., 200]
     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
     return res.x[0], res.x[1], f(res.x)

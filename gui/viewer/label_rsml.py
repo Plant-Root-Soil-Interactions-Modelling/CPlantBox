@@ -12,7 +12,8 @@ import xylem_flux
 """
 creates a csv file per rsml file containing krs values, and suf values per 1 mm layers
 
-expected three arguments: file path, scenario index (1-4), (optionally, --shoot, only use for measured monocots; --split, for multiple dicots)
+expected three arguments: file path, scenario index (1-4), 
+optionally, --shoot, only use for measured monocots; --split, for multiple dicots, --z_shift to relocate seed to -3cm
 
 e.g. 
 python3 label_rsml.py ~/Downloads/second+round/monocot/maize 1
@@ -23,15 +24,15 @@ python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 
 python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 
-python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/monocot/ 1 --shoot
-python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/dicot/ 1 --split
+python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/monocot/ 1 --shoot --z_shift
+python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/dicot/ 1 --split --z_shift
 """
 
 
-def label_file(file, artificial_shoot, split, scenario_index):
+def label_file(file, z_shift, artificial_shoot, split, scenario_index):
     """ opens rsml and computes krs and suf """
     data = ViewerDataModel()
-    data.open_rsml(file)  # same as in gui (to check)
+    data.open_rsml(file, z_shift)  # same as in gui (to check)
     if artificial_shoot:
         data.add_artificial_shoot()
 
@@ -63,19 +64,22 @@ def label_file(file, artificial_shoot, split, scenario_index):
         krs = [None] * n
         depth = [None] * n
 
-        for i in range(0, n):
+        y = []
+        for i in data.base_nodes:
+            y.append(data.analyser.nodes[i].y)
+        ysorted = np.argsort(y)
+        print("y situation:", y, ysorted)
 
+        n2 = int(np.ceil(-data.analyser.getMinBounds().z))
+        suf_ = np.zeros((n, int(n2) * 10))
+
+        for i in ysorted:
             r.dirichlet_ind = [ data.base_nodes[i] ]  # krs is based on dirichlet boundary condition
             krs[i], _ = r.get_krs(data.max_ct, [data.base_segs[i]])
-
             r.neumann_ind = [data.base_nodes[i]]  # suf is based on neumann boundary condititon
             suf = r.get_suf(data.max_ct)
             data.analyser.addData("SUF", suf)
-            if i == 0:
-                n2 = int(np.ceil(-data.analyser.getMinBounds().z))
-                suf_ = np.zeros((n, int(n2) * 10))
             suf_[i,:] = data.analyser.distribution("SUF", 0., float(-n2), int(n2) * 10, False)  # mm layers
-
             depth[i] = r.get_mean_suf_depth(data.max_ct)  # mean depth is based on suf, i.e. based on neumann bc
     else:
 
@@ -114,7 +118,8 @@ if __name__ == '__main__':
     parser.add_argument('file_path', type = str, help = 'file path')
     parser.add_argument('scenario_index', type = int, help = 'scenario index (1-4)')
     parser.add_argument('--shoot', action = 'store_true', help = 'adds an artificial shoot')
-    parser.add_argument('--split', action = 'store_true', help = 'adds an artificial shoot')
+    parser.add_argument('--split', action = 'store_true', help = 'splits output for multiple plants into different csv files')
+    parser.add_argument('--z_shift', action = 'store_true', help = 'shifts seed to -3cm (based on the first seed, if multiple plants are present)')
     args = parser.parse_args()
 
     walk_dir = args.file_path
@@ -127,6 +132,7 @@ if __name__ == '__main__':
     print('walk_dir (absolute) = ' + os.path.abspath(walk_dir))
     artificial_shoot = args.shoot
     split = args.split
+    z_shift = args.z_shift
 
     scenario_index = args.scenario_index
     print("Scenario index {:g}, see file viewer_conductivities.py".format(scenario_index))
@@ -154,7 +160,7 @@ if __name__ == '__main__':
                     file_path = os.path.join(root, filename)
                     print('file %s (full path: %s)\n' % (filename, file_path))
 
-                    suf_, krs, depth = label_file(file_path, artificial_shoot, split, scenario_index)
+                    suf_, krs, depth = label_file(file_path, z_shift, artificial_shoot, split, scenario_index)
                     if len(krs) > 1:
                         for i in range(0, len(krs)):
                             write_csv(file_path, suf_[i,:], krs[i], scenario_index, depth[i], split, i)
