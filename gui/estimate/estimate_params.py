@@ -21,6 +21,27 @@ def negexp_rate(l, k, t):
         return 1.e-9  # if k = 0 growth is probably slow
 
 
+def target_rate(rate:float, lengths:np.array, r:float, lmax:float, times:float):
+    """ target function for estimating the linear base root production rate [day-1],
+    @param rate: linear base root production rate (delay between basal root emergence) [day-1] 
+    @param lengths: basal root lengths as numpy array sorted ascending [cm], list (per measurement) of list of sorted root lengths
+    @param r: initial growth rate [cm/day]
+    @param lmax: maximal root length [cm] 
+    @param times: maximal measurement, time list (per measurement)
+    @return error 
+     """
+    rate = max(rate, 0.)
+    n = len(lengths)  # number of measurements
+    ages, lengths2 = [], []  # flattened ages and lenghts
+    for ii in range(0, n):
+        nn = len(lengths[ii])
+        for i in range(0, nn):
+            ages.append((i + 1) * rate)
+            lengths2.append(lengths[ii][i])
+    x = target_length(r, lmax, np.array(lengths2), np.array(ages))
+    return x
+
+
 def target_length(r:float, k:float, lengths:np.array, ages:np.array):
     """ target function for optimization root target length [cm],
     @param r initial root length [cm], @param k maximal root length [cm]
@@ -59,19 +80,22 @@ def estiamte_emergance_order0(lengths:np.array, ages:np.array, r:float, k:float)
     return res, f
 
 
-def estimate_order0_rate(lengths:np.array, r:float, k:float, time:float):
+def estimate_order0_rate(lengths:np.array, r:float, k:float, times:float):
     """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length
-    @param lengths list of root lengths [cm] 
-    @param r initial root length [cm] 
-    @param k maximal root length [cm]
-    @param time maximal measurement time """
-    f = lambda x: target_rate(x[0], lengths, r, k, time)
-    x0 = [time / lengths.shape[0]]
+    @param lengths list of root lengths [cm] list (per measurement) of list of root sorted lengths
+    @param r initial growth rate [cm/day] 
+    @param k maximal root length [cm] 
+    @param times maximal measurement, time list (per measurement) [day]"""
+    assert len(lengths) == len(times), "estimate_order0_rate: size of measuered lengths list must equal measuring times"
+    f = lambda x: target_rate(x[0], lengths, r, k, times)
+    n = len(lengths)
+    x0 = np.array(times) / n
     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
-    n = lengths.shape[0]
-    ages = np.zeros(lengths.shape)
-    for i in range(0, n):
-        ages[n - i - 1] = max(time - i * res.x[0], 0.)
+    ages = [[]] * n
+    for ii in range(0, n):
+        nn = len(lengths[ii])
+        for i in range(0, nn):
+            ages[ii].append((i + 1) * res.x[0])
     return res, f, ages
 
 

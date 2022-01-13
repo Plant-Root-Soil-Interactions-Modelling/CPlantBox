@@ -17,6 +17,7 @@ class EstimateDataModel:
     def __init__(self):
         self.rsmls = []  # list of rsml data to analyse, rsml_data.RsmlData
         self.estimates = [{}]  # list of dictionary of parameters per root
+        self.plant = pb.Plant()  # to own the CPlantBox parameters
         self.parameters = []  # list of CPlantBox parameters of type , index = subType, max = 10
         self.times = []
         self.base_root_indices = []
@@ -56,7 +57,6 @@ class EstimateDataModel:
                         print("filename", filename)
                         self.times.append(0)
         self.estimates = [None] * len(self.times)
-        self.plant = pb.Plant()  # (for writing)
         self.parameters = [pb.RootRandomParameter(self.plant) for _ in range(0, 10)]
         self.create_length()  # add a length tag to properties
         self.initialize_roots_()  # find base roots
@@ -127,10 +127,11 @@ class EstimateDataModel:
         c = np.array([len(x) for x in indices])
         while np.sum(c) > 0:
             self.estimate_zones_(indices)
-            if base_method < 2:  # tap and basals are treated the same way (multiple dicots)
-                self.aggregate_parameters_(indices, target_type = order)
-            else:
-                pass  # TODO not implemented at many points in the code
+            # if base_method < 2:  # tap and basals are treated the same way (multiple dicots)
+            #     self.aggregate_parameters_(indices, target_type = order)
+            # else:
+            #     pass  # TODO not implemented at many points in the code ####################################################################
+            self.aggregate_parameters_(indices, target_type = order)
             order += 1
             indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
             c = np.array([len(x) for x in indices])
@@ -140,27 +141,58 @@ class EstimateDataModel:
             for j in j_:
                 self.estimates[i][(j, "age")] = self.times[i]
 
-        order = 0  # age must be estimated for intitial indices (!)
-        indices = self.base_root_indices  # starting with base roots indices, then is ascending topological order
-        c = np.array([len(x) for x in indices])
-
-        while np.sum(c) > 0:
-            # print("computing order ", order)
-
-            # 1. fit (r, lmax), based on age, into target_type = order
-            self.fit_root_length_(indices, base_method, target_type = order)
-
-            # 2. add individual r, for less noise
-            self.add_r_(indices, order)
-
+        if base_method < 2:
+            order = 0  # age must be estimated for intitial indices (!)
+            indices = self.base_root_indices
+            self.fit_root_length_(indices, base_method, target_type = order)  # 1
+            self.add_r_(indices, order)  # 2
             if apical_method == 0:  # delay based
                 self.add_delay_(indices, order)
+            self.compute_age(indices, order, apical_method)  # age for the next iteration, aggregate_parameters_ must be called before
+            order += 1
+            indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
+            c = np.array([len(x) for x in indices])
+        else:  # base_method >= 2
+            indices = self.tap_root_indices  # tap root first
+            self.fit_root_length_(indices, base_method, target_type = order)  # 1
+            self.add_r_(indices, order)  # 2
+            if apical_method == 0:  # delay based
+                self.add_delay_(indices, order)
+            self.compute_age(indices, order, apical_method)  # age for the next iteration, aggregate_parameters_ must be called before
+            # copy r into basal parameters
+            self.parameters[4] = self.parameters[0].copy(self.plant)
+            # fit basal production rate
+            indices = self.basal_root_indices
+            p = self.parameters[4]
+            # print(self.basal_root_indices)
+            # print(self.times)
+            n = len(indices)  # number of measurements
+            length_basals = [[]] * n
+            for i, j_ in enumerate(indices):
+                for j in j_:
+                  length_basals[i].append(self.rsmls[i].properties["length"][j])
+                length_basals[i].sort()
+            res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
+            # add basal ages accordingly
+            print("production rate", res.x[0])
+            print("ages", ages)
+            sss
+            # TODO ##############################################################################################
+            order = 1
+            indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
+            c = np.array([len(x) for x in indices])
 
+        while np.sum(c) > 0:  # the rest (higher orders...)
+            # 1. fit (r, lmax), based on age, into target_type = order
+            self.fit_root_length_(indices, base_method, target_type = order)
+            # 2. add individual r, for less noise
+            self.add_r_(indices, order)
+            if apical_method == 0:  # delay based
+                self.add_delay_(indices, order)
             # 3. calculate next iteration ages
             self.compute_age(indices, order, apical_method)  # age for the next iteration, aggregate_parameters_ must be called before
 
             order += 1
-
             indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
             c = np.array([len(x) for x in indices])
             # print("new length", np.sum(c), "at order", order, "indices", c)  # TODO change while criteria [[],[],[]] will pass
@@ -310,26 +342,13 @@ class EstimateDataModel:
         length_ = np.array(length_)
         age_ = np.array(age_)
 
-        if base_method == 0:
+        if base_method == 0 or base_method == 2:
             r, k, res = fit_taproot_rk(length_, age_)
             print("order", target_type, "r", r, "k", k, "res", res)
-        elif base_method == 1:
+        elif base_method == 1 or base_method == 3:
             k = self.parameters[target_type].lmax
             r, res = fit_taproot_r(length_, age_, k)
             print("order", target_type, "r", r, "k", k, "res", res)
-
-        # elif base_method == 2:  # TODO
-        #     r, k, res_ = fit_taproot_rk(length_tap, age_tap)
-        #     res, f = estiamte_emergance_order0(np.array(length_basals), np.array(age_basals), r, k)
-        #     print(res)
-        #     print(res.x[0])
-        #
-        # elif base_method == 3:  # TODO
-        #     k = 100
-        #     r, res_ = fit_taproot_r(length_tap, age_tap, k)
-        #     res, f = estiamte_emergance_order0(np.array(length_basals), np.array(age_basals), r, k)
-        #     print(res)
-        #     print(res.x[0])
 
         self.parameters[target_type].r = r
         self.parameters[target_type].lmax = k
