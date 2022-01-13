@@ -61,7 +61,7 @@ r.setKx([[kz]])
 r.airPressure = p_a
 
 # Numerical solution 
-r.seg_ind = seg_tips # segment indices for Neumann b.c.
+r.neumann_ind = seg_tips # segment indices for Neumann b.c.
 r.node_ind = node_tips
 rx = r.solve_leuning(sim_time = simtime,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
 Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = True)

@@ -54,11 +54,12 @@ r.setKx([[kz]])
 r.airPressure = p_a
 
 # Numerical solution 
-r.seg_ind = seg_tips # segment indices for Neumann b.c.
+r.neumann_ind = seg_tips # segment indices for Neumann b.c.
 r.node_ind = node_tips
 rx = r.solve_neumann(sim_time= simtime, value=0, sxx=[p_s], cells=True) #water matric pot given per segment
 fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
-r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True)#r.segFluxes(simtime, rx, p_out, False)  # cm3/day
+#too slow
+#r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True)#r.segFluxes(simtime, rx, p_out, False)  # cm3/day
 
 
 # plot results 
