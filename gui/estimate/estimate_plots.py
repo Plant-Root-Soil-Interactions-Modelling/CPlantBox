@@ -5,10 +5,10 @@ import plantbox as pb
 from estimate_params import *
 
 
-def plot_baseroots(data, index, ax):
+def plot_baseroots(data, base_method, ax):
     """ 
     data     EstimateDataModel
-    index    base method index
+    base_method    base method index
     """
     ax.clear()
 
@@ -18,6 +18,8 @@ def plot_baseroots(data, index, ax):
         for j in j_:
             age_.append(data.estimates[i][(j, "age")])
             l_.append(data.rsmls[i].properties["length"][j])
+            if age_[-1] > 6 and l_[-1] < 5:
+                print("short! measurement", i, "root", j)
     ax.plot(age_, l_, "r*", label = "tap roots")  # scatter plot
 
     # basal data
@@ -26,7 +28,7 @@ def plot_baseroots(data, index, ax):
         for j in j_:
             age_.append(data.estimates[i][(j, "age")])
             l_.append(data.rsmls[i].properties["length"][j])
-    if index < 2:  # basal = tap
+    if base_method < 2:  # basal = tap
         ax.plot(age_, l_, "r*")  # scatter plot
     else:
         ax.plot(age_, l_, "b*", label = "basal roots")  # scatter plot

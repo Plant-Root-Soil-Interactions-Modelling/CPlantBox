@@ -21,7 +21,7 @@ def negexp_rate(l, k, t):
         return 1.e-9  # if k = 0 growth is probably slow
 
 
-def target_rate(rate:float, lengths:np.array, r:float, lmax:float, times:float):
+def target_rate(rate, lengths:np.array, r:float, lmax:float, times:float):
     """ target function for estimating the linear base root production rate [day-1],
     @param rate: linear base root production rate (delay between basal root emergence) [day-1] 
     @param lengths: basal root lengths as numpy array sorted ascending [cm], list (per measurement) of list of sorted root lengths
@@ -36,7 +36,7 @@ def target_rate(rate:float, lengths:np.array, r:float, lmax:float, times:float):
     for ii in range(0, n):
         nn = len(lengths[ii])
         for i in range(0, nn):
-            ages.append((i + 1) * rate)
+            ages.append(times[ii] - (i + 1) * rate)
             lengths2.append(lengths[ii][i])
     x = target_length(r, lmax, np.array(lengths2), np.array(ages))
     return x
@@ -71,31 +71,51 @@ def fit_taproot_rk(length, times):
     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
     return res.x[0], res.x[1], f(res.x)
 
-
-def estiamte_emergance_order0(lengths:np.array, ages:np.array, r:float, k:float):
-    """ fits the emergance time of 2nd basal roots """
-    f = lambda x: target_length(r, k, lengths, ages - np.ones(ages.shape) * x[0])
-    x0 = [np.max(ages)]
-    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)
-    return res, f
+# def estiamte_emergance_order0(lengths:np.array, ages:np.array, r:float, k:float):
+#     """ fits the emergance time of 2nd basal roots """
+#     f = lambda x: target_length(r, k, lengths, ages - np.ones(ages.shape) * x[0])
+#     x0 = [np.max(ages)]
+#     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)
+#     return res, f
 
 
 def estimate_order0_rate(lengths:np.array, r:float, k:float, times:float):
     """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length
     @param lengths list of root lengths [cm] list (per measurement) of list of root sorted lengths
-    @param r initial growth rate [cm/day] 
+    @param r initial predefined growth rate [cm/day] 
     @param k maximal root length [cm] 
     @param times maximal measurement, time list (per measurement) [day]"""
     assert len(lengths) == len(times), "estimate_order0_rate: size of measuered lengths list must equal measuring times"
     f = lambda x: target_rate(x[0], lengths, r, k, times)
     n = len(lengths)
-    x0 = np.array(times) / n
+    x0 = np.max(times) / n
     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
-    ages = [[]] * n
+    ages = [None] * n
     for ii in range(0, n):
+        ages[ii] = []
         nn = len(lengths[ii])
         for i in range(0, nn):
-            ages[ii].append((i + 1) * res.x[0])
+            ages[ii].append(times[ii] - (i + 1) * res.x[0])
+    return res, f, ages
+
+
+def estimate_order0_rrate(lengths:np.array, r0:float, k:float, times:float):
+    """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length
+    @param lengths list of root lengths [cm] list (per measurement) of list of root sorted lengths
+    @param r0 initial growth rate for fitting [cm/day] 
+    @param k maximal root length [cm] 
+    @param times maximal measurement, time list (per measurement) [day]"""
+    assert len(lengths) == len(times), "estimate_order0_rate: size of measuered lengths list must equal measuring times"
+    f = lambda x: target_rate(x[0], lengths, x[1], k, times)
+    n = len(lengths)
+    x0 = [ np.max(times) / n, r0]  # initial value
+    res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # bounds and constraints are possible, but method dependent
+    ages = [None] * n
+    for ii in range(0, n):
+        ages[ii] = []
+        nn = len(lengths[ii])
+        for i in range(0, nn):
+            ages[ii].append(times[ii] - (i + 1) * res.x[0])
     return res, f, ages
 
 

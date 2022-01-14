@@ -20,10 +20,10 @@ class EstimateDataModel:
         self.plant = pb.Plant()  # to own the CPlantBox parameters
         self.parameters = []  # list of CPlantBox parameters of type , index = subType, max = 10
         self.times = []
-        self.base_root_indices = []
+        self.base_root_indices = []  # tap roots and basal roots
         self.tap_root_indices = []
-        self.basal_root_indices = []
-        self.root_indices = []
+        self.basal_root_indices = []  # includes shoot bornes
+        self.root_indices = []  # all roots
         self.folder_name = ""
         self.file_names = []  # for debugging
 
@@ -65,6 +65,20 @@ class EstimateDataModel:
         """ true if a rsml folder was set """
         return len(self.rsmls) > 0
 
+    def create_length(self):
+        """ calculates root lengths, and adds it to properties if not already present)"""
+        for k, _ in enumerate(self.rsmls):  # measurements
+            if not "length" in self.rsmls[k].properties:
+                self.rsmls[k].properties["length"] = []
+                for i, p in enumerate(self.rsmls[k].polylines):
+                    l = 0.
+                    for j, n1 in enumerate(p[:-1]):
+                        n2 = p[j + 1]
+                        l += np.linalg.norm(np.array(n2) - np.array(n1))
+                    self.rsmls[k].properties["length"].append(l)
+        else:
+            print("EstimateDataModel.create_length: 'length' tag is already available")
+
     def initialize_roots_(self):
         """ sets base root indices, tap root indices, and basal root indices.
         base root indices are the sum of taps and basals (treating shootborne and basals as equal for now) """
@@ -80,40 +94,21 @@ class EstimateDataModel:
                 if pp[j] == -1:  # add if base root
                     self.base_root_indices[-1].append(j)
         # 2. find tap and basal indices
-        self.tap_root_indices = []
-        self.basal_root_indices = []
-        for i in range(0, len(self.times)):  # plants
-            bri = self.base_root_indices[i]
-            self.tap_root_indices.append([])  # case for not found
-            self.basal_root_indices.append([])
-            software = self.rsmls[i].metadata.software
-            if (software == "OpenSimRoot" or software == "archisimple") and (len(bri) > 1):  # some come with an artificial shoot
-                self.tap_root_indices[-1].append(bri[1])
-                startindex = 2
-                print("speical case for ", software)
-            else:
-                self.tap_root_indices[-1].append(bri[0])
-                startindex = 1
-            for j in bri[startindex:]:  # other base roots
-                self.basal_root_indices[-1].append(j)
-        # print("taps")
-        # print(self.tap_root_indices)
-        # print("basals")
-        # print(self.basal_root_indices)
-
-    def create_length(self):
-        """ calculates root lengths, and adds it to properties if not already present)"""
-        for k, _ in enumerate(self.rsmls):  # measurements
-            if not "length" in self.rsmls[k].properties:
-                self.rsmls[k].properties["length"] = []
-                for i, p in enumerate(self.rsmls[k].polylines):
-                    l = 0.
-                    for j, n1 in enumerate(p[:-1]):
-                        n2 = p[j + 1]
-                        l += np.linalg.norm(np.array(n2) - np.array(n1))
-                    self.rsmls[k].properties["length"].append(l)
-        else:
-            print("EstimateDataModel.create_length: 'length' tag is already available")
+        n = len(self.times)
+        self.tap_root_indices = [None] * n
+        self.basal_root_indices = [None] * n
+        for i in range(0, n):  # plants
+            self.basal_root_indices[i] = []
+            self.tap_root_indices[i] = []
+            # print("measurement (file)", i)
+            bri = np.array(self.base_root_indices[i], dtype = np.int64)
+            lengths = np.array(self.rsmls[i].properties["length"])
+            tap_index = np.argmax(lengths[bri])  # longest base root is tap root (not perfect)
+            self.tap_root_indices[i].append(self.base_root_indices[i][tap_index])
+            # print("tap roots", self.tap_root_indices[-1], "tap index", tap_index, "root", self.base_root_indices[i][tap_index])
+            self.basal_root_indices[i] = self.base_root_indices[i].copy()
+            self.basal_root_indices[i].remove(tap_index)
+            # print("base roots", self.base_root_indices[i], self.basal_root_indices[i])
 
     def create_params(self, apical_method, base_method, calibration_method):
         """
@@ -144,15 +139,9 @@ class EstimateDataModel:
         if base_method < 2:
             order = 0  # age must be estimated for intitial indices (!)
             indices = self.base_root_indices
-            self.fit_root_length_(indices, base_method, target_type = order)  # 1
-            self.add_r_(indices, order)  # 2
-            if apical_method == 0:  # delay based
-                self.add_delay_(indices, order)
-            self.compute_age(indices, order, apical_method)  # age for the next iteration, aggregate_parameters_ must be called before
-            order += 1
-            indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
             c = np.array([len(x) for x in indices])
         else:  # base_method >= 2
+            order = 0
             indices = self.tap_root_indices  # tap root first
             self.fit_root_length_(indices, base_method, target_type = order)  # 1
             self.add_r_(indices, order)  # 2
@@ -160,24 +149,32 @@ class EstimateDataModel:
                 self.add_delay_(indices, order)
             self.compute_age(indices, order, apical_method)  # age for the next iteration, aggregate_parameters_ must be called before
             # copy r into basal parameters
-            self.parameters[4] = self.parameters[0].copy(self.plant)
+            target_type = 4
+            self.parameters[target_type] = self.parameters[0].copy(self.plant)
             # fit basal production rate
             indices = self.basal_root_indices
-            p = self.parameters[4]
-            # print(self.basal_root_indices)
-            # print(self.times)
+            p = self.parameters[target_type]
             n = len(indices)  # number of measurements
-            length_basals = [[]] * n
+            length_basals = [None] * n
             for i, j_ in enumerate(indices):
+                length_basals[i] = []
                 for j in j_:
                   length_basals[i].append(self.rsmls[i].properties["length"][j])
                 length_basals[i].sort()
-            res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
+            # res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
+            # print("production rate", res.x[0])
+            res, f, ages = estimate_order0_rrate(np.array(length_basals), p.r, p.lmax, self.times)
+            print("production rate", res.x[0], "elongation rate", res.x[1])
+
             # add basal ages accordingly
-            print("production rate", res.x[0])
-            print("ages", ages)
-            sss
-            # TODO ##############################################################################################
+            for i, j_ in enumerate(indices):
+                for j in j_:
+                    self.estimates[i][(j, "age")] = ages[i][j]
+            self.fit_root_length_(indices, base_method, target_type = target_type)  # 1
+            self.add_r_(indices, target_type)  # 2
+            if apical_method == 0:  # delay based
+                self.add_delay_(indices, target_type)
+            self.compute_age(indices, target_type, apical_method)
             order = 1
             indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
             c = np.array([len(x) for x in indices])
@@ -297,9 +294,9 @@ class EstimateDataModel:
                             self.estimates[i][(k, "age")] = age
             else:
                 for j in j_:
-                    parent_ct = measurement_time - self.estimates[i][(j, "age")]
                     kids = self.pick_kids(i, j)
                     if len(kids) > 0:  # add estimated age
+                        parent_ct = measurement_time - self.estimates[i][(j, "age")]
                         for k in kids[:, 0]:  # kids
 
                             r = self.estimates[i][(j, "r")]  # of parent root
