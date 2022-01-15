@@ -1,16 +1,7 @@
-import timeit
 import math
-import warnings
-warnings.filterwarnings("ignore", category=RuntimeWarning) 
-
 import numpy as np
 from scipy import sparse
 import scipy.sparse.linalg as LA
-import collections
-
-import plantbox as pb
-from plantbox import XylemFlux
-import rsml_reader as rsml  # todo
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 from plantbox import PhloemFlux
 
@@ -94,7 +85,9 @@ class Leuning(PhloemFlux, XylemFluxPython):
             @param soil_k [day-1]           optionally, soil conductivities can be prescribed per segment, 
                                             conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
             @param log                      indicates if omputed values should be printed in a text file  
-            @return [cm] root xylem pressure per root system node         
+            @return [cm] root xylem pressure per root system node  
+            
+            ATT: assumes that leaf temparature is constant and not influenced by gs
          """
         if log:
             logfile = open('solve_leuning.txt', "w")
@@ -181,6 +174,10 @@ class Leuning(PhloemFlux, XylemFluxPython):
         return self.x
     
     def initVals(self, N, age):
+        self.initStructandN( N, age)
+        self.initVcVjRd()
+    
+    def initStructandN(self,  N, age):
         self.leaf_nodes = self.get_nodes_index(4)
         self.segments = self.get_segments()
         self.seg_radii = np.array(self.rs.radii)
@@ -190,17 +187,17 @@ class Leuning(PhloemFlux, XylemFluxPython):
         radii_leaf = self.seg_radii[self.seg_indxs]  
         length_leaf = self.seg_length[self.seg_indxs]
         mass = (math.pi * pow(radii_leaf,2) * length_leaf)* self.Param['rho_p'] #in g
-        Area = 0.0001 * (2 * math.pi * radii_leaf* length_leaf + 2 * math.pi * pow(radii_leaf, 2)) 
+        totArea = 0.0001 * (2 * math.pi * radii_leaf* length_leaf + 2 * math.pi * pow(radii_leaf, 2)) #m2
         
         if N == []:
             self.getNc() #module to get N concentration in leaf. TODO: use N flow instead
         else:
             self.Nc = N # in % or g N per g DM
         
-        Np = ((self.Nc/100) * mass / Area)/14 #in mol/m2
+        Np = ((self.Nc/100) * mass / totArea)/14 #in mol/m2
         self.Chl = self.Param['Chl/N']*Np*893.51/10 #chlorophyll a content in microg cm-2, evans1989 
         self.seg_leaves = self.get_segments()[self.seg_indxs]
-        self.Area =  (2 * math.pi * radii_leaf *length_leaf ) #cm2
+        self.sideArea =  (2 * math.pi * radii_leaf *length_leaf ) #cm2
         st = 2
         kr = np.array([self.kr_f(age, st, 4,leafn) for leafn in range(len(self.seg_indxs))])
         kx = self.kx_f(age, st, 4)
@@ -211,11 +208,42 @@ class Leuning(PhloemFlux, XylemFluxPython):
         self.d = np.exp(-self.tau*self.l)-np.exp(self.tau*self.l)
         
         self.es = 0.61078 * np.exp(17.27 * self.TairC / (self.TairC + 237.3)) #2.338205 kPa
-        
-        ##Vc25max
-        self.Vcrefmax = (self.Param['VcmaxrefChl1']*self.Chl + self.Param['VcmaxrefChl2'])*1e-6 #mol m-2 s-1
-        
     
+    def initVcVjRd(self):     
+        #carboxylation rate
+        ##Vc25max
+        Vcrefmax = (self.Param['VcmaxrefChl1']*self.Chl + self.Param['VcmaxrefChl2'])*1e-6 #mol m-2 s-1
+        ##Vcmax
+        expo1 = np.exp(self.Param['Eav'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/self.Tl))
+        expo2 = np.exp((self.Param['S'] * self.Tl - self.Param['Edv'])/(self.Param['R'] * self.Tl))
+        self.Vcmax = Vcrefmax * expo1 / (1 + expo2) #Eq 11
+        ##Vc
+        self.Ko = self.Param['Ko_ref'] * np.exp(self.Param['Eao']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl)) #Eq 9
+        self.Kc = self.Param['Kc_ref'] * np.exp(self.Param['Eac']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl)) #Eq 9
+        self.delta = self.Param['gamma0'] * (1+ self.Param['gamma1']*(self.Tl - self.Param['Tref']) + self.Param['gamma2']*pow((self.Tl - self.Param['Tref']),2) ) #Eq 10
+        
+        #electron transport rate
+        ##Jrefmax
+        Jrefmax = Vcrefmax * self.Param['a3'] #Eq 25
+        ##Jmax
+        expo1 = np.exp(self.Param['Eaj'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/self.Tl))
+        expo2 = np.exp((self.Param['S'] * self.Tl - self.Param['Edj'])/(self.Param['R'] * self.Tl))
+        Jmax = np.minimum(Jrefmax * expo1 / (1 + expo2), Jrefmax) #Eq 24
+        ##J
+        coefa = self.Param['theta']
+        coefb = -(self.Param['alpha'] * self.Qlight + Jmax)
+        coefc = self.Param['alpha'] * self.Qlight * Jmax
+        dis = pow(coefb,2) - (4*coefa*coefc)
+        self.J =  ((-coefb- np.sqrt(dis))/(2*coefa))
+        
+        self.Rd = self.Param['Rd_ref'] * np.exp(self.Param['Eard']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl))
+        if self.log:
+            logfile = open('solve_leuning.txt', "a")
+            logfile.write(' Chl '+repr(Chl)+' Vcrefmax '+ repr(Vcrefmax)+', Vcmax '+ repr(self.Vcmax)+
+            ', Ko '+ repr(self.Ko)+', Kc '+ repr(self.Kc)+ ', Γ* '+ repr(self.delta)+ 
+            ', Jrefmax '+ repr(Jrefmax)+', Jmax '+ repr(Jmax)+', J '+ repr(self.J))
+            logfile.close()
+            
     def getNc(self):
         """ give N concentration in leaf. TODO: use N flow in plant instead
         """
@@ -234,7 +262,6 @@ class Leuning(PhloemFlux, XylemFluxPython):
         Nc = (DM_aboveground <= self.Param['DMcrit'])*4.4 + (~(DM_aboveground <= self.Param['DMcrit'])) * (self.Param['anc']*pow(DM_aboveground,-self.Param['bnc']))  #Eq 18
         self.Nc = Nc
         
-    
     def calcAn( self ):
         """
             fills the net assimilation and dark respiration vectors
@@ -245,48 +272,20 @@ class Leuning(PhloemFlux, XylemFluxPython):
             vector is ordered like the leaf segments
         """
         #carboxylation rate
-        ##Vcmax
-        expo1 = np.exp(self.Param['Eav'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/self.Tl))
-        expo2 = np.exp((self.Param['S'] * self.Tl - self.Param['Edv'])/(self.Param['R'] * self.Tl))
-        Vcmax = self.Vcrefmax * expo1 / (1 + expo2) #Eq 11
-        ##Vc
-        Ko = self.Param['Ko_ref'] * np.exp(self.Param['Eao']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl)) #Eq 9
-        Kc = self.Param['Kc_ref'] * np.exp(self.Param['Eac']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl)) #Eq 9
-        delta = self.Param['gamma0'] * (1+ self.Param['gamma1']*(self.Tl - self.Param['Tref']) + self.Param['gamma2']*pow((self.Tl - self.Param['Tref']),2) ) #Eq 10
-        self.Vc = np.minimum(np.maximum(Vcmax * (self.ci - delta) / (self.ci + Kc*(1 + self.Param['oi']/Ko)),0),Vcmax) #Eq 8
+        self.Vc = np.minimum(np.maximum(self.Vcmax * (self.ci - self.delta) / (self.ci + self.Kc*(1 + self.Param['oi']/self.Ko)),0),self.Vcmax) #Eq 8
         #electron transport rate
-        ##Jrefmax
-        Jrefmax = self.Vcrefmax * self.Param['a3'] #Eq 25
-        ##Jmax
-        expo1 = np.exp(self.Param['Eaj'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/self.Tl))
-        expo2 = np.exp((self.Param['S'] * self.Tl - self.Param['Edj'])/(self.Param['R'] * self.Tl))
-        Jmax = np.minimum(Jrefmax * expo1 / (1 + expo2), Jrefmax) #Eq 24
-        ##J
-        coefa = self.Param['theta']
-        coefb = -(self.Param['alpha'] * self.Qlight + Jmax)
-        coefc = self.Param['alpha'] * self.Qlight * Jmax
-        dis = pow(coefb,2) - (4*coefa*coefc)
-        J =  ((-coefb- np.sqrt(dis))/(2*coefa))
         ##Vj
         eps = 0
         if not isinstance(self.ci, float):
             eps = np.full(len(self.ci),0.)
-            eps[np.where([self.ci == 2 * delta])[0]] =0.001*delta # to avoid a division by 0
-            
-        elif self.ci == 2 * delta:
-            eps = 0.001*delta 
-        self.Vj = np.maximum(J/4 * (self.ci - delta)/ (self.ci - 2 * delta+eps), 0) #Eq 22
-            
-        #An and Rd
-        self.Rd = self.Param['Rd_ref'] * np.exp(self.Param['Eard']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl))
+            eps[np.where([self.ci == 2 * self.delta])[0]] =0.001*self.delta # to avoid a division by 0   
+        elif self.ci == 2 * self.delta:
+            eps = 0.001*self.delta 
+        self.Vj = np.maximum(self.J/4 * (self.ci - self.delta)/ (self.ci - 2 * self.delta+eps), 0) #Eq 22
+        #An and delta_gco2
         self.An = np.minimum(self.Vc, self.Vj) - self.Rd #Eq 6
-        self.deltagco2 = (delta + Kc*self.Rd*(1 + self.Param['oi']/Ko)/Vcmax)/(1-self.Rd/Vcmax)
-        if self.log:
-            logfile = open('solve_leuning.txt', "a")
-            logfile.write(' Chl '+repr(Chl)+' Vcrefmax '+ repr(Vcrefmax)+', Vcmax '+ repr(Vcmax)+
-            ', Ko '+ repr(Ko)+', Kc '+ repr(Kc)+ ', Γ* '+ repr(delta)+ 
-            ', Jrefmax '+ repr(Jrefmax)+', Jmax '+ repr(Jmax)+', J '+ repr(J))
-            logfile.close()
+        self.deltagco2 = (self.delta + self.Kc*self.Rd*(1 + self.Param['oi']/self.Ko)/self.Vcmax)/(1-self.Rd/self.Vcmax)
+
             
     def calcGs( self):
         """ fills the stomatal conductance vector
@@ -296,11 +295,9 @@ class Leuning(PhloemFlux, XylemFluxPython):
             size = number of leaf segments
             vector is ordered like the leaf segments
         """
-        p_l =(self.rxi + self.rxj)*0.5
-        self.fw = self.Param['fwr'] + (1- self.Param['fwr'])*np.exp(-np.exp(-self.Param['sh']*(p_l/10228 - self.Param['p_lcrit'])*10228)) #Eq 5
-        p_LMPa = p_l*0.0000978 # cm => MPa
+        p_lMPa =(self.rxi + self.rxj)*0.5*0.0000978 # cm => MPa
+        self.fw = self.Param['fwr'] + (1- self.Param['fwr'])*np.exp(-np.exp(-self.Param['sh']*(p_lMPa - self.Param['p_lcrit'])*10228)) #Eq 5
         self.gco2 = self.Param['g0']+ self.fw * self.Param['a1'] * (self.An + self.Rd)/(self.ci - self.deltagco2) #tuzet2003
-        p_lMPa = p_l *0.0000978
         HRleaf = np.exp(self.Param['Mh2o'] * p_lMPa/(self.Param['rho_h2o']*self.Param['R']*self.Tl)) #fractional relative humidity in the intercellular spaces
         ea = self.es - self.VPD
         ea_leaf = self.es * HRleaf
@@ -322,7 +319,7 @@ class Leuning(PhloemFlux, XylemFluxPython):
             size = number of leaf segments
             vector is ordered like the leaf segments
         """
-        self.pg = -((self.Area * self.Jw)/(-self.f*(1./(self.tau*self.d))*(2.-np.exp(-self.tau*self.l)-np.exp(self.tau*self.l))) - (self.rxi + self.rxj))/2 
+        self.pg = -((self.sideArea * self.Jw)/(-self.f*(1./(self.tau*self.d))*(2.-np.exp(-self.tau*self.l)-np.exp(self.tau*self.l))) - (self.rxi + self.rxj))/2 
         
     
     
