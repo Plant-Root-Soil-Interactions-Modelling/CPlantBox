@@ -12,8 +12,9 @@ import plantbox as pb
 from plantbox import XylemFlux
 import rsml_reader as rsml  # todo
 from xylem_flux import XylemFluxPython  # Python hybrid solver
+from plantbox import PhloemFlux
 
-class Leuning(XylemFluxPython):
+class Leuning(PhloemFlux, XylemFluxPython):
     """      
         C++ part is defined in CPlantBox XylemFlux.hh and XylemFlux.cpp
         Calculates water movement within the xylems, the stomatal aperture and net assimilation rate. 
@@ -28,18 +29,6 @@ class Leuning(XylemFluxPython):
             from Tuzet 2003, Dewar 2002 and Lu 2020                     
         """
         super().__init__(rs)
-        self.An = [] #
-        self.Vc = [] #
-        self.Vj = [] #
-        self.Rd = []#
-        self.ci = []#
-        self.Jw = []
-        self.fw = []
-        self.E = []
-        self.deltagco2 = []
-        self.x = []
-        self.gco2 =  []# stomatal aperture for CO2
-        self.Nc = 0 # in % or g N per g DM
         self.Param = { #list of parameters in alphabetical order. TODO: delete the useless parameters
         'a1' :3,#6, #(-) fitting parameter for gco2
         'a2': 1.6,#(-)
@@ -112,35 +101,18 @@ class Leuning(XylemFluxPython):
             logfile.write('input parameters: ')
             logfile.write(repr(self.Param))
         
-        organTypes = self.get_organ_types()
-        leaf_nodes = self.get_nodes_index(4)
-        stop = False
-        diff = 0
-        loop = 0
-        numleafseg = len(self.get_segments_index(4))
-        p_l = p_linit 
-        #self.p_g = np.full(numleafseg, p_ginit)
-        self.gco2 = []
-        self.An = []
-        self.Rd = [] # reset the arrays
-        self.x =[]
-        self.Vc = [] #
-        self.Vj = [] #
-        self.ci = []#
-        self.Jw = []
-        self.fw = []
-        self.E = []
-        self.deltagco2 =[]
-        if N == []:
-            self.getNc() #module to get N concentration in leaf. TODO: use N flow instead
-        else:
-            self.Nc = N # in % or g N per g DM
-        self.ci = ci_init
+        stop = False; self.Qlight = Qlight; self.log=log
+        self.VPD = VPD; self.Tl = Tl; self.sim_time = sim_time
+        diff = 0; loop = 0
+        self.TairC = Tl - 273.15; self.ci = ci_init
         self.Param['cs'] = cs
-        Indx = np.concatenate((self.get_organ_nodes_tips()))
-        value = np.full(len(Indx), 0) #set 0 axial fux at tip of stems, roots and leaves
+        
+        self.initVals(N, sim_time)
+        
         x_old = np.full(len(self.rs.nodes), 0)
-        x = p_l
+        An_old = gco2_old = ci_old = pg_old = np.full(len(self.seg_indxs), 0)
+        self.x = p_linit 
+        
         while(stop != True):   
             loop +=1 
             if log:
@@ -148,26 +120,43 @@ class Leuning(XylemFluxPython):
                 logfile.write("*" * 120)
                 logfile.write('\nLoop n°'+repr(loop))
                 logfile.close()
-            #self.calcGbl(Tl,V, log = log)
-            self.calcAn(Qlight, Tl, log=log) 
-            self.calcGs(VPD,  x,  Tl)  #also computes E and Jw
+            
+            if (isinstance(self.x, float) or isinstance(self.x, int)): #first loop
+                self.rxi = self.rxj = self.x
+            else:
+                self.rxi = np.array([self.x[s[0]] for s in self.seg_leaves])
+                self.rxj = np.array([self.x[s[1]] for s in self.seg_leaves])
+                
+                
+            self.calcAn() 
+            self.calcGs()  #also computes E and Jw
             self.calcCi() 
-            self.calcPsig(sim_time, p_l) #water potential of guard cell
+            self.calcPsig() #water potential of guard cell
             self.linearSystem(sim_time, sxx, cells, soil_k) # C++ (see XylemFlux.cpp)
             Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
             Q = sparse.csr_matrix(Q)
-            Q, b = self.bc_neumann(Q, self.aB, Indx, value)  # cm3 day-1
-            x = LA.spsolve(Q, b, use_umfpack = True)  # direct
-            self.x = x
-            p_l = x[leaf_nodes]
-            diff = max(abs(x-x_old))
-            x_old = x
+            self.x = LA.spsolve(Q, self.aB, use_umfpack = False)  # no difference when upfpack set to false
+            
+            diffX = max(abs(self.x-x_old))
+            diffAn = max(abs(self.An-An_old))
+            diffGs = max(abs(self.gco2-gco2_old))
+            diffCi = max(abs(self.ci-ci_old))
+            diffPsig = max(abs(self.getPg-pg_old))
+            diff = np.array([diffX,diffAn, diffGs, diffCi, diffPsig])
+            diffRel = np.array([max(abs(diffX/self.x)),max(abs(diffAn/self.An)), max(abs(diffGs/self.gco2)), 
+                        max(abs(diffCi/self.ci)), max(abs(diffPsig/self.getPg))])
+            
+            x_old = self.x
+            An_old = self.An
+            gco2_old = self.gco2
+            ci_old = self.ci
+            pg_old = self.getPg
+            
             if(verbose):
-                print("max error (cm): ", diff, ", loop n°",loop)
-            if(loop > 1000 or (max(abs(diff/x) > 0.01)+ max(abs(diff/x) > 0.01) ==0)):
+                print("max error: ", diff,"max error (rel): ", diffRel, ", loop n°",loop)
+            if((loop > 1000) or (max(abs(diffRel)) < 0.01)):
                 stop = True
             if log:
-                
                 logfile = open('solve_leuning.txt', "a")
                 logfile.write('\nAn (mol CO2 m-2 s-1) matrix: \n' +repr(self.An))
                 logfile.write('\nRd (mol CO2 m-2 s-1) matrix: \n' +repr(self.Rd))
@@ -176,23 +165,77 @@ class Leuning(XylemFluxPython):
                 logfile.write('\ngco2 (mol CO2 m-2 s-1) matrix: \n' +repr(self.gco2))
                 logfile.write('\nci (mol mol-1) matrix: \n' +repr(self.ci))
                 logfile.write('\nci/cs (-) matrix: \n' +repr([number / self.Param['cs'] for number in self.ci]))
-                logfile.write('\np_l (cm) matrix: \n' +repr(p_l))
+                logfile.write('\np_l (cm) matrix: \n' +repr(p_l[self.leaf_nodes]))
                 logfile.write('\nfw (-) matrix'+ repr(self.fw)+'\n')
                 logfile.write('\np_g (cm) matrix: \n' +repr(self.pg)+'\n')
                 logfile.write('\nJw (cm3 cm-2 d-1) matrix: \n' +repr(self.Jw)+'\n')
-                logfile.write('\nE (cm3 d-1) matrix'+ repr(self.E)+'\n')
-                logfile.write('\np_l (cm) matrix'+ repr(p_l)+'\n')
+                #logfile.write('\nE (cm3 d-1) matrix'+ repr(self.E)+'\n')
                 logfile.close()
-        res = max((max(abs(diff/x)), max(abs(diff/x))))
+        res = max(abs(diffRel))
         print('leuning computation module stopped after {} trials. Sum of absolute difference between leaf matric potential calculated at the last two trials: {}\nmax error in a cell:{}'.format(loop, diff,res))
         if log:
             logfile = open('solve_leuning.txt', "a")
             logfile.write('leuning computation module stopped after {} trials. Sum of absolute difference between leaf matric potential calculated at the last two trials: {}'.format(loop, diff))
             logfile.close()
             print('you can find the simulation log in the file solve_leuning.txt')
-        return x
+        return self.x
+    
+    def initVals(self, N, age):
+        self.leaf_nodes = self.get_nodes_index(4)
+        self.segments = self.get_segments()
+        self.seg_radii = np.array(self.rs.radii)
+        self.organTypes = np.array(self.rs.organTypes)
+        self.seg_length = np.array(self.segLength())
+        self.seg_indxs = np.array(self.get_segments_index(4))
+        radii_leaf = self.seg_radii[self.seg_indxs]  
+        length_leaf = self.seg_length[self.seg_indxs]
+        mass = (math.pi * pow(radii_leaf,2) * length_leaf)* self.Param['rho_p'] #in g
+        Area = 0.0001 * (2 * math.pi * radii_leaf* length_leaf + 2 * math.pi * pow(radii_leaf, 2)) 
         
-    def calcAn( self,Q, Tl, log=True ):
+        if N == []:
+            self.getNc() #module to get N concentration in leaf. TODO: use N flow instead
+        else:
+            self.Nc = N # in % or g N per g DM
+        
+        Np = ((self.Nc/100) * mass / Area)/14 #in mol/m2
+        self.Chl = self.Param['Chl/N']*Np*893.51/10 #chlorophyll a content in microg cm-2, evans1989 
+        self.seg_leaves = self.get_segments()[self.seg_indxs]
+        self.Area =  (2 * math.pi * radii_leaf *length_leaf ) #cm2
+        st = 2
+        kr = np.array([self.kr_f(age, st, 4,leafn) for leafn in range(len(self.seg_indxs))])
+        kx = self.kx_f(age, st, 4)
+        a = radii_leaf
+        self.l = length_leaf
+        self.f = -2*a*math.pi*kr
+        self.tau = np.sqrt(2*a*math.pi*kr/kx)
+        self.d = np.exp(-self.tau*self.l)-np.exp(self.tau*self.l)
+        
+        self.es = 0.61078 * np.exp(17.27 * self.TairC / (self.TairC + 237.3)) #2.338205 kPa
+        
+        ##Vc25max
+        self.Vcrefmax = (self.Param['VcmaxrefChl1']*self.Chl + self.Param['VcmaxrefChl2'])*1e-6 #mol m-2 s-1
+        
+    
+    def getNc(self):
+        """ give N concentration in leaf. TODO: use N flow in plant instead
+        """
+        seg_aboveground = self.segments[np.where(self.organTypes > 2)  ]
+        radii_aboveground = self.seg_radii[np.where(self.organTypes > 2)]  
+        length_aboveground = self.seg_length[np.where(self.organTypes > 2)]  
+        DM_aboveground = 0
+        get_y_node = lambda vec : np.array(vec)[1]
+        get_x_node = lambda vec : np.array(vec)[0]
+        nodes_aboveground = np.concatenate((self.get_nodes_organ_type(3),self.get_nodes_organ_type(4)))
+        nodesy = np.array([get_y_node(xi) for xi in self.segments])
+        nodesx = np.array([get_x_node(xi) for xi in self.segments])
+        surface = (max(nodesx) - min(nodesx)) * (max(nodesy) - min(nodesy)) * 1e-8 #cm2 -> ha
+        DM_aboveground = sum((math.pi * np.power(radii_aboveground,2) * length_aboveground)* self.Param['rho_p']*1e-6 )# g -> tonne,  #Eq 19
+        DM_aboveground = DM_aboveground/surface  #Eq 19
+        Nc = (DM_aboveground <= self.Param['DMcrit'])*4.4 + (~(DM_aboveground <= self.Param['DMcrit'])) * (self.Param['anc']*pow(DM_aboveground,-self.Param['bnc']))  #Eq 18
+        self.Nc = Nc
+        
+    
+    def calcAn( self ):
         """
             fills the net assimilation and dark respiration vectors
             @param Q_input[mol photons m-2 s-1]     absorbed photon irradiance (mean or per leaf segment)
@@ -201,76 +244,51 @@ class Leuning(XylemFluxPython):
             size = number of leaf segments
             vector is ordered like the leaf segments
         """
-        self.An = [] # reset the array
-        self.Rd = []
-        self.Vc = []
-        self.Vj = []
-        self.deltagco2 =[]
-        seg_radii = np.array(self.rs.radii)
-        organTypes = np.array(self.rs.organTypes)
-        seg_length = np.array(self.segLength())
-        radii_leaf = seg_radii[np.where(organTypes == 4)]  
-        length_leaf = seg_length[np.where(organTypes == 4)]
         #carboxylation rate
-        ##Vc25max
-        mass = (math.pi * pow(radii_leaf,2) * length_leaf)* self.Param['rho_p'] #in g
-        Area = 0.0001 * (2 * math.pi * radii_leaf* length_leaf + 2 * math.pi * pow(radii_leaf, 2)) 
-        Np = ((self.Nc/100) * mass / Area)/14 #in mol/m2
-        Chl = self.Param['Chl/N']*Np*893.51/10 #chlorophyll a content in microg cm-2, evans1989 
-        Vcrefmax = (self.Param['VcmaxrefChl1']*Chl + self.Param['VcmaxrefChl2'])*1e-6 #mol m-2 s-1
         ##Vcmax
-        expo1 = np.exp(self.Param['Eav'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/Tl))
-        expo2 = np.exp((self.Param['S'] * Tl - self.Param['Edv'])/(self.Param['R'] * Tl))
-        Vcmax = Vcrefmax * expo1 / (1 + expo2) #Eq 11
+        expo1 = np.exp(self.Param['Eav'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/self.Tl))
+        expo2 = np.exp((self.Param['S'] * self.Tl - self.Param['Edv'])/(self.Param['R'] * self.Tl))
+        Vcmax = self.Vcrefmax * expo1 / (1 + expo2) #Eq 11
         ##Vc
-        Ko = self.Param['Ko_ref'] * np.exp(self.Param['Eao']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/Tl)) #Eq 9
-        Kc = self.Param['Kc_ref'] * np.exp(self.Param['Eac']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/Tl)) #Eq 9
-        delta = self.Param['gamma0'] * (1+ self.Param['gamma1']*(Tl - self.Param['Tref']) + self.Param['gamma2']*pow((Tl - self.Param['Tref']),2) ) #Eq 10
-        ci = self.ci
-        Vc = np.minimum(np.maximum(Vcmax * (ci - delta) / (ci + Kc*(1 + self.Param['oi']/Ko)),0),Vcmax) #Eq 8
+        Ko = self.Param['Ko_ref'] * np.exp(self.Param['Eao']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl)) #Eq 9
+        Kc = self.Param['Kc_ref'] * np.exp(self.Param['Eac']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl)) #Eq 9
+        delta = self.Param['gamma0'] * (1+ self.Param['gamma1']*(self.Tl - self.Param['Tref']) + self.Param['gamma2']*pow((self.Tl - self.Param['Tref']),2) ) #Eq 10
+        self.Vc = np.minimum(np.maximum(Vcmax * (self.ci - delta) / (self.ci + Kc*(1 + self.Param['oi']/Ko)),0),Vcmax) #Eq 8
         #electron transport rate
         ##Jrefmax
-        Jrefmax = Vcrefmax * self.Param['a3'] #Eq 25
+        Jrefmax = self.Vcrefmax * self.Param['a3'] #Eq 25
         ##Jmax
-        expo1 = np.exp(self.Param['Eaj'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/Tl))
-        expo2 = np.exp((self.Param['S'] * Tl - self.Param['Edj'])/(self.Param['R'] * Tl))
+        expo1 = np.exp(self.Param['Eaj'] /(self.Param['R']*self.Param['Tref'])*(1 - self.Param['Tref']/self.Tl))
+        expo2 = np.exp((self.Param['S'] * self.Tl - self.Param['Edj'])/(self.Param['R'] * self.Tl))
         Jmax = np.minimum(Jrefmax * expo1 / (1 + expo2), Jrefmax) #Eq 24
         ##J
         coefa = self.Param['theta']
-        coefb = -(self.Param['alpha'] * Q + Jmax)
-        coefc = self.Param['alpha'] * Q * Jmax
+        coefb = -(self.Param['alpha'] * self.Qlight + Jmax)
+        coefc = self.Param['alpha'] * self.Qlight * Jmax
         dis = pow(coefb,2) - (4*coefa*coefc)
         J =  ((-coefb- np.sqrt(dis))/(2*coefa))
         ##Vj
         eps = 0
-        if not isinstance(ci, float):
-            eps = np.full(len(ci),0.)
-            eps[np.where([ci == 2 * delta])[0]] =0.001*delta # to avoid a division by 0
+        if not isinstance(self.ci, float):
+            eps = np.full(len(self.ci),0.)
+            eps[np.where([self.ci == 2 * delta])[0]] =0.001*delta # to avoid a division by 0
             
-        elif ci == 2 * delta:
+        elif self.ci == 2 * delta:
             eps = 0.001*delta 
-        Vj = np.maximum(J/4 * (ci - delta)/ (ci - 2 * delta+eps), 0) #Eq 22
+        self.Vj = np.maximum(J/4 * (self.ci - delta)/ (self.ci - 2 * delta+eps), 0) #Eq 22
             
         #An and Rd
-        Rd = self.Param['Rd_ref'] * np.exp(self.Param['Eard']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/Tl))
-        An = np.minimum(Vc, Vj) - Rd #Eq 6
-        #print('Q ',An, Q, Vj, J2, coefa, coefb, coefc, Jmax, math.sqrt(dis))
-        deltagco2 = (delta + Kc*Rd*(1 + self.Param['oi']/Ko)/Vcmax)/(1-Rd/Vcmax)
-        #print('ref',Vcmax, Ko, Kc,  ci, delta,ci - delta, ci - 2 * delta)
-        #print('An', An, Rd, Vc, Vj, min(Vc, Vj) - Rd)
-        self.An = An #cm3/day
-        self.Rd =Rd #cm3/day
-        self.Vc= Vc #cm3/day
-        self.Vj=Vj #cm3/day
-        self.deltagco2=deltagco2
-        if log:
+        self.Rd = self.Param['Rd_ref'] * np.exp(self.Param['Eard']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl))
+        self.An = np.minimum(self.Vc, self.Vj) - self.Rd #Eq 6
+        self.deltagco2 = (delta + Kc*self.Rd*(1 + self.Param['oi']/Ko)/Vcmax)/(1-self.Rd/Vcmax)
+        if self.log:
             logfile = open('solve_leuning.txt', "a")
             logfile.write(' Chl '+repr(Chl)+' Vcrefmax '+ repr(Vcrefmax)+', Vcmax '+ repr(Vcmax)+
             ', Ko '+ repr(Ko)+', Kc '+ repr(Kc)+ ', Γ* '+ repr(delta)+ 
             ', Jrefmax '+ repr(Jrefmax)+', Jmax '+ repr(Jmax)+', J '+ repr(J))
             logfile.close()
             
-    def calcGs( self,VPD, rx, Tl):
+    def calcGs( self):
         """ fills the stomatal conductance vector
             @param VPD_input [kPa]          vapour pressure deficit
             @param p_l_input [cm]           leaf matric poential (mean or per leaf segment)
@@ -278,100 +296,36 @@ class Leuning(XylemFluxPython):
             size = number of leaf segments
             vector is ordered like the leaf segments
         """
-        self.gco2 = []
-        self.Jw = []
-        self.fw = []
-        self.E = []
-        ci = self.ci
-        seg_radii = np.array(self.rs.radii)
-        organTypes = np.array(self.rs.organTypes)
-        seg_length = np.array(self.segLength())
-        radii_leaf = seg_radii[np.where(organTypes == 4)]  
-        length_leaf = seg_length[np.where(organTypes == 4)]
-        seg_leaves = self.get_segments()[np.where(organTypes == 4)]
-        p_l = rx
-        if isinstance(rx, type(np.array([]))):
-            p_l =np.array([(rx[segl[0]]+rx[segl[1]])*0.5 for segl in seg_leaves])
-        TairC = Tl - 273.15
-        fw = self.Param['fwr'] + (1- self.Param['fwr'])*np.exp(-np.exp(-self.Param['sh']*(p_l/10228 - self.Param['p_lcrit'])*10228)) #Eq 5
-        p_LMPa = p_l*0.0000978
-        sf = 4.9
-        pref = -1.2
-        #fw = (1 + np.exp(sf *pref))/((1 + np.exp(pref - p_LMPa))) #Tuzet2003
-        self.fw=fw
-        #g =  fw * self.Param['a1'] * (self.An[si] + self.Rd[si]) / (ci*(1 + VPD/self.Param['D0'])) #Eq 1 Dewar2002
-        g = self.Param['g0']+ fw * self.Param['a1'] * (self.An + self.Rd)/(ci - self.deltagco2) #tuzet2003
-        #g = self.Param['g0']+ max(fw * self.Param['a1'] * (self.An[si] + self.Rd[si])/((ci - self.deltagco2[si])*(1 + VPD/self.Param['D0'])),0) #leuning with ci
-        self.gco2=g
-        gw = g * 1.6
-        p_lMPa = p_l *0.0000978 # cm => MPa
-        HRleaf = np.exp(self.Param['Mh2o'] * p_lMPa/(self.Param['rho_h2o']*self.Param['R']*Tl)) #fractional relative humidity in the intercellular spaces
-        es = 0.61078 * np.exp(17.27 * TairC / (TairC + 237.3)) #2.338205 kPa
-        ea = es - VPD
-        ea_leaf = es * HRleaf
-        VPDL = ea_leaf - ea
-        trans = gw * VPDL/self.Param['Patm'] * self.Param['Mh2o']/self.Param['rho_h2o'] * 24*3600e-4 #in cm3 cm-2 d-1
-        self.Jw=trans
-        Area =  (2 * math.pi * radii_leaf *length_leaf ) #cm2
-        E = Area * trans
-        self.E=E
+        p_l =(self.rxi + self.rxj)*0.5
+        self.fw = self.Param['fwr'] + (1- self.Param['fwr'])*np.exp(-np.exp(-self.Param['sh']*(p_l/10228 - self.Param['p_lcrit'])*10228)) #Eq 5
+        p_LMPa = p_l*0.0000978 # cm => MPa
+        self.gco2 = self.Param['g0']+ self.fw * self.Param['a1'] * (self.An + self.Rd)/(self.ci - self.deltagco2) #tuzet2003
+        p_lMPa = p_l *0.0000978
+        HRleaf = np.exp(self.Param['Mh2o'] * p_lMPa/(self.Param['rho_h2o']*self.Param['R']*self.Tl)) #fractional relative humidity in the intercellular spaces
+        ea = self.es - self.VPD
+        ea_leaf = self.es * HRleaf
+        #VPDL = ea_leaf - ea
+        self.Jw = (self.gco2 * 1.6) * (ea_leaf - ea)/self.Param['Patm'] * self.Param['Mh2o']/self.Param['rho_h2o'] * 24*3600e-4 #in cm3 cm-2 d-1
+        #self.E = self.Area * self.Jw
             
-    def getNc(self):
-        """ give N concentration in leaf. TODO: use N flow in plant instead
-        """
-        seg_radii = np.array(self.rs.radii)
-        organTypes = np.array(self.rs.organTypes)
-        seg_length = np.array(self.segLength())
-        seg = np.array(self.get_segments())
-        DM_aboveground = 0
-        seg_aboveground = seg[np.where(organTypes > 2)  ]
-        radii_aboveground = seg_radii[np.where(organTypes > 2)]  
-        length_aboveground = seg_length[np.where(organTypes > 2)]  
-        get_y_node = lambda vec : np.array(vec)[1]
-        get_x_node = lambda vec : np.array(vec)[0]
-        nodes_aboveground = np.concatenate((self.get_nodes_organ_type(3),self.get_nodes_organ_type(4)))
-        nodesy = np.array([get_y_node(xi) for xi in seg])
-        nodesx = np.array([get_x_node(xi) for xi in seg])
-        surface = (max(nodesx) - min(nodesx)) * (max(nodesy) - min(nodesy)) * 1e-8 #cm2 -> ha
-        DM_aboveground = sum((math.pi * np.power(radii_aboveground,2) * length_aboveground)* self.Param['rho_p']*1e-6 )# g -> tonne,  #Eq 19
-        DM_aboveground = DM_aboveground/surface  #Eq 19
-        Nc = (DM_aboveground <= self.Param['DMcrit'])*4.4 + (~(DM_aboveground <= self.Param['DMcrit'])) * (self.Param['anc']*pow(DM_aboveground,-self.Param['bnc']))  #Eq 18
-        self.Nc = Nc
         
     def calcCi(self):
         """ give leaf segments internal [CO2] in mol mol-1 as matrix
         """
-        self.ci = []
-        ci = (self.Param['cs']*self.Param['a1']*self.fw +self.deltagco2)/(1+self.Param['a1']*self.fw) #Eq 26
-        self.ci = ci
+        self.ci = (self.Param['cs']*self.Param['a1']*self.fw +self.deltagco2)/(1+self.Param['a1']*self.fw) #Eq 26
+        
             
-    def calcPsig( self,age, p_l_input):
+    def calcPsig( self):
         """ 
             fills the guard cell water potential vector
             @param Q_input[mol photons m-2 s-1]     absorbed photon irradiance (mean or per leaf segment) 
             size = number of leaf segments
             vector is ordered like the leaf segments
         """
-        pg = []
-        seg_radii = np.array(self.rs.radii)
-        seg_length = np.array(self.segLength())
-        seg_indxs = np.array(self.get_segments_index(4))
-        segments = self.get_segments()
-        lsegs = segments[seg_indxs] 
-        if len(self.x) == 0: #first loop
-            rxi = p_l_input
-            rxj = p_l_input
-        else:
-            rxi = np.array([self.x[s[0]] for s in lsegs])
-            rxj = np.array([self.x[s[1]] for s in lsegs])
-        E = self.E # transpiration according to stomatal model
-        st = 2
-        kr = np.array([self.kr_f(age, st, 4,leafn) for leafn in range(len(seg_indxs))])
-        kx = self.kx_f(age, st, 4)
-        a = seg_radii[seg_indxs]
-        l = seg_length[seg_indxs]
-        f = -2*a*math.pi*kr
-        tau = np.sqrt(2*a*math.pi*kr/kx)
-        d = np.exp(-tau*l)-np.exp(tau*l)
-        psig = -(E/(-f*(1./(tau*d))*(2.-np.exp(-tau*l)-np.exp(tau*l))) - (rxi + rxj))/2 
-        self.pg = psig
+        self.pg = -((self.Area * self.Jw)/(-self.f*(1./(self.tau*self.d))*(2.-np.exp(-self.tau*self.l)-np.exp(self.tau*self.l))) - (self.rxi + self.rxj))/2 
+        
+    
+    
+    @property        
+    def getPg(self):
+        return np.array(self.pg)
