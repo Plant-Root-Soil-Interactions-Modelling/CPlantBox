@@ -158,7 +158,7 @@ class Leuning(PhloemFlux, XylemFluxPython):
                 logfile.write('\ngco2 (mol CO2 m-2 s-1) matrix: \n' +repr(self.gco2))
                 logfile.write('\nci (mol mol-1) matrix: \n' +repr(self.ci))
                 logfile.write('\nci/cs (-) matrix: \n' +repr([number / self.Param['cs'] for number in self.ci]))
-                logfile.write('\np_l (cm) matrix: \n' +repr(p_l[self.leaf_nodes]))
+                logfile.write('\np_l (cm) matrix: \n' +repr(self.x[self.leaf_nodes]))
                 logfile.write('\nfw (-) matrix'+ repr(self.fw)+'\n')
                 logfile.write('\np_g (cm) matrix: \n' +repr(self.pg)+'\n')
                 logfile.write('\nJw (cm3 cm-2 d-1) matrix: \n' +repr(self.Jw)+'\n')
@@ -239,7 +239,7 @@ class Leuning(PhloemFlux, XylemFluxPython):
         self.Rd = self.Param['Rd_ref'] * np.exp(self.Param['Eard']/(self.Param['R']*self.Param['Tref'])*(1-self.Param['Tref']/self.Tl))
         if self.log:
             logfile = open('solve_leuning.txt', "a")
-            logfile.write(' Chl '+repr(Chl)+' Vcrefmax '+ repr(Vcrefmax)+', Vcmax '+ repr(self.Vcmax)+
+            logfile.write(' Chl '+repr(self.Chl)+' Vcrefmax '+ repr(Vcrefmax)+', Vcmax '+ repr(self.Vcmax)+
             ', Ko '+ repr(self.Ko)+', Kc '+ repr(self.Kc)+ ', Γ* '+ repr(self.delta)+ 
             ', Jrefmax '+ repr(Jrefmax)+', Jmax '+ repr(Jmax)+', J '+ repr(self.J))
             logfile.close()
