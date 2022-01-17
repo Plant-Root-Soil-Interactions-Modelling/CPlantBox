@@ -24,11 +24,19 @@ class ViewerDataModel(RsmlData):
         self.base_nodes = [0]  # base nodes indices (of roots or multiple plants)
         self.base_segs = [0]  # emerging segment indices from base nodes
 
-    def open_rsml(self, fname, z_shift = False):
+    def open_rsml(self, fname, z_shift=False):
         """ see RsmlData.open_rsml() in src/python_modules/rsml_data.py                
         Additionally, creates an analyser (pb.SegmentAnalyser) and a xylem_flux (pb.XylemFluxPython) object 
         """
-        RsmlData.open_rsml(self, fname, z_shift)
+        RsmlData.open_rsml(self, fname, z_shift)       
+        if not self.tagnames[0]:
+            print("ViewerDataModel.open_rsml: no radius tag found, set to 0.1 cm")
+            c = 0  # node counter
+            for i, pl in enumerate(self.polylines):
+                c += 1
+                for p in pl:
+                    c += 1            
+            self.radii = np.ones((c,)) * 0.1  # cm
         self.convert_to_xylem_flux_()
 
     def convert_to_xylem_flux_(self):
@@ -43,11 +51,11 @@ class ViewerDataModel(RsmlData):
         segCTs = np.zeros((segs.shape[0], 1))
         subTypes = np.zeros((segs.shape[0], 1))
         for i, s in enumerate(segs):
-            segRadii[i] = self.radii[s[1]]  # seg to node index
+            segRadii[i] = self.radii[s[1]]  # seg to node index            
             segCTs[i] = self.cts[s[1]]
             subTypes[i] = self.types[s[1]]
         if np.isnan(subTypes[0]):
-            subTypes = np.ones((len(segs),), dtype = np.int64)
+            subTypes = np.ones((len(segs),), dtype=np.int64)
         segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
         self.analyser = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
