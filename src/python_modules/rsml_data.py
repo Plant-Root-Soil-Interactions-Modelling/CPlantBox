@@ -54,7 +54,7 @@ class RsmlData:
         self.types = types
         self.tagnames = tagnames
 
-    def open_rsml(self, fname, shift_z = False):
+    def open_rsml(self, fname, shift_z=False):
         """ opens an rsml file into self.data, using rsml_reader (in CPlantBox/src/python_modules)              
         converts units to cm and day 
         if necessary converts 2d -> 3d, 
@@ -77,7 +77,7 @@ class RsmlData:
                 for k in range(0, 3):
                     self.polylines[i][j][k] *= scale
 
-    def check_polylines_2d_(self, shift_z = False):
+    def check_polylines_2d_(self, shift_z=False):
         """  converts 2d image coordinates to 3d coordinates
             shift_z determines if the roots system seed is shifted to -3 cm
         """
