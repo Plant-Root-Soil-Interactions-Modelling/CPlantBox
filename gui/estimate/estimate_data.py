@@ -161,10 +161,10 @@ class EstimateDataModel:
                 for j in j_:
                   length_basals[i].append(self.rsmls[i].properties["length"][j])
                 length_basals[i].sort()
-            # res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
-            # print("production rate", res.x[0])
-            res, f, ages = estimate_order0_rrate(np.array(length_basals), p.r, p.lmax, self.times)
-            print("production rate", res.x[0], "elongation rate", res.x[1])
+            res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
+            print("production rate", res.x[0])
+            # res, f, ages = estimate_order0_rrate(np.array(length_basals), p.r, p.lmax, self.times)
+            # print("production rate", res.x[0], "elongation rate", res.x[1])
 
             # add basal ages accordingly
             for i, j_ in enumerate(indices):
@@ -316,7 +316,7 @@ class EstimateDataModel:
                                 la = self.parameters[target_type].la  # - self.parameters[target_type].ln / 2  # mean of parent root
                                 bl_la = min(bl + la, p.lmax * 0.99)  # lmax of parent!!!
                                 age = negexp_age(max(bl_la, 0.), r, p.lmax)  # time the lateral emerged
-                                root_age = measurement_time - (parent_ct + age)
+                                root_age = max(measurement_time - (parent_ct + age), 0.)
                                 if root_age < 0:
                                     print(i, j, k)
                                     print(target_type, "measurement_time", measurement_time, "parent_ct", parent_ct, "age({:g},{:g})={:g}".format(bl + la, r, age),

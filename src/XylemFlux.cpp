@@ -354,7 +354,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
  *
  * @param simTime   [days] current simulation time is needed for age dependent conductivities,
  *                  to calculate the age from the creation times (age = sim_time - segment creation time).
- * @param rx        [cm] root xylem matric potential
+ * @param rx        [cm] root xylem matric potential per node
  * @param sx        [cm] soil matric potential for each segment
  * @param approx    approximate or exact (default = false, i.e. exact)
  * @param cells     sx per cell (true), or segments (false)

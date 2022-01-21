@@ -38,6 +38,8 @@ class XylemFluxPython(XylemFlux):
         self.neumann_ind = [0]  # node indices for Neumann flux
         self.dirichlet_ind = [0]  # node indices for Dirichlet flux
 
+        self.last = "none"
+
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
@@ -113,12 +115,14 @@ class XylemFluxPython(XylemFlux):
         if sx >= wilting_point - eps:
 
             x = self.solve_neumann(sim_time, trans, sxx, cells, soil_k)  # try neumann, if below wilting point, switch to Dirichlet
+            self.last = "neumann"
 
             if x[0] <= wilting_point:
 
                 Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
                 Q = sparse.csr_matrix(Q)
                 Q, b = self.bc_dirichlet(Q, self.aB, [0], [float(wilting_point)])
+                self.last = "dirichlet"
 
                 try:
                     x = LA.spsolve(Q, b, use_umfpack = True)

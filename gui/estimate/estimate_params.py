@@ -36,7 +36,7 @@ def target_rate(rate, lengths:np.array, r:float, lmax:float, times:float):
     for ii in range(0, n):
         nn = len(lengths[ii])
         for i in range(0, nn):
-            ages.append(times[ii] - (i + 1) * rate)
+            ages.append(max(times[ii] - (i + 1) * rate, 0.))
             lengths2.append(lengths[ii][i])
     x = target_length(r, lmax, np.array(lengths2), np.array(ages))
     return x
@@ -95,7 +95,7 @@ def estimate_order0_rate(lengths:np.array, r:float, k:float, times:float):
         ages[ii] = []
         nn = len(lengths[ii])
         for i in range(0, nn):
-            ages[ii].append(times[ii] - (i + 1) * res.x[0])
+            ages[ii].append(max(times[ii] - (i + 1) * res.x[0], 0.))
     return res, f, ages
 
 
