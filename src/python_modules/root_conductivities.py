@@ -16,7 +16,7 @@ r.kx_f(age, type)
 """
 
 
-def init_conductivities(r, age_dependent:bool = False):
+def init_conductivities(r, age_dependent:bool=False):
     """ call to initialize age dependent or independent conductivities, 
     initializes functions kr(age, type) and kx(age, type) """
 
@@ -46,7 +46,7 @@ def init_conductivities(r, age_dependent:bool = False):
                       [kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0]])  # [1/day]
 
 
-def init_conductivities_growth(r, age_dependent:bool = False, dt = 1):
+def init_conductivities_growth(r, age_dependent:bool=False, dt=1):
     """ same as init_conductivities but with a 1 day slope if segments emerge
         @param dt     time span after emergence to reach full kr value
     """
@@ -122,14 +122,12 @@ def init_singleroot_contkrkx(r):
     """ Hydraulic conductivities - for Jans scenarios, BUT with constanct kr (if we use a lookup table) """
     kr_const = 2.843148e-5 / (2 * np.pi * 0.05 * 0.5)  # in case of table look up, the values must agree, = 0.00018100042
 
-    print(kr_const)
     kr = np.array([[0., kr_const], [1e4, kr_const]])
     r.setKrTables([kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1]],
                   [kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0]])  # [cm^3/day]
 
     # first entry twice, because rsml starts at type 1
-    kx_const = 0.346 * 0.5  # [cm3/day]
-    print(kx_const)
+    kx_const = 0.346 * 0.5  # [cm3/day] 1e6 *   
 
     kx = np.array([[0., kx_const], [1e4, kx_const]])
 

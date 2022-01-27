@@ -1,6 +1,7 @@
 import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
 
 import vtk_plot as vp
+import vtk_tools as vt
 from viewer_data import ViewerDataModel
 import viewer_plots
 import viewer_conductivities
@@ -27,7 +28,9 @@ class App:
         # Menu
         menu = tkinter.Menu(root)
         menu_file = tkinter.Menu(menu, tearoff=0)
-        menu_file.add_command(label="Open...", command=self.file_open)
+        menu_file.add_command(label="Open (.rsml)...", command=self.file_open)
+        menu_file.add_command(label="Save (.rsml)...", command=self.file_save)
+        menu_file.add_command(label="Save (.vtp)...", command=self.file_save_vtp)
         menu_file.add_separator()
         menu_file.add_command(label="Exit", command=self.file_quit)
         menu.add_cascade(label="File", menu=menu_file)
@@ -262,6 +265,25 @@ class App:
             if fname:
                 self.data.open_rsml(fname)
                 self.update_all()
+    
+    def file_save(self):
+        """ menu item: save rsml file (polylines)"""
+        if self.data.exists():
+            fname = tkinter.filedialog.asksaveasfilename(defaultextension=".rsml")
+            print(fname, type(fname))
+            if isinstance(fname, str):
+                if fname:
+                    pd = vp.segs_to_polydata(self.data.analyser, zoom_factor=1., param_names=["subType", "radius", "creationTime"])                    
+                    vt.write_rsml(fname, pd, 0, None, self.data.base_nodes)
+
+    def file_save_vtp(self):
+        """ menu item: save save vtp file containing segments (not polylines) """
+        if self.data.exists():
+            fname = tkinter.filedialog.asksaveasfilename(defaultextension=".vtp")
+            print(fname, type(fname))
+            if isinstance(fname, str):
+                if fname:
+                    self.data.analyser.write(fname)  # segment analyser's writer 
 
     def file_quit(self):
         """ menu item: quits application """
