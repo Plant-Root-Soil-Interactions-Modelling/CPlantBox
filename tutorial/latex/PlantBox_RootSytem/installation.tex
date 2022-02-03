@@ -1,11 +1,8 @@
 \newpage
-
+\section{Introduction}
 \subsection{Installation}
 
 This installation guideline is for CPlantBox on Linux systems (e.g. Ubuntu). 
-
-\section*{Required compilers and tools}
-%
 If on a recent Ubuntu system, the c++ compiler and python that come with the distribution are recent enough. Otherwise, please make sure you have a recent c++ compiler (e.g. \lstinline{sudo apt-get install clang}), fortran compiler (sudo apt-get install gfortran) and python3 (e.g. \lstinline{sudo apt-get install python3.7}). 
 
 - Install git: \\
@@ -33,14 +30,12 @@ If on a recent Ubuntu system, the c++ compiler and python that come with the dis
 
 -Download CPlantBox:\\
 \texttt{git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git}\\
-    \hspace{\parindent} \texttt{cd CRootBox}\\
-    \hspace{\parindent} \texttt{git checkout master}\\
-		\hspace{\parindent} \texttt{cd ..}\\
+
 To build CPlantBox and its python shared library, move again into the CPlantBox folder and type into the console:\\
-\lstinline {cd CRootBox}\\
+\lstinline {cd CPlantBox}\\
 \lstinline{cmake .}\footnote{It may be necessary on your installation to check the CPlantBox/src/CMakeLists.txt file regarding required python version and out-commenting line 34.}\\
 \lstinline{make}\\
-(If building CPlantBox on the cluster, two lines in the file \lstinline{\textbf{CRootBox}/CMakeLists.txt} need to be outcommented before:\\ 
+(If building CPlantBox on the IBG-3 cluster, two lines in the file \lstinline{\textbf{CPlantBox}/CMakeLists.txt} need to be outcommented before:\\ 
 \lstinline{set(CMAKE_C_COMPILER "/usr/bin/gcc")}\\
 \lstinline{set(CMAKE_CXX_COMPILER "/usr/bin/g++")})\\
 
