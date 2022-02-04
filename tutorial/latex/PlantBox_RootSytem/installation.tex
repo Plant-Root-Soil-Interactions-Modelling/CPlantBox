@@ -3,7 +3,14 @@
 \subsection{Installation}
 
 This installation guideline is for CPlantBox on Linux systems (e.g. Ubuntu). 
-If on a recent Ubuntu system, the c++ compiler and python that come with the distribution are recent enough. Otherwise, please make sure you have a recent c++ compiler (e.g. \lstinline{sudo apt-get install clang}), fortran compiler (sudo apt-get install gfortran) and python3 (e.g. \lstinline{sudo apt-get install python3.7}). 
+If on a recent Ubuntu system, the c++ compiler and python that come with the distribution are recent enough. Otherwise, please make sure you have a recent c++ compiler (e.g. \lstinline{sudo apt-get install clang}), fortran compiler (sudo apt-get install gfortran) and python3. If you wish to be able to follow the examples provided in the Jupyter Notebooks, it is recommended to install the Anaconda Python distribution: \\
+- Install curl if not yet available:\\
+\istinline{sudo apt-get install curl}\\
+- Download and install Anaconda (adapt the version accordingly):\\
+\istinline{cd /tmp}\\
+\lstinline{curl https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh --output anaconda.sh} \\
+\istinline{bash anaconda.sh}\\
+\istinline{source ~/.bashrc}\\
 
 - Install git: \\
 \lstinline{sudo apt-get install git}\\
@@ -19,7 +26,7 @@ If on a recent Ubuntu system, the c++ compiler and python that come with the dis
 \lstinline{pip3 install scipy}\\
 - Install the python package matplotlib:\\
 \lstinline{pip3 install matplotlib}\footnote{Known bug in ubuntu 18.04: needs sudo apt-get install libfreetype6-dev libxft-dev installed before.}\\
-- Install the python package VTK:\\alug
+- Install the python package VTK:\\
 \lstinline {pip3 install vtk}\\
 - Install the java runtime environment:\\
 \lstinline{sudo apt-get install default-jre}\\
