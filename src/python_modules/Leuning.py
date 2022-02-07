@@ -3,9 +3,9 @@ import numpy as np
 from scipy import sparse
 import scipy.sparse.linalg as LA
 from xylem_flux import XylemFluxPython  # Python hybrid solver
-from plantbox import PhloemFlux
+#from plantbox import PhloemFlux
 
-class Leuning(PhloemFlux, XylemFluxPython):
+class Leuning(XylemFluxPython): #PhloemFlux, 
     """      
         C++ part is defined in CPlantBox XylemFlux.hh and XylemFlux.cpp
         Calculates water movement within the xylems, the stomatal aperture and net assimilation rate. 
@@ -136,6 +136,7 @@ class Leuning(PhloemFlux, XylemFluxPython):
             diffCi = max(abs(self.ci-ci_old))
             diffPsig = max(abs(self.getPg-pg_old))
             diff = np.array([diffX,diffAn, diffGs, diffCi, diffPsig])
+            
             diffRel = np.array([max(abs(diffX/self.x)),max(abs(diffAn/self.An)), max(abs(diffGs/self.gco2)), 
                         max(abs(diffCi/self.ci)), max(abs(diffPsig/self.getPg))])
             
@@ -165,7 +166,11 @@ class Leuning(PhloemFlux, XylemFluxPython):
                 #logfile.write('\nE (cm3 d-1) matrix'+ repr(self.E)+'\n')
                 logfile.close()
         res = max(abs(diffRel))
-        print('leuning computation module stopped after {} trials. Sum of absolute difference between leaf matric potential calculated at the last two trials: {}\nmax error in a cell:{}'.format(loop, diff,res))
+        if(verbose):
+            print('leuning computation module stopped after {} trials.'.format(loop))
+            print('Maximum absolute difference calculated at the last two trials for')
+            print('psi:',diffX,'An:', diffAn, 'gco2:',diffGs, 'ci:', diffCi, "guard cell's matric potential",diffPsig)
+            print('max relative error in a cell:{}'.format(res))
         if log:
             logfile = open('solve_leuning.txt', "a")
             logfile.write('leuning computation module stopped after {} trials. Sum of absolute difference between leaf matric potential calculated at the last two trials: {}'.format(loop, diff))
