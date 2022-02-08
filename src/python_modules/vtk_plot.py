@@ -451,7 +451,7 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
     mapper = vtk.vtkDataSetMapper()
     mapper.SetInputData(grid)
     mapper.Update()
-    mapper.SetArrayName(p_name)
+    # mapper.SetArrayName(p_name)
     mapper.SelectColorArray(p_name)  # ? to choosvtkScalarBarActore cell data or point data
     mapper.UseLookupTableScalarRangeOn()
     meshActor = vtk.vtkActor()

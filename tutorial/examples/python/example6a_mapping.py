@@ -46,5 +46,5 @@ rootActor, rootCBar = vp.plot_roots(pd, "linear_index", "segment index plot", Fa
 """  vizualise soil  """
 grid = vp.uniform_grid(min_, max_, res_)  # for visualization
 meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
-vp.render_window([meshActor, rootActor], "Test mapping", rootCBar, grid.GetBounds()).Start()
+vp.render_window([meshActor[0], rootActor], "Test mapping", rootCBar, grid.GetBounds()).Start()
 
