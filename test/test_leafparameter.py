@@ -130,14 +130,13 @@ class TestLeafParameter(unittest.TestCase):
         phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
         l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
         assert(l.shape == phi.shape)
-        N = 500  # N is rather high for testing
+        N = 10#500  # N is rather high for testing
         lrp.createLeafRadialGeometry(phi, l, N)          
            
         # self.assertEqual(lrp.leafMid(), 3., "unexpected leaf mid")
         # self.assertEqual(lrp.leafLength(), 6.5, "unexpected leaf length")        
         yy = np.linspace(0, lrp.leafLength(), N)
         geom = lrp.leafGeometry
-
         x_, y_ = [], []
         for i, x in enumerate(geom):
 #             if len(x) > 1:
