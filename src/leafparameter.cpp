@@ -442,9 +442,6 @@ void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std:
 		auto y_ = Function::linspace(0., leafLength(), N);
 		for (int i = 0; i<N; i++) {
 			std::vector<double> x = intersections(y_[i], phi, l);
-			std::cout<<i<<") "<<y_[i]<<", ";
-			for (auto x_i: x)
-				std::cout << x_i << ' ';
 			std::cout<<std::endl;
 			std::sort(x.begin(), x.end());
 			leafGeometry.at(i) = x;
@@ -492,9 +489,6 @@ void LeafRandomParameter::normalizeLeafNodes() {
 	}
 }
 
-/**
- * returns the intersection of a horizontal line at y-coordinate with the leaf geometry
- */
 /**
  * returns the intersection of a horizontal line at y-coordinate with the leaf geometry
  */
