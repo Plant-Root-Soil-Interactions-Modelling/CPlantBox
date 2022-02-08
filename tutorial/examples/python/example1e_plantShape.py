@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 
 ##parameters for example:
 adaptSeed = False
-adaptLeaf = True
+adaptLeaf = False
 adaptStem = False
-leafRadial = True #radial or not
+leafRadial = False #radial or not
 anim = False
 zoomLeafShape = True
 export = False
@@ -35,6 +35,10 @@ path = "../../../modelparameter/plant/"
 name = "example1e"
 plant.readParameters(path + name + ".xml")
 
+for p in plant.getOrganRandomParameter(pb.leaf):
+    if (p.subType >= 2):
+        print(p)
+
 
 if adaptSeed:
     srp = plant.getOrganRandomParameter(pb.seed)
@@ -47,7 +51,7 @@ if adaptSeed:
 if adaptLeaf:
     for p in plant.getOrganRandomParameter(pb.leaf):
         if (p.subType >= 2): #leaf subtypes start at 2
-            p.lb =  2 # length of leaf stem
+            p.lb =  1 # length of leaf stem
             p.la,  p.lmax = 3.5, 8.5
             p.areaMax = 10  # cm2, area reached when length = lmax
             N = 100  # N is rather high for testing
@@ -62,8 +66,15 @@ if adaptLeaf:
                 p.la,  p.lmax = 5, 11
                 phi = np.array([-90, -45, 0., 45,67.5,70, 90]) / 180. * np.pi
                 l = np.array([2, 2, 2, 4,1,1, 4]) #distance from leaf center
+                #Round leaf:
+                p.la,  p.lmax = 5, 11
+                print(3.14*((p.lmax-p.lb-p.la)/2)**2)
+                p.areaMax = 3.145*(((p.lmax-p.la - p.lb)/2)**2)
+                phi = np.array([-90, -45, 0., 45,67.5,70, 90]) / 180. * np.pi
+                l_ = (p.lmax - p.lb - p.la)/2
+                l = np.array([l_ for x_i in range(len(phi))]) #([2, 2, 2, 4,1,1, 4]) #distance from leaf center
                 #flower-shaped leaf:
-                #p.areaMax = 50 
+                #p.areaMax = 100 
                 #p.la, p.lb, p.lmax = 5, 1, 11
                 #phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
                 #l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
@@ -115,7 +126,8 @@ if anim:
 
 if getImage:
     # Simulate
-    plant.simulate(30, True)
+    if not anim:
+        plant.simulate(30, True)
     # Plot, using vtk
     vp.plot_plant(plant, "organType")
     # zoom on leaf--theory--2D
