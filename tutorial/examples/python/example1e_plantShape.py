@@ -13,11 +13,11 @@ import vtk_plot as vp
 import matplotlib.pyplot as plt
 
 ##parameters for example:
-adaptSeed = False
-adaptLeaf = False
-adaptStem = False
-leafRadial = False #radial or not
-anim = False
+adaptSeed = True
+adaptLeaf = True
+adaptStem = True
+leafRadial = True #radial or not
+anim = True
 zoomLeafShape = True
 export = False
 getImage = True
@@ -32,8 +32,7 @@ plant.readParameters(path + name + ".xml")
         
 
 if adaptSeed:
-    srp = plant.getOrganRandomParameter(pb.seed)
-    srp = pb.SeedRandomParameter(p)  # with default values
+    srp = pb.SeedRandomParameter(plant)  # with default values
     srp.firstTil = 0  # [day] first emergence of a tiler
     srp.delayTil = 0  # [day] delay between the emergence of tilers
     srp.maxTil = 0 # [-] number of tillers 
@@ -45,8 +44,9 @@ if adaptStem:
         if (p.subType > 0): # can be changed according to the suptypes of the plant
             p.nodalGrowth = 1   #< whether to implement the internodal growth 
             p.delayLat = 1  #< delay between stem creation and start of nodal growth [day]
-            p.delayNG = 5   #< delay between lateral creation and growth [day]
+            p.delayNG = 10   #< delay between lateral creation and growth [day]
             #p.tropismAge = 10 #< only used if tropsimT = 6
+            plant.setOrganRandomParameter(p)
             
 if adaptLeaf:
     for p in plant.getOrganRandomParameter(pb.leaf):
@@ -109,6 +109,7 @@ if adaptLeaf:
             #p.tropismN = 5
             #p.tropismS = 0.1
             p.tropismAge = 10 #< age at which tropism switch occures, only used if p.tropismT = 6
+            plant.setOrganRandomParameter(p)
 
 
 for p in plant.getOrganRandomParameter(pb.leaf):
