@@ -361,16 +361,15 @@ void OrganRandomParameter::bindParameter(std::string name, double* d, std::strin
  */
 std::vector<double> OrganRandomParameter::string2vector(std::string xmlInput)
 {
-	std::cout<<"in OrganRandomParameter::string2vector"<<std::endl;
-	std::vector<std::string> fields_;
-	std::vector<double> fields;
-	boost::split( fields_, xmlInput, boost::is_any_of( " ," ), boost::token_compress_on );
-	  for(auto str_i: fields_)
-	  {
-		  fields.push_back(std::stod(str_i));
-	  }
+	
+    std::string buf;                 // Have a buffer string
+    std::stringstream ss(xmlInput);       // Insert the string into a stream
+
+    std::vector<double> tokens; // Create vector to hold our words
+
+    while (ss >> buf){tokens.push_back(std::stod(buf));}
   
-	return fields;
+	return tokens;
 }
 
 } // namespace
