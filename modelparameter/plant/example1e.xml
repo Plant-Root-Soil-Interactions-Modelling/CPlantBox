@@ -160,16 +160,16 @@
 
 
 <organ type="leaf" name="lateral1" subType="2">
-    <parameter name="lb" value="4" dev="0"/>
+    <parameter name="lb" value="2" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
+    <parameter name="la" value="3.5" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="0" dev="0" functiontype="3"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="4" dev="0"/>
+    <parameter name="lmax" value="8.5" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="0.5" />
-    <parameter name="a" value="0.16"/>
+    <parameter name="a" value="0.016"/>
     <parameter name="tropismT" value="6"/>
     <parameter name="tropismN" value="18"/>
     <parameter name="tropismS" value="0.2"/>
@@ -179,6 +179,10 @@
     <parameter name="theta" value="0" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
+    <parameter name="areaMax" value="10"/>
+    <parameter name="geometryN" value="100"/>
+    <parameter name="parametrisationType" value="1"/>
+	<parameter name="leafGeometry" phi="-3, -2.1, 0., 2.45, 3.5" x="0., 1.54, 1.7, 1.26, 0."/>
 </organ>
 
 

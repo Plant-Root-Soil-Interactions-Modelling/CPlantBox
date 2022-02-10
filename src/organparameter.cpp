@@ -351,4 +351,26 @@ void OrganRandomParameter::bindParameter(std::string name, double* d, std::strin
     }
 }
 
+
+/**
+ *  converts string to vector of double see @LeafRandomParameter::readXML
+ *	used for leaf shape 
+ *  @param xmlInput     input array in xml
+ *
+ * @return xmlInput converted to vector double
+ */
+std::vector<double> OrganRandomParameter::string2vector(std::string xmlInput)
+{
+	std::cout<<"in OrganRandomParameter::string2vector"<<std::endl;
+	std::vector<std::string> fields_;
+	std::vector<double> fields;
+	boost::split( fields_, xmlInput, boost::is_any_of( " ," ), boost::token_compress_on );
+	  for(auto str_i: fields_)
+	  {
+		  fields.push_back(std::stod(str_i));
+	  }
+  
+	return fields;
+}
+
 } // namespace

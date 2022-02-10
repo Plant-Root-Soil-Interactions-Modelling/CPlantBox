@@ -288,6 +288,19 @@ std::string LeafRandomParameter::toString(bool verbose) const {
 			str << successorP[i] << " ";
 		}
 		str << "\t" << description.at("successorP") << std::endl;
+		///
+		
+		str << "leafGeometryPhi\t";
+		for (int i=0; i<leafGeometryPhi.size(); i++) {
+			str << leafGeometryPhi[i] << " ";
+		}
+		str << "\t" << description.at("leafGeometryPhi") << std::endl;
+		str << "leafGeometryX\t";
+		for (int i=0; i<leafGeometryX.size(); i++) {
+			str << leafGeometryX[i] << " ";
+		}
+		str << "\t" << description.at("leafGeometryX") << std::endl;
+		
 		return s.insert(s.length()-4, str.str());
 	} else {
 		return OrganRandomParameter::toString(false);
@@ -320,13 +333,17 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 	if  ((p_<1) && (p_!=0))  {
 		std::cout << "LeafRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
 	}
+	//go back to start of the list?
+	p = element->FirstChildElement("parameter");						 
 	leafGeometryPhi.resize(0);
 	leafGeometryX.resize(0);
 	while(p) {
 		std::string key = p->Attribute("name");
 		if (key.compare("leafGeometry")==0)  {
-			successor.push_back(p->IntAttribute("phi"));
-			successorP.push_back(p->DoubleAttribute("x"));
+			//leafGeometryPhi.push_back(p->DoubleAttribute("phi"));
+			leafGeometryPhi = string2vector(p->Attribute("phi"));
+			//leafGeometryX.push_back(p->DoubleAttribute("x"));
+			leafGeometryX = string2vector(p->Attribute("x"));
 		}
 		p = p->NextSiblingElement("parameter");
 	}

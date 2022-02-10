@@ -6,6 +6,9 @@
 #include <map>
 #include <memory>
 #include <iostream>
+#include <vector>
+#include <string>
+#include <boost/algorithm/string.hpp>
 
 #include "external/tinyxml2/tinyxml2.h"
 
@@ -81,6 +84,7 @@ public:
 
     std::weak_ptr<Organism> plant;
     std::shared_ptr<GrowthFunction> f_gf;
+	std::vector<double> string2vector(std::string xmlInput);///<convert string to vector<double>, to simplifiy xml input
 
 protected:
 
