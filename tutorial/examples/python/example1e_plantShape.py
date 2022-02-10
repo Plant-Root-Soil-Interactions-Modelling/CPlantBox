@@ -38,7 +38,7 @@ plant.readParameters(path + name + ".xml")
 for p in plant.getOrganRandomParameter(pb.leaf):
     if (p.subType >= 2):
         print(p)
-
+raise Exception
 
 if adaptSeed:
     srp = plant.getOrganRandomParameter(pb.seed)

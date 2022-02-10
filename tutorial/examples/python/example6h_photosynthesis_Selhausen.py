@@ -59,6 +59,8 @@ resultsVj=[]
 resultscics=[]
 resultsfw=[]
 resultspl=[]
+print(round(len(df['PAR'])*initTime),round(len(df['PAR'])*endTime))
+print(df['PAR'][round(len(df['PAR'])*initTime):round(len(df['PAR'])*endTime)])
 for i in range(round(len(df['PAR'])*initTime),round(len(df['PAR'])*endTime)):
     
     Q_input = df['PAR'][i]
