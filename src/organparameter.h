@@ -8,7 +8,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <boost/algorithm/string.hpp>
 
 #include "external/tinyxml2/tinyxml2.h"
 
