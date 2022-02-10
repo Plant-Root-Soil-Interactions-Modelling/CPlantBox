@@ -26,11 +26,11 @@ path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/"
 name = "manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
 RH = np.arange(0.1, 0.9, 0.01)
-Q = np.arange(0, 1000e-6, 10e-6)#[250e-6,300e-6, 350e-6, 400e-6,450e-6, 500e-6,750e-6, 1000e-6] # mol quanta m-2 s-1 light, example from leuning1995
+Q = np.arange(1e-6, 1000e-6, 100e-6)# mol quanta m-2 s-1 light, example from leuning1995
 TairC = np.arange(-30,50, 5)
-p_s = np.arange(-200, -20000, -100) #cm
-N = np.arange(0.1, 6, 0.5) #%
-cs = np.arange(100e-6, 1000e-6, 50e-6) #mol mol-1
+p_s = np.arange(-200, -20000, -1000) #cm
+N = np.arange(0.1, 6, 1) #%
+cs = np.arange(100e-6, 1000e-6, 100e-6) #mol mol-1
 es = 0.61078 * np.exp(17.27 * 20 / (20+ 237.3))
 VPDvar = [es - es*rh for rh in RH]
 
@@ -48,20 +48,12 @@ pl.simulate(simtime, False)
 
 
 r = Leuning(pl) 
-nodes = r.get_nodes()
-tiproots, tipstem, tipleaf = r.get_organ_nodes_tips() #end node of end segment of each organ
-node_tips = np.concatenate((tiproots, tipstem, tipleaf))
-tiproots, tipstem, tipleaf = r.get_organ_segments_tips() #end segment of each organ
-seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
-
 
 r.setKr([[kr],[kr_stem],[gmax]]) #gmax will be changed by the leuning function 
 r.setKx([[kz]])
 r.airPressure = p_a
 
 # Numerical solution 
-r.seg_ind = seg_tips # segment indices for Neumann b.c.
-r.node_ind = node_tips
 leaf_nodes = r.get_nodes_index(4)
 variables = [ Q,RH, TairC, p_s, N, cs]
 results=[[],[],[], [], [], []]
@@ -120,38 +112,7 @@ for i in range(len(variables)):
     resultscics[i] = cics
     resultsfw[i] = fw
     resultspl[i] = pl
-time2 = datetime.datetime.now() 
-elapsedTime = time2 - time1
-print(elapsedTime.total_seconds(), trials)
-print(elapsedTime.total_seconds()/trials)
-logfile = open('leuning6finput.txt', "w")
-logfile.write(repr(variables))
-logfile.close()
-logfile = open('leuning6fE.txt', "w")
-logfile.write(repr(results))
-logfile.close()
-logfile = open('leuning6fAn.txt', "w")
-logfile.write(repr(resultsAn))
-logfile.close()
-logfile = open('leuning6fVc.txt', "w")
-logfile.write(repr(resultsVc))
-logfile.close()
-logfile = open('leuning6fVj.txt', "w")
-logfile.write(repr(resultsVj))
-logfile.close()
-logfile = open('leuning6fco2.txt', "w")
-logfile.write(repr(resultsgco2))
-logfile.close()
-logfile = open('leuning6fcics.txt', "w")
-logfile.write(repr(resultscics))
-logfile.close()
-logfile = open('leuning6fpl.txt', "w")
-logfile.write(repr(resultspl))
-logfile.close()
-logfile = open('leuning6ffw.txt', "w")
-logfile.write(repr(resultsfw))
-logfile.close()
-
+    
 # plot results 
 fig, axs = plt.subplots(2,3, sharey=True)
 axs[0, 0].plot(variables[0], results[0])

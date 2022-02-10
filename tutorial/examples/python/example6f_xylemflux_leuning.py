@@ -50,10 +50,6 @@ pl.simulate(simtime, False)
 
 r = Leuning(pl) 
 nodes = r.get_nodes()
-tiproots, tipstem, tipleaf = r.get_organ_nodes_tips() #end node of end segment of each organ
-node_tips = np.concatenate((tiproots, tipstem, tipleaf))
-tiproots, tipstem, tipleaf = r.get_organ_segments_tips() #end segment of each organ
-seg_tips = np.concatenate((tiproots, tipstem, tipleaf))
 
 
 r.setKr([[kr],[kr_stem],[gmax]]) 
@@ -61,13 +57,11 @@ r.setKx([[kz]])
 r.airPressure = p_a
 
 # Numerical solution 
-r.neumann_ind = seg_tips # segment indices for Neumann b.c.
-r.node_ind = node_tips
 rx = r.solve_leuning(sim_time = simtime,sxx=[p_s], cells = True, Qlight = Q,VPD = VPD,
-Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = True)
+Tl = TairK,p_linit = p_s,ci_init = cs,cs=cs, soil_k = [], log = True, verbose = True)
 
 fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
-r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False)
+#r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True, show_matrices = False)
 
 # plot results 
 fig, ax = plt.subplots()
