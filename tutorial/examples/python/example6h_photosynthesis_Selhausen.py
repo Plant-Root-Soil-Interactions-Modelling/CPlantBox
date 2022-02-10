@@ -21,8 +21,9 @@ simtime = 14.0  # [day] for task b
 k_soil = []
 plotResults = True
 saveResults = False
-initTime = 0.5
-endTime = 0.75
+
+t_init = 70
+t_end = 90
 
 # root system 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
@@ -59,9 +60,8 @@ resultsVj=[]
 resultscics=[]
 resultsfw=[]
 resultspl=[]
-print(round(len(df['PAR'])*initTime),round(len(df['PAR'])*endTime))
-print(df['PAR'][round(len(df['PAR'])*initTime):round(len(df['PAR'])*endTime)])
-for i in range(round(len(df['PAR'])*initTime),round(len(df['PAR'])*endTime)):
+
+for i in range(t_init, t_end):
     
     Q_input = df['PAR'][i]
     RH_input = df['RH'][i]
@@ -113,7 +113,7 @@ if saveResults:
     logfile.write(repr(resultsfw))
     logfile.close()
 
-timePlot = df[round(len(df['time'])*initTime):round(len(df['time'])*endTime)]['time']
+timePlot = df[t_init:t_end]['time']
 if plotResults:
     fig, axs = plt.subplots(2,2)
     axs[0, 0].plot(timePlot, resultsAn)
