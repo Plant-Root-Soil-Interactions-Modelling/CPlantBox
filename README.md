@@ -26,6 +26,9 @@ in the root folder, and run some Python tutorial examples (see tutorial/latex/Pl
 cd tutorial/examples/python
 python3 example1a.py
 ```
+If you have ubuntu >= 20.02, you can download the python file "installDumuxRosiWithUbuntu2004.py".
+This file is based on the dumux installation file. It will create a "DUMUX" folder
+and install inside the dependencies necessary to run dumux-rosi.
 
 # Folder sructure
 
