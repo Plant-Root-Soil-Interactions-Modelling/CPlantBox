@@ -180,9 +180,4 @@ if getImage:
     print("3D leaf shape of actual leaf")
     vp.plot_leaf(lorg)
     
-if export:
-    # Export final result (as vtp)
-    plant.write("results/example_plant.vtp")
-    ana = pb.SegmentAnalyser(plant)
-    ana.write("results/example_plant_segs.vtp")
     
