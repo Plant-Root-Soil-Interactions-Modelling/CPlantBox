@@ -31,7 +31,7 @@ python3 example1a.py
 ```
 
 ### Ubuntu >= 20.04
-If you have ubuntu >= 20.02, you can download the python file "installDumuxRosiWithUbuntu2004.py".
+If you have ubuntu >= 20.04, you can download the python file "installDumuxRosiWithUbuntu2004.py".
 This file is based on the dumux installation file. 
 run
 ```bash
