@@ -16,7 +16,10 @@ You can click the link to follow the guide there, just to click some buttons and
 [here is the link to use it](http://b.cplantbox.com).
 
 ## or build local
-
+### windows
+CPlantBox is currently not available on windows. 
+Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
+### linux
  Run CMake which configures the CPlantBox libraries by 
 ```bash
 cmake . && make
@@ -26,9 +29,16 @@ in the root folder, and run some Python tutorial examples (see tutorial/latex/Pl
 cd tutorial/examples/python
 python3 example1a.py
 ```
+
+### Ubuntu >= 20.04
 If you have ubuntu >= 20.02, you can download the python file "installDumuxRosiWithUbuntu2004.py".
-This file is based on the dumux installation file. It will create a "DUMUX" folder
-and install inside the dependencies necessary to run dumux-rosi.
+This file is based on the dumux installation file. 
+run
+```bash
+python3 installDumuxRosiWithUbuntu2004.py
+```
+It will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
+This script might work on other linux OS but has not been tested.
 
 # Folder sructure
 
