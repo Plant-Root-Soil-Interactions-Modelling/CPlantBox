@@ -44,7 +44,7 @@ SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::
  */
 SegmentAnalyser::SegmentAnalyser(const Organism& plant)
 {
-    std::cout << "construct from Organism\n";
+    //std::cout << "construct from Organism\n";
     nodes = plant.getNodes();
     segments = plant.getSegments();
     auto segCTs = plant.getSegmentCTs();
