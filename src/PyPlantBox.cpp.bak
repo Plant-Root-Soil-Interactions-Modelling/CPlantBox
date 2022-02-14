@@ -346,7 +346,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNewSegmentOrigins", &Organism::getNewSegmentOrigins, py::arg("ot") = -1)  // default
 
             .def("initializeReader", &Organism::initializeReader)
-            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true)  // default
+            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant")  // default
             .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("comments") = true)  // default
             .def("writeRSML", &Organism::writeRSML)
             .def("getRSMLSkip", &Organism::getRSMLSkip)
@@ -483,7 +483,8 @@ PYBIND11_MODULE(plantbox, m) {
            .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
            .def("addData", &SegmentAnalyser::addData)
            .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}))
-           .def_readwrite("nodes", &SegmentAnalyser::nodes)
+           .def("copy", &SegmentAnalyser::copy)
+		   .def_readwrite("nodes", &SegmentAnalyser::nodes)
            .def_readwrite("segments", &SegmentAnalyser::segments)
            .def_readwrite("segO", &SegmentAnalyser::segO)
            .def_readwrite("data", &SegmentAnalyser::data);
@@ -560,8 +561,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("delayRCs", &SeedRandomParameter::delayRCs)
             .def_readwrite("nz", &SeedRandomParameter::nz)
             .def_readwrite("nzs", &SeedRandomParameter::nzs)
-            .def_readwrite("delayTil", &SeedRandomParameter::delayTi)
-            .def_readwrite("firstTil", &SeedRandomParameter::firstTi)
             .def_readwrite("maxTil", &SeedRandomParameter::maxTil)
             .def_readwrite("maxTils", &SeedRandomParameter::maxTils)
             .def_readwrite("simtime", &SeedRandomParameter::simtime)
@@ -622,9 +621,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
             .def_readwrite("f_se", &LeafRandomParameter::f_se)
             .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
-            .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
-            .def_readwrite("tropismAge", &LeafRandomParameter::tropismAge)
-            .def_readwrite("tropismAges", &LeafRandomParameter::tropismAges);
+            .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp);
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool>())
@@ -681,9 +678,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("delayNG", &StemRandomParameter::delayNG)
             .def_readwrite("delayNGs", &StemRandomParameter::delayNGs)
             .def_readwrite("delayLat", &StemRandomParameter::delayLat)
-            .def_readwrite("delayLats", &StemRandomParameter::delayLats)
-            .def_readwrite("tropismAge", &StemRandomParameter::tropismAge)
-            .def_readwrite("tropismAges", &StemRandomParameter::tropismAges);
+            .def_readwrite("delayLats", &StemRandomParameter::delayLats);
     py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
@@ -695,7 +690,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("theta", &StemSpecificParameter::theta)
             .def_readwrite("rlt", &StemSpecificParameter::rlt)
             .def("getK",&StemSpecificParameter::getK)
-            .def("nob", &StemSpecificParameter::nob);
+            .def("nob", &StemSpecificParameter::nob)
+            .def_readwrite("delayLat", &StemSpecificParameter::delayLat)
+            .def_readwrite("delayNG", &StemSpecificParameter::delayNG);
     /**
      * Root.h
      */
@@ -737,9 +734,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("calcLength", &Leaf::calcLength)
             .def("calcAge", &Leaf::calcAge)
             .def("getLeafRandomParameter", &Leaf::getLeafRandomParameter)
-            .def("param", &Leaf::param)
-            .def("leafArea", &Leaf::leafArea)
-            .def("leafLength", &Leaf::leafLength);
+            .def("param", &Leaf::param);
     /**
      * Stem.h
      */
