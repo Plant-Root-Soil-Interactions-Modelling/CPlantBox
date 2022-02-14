@@ -47,7 +47,7 @@ public:
 
   /* parameters */
   void initializeReader() override; ///< initializes XML reader
-  void readParameters(std::string name, std::string  basetag = "plant") override { this->initializeReader(); Organism::readParameters(name, basetag); };
+  void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true) override { this->initializeReader(); Organism::readParameters(name, basetag, fromFile); };
   void openXML(std::string name) { readParameters(name); } // old name
 
   /* Simulation */

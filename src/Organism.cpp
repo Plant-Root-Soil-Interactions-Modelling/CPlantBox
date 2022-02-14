@@ -546,13 +546,15 @@ std::string Organism::toString() const
  * in the organ type parameters Organism::organParam, since
  * the organ type parameters are created by OrganTypeParameter::copy.
  *
- * @param name      file name
+ * @param name      file name or data as string
  * @param basetag   name of the base tag (e.g. "organism", or "plant")
+ * @param fromFile  @param name == file name (true) or data as string (false)
  */
-void Organism::readParameters(std::string name, std::string basetag)
+void Organism::readParameters(std::string name, std::string basetag, bool fromFile)
 {
     tinyxml2::XMLDocument doc;
-    doc.LoadFile(name.c_str());
+	if(fromFile){doc.LoadFile(name.c_str()); //open xml file and read data
+	}else{doc.Parse((const char*)name.c_str());} //get data directly from string
     if(doc.ErrorID() == 0) {
         tinyxml2::XMLElement* base = doc.FirstChildElement(basetag.c_str());
         if(base != nullptr){

@@ -346,7 +346,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNewSegmentOrigins", &Organism::getNewSegmentOrigins, py::arg("ot") = -1)  // default
 
             .def("initializeReader", &Organism::initializeReader)
-            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant")  // default
+            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true)  // default
             .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("comments") = true)  // default
             .def("writeRSML", &Organism::writeRSML)
             .def("getRSMLSkip", &Organism::getRSMLSkip)
