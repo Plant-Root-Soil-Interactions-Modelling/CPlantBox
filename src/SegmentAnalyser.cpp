@@ -694,6 +694,7 @@ SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
  * @param bot       vertical bot position (cm) (e.g. = -100 cm)
  * @param n         number of layers, each with a height of (top-bot)/n
  * @param exact     calculates the intersection with the layer boundaries (true), only based on segment midpoints (false)
+ *                  (TODO) intersections do not work with user data
  * @return          vector of size @param n containing the summed parameter in this layer
  */
 std::vector<double> SegmentAnalyser::distribution(std::string name, double top, double bot, int n, bool exact) const
