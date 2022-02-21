@@ -123,11 +123,11 @@ public:
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability function
 
     std::vector<std::vector<double>> leafGeometry; // normalized x - coordinates per along the normalized mid vein
+	int geometryN = 100; // leaf geometry resolution (not in XML)
 
 protected:
 
-	int geometryN = 100; // leaf geometry resolution (not in XML)
-
+	
     void bindParameters(); ///<sets up class introspectionbindParameters
     std::vector<double> intersections(double y, std::vector<double> phi, std::vector<double> l); ///< returns the intersection of a horizontal line at y-coordinate with the leaf geometry
     void normalizeLeafNodes(); ///< scales leaf area to 1

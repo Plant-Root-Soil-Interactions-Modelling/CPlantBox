@@ -13,11 +13,11 @@ import vtk_plot as vp
 import matplotlib.pyplot as plt
 
 ##parameters for example:
-adaptSeed = True
-adaptLeaf = True
-adaptStem = True
-leafRadial = True #radial or not
-anim = True
+adaptSeed = False
+adaptLeaf = False
+adaptStem = False
+leafRadial = False #radial or not
+anim = False
 zoomLeafShape = True
 export = False
 getImage = True
@@ -146,9 +146,9 @@ if getImage:
     vp.plot_plant(plant, "organType")
     # zoom on leaf--theory--2D
     print("2D leaf shape of a full grown leaf")
-    lorg = plant.getOrgans(pb.leaf)[0]
+    lorg = plant.getOrgans(pb.leaf)[1]
     lrp = lorg.getLeafRandomParameter()    
-    
+    leafRadial = (lrp.parametrisationType == 0)
     if leafRadial:
         yy = np.linspace(0, lorg.leafLength(), N)
         geom_x, geom_y = [],[]

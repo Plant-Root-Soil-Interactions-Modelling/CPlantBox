@@ -188,7 +188,7 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
                 i++;
             }
             if (i == 0) {
-                if (key.compare("successor")!=0) {
+                if ((key.compare("successor")!=0)&&((key.compare("leafGeometry")!=0)||(organType!=Organism::ot_leaf))) {
                     std::cout << "OrganRandomParameter::readXML: warning! parameter " << key <<
                         " is defined in the xml, but not available in organ " << Organism::organTypeName(organType) << "\n" << std::flush;
                 }
