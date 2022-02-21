@@ -425,6 +425,7 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("gf", &gf, "Growth function number [1]");
 	bindParameter("lnf", &lnf, "Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)");
 	bindParameter("parametrisationType", &parametrisationType, "Leaf geometry parametrisation type");
+	bindParameter("geometryN", &geometryN, "leaf geometry resolution");
 	// other parameters (descriptions only)
 	description["successor"] = "Sub type of lateral leaf veins";
 	description["successorP"] = "Probability of each sub type to occur";

@@ -592,6 +592,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("nobs",&LeafRandomParameter::nobs)
             .def("leafLength",&LeafRandomParameter::leafLength)
             .def("leafMid",&LeafRandomParameter::leafMid)
+			.def_readwrite("geometryN", &LeafRandomParameter::geometryN)
+			.def_readwrite("parametrisationType", &LeafRandomParameter::parametrisationType)
 			.def_readwrite("leafGeometry", &LeafRandomParameter::leafGeometry)
             .def_readwrite("lb", &LeafRandomParameter::lb)
             .def_readwrite("lbs", &LeafRandomParameter::lbs)
