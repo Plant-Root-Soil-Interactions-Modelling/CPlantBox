@@ -25,99 +25,22 @@ getImage = True
 ##create plant:
 plant = pb.Plant()
 # Open plant and root parameter from a file
-path = "../../../modelparameter/plant/" 
-name = "example1e"
+path = "../../../modelparameter/plantWithLeaves/" 
+name ="Crypsis_aculeata_Clausnitzer_1994"
+#other options:
+#"Zea_mays_4_Leitner_2014"
+#"Lupinus_albus_Leitner_2014"
+#"Heliantus_Pagès_2013"
+#"Crypsis_aculeata_Clausnitzer_1994"
+#"Brassica_napus_a_Leitner_2010"
+#"0"
+#"example1e"
 plant.readParameters(path + name + ".xml")
 
         
 
-if adaptSeed:
-    srp = pb.SeedRandomParameter(plant)  # with default values
-    srp.firstTil = 0  # [day] first emergence of a tiler
-    srp.delayTil = 0  # [day] delay between the emergence of tilers
-    srp.maxTil = 0 # [-] number of tillers 
-    plant.setOrganRandomParameter(srp)
-    
-
-if adaptStem:
-    for p in plant.getOrganRandomParameter(pb.stem):
-        if (p.subType > 0): # can be changed according to the suptypes of the plant
-            p.nodalGrowth = 1   #< whether to implement the internodal growth 
-            p.delayLat = 1  #< delay between stem creation and start of nodal growth [day]
-            p.delayNG = 10   #< delay between lateral creation and growth [day]
-            #p.tropismAge = 10 #< only used if tropsimT = 6
-            plant.setOrganRandomParameter(p)
-            
-if adaptLeaf:
-    for p in plant.getOrganRandomParameter(pb.leaf):
-    
-                #p.lmax - p.la - p.lb = leafMid = center of radial circle
-        if (p.subType >= 2): #leaf subtypes start at 2
-            p.lb =  1 # length of leaf stem
-            p.la,  p.lmax = 3.5, 8.5
-            p.areaMax = 10  # cm2, area reached when length = lmax
-            N = 100  # N is rather high for testing
-            if leafRadial:
-            
-                #LongLeaf:
-                p.lb =  1 # length of leaf stem
-                p.la,  p.lmax = 3.5, 8.5
-                p.areaMax = 10  # cm2, area reached when length = lmax
-                N = 100  # N is rather high for testing
-                phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-                l = np.array([3, 2.2, 1.7, 2, 3.5]) #distance from leaf center
-                
-                
-                #Maple leaf:
-                p.lb =  1 # length of leaf stem
-                N = 100  # N is rather high for testing
-                p.areaMax = 50 
-                p.la,  p.lmax = 5, 11
-                phi = np.array([-90, -45, 0., 45,67.5,70, 90]) / 180. * np.pi
-                l = np.array([2, 2, 2, 4,1,1, 4]) #distance from leaf center
-                
-                #Round leaf:
-                p.lb =  1 # length of leaf stem
-                N = 100  # N is rather high for testing
-                p.la,  p.lmax = 5, 11
-                p.areaMax = 3.145*(((p.lmax-p.la - p.lb)/2)**2)
-                phi = np.array([-90, -45, 0., 45,67.5,70, 90]) / 180. * np.pi
-                l_ = (p.lmax - p.lb - p.la)/2
-                l = np.array([l_ for x_i in range(len(phi))]) #([2, 2, 2, 4,1,1, 4]) #distance from leaf center
-                
-                #flower-shaped leaf:
-                #p.lb =  1 # length of leaf stem
-                #N = 100  # N is rather high for testing
-                #p.areaMax = 100 
-                #p.la, p.lb, p.lmax = 5, 1, 11
-                #phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
-                #l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
-                
-                p.createLeafRadialGeometry(phi, l, N)  
-                
-            else:
-                p.lb =  2 # length of leaf stem
-                p.la,  p.lmax = 3.5, 8.5
-                p.areaMax = 10  # cm2, area reached when length = lmax
-                N = 100  # N is rather high for testing
-                y = np.array([-3, -3 * 0.7, 0., 3.5 * 0.7, 3.5])
-                l = np.array([0., 2.2 * 0.7, 1.7, 1.8 * 0.7, 0.])
-                p.createLeafGeometry(y, l, N)     
-                
-                
-            p.tropismT = 6 # 6: Anti-gravitropism to gravitropism
-            #p.tropismN = 5
-            #p.tropismS = 0.1
-            p.tropismAge = 10 #< age at which tropism switch occures, only used if p.tropismT = 6
-            plant.setOrganRandomParameter(p)
-
-
-for p in plant.getOrganRandomParameter(pb.leaf):
-    if (p.subType >= 2):
-        print(p)     
     
     
-
 plant.initialize()
 
 if anim:
@@ -150,6 +73,7 @@ if getImage:
     lrp = lorg.getLeafRandomParameter()    
     leafRadial = (lrp.parametrisationType == 0)
     if leafRadial:
+        N = len(lrp.leafGeometry)
         yy = np.linspace(0, lorg.leafLength(), N)
         geom_x, geom_y = [],[]
         for i, x in enumerate(lrp.leafGeometry):
