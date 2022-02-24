@@ -150,6 +150,7 @@ if getImage:
     lrp = lorg.getLeafRandomParameter()    
     leafRadial = (lrp.parametrisationType == 0)
     if leafRadial:
+        N = len(lrp.leafGeometry)
         yy = np.linspace(0, lorg.leafLength(), N)
         geom_x, geom_y = [],[]
         for i, x in enumerate(lrp.leafGeometry):
