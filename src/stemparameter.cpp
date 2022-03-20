@@ -10,13 +10,6 @@
 
 namespace CPlantBox {
 
-/**
- * @return Mean maximal stem length of this stem type
- */
-double StemSpecificParameter::getK() const {
-    double l = std::accumulate(ln.begin(), ln.end(), 0.);
-    return l+la+lb;
-}
 
 /**
  * @copydoc OrganParameter::toString()

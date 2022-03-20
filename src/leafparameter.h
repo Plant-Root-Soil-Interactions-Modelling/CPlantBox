@@ -5,8 +5,6 @@
 #include "mymath.h"
 #include "soil.h"
 #include "organparameter.h"
-#include "tropism.h"
-#include "growth.h"
 
 #include <vector>
 
@@ -21,28 +19,17 @@ class LeafSpecificParameter : public OrganSpecificParameter
 {
 public:
 
-	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
+	LeafSpecificParameter() :LeafSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.){ };
 	LeafSpecificParameter(int subType, double lb, double la, 
 	const std::vector<double>& ln, double r, double a, double theta, 
-	double rlt, double leafArea, bool laterals):
-		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), 
-		theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals), 
-		ln(ln)   { }; ///< Constructor setting all parameters
+	double rlt, double leafArea, bool laterals = false):
+		OrganSpecificParameter(subType,a,lb,la,ln, r,  theta, rlt, laterals), areaMax(leafArea) { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
 	 */
-	double lb = 0.; 		///< Basal zone of leaf (leaf-stem) [cm]
-	double la = 0.;			///< Apical zone of leaf vein [cm];
-	double r = 0.;			///< Initial growth rate [cm day-1]
-	double theta = 0.; 		///< Branching angle between veins [rad]
-	double rlt = 0.;		///< Leaf life time [day]
 	double areaMax = 0.; 	///< Leaf area [cm2]
-	bool laterals = false;  ///< Indicates if lateral leaves exist
-	std::vector<double> ln = std::vector<double>(); ///< Inter-lateral distances (if laterals) or mid for radial parametrisation (if there are no laterals) [cm]
-
-	int nob() const { return ln.size() + laterals; } //number of laterals = number of phytomers + 1
-	double getK() const; ///< Returns the exact maximal leaf length (including leaf stem) of this realization [cm]
+	
 	double leafLength() const { return getK()-lb; }; ///< Returns the exact maximal leaf length (excluding leaf stem) of this realization [cm]
 
 	std::string toString() const override;
@@ -117,7 +104,6 @@ public:
 	int parametrisationType = 0; // 0 .. radial, 1..along main axis
 
 	/* call back functions */
-    std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability function

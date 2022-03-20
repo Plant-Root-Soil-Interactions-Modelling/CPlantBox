@@ -94,7 +94,13 @@ double Organ::getLength(int i) const
 {
 	double l = 0.; // length until node i
 	for (int j = 0; j<i; j++) {
-		l += nodes.at(j+1).minus(nodes.at(j)).length(); // relative length equals absolute length
+		if(this->getParameter("organType")==Organism::ot_root){
+			l += nodes.at(j+1).minus(nodes.at(j)).length(); // relative length equals absolute length
+		}else{
+			// relative length equals absolute length during growth
+			// for leaves and stem
+			l += nodes.at(j+1).length(); 
+		}
 	}
 	return l;
 }
@@ -321,8 +327,29 @@ int Organ::getNumberOfLaterals() const {
  */
 double Organ::getParameter(std::string name) const {
 	// specific parameters
+	if (name=="volume") { return param()->a*param()->a*M_PI*getLength(true); } // // root volume [cm^3]
+	if (name=="surface") { return 2*param()->a*M_PI*getLength(true); }
+	if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
+	if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
+	if (name=="nob") { return param()->nob(); } // number of branches
+	if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
+	if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
+	if (name=="lnMean") { // mean lateral distance [cm]
+		auto& v =param()->ln;
+		return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+	}
+	if (name=="lnDev") { // standard deviation of lateral distance [cm]
+		auto& v =param()->ln;
+		double mean = std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+		double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
+		return std::sqrt(sq_sum / v.size() - mean * mean);
+	}
 	if (name=="subType") { return this->param_->subType; }
-    if (name=="a") { return param_->a; } // root radius [cm]
+    if (name=="rlt") { return param()->rlt; } // root life time [day]
+	if (name=="k") { return param()->getK(); }; // maximal root length [cm]
+	if (name=="lb") { return param()->lb; } // basal zone [cm]
+	if (name=="la") { return param()->la; } // apical zone [cm]
+	if (name=="a") { return param_->a; } // root radius [cm]
 	if (name=="radius") { return this->param_->a; } // root radius [cm]
 	if (name=="diameter") { return 2.*this->param_->a; } // root diameter [cm]
 	// organ member variables
@@ -474,19 +501,233 @@ std::string Organ::toString() const
 	return str.str();
 }
 
+
 /**
- * @return Current absolute heading of the organ tip, based on initial heading, or last two nodes
+ * @return Current absolute heading of the organ at node n, based on initial heading, or segment before
+ * ok with rel coord? 
  */
-Vector3d Organ::heading() const
+Vector3d Organ::heading(int n) const
 {
-	if (nodes.size()>1) {
-		int n = nodes.size();
-		Vector3d h = getNode(n-1).minus(getNode(n-2));
+	if(n<0){n=nodes.size()-1 ;}
+	if ((nodes.size()>1)&&(n>0)) {
+		n = std::min(int(nodes.size()-1),n);
+		Vector3d h;
+		if(this->getParameter("organType")==Organism::ot_root){
+			h = getNode(n).minus(getNode(n-1));
+		}else{	h = getNode(n);}//rel coordinates for leaf and stem
 		h.normalize();
 		return h;
 	} else {
-		return iHeading.column(0);
+		return getiHeading();
 	}
+}
+
+
+
+/**
+ * Analytical creation (=emergence) time of a point along the already grown organ
+ *
+ * @param length   length along the organ, where the point is located [cm]
+ * @param dt 	   current time step [day]
+ * @return         the analytic time when this point was reached by the growing organ [day],
+ * 				   if growth is impeded, the value is not exact, but approximated dependent on the temporal resolution.
+ */
+double Organ::calcCreationTime(double length, double dt)
+{
+    assert(length >= 0 && "Organ::getCreationTime() negative length");
+    double age_ = calcAge(std::max(length,0.)); // organ age as if grown unimpeded (lower than real age)
+    
+	assert(age_ >= 0 && "Organ::getCreationTime() negative age");
+	double a = std::max(age_, age-dt /*old age*/);
+    a = std::min(a, age); // a in [age-dt, age]
+    return a+nodeCTs[0];
+}
+/**
+ * Analytical length of the leaf at a given age
+ *
+ * @param age          age of the leaf [day]
+ */
+double Organ::calcLength(double age)
+{
+	assert(age>=0  && "Leaf::calcLength() negative root age");
+	return getF_gf()->getLength(age,getParameter("r"),getParameter("k"),shared_from_this());
+}
+
+/**
+ * Analytical age of the leaf at a given length
+ *
+ * @param length   length of the leaf [cm]
+ */
+double Organ::calcAge(double length)
+{
+	assert(length>=0 && "Leaf::calcAge() negative root length");
+	return getF_gf()->getAge(length,getParameter("r"),getParameter("k"),shared_from_this());
+}
+
+/**
+ * computes absolute coordinates from relative coordinates
+ * when this function is called, the parent organ has already
+ * its absolute coordinates
+ * called by @see Plant::rel2abs
+ */
+void Organ::rel2abs() 
+{
+	double ageSwitch = getF_tf()->ageSwitch; //rename
+	bool tropismChange = ((age > ageSwitch)&&(ageSwitch >0));
+	nodes[0] = getOrigin();//get absolute coordinates of first node via coordinates of parent
+	for(size_t i=1; i<nodes.size(); i++){
+		Vector3d newdx = nodes[i];
+		//if new node or has an age-dependent tropism + reached age at which tropism changes. Might need to update the conditions if do new tropism functions
+		//i.e., gradual change according to age
+		if((i>= oldNumberOfNodes )|| (tropismChange)){
+			double sdx = nodes[i].length();
+			newdx = getIncrement(nodes[i-1], sdx, i-1);
+		}
+		nodes[i] = nodes[i-1].plus(newdx);
+		
+	}
+	if(tropismChange){
+		getF_tf()->ageSwitch = -1; //switch done
+	}
+	for(size_t i=0; i<children.size(); i++){
+		(children[i])->rel2abs();
+	}//if carries children, update their coordinates from relative to absolute
+	
+	
+}
+
+/**
+ *  Creates nodes and node emergence times for a length l
+ *
+ *  Checks that each new segments length is <= dx but >= parent->minDx
+ *
+ *  @param l        total length of the segments that are created [cm]
+ *  @param dt       time step [day]
+ *  @param verbose  turns console output on or off
+ */
+void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
+{
+    if (l==0) {
+        std::cout << "Root::createSegments: zero length encountered \n";
+        return;
+    }
+    if (l<0) {
+        std::cout << "Root::createSegments: negative length encountered \n";
+    }
+
+    // shift first node to axial resolution
+    double shiftl = 0; // length produced by shift
+    int nn = nodes.size();
+	if( PhytoIdx >= 0){ //if we are doing internodal growth,  PhytoIdx >= 0.
+		auto o = children.at(PhytoIdx);
+		nn = o->parentNI +1; //shift the last node of the phytomere n° PhytoIdx instead of the last node of the organ
+	}	
+    if (firstCall||(PhytoIdx >= 0)) { // first call of createSegments (in Root::simulate)
+        firstCall = false;
+		bool notChildBaseNode = (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI));
+		if ((nn>1) && (notChildBaseNode || (organType()!=Organism::ot_root)) ) { // don't move a child base node for roots
+            Vector3d n2 = nodes[nn-2];
+            Vector3d n1 = nodes[nn-1];
+			Vector3d h;
+			if(organType()==Organism::ot_root){
+				h = n1.minus(n2);
+			}else{h = n1;}//relative length for stem and leaves
+            double olddx = h.length(); // length of last segment
+			if (olddx<dx()*0.99) { // shift node instead of creating a new node
+                shiftl = std::min(dx()-olddx, l);
+                double sdx = olddx + shiftl; // length of new segment
+                // Vector3d newdxv = getIncrement(n2, sdx);
+                h.normalize();
+				if(organType()==Organism::ot_root){
+					nodes[nn-1] = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
+                }else{nodes[nn-1] = h.times(sdx);}
+				double et = this->calcCreationTime(getLength(true)+shiftl, dt);
+                nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                moved = true;
+                l -= shiftl;
+                if (l<=0) { // ==0 should be enough
+                    return;
+                }
+            } else {
+                moved = false;
+            }
+        } else {
+            moved = false;
+        }
+    }
+    // create n+1 new nodes
+    double sl = 0; // summed length of created segment
+    int n = floor(l/dx());
+    for (int i = 0; i < n + 1; i++) {
+
+        double sdx; // segment length (<=dx)
+        if (i<n) {  // normal case
+            sdx = dx();
+        } else { // last segment
+            sdx = l-n*dx();
+            if (sdx<dxMin()*0.99) { //plant.lock()->getMinDx()) { // quit if l is too small
+                if (verbose&& sdx != 0) {
+					std::cout <<"Root::createSegments(): length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
+                }
+				if( PhytoIdx >= 0){
+					this->epsilonDx += sdx;
+				}else{this->epsilonDx = sdx;}
+                return;
+            }
+			this->epsilonDx = 0; //no residual
+        }
+        sl += sdx;
+        Vector3d newdx = getIncrement(nodes.back(), sdx);
+		Vector3d newnode;
+		if(organType()==Organism::ot_root){
+			newnode = Vector3d(sdx, 0., 0.);
+		}else{ newnode = Vector3d(nodes.back().plus(newdx));}
+        double et = this->calcCreationTime(getLength(true)+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
+        // in case of impeded growth the node emergence time is not exact anymore,
+        // but might break down to temporal resolution
+        bool shift = (PhytoIdx >= 0); //node will be insterted between 2 nodes. only happens if we have internodal growth (PhytoIdx >= 0)
+		addNode(newnode, et, size_t(nn+i), shift);
+    }
+}
+
+
+/**
+ * computes relative coordinates from absolute coordinates
+ * when this function is called, the parent organ has already
+ * its relative coordinates
+ * called by @see Plant::abs2rel
+ */
+void Organ::abs2rel()
+{
+	for (int j = nodes.size(); j>1; j--) {
+		nodes[j-1] = nodes.at(j-1).minus(nodes.at(j-2));
+		}
+	nodes[0] = Vector3d(0.,0.,0.);
+	for(size_t i=0; i<children.size(); i++){
+		(children[i])->abs2rel();
+	}//if carry children, update their pos
+	
+}
+
+
+
+/**
+ * Returns the increment of the next segments
+ *
+ *  @param p       coordinates of previous node (in absolute coordinates)
+ *  @param sdx     length of next segment [cm]
+ *  @param n       index at which new node is to be inserted
+ *  @return        the vector representing the increment
+ */
+Vector3d Organ::getIncrement(const Vector3d& p, double sdx, int n)
+{
+	Vector3d h = heading(n);
+	Matrix3d ons = Matrix3d::ons(h);
+	//use dx() rather rhan sdx to compute heading
+	//to make tropism independante from growth rate
+	Vector2d ab = getF_tf()->getHeading(p, ons, dx(),shared_from_this());
+	Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+	return sv.times(sdx);
 }
 
 }

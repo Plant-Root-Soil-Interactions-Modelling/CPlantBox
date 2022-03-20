@@ -10,13 +10,6 @@
 
 namespace CPlantBox {
 
-/**
- * @return Mean maximal root length of this root type
- */
-double RootSpecificParameter::getK() const {
-    double l = std::accumulate(ln.begin(), ln.end(), 0.);
-    return l+la+lb;
-}
 
 /**
  * @copydoc OrganParameter::toString()

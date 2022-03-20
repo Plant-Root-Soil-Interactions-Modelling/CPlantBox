@@ -35,7 +35,7 @@ public:
 	 * @param n_            number of tries
 	 * @param sigma_        standard deviation of angular change [1/cm]
 	 */
-	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_, double ageSwitch_ = 0): 
+	Tropism(std::shared_ptr<Organism> plant, double n_,double sigma_, double ageSwitch_ = -1): 
 	ageSwitch(ageSwitch_),plant(plant), n(n_), sigma(sigma_) { }
 	virtual ~Tropism() { }
 
@@ -67,7 +67,7 @@ public:
 
 	static Vector3d getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx);
 	///< Auxiliary function: Applies angles a and b and goes dx [cm] into the new direction
-	double ageSwitch;			  
+	double ageSwitch = -1;			  
 
 protected:
 
@@ -278,7 +278,7 @@ class AntiGravi2Gravitropism : public Tropism
 {
 public:
 
-	AntiGravi2Gravitropism(std::shared_ptr<Organism> plant, double n, double sigma, double ageSwitch = 0) : 
+	AntiGravi2Gravitropism(std::shared_ptr<Organism> plant, double n, double sigma, double ageSwitch = -1) : 
 	Tropism(plant, n,sigma,ageSwitch) { } ///< @see TropismFunction
 
 	

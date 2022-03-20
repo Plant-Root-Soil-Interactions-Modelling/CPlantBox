@@ -3,6 +3,8 @@
 #define ORGAN_H_
 
 #include "mymath.h"
+//#include "growth.h"
+//#include "tropism.h"
 
 #include "external/tinyxml2/tinyxml2.h"
 
@@ -18,6 +20,8 @@ class OrganSpecificParameter;
 class OrganRandomParameter;
 class Organism;
 class Plant;
+class GrowthFunction;
+class Tropism;
 
 /**
  * Organ
@@ -48,6 +52,11 @@ public:
 
     /* development */
     virtual void simulate(double dt, bool verbose = false); ///< grow for a time span of @param dt
+	double calcCreationTime(double length, double dt =0.); ///< analytical creation (=emergence) time of a node at a length
+    double calcLength(double age); ///< analytical length of the root
+    double calcAge(double length); ///< analytical age of the root
+	virtual std::shared_ptr<GrowthFunction> getF_gf(){assert(false&&"getF_gf notimplemented");}
+	virtual std::shared_ptr<Tropism> getF_tf(){assert(false&&"getF_tf notimplemented");}
 
     /* tree */
     void setOrganism(std::shared_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
@@ -69,12 +78,12 @@ public:
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     virtual  double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
-
+	
 	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< absolute coordinate of the organs origin
-    virtual Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ, absolute coordinates per defaul
+    Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ, absolute coordinates per defaul
     int getNodeId(int i) const { return nodeIds.at(i); } ///< global node index of the i-th node, i is called the local node index
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
     void addNode(Vector3d n, double t, size_t index, bool shift); //< adds a node to the root
@@ -84,10 +93,9 @@ public:
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
 	double dx() const; ///< returns the max axial resolution
 	double dxMin() const; ///< returns the min axial resolution
-	virtual void rel2abs(){ throw std::runtime_error( "rel2abs() not implemented" );  }///should be overwritten
-    virtual void abs2rel(){ throw std::runtime_error( "abs2rel() not implemented" );  }///should be overwritten
-    
-	void moveOrigin(int idx);//change idx of first node, in case of nodal growth
+	void rel2abs() ;//for aboveground organs
+    void abs2rel();//for aboveground organs
+    void moveOrigin(int idx);//change idx of first node, in case of nodal growth
 
     /* last time step */
     virtual bool hasMoved() const { return moved; }; ///< have any nodes moved during the last simulate call
@@ -104,14 +112,21 @@ public:
     void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
 
     /* Parameters that are constant over the organ life time*/
-    Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
+    virtual Vector3d getiHeading() const {return iHeading.column(0);}//overwritten by stem and leaf
+	Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
 
     int parentNI; ///< local parent node index
 	 /* useful */
-    virtual Vector3d heading() const; ///< current (absolute) heading of the organs tip
-    virtual Vector3d heading(int i)  const { throw std::runtime_error( "heading(i) not implemented" );  }///should be overwritten ; ///< current (absolute) heading of the organs tip
+    virtual Vector3d heading(int i = -1) const;///should be overwritten ; ///< current (absolute) heading of the organs tip
+	std::shared_ptr<const OrganSpecificParameter> param() const {return param_;}; ///< organ parameter
 
 protected:
+	
+    Vector3d getIncrement(const Vector3d& p, double sdx, int n= -1); ///< called by createSegments, to determine growth direction
+	void createSegments(double l, double dt, bool verbose, int PhytoIdx=-1);///< creates segments of length l, called by ::simulate()
+	bool firstCall = true; ///< firstCall of createSegments in simulate
+
+    
 
     /* up and down the organ tree */
     std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of

@@ -31,20 +31,13 @@ public:
     virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
-
-    int organType() const override { return Organism::ot_root; }; ///< returns the organs type
-
-    void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
-
-    double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
-    std::string toString() const override;
-
-    /* From analytical equations */
-    double calcCreationTime(double length, double dt); ///< analytical creation (=emergence) time of a node at a length
-    double calcLength(double age); ///< analytical length of the root
-    double calcAge(double length); ///< analytical age of the root
-
+	int organType() const override { return Organism::ot_root; }; ///< returns the organs type
+	void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
+	std::string toString() const override;
+    
     /* Abbreviations */
+	std::shared_ptr<GrowthFunction> getF_gf() override {return getRootRandomParameter()->f_gf;}
+	std::shared_ptr<Tropism> getF_tf() override {return getRootRandomParameter()->f_tf;}
     std::shared_ptr<RootRandomParameter> getRootRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const RootSpecificParameter> param() const; ///< root parameter
 
@@ -53,9 +46,6 @@ public:
 protected:
 
     virtual void createLateral(double dt, bool silence); ///< creates a new lateral, called by Root::simulate()
-
-    virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
-    void createSegments(double l, double dt, bool silence); ///< creates segments of length l, called by Root::simulate()
 
     bool firstCall = true; ///< firstCall of createSegments in simulate
 

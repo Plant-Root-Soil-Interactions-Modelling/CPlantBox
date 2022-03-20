@@ -11,13 +11,6 @@
 
 namespace CPlantBox {
 
-/**
- * @return Mean maximal leaf length of this leaf type
- */
-double LeafSpecificParameter::getK() const {
-	double l = std::accumulate(ln.begin(), ln.end(), 0.); // branchning zone
-	return l+la+lb;
-}
 
 /**
  * @copydoc OrganParameter::toString()

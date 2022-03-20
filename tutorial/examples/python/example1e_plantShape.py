@@ -143,7 +143,7 @@ if getImage:
     if not anim:
         plant.simulate(30, True)
     # Plot, using vtk
-    vp.plot_plant(plant, "organType")
+    #vp.plot_plant(plant, "organType")
     # zoom on leaf--theory--2D
     print("2D leaf shape of a full grown leaf")
     lorg = plant.getOrgans(pb.leaf)[1]
@@ -179,6 +179,6 @@ if getImage:
     
     # zoom on leaf--realized
     print("3D leaf shape of actual leaf")
-    vp.plot_leaf(lorg)
+    #vp.plot_leaf(lorg)
     
     

@@ -48,6 +48,15 @@ std::shared_ptr<OrganRandomParameter> OrganRandomParameter::copy(std::shared_ptr
     return o;
 }
 
+
+/**
+ * @return Mean maximal root length of this root type
+ */
+double OrganSpecificParameter::getK() const {
+    double l = std::accumulate(ln.begin(), ln.end(), 0.);
+    return l+la+lb;
+}
+
 /**
  * An organ specific parameter set (OrganParameter) is created from the general parameter set (OrganTypeParameter).
  * In the specializations of this class, random variables are drawn from their distributions.

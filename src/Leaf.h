@@ -13,10 +13,10 @@ namespace CPlantBox {
 class Plant;
 
 /**
- * Stem
+ * organ
  *
- * Describes a single stem, by a vector of nodes representing the stem.
- * The method simulate() creates new nodes of this stem, and lateral stems in the stem's branching zone.
+ * Describes a single organ, by a vector of nodes representing the organ.
+ * The method simulate() creates new nodes of this organ, and lateral organs in the organ's branching zone.
  *
  */
 class Leaf : public Organ
@@ -28,15 +28,12 @@ public:
 	Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
 	virtual ~Leaf() { };
 
-	std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;   ///< deep copies the root tree
-
+	std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant) override;   ///< deep copies the organ tree
 	int organType() const override { return Organism::ot_leaf; } ///< returns the organs type
-
-	void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
-
-    Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
-
+	void simulate(double dt, bool silence = false) override; ///< organ growth for a time span of \param dt
 	double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
+	std::shared_ptr<GrowthFunction> getF_gf() override {return getLeafRandomParameter()->f_gf;}
+	std::shared_ptr<Tropism> getF_tf() override {return getLeafRandomParameter()->f_tf;}
 
 	/* leaf vizualisation */
     double leafLength() const { return std::max(getLength(false)-param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
@@ -47,22 +44,12 @@ public:
 
     std::string toString() const override;
 
-	/* exact from analytical equations */
-	double calcCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
-	double calcLength(double age); ///< analytical length of the stem
-	double calcAge(double length); ///< analytical age of the stem
-
-	/* abbreviations */
-	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
-	std::shared_ptr<const LeafSpecificParameter> param() const; ///< root parameter
-
-	/* useful */
-    Vector3d heading(int n)  const override; ///< current (absolute) heading of the organs at node n
-    Vector3d heading() const override {return heading( -1 ); } 
 	
-    void rel2abs() override; ///< compute absolute from relative node coordinates
-	void abs2rel() override;///< compute relative from absolute node coordinates
-	Vector3d getiHeading() const;///< compute initial heading from 
+	/* abbreviations */
+	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< organ type parameter of this organ
+	std::shared_ptr<const LeafSpecificParameter> param() const; ///< organ parameter
+
+	Vector3d getiHeading() const override;///< compute initial heading from 
 	bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
 												   
 
@@ -76,14 +63,9 @@ protected:
     void addleafphytomerID(int subtype);
 
     void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
-
-    Vector3d getIncrement(const Vector3d& p, double sdx, int n= -1); ///< called by createSegments, to determine growth direction
-	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
-
-    bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
+	bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 	std::vector<double> getLeafVisX_(double l);
-	bool ageDependentTropism = false;///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abd
-    bool firstCall = true;
+
 };
 
 } // namespace CPlantBox

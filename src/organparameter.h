@@ -10,7 +10,9 @@
 #include <string>
 
 #include "external/tinyxml2/tinyxml2.h"
+#include "tropism.h"
 
+#include "growth.h"
 /**
  * This file describes the classes OrganSpecificParameter and OrganRandomParameter.
  * OrganSpecificParameter are drawn from the OrganRandomParameter class
@@ -20,6 +22,7 @@ namespace CPlantBox {
 
 class Organism; // forward declaration
 class GrowthFunction;
+//class Tropism;
 class ExponentialGrowth;
 
 /**
@@ -28,13 +31,26 @@ class ExponentialGrowth;
 class OrganSpecificParameter {
 public:
 
-    OrganSpecificParameter(int t, double a): subType(t), a(a)  { }
+    OrganSpecificParameter(int t, double a, double lb=0., double la=0., 
+	const std::vector<double>& ln=std::vector<double>(0), double r=0., double theta=0., 
+	double rlt=0., bool laterals=false):  lb(lb), la(la), r(r), 
+		theta(theta), rlt(rlt), subType(t), a(a) , laterals(laterals), 
+		ln(ln)   { }
 
     virtual ~OrganSpecificParameter() { }
 
-    int subType = -1; ///< sub type of the organ
+    int nob() const { return ln.size() + laterals; } //number of laterals = number of phytomers + 1
+	double getK() const; ///< Returns the exact maximal leaf length (including leaf stem) of this realization [cm]
+	double lb = 0.; 		///< Basal zone of leaf (leaf-stem) [cm]
+	double la = 0.;			///< Apical zone of leaf vein [cm];
+	double r = 0.;			///< Initial growth rate [cm day-1]
+	double theta = 0.; 		///< Branching angle between veins [rad]
+	double rlt = 0.;		///< Leaf life time [day]
+	int subType = -1; ///< sub type of the organ
     double a = 0.; ///< radius of the organ [cm]
-    virtual std::string toString() const; ///< quick info for debugging
+    bool laterals = false;  ///< Indicates if lateral leaves exist
+	std::vector<double> ln = std::vector<double>(); ///< Inter-lateral distances (if laterals) or mid for radial parametrisation (if there are no laterals) [cm]
+	virtual std::string toString() const; ///< quick info for debugging
 
 };
 
@@ -82,6 +98,7 @@ public:
 	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 
     std::weak_ptr<Organism> plant;
+    std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<GrowthFunction> f_gf;
 	std::vector<double> string2vector(std::string xmlInput);///<convert string to vector<double>, to simplifiy xml input
 

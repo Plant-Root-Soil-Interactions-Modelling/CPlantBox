@@ -4,9 +4,7 @@
 
 #include "mymath.h"
 #include "soil.h"
-#include "growth.h"
 #include "organparameter.h"
-#include "tropism.h"
 
 /**
  * This file describes the classes StemSpecificParameter and StemRandomParameter.
@@ -27,26 +25,15 @@ public:
 
     StemSpecificParameter(): StemSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
     StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt,
-	bool laterals= false, int nodalGrowth = 0, double delayNG = 0., double delayLat = 0.):
-        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), 
-		laterals(laterals), nodalGrowth(nodalGrowth), delayNG(delayNG), delayLat(delayLat) { } ///< Constructor setting all parameters
+	bool laterals= false, int nodalGrowth = 0,double delayNG = 0., double delayLat = 0.):
+        OrganSpecificParameter(type,a, lb,la,ln, r, theta, rlt, laterals), nodalGrowth(nodalGrowth), delayNG(delayNG), delayLat(delayLat) { } ///< Constructor setting all parameters
 
     /*
      * StemBox parameters per single stem
      */
-    double lb;              ///< Basal zone [cm]
-    double la;              ///< Apical zone [cm]
-    double r;               ///< Initial growth rate [cm day-1]
-    double theta;           ///< Angle between stem and parent stem [rad]
-    double rlt;             ///< Stem life time [day]
-    std::vector<double> ln; ///< Inter-lateral distances [cm]
-	bool laterals = false;
-	int nodalGrowth;			///< whether to implement the internodal growth [1] (see @stem::simulate)
+    int nodalGrowth;			///< whether to implement the internodal growth [1] (see @stem::simulate)
 	double delayNG;
 	double delayLat;
-    int nob() const { return ln.size() + laterals; } ///< return the maximal number of lateral branches [1]
-    double getK() const; ///< Returns the exact maximal stem length of this realization [cm]
-
     std::string toString() const override; ///< for debugging
 
 };
@@ -119,7 +106,6 @@ public:
     /*
      * Callback functions for the Stem (set up by the class StemSystem)
      */
-    std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth

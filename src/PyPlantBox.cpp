@@ -227,10 +227,19 @@ PYBIND11_MODULE(plantbox, m) {
      * organparameter.h
      */
     py::class_<OrganSpecificParameter, std::shared_ptr<OrganSpecificParameter>>(m,"OrganSpecificParameter")
-            .def(py::init<int, double>())
+            .def(py::init<int ,double, double, double, const std::vector<double>&,  double, double, double, bool>())
             .def_readwrite("subType",&OrganSpecificParameter::subType)
 			.def_readwrite("a",&OrganSpecificParameter::a)
-            .def("__str__",&OrganSpecificParameter::toString);
+            .def("__str__",&OrganSpecificParameter::toString)
+			.def_readwrite("lb", &OrganSpecificParameter::lb)
+            .def_readwrite("la", &OrganSpecificParameter::la)
+            .def_readwrite("ln", &OrganSpecificParameter::ln)
+            .def_readwrite("r", &OrganSpecificParameter::r)
+            .def_readwrite("a", &OrganSpecificParameter::a)
+            .def_readwrite("theta", &OrganSpecificParameter::theta)
+            .def_readwrite("rlt", &OrganSpecificParameter::rlt)
+            .def("getK",&OrganSpecificParameter::getK)
+            .def("nob", &OrganSpecificParameter::nob);
     py::class_<OrganRandomParameter, std::shared_ptr<OrganRandomParameter>>(m,"OrganRandomParameter")
             .def(py::init<std::shared_ptr<Organism>>())
             .def("copy",&OrganRandomParameter::copy)
@@ -247,16 +256,19 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("subType",&OrganRandomParameter::subType)
             .def_readwrite("a", &OrganRandomParameter::a)
             .def_readwrite("a_s", &OrganRandomParameter::as) // as is a keyword in python
-            .def_readwrite("dx", &RootRandomParameter::dx)
-            .def_readwrite("dxMin", &RootRandomParameter::dxMin)
+            .def_readwrite("dx", &OrganRandomParameter::dx)
+            .def_readwrite("dxMin", &OrganRandomParameter::dxMin)
 			.def_readwrite("plant",&OrganRandomParameter::plant)
-            .def_readwrite("f_gf", &RootRandomParameter::f_gf);
+            .def_readwrite("f_gf", &OrganRandomParameter::f_gf);
     /**
      * Organ.h
      */
     py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ")
             .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, Matrix3d, int>())
             .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
+            .def("calcCreationTime", &Organ::calcCreationTime)
+            .def("calcLength", &Organ::calcLength)
+            .def("calcAge", &Organ::calcAge)
             .def("copy",&Organ::copy)
             .def("organType",&Organ::organType)
             .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
@@ -527,16 +539,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("f_sbp", &RootRandomParameter::f_sbp);
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
-            .def_readwrite("lb", &RootSpecificParameter::lb)
-            .def_readwrite("la", &RootSpecificParameter::la)
-            .def_readwrite("ln", &RootSpecificParameter::ln)
-            .def_readwrite("r", &RootSpecificParameter::r)
-            .def_readwrite("a", &RootSpecificParameter::a)
-            .def_readwrite("theta", &RootSpecificParameter::theta)
-            .def_readwrite("rlt", &RootSpecificParameter::rlt)
-            .def("getK",&RootSpecificParameter::getK)
-            .def("nob", &RootSpecificParameter::nob);
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>());
     /*
      * seedparameter.h
      */
@@ -630,17 +633,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool>())
-            .def_readwrite("lb", &LeafSpecificParameter::lb)
-            .def_readwrite("la", &LeafSpecificParameter::la)
-            .def_readwrite("ln", &LeafSpecificParameter::ln)
-            .def_readwrite("r", &LeafSpecificParameter::r)
-            .def_readwrite("a", &LeafSpecificParameter::a)
-            .def_readwrite("theta", &LeafSpecificParameter::theta)
-            .def_readwrite("rlt", &LeafSpecificParameter::rlt)
-            .def_readwrite("leafArea", &LeafSpecificParameter::areaMax)
-            .def_readwrite("laterals", &LeafSpecificParameter::laterals)
-			.def("getK",&LeafSpecificParameter::getK)
-            .def("nob",&LeafSpecificParameter::nob);
+            .def_readwrite("leafArea", &LeafSpecificParameter::areaMax);
     /*
      * stemparameter.h
      */
@@ -688,26 +681,14 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("tropismAges", &StemRandomParameter::tropismAges);
     py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double>())
-            .def_readwrite("lb", &StemSpecificParameter::lb)
-            .def_readwrite("la", &StemSpecificParameter::la)
-            .def_readwrite("ln", &StemSpecificParameter::ln)
-            .def_readwrite("r", &StemSpecificParameter::r)
-            .def_readwrite("a", &StemSpecificParameter::a)
-            .def_readwrite("theta", &StemSpecificParameter::theta)
-            .def_readwrite("rlt", &StemSpecificParameter::rlt)
-            .def("getK",&StemSpecificParameter::getK)
-            .def("nob", &StemSpecificParameter::nob);
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double>());
     /**
      * Root.h
      */
     py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
             .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
-			.def("calcCreationTime", &Root::calcCreationTime)
-            .def("calcLength", &Root::calcLength)
-            .def("calcAge", &Root::calcAge)
-            .def("getRootRandomParameter", &Root::getRootRandomParameter)
+			.def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
     /**
      * Seed.h
@@ -735,9 +716,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
 			.def("getLeafVis", &Leaf::getLeafVis)
 			.def("getLeafVisX", &Leaf::getLeafVisX)
-            .def("calcCreationTime", &Leaf::calcCreationTime)
-            .def("calcLength", &Leaf::calcLength)
-            .def("calcAge", &Leaf::calcAge)
             .def("getLeafRandomParameter", &Leaf::getLeafRandomParameter)
             .def("param", &Leaf::param)
             .def("leafArea", &Leaf::leafArea)
@@ -748,9 +726,6 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
            .def(py::init<std::shared_ptr<Organism>, int, Matrix3d, double, std::shared_ptr<Organ>, int>())
            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
-           .def("calcCreationTime", &Stem::calcCreationTime)
-           .def("calcLength", &Stem::calcLength)
-           .def("calcAge", &Stem::calcAge)
            .def("getStemRandomParameter", &Stem::getStemRandomParameter)
            .def("param", &Stem::param);
     /*
