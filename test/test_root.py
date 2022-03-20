@@ -170,14 +170,21 @@ class TestRoot(unittest.TestCase):
         """ tests if nodes created in last time step are correct """  
         self.root_example_rrp()
         r = self.root
-        r.simulate(.5, False)
+        non = r.getNumberOfNodes() 
+        dx = r.getRootRandomParameter().dx
+        
+        r.simulate(.5, False)     
+        self.assertEqual(r.getNumberOfNodes() - non, round(0.5 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth
+        non = r.getNumberOfNodes() 
         self.assertEqual(r.hasMoved(), False, "dynamics: node is creaetd during first step")
-        r.simulate(1e-1, False)        
+        
+        r.simulate(1e-1, False)      
+        self.assertEqual(r.getNumberOfNodes() - non, round(1e-1 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         non = r.getNumberOfNodes() 
+        
         r.simulate(2.4, False)
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
-        dx = r.getRootRandomParameter().dx
         self.assertEqual(r.getNumberOfNodes() - non, round(2.4 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth
 
     def root_example_rrp2(self):

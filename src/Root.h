@@ -47,7 +47,6 @@ protected:
 
     virtual void createLateral(double dt, bool silence); ///< creates a new lateral, called by Root::simulate()
 
-    bool firstCall = true; ///< firstCall of createSegments in simulate
 
 };
 

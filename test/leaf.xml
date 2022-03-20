@@ -1,4 +1,6 @@
 <leaf name="lateral" subType="1">
+    <parameter name="geometryN" value="100"/>
+    <!--leaf geometry resolution-->
     <parameter name="gf" value="1"/>
     <!--Growth function number [1]-->
     <parameter name="lnf" value="0"/>

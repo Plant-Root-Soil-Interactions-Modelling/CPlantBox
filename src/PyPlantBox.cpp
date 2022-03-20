@@ -681,6 +681,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("tropismAges", &StemRandomParameter::tropismAges);
     py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
             .def(py::init<>())
+            .def_readwrite("delayNG", &StemSpecificParameter::delayNG)
+            .def_readwrite("delayLat", &StemSpecificParameter::delayLat)
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double>());
     /**
      * Root.h

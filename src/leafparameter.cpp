@@ -86,15 +86,19 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	}
 	if (!hasLaterals) { // no laterals
 
-    	lb_ = 0;
-        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
-		res = la_-floor(la_ / dx)*dx;
+		double lmax_ = std::max(lmax + p->randn()*lmaxs, 0.) ; // adapt total length
+		res = lmax_-floor(lmax_ / dx)*dx;
 		if(res < dxMin && res != 0){
-			if(res <= dxMin/2){ la_ -= res;
-			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
-			this->la=la_;
+			if(res <= dxMin/2){ lmax_ -= res;
+			}else{lmax_ =  floor(lmax_ / dx)*dx + dxMin;}
+			this->lmax=lmax_;
 		}			//make la_ compatible with dx() and dxMin()
+		
+		lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
+		this->lb=lb_;
 
+        la_ = lmax_ - this->lb; // keep lb as needed for leaf area
+		this->la=la_;
     } else {
 	lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
 	res = lb_ - floor(lb_/dx)* dx;	
