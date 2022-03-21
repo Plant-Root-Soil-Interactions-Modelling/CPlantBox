@@ -24,13 +24,13 @@ import vtk_plot as vp
 class TestRelCoord(unittest.TestCase):
 
     def test_coord(self):
-        pl = pb.MappedPlant()  
+        pl = pb.MappedPlant(seednum = 1)  
         path = "../modelparameter/plant/"  
         name = "test_relcoord"
         pl.readParameters(path + name + ".xml") 
         #stochastic = False => thus rand() always give 0.5 for Tropism. => result only change according to sigma        
         pl.initialize(stochastic = False)
-        dt = 0.1
+        dt = 1
         steps = 100
         for step in range(steps):
             pl.simulate(dt, False)
