@@ -297,14 +297,15 @@ void Stem::internodalGrowth(double dl,double dt_, bool verbose)
 {
 	
 	const StemSpecificParameter& p = *param(); // rename
+	const StemRandomParameter& Prandom = *getStemRandomParameter();
 	std::vector<double> toGrow(p.ln.size());
 	double dl_;
 	double missing = 0.;
-	if(p.nodalGrowth==0){
+	if(Prandom.nodalGrowth==0){
 		toGrow[0] = dl;
 		std::fill(toGrow.begin()+1,toGrow.end(),0) ;
 	}
-	if(p.nodalGrowth ==1){std::fill(toGrow.begin(),toGrow.end(),dl/p.ln.size()) ; }
+	if(Prandom.nodalGrowth ==1){std::fill(toGrow.begin(),toGrow.end(),dl/p.ln.size()) ; }
 	size_t i=1;
 	while( (dl >0)&&(i<=p.ln.size()) ) {
 		//if the phytomere can do a growth superior to the mean phytomere growth, we add the value of "missing" 

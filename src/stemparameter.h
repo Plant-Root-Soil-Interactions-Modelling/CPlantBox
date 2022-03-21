@@ -25,13 +25,13 @@ public:
 
     StemSpecificParameter(): StemSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
     StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt,
-	bool laterals= false, int nodalGrowth = 0,double delayNG = 0., double delayLat = 0.):
-        OrganSpecificParameter(type,a, lb,la,ln, r, theta, rlt, laterals), nodalGrowth(nodalGrowth), delayNG(delayNG), delayLat(delayLat) { } ///< Constructor setting all parameters
+	bool laterals= false, double delayNG = 0., double delayLat = 0.):
+        OrganSpecificParameter(type,a, lb,la,ln, r, theta, rlt, laterals),  delayNG(delayNG), delayLat(delayLat) { } ///< Constructor setting all parameters
 
     /*
      * StemBox parameters per single stem
      */
-    int nodalGrowth;			///< whether to implement the internodal growth [1] (see @stem::simulate)
+    //int nodalGrowth;			///< whether to implement the internodal growth [1] (see @stem::simulate)
 	double delayNG;
 	double delayLat;
     std::string toString() const override; ///< for debugging

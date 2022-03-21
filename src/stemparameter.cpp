@@ -204,7 +204,7 @@ default:
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // stem life time
 	double delayNG_ = std::max(delayNG + p->randn()*delayNGs, 0.);
 	double delayLat_ = std::max(delayLat + p->randn()*delayLats, 0.);
-    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNG_, delayLat_);
+    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,nob_,r_,a_,theta_,rlt_,hasLaterals,  delayNG_, delayLat_);
 }
 
 /**

@@ -93,8 +93,8 @@ public:
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
 	double dx() const; ///< returns the max axial resolution
 	double dxMin() const; ///< returns the min axial resolution
-	void rel2abs() ;//for aboveground organs
-    void abs2rel();//for aboveground organs
+	void rel2abs(double dt) ;//for aboveground organs, convert relative to absolut coordinates
+    void abs2rel();//for aboveground organs, convert absolut to relative coordinates
     void moveOrigin(int idx);//change idx of first node, in case of nodal growth
 
     /* last time step */

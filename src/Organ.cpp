@@ -503,14 +503,15 @@ std::string Organ::toString() const
 
 
 /**
+ * @param n      node index
  * @return Current absolute heading of the organ at node n, based on initial heading, or segment before
- * ok with rel coord? 
+ * 
  */
 Vector3d Organ::heading(int n) const
 {
 	if(n<0){n=nodes.size()-1 ;}
 	if ((nodes.size()>1)&&(n>0)) {
-		n = std::min(int(nodes.size()-1),n);
+		n = std::min(int(nodes.size()),n);
 		Vector3d h;
 		h = getNode(n).minus(getNode(n-1));//rel coordinates for leaf and stem
 		h.normalize();
@@ -562,37 +563,7 @@ double Organ::calcAge(double length)
 	return getF_gf()->getAge(length,getParameter("r"),getParameter("k"),shared_from_this());
 }
 
-/**
- * computes absolute coordinates from relative coordinates
- * when this function is called, the parent organ has already
- * its absolute coordinates
- * called by @see Plant::rel2abs
- */
-void Organ::rel2abs() 
-{
-	double ageSwitch = getF_tf()->ageSwitch; //rename
-	bool tropismChange = ((age > ageSwitch)&&(ageSwitch >0));
-	nodes[0] = getOrigin();//get absolute coordinates of first node via coordinates of parent
-	for(size_t i=1; i<nodes.size(); i++){
-		Vector3d newdx = nodes[i];
-		//if new node or has an age-dependent tropism + reached age at which tropism changes. Might need to update the conditions if do new tropism functions
-		//i.e., gradual change according to age
-		if((i>= oldNumberOfNodes )|| (tropismChange)){
-			double sdx = nodes[i].length();
-			newdx = getIncrement(nodes[i-1], sdx, i-1);
-		}
-		nodes[i] = nodes[i-1].plus(newdx);
-		
-	}
-	if(tropismChange){
-		getF_tf()->ageSwitch = -1; //switch done
-	}
-	for(size_t i=0; i<children.size(); i++){
-		(children[i])->rel2abs();
-	}//if carries children, update their coordinates from relative to absolute
-	
-	
-}
+
 
 /**
  *  Creates nodes and node emergence times for a length l
@@ -602,6 +573,7 @@ void Organ::rel2abs()
  *  @param l        total length of the segments that are created [cm]
  *  @param dt       time step [day]
  *  @param verbose  turns console output on or off
+ *  @param PhytoIdx index of the growing phytomere (if nodal growth for stem)
  */
 void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 {
@@ -616,7 +588,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
     // shift first node to axial resolution
     double shiftl = 0; // length produced by shift
     int nn = nodes.size();
-	if( PhytoIdx >= 0){ //if we are doing internodal growth,  PhytoIdx >= 0.
+  if( PhytoIdx >= 0){ //if we are doing internodal growth,  PhytoIdx >= 0.
 		auto o = children.at(PhytoIdx);
 		nn = o->parentNI +1; //shift the last node of the phytomere n° PhytoIdx instead of the last node of the organ
 	}	
@@ -643,7 +615,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
                 nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
-                if (l<=0) { // ==0 should be enough
+				if (l<=0) { // ==0 should be enough
                     return;
                 }
             } else {
@@ -689,7 +661,36 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
     }
 }
 
-
+/**
+ * computes absolute coordinates from relative coordinates
+ * when this function is called, the parent organ has already
+ * its absolute coordinates
+ * called by @see Plant::rel2abs
+ *  @param dt      time step [day]
+ */
+void Organ::rel2abs(double dt) 
+{
+	double ageSwitch = getF_tf()->ageSwitch; //rename
+	bool Leaf_tropismChange = (((age-dt)<= ageSwitch)&&(age >= ageSwitch)&&(ageSwitch >0))&&(organType()==Organism::ot_leaf);//re-compute tropism for leaf?
+	bool Stem_tropismChange = (active&&(organType()==Organism::ot_stem));//re-compute tropism for stem?
+	nodes[0] = getOrigin();//get absolute coordinates of first node via coordinates of parent
+	for(size_t i=1; i<nodes.size(); i++){
+		Vector3d newdx = nodes[i];
+		//if new node or has an age-dependent tropism + reached age at which tropism changes. Might need to update the conditions if do new tropism functions
+		//i.e., gradual change according to age
+		if((i>= oldNumberOfNodes )||Leaf_tropismChange||Stem_tropismChange){
+			double sdx = nodes[i].length();
+			newdx = getIncrement(nodes[i-1], sdx, i-1);
+		}
+		nodes[i] = nodes[i-1].plus(newdx);
+		
+	}
+	for(size_t i=0; i<children.size(); i++){
+		(children[i])->rel2abs(dt);
+	}//if carries children, update their coordinates from relative to absolute
+	
+	
+}
 /**
  * computes relative coordinates from absolute coordinates
  * when this function is called, the parent organ has already
@@ -724,7 +725,9 @@ Vector3d Organ::getIncrement(const Vector3d& p, double sdx, int n)
 	Matrix3d ons = Matrix3d::ons(h);
 	//use dx() rather rhan sdx to compute heading
 	//to make tropism independante from growth rate
-	Vector2d ab = getF_tf()->getHeading(p, ons, dx(),shared_from_this());
+	int n_ = -2;
+	if(organType() == Organism::ot_stem ){n_ = n;}
+	Vector2d ab = getF_tf()->getHeading(p, ons, dx(),shared_from_this(), n_+1);
 	Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
 	return sv.times(sdx);
 }

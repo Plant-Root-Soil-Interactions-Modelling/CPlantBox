@@ -192,7 +192,7 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 {	
 	abs2rel();
     Organism::simulate(dt, verbose);	
-	rel2abs();
+	rel2abs(dt);
 }
 
 /**
@@ -224,13 +224,13 @@ void Plant::abs2rel()
 /**
  * go from relative to absolute coordinates for aboveground organs
  */
-void Plant::rel2abs()	
+void Plant::rel2abs(double dt)	
 {	
 	auto s = getSeed();
 	for (int i = 0; i< s->getNumberOfChildren();i++) {
 		auto child = s->getChild(i);
 		if(child->organType() >2){ //if aboveground-organ
-			child->rel2abs();
+			child->rel2abs(dt);
 		}
 		
     }

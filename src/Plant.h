@@ -72,7 +72,7 @@ public:
 
 protected:
   void abs2rel();
-  void rel2abs();
+  void rel2abs(double dt);
   std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
   std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
