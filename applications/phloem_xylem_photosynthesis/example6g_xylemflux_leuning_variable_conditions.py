@@ -1,5 +1,5 @@
 """ water movement within the root (static soil) """
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/python_modules")
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 from Leuning import Leuning
 import plantbox as pb
@@ -22,7 +22,7 @@ k_soil = []
 
 # root system 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
-path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
+path = "../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
 name = "manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
 RH = np.arange(0.1, 0.9, 0.01)

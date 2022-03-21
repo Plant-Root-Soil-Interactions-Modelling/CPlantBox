@@ -1,7 +1,7 @@
 """ Example of the photosynthesis module, using real data from the Selhausen lysimeter setup
 
 """
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/python_modules")
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 from Leuning import Leuning
 import plantbox as pb
@@ -27,12 +27,12 @@ t_end = 90
 
 # root system 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
-path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
+path = "../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
 name = "manyleaves" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
 
 #load data
-df = pd.read_csv('../../../modelparameter/Selhausen_weather_data.txt', delimiter = "\t")
+df = pd.read_csv('../../modelparameter/Selhausen_weather_data.txt', delimiter = "\t")
 
 """ soil """
 min_ = np.array([-5, -5, -15])

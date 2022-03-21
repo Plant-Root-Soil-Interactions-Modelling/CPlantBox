@@ -2,7 +2,7 @@ from fipy import *
 from fipy.meshes.nonUniformGrid1D import NonUniformGrid1D as Grid1D
 from fipy.meshes.nonUniformGrid2D import NonUniformGrid2D as Grid2D
 from fipy.tools import numerix as np
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/python_modules")
 from xylem_flux import XylemFluxPython  # Python hybrid solver
 from phloem_flux import PhloemFluxPython
 import plantbox as pb
@@ -26,7 +26,7 @@ np.set_printoptions(threshold=sys.maxsize)
 #
 ####################### 
 pl = pb.MappedPlant() #pb.MappedRootSystem() #pb.MappedPlant()
-path = "../../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
+path = "../../modelparameter/plant/" #"../../../modelparameter/rootsystem/" 
 name = "manyleaves"# "oneroot" #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 pl.readParameters(path + name + ".xml")
 
