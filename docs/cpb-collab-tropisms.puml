@@ -1,0 +1,32 @@
+@startuml
+footer Arnaud Bouvry
+skinparam backgroundColor white
+
+'#############
+'# TROPISMS 
+'#############
+
+class CPlantBox::Tropism
+
+class CPlantBox::AntiGravi2Gravitropism
+class CPlantBox::AntiGravitropism
+class CPlantBox::CombinedTropism
+class CPlantBox::Exotropism
+class CPlantBox::Gravitropism
+class CPlantBox::Hydrotropism
+class CPlantBox::Plagiotropism
+class CPlantBox::PyTropism
+class CPlantBox::TwistTropism
+
+CPlantBox::Tropism <-- CPlantBox::AntiGravi2Gravitropism
+CPlantBox::Tropism <-- CPlantBox::AntiGravitropism
+CPlantBox::Tropism <-- CPlantBox::CombinedTropism
+CPlantBox::Tropism <-- CPlantBox::Exotropism
+CPlantBox::Tropism <-- CPlantBox::Gravitropism
+CPlantBox::Tropism <-- CPlantBox::Hydrotropism
+CPlantBox::Tropism <-- CPlantBox::Plagiotropism
+CPlantBox::Tropism <-- CPlantBox::PyTropism
+CPlantBox::Tropism <-- CPlantBox::TwistTropism
+
+@enduml
+

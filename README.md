@@ -52,7 +52,9 @@ This script might work on other linux OS but has not been tested.
 Create the documentation by running doxygen in the folder 
 $ doxygen doxy_config
 
-The documentation will be located in the folder /doc
+The documentation will be located in the folder /doc. Compile doc/latex/refman.tex to generate the full doxygen documentation in doc/latex/refman.pdf.
+
+Collaboration diagrams give an overview of the code in folder /docs.
 
 # Examples
 Simulation videos availabe in Youtube Channel https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q
