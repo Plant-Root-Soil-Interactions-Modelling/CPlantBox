@@ -65,7 +65,6 @@ def plot_plant(plant, p_name, render = True):
 
 
 def create_leaf(leaf, leaf_points, leaf_polys):
-    debug = True  # AB
     offs = leaf_points.GetNumberOfPoints()
 
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
@@ -76,20 +75,6 @@ def create_leaf(leaf, leaf_points, leaf_polys):
         if len(ln1) > 0 or len(ln2) > 0:
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)
-
-            if debug and i < (leaf.getNumberOfNodes() - 2):
-                try:
-                    print(f'offs={offs}\n')
-                    print(f'ln1 0={ln1[0]}')
-                    print(f'ln1 1={ln1[1]}')
-                    print(f'ln2 0={ln2[0]}')
-                    print(f'ln2 1={ln2[1]}')
-                    print(f'n1={n1}')
-                    print(f'n2={n2}')
-                except:
-                    print(i)
-                    print(len(ln1), len(ln2))
-
 
 #             if len(ln1) > 0 and len(ln2) == 0:
 #                 print(" 2 -> 0")
