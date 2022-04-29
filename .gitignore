@@ -36,7 +36,7 @@ CMakeFiles
 Makefile
 *CMakeCache*
 
-# something pythoon related
+# something python related
 *.pyc
 __pycache__
 
@@ -52,3 +52,6 @@ Debug/
 # Jupyter notebook
 tutorial/jupyter/.ipynb_checkpoints/
 .ipynb_checkpoints/
+
+# images
+*.png

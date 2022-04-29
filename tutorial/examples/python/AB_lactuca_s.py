@@ -96,7 +96,7 @@ if adaptLeaf:
                 p.lb =  1 # length of leaf stem
                 N = 100  # N is rather high for testing
                 p.la,  p.lmax = 5, 11
-                p.areaMax = 3.145*(((p.lmax-p.la - p.lb)/2)**2)
+                # p.areaMax = 3.145*(((p.lmax-p.la - p.lb)/2)**2)
                 # phi = np.array([-90, -45, 0., 45,67.5,70, 90]) / 180. * np.pi
                 phi = np.arange(start=0, stop=2*np.pi, step=np.pi/4)
                 l_ = (p.lmax - p.lb - p.la)/2
@@ -128,8 +128,8 @@ if adaptLeaf:
             # p.tropismN = 1
             # p.tropismS = 0.1
 
-            p.tropismT = 6 # 6: Anti-gravitropism to gravitropism
-            p.tropismAge = 10 #< age at which tropism switch occures, only used if p.tropismT = 6
+            # p.tropismT = 6 # 6: Anti-gravitropism to gravitropism
+            # p.tropismAge = 10 #< age at which tropism switch occures, only used if p.tropismT = 6
             # #p.tropismN = 5
             # #p.tropismS = 0.1
 
@@ -153,12 +153,12 @@ for p in plant.getOrganRandomParameter(pb.leaf):
 
 
 plant.initialize()
-rs.initialize()
+# rs.initialize()
 
 plant.simulate(dt=1, verbose=True)
 plant.simulate(dt=39, verbose=True)
 
-rs.simulate(dt=40, verbose=True)
+# rs.simulate(dt=40, verbose=True)
 
 
 vp.plot_plant(plant, "organType")

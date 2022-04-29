@@ -153,16 +153,16 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="0.5" />
     <parameter name="a" value="0.016"/>
-    <parameter name="tropismT" value="1"/>
-    <parameter name="tropismN" value="0"/>
-    <parameter name="tropismS" value="-0.5"/>
+    <parameter name="tropismT" value="4"/>
+    <parameter name="tropismN" value="0.5"/>
+    <parameter name="tropismS" value="0.5"/>
     <parameter name="tropismAge" value="10"/>
     <parameter name="dx" value="1"/>
     <parameter name="dxMin" value="0.5"/>
     <parameter name="theta" value="0.17" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
-    <parameter name="areaMax" value="50"/>
+    <parameter name="areaMax" value="500"/>
     <parameter name="geometryN" value="100"/>
     <parameter name="parametrisationType" value="1"/>
 	<parameter name="leafGeometry" phi="-3, -2.1, 0., 2.45, 3.5" x="0., 1.54, 1.7, 1.26, 0."/>
