@@ -289,21 +289,15 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         if (cells) { // soil matric potential given per cell
             int cellIndex = rs->seg2cell[j-1];
             if (cellIndex>=0) {
-				if(organType== Organism::ot_leaf){
-					assert(false&&"isLeaf and cellindax >0");}
                 if(sx.size()>1) {
                     psi_s = sx.at(cellIndex);
                 } else {
                     psi_s = sx.at(0);
                 }
             } else {
-				if(organType== Organism::ot_root){
-				std::cout<<"rs->seg2cell[j-1] "<<rs->seg2cell[j-1]<<std::endl;
-				assert(false&&"isRoot and cellindax <0");}
                 psi_s = airPressure;
             }
         } else {
-			assert(false&&"should use cell");
             psi_s = sx.at(si); // j-1 = segIdx = s.y-1
         }
 
