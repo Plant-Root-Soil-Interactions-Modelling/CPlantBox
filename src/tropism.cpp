@@ -108,7 +108,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
         int i=0; // counts change in alpha
         int j=0;    // counts change in beta
 
-        while (d>0) { // not valid
+        while ((d>0)&&(o->organType()== Organism::ot_root))  { // not valid
             i++;
             j=0;
             while ((d>0) && j<betaN) { // change beta
@@ -123,7 +123,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
                 j++;
             }
 
-            if (d>0) {
+            if ((d>0)&&(o->organType()== Organism::ot_root))  {
                 a = a + M_PI/2./double(alphaN);
             }
 

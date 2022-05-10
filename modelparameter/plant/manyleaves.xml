@@ -3,7 +3,7 @@
 <organ type="seed" subType="0">
     <parameter name="seedPos.x" value="0"/>
     <parameter name="seedPos.y" value="0"/>
-    <parameter name="seedPos.z" value="-1"/>
+    <parameter name="seedPos.z" value="-3"/>
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
@@ -23,7 +23,7 @@
     <!--Apical zone [cm];-->
     <parameter name="ln" value="1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="20" dev="0"/>
+    <parameter name="lmax" value="10" dev="0"/>
     <parameter name="r" value="16" dev="0"/>
     <parameter name="a" value="0.30000000000000001" dev="0"/>
     <parameter name="tropismT" value="1"/>
@@ -81,7 +81,7 @@
 </organ>
 
 <organ type="stem" name="mainstem" subType="1">
-    <parameter name="lb" value="1.5" dev="0"/>
+    <parameter name="lb" value="4.5" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0.5" dev="0"/>
     <!--Apical zone [cm];-->
@@ -131,13 +131,13 @@
 
 
 <organ type="leaf" name="lateral1" subType="2">
-    <parameter name="lb" value="1" dev="0"/>
+    <parameter name="lb" value="2" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="1" dev="0"/>
+    <parameter name="lmax" value="2" dev="0"/>
     <parameter name="r" value="40" dev="0"/>
     <parameter name="a" value="0.10000000000000001" dev="0"/>
     <parameter name="RotBeta" value="1"/>
