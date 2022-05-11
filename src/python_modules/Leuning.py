@@ -103,7 +103,8 @@ class Leuning(XylemFluxPython): #PhloemFlux,
         self.initVals(N, sim_time)
         
         x_old = np.full(len(self.rs.nodes), 0)
-        An_old = gco2_old = ci_old = pg_old = np.full(len(self.seg_indxs), 0)
+        An_old = gco2_old = ci_old = pg_old = np.full(len(self.seg_indxs), 0.)
+        outputFlux_old = np.full((len(self.rs.nodes)-1), 0.)
         self.x = p_linit 
         
         while(stop != True):   
@@ -130,25 +131,29 @@ class Leuning(XylemFluxPython): #PhloemFlux,
             Q = sparse.csr_matrix(Q)
             self.x = LA.spsolve(Q, self.aB, use_umfpack = False)  # no difference when upfpack set to false
             
-            diffX = max(abs(self.x-x_old))
-            diffAn = max(abs(self.An-An_old))
-            diffGs = max(abs(self.gco2-gco2_old))
-            diffCi = max(abs(self.ci-ci_old))
-            diffPsig = max(abs(self.getPg-pg_old))
-            diff = np.array([diffX,diffAn, diffGs, diffCi, diffPsig])
+            outputFlux = self.radial_fluxes(2.0, self.x, sxx, [], True);
             
-            diffRel = np.array([max(abs(diffX/self.x)),max(abs(diffAn/self.An)), max(abs(diffGs/self.gco2)), 
-                        max(abs(diffCi/self.ci)), max(abs(diffPsig/self.getPg))])
+            diffX = max(abs(np.divide((self.x-x_old), self.x, out=np.zeros_like(self.x), where=self.x!=0)))
+            diffAn = max(abs(np.divide((self.An-An_old), self.An, out=np.zeros_like(self.An), where=self.An!=0)))#(self.An-An_old)/self.An))
+            
+            diffGs = max(abs(np.divide((self.gco2-gco2_old), gco2_old, out=np.zeros_like(gco2_old), where=gco2_old!=0)))#(self.gco2-gco2_old)/self.gco2))
+            diffCi = max(abs(np.divide((self.ci-ci_old), self.ci, out=np.zeros_like(self.ci), where=self.ci!=0)))#(self.ci-ci_old)/self.ci))
+            diffPsig = max(abs(np.divide((self.getPg-pg_old), self.getPg, out=np.zeros_like(self.getPg), where=self.getPg!=0)))#(self.getPg-pg_old)/self.getPg))
+            diffFlux = max(abs(np.divide((outputFlux-outputFlux_old), outputFlux, out=np.zeros_like(outputFlux), where=outputFlux!=0)))#(outputFlux-outputFlux_old)/outputFlux))
+            diffRel = np.array([diffX,diffAn, diffGs, diffCi, diffPsig, diffFlux])
+            
+            #diffRel = np.array([max(abs(diffX/self.x)),max(abs(diffAn/self.An)), max(abs(diffGs/self.gco2)), 
+             #           max(abs(diffCi/self.ci)), max(abs(diffPsig/self.getPg))])
             
             x_old = self.x
             An_old = self.An
             gco2_old = self.gco2
             ci_old = self.ci
             pg_old = self.getPg
-            
+            outputFlux_old=outputFlux
             if(verbose):
                 print("max error: ", diff,"max error (rel): ", diffRel, ", loop n°",loop)
-            if((loop > 1000) or (max(abs(diffRel)) < 0.01)):
+            if((loop > 1000) or (max(abs(diffRel)) < 0.001)):
                 stop = True
             if log:
                 logfile = open('solve_leuning.txt', "a")
