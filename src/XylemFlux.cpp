@@ -345,8 +345,9 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         } else {
             fluxes[si] = 0.;
         }
+
     }
-    return fluxes;
+	return fluxes;
 }
 
 /**
