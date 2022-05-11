@@ -630,8 +630,8 @@ void RootSystem::writeGeometry(std::ostream & os) const
  *
  * @param rs        the root system to be stored
  */
-RootSystemState::RootSystemState(const RootSystem& rs) : simtime(rs.simtime), rid(rs.organId), old_non(rs.oldNumberOfNodes), old_nor(rs.oldNumberOfOrgans),
-    numberOfCrowns(rs.numberOfCrowns), gen(rs.gen), UD(rs.UD), ND(rs.ND)
+RootSystemState::RootSystemState(const RootSystem& rs) : simtime(rs.simtime), dt(rs.dt), organId(rs.organId), nodeId(rs.nodeId),
+    oldNumberOfOrgans(rs.oldNumberOfOrgans), numberOfCrowns(rs.numberOfCrowns), gen(rs.gen), UD(rs.UD), ND(rs.ND)
 {
     baseRoots = std::vector<RootState>(rs.baseOrgans.size()); // store base roots
     for (size_t i=0; i<baseRoots.size(); i++) {
@@ -648,11 +648,13 @@ void RootSystemState::restore(RootSystem& rs)
 {
     rs.roots.clear(); // clear buffer
     rs.simtime = simtime; // copy back everything
-    rs.organId = rid;
-    rs.nodeId = nid;
-    rs.oldNumberOfNodes = old_non;
-    rs.oldNumberOfOrgans = old_nor;
+    rs.dt = dt;
+    rs.organId = organId;
+    rs.nodeId = nodeId;
+    rs.oldNumberOfNodes = oldNumberOfNodes;
+    rs.oldNumberOfOrgans = oldNumberOfOrgans;
     rs.numberOfCrowns = numberOfCrowns;
+
     rs.gen = gen;
     rs.UD = UD;
     rs.ND = ND;
@@ -666,7 +668,8 @@ void RootSystemState::restore(RootSystem& rs)
  *
  * @param r        the root to be stored
  */
-RootState::RootState(const Root& r): alive(r.alive), active(r.active), age(r.age), length(r.getLength(true)), old_non(r.oldNumberOfNodes)
+RootState::RootState(const Root& r): alive(r.alive), active(r.active), age(r.age), length(r.getLength(true)),
+    epsilonDx(r.epsilonDx), moved(r.moved), oldNumberOfNodes(r.oldNumberOfNodes), firstCall(r.firstCall)
 {
     lNode = r.nodes.back();
     lNodeId = r.nodeIds.back();
@@ -689,7 +692,11 @@ void RootState::restore(Root& r)
     r.active = active;
     r.age = age;
     r.length = length;
-    r.oldNumberOfNodes = old_non;
+    r.epsilonDx = epsilonDx;
+    r.moved = moved;
+    r.oldNumberOfNodes = oldNumberOfNodes;
+    r.firstCall = firstCall; //
+
     r.nodes.resize(non); // shrink vectors
     r.nodeIds.resize(non);
     r.nodeCTs.resize(non);

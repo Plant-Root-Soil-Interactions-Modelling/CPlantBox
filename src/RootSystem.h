@@ -137,11 +137,12 @@ private:
 
     std::vector<RootState> baseRoots;  ///< Base roots of the root system
 
-    double simtime = 0; ///< simulation time
-    int rid = -1; ///< unique root id counter
-    int nid = -1; ///< unique node id counter
-    int old_non=0; ///< old number of nodes
-    int old_nor=0; ///< old number of roots
+    double simtime = 0;
+    double dt = 0; //< last time step that was used
+    int organId = -1;
+    int nodeId = -1;
+    int oldNumberOfNodes = 0;
+    int oldNumberOfOrgans = 0;
     int numberOfCrowns = 0; ///< old number of root crowns
 
     mutable std::mt19937 gen; ///< random generator state
@@ -169,11 +170,14 @@ public:
 private:
 
     /* parameters that are given per root that may change with time */
-    bool alive = 1; ///< true: alive, false: dead
-    bool active = 1; ///< true: active, false: root stopped growing
-    double age = 0; ///< current age [days]
-    double length = 0; ///< actual length [cm] of the root. might differ from getLength(age) in case of impeded root growth
-    int old_non = 1; ///< number of old nodes, the sign is positive if the last node was updated, otherwise its negative
+    bool alive = 1;
+    bool active = 1;
+    double age = 0;
+    double length = 0;
+    double epsilonDx = 0;
+    bool moved = false;
+    int oldNumberOfNodes = 0;
+    bool firstCall = true;
 
     /* down the root branch*/
     std::vector<RootState> laterals = std::vector<RootState>(0); ///< the lateral roots of this root
