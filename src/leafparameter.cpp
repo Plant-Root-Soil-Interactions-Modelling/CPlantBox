@@ -129,8 +129,8 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 
 	nob_ = std::max(round(nob() + p->randn()*nobs()),1.); // maximal number of leafs
 	switch(lnf) {
-	case 0: // homogeneously distributed stem nodes
-		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+	case 0: // homogeneously distributed leaf nodes
+		for (int i = 0; i<nob_-1; i++) { // create inter-leaf distances
 			double d = std::max(ln + p->randn()*lns,dxMin); //Normal function of equal internode distance
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
@@ -143,7 +143,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		}
 		break;
 	case 1: //nodes distance increase linearly TODO
-		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-leaf distances
 			double d =  std::max(ln*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
@@ -157,7 +157,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		}
 		break;
 	case 2: //nodes distance decrease linearly TODO
-		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_-1; i++) { // create inter-leaf distances
 			double d =  std::max(ln*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
@@ -170,7 +170,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		}
 		break;
 	case 3: //nodes distance increase exponential TODO
-		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_-1; i++) { // create inter-leaf distances
 			double d =  std::max(ln + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
@@ -183,7 +183,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		}
 		break;
 	case 4://nodes distance decrease exponential TODO
-		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-leaf distances
 			double d =  std::max(ln/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
@@ -197,7 +197,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		}
 		break;
 	case 5://nodes distance decrease exponential
-		for (int i = 0; i<nob_*2-1; i++) { // create inter-stem distances
+		for (int i = 0; i<nob_*2-1; i++) { // create inter-leaf distances
 			double d =  std::max(ln/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
@@ -410,7 +410,7 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
 	bindParameter("la", &la, "Apical zone [cm]", &las);
 	bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
-	bindParameter("lmax", &lmax, "Maximal stem length [cm]", &lmaxs);
+	bindParameter("lmax", &lmax, "Maximal leaf length [cm]", &lmaxs);
 	bindParameter("areaMax", &areaMax, "Maximal leaf area [cm2]", &areaMaxs);
 	bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
 	bindParameter("RotBeta", &rotBeta, "RevRotation of the leaf"); /// todo improve description, start lower letter

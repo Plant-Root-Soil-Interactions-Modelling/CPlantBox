@@ -13,10 +13,10 @@ namespace CPlantBox {
 class Plant;
 
 /**
- * Stem
+ * Leaf
  *
- * Describes a single stem, by a vector of nodes representing the stem.
- * The method simulate() creates new nodes of this stem, and lateral stems in the stem's branching zone.
+ * Describes a single leaf, by a vector of nodes representing the leaf.
+ * The method simulate() creates new nodes of this leaf, and lateral leafs in the leaf's branching zone.
  *
  */
 class Leaf : public Organ
@@ -32,7 +32,7 @@ public:
 
 	int organType() const override { return Organism::ot_leaf; } ///< returns the organs type
 
-	void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
+	void simulate(double dt, bool silence = false) override; ///< leaf growth for a time span of \param dt
 
     Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
 
@@ -49,8 +49,8 @@ public:
 
 	/* exact from analytical equations */
 	double calcCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
-	double calcLength(double age); ///< analytical length of the stem
-	double calcAge(double length); ///< analytical age of the stem
+	double calcLength(double age); ///< analytical length of the leaf
+	double calcAge(double length); ///< analytical age of the leaf
 
 	/* abbreviations */
 	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
@@ -78,7 +78,7 @@ protected:
     void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 
     Vector3d getIncrement(const Vector3d& p, double sdx, int n= -1); ///< called by createSegments, to determine growth direction
-	void createSegments(double l, bool silence); ///< creates segments of length l, called by stem::simulate()
+	void createSegments(double l, bool silence); ///< creates segments of length l, called by leaf::simulate()
 
     bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 	std::vector<double> getLeafVisX_(double l);

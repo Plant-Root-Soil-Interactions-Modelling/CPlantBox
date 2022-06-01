@@ -46,7 +46,8 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 	assert(parent!=nullptr && "Leaf::Leaf parent must be set");
 	addleafphytomerID(param()->subType);
 	ageDependentTropism = getLeafRandomParameter()->f_tf->ageSwitch > 0;
-																	 
+	// Calculate the rotation of the leaves. The code begins here needs to be rewritten, because another following project will work on the leaves. The code here is just temporally used to get some nice visualizations. When someone rewrites the code, please take "gimbal lock" into consideration.  
+	//Rewritten Begin: 															 
 	double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->rotBeta
 			+ M_PI*plant->rand()*getLeafRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	beta = beta + getLeafRandomParameter()->initBeta*M_PI;
@@ -62,7 +63,7 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 	}
 	//used when computing actual heading, @see LEaf::getIHeading
 	this->partialIHeading = Vector3d::rotAB(theta,beta);
-	
+	// Rewritten ends 
 	if (parent->organType()!=Organism::ot_seed) { // if not base organ
 	
 		double creationTime;
@@ -387,6 +388,10 @@ void Leaf::addleafphytomerID(int subtype)
  * Creates a new lateral by calling Leaf::createNewleaf().
  *
  * Overwrite this method to implement more specialized leaf classes.
+ * 
+ * This method was done in a rush, because there will be a following project specifically
+ * focus on the leaves. This should be rewritten instead of kept. 
+ * 
  */
 void Leaf::createLateral(bool silence)
 {
