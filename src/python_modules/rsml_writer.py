@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
 import datetime
 from scipy import sparse
 import numpy as np
@@ -157,7 +159,7 @@ class LinkedPolylines:
 
     def __init__(self):
         self.branchnumber = -1
-        self.parent_node = -1
+        self.parent_node = -1 # parent node index!
         self.polyline = []
         self.laterals = []
         self.base_root = False
@@ -208,11 +210,13 @@ class LinkedPolylines:
                 fun.append(ET.Element("sample", dict(value = str(nodedata[i][p]))))
 
 
-def follow_(i0:int, i:int, A) -> LinkedPolylines:
+def follow_(i0:int, i:int, i_old, A) -> LinkedPolylines:
     """ Recursively follows the roots
     
     Args:
-        i (int): initial node 
+        i0 (int): parent node index
+        i (int): initial node  
+        i_old (int) : parent node
         A (sparse matrix): adjacency matrix, values are either branch number (>0!) or root order (>0!)
             
     Returns: 
@@ -220,31 +224,37 @@ def follow_(i0:int, i:int, A) -> LinkedPolylines:
     """
     _, j_ = A[i,:].nonzero()
 
-    if len(j_) > 0:  # if there is at least another segment
-
-        newlines = LinkedPolylines()
+    newlines = LinkedPolylines()
+    newlines.polyline = [i]
+    newlines.parent_node = i0
+    
+    if len(j_)==0: # in case there no other node
+        newlines.branchnumber = A[i_old, i]
+    else: 
         newlines.branchnumber = A[i, j_[0]]
-        newlines.polyline = [i]
-        newlines.parent_node = i0
+        
+    if len(j_) > 0:  # if there is at least another node
 
+        first = True
         done = False
         while not done:
             done = True
-            for j in j_:
-                if  A[i, j] == newlines.branchnumber:  # follow this branch number
+            for j in j_: # we process all neighbouring nodes
+                if  A[i, j] == newlines.branchnumber:  # follow this branch number (maximal one node can have the same branchnumber)
+                    if not first:
+                        print("rsml_writer: follow_ is not possible, several paths for data index")
+                        raise
                     newlines.polyline.append(j)
-                    done = False
-                else:
-                    # print("lateral", j)
-                    newlines.laterals.append(follow_(len(newlines.polyline) - 1, j, A))  # follow lateral
+                    done = False # if no other node has the same branch number, we quit
+                    first = False
+                else: # laterals are created into all other directions
+                    newlines.laterals.append(follow_(len(newlines.polyline) - 1, j, i, A))  # follow lateral
             if not done:
                 i = newlines.polyline[-1]  # jump to next node
                 _, j_ = A[i,:].nonzero()
+                first = True
 
-        return newlines
-    else:
-        return []
-
+    return newlines
 
 def segs2polylines(axes:list, segs:list, segdata:list) -> list:
     """ Converts a root system represented by nodes and segments into a linked polyline representation.
@@ -261,7 +271,7 @@ def segs2polylines(axes:list, segs:list, segdata:list) -> list:
     A = sparse.csr_matrix((segdata, (segs[:, 0], segs[:, 1])), dtype = np.int64, shape = (n, n))
     polylines = []
     for a in axes:
-        polylines.append(follow_(-1, a, A))
+        polylines.append(follow_(-1, a, -1, A))
         polylines[-1].base_root = True  # follow_ adds subtree, main axis is last (?)
     return polylines
 
@@ -286,17 +296,18 @@ def write_rsml(name:str, axes:list, segs:list, segdata:list, nodes:list, nodedat
     # Scene
     LinkedPolylines.set_metadata(meta)
     polylines = segs2polylines(axes, segs, segdata)
+                
     scene = ET.SubElement(rsml, "scene")
     plant = ET.SubElement(scene, "plant")
     for root in polylines:
         if root:
             root.write_root(plant, nodes, nodedata, Renumber = kwargs.get("Renumber", True))
-    # Wrote Tree
-    tree = ET.ElementTree(rsml)
-    tree.write(name, xml_declaration = True, encoding = 'utf-8', method = "xml")
-    return 0
-
-
+    # Write (pretty)
+    xmlstr = minidom.parseString(ET.tostring(rsml)).toprettyxml(indent="   ", encoding='UTF-8')
+    with open(name, "w") as f:
+        f.write(xmlstr.decode('UTF-8'))
+        f.close()
+        
 if __name__ == "__main__":
 
     axis = [0]  # initial node

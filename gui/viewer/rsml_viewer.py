@@ -137,7 +137,7 @@ class App:
         # label_general
         c = 0  # node counter
         for i, pl in enumerate(self.data.polylines):
-            c += 1
+            # c += 1 
             for p in pl:
                 c += 1
         lstr = "\nSoftware\nFilename \nNumber of plants (base nodes)\nNumber of base roots (segments)\nNumber of roots\nNumber of nodes\n"

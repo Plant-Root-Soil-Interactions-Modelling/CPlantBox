@@ -18,16 +18,8 @@ writing: vtp, vtu, msh, dgf, rsml
 
 def vtk_points(p):
     """ creates vtkPoints from an numpy array @param p"""
-    da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
-    da.SetNumberOfComponents(3)  # vtk point dimension is always 3
-    da.SetNumberOfTuples(p.shape[0])
-    for i in range(0, p.shape[0]):
-        if p.shape[1] == 2:
-            da.InsertTuple3(i, p[i, 0], p[i, 1], 0.)
-        elif p.shape[1] == 3:
-            da.InsertTuple3(i, p[i, 0], p[i, 1], p[i, 2])
     points = vtk.vtkPoints()
-    points.SetData(da)
+    points.SetData(vtk_data3(p))
     return points
 
 
@@ -69,6 +61,17 @@ def vtk_data(d):
 #             da.InsertTuple4(i, d[i, 0], d[i, 1], d[i, 2], d[i, 3])
     return da
 
+def vtk_data3(p):
+    """ creates vtkPoints from an numpy array @param p"""
+    da = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
+    da.SetNumberOfComponents(3)  # vtk point dimension is always 3
+    da.SetNumberOfTuples(p.shape[0])
+    for i in range(0, p.shape[0]):
+        if p.shape[1] == 2:
+            da.InsertTuple3(i, p[i, 0], p[i, 1], 0.)
+        elif p.shape[1] == 3:
+            da.InsertTuple3(i, p[i, 0], p[i, 1], p[i, 2])
+    return da
 
 def np_convert(x):
     """ converts a list of something (e.g. list of 3 floats) to a numpy array (Nx3)"""
