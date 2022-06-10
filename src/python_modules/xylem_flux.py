@@ -238,15 +238,37 @@ class XylemFluxPython(XylemFlux):
         """ converts the list of Vector2i to a 2D numpy array """
         return np.array(list(map(lambda x: np.array(x), self.rs.segments)), dtype = np.int64)
 
-    def get_ages(self, final_age = 0.):
+    def get_subtypes(self):
+        """ segment sub types as numpy array """
+        return np.array(self.rs.subTypes)
+
+    def get_ages(self, final_age = -1.):
         """ converts the list of nodeCT to a numpy array of segment ages
-        @param final_age [day]         current root system age, (default = 0 means detect from nodeCT)
+        @param final_age [day]         current root system age, (default = 0 means detect maximum from nodeCT)
         """
         cts = np.array(self.rs.nodeCTs)
-        if final_age == 0.:
+        if final_age == -1.:
             final_age = np.max(cts)
-        ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
-        return ages[1:]  # segment index is node index-1
+        node_ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
+        segs = self.get_segments()
+        ages = np.zeros(segs.shape[0])
+        for i, s in enumerate(segs):
+            ages[i] = node_ages[s[1]]  # segment age based on second node (as in XylemFlux::linearSystem)
+        return ages
+
+    def get_conductivities(self, final_age = -1.):
+        """ returns radial [1 day-1] and axial [cm3 day-1] conductivity per segment 
+        @param final_age [day]         current root system age, (default = 0 means detect maximum from nodeCT)        
+        """
+        ages = self.get_ages(final_age)
+        subtypes = self.get_subtypes()
+        assert ages.shape == subtypes.shape, "get_conductivities: length of age and subtype must agree"
+        kr = np.zeros(ages.shape)
+        kx = np.zeros(ages.shape)
+        for i in range(0, len(ages)):
+            kr[i] = self.kr_f(ages[i], subtypes[i])
+            kx[i] = self.kx_f(ages[i], subtypes[i])
+        return kr, kx
 
     def get_nodes_index(self, ot):
         """ return node indices of segments with organ type @param ot """
@@ -265,7 +287,7 @@ class XylemFluxPython(XylemFlux):
         return nodes[self.get_nodes_index(ot)]
 
     def get_segments_index(self, ot):
-        """ return node indices of organ type @param ot """
+        """ return segment indices of organ type @param ot """
         organTypes = self.get_organ_types()
         segIdx = np.array(list(range(0, len(organTypes))))
         otsegs = segIdx[organTypes == ot]
@@ -274,10 +296,6 @@ class XylemFluxPython(XylemFlux):
     def get_organ_types(self):
         """ segment organ types as numpy array """
         return np.array(self.rs.organTypes)
-
-    def get_subtypes(self):
-        """ segment sub types as numpy array """
-        return np.array(self.rs.subTypes)
 
     def get_organ_nodes_tips(self):
         """ return index of nodes at the end of each organ """

@@ -147,3 +147,8 @@ def plot_krs(data, ax, j):
     ax.set_xlabel("Time (days)")
     ax.set_ylabel("Root system conductivity Krs")
 
+    # for Debugging
+    kr, kx = data.xylem_flux.get_conductivities(-1.)  # (default) -1. means: current time is maximum of node creation times
+    print("\nkr")
+    print(kr)
+    print("\n")
