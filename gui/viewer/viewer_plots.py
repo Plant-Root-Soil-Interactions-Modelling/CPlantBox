@@ -102,7 +102,7 @@ def plot_suf(data, ax3, j):
     n = int(np.ceil(-data.analyser.getMinBounds().z))
     z_ = np.linspace(-0.5, -n + 0.5, n)
     d = data.analyser.distribution("SUF", 0., float(-n), int(n), False)  # False!!!
-    print("SUF total", np.min(d), np.max(d), np.mean(d))
+    print("SUF total", np.min(d), np.max(d), np.mean(d), np.sum(d))
     ax3.plot(d, z_, "-*", label = "total")
     max_type = int(np.max(data.analyser.data["subType"]))
     for i in range(0, max_type + 1):
@@ -112,7 +112,7 @@ def plot_suf(data, ax3, j):
         if segn > 0:
             d = ana.distribution("SUF", 0., float(-n), int(n), False)
             ax3.plot(d, z_, "-*", label = "type {:g}".format(i))
-            print("SUF", i, np.min(d), np.max(d), np.mean(d))
+            print("SUF", i, np.min(d), np.max(d), np.mean(d), np.sum(d))
     ax3.set_title("Root system krs {:g}".format(krs))
     ax3.set_ylabel("Depth (cm)")
     ax3.set_xlabel("Root system surface uptake fraction (SUF) per 1 cm layer (1)")

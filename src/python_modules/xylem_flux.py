@@ -432,29 +432,39 @@ class XylemFluxPython(XylemFlux):
                 print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
         print()
 
-    def plot_conductivities(self, monocot = True, plot_now = True):
-        """ plots conductivity  """
+    def plot_conductivities(self, monocot = True, plot_now = True, axes_ind = [], lateral_ind = []):
+        """ plots conductivity  
+        @param monocot      indicates if monocot (True) or dicot (False)
+        @param plot_now     indicates if the figure is shown, or just retruned
+        @param axes_ind     for monocots a list of three root types for "tap root", "basal", "shoot borne";
+                            for dicots a list of one root type representing the "tap root"
+        @param lateral_ind  for monocots a list of two root types for "1st order laterals", "2nd order laterals"
+                            for dicots a list of three root types for "1st order laterals", "2nd order laterals", "3rd order laterals"          
+        """
         axes_age = np.linspace(-5, 100, 500)
         lateral_age = np.linspace(-2, 25, 125)
-
         lateral_cols = ["r", "g:", "m--", "b--"]
         axes_cols = ["r", "g:", "m--", "b--"]
-
         if monocot:
             axes_str = ["tap root", "basal", "shoot borne"]
-            axes_ind = [1, 4, 5]
             lateral_str = ["1st order laterals", "2nd order laterals"]
-            lateral_ind = [2, 3]
-        else:
+            if axes_ind == []:
+                axes_ind = [1, 4, 5]
+            if lateral_ind == []:
+                lateral_ind = [2, 3]
+        else:  # dicot
             axes_str = ["tap root"]
-            axes_ind = [1]
             lateral_str = ["1st order laterals", "2nd order laterals", "3rd order laterals"]
-            lateral_ind = [2, 3, 4]
+            if axes_ind == []:
+                axes_ind = [1]
+            if lateral_ind == []:
+                lateral_ind = [2, 3, 4]
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize = (16, 10))
         for j, st in enumerate(axes_ind):
             kx_ = [ self.kx_f(axes_age[i], st, 2) for i in range(0, len(axes_age)) ]
             ax1.plot(axes_age, kx_, axes_cols[j])
+        kx_max = np.max(kx_)
         ax1.legend(axes_str)
         ax1.set_title("Axis")
         ax1.set_xlabel("age [day]")
@@ -462,6 +472,7 @@ class XylemFluxPython(XylemFlux):
         for j, st in enumerate(lateral_ind):
             kx_ = [ self.kx_f(lateral_age[i], st, 2) for i in range(0, len(lateral_age)) ]
             ax2.plot(lateral_age, kx_, axes_cols[j])
+        kx_max = max(kx_max, np.max(kx_))
         ax2.legend(lateral_str)
         ax2.set_title("Laterals")
         ax2.set_xlabel("age [day]")
@@ -469,6 +480,7 @@ class XylemFluxPython(XylemFlux):
         for j, st in enumerate(axes_ind):
             kr_ = [ self.kr_f(axes_age[i], st, 2, 0) for i in range(0, len(axes_age)) ]
             ax3.plot(axes_age, kr_, axes_cols[j])
+        kr_max = np.max(kr_)
         ax3.legend(axes_str)
         ax3.set_title("Axis")
         ax3.set_xlabel("age [day]")
@@ -476,16 +488,22 @@ class XylemFluxPython(XylemFlux):
         for j, st in enumerate(lateral_ind):
             kr_ = [ self.kr_f(lateral_age[i], st, 2, 0) for i in range(0, len(lateral_age)) ]
             ax4.plot(lateral_age, kr_, axes_cols[j])
+        kr_max = max(kr_max, np.max(kr_))
         ax4.legend(lateral_str)
         ax4.set_title("Laterals")
         ax4.set_xlabel("age [day]")
         ax4.set_ylabel("radial conductance [day$^{-1}$]")
+        print(kx_max)
+        print(kr_max)
+        ax1.set_ylim([0, kx_max * 1.1])
+        ax2.set_ylim([0, kx_max * 1.1])
+        ax3.set_ylim([0, kr_max * 1.1])
+        ax4.set_ylim([0, kr_max * 1.1])
         print()
-        print("Artifical shoot kx = {:g}, kr = {:g} ".format(self.kx_f(1, 0, 2), self.kr_f(1, 0, 2, 0)))
-        for st in range(1, 5):
+        for st in range(0, 5):
             print("SubType {:g} for negative age: kx = {:g}, kr = {:g}".format(st, self.kx_f(-1, st, 2), self.kr_f(-1, st, 2, 0)))
-        print("SubType 2 old : kx = {:g}, kr = {:g}".format(self.kx_f(100, 2, 2), self.kr_f(100, 2, 2, 0)))
-        print("")
+            print("SubType {:g} for old root age: kx = {:g}, kr = {:g}".format(st, self.kx_f(100, st, 2), self.kr_f(100, st, 2, 0)))
+        print()
         if plot_now:
             plt.show()
         return fig

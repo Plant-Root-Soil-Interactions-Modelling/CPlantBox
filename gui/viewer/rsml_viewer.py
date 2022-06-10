@@ -27,28 +27,28 @@ class App:
         self.root.geometry("850x800")
         # Menu
         menu = tkinter.Menu(root)
-        menu_file = tkinter.Menu(menu, tearoff=0)
-        menu_file.add_command(label="Open (.rsml)...", command=self.file_open)
-        menu_file.add_command(label="Save (.rsml)...", command=self.file_save)
-        menu_file.add_command(label="Save (.vtp)...", command=self.file_save_vtp)
+        menu_file = tkinter.Menu(menu, tearoff = 0)
+        menu_file.add_command(label = "Open (.rsml)...", command = self.file_open)
+        menu_file.add_command(label = "Save (.rsml)...", command = self.file_save)
+        menu_file.add_command(label = "Save (.vtp)...", command = self.file_save_vtp)
         menu_file.add_separator()
-        menu_file.add_command(label="Exit", command=self.file_quit)
-        menu.add_cascade(label="File", menu=menu_file)
-        menu_edit = tkinter.Menu(menu, tearoff=0)
-        menu_edit.add_command(label="Add shoot", command=self.edit_add_shoot)
-        menu_edit.add_command(label="Add creation time", command=self.edit_add_creation_times)
-        menu.add_cascade(label="Edit", menu=menu_edit)
-        menu_view = tkinter.Menu(menu, tearoff=0)
-        menu_view.add_command(label="Type...", command=self.view_vtk_plot_subtype)
-        menu_view.add_command(label="Segment length...", command=self.view_vtk_plot_length)
-        menu_view.add_command(label="Creation time...", command=self.view_vtk_plot_creationtime)
-        menu_view.add_command(label="SUF...", command=self.view_vtk_plot_suf)
-        menu_view.add_command(label="Multiple SUF...", command=self.view_vtk_plot_multiple_suf)
-        menu_view.add_command(label="Animation...", command=self.view_vtk_anim)
+        menu_file.add_command(label = "Exit", command = self.file_quit)
+        menu.add_cascade(label = "File", menu = menu_file)
+        menu_edit = tkinter.Menu(menu, tearoff = 0)
+        menu_edit.add_command(label = "Add shoot", command = self.edit_add_shoot)
+        menu_edit.add_command(label = "Add creation time", command = self.edit_add_creation_times)
+        menu.add_cascade(label = "Edit", menu = menu_edit)
+        menu_view = tkinter.Menu(menu, tearoff = 0)
+        menu_view.add_command(label = "Type...", command = self.view_vtk_plot_subtype)
+        menu_view.add_command(label = "Segment length...", command = self.view_vtk_plot_length)
+        menu_view.add_command(label = "Creation time...", command = self.view_vtk_plot_creationtime)
+        menu_view.add_command(label = "SUF...", command = self.view_vtk_plot_suf)
+        menu_view.add_command(label = "Multiple SUF...", command = self.view_vtk_plot_multiple_suf)
+        menu_view.add_command(label = "Animation...", command = self.view_vtk_anim)
         menu_view.add_separator()
-        menu_view.add_command(label="About...", command=self.view_about)
-        menu.add_cascade(label="View", menu=menu_view)
-        self.root.config(menu=menu)
+        menu_view.add_command(label = "About...", command = self.view_about)
+        menu.add_cascade(label = "View", menu = menu_view)
+        self.root.config(menu = menu)
         # Tabs
         tabControl = ttk.Notebook(self.root)
         tab_info = ttk.Frame(tabControl)
@@ -56,88 +56,88 @@ class App:
         tab_development = ttk.Frame(tabControl)
         tab_suf = ttk.Frame(tabControl)
         tab_krs = ttk.Frame(tabControl)
-        tabControl.add(tab_info, text='Information')
-        tabControl.add(tab_depth, text='Root depth  profile')
-        tabControl.add(tab_development, text='Root development')
-        tabControl.add(tab_suf, text='Hydraulic properties')
-        tabControl.add(tab_krs, text='Hydraulic development')
-        tabControl.pack(expand=1, fill="both")
+        tabControl.add(tab_info, text = 'Information')
+        tabControl.add(tab_depth, text = 'Root depth  profile')
+        tabControl.add(tab_development, text = 'Root development')
+        tabControl.add(tab_suf, text = 'Hydraulic properties')
+        tabControl.add(tab_krs, text = 'Hydraulic development')
+        tabControl.pack(expand = 1, fill = "both")
         # tab_info
-        lf_general = ttk.LabelFrame(tab_info, text='General')
-        lf_general.grid(column=0, row=0, padx=20, pady=10)
-        lf_prop = ttk.LabelFrame(tab_info, text='Properties (values per root)')
-        lf_prop.grid(column=0, row=1, padx=20, pady=10)
-        lf_fun = ttk.LabelFrame(tab_info, text='Functions (values per node)')
-        lf_fun.grid(column=0, row=2, padx=20, pady=10)
-        lf_use = ttk.LabelFrame(tab_info, text='Using')
-        lf_use.grid(column=0, row=3, padx=20, pady=10)
+        lf_general = ttk.LabelFrame(tab_info, text = 'General')
+        lf_general.grid(column = 0, row = 0, padx = 20, pady = 10)
+        lf_prop = ttk.LabelFrame(tab_info, text = 'Properties (values per root)')
+        lf_prop.grid(column = 0, row = 1, padx = 20, pady = 10)
+        lf_fun = ttk.LabelFrame(tab_info, text = 'Functions (values per node)')
+        lf_fun.grid(column = 0, row = 2, padx = 20, pady = 10)
+        lf_use = ttk.LabelFrame(tab_info, text = 'Using')
+        lf_use.grid(column = 0, row = 3, padx = 20, pady = 10)
         self.label_general_l = tkinter.StringVar()
         self.label_general_r = tkinter.StringVar()
-        ttk.Label(lf_general, textvariable=self.label_general_l, anchor="w", width=30).grid(column=0, row=0)
-        ttk.Label(lf_general, textvariable=self.label_general_r, anchor="w", width=70).grid(column=1, row=0)
+        ttk.Label(lf_general, textvariable = self.label_general_l, anchor = "w", width = 30).grid(column = 0, row = 0)
+        ttk.Label(lf_general, textvariable = self.label_general_r, anchor = "w", width = 70).grid(column = 1, row = 0)
         self.label_prop_l = tkinter.StringVar()
         self.label_prop_r = tkinter.StringVar()
-        ttk.Label(lf_prop, textvariable=self.label_prop_l, anchor="w", width=30).grid(column=0, row=0)
-        ttk.Label(lf_prop, textvariable=self.label_prop_r, anchor="w", width=70).grid(column=1, row=0)
+        ttk.Label(lf_prop, textvariable = self.label_prop_l, anchor = "w", width = 30).grid(column = 0, row = 0)
+        ttk.Label(lf_prop, textvariable = self.label_prop_r, anchor = "w", width = 70).grid(column = 1, row = 0)
         self.label_fun_l = tkinter.StringVar()
         self.label_fun_r = tkinter.StringVar()
-        ttk.Label(lf_fun, textvariable=self.label_fun_l, anchor="w", width=30).grid(column=0, row=0)
-        ttk.Label(lf_fun, textvariable=self.label_fun_r, anchor="w", width=70).grid(column=1, row=0)
+        ttk.Label(lf_fun, textvariable = self.label_fun_l, anchor = "w", width = 30).grid(column = 0, row = 0)
+        ttk.Label(lf_fun, textvariable = self.label_fun_r, anchor = "w", width = 70).grid(column = 1, row = 0)
         self.label_use_l = tkinter.StringVar()
         self.label_use_r = tkinter.StringVar()
-        ttk.Label(lf_use, textvariable=self.label_use_l, anchor="w", width=30).grid(column=0, row=0)
-        ttk.Label(lf_use, textvariable=self.label_use_r, anchor="w", width=70).grid(column=1, row=0)
+        ttk.Label(lf_use, textvariable = self.label_use_l, anchor = "w", width = 30).grid(column = 0, row = 0)
+        ttk.Label(lf_use, textvariable = self.label_use_r, anchor = "w", width = 70).grid(column = 1, row = 0)
         # tab_profile
-        self.combo1 = ttk.Combobox(tab_depth, values=[ "Length", "Surface", "Volume"])
-        self.combo1.pack(pady=10)
+        self.combo1 = ttk.Combobox(tab_depth, values = [ "Length", "Surface", "Volume"])
+        self.combo1.pack(pady = 10)
         self.combo1.current(0)
         self.combo1.bind("<<ComboboxSelected>>", self.update_profile)
-        fig, self.ax = plt.subplots(1, 1, figsize=(7, 7))
-        self.canvas = FigureCanvasTkAgg(fig, master=tab_depth)  # A tk.DrawingArea.
+        fig, self.ax = plt.subplots(1, 1, figsize = (7, 7))
+        self.canvas = FigureCanvasTkAgg(fig, master = tab_depth)  # A tk.DrawingArea.
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tkinter.BOTH, expand=1)
+        self.canvas.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
         # tab_development
-        self.combo2 = ttk.Combobox(tab_development, values=[ "Length", "Surface", "Volume"])
-        self.combo2.pack(pady=10)
+        self.combo2 = ttk.Combobox(tab_development, values = [ "Length", "Surface", "Volume"])
+        self.combo2.pack(pady = 10)
         self.combo2.current(0)
         self.combo2.bind("<<ComboboxSelected>>", self.update_development)
-        fig2, self.ax2 = plt.subplots(1, 1, figsize=(15, 10))
-        self.canvas2 = FigureCanvasTkAgg(fig2, master=tab_development)  # A tk.DrawingArea.
+        fig2, self.ax2 = plt.subplots(1, 1, figsize = (15, 10))
+        self.canvas2 = FigureCanvasTkAgg(fig2, master = tab_development)  # A tk.DrawingArea.
         self.canvas2.draw()
-        self.canvas2.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        self.canvas2.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
         # hydraulic properties
         tab_suf_frame = tkinter.Frame(tab_suf)
-        self.combo3 = ttk.Combobox(tab_suf_frame, values=[ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
-        self.combo3.pack(side=tkinter.LEFT, pady=5, padx=10)
+        self.combo3 = ttk.Combobox(tab_suf_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
+        self.combo3.pack(side = tkinter.LEFT, pady = 5, padx = 10)
         self.combo3.current(0)
         self.combo3.bind("<<ComboboxSelected>>", self.update_hydraulics)
-        button = tkinter.Button(tab_suf_frame, text="plot conductivities", command=self.plot_conductivities)
-        button.pack(side=tkinter.LEFT, pady=5, padx=10)
-        tab_suf_frame.pack(side=tkinter.TOP)
-        fig3, self.ax3 = plt.subplots(1, 1, figsize=(15, 10))
-        self.canvas3 = FigureCanvasTkAgg(fig3, master=tab_suf)  # A tk.DrawingArea.
+        button = tkinter.Button(tab_suf_frame, text = "plot conductivities", command = self.plot_conductivities)
+        button.pack(side = tkinter.LEFT, pady = 5, padx = 10)
+        tab_suf_frame.pack(side = tkinter.TOP)
+        fig3, self.ax3 = plt.subplots(1, 1, figsize = (15, 10))
+        self.canvas3 = FigureCanvasTkAgg(fig3, master = tab_suf)  # A tk.DrawingArea.
         self.canvas3.draw()
-        self.canvas3.get_tk_widget().pack(side=tkinter.BOTTOM, fill=tkinter.BOTH, expand=1)
+        self.canvas3.get_tk_widget().pack(side = tkinter.BOTTOM, fill = tkinter.BOTH, expand = 1)
         # hydraulic development
         tab_krs_frame = tkinter.Frame(tab_krs)
-        self.combo4 = ttk.Combobox(tab_krs_frame, values=[ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
-        self.combo4.pack(side=tkinter.LEFT, pady=5, padx=10)
+        self.combo4 = ttk.Combobox(tab_krs_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
+        self.combo4.pack(side = tkinter.LEFT, pady = 5, padx = 10)
         self.combo4.current(0)
         self.combo4.bind("<<ComboboxSelected>>", self.update_krs)
-        button2 = tkinter.Button(tab_krs_frame, text="plot conductivities", command=self.plot_conductivities)
-        button2.pack(side=tkinter.LEFT, pady=5, padx=10)
-        tab_krs_frame.pack(side=tkinter.TOP)
-        fig4, self.ax4 = plt.subplots(1, 1, figsize=(15, 10))
-        self.canvas4 = FigureCanvasTkAgg(fig4, master=tab_krs)  # A tk.DrawingArea.
+        button2 = tkinter.Button(tab_krs_frame, text = "plot conductivities", command = self.plot_conductivities)
+        button2.pack(side = tkinter.LEFT, pady = 5, padx = 10)
+        tab_krs_frame.pack(side = tkinter.TOP)
+        fig4, self.ax4 = plt.subplots(1, 1, figsize = (15, 10))
+        self.canvas4 = FigureCanvasTkAgg(fig4, master = tab_krs)  # A tk.DrawingArea.
         self.canvas4.draw()
-        self.canvas4.get_tk_widget().pack(side=tkinter.BOTTOM, fill=tkinter.BOTH, expand=1)
+        self.canvas4.get_tk_widget().pack(side = tkinter.BOTTOM, fill = tkinter.BOTH, expand = 1)
 
     def update_info(self):
         """ update info tab """
         # label_general
         c = 0  # node counter
         for i, pl in enumerate(self.data.polylines):
-            # c += 1 
+            # c += 1
             for p in pl:
                 c += 1
         lstr = "\nSoftware\nFilename \nNumber of plants (base nodes)\nNumber of base roots (segments)\nNumber of roots\nNumber of nodes\n"
@@ -185,7 +185,7 @@ class App:
         lstr = "\nRadius \nCreation time \nTypes \n"
         if tagnames[0]:
             rstr += "from tag '{:s}' within [{:g}, {:g}] cm\n".format(tagnames[0], np.min(self.data.radii), np.max(self.data.radii))
-        else: 
+        else:
             rstr += "not found (set to 0.1 cm) \n"
         if tagnames[1]:
             rstr += "from tag '{:s}' within [{:g}, {:g}] days\n".format(tagnames[1], np.min(self.data.cts), np.max(self.data.cts))
@@ -211,13 +211,15 @@ class App:
 
     def update_hydraulics(self, event):
         """ updates hydraulic properties plot """
-        viewer_plots.plot_suf(self.data, self.ax3, self.combo3.current())
-        self.canvas3.draw()
+        if self.data.exists():
+            viewer_plots.plot_suf(self.data, self.ax3, self.combo3.current())
+            self.canvas3.draw()
 
     def update_krs(self, event):
         """ updates hydraulic properties plot """
-        viewer_plots.plot_krs(self.data, self.ax4, self.combo4.current())
-        self.canvas4.draw()
+        if self.data.exists():
+            viewer_plots.plot_krs(self.data, self.ax4, self.combo4.current())
+            self.canvas4.draw()
 
     def view_vtk_plot(self, name):
         """ vtk plot coloring name """
@@ -250,40 +252,40 @@ class App:
                 viewer_conductivities.init_dynamic_scenario1(r)
             elif j == 3:
                 viewer_conductivities.init_dynamic_scenario2(r)
-            fig = r.plot_conductivities(False)
-            canvas = FigureCanvasTkAgg(fig, master=root)  # A tk.DrawingArea.
+            fig = r.plot_conductivities(monocot = False, plot_now = False, axes_ind = [0], lateral_ind = [1, 2, 3])
+            canvas = FigureCanvasTkAgg(fig, master = root)  # A tk.DrawingArea.
             canvas.draw()
-            canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+            canvas.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
             tkinter.mainloop()
 
     def file_open(self):
         """ menu item: open rsml file """
         global fname
-        fname = tkinter.filedialog.askopenfilename(title='Please select a RSML root system',
-                                                  filetypes=[('Image Files', ['.rsml', '.RSML', '.xml'])])
+        fname = tkinter.filedialog.askopenfilename(title = 'Please select a RSML root system',
+                                                  filetypes = [('Image Files', ['.rsml', '.RSML', '.xml'])])
         if isinstance(fname, str):
             if fname:
                 self.data.open_rsml(fname)
                 self.update_all()
-    
+
     def file_save(self):
         """ menu item: save rsml file (polylines)"""
         if self.data.exists():
-            fname = tkinter.filedialog.asksaveasfilename(defaultextension=".rsml")
+            fname = tkinter.filedialog.asksaveasfilename(defaultextension = ".rsml")
             print(fname, type(fname))
             if isinstance(fname, str):
                 if fname:
-                    pd = vp.segs_to_polydata(self.data.analyser, zoom_factor=1., param_names=["subType", "radius", "creationTime"])                    
+                    pd = vp.segs_to_polydata(self.data.analyser, zoom_factor = 1., param_names = ["subType", "radius", "creationTime"])
                     vt.write_rsml(fname, pd, 0, None, self.data.base_nodes)
 
     def file_save_vtp(self):
         """ menu item: save save vtp file containing segments (not polylines) """
         if self.data.exists():
-            fname = tkinter.filedialog.asksaveasfilename(defaultextension=".vtp")
+            fname = tkinter.filedialog.asksaveasfilename(defaultextension = ".vtp")
             print(fname, type(fname))
             if isinstance(fname, str):
                 if fname:
-                    self.data.analyser.write(fname)  # segment analyser's writer 
+                    self.data.analyser.write(fname)  # segment analyser's writer
 
     def file_quit(self):
         """ menu item: quits application """
