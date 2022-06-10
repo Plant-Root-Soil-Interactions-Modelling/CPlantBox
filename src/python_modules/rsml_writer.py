@@ -159,7 +159,7 @@ class LinkedPolylines:
 
     def __init__(self):
         self.branchnumber = -1
-        self.parent_node = -1 # parent node index!
+        self.parent_node = -1  # parent node index!
         self.polyline = []
         self.laterals = []
         self.base_root = False
@@ -217,7 +217,7 @@ def follow_(i0:int, i:int, i_old, A) -> LinkedPolylines:
         i0 (int): parent node index
         i (int): initial node  
         i_old (int) : parent node
-        A (sparse matrix): adjacency matrix, values are either branch number (>0!) or root order (>0!)
+        A (sparse matrix): adjacency matrix with branch ids, values are branch number (>0!) or root order (>0!) etc.
             
     Returns: 
         LinkedPolyline: representing the root system
@@ -227,27 +227,26 @@ def follow_(i0:int, i:int, i_old, A) -> LinkedPolylines:
     newlines = LinkedPolylines()
     newlines.polyline = [i]
     newlines.parent_node = i0
-    
-    if len(j_)==0: # in case there no other node
+
+    if i_old > -1:  # in case it is not the first node
         newlines.branchnumber = A[i_old, i]
-    else: 
-        newlines.branchnumber = A[i, j_[0]]
-        
+    else:
+        newlines.branchnumber = A[i, j_[0]]  # pick first segment
+
     if len(j_) > 0:  # if there is at least another node
 
         first = True
         done = False
         while not done:
             done = True
-            for j in j_: # we process all neighbouring nodes
-                if  A[i, j] == newlines.branchnumber:  # follow this branch number (maximal one node can have the same branchnumber)
-                    if not first:
-                        print("rsml_writer: follow_ is not possible, several paths for data index")
-                        raise
+            for j in j_:  # we process all neighbouring nodes
+                if  A[i, j] == newlines.branchnumber and first:  # follow this branch number (maximal one node can have the same branchnumber)
                     newlines.polyline.append(j)
-                    done = False # if no other node has the same branch number, we quit
+                    done = False  # if no other node has the same branch number, we quit
                     first = False
-                else: # laterals are created into all other directions
+                else:  # laterals are created into all other directions
+                    if  A[i, j] == newlines.branchnumber:
+                        print("rsml_writer.follow_() warning: path is not unique, e.g. if root and lateral have the same branch id (order, branchnumber, ...)")
                     newlines.laterals.append(follow_(len(newlines.polyline) - 1, j, i, A))  # follow lateral
             if not done:
                 i = newlines.polyline[-1]  # jump to next node
@@ -255,6 +254,7 @@ def follow_(i0:int, i:int, i_old, A) -> LinkedPolylines:
                 first = True
 
     return newlines
+
 
 def segs2polylines(axes:list, segs:list, segdata:list) -> list:
     """ Converts a root system represented by nodes and segments into a linked polyline representation.
@@ -283,7 +283,7 @@ def write_rsml(name:str, axes:list, segs:list, segdata:list, nodes:list, nodedat
         name(str): file name
         axes(list of int): indices of the starting nodes
         segs(list of list of int) segments: represented by two node indices 
-        segdata(list of int): branch number or root order per segment (both >0!), needed to reconstruct the polylines
+        segdata(list of int): branch id, e.g. branch number or root order per segment (both >0!), needed to reconstruct the polylines from the segments
         nodes(list of list of float) nodes of the root system
         nodedata (list of list of float) data attached to the nodes, stored as functions
         meta(Metadata): Additional information, e.g. on rsml properties and functions
@@ -296,18 +296,19 @@ def write_rsml(name:str, axes:list, segs:list, segdata:list, nodes:list, nodedat
     # Scene
     LinkedPolylines.set_metadata(meta)
     polylines = segs2polylines(axes, segs, segdata)
-                
+
     scene = ET.SubElement(rsml, "scene")
     plant = ET.SubElement(scene, "plant")
     for root in polylines:
         if root:
             root.write_root(plant, nodes, nodedata, Renumber = kwargs.get("Renumber", True))
     # Write (pretty)
-    xmlstr = minidom.parseString(ET.tostring(rsml)).toprettyxml(indent="   ", encoding='UTF-8')
+    xmlstr = minidom.parseString(ET.tostring(rsml)).toprettyxml(indent = "   ", encoding = 'UTF-8')
     with open(name, "w") as f:
         f.write(xmlstr.decode('UTF-8'))
         f.close()
-        
+
+
 if __name__ == "__main__":
 
     axis = [0]  # initial node
