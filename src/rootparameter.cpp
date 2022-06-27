@@ -74,7 +74,7 @@ std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 {
-    bool hasLaterals = successor.size()>0;
+    bool hasLaterals = (successor.size()>0);
 	auto p = plant.lock();
 	//define the parameters outside fo the if functions:
     double lb_;
@@ -86,46 +86,57 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 		this->dxMin = dx/2;}
 	if (!hasLaterals) { // no laterals
     	lb_ = 0;
-        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
+        la_ = std::max(lmax + p->randn()*lmaxs, dxMin); // la, and lb is ignored
 		res = la_-floor(la_ / dx)*dx;
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ la_ -= res;
-			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
-			this->la=la_;
+			}else{la_ =  floor(la_ / dx)*dx;}// + dxMin;}
+			//this->la=la_; otherwise, la changes for the next roots
 		}			//make la_ compatible with dx() and dxMin()
 
     } else { // laterals
 
         lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
+		la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
+		int nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 	
         double res = lb_ - floor(lb_/dx)* dx;
 		
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ lb_ -= res;
 			}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
-			this->lb=lb_;
+			//this->lb=lb_;
 		}	
 		
-		la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
 		res = la_-floor(la_ / dx)*dx;
 		
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ la_ -= res;
 			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
-			this->la=la_;
+			//this->la=la_;
 		}
-		
+		double ln_mean = ln;
 		if(ln < dxMin*0.99 && ln != 0){
 			std::cout<<"\nRootRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
-			ln = dxMin;
+			ln_mean = dxMin;
 		}
 		
-        int nob_ = std::max(round(nob() + p->randn()*nobs()), 1.); // maximal number of branches +1
-        double sum_ln = nob_*ln; // mean length of lateral zone
+        int nob_ = std::min(std::max(round(nob() + p->randn()*nobs()), 1.),double(nob_real)); // maximal number of branches +1
+		int latMissing = nob_real - nob_;
+		int latExtra1 = floor(latMissing/nob_);//mean number of extra laterals per branching point to keep correct number
+		int latExtra2 = latMissing - latExtra1*(nob_);
+			
+		int latExtra2_ = latExtra2;							
+		assert((latMissing >= 0)&&"root parameters realize latmissing< 0");
+		//at end of basal zone
+		for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+		if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
+		double sum_ln = nob_*ln_mean; // mean length of lateral zone
+        
         for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-        	double z = ((double)i+0.5)*ln; // regular position along root lateral zone
+        	double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
         	double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
-        	double pf = (ln + f) / ln; // we scale lns by the change in percentage
-            double d = std::max(ln + f + pf*p->randn()*lns, 1.e-5); // miminum is 1.e-5
+        	double pf = (ln_mean + f) / ln_mean; // we scale lns by the change in percentage
+            double d = std::max(ln_mean + f + pf*p->randn()*lns, dxMin); // miminum is 1.e-5
             res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
@@ -134,6 +145,8 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 				} //make ln compatible with dx() and dxMin().
 			
 			ln_.push_back(d);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}  
         }
     }
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation

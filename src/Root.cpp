@@ -134,7 +134,7 @@ void Root::simulate(double dt, bool verbose)
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
-		length = getLength();
+		length = getLength(true);
 		this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
                 
                 // create geometry
@@ -160,7 +160,7 @@ void Root::simulate(double dt, bool verbose)
 						double s = p.lb; // summed length
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
-                            if (length<s) {
+                            if (length<=s) {
                                 if (i==children.size()) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
@@ -170,9 +170,9 @@ void Root::simulate(double dt, bool verbose)
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
-                                    createSegments(ddx,dt_,verbose);
-                                    dl-=ddx;
-                                    length=s;
+										createSegments(ddx,dt_,verbose);
+										dl-=ddx;
+										length=s;
 //									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
 //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
 //									} // this could happen, if the tip ends in this section

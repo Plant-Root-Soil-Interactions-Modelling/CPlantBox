@@ -66,7 +66,11 @@ public:
 
     const double eps = 1.e-5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
-
+	double kr_length = -1.0; //define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
+	//% of segment length in the root exchange zone, see MappedPlant::simulate. 
+	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)
+	std::vector<double> exchangeZoneCoefs; 
+	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
 
 protected:
 
@@ -122,12 +126,16 @@ public:
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 
-	void setCWGr(std::vector<double> CWGr); ///< growth as defined by phloem module.
-    std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
+	std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
     virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
-    virtual double randn() override {if(stochastic){return ND(gen);} else {return 0.5; } }  ///< normally distributed random number (0,1)
+    virtual double randn() override {if(stochastic){return std::min(std::max(ND(gen),-1.),1.);} else {return 0.5; } }  ///< normally distributed random number (0,1)
 	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
+	//for photosynthesis and phloem module:	
+	void calcExchangeZoneCoefs();	// needed or directly in simulate?		   
+	void calcLeafBladeSurface();// needed or directly in simulate?								 
+	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
+	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module					
 };
 
 }

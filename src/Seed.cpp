@@ -161,7 +161,7 @@ void Seed::initialize(bool verbose)
 					std::cout << "Tiller stem type #" << tillerType << " was not defined, using main stem parameters instead, ";
 				}
 				auto tillParam = p->getOrganRandomParameter(Organism::ot_stem, 1)->copy(plant.lock());
-				tillParam->subType = basalType;
+				tillParam->subType = tillerType;
 				p->setOrganRandomParameter(tillParam);
 			}
 			int maxTi = sp->maxTil;

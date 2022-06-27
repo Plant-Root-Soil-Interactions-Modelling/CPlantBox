@@ -159,22 +159,22 @@ void Stem::simulate(double dt, bool verbose)
 			if (active) {
 
 				// length increment
-				double delayNG_ = 0.; //delay between organ creation and expansion
-				double ageAtLb = calcAge(p.lb);//age at which organ reached lb
-				if((age > ageAtLb)){
-					delayNG_ = std::min(p.delayNG, age - ageAtLb );
+				double age__ = age;
+				if(age > p.delayNGStart){
+					if(age > p.delayNGEnd){age__ = age - (p.delayNGEnd - p.delayNGStart);
+					}else{age__ =p.delayNGStart;}
 				}//delay to apply 
 				/*as we currently do not implement impeded growth for stem and leaves
 				*we can use directly the organ's age to cumpute the target length
 				*/
-				double targetlength = calcLength(age - delayNG_)+ this->epsilonDx;
+				double targetlength = calcLength(age__)+ this->epsilonDx;
 				double e = targetlength-length; // store value of elongation to add
 				//can be negative
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
-				length = getLength();
+				length = getLength(true);
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				// create geometry
-				if (p.laterals) { // stem has laterals
+				if (p.laterals||bool(additional_childern)) { // stem has laterals
 					//std::cout<<"sim seed nC is"<< nC<<"\n";
 					//std::cout<<"sim seed nZ is"<< nZ<<"\n";
 					/*
@@ -224,40 +224,43 @@ void Stem::simulate(double dt, bool verbose)
 							{
 								leafGrow(verbose);
 							}
-							createSegments(this->dxMin(),verbose);
-							dl-=this->dxMin();
-							length+=this->dxMin();}
+							if(p.ln.at(children.size()-additional_childern-1)>0){
+								createSegments(this->dxMin(),verbose);
+								dl-=this->dxMin();
+								length+=this->dxMin();
+							}
+						}
 						createLateral(verbose);
 						if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2){
 										leafGrow(verbose);
-						}
-					}
-					if((length>=p.lb)&&((p.ln.size()+1)!=(children.size()))){
-						std::stringstream errMsg;
-						errMsg <<"Stem::simulate(): different number of realized laterals ("<<children.size()<<
-						") and max laterals ("<<p.ln.size()+1<<")";
-						throw std::runtime_error(errMsg.str().c_str());
-					}
-					//internodal elongation, if the basal zone of the stem is created and still has to grow
-					double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
-					if((dl>0)&&(length>=p.lb)){
-							int nn = children.at(p.ln.size())->parentNI; //node carrying the last lateral == end of branching zone
-							double currentInternodeDistance = getLength(nn) - p.lb; //actual length of branching zone
-							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone 
-
-							if(ddx > 0){
-								internodalGrowth(ddx, verbose);
-								dl -= ddx;
-							length += ddx;
-								
 							}
 						}
-					/* apical zone */
-					//only grows once the basal and branching nodes are developped
-					if ((dl>0)&&(length>=(maxInternodeDistance + p.lb))) {
-						createSegments(dl,verbose);
-						length+=dl;
-					} 
+						if((p.ln.size()+1)!=(children.size())){
+							std::stringstream errMsg;
+							errMsg <<"Stem::simulate(): different number of realized laterals ("<<children.size()<<
+							") and max laterals ("<<p.ln.size()+1<<")";
+							throw std::runtime_error(errMsg.str().c_str());
+						}
+						//internodal elongation, if the basal zone of the stem is created and still has to grow
+						double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
+						if((dl>0)&&(length>=p.lb)&&(maxInternodeDistance>0)){
+								int nn = children.at(p.ln.size())->parentNI; //node carrying the last lateral == end of branching zone
+								double currentInternodeDistance = getLength(nn) - p.lb; //actual length of branching zone
+								double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone 
+
+								if(ddx > 0){
+									internodalGrowth(ddx, verbose);
+									dl -= ddx;
+								length += ddx;
+									
+								}
+							}
+						/* apical zone */
+						//only grows once the basal and branching nodes are developped
+						if ((dl>0)&&(length>=(maxInternodeDistance + p.lb))) {
+							createSegments(dl,verbose);
+							length+=dl;
+						} 
 				} else { // no laterals
 					if (dl>0) {
 						createSegments(dl,verbose);
@@ -295,31 +298,37 @@ void Stem::internodalGrowth(double dl, bool verbose)
 	const StemSpecificParameter& p = *param(); // rename
 	std::vector<double> toGrow(p.ln.size());
 	double dl_;
-	double missing = 0.;
-	if(p.nodalGrowth==0){
+					   
+	const int ln_0 = count(p.ln.cbegin(), p.ln.cend(), 0);//number of laterals wich grow on smae branching point as the one before
+	if(p.nodalGrowth==0){//sequentiall growth
 		toGrow[0] = dl;
 		std::fill(toGrow.begin()+1,toGrow.end(),0) ;
 	}
-	if(p.nodalGrowth ==1){std::fill(toGrow.begin(),toGrow.end(),dl/p.ln.size()) ; }
+	if(p.nodalGrowth ==1)
+	{//equal growth
+		std::fill(toGrow.begin(),toGrow.end(),dl/(p.ln.size()-ln_0)) ; 
+	}
 	size_t i=1;
-	while( (dl >0)&&(i<=p.ln.size()) ) {
+	int i_ = 0;
+	while( (dl >0)&&(i_<(p.ln.size()*2)) ) {
 		//if the phytomere can do a growth superior to the mean phytomere growth, we add the value of "missing" 
 		//(i.e., length left to grow to get the predefined total growth of the branching zone)
 		int nn1 = children.at(i-1)->parentNI; //node at the beginning of phytomere
 		double length1 = getLength(nn1);
 		int nn2 = children.at(i)->parentNI; //node at end of phytomere
 		double availableForGrowth = p.ln.at(i-1) -( getLength(nn2) - length1 ) ;//difference between maximum and current length of the phytomere
-		dl_ = std::min(toGrow[i-1],availableForGrowth);
+		dl_ = std::min(std::min(toGrow[i-1],availableForGrowth), dl);
 		if(i< p.ln.size()){
 			toGrow[i] +=  toGrow[i-1] - dl_ ;
-		}else{missing = toGrow[i-1] - dl_;}
+		}
 		if(dl_ > 0){createSegments(dl_,verbose, i ); dl -= dl_;}
 		i++;
-		
+		i_++;//do the loop at most twice
+		if(i>p.ln.size()){i=1;}
 	}
-	if(missing > 1e-6){//this sould not happen as computed dl to be <= sum(availableForGrowth)
+	if(std::abs(dl) > 1e-6){//this sould not happen as computed dl to be <= sum(availableForGrowth)
 		std::stringstream errMsg;
-		errMsg <<"Stem::internodalGrowth length left to grow: "<<missing;
+		errMsg <<"Stem::internodalGrowth length left to grow: "<<dl;
 		throw std::runtime_error(errMsg.str().c_str());
 	}
 }
@@ -332,6 +341,8 @@ void Stem::internodalGrowth(double dl, bool verbose)
 double Stem::getParameter(std::string name) const
 {
 	if (name=="lb") { return param()->lb; } // basal zone [cm]
+	if (name=="delayNGStart") { return param()->delayNGStart; } // delay for nodal growth [day]
+	if (name=="delayNGEnd") { return param()->delayNGEnd; } // delay for nodal growth [day]
 	if (name=="la") { return param()->la; } // apical zone [cm]
 	if (name=="nob") { return param()->nob(); } // number of branches
 	if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -555,25 +566,6 @@ void Stem::shootBorneRootGrow(bool verbose)
 			std::cout<<"root grow number "<<i<<"\n";
 		}
 	}
-
-	//    auto sp = param(); // rename
-	//    int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
-	//    //    std::cout << "ShootBorneRootGrow createLateral()\n";
-	//    //    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
-	//
-	//    if ( lt > 0 ) {
-	//        double ageLN = this->calcAge(length); // age of stem when lateral node is created
-	//        double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-	//        double delay = ageLG-ageLN; // time the lateral has to wait
-	//        int nodeToGrowShotBorneRoot = 2;
-	//        Vector3d sbrheading(0,0,-1); //just a test heading
-	//        auto shootBorneRootGrow = std::make_shared<Root>(plant.lock() , 5, sbrheading, delay ,shared_from_this(), length, nodeToGrowShotBorneRoot);
-	//        if (nodes.size() > nodeToGrowShotBorneRoot ) {
-	//            //                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
-	//            children.push_back(shootBorneRootGrow);
-	//            shootBorneRootGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current age)
-	//        }
-	//    }
 }
 
 /**
@@ -663,7 +655,7 @@ void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 				double sdx = olddx + shiftl; // length of new segment
 				h.normalize();  
 				nodes[nn-1] =  h.times(sdx);
-				double et = this->calcCreationTime(getLength(true)+shiftl);
+				double et = this->calcCreationTime(getLength(false)+shiftl);//creation time based on theoretical length
 				nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 				l -= shiftl;
 				if (l<=0) { // ==0 should be enough
@@ -695,7 +687,7 @@ void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 		}
 		sl += sdx;
 		Vector3d newnode = Vector3d(sdx, 0., 0.);
-		double et = this->calcCreationTime(getLength(true)+shiftl+sl);
+		double et = this->calcCreationTime(getLength(false)+shiftl+sl);//creation time based on theoretical length
 		// in case of impeded growth the node emergence time is not exact anymore,
 		// but might break down to temporal resolution
 		bool shift = (PhytoIdx >= 0); //node will be insterted between 2 nodes. only happens if we have internodal growth (PhytoIdx >= 0)
@@ -708,8 +700,14 @@ void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 double Stem::getLength(int i) const 
 {
 	double l = 0.; // length until node i
-	for (int j = 0; j<i; j++) {
-		l += nodes.at(j+1).length(); // relative length equals absolute length
+	if(getOrganism()->hasRelCoord()){//is currently using relative coordinates?
+		for (int j = 0; j<i; j++) {
+			l += nodes.at(j+1).length(); // relative length equals absolute length
+		}
+	}else{
+		for (int j = 0; j<i; j++) {
+			l += nodes.at(j+1).minus(nodes.at(j)).length(); // relative length equals absolute length
+		}
 	}
 	return l;
 }

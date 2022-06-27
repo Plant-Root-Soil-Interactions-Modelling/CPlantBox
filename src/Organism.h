@@ -61,7 +61,7 @@ public:
     double getDt() const { return dt; } ///< returns the current simulation duration/time step
 
     /* as sequential list */
-    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1) const; ///< sequential list of organs
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1, bool all = false) const; ///< sequential list of organs
     virtual std::vector<double> getParameter(std::string name, int ot = -1, std::vector<std::shared_ptr<Organ>> organs = std::vector<std::shared_ptr<Organ>>(0)) const; ///< parameter value per organ
     double getSummed(std::string name, int ot = -1) const; ///< summed up parameters
     // std::shared_ptr<Organ> pickOrgan(int nodeId); // TODO
@@ -76,6 +76,7 @@ public:
     virtual std::vector<double> getNodeCTs() const; ///< node creation times, corresponding to Organism::getNodes
     virtual std::vector<Vector2i> getSegments(int ot=-1) const; ///< line segment containing two node indices, corresponding to Organism::getNodes
     virtual std::vector<double> getSegmentCTs(int ot=-1) const; ///< line creation times, corresponding to Organism::getSegments
+    virtual std::vector<int> getSegmentIds(int ot=-1) const; ///< line segment indices, corresponding to Organism::getSegments  
     virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< points to the organ which contains the segment, corresponding to Organism::getSegments
 
     /* last time step */
@@ -115,7 +116,8 @@ public:
 	double getSeedVal(){return seed_val;}
 	void setStochastic(bool stochastic_){stochastic = stochastic_;}
 	bool getStochastic(){return stochastic;}
-	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism								
+	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism	
+	virtual bool	hasRelCoord(){return false;} ///< overriden by @Plant::hasRelCoord()
 
 protected:
 

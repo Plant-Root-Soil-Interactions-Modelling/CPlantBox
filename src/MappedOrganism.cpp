@@ -566,26 +566,14 @@ void MappedPlant::initialize(bool verbose, bool stochastic) {
 void MappedPlant::mapSubTypes(){
 	for(int ot = 0; ot < organParam.size();ot++ )
 	{
-		for(int st = 0; st < organParam[ot].size();st++ )
+		std::cout<<"MappedPlant::mapSubTypes for organtype "<<ot<<std::endl;
+		int st_ = 0;
+		for(auto op : organParam[ot] )
 		{
-			switch (ot) {
-			case 2: {
-				st2newst[std::make_tuple(ot, st)] = st;
-				break;
-			}
-			case 3: {
-				switch(st){
-				case 1: {st2newst[std::make_tuple(ot, st)] = st; continue;}
-				case 2: {continue; }//stem of st = 2 is a bud, it desn't have a kr/kx
-				default:{ st2newst[std::make_tuple(ot, st)] = st -1 ;};
-				}
-				break;
-			}
-			case 4: {
-				st2newst[std::make_tuple(ot+2, st)] = st - 2;
-				break;
-			} //leaf st starts with 2
-			}
+			int st = op.second->subType;
+			st2newst[std::make_tuple(ot, st)] = st_;
+			std::cout<<"old st: "<<st<<", new st: "<< st_ <<std::endl;
+			st_ ++;
 		}
 	}
 }
@@ -651,9 +639,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 		vsegIdx.push_back(segIdx);
 		c++;
 		radii[segIdx] = so->getParam()->a;
-		subTypes[segIdx] = so->getParam()->subType;
+		//subTypes[segIdx] = so->getParam()->subType;
 		organTypes[segIdx] = so->organType();
-		subTypes[segIdx] = st2newst[std::make_tuple(organTypes[segIdx],subTypes[segIdx])];
+		subTypes[segIdx] = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];
 	}
 
 	// map new segments
@@ -685,46 +673,52 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
+	if(kr_length > 0.){calcExchangeZoneCoefs();}
+	calcLeafBladeSurface();
 }
 
 
+void MappedPlant::calcLeafBladeSurface()
+{
+	std::vector<int> node_leavesIdx = getNodeIds(4);//ids of leaf segments
+	leafBladeSurface = std::vector<double>(segments.size(),0.);//surface for photosynthesis carbon and water exchange
+	auto organs = this->getOrgans(4);
+	for (const auto& org : organs) {
+		std::vector<int> nodeIds = org->getNodeIds();//idx of seg,ent at the end of each organ
+		for(int localIdx = 1; localIdx< nodeIds.size();localIdx++){
+			int globalIdx_y = nodeIds.at(localIdx);
+			leafBladeSurface[globalIdx_y -1 ] =std::static_pointer_cast<Leaf>(org)->leafArea(localIdx-1);
+		}			
+	}
+}
 
 /**
- * define the growth rate of each organ according to value given by phloem module
- * Does not overright the r (initial growth rate) parameter
- * @param CWGr        growth of each organ during time step
- *
- */
-void MappedPlant::setCWGr(std::vector<double> CWGr)
-{
-	auto organs = this->getOrgans(-1);
-	std::map<int, double> cWGrRoot; //set cWGr in this function instead of in Mappedorganism.h : cWGr is then reset to empy every tim efunction is called
-	std::map<int, double> cWGrStem; // + no need for mapped organism to keep cWGr in memory. just has to be in growth function
-	std::map<int, double> cWGrLeaf;
-	int num = 0;
-	for (const auto& r : organs) {
-		if(r->organType() == ot_root){//each organ type has it s own growth function (and thus CW_Gr map)
-			cWGrRoot.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
+ * computes coeficients for kr
+ * when root kr > 0 up to kr_length cm from the root tip
+ * see @XylemFlux::kr_RootExchangeZonePerType()
+ **/
+void MappedPlant::calcExchangeZoneCoefs() { //
+	exchangeZoneCoefs.resize(segments.size());
+	auto orgs = getOrgans(-1);
+	for(auto org: orgs)
+	{
+		for(int localIdx = 1; localIdx < org->getNumberOfNodes();localIdx++)
+		{
+			int globalIdx_x = org->getNodeId(localIdx -1 );
+			int globalIdx_y = org->getNodeId(localIdx);
+			if(org->organType() != Organism::ot_root){exchangeZoneCoefs[globalIdx_y-1] = 1;
+			}else{
+				auto n1 = nodes[globalIdx_x];
+				auto n2 = nodes[globalIdx_y];
+				auto v = n2.minus(n1);
+				double l = v.length();
+				double distance2RootTip_y = org->getLength(true) - org->getLength(localIdx);
+				double length_in_exchangeZone = std::min(l,std::max(kr_length - std::max(distance2RootTip_y,0.),0.));
+				exchangeZoneCoefs[globalIdx_y-1] = length_in_exchangeZone/l;
+			}
 		}
-		if(r->organType() == ot_stem){
-			cWGrStem.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-		}
-		if(r->organType() == ot_leaf){
-			cWGrLeaf.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-		}
-		num = num + 1;
-	}
-	for (auto orp : getOrganRandomParameter(ot_root)) { // each maps is copied for each sub type; or (todo), we could pass a pointer, and keep maps in this class
-		orp->f_gf->CW_Gr = cWGrRoot;
-	}
-	for (auto orp : getOrganRandomParameter(ot_stem)) {
-		orp->f_gf->CW_Gr = cWGrStem;
-	}
-	for (auto orp : getOrganRandomParameter(ot_leaf)) {
-		orp->f_gf->CW_Gr = cWGrLeaf;
 	}
 }
-
 
 /**
  *Gives an overview of the mappedplant object (for debugging)
@@ -761,4 +755,46 @@ void MappedPlant::printNodes() {
 	std::cout << "\n segments size \n"<< segments.size() << std::flush;
 }
 
+/**
+ *
+ *
+ *
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+std::vector<int> MappedPlant::getSegmentIds(int ot) const
+{
+	//std::cout<<"getSegmentIds "<<ot<<" "<< segments.size()<<" "<<organTypes.size()<<std::endl;
+    std::vector<int> segId;// = std::vector<int>(segments.size());
+    for (int i=0; i<segments.size(); i++) {
+		//std::cout<<(segments[i].y-1)<<" "<<(organTypes[segments[i].y-1])<<std::endl;
+		if((ot == -1)||(organTypes[segments[i].y-1]== ot)){
+			//std::cout<<"push back "<<std::endl;
+			segId.push_back(segments[i].y-1);
+		}
+    }
+	//std::cout<<"end getSegmentIds "<<segId.size()<<std::endl;
+    return segId;
+}
+/**
+ *
+ *
+ *
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+std::vector<int> MappedPlant::getNodeIds(int ot) const
+{
+	//std::cout<<"getNodeIds "<<ot<<" "<< segments.size()<<" "<<organTypes.size()<<std::endl;
+    std::vector<int> nodeId;// = std::vector<int>(segments.size());
+    for (int i=0; i<segments.size(); i++) {
+		//std::cout<<(segments[i].y)<<" "<<(organTypes[segments[i].y-1])<<std::endl;
+		if((ot == -1)||(organTypes[segments[i].y-1]== ot)){
+			//std::cout<<"push back "<<std::endl;
+			nodeId.push_back(segments[i].y);
+		}
+    }
+	//std::cout<<"end getSegmentIds "<<nodeId.size()<<std::endl;
+    return nodeId;
+}
 } // namespace

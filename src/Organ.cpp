@@ -275,22 +275,24 @@ std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot)
 }
 
 /**
- * Returns the organs as sequential list, copies only organs with more than one node.
- *
+ * Returns the organs as sequential list, if all == false,copies only organs with more than one node.
+ * if all == true return all born organs (age > 0 ) except for the seed and bulb (i.e., organs which do not grow)
  * @param ot        the expected organ type, where -1 denotes all organ types (default).
+ * @param all       get also the organs with only one node? default: false. Sometimes true for carbon-limited growth
  * @param v         vector of organs where the subtree is added,
  *                  only expected organ types with more than one nodes are added.
  */
-void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
+void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v, bool all)
 {
-	if (this->nodes.size()>1) {
+	bool isBulb = ((this->organType() == Organism::ot_stem)&&(this->getParameter("subType") == 2));//do not count leaf bulb
+	if ((this->nodes.size()>1 || all)&&(!isBulb) &&(this->getAge()>0) &&( this->organType() != Organism::ot_seed)) {
 		if ((ot<0) || (ot==this->organType())) {
 			v.push_back(shared_from_this());
 		}
 	}
 	// std::cout << "Organ::getOrgans recursive: number of children " <<  this->children.size() << "\n" << std::flush;
 	for (const auto& c : this->children) {
-		c->getOrgans(ot,v);
+		c->getOrgans(ot,v, all);
 	}
 }
 
@@ -489,4 +491,15 @@ Vector3d Organ::heading() const
 	}
 }
 
+/**
+ * Needed for carbon-limited growth: to know sucrose necessary for length increase
+ * @param length   length for which volume is calculated. if length = -1, use current organ length
+ * @param realized for length = -1: use current theoratical or realized length
+ * @return Volume for specific or current length. Overriden for @Leaf::orgVolume
+ */
+double Organ::orgVolume(double length_,  bool realized) const
+{
+	if(length_ == -1){length_ = getLength(realized);}
+	return M_PI * length_ * param_->a * param_->a;//cylinder
+};
 }

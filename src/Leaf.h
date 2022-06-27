@@ -39,9 +39,12 @@ public:
 	double getParameter(std::string name) const override; ///< returns an organ parameter of Plant::ScalarType
 
 	/* leaf vizualisation */
-    double leafLength() const { return std::max(getLength(false)-param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
-    double leafCenter() const { return std::max(getLength(false)-param()->la-param()->lb, 0.); }; ///< center of the radial parametrisation
-    double leafArea() ; ///< returns the leaf surface area, zero if there are lateral-leafs [cm2]
+    double leafLength( bool realized = false) const { return std::max(getLength(realized)-param()->lb, 0.); /* represents the leaf base*/ }; ///< leaf surface length [cm]
+    double leafCenter( bool realized = false) const { return std::max(getLength(realized)-param()->la-param()->lb, 0.); }; ///< center of the radial parametrisation
+    double leafArea( bool realized = false) const; ///< returns the leaf surface area, zero if there are lateral-leafs [cm2]
+	double leafAreaAtSeg(int localSegId, bool realized = false); //leaf area at a specific segment
+	double getLength(int i) const override;
+	double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
 	std::vector<double> getLeafVisX(int i);
 	std::vector<Vector3d> getLeafVis(int i); // per node
 
@@ -64,7 +67,8 @@ public:
 	void abs2rel() override;///< compute relative from absolute node coordinates
 	Vector3d getiHeading() const;///< compute initial heading from 
 	bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
-												   
+	double orgVolume(double length_ = -1.,  bool realized = false) const override;
+	double orgVolume2Length(double volume_) override;	
 
 protected:
 

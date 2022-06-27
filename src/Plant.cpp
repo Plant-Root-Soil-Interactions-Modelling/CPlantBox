@@ -191,8 +191,10 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 	void Plant::simulate(double dt, bool verbose)	
 {	
 	abs2rel();
+	relCoord = true;
     Organism::simulate(dt, verbose);	
 	rel2abs();
+	relCoord = false;
 }
 
 /**
