@@ -16,6 +16,13 @@ def sinusoidal(t):
     return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.
 
 
+def sinusoidal2(t):
+    """ sinusoidal from 6:00 - 18:00, 0 otherwise """
+    t_ = t - np.floor(t) - 6 / 24  # transfrom single day - 6h
+    ind_ = np.logical_and(t_ > 0, t_ < 0.5)  # zero otherwise
+    return np.multiply(ind_, sinusoidal(2 * t_))  # stretch t_ to a day period for daily sinusoidal
+
+
 class XylemFluxPython(XylemFlux):
     """  Hybrid flux solver (following Meunier et al.)
     
