@@ -81,16 +81,23 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double la_;
 	double res;
     std::vector<double> ln_; // stores the inter-distances
+	int nob_real =0;
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;}
 	if (!hasLaterals) { // no laterals
     	lb_ = 0;
-        la_ = std::max(lmax + p->randn()*lmaxs, dxMin); // la, and lb is ignored
+        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
 		res = la_-floor(la_ / dx)*dx;
+		if(subType == 2)
+		{
+			std::cout<<"res "<<subType<<" "<<res<<" "<<la_<<" "<<dxMin<<" "<<dx<<" ";
+			std::cout<<(la_ / dx)<<" "<<floor(la_ / dx)<<" "<<floor(la_ / dx)*dx<<" ";
+			std::cout<<(res < dxMin && res != 0)<<" "<<(res <= dxMin/2)<<std::endl;
+		}
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ la_ -= res;
-			}else{la_ =  floor(la_ / dx)*dx;}// + dxMin;}
+			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
 			//this->la=la_; otherwise, la changes for the next roots
 		}			//make la_ compatible with dx() and dxMin()
 
@@ -98,7 +105,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 
         lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
 		la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-		int nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 	
+		nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 	
         double res = lb_ - floor(lb_/dx)* dx;
 		
 		if(res < dxMin && res != 0){
@@ -109,18 +116,25 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 		
 		res = la_-floor(la_ / dx)*dx;
 		
+		if(subType == 2)
+		{
+			std::cout<<"res "<<subType<<" "<<res<<" "<<la_<<" "<<dxMin<<" "<<dx<<" ";
+			std::cout<<(la_ / dx)<<" "<<floor(la_ / dx)<<" "<<floor(la_ / dx)*dx<<" ";
+			std::cout<<(res < dxMin && res != 0)<<" "<<(res <= dxMin/2)<<std::endl;
+		}
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ la_ -= res;
 			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
 			//this->la=la_;
+
 		}
 		double ln_mean = ln;
 		if(ln < dxMin*0.99 && ln != 0){
 			std::cout<<"\nRootRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
 			ln_mean = dxMin;
 		}
-		
-        int nob_ = std::min(std::max(round(nob() + p->randn()*nobs()), 1.),double(nob_real)); // maximal number of branches +1
+		int nob1 = std::max((lmax-la_-lb_)/ln_mean+1, 1.);//use new la_, lb_ and ln_mean
+        int nob_ = std::min(std::max(round(nob1 + p->randn()*nobs()), 1.),double(nob_real)); // maximal number of branches +1
 		int latMissing = nob_real - nob_;
 		int latExtra1 = floor(latMissing/nob_);//mean number of extra laterals per branching point to keep correct number
 		int latExtra2 = latMissing - latExtra1*(nob_);
@@ -154,6 +168,26 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
 
+	if((ln_.size()!=(nob_real-1))&&(ln_.size()!=(nob_real))&& (!((ln_.size()==(nob_real+1))&&(ln_.size()==0)) )){
+		std::cout<<"root realize "<<hasLaterals<<" "<<std::endl;
+		std::cout<<"ln "<<ln_.size()<<" "<<nob_real<<" "<<la<<" "<<la_<<" "<<lb<<" "<<lb_<<" "<<ln<<" "<<std::endl;
+		std::cout<<"test "<<(!((ln_.size()==(nob_real+1))&&(ln_.size()==0)))<<" "<< (ln_.size()==(nob_real+1)) <<" "<< (ln_.size()==0) <<std::endl;
+		assert(false);
+	}	
+																										  
+	if(true){
+		std::cout<<"each ln:\n";
+		for(int i = 0; i<ln_.size(); i++){std::cout<<ln_.at(i)<<" ";}
+		std::cout<<"end ln:\n";
+		std::cout<<"root realize "<<subType<<" "<<hasLaterals<<" "<<std::endl;
+		std::cout<<"ln "<<ln_.size()<<" nob_real "<<nob_real<<" la "<<la<<" la_ "<<la_<<" lb "<<lb<<" lb_ "<<lb_<<" ln "<<ln<<" "<<std::endl;
+	}	
+		if(subType == 2)
+		{
+			std::cout<<"resbis "<<la_<<" "<<la<<std::endl;
+			//assert(false);
+		}
+	
     return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hasLaterals);
 }
 

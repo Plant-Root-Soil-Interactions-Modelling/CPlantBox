@@ -57,7 +57,7 @@ r.airPressure = p_a
 r.neumann_ind = seg_tips # segment indices for Neumann b.c.
 r.node_ind = node_tips
 rx = r.solve_neumann(sim_time= simtime, value=0, sxx=[p_s], cells=True) #water matric pot given per segment
-fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
+#fluxes = r.radial_fluxes(simtime, rx, [p_s], k_soil, True)  # cm3/day
 #too slow
 #r.summarize_fluxes(fluxes, simtime, rx, [p_s], k_soil, True)#r.segFluxes(simtime, rx, p_out, False)  # cm3/day
 
@@ -69,15 +69,15 @@ plt.ylabel("Depth (cm)")
 plt.title("Xylem matric potential (cm)")
 plt.show()
 
-plt.plot(fluxes, nodes[1:, 2] , "r*")
-plt.xlabel("Fluxes")
-plt.ylabel("Depth (cm)")
-plt.title("water fluxes")
-plt.show()
+# plt.plot(fluxes, nodes[1:, 2] , "r*")
+# plt.xlabel("Fluxes")
+# plt.ylabel("Depth (cm)")
+# plt.title("water fluxes")
+# plt.show()
 
 #Additional vtk plot
 ana = pb.SegmentAnalyser(r.rs)
 ana.addData("rx", rx)
-ana.addData("fluxes", np.maximum(fluxes, -1.e-3))  # cut off for vizualisation
+#ana.addData("fluxes", np.maximum(fluxes, -1.e-3))  # cut off for vizualisation
 ana.write("results/example_6d.vtp", ["radius", "surface", "rx", "fluxes"]) #
 #vp.plot_roots(ana, "rx", "Xylem matric potential (cm)")  # "fluxes"

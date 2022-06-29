@@ -87,6 +87,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	std::vector<double> ln_; // stores the inter-distances
 	double res;
 	int nob_ = 0; //number of branching nodes
+	int nob_real = 0; //number of branching nodes
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;
@@ -94,7 +95,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	if (!hasLaterals) { // no laterals
 
     	//lb_ = 0; //lb = length petiole => basal zone has a meaning even without lateral
-        double lmax_ = std::max(lmax + p->randn()*lmaxs, dxMin) ; // adapt total length
+        double lmax_ = std::max(lmax + p->randn()*lmaxs, 0.) ; // adapt total length
 		res = lmax_-floor(lmax_ / dx)*dx;
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ lmax_ -= res;
@@ -110,17 +111,17 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	{
 		lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
 		la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
-		int nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 
+		nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 
 		
 		res = lb_ - floor(lb_/dx)* dx;	
-		if (res < dxMin/2 && res != 0){
+		if (res < dxMin/2){// && res != 0
 				lb_ -= res;
 			} else {
 				lb_ =  floor(lb_ / dx)*dx + dxMin;
 			//this->lb=lb_;
 		}	
 		res = la_-floor(la_ / dx)*dx;	
-		if(res < dxMin/2 && res != 0){
+		if(res < dxMin/2){// && res != 0
 			la_ -= res;
 			}else{la_ =  floor(la_ / dx)*dx +dxMin;}
 			//this->la=la_;
@@ -250,6 +251,11 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
 	double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // leaf life time
 	double leafArea_ = std::max(areaMax + p->randn()*areaMaxs, 0.); // radius
+																								  
+	if(true){
+		std::cout<<"leaf realize "<<subType<<" "<<hasLaterals<<" "<<std::endl;
+		std::cout<<"ln "<<ln_.size()<<" "<<nob_real<<" "<<la<<" "<<la_<<" "<<lb<<" "<<lb_<<" "<<ln<<" "<<std::endl;
+	}	
 	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, hasLaterals, Width_blade_, Width_petiole_);
 }
 

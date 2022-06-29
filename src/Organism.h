@@ -54,7 +54,7 @@ public:
     int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str
 
     /* initialization and simulation */
-    void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership
+    void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o);std::cout<<"plant add organ "<<baseOrgans.size()<<std::endl; } ///< adds an organ, takes ownership
     virtual void initialize(bool verbose = true); ///< overwrite for initialization jobs
     virtual void simulate(double dt, bool verbose = false); ///< calls the base organs simulate methods
     double getSimTime() const { return simtime; } ///< returns the current simulation time

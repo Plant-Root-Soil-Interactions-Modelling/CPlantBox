@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <set>
 
-#ifdef WITH_PHOTOSYNTHESIS
+#ifdef USE_PHOTOSYNTHESIS
 #include <Eigen/Dense>
 #include <Eigen/Sparse> 
 #endif
@@ -26,39 +26,43 @@ XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs){}
  * @param cells 			sx per cell (true), or segments (false)
  * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
  *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
+ * @param withEigen			use Eigen solve (true), ot not (false = default)
  */
-void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k)
+void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k, bool withEigen)
 {
+	//std::cout<<"XylemFlux::linearSystem"<<std::endl;
     int Ns = rs->segments.size(); // number of segments
     int N = rs->nodes.size(); // number of nodes
     aB.resize(N);
     std::fill(aB.begin(), aB.end(), 0.);
-#ifdef WITH_PHOTOSYNTHESIS
+#ifdef USE_PHOTOSYNTHESIS
 	typedef Eigen::Triplet<double> Tri;
 	std::vector<Tri> tripletList;
 	tripletList.reserve(Ns*4);
 	Eigen::SparseMatrix<double> mat(N,N);
 	mat.reserve(Eigen::VectorXi::Constant(N,2));
 	Eigen::VectorXd b(N);
-#else
-    aI.resize(4*Ns);
+#endif
+    aI.resize(4*Ns); //keep those in case wants to use both photosynthesis + xylem::solve
     aJ.resize(4*Ns);
     aV.resize(4*Ns);
     std::fill(aV.begin(), aV.end(), 0.);
     std::fill(aI.begin(), aI.end(), 0);
     std::fill(aJ.begin(), aJ.end(), 0);
-#endif
     size_t k=0;
     size_t numleaf = 0; //count at which leaf segment number we are
+	std::cout<<"XylemFlux::linearSystem "<<Ns<<" "<<N<<std::endl;
     for (int si = 0; si<Ns; si++) {
-
+		if(si ==1692){std::cout<<"in seg "<<si<<" "<<rs->organTypes.size()<<std::endl;}
         int i = rs->segments[si].x;
         int j = rs->segments[si].y;
 
         double psi_s;
         int organType = rs->organTypes[si];
+		if(si ==1692){std::cout<<"organType "<<organType<<" "<<i<<" "<<j<<std::endl;}
         if (cells) { // soil matric potential given per cell
             int cellIndex = rs->seg2cell[j-1];
+			if(si ==1692){std::cout<<"cellIndex "<<cellIndex<<" "<<sx.size()<<std::endl;}
             if (cellIndex>=0) {
 				if(organType == Organism::ot_leaf){
 					std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
@@ -80,12 +84,13 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         } else {
             psi_s = sx.at(si); // j-1 = segIdx = s.y-1
         }
+		if(si ==1692){std::cout<<"psi_s "<<psi_s<<" "<<rs->radii.size()<<std::endl;}
         double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
         double age = simTime - rs->nodeCTs[j];
         int subType = rs->subTypes[si];
         double kx = 0.;
         double  kr = 0.;
-
+		if(si ==1692){std::cout<<"before krkr"<<std::endl;}
         try {
             kx = kx_f(si, age, subType, organType);
             kr = kr_f(si, age, subType, organType, numleaf);
@@ -94,6 +99,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
         }
 
+		if(si ==1692){std::cout<<"after krkr "<<soil_k.size()<<std::endl;}
         if (soil_k.size()>0) {
             kr = std::min(kr, soil_k[si]);
         }
@@ -112,7 +118,9 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 			//perimeter of the leaf blade 
 			// "*2" => C3 plant has stomatas on both sides. 
 			//later make it as option to have C4, i.e., stomatas on one side
+			 if(si ==1692){std::cout << "organType == Organism::ot_leaf "<<si<<" "<<numleaf;}
 			perimeter = rs->leafBladeSurface[si] / l *2;
+			 if(si ==1692){std::cout << " "<<l<<" "<<perimeter<<std::endl;}
             numleaf +=1;
         }else{perimeter = 2 * M_PI * a;}
 		
@@ -135,51 +143,74 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         }
 
         aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
-#ifdef WITH_PHOTOSYNTHESIS
-		b(i) = aB[i];
-		tripletList.push_back(Tri(i,i,cii));
-#else
+#ifdef USE_PHOTOSYNTHESIS
+		if(withEigen){ //when build with photosynthesis but do not want to use eigensolve
+			//std::cout<< "def USE_PHOTOSYNTHESIS "<<std::endl;
+			b(i) = aB[i];
+			tripletList.push_back(Tri(i,i,cii));
+		}
+		
+#endif
         aI[k] = i; aJ[k]= i; aV[k] = cii;
-#endif
         k += 1;
-#ifdef WITH_PHOTOSYNTHESIS
-		tripletList.push_back(Tri(i,j,cij));
-#else
-        aI[k] = i; aJ[k] = j;  aV[k] = cij;
+#ifdef USE_PHOTOSYNTHESIS
+		if(withEigen){ tripletList.push_back(Tri(i,j,cij));}
 #endif
+        aI[k] = i; aJ[k] = j;  aV[k] = cij;
+		
         k += 1;
 
         int ii = i;
         i = j;  j = ii; // edge ji
         aB[i] += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign
-#ifdef WITH_PHOTOSYNTHESIS
-		b(i) = aB[i];
-		tripletList.push_back(Tri(i,i,cii));
-#else
+#ifdef USE_PHOTOSYNTHESIS
+		if(withEigen){ 
+			b(i) = aB[i];
+			tripletList.push_back(Tri(i,i,cii));
+		}
+#endif
         aI[k] = i; aJ[k]= i; aV[k] = cii;
-#endif
+		
         k += 1;
+#ifdef USE_PHOTOSYNTHESIS
+		if(withEigen){ tripletList.push_back(Tri(i,j,cij));}
+#endif
         aI[k] = i; aJ[k] = j;  aV[k] = cij;
+		
         k += 1;
+		if(si ==1692){std::cout<< "endloop "<<si<<std::endl;}
     }
-#ifdef WITH_PHOTOSYNTHESIS
-	Eigen::SparseLU<Eigen::SparseMatrix<double>> lu;
-    lu.compute(mat);
-	
-	if(lu.info() != Eigen::Success){
-        std::cout << "XylemFlux::linearSystem  matrix Compute with Eigen failed: " << lu.info() << std::endl;
-		assert(false);
+	std::cout<< "end xylem::linear 1"<<std::endl;
+#ifdef USE_PHOTOSYNTHESIS
+	if(withEigen){ 
+		mat.setFromTriplets(tripletList.begin(), tripletList.end());
+		mat.makeCompressed();
+		//std::cout<< "end xylem::linear 1a"<<std::endl;
+		Eigen::SparseLU<Eigen::SparseMatrix<double>> lu;
+		//std::cout<< "end xylem::linear 1b"<<std::endl;
+		lu.compute(mat);
+		//std::cout<< "end xylem::linear 1c"<<std::endl;
+		
+		if(lu.info() != Eigen::Success){
+			std::cout << "XylemFlux::linearSystem  matrix Compute with Eigen failed: " << lu.info() << std::endl;
+			assert(false);
+		}
+		
+		//std::cout<< "end xylem::linear 1d"<<std::endl;
+		Eigen::VectorXd v2;
+		//std::cout<< "end xylem::linear 1e"<<std::endl;
+		try{ 
+			v2= lu.solve(b);
+		}catch(...){
+			assert(false&&"XylemFlux::linearSystem error when solving wat. pot. xylem with Eigen ");
+		}
+		//std::cout<< "end xylem::linear 1f"<<std::endl;
+		std::vector<double> v3(&v2[0], v2.data()+v2.cols()*v2.rows());
+		//std::cout<< "end xylem::linear 1g"<<std::endl;
+		psiXyl = v3;
 	}
-	
-    Eigen::VectorXd v2;
-	try{ 
-		v2= lu.solve(b);
-	}catch(...){
-		assert(false&&"XylemFlux::linearSystem error when solving wat. pot. xylem with Eigen ");
-	}
-    std::vector<double> v3(&v2[0], v2.data()+v2.cols()*v2.rows());
-	psiXyl = v3;
 #endif
+	//std::cout<< "end xylem::linear 2"<<std::endl;
 }
 
 /**
@@ -403,9 +434,12 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
             double tau = std::sqrt(perimeter*kr/kx); // sqrt(c) [cm-1]
             double d = std::exp(-tau*l)-std::exp(tau*l); // det
             double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
-            if(std::isnan(fExact)) {
-            	std::cout << "XylemFlux::segFluxes: nan fExact. tau " << tau << ", l " << l << ", d " << d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
-            }
+            if(!std::isfinite(fExact)) {
+            	std::cout << "XylemFlux::segFluxes: nan or Inf fExact. segIdx "<<si<<" organType "<<organType<<" subType "<<subType;
+				std::cout <<" tau " << tau << ", l " << l << ", d "<<" perimeter "<<perimeter<<" kr "<<kr;
+				std::cout<< d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
+				throw std::runtime_error("XylemFlux::segFluxes: nan or Inf fExact");
+			}
 
             double flux = fExact*(!approx)+approx*fApprox;
             fluxes[si] = flux;
@@ -491,9 +525,13 @@ std::vector<double> XylemFlux::segFluxes_detached(double simTime, const std::vec
             double d = std::exp(-tau*l)-std::exp(tau*l); // det
             double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
 
-            if(std::isnan(fExact)) {
-            	std::cout << "XylemFlux::segFluxes_detached: tau " << tau << ", l " << l << ", d " << d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
-            }
+            if(!std::isfinite(fExact)) {
+            	std::cout << "XylemFlux::segFluxes: nan or Inf fExact. segIdx "<<si<<" organType "<<organType<<" subType "<<subType;
+				std::cout <<" tau " << tau << ", l " << l << ", d "<<" radius "<<a<<" kr "<<kr;
+				std::cout<< d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
+				throw std::runtime_error("XylemFlux::segFluxes: nan or Inf fExact");
+			}
+
 
             double flux = fExact*(!approx)+approx*fApprox;
             fluxes[si] = flux;

@@ -167,7 +167,7 @@
     <parameter name="successor" number="0" type="2" percentage="1"/>
 </organ>
 
-<organ type="leaf" name="lateral1" subType="2">
+<organ type="leaf" name="lateral1" subType="1">
     <parameter name="lb" value="15" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="4" dev="0"/>

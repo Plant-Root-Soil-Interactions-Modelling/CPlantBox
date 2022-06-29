@@ -418,6 +418,27 @@ std::vector<double> MappedSegments::segLength() const {
 
 
 /**
+ * Calculates the minimum of node coordinates
+ * (e.g. minimum corner of bounding box)
+ * value not cached
+ */
+Vector3d MappedSegments::getMinBounds() {
+    Vector3d min_ = Vector3d(nodes[0].x, nodes[0].y, nodes[0].z); 
+    for (const auto& n : nodes) {
+        if (n.x < min_.x) {
+            min_.x = n.x;
+        }
+        if (n.y < min_.y) {
+            min_.y = n.y;
+        }
+        if (n.z < min_.z) {
+            min_.z = n.z;
+        }
+    }
+    return min_;
+}
+
+/**
  * Overridden, to map initial shoot segments (@see RootSystem::initialize).
  *
  * Shoot segments have per default radii = 0.1 cm, types = 0, orgtype = 2
@@ -566,14 +587,16 @@ void MappedPlant::initialize(bool verbose, bool stochastic) {
 void MappedPlant::mapSubTypes(){
 	for(int ot = 0; ot < organParam.size();ot++ )
 	{
-		std::cout<<"MappedPlant::mapSubTypes for organtype "<<ot<<std::endl;
-		int st_ = 0;
-		for(auto op : organParam[ot] )
+		std::cout<<"MappedPlant::mapSubTypes for organtype "<<ot<<" with "<<organParam[ot].size()<<" subtypes "<<std::endl;
+		int stNew = 0;
+		for(int stOld_ = 1; stOld_ < organParam[ot].size();stOld_++)//skipe stOld ==0, not realted to any organ st
 		{
-			int st = op.second->subType;
-			st2newst[std::make_tuple(ot, st)] = st_;
-			std::cout<<"old st: "<<st<<", new st: "<< st_ <<std::endl;
-			st_ ++;
+			if(organParam[ot][stOld_] != NULL) {
+				int stOld = organParam[ot][stOld_]->subType;
+				st2newst[std::make_tuple(ot, stOld)] = stNew;
+				std::cout<<"old st: "<<stOld<<", new st: "<< stNew <<std::endl;
+				stNew ++;
+			} else {std::cout<<"subType n#"<<stOld_<<" does not exist, skip "<<std::endl;}
 		}
 	}
 }
@@ -673,6 +696,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
+	std::cout <<"calcExchangeZoneCoefs ? "<<kr_length<<std::endl;
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
 	calcLeafBladeSurface();
 }
@@ -680,14 +704,19 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 void MappedPlant::calcLeafBladeSurface()
 {
+	std::cout<<"MappedPlant::calcLeafBladeSurface()"<<std::endl;
 	std::vector<int> node_leavesIdx = getNodeIds(4);//ids of leaf segments
 	leafBladeSurface = std::vector<double>(segments.size(),0.);//surface for photosynthesis carbon and water exchange
-	auto organs = this->getOrgans(4);
+	auto organs = this->getOrgans(4);//get leaves
+	bool realized = true; //use realized length and area
 	for (const auto& org : organs) {
+		std::cout<<"org->getId() "<<org->getId()<<std::endl;
 		std::vector<int> nodeIds = org->getNodeIds();//idx of seg,ent at the end of each organ
 		for(int localIdx = 1; localIdx< nodeIds.size();localIdx++){
 			int globalIdx_y = nodeIds.at(localIdx);
-			leafBladeSurface[globalIdx_y -1 ] =std::static_pointer_cast<Leaf>(org)->leafArea(localIdx-1);
+			std::cout<<"at globalIdx "<<globalIdx_y<<" local Idx "<<localIdx<<std::endl;
+			leafBladeSurface[globalIdx_y -1 ] =std::static_pointer_cast<Leaf>(org)->leafAreaAtSeg(localIdx-1, realized);
+			std::cout<<"output area "<<leafBladeSurface[globalIdx_y -1 ]<<std::endl;
 		}			
 	}
 }
@@ -698,7 +727,7 @@ void MappedPlant::calcLeafBladeSurface()
  * see @XylemFlux::kr_RootExchangeZonePerType()
  **/
 void MappedPlant::calcExchangeZoneCoefs() { //
-	exchangeZoneCoefs.resize(segments.size());
+	exchangeZoneCoefs.resize(segments.size(), -1.0);
 	auto orgs = getOrgans(-1);
 	for(auto org: orgs)
 	{
@@ -717,6 +746,14 @@ void MappedPlant::calcExchangeZoneCoefs() { //
 				exchangeZoneCoefs[globalIdx_y-1] = length_in_exchangeZone/l;
 			}
 		}
+	}
+	const int notFound = std::count(exchangeZoneCoefs.cbegin(), exchangeZoneCoefs.cend(), -1.0);
+	if(notFound != 0)
+	{
+		std::stringstream errMsg;
+		errMsg <<"MappedPlant::calcExchangeZoneCoefs(): "<<notFound<<" elements not initalized";
+		throw std::runtime_error(errMsg.str().c_str());
+		std::cout<<"notFound "<<notFound<<std::endl;
 	}
 }
 
@@ -797,4 +834,5 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
 	//std::cout<<"end getSegmentIds "<<nodeId.size()<<std::endl;
     return nodeId;
 }
+
 } // namespace

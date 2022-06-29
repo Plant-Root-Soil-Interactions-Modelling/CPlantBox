@@ -54,12 +54,13 @@ class XylemFluxPython(XylemFlux):
         if isinstance(value, (float, int)):
             n = len(self.neumann_ind)
             value = [value / n] * n
-
+        print("before linearSystem")
         if len(soil_k) > 0:
             self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
         else:
             self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
 
+        print("after linearSystem")
         Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
         Q = sparse.csc_matrix(Q)
         Q, b = self.bc_neumann(Q, self.aB, self.neumann_ind, value)  # cm3 day-1
@@ -175,7 +176,7 @@ class XylemFluxPython(XylemFlux):
                 else:
                     p_s = sxx[0]
             else:
-                p_s = self.airPressure
+                p_s = self.psi_air
         else:
             p_s = sxx[seg_ind]
 

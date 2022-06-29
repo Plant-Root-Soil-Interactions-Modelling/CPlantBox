@@ -81,6 +81,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     std::vector<double> ln_; // stores the inter-distances
 	double res;
 	bool hasLaterals = (successor.size()>0);
+	int nob_real = 0;
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;
@@ -88,7 +89,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 	if (!hasLaterals) { // no laterals
 
     	lb_ = 0;
-        la_ = std::max(lmax + p->randn()*lmaxs, dxMin); // la, and lb is ignored
+        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
 		res = la_-floor(la_ / dx)*dx;
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ la_ -= res;
@@ -99,7 +100,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     } else {
 		lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
 		la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-		int nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 			  
+		nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 			  
 		res = lb_ - floor(lb_/dx)* dx;	
 		if((res < dxMin) && (res != 0)){
 			if(res <= dxMin/2){ lb_ -= res;
@@ -234,8 +235,18 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // stem life time
 	double delayNGStart_ = std::max(delayNGStart + p->randn()*delayNGStarts, 0.);
 	double delayNGEnd_ = std::max(delayNGEnd + p->randn()*delayNGEnds, 0.);
+	if(delayNGEnd_ < delayNGStart_){
+		std::cout<<"StemRandomParameter::realize() : delayNGEnd_ < delayNGStart_ \n";
+		std::cout<<"set delayNGEnd_ = delayNGStart_ = "<<delayNGStart_<<std::endl;
+		delayNGEnd_ = delayNGStart_;
+	}
 	double delayLat_ = std::max(delayLat + p->randn()*delayLats, 0.);
-    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNGStart_, delayNGEnd_, delayLat_);
+    																						  
+	if(true){
+		std::cout<<"stem realize "<<subType<<" "<<hasLaterals<<" "<<delayLat_<<std::endl;
+		std::cout<<"ln "<<ln_.size()<<" "<<nob_real<<" "<<la<<" "<<la_<<" "<<lb<<" "<<lb_<<" "<<ln<<" "<<std::endl;
+	}	
+	return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNGStart_, delayNGEnd_, delayLat_);
 }
 
 /**

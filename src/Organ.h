@@ -69,8 +69,8 @@ public:
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     virtual  double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
-	virtual double calcAge(double length){return -1.;} ///< needed for @Organ::getOrgans
-	virtual double calcLength(double age){return -1.;}
+	virtual double calcAge(double length){throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
+	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
 	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
@@ -96,7 +96,7 @@ public:
     int getOldNumberOfNodes() const { return oldNumberOfNodes; } ///< the number of nodes before the last simulate call
 
     /* for post processing */
-    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1); ///< the organ including children in a sequential vector
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1, bool all = false); ///< the organ including children in a sequential vector
     void getOrgans(int otype, std::vector<std::shared_ptr<Organ>>& v, bool all = false); ///< the organ including children in a sequential vector
     virtual double getParameter(std::string name) const; ///< returns an organ parameter
 	int getNumberOfLaterals() const; ///< the number of emerged laterals (i.e. number of children with age>0)

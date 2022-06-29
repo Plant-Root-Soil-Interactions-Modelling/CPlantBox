@@ -3,6 +3,7 @@
 #include "Leaf.h"
 #include "Root.h"
 #include "Plant.h"
+#include <algorithm>
 
 namespace CPlantBox {
 
@@ -26,8 +27,10 @@ std::vector<int> Stem::phytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
  * @param oldNON    	the number of nodes of the previous time step (default = 0)
  */
 Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-		Matrix3d iHeading, int pni, bool moved, int oldNON)
-:Organ(id, param, alive, active, age, length, iHeading, pni, moved,  oldNON)
+		Vector3d partialIHeading_, int pni, bool moved, int oldNON)
+:Organ(id, param, alive, active, age, length, 
+Matrix3d(Vector3d(0., 0., 1.), Vector3d(0., 1., 0.), Vector3d(1., 0., 0.)), 
+pni, moved,  oldNON), partialIHeading(partialIHeading_)
 {}
 
 /**
@@ -104,6 +107,9 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p)
  */
 void Stem::simulate(double dt, bool verbose)
 {
+	if(!getOrganism()->hasRelCoord()){
+		throw std::runtime_error("organism no set in rel coord");
+	}
 	const StemSpecificParameter& p = *param(); // rename
 	firstCall = true;
 	oldNumberOfNodes = nodes.size();
@@ -218,7 +224,8 @@ void Stem::simulate(double dt, bool verbose)
 					//the end of the basal zone
 					if (((children.size()-additional_childern)<(p.ln.size()+1))&&(length>=p.lb)) 
 					{
-						for (size_t i=0; (i<p.ln.size()); i++) {
+						for (size_t i=0; (i<p.ln.size()); i++) 
+						{
 							createLateral(verbose);
 							if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2)
 							{
@@ -234,16 +241,19 @@ void Stem::simulate(double dt, bool verbose)
 						if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2){
 										leafGrow(verbose);
 							}
-						}
-						if((p.ln.size()+1)!=(children.size())){
-							std::stringstream errMsg;
-							errMsg <<"Stem::simulate(): different number of realized laterals ("<<children.size()<<
-							") and max laterals ("<<p.ln.size()+1<<")";
-							throw std::runtime_error(errMsg.str().c_str());
-						}
-						//internodal elongation, if the basal zone of the stem is created and still has to grow
-						double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
-						if((dl>0)&&(length>=p.lb)&&(maxInternodeDistance>0)){
+					}
+					if(((p.ln.size()+1)!=(children.size()))&&(length>=p.lb)){//length>=p.lb)&&
+						std::stringstream errMsg;
+						errMsg <<"Stem::simulate(): different number of realized laterals ("<<children.size()<<
+						") and max laterals ("<<p.ln.size()+1<<")";
+						throw std::runtime_error(errMsg.str().c_str());
+					}
+					
+					if(length <0){std::cout<<"error length<0 "<<length<<" "<<dl<<std::endl;assert(false);}
+						//std::cout<<"alive2"<<std::endl;
+					//internodal elongation, if the basal zone of the stem is created and still has to grow
+					double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
+					if((dl>0)&&(length>=p.lb)&&(maxInternodeDistance>0)){
 								int nn = children.at(p.ln.size())->parentNI; //node carrying the last lateral == end of branching zone
 								double currentInternodeDistance = getLength(nn) - p.lb; //actual length of branching zone
 								double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone 
@@ -299,7 +309,7 @@ void Stem::internodalGrowth(double dl, bool verbose)
 	std::vector<double> toGrow(p.ln.size());
 	double dl_;
 					   
-	const int ln_0 = count(p.ln.cbegin(), p.ln.cend(), 0);//number of laterals wich grow on smae branching point as the one before
+	const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0);//number of laterals wich grow on smae branching point as the one before
 	if(p.nodalGrowth==0){//sequentiall growth
 		toGrow[0] = dl;
 		std::fill(toGrow.begin()+1,toGrow.end(),0) ;
@@ -321,7 +331,9 @@ void Stem::internodalGrowth(double dl, bool verbose)
 		if(i< p.ln.size()){
 			toGrow[i] +=  toGrow[i-1] - dl_ ;
 		}
-		if(dl_ > 0){createSegments(dl_,verbose, i ); dl -= dl_;}
+		if(dl_ > 0){
+			createSegments(dl_,verbose, i ); dl -= dl_;
+			}
 		i++;
 		i_++;//do the loop at most twice
 		if(i>p.ln.size()){i=1;}
@@ -396,13 +408,16 @@ double Stem::calcLength(double age)
 
 /**
  * Analytical age of the stem at a given length
- *
+ * no scaling of organ growth , so can return age directly
+ * otherwise cannot compute exact age between delayNGStart and delayNGEnd
  * @param length   length of the stem [cm]
  */
 double Stem::calcAge(double length)
 {
 	assert(length>=0 && "Stem::calcAge() negative root age");
-	return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
+	double age__ = getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
+	if(age__ >param()->delayNGStart ){age__ += (param()->delayNGEnd - param()->delayNGStart);}
+	return age__;
 }
 
 /**
@@ -418,6 +433,11 @@ void Stem::createLateral(bool silence)
 	double delay = sp->delayLat * children.size();	//time the lateral has to wait before growing				  
 	Matrix3d h = Matrix3d(); //not needed anymore
 	int lnf = getStemRandomParameter()->lnf;
+	std::cout<<" Stem::createLateral id:"<<getId()<<" delaylat:"<<sp->delayLat;
+	std::cout<<" kidsize:"<< children.size()<<" ageln:"<<ageLN;
+	std::cout<<" delaytot:"<<delay <<" age:"<<age<<" length:"<<length;
+	std::cout<<" non:"<<nodes.size()<<std::endl;
+	
 	if (lnf == 2&& lt !=2) {
 		auto lateral = std::make_shared<Stem>(plant.lock(), lt, h, delay/2, shared_from_this(),  nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
@@ -470,8 +490,13 @@ void Stem::leafGrow(bool silence)
 	double ageLN = this->calcAge(sp->lb); // age of stem when lateral node is created
 	double delay = sp->delayLat * children.size();	//time the lateral has to wait before growing	
 	Matrix3d h = Matrix3d(); // current heading in absolute coordinates TODO (revise??)
-	int lt =2;
+	int lt =1;
 	int lnf = getStemRandomParameter()->lnf;
+	std::cout<<" Stem::leafGrow id:"<<getId()<<" delaylat:"<<sp->delayLat;
+	std::cout<<" kidsize:"<< children.size()<<" ageln:"<<ageLN;
+	std::cout<<" delaytot:"<<delay <<" age:"<<age<<" length:"<<length;
+	std::cout<<" non:"<<nodes.size()<<std::endl;
+	
 	if (lnf==2) {
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay/2, shared_from_this(), nodes.size() - 1);
 		//lateral->setRelativeOrigin(nodes.back());
@@ -591,13 +616,19 @@ Vector3d Stem::getIncrement(const Vector3d& p, double sdx, int n)
  */
 Vector3d Stem::heading(int n ) const
 {
+	//std::cout<<"heading(int n) "<<n<<std::endl;
 	if(n<0){n=nodes.size()-1 ;}
+	//std::cout<<"		"<<n<<std::endl;
 	if ((nodes.size()>1)&&(n>0)) {
 		n = std::min(int(nodes.size()),n);
+	//std::cout<<"		"<<n<<std::endl;
 		Vector3d h = getNode(n).minus(getNode(n-1));
 		h.normalize();
+	//std::cout<<"		"<<h.toString()<<std::endl;
 		return h;
 	} else {
+		
+	//std::cout<<" to getiHeading() "<<std::endl;
 		return getiHeading();
 	}
 }
@@ -608,6 +639,8 @@ Vector3d Stem::heading(int n ) const
 Vector3d Stem::getiHeading()  const
 {	
 	Matrix3d iHeading;
+	//std::cout<<"in iheading "<<this->organType()<<" "<<this->getId()<<std::endl;
+	//std::cout<<getParent()->organType()<<" "<<(getParent()->organType()==Organism::ot_seed) <<std::endl;
 	if (getParent()->organType()==Organism::ot_seed) { // from seed?
 		iHeading = Matrix3d(Vector3d(0, 0, 1), Vector3d(0, 1, 0), Vector3d(1, 0, 0));
 	}else{
@@ -732,23 +765,33 @@ double Stem::getLength(bool realized) const
 void Stem::rel2abs() 
 {
 	
+	//std::cout<<"Stem::rel2abs() "<<nodes[0].toString()<<std::endl;
 	nodes[0] = getOrigin(); //recompute postiion of the first node
+	//std::cout<<"Stem::rel2abs(), after getOrigin"<<std::endl;
 	
 	for(size_t i=1; i<nodes.size(); i++){
+		
+	//std::cout<<"Stem::rel2abs(), in nodes "<<i<<std::endl;
 		Vector3d newdx = nodes[i];
+	//std::cout<<"	"<<newdx.toString()<<std::endl;
 		if((i>=oldNumberOfNodes)|| active){//if we have a new node or have nodal growth, need to update the tropism effect
 			double sdx = nodes[i].length();
+		//std::cout<<"	"<<sdx<<std::endl;
 			newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
+	//std::cout<<"	"<<newdx.toString()<<std::endl;
 		}
 		nodes[i] = nodes[i-1].plus(newdx); //replace relative by absolute position
+	//std::cout<<"	"<<nodes[i].toString()<<std::endl;
 		
 		
 	}
 	//if carry children, update their pos
 	
+	//std::cout<<"Stem::rel2abs(), to the kids "<<children.size()<<std::endl;
 	for(size_t i=0; i<children.size(); i++){
 		(children[i])->rel2abs();
 	}
+	//std::cout<<"Stem::rel2abs(), done"<<std::endl;
 	
 }
 
@@ -757,10 +800,12 @@ void Stem::rel2abs()
  */
 void Stem::abs2rel()
 {
+	//std::cout<<"Stem::abs2rel()"<<std::endl;
 	for (int j = nodes.size(); j>1; j--) {
 		nodes[j-1] = nodes.at(j-1).minus(nodes.at(j-2));
 	}
 	nodes[0] = Vector3d(0.,0.,0.);
+	//std::cout<<"Stem::abs2rel(), children.size() "<<children.size()<<std::endl;
 	for(size_t i=0; i<children.size(); i++){
 		(children[i])->abs2rel();
 	}//if carry children, update their pos

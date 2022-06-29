@@ -304,22 +304,6 @@ public:
 
 };
 
-/*
-* more or less copy of algorithm::count to not have to import library
-*/
-template<class InputIt, class T>
-int count(InputIt first, InputIt last, const T& value)
-{
-    int ret = 0;
-    for (; first != last; ++first) {
-        if (*first == value) {
-            ret++;
-        }
-    }
-    return ret;
-}
-
-
 
 } // end namespace CPlantBox
 

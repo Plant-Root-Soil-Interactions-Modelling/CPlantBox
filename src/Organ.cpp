@@ -263,14 +263,15 @@ double Organ::dxMin() const
  * Returns the organs as sequential list, copies only organs with more than one node.
  *
  * @param ot        the expected organ type, where -1 denotes all organ types (default).
+ * @param all       get also the organs with only one node? default: false. Sometimes true for carbon-limited growth
  *
  * @return A sequential list of organs. If there is less than one node,
  * or another organ type is expected, an empty vector is returned.
  */
-std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot)
+std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot, bool all)
 {
 	auto v = std::vector<std::shared_ptr<Organ>> ();
-	this->getOrgans(ot, v);
+	this->getOrgans(ot, v, all);
 	return v;
 }
 
@@ -284,8 +285,11 @@ std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot)
  */
 void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v, bool all)
 {
-	bool isBulb = ((this->organType() == Organism::ot_stem)&&(this->getParameter("subType") == 2));//do not count leaf bulb
-	if ((this->nodes.size()>1 || all)&&(!isBulb) &&(this->getAge()>0) &&( this->organType() != Organism::ot_seed)) {
+	bool notBulb = !((this->organType() == Organism::ot_stem)&&(this->getParameter("subType") == 2));//do not count leaf bulb
+	//might have age <0 and node.size()> 1 when adding organ manuelly @see test_organ.py
+	bool forCarbon_limitedGrowth = (all && (this->getAge()>0));//when ask for "all" organs which have age > 0 even if nodes.size() == 1
+	bool notSeed = ( this->organType() != Organism::ot_seed);
+	if ((this->nodes.size()>1 || forCarbon_limitedGrowth)&& notBulb &&notSeed) {
 		if ((ot<0) || (ot==this->organType())) {
 			v.push_back(shared_from_this());
 		}

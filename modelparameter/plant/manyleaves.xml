@@ -104,33 +104,8 @@
     <parameter name="successor" number="0" type="2" percentage="1"/>
 </organ>
 
-<organ type="stem" name="bulb" subType="2">
-    <parameter name="lb" value="0" dev="0"/>
-    <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
-    <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="0" dev="0"/>
-    <parameter name="r" value="2" dev="0"/>
-    <parameter name="a" value="0.50000000000000001" dev="0"/>
-    <parameter name="RotBeta" value="0"/>
-    <parameter name="BetaDev" value="0"/>
-    <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="0"/>
-    <parameter name="tropismN" value="1"/>
-    <parameter name="tropismS" value="0"/>
-    <parameter name="dx" value="0.25"/>
-    <parameter name="dxMin" value="0.2"/>
-    <parameter name="theta" value="0.2" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="3"/>
 
-</organ>
-
-
-
-<organ type="leaf" name="lateral1" subType="2">
+<organ type="leaf" name="lateral1" subType="1">
     <parameter name="lb" value="2" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>

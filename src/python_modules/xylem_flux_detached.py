@@ -101,7 +101,7 @@ class XylemFluxDetached(XylemFluxPython):
                 else:
                     p_s = sxx[0]
             else:
-                p_s = self.airPressure
+                p_s = self.psi_air
         else:
             p_s = sxx[seg_ind]
         a = self.rs.radii[seg_ind]  # radius

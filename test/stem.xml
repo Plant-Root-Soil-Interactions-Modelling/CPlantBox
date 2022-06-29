@@ -15,7 +15,11 @@
     <!--RevRotation of the stem-->
     <parameter name="a" value="0.1"/>
     <!--Stem radius [cm]-->
-    <parameter name="delayNG" value="0"/>
+    <parameter name="delayLat" value="0"/>
+    <!--delay between latteral creation and start of nodal growth-->
+    <parameter name="delayNGEnd" value="0"/>
+    <!--delay between stem creation and start of nodal growth-->
+    <parameter name="delayNGStart" value="0"/>
     <!--delay between stem creation and start of nodal growth-->
     <parameter name="dx" value="0.25"/>
     <!--Axial resolution [cm] (maximal segment size)-->

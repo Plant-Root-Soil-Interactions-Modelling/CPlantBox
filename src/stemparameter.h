@@ -29,7 +29,8 @@ public:
     StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt,
 	bool laterals= false, int nodalGrowth = 0, double delayNGStart = 0.,double delayNGEnd = 0., double delayLat = 0.):
         OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), 
-		laterals(laterals), nodalGrowth(nodalGrowth), delayNGStart(delayNGStart), delayNGEnd(delayNGEnd), delayLat(delayLat) { } ///< Constructor setting all parameters
+		laterals(laterals), nodalGrowth(nodalGrowth), delayNGStart(delayNGStart), delayNGEnd(delayNGEnd), delayLat(delayLat) 
+		{ std::cout<<"delayLat created "<<delayLat<<" "<< type <<std::endl;} ///< Constructor setting all parameters
 
     /*
      * StemBox parameters per single stem

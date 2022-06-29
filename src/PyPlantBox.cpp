@@ -33,6 +33,7 @@ namespace py = pybind11;
 #include "ExudationModel.h"
 
 #include "sdf_rs.h" // todo to revise ...
+#include "Photosynthesis.h"
 
 namespace CPlantBox {
 
@@ -295,7 +296,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("hasMoved",&Organ::hasMoved)
             .def("getOldNumberOfNodes",&Organ::getOldNumberOfNodes)
 
-            .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype)) &Organ::getOrgans, py::arg("ot")=-1) //overloads, default
+            .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype, bool all)) &Organ::getOrgans, py::arg("ot")=-1, py::arg("all")=false) //overloads, default
             .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>>& v, bool all)) &Organ::getOrgans)
             .def("getParameter",&Organ::getParameter)
             .def("__str__",&Organ::toString)
@@ -753,18 +754,22 @@ PYBIND11_MODULE(plantbox, m) {
             .def("param", &Leaf::param)
             .def("leafArea", &Leaf::leafArea, py::arg("realized")=false)
             .def("leafCenter", &Leaf::leafCenter, py::arg("realized")=false)
-            .def("leafLength", &Leaf::leafLength, py::arg("realized")=false);
+            .def("leafLength", &Leaf::leafLength, py::arg("realized")=false)
+            .def("abs2rel", &Leaf::abs2rel)
+            .def("rel2abs", &Leaf::rel2abs);
     /**
      * Stem.h
      */
     py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
            .def(py::init<std::shared_ptr<Organism>, int, Matrix3d, double, std::shared_ptr<Organ>, int>())
-           .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
+           .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
            .def("calcCreationTime", &Stem::calcCreationTime)
            .def("calcLength", &Stem::calcLength)
            .def("calcAge", &Stem::calcAge)
            .def("getStemRandomParameter", &Stem::getStemRandomParameter)
-           .def("param", &Stem::param);
+           .def("param", &Stem::param)
+            .def("abs2rel", &Stem::abs2rel)
+            .def("rel2abs", &Stem::rel2abs);
     /*
      * RootSystem.h
      */
@@ -853,7 +858,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
-            		py::arg("soil_k") = std::vector<double>())
+            		py::arg("soil_k") = std::vector<double>(),py::arg("withEigen") = false)
             .def("linearSystem_detached",&XylemFlux::linearSystem_detached, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
                     py::arg("soil_k") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
@@ -895,7 +900,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
-            .def("write", &Plant::write);
+            .def("write", &Plant::write)
+            .def("setRelCoord", &Plant::setRelCoord)
+            .def("abs2rel", &Plant::abs2rel)
+            .def("rel2abs", &Plant::rel2abs);
 
 			
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
@@ -907,7 +915,56 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("plant", &MappedPlant::plant)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
-
+/*
+     * Photosynthesis.h
+     */
+    py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit") ,  py::arg("ciInit"))
+			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("sim_time_")=1.0 , 
+					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
+					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(), 
+					py::arg("doLog_")=false, py::arg("verbose_")=true, py::arg("RH_") = 0.5, py::arg("TairC_") = 25)
+			
+            .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
+            .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
+            .def_readwrite("psiMax", &Photosynthesis::psiMax)
+            .def_readwrite("psiMin", &Photosynthesis::psiMin)
+            .def_readwrite("limMaxErr", &Photosynthesis::limMaxErr)
+            .def_readwrite("An", &Photosynthesis::An)
+            .def_readwrite("Vc", &Photosynthesis::Vc)
+            .def_readwrite("Vj", &Photosynthesis::Vj)
+            .def_readwrite("fw", &Photosynthesis::fw)
+            .def_readwrite("ci", &Photosynthesis::ci)
+            .def_readwrite("Rd", &Photosynthesis::Rd)
+            .def_readwrite("gco2", &Photosynthesis::gco2)
+            .def_readwrite("es", &Photosynthesis::es)
+            .def_readwrite("ea", &Photosynthesis::ea)
+            .def_readwrite("Qlight", &Photosynthesis::Qlight)
+            .def_readwrite("ci", &Photosynthesis::ci)
+            .def_readwrite("Jw", &Photosynthesis::Jw)
+            .def_readwrite("Ev", &Photosynthesis::Ev)
+            .def_readwrite("plant", &Photosynthesis::plant)
+            .def_readwrite("Ag4Phloem", &Photosynthesis::Ag4Phloem)
+            .def_readwrite("minLoop", &Photosynthesis::minLoop)
+            .def_readwrite("maxLoop", &Photosynthesis::maxLoop)
+            .def_readwrite("Patm", &Photosynthesis::Patm)
+            .def_readwrite("cs", &Photosynthesis::cs)
+            .def_readwrite("TleafK", &Photosynthesis::TleafK)
+            .def_readwrite("TairC", &Photosynthesis::TairC)
+            .def_readwrite("Chl", &Photosynthesis::Chl)
+            .def_readwrite("g0", &Photosynthesis::g0)
+            .def_readwrite("theta", &Photosynthesis::theta)
+            .def_readwrite("gamma0", &Photosynthesis::gamma0)
+            .def_readwrite("gamma1", &Photosynthesis::gamma1)
+            .def_readwrite("gamma2", &Photosynthesis::gamma2)
+            .def_readwrite("alpha", &Photosynthesis::alpha)
+            .def_readwrite("a1", &Photosynthesis::a1)
+            .def_readwrite("a3", &Photosynthesis::a3)
+            .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
+            .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
+            .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
+            .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
+            .def_readwrite("k_stomatas_old", &Photosynthesis::k_stomatas_old);
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)
             .value("gravi", Plant::TropismTypes::tt_gravi)

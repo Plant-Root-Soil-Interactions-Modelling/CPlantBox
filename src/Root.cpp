@@ -85,7 +85,7 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
-    firstCall = true;
+	firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
 
@@ -160,7 +160,7 @@ void Root::simulate(double dt, bool verbose)
 						double s = p.lb; // summed length
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
-                            if (length<=s) {
+                            if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
                                 if (i==children.size()) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
@@ -170,9 +170,11 @@ void Root::simulate(double dt, bool verbose)
                                     dl=0;
                                 } else { // grow over inter-lateral distance i
                                     double ddx = s-length;
+									if(ddx>0){
 										createSegments(ddx,dt_,verbose);
 										dl-=ddx;
 										length=s;
+									}
 //									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
 //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
 //									} // this could happen, if the tip ends in this section
@@ -336,7 +338,7 @@ void Root::createSegments(double l, double dt, bool verbose)
                 // Vector3d newdxv = getIncrement(n2, sdx);
                 h.normalize();
                 nodes[nn-1] = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
-                double et = this->calcCreationTime(getLength(true)+shiftl, dt);
+                double et = this->calcCreationTime(getLength(false)+shiftl, dt);
                 nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
@@ -372,8 +374,9 @@ void Root::createSegments(double l, double dt, bool verbose)
         sl += sdx;
         Vector3d newdx = getIncrement(nodes.back(), sdx);
         Vector3d newnode = Vector3d(nodes.back().plus(newdx));
-        double et = this->calcCreationTime(getLength(true)+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
-        // in case of impeded growth the node emergence time is not exact anymore,
+        double et = this->calcCreationTime(getLength(false)+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
+        std::cout<<"what is et? "<<et<<" "<<age<<" "<<dt<<" "<<nodes.size()<<" "<<getOrganism()->getSimTime()<<std::endl;
+		// in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
         addNode(newnode, et);
     }

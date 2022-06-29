@@ -69,7 +69,7 @@ public:
 	///< Auxiliary function: Applies angles a and b and goes dx [cm] into the new direction
 	double ageSwitch;			  
 
-	int alphaN = 20;//stop protecting in case want to increase number of trials
+	int alphaN = 20;//stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
 	int betaN = 5;//stop protecting in case want to increase number of trials
 protected:
 

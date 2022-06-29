@@ -26,7 +26,7 @@ public:
     static std::vector<int> phytomerId;
 
     Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-    		Matrix3d iHeading, int pni, bool moved = true, int oldNON = 0);
+    		Vector3d partialIHeading_, int pni, bool moved = true, int oldNON = 0);
     Stem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
     virtual ~Stem() { };
 

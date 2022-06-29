@@ -270,13 +270,13 @@ double Leaf::leafArea(bool realized) const
 		{
 			case LeafRandomParameter::shape_cuboid:{ 
 				double Width_blade = getParameter("Width_blade") ;
-				double Width_petiole = getParameter("Width_petiole") ;
+				//double Width_petiole = getParameter("Width_petiole") ;
 				double surface_;
 				if (length_ <= param()->lb) {
-					surface_ =  Width_petiole * length_ ; 
+					surface_ =  0;// Width_petiole * length_ ; 
 				} else {
 					//surface of basal zone
-					double surfacePetiole = Width_petiole *param()->lb  ;
+					double surfacePetiole = 0;//Width_petiole *param()->lb  ;
 					//surface rest of leaf
 											  
 					length_ -= param()->lb;
@@ -308,12 +308,14 @@ double Leaf::leafArea(bool realized) const
  * upper side only. If used for photosynthesis, 
  * with C3 plants (stomata on upper + lower side) need to do * 2
  * see @XylemFlux::segFluxes and @XylemFlux::linearSystem 
- * @param localSegId	index for which evaluate area
+ * @param localSegId	index for which evaluate area == nodey_localid + 1
  * @param realized		use realized (true) or theoretical (false) length and area (default = false)
  * @return 	leaf blade area at segment n°localSegId [cm2]
  */
 double Leaf::leafAreaAtSeg(int localSegId, bool realized)
 {
+	std::cout<<"Leaf::leafAreaAtSeg "<<localSegId <<" "<< realized<<" "<< param()->laterals<<std::endl;
+	
 	double surface_ = 0.;
 	if (param()->laterals) {
 		return 0.;
@@ -325,22 +327,19 @@ double Leaf::leafAreaAtSeg(int localSegId, bool realized)
 		double length_ = v.length();
 		double lengthAt_x = getLength(localSegId);
 		double lengthAt_y = getLength(localSegId + 1);
-		double lengthInPetiole = std::min(length_,std::max(lengthAt_y - std::max(param()->lb - lengthAt_x,0.), 0.));
+		double lengthInPetiole = std::min(length_,std::max(param()->lb - lengthAt_x,0.));
 		double lengthInBlade = std::max(length_ - lengthInPetiole, 0.);
+		std::cout<<"shape id "<<getLeafRandomParameter()->shapeType<<" "<<length_<<" "<<lengthAt_x<<" "<<lengthAt_y<<std::endl;
+		std::cout<<"lengthInPetiole "<<param()->lb<<" "<<lengthInPetiole<<" "<<lengthInBlade<<std::endl;
+		assert(((lengthInBlade+lengthInPetiole)==length_)&&"leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
 		switch(shapeType) 
 		{
 			case LeafRandomParameter::shape_cuboid:{ 
 				double Width_blade = getParameter("Width_blade") ;
-				double Width_petiole = getParameter("Width_petiole") ;
-				if (lengthAt_y <= param()->lb) {
-					surface_ =  Width_petiole * length_ ; 
-				} else {
-					//surface of basal zone
-					double surfacePetiole = Width_petiole * lengthInPetiole  ;
-					double surfaceBlade =  Width_blade * lengthInBlade ;
-					surface_ =  surfaceBlade + surfacePetiole;				
-				}
-			
+				//double Width_petiole = getParameter("Width_petiole") ;
+				double surfaceBlade =  Width_blade * lengthInBlade ;
+				surface_ =  surfaceBlade ;//+ surfacePetiole;				
+				std::cout<<"LeafRandomParameter::shape_cuboid: "<<Width_blade<<" "<<surface_<<std::endl;
 			} break;
 			case LeafRandomParameter::shape_cylinder:{
 				// divide by two to get only upper side of leaf
@@ -756,7 +755,7 @@ void Leaf::createSegments(double l, bool verbose)
 				double sdx = olddx + shiftl; // length of new segment
 				h.normalize();  
 				nodes[nn-1] = h.times(sdx);
-				double et = this->calcCreationTime(getLength(true)+shiftl);
+				double et = this->calcCreationTime(getLength(false)+shiftl);
 				nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
 				l -= shiftl;
 				if (l<=0) { // ==0 should be enough
@@ -785,7 +784,7 @@ void Leaf::createSegments(double l, bool verbose)
 		}
 		sl += sdx;
 		Vector3d newnode = Vector3d(sdx, 0., 0.);//set relative position (@see rel2abs for addition of tropism)
-		double et = this->calcCreationTime(getLength(true)+shiftl+sl);
+		double et = this->calcCreationTime(getLength(false)+shiftl+sl);
 		// in case of impeded growth the node emergence time is not exact anymore,
 		// but might break down to temporal resolution
 		addNode(newnode, et);

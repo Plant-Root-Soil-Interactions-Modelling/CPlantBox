@@ -71,6 +71,7 @@ public:
 	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)
 	std::vector<double> exchangeZoneCoefs; 
 	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
+	Vector3d getMinBounds();		
 
 protected:
 
@@ -131,11 +132,11 @@ public:
     virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
     virtual double randn() override {if(stochastic){return std::min(std::max(ND(gen),-1.),1.);} else {return 0.5; } }  ///< normally distributed random number (0,1)
 	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
-	//for photosynthesis and phloem module:	
-	void calcExchangeZoneCoefs();	// needed or directly in simulate?		   
-	void calcLeafBladeSurface();// needed or directly in simulate?								 
+	//for photosynthesis and phloem module:	   
+	void calcLeafBladeSurface();// needed or directly in simulate?				
+	void calcExchangeZoneCoefs();					 
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
-	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module					
+	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module
 };
 
 }
