@@ -9,11 +9,11 @@ namespace CPlantBox {
 
 
 XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs)
-            {
+                        {
     size_t length_leaf = std::count(rs->organTypes.begin(), rs->organTypes.end(), 4);
     gs.resize(length_leaf);
     pg.resize(length_leaf);
-            }
+                        }
 
 
 /**
@@ -49,7 +49,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         double psi_s;
         int organType = rs->organTypes[si];
         if (cells) { // soil matric potential given per cell
-            int cellIndex = rs->seg2cell[j-1];
+            int cellIndex = rs->seg2cell[si];
             if (cellIndex>=0) {
                 if(sx.size()>1) {
                     psi_s = sx.at(cellIndex);
@@ -166,7 +166,7 @@ void XylemFlux::linearSystem_detached(double simTime, const std::vector<double>&
         double psi_s;
         int organType = rs->organTypes[si];
         if (cells) { // soil matric potential given per cell
-            int cellIndex = rs->seg2cell[j-1];
+            int cellIndex = rs->seg2cell[si];
             if (cellIndex>=0) {
                 if(sx.size()>1) {
                     psi_s = sx.at(cellIndex);
@@ -287,7 +287,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 
         double psi_s;
         if (cells) { // soil matric potential given per cell
-            int cellIndex = rs->seg2cell[j-1];
+            int cellIndex = rs->seg2cell[si];
             if (cellIndex>=0) {
                 if(sx.size()>1) {
                     psi_s = sx.at(cellIndex);
@@ -347,7 +347,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         }
 
     }
-	return fluxes;
+    return fluxes;
 }
 
 /**
@@ -377,7 +377,7 @@ std::vector<double> XylemFlux::segFluxes_detached(double simTime, const std::vec
 
         double psi_s;
         if (cells) { // soil matric potential given per cell
-            int cellIndex = rs->seg2cell[j-1];
+            int cellIndex = rs->seg2cell[si];
             if (cellIndex>=0) {
                 if(sx.size()>1) {
                     psi_s = sx.at(cellIndex);
@@ -431,7 +431,7 @@ std::vector<double> XylemFlux::segFluxes_detached(double simTime, const std::vec
             double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
 
             if(std::isnan(fExact)) {
-            	std::cout << "XylemFlux::segFluxes_detached: tau " << tau << ", l " << l << ", d " << d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
+                std::cout << "XylemFlux::segFluxes_detached: tau " << tau << ", l " << l << ", d " << d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
             }
 
             double flux = fExact*(!approx)+approx*fApprox;
@@ -705,5 +705,72 @@ void XylemFlux::setKxValues(std::vector<double> values) {
     kx_f = std::bind(&XylemFlux::kx_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     std::cout << "Kx is given per segment\n";
 }
+
+/**
+ * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
+ */
+std::vector<double> XylemFlux::getEffKr(double simtime) {
+    std::vector<double> kr = std::vector<double>(rs->segments.size());
+    for (int si = 0; si<rs->segments.size(); si++) {
+        int i = rs->segments[si].x;
+        int j = rs->segments[si].y;
+        Vector3d n1 = rs->nodes[i];
+        Vector3d n2 = rs->nodes[j];
+        double l = (n2.minus(n1)).length();
+        double a = rs->radii[si];
+        int organType = rs->organTypes[si];
+        double age = simtime - rs->nodeCTs[j];
+        int subType = rs->subTypes[si];
+        try {
+            kr[si] = 2.*M_PI *a*l*kr_f(si, age, subType, organType, 0);
+        } catch(...) {
+            std::cout << "\n XylemFlux::segFluxes: radial conductivities failed" << std::flush;
+            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
+        }
+    }
+    return kr;
+}
+
+/**
+ * Returns radial conductivities per segment for a specific simulation time
+ */
+std::vector<double> XylemFlux::getKx(double simtime) {
+    std::vector<double> kx = std::vector<double>(rs->segments.size());
+    for (int si = 0; si<rs->segments.size(); si++) {
+        int j = rs->segments[si].y;
+        int organType = rs->organTypes[si];
+        double age = simtime - rs->nodeCTs[j];
+        int subType = rs->subTypes[si];
+        try {
+            kx[si] = kx_f(si, age, subType, organType);
+        } catch(...) {
+            std::cout << "\n XylemFlux::segFluxes: axial conductivities failed" << std::flush;
+            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
+        }
+    }
+    return kx;
+}
+
+/**
+ * Returns soil matric potential per segment, for a given soil sx connected gy the mapper rs->seg2cell
+ */
+std::vector<double> XylemFlux::getHs(const std::vector<double>& sx) {
+    std::vector<double> hs = std::vector<double>(rs->segments.size());
+    for (int si = 0; si<rs->segments.size(); si++) {
+        int cellIndex = rs->seg2cell[si];
+        if (cellIndex>=0) {
+            if(sx.size()>1) {
+                hs[si] = sx.at(cellIndex);
+            } else {
+                hs[si] = sx.at(0);
+            }
+        } else {
+            hs[si] = airPressure;
+        }
+    }
+    return hs;
+}
+
+
 
 } // namespace

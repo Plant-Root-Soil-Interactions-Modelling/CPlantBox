@@ -59,6 +59,10 @@ public:
     void setKrValues(std::vector<double> values); ///< one value per segment
     void setKxValues(std::vector<double> values); ///< one value per segment
 
+    std::vector<double> getEffKr(double simtime);
+    std::vector<double> getKx(double simtime);
+    std::vector<double> getHs(const std::vector<double>& sx);
+
     std::function<double(int, double,int, int, int)> kr_f = [](int si, double age, int type, int orgtype, int numleaf) { return 0.; };
     std::function<double(int, double,int,int)> kx_f = [](int si, double age, int type, int orgtype) { return 1.; };
 

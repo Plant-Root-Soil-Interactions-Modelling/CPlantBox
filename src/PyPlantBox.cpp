@@ -839,6 +839,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKxTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKxTables))
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)
+            .def("getEffKr", &XylemFlux::getEffKr)
+            .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>())
             .def("linearSystem_detached",&XylemFlux::linearSystem_detached, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
@@ -885,10 +887,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def("createGrowthFunction", &Plant::createGrowthFunction)
             .def("write", &Plant::write);
 
-			
-	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
-			.def(py::init<double>(),  py::arg("seednum")=0)	
-			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
+
+	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")
+			.def(py::init<double>(),  py::arg("seednum")=0)
+			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)
 
             .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)

@@ -9,18 +9,23 @@ import matplotlib.pyplot as plt
 import plantbox as pb
 from plantbox import XylemFlux
 import rsml_reader as rsml
+from hamcrest.core.core.isnone import none
 
 
 def sinusoidal(t):
-    """ sinusoidal function (used for transpiration) """
+    """ sinusoidal function (used for transpiration) (integral over one day is 1)"""
     return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.
 
+# def sinusoidal2(t):
+#     """ sinusoidal from 6:00 - 18:00, 0 otherwise """
+#     t_ = t - np.floor(t) - 6 / 24  # transfrom single day - 6h
+#     ind_ = np.logical_and(t_ > 0, t_ < 0.5)  # zero otherwise
+#     return np.multiply(ind_, sinusoidal(2 * t_))  # stretch t_ to a day period for daily sinusoidal
 
-def sinusoidal2(t):
-    """ sinusoidal from 6:00 - 18:00, 0 otherwise """
-    t_ = t - np.floor(t) - 6 / 24  # transfrom single day - 6h
-    ind_ = np.logical_and(t_ > 0, t_ < 0.5)  # zero otherwise
-    return np.multiply(ind_, sinusoidal(2 * t_))  # stretch t_ to a day period for daily sinusoidal
+
+def sinusoidal2(t, dt):
+    """ sinusoidal functgion from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
+    return np.maximum(0., np.pi * (np.cos(2 * np.pi * (t - 0.5)) + np.cos(2 * np.pi * ((t + dt) - 0.5))) / 2)
 
 
 class XylemFluxPython(XylemFlux):
@@ -46,6 +51,45 @@ class XylemFluxPython(XylemFlux):
         self.dirichlet_ind = [0]  # node indices for Dirichlet flux
 
         self.last = "none"
+        self.Q = None  # store linear system
+        self.b = None
+
+    def get_incidence_matrix(self):
+        """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
+        """
+        segs = self.rs.segments
+        sn = len(segs)
+        nn = len(self.rs.nodes)
+        ii_, jj_, vv_ = [], [], []
+        for i, s in enumerate(segs):  # build incidence matrix from edges
+            ii_.append(i)
+            ii_.append(i)
+            jj_.append(segs[i].x)
+            jj_.append(segs[i].y)
+            vv_.append(-1.)
+            vv_.append(1.)
+        return sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (sn, nn))
+
+    def linearSystem_doussan(self, sim_time, sxx, cells = True, soil_k = []):
+        """ soil_k TODO
+        """
+        print("building doussan matrix")
+        IM = self.get_incidence_matrix()
+        IMt = IM.transpose()
+        Kx = sparse.diags(self.getKx(sim_time))
+        kr = np.zeros((IM.shape[1],))
+        kr[1:] = np.array(self.getEffKr(sim_time))
+        Kr = sparse.diags(kr)
+        A = IMt @ Kx @ IM + Kr
+        (self.aI, self.aJ, self.aV) = sparse.find(A)
+        if cells:
+            hs = np.zeros((IM.shape[1],))
+            hs[1:] = self.getKs(sim_time)
+            self.aB = Kr * hs
+        else:
+            hs = np.zeros((IM.shape[1],))
+            hs[1:] = sxx
+            self.aB = Kr * hs
 
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
@@ -57,25 +101,25 @@ class XylemFluxPython(XylemFlux):
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node         
          """
-        # start = timeit.default_timer()
-        if isinstance(value, (float, int)):
-            n = len(self.neumann_ind)
-            value = [value / n] * n
+        if not self.last == "neumann":  # rebuild matrix only if method changed
+            # start = timeit.default_timer()
+            if isinstance(value, (float, int)):
+                n = len(self.neumann_ind)
+                value = [value / n] * n
 
-        if len(soil_k) > 0:
-            self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
-        else:
-            self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
+            if len(soil_k) > 0:
+                self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
+            else:
+                self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
 
-        Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-        Q = sparse.csc_matrix(Q)
-        Q, b = self.bc_neumann(Q, self.aB, self.neumann_ind, value)  # cm3 day-1
+            self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
+            self.Q = sparse.csc_matrix(self.Q)
+            self.Q, self.b = self.bc_neumann(self.Q, self.aB, self.neumann_ind, value)  # cm3 day-1
+            # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
 
-        # plt.spy(Q)
+        # plt.spy(self.Q)
         # plt.show()
-
-        x = LA.spsolve(Q, b, use_umfpack = True)  # direct
-        # print ("linear system assembled and solved in", timeit.default_timer() - start, " s")
+        x = LA.spsolve(self.Q, self.b, use_umfpack = True)  # direct
         return x
 
     def solve_dirichlet(self, sim_time:float, value:list, sxc:float, sxx, cells:bool, soil_k = []):
@@ -89,19 +133,20 @@ class XylemFluxPython(XylemFlux):
                                       conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node
          """
-        if isinstance(value, (float, int)):
-            n = len(self.dirichlet_ind)
-            value = [value] * n
+        if not self.last == "dirichlet":  # rebuild matrix only if method changed
+            if isinstance(value, (float, int)):
+                n = len(self.dirichlet_ind)
+                value = [value] * n
 
-        if len(soil_k) > 0:
-            self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
-        else:
-            self.linearSystem(sim_time, sxx, cells)
+            if len(soil_k) > 0:
+                self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
+            else:
+                self.linearSystem(sim_time, sxx, cells)
 
-        Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-        Q = sparse.csc_matrix(Q)
-        Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, value)
-        x = LA.spsolve(Q, b, use_umfpack = True)
+            self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
+            self.Q = sparse.csc_matrix(self.Q)
+            self.Q, self.b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, value)
+        x = LA.spsolve(self.Q, self.b, use_umfpack = True)
         return x
 
     def solve(self, sim_time:float, trans:list, sx:float, sxx, cells:bool, wilting_point:float, soil_k = []):
@@ -118,6 +163,7 @@ class XylemFluxPython(XylemFlux):
             @return [cm] root xylem pressure per root system node
         """
         eps = 1
+        self.last = "none"  # always rebuild matrix TODO soil always changes...
 
         if sx >= wilting_point - eps:
 
