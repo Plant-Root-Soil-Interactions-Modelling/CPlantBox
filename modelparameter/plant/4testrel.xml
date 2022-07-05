@@ -170,6 +170,9 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="0.5" />
     <parameter name="a" value="0.16"/>
+    <parameter name="Width_blade" value="1.2"/>
+    <parameter name="Width_petiole" value="0.16"/>
+    <parameter name="shapeType" value="1"/>
     <parameter name="tropismT" value="6"/>
     <parameter name="tropismN" value="18"/>
     <parameter name="tropismS" value="0.2"/>
