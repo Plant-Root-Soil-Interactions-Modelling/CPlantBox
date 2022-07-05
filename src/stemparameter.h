@@ -26,10 +26,10 @@ class StemSpecificParameter :public OrganSpecificParameter
 public:
 
     StemSpecificParameter(): StemSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
-    StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, int nob, double r, double a, double theta, double rlt,
-	bool laterals= false, int nodalGrowth = 0, double delayNG = 0., double delayLat = 0.):
+    StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt,
+	bool laterals= false, int nodalGrowth = 0, double delayNGStart = 0.,double delayNGEnd = 0., double delayLat = 0.):
         OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), 
-		laterals(laterals), nodalGrowth(nodalGrowth), delayNG(delayNG), delayLat(delayLat) { } ///< Constructor setting all parameters
+		laterals(laterals), nodalGrowth(nodalGrowth), delayNGStart(delayNGStart), delayNGEnd(delayNGEnd), delayLat(delayLat) { } ///< Constructor setting all parameters
 
     /*
      * StemBox parameters per single stem
@@ -42,7 +42,8 @@ public:
     std::vector<double> ln; ///< Inter-lateral distances [cm]
 	bool laterals = false;
 	int nodalGrowth;			///< whether to implement the internodal growth [1] (see @stem::simulate)
-	double delayNG;
+	double delayNGStart;
+	double delayNGEnd;
 	double delayLat;
     int nob() const { return ln.size() + laterals; } ///< return the maximal number of lateral branches [1]
     double getK() const; ///< Returns the exact maximal stem length of this realization [cm]
@@ -109,8 +110,10 @@ public:
     double rlts = 0.;	    ///< Standard deviation stem life time (days)
     int gf = 1;			    ///< Growth function (1=negative exponential, 2=linear)
 	int nodalGrowth = 0;		///< whether to implement the internodal growth (see @stem::simulate)
-	double delayNG = 0.;		///< delay between stem creation and start of nodal growth [day]
-	double delayNGs = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
+	double delayNGStart = 0.;		///< delay between stem creation and start of nodal growth [day]
+	double delayNGStarts = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
+	double delayNGEnd = 0.;		///< delay between stem creation and start of nodal growth [day]
+	double delayNGEnds = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
 	double delayLat = 0.;		///< delay between stem creation and start of nodal growth [day]
 	double delayLats = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
     std::vector<int> successor = std::vector<int>(0);			///< Lateral types [1]

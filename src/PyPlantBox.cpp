@@ -284,6 +284,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getOrigin",&Organ::getOrigin)
 			.def("getNode",&Organ::getNode)
             .def("getNodeId",&Organ::getNodeId)
+            .def("getNodeIds",&Organ::getNodeIds)
             .def("getNodeCT",&Organ::getNodeCT)
             .def("addNode",(void (Organ::*)(Vector3d n, double t)) &Organ::addNode,  py::arg("n"), py::arg("t")) // overloads
             .def("addNode",(void (Organ::*)(Vector3d n, int id, double t)) &Organ::addNode,  py::arg("n"),  py::arg("id"),py::arg("t")) // overloads
@@ -294,11 +295,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def("hasMoved",&Organ::hasMoved)
             .def("getOldNumberOfNodes",&Organ::getOldNumberOfNodes)
 
-            .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype)) &Organ::getOrgans, py::arg("ot")=-1) //overloads, default
-            .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>>& v)) &Organ::getOrgans)
+            .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype, bool all)) &Organ::getOrgans, py::arg("ot")=-1, py::arg("all")=false) //overloads, default
+            .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>>& v, bool all)) &Organ::getOrgans)
             .def("getParameter",&Organ::getParameter)
             .def("__str__",&Organ::toString)
-
+            .def("orgVolume",&Organ::orgVolume, py::arg("length_")=-1, py::arg("realized")=false)
+			.def("orgVolume2Length",&Organ::orgVolume2Length)
             .def_readwrite("iHeading", &Organ::iHeading)
             .def_readwrite("parentNI", &Organ::parentNI);
 
@@ -319,7 +321,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("simulate", &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) //default
             .def("getSimTime", &Organism::getSimTime)
 
-            .def("getOrgans", &Organism::getOrgans, py::arg("ot") = -1) // default
+            .def("getOrgans", &Organism::getOrgans, py::arg("ot") = -1, py::arg("allOrgs")=false) // default
             .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<std::shared_ptr<Organ>>(0)) // default
             .def("getSummed", &Organism::getSummed, py::arg("name"), py::arg("ot") = -1) // default
 
@@ -437,7 +439,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getHeading",&Tropism::getHeading)
             .def("getUCHeading",&Tropism::getUCHeading)
             .def("tropismObjective",&Tropism::tropismObjective)
-            .def("getPosition",&Tropism::getPosition);
+            .def("getPosition",&Tropism::getPosition)
+            .def_readwrite("alphaN", &Tropism::alphaN)
+            .def_readwrite("betaN", &Tropism::betaN);
     py::class_<Gravitropism, Tropism, std::shared_ptr<Gravitropism>>(m, "Gravitropism")
             .def(py::init<std::shared_ptr<Organism>, double, double>());
     py::class_<Plagiotropism, Tropism, std::shared_ptr<Plagiotropism>>(m, "Plagiotropism")
@@ -629,7 +633,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("tropismAges", &LeafRandomParameter::tropismAges);
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool, double, double>())
             .def_readwrite("lb", &LeafSpecificParameter::lb)
             .def_readwrite("la", &LeafSpecificParameter::la)
             .def_readwrite("ln", &LeafSpecificParameter::ln)
@@ -680,8 +684,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("f_sa", &StemRandomParameter::f_sa)
             .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
             .def_readwrite("nodalGrowth", &StemRandomParameter::nodalGrowth)
-            .def_readwrite("delayNG", &StemRandomParameter::delayNG)
-            .def_readwrite("delayNGs", &StemRandomParameter::delayNGs)
+            .def_readwrite("delayNGStart", &StemRandomParameter::delayNGStart)
+            .def_readwrite("delayNGStarts", &StemRandomParameter::delayNGStarts)
+            .def_readwrite("delayNGEnd", &StemRandomParameter::delayNGEnd)
+            .def_readwrite("delayNGEnds", &StemRandomParameter::delayNGEnds)
             .def_readwrite("delayLat", &StemRandomParameter::delayLat)
             .def_readwrite("delayLats", &StemRandomParameter::delayLats)
             .def_readwrite("tropismAge", &StemRandomParameter::tropismAge)
@@ -697,7 +703,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("theta", &StemSpecificParameter::theta)
             .def_readwrite("rlt", &StemSpecificParameter::rlt)
             .def("getK",&StemSpecificParameter::getK)
-            .def("nob", &StemSpecificParameter::nob);
+            .def("nob", &StemSpecificParameter::nob)
+            .def_readwrite("delayLat", &StemSpecificParameter::delayLat)
+            .def_readwrite("delayNGStart", &StemSpecificParameter::delayNGStart)
+            .def_readwrite("delayNGEnd", &StemSpecificParameter::delayNGEnd);
     /**
      * Root.h
      */
@@ -739,20 +748,27 @@ PYBIND11_MODULE(plantbox, m) {
             .def("calcLength", &Leaf::calcLength)
             .def("calcAge", &Leaf::calcAge)
             .def("getLeafRandomParameter", &Leaf::getLeafRandomParameter)
+            .def("orgVolume",&Leaf::orgVolume, py::arg("length_")=-1, py::arg("realized")=false)
+			.def("orgVolume2Length",&Leaf::orgVolume2Length)
             .def("param", &Leaf::param)
-            .def("leafArea", &Leaf::leafArea)
-            .def("leafLength", &Leaf::leafLength);
+            .def("leafArea", &Leaf::leafArea, py::arg("realized")=false, py::arg("withPetiole")=false)
+            .def("leafCenter", &Leaf::leafCenter, py::arg("realized")=false)
+            .def("leafLength", &Leaf::leafLength, py::arg("realized")=false)
+            .def("abs2rel", &Leaf::abs2rel)
+            .def("rel2abs", &Leaf::rel2abs);
     /**
      * Stem.h
      */
     py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
            .def(py::init<std::shared_ptr<Organism>, int, Matrix3d, double, std::shared_ptr<Organ>, int>())
-           .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
+           .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
            .def("calcCreationTime", &Stem::calcCreationTime)
            .def("calcLength", &Stem::calcLength)
            .def("calcAge", &Stem::calcAge)
            .def("getStemRandomParameter", &Stem::getStemRandomParameter)
-           .def("param", &Stem::param);
+           .def("param", &Stem::param)
+           .def("abs2rel", &Stem::abs2rel)
+           .def("rel2abs", &Stem::rel2abs);
     /*
      * RootSystem.h
      */
@@ -833,14 +849,15 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0))
             .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&XylemFlux::setKrTables))
             .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&XylemFlux::setKxTables))
-            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0))
+            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),
+																		py::arg("kr_length_") = -1.0)
             .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0))
             .def("setKrTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKrTables))
             .def("setKxTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKxTables))
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
-            		py::arg("soil_k") = std::vector<double>())
+            		py::arg("soil_k") = std::vector<double>(),py::arg("withEigen") = false)
             .def("linearSystem_detached",&XylemFlux::linearSystem_detached, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
                     py::arg("soil_k") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
@@ -862,9 +879,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
-			.def_readwrite("airPressure", &XylemFlux::airPressure)
-			.def_readwrite("gs", &XylemFlux::gs)
-			.def_readwrite("pg", &XylemFlux::pg);
+			.def_readwrite("psi_air", &XylemFlux::psi_air)
+			.def_readwrite("psiXyl", &XylemFlux::psiXyl);
 
     /*
      * Plant.h
@@ -883,17 +899,22 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
-            .def("write", &Plant::write);
+            .def("write", &Plant::write)
+            .def("setRelCoord", &Plant::setRelCoord)
+            .def("abs2rel", &Plant::abs2rel)
+            .def("rel2abs", &Plant::rel2abs);
 
 			
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
 			.def(py::init<double>(),  py::arg("seednum")=0)	
-			.def("mappedSegments", (void (MappedPlant::*)(bool)) &MappedPlant::mappedSegments)	
-
-            .def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
+			.def("mappedSegments", &MappedPlant::mappedSegments)	
+			.def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("plant", &MappedPlant::plant)
-            .def("setCWGr", (void (MappedPlant::*)(std::vector<double>)) &MappedPlant::setCWGr, py::arg("CWGr"));
+			.def("getSegmentIds",&MappedPlant::getSegmentIds)
+			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
+			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
+			.def("getNodeIds",&MappedPlant::getNodeIds);
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

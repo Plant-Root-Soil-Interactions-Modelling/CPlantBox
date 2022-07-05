@@ -159,7 +159,7 @@
 </organ>
 
 
-<organ type="leaf" name="lateral1" subType="2">
+<organ type="leaf" name="lateral1" subType="1">
     <parameter name="lb" value="4" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>

@@ -86,24 +86,26 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	double la_;
 	std::vector<double> ln_; // stores the inter-distances
 	double res;
-	int nob_ = 0; //number of branching nodes
+	int nob_real = 0; //number of branching nodes
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;
 	}
 	if (!hasLaterals) { // no laterals
 
-    	lb_ = 0;
-        la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
-		res = la_-floor(la_ / dx)*dx;
+    	//length of sheath or petiole => basal zone has a meaning even without lateral
+		lb_ = std::max(lb + p->randn()*lbs,double(0)); 
+		double lmax_ = std::max(lmax + p->randn()*lmaxs, 0.) ; // adapt total length
+		res = lmax_-floor(lmax_ / dx)*dx;
 		if(res < dxMin && res != 0){
-			if(res <= dxMin/2){ la_ -= res;
-			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
-			this->la=la_;
+			if(res <= dxMin/2){ lmax_ -= res;
+			}else{lmax_ =  floor(lmax_ / dx)*dx + dxMin;}   
 		}			//make la_ compatible with dx() and dxMin()
-
+		la_ = lmax_ - lb_; 
     } else {
 	lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
+	la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
+	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 
 	res = lb_ - floor(lb_/dx)* dx;	
 	if (res < dxMin) {
 		if (res <= dxMin/2){
@@ -111,23 +113,29 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 		} else {
 			lb_ =  floor(lb_ / dx)*dx + dxMin;
 		}
-		this->lb=lb_;
 	}	
 
-	la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
 	res = la_-floor(la_ / dx)*dx;	
 	if(res < dxMin && res != 0){
 		if(res <= dxMin/2){ la_ -= res;
 		}else{la_ =  floor(la_ / dx)*dx + dxMin;}
-		this->la=la_;
 	}
-
+	double ln_mean = ln;
 	if (ln < dxMin*0.99 && ln !=0){
 		std::cout<<"\nLeafRandomParameter::realize inter-lateral distance (ln) "<<ln<<" below minimum resolution (dxMin) "<<dxMin<<". ln set to dxMin"<<std::endl;
-		ln = dxMin;
+		ln_mean = dxMin;
 	}
 
-	nob_ = std::max(round(nob() + p->randn()*nobs()),1.); // maximal number of leafs
+	int nob1 = std::max((lmax-la_-lb_)/ln_mean+1, 1.);//use new la_, lb_ and ln_mean
+    int nob_ = std::min(std::max(round(nob1 + p->randn()*nobs()), 1.),double(nob_real)); // maximal number of branches +1
+	int latMissing = nob_real - nob_;
+	int latExtra1 = floor(latMissing/nob_);//mean number of extra laterals per branching point to keep correct number
+	int latExtra2 = latMissing - latExtra1*(nob_);
+	int latExtra2_ = latExtra2;
+	//at end of basal zone
+	for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+	if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
+	
 	switch(lnf) {
 	case 0: // homogeneously distributed leaf nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-leaf distances
@@ -140,11 +148,13 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			} //make ln compatible with dx() and dxMin().
 
 			ln_.push_back(d);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
 		}
 		break;
 	case 1: //nodes distance increase linearly TODO
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-leaf distances
-			double d =  std::max(ln*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln_mean*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
@@ -153,12 +163,16 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			} //make ln compatible with dx() and dxMin().
 
 			ln_.push_back(d);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}			   
 			ln_.push_back(0);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
 		}
 		break;
 	case 2: //nodes distance decrease linearly TODO
 		for (int i = 0; i<nob_-1; i++) { // create inter-leaf distances
-			double d =  std::max(ln*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln_mean*(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
@@ -167,11 +181,13 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			} //make ln compatible with dx() and dxMin().
 
 			ln_.push_back(d);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}	
 		}
 		break;
 	case 3: //nodes distance increase exponential TODO
 		for (int i = 0; i<nob_-1; i++) { // create inter-leaf distances
-			double d =  std::max(ln + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln_mean + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
@@ -180,11 +196,13 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			} //make ln compatible with dx() and dxMin().
 
 			ln_.push_back(d);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
 		}
 		break;
 	case 4://nodes distance decrease exponential TODO
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-leaf distances
-			double d =  std::max(ln/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln_mean/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
@@ -193,12 +211,16 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			} //make ln compatible with dx() and dxMin().
 
 			ln_.push_back(d);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}			   
 			ln_.push_back(0);
+			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
 		}
 		break;
 	case 5://nodes distance decrease exponential
 		for (int i = 0; i<nob_*2-1; i++) { // create inter-leaf distances
-			double d =  std::max(ln/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
+			double d =  std::max(ln_mean/(1+i) + p->randn()*lns,dxMin); //std::max(  );//ln + randn()*lns,1e-9);
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
@@ -207,17 +229,23 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 			} //make ln compatible with dx() and dxMin().
 
 			ln_.push_back(d);
+					for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+					if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;} 
+																											 
+   
 		}
 		break;
 	default:
 		throw 1; // TODO make a nice one
 	}}
 	double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
+	double  Width_blade_ = std::max( Width_blade + p->randn()* Width_blades, 0.); // initial elongation
+	double  Width_petiole_ = std::max( Width_petiole + p->randn()* Width_petioles, 0.); // initial elongation
 	double a_ = std::max(a + p->randn()*as, 0.); // radius
 	double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
 	double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // leaf life time
 	double leafArea_ = std::max(areaMax + p->randn()*areaMaxs, 0.); // radius
-	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, hasLaterals);
+	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, hasLaterals, Width_blade_, Width_petiole_);
 }
 
 /**
@@ -407,6 +435,9 @@ tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
 void LeafRandomParameter::bindParameters()
 {
 	OrganRandomParameter::bindParameters();
+	bindParameter("shapeType", &shapeType, "leaf shape type for definition of area and volume (cylinder = 0, cuboid = 1, user-defined 2D shape= 2)");
+	bindParameter("Width_petiole",  &Width_petiole, "width petiole [cm]", &Width_petioles);//when leaf defined as a cuboid
+	bindParameter("Width_blade", &Width_blade, "width blade [cm]", &Width_blades);//when leaf defined as a cuboid
 	bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
 	bindParameter("la", &la, "Apical zone [cm]", &las);
 	bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);

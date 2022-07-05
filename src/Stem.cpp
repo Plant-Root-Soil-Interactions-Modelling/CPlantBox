@@ -3,6 +3,7 @@
 #include "Leaf.h"
 #include "Root.h"
 #include "Plant.h"
+#include <algorithm>
 
 namespace CPlantBox {
 
@@ -13,21 +14,23 @@ std::vector<int> Stem::phytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
  * The organ tree must be created, @see Organ::setPlant, Organ::setParent, Organ::addChild
  * Organ geometry must be created, @see Organ::addNode, ensure that this->getNodeId(0) == parent->getNodeId(pni)
  *
- * @param id        	the organ's unique id (@see Organ::getId)
- * @param param     	the organs parameters set, ownership transfers to the organ
- * @param alive     	indicates if the organ is alive (@see Organ::isAlive)
- * @param active    	indicates if the organ is active (@see Organ::isActive)
- * @param age       	the current age of the organ (@see Organ::getAge)
- * @param length    	the current length of the organ (@see Organ::getLength)
- * @param iheading  	the initial heading of this root
- * @param pbl       	base length of the parent root, where this root emerges
- * @param pni       	local node index, where this root emerges
- * @deprecated moved	indicates if nodes were moved in the previous time step (default = false)
- * @param oldNON    	the number of nodes of the previous time step (default = 0)
+ * @param id        		the organ's unique id (@see Organ::getId)
+ * @param param     		the organs parameters set, ownership transfers to the organ
+ * @param alive     		indicates if the organ is alive (@see Organ::isAlive)
+ * @param active    		indicates if the organ is active (@see Organ::isActive)
+ * @param age       		the current age of the organ (@see Organ::getAge)
+ * @param length    		the current length of the organ (@see Organ::getLength)
+ * @param partialIHeading 	the initial partial heading of this root
+ * @param pbl       		base length of the parent root, where this root emerges
+ * @param pni       		local node index, where this root emerges
+ * @deprecated moved		indicates if nodes were moved in the previous time step (default = false)
+ * @param oldNON    		the number of nodes of the previous time step (default = 0)
  */
 Stem::Stem(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-		Matrix3d iHeading, int pni, bool moved, int oldNON)
-:Organ(id, param, alive, active, age, length, iHeading, pni, moved,  oldNON)
+		Vector3d partialIHeading_, int pni, bool moved, int oldNON)
+:Organ(id, param, alive, active, age, length, 
+Matrix3d(Vector3d(0., 0., 1.), Vector3d(0., 1., 0.), Vector3d(1., 0., 0.)),  
+pni, moved,  oldNON), partialIHeading(partialIHeading_)
 {}
 
 /**
@@ -104,6 +107,9 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p)
  */
 void Stem::simulate(double dt, bool verbose)
 {
+	if(!getOrganism()->hasRelCoord()){
+		throw std::runtime_error("organism no set in rel coord");
+	}
 	const StemSpecificParameter& p = *param(); // rename
 	firstCall = true;
 	oldNumberOfNodes = nodes.size();
@@ -159,22 +165,24 @@ void Stem::simulate(double dt, bool verbose)
 			if (active) {
 
 				// length increment
-				double delayNG_ = 0.; //delay between organ creation and expansion
-				double ageAtLb = calcAge(p.lb);//age at which organ reached lb
-				if((age > ageAtLb)){
-					delayNG_ = std::min(p.delayNG, age - ageAtLb );
+				double age__ = age;
+				if(age > p.delayNGStart){//simulation ends after start of growth pause
+					if(age < p.delayNGEnd){age__ =p.delayNGStart;//during growth pause
+					}else{
+						age__ = age - (p.delayNGEnd - p.delayNGStart);//simulation ends after end of growth pause
+					}
 				}//delay to apply 
 				/*as we currently do not implement impeded growth for stem and leaves
 				*we can use directly the organ's age to cumpute the target length
 				*/
-				double targetlength = calcLength(age - delayNG_)+ this->epsilonDx;
+				double targetlength = calcLength(age__)+ this->epsilonDx;
 				double e = targetlength-length; // store value of elongation to add
 				//can be negative
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
-				length = getLength();
+				length = getLength(true);
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				// create geometry
-				if (p.laterals) { // stem has laterals
+				if (p.laterals||bool(additional_childern)) { // stem has laterals
 					//std::cout<<"sim seed nC is"<< nC<<"\n";
 					//std::cout<<"sim seed nZ is"<< nZ<<"\n";
 					/*
@@ -224,9 +232,12 @@ void Stem::simulate(double dt, bool verbose)
 							{
 								leafGrow(verbose);
 							}
-							createSegments(this->dxMin(),verbose);
-							dl-=this->dxMin();
-							length+=this->dxMin();}
+							if(p.ln.at(children.size()-additional_childern-1)>0){
+								createSegments(this->dxMin(),verbose);
+								dl-=this->dxMin();
+								length+=this->dxMin();
+							}
+						}
 						createLateral(verbose);
 						if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2){
 										leafGrow(verbose);
@@ -240,7 +251,7 @@ void Stem::simulate(double dt, bool verbose)
 					}
 					//internodal elongation, if the basal zone of the stem is created and still has to grow
 					double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
-					if((dl>0)&&(length>=p.lb)){
+					if((dl>0)&&(length>=p.lb)&&(maxInternodeDistance>0)){
 							int nn = children.at(p.ln.size())->parentNI; //node carrying the last lateral == end of branching zone
 							double currentInternodeDistance = getLength(nn) - p.lb; //actual length of branching zone
 							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone 
@@ -295,31 +306,36 @@ void Stem::internodalGrowth(double dl, bool verbose)
 	const StemSpecificParameter& p = *param(); // rename
 	std::vector<double> toGrow(p.ln.size());
 	double dl_;
-	double missing = 0.;
-	if(p.nodalGrowth==0){
+	const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0);//number of laterals wich grow on smae branching point as the one before
+	if(p.nodalGrowth==0){//sequentiall growth
 		toGrow[0] = dl;
 		std::fill(toGrow.begin()+1,toGrow.end(),0) ;
 	}
-	if(p.nodalGrowth ==1){std::fill(toGrow.begin(),toGrow.end(),dl/p.ln.size()) ; }
+	if(p.nodalGrowth ==1)
+	{//equal growth
+		std::fill(toGrow.begin(),toGrow.end(),dl/(p.ln.size()-ln_0)) ; 
+	}
 	size_t i=1;
-	while( (dl >0)&&(i<=p.ln.size()) ) {
+	int i_ = 0;
+	while( (dl >0)&&(i_<(p.ln.size()*2)) ) {
 		//if the phytomere can do a growth superior to the mean phytomere growth, we add the value of "missing" 
 		//(i.e., length left to grow to get the predefined total growth of the branching zone)
 		int nn1 = children.at(i-1)->parentNI; //node at the beginning of phytomere
 		double length1 = getLength(nn1);
 		int nn2 = children.at(i)->parentNI; //node at end of phytomere
 		double availableForGrowth = p.ln.at(i-1) -( getLength(nn2) - length1 ) ;//difference between maximum and current length of the phytomere
-		dl_ = std::min(toGrow[i-1],availableForGrowth);
+		dl_ = std::min(std::min(toGrow[i-1],availableForGrowth), dl);
 		if(i< p.ln.size()){
 			toGrow[i] +=  toGrow[i-1] - dl_ ;
-		}else{missing = toGrow[i-1] - dl_;}
+		}
 		if(dl_ > 0){createSegments(dl_,verbose, i ); dl -= dl_;}
 		i++;
-		
+		i_++;//do the loop at most twice
+		if(i>p.ln.size()){i=1;}
 	}
-	if(missing > 1e-6){//this sould not happen as computed dl to be <= sum(availableForGrowth)
+	if(std::abs(dl)> 1e-6){//this sould not happen as computed dl to be <= sum(availableForGrowth)
 		std::stringstream errMsg;
-		errMsg <<"Stem::internodalGrowth length left to grow: "<<missing;
+		errMsg <<"Stem::internodalGrowth length left to grow: "<<dl;
 		throw std::runtime_error(errMsg.str().c_str());
 	}
 }
@@ -332,6 +348,8 @@ void Stem::internodalGrowth(double dl, bool verbose)
 double Stem::getParameter(std::string name) const
 {
 	if (name=="lb") { return param()->lb; } // basal zone [cm]
+	if (name=="delayNGStart") { return param()->delayNGStart; } // delay for nodal growth [day]
+	if (name=="delayNGEnd") { return param()->delayNGEnd; } // delay for nodal growth [day]
 	if (name=="la") { return param()->la; } // apical zone [cm]
 	if (name=="nob") { return param()->nob(); } // number of branches
 	if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -385,13 +403,16 @@ double Stem::calcLength(double age)
 
 /**
  * Analytical age of the stem at a given length
- *
+ * no scaling of organ growth , so can return age directly
+ * otherwise cannot compute exact age between delayNGStart and delayNGEnd
  * @param length   length of the stem [cm]
  */
 double Stem::calcAge(double length)
 {
 	assert(length>=0 && "Stem::calcAge() negative root age");
-	return getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
+	double age__ = getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
+	if(age__ >param()->delayNGStart ){age__ += (param()->delayNGEnd - param()->delayNGStart);}
+	return age__;
 }
 
 /**
@@ -459,7 +480,7 @@ void Stem::leafGrow(bool silence)
 	double ageLN = this->calcAge(sp->lb); // age of stem when lateral node is created
 	double delay = sp->delayLat * children.size();	//time the lateral has to wait before growing	
 	Matrix3d h = Matrix3d(); // current heading in absolute coordinates TODO (revise??)
-	int lt =2;
+	int lt = getLeafSubType();//subType of leaf can be 2 (old version) or 1 (new version)
 	int lnf = getStemRandomParameter()->lnf;
 	if (lnf==2) {
 		auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  h, delay/2, shared_from_this(), nodes.size() - 1);
@@ -504,6 +525,21 @@ void Stem::leafGrow(bool silence)
 		children.push_back(lateral);
 		lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
 	}
+}
+
+/*
+ * Searches for subtype of first leaf
+ */
+int Stem::getLeafSubType()
+{
+	auto orp = plant.lock()->getOrganRandomParameter(Organism::ot_leaf);
+	for(int st_ = 1; st_ < orp.size();st_++)//skipe st_ ==0, never an organ st
+	{
+		if(orp[st_] != NULL) {
+			return orp[st_]->subType;
+		}
+	}
+	return -1;
 }
 
 /*
@@ -708,8 +744,14 @@ void Stem::createSegments(double l, bool verbose, int PhytoIdx)
 double Stem::getLength(int i) const 
 {
 	double l = 0.; // length until node i
-	for (int j = 0; j<i; j++) {
-		l += nodes.at(j+1).length(); // relative length equals absolute length
+	if(getOrganism()->hasRelCoord()){//is currently using relative coordinates?
+		for (int j = 0; j<i; j++) {
+			l += nodes.at(j+1).length(); // relative length equals absolute length
+		}
+	}else{
+		for (int j = 0; j<i; j++) {
+			l += nodes.at(j+1).minus(nodes.at(j)).length(); // relative length equals absolute length
+		}
 	}
 	return l;
 }

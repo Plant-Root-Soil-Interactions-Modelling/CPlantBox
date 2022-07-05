@@ -1,10 +1,14 @@
 <leaf name="lateral" subType="1">
+    <parameter name="geometryN" value="100"/>
+    <!--leaf geometry resolution-->
     <parameter name="gf" value="1"/>
     <!--Growth function number [1]-->
     <parameter name="lnf" value="0"/>
     <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
     <parameter name="parametrisationType" value="0"/>
     <!--Leaf geometry parametrisation type-->
+    <parameter name="shapeType" value="0"/>
+    <!--leaf shape type for definition of area and volume (cylinder = 0, cuboid = 1, user-defined 2D shape= 2)-->
     <parameter name="tropismT" value="1"/>
     <!--Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
     <parameter name="BetaDev" value="0.2"/>
@@ -13,6 +17,10 @@
     <!--Initial RevRotation-->
     <parameter name="RotBeta" value="0.60000002"/>
     <!--RevRotation of the leaf-->
+    <parameter name="Width_blade" value="0"/>
+    <!--width blade [cm]-->
+    <parameter name="Width_petiole" value="0"/>
+    <!--width petiole [cm]-->
     <parameter name="a" value="0.1"/>
     <!--radius [cm]-->
     <parameter name="areaMax" value="10"/>
@@ -26,7 +34,7 @@
     <parameter name="lb" value="6"/>
     <!--Basal zone [cm]-->
     <parameter name="lmax" value="17"/>
-    <!--Maximal stem length [cm]-->
+    <!--Maximal leaf length [cm]-->
     <parameter name="ln" value="1.25" dev="0.12"/>
     <!--Inter-lateral distance [cm]-->
     <parameter name="r" value="1"/>

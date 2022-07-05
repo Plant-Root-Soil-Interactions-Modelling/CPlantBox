@@ -68,7 +68,9 @@ public:
 	static Vector3d getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx);
 	///< Auxiliary function: Applies angles a and b and goes dx [cm] into the new direction
 	double ageSwitch;			  
-
+	int alphaN = 20;//stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
+	int betaN = 5;//stop protecting in case want to increase number of trials
+    
 protected:
 
 	std::weak_ptr<Organism> plant;
@@ -77,9 +79,7 @@ protected:
 	double sigma; ///< Standard deviation
 
 	std::weak_ptr<SignedDistanceFunction> geometry; ///< confining geometry todo
-	const int alphaN = 20;
-	const int betaN = 5;
-    double randn(int nNode) {if((nNode > 0)&&(plant.lock()->getStochastic())){ return ND(gen);}else{return plant.lock()->randn();}; } ///< normally distributed random number (0,1)
+	double randn(int nNode) {if((nNode > 0)&&(plant.lock()->getStochastic())){ return ND(gen);}else{return plant.lock()->randn();}; } ///< normally distributed random number (0,1)
     double rand(int nNode) {if((nNode > 0)&&(plant.lock()->getStochastic())){ return UD(gen);}else{return plant.lock()->randn();}; } ///< uniformly distributed random number (0,1)
 	std::normal_distribution<double> ND;
     std::uniform_real_distribution<double> UD;

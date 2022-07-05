@@ -153,7 +153,7 @@ void Leaf::simulate(double dt, bool verbose)
 				double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
 				double e = targetlength-length; // unimpeded elongation in time step dt
 				double dl = std::max(e, 0.);// length increment = calculated length + increment from last time step too small to be added
-				length = getLength();
+				length = getLength(true);
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				// create geometry
 				if (p.laterals) { // leaf has laterals
@@ -218,15 +218,18 @@ void Leaf::simulate(double dt, bool verbose)
  *
  */
 double Leaf::getParameter(std::string name) const {
+	if (name=="shapeType") { return getLeafRandomParameter()->shapeType; } // definition type of the leaf shape 
+	if (name=="Width_petiole") { return param()->Width_petiole; } // [cm]
+	if (name=="Width_blade") { return param()->Width_blade; } // [cm]
 	if (name=="lb") { return param()->lb; } // basal zone [cm]
 	if (name=="la") { return param()->la; } // apical zone [cm]
 	//if (name=="nob") { return param()->nob; } // number of branches
 	if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
-	if (name=="radius") { return param()->a; } // root radius [cm]
-	if (name=="a") { return param()->a; } // root radius [cm]
-	if (name=="theta") { return param()->theta; } // angle between root and parent root [rad]
-	if (name=="rlt") { return param()->rlt; } // root life time [day]
-	if (name=="k") { return param()->getK(); }; // maximal root length [cm]
+	if (name=="radius") { return param()->a; } // leaf radius or thickness [cm]
+	if (name=="a") { return param()->a; } // leaf radius or thickness [cm]
+	if (name=="theta") { return param()->theta; } // angle between leaf and parent root [rad]
+	if (name=="rlt") { return param()->rlt; } // leaf life time [day]
+	if (name=="k") { return param()->getK(); }; // maximal leaf length [cm]
 	if (name=="lnMean") { // mean lateral distance [cm]
 		auto& v =param()->ln;
 		return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
@@ -237,8 +240,12 @@ double Leaf::getParameter(std::string name) const {
 		double sq_sum = std::inner_product(v.begin(), v.end(), v.begin(), 0.0);
 		return std::sqrt(sq_sum / v.size() - mean * mean);
 	}
-	if (name=="volume") { return param()->a*param()->a*M_PI*getLength(true); } // // realized root volume [cm^3]
-	if (name=="surface") { return 2*param()->a*M_PI*getLength(true); } // // realized root surface [cm^2]
+	if (name=="volume_th") { return orgVolume(-1, false); } // // theoretical leaf volume [cm^3]
+	if (name=="surface_th") { return leafArea(false); } // // theoretical leaf surface [cm^2]
+	if (name=="volume_realized") { return orgVolume(-1, true); } // // realized leaf volume [cm^3]
+	if (name=="surface_realized") { return leafArea(true); } // // realized leaf surface [cm^2]
+	if (name=="volume") { return orgVolume(-1, true); } // // realized leaf volume [cm^3]
+	if (name=="surface") { return leafArea(true); } // // realized leaf surface [cm^2]
 	if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
 	if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
 	return Organ::getParameter(name);
@@ -247,14 +254,310 @@ double Leaf::getParameter(std::string name) const {
 
 /**
  * in case there are no lateral leafs return leaf surface area [cm2]
+ * upper side only. If used for photosynthesis, 
+ * with C3 plants (stomata on upper + lower side) need to do * 2
+ * @param realized		use realized (true) or theoretical (false) length and area (default = false)
+ * @param withPetiole	take into account leaf petiole or sheath (true) or not (false). Default = false (for computation of transpiration)
+ * @return 	total leaf blade Area  (withPetiole == false) or total leaf Area (withPetiole == true) [cm2] 
  */
-double Leaf::leafArea()
-{
+double Leaf::leafArea(bool realized, bool withPetiole) const
+{																			 
+	double length_ = getLength(realized);
+	double surface_ = 0;
+	double surfacePetiole = 0;
 	if (param()->laterals) {
 		return 0.;
 	} else {
-		return param()->areaMax * (leafLength()/param()->leafLength());
+		int shapeType = getLeafRandomParameter()->shapeType;
+		switch(shapeType) 
+		{
+			case LeafRandomParameter::shape_cuboid:{ 
+				double Width_blade = getParameter("Width_blade") ;
+				double Width_petiole = getParameter("Width_petiole") ;
+				if (length_ <= param()->lb) {
+					surfacePetiole =  Width_petiole * length_ ; 
+				} else {
+					//surface of basal zone
+					surfacePetiole = Width_petiole *param()->lb  ;
+					//surface rest of leaf
+											  
+					length_ -= param()->lb;
+											
+					double surfaceBlade =  Width_blade * length_ ;
+					surface_ =  surfaceBlade;				
+				}
+				if(withPetiole){surface_ += surfacePetiole;}
+				return surface_;
+			
+			} break;
+			case LeafRandomParameter::shape_cylinder:{
+				// divide by two to get only upper side of leaf
+				double perimeter =  2 * M_PI * param()->a;
+				if (length_ <= param()->lb) {
+					surfacePetiole =  perimeter  * length_ /2; 
+				} else {
+					//surface of basal zone
+					surfacePetiole = perimeter  *param()->lb /2 ;
+					//surface rest of leaf
+											  
+					length_ -= param()->lb;
+											
+					double surfaceBlade =  perimeter  * length_ /2;
+					surface_ =  surfaceBlade;				
+				}
+				if(withPetiole){surface_ += surfacePetiole;}
+				return surface_;
+				
+			} break;
+			case LeafRandomParameter::shape_2D:{
+				// how to take into account possible petiole area? add perimeter  *param()->lb /2 ?
+				return param()->areaMax * (leafLength(realized)/param()->leafLength());
+			} break;
+			
+			default:
+				throw  std::runtime_error("Leaf::leafArea: undefined leaf shape type");
+		}
 	}
+	return 0.;
+};
+
+/**
+ * leaf BLADE Area at segment n°localSegId
+ * upper side only. If used for photosynthesis, 
+ * with C3 plants (stomata on upper + lower side) need to do * 2
+ * see @XylemFlux::segFluxes and @XylemFlux::linearSystem 
+ * @param localSegId	index for which evaluate area == nodey_localid + 1
+ * @param realized		use realized (true) or theoretical (false) length and area (default = false)
+ * @param withPetiole	take into account leaf petiole or sheath (true) or not (false). Default = false (for computation of transpiration)
+ * @return 	leaf area at segment n°localSegId [cm2]
+ */
+double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole)
+{
+	double surface_ = 0.;
+	if (param()->laterals) {
+		return 0.;
+	} else {
+		int shapeType = getLeafRandomParameter()->shapeType;
+		auto n1 = nodes.at(localSegId);
+		auto n2 = nodes.at(localSegId + 1);
+		auto v = n2.minus(n1);
+		double length_ = v.length();
+		double lengthAt_x = getLength(localSegId);
+		double lengthInPetiole = std::min(length_,std::max(param()->lb - lengthAt_x,0.));//petiole or sheath
+		double lengthInBlade = std::max(length_ - lengthInPetiole, 0.);
+		assert(((lengthInBlade+lengthInPetiole)==length_)&&"leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
+		switch(shapeType) 
+		{
+			case LeafRandomParameter::shape_cuboid:{ 
+				double Width_blade = getParameter("Width_blade") ;
+				
+				double surfaceBlade =  Width_blade * lengthInBlade ;
+				surface_ =  surfaceBlade ;
+				double surfacePetiole = 0;
+				if(withPetiole)
+				{ 
+					double Width_petiole = getParameter("Width_petiole") ;
+					surfacePetiole =   Width_petiole * lengthInPetiole ;
+					surface_ +=  surfacePetiole;
+				}
+			} break;
+			case LeafRandomParameter::shape_cylinder:{
+				// divide by two to get only upper side of leaf
+				surface_ =  2 * M_PI * lengthInBlade * param()->a / 2; 
+				if(withPetiole)
+				{ 
+					surface_ +=  2 * M_PI * lengthInPetiole * param()->a / 2; 
+				}				
+				
+			} break;
+			case LeafRandomParameter::shape_2D:{
+				//TODO: compute it better later? not sur how to do it if the leaf is not convex
+				// how to take into account possible petiole area? add perimeter  *lengthInPetiole /2 ?
+				surface_ = (lengthInBlade / leafLength(realized)) * leafArea(realized);
+			} break;
+			
+			default:
+				throw  std::runtime_error("Leaf::leafAreaAtSeg: undefined leaf shape type");
+		}
+	}
+	if(surface_ < 1e-15){ surface_ = 0;}
+	return surface_;
+};
+
+/**
+ * leaf BLADE Area at segment n°localSegId
+ * upper side only. If used for photosynthesis, 
+ * with C3 plants (stomata on upper + lower side) need to do * 2
+ * see @XylemFlux::segFluxes and @XylemFlux::linearSystem 
+ * @param localSegId	index for which evaluate area == nodey_localid + 1
+ * @param realized		use realized (true) or theoretical (false) length and area (default = false)
+ * @param withPetiole	take into account leaf petiole or sheath (true) or not (false). Default = false (for computation of transpiration)
+ * @return 	leaf area at segment n°localSegId [cm2]
+ */
+double Leaf::leafLengthAtSeg(int localSegId, bool withPetiole)
+{
+	
+	
+	double length_out = 0.;
+	if (!(param()->laterals)) {
+		auto n1 = nodes.at(localSegId);
+		auto n2 = nodes.at(localSegId + 1);
+		auto v = n2.minus(n1);
+		double length_ = v.length();
+		double lengthAt_x = getLength(localSegId);
+		double lengthInPetiole = std::min(length_,std::max(param()->lb - lengthAt_x,0.));//petiole or sheath
+		double lengthInBlade = std::max(length_ - lengthInPetiole, 0.);
+		assert(((lengthInBlade+lengthInPetiole)==length_)&&"leafAreaAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
+		length_out = lengthInBlade;
+		if(withPetiole){length_out += lengthInPetiole;}
+	}
+	return length_out;
+};
+
+
+
+/**
+ * leaf BLADE Area at segment n°localSegId
+ * upper side only. If used for photosynthesis, 
+ * with C3 plants (stomata on upper + lower side) need to do * 2
+ * see @XylemFlux::segFluxes and @XylemFlux::linearSystem 
+ * @param localSegId	index for which evaluate area == nodey_localid + 1
+ * @param realized		use realized (true) or theoretical (false) length and area (default = false)
+ * @param withPetiole	take into account leaf petiole or sheath (true) or not (false). Default = false (for computation of transpiration)
+ * @return 	leaf area at segment n°localSegId [cm2]
+ */
+double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
+{
+	double vol_ = 0.;
+	if (param()->laterals) {
+		return 0.;
+	} else {
+		int shapeType = getLeafRandomParameter()->shapeType;
+		auto n1 = nodes.at(localSegId);
+		auto n2 = nodes.at(localSegId + 1);
+		auto v = n2.minus(n1);
+		double length_ = v.length();
+		double lengthAt_x = getLength(localSegId);
+		double lengthInPetiole = std::min(length_,std::max(param()->lb - lengthAt_x,0.));//petiole or sheath
+		double lengthInBlade = std::max(length_ - lengthInPetiole, 0.);
+		double a = getParameter("a") ;//radius or thickness
+		assert(((lengthInBlade+lengthInPetiole)==length_)&&"leafVolAtSeg: lengthInBlade+lengthInPetiole !=lengthSegment");
+		switch(shapeType) 
+		{
+			case LeafRandomParameter::shape_cuboid:{ 
+				double Width_blade = getParameter("Width_blade") ;
+				
+				double volBlade =  Width_blade * lengthInBlade *a;
+				vol_ =  volBlade ;
+				double volPetiole = 0;
+				if(withPetiole)
+				{ 
+					double Width_petiole = getParameter("Width_petiole") ;
+					volPetiole =   Width_petiole * lengthInPetiole *a;
+					vol_ +=  volPetiole;
+				}
+			} break;
+			case LeafRandomParameter::shape_cylinder:{
+				// divide by two to get only upper side of leaf
+				vol_ =  M_PI * lengthInBlade * param()->a * param()->a; 
+				if(withPetiole)
+				{ 
+					vol_ +=  M_PI * lengthInPetiole * param()->a * param()->a; 
+				}				
+				
+			} break;
+			case LeafRandomParameter::shape_2D:{
+				//TODO: compute it better later? not sur how to do it if the leaf is not convex
+				// how to take into account possible petiole area? add perimeter  *lengthInPetiole /2 ?
+				vol_ = (lengthInBlade / leafLength(realized)) * leafArea(realized) *a;
+			} break;
+			
+			default:
+				throw  std::runtime_error("Leaf::leafVolAtSeg: undefined leaf shape type");
+		}
+	}
+	return vol_;
+};
+
+
+
+/**
+ * @param length_	total leaf length for which to evaluate volume. default = -1 (i.e., use current volume)
+ *					for phloem module, need to compute volume for other lengths
+ * @param realized		use realized (true) or theoretical (false) length and area (default = false)
+ * @return leaf volume [cm3]
+ */
+double Leaf::orgVolume(double length_, bool realized) const
+{
+	double vol_;
+	const LeafSpecificParameter& p = *param(); 
+	int shapeType = getLeafRandomParameter()->shapeType;																						 
+	if(length_ == -1){length_ = getLength(realized);}//theoretical
+	switch(shapeType) 
+	{
+		case LeafRandomParameter::shape_cuboid:{ 
+			double Width_blade = getParameter("Width_blade") ;
+			double Width_petiole = getParameter("Width_petiole") ;
+			if ((p.laterals)||(length_ <= p.lb)) {
+				vol_ =  Width_petiole * length_ * p.a;
+			} else {
+				//volume of basal zone
+				double volPetiole = Width_petiole * p.lb * p.a ;//assume p.a is thickness
+				//volume rest of leaf
+				length_ -= p.lb;
+				double volBlade =  Width_blade * length_ * p.a; //assume p.a is thickness
+				vol_ =  volBlade + volPetiole;
+			}
+		}break;
+		case LeafRandomParameter::shape_cylinder:{
+			vol_ = length_ * p.a * p.a * M_PI;
+		} break;
+		case LeafRandomParameter::shape_2D:{
+			// how to take into account possible petiole volume? add lengthPetiole * p.a * p.a * M_PI;  ?
+			vol_ = leafArea(realized) * p.a ;//assume p.a is thickness
+		} break;
+		default:
+			throw  std::runtime_error("Leaf::orgVolume: undefined leaf shape type");
+	}
+	return vol_;
+};
+
+/**
+ * @param volume_	total leaf length for which to evaluate volume.
+ *					for phloem module, need to compute lengths for different volumes
+ * @return leaf length [cm]
+ */
+double Leaf::orgVolume2Length(double volume_) 
+{
+	const LeafSpecificParameter& p = *param(); 
+	double length_;
+	int shapeType = getLeafRandomParameter()->shapeType;	
+	switch(shapeType) 
+		{
+			case LeafRandomParameter::shape_cuboid:{ 
+				double Width_blade = getParameter("Width_blade") ;
+				double Width_petiole = getParameter("Width_petiole") ;
+				double volPetiole = Width_petiole * p.lb * p.a;//assume p.a is thickness
+				if(volume_ <= volPetiole){
+					length_ = volume_/( Width_petiole * p.a);//assume p.a is thickness
+				}else{
+					double lengthBlade = (volume_ - volPetiole)/p.a/Width_blade;
+					length_ = p.lb + lengthBlade;
+				}
+			} break;
+			case LeafRandomParameter::shape_cylinder:
+			{
+				length_ = volume_/(p.a*p.a*M_PI);
+			} break;
+			case LeafRandomParameter::shape_2D:{
+				double area_ = volume_ / p.a;//assume p.a is thickness
+				bool realized = false;
+				length_ = leafLength(realized ) * (area_ / p.areaMax); //assume area/areaMax = length / lengthmax
+			} break;
+			default:
+				throw  std::runtime_error("Leaf::orgVolume2Length: undefined leaf shape type");
+	}
+	return length_;
 };
 
 /**
@@ -638,5 +941,38 @@ std::string Leaf::toString() const
 	std::stringstream newstring;
 	newstring << "; initial heading: " << iHeading.column(0).toString()  << ", parent node index " << parentNI << ".";
 	return  Organ::toString()+newstring.str();
+}
+
+/**
+ * @return the organs length from start node up to the node with index @param i.
+ */
+double Leaf::getLength(int i) const 
+{
+	double l = 0.; // length until node i
+	if(getOrganism()->hasRelCoord()){
+		for (int j = 0; j<i; j++) {
+			l += nodes.at(j+1).length(); // relative length equals absolute length
+		}
+	}else{
+		for (int j = 0; j<i; j++) {
+			l += nodes.at(j+1).minus(nodes.at(j)).length(); // relative length equals absolute length
+		}
+	}
+	return l;
+}
+
+ /* 
+ * @param realized	FALSE:	get theoretical organ length, INdependent from spatial resolution (dx() and dxMin()) 
+ *					TRUE:	get realized organ length, dependent from spatial resolution (dx() and dxMin())
+ *					DEFAULT = TRUE
+ * @return 			The chosen type of organ length (realized or theoretical).
+ */
+double Leaf::getLength(bool realized) const
+{
+	if (realized) {
+		return length - this->epsilonDx;
+	} else {
+		return length;
+	}
 }
 } // namespace CPlantBox

@@ -24,10 +24,10 @@ public:
 	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
 	LeafSpecificParameter(int subType, double lb, double la, 
 	const std::vector<double>& ln, double r, double a, double theta, 
-	double rlt, double leafArea, bool laterals):
+	double rlt, double leafArea, bool laterals, double Width_blade, double Width_petiole):
 		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), 
 		theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals), 
-		ln(ln)   { }; ///< Constructor setting all parameters
+		ln(ln), Width_blade(Width_blade), Width_petiole(Width_petiole)  { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
@@ -40,7 +40,8 @@ public:
 	double areaMax = 0.; 	///< Leaf area [cm2]
 	bool laterals = false;  ///< Indicates if lateral leaves exist
 	std::vector<double> ln = std::vector<double>(); ///< Inter-lateral distances (if laterals) or mid for radial parametrisation (if there are no laterals) [cm]
-
+	double Width_blade = 0.;		///< width of leafe blade (cm) = length - lb zone. define later a width growth rate?
+	double Width_petiole = 0.;		///< width of leafe petiole (cm) = lb zone. define later a width growth rate?
 	int nob() const { return ln.size() + laterals; } //number of laterals = number of phytomers + 1
 	double getK() const; ///< Returns the exact maximal leaf length (including leaf stem) of this realization [cm]
 	double leafLength() const { return getK()-lb; }; ///< Returns the exact maximal leaf length (excluding leaf stem) of this realization [cm]
@@ -57,8 +58,8 @@ public:
 class LeafRandomParameter : public OrganRandomParameter
 {
 public:
-
-	LeafRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
+	enum shapeTypes { shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2}; ///< how is the shape of the leaf defined?, see @orgVolume and @orgVolume2Length
+    LeafRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
 	virtual ~LeafRandomParameter() { };
 
     void createLeafGeometry(std::vector<double> y, std::vector<double> l, int N); // create normalized leaf geometry
@@ -107,15 +108,20 @@ public:
 	double thetas = 0.; 	///< Standard deviation angle between leafvein and parent leafvein (rad)
 	double rlt = 1.e9;		///< Leaf life time (days)
 	double rlts = 0.;		///< Standard deviation of leaf life time (days)
+	double Width_blade = 0.;		///< width of leafe blade (cm) = length - lb zone. define later a width growth rate?
+	double Width_blades = 0.;		///< Standard deviation of leaf blade width (cm)
+	double Width_petiole = 0.;		///< width of leafe petiole (cm) = lb zone. define later a width growth rate?
+	double Width_petioles = 0.;		///< Standard deviation of leaf petiole width (cm)
 	int gf = 1;				///< Growth function (1=negative exponential, 2=linear)
 	std::vector<int> successor = {};			///< Lateral types [1]
 	std::vector<double> successorP = {}; 	///< Probabiltities of lateral type to emerge (sum of values == 1) [1]
 
 	/* describes the plant geometry */
-	std::vector<double> leafGeometryPhi= {};
-	std::vector<double> leafGeometryX= {};
-	int parametrisationType = 0; // 0 .. radial, 1..along main axis
-
+	std::vector<double> leafGeometryPhi= {}; //2D shape
+	std::vector<double> leafGeometryX= {};//2D shape
+	int parametrisationType = 0; // 2D shape type : 0 .. radial, 1..along main axis
+	//how is the shape of the leaf deined? cylinder (a = radius), cuboid (a = thickness, Width_blade, Width_petiole), 2D (leafGeometryPhi, leafGeometryX, areaMax)
+	int shapeType = 0; 
 	/* call back functions */
     std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
