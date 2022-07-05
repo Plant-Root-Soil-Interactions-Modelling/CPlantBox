@@ -121,7 +121,7 @@ public:
 	std::vector<double> leafGeometryX= {};//2D shape
 	int parametrisationType = 0; // 2D shape type : 0 .. radial, 1..along main axis
 	//how is the shape of the leaf deined? cylinder (a = radius), cuboid (a = thickness, Width_blade, Width_petiole), 2D (leafGeometryPhi, leafGeometryX, areaMax)
-	int shapeType = 0; 
+	int shapeType = 2; //default: 2D shape
 	/* call back functions */
     std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
