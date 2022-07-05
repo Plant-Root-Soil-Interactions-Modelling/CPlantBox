@@ -69,13 +69,15 @@ public:
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     virtual  double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
-
+	virtual double calcAge(double length){throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
+	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
 	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
     Vector3d getOrigin() const { return getParent()->getNode(parentNI); }; ///< absolute coordinate of the organs origin
     virtual Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ, absolute coordinates per defaul
     int getNodeId(int i) const { return nodeIds.at(i); } ///< global node index of the i-th node, i is called the local node index
+	std::vector<int> getNodeIds() const { return nodeIds; } ///< global node index of the i-th node, i is called the local node index
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
     void addNode(Vector3d n, double t, size_t index, bool shift); //< adds a node to the root
     void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
@@ -94,8 +96,8 @@ public:
     int getOldNumberOfNodes() const { return oldNumberOfNodes; } ///< the number of nodes before the last simulate call
 
     /* for post processing */
-    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1); ///< the organ including children in a sequential vector
-    void getOrgans(int otype, std::vector<std::shared_ptr<Organ>>& v); ///< the organ including children in a sequential vector
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot=-1, bool all = false); ///< the organ including children in a sequential vector
+    void getOrgans(int otype, std::vector<std::shared_ptr<Organ>>& v, bool all = false); ///< the organ including children in a sequential vector
     virtual double getParameter(std::string name) const; ///< returns an organ parameter
 	int getNumberOfLaterals() const; ///< the number of emerged laterals (i.e. number of children with age>0)
 
@@ -110,7 +112,9 @@ public:
 	 /* useful */
     virtual Vector3d heading() const; ///< current (absolute) heading of the organs tip
     virtual Vector3d heading(int i)  const { throw std::runtime_error( "heading(i) not implemented" );  }///should be overwritten ; ///< current (absolute) heading of the organs tip
-
+	/* for carbon-limited growth (know future (or past) volume (or length))*/
+	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
+	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
 protected:
 
     /* up and down the organ tree */

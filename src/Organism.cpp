@@ -171,15 +171,16 @@ void Organism::simulate(double dt, bool verbose)
  * Creates a sequential list of organs. Considers only organs with more than 1 node.
  *
  * @param ot        the expected organ type, where -1 denotes all organ types (default).
- * @return Sequential list of organs. If there is less than one node,
+* @param all       get also the organs with only one node? default: false.  Sometimes true for carbon-limited growth
+ * @return Sequential list of organs. For all == false, if there is less than one node,
  * or another organ type is expected, an empty vector is returned.
  */
-std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot) const
+std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot, bool all) const
 {
     auto organs = std::vector<std::shared_ptr<Organ>>(0);
     organs.reserve(getNumberOfOrgans()); // just for speed up
     for (const auto& o : this->baseOrgans) {
-        o->getOrgans(ot, organs);
+        o->getOrgans(ot, organs, all);
     }
     return organs;
 }
@@ -359,6 +360,22 @@ std::vector<double> Organism::getSegmentCTs(int ot) const
     }
     return cts;
 }
+/**
+ * The segment indexes, corresponding to Organism::getSegments(ot).
+ *
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+std::vector<int> Organism::getSegmentIds(int ot) const
+{
+    auto segments = getSegments(ot); // of all nodes (otherwise indices are tricky)
+    std::vector<int> segId = std::vector<int>(segments.size());
+    for (int i=0; i<segments.size(); i++) {
+        segId[i] = segments[i].y-1;
+    }
+    return segId;
+}
+
 
 /**
  * A vector of pointers to the organs containing each segment, corresponding to Organism::getSegments.

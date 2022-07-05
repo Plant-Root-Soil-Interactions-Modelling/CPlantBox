@@ -92,30 +92,31 @@ public:
 /**
  * CWLimitedGrowth uses growth given by phloem module
  */
-class CWLimitedGrowth : public LinearGrowth
+class CWLimitedGrowth : public ExponentialGrowth
 {
 public:
 
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override {
-		if ((this->CW_Gr.empty()) || (CW_Gr.count(o->getId()) ==0)){
-			double length = LinearGrowth::getLength(t, r, k, o);
+		double length_;
+		if (this->CW_Gr.empty()  ){//
+			double length = ExponentialGrowth::getLength(t, r, k, o);
 			return length;
 		} else {
-			double length = o->getLength(false) ; // o->getParameter("length");
-			return this->CW_Gr.find(o->getId())->second+ length;
+			if((CW_Gr.count(o->getId()) ==0)||(this->CW_Gr.find(o->getId())->second<0)){length_ = 0; //org created at this time step
+				if((t> o->getOrganism()->getDt())&&(this->CW_Gr.find(o->getId())->second<-1e-5)){//possible rounding errors?
+					assert(false);
+				}
+			}else{
+				length_= o->getLength(false) +this->CW_Gr.find(o->getId())->second; // o->getParameter("length");
+				const_cast<double&>( this->CW_Gr.find(o->getId())->second ) = -1.;//sucrose is spent
+			}
+			return length_;
 		}
 	} ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
-		if ((this->CW_Gr.empty()) || (CW_Gr.count(o->getId()) ==0)){
-			double age = LinearGrowth::getAge(l, r, k, o);
-			return age;
-		} else {
-			double dt = o->getOrganism()->getDt();
-			double age = o->getParameter("age");
-			return age + dt;
-		}
+		return ExponentialGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
 	}  ///< @copydoc GrowthFunction::getAge
 
 	std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<CWLimitedGrowth>(*this); }
