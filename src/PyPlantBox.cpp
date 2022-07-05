@@ -856,6 +856,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKxTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKxTables))
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)
+            .def("getEffKr", &XylemFlux::getEffKr)
+            .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>(),py::arg("withEigen") = false)
             .def("linearSystem_detached",&XylemFlux::linearSystem_detached, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,

@@ -16,7 +16,7 @@ r.kx_f(age, type)
 """
 
 
-def init_conductivities(r, age_dependent:bool=False):
+def init_conductivities(r, age_dependent:bool = False):
     """ call to initialize age dependent or independent conductivities, 
     initializes functions kr(age, type) and kx(age, type) """
 
@@ -32,10 +32,10 @@ def init_conductivities(r, age_dependent:bool=False):
     kx1 = np.array([[0, 4.07e-04], [1, 5.00e-04], [2, 6.15e-04], [3, 7.56e-04], [4, 9.30e-04], [5, 1.14e-03], [6, 1.41e-03], [7, 1.73e-03], [8, 2.12e-03], [9, 2.61e-03], [10, 3.21e-03], [11, 3.95e-03], [12, 4.86e-03], [13, 5.97e-03], [14, 7.34e-03], [15, 9.03e-03], [16, 1.11e-02], [17, 1.36e-02]])
 
     if age_dependent:
-        r.setKrTables([kr0[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1]],
-                      [kr0[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0]])  # [cm^3/day]
-        r.setKxTables([kx0[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1]],
-                      [kx0[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0]])  # [1/day]
+        r.setKrTables([kr0[:, 1], kr0[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1]],
+                      [kr0[:, 0], kr0[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0]])  # [cm^3/day]
+        r.setKxTables([kx0[:, 1], kx0[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1]],
+                      [kx0[:, 0], kx0[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0]])  # [1/day]
 
     else:  # we set it as table to be able to make the rootsystem grow in a predefined way
         kr = np.array([[-1e4, 1.e-9], [-1.e-9, 1.e-9], [0., kr_const_], [1e4, kr_const_]])
@@ -46,7 +46,7 @@ def init_conductivities(r, age_dependent:bool=False):
                       [kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0]])  # [1/day]
 
 
-def init_conductivities_growth(r, age_dependent:bool=False, dt=1):
+def init_conductivities_growth(r, age_dependent:bool = False, dt = 1):
     """ same as init_conductivities but with a 1 day slope if segments emerge
         @param dt     time span after emergence to reach full kr value
     """
@@ -127,7 +127,7 @@ def init_singleroot_contkrkx(r):
                   [kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0]])  # [cm^3/day]
 
     # first entry twice, because rsml starts at type 1
-    kx_const = 0.346 * 0.5  # [cm3/day] 1e6 *   
+    kx_const = 0.346 * 0.5  # [cm3/day] 1e6 *
 
     kx = np.array([[0., kx_const], [1e4, kx_const]])
 
