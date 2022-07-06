@@ -146,7 +146,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
  */
 double Exotropism::tropismObjective(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx, const std::shared_ptr<Organ> o)
 {
-    Vector3d iheading =o->iHeading.column(0);
+    Vector3d iheading =o->getiHeading0();
     double s = iheading.times(old.times(Vector3d::rotAB(a,b)));
     s*=(1./iheading.length()); // iheading should be normed anyway?
     s*=(1./old.column(0).length());

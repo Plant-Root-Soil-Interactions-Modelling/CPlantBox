@@ -606,14 +606,14 @@ Vector3d Stem::heading(int n ) const
 		h.normalize();
 		return h;
 	} else {
-		return getiHeading();
+		return getiHeading0();
 	}
 }
 
 /**
  * @return Current absolute heading of the organ at node n, based on initial heading, or segment before
  */
-Vector3d Stem::getiHeading()  const
+Vector3d Stem::getiHeading0()  const
 {	
 	Matrix3d iHeading;
 	if (getParent()->organType()==Organism::ot_seed) { // from seed?

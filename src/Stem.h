@@ -57,7 +57,7 @@ public:
 	/* orientation */
 	Vector3d heading(int n)  const override; ///< current (absolute) heading of the organs at node n
     Vector3d heading() const override {return heading( -1 ); } 
-	Vector3d getiHeading()  const;
+	Vector3d getiHeading0()  const override;
 	
     void rel2abs() override;
 	void abs2rel() override;

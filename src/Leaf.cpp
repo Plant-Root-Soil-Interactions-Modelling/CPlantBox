@@ -303,7 +303,7 @@ std::vector<Vector3d> Leaf::getLeafVis(int i)
 		if (n>0) {
 			std::vector<Vector3d> coords;
 			auto x_ = getLeafVisX_(l);
-			Vector3d x1= iHeading.column(0);
+			Vector3d x1= getiHeading0();
 			x1.normalize();
 			Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs
 			y1.normalize();
@@ -527,7 +527,7 @@ Vector3d Leaf::heading(int n) const
 		h.normalize();
 		return h;
 	} else {
-		return getiHeading();
+		return getiHeading0();
 	}
 }
 
@@ -535,7 +535,7 @@ Vector3d Leaf::heading(int n) const
 /**
  * @return Current absolute heading of the organ at node n, based on initial heading, or segment before
  */
-Vector3d Leaf::getiHeading()  const
+Vector3d Leaf::getiHeading0()  const
 {
 	Vector3d vIHeading = getParent()->heading(parentNI);
 	Matrix3d iHeading = Matrix3d::ons(vIHeading);
@@ -636,7 +636,7 @@ std::shared_ptr<const LeafSpecificParameter>  Leaf::param() const
 std::string Leaf::toString() const
 {
 	std::stringstream newstring;
-	newstring << "; initial heading: " << iHeading.column(0).toString()  << ", parent node index " << parentNI << ".";
+	newstring << "; initial heading: " << getiHeading0().toString()  << ", parent node index " << parentNI << ".";
 	return  Organ::toString()+newstring.str();
 }
 } // namespace CPlantBox

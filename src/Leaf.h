@@ -62,7 +62,7 @@ public:
 	
     void rel2abs() override; ///< compute absolute from relative node coordinates
 	void abs2rel() override;///< compute relative from absolute node coordinates
-	Vector3d getiHeading() const;///< compute initial heading from 
+	Vector3d getiHeading0() const override;///< compute initial heading from 
 	bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
 												   
 
