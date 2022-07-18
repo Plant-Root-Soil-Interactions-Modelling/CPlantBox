@@ -860,14 +860,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>(),py::arg("withEigen") = false)
-            .def("linearSystem_detached",&XylemFlux::linearSystem_detached, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
-                    py::arg("soil_k") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
             		py::arg("soil_k") = std::vector<double>())
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
             		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
-		    .def("segFluxes_detached",&XylemFlux::segFluxes_detached, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
-		            		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
 			.def("sumSegFluxes",&XylemFlux::sumSegFluxes)
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
 			.def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))

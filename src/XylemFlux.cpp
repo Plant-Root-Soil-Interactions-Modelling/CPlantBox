@@ -187,115 +187,6 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 #endif
 }
 
-/**
- * Assembles the linear system as sparse matrix, given by public member variables,
- * indices aI, aJ, and corresponding values aV; and load aB
- * Never used for whole plants, only for RootSystems
- *
- * @param simTime[day]      current simulation time, needed for age dependent conductivities,
- *                          to calculate the age from the creation times (age = sim_time - segment creation time).
- * @param sx [cm]           soil matric potential in the cells or around the segments, given per cell or per segment
- * @param cells             sx per cell (true), or segments (false)
- * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
- *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
- */
-void XylemFlux::linearSystem_detached(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k)
-{
-    int Ns = rs->segments.size(); // number of segments
-    aI.resize(4*Ns);
-    aJ.resize(4*Ns);
-    aV.resize(4*Ns);
-    int N = rs->nodes.size(); // number of nodes
-    aB.resize(N);
-    std::fill(aB.begin(), aB.end(), 0.);
-    std::fill(aV.begin(), aV.end(), 0.);
-    std::fill(aI.begin(), aI.end(), 0);
-    std::fill(aJ.begin(), aJ.end(), 0);
-    size_t k=0;
-    for (int si = 0; si<Ns; si++) {
-
-        int i = rs->segments[si].x;
-        int j = rs->segments[si].y;
-
-        double psi_s;
-        int organType = rs->organTypes[si];
-        if (cells) { // soil matric potential given per cell
-            int cellIndex = rs->seg2cell[si];
-            if (cellIndex>=0) {
-				if(organType == Organism::ot_leaf){
-					std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
-					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-				}
-                if(sx.size()>1) {
-                    psi_s = sx.at(cellIndex);
-                } else {
-                    psi_s = sx.at(0);
-                }
-            } else {
-				if(organType == Organism::ot_root)
-				{
-					std::cout<<"XylemFlux::linearSystem: Root segment n#"<<si<<" aboveground. OrganType: ";
-					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-				}
-                psi_s = psi_air;
-            }
-        } else {
-            psi_s = sx.at(j-1); // j-1 = segIdx = s.y-1
-        }
-        double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
-        double age = simTime - rs->nodeCTs[j];
-        int subType = rs->subTypes[si];
-        double kx = 0.;
-        double  kr = 0.;
-
-        try {
-            kx = kx_f(si, age, subType, organType);
-            kr = kr_f(si, age, subType, organType, 0);
-        } catch(...) {
-            std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
-            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
-        }
-
-        if (soil_k.size()>0) {
-            kr = std::min(kr, soil_k[si]);
-        }
-
-        auto n1 = rs->nodes[i];
-        auto n2 = rs->nodes[j];
-        auto v = n2.minus(n1);
-        double l = v.length();
-        if (l<1.e-5) {
-            std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n"; // quick fix?
-            l = 1.e-5;
-        }
-        double vz = v.z / l; // normed direction
-
-        double tau = std::sqrt(2.*a * M_PI * kr / kx); // Eqn (2)
-        double delta = std::exp(-tau * l) - std::exp(tau * l); // Eqn (5)
-        double idelta = 1. / delta;
-
-        double cii = -kx * idelta * tau * (std::exp(-tau * l) + std::exp(tau * l)); // Eqn (16)
-        double cij = 2 * kx * idelta * tau;  // Eqn 17
-        double bi = kx * vz; //  # Eqn 18
-
-        i = rs->segments[0].x; // <---------------------------------- that' it (everything gets connected to the first node)
-
-        aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
-        aI[k] = i; aJ[k]= i; aV[k] = cii;
-        k += 1;
-        aI[k] = i; aJ[k] = j;  aV[k] = cij;
-        k += 1;
-
-        int ii = i;
-        i = j;  j = ii; // edge ji
-        aB[i] += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign
-        aI[k] = i; aJ[k]= i; aV[k] = cii;
-        k += 1;
-        aI[k] = i; aJ[k] = j;  aV[k] = cij;
-        k += 1;
-    }
-}
-
 
 /**
  * Fluxes from root segments into soil cells
@@ -418,94 +309,6 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
             fluxes[si] = 0.;
         }
 
-    }
-    return fluxes;
-}
-
-/**
- * Volumetric fluxes for each segment according to a given solution @param rx and @param sx
- * Never used for whole plants, only for RootSystems
- *
- * @param simTime   [days] current simulation time is needed for age dependent conductivities,
- *                  to calculate the age from the creation times (age = sim_time - segment creation time).
- * @param rx        [cm] root xylem matric potential per node
- * @param sx        [cm] soil matric potential for each segment
- * @param approx    approximate or exact (default = false, i.e. exact)
- * @param cells     sx per cell (true), or segments (false)
- * @param soil_k    [day-1] optionally, soil conductivities can be prescribed per segment,
- *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
- *
- * @return Volumetric fluxes for each segment [cm3/day]
- */
-std::vector<double> XylemFlux::segFluxes_detached(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-    bool approx, bool cells, const std::vector<double> soil_k)
-{
-    std::vector<double> fluxes = std::vector<double>(rs->segments.size());
-    size_t numleaf = 0;
-    for (int si = 0; si<rs->segments.size(); si++) {
-
-        int i = rs->segments[0].x;
-        int j = rs->segments[si].y;
-        int organType = rs->organTypes[si];
-
-        double psi_s;
-        if (cells) { // soil matric potential given per cell
-            int cellIndex = rs->seg2cell[si];
-            if (cellIndex>=0) {
-                if(sx.size()>1) {
-                    psi_s = sx.at(cellIndex);
-                } else {
-                    psi_s = sx.at(0);
-                }
-            } else {
-                psi_s = psi_air;
-            }
-        } else {
-            psi_s = sx.at(si); // j-1 = segIdx = s.y-1
-        }
-
-        double a = rs->radii[si]; // si is correct, with ordered and unordered segments
-        double age = simTime - rs->nodeCTs[j];
-        int subType = rs->subTypes[si];
-
-        double kx = 0.;
-        double kr = 0.;
-        try {
-            kx = kx_f(si, age, subType, organType);
-            kr = kr_f(si, age, subType, organType, numleaf);
-        } catch(...) {
-            std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
-            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
-        }
-        if (soil_k.size()>0) {
-            kr = std::min(kr, soil_k[si]);
-        }
-
-
-        if (a*kr>1.e-16) { // only relevant for exact solution
-            Vector3d n1 = rs->nodes[rs->segments[si].x]; // not i !!!
-            Vector3d n2 = rs->nodes[j];
-            double l = (n2.minus(n1)).length();
-            if (l<1.e-5) { // cut off like in XylemFlux::linearSystem
-                l = 1.e-5;
-            }
-            double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
-            double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
-
-            double tau = std::sqrt(2*a*M_PI*kr/kx); // sqrt(c) [cm-1]
-            double d = std::exp(-tau*l)-std::exp(tau*l); // det
-            double fExact = -f*(1./(tau*d))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tau*l)-std::exp(tau*l));
-
-            if(!std::isfinite(fExact)) {
-            	std::cout << "XylemFlux::segFluxes_detached: tau " << tau << ", l " << l << ", d " << d << ", rx "<< rx[i] << ", psi_s " << psi_s << ", f " << f << "\n";
-
-            }
-
-            double flux = fExact*(!approx)+approx*fApprox;
-            fluxes[si] = flux;
-        } else {
-            fluxes[si] = 0.;
-        }
     }
     return fluxes;
 }
@@ -842,7 +645,7 @@ std::vector<double> XylemFlux::getHs(const std::vector<double>& sx) {
                 hs[si] = sx.at(0);
             }
         } else {
-            hs[si] = airPressure;
+            hs[si] = psi_air;
         }
     }
     return hs;
