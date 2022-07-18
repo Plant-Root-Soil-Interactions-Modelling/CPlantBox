@@ -1,0 +1,104 @@
+@startuml
+footer Arnaud Bouvry
+' Ortho lines (only vertical and horizontal segments)
+'skinparam linetype ortho
+
+' Split into 4 pages
+'page 2x2
+'skinparam pageMargin 10
+
+skinparam svgLinkTarget _parent
+skinparam backgroundColor white
+
+'#############
+'# SOIL LOOKUP
+'#############
+
+package "SoilLookUp" {
+class CPlantBox::SoilLookUp
+class CPlantBox::MultiplySoilLookUp
+class CPlantBox::Grid1D
+class CPlantBox::EquidistantGrid1D
+class CPlantBox::ExudationModel
+'class CPlantBox::Vector3d
+class CPlantBox::RectilinearGrid3D
+class CPlantBox::EquidistantGrid3D
+class CPlantBox::ProportionalElongation
+class CPlantBox::PySoilLookUp
+class CPlantBox::SoilLookUpSDF
+
+CPlantBox::SoilLookUp <-- CPlantBox::Grid1D
+CPlantBox::Grid1D <-- CPlantBox::EquidistantGrid1D
+
+
+CPlantBox::SoilLookUp <-- CPlantBox::RectilinearGrid3D
+CPlantBox::Grid1D <.. CPlantBox::RectilinearGrid3D 
+note on link
+xgrid 
+ygrid 
+zgrid
+end note
+
+CPlantBox::RectilinearGrid3D <-- CPlantBox::EquidistantGrid3D
+
+
+CPlantBox::EquidistantGrid3D <.. CPlantBox::ExudationModel 
+note on link
+grid
+end note
+
+
+CPlantBox::SoilLookUp <-- CPlantBox::MultiplySoilLookUp
+
+CPlantBox::SoilLookUp <.. CPlantBox::ProportionalElongation 
+note on link
+baseLookUp
+end note
+
+CPlantBox::SoilLookUp <-- CPlantBox::PySoilLookUp
+
+CPlantBox::SoilLookUp <-- CPlantBox::SoilLookUpSDF
+} 
+'end package
+
+CPlantBox::Vector3d <.. CPlantBox::ExudationModel 
+note on link
+tip_
+x_
+v_
+end note
+
+
+
+'#############
+'# GEOMETRY
+'#############
+
+class CPlantBox::Matrix3d
+class CPlantBox::Vector3d
+
+CPlantBox::Vector3d <.. CPlantBox::Matrix3d
+note on link
+r0
+r1
+r2
+end note
+
+package SignedDistanceFunctions {
+class CPlantBox::SignedDistanceFunction
+
+CPlantBox::SignedDistanceFunction <.. CPlantBox::SoilLookUpSDF
+note on link
+sdf
+end note
+
+}
+
+' Hidden arrows for tighter layout
+'CPlantBox::SDF_Complement <-[hidden]- CPlantBox::SDF_Difference
+'CPlantBox::SDF_PlantBox <-[hidden]- CPlantBox::SDF_PlantContainer
+'CPlantBox::SDF_RootSystem <-[hidden]- CPlantBox::SDF_RotateTranslate
+
+
+@enduml
+

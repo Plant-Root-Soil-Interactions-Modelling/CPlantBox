@@ -1,0 +1,64 @@
+@startuml
+footer Arnaud Bouvry
+' Ortho lines (only vertical and horizontal segments)
+'skinparam linetype ortho
+
+' Split into 4 pages
+'page 2x2
+'skinparam pageMargin 10
+
+skinparam svgLinkTarget _parent
+skinparam backgroundColor white
+
+
+'#############
+'# ORGANS
+'#############
+package Organs {
+class CPlantBox::Organ
+class CPlantBox::Leaf
+class CPlantBox::Root
+class CPlantBox::RootDelay
+class CPlantBox::Seed
+class CPlantBox::Stem
+
+CPlantBox::Organ <-- CPlantBox::Leaf
+esft_organ <-- CPlantBox::Organ
+
+
+CPlantBox::Organ <-- CPlantBox::Root
+CPlantBox::Organ <-- CPlantBox::Seed
+CPlantBox::Organ <-- CPlantBox::Stem
+CPlantBox::Root <-- CPlantBox::RootDelay
+}
+CPlantBox::Vector3d <.. CPlantBox::Leaf
+note on link
+partialHeading
+end note
+
+CPlantBox::Vector3d <.. CPlantBox::Stem
+note on link
+partialHeading
+end note
+
+CPlantBox::Matrix3d <.. CPlantBox::Organ
+note on link
+iHeading
+end note
+
+'#############
+'# GEOMETRY
+'#############
+
+class CPlantBox::Matrix3d
+class CPlantBox::Vector3d
+
+CPlantBox::Vector3d <.. CPlantBox::Matrix3d
+note on link
+r0
+r1
+r2
+end note
+
+@enduml
+

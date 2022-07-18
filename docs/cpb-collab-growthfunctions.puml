@@ -1,0 +1,29 @@
+@startuml
+footer Arnaud Bouvry
+
+' Ortho lines (only vertical and horizontal segments)
+'skinparam linetype ortho
+
+' Split into 4 pages
+'page 2x2
+'skinparam pageMargin 10
+
+skinparam svgLinkTarget _parent
+
+
+'#############
+'# GROWTH FUNCTIONS 
+'#############
+
+class CPlantBox::GrowthFunction
+
+class CPlantBox::LinearGrowth
+class CPlantBox::CWLimitedGrowth
+class CPlantBox::ExponentialGrowth
+
+CPlantBox::GrowthFunction <-- CPlantBox::LinearGrowth
+CPlantBox::LinearGrowth <-- CPlantBox::CWLimitedGrowth
+CPlantBox::GrowthFunction <-- CPlantBox::ExponentialGrowth
+
+@enduml
+

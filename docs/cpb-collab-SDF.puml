@@ -1,0 +1,94 @@
+@startuml
+footer Arnaud Bouvry
+' Ortho lines (only vertical and horizontal segments)
+'skinparam linetype ortho
+
+' Split into 4 pages
+'page 2x2
+'skinparam pageMargin 10
+
+skinparam svgLinkTarget _parent
+skinparam backgroundColor white
+
+'#############
+'# SOIL LOOKUP
+'#############
+
+package "SoilLookUp" {
+class CPlantBox::SoilLookUp
+} 
+'end package
+
+
+'#############
+'# GEOMETRY
+'#############
+
+class CPlantBox::Matrix3d
+class CPlantBox::Vector3d
+
+CPlantBox::Vector3d <.. CPlantBox::Matrix3d
+note on link
+r0
+r1
+r2
+end note
+
+package SignedDistanceFunctions {
+class CPlantBox::SignedDistanceFunction
+class CPlantBox::SDF_Complement
+class CPlantBox::SDF_Cuboid
+class CPlantBox::SDF_Difference
+class CPlantBox::SDF_HalfPlane
+class CPlantBox::SDF_Intersection
+class CPlantBox::SDF_PlantBox
+class CPlantBox::SDF_PlantContainer
+class CPlantBox::SDF_RootSystem
+class CPlantBox::SDF_RotateTranslate
+class CPlantBox::SDF_Union
+class CPlantBox::SoilLookUpSDF
+
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_Complement
+
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_Cuboid
+CPlantBox::Vector3d <-- CPlantBox::SDF_Cuboid
+note on link
+min
+max
+end note
+
+CPlantBox::SDF_Intersection <-- CPlantBox::SDF_Difference
+
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_HalfPlane
+CPlantBox::Vector3d <-- CPlantBox::SDF_HalfPlane
+note on link
+p1
+p2
+n
+o
+end note
+
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_Intersection
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_PlantBox
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_PlantContainer
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_RootSystem
+CPlantBox::SignedDistanceFunction <-- CPlantBox::SDF_RotateTranslate
+CPlantBox::SDF_Intersection <-- CPlantBox::SDF_Union
+
+CPlantBox::SignedDistanceFunction <.. CPlantBox::SoilLookUpSDF
+note on link
+sdf
+end note
+
+CPlantBox::SoilLookUp <-- CPlantBox::SoilLookUpSDF
+
+}
+
+' Hidden arrows for tighter layout
+'CPlantBox::SDF_Complement <-[hidden]- CPlantBox::SDF_Difference
+'CPlantBox::SDF_PlantBox <-[hidden]- CPlantBox::SDF_PlantContainer
+'CPlantBox::SDF_RootSystem <-[hidden]- CPlantBox::SDF_RotateTranslate
+
+
+@enduml
+

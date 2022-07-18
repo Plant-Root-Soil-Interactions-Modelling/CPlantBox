@@ -88,7 +88,7 @@ protected:
 
     bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 	std::vector<double> getLeafVisX_(double l);
-	bool ageDependentTropism = false;///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abd
+	bool ageDependentTropism = false;///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abs
     bool firstCall = true;
 };
 
