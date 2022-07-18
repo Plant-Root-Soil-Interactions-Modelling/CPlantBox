@@ -415,6 +415,27 @@ std::vector<double> MappedSegments::segLength() const {
 }
 
 
+/**
+ * Calculates the minimum of node coordinates
+ * (e.g. minimum corner of bounding box)
+ * value not cached
+ */
+Vector3d MappedSegments::getMinBounds() {
+    Vector3d min_ = Vector3d(nodes[0].x, nodes[0].y, nodes[0].z); 
+    for (const auto& n : nodes) {
+        if (n.x < min_.x) {
+            min_.x = n.x;
+        }
+        if (n.y < min_.y) {
+            min_.y = n.y;
+        }
+        if (n.z < min_.z) {
+            min_.z = n.z;
+        }
+    }
+    return min_;
+}
+
 
 
 /**
@@ -566,26 +587,16 @@ void MappedPlant::initialize(bool verbose, bool stochastic) {
 void MappedPlant::mapSubTypes(){
 	for(int ot = 0; ot < organParam.size();ot++ )
 	{
-		for(int st = 0; st < organParam[ot].size();st++ )
+		//std::cout<<"MappedPlant::mapSubTypes for organtype "<<ot<<" with "<<organParam[ot].size()<<" subtypes "<<std::endl;
+		int stNew = 0;
+		for(int stOld_ = 1; stOld_ < organParam[ot].size();stOld_++)//skipe stOld ==0, not realted to any organ st
 		{
-			switch (ot) {
-			case 2: {
-				st2newst[std::make_tuple(ot, st)] = st;
-				break;
-			}
-			case 3: {
-				switch(st){
-				case 1: {st2newst[std::make_tuple(ot, st)] = st; continue;}
-				case 2: {continue; }//stem of st = 2 is a bud, it desn't have a kr/kx
-				default:{ st2newst[std::make_tuple(ot, st)] = st -1 ;};
-				}
-				break;
-			}
-			case 4: {
-				st2newst[std::make_tuple(ot+2, st)] = st - 2;
-				break;
-			} //leaf st starts with 2
-			}
+			if(organParam[ot][stOld_] != NULL) {
+				int stOld = organParam[ot][stOld_]->subType;
+				st2newst[std::make_tuple(ot, stOld)] = stNew;
+				//std::cout<<"old st: "<<stOld<<", new st: "<< stNew <<std::endl;
+				stNew ++;
+			}// else {std::cout<<"subType n#"<<stOld_<<" does not exist, skip "<<std::endl;}
 		}
 	}
 }
@@ -641,6 +652,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 	radii.resize(radii.size()+newsegO.size());
 	subTypes.resize(subTypes.size()+newsegO.size());
 	organTypes.resize(organTypes.size()+newsegO.size());
+	segVol.resize(segVol.size()+newsegO.size());
+	bladeLength.resize(bladeLength.size()+newsegO.size());
+	leafBladeSurface.resize(leafBladeSurface.size()+newsegO.size()); 
 	c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
@@ -649,11 +663,36 @@ void MappedPlant::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		vsegIdx.push_back(segIdx);
-		c++;
 		radii[segIdx] = so->getParam()->a;
-		subTypes[segIdx] = so->getParam()->subType;
-		organTypes[segIdx] = so->organType();
-		subTypes[segIdx] = st2newst[std::make_tuple(organTypes[segIdx],subTypes[segIdx])];
+		organTypes.at(segIdx) = so->organType();
+		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];//new st 
+		
+		if(organTypes[segIdx] == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
+		{
+			int index;
+			auto nodeIds = so->getNodeIds();
+			auto it = find(nodeIds.begin(), nodeIds.end(), newsegs[c].y);
+			if (it != nodeIds.end()){ index = it - nodeIds.begin() -1;
+			}else { 
+				throw std::runtime_error("MappedPlant::simulate: global segment index not found in organ");
+			}
+			int localSegId = index;
+			bool realized = true; bool withPetiole = false;
+			segVol.at(segIdx) = -1; 
+			bladeLength.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafLengthAtSeg(localSegId, withPetiole);
+			leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(localSegId,realized, withPetiole);
+			withPetiole = true;
+			segVol.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafVolAtSeg(localSegId, realized, withPetiole);//* thickness;
+			assert((segVol.at(segIdx) > 0)&&"MappedPlant::simulate: computation of leaf volume failed");
+			
+		}else{ //stems and roots are cylinder
+			auto s = segments.at(segIdx);
+			double length_seg = (nodes.at(s.x).minus(nodes.at(s.y))).length();
+			segVol.at(segIdx) = radii.at(segIdx) * radii.at(segIdx) * M_PI * length_seg;
+			bladeLength.at(segIdx) = 0;
+			leafBladeSurface.at(segIdx) = 0;
+		}
+		c++;
 	}
 
 	// map new segments
@@ -685,43 +724,45 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
+	if(kr_length > 0.){calcExchangeZoneCoefs();}
+
 }
 
 
 
 /**
- * define the growth rate of each organ according to value given by phloem module
- * Does not overright the r (initial growth rate) parameter
- * @param CWGr        growth of each organ during time step
- *
- */
-void MappedPlant::setCWGr(std::vector<double> CWGr)
-{
-	auto organs = this->getOrgans(-1);
-	std::map<int, double> cWGrRoot; //set cWGr in this function instead of in Mappedorganism.h : cWGr is then reset to empy every tim efunction is called
-	std::map<int, double> cWGrStem; // + no need for mapped organism to keep cWGr in memory. just has to be in growth function
-	std::map<int, double> cWGrLeaf;
-	int num = 0;
-	for (const auto& r : organs) {
-		if(r->organType() == ot_root){//each organ type has it s own growth function (and thus CW_Gr map)
-			cWGrRoot.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
+ * computes coeficients for kr
+ * when root kr > 0 up to kr_length cm from the root tip
+ * see @XylemFlux::kr_RootExchangeZonePerType()
+ **/
+void MappedPlant::calcExchangeZoneCoefs() { //
+	exchangeZoneCoefs.resize(segments.size(), -1.0);
+	auto orgs = getOrgans(-1);
+	for(auto org: orgs)
+	{
+		for(int localIdx = 1; localIdx < org->getNumberOfNodes();localIdx++)
+		{
+			int globalIdx_x = org->getNodeId(localIdx -1 );
+			int globalIdx_y = org->getNodeId(localIdx);
+			if(org->organType() != Organism::ot_root){exchangeZoneCoefs.at(globalIdx_y-1) = 1;
+			}else{
+				auto n1 = nodes.at(globalIdx_x);
+				auto n2 = nodes.at(globalIdx_y);
+				auto v = n2.minus(n1);
+				double l = v.length();
+				double distance2RootTip_y = org->getLength(true) - org->getLength(localIdx);
+				double length_in_exchangeZone = std::min(l,std::max(kr_length - std::max(distance2RootTip_y,0.),0.));
+				exchangeZoneCoefs.at(globalIdx_y-1) = length_in_exchangeZone/l;
+			}
 		}
-		if(r->organType() == ot_stem){
-			cWGrStem.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-		}
-		if(r->organType() == ot_leaf){
-			cWGrLeaf.insert(std::pair<int, double>(r->getId(), CWGr.at(num)));
-		}
-		num = num + 1;
 	}
-	for (auto orp : getOrganRandomParameter(ot_root)) { // each maps is copied for each sub type; or (todo), we could pass a pointer, and keep maps in this class
-		orp->f_gf->CW_Gr = cWGrRoot;
-	}
-	for (auto orp : getOrganRandomParameter(ot_stem)) {
-		orp->f_gf->CW_Gr = cWGrStem;
-	}
-	for (auto orp : getOrganRandomParameter(ot_leaf)) {
-		orp->f_gf->CW_Gr = cWGrLeaf;
+	const int notFound = std::count(exchangeZoneCoefs.cbegin(), exchangeZoneCoefs.cend(), -1.0);
+	if(notFound != 0)
+	{
+		std::stringstream errMsg;
+		errMsg <<"MappedPlant::calcExchangeZoneCoefs(): "<<notFound<<" elements not initalized";
+		throw std::runtime_error(errMsg.str().c_str());
+		std::cout<<"notFound "<<notFound<<std::endl;
 	}
 }
 
@@ -759,6 +800,38 @@ void MappedPlant::printNodes() {
 		std::cout << to.toString() << std::flush;
 	}
 	std::cout << "\n segments size \n"<< segments.size() << std::flush;
+}
+
+/**
+ *	index of node of organtype ot
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+std::vector<int> MappedPlant::getSegmentIds(int ot) const
+{
+	std::vector<int> segId;// = std::vector<int>(segments.size());
+    for (int i=0; i<segments.size(); i++) {
+		if((ot == -1)||(organTypes[segments[i].y-1]== ot)){
+			segId.push_back(segments[i].y-1);
+		}
+    }
+	return segId;
+}
+
+/**
+ * index of segment of organ type ot
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+std::vector<int> MappedPlant::getNodeIds(int ot) const
+{
+	std::vector<int> nodeId;// = std::vector<int>(segments.size());
+    for (int i=0; i<segments.size(); i++) {
+		if((ot == -1)||(organTypes[segments[i].y-1]== ot)){
+			nodeId.push_back(segments[i].y);
+		}
+    }
+	return nodeId;
 }
 
 } // namespace

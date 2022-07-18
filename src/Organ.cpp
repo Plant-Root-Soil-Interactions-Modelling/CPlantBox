@@ -263,34 +263,41 @@ double Organ::dxMin() const
  * Returns the organs as sequential list, copies only organs with more than one node.
  *
  * @param ot        the expected organ type, where -1 denotes all organ types (default).
+ * @param all       get also the organs with only one node? default: false. Sometimes true for carbon-limited growth
  *
  * @return A sequential list of organs. If there is less than one node,
  * or another organ type is expected, an empty vector is returned.
  */
-std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot)
+std::vector<std::shared_ptr<Organ>> Organ::getOrgans(int ot, bool all)
 {
 	auto v = std::vector<std::shared_ptr<Organ>> ();
-	this->getOrgans(ot, v);
+	this->getOrgans(ot, v, all);
 	return v;
 }
 
 /**
- * Returns the organs as sequential list, copies only organs with more than one node.
- *
+ * Returns the organs as sequential list, if all == false,copies only organs with more than one node.
+ * if all == true return all born organs (age > 0 ) except for the seed and bulb (i.e., organs which do not grow)
  * @param ot        the expected organ type, where -1 denotes all organ types (default).
+ * @param all       get also the organs with only one node? default: false. Sometimes true for carbon-limited growth
  * @param v         vector of organs where the subtree is added,
  *                  only expected organ types with more than one nodes are added.
  */
-void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v)
+void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v, bool all)
 {
-	if (this->nodes.size()>1) {
+	bool notBulb = !((this->organType() == Organism::ot_stem)&&(this->getParameter("subType") == 2));//do not count leaf bulb
+	//might have age <0 and node.size()> 1 when adding organ manuelly @see test_organ.py
+	bool forCarbon_limitedGrowth = (all && (this->getAge()>0));//when ask for "all" organs which have age > 0 even if nodes.size() == 1
+	bool notSeed = ( this->organType() != Organism::ot_seed);
+	
+	if ((this->nodes.size()>1 || forCarbon_limitedGrowth)&& notBulb &&notSeed) {
 		if ((ot<0) || (ot==this->organType())) {
 			v.push_back(shared_from_this());
 		}
 	}
 	// std::cout << "Organ::getOrgans recursive: number of children " <<  this->children.size() << "\n" << std::flush;
 	for (const auto& c : this->children) {
-		c->getOrgans(ot,v);
+		c->getOrgans(ot,v, all);
 	}
 }
 
@@ -489,4 +496,16 @@ Vector3d Organ::heading() const
 	}
 }
 
+/**
+ * Needed for carbon-limited growth: to know sucrose necessary for length increase
+ * Overwritten by @Leaf::orgVolume
+ * @param length   length for which volume is calculated. if length = -1, use current organ length
+ * @param realized for length = -1: use current theoratical or realized length
+ * @return Volume for specific or current length. Overriden for @Leaf::orgVolume
+ */
+double Organ::orgVolume(double length_,  bool realized) const
+{
+	if(length_ == -1){length_ = getLength(realized);}
+	return M_PI * length_ * param_->a * param_->a;//cylinder
+};
 }

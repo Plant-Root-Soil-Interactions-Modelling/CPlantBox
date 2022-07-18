@@ -160,23 +160,26 @@ void Root::simulate(double dt, bool verbose)
 						double s = p.lb; // summed length
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
-                            if (length<s) {
+                            if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
                                 if (i==children.size()) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
-                                if (length+dl<=s) { // finish within inter-lateral distance i
-                                    createSegments(dl,dt_,verbose);
-                                    length+=dl; //- this->epsilonDx;
-                                    dl=0;
-                                } else { // grow over inter-lateral distance i
-                                    double ddx = s-length;
-                                    createSegments(ddx,dt_,verbose);
-                                    dl-=ddx;
-                                    length=s;
-//									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-//										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
-//									} // this could happen, if the tip ends in this section
-                                }
+								if(length < s)//because with former check we have (length<=s)
+								{
+									if (length+dl<=s) { // finish within inter-lateral distance i
+										createSegments(dl,dt_,verbose);
+										length+=dl; //- this->epsilonDx;
+										dl=0;
+									} else { // grow over inter-lateral distance i
+										double ddx = s-length;
+										createSegments(ddx,dt_,verbose);
+										dl-=ddx;
+										length=s;
+	//									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+	//										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
+	//									} // this could happen, if the tip ends in this section
+									}
+								}
                             }
                         }
                         if (p.ln.size()==children.size()&& (getLength(true)>=s)){
