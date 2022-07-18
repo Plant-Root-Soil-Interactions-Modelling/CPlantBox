@@ -333,9 +333,9 @@ double Organ::getParameter(std::string name) const {
 	if (name=="radius") { return this->param_->a; } // root radius [cm]
 	if (name=="diameter") { return 2.*this->param_->a; } // root diameter [cm]
 	// organ member variables
-    if (name=="iHeadingX") { return iHeading.column(0).x; } // root initial heading x - coordinate [cm]
-    if (name=="iHeadingY") { return iHeading.column(0).y; } // root initial heading y - coordinate [cm]
-    if (name=="iHeadingZ") { return iHeading.column(0).z; } // root initial heading z - coordinate [cm]
+    if (name=="iHeadingX") { return getiHeading0().x; } // root initial heading x - coordinate [cm]
+    if (name=="iHeadingY") { return getiHeading0().y; } // root initial heading y - coordinate [cm]
+    if (name=="iHeadingZ") { return getiHeading0().z; } // root initial heading z - coordinate [cm]
     if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
     if (name=="parent-node") { // local parent node index for RSML (higher order roots are missing the first node)
         if (this->parent.expired()) {
@@ -492,7 +492,7 @@ Vector3d Organ::heading() const
 		h.normalize();
 		return h;
 	} else {
-		return iHeading.column(0);
+		return getiHeading0();
 	}
 }
 

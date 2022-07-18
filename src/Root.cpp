@@ -427,7 +427,7 @@ double Root::getParameter(std::string name) const
 std::string Root::toString() const
 {
     std::stringstream newstring;
-    newstring << "; initial heading: " << iHeading.toString() << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
     return  Organ::toString()+newstring.str();
 }
 

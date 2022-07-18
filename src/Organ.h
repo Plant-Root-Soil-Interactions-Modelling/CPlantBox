@@ -106,8 +106,9 @@ public:
     void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
 
     /* Parameters that are constant over the organ life time*/
+    virtual Vector3d getiHeading0() const {return iHeading.column(0);}
     Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
-
+	
     int parentNI; ///< local parent node index
 	 /* useful */
     virtual Vector3d heading() const; ///< current (absolute) heading of the organs tip
