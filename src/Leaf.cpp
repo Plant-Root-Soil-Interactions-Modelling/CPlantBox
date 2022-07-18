@@ -609,7 +609,8 @@ std::vector<Vector3d> Leaf::getLeafVis(int i)
 			Vector3d x1= getiHeading0();
 			x1.normalize();
 			Vector3d y1 = Vector3d(0,0,-1).cross(x1); // todo angle between leaf - halfs
-			y1.normalize();
+			y1.normalize(); 
+			
 			double a  = leafArea() / leafLength(); // scale radius
 			for (double x :x_) {
 				coords.push_back(getNode(i).plus(y1.times(x*a)));
