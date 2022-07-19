@@ -131,9 +131,9 @@
 
 
 <organ type="leaf" name="lateral1" subType="2">
-    <parameter name="lb" value="2" dev="0"/>
+    <parameter name="lb" value="0" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
+    <parameter name="la" value="2" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
