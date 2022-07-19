@@ -87,6 +87,11 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	std::vector<double> ln_; // stores the inter-distances
 	double res;
 	int nob_real = 0; //number of branching nodes
+	if((shapeType == shape_2D)&&(leafGeometryPhi.size()==0))//because default value of shapeType is shape_2D
+	{
+		std::cout<<"shapeType set to shape_2D but no 2D shape data given, set shapeType to cylinder"<<std::endl;
+		shapeType = shape_cylinder;
+	}
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;
