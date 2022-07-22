@@ -43,11 +43,6 @@ Photosynthesis::Photosynthesis(std::shared_ptr<CPlantBox::MappedPlant> plant_, d
 		@param sim_time_ [day]           simulation time
 		@param sxx_ [cm]                 soil matric potentials given per segment or per soil cell
 		@param cells_                    indicates if the matric potentials are given per cell (True) or by segments (False)
-																					   
-																				 
-														 
-																										  
-																									   
 		@param soil_k [day-1]           optionally, soil conductivities can be prescribed per segment, 
 										conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
 		@param doLog_                    indicates if computed values should be printed in a text file (True) or not (False) 
@@ -93,14 +88,12 @@ void Photosynthesis::solve_photosynthesis(double sim_time_,std::vector<double> s
 	
 	//		compute parameters which do not change between the loops
 	initCalcs(sim_time_);
-	k_stomatas = k_stomatas_old ;
-	bool withEigen_ = true; //solve water flux with Eigen library, @see XylemFlux::linearSystem
+	k_stomatas = k_stomatas_old ;											
 	while(!this->stop){  
-		//std::cout<<"in loop "<<loop<<std::endl;
 		std::fill(maxErr.begin(), maxErr.end(), 0.);//re-initialize error vector
 		loopCalcs(sim_time_) ;//compute photosynthesis outputs
 		if((verbose_photosynthesis > 1)){std::cout<<"to linearSystem"<<std::endl;}
-		linearSystemSolve(sim_time_, sxx_, cells_, soil_k_, withEigen_); //compute psiXyl
+		linearSystemSolve(sim_time_, sxx_, cells_, soil_k_); //compute psiXyl
 		if((verbose_photosynthesis > 1)){std::cout<<"to outputFlux"<<std::endl;}
 		//usefull only to know whether we reached convergence
 		outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, std::vector<double>());//approx = false
@@ -145,10 +138,22 @@ void Photosynthesis::solve_photosynthesis(double sim_time_,std::vector<double> s
 	}
 }
 
-void Photosynthesis::getError(double simTime_, const std::vector<double>& sxx_, bool cells_, const std::vector<double> soil_k_, bool withEigen_)
+
+/**
+ * Solves the linear system filled by @see XylemFlux::linearSystem
+ *
+ * @param simTime[day]  	current simulation time, needed for age dependent conductivities,
+ *                  		to calculate the age from the creation times (age = sim_time - segment creation time).
+ * @param sx [cm]			soil matric potential in the cells or around the segments, given per cell or per segment
+ * @param cells 			sx per cell (true), or segments (false)
+ * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
+ *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
+ */
+void Photosynthesis::linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, const std::vector<double> soil_k_)
 {
 	//get "tripletList" and "b"
-	linearSystem(sim_time_, sxx_, cells_, soil_k_, withEigen_); //see @ XylemFlux::linearSystem
+	bool withEigen_ = true;
+	linearSystem(simTime_, sxx_, cells_, soil_k_, withEigen_); //see XylemFlux::linearSystem
     int N = rs->nodes.size(); // number of nodes
 	Eigen::SparseMatrix<double> mat(N,N);
 	mat.reserve(Eigen::VectorXi::Constant(N,2));
@@ -171,6 +176,7 @@ void Photosynthesis::getError(double simTime_, const std::vector<double>& sxx_, 
 	std::vector<double> v3(&v2[0], v2.data()+v2.cols()*v2.rows());
 	psiXyl = v3;
 }
+
 /* 
 		Computes error % for each segment for each of the variables of interestes.
 		@param sim_time_ [day]           simulation time, needed when doLog = true

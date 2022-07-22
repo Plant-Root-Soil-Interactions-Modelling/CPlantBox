@@ -85,15 +85,25 @@ void OutputSettings() ;
 void BreakpointSharpParameterChanges(int s, double t) ; // User-editable (implemented in 'PiafMunch2.cpp') ; s = # of integration segment (first = 1) ; t = time
 void aux(double t, double * y) ;	
 
+
+/**
+ * Phloem flow based on PiafMunch code of LAcointe et al. 2019
+ * see also phloem_flow.py in CPlantBox/src/python_modules
+ *
+ * Units are [hPa] and [day]
+ * CplantBox object making link with PiafMunh
+ * Wraps a Photosynthesis class
+ */
 class PhloemFlux: public CPlantBox::Photosynthesis
 {
 	public:
 	PhloemFlux(std::shared_ptr<CPlantBox::MappedPlant> plant_, double psiXylInit = -500., double ciInit = 350e-6): 
-		CPlantBox::Photosynthesis(plant_, psiXylInit, ciInit){};//, plant(plant_)
+		CPlantBox::Photosynthesis(plant_, psiXylInit, ciInit){};
     std::shared_ptr<PhloemFlux> Phloem() { return std::make_shared<PhloemFlux>(*this); }; // up-cast for Python binding
 	virtual ~PhloemFlux() { }
-	int startPM(double StartTime ,double EndTime, int OutputStep,double TairK, bool verbose = true , std::string filename= "outpm.txt");
-	void computeOrgGrowth(double t);
+	int startPM(double StartTime ,double EndTime, int OutputStep,double TairK, bool verbose = true , 
+		std::string filename= "outpm.txt");///< main function called from python
+	void computeOrgGrowth(double t);///< returns max sucrose need for growth per segment
 	
 	//		from plant shape
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
@@ -141,6 +151,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	vector<double> vol_STv;//void(*aux)(double,double*),
 	vector<double> r_ST_refv; 
 	vector<double> r_STv; 
+	//length and volume incrase per segment and organs
 	std::vector<double> delta_suc_org;
 	std::vector<double> delta_ls;
 	std::vector<double> delta_ls_org_i;
@@ -149,65 +160,68 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	std::vector<double> delta_ls_org_max;
 	std::vector<double> delta_vol_org_i, delta_vol_org, delta_vol_org_imax, delta_vol_org_max;
 	std::vector<double> delta_vol_node_i, delta_vol_node, delta_vol_node_imax, delta_vol_node_max;
-	std::vector<double> Agv;
-	std::vector<double> Q_Grmaxv;
-	std::vector<double> Q_GrmaxUnbornv_i;
-	std::vector<double> Q_GrUnbornv_i;
-	std::vector<double> Q_Exudmaxv ;
-	std::vector<double> Q_Rmmaxv ;
-	std::vector<double> Flv ;
-	std::vector<double> vol_Mesov;
-	std::vector<double> JW_STv;
-	std::vector<double> Fpsi;
-	std::vector<std::map<int,double>> deltaSucOrgNode_;
+	
+	//all in (mmol Suc d-1)
+	std::vector<double> Agv;//assimilation (mmol Suc d-1)
+	std::vector<double> Q_Grmaxv;//maximal sucrose sink for growth (mmol Suc d-1)
+	std::vector<double> Q_GrmaxUnbornv_i;//maximal sucrose sink for growth of organ with length < dxMin, (mmol Suc d-1)
+	std::vector<double> Q_GrUnbornv_i;//realized sucrose sink for growth of organ with length < dxMin, (mmol Suc d-1)
+	std::vector<double> Q_Exudmaxv ;//maximal exudatoin rate, (mmol Suc d-1)
+	std::vector<double> Q_Rmmaxv ;//maximal sucrose usage for maintenance, (mmol Suc d-1)
+	std::vector<double> Flv ;//sucrose flow from mesophyll to sieve tube, (mmol Suc d-1)
+	std::vector<double> vol_Mesov;//volume of mesophyll (same as leaf blade volume), (cm3)
+	std::vector<double> JW_STv;//sieve tube water flow, (cm3 d-1)
+	std::vector<double> Fpsi;//water scarcity factor for growth, (-)
+	std::vector<std::map<int,double>> deltaSucOrgNode_;//maximal sucrose need for growth per node, (mmol Suc d-1)
 	
 	
 	//		To calibrate
 	double Q10 = 2.; double TrefQ10 = 20;//to compute effect of T on growth (see CN-wheat, residual respiration @Barillot 2016, appendix)
 	double psiMax = 0; double psiMin = -2000*(1/0.9806806);//limit wat. pot. in xylem for water-limited growth, [cm]
-	double KMgr = 0.16;
-	double KMrm = 0.2;
-	double k_meso = 1e-4;
+	//double KMgr = 0.16; //@see C_fluxes,Michaelis menten coef for growth, not implemented
+	//double KMrm = 0.2; //@see C_fluxes,Michaelis menten coef for maintenance, not implemented
+	//double k_meso = 1e-4;//conductivity if implement ohm analogy for Fl, not implemented
 	double Csoil =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
-	double surfMeso =0.01 ;//cm2
-	double Cobj_ST = 1.;
+	//used if sameVolume_meso_st == false, sameVolume_meso_seg == false
+	double surfMeso =0.01 ;//cross sectinnal area of mesophyll (cm2). 
+	//double Cobj_ST = 1.;// ==> when doing loading or unloading with objective value. not implemented
 	double Vmaxloading = 0.019872;//mmol cm-1 d-1 for leaf blade 1cm wide
-	double CSTimin = 0.4;
-	double beta_loading = 1;
-	double Mloading = 0.2;
-	double Gr_Y = 0.75;
-	double atol_double = 1e-017;
-	double rtol_double = 1e-023;
-	double initValST = 0.8;
-	double initValMeso = 0.9;
+	double CSTimin = 0.4;//minimum CST value below which there is no sink of sucrose
+	double beta_loading = 1;//@see C_fluxes, feedback effect of C_ST on Q_FL
+	double Mloading = 0.2;//@see C_fluxes,Michaelis menten coef for Fl
+	double Gr_Y = 0.75;//growth efficiency
+	double atol_double = 1e-017;//max absolute error
+	double rtol_double = 1e-023;//max realtive error
+	double initValST = 0.8;//initial concentration in sieve tube
+	double initValMeso = 0.9;//initial concentration in mesophyll
 	
 	//		boolean choices
 	bool update_viscosity_ = true;
-	bool usePsiXyl = true;
-	bool sameVolume_meso_seg = true;
+	bool usePsiXyl = true;//use PsiXyl value of xylem tissue
+	bool sameVolume_meso_seg = true; //use same volume for mesophyll and leaf blade compartment?
 	bool sameVolume_meso_st = true; //use same volume for mesophyll and leaf st compartment?
-	bool withInitVal = false;
-	int solver = 1;
-	bool doTroubleshooting =false;
-	bool useCWGr;
-	int expression = 1;
+	bool withInitVal = false;//use initValST and initValMeso
+	int solver = 1;//which solver to use
+	bool doTroubleshooting =false; //do extra printing
+	bool useCWGr; //use water- and carbon- limited growth?
+	int expression = 1;//if implement several possible expression in C_fluxes
 	
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters & constants (implemented in 'initialize.cpp')
 	void initialize_hydric() ;							// initializes hydric system parameters & constants (implemented in 'initialize.cpp')
-	void initializePM_(double dt,  double TairK); 
-	void f(double t, double *y, double *y_dot) ;
+	void initializePM_(double dt,  double TairK); //copmutes PiafMunch input data from CPlantBox data
+	void f(double t, double *y, double *y_dot) ;	//function launched by CVODE-SUNDIALS
 	void aux(double t, double * y);
 	void update_viscosity() ;
 	void C_fluxes(double t, int Nt) ; // in  PiafMunch2.cpp
 	
 	protected:
 	//internal parameters
-	double TairK_phloem;
+	double TairK_phloem;//temperature in K for phloem tissue
 	int Nt_old = 0; //BU old seg size
     Fortran_vector Q_ParApoBU ;
 	Fortran_vector Q_GrmaxBU ;
-	bool hayErrores = false;
+	//bool hayErrores = false;
 	int errorID = -1;
 	int neq_coef = 9;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
 	std::vector<double> BackUpMaxGrowth;//to check at runtime if growth is correct

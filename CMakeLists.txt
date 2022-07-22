@@ -18,6 +18,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 if (WITH_PHOTOSYNTHESIS)
 MESSAGE(STATUS "WITH_PHOTOSYNTHESIS")
+add_definitions(-DUSE_PHOTOSYNTHESIS=1)
 #need C++17 for Eigen3 
 set(RELEASE_OPTS "-std=c++17 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -march=native -funroll-loops -g0 ")
 set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")

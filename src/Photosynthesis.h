@@ -28,9 +28,12 @@ public:
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
 	void solve_photosynthesis(double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) , 
 				bool cells_ = true, std::vector<double> soil_k_ = std::vector<double>(),
-				bool doLog_ = false, int verbose_ = 0, double RH_=0.5, double TairC_=25);
+				bool doLog_ = false, int verbose_ = 0, double RH_=0.5, 
+				double TairC_=25); ///< main function, makes looping until convergence
+	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, 
+				const std::vector<double> soil_k_);///< main function, solves the flux equations
 	
-	void loopCalcs(double simTime); ///< 
+	void loopCalcs(double simTime); ///<solves photosynthesis/stomatal opening equations 
 	void getAg4Phloem(); ///< Converts An [mol CO2 m-2 s-1] to Ag4Phloem [mmol Suc d-1]
 	void getError(double simTime);///< Computes error % for each segment for each of the variables of interestes.
 	
@@ -101,6 +104,7 @@ public:
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
 	
 protected:
+	//Compute variables which do not vary during one "solve_photosynthesis " computation
 	void initCalcs(double sim_time_);
 	void initStruct(double sim_time_);
 	void initVcVjRd();

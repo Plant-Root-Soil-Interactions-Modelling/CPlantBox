@@ -4,10 +4,6 @@
 #include <algorithm>
 #include <set>
 
-#ifdef USE_PHOTOSYNTHESIS
-#include <Eigen/Dense>
-#include <Eigen/Sparse> 
-#endif
 namespace CPlantBox {
 
 
@@ -25,7 +21,7 @@ XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs){}
  * @param cells 			sx per cell (true), or segments (false)
  * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
  *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
-* @param withEigen			use Eigen solve (true), ot not (false = default)
+* @param withEigen			use Eigen solve (true), ot not (false = default). == True when called by @see Photosynthesis::linearSystemSolve
  */
 void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k, bool withEigen)
 {
@@ -41,10 +37,14 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
     std::fill(aJ.begin(), aJ.end(), 0);
     size_t k=0;
     size_t numleaf = 0;
-#ifdef USE_PHOTOSYNTHESIS
+	
+#ifdef USE_PHOTOSYNTHESIS //create Eigen matrices to send to Photosynthesis::linearSystemSolve
 	typedef Eigen::Triplet<double> Tri;
+	tripletList.clear();
 	tripletList.reserve(Ns*4);
-	b.resize(N);
+	b = Eigen::VectorXd(N);
+	Eigen::SparseMatrix<double> mat(N,N);
+	mat.reserve(Eigen::VectorXi::Constant(N,2));
 #endif
     for (int si = 0; si<Ns; si++) {
 
@@ -129,7 +129,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 
         aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
 #ifdef USE_PHOTOSYNTHESIS
-		if(withEigen){ //when build with photosynthesis but do not want to use eigensolve
+		if(withEigen){ //when build with photosynthesis but do not use Photosynthesis object
 			b(i) = aB[i];
 			tripletList.push_back(Tri(i,i,cii));
 		}

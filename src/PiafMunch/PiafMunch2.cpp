@@ -153,7 +153,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
 		double Cmeso = max(0.,Q_Sympl[i]/vol_ParApo[i]);
-		Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
+		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
 		double Q_Rmmax_ ;double Q_Exudmax_;double Fu_lim;
 		Q_out_dot[i] = 0;

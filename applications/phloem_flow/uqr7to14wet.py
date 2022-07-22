@@ -1,8 +1,8 @@
 """ water movement within the root (static soil) """
 directoryN = "/7to14wet/"
 import sys; 
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
-CPBdir = "../../.."
+import sys; sys.path.append("../.."); sys.path.append("../../src/python_modules")
+CPBdir = "../.."
 #import matplotlib
 #matplotlib.use('AGG') #otherwise "import matplotlib.pyplot" hangs
 
@@ -300,6 +300,7 @@ p_mean = -187
 p_bot = p_mean + depth/2
 p_top = p_mean - depth/2
 sx = np.linspace(p_top, p_bot, depth)
+print(sx)
 #p_g = -2000 # water potential of the gua
 picker = lambda x,y,z : max(int(np.floor(-z)),-1) #abovegroud nodes get index -1
 
@@ -511,8 +512,11 @@ while simDuration < simMax:
         
     setKrKx_xylem(weatherX["TairC"], weatherX["RH"])
     
+    #r.maxLoop = 3
     r.solve_photosynthesis(sim_time_ = simDuration, sxx_=sx, cells_ = True,RH_ = weatherX["RH"],
         verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"] )
+    #print(r.psiXyl)
+    #raise Exception
         
     #trans = np.array(r.outputFlux)
     """ dumux """    
@@ -761,13 +765,15 @@ while simDuration < simMax:
     rl_ = ana.distribution("length", 0., -depth, layers, True)                   
     rl_ = np.array(rl_)/ soilvolume  # convert to density
     fluxes_p = np.insert(fluxes_p,0,0)# "[sucrose]",
-    if(simDuration > 0):#if(simDuration > (simMax -1)):
-        vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)"],
-                            vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p], 
-                            filename = "results"+ directoryN +"plotplant_psi_"+ str(ö), range_ = [300,1450])
-        vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","sucrose concentration (mmol/cm3)"],
-                            vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, C_ST_p], 
-                            filename = "results"+ directoryN +"plotplant_suc_"+ str(ö), range_ = [0,3])   
+    
+    #need to adapt plot_plant for this to work
+    # if(simDuration > 0):#if(simDuration > (simMax -1)):
+        # vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)"],
+                            # vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p], 
+                            # filename = "results"+ directoryN +"plotplant_psi_"+ str(ö), range_ = [300,1450])
+        # vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","sucrose concentration (mmol/cm3)"],
+                            # vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, C_ST_p], 
+                            # filename = "results"+ directoryN +"plotplant_suc_"+ str(ö), range_ = [0,3])   
     ö +=1
     r_ST_ref = np.array(r.r_ST_ref)
     r_ST = np.array(r.r_ST)
