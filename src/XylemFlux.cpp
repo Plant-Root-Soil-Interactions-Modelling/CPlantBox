@@ -43,11 +43,8 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
     size_t numleaf = 0;
 #ifdef USE_PHOTOSYNTHESIS
 	typedef Eigen::Triplet<double> Tri;
-	std::vector<Tri> tripletList;
 	tripletList.reserve(Ns*4);
-	Eigen::SparseMatrix<double> mat(N,N);
-	mat.reserve(Eigen::VectorXi::Constant(N,2));
-	Eigen::VectorXd b(N);
+	b.resize(N);
 #endif
     for (int si = 0; si<Ns; si++) {
 
@@ -163,28 +160,6 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         aI[k] = i; aJ[k] = j;  aV[k] = cij;
         k += 1;
     }
-#ifdef USE_PHOTOSYNTHESIS
-	if(withEigen){ 
-		mat.setFromTriplets(tripletList.begin(), tripletList.end());
-		mat.makeCompressed();
-		Eigen::SparseLU<Eigen::SparseMatrix<double>> lu;
-		lu.compute(mat);
-		
-		if(lu.info() != Eigen::Success){
-			std::cout << "XylemFlux::linearSystem  matrix Compute with Eigen failed: " << lu.info() << std::endl;
-			assert(false);
-		}
-		
-		Eigen::VectorXd v2;
-		try{ 
-			v2= lu.solve(b);
-		}catch(...){
-			assert(false&&"XylemFlux::linearSystem error when solving wat. pot. xylem with Eigen ");
-		}
-		std::vector<double> v3(&v2[0], v2.data()+v2.cols()*v2.rows());
-		psiXyl = v3;
-	}
-#endif
 }
 
 

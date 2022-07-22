@@ -11,9 +11,25 @@ set(CMAKE_CXX_FLAGS_DEBUG "-std=c++11 -O0 -ggdb -Wall")
 # set default build type to release Release
 set(CMAKE_BUILD_TYPE Release)
 
+#compile options 
+#to use photosynthesis:
+#cmake . -DWITH_PHOTOSYNTHESIS=ON
+#make
+
+if (WITH_PHOTOSYNTHESIS)
+MESSAGE(STATUS "WITH_PHOTOSYNTHESIS")
+#need C++17 for Eigen3 
+set(RELEASE_OPTS "-std=c++17 -fno-strict-aliasing -fstrict-overflow -fno-finite-math-only -O3 -march=native -funroll-loops -g0 ")
+set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
+set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
+endif()
+
 # add source directory to the include path
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # add subdirectories
 add_subdirectory(src)
 add_subdirectory(tutorial)
+
+
+unset(WITH_PHOTOSYNTHESIS CACHE) #to keep as default WITH_PHOTOSYNTHESIS=OFF

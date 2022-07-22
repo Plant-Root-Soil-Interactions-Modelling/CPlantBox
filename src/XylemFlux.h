@@ -73,7 +73,6 @@ public:
 
     double psi_air = -954378; // air water potential [cm] for T = 20°C and RH = 0.5
 	std::vector<double> k_stomatas;//stomatal radial conductance for Photosynthesis
-	std::vector<double> psiXyl; //saves the wat. pot. values of xylem for photosynthesis and phloem modules
 
 protected:
 
@@ -155,6 +154,12 @@ protected:
     double kx_tablePerOrgType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(0), kxs.at(organType-2).at(0)); } //constant for all subtype but type and age dependant
     double kx_tablePerType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(type), kxs.at(organType-2).at(type)); } //subtype, type and age dependant
     double kx_valuePerSegment(int si, double age, int type, int organType) { return kx.at(0).at(si); };
+
+	
+#ifdef USE_PHOTOSYNTHESIS
+	std::vector<Tri> tripletList;
+	Eigen::VectorXd b;
+#endif
 
 };
 

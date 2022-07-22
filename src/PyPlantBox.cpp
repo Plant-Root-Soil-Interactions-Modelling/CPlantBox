@@ -34,6 +34,11 @@ namespace py = pybind11;
 
 #include "sdf_rs.h" // todo to revise ...
 
+
+#ifdef USE_PHOTOSYNTHESIS
+#include "Photosynthesis.h"
+#include "PiafMunch/runPM.h"
+#endif
 namespace CPlantBox {
 
 /**
@@ -877,8 +882,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
-			.def_readwrite("psi_air", &XylemFlux::psi_air)
-			.def_readwrite("psiXyl", &XylemFlux::psiXyl);
+			.def_readwrite("psi_air", &XylemFlux::psi_air);
 
     /*
      * Plant.h
@@ -913,7 +917,130 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
-
+#ifdef USE_PHOTOSYNTHESIS	
+	/*
+     * Photosynthesis.h
+     */
+    py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit") ,  py::arg("ciInit"))
+			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("sim_time_")=1.0 , 
+					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
+					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(), 
+					py::arg("doLog_")=false, py::arg("verbose_")=true, py::arg("RH_") = 0.5, py::arg("TairC_") = 25)
+			
+            .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
+            .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
+            .def_readwrite("limMaxErr", &Photosynthesis::limMaxErr)
+			.def_readwrite("psiXyl", &Photosynthesis::psiXyl)
+            .def_readwrite("An", &Photosynthesis::An)
+            .def_readwrite("Vc", &Photosynthesis::Vc)
+            .def_readwrite("Vj", &Photosynthesis::Vj)
+            .def_readwrite("fw", &Photosynthesis::fw)
+            .def_readwrite("ci", &Photosynthesis::ci)
+            .def_readwrite("Rd", &Photosynthesis::Rd)
+            .def_readwrite("gco2", &Photosynthesis::gco2)
+            .def_readwrite("es", &Photosynthesis::es)
+            .def_readwrite("ea", &Photosynthesis::ea)
+            .def_readwrite("Qlight", &Photosynthesis::Qlight)
+            .def_readwrite("ci", &Photosynthesis::ci)
+            .def_readwrite("Jw", &Photosynthesis::Jw)
+            .def_readwrite("Ev", &Photosynthesis::Ev)
+            .def_readwrite("plant", &Photosynthesis::plant)
+            .def_readwrite("Ag4Phloem", &Photosynthesis::Ag4Phloem)
+            .def_readwrite("minLoop", &Photosynthesis::minLoop)
+            .def_readwrite("maxLoop", &Photosynthesis::maxLoop)
+            .def_readwrite("Patm", &Photosynthesis::Patm)
+            .def_readwrite("cs", &Photosynthesis::cs)
+            .def_readwrite("TleafK", &Photosynthesis::TleafK)
+            .def_readwrite("TairC", &Photosynthesis::TairC)
+            .def_readwrite("Chl", &Photosynthesis::Chl)
+            .def_readwrite("g0", &Photosynthesis::g0)
+            .def_readwrite("theta", &Photosynthesis::theta)
+            .def_readwrite("gamma0", &Photosynthesis::gamma0)
+            .def_readwrite("gamma1", &Photosynthesis::gamma1)
+            .def_readwrite("gamma2", &Photosynthesis::gamma2)
+            .def_readwrite("alpha", &Photosynthesis::alpha)
+            .def_readwrite("a1", &Photosynthesis::a1)
+            .def_readwrite("a3", &Photosynthesis::a3)
+            .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
+            .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
+            .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
+            .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
+            .def_readwrite("k_stomatas_old", &Photosynthesis::k_stomatas_old)
+            .def_readwrite("doLog", &Photosynthesis::doLog);
+			
+	/*
+     * runPM.h
+     */
+    py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  
+			py::arg("psiXylInit"),  py::arg("ciInit") )
+            .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
+            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0)
+			
+            .def("setKx_st",&PhloemFlux::setKx_st)
+            .def("setRmax_st",&PhloemFlux::setRmax_st)
+            .def("setAcross_st",&PhloemFlux::setAcross_st)
+            .def("setRhoSucrose",&PhloemFlux::setRhoSucrose)
+            .def("setKrm1",&PhloemFlux::setKrm1)
+            .def("setKrm2",&PhloemFlux::setKrm2)
+			.def("startPM",&PhloemFlux::startPM)
+            .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
+            .def_readwrite("psiMax", &PhloemFlux::psiMax)
+            .def_readwrite("psiMin", &PhloemFlux::psiMin)
+			
+            .def_readwrite("Q_out",&PhloemFlux::Q_outv)
+            .def_readwrite("Q_init",&PhloemFlux::Q_init)
+            .def_readwrite("Q_out_dot",&PhloemFlux::Q_out_dotv)
+            .def_readwrite("a_ST",&PhloemFlux::a_STv)
+            .def_readwrite("vol_ST",&PhloemFlux::vol_STv)
+            .def_readwrite("vol_Meso",&PhloemFlux::vol_Mesov)
+            .def_readwrite("CSTimin",&PhloemFlux::CSTimin)
+            .def_readwrite("C_ST",&PhloemFlux::C_STv)
+            .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
+            .def_readwrite("r_ST",&PhloemFlux::r_STv)
+            .def_readwrite("delta_ls",&PhloemFlux::delta_ls)
+            .def_readwrite("delta_ls_org_i",&PhloemFlux::delta_ls_org_i)
+            .def_readwrite("delta_suc_org",&PhloemFlux::delta_suc_org)
+            .def_readwrite("delta_ls_org",&PhloemFlux::delta_ls_org)
+            .def_readwrite("delta_ls_org_imax",&PhloemFlux::delta_ls_org_imax)
+            .def_readwrite("delta_ls_org_max",&PhloemFlux::delta_ls_org_max)
+            .def_readwrite("update_viscosity",&PhloemFlux::update_viscosity_)
+            .def_readwrite("AgPhl",&PhloemFlux::Agv)
+            .def_readwrite("Q_Grmax",&PhloemFlux::Q_Grmaxv)
+            .def_readwrite("Q_Exudmax",&PhloemFlux::Q_Exudmaxv)
+            .def_readwrite("Q_Rmmax",&PhloemFlux::Q_Rmmaxv)
+            .def_readwrite("Fl",&PhloemFlux::Flv)
+            .def_readwrite("KMgr",&PhloemFlux::KMgr)
+            .def_readwrite("KMrm",&PhloemFlux::KMrm)
+            .def_readwrite("k_meso",&PhloemFlux::k_meso)
+            .def_readwrite("Csoil",&PhloemFlux::Csoil)
+            .def_readwrite("deltaSucOrgNode",&PhloemFlux::deltaSucOrgNode_)
+            .def_readwrite("usePsiXyl",&PhloemFlux::usePsiXyl)
+            .def_readwrite("expression",&PhloemFlux::expression)
+            .def_readwrite("JW_ST",&PhloemFlux::JW_STv)
+            .def_readwrite("Gr_Y",&PhloemFlux::Gr_Y)
+            .def_readwrite("solver",&PhloemFlux::solver)
+            .def_readwrite("atol",&PhloemFlux::atol_double)
+            .def_readwrite("rtol",&PhloemFlux::rtol_double)
+            .def_readwrite("surfMeso",&PhloemFlux::surfMeso)
+			.def_readwrite("sameVolume_meso_st",&PhloemFlux::sameVolume_meso_st)
+			.def_readwrite("sameVolume_meso_seg",&PhloemFlux::sameVolume_meso_seg)
+			.def_readwrite("Cobj_ST",&PhloemFlux::Cobj_ST)
+			.def_readwrite("Vmaxloading",&PhloemFlux::Vmaxloading)
+			.def_readwrite("useCWGr",&PhloemFlux::useCWGr)
+			.def_readwrite("beta_loading",&PhloemFlux::beta_loading)
+			.def_readwrite("Mloading",&PhloemFlux::Mloading)
+			.def_readwrite("withInitVal",&PhloemFlux::withInitVal)
+			.def_readwrite("initValST",&PhloemFlux::initValST)
+			.def_readwrite("initValMeso",&PhloemFlux::initValMeso)
+			.def_readwrite("doTroubleshooting",&PhloemFlux::doTroubleshooting)
+			.def_readwrite("Q_GrUnbornv_i",&PhloemFlux::Q_GrUnbornv_i)
+			.def_readwrite("Q_GrmaxUnbornv_i",&PhloemFlux::Q_GrmaxUnbornv_i)
+			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
+			.def_readwrite("Q10",&PhloemFlux::Q10)
+			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10);
+#endif
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)
             .value("gravi", Plant::TropismTypes::tt_gravi)
