@@ -327,7 +327,7 @@ r.setKrm1([[10e-2]])#([[2.5e-2]])
 r.setRhoSucrose([[0.51],[0.65],[0.56]])#0.51
 r.setRmax_st([[14.4,9.0,6.0,14.4],[5.,5.],[15.]])#*6 for roots, *1 for stem, *24/14*1.5 for leaves
 #r.setRmax_st([[12,9.0,6.0,12],[5.,5.],[15.]])
-r.KMrm = 0.1#VERY IMPORTANT TO KEEP IT HIGH
+r.KMfu = 0.1#VERY IMPORTANT TO KEEP IT HIGH
 #r.exud_k = np.array([2.4e-4])#*10#*(1e-1)
 #r.k_gr = 1#0
 r.sameVolume_meso_st = False

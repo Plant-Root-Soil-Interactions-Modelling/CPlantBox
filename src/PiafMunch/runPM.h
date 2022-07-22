@@ -179,7 +179,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	double Q10 = 2.; double TrefQ10 = 20;//to compute effect of T on growth (see CN-wheat, residual respiration @Barillot 2016, appendix)
 	double psiMax = 0; double psiMin = -2000*(1/0.9806806);//limit wat. pot. in xylem for water-limited growth, [cm]
 	//double KMgr = 0.16; //@see C_fluxes,Michaelis menten coef for growth, not implemented
-	//double KMrm = 0.2; //@see C_fluxes,Michaelis menten coef for maintenance, not implemented
+	double KMfu = 0.2; //@see C_fluxes,Michaelis menten coef for active sucrose usage
 	//double k_meso = 1e-4;//conductivity if implement ohm analogy for Fl, not implemented
 	double Csoil =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
 	//used if sameVolume_meso_st == false, sameVolume_meso_seg == false
@@ -219,7 +219,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	//internal parameters
 	double TairK_phloem;//temperature in K for phloem tissue
 	int Nt_old = 0; //BU old seg size
-    Fortran_vector Q_ParApoBU ;
+    Fortran_vector Q_GrowthtotBU ;
 	Fortran_vector Q_GrmaxBU ;
 	//bool hayErrores = false;
 	int errorID = -1;

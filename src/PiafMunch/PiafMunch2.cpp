@@ -62,15 +62,15 @@ double * vol_Sympl_dot = NULL ; // (ml / h) Variation rate of lateral parenchyma
 /******************* VARIABLES INVOLVED in CARBON METABOLISM AND FLUXES *******************************  */
 // as components of function f argument double* y in the solving procedure, the first 3 are stored as double* ; all others are Fortran_vectors
 double* Q_out = NULL;
-double* Q_Sympl = NULL						; // Amount of sugar in parenchyma symplasm										(mmol)
+double* Q_Mesophyll = NULL						; // Amount of sugar in parenchyma symplasm										(mmol)
 double* Q_ST = NULL						; // Amount of sugar in sieve tubes	= C_TC * Vol_ST						(mmol)
-double* Starch = NULL						; // Amount of starch in parenchyma										(mmol)
-double* Q_PhlApo = NULL                 ; // amount of sugar in phloem apoplasm   (mmol)
-double* Q_ParApo = NULL                 ; // amount of sugar in lateral parenchyma apoplasm   (mmol)
+double* Q_RespMaint = NULL						; // Amount of starch in parenchyma										(mmol)
+double* Q_Exudation = NULL                 ; // amount of sugar in phloem apoplasm   (mmol)
+double* Q_Growthtot = NULL                 ; // amount of sugar in lateral parenchyma apoplasm   (mmol)
 Fortran_vector JS_ST						; // (mmol / h)  : Axial phloem sugar flux
 Fortran_vector JS_PhlMb				; // Phloem cross-membrane sugar fluxes into sieve tubes from apoplasm				(mmol / h)
 Fortran_vector RespMaint					; // Maintenance respiration rate										(mmol / h)
-Fortran_vector StarchSyn						; // Michaelis-Menten rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
+Fortran_vector Q_RespMaintSyn						; // Michaelis-Menten rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
 Fortran_vector C_amont					; //  (mmol / ml) : ST Sugar concentration at upflow node
 Fortran_vector Input					; // e.g. Leaf photosynthetic assimilation rate, but may occur at any node, whether 'leaf' or not (boundary condition)			(mmol / h)
 Fortran_vector C_Sympl						; // Concentration of sugar in parenchyma = Q_Par / vol_Sympl			(mmol / ml)
@@ -84,31 +84,31 @@ Fortran_vector C_SymplUpflow					; // upflow concentration (mmol / ml) for JS_Sy
 Fortran_vector C_PhlApo, C_ParApo, C_ApoUpflow ; // (mmol / ml) apoplasmic sugar conc., resp. in phloem and lat.parenchyma, and upflow conc. for JS_Apo
 Fortran_vector Delta_JS_ST ; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
 extern Fortran_vector P_Sympl		; // Lateral parenchyma symplasmic turgor pressure 								(MPa)
-double Starch_dot_alt ; // for an alternate, target-oriented,  expression of starch variation rate
+double Q_Rm_dot_alt ; // for an alternate, target-oriented,  expression of starch variation rate
 
 /******** TRACER-RELATED VARIABLES ***********************************************************/
-double* TracerQ_Sympl = NULL						; // Amount of tracer in parenchyma										(MBq)
-double* TracerQ_ST = NULL						; // Amount of soluble tracer in sieve tubes	= TracerC_ST * Vol_ST						(MBq)
-double* TracerStarch = NULL						; // Amount of insoluble tracer in parenchyma										(MBq)
-double *TracerQ_PhlApo=NULL, *TracerQ_ParApo=NULL ; // Amount of soluble tracer in apoplasm	= TracerC_xxxApo * Vol_xxxApo			(MBq)
+double* TracerQ_Mesophyll = NULL						; // Amount of tracer in parenchyma										(MBq)
+double* Q_RespMaintmax = NULL						; // Amount of soluble tracer in sieve tubes	= TracerC_ST * Vol_ST						(MBq)
+double* TracerQ_RespMaint = NULL						; // Amount of insoluble tracer in parenchyma										(MBq)
+double *Q_Exudationmax=NULL, *Q_Growthtotmax=NULL ; // Amount of soluble tracer in apoplasm	= TracerC_xxxApo * Vol_xxxApo			(MBq)
 Fortran_vector TracerJS_ST						; // TracerJS_ST[i] (MBq / h)  = TracerJS_ST_[i-1], i = 2..N  : Axial phloem soluble tracer flux ; TracerJS_ST[1]= NA, whereas TracerJS_ST_[1] = TracerJS_ST[2]
 Fortran_vector TracerJS_PhlMb						; // Lateral (Apoplasmic) soluble tracer fluxes into sieve tubes from parenchyma				(MBq / h)
 Fortran_vector TracerRespMaint					; // Tracer Maintenance respiration rate										(MBq / h)
-Fortran_vector TracerStarchSyn						; // Michaelis-Menten rate of tracer starch synthesis from tracer sugar substrate						(MBq / h)
+Fortran_vector TracerQ_RespMaintSyn						; // Michaelis-Menten rate of tracer starch synthesis from tracer sugar substrate						(MBq / h)
 Fortran_vector TracerInput					; // Leaf photosynthetic Tracer Assimilation rate (boundary condition)			(MBq / h)
-Fortran_vector TracerC_Sympl						; // Concentration of soluble tracer in parenchyma symplasm= TracerQ_Sympl / vol_Sympl			(MBq / ml)
+Fortran_vector TracerC_Sympl						; // Concentration of soluble tracer in parenchyma symplasm= TracerQ_Mesophyll / vol_Sympl			(MBq / ml)
 Fortran_vector TracerC_ST							; // Concentration of soluble tracer in sieve tubes								(MBq / ml solution))
 Fortran_vector TracerC_PhlApo, TracerC_ParApo ; // Concentration of soluble tracer in apoplasms					(MBq / ml solution))
-Fortran_vector TracerRatioSympl ; //   TracerQ_Sympl / Q_Sympl = TracerC_Sympl / C_Sympl  (MBq / mmol)
-Fortran_vector TracerRatioStarch ; //   = TracerStarch / Starch (MBq / mmol)
-Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de TracerQ_ST_dot[ ]
+Fortran_vector TracerRatioSympl ; //   TracerQ_Mesophyll / Q_Mesophyll = TracerC_Sympl / C_Sympl  (MBq / mmol)
+Fortran_vector TracerRatioQ_RespMaint ; //   = TracerQ_RespMaint / Q_RespMaint (MBq / mmol)
+Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_Rmmax_dot[ ]
 Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif opposé à JS_Trsv !!!
 Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol / ml) for TracerJS_Sympl
 Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
 
 /******* variation rate of any variable X is noted: X_dot = dX/dt : *******/
-double * Q_Sympl_dot = NULL, * Q_ST_dot = NULL, * Starch_dot = NULL, *Q_PhlApo_dot = NULL, *Q_ParApo_dot = NULL,  *Q_out_dot = NULL  ;
-double * TracerQ_Sympl_dot=NULL, * TracerQ_ST_dot=NULL, * TracerStarch_dot=NULL, *TracerQ_PhlApo_dot=NULL, *TracerQ_ParApo_dot=NULL ;
+double * Q_Mesophyll_dot = NULL, * Q_ST_dot = NULL, * Q_Rm_dot = NULL, *Q_Exud_dot = NULL, *Q_Gtot_dot = NULL,  *Q_out_dot = NULL  ;
+double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, *Q_Exudmax_dot=NULL, *Q_Gtotmax_dot=NULL ;
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
 
@@ -152,7 +152,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	for (int i = 1 ; i <= Nt ; i++) 
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
-		double Cmeso = max(0.,Q_Sympl[i]/vol_ParApo[i]);
+		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
 		double Q_Rmmax_ ;double Q_Exudmax_;double Fu_lim;
@@ -165,50 +165,50 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);
 		
 		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];
-		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMrm));			
+		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));			
 		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i];
 		
 		//Q_meso_dot:
-		Q_Sympl_dot[i] = Ag[i] -Q_Fl[i];
+		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i];
 		
 		Input[i] = Q_Fl[i];
 		
-		//Resp_maint:
-		Starch_dot[i] = min(Fu_lim, Q_Rmmax_);
+		//Q_Rm_dot:
+		Q_Rm_dot[i] = min(Fu_lim, Q_Rmmax_);
 		
 		//Growth:
 		//add max(X,0.) in case of issues with rounding
-		Q_ParApo_dot[i] = max(min(Fu_lim - Starch_dot[i], Q_Grmax[i]),0.);//Q_Gr[i];
+		Q_Gtot_dot[i] = max(min(Fu_lim - Q_Rm_dot[i], Q_Grmax[i]),0.);//Q_Gr[i];
 		//Exudation:
-		Q_PhlApo_dot[i] =  Q_Exudmax_;//min(Fu_lim - Starch_dot[i] - Q_ParApo_dot[i], Q_Exudmax_);//Q_Exud[i] ;
+		Q_Exud_dot[i] =  Q_Exudmax_;//min(Fu_lim - Q_Rm_dot[i] - Q_Gtot_dot[i], Q_Exudmax_);//Q_Exud[i] ;
 		
 		
 		//Resp_maintmax:
-		TracerQ_ST_dot[i] = Q_Rmmax_ ;
+		Q_Rmmax_dot[i] = Q_Rmmax_ ;
 		
 		//Growthmax:
-		TracerQ_ParApo_dot[i] = Q_Grmax[i];
+		Q_Gtotmax_dot[i] = Q_Grmax[i];
 		
 		//Exudationmax:
-		TracerQ_PhlApo_dot[i] = Q_Exudmax[i];;
+		Q_Exudmax_dot[i] = Q_Exudmax[i];;
 		
 		if(doTroubleshooting){
 			std::cout<<"C_fluxes "<<i<<" "<<vol_ST[i]<<" "<<vol_ParApo[i]<<" "<<vol_Seg[i]<<" CSTimin "<<CSTimin<<std::endl;
 			std::cout<<"max(0.,C_ST[i]) "<<max(0.,C_ST[i])<<std::endl;
 			std::cout<<" C_ST[i] "<<C_ST[i]<<" Q_ST[i] "<<Q_ST[i]<<" "<<Q_Fl[i]<<" "<<CSTi<<" "<<Cmeso<<" "<<len_leaf[i]<<" max(0., CSTi-CSTimin) "<< max(0., CSTi-CSTimin)<<std::endl;
 			std::cout<<Q_Rmmax_<<" "<<Q_Rmmax[i]<<" "<< krm2[i]<<" "<<CSTi_delta<<" "<<Q_Exudmax[i]<<std::endl;
-			std::cout<<Q_Exudmax_<<" Fu_lim "<<Fu_lim<<" Q_ST_dot "<<Q_ST_dot[i]<<" "<<Q_Sympl_dot[i]<<" "<<Input[i]<<" "<<Starch_dot[i]<<std::endl;
-			std::cout<<"Qgri "<<Q_ParApo_dot[i] <<" Q_Exudmax_ "<<Q_PhlApo_dot[i]<<" Q_Rmmax_ "<<TracerQ_ST_dot[i]<<" Qgrmaxi "<<TracerQ_ParApo_dot[i]<<" "<<TracerQ_PhlApo_dot[i]<<std::endl;
-			std::cout<<"Qmeso "<<Q_Sympl[i]<<" "<<Ag[i]<<std::endl;
+			std::cout<<Q_Exudmax_<<" Fu_lim "<<Fu_lim<<" Q_ST_dot "<<Q_ST_dot[i]<<" "<<Q_Mesophyll_dot[i]<<" "<<Input[i]<<" "<<Q_Rm_dot[i]<<std::endl;
+			std::cout<<"Qgri "<<Q_Gtot_dot[i] <<" Q_Exudmax_ "<<Q_Exud_dot[i]<<" Q_Rmmax_ "<<Q_Rmmax_dot[i]<<" Qgrmaxi "<<Q_Gtotmax_dot[i]<<" "<<Q_Exudmax_dot[i]<<std::endl;
+			std::cout<<"Qmeso "<<Q_Mesophyll[i]<<" "<<Ag[i]<<std::endl;
 		}
 		
-		if(((Q_ST[i]<= 0) &&(Q_ST_dot[i] < 0))||((Starch_dot[i]<0)||(Q_ParApo_dot[i]<0)||(Q_PhlApo_dot[i]<0))){
+		if(((Q_ST[i]<= 0) &&(Q_ST_dot[i] < 0))||((Q_Rm_dot[i]<0)||(Q_Gtot_dot[i]<0)||(Q_Exud_dot[i]<0))){
 			std::cout<<"error, see file errors.txt"<<std::endl;
 			std::ofstream outfile;
 			outfile.open("errors.txt", std::ios_base::app); // append instead of overwrite
 			outfile<< std::endl<<"C_fluxes "<<t<<" "<<i<<" "<<CSTi<<" "<<CSTimin<<" "<<Q_ST[i]<<" qdot: "<<Q_ST_dot[i]<<", Fu: "<<Fu_lim <<std::flush;
-			outfile<<" rm:"<<Starch_dot[i]<<" maxrm: "<<TracerQ_ST_dot[i]<<std::flush;
-			outfile<<" gr:"<<Q_ParApo_dot[i]<<" grmax: "<<TracerQ_ParApo_dot[i]<<" exud:"<<Q_PhlApo_dot[i]<<" js:"<<Delta_JS_ST[i]<<std::flush;
+			outfile<<" rm:"<<Q_Rm_dot[i]<<" maxrm: "<<Q_Rmmax_dot[i]<<std::flush;
+			outfile<<" gr:"<<Q_Gtot_dot[i]<<" grmax: "<<Q_Gtotmax_dot[i]<<" exud:"<<Q_Exud_dot[i]<<" js:"<<Delta_JS_ST[i]<<std::flush;
 			outfile<<" vol_ST:"<<vol_ST[i]<<std::flush;
 			outfile<<std::endl<<std::flush;
 			errorID = i; //will stop computation in PhloemFlux::f

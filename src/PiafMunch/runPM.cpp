@@ -70,77 +70,77 @@ void fout(double t, double *y, double *y_dot){phloem_->f(t, y, y_dot);} ; // the
 // Full list of printable/savable variables -- to be updated in case of hard-updating the model (number and nature of local compartments within each archit. element) :
 int NumAllNodeVariablesNames = 62 ; // 62 node variables :
 string AllNodeVariablesNamesQList[] = {
-	"Absorb (ml / h)", "Starch (mmol eq. Glu)", "StarchSyn (mmol eq. Glu / h)", "C_ST (mmol / ml)", "C_Sympl (mmol / ml)", "JS_PhlMb (mmol / h)", "JW_Trsv (ml / h)", "JW_PhlMb (ml / h)", "JW_ParMb (ml / h)", "Psi_ST (MPa)",
-	"P_Xyl (MPa)", "Q_Sympl (mmol)", "Q_ST (mmol)", "Resp_Maint (mmol / h)", "C_SymplUpflow (mmol / ml)", "JS_Sympl (mmol / h)", "JW_Apo (ml / h)", "JW_Sympl (ml / h)", "P_ST (MPa)", "P_Sympl (MPa)",
-	"Psi_PhlApo (MPa)", "Psi_ParApo (MPa)", "Psi_Sympl (MPa)", "vol_Sympl (ml)", "vol_Sympl_dot (ml / h)", "P_PhlApo (MPa)", "P_ParApo (MPa)", "Q_PhlApo (mmol)", "Q_ParApo (mmol)",
-	"C_PhlApo (mmol / ml)", "C_ParApo (mmol / ml)", "Q_PhlApo_dot (mmol / h)", "Q_ParApo_dot (mmol / h)", "JS_Apo (mmol / h)", "JS_ParMb (mmol / h)", "C_ApoUpflow (mmol / ml)",
-	"P_ST_dot (MPa / h)", "P_Sympl_dot (MPa / h)", "Starch_dot (mmol eq. Glu / h)", "Q_ST_dot (mmol / h)", "Q_Sympl_dot (mmol / h)", "Input (mmol / h)", "Transpirat (ml / h)", "PsiSoil (MPa)",
+	"Absorb (ml / h)", "Q_RespMaint (mmol eq. Glu)", "Q_RespMaintSyn (mmol eq. Glu / h)", "C_ST (mmol / ml)", "C_Sympl (mmol / ml)", "JS_PhlMb (mmol / h)", "JW_Trsv (ml / h)", "JW_PhlMb (ml / h)", "JW_ParMb (ml / h)", "Psi_ST (MPa)",
+	"P_Xyl (MPa)", "Q_Mesophyll (mmol)", "Q_ST (mmol)", "Resp_Maint (mmol / h)", "C_SymplUpflow (mmol / ml)", "JS_Sympl (mmol / h)", "JW_Apo (ml / h)", "JW_Sympl (ml / h)", "P_ST (MPa)", "P_Sympl (MPa)",
+	"Psi_PhlApo (MPa)", "Psi_ParApo (MPa)", "Psi_Sympl (MPa)", "vol_Sympl (ml)", "vol_Sympl_dot (ml / h)", "P_PhlApo (MPa)", "P_ParApo (MPa)", "Q_Exudation (mmol)", "Q_Growthtot (mmol)",
+	"C_PhlApo (mmol / ml)", "C_ParApo (mmol / ml)", "Q_Exud_dot (mmol / h)", "Q_Gtot_dot (mmol / h)", "JS_Apo (mmol / h)", "JS_ParMb (mmol / h)", "C_ApoUpflow (mmol / ml)",
+	"P_ST_dot (MPa / h)", "P_Sympl_dot (MPa / h)", "Q_Rm_dot (mmol eq. Glu / h)", "Q_ST_dot (mmol / h)", "Q_Mesophyll_dot (mmol / h)", "Input (mmol / h)", "Transpirat (ml / h)", "PsiSoil (MPa)",
 // Tracer-specific add-ins :
-	"TracerStarch (MBq)", "TracerStarchSyn (MBq / h)", "TracerC_ST (MBq / ml)", "TracerC_Sympl (MBq / ml)", "TracerJS_PhlMb (MBq / h)", "TracerQ_Sympl (MBq)", "TracerQ_ST (MBq)", "TracerRespMaint (MBq / h)",
-	"TracerInput (MBq / h)", "TracerJS_Sympl (MBq / h)", "TracerJS_ParMb (MBq / h)", "TracerQ_PhlApo (MBq)", "TracerQ_ParApo (MBq)", "TracerC_PhlApo (MBq / ml)",
+	"TracerQ_RespMaint (MBq)", "TracerQ_RespMaintSyn (MBq / h)", "TracerC_ST (MBq / ml)", "TracerC_Sympl (MBq / ml)", "TracerJS_PhlMb (MBq / h)", "TracerQ_Mesophyll (MBq)", "Q_RespMaintmax (MBq)", "TracerRespMaint (MBq / h)",
+	"TracerInput (MBq / h)", "TracerJS_Sympl (MBq / h)", "TracerJS_ParMb (MBq / h)", "Q_Exudationmax (MBq)", "Q_Growthtotmax (MBq)", "TracerC_PhlApo (MBq / ml)",
 	"TracerC_ParApo (MBq / ml)", "TracerJS_Apo (MBq / h)", "TracerC_SymplUpflow (MBq / ml)", "TracerC_ApoUpflow (MBq / ml)"
 } ;
 int NumAllConnVariablesNames = 5 ; // 5 internode connector flux variables :
 string AllConnVariablesNamesQList[] = { "C_Upflow (mmol / ml)", "JS_ST (mmol / h)", "JW_ST (ml / h)", "JW_Xyl (ml / h)", "TracerJS_ST (MBq / h)" } ;
 
-extern double *Q_ST, *Q_Sympl, *Starch, *Q_PhlApo, *Q_ParApo, *Q_out ;		  // components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Sympl_dot, *Starch_dot, *Q_PhlApo_dot, *Q_ParApo_dot, *Q_out_dot ; //... and its derivatives.  ;
-extern double *TracerQ_ST, *TracerQ_Sympl, *TracerStarch, *TracerQ_PhlApo, *TracerQ_ParApo ;		  // components of vector y as used in diff. system f()...
-extern double *TracerQ_ST_dot, *TracerQ_Sympl_dot, *TracerStarch_dot, *TracerQ_PhlApo_dot, *TracerQ_ParApo_dot ; //... and its derivatives.  ;
+extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
+extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
+extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
+extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl, *vol_Sympl_dot ;
 extern Fortran_vector Psi_Xyl, JW_ST, JS_ST, C_Sympl, C_ST, C_amont, JS_Sympl, JS_Apo, JS_ParMb, JS_PhlMb, Psi_Sympl, C_PhlApo, C_ParApo, P_ST, Absorb, RespMaint ;
 extern Fortran_vector JW_Trsv, JW_Xyl, JW_PhlMb, JW_ParMb, JW_Apo, JW_Sympl, P_Sympl, Psi_ST, P_Xyl, Psi_PhlApo, Psi_ParApo, P_PhlApo, P_ParApo ;
 extern Fortran_vector r_Xyl, r_ST, r_ST_ref, r_Trsv, r_PhlMb, r_ParMb, r_Apo, r_Sympl, vol_ST, vol_PhlApo, vol_ParApo ;
-extern Fortran_vector r_abs, PsiSoil, Transpirat, Input, StarchSyn ;
+extern Fortran_vector r_abs, PsiSoil, Transpirat, Input, Q_RespMaintSyn ;
 extern Fortran_vector P_ST_dot, P_Sympl_dot ; // variation rate of any variable X is noted: X_dot = dX/dt
 extern Fortran_vector C_SymplUpflow, C_ApoUpflow ; // to derive JS_Sympl, and maybe JS_Apo, from resp. water fluxes JW_xxx
 // tracer-specific add-ins :
 extern Fortran_vector TracerJS_ST, TracerC_Sympl, TracerC_ST, TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb, TracerJS_PhlMb, TracerC_PhlApo, TracerC_ParApo ;
-extern Fortran_vector TracerStarchSyn, TracerInput, TracerRespMaint, TracerC_SymplUpflow, TracerC_ApoUpflow ;
-extern Fortran_vector TracerRatioSympl, TracerRatioStarch ;
+extern Fortran_vector TracerQ_RespMaintSyn, TracerInput, TracerRespMaint, TracerC_SymplUpflow, TracerC_ApoUpflow ;
+extern Fortran_vector TracerRatioSympl, TracerRatioQ_RespMaint ;
 
 // variables pointers are of type 'Fortran_vector*' (or NULL for those that are components of double* y in definition of function f).
 // Check for consistency between these lists AllxxxxVariablesRefsQList hereafter and AllxxxxVariablesNamesQList[] above:
 Fortran_vector* AllNodeVariablesRefsQList[] = {  // 62 node variables :
-	&Absorb, NULL, &StarchSyn, &C_ST, &C_Sympl, &JS_PhlMb, &JW_Trsv, &JW_PhlMb, &JW_ParMb, &Psi_ST,
+	&Absorb, NULL, &Q_RespMaintSyn, &C_ST, &C_Sympl, &JS_PhlMb, &JW_Trsv, &JW_PhlMb, &JW_ParMb, &Psi_ST,
 	&P_Xyl, NULL, NULL, &RespMaint, &C_SymplUpflow, &JS_Sympl, &JW_Apo, &JW_Sympl , &P_ST, &P_Sympl,
 	&Psi_PhlApo, &Psi_ParApo, &Psi_Sympl, NULL, NULL, &P_PhlApo, &P_ParApo, NULL, NULL,
 	&C_PhlApo, &C_ParApo, NULL, NULL, &JS_Apo, &JS_ParMb, &C_ApoUpflow,
 	&P_ST_dot, &P_Sympl_dot,  NULL, NULL, NULL, &Input, &Transpirat, &PsiSoil,
 	// tracer-specific add-ons :
-	NULL, &TracerStarchSyn, &TracerC_ST, &TracerC_Sympl, &TracerJS_PhlMb, NULL, NULL, &TracerRespMaint,
+	NULL, &TracerQ_RespMaintSyn, &TracerC_ST, &TracerC_Sympl, &TracerJS_PhlMb, NULL, NULL, &TracerRespMaint,
 	&TracerInput, &TracerJS_Sympl, &TracerJS_ParMb, NULL, NULL, &TracerC_PhlApo,
 	&TracerC_ParApo, &TracerJS_Apo , &TracerC_SymplUpflow, &TracerC_ApoUpflow
 } ;
 Fortran_vector* AllConnVariablesRefsQList[] = {&C_amont, &JS_ST,  &JW_ST, &JW_Xyl, &TracerJS_ST} ; // 5 internode-connector variables
 
 // temporary storage of results for output :
-Fortran_matrix Q_ST_t, Q_Sympl_t, Starch_t, Q_PhlApo_t, Q_ParApo_t, Q_ST_dot_t, Q_Sympl_dot_t, Starch_dot_t, Q_PhlApo_dot_t, Q_ParApo_dot_t, vol_Sympl_t, vol_Sympl_dot_t ;
+Fortran_matrix Q_ST_t, Q_Mesophyll_t, Q_RespMaint_t, Q_Exudation_t, Q_Growthtot_t, Q_ST_dot_t, Q_Mesophyll_dot_t, Q_Rm_dot_t, Q_Exud_dot_t, Q_Gtot_dot_t, vol_Sympl_t, vol_Sympl_dot_t ;
 Fortran_matrix JW_ST_t, JS_ST_t, C_Sympl_t, C_ST_t, JS_Sympl_t, JS_Apo_t, JS_ParMb_t, JS_PhlMb_t, Psi_Sympl_t, C_PhlApo_t, C_ParApo_t, P_ST_t, Absorb_t, RespMaint_t ;
 Fortran_matrix JW_Trsv_t, JW_Xyl_t, JW_PhlMb_t, JW_ParMb_t, JW_Apo_t, JW_Sympl_t, P_Sympl_t, Psi_ST_t, P_Xyl_t, Psi_PhlApo_t, Psi_ParApo_t, P_PhlApo_t, P_ParApo_t ;
-Fortran_matrix PsiSoil_t, Transpirat_t, Input_t, StarchSyn_t, P_ST_dot_t, P_Sympl_dot_t, C_SymplUpflow_t, C_ApoUpflow_t, C_amont_t ;
+Fortran_matrix PsiSoil_t, Transpirat_t, Input_t, Q_RespMaintSyn_t, P_ST_dot_t, P_Sympl_dot_t, C_SymplUpflow_t, C_ApoUpflow_t, C_amont_t ;
 // tracer-specific add-ins :
-Fortran_matrix TracerQ_ST_t, TracerQ_Sympl_t, TracerStarch_t, TracerQ_PhlApo_t, TracerQ_ParApo_t ;		  // components of vector y as used in diff. system f()...
-// Fortran_matrix TracerQ_ST_dot_t, TracerQ_Sympl_dot_t, TracerStarch_dot_t, TracerQ_PhlApo_dot_t, TracerQ_ParApo_dot_t ;		  // components of vector y as used in diff. system f()...
+Fortran_matrix Q_RespMaintmax_t, TracerQ_Mesophyll_t, TracerQ_RespMaint_t, Q_Exudationmax_t, Q_Growthtotmax_t ;		  // components of vector y as used in diff. system f()...
+// Fortran_matrix Q_Rmmax_dot_t, TracerQ_Mesophyll_dot_t, TracerQ_Rm_dot_t, Q_Exudmax_dot_t, Q_Gtotmax_dot_t ;		  // components of vector y as used in diff. system f()...
 Fortran_matrix TracerJS_ST_t, TracerC_Sympl_t, TracerC_ST_t, TracerJS_Sympl_t, TracerJS_Apo_t, TracerJS_ParMb_t, TracerJS_PhlMb_t, TracerC_PhlApo_t, TracerC_ParApo_t, TracerC_SymplUpflow_t, TracerC_ApoUpflow_t ;
-Fortran_matrix TracerPhotSynth_t, TracerStarchSyn_t, TracerInput_t, TracerRespMaint_t ;
-// Fortran_matrix TracerRatioSympl_t, TracerRatioStarch_t ;
+Fortran_matrix TracerPhotSynth_t, TracerQ_RespMaintSyn_t, TracerInput_t, TracerRespMaint_t ;
+// Fortran_matrix TracerRatioSympl_t, TracerRatioQ_RespMaint_t ;
 
 Fortran_matrix* AllNodeMatricesRefsQList[] = {
-	&Absorb_t, &Starch_t, &StarchSyn_t, &C_ST_t, &C_Sympl_t, &JS_PhlMb_t, &JW_Trsv_t, &JW_PhlMb_t, &JW_ParMb_t, &Psi_ST_t,
-	&P_Xyl_t, &Q_Sympl_t, &Q_ST_t, &RespMaint_t, &C_SymplUpflow_t, &JS_Sympl_t, &JW_Apo_t, &JW_Sympl_t, &P_ST_t, &P_Sympl_t,
-	&Psi_PhlApo_t, &Psi_ParApo_t, &Psi_Sympl_t, &vol_Sympl_t, &vol_Sympl_dot_t, &P_PhlApo_t, &P_ParApo_t, &Q_PhlApo_t, &Q_ParApo_t,
-	&C_PhlApo_t, &C_ParApo_t, &Q_PhlApo_dot_t, &Q_ParApo_dot_t, &JS_Apo_t, &JS_ParMb_t, &C_ApoUpflow_t,
-	&P_ST_dot_t, &P_Sympl_dot_t, &Starch_dot_t, &Q_ST_dot_t, &Q_Sympl_dot_t, &Input_t, &Transpirat_t, &PsiSoil_t,
+	&Absorb_t, &Q_RespMaint_t, &Q_RespMaintSyn_t, &C_ST_t, &C_Sympl_t, &JS_PhlMb_t, &JW_Trsv_t, &JW_PhlMb_t, &JW_ParMb_t, &Psi_ST_t,
+	&P_Xyl_t, &Q_Mesophyll_t, &Q_ST_t, &RespMaint_t, &C_SymplUpflow_t, &JS_Sympl_t, &JW_Apo_t, &JW_Sympl_t, &P_ST_t, &P_Sympl_t,
+	&Psi_PhlApo_t, &Psi_ParApo_t, &Psi_Sympl_t, &vol_Sympl_t, &vol_Sympl_dot_t, &P_PhlApo_t, &P_ParApo_t, &Q_Exudation_t, &Q_Growthtot_t,
+	&C_PhlApo_t, &C_ParApo_t, &Q_Exud_dot_t, &Q_Gtot_dot_t, &JS_Apo_t, &JS_ParMb_t, &C_ApoUpflow_t,
+	&P_ST_dot_t, &P_Sympl_dot_t, &Q_Rm_dot_t, &Q_ST_dot_t, &Q_Mesophyll_dot_t, &Input_t, &Transpirat_t, &PsiSoil_t,
 	// tracer-specific add-ons :
-	&TracerStarch_t, &TracerStarchSyn_t, &TracerC_ST_t, &TracerC_Sympl_t, &TracerJS_PhlMb_t, &TracerQ_Sympl_t, &TracerQ_ST_t, &TracerRespMaint_t,
-	&TracerInput_t, &TracerJS_Sympl_t, &TracerJS_ParMb_t, &TracerQ_PhlApo_t, &TracerQ_ParApo_t, &TracerC_PhlApo_t,
+	&TracerQ_RespMaint_t, &TracerQ_RespMaintSyn_t, &TracerC_ST_t, &TracerC_Sympl_t, &TracerJS_PhlMb_t, &TracerQ_Mesophyll_t, &Q_RespMaintmax_t, &TracerRespMaint_t,
+	&TracerInput_t, &TracerJS_Sympl_t, &TracerJS_ParMb_t, &Q_Exudationmax_t, &Q_Growthtotmax_t, &TracerC_PhlApo_t,
 	&TracerC_ParApo_t, &TracerJS_Apo_t, &TracerC_SymplUpflow_t, &TracerC_ApoUpflow_t
 };
 Fortran_matrix* AllConnMatricesRefsQList[] = {&C_amont_t, &JS_ST_t,  &JW_ST_t, &JW_Xyl_t, &TracerJS_ST_t} ;
 Index_vector Breakpoint_index(1, 1) ; // aux. for output time settings
 double * y_dot = NULL ;	// used in f() as called by aux() which is called by odesolve() -- contains all derivatives of vector Y (whose starting values are Y0 below) below.
-Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q_ST_0, Q_Sympl_0, Starch_0, Q_PhlApo_0 & Q_ParApo_0, and homologous tracer init values, and vol_Sympl_0 :
+Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q_ST_0, Q_Mesophyll_0, Q_RespMaint_0, Q_Exudation_0 & Q_Growthtot_0, and homologous tracer init values, and vol_Sympl_0 :
 Fortran_vector atol_, rtol ; // integration accuracy parameters (set in GUI)
 double t0, tf, pas;		// solve for t = [t0, tf], save result at each time step (hours)
 extern double T;
@@ -566,7 +566,7 @@ void PhloemFlux::computeOrgGrowth(double t){
 				if(doTroubleshooting){std::cout<<"deltaSucmax_1 "<<org->getId()<<" "<<k<<" "<<deltaSucmax_1<<std::endl;}
 			}
 			double deltaSucmax_ = deltaSucmax_1 /Gr_Y;//max suc needed for Gtot
-			double deltaSuc = min(Q_ParApo[nodeIds_.at(k) +1] - Q_ParApoBU[nodeIds_.at(k) +1], deltaSucmax_);
+			double deltaSuc = min(Q_Growthtot[nodeIds_.at(k) +1] - Q_GrowthtotBU[nodeIds_.at(k) +1], deltaSucmax_);
 			if((deltaSucmax_ > Q_Grmax[nodeIds_.at(k) +1]))
 			{
 				std::cout<<"error Q_Grmax "<<k<<" "<<(nodeIds_.at(k)+1)<<" "<<deltaSucmax_<<" "<<Q_Grmax[nodeIds_.at(k) +1]<<std::endl;
@@ -580,7 +580,7 @@ void PhloemFlux::computeOrgGrowth(double t){
 			delta_volOrgmax += deltaSucmax_*Gr_Y/rhoSucrose_f(st,ot);
 			
 			
-			Q_ParApoBU[nodeIds_.at(k) +1] += deltaSuc;//sucrose is spent
+			Q_GrowthtotBU[nodeIds_.at(k) +1] += deltaSuc;//sucrose is spent
 			Q_GrmaxBU[nodeIds_.at(k) +1] += deltaSucmax_;//sucrose is spent
 			
 			delta_vol_node_i.at(nodeIds_.at(k)) += deltaSuc*Gr_Y/rhoSucrose_f(st,ot);
@@ -597,7 +597,7 @@ void PhloemFlux::computeOrgGrowth(double t){
 					std::cout<<"Q_GrUnbornv_i for org "<<org->getId()<<" on node "<<org->getNodeIds().at(0)<<" deltasuc "<<deltaSuc<<std::endl;
 					std::cout<<"unborn id "<<orgID<<" or "<<orgID2<<std::endl;
 					std::cout<<"unborn age "<<org->getAge()<<" "<<t<<" "<<org->isAlive()<<" "<<org->isActive()<<std::endl;
-					std::cout<<"compute suc "<<Q_ParApoBU[nodeIds_.at(k) +1]<<" "<<Q_ParApo[nodeIds_.at(k) +1]<<std::endl;
+					std::cout<<"compute suc "<<Q_GrowthtotBU[nodeIds_.at(k) +1]<<" "<<Q_Growthtot[nodeIds_.at(k) +1]<<std::endl;
 				}
 			}
 			

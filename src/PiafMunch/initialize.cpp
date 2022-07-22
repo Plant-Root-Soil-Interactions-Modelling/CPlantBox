@@ -61,7 +61,7 @@ extern vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc]
 extern Fortran_vector JS_ST						; // (mmol / h)  : Axial phloem sugar flux
 extern Fortran_vector JS_PhlMb				; // Phloem cross-membrane sugar fluxes into sieve tubes from apoplasm				(mmol / h)
 extern Fortran_vector RespMaint					; // Maintenance respiration rate										(mmol / h)
-extern Fortran_vector StarchSyn						; // Michaelis-Menten rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
+extern Fortran_vector Q_RespMaintSyn						; // Michaelis-Menten rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
 extern Fortran_vector C_amont					; //  (mmol / ml) : ST Sugar concentration at upflow node
 extern Fortran_vector Input					; // Local C input (photosynthetic assimilation rate in leaves, but may be defined anywhere) (boundary condition)			(mmol / h)
 extern Fortran_vector C_Sympl						; // Concentration of sugar in parenchyma = Q_Par / vol_Sympl			(mmol / ml)
@@ -81,18 +81,18 @@ extern double TracerDecay_k, TracerHalfLife ;
 extern Fortran_vector TracerJS_ST						; // TracerJS_ST[i] (MBq / h)  = TracerJS_ST_[i-1], i = 2..N  : Axial phloem soluble tracer flux ; TracerJS_ST[1]= NA, whereas TracerJS_ST_[1] = TracerJS_ST[2]
 extern Fortran_vector TracerJS_PhlMb						; // Lateral (Apoplasmic) soluble tracer fluxes into sieve tubes from parenchyma				(MBq / h)
 extern Fortran_vector TracerRespMaint					; // Tracer Maintenance respiration rate										(MBq / h)
-extern Fortran_vector TracerStarchSyn						; // Michaelis-Menten rate of tracer starch synthesis from tracer sugar substrate						(MBq / h)
+extern Fortran_vector TracerQ_RespMaintSyn						; // Michaelis-Menten rate of tracer starch synthesis from tracer sugar substrate						(MBq / h)
 extern Fortran_vector TracerInput					; // Tracer input (photosynthetic Tracer Assimilation rate in leaves, but more general) (boundary condition)			(MBq / h)
-extern Fortran_vector TracerC_Sympl						; // Concentration of soluble tracer in parenchyma symplasm= TracerQ_Sympl / vol_Sympl			(MBq / ml)
+extern Fortran_vector TracerC_Sympl						; // Concentration of soluble tracer in parenchyma symplasm= TracerQ_Mesophyll / vol_Sympl			(MBq / ml)
 extern Fortran_vector TracerC_ST							; // Concentration of soluble tracer in sieve tubes								(MBq / ml solution))
 extern Fortran_vector TracerC_PhlApo, TracerC_ParApo ; // Concentration of soluble tracer in apoplasms					(MBq / ml solution))
-extern Fortran_vector TracerRatioSympl ; //   TracerQ_Sympl / Q_Sympl = TracerC_Sympl / C_Sympl  (MBq / mmol)
-extern Fortran_vector TracerRatioStarch ; //   = TracerStarch / Starch (MBq / mmol)
-extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de TracerQ_ST_dot[ ]
+extern Fortran_vector TracerRatioSympl ; //   TracerQ_Mesophyll / Q_Mesophyll = TracerC_Sympl / C_Sympl  (MBq / mmol)
+extern Fortran_vector TracerRatioQ_RespMaint ; //   = TracerQ_RespMaint / Q_RespMaint (MBq / mmol)
+extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_Rmmax_dot[ ]
 extern Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif opposé à JS_Trsv !!!
 extern Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol / ml) for TracerJS_Sympl
 extern Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
-extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de TracerQ_ST_dot[ ]
+extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_Rmmax_dot[ ]
 
 extern Fortran_vector P_Xyl			; // Xylem water potential = pressure (no solute)												(MPa)
 extern Fortran_vector Psi_Xyl			; // Xylem water potential = pressure (no solute)												(MPa)
@@ -154,7 +154,7 @@ extern double T ;	// absolute temperature													(K)
 extern Fortran_vector Transpirat		; // Leaf transpiration rate (used in water-fluxes calc.)				(mmol / h)
 extern Fortran_vector PsiSoil			; // Soil water potential at root end (used in water-fluxes calc.)		(MPa)
 void UpdateResistances(double t) ;
-extern Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q_ST_0, Q_Sympl_0, Starch_0, Q_PhlApo_0 & Q_ParApo_0, and homologous tracer init values, and vol_Sympl_0 :
+extern Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q_ST_0, Q_Mesophyll_0, Q_RespMaint_0, Q_Exudation_0 & Q_Growthtot_0, and homologous tracer init values, and vol_Sympl_0 :
 
 
 
@@ -164,7 +164,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 	JS_ST = Fortran_vector(Nc, 0.) ; // (mmol / h)   Axial phloem sugar flux
     JS_PhlMb = Fortran_vector(Nt, 0.)			; // CrossMembrane phloem sugar fluxes from apoplasm into sieve tubes (mmol / h)
     RespMaint = Fortran_vector(Nt, 0.)			; // Maintenance respiration rate										(mmol / h)
-    StarchSyn = Fortran_vector(Nt, 0.)				; // Rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
+    Q_RespMaintSyn = Fortran_vector(Nt, 0.)				; // Rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
     Input = Fortran_vector(Nt, 0.)		; // External sugar input (may be photosynthetic Assimilation rate, but not restricted to leaves)	(mmol / h)
     i_amont = Fortran_vector(Nc, 0.)	; //  Index_vector(Nc)	; // true upflow node : sera I_Upflow[j]  ou  I_Downflow[j] suivant le sens réel du flux
     C_amont = Fortran_vector(Nc, 0.)	; //  (mmol / ml) : ST Sugar concentration at true upflow node
@@ -177,8 +177,8 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 		Y0= Fortran_vector(vecIn); 
 		
 		//Y0.display();
-		Fortran_vector Q_ParApoBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
-		Q_ParApoBU.append(Q_ParApoBU_temp);
+		Fortran_vector Q_GrowthtotBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
+		Q_GrowthtotBU.append(Q_GrowthtotBU_temp);
 		Fortran_vector Q_GrmaxBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
 		Q_GrmaxBU.append(Q_GrmaxBU_temp);
 	}else{
@@ -187,14 +187,14 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 			Y0 =  Fortran_vector(Nt*neq_coef, 0.) ;
 			Y0.sequentialFill(vecIn, Nt_old, Nt);
 			
-			Fortran_vector Q_ParApoBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
-			Q_ParApoBU.append(Q_ParApoBU_temp);
+			Fortran_vector Q_GrowthtotBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
+			Q_GrowthtotBU.append(Q_GrowthtotBU_temp);
 			Fortran_vector Q_GrmaxBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
 			Q_GrmaxBU.append(Q_GrmaxBU_temp);
 		}else{
 			if(doTroubleshooting){std::cout<<"setup empty y0 "<<std::endl;}
 			Y0 =  Fortran_vector(Nt*neq_coef, 0.) ;
-			Q_ParApoBU = Fortran_vector(Nt, 0.) ;
+			Q_GrowthtotBU = Fortran_vector(Nt, 0.) ;
 			Q_GrmaxBU = Fortran_vector(Nt, 0.) ;
 			if(withInitVal){//initial value for mesophyll and sieve tube
 				for(int z = 0; z < Nt;z++){
