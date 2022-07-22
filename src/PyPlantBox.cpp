@@ -871,8 +871,6 @@ PYBIND11_MODULE(plantbox, m) {
             		py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
 			.def("sumSegFluxes",&XylemFlux::sumSegFluxes)
 			.def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
-			.def("segOuterRadii",&XylemFlux::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
-			.def("segLength",&XylemFlux::segLength)
 			.def_readonly("kr_f_cpp", &XylemFlux::kr_f)
             .def_readonly("kx_f_cpp", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
@@ -906,10 +904,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def("abs2rel", &Plant::abs2rel)
             .def("rel2abs", &Plant::rel2abs);
 
-			
-	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")	
-			.def(py::init<double>(),  py::arg("seednum")=0)	
-			.def("mappedSegments", &MappedPlant::mappedSegments)	
+
+	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")
+			.def(py::init<double>(),  py::arg("seednum")=0)
+			.def("mappedSegments", &MappedPlant::mappedSegments)
 			.def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("plant", &MappedPlant::plant)

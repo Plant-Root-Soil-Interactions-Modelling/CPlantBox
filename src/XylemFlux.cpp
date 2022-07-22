@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <set>
 
+
 namespace CPlantBox {
 
 
@@ -101,10 +102,10 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
             // std::cout << "XylemFlux::linearSystem: warning segment length smaller 1.e-5 \n";
             l = 1.e-5; // valid quick fix? (also in segFluxes)
         }
-		double perimeter;//perimeter of exchange surface 
+		double perimeter;//perimeter of exchange surface
         if (organType == Organism::ot_leaf) {
-			//perimeter of the leaf blade 
-			// "*2" => C3 plant has stomatas on both sides. 
+			//perimeter of the leaf blade
+			// "*2" => C3 plant has stomatas on both sides.
 			//later make it as option to have C4, i.e., stomatas on one side
 			perimeter = rs->leafBladeSurface[si] / l *2;
             numleaf +=1;
@@ -133,7 +134,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 			b(i) = aB[i];
 			tripletList.push_back(Tri(i,i,cii));
 		}
-		
+
 #endif
         aI[k] = i; aJ[k]= i; aV[k] = cii;
         k += 1;
@@ -147,7 +148,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         i = j;  j = ii; // edge ji
         aB[i] += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign
 #ifdef USE_PHOTOSYNTHESIS
-		if(withEigen){ 
+		if(withEigen){
 			b(i) = aB[i];
 			tripletList.push_back(Tri(i,i,cii));
 		}
@@ -256,10 +257,10 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
             l = 1.e-5; // valid quick fix? (also in segFluxes)
         }
 
-		double perimeter;//perimeter of exchange surface 
+		double perimeter;//perimeter of exchange surface
         if (organType == Organism::ot_leaf) {
-			//perimeter of the leaf blade 
-			// "*2" => C3 plant has stomatas on both sides. 
+			//perimeter of the leaf blade
+			// "*2" => C3 plant has stomatas on both sides.
 			//later make it as option to have C4, i.e., stomatas on one side
 			perimeter = rs->leafBladeSurface[si] / l *2;
             numleaf +=1;
@@ -323,7 +324,7 @@ std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxe
  */
 std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFluxes, int type) const
 {
-    auto lengths =  this->segLength();
+    auto lengths =  this->rs->segLength();
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     std::fill(fluxes.begin(), fluxes.end(), 0.);
     auto map = rs->cell2seg;
