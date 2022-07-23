@@ -23,11 +23,8 @@
 *
 -----------------------------------------------------------------------------------------------------------------------------------*/
 
-#ifndef decoupled
+
 #include <PiafMunch/PM_arrays.h>
-#else
-#include <PM_arrays.h>
-#endif
 
 #define PM_BOUNDS_CHECK // ne concerne que le fichier index_vector.cpp
 

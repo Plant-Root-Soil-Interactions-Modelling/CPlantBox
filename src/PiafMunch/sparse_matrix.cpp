@@ -26,12 +26,8 @@
 #include <vector>
 #include <list>
 
-
-#ifndef decoupled
 #include <PiafMunch/PM_arrays.h>
-#else
-#include <PM_arrays.h>
-#endif
+
 
 bool Sparse_add_set_ij_check(int * ij_, int * ij_1, int * ij_2) ; //
 void Sparse_add_fill_ij_(int* ij, int*ij1, int* ij2, const int& m, const int& n, const int& nnz, const int& nnz1, const int& nnz2);

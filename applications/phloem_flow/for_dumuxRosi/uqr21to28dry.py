@@ -638,13 +638,14 @@ while simDuration < simMax:
     Lp = 0.005#0.004320 #cm d-1 hPa, assumed resistance between xylem and phloem
     Rgaz =  83.14 #hPa cm3 K-1 mmol-1
     a_STs = np.array(r.a_ST)# == Across st
-    perimeter = [r.getPerimeter(sti, oti) for sti, oti in zip(st_4phloem, ot_4phloem)]
+    #perimeter = [r.getPerimeter(sti, oti) for sti, oti in zip(st_4phloem, ot_4phloem)]
     #RhatFhat =   TK * C_ST[1:] * Rgaz *  length_ST * Lp /np.abs(jw) *perimeter / Across
     #RhatFhat =   TK * C_ST[1:] * Rgaz *  length_ST * Lp * Across/np.abs(jw * Across) *perimeter / Across
     #RhatFhat =   TK * C_ST[1:] * Rgaz *  length_ST * Lp * Across/np.abs(JW_ST) *perimeter / Across
     #RhatFhat =   TK * C_ST[1:] * Rgaz *  length_ST * Lp /np.abs(JW_ST) *perimeter
     #RhatFhat =   TK * C_ST[1:] * Rgaz *  length_ST * Lp /np.abs(JW_ST) *perimeter[2 pi r]
-    RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * length_ST * Lp /np.abs(JW_ST) *  perimeter  
+    #first part of RhatFhat: 9compute rest afterwards
+    RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * length_ST  /np.abs(JW_ST) #* Lp *  perimeter  
     #RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * 2 /a_STs* length_ST * Lp /np.abs(JW_ST) *   (25*a_STs*a_STs*np.pi) 
     #RhatFhat =  (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * length_ST * Lp /np.abs(JW_ST) *   (25*a_STs*np.pi) * 2
     C_ST_ = C_ST[1:]
@@ -691,7 +692,7 @@ while simDuration < simMax:
         print("growth (cm3) per type\n\ttotobs", volOrg_typei , volOrg2_typei)       
         print("sucOrg obs (mmol)\t th (mmol)\t", sucOrg_type - sucOrgini_type, sucOrg2_type - sucOrgini2_type)       
         print("Grobs (mmol) root\tstem\tleaf\t", sum(Q_Gr2bu)*r.Gr_Y,sum(Q_Gr3bu)*r.Gr_Y, sum(Q_Gr4bu)*r.Gr_Y)# , gr4ith) 
-        print("RhatFhat ", min(RhatFhat),C_ST_[ids],a_STs[ids], length_ST[ids], JW_ST[ids]  )
+        #print("RhatFhat ", min(RhatFhat),C_ST_[ids],a_STs[ids], length_ST[ids], JW_ST[ids]  )
         
     if min(C_ST) < 0.0:
         print("min(C_ST) < 0.015", min(C_ST),np.mean(C_ST),max(C_ST))

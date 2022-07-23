@@ -249,7 +249,7 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		}
 		C_amont[j] = C_ST[i_amont[j]] ; 
 		
-		if((errorID == I_Upflow[j])||(errorID == I_Downflow[j]))
+		if((errorID == I_Upflow[j])||(errorID == I_Downflow[j]))//found an error in last run of C_fluxes function
 		{
 			std::ofstream outfile;
 			outfile.open("errors.txt", std::ios_base::app); // append instead of overwrite
@@ -261,7 +261,7 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 			assert(false&&"PhloemFlux::C_fluxes : negative maximal flux of sucrose concentration");
 			
 		}
-		if (C_amont[j] < 0.) C_amont[j] = 0. ; 
+		if (C_amont[j] < 0.) C_amont[j] = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)
 	}
 	if(update_viscosity_){update_viscosity() ;}
 	JW_ST /= r_ST;

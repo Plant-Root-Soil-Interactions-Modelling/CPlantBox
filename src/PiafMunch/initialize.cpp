@@ -162,9 +162,9 @@ extern Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q
 void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 	
 	JS_ST = Fortran_vector(Nc, 0.) ; // (mmol / h)   Axial phloem sugar flux
-    JS_PhlMb = Fortran_vector(Nt, 0.)			; // CrossMembrane phloem sugar fluxes from apoplasm into sieve tubes (mmol / h)
+    //JS_PhlMb = Fortran_vector(Nt, 0.)			; // CrossMembrane phloem sugar fluxes from apoplasm into sieve tubes (mmol / h)
     RespMaint = Fortran_vector(Nt, 0.)			; // Maintenance respiration rate										(mmol / h)
-    Q_RespMaintSyn = Fortran_vector(Nt, 0.)				; // Rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
+    //Q_RespMaintSyn = Fortran_vector(Nt, 0.)				; // Rate of starch synthesis from sugar substrate						(mmol sug.eq./ h)
     Input = Fortran_vector(Nt, 0.)		; // External sugar input (may be photosynthetic Assimilation rate, but not restricted to leaves)	(mmol / h)
     i_amont = Fortran_vector(Nc, 0.)	; //  Index_vector(Nc)	; // true upflow node : sera I_Upflow[j]  ou  I_Downflow[j] suivant le sens réel du flux
     C_amont = Fortran_vector(Nc, 0.)	; //  (mmol / ml) : ST Sugar concentration at true upflow node
@@ -172,7 +172,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 	if(doTroubleshooting){
 		std::cout<<"initial size of vector: "<<vecIn.size()<<" nodes: "<<Nt<<" connections "<<Nc<<" "<<std::endl;
 	}
-    if(vecIn.size() == (Nt*neq_coef)){
+    if(vecIn.size() == (Nt*neq_coef)){ //gave input vector with starting values 
 		if(doTroubleshooting){std::cout<<"setup full y0 "<<std::endl;}
 		Y0= Fortran_vector(vecIn); 
 		
@@ -182,7 +182,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 		Fortran_vector Q_GrmaxBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
 		Q_GrmaxBU.append(Q_GrmaxBU_temp);
 	}else{
-		if(vecIn.size() > 0){
+		if(vecIn.size() > 0){// plant grew since last phloem flow computatoin
 			if(doTroubleshooting){std::cout<<"complete y0 "<<std::endl;}
 			Y0 =  Fortran_vector(Nt*neq_coef, 0.) ;
 			Y0.sequentialFill(vecIn, Nt_old, Nt);
@@ -191,7 +191,7 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 			Q_GrowthtotBU.append(Q_GrowthtotBU_temp);
 			Fortran_vector Q_GrmaxBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
 			Q_GrmaxBU.append(Q_GrmaxBU_temp);
-		}else{
+		}else{//first phloem flow computation ==> vecIn is empty
 			if(doTroubleshooting){std::cout<<"setup empty y0 "<<std::endl;}
 			Y0 =  Fortran_vector(Nt*neq_coef, 0.) ;
 			Q_GrowthtotBU = Fortran_vector(Nt, 0.) ;
