@@ -26,11 +26,7 @@
 #include <string.h>
 
 
-#ifndef decoupled
 #include <PiafMunch/PM_arrays.h>
-#else
-#include <PM_arrays.h>
-#endif
 
 vector<double> Fortran_vector::toCppVector() {
 	int n = (int)v_[0];

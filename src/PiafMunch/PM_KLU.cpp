@@ -26,11 +26,8 @@
 # include <float.h> // pour DBL_EPSILON
 
 
-#ifndef decoupled
 #include <PiafMunch/PM_arrays.h>
-#else
-#include <PM_arrays.h>
-#endif
+
 
 extern double r ;
 char KLU_message[1000] ;

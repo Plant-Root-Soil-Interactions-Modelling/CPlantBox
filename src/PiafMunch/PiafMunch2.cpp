@@ -152,43 +152,41 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	for (int i = 1 ; i <= Nt ; i++) 
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
-		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);
+		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);//concentration in meosphyll compartment
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
 		double Q_Rmmax_ ;double Q_Exudmax_;double Fu_lim;
-		Q_out_dot[i] = 0;
+		Q_out_dot[i] = 0;// not used currently
 		
-		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//k_meso*min(max(Cobj_ST - CSTi, 0.), Cmeso);//
-		CSTi = max(0., CSTi-CSTimin);
+		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
+		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
-		double CSTi_delta = max(0.,CSTi-Csoil);
-		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);
+		double CSTi_delta = max(0.,CSTi-Csoil); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
+		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
-		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];
-		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));			
-		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i];
+		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate
+		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
+		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i];//variation of sucrose content in node
 		
 		//Q_meso_dot:
-		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i];
+		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i];//variaiton of sucrose content in mesophyll compartment 
 		
-		Input[i] = Q_Fl[i];
+		Input[i] = Q_Fl[i];//phloem loading
 		
 		//Q_Rm_dot:
-		Q_Rm_dot[i] = min(Fu_lim, Q_Rmmax_);
+		Q_Rm_dot[i] = min(Fu_lim, Q_Rmmax_);//realized rate of maintenance respiration 
 		
 		//Growth:
 		//add max(X,0.) in case of issues with rounding
-		Q_Gtot_dot[i] = max(min(Fu_lim - Q_Rm_dot[i], Q_Grmax[i]),0.);//Q_Gr[i];
+		Q_Gtot_dot[i] = max(min(Fu_lim - Q_Rm_dot[i], Q_Grmax[i]),0.);//realized rate of sucrose usage for growth + growth respiration
 		//Exudation:
-		Q_Exud_dot[i] =  Q_Exudmax_;//min(Fu_lim - Q_Rm_dot[i] - Q_Gtot_dot[i], Q_Exudmax_);//Q_Exud[i] ;
+		Q_Exud_dot[i] =  Q_Exudmax_;//realized rate of exudation
 		
-		
+		////save maximum sucrose usage rate for post-processing
 		//Resp_maintmax:
 		Q_Rmmax_dot[i] = Q_Rmmax_ ;
-		
 		//Growthmax:
 		Q_Gtotmax_dot[i] = Q_Grmax[i];
-		
 		//Exudationmax:
 		Q_Exudmax_dot[i] = Q_Exudmax[i];;
 		
@@ -202,6 +200,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 			std::cout<<"Qmeso "<<Q_Mesophyll[i]<<" "<<Ag[i]<<std::endl;
 		}
 		
+		//check if error
 		if(((Q_ST[i]<= 0) &&(Q_ST_dot[i] < 0))||((Q_Rm_dot[i]<0)||(Q_Gtot_dot[i]<0)||(Q_Exud_dot[i]<0))){
 			std::cout<<"error, see file errors.txt"<<std::endl;
 			std::ofstream outfile;

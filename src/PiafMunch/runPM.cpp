@@ -22,11 +22,9 @@
 * If not, see <http://www.gnu.org/licenses/>.
 *
 -----------------------------------------------------------------------------------------------------------------------------------*/
-#ifndef decoupled
+
 #include <PiafMunch/runPM.h>
-#else
-#include <runPM.h>
-#endif
+
 vector<int> I_Upflow, I_Downflow ; //  I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# of conv. upflow (resp. conv. downflow) node of internode flux #jf
 int i,j;
 float rs = 1.1f ; // (if relevant) rate of geometric increment of output step -- to be adjusted to yield 100 steps between t0 and tf

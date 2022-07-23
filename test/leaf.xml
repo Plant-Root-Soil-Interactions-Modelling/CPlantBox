@@ -7,7 +7,7 @@
     <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
     <parameter name="parametrisationType" value="0"/>
     <!--Leaf geometry parametrisation type-->
-    <parameter name="shapeType" value="0"/>
+    <parameter name="shapeType" value="2"/>
     <!--leaf shape type for definition of area and volume (cylinder = 0, cuboid = 1, user-defined 2D shape= 2)-->
     <parameter name="tropismT" value="1"/>
     <!--Type of leaf tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->

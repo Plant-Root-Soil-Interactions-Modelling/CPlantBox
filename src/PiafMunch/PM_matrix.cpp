@@ -28,11 +28,8 @@
 #include <QtGui>
 #endif // QT_GUI_LIB
 
-#ifndef decoupled
 #include <PiafMunch/PM_arrays.h>
-#else
-#include <PM_arrays.h>
-#endif
+
 
 char message[10000], name_[300] ;
 
