@@ -1,6 +1,5 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 
-#ifdef USE_PHOTOSYNTHESIS
 #include "Photosynthesis.h"
 //#include <armadillo>
 //#include <algorithm>
@@ -524,4 +523,3 @@ void Photosynthesis::loopCalcs(double simTime){
 	/* Computes water-limited growth*/
 
 }//end namespace
-#endif
