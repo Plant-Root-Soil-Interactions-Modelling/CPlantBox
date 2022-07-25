@@ -630,7 +630,7 @@ while simDuration < simMax:
     volOrg2_typei = volOrg2_type - volOrgini2_type
     
     JW_ST = np.array(r.JW_ST)
-    length_ST = np.array(r.segLength())
+    length_ST = np.array(r.plant.segLength())
     #0.0001037
     Lp = 0.005#0.004320 #cm d-1 hPa, assumed resistance between xylem and phloem
     Rgaz =  83.14 #hPa cm3 K-1 mmol-1
