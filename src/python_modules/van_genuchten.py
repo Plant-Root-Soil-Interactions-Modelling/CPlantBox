@@ -8,7 +8,7 @@ from scipy import interpolate
 import matplotlib.pyplot as plt
 
 
-def pa2head(pa_, pnref=1.e5, g=9.81):
+def pa2head(pa_, pnref = 1.e5, g = 9.81):
     """ pascal to pressure head, converts a numpy array """
     h = np.zeros(len(pa_))
     for i, p in enumerate(pa_):
@@ -16,7 +16,7 @@ def pa2head(pa_, pnref=1.e5, g=9.81):
     return h
 
 
-def head2pa(h_, pnref=1.e5, g=9.81):
+def head2pa(h_, pnref = 1.e5, g = 9.81):
     """ pressure to pascal, converts a numpy array """
     pa = np.zeros(len(h_))
     for i, h in enumerate(h_):
@@ -34,6 +34,9 @@ class Parameters:
         self.n = p[3]
         self.m = 1. - 1. / self.n
         self.Ksat = p[4]
+
+    def __iter__(self):  # for conversion to list with list(soil)
+        return (i for i in [self.theta_R, self.theta_S, self.alpha, self.n, self.Ksat])
 
 
 def pressure_head(theta, sp):
@@ -59,8 +62,8 @@ def water_diffusivity(TH, theta_i, theta_sur, sp):
     return D
 
 
-def water_content(h, sp): 
-    """ returns the volumetric water content [1] at a given matric potential [cm] according to the VanGenuchten model (Eqn 21) """ 
+def water_content(h, sp):
+    """ returns the volumetric water content [1] at a given matric potential [cm] according to the VanGenuchten model (Eqn 21) """
     return sp.theta_R + (sp.theta_S - sp.theta_R) / pow(1. + pow(sp.alpha * abs(h), sp.n), sp.m)
 
 
@@ -74,15 +77,15 @@ def effective_saturation(h, sp):
 
 def hydraulic_conductivity(h, sp):
     """ returns the hydraulic conductivity [cm/day] at a given matric potential [cm] according to the van genuchten model (Eqn 8) """
-    se = effective_saturation(h, sp) 
+    se = effective_saturation(h, sp)
     K = sp.Ksat * (se ** 0.5) * ((1. - pow(1. - pow(se, 1. / sp.m), sp.m)) ** 2)
-    return K 
+    return K
 
 
 def matric_flux_potential(h, sp):
     """ returns the matric flux potential [cm2/day] for a matric potential [cm]"""
     hmin = -1.e6
-    K = lambda h: hydraulic_conductivity(h, sp)  # integrand 
+    K = lambda h: hydraulic_conductivity(h, sp)  # integrand
     MFP, _ = integrate.quad(K, hmin, h)
     return MFP
 
@@ -103,57 +106,57 @@ fast_imfp = {}
 """ fast_imfp[sp](mfp): returns the matric potential [cm] from the matric flux potential [cm2/day], 
     call create_mfp_lookup first, once for each soil parameter @param sp"""
 
-    
-def create_mfp_lookup(sp, wilting_point=-15000, n=15001):
+
+def create_mfp_lookup(sp, wilting_point = -15000, n = 15001):
     """ initializes the look up tables for soil parameter to use fast_mfp, and fast_imfp """
     print("initializing look up tables")
-    global fast_mfp 
+    global fast_mfp
     global fast_imfp
 
-    h_ = -np.logspace(np.log10(1.), np.log10(np.abs(wilting_point)), n) 
+    h_ = -np.logspace(np.log10(1.), np.log10(np.abs(wilting_point)), n)
     h_ = h_ + np.ones((n,))
-    
+
     mfp = np.zeros(h_.shape)
     for i, h in enumerate(h_):
         mfp[i] = matric_flux_potential(h, sp)
-    fast_mfp[sp] = interpolate.interp1d(h_, mfp, bounds_error=False, fill_value=(mfp[0], mfp[-1]))  # 
+    fast_mfp[sp] = interpolate.interp1d(h_, mfp, bounds_error = False, fill_value = (mfp[0], mfp[-1]))  #
 #     print("Table")
 #     print(h_[0], h_[-1])
 #     print(mfp[0], mfp[-1])
-    
+
     imfp = np.zeros(h_.shape)
     for i, _ in enumerate(mfp):
-        imfp[i] = h_[i]   
-    fast_imfp[sp] = interpolate.interp1d(mfp, imfp, bounds_error=False, fill_value=(imfp[0], imfp[-1]))  # 
-    
+        imfp[i] = h_[i]
+    fast_imfp[sp] = interpolate.interp1d(mfp, imfp, bounds_error = False, fill_value = (imfp[0], imfp[-1]))  #
+
     print("done")
-    
+
 # fast_specific_moisture_storage = {}
-# fast_water_content = {}    
+# fast_water_content = {}
 # fast_hydraulic_conductivity = {}
-# 
-# 
+#
+#
 # def create_lookups(sp, wilting_point=-15000, n=15001):
-#     """ good luck with that..."""        
-#     global fast_specific_moisture_storage 
+#     """ good luck with that..."""
+#     global fast_specific_moisture_storage
 #     global fast_water_content
 #     global fast_hydraulic_conductivity
-#     
-#     h_ = -np.logspace(np.log10(1.), np.log10(np.abs(wilting_point)), n) 
-#     h_ = h_ + np.ones((n,))      
+#
+#     h_ = -np.logspace(np.log10(1.), np.log10(np.abs(wilting_point)), n)
+#     h_ = h_ + np.ones((n,))
 #     print("Creating Van Genuchten Look Up Tables")
 #     print("Table")
 #     print(h_[0], h_[-1])
-#           
+#
 #     sms = np.zeros(h_.shape)
 #     theta = np.zeros(h_.shape)
 #     k = np.zeros(h_.shape)
 #     for i, h in enumerate(h_):
 #         sms[i] = specific_moisture_storage(h, sp)
-#         theta[i] = water_content(h, sp)        
-#         k[i] = water_content(h, sp)  
-#     fast_specific_moisture_storage[sp] = interpolate.interp1d(h_, sms, bounds_error=False, fill_value=(sms[0], sms[-1]))       
-#     fast_water_content[sp] = interpolate.interp1d(h_, theta, bounds_error=False, fill_value=(theta[0], theta[-1]))  # 
-#     fast_hydraulic_conductivity[sp] = interpolate.interp1d(h_, k, bounds_error=False, fill_value=(k[0], k[-1]))  # 
+#         theta[i] = water_content(h, sp)
+#         k[i] = water_content(h, sp)
+#     fast_specific_moisture_storage[sp] = interpolate.interp1d(h_, sms, bounds_error=False, fill_value=(sms[0], sms[-1]))
+#     fast_water_content[sp] = interpolate.interp1d(h_, theta, bounds_error=False, fill_value=(theta[0], theta[-1]))  #
+#     fast_hydraulic_conductivity[sp] = interpolate.interp1d(h_, k, bounds_error=False, fill_value=(k[0], k[-1]))  #
 #     input()
 
