@@ -1,5 +1,4 @@
 import timeit
-import math
 
 import numpy as np
 from scipy import sparse
@@ -227,8 +226,8 @@ class XylemFluxPython(XylemFlux):
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot, seg_ind)
         if a * kr > 1.e-16:
-            tau = math.sqrt(2 * a * math.pi * kr / kx)  # cm-2
-            AA = np.array([[1, 1], [math.exp(tau * l), math.exp(-tau * l)] ])
+            tau = np.sqrt(2 * a * np.pi * kr / kx)  # cm-2
+            AA = np.array([[1, 1], [np.exp(tau * l), np.exp(-tau * l)] ])
             bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
             d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
             dpdz0 = d[0] * tau - d[1] * tau  # insert z = 0, z = l into exact solution
@@ -594,7 +593,7 @@ class XylemFluxPython(XylemFlux):
         get_nodetype = lambda y: organTypes[y - 1]
         nodesy = np.array([get_y_node(xi) for xi in segments])
         nodesx = np.array([get_x_node(xi) for xi in segments])
-        nodeflux = np.full(len(self.get_nodes()), math.nan)
+        nodeflux = np.full(len(self.get_nodes()), np.nan)
         nodes = np.arange(len(self.get_nodes()))
         for nd in range(len(nodeflux)):
             fluxseg_roots_bellow = axialfluxes_j[np.logical_and((nodesx == nd), (organTypes == 2))]  # upper root flux where node is upper node
@@ -604,7 +603,7 @@ class XylemFluxPython(XylemFlux):
             nodeflux[nd] = sum((sum(fluxseg_roots_bellow), sum(fluxseg_roots_above), sum(fluxseg_stemsleaves_bellow), sum(fluxseg_stemsleaves_above)))
         tiproots, tipstems, tipleaves = self.get_organ_nodes_tips()
         tips = np.concatenate((tiproots, tipstems, tipleaves))
-        nodeflux[tips] = math.nan
+        nodeflux[tips] = np.nan
         print('sum (absolut value) of net water balance in each node, appart from node at the tip of organs {} [cm3/day] (should be 0)'.format(np.nansum(abs(nodeflux))))
         tot_balance = -sum(axialfluxes_i[tipsegroots]) - sum(axialfluxes_j[tipsegstems]) - sum(axialfluxes_j[tipsegleaves]) - sum(fluxes)
         print('net water flux in plant: {} [cm3/day] (should be 0)'.format(tot_balance))
