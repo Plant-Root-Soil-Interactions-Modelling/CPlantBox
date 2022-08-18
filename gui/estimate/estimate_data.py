@@ -107,8 +107,8 @@ class EstimateDataModel:
             self.tap_root_indices[i].append(self.base_root_indices[i][tap_index])
             # print("tap roots", self.tap_root_indices[-1], "tap index", tap_index, "root", self.base_root_indices[i][tap_index])
             self.basal_root_indices[i] = self.base_root_indices[i].copy()
-            self.basal_root_indices[i].remove(tap_index)
             # print("base roots", self.base_root_indices[i], self.basal_root_indices[i])
+            self.basal_root_indices[i].pop(tap_index)
 
     def create_params(self, apical_method, base_method, calibration_method):
         """
