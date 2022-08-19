@@ -34,15 +34,16 @@ def plot_leaf(leaf):
     render_window([actor], "plot_plant", [], [-10, 10, -10, 10, -10, 10]).Start()
 
 
-def plot_plant(plant, p_name, render = True, printout = False, outputDirectory = "output/", timestamp = False, date = "", sim_name = "", GraphicalAccuracy = False, ExtraParam = None):
+def plot_plant(plant, p_name, render = True, printout = False, outputDirectory = "output/", timestamp = False, date = "", sim_name = "", GraphicalAccuracy = False, ExtraParam = None, NormalsZValue = [],LeafSurfaceList = [],Thickness = False):
     """
         plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons 
         @param plant: requires a "plantbox.organism"
+        
         @param p_name: parameter desired to show on the graph and color bar.
         
-        @param printout: This is the main toggle for the output of the 3D structure of the plant. If not set to True, the following parameters will not have an effect.
+        @param printout: This is the main toggle for the output of the 3D structure of the plant. If not set to True, the following parameters will not have an effect(outputDirectory, timestamp, date, sim_name, GraphicalAccuracy).
         
-        @paramoutputDirectory: sets the path to store the file created by the printout parameter
+        @param outputDirectory: sets the path to store the file created by the printout parameter (LeafOBJ and SegsOBJ)
         
         @param timestamp: If set to True, will create permanent copies of the files created by printout in a subfolder called "stored"(it cannot be changed). The "stored" folder will be created bellow the outputDirectory.
         
@@ -52,8 +53,12 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
         @param sim_name: If left blank, does nothing. If filled in, it will create a sub folder before the date (output/sim_name/date).
         
         Directory order: outputDirectory/stored/sim_name/date/ 3D files (LeafOBJ and SegsOBJ).
-        @param GraphicalAccuracy: Allows the code to rerun the creation of the leaves so they look better in the render window
-        @param ExtraParam: Allows the user to add multiple data sets to the plant. The first slot must be the name, the 2nd the stem values (it needs to be filled in), the 3rd is for the leaves and is optionnal (the leaves will look funky). ex.: ExtraParam =[["Test", Test_stem, Test_leaf], ["Test2", Test2_stem, Test2_leaves]] with Test_stem and Test_leaves matrices of the right size.
+        
+        @param GraphicalAccuracy: Allows the code to rerun the creation of the leaves so they look better in the render window when printout is set to True.
+        
+        @param ExtraParam: Allows the user to add multiple data sets to the plant. The first slot must be the name, the 2nd the stem values (it needs to be filled in), the 3rd is for the leaves and is optionnal (the leaves will look funky if left empty). 
+        ex.: ExtraParam =[["Test", Test_stem, Test_leaf], ["Test2", Test2_stem, Test2_leaves]] with Test_stem and Test_leaves matrices of the right sizes (stem: number of segments, leaves: number of quadrilaterals).
+        @param Thickness: Creates thickened leaves. This parameter REQUIRES printout to be set to "True" to have any impact. This parameter is not compatible with ExtraParam for the moment.
         
     """
     
@@ -65,8 +70,8 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
         if not os.path.exists(outputDirectory):
             os.makedirs(outputDirectory)
         
-        #Clear the content of the folder of old tests in the "output/" folder. ATTENTION, it clears ALL ".obj" file in it.
-        #This is made to prevent empty files of being kept from old simulations with a bigger number of leafes or 
+        #Clear the content of the folder of old modelisations in the "output/" folder. ATTENTION, it clears ALL ".obj" file in it.
+        #This is made to prevent empty files from being kept from old simulations with a bigger number of leaves or 
         #segments per leaf.
         filelist = [ f for f in os.listdir(outputDirectory) if f.endswith(".obj") ]
         for f in filelist:
@@ -87,7 +92,7 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
                 minute = "0" + minute
             if len(second) == 1:
                 second = "0" + second
-            date = day + "-" + month + "-" + year +"_" + hour + "h" + minute + "min"+ second + "s"
+            date = year + "-" + month + "-" + day +"_" + hour + "h" + minute + "min"+ second + "s"
     
 
     
@@ -112,45 +117,58 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
     leafes = plant.getOrgans(pb.leaf)
         
     
-    DataBias = 0
-    if GraphicalAccuracy:
+    if GraphicalAccuracy and printout and render:
         UIVal = 2
     else:
         UIVal = 1
-    for i in range(UIVal): #This will run TWICE the creation of the leaf (green quadrilaterals) if set to 2.
+        
+    LinearExtrusion = []
+    for i in range(UIVal): #This will run TWICE the creation of the leaf (green quadrilaterals) if set to 2. The first step creates individuals segments the second creates all the segments appended in the "polydata".
         global LeafSegIDListList
         LeafSegIDListList = []
         global QuadCounterListList
         QuadCounterListList = []
-        # print("i",i) #Let's you know at which run you are at (If printout set to "True", the leafes won't appear on the render_window, it needs a second run to redraw them correctly.)
-        if i ==0:
-            printout = True
+        # print("Leaf iteration",i) #Let's you know at which run you are at (If printout set to "True", the leafes won't appear on the render_window, it needs a second run to redraw them correctly.)
+        if (i == 0) and printout: #doesn't overwrite printout if set to False at the beginning
+            printout = True 
         elif i==1:
             printout = False
+        
         for k, l in enumerate(leafes):
             LeafSegIDList = []
             QuadCounterList = []
-            create_leaf(l, leaf_points, leaf_polys, LeafSegIDList = LeafSegIDList, QuadCounterList = QuadCounterList, k = k, printout = printout, outputDirectory = outputDirectory, timestamp = timestamp, date = date, sim_name = sim_name)
+            if Thickness and printout:
+                LinearExtrusion = create_leaf(l, leaf_points, leaf_polys, LeafSegIDList = LeafSegIDList, QuadCounterList = QuadCounterList, k = k, printout = printout, outputDirectory = outputDirectory, timestamp = timestamp, date = date, sim_name = sim_name, NormalsZValue = NormalsZValue, LeafSurfaceList = LeafSurfaceList, Thickness = Thickness, OutPut = LinearExtrusion)
+            else:
+                create_leaf(l, leaf_points, leaf_polys, LeafSegIDList = LeafSegIDList, QuadCounterList = QuadCounterList, k = k, printout = printout, outputDirectory = outputDirectory, timestamp = timestamp, date = date, sim_name = sim_name, NormalsZValue = NormalsZValue, LeafSurfaceList = LeafSurfaceList)
             
             #Debug:
             # print("Current leaf radius", l.getParameter("radius"))
-            # print("LeafSegIDList:",LeafSegIDList,"QuadCounterList(number of Quadrilaterals added per segment):",QuadCounterList)
-            # print("Length of the above lists:", len(LeafSegIDList),";",len(QuadCounterList)) #The lengths should be the same.
-            if k == (len(leafes)-1):
-                DataBias = QuadCounterList[-1]
-                print("DataBias", DataBias)
-            for c in LeafSegIDList:
-                LeafSegIDListList.append(c)
-            for c in QuadCounterList:
-                QuadCounterListList.append(c)
+            # print(k)#Current leaf number
+            # print("LeafSegIDList:",LeafSegIDList,"Number of Quadrilaterals added per segment:",QuadCounterList)
+            # print("Length of the above lists (both should be the same amount):", len(LeafSegIDList),";",len(QuadCounterList)) #The lengths should be the same.
+            LeafSegIDListList.extend(LeafSegIDList)
+            QuadCounterListList.extend(QuadCounterList)
+        if i==1:
+            printout = True
     # print("LeafSegIDListList, size:", len(LeafSegIDListList), "IDs:", LeafSegIDListList)
     # print("QuadCounterListList, size:", len(QuadCounterListList), "IDs:", QuadCounterListList)
-
+    # print(LeafSurfaceList) #Computes the surface for each quadrilateral forming the each segment of each leaf
+    print("Number of extruded leafes' segments (should be higher then 0):", len(LinearExtrusion))
 
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
+
+    vtkAppendPolyData = vtk.vtkAppendPolyData()
+    if Thickness:
+        # vtkAppendPolyData.FastDelete()
+        for elem in LinearExtrusion:
+            vtkAppendPolyData.AddInputData(elem.GetOutput())
+            vtkAppendPolyData.Update()
     
+    
+    ThicknessPolyData = []
     if ExtraParam != None:
         for P in ExtraParam:
             data1 = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
@@ -158,14 +176,31 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
             data1.SetNumberOfTuples(1)
             # print("params length", len(P[1]))
             for d in range(len(P[2])):
-                data1.InsertTuple1(d, float(P[2][d-DataBias])) #For some reason the code begins the data one segment further so you need to go back "DataBias" quadrialterals for the number of quadrilaterals of the last segment of the last leaf.
+                if Thickness:
+                    # float(P[2][d])
+                    data1.InsertTuple1(d*2+1, float(P[2][d])) #upper surface of the leaf
+                    data1.InsertTuple1(d*2, float(P[2][d]))   #lower surface 
+                    for j in range (4):
+                        data1.InsertTuple1(d*4 + j + len(P[2])*2, float(P[2][d]))
+                else:
+                    data1.InsertTuple1(d, float(P[2][d]))
+                # data1.InsertTuple1(d, float(P[2][d]))
+                
             data1.SetName(P[0])
             polyData.GetCellData().AddArray(data1)
+            if Thickness:
+                ThicknessPolyData = vtkAppendPolyData.GetOutput()
+                ThicknessPolyData.GetCellData().AddArray(data1)
     
-    colors = vtk.vtkNamedColors()
 
     mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputData(polyData)
+    if Thickness and ExtraParam != None:
+        mapper.SetInputData(ThicknessPolyData)
+    elif Thickness and not(ExtraParam != None):
+        mapper.SetInputData(vtkAppendPolyData.GetOutput())
+    else:
+        mapper.SetInputData(polyData)
+    
     if ExtraParam != None:
         for P in ExtraParam:
             if P[0] == p_name:
@@ -179,24 +214,29 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
     
     actor = vtk.vtkActor()
     actor.SetMapper(mapper);
+    
+    colors = vtk.vtkNamedColors()
     if ExtraParam == None:
         actor.GetProperty().SetColor(colors.GetColor3d("Green"))
         
     if render:
-        render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start()
+        # render_window([tube_plot_actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start()      #shows only plant
+        render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start() #shows plant and leaves
     return [tube_plot_actor, actor], color_bar
 
 
-def create_leaf(leaf, leaf_points, leaf_polys, meshing = False, LeafSegIDList = [], QuadCounterList = [],k = 0, printout = False, outputDirectory = "output/", timestamp = False, date = "", sim_name = ""):
-
+def create_leaf(leaf, leaf_points, leaf_polys, meshing = False, LeafSegIDList = [], QuadCounterList = [],k = 0, printout = False, outputDirectory = "output/", timestamp = False, date = "", sim_name = "", NormalsZValue = [], LeafSurfaceList = [], Thickness = False, OutPut = []):
+    
     offs = leaf_points.GetNumberOfPoints()
     if printout:
         if not(outputDirectory.endswith("/")):
                 outputDirectory = outputDirectory + "/"
         if not(sim_name.endswith("/")) and (sim_name != ""): #if the simulation name is empty, it doesn't add a "/"
                 sim_name = sim_name + "/"
+    
 
     for i in range(0, leaf.getNumberOfNodes() - 1):  
+        linearExtrusion1 = vtk.vtkLinearExtrusionFilter()
         if printout:
             offs = 0
             leaf_points.Reset()
@@ -254,19 +294,44 @@ def create_leaf(leaf, leaf_points, leaf_polys, meshing = False, LeafSegIDList = 
             # print(dir(leaf_points),"leaf_points")
             # numpy_support.vtk_to_numpy(polyData.GetPoints().GetData()) #Allows to show the inside of the points position
             
+            #printing the positions, before using them. If uncommented, breaks the visual for some reason.
+            # for i in range(len(ln1)):
+            #     print("ln1",ln1[i],"ln2",ln2[i])
             if printout:
                 polyData = vtk.vtkPolyData()
                 polyData.SetPoints(leaf_points)
                 polyData.SetPolys(leaf_polys)
                 
-                #Intended to create thick leaves but it doesn't work
-                # normal = vtk.vtkPolyDataNormals()
-                # normal.AddInputData(polyData)
-                # # normal.ComputeCellNormalsOn()
-                # normal.AutoOrientNormalsOn()
-                # normal.Update()
-                # # print(normal.GetOutputPort())
-                # # print(dir(normal), normal.GetOutputPort())
+                #Surface computation
+                qualityFilter = vtk.vtkMeshQuality()
+                qualityFilter.SetInputData(polyData) 
+                # qualityFilter.SetTriangleQualityMeasureToArea()
+                qualityFilter.SetQuadQualityMeasureToArea()
+                qualityFilter.Update()
+                # print("t",np.array(qualityFilter.GetOutput().GetCellData().GetArray("Quality"))) #output of vector with the same amount of inputs as the number of quadrilateral in the segment.
+                LeafSurfaceList.append(np.array(qualityFilter.GetOutput().GetCellData().GetArray("Quality")))
+                # print(LeafSurfaceList)
+                
+                
+                #Normal to the leaf surface
+                normal = vtk.vtkPolyDataNormals()
+                normal.AddInputData(polyData)
+                normal.ComputePointNormalsOn()
+                normal.SplittingOn()
+                normal.Update()
+                NormalData = normal.GetOutput().GetPointData().GetNormals()
+                NormalVector = np.array(NormalData)
+                # print(type(NormalVector),NormalVector.size,NormalVector) #debug
+                # print(NormalVector.size)
+                
+                # for t in range(0,len(NormalVector),4): #each surface is defined by for points thus 4 normals are computed per surface. We jump by a step of 4 to go to the next quadrilateral. If the leaf has a hand like shape, it could have more than 2 quadrilaterals per segment (due to the dents).
+                #     NormalsZValue.append(abs(NormalVector[t][2])) # adds a value for each quadrilateral of the segment
+                # print(1-abs(NormalVector[t][0]))
+                if NormalVector.size > 1:
+                    NormalsZValue.append(abs(NormalVector[0][2]))# Extract the Z value [2] and only adds the first quadrilateral value for the whole segment[0].
+                elif NormalVector.size == 1: #happens when the surface is a line and thus no normal can be computed
+                    NormalsZValue.append(float(0))
+
                 
                 writer = vtk.vtkOBJWriter()
                 
@@ -293,26 +358,38 @@ def create_leaf(leaf, leaf_points, leaf_polys, meshing = False, LeafSegIDList = 
                     writer.Write()
                     
                 #Possible creation of thick leaves.  
-                #NOTE: it only extrudes towards the Z axis (needs to implement "SetVector(x,y,z)" with the normal). 
-#                 linearExtrusion1 = vtk.vtkLinearExtrusionFilter()
-#                 # print(leafes[0].getParameter("radius"))
+                # linearExtrusion1 = vtk.vtkLinearExtrusionFilter()
                 
-#                 linearExtrusion1.AddInputData(polyData)
-#                 linearExtrusion1.SetScaleFactor(leaf.getParameter("radius"))
-#                 # linearExtrusion1.SetExtrusionTypeToNormalExtrusion()
-#                 # linearExtrusion1.AddInputConnection(normal.GetOutputPort())
-#                 # print(linearExtrusion1.GetScaleFactor())
+                linearExtrusion1.AddInputData(polyData)
+                linearExtrusion1.SetScaleFactor(leaf.getParameter("radius")) #Set the thickness of the leave based on the radius of the segment corresponding
+                linearExtrusion1.SetExtrusionTypeToNormalExtrusion()
+                linearExtrusion1.SetVector(NormalVector[0]) #Sets the vector. Since one segment has the same orientation, the first quadrilateral's normal is used
+                OutPut.append(linearExtrusion1)
+                # print(linearExtrusion1.GetScaleFactor())
                 
-#                 # print(dir(linearExtrusion1))
+                # print(dir(linearExtrusion1))  #shows in the console all the functions available in this object
                 
-#                 writer = vtk.vtkOBJWriter()
-#                 # writer = vtk.vtkOBJExporter()
-#                 # print(dir(writer))
-#                 writer.SetFileName(outputDirectory + "LeafThicknessOBJ{}_{}".format(k,i) + date + ".obj")
-#                 writer.AddInputConnection(linearExtrusion1.GetOutputPort())
-#                 writer.Write()
+                writer = vtk.vtkOBJWriter()
+                # print(dir(writer)) #Debug
+                writer.SetFileName(outputDirectory + "LeafThicknessOBJ{}_{}".format(k,i) + ".obj")
+                writer.SetInputConnection(linearExtrusion1.GetOutputPort())
+                writer.Write()
+                if timestamp:
+                    if not(sim_name.endswith("/")) and (sim_name != ""): #if the simulation name is empty, it doesn't add a "/"
+                        sim_name = sim_name + "/"
+                    if not(date.endswith("/")):
+                        date = date + "/"
+                    path = outputDirectory + "stored/" + sim_name + date + "LeafThicknessOBJ/"
+                    if not os.path.exists(path):
+                        os.makedirs(path)
+                    writer.SetFileName(path + "LeafThicknessOBJ{}_{}".format(k,i) + ".obj")
+                    writer.SetInputConnection(linearExtrusion1.GetOutputPort())
+                    writer.Update()
+                    writer.Write()
     #Debug:   
     # print("Leaf number:",k,"Number of segments:",i+1)
+    if Thickness == True and printout == True:
+        return OutPut
 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs, meshing = False):
@@ -388,67 +465,69 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
     c2p.SetInputData(pd)
     c2p.Update()
     
-    if printout: #this will duplicate the work but maintains the ability to render the structure.
-        if not(outputDirectory.endswith("/")):
-            outputDirectory = outputDirectory + "/"
-        #Create the output folder, if not present
-        if not os.path.exists(outputDirectory):
-            os.makedirs(outputDirectory)
-        # Checks if the simulation name ends with a "/"
-        if not(sim_name.endswith("/")) and (sim_name != ""): #if the simulation name is empty, it doesn't add a "/"
-            sim_name = sim_name + "/"
-        for i, seg in enumerate(segs):
-            point = vtk_points(np.array([nodes[seg[0]],nodes[seg[1]]]))
-            cell = vtk_cells(np.array([[0,1]]))
-            radius = np.array(ana.getParameter("radius"))[i]
-            radius *= zoom_factor
-            # print(radius)
+#     if printout: #this will duplicate the work but maintains the ability to render the structure.
+#         if not(outputDirectory.endswith("/")):
+#             outputDirectory = outputDirectory + "/"
+#         #Create the output folder, if not present
+#         if not os.path.exists(outputDirectory):
+#             os.makedirs(outputDirectory)
+#         # Checks if the simulation name ends with a "/"
+#         if not(sim_name.endswith("/")) and (sim_name != ""): #if the simulation name is empty, it doesn't add a "/"
+#             sim_name = sim_name + "/"
+        
+#         for i, seg in enumerate(segs):
+#             point = vtk_points(np.array([nodes[seg[0]],nodes[seg[1]]]))
+#             cell = vtk_cells(np.array([[0,1]]))
+#             radius = np.array(ana.getParameter("radius"))[i]
+#             radius *= zoom_factor
+#             # print(radius)
 
-            ##Code from vtk_tools.py -> vtk_data. vtk_data can't work with size "1" arrays as it is not read as an array but as a singular item of its type.
-            data1 = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
-            data1.SetNumberOfComponents(1)  # number of components
-            data1.SetNumberOfTuples(1)
-            data1.InsertTuple1(0, radius)
-            data1.SetName("radius")
-            ##
+#             ##Code from vtk_tools.py -> vtk_data. vtk_data can't work with size "1" arrays as it is not read as an array but as a singular item of its type.
+#             data1 = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
+#             data1.SetNumberOfComponents(1)  # number of components
+#             data1.SetNumberOfTuples(1)
+#             data1.InsertTuple1(0, radius)
+#             data1.SetName("radius")
+#             ##
 
-            pd1 = vtk.vtkPolyData()
-            pd1.SetPoints(point)
-            pd1.SetLines(cell)
-            pd1.GetCellData().AddArray(data1)
+#             pd1 = vtk.vtkPolyData()
+#             pd1.SetPoints(point)
+#             pd1.SetLines(cell)
+#             pd1.GetCellData().AddArray(data1)
 
-            c2p1 = vtk.vtkCellDataToPointData()  # set cell and point data
-            c2p1.SetPassCellData(True)
-            c2p1.SetInputData(pd1)
-            c2p1.Update()
-            pd2 = c2p1.GetPolyDataOutput()
-            pd2.GetPointData().SetActiveScalars("radius")
+#             c2p1 = vtk.vtkCellDataToPointData()  # set cell and point data
+#             c2p1.SetPassCellData(True)
+#             c2p1.SetInputData(pd1)
+#             c2p1.Update()
+#             pd2 = c2p1.GetPolyDataOutput()
+#             pd2.GetPointData().SetActiveScalars("radius")
 
-            tubeFilter = vtk.vtkTubeFilter()
-            tubeFilter.SetInputData(pd2)
-            tubeFilter.SetNumberOfSides(9)
-            tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
-            tubeFilter.CappingOn()
-            tubeFilter.Update()
+#             tubeFilter = vtk.vtkTubeFilter()
+#             tubeFilter.SetInputData(pd2)
+#             tubeFilter.SetNumberOfSides(9)
+#             tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
+#             tubeFilter.CappingOn()
+#             tubeFilter.Update()
 
-            writer = vtk.vtkOBJWriter()
-            writer.SetFileName(outputDirectory + "SegsOBJ_{}".format(str(i)) + ".obj")
-            writer.SetInputConnection(tubeFilter.GetOutputPort())
-            writer.Write()
-            if timestamp:
-                if not(date.endswith("/")):
-                    date = date + "/"
-                path = outputDirectory + "stored/" + sim_name + date + "SegsOBJ/"
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                writer.SetFileName(path + "SegsOBJ_{}".format(str(i)) + ".obj")
-                writer.SetInputConnection(tubeFilter.GetOutputPort())
-                writer.Update()
-                writer.Write()
-        if ("rick" in sim_name)  and ("roll" in date): #Oeuf de Pâques(French)
-            import webbrowser
-            webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+#             writer = vtk.vtkOBJWriter()
+#             writer.SetFileName(outputDirectory + "SegsOBJ_{}".format(str(i)) + ".obj")
+#             writer.SetInputConnection(tubeFilter.GetOutputPort())
+#             writer.Write()
+#             if timestamp:
+#                 if not(date.endswith("/")):
+#                     date = date + "/"
+#                 path = outputDirectory + "stored/" + sim_name + date + "SegsOBJ/"
+#                 if not os.path.exists(path):
+#                     os.makedirs(path)
+#                 writer.SetFileName(path + "SegsOBJ_{}".format(str(i)) + ".obj")
+#                 writer.SetInputConnection(tubeFilter.GetOutputPort())
+#                 writer.Update()
+#                 writer.Write()
             
+
+#         if ("Oeuf" in sim_name)  and ("Pâques" in date): #Oeuf de Pâques(French)
+#             import webbrowser
+#             webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
             
     return c2p.GetPolyDataOutput()
 
@@ -617,7 +696,12 @@ def create_lookup_table(tableIdx = 15, numberOfColors = 256):
     @return A vtkLookupTable
     """
     colorSeries = vtk.vtkColorSeries()
-    colorSeries.SetColorScheme(tableIdx)
+    if isinstance( tableIdx, int): 
+        colorSeries.SetColorScheme(tableIdx)
+    if isinstance (tableIdx, str):
+        test = "vtk.vtkColorSeries." + tableIdx #"BREWER_SEQUENTIAL_YELLOW_ORANGE_BROWN_9"#"BREWER_SEQUENTIAL_BLUE_GREEN_9"
+        # print(eval(test))
+        colorSeries.SetColorScheme(eval(test)) #transform the string into the command
     lut_ = colorSeries.CreateLookupTable(vtk.vtkColorSeries.ORDINAL)
     n = lut_.GetNumberOfTableValues ()
 
@@ -670,6 +754,7 @@ def create_scalar_bar(lut, grid = None, p_name = "", RangeOverwrite = None):
     scalarBar.SetLabelTextProperty(textProperty)
     scalarBar.AnnotationTextScalingOff()
     scalarBar.SetUnconstrainedFontSize(True)
+    # scalarBar.SetNumberOfLabels(3) #by default, it's 5
 
     return scalarBar
 
@@ -721,8 +806,9 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, ReturnLut
     plantActor = vtk.vtkActor()
     plantActor.SetMapper(mapper)
     
-    lut = create_lookup_table()  # 24
+    lut = create_lookup_table()
     if ReturnLut and RangeExtra != None:
+        lut = create_lookup_table(tableIdx = "BREWER_SEQUENTIAL_YELLOW_ORANGE_BROWN_9") # it is from https://vtk.org/doc/nightly/html/vtkColorSeries_8h_source.html
         a = pd.GetCellData().GetAbstractArray(p_name)
         RangeTemp = a.GetRange()
         RangeLow = min(RangeExtra[0], RangeTemp[0])
@@ -730,6 +816,7 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, ReturnLut
         RangeOverwrite = (RangeLow, RangeHigh)
         scalar_bar = create_scalar_bar(lut, pd, p_name, RangeOverwrite)  # vtkScalarBarActor
     else:
+        lut = create_lookup_table()
         scalar_bar = create_scalar_bar(lut, pd, p_name)
     mapper.SetLookupTable(lut)
 
@@ -1022,7 +1109,7 @@ class AnimateRoots:
            pd = segs_to_polydata(self.rootsystem, 1., [self.root_name, "radius"])
 
            if self.plant:
-               newRootActor, rootCBar = plot_plant(self.rootsystem, self.root_name, False, GraphicalAccuracy = True)
+               newRootActor, rootCBar = plot_plant(self.rootsystem, self.root_name, False)
            else:
                newRootActor, rootCBar = plot_roots(pd, self.root_name, "", False)
            if isinstance(newRootActor, list):
