@@ -99,7 +99,6 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
     
     # plant as tube plot
     pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name], printout = printout, outputDirectory = outputDirectory, timestamp = timestamp, date = date , sim_name = sim_name, ExtraParam = ExtraParam )  # poly data
-    # global lut, tube_plot_actor, color_bar
     tube_plot_actor, color_bar = plot_roots(pd, p_name, "", render = False)
     lut = None
     if ExtraParam != None:
@@ -154,7 +153,7 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
     # print("LeafSegIDListList, size:", len(LeafSegIDListList), "IDs:", LeafSegIDListList)
     # print("QuadCounterListList, size:", len(QuadCounterListList), "IDs:", QuadCounterListList)
     # print(LeafSurfaceList) #Computes the surface for each quadrilateral forming the each segment of each leaf
-    print("Number of extruded leafes' segments (should be higher then 0):", len(LinearExtrusion))
+    # print("Number of extruded leafes' segments (should be higher then 0):", len(LinearExtrusion))
 
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
@@ -162,7 +161,6 @@ def plot_plant(plant, p_name, render = True, printout = False, outputDirectory =
 
     vtkAppendPolyData = vtk.vtkAppendPolyData()
     if Thickness:
-        # vtkAppendPolyData.FastDelete()
         for elem in LinearExtrusion:
             vtkAppendPolyData.AddInputData(elem.GetOutput())
             vtkAppendPolyData.Update()
@@ -291,7 +289,6 @@ def create_leaf(leaf, leaf_points, leaf_polys, meshing = False, LeafSegIDList = 
                     QuadCounter = QuadCounter + 2
             QuadCounterList.append(QuadCounter)
             
-            # print(dir(leaf_points),"leaf_points")
             # numpy_support.vtk_to_numpy(polyData.GetPoints().GetData()) #Allows to show the inside of the points position
             
             #printing the positions, before using them. If uncommented, breaks the visual for some reason.
@@ -326,7 +323,6 @@ def create_leaf(leaf, leaf_points, leaf_polys, meshing = False, LeafSegIDList = 
                 
                 # for t in range(0,len(NormalVector),4): #each surface is defined by for points thus 4 normals are computed per surface. We jump by a step of 4 to go to the next quadrilateral. If the leaf has a hand like shape, it could have more than 2 quadrilaterals per segment (due to the dents).
                 #     NormalsZValue.append(abs(NormalVector[t][2])) # adds a value for each quadrilateral of the segment
-                # print(1-abs(NormalVector[t][0]))
                 if NormalVector.size > 1:
                     NormalsZValue.append(abs(NormalVector[0][2]))# Extract the Z value [2] and only adds the first quadrilateral value for the whole segment[0].
                 elif NormalVector.size == 1: #happens when the surface is a line and thus no normal can be computed
@@ -365,12 +361,9 @@ def create_leaf(leaf, leaf_points, leaf_polys, meshing = False, LeafSegIDList = 
                 linearExtrusion1.SetExtrusionTypeToNormalExtrusion()
                 linearExtrusion1.SetVector(NormalVector[0]) #Sets the vector. Since one segment has the same orientation, the first quadrilateral's normal is used
                 OutPut.append(linearExtrusion1)
-                # print(linearExtrusion1.GetScaleFactor())
                 
-                # print(dir(linearExtrusion1))  #shows in the console all the functions available in this object
                 
                 writer = vtk.vtkOBJWriter()
-                # print(dir(writer)) #Debug
                 writer.SetFileName(outputDirectory + "LeafThicknessOBJ{}_{}".format(k,i) + ".obj")
                 writer.SetInputConnection(linearExtrusion1.GetOutputPort())
                 writer.Write()
@@ -441,7 +434,6 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
                 ana.addData(P[0], P[1])
     else:
         ana = rs
-    # print("param_names", param_names) #it shows that only the required name is added to the polydata (saves data storage).
     nodes = np_convert(ana.nodes)
     segs = np_convert(ana.segments)        
     points = vtk_points(nodes)
@@ -465,69 +457,69 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
     c2p.SetInputData(pd)
     c2p.Update()
     
-#     if printout: #this will duplicate the work but maintains the ability to render the structure.
-#         if not(outputDirectory.endswith("/")):
-#             outputDirectory = outputDirectory + "/"
-#         #Create the output folder, if not present
-#         if not os.path.exists(outputDirectory):
-#             os.makedirs(outputDirectory)
-#         # Checks if the simulation name ends with a "/"
-#         if not(sim_name.endswith("/")) and (sim_name != ""): #if the simulation name is empty, it doesn't add a "/"
-#             sim_name = sim_name + "/"
+    if printout: #this will duplicate the work but maintains the ability to render the structure.
+        if not(outputDirectory.endswith("/")):
+            outputDirectory = outputDirectory + "/"
+        #Create the output folder, if not present
+        if not os.path.exists(outputDirectory):
+            os.makedirs(outputDirectory)
+        # Checks if the simulation name ends with a "/"
+        if not(sim_name.endswith("/")) and (sim_name != ""): #if the simulation name is empty, it doesn't add a "/"
+            sim_name = sim_name + "/"
         
-#         for i, seg in enumerate(segs):
-#             point = vtk_points(np.array([nodes[seg[0]],nodes[seg[1]]]))
-#             cell = vtk_cells(np.array([[0,1]]))
-#             radius = np.array(ana.getParameter("radius"))[i]
-#             radius *= zoom_factor
-#             # print(radius)
+        for i, seg in enumerate(segs):
+            point = vtk_points(np.array([nodes[seg[0]],nodes[seg[1]]]))
+            cell = vtk_cells(np.array([[0,1]]))
+            radius = np.array(ana.getParameter("radius"))[i]
+            radius *= zoom_factor
+            # print(radius)
 
-#             ##Code from vtk_tools.py -> vtk_data. vtk_data can't work with size "1" arrays as it is not read as an array but as a singular item of its type.
-#             data1 = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
-#             data1.SetNumberOfComponents(1)  # number of components
-#             data1.SetNumberOfTuples(1)
-#             data1.InsertTuple1(0, radius)
-#             data1.SetName("radius")
-#             ##
+            ##Code from vtk_tools.py -> vtk_data. vtk_data can't work with size "1" arrays as it is not read as an array but as a singular item of its type.
+            data1 = vtk.vtkDataArray.CreateDataArray(vtk.VTK_DOUBLE)
+            data1.SetNumberOfComponents(1)  # number of components
+            data1.SetNumberOfTuples(1)
+            data1.InsertTuple1(0, radius)
+            data1.SetName("radius")
+            ##
 
-#             pd1 = vtk.vtkPolyData()
-#             pd1.SetPoints(point)
-#             pd1.SetLines(cell)
-#             pd1.GetCellData().AddArray(data1)
+            pd1 = vtk.vtkPolyData()
+            pd1.SetPoints(point)
+            pd1.SetLines(cell)
+            pd1.GetCellData().AddArray(data1)
 
-#             c2p1 = vtk.vtkCellDataToPointData()  # set cell and point data
-#             c2p1.SetPassCellData(True)
-#             c2p1.SetInputData(pd1)
-#             c2p1.Update()
-#             pd2 = c2p1.GetPolyDataOutput()
-#             pd2.GetPointData().SetActiveScalars("radius")
+            c2p1 = vtk.vtkCellDataToPointData()  # set cell and point data
+            c2p1.SetPassCellData(True)
+            c2p1.SetInputData(pd1)
+            c2p1.Update()
+            pd2 = c2p1.GetPolyDataOutput()
+            pd2.GetPointData().SetActiveScalars("radius")
 
-#             tubeFilter = vtk.vtkTubeFilter()
-#             tubeFilter.SetInputData(pd2)
-#             tubeFilter.SetNumberOfSides(9)
-#             tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
-#             tubeFilter.CappingOn()
-#             tubeFilter.Update()
+            tubeFilter = vtk.vtkTubeFilter()
+            tubeFilter.SetInputData(pd2)
+            tubeFilter.SetNumberOfSides(9)
+            tubeFilter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
+            tubeFilter.CappingOn()
+            tubeFilter.Update()
 
-#             writer = vtk.vtkOBJWriter()
-#             writer.SetFileName(outputDirectory + "SegsOBJ_{}".format(str(i)) + ".obj")
-#             writer.SetInputConnection(tubeFilter.GetOutputPort())
-#             writer.Write()
-#             if timestamp:
-#                 if not(date.endswith("/")):
-#                     date = date + "/"
-#                 path = outputDirectory + "stored/" + sim_name + date + "SegsOBJ/"
-#                 if not os.path.exists(path):
-#                     os.makedirs(path)
-#                 writer.SetFileName(path + "SegsOBJ_{}".format(str(i)) + ".obj")
-#                 writer.SetInputConnection(tubeFilter.GetOutputPort())
-#                 writer.Update()
-#                 writer.Write()
+            writer = vtk.vtkOBJWriter()
+            writer.SetFileName(outputDirectory + "SegsOBJ_{}".format(str(i)) + ".obj")
+            writer.SetInputConnection(tubeFilter.GetOutputPort())
+            writer.Write()
+            if timestamp:
+                if not(date.endswith("/")):
+                    date = date + "/"
+                path = outputDirectory + "stored/" + sim_name + date + "SegsOBJ/"
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                writer.SetFileName(path + "SegsOBJ_{}".format(str(i)) + ".obj")
+                writer.SetInputConnection(tubeFilter.GetOutputPort())
+                writer.Update()
+                writer.Write()
             
 
-#         if ("Oeuf" in sim_name)  and ("Pâques" in date): #Oeuf de Pâques(French)
-#             import webbrowser
-#             webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+        if ("Oeuf" in sim_name)  and ("Pâques" in date): #Oeuf de Pâques(French)
+            import webbrowser
+            webbrowser.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
             
     return c2p.GetPolyDataOutput()
 
