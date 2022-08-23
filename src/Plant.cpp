@@ -1,4 +1,5 @@
 #include "Plant.h"
+#include "RootDelay.h"
 
 #include <memory>
 #include <iostream>
@@ -82,7 +83,28 @@ void Plant::reset()
  *						(in which case only initialize seed and not the other organs)? 
  *						@See CPlantBox/test/test_stem.py
  */
-void Plant::initialize(bool verbose , bool test )
+void Plant::initialize_(bool verbose , bool test )
+{
+    oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
+
+    // further initializations
+	if(!test){ initCallbacks();}
+}
+
+/**
+ * Sets up the plant according to the plant parameters,
+ * a confining geometry, the tropism functions, and the growth functions.
+ *
+ * LB, Length based: Delay for lateral root is calculated from the apical length (classical RootBox approach)
+ *
+ * If not used for test file: Call this method before simulation and after setting geometry, 
+ * plant and root parameters
+ * @param verbose       print information
+ * @param test          is it used for a test file 
+ *						(in which case only initialize seed and not the other organs)? 
+ *						@See CPlantBox/test/test_stem.py
+ */
+void Plant::initializeLB(bool verbose , bool test )
 {
     reset(); // just in case
 
@@ -90,11 +112,35 @@ void Plant::initialize(bool verbose , bool test )
     auto seed = std::make_shared<Seed>(shared_from_this());
 	if(!test){seed->initialize(verbose);}
     baseOrgans.push_back(seed);
+    initialize_(verbose, test);
+	
+}
+/**
+ * Sets up the plant according to the plant parameters,
+ * a confining geometry, the tropism functions, and the growth functions.
+ *
+ * DB, Delay based: Delay for lateral root is predefined, apical length therefore not constant
+ *
+ * If not used for test file: Call this method before simulation and after setting geometry, 
+ * plant and root parameters
+ * @param verbose       print information
+ * @param test          is it used for a test file 
+ */
+void Plant::initializeDB(bool verbose, bool test)
+{
+	reset(); // just in case
 
-    oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
+    class SeedDB :public Seed { // make the seed use the RootDelay class
+    	using Seed::Seed;
+    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay) override {
+    		return std::make_shared<RootDelay>(plant, type, heading, delay, shared_from_this(), 0);
+    	};
+    };
 
-    // further initializations
-	if(!test){ initCallbacks();}
+    auto seed = std::make_shared<SeedDB>(shared_from_this());
+	if(!test){seed->initialize(verbose);}
+    baseOrgans.push_back(seed);
+    initialize_(verbose, test);
 }
 
 /**

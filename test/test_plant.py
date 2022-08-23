@@ -6,6 +6,9 @@ from rsml_reader import *
 path = "../modelparameter/plant/"
 
 
+
+def rootLength(t, r, k):  # root length at a certain age
+    return k * (1 - np.exp(-r * t / k))   
 class TestPlant(unittest.TestCase):
 
     def test_CPlantBox(self):
@@ -61,6 +64,26 @@ class TestPlant(unittest.TestCase):
 #         node_connection_o = seg2a(p.getSegments(15)) # plant segments        
         pass
 
+    def test_DB_delay(self):
+        p = pb.MappedPlant()
+        p.readParameters(path + "Heliantus_Pagès_2013.xml")
+        rrp = p.getOrganRandomParameter(pb.root)[1]
+        rrp.ldelay = 3
+        rrp = p.getOrganRandomParameter(pb.root)[2]
+        rrp.ldelay = 5
+        p.setOrganRandomParameter(rrp)
+        p.initializeDB()
+        time = 76
+        p.simulate(time)
+        tl, rl = [], []
+        for i, r in enumerate(p.getOrgans(pb.root)):
+            rl.append(r.getLength())
+            et, dl = 0, 0 #no delay for basal roots
+            rsp = r.getParam()
+            if rsp.subType > 1:
+                dl = r.getParent().getOrganRandomParameter().ldelay #only works because deviation == 0
+                et = r.getParent().getNodeCT(r.parentNI) + dl
+            self.assertAlmostEqual(r.getAge(), (time -et), 10, "numeric and analytic age of root n#" + str(i + 1) +" do not agree")
 
 if __name__ == '__main__':
     # MANY tests missing !!!
