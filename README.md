@@ -31,11 +31,11 @@ python3 example1a.py
 ```
 
 ### Ubuntu >= 20.04
-If you have ubuntu >= 20.04, you can download the python file "installDumuxRosiWithUbuntu2004.py".
+If you have ubuntu >= 20.04, you can download the python file "installDumuxRosi_Ubuntu.py".
 This file is based on the dumux installation file. 
 run
 ```bash
-python3 installDumuxRosiWithUbuntu2004.py
+python3 installDumuxRosi_Ubuntu.py
 ```
 It will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
 This script might work on other linux OS but has not been tested.
