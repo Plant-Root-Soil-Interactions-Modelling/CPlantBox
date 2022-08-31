@@ -46,7 +46,7 @@ run
 ```bash
 conda create -n cpb_py38 python=3.8
 conda activate cpb_py38 
-python3 stallCPlantBox.py
+python3 installCPlantBox.py
 ```
 It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.
 
