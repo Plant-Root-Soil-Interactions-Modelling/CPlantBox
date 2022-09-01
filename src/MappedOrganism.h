@@ -99,9 +99,10 @@ public:
 
     using RootSystem::RootSystem;
 
-    void initialize(bool verbose = true); ///< overridden, to map initial shoot segments,
-    void initializeLB(int basaltype, int shootbornetype, bool verbose = true); ///< overridden, to map initial shoot segments,
-
+    void initialize(bool verbose = true) override { initializeLB(4, 5, verbose); }; ///< overridden, to map initial shoot segments,
+    void initializeLB(int basaltype, int shootbornetype, bool verbose = true) override { bool LB = true; initialize_(basaltype, shootbornetype, verbose, LB); }; ///< overridden, to map initial shoot segments,
+	void initializeDB(int basaltype, int shootbornetype, bool verbose = true) override { bool LB = false; initialize_(basaltype, shootbornetype, verbose, LB); }; ///< overridden, to map initial shoot segments,
+	
     void simulate(double dt, bool verbose = false) override; ///< build nodes and segments sequentially
 
     /* segments are shoot and root segments */
@@ -109,6 +110,9 @@ public:
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
+ protected:
+	void initialize_(int basaltype, int shootbornetype, bool verbose = true, bool LB = true);
+																					   
 
 };
 
@@ -123,7 +127,9 @@ public:
 	MappedPlant(double seednum = 0): Plant(seednum){}; ///< constructor
     virtual ~MappedPlant() { }; ///< destructor
 	
-    void initialize(bool verbose = true, bool stochastic = true); ///< overridden, to map initial shoot segments,
+    void initializeLB(bool verbose = true, bool stochastic = true) { bool LB = true; initialize_(verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
+	void initializeDB(bool verbose = true, bool stochastic = true) { bool LB = false; initialize_(verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
+	void initialize(bool verbose = true, bool stochastic = true) { initializeLB(verbose, stochastic); }; ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
     void printNodes(); ///< print information
 	void mapSubTypes();
@@ -139,7 +145,9 @@ public:
 	//for photosynthesis and phloem module:	   
 	void calcExchangeZoneCoefs() override;					 
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
-	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module			  
+	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module		
+ protected:
+	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);	
 };
 
 }

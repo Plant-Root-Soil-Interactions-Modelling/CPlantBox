@@ -443,10 +443,16 @@ Vector3d MappedSegments::getMinBounds() {
  *
  * Shoot segments have per default radii = 0.1 cm, types = 0, orgtype = 2
  * This can be changed by directly accessing the member variables.
+ * @param basaltype			subtype of basal roots 	(default = 4)
+ * @param shootbornetype	subtype of shootborn roots (default = 5)
+ * @param LB		 		implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
  */
-void MappedRootSystem::initializeLB(int basaltype, int shootbornetype, bool verbose) {
+void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbose, bool LB) {
 	std::cout << "MappedRootSystem::initialize \n" << std::flush;
-	RootSystem::initializeLB(basaltype, shootbornetype, verbose);
+	if(LB){
+		RootSystem::initializeLB( basaltype, shootbornetype, verbose);
+	}else{RootSystem::initializeDB( basaltype, shootbornetype, verbose);}
+	
 	segments = this->getShootSegments();
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();
@@ -459,15 +465,7 @@ void MappedRootSystem::initializeLB(int basaltype, int shootbornetype, bool verb
 	mapSegments(segments);
 }
 
-/**
- * Overridden, to map initial shoot segments (@see RootSystem::initialize).
- *
- * Shoot segments have per default radii = 0.1 cm, types = 0
- * This can be changed by directly accessing the member variables.
- */
-void MappedRootSystem::initialize(bool verbose) {
-	this->initializeLB(4,5, verbose);
-}
+
 
 /**
  * Simulates the development of the organism in a time span of @param dt days.
@@ -566,12 +564,14 @@ void MappedRootSystem::simulate(double dt, bool verbose)
  * initialization of mappedplant
  * @param verbose 		indicates if status is written to the console (cout) (default = false)
  * @param stochastic 	keep stochasticity in simulation? (default = true)
+ * @param LB		 	implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
  */
-void MappedPlant::initialize(bool verbose, bool stochastic) {
+void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
 	reset(); // just in case
 	std::cout << "MappedPlant::initialize \n" << std::flush;
 	this->stochastic = stochastic;
-	Plant::initialize(verbose);
+	if(LB){	Plant::initializeLB(verbose);
+	}else{Plant::initializeDB(verbose);}
 	Plant::setStochastic(stochastic);
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();
