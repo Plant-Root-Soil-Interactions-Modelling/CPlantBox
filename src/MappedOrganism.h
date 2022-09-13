@@ -127,9 +127,9 @@ public:
 	MappedPlant(double seednum = 0): Plant(seednum){}; ///< constructor
     virtual ~MappedPlant() { }; ///< destructor
 	
-    void initializeLB(bool verbose = true, bool stochastic = true) { bool LB = true; initialize_(verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
-	void initializeDB(bool verbose = true, bool stochastic = true) { bool LB = false; initialize_(verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
-	void initialize(bool verbose = true, bool stochastic = true) { initializeLB(verbose, stochastic); }; ///< overridden, to map initial shoot segments,
+    void initializeLB(int basaltype, int shootbornetype, bool verbose = true, bool stochastic = true) { bool LB = true; initialize_(basaltype, shootbornetype,verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
+	void initializeDB(int basaltype, int shootbornetype, bool verbose = true, bool stochastic = true) { bool LB = false; initialize_(basaltype, shootbornetype,verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
+	void initialize(bool verbose = true, bool stochastic = true) { initializeLB(4, 5, verbose, stochastic); }; ///< overridden, to map initial shoot segments,
     void simulate(double dt, bool verbose) override ; ///< build nodes and segments sequentially
     void printNodes(); ///< print information
 	void mapSubTypes();
@@ -147,7 +147,7 @@ public:
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
 	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module		
  protected:
-	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);	
+	void initialize_(int basaltype, int shootbornetype, bool verbose = true, bool stochastic = true, bool LB = true);	
 };
 
 }

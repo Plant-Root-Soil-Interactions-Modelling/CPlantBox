@@ -566,12 +566,12 @@ void MappedRootSystem::simulate(double dt, bool verbose)
  * @param stochastic 	keep stochasticity in simulation? (default = true)
  * @param LB		 	implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
  */
-void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
+void MappedPlant::initialize_(int basaltype, int shootbornetype, bool verbose, bool stochastic, bool LB) {
 	reset(); // just in case
 	std::cout << "MappedPlant::initialize \n" << std::flush;
 	this->stochastic = stochastic;
-	if(LB){	Plant::initializeLB(verbose);
-	}else{Plant::initializeDB(verbose);}
+	if(LB){	Plant::initializeLB(basaltype, shootbornetype, verbose);
+	}else{Plant::initializeDB(basaltype, shootbornetype, verbose);}
 	Plant::setStochastic(stochastic);
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();

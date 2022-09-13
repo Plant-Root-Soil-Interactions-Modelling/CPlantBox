@@ -60,7 +60,7 @@ class TestStem(unittest.TestCase):
 
         # creates seed organ (otherwise throws error in plant::simulate())
         # test == True => no need to give root parameter
-        self.plant.initialize(verbose = False, test = True)
+        self.plant.initialize(verbose =  True)
         paramS = srp.realize()
         self.seed = self.plant.getSeed()#
 

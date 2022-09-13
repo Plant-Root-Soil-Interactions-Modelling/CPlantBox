@@ -52,96 +52,101 @@ void Seed::initialize(bool verbose)
 	auto p = plant.lock();
 	auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
 	bool plantBox = stemP.size()>0;
+	auto rootP = p->getOrganRandomParameter(Organism::ot_root);
+	bool hasRoot = (rootP).size()>0;
 	if (verbose) {
 		if (plantBox) {
-			std::cout << "Seed::initialize: Plant \n";
+			std::cout << "Seed::initialize: Plant "<<(rootP).size()<<" "<<" \n";
 		} else {
 			std::cout << "Seed::initialize: RootSystem \n";
 		}
 	}
+	const double maxT = 365.; // maximal simulation time
+	auto sp = this->param(); // rename
 
 	/*
 	 * Create roots
 	 */
-	const double maxT = 365.; // maximal simulation time
-	auto sp = this->param(); // rename
-	Vector3d iheading(0,0,-1);
+	if(hasRoot || (!plantBox))
+	{ 
+		Vector3d iheading(0,0,-1);
 
-	// Taproot
-	std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, iheading ,0); // tap root has root type 1
-	taproot->addNode(getNode(0), getNodeId(0), 0);
-	this->addChild(taproot);
+		// Taproot
+		std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, iheading ,0); // tap root has root type 1
+		taproot->addNode(getNode(0), getNodeId(0), 0);
+		this->addChild(taproot);
 
-	// Basal roots
-	int bt = getParamSubType(Organism::ot_root, "basal");
-	if (bt>0) {
-		basalType = bt;
-	} // otherwise stick with default
-	if (sp->maxB>0) {
-		try {
-			p->getOrganRandomParameter(Organism::ot_root, basalType); // if the type is not defined an exception is thrown
-		} catch (...) {
-			if (verbose) {
-				std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
-			}
-			auto brtp = p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
-			brtp->subType = basalType;
-			p->setOrganRandomParameter(brtp);
-		}
-		int maxB = (sp->maxB);
-		if (sp->delayB > 0) { // limit if possible
-			maxB = std::min(maxB,int(ceil((maxT-sp->firstB)/sp->delayB))); // maximal for simtime maxT
-		}
-		double delay = sp->firstB;
-		for (int i=0; i<maxB; i++) {
-			std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, iheading, delay);
-			basalroot->addNode(getNode(0), getNodeId(0), delay);
-			this->addChild(basalroot);
-			delay += sp->delayB;
-		}
-	}
-
-	// Shoot borne roots
-	if (!plantBox) { // use CRootBox initialization
-		int st = getParamSubType(Organism::ot_root, "shootborne");
-		if (st>0) {
-			shootborneType = st;
+		// Basal roots
+		int bt = getParamSubType(Organism::ot_root, "basal");
+		if (bt>0) {
+			basalType = bt;
 		} // otherwise stick with default
-		if ((sp->nC>0) && (sp->firstSB+sp->delaySB<maxT)) { // only if there are any shootborne roots
+		if (sp->maxB>0) {
 			try {
-				p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
+				p->getOrganRandomParameter(Organism::ot_root, basalType); // if the type is not defined an exception is thrown
 			} catch (...) {
 				if (verbose) {
-					std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
+					std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
 				}
-				auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
-				srtp->subType = shootborneType;
-				p->setOrganRandomParameter(srtp);
+				auto brtp = p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
+				brtp->subType = basalType;
+				p->setOrganRandomParameter(brtp);
 			}
-			Vector3d sbpos = sp->seedPos;
-			sbpos.z=sbpos.z/2.; // half way up the mesocotyl
-			numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
-			double delay = sp->firstSB;
-			for (int i=0; i<numberOfRootCrowns; i++) {
-				std::shared_ptr<Organ>  shootborne0 = createRoot(plant.lock(), shootborneType, iheading ,delay);
-				// TODO fix the initial radial heading
-				shootborne0->addNode(sbpos,delay);
-				this->addChild(shootborne0);
-				delay += sp->delaySB;
-				for (int j=1; j<sp->nC; j++) {
-					std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, iheading ,delay);
-					// TODO fix the initial radial heading
-					shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0),delay);
-					this->addChild(shootborne);
-					delay += sp->delaySB;
-				}
-				sbpos.z+=sp->nz;  // move up, for next root crown
-				delay = sp->firstSB + i*sp->delayRC; // reset age
+			int maxB = (sp->maxB);
+			if (sp->delayB > 0) { // limit if possible
+				maxB = std::min(maxB,int(ceil((maxT-sp->firstB)/sp->delayB))); // maximal for simtime maxT
 			}
-		} else {
-			numberOfRootCrowns = 0;
+			double delay = sp->firstB;
+			for (int i=0; i<maxB; i++) {
+				std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, iheading, delay);
+				basalroot->addNode(getNode(0), getNodeId(0), delay);
+				this->addChild(basalroot);
+				delay += sp->delayB;
+			}
 		}
-	}
+
+		// Shoot borne roots
+		if (!plantBox) { // use CRootBox initialization
+			int st = getParamSubType(Organism::ot_root, "shootborne");
+			if (st>0) {
+				shootborneType = st;
+			} // otherwise stick with default
+			if ((sp->nC>0) && (sp->firstSB+sp->delaySB<maxT)) { // only if there are any shootborne roots
+				try {
+					p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
+				} catch (...) {
+					if (verbose) {
+						std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
+					}
+					auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
+					srtp->subType = shootborneType;
+					p->setOrganRandomParameter(srtp);
+				}
+				Vector3d sbpos = sp->seedPos;
+				sbpos.z=sbpos.z/2.; // half way up the mesocotyl
+				numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
+				double delay = sp->firstSB;
+				for (int i=0; i<numberOfRootCrowns; i++) {
+					std::shared_ptr<Organ>  shootborne0 = createRoot(plant.lock(), shootborneType, iheading ,delay);
+					// TODO fix the initial radial heading
+					shootborne0->addNode(sbpos,delay);
+					this->addChild(shootborne0);
+					delay += sp->delaySB;
+					for (int j=1; j<sp->nC; j++) {
+						std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, iheading ,delay);
+						// TODO fix the initial radial heading
+						shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0),delay);
+						this->addChild(shootborne);
+						delay += sp->delaySB;
+					}
+					sbpos.z+=sp->nz;  // move up, for next root crown
+					delay = sp->firstSB + i*sp->delayRC; // reset age
+				}
+			} else {
+				numberOfRootCrowns = 0;
+			}
+		}
+	}else{std::cout << "Seed::initialize:no roots are defiend for CPlantBox. Simulation with shoot only\n";}
 
 	/*
 	 * Create Stem

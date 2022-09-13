@@ -83,12 +83,16 @@ void Plant::reset()
  *						(in which case only initialize seed and not the other organs)? 
  *						@See CPlantBox/test/test_stem.py
  */
-void Plant::initialize_(bool verbose , bool test )
+void Plant::initialize_(int basal, int shootborne, bool verbose  )//, bool test
 {
+	
+    seed->basalType = basal;
+    seed->shootborneType = shootborne;
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
 
     // further initializations
-	if(!test){ initCallbacks();}
+	//if(!test){ initCallbacks();}
+	initCallbacks();
 }
 
 /**
@@ -104,15 +108,16 @@ void Plant::initialize_(bool verbose , bool test )
  *						(in which case only initialize seed and not the other organs)? 
  *						@See CPlantBox/test/test_stem.py
  */
-void Plant::initializeLB(bool verbose , bool test )
+void Plant::initializeLB(int basal, int shootborne, bool verbose )// , bool test
 {
     reset(); // just in case
 
     // create seed
-    auto seed = std::make_shared<Seed>(shared_from_this());
-	if(!test){seed->initialize(verbose);}
+    seed = std::make_shared<Seed>(shared_from_this());
+	//if(!test){seed->initialize(verbose);}
+	seed->initialize(verbose);
     baseOrgans.push_back(seed);
-    initialize_(verbose, test);
+    initialize_(basal, shootborne, verbose);//, test
 	
 }
 /**
@@ -126,7 +131,7 @@ void Plant::initializeLB(bool verbose , bool test )
  * @param verbose       print information
  * @param test          is it used for a test file 
  */
-void Plant::initializeDB(bool verbose, bool test)
+void Plant::initializeDB(int basal, int shootborne, bool verbose)//, bool test
 {
 	reset(); // just in case
 
@@ -137,10 +142,11 @@ void Plant::initializeDB(bool verbose, bool test)
     	};
     };
 
-    auto seed = std::make_shared<SeedDB>(shared_from_this());
-	if(!test){seed->initialize(verbose);}
+    seed = std::make_shared<SeedDB>(shared_from_this());
+	//if(!test){seed->initialize(verbose);}
+	seed->initialize(verbose);
     baseOrgans.push_back(seed);
-    initialize_(verbose, test);
+    initialize_(basal, shootborne, verbose); //, test
 }
 
 /**

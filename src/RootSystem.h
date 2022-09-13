@@ -8,7 +8,6 @@
 #include "tropism.h"
 #include "Organism.h"
 #include "Root.h"
-#include "seedparameter.h"
 #include "Seed.h"
 
 namespace CPlantBox {
@@ -100,9 +99,9 @@ public:
 
 private:
 
+    std::shared_ptr<Seed> seed = nullptr;
     void initialize_(int basal = 4, int shootborne = 5, bool verbose = true);
 
-    std::shared_ptr<Seed> seed = nullptr;
     SeedSpecificParameter seedParam;
 
     std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>(); ///< Confining geometry (unconfined by default)
