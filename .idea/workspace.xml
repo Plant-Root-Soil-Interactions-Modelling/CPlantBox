@@ -9,6 +9,8 @@
       <change beforePath="$PROJECT_DIR$/src/MappedOrganism.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/MappedOrganism.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Organ.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Organ.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Organ.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/Organ.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PiafMunch/runPM.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/PiafMunch/runPM.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PiafMunch/runPM.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/PiafMunch/runPM.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/PyPlantBox.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/PyPlantBox.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Stem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/Stem.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/leafparameter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/leafparameter.cpp" afterDir="false" />
@@ -19,7 +21,14 @@
       <change beforePath="$PROJECT_DIR$/src/python_modules/vtk_plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/python_modules/vtk_plot.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/stemparameter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/stemparameter.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/stemparameter.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/stemparameter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/leaf.xml" beforeDir="false" afterPath="$PROJECT_DIR$/test/leaf.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/organism.rsml" beforeDir="false" afterPath="$PROJECT_DIR$/test/organism.rsml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/stem.xml" beforeDir="false" afterPath="$PROJECT_DIR$/test/stem.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_leafparameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_leafparameter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test_plant.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_plant.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_rootsystem.rsml" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_rootsystem.rsml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_stem.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_stem.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test_stemparameter.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/test_stemparameter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tutorial/examples/old_cpp/test" beforeDir="false" afterPath="$PROJECT_DIR$/tutorial/examples/old_cpp/test" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

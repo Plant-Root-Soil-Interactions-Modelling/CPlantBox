@@ -175,7 +175,7 @@
 	<parameter name="theta" value="0.5" dev="0"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
 	<parameter name="gf" value="3"/>
-	<parameter name="successor" type="2" numLat="2" percentage="1"/>
+	<parameter name="successor" organType ="4" subType="2" numLat="2" percentage="1"/>
 </organ>
 
 <organ type="leaf" name="lateral1" subType="2">

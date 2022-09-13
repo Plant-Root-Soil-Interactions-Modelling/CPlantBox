@@ -753,7 +753,7 @@ void Leaf::createLateral(bool silence)
 		if(foundId || applyAll  )//aply here
 		{
 			int numlats = 1;//how many laterals? default = 1
-			if(rp->successorNo.size()>i){ot =  rp->successorNo.at(i);}
+			if(rp->successorNo.size()>i){numlats =  rp->successorNo.at(i);}
 			if((this->param_->subType == 1)&&verbose){std::cout<<"numlats "<<numlats <<std::endl;}
 			for(int nn = 0; nn < numlats; nn++)
 			{
