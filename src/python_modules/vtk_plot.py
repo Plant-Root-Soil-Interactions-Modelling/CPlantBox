@@ -5,8 +5,8 @@ import time
 import numpy as np
 import vtk
 
-"""
-VTK Plot, by Daniel Leitner (refurbished 06/2020)
+""" 
+VTK Plot, by Daniel Leitner (refurbished 06/2020) 
 
 to make interactive vtk plot of root systems and soil grids
 """
@@ -31,42 +31,75 @@ def plot_leaf(leaf):
     render_window([actor], "plot_plant", [], [-10, 10, -10, 10, -10, 10]).Start()
 
 
-def plot_plant(plant, p_name, render = True):
+def plot_plant(plant, p_name, vals=[],render = True, filename = "plot_plant", range_ = None):
     """
-        plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons
+        plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons 
     """
     # plant as tube plot
-    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data
-    tube_plot_actor, color_bar = plot_roots(pd, p_name, "", render = False)
-
+    if not isinstance(p_name, list):
+        p_name = [p_name]
+    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime"] + p_name,  vals)  # poly data
+    
+    
+    tube_plot_actor, color_bar, lut = plot_roots(pd, p_name[-1], "", render = False, range_=None) #last element say what to visualize
+    
     # leafes as polygons
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
 
     leafes = plant.getOrgans(pb.leaf)
+    globalIdx_y = []
     for l in leafes:
-        create_leaf(l, leaf_points, leaf_polys)
-
+        globalIdx_y =globalIdx_y + create_leaf(l, leaf_points, leaf_polys)
+    globalIdx_y = np.array(globalIdx_y)
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
-
-    colors = vtk.vtkNamedColors()
+    numnodes = plant.getNumberOfNodes()
+    if (len(vals)>0) and (len(leafes)>0):    
+        if (not isinstance(vals, list)) and (not isinstance(vals[0], type(np.array([])))):
+            vals = [vals]
+        for i in range(len(vals)):
+            vals_ = vals[-1-i]
+            p_name_ = p_name[-1-i]
+            if len(vals_) == numnodes:
+                param = vals_[globalIdx_y] #select data for leaf
+            else :
+                if len(vals_) == (numnodes-1):
+                     param = vals_[globalIdx_y -1]
+            data = vtk_data(param)
+            data.SetName(p_name_)
+            polyData.GetCellData().AddArray(data)
+    else:
+        colors = vtk.vtkNamedColors()
 
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
+    
+    mapper.ScalarVisibilityOn();
+    mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
+    #mapper.SetArrayName(p_name)
+    mapper.SelectColorArray(p_name[-1])
+    mapper.UseLookupTableScalarRangeOn()
+    mapper.SetLookupTable(lut)
     actor = vtk.vtkActor()
     actor.SetMapper(mapper);
-    actor.GetProperty().SetColor(colors.GetColor3d("Green"))
+    
+    if not ((len(vals)>0) and (len(leafes)>0)):
+        actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
-        render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start()
+        #render_window([tube_plot_actor, actor], filename, color_bar, tube_plot_actor.GetBounds())#.Start()
+        write_vtp(filename+"_leaf.vtp", polyData)
+        write_vtp(filename+".vtp", pd)
     return [tube_plot_actor, actor], color_bar
 
 
-def create_leaf(leaf, leaf_points, leaf_polys):
-    offs = leaf_points.GetNumberOfPoints()
 
+def create_leaf(leaf, leaf_points, leaf_polys):
+
+    offs = leaf_points.GetNumberOfPoints()
+    globalIdx_y = [] #index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
 
         ln1 = leaf.getLeafVis(i)
@@ -75,7 +108,7 @@ def create_leaf(leaf, leaf_points, leaf_polys):
         if len(ln1) > 0 or len(ln2) > 0:
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)
-
+            glIdx = leaf.getNodeId(i +1)
 #             if len(ln1) > 0 and len(ln2) == 0:
 #                 print(" 2 -> 0")
 #             if len(ln1) == 0 and len(ln2) > 0:
@@ -84,28 +117,34 @@ def create_leaf(leaf, leaf_points, leaf_polys):
             if len(ln1) == 2 and len(ln2) == 2:  # normal case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
             elif len(ln1) == 6 and len(ln2) == 6:  # convex case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[1], ln1[2], ln2[2], ln2[1], leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[3], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[4], ln1[5], ln2[5], ln2[4], leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx,glIdx,glIdx]
             elif len(ln1) == 2 and len(ln2) == 6:  # normal to convex case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[3], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
                 if x2[1] <= x1[0]:
                     offs = add_quad_(ln1[0], ln1[0], ln2[1], ln2[2], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[1], ln1[1], ln2[4], ln2[5], leaf_points, leaf_polys, offs)
+                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
             elif len(ln1) == 6 and len(ln2) == 2:  # convex to normal case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
                 if x1[1] <= x2[0]:
                     offs = add_quad_(ln1[1], ln1[2], ln2[0], ln2[0], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[4], ln1[5], ln2[1], ln2[1], leaf_points, leaf_polys, offs)
-
+                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
+    return globalIdx_y 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
     q = vtk.vtkPolygon()
@@ -124,8 +163,8 @@ def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
 def solver_to_polydata(solver, min_, max_, res_):
     """ Creates vtkPolydata from dumux-rosi solver as a structured grid
     @param solver
-    @param min_
-    @param max_
+    @param min_ 
+    @param max_ 
     @param res_
     """
     pd = uniform_grid(min_, max_, res_)
@@ -137,26 +176,42 @@ def solver_to_polydata(solver, min_, max_, res_):
     return pd
 
 
-def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "organType" "creationTime"]):
-    """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments
+def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "organType" "creationTime"], vals = []):
+    """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments 
     @param rs             a RootSystem, Plant, or SegmentAnalyser
     @param zoom_factor    a radial zoom factor, since root are sometimes too thin for vizualisation
-    @param param_names    parameter names of scalar fields, that are copied to the polydata object
+    @param param_names    parameter names of scalar fields, that are copied to the polydata object   
     @return A vtkPolydata object of the root system
     """
     if isinstance(rs, pb.Organism):
         ana = pb.SegmentAnalyser(rs)  # for Organism like Plant or RootSystem
     else:
         ana = rs
+        
     nodes = np_convert(ana.nodes)
+    
+    if len(vals) > 0:
+        if isinstance(vals[0], list) or isinstance(vals[0], type(np.array([]))):#len(vals[0]) > 0:
+            for i in range(len(vals)) :
+                if len(vals[-1-i]) == len(nodes) :
+                    ana.addData(param_names[-1-i], vals[-1-i])
+        else:
+            if len(vals) == len(nodes) :
+                ana.addData(param_names[-1], vals)
     segs = np_convert(ana.segments)
     points = vtk_points(nodes)
     cells = vtk_cells(segs)
     pd = vtk.vtkPolyData()
     pd.SetPoints(points)
     pd.SetLines(cells)  # check SetPolys
-    for n in param_names:
+    for count, n in enumerate(param_names):
         param = np.array(ana.getParameter(n))
+        # try:
+            # param = np.array(ana.getParameter(n))
+        # except:
+            # count_ = len(param_names) -1 - count
+            # param = vals[count_]
+        #print("param_names ",n, min(param), max(param))
         if param.shape[0] == segs.shape[0]:
             if n == "radius":
                 param *= zoom_factor
@@ -165,11 +220,13 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
             pd.GetCellData().AddArray(data)
         else:
             print("segs_to_polydata: Warning parameter " + n + " is sikpped because of wrong size", param.shape[0], "instead of", segs.shape[0])
+                    
     c2p = vtk.vtkCellDataToPointData()  # set cell and point data
     c2p.SetPassCellData(True)
     c2p.SetInputData(pd)
     c2p.Update()
     return c2p.GetPolyDataOutput()
+
 
 
 def uniform_grid(min_, max_, res):
@@ -189,13 +246,13 @@ def uniform_grid(min_, max_, res):
 
 def render_window(actor, title, scalarBar, bounds):
     """ puts a vtk actor on the stage (renders an interactive window)
-
+    
     @param actor                    a (single) actor, or a list of actors (ensemble)
-    @param title                    window title
+    @param title                    window title 
     @param scalarBar                one or a list of vtkScalarBarActor (optional)
     @param bounds                   spatial bounds (to set axes actor, and camera position and focal point)
     @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write png
-
+    
     (built in)
     Keypress j / Keypress t: toggle between joystick (position sensitive) and trackball (motion sensitive) styles. In joystick style, motion occurs continuously as long as a mouse button is pressed. In trackball style, motion occurs when the mouse button is pressed and the mouse pointer moves.
     Keypress c / Keypress a: toggle between camera and actor modes. In camera mode, mouse events affect the camera position and focal point. In actor mode, mouse events affect the actor that is under the mouse pointer.
@@ -210,10 +267,10 @@ def render_window(actor, title, scalarBar, bounds):
     Keypress s: modify the representation of all actors so that they are surfaces.
     Keypress u: invoke the user-defined function. Typically, this keypress will bring up an interactor that you can type commands in. Typing u calls UserCallBack() on the vtkRenderWindowInteractor, which invokes a vtkCommand::UserEvent. In other words, to define a user-defined callback, just add an observer to the vtkCommand::UserEvent on the vtkRenderWindowInteractor object.
     Keypress w: modify the representation of all actors so that they are wireframe.
-
+    
     (additional)
-    Keypress g: save as png
-    Keypress x,y,z,v: various views
+    Keypress g: save as png    
+    Keypress x,y,z,v: various views    
     """
     colors = vtk.vtkNamedColors()  # Set the background color
     ren = vtk.vtkRenderer()  # Set up window with interaction
@@ -265,21 +322,23 @@ def render_window(actor, title, scalarBar, bounds):
     renWin.SetSize(1200, 1000)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
-
-    iren = vtk.vtkRenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
-    renWin.Render()
-    iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
-    iren.AddObserver('KeyPressEvent', lambda obj, ev:keypress_callback_(obj, ev, bounds), 1.0)
-    iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
-    for a in ren.GetActors():
-        a.Modified()  #
-    renWin.Render()
-    return iren
+    file_name = renWin.GetWindowName()
+    write_png(renWin, file_name)
+    print("saved", file_name + ".png")
+    # iren = vtk.vtkRenderWindowInteractor()
+    # iren.SetRenderWindow(renWin)
+    # renWin.Render()
+    # iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
+    # iren.AddObserver('KeyPressEvent', lambda obj, ev:keypress_callback_(obj, ev, bounds), 1.0)
+    # iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
+    # for a in ren.GetActors():
+        # a.Modified()  #
+    # renWin.Render()
+    # return iren
 
 
 def keypress_callback_(obj, ev, bounds):
-    """ adds the functionality to make a screenshot by pressing 'g',
+    """ adds the functionality to make a screenshot by pressing 'g', 
     and to change view to axis aligned plots (by 'x', 'y', 'z', 'v') """
     key = obj.GetKeySym()
     if key == 'g':
@@ -315,7 +374,7 @@ def keypress_callback_(obj, ev, bounds):
 
 def write_png(renWin, fileName):
     """" Save the current render window in a png (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
-    @param renWin        the vtkRenderWindow
+    @param renWin        the vtkRenderWindow 
     @parma fileName      file name without extension
     """
     windowToImageFilter = vtk.vtkWindowToImageFilter();
@@ -330,7 +389,7 @@ def write_png(renWin, fileName):
 
 
 def create_lookup_table(tableIdx = 15, numberOfColors = 256):
-    """ creates a color lookup table
+    """ creates a color lookup table 
     @param tableIdx          index of the predefined color table, see VTKColorSeriesPatches.html
     @param numberOfColors    number of colors interpolated from the predefined table
     @return A vtkLookupTable
@@ -351,8 +410,7 @@ def create_lookup_table(tableIdx = 15, numberOfColors = 256):
 
     return lut
 
-
-def create_scalar_bar(lut, grid = None, p_name = ""):
+def create_scalar_bar(lut, grid = None, p_name = "", range_ = None):
     """ creates a vtkScalarBarActor, for a vtkLookupTable, sets hte active scalar to p_name
     @param lut         vtkLookupTable
     @param grid        the grid the scalar bar will be used on (to automatically determine the scalar range)
@@ -360,19 +418,21 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     @return a vtkScalarBarActor
     """
     if grid != None and p_name != "":
-        range = [0, 1]
-        a = grid.GetCellData().GetAbstractArray(p_name)
-        if a:
-            range = a.GetRange()
-            grid.GetCellData().SetActiveScalars(p_name)
-        else:
-            a = grid.GetPointData().GetAbstractArray(p_name)
-            grid.GetPointData().SetActiveScalars(p_name)
+        if range_ == None :
+            range = [0, 1]
+            a = grid.GetCellData().GetAbstractArray(p_name)                                          
             if a:
                 range = a.GetRange()
-        if p_name == "organType":  # fix range for for organType
-            range = [ 2, 4]
-        lut.SetTableRange(range)
+                grid.GetCellData().SetActiveScalars(p_name)
+            else:
+                a = grid.GetPointData().GetAbstractArray(p_name)
+                grid.GetPointData().SetActiveScalars(p_name)
+                if a:
+                    range = a.GetRange()
+            if p_name == "organType":  # fix range for for organType
+                range = [ 2, 4]
+            range_ = range
+        lut.SetTableRange(range_)
 
     scalarBar = vtk.vtkScalarBarActor()
     scalarBar.SetLookupTable(lut)
@@ -389,8 +449,8 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
-def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True):
-    """ plots the root system
+def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, range_ = None):
+    """ plots the root system 
     @param pd         RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
     @param p_name     parameter name of the data to be visualized
     @param win_title  the windows titles (optionally, defaults to p_name)
@@ -428,12 +488,13 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True):
     plantActor.SetMapper(mapper)
 
     lut = create_lookup_table()  # 24
-    scalar_bar = create_scalar_bar(lut, pd, p_name)  # vtkScalarBarActor
+    scalar_bar = create_scalar_bar(lut, pd, p_name, range_)  # vtkScalarBarActor
     mapper.SetLookupTable(lut)
 
     if render:
         render_window(plantActor, win_title, scalar_bar, pd.GetBounds()).Start()
-    return plantActor, scalar_bar
+    return plantActor, scalar_bar, lut
+
 
 
 def plot_mesh(grid, p_name, win_title = "", render = True):
@@ -441,7 +502,7 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
     @param win_title  the windows titles (optionally, defaults to p_name)
-    @param render     render in a new interactive window (default = True)
+    @param render     render in a new interactive window (default = True)    
     @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if win_title == "":
@@ -467,14 +528,14 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
 
 
 def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True):
-    """ plots orthogonal nz vertical cuts z[:-1] (xy-planes), with z = linspace(min_z, max_z, nz+1),
-    and two additonal sclices at x=0 (yz-plane), y=0 (xz-plane)
+    """ plots orthogonal nz vertical cuts z[:-1] (xy-planes), with z = linspace(min_z, max_z, nz+1), 
+    and two additonal sclices at x=0 (yz-plane), y=0 (xz-plane)          
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
     @param nz           number of vertical slices
     @param win_title    the windows titles (optionally, defaults to p_name)
     @param render       render in a new interactive window (default = True)
-    @return a tuple of a list of vtkActors and a single corresponding color bar vtkScalarBarActor
+    @return a tuple of a list of vtkActors and a single corresponding color bar vtkScalarBarActor    
     """
     if win_title == "":
         win_title = p_name
@@ -573,9 +634,9 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
     @param s
     @param rp            root parameter segment data (will be added)
-    @param periodic      if yes the root system will be mapped into the domain
+    @param periodic      if yes the root system will be mapped into the domain 
     @param min_b         minimum of domain boundaries
-    @param max_b         maximum of domain boundaries
+    @param max_b         maximum of domain boundaries    
     @param cell_number   domain resolution
     @param filename      file name (without extension)
     """
@@ -630,9 +691,9 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
 
 
 def plot_roots_and_soil_files(filename: str, pname:str):
-    """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil()
+    """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil() 
     @param filename      file name (without extension)
-    @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
+    @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")    
     """
     path = "results/"
     pd = read_vtp(path + filename + ".vtp")
@@ -740,4 +801,5 @@ class AnimateRoots:
 
             self.actors.extend(meshActor)
             self.bounds = grid.GetBounds()
+
 

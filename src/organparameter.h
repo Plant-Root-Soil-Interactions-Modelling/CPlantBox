@@ -8,8 +8,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "mymath.h"
 
-#include "external/tinyxml2/tinyxml2.h"
 
 /**
  * This file describes the classes OrganSpecificParameter and OrganRandomParameter.
@@ -31,7 +31,7 @@ public:
     OrganSpecificParameter(int t, double a): subType(t), a(a)  { }
 
     virtual ~OrganSpecificParameter() { }
-
+	int created_linking_node = 0;
     int subType = -1; ///< sub type of the organ
     double a = 0.; ///< radius of the organ [cm]
     virtual std::string toString() const; ///< quick info for debugging
@@ -83,7 +83,7 @@ public:
 
     std::weak_ptr<Organism> plant;
     std::shared_ptr<GrowthFunction> f_gf;
-	std::vector<double> string2vector(std::string xmlInput);///<convert string to vector<double>, to simplifiy xml input
+	//std::vector<double> string2vector(std::string xmlInput);///<convert string to vector<double>, to simplifiy xml input
 
 protected:
 

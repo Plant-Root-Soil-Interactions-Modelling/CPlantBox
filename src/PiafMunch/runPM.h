@@ -205,6 +205,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	bool doTroubleshooting =false; //do extra printing
 	bool useCWGr; //use water- and carbon- limited growth?
 	int expression = 1;//if implement several possible expression in C_fluxes
+	bool useStemTip = true;
 	
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters & constants (implemented in 'initialize.cpp')

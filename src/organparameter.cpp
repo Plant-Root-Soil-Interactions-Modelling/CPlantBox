@@ -3,7 +3,6 @@
 
 #include "Organism.h"
 #include "growth.h"
-
 #include <limits>
 #include <iostream>
 #include <exception>
@@ -171,17 +170,19 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
         name = "undefined*";
     }
     auto p = element->FirstChildElement("parameter");
+	std::cout<<"OrganRandomParameter::readXML "<<std::endl;
     while(p!=nullptr) {
         const char* str = p->Attribute("name");
         if (str!=nullptr) {
             std::string key = std::string(str);
+			std::cout<<"key "<<key<<" ";
             int i = 0;
             if (iparam.count(key)>0) {
                 *iparam[key] = p->IntAttribute("value", *iparam[key]);  // if not found, leave default
-                i++;
+                i++;std::cout<<"*iparam[key] "<<*iparam[key]<<" ";
             } else if (dparam.count(key)>0) {
                 *dparam[key] = p->DoubleAttribute("value", *dparam[key]);  // if not found, leave default
-                i++;
+                i++;std::cout<<"*dparam[key] "<<*dparam[key]<<" ";
             }
             if (param_sd.count(key)>0) {
                 *param_sd[key] = p->DoubleAttribute("dev", *param_sd[key]); // if not found, leave default
@@ -194,6 +195,7 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
                 }
             }
             p = p->NextSiblingElement("parameter");
+			std::cout<<std::endl;
         } else {
             std::cout << "OrganRandomParameter::readXML: warning! tag has no attribute 'name' \n" << std::flush;
             p = p->NextSiblingElement("parameter");
@@ -352,24 +354,7 @@ void OrganRandomParameter::bindParameter(std::string name, double* d, std::strin
 }
 
 
-/**
- *  converts string to vector of double see @LeafRandomParameter::readXML
- *	used for leaf shape 
- *  @param xmlInput     input array in xml
- *
- * @return xmlInput converted to vector double
- */
-std::vector<double> OrganRandomParameter::string2vector(std::string xmlInput)
-{
-	
-    std::string buf;                 // Have a buffer string
-    std::stringstream ss(xmlInput);       // Insert the string into a stream
 
-    std::vector<double> tokens; // Create vector to hold our words
 
-    while (ss >> buf){tokens.push_back(std::stod(buf));}
-  
-	return tokens;
-}
 
 } // namespace

@@ -21,8 +21,8 @@ class TestLeafParameter(unittest.TestCase):
 
     def add_successors(self):
         """ add successor sub types to the example"""
-        self.lrp.successor = [4, 5, 6]
-        self.lrp.successorP = [0.4, 0.1, 0.5]
+        self.lrp.successorST = [[4, 5, 6]]
+        self.lrp.successorP = [[0.4, 0.1, 0.5]]
         # print(self.srp.successorP[0])
 
     def test_constructors(self):
@@ -94,9 +94,9 @@ class TestLeafParameter(unittest.TestCase):
         self.assertEqual(otp2.lmax, otp.lmax, "xml: value unexpected")  # value
         self.assertEqual(otp2.lns, otp.lns, "xml: value unexpected")  # dev
         for i in range(0, 3):
-            self.assertEqual(otp2.successor[i], otp.successor[i], "xml: value unexpected")
+            self.assertEqual(otp2.successorST[0][i], otp.successorST[0][i], "xml: value unexpected")
         for i in range(0, 3):
-            self.assertAlmostEqual(otp2.successorP[i], otp.successorP[i], 7, "xml: value unexpected")
+            self.assertAlmostEqual(otp2.successorP[0][i], otp.successorP[0][i], 7, "xml: value unexpected")
 
     def test_realize(self):
         """ calls realize """

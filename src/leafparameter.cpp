@@ -79,7 +79,8 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
-	bool hasLaterals = (successor.size()>0);
+	bool verbose = true;
+	bool hasLaterals = (successorST.size()>0);
 	auto p = plant.lock();
 	//define the parameters outside fo the if functions:
 	double lb_;
@@ -110,7 +111,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
     } else {
 	lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
 	la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
-	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 
+	nob_real = std::max((lmax-la_-lb_)/ln+1, 1.);// real maximal number of branches 
 	res = lb_ - floor(lb_/dx)* dx;	
 	if (res < dxMin) {
 		if (res <= dxMin/2){
@@ -140,11 +141,15 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	//at end of basal zone
 	for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 	if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
-	
+	if(verbose)
+	{
+	std::cout<<"leaf=> lnf is "<<lnf<<" "<<subType<<std::endl;
+	std::cout<<"leaf=> in create lat branch "<<nob1<< " " <<nob_<<" "<<latMissing<<" "<<latExtra1<<" "<<latExtra2<<std::endl;
+	}
 	switch(lnf) {
 	case 0: // homogeneously distributed leaf nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-leaf distances
-			double d = std::max(ln + p->randn()*lns,dxMin); //Normal function of equal internode distance
+			double d = std::max(ln_mean + p->randn()*lns,dxMin); //Normal function of equal internode distance
 			res = d -floor(d / dx)*dx;
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
@@ -169,10 +174,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}			   
-			ln_.push_back(0);
-			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}	
 		}
 		break;
 	case 2: //nodes distance decrease linearly TODO
@@ -202,7 +204,11 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}	
+			// latExtra2_-=0.5;}			   
+			// ln_.push_back(0);
+			// for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
+			// if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
 		}
 		break;
 	case 4://nodes distance decrease exponential TODO
@@ -217,10 +223,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}			   
-			ln_.push_back(0);
-			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_-=0.5;}
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}		
 		}
 		break;
 	case 5://nodes distance decrease exponential
@@ -250,7 +253,17 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
 	double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // leaf life time
 	double leafArea_ = std::max(areaMax + p->randn()*areaMaxs, 0.); // radius
-	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, hasLaterals, Width_blade_, Width_petiole_);
+	double delayLat_ = std::max(delayLat + p->randn()*delayLats, 0.);
+	if(verbose)
+	{
+	std::cout<<"to std::make_shared<LeafSpecificParameter> ";
+	std::cout<<subType<<" "<<lb_<<" "<<la_<<" "<<r_<<" "<<hasLaterals<<std::endl;
+	std::cout<<"ln: "<<std::endl;
+	for (int j = 0; j<ln_.size(); j++) {std::cout<< ln_.at(j)<<" ";}
+	std::cout<<std::endl;
+	}
+	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, 
+			hasLaterals, Width_blade_, Width_petiole_, delayLat_);
 }
 
 /**
@@ -259,22 +272,22 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
  * @param pos       spatial position (for coupling to a soil model)
  * @return          leaf sub type of the lateral leaf
  */
-int LeafRandomParameter::getLateralType(const Vector3d& pos)
+int LeafRandomParameter::getLateralType(const Vector3d& pos, int ruleId)
 {
-	assert(successor.size()==successorP.size()
-			&& "LeafTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
-	if (successorP.size()>0) { // at least 1 successor type
+	assert(successorST.at(ruleId).size()==successorP.at(ruleId).size()
+        && "LeafTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
+	if (successorP.at(ruleId).size()>0) { // at least 1 successor type
 		double d = plant.lock()->rand(); // in [0,1]
 		int i=0;
-		double p=successorP.at(i);
+		double p=successorP.at(ruleId).at(i);
 		i++;
-		while ((p<d) && (i<successorP.size())) {
-			p+=successorP.at(i);
+		while ((p<d) && (i<successorP.at(ruleId).size())) {
+			p+=successorP.at(ruleId).at(i);
 			i++;
 		}
 		if (p>=d) { // success
 			// std::cout << "lateral type " << successor.at(i-1) << "\n" << std::flush;
-			return successor.at(i-1);
+			return i-1;
 		} else { // no successors
 			// std::cout << "no lateral type " << std::flush;
 			return -1;
@@ -312,14 +325,20 @@ std::string LeafRandomParameter::toString(bool verbose) const {
 		std::string s = OrganRandomParameter::toString(true);
 		std::stringstream str;
 		str << "successor\t";
-		for (int i=0; i<successor.size(); i++) {
-			str << successor[i] << " ";
-		}
+		for (int i=0; i<successorST.size(); i++) {
+            for (int j=0; i<successorST.at(i).size(); j++) {
+				str << successorST[i][j] << " ";
+			}
+			str << "; ";
+        }
 		str << "\t" << description.at("successor") << std::endl;
 		str << "successorP\t";
 		for (int i=0; i<successorP.size(); i++) {
-			str << successorP[i] << " ";
-		}
+            for (int j=0; i<successorP.at(i).size(); j++) {
+				str << successorP[i][j] << " ";
+			}
+			str << "; ";
+        }
 		str << "\t" << description.at("successorP") << std::endl;
 		///
 		
@@ -352,17 +371,108 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 {
 	OrganRandomParameter::readXML(element);
 	tinyxml2::XMLElement* p = element->FirstChildElement("parameter");
-	successor.resize(0);
-	successorP.resize(0);
+	successorOT.resize(0, std::vector<int>(0));//2D, int
+    successorST.resize(0, std::vector<int>(0));//2D, int
+    successorP.resize(0, std::vector<double>(0));//2D, double
+    successorNo.resize(0);//1D, int
+    successorWhere.resize(0, std::vector<int>(0));//2D, int
+	double p_ =0., defaultVald;
+	int defaultVal, defaultSize, numLat, success;
+	std::vector<std::string> lookfor ;
+	bool replaceByDefaultValue;
+	int ruleId = 0;
+	bool verbose = true;
 	while(p) {
 		std::string key = p->Attribute("name");
-		if (key.compare("successor")==0)  {
-			successor.push_back(p->IntAttribute("type"));
-			successorP.push_back(p->DoubleAttribute("percentage"));
+		if(verbose){
+			std::cout<<"LeafRandomParameter::readXML ";
+			std::cout<<key<<" "<<key.compare("successor")<<std::endl;
 		}
+        if (key.compare("successor")==0)  {
+			if(successorNo.size()< (ruleId+1))
+			{
+				successorOT.push_back(std::vector<int>());
+				successorST.push_back(std::vector<int>());
+				successorWhere.push_back(std::vector<int>());
+				successorP.push_back(std::vector<double>());
+				successorNo.push_back(1);
+			}
+			//default == make one lateral
+			success = p->QueryIntAttribute("numLat",&numLat);
+			if(success == tinyxml2::XML_SUCCESS){successorNo.at(ruleId) = numLat;}
+			
+			
+			//default == empty vector == apply rule to all the linking nodes
+			replaceByDefaultValue = true;lookfor = std::vector<std::string>{"where"};
+			defaultVal = -1;defaultSize = int(successorWhere.at(ruleId).size() ==0);
+			cpb_queryStringAttribute(lookfor,
+						defaultVal,defaultSize, replaceByDefaultValue,
+						successorWhere.at(ruleId), p);//name, default value, vector to fill, accept not found
+			
+			replaceByDefaultValue = false;lookfor = std::vector<std::string>{"subType","type"};
+			defaultVal = 1.0;defaultSize = 0;
+			cpb_queryStringAttribute(lookfor,
+						defaultVal,defaultSize, replaceByDefaultValue,
+						successorST.at(ruleId), p);
+			
+			
+			
+			replaceByDefaultValue = true;lookfor = std::vector<std::string>{"percentage"};
+			defaultVald = 1./successorST.at(ruleId).size();
+			defaultSize = (successorST.at(ruleId).size() - successorP.at(ruleId).size());
+			
+			if(!std::isfinite(defaultVal))
+			{
+				std::cout<<"!std::isfinite(defaultVal) "<<defaultVald<<" ";
+				std::cout<<" did sucST "<< successorST.at(ruleId).size() <<std::endl;
+				for(int k = 0;k < successorST.at(ruleId).size(); k++){
+					std::cout<<successorST.at(ruleId).at(k)<<" ";}
+				std::cout<<std::endl;
+				assert(false);
+			}
+			cpb_queryStringAttribute(lookfor,
+						defaultVald,defaultSize, replaceByDefaultValue,
+						successorP.at(ruleId), p);
+			
+			replaceByDefaultValue = true;lookfor = std::vector<std::string>{"organType"};
+			if(successorST.at(ruleId).at(0) == 2){
+				//for backward compatibility => if not organtype and subtype == 2, then we want a leaf
+				defaultVal = Organism::ot_leaf; 
+			}else{defaultVal = this->organType;}
+			defaultSize = (successorST.at(ruleId).size() - successorOT.at(ruleId).size());
+			cpb_queryStringAttribute(lookfor,
+						defaultVal,defaultSize, replaceByDefaultValue,
+						successorOT.at(ruleId), p);
+			
+			//sum(p_) <= 1. 
+			p_ = std::accumulate(successorP.at(ruleId).begin(), successorP.at(ruleId).end(), 0.);
+			if(verbose){
+			std::cout<<"sum p_ is "<<p_<<" "<< (p_ == 1.) <<" "<< ruleId <<std::endl;
+				std::cout<<" did sucST "<< successorST.size() <<std::endl;
+				std::cout<<" did sucST "<< successorST.at(ruleId).size() <<std::endl;
+				std::cout<<" did sucP "<< successorP.size() <<std::endl;
+				std::cout<<" did sucP "<< successorP.at(ruleId).size() <<std::endl;
+				std::cout<<" did sucQT "<< successorOT.size() <<std::endl;
+				std::cout<<" did sucQT "<< successorOT.at(ruleId).size() <<std::endl;
+				std::cout<<" did sucNo "<< successorNo.size() <<std::endl;
+				std::cout<<" did sucWhere "<< successorWhere.size() <<std::endl;
+				std::cout<<" did sucWhere "<< successorWhere.at(ruleId).size() <<std::endl;
+			}
+			if(p_ == 1.) //we gathered on group of successor
+			{
+				ruleId ++;
+				if(verbose){
+				std::cout<<"new ruleId "<<ruleId<<std::endl;
+				}
+				// successorP.push_back(sucP); 	sucP.resize(0);
+				// successorOT.push_back(sucOT); 	sucOT.resize(0);
+				// successorST.push_back(sucST); 	sucST.resize(0);
+				// successorWhere.push_back(sucW); sucW.resize(0);
+			}
+        }
 		p = p->NextSiblingElement("parameter");
 	}
-	double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
+	//double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
 	if  ((p_<1) && (p_!=0))  {
 		std::cout << "LeafRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
 	}
@@ -373,10 +483,11 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 	while(p) {
 		std::string key = p->Attribute("name");
 		if (key.compare("leafGeometry")==0)  {
+			double dummy = 0.0;
 			//leafGeometryPhi.push_back(p->DoubleAttribute("phi"));
-			leafGeometryPhi = string2vector(p->Attribute("phi"));
+			leafGeometryPhi = string2vector(p->Attribute("phi"), dummy);
 			//leafGeometryX.push_back(p->DoubleAttribute("x"));
-			leafGeometryX = string2vector(p->Attribute("x"));
+			leafGeometryX = string2vector(p->Attribute("x"), dummy);
 		}
 		p = p->NextSiblingElement("parameter");
 	}
@@ -397,27 +508,36 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
  */
 tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
 {
-	assert(successor.size()==successorP.size() &&
+	assert(successorST.size()==successorP.size() &&
 			"LeafTypeParameter::writeXML: Successor sub type and probability vector does not have the same size" );
 	tinyxml2::XMLElement* element = OrganRandomParameter::writeXML(doc, comments);
-	for (int i = 0; i<successor.size(); i++) {
-		tinyxml2::XMLElement* p = doc.NewElement("parameter");
-		p->SetAttribute("name", "successor");
-		p->SetAttribute("number", i);
-		p->SetAttribute("type", successor[i]);
-		p->SetAttribute("percentage", float(successorP[i]));
-		element->InsertEndChild(p);
-		if (comments) {
-			std::string str = description.at("successor");
-			tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
-			element->InsertEndChild(c);
-		}
+	double p_ = 0.;
+	
+    for (int j = 0; j<successorST.size(); j++) {	
+			tinyxml2::XMLElement* p = doc.NewElement("parameter");
+			p->SetAttribute("name", "successor");
+			if(successorNo.size()>j){p->SetAttribute("numLat", successorNo.at(j));}
+			if(successorWhere.size()>j){p->SetAttribute("Where", vector2string(successorWhere.at(j)).c_str());}
+			p->SetAttribute("subType", vector2string(successorST.at(j)).c_str());
+			if(successorOT.size()>j){p->SetAttribute("organType", vector2string(successorOT.at(j)).c_str());}
+			p->SetAttribute("percentage", vector2string(successorP.at(j)).c_str());
+			element->InsertEndChild(p);
+			if (comments) {
+				std::string str = description.at("successor");
+				tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
+				element->InsertEndChild(c);
+			}
+			p_ += std::accumulate(successorP.at(j).begin(), successorP.at(j).end(), 0.);
+			if ((p_<1) && (p_!=0)) {
+				std::cout << "LeafRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
+			}
 
+		
 	}
-	double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
-	if ((p_<1) && (p_!=0)) {
-		std::cout << "LeafRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
-	}
+	// double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
+	// if ((p_<1) && (p_!=0)) {
+		// std::cout << "LeafRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
+	// }
 	for (int i = 0; i<leafGeometryPhi.size(); i++) {
 		tinyxml2::XMLElement* p = doc.NewElement("parameter");
 		p->SetAttribute("name", "leafGeometry");
@@ -462,8 +582,9 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("lnf", &lnf, "Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)");
 	bindParameter("parametrisationType", &parametrisationType, "Leaf geometry parametrisation type");
 	bindParameter("geometryN", &geometryN, "leaf geometry resolution");
-	// other parameters (descriptions only)
-	description["successor"] = "Sub type of lateral leaf veins";
+	bindParameter("delayLat", &delayLat, "delay between latteral creation and start of nodal growth", &delayLats);
+    // other parameters (descriptions only)
+	description["successorST"] = "Sub type of lateral leaf veins";
 	description["successorP"] = "Probability of each sub type to occur";
 	description["leafGeometryPhi"] = "Leaf geometry parametrisation parameter";
 	description["leafGeometryX"] = "Leaf geometry parametrisation";
@@ -474,7 +595,7 @@ void LeafRandomParameter::bindParameters()
  * and normalizes (see normalize())
  */
 void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std::vector<double> l, int N) {
-	if (phi.size()>0 && (l.size()==l.size())) {
+	if (phi.size()>0 && (phi.size()==l.size())) {
 		leafGeometry.resize(N);
 		auto y_ = Function::linspace(0., leafLength(), N);
 		for (int i = 0; i<N; i++) {

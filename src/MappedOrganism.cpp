@@ -683,6 +683,12 @@ void MappedPlant::simulate(double dt, bool verbose)
 			leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(localSegId,realized, withPetiole);
 			withPetiole = true;
 			segVol.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafVolAtSeg(localSegId, realized, withPetiole);//* thickness;
+			if(!(segVol.at(segIdx) >= 0)){
+				std::stringstream errMsg;
+				errMsg <<"MappedPlant::simulate: computation of leaf volume failed "<<segIdx<<
+				" "<<segVol.at(segIdx)<<"\n";
+				throw std::runtime_error(errMsg.str().c_str());
+			}
 			assert((segVol.at(segIdx) >= 0)&&"MappedPlant::simulate: computation of leaf volume failed");
 			
 		}else{ //stems and roots are cylinder

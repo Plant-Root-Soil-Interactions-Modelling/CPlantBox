@@ -870,7 +870,8 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 				double Lseg = 0.;
 				
 				bool isRootTip = ((ot==2)&&(k==(nodeIds_.size()-1)));
-				if((nNodes==1)||isRootTip){Flen = 1.;
+				bool isStemTip = ((ot==3)&&(k==(nodeIds_.size()-1))); 
+				if((nNodes==1)||isRootTip||(isStemTip&&useStemTip)){Flen = 1.;
 					if(doTroubleshooting){
 						std::cout<<"		root or short organ "<<nodeId<<" "<<org->parentNI<<std::endl;
 					}

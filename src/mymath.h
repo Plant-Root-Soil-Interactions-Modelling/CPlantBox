@@ -9,10 +9,12 @@
 
 #include <cmath>
 #include <sstream>
+#include <iostream>
 #include <assert.h>
 #include <vector>
 #include <functional>
 
+#include "external/tinyxml2/tinyxml2.h"
 
 namespace CPlantBox {
 
@@ -305,9 +307,79 @@ public:
 
 };
 
+/**
+ *  converts string to vector of double see @LeafRandomParameter::readXML
+ *	used for leaf shape
+ *  @param xmlInput     input array in xml
+ *
+ * @return xmlInput converted to vector double
+ */
+template <class IntOrDouble3>
+std::vector<IntOrDouble3> string2vector(const char* xmlInput, IntOrDouble3 defaultVal)//  
+{
+
+	std::string buf;                 // Have a buffer string
+	std::stringstream ss(xmlInput);       // Insert the string into a stream
+
+	std::vector<IntOrDouble3> tokens; // Create vector to hold our words
+
+	while (std::getline(ss, buf, ','))
+	{tokens.push_back(std::stod(buf));}
+
+	return tokens;
+}
 
 
 
+template <class IntOrDouble>
+void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
+	bool replaceByDefault,
+	std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
+{	std::cout<<std::endl<<std::endl;
+	std::cout<<"queryStringAttribute "<<key->Attribute("name")<<" ";
+	std::cout<<defaultVal<<" "<<sizeVector<<" ";
+	std::cout<<keyNames.size()<<" "<<replaceByDefault<<std::endl<<std::endl<<std::endl;
+	int success = -1;
+	std::vector<IntOrDouble> dummy;
+	for(int i = 0; (i < keyNames.size())&&(tinyxml2::XML_SUCCESS != success); i++){
+		std::cout<<"		"<<keyNames.at(i);
+		const char* cckey;
+		//std::string cckey;
+		success = key->QueryStringAttribute(keyNames.at(i).c_str(),&cckey);
+		if (tinyxml2::XML_SUCCESS == success){
+			//use default val to defin type of element in vector
+			dummy = string2vector(cckey, defaultVal);
+		}
+		std::cout<< " "<<success<<std::endl;
+		
+	}
+	if(tinyxml2::XML_SUCCESS != success){
+		assert(replaceByDefault && 
+		"mymath::queryStringAttribute: key not found in xml file without default value");
+		dummy = std::vector<IntOrDouble>(sizeVector, defaultVal);
+	};
+	if(vToFill.size() == 0){vToFill = dummy;
+	}else{
+		vToFill.insert( vToFill.end(), dummy.begin(), dummy.end() );
+	}
+	
+	std::cout<<" did vToFill "<< vToFill.size() <<std::endl;
+	for(int k = 0;k < vToFill.size(); k++){std::cout<<vToFill.at(k)<<" ";}
+	std::cout<<std::endl;
+}
+
+template <class IntOrDouble2>
+std::string vector2string(std::vector<IntOrDouble2> vec)
+{
+    std::stringstream ss;
+    for (auto it = vec.begin(); it != vec.end(); it++)    {
+        if (it != vec.begin()) {
+            ss << ", ";
+        }
+        ss << *it;
+    }
+	return ss.str() ;
+}
 
 } // end namespace CPlantBox
 

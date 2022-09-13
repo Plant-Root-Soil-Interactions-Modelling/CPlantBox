@@ -1,9 +1,17 @@
 import unittest
 import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
+sys.path.append("src/python_modules")
 import plantbox as pb
+from importlib import reload  # Python 3.4+
+pb = reload(pb)
 from rsml_reader import *
-
-path = "../modelparameter/plant/"
+import vtk_plot as vp
+import os
+currentpath = os.getcwd()
+if currentpath[-4:] == "tBox":
+    path = "/modelparameter/plant/"
+else:
+    path = "/../modelparameter/plant/"
 
 
 
@@ -13,30 +21,44 @@ class TestPlant(unittest.TestCase):
 
     def test_CPlantBox(self):
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
-        p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013.xml")
-
-        seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
-        roots = p.getOrganRandomParameter(pb.OrganTypes.root)
-        stems = p.getOrganRandomParameter(pb.OrganTypes.stem)
-        leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
-#         for p_ in seeds:
-#             print(p_)
-#         for p_ in roots[1:]:
-#             print(p_)
-#         for p_ in stems[1:]:
-#             print(p_)
-#         for p_ in leafs[1:]:
-#             print(p_)
-
-        self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1],
-                         "test_CPlantBox: read wrong number of random parameter from xml")
+        p = pb.MappedPlant()
+        print(os.getcwd() +path + "Heliantus_Pagès_2013.xml")
+        p.openXML(os.getcwd() +path + "Heliantus_Pagès_2013.xml")
 
         p.initialize(True)
-        p.simulate(76)
-        p.write("morningglory.vtp")
+        #p.simulate(100, True)
 
-    def test_CPlantBox_analysis(self):
+        #for p_ in p.getOrganRandomParameter(pb.stem):
+        #    if (p_.subType > 0):
+        #        print(p_.subType, "radius", p_.a, "lmax", p_.lmax, p_.ln, p_.lb,  p_.nob())
+
+        # nodes = p.getNodes()
+        # segseg = p.getSegments()
+        # orgs = p.getOrgans()
+        # p.getNumberOfOrgans()
+        #print(p.segLength())
+        # for org in orgs:
+        #     print(org.getId(), org.organType(), org.getOrigin(), org.getNumberOfNodes(),
+        #           org.getNumberOfChildren(), org.getNodeId(0))
+        #     print("     ",org.getNode(org.getNumberOfNodes() - 1))
+        #
+        #     nns = [ np.array(org.getNode(n_))
+        #             for n_ in range(org.getNumberOfNodes())]
+        #     print(nns)
+        #     for nkid in range(org.getNumberOfChildren()):
+        #         orgkid = org.getChild(nkid)
+        #         print("kid :",orgkid.getId(), orgkid.organType(), orgkid.getOrigin(), orgkid.getNumberOfNodes(),
+        #               orgkid.getNumberOfChildren(),orgkid.getNodeId(0))
+        #         print("     ",orgkid.getNode(orgkid.getNumberOfNodes() - 1))
+        #     #print(nns)
+        # p.write("morningglory_" + str(0) + ".vtp")
+        # raise Exception
+        for i in range(76):
+            p.simulate(1, True)
+            p.write("morningglory_"+ str(i) +".vtp")
+        vp.plot_plant(p,p_name = "organType")
+
+    def _test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
         p.openXML(path + "Heliantus_Pagès_2013.xml")
@@ -45,7 +67,7 @@ class TestPlant(unittest.TestCase):
         ana = pb.SegmentAnalyser(p)
         ana.write("morningglory_ama.vtp")
 
-    def test_convert(self):
+    def _test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
         p = pb.Plant()
         p.openXML(path + "Heliantus_Pagès_2013.xml")
@@ -64,7 +86,7 @@ class TestPlant(unittest.TestCase):
 #         node_connection_o = seg2a(p.getSegments(15)) # plant segments        
         pass
 
-    def test_DB_delay(self):
+    def _test_DB_delay(self):
         p = pb.MappedPlant()
         p.readParameters(path + "Heliantus_Pagès_2013.xml")
         rrp = p.getOrganRandomParameter(pb.root)[1]

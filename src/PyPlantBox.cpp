@@ -262,6 +262,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("copy",&Organ::copy)
             .def("organType",&Organ::organType)
             .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
+			.def("getNumberOfLinkingNodes", &Organ::getNumberOfLinkingNodes)
 			.def("getNumberOfLaterals", &Organ::getNumberOfLaterals)
 			.def("setParent",&Organ::setParent)
             .def("getParent",&Organ::getParent)
@@ -625,7 +626,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &LeafRandomParameter::rlt)
             .def_readwrite("rlts", &LeafRandomParameter::rlts)
             .def_readwrite("gf", &LeafRandomParameter::gf)
-            .def_readwrite("successor", &LeafRandomParameter::successor)
+            .def_readwrite("successor", &LeafRandomParameter::successorST)//for backward compatibility
+            .def_readwrite("successorST", &LeafRandomParameter::successorST)
             .def_readwrite("successorP", &LeafRandomParameter::successorP)
             .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
             .def_readwrite("f_se", &LeafRandomParameter::f_se)
@@ -664,6 +666,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("ln", &StemRandomParameter::ln)
             .def_readwrite("lns", &StemRandomParameter::lns)
             .def_readwrite("lnf", &StemRandomParameter::lnf)
+            .def_readwrite("a", &StemRandomParameter::a)
+            .def_readwrite("as", &StemRandomParameter::as)
             .def_readwrite("lmax", &StemRandomParameter::lmax)
             .def_readwrite("lmaxs", &StemRandomParameter::lmaxs)
             .def_readwrite("r", &StemRandomParameter::r)
@@ -679,7 +683,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &StemRandomParameter::rlt)
             .def_readwrite("rlts", &StemRandomParameter::rlts)
             .def_readwrite("gf", &StemRandomParameter::gf)
-            .def_readwrite("successor", &StemRandomParameter::successor)
+            .def_readwrite("successorNo", &StemRandomParameter::successorNo)
+            .def_readwrite("successorOT", &StemRandomParameter::successorOT)
+            .def_readwrite("successor", &StemRandomParameter::successorST)//for backward compatibility
+            .def_readwrite("successorST", &StemRandomParameter::successorST)
+            .def_readwrite("successorWhere", &StemRandomParameter::successorWhere)
             .def_readwrite("successorP", &StemRandomParameter::successorP)
             .def_readwrite("f_tf", &StemRandomParameter::f_tf)
             .def_readwrite("f_se", &StemRandomParameter::f_se)
@@ -1038,7 +1046,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("Q_GrmaxUnbornv_i",&PhloemFlux::Q_GrmaxUnbornv_i)
 			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
 			.def_readwrite("Q10",&PhloemFlux::Q10)
-			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10);
+			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10)
+			.def_readwrite("useStemTip",&PhloemFlux::useStemTip);
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

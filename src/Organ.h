@@ -11,6 +11,7 @@
 #include <functional>
 #include <map>
 #include <limits>
+#include <algorithm>
 
 namespace CPlantBox {
 
@@ -58,7 +59,7 @@ public:
     void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
     int getNumberOfChildren() { return children.size(); } ///< number of children
     std::shared_ptr<Organ> getChild(int i) { return children.at(i); } /// child with index @param i
-
+	int getNumberOfLinkingNodes(){return created_linking_node;}
     /* parameters */
     int getId() const { return id; } ///< unique organ id
     std::shared_ptr<const OrganSpecificParameter> getParam() const { return param_; } ///< organ parameters
@@ -88,8 +89,7 @@ public:
 	double dxMin() const; ///< returns the min axial resolution
 	virtual void rel2abs(){ throw std::runtime_error( "rel2abs() not implemented" );  }///should be overwritten
     virtual void abs2rel(){ throw std::runtime_error( "abs2rel() not implemented" );  }///should be overwritten
-    
-	void moveOrigin(int idx);//change idx of first node, in case of nodal growth
+    void moveOrigin(int idx);//change idx of first node, in case of nodal growth
 
     /* last time step */
     virtual bool hasMoved() const { return moved; }; ///< have any nodes moved during the last simulate call
@@ -133,6 +133,7 @@ protected:
     double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
 	double epsilonDx = 0; ///< growth increment too small to be added to organ. kept in memory and added to growth of next simulation step
+	int created_linking_node = 0;
 
     /* node data */
     std::vector<Vector3d> nodes; ///< nodes of the organ [cm]

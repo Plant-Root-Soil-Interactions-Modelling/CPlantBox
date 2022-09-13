@@ -24,10 +24,12 @@ public:
 	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
 	LeafSpecificParameter(int subType, double lb, double la, 
 	const std::vector<double>& ln, double r, double a, double theta, 
-	double rlt, double leafArea, bool laterals, double Width_blade, double Width_petiole):
+	double rlt, double leafArea, bool laterals, double Width_blade, 
+	double Width_petiole, double delayLat = 0.):
 		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), 
 		theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals), 
-		ln(ln), Width_blade(Width_blade), Width_petiole(Width_petiole)  { }; ///< Constructor setting all parameters
+		ln(ln), Width_blade(Width_blade), Width_petiole(Width_petiole), 
+		delayLat(delayLat)  { }; ///< Constructor setting all parameters
 
 	/*
 	 * Parameters per leaf
@@ -42,7 +44,8 @@ public:
 	std::vector<double> ln = std::vector<double>(); ///< Inter-lateral distances (if laterals) or mid for radial parametrisation (if there are no laterals) [cm]
 	double Width_blade = 0.;		///< width of leafe blade (cm) = length - lb zone. define later a width growth rate?
 	double Width_petiole = 0.;		///< width of leafe petiole (cm) = lb zone. define later a width growth rate?
-	int nob() const { return ln.size() + laterals; } //number of laterals = number of phytomers + 1
+	double delayLat;
+    int nob() const { return ln.size() + laterals; } //number of laterals = number of phytomers + 1
 	double getK() const; ///< Returns the exact maximal leaf length (including leaf stem) of this realization [cm]
 	double leafLength() const { return getK()-lb; }; ///< Returns the exact maximal leaf length (excluding leaf stem) of this realization [cm]
 
@@ -69,7 +72,7 @@ public:
 
 	std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific leaf from the leaf parameter set
 
-	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on leaf parameter set
+	int getLateralType(const Vector3d& pos, int ruleId); ///< Choose (dice) lateral type based on leaf parameter set
     double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
     double nobs() const; ///< returns the standard deviation of number of branches [1]
     double leafLength() { return lmax-lb; }; // lb represents the leaf base
@@ -113,8 +116,14 @@ public:
 	double Width_petiole = 0.;		///< width of leafe petiole (cm) = lb zone. define later a width growth rate?
 	double Width_petioles = 0.;		///< Standard deviation of leaf petiole width (cm)
 	int gf = 1;				///< Growth function (1=negative exponential, 2=linear)
-	std::vector<int> successor = {};			///< Lateral types [1]
-	std::vector<double> successorP = {}; 	///< Probabiltities of lateral type to emerge (sum of values == 1) [1]
+	double delayLat = 0.;		///< delay between stem creation and start of nodal growth [day]
+	double delayLats = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
+    std::vector<std::vector<int> > successorST = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
+    
+	std::vector<std::vector<double>> successorP = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]
+    std::vector<int>  successorNo = std::vector<int>(0);			///< Lateral types [1]
+    std::vector<std::vector<int> > successorWhere = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]
+    std::vector<std::vector<int> > successorOT = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
 
 	/* describes the plant geometry */
 	std::vector<double> leafGeometryPhi= {}; //2D shape
