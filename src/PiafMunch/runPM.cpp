@@ -200,7 +200,7 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	OutputSettings() ; // sets up file and graph outputs, including possible breakpoint- and/or extra-output- times as stated above
 
     // *************** SOLVING THE DIFFERENTIAL EQUATION SYSTEM ************************************* :
-    int neq = Y0.size() ;							// number of differential eq. = problem size (= 8*Nt après ajouts FAD)
+    int neq = Y0.size() ;							// number of differential eq. = problem size (= 8*Nt aprÃ¨s ajouts FAD)
     if(doTroubleshooting){cout<<"neq "<<neq<<" "<<Nc<<" "<<Nt<<endl;}
 	
 	assert((Nt == (neq/neq_coef))&&"Wrong seg and node number");
@@ -208,10 +208,10 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	y_dot = new double[1 + neq] ;			// for use in aux()
     
     // -------------  To compute P_dot = dP/dt  and  P_symp_dot = dP_Sympl/dt  and make them available to all modules in real time : ---------------------
-    // 1°) Oversize both 'Var_integrale' and 'Var_derivee' pointers and initialize all of them to NULL :
+    // 1Â°) Oversize both 'Var_integrale' and 'Var_derivee' pointers and initialize all of them to NULL :
     Fortran_vector** Var_integrale = new Fortran_vector*[100] ; Fortran_vector** Var_derivee = new Fortran_vector*[100] ;
     for (i = 0 ; i < 100 ; i ++) {Var_integrale[i] = Var_derivee[i] = NULL ;}
-    // 2°) initialize pointers to derivatives (and corresponding integrals) that are actually used (or may be so), in this case for...
+    // 2Â°) initialize pointers to derivatives (and corresponding integrals) that are actually used (or may be so), in this case for...
     Var_integrale[0] = &P_Sympl ; Var_derivee[0] = &P_Sympl_dot ; //...elastic changes of symplastic volume in function (PiafMunch2.cpp)Smooth_Parameter_and_BoundaryConditions_Changes()
     Var_integrale[1] = &P_ST ; Var_derivee[1] = &P_ST_dot ;
 		//throw std::runtime_error("Breakpoint_index.size() ");
@@ -231,17 +231,17 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 			case 2: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, MODIFIED_GS, PREC_NONE, 2, Var_integrale, Var_derivee); break; // STALD = true, verbose = true, rootfind = NULL
 			case 3: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, CLASSICAL_GS, PREC_NONE, 2, Var_integrale, Var_derivee); break; // le + rapide : best for large N (>= 1000) ; break ; sinon, un peu instable avec VarVisc
 			case 4 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, CLASSICAL_GS, PREC_NONE, 2, Var_integrale, Var_derivee) ; break ; // le + rapide : best for large N (>= 1000) ; break ; sinon, un peu instable avec VarVisc
-				case 5 : j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, DIAG, 2, Var_integrale, Var_derivee) ; break ; // TB pour Thompson, même avec vol_Sympl_dot ...
+				case 5 : j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, DIAG, 2, Var_integrale, Var_derivee) ; break ; // TB pour Thompson, mÃªme avec vol_Sympl_dot ...
 			case 6 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPBCGS, 1, PREC_NONE, 2, Var_integrale, Var_derivee) ; break ;
 				case 7: j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, BAND, 2, Var_integrale, Var_derivee, true, true, NULL, 0, neq / 30, neq / 30); break; // mu = ml = neq/30 : TB
 			case 8: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, PCG, 1, PREC_NONE, 2, Var_integrale, Var_derivee); break; //
 			case 9 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPTFQMR, 1, PREC_NONE, 2, Var_integrale, Var_derivee) ; break ; //
-			case 10 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, MODIFIED_GS, PREC_LEFT, 2, Var_integrale, Var_derivee) ; break ; // STALD = true, ... (id. ci-dessus) :  bon choix en général, mais pas avec vol_Sympl_dot !
+			case 10 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, MODIFIED_GS, PREC_LEFT, 2, Var_integrale, Var_derivee) ; break ; // STALD = true, ... (id. ci-dessus) :  bon choix en gÃ©nÃ©ral, mais pas avec vol_Sympl_dot !
 			case 11 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, CLASSICAL_GS, PREC_LEFT, 2, Var_integrale, Var_derivee) ; break ; //
 			case 12: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, CLASSICAL_GS, PREC_RIGHT, 2, Var_integrale, Var_derivee); break; // le + rapide : best for large N (>= 1000) ; break ; sinon, un peu instable avec VarVisc
 			case 13: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, MODIFIED_GS, PREC_BOTH, 2, Var_integrale, Var_derivee); break; // STALD = true, verbose = true, rootfind = NULL
 			case 14: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, CLASSICAL_GS, PREC_LEFT, 2, Var_integrale, Var_derivee); break; // le + rapide : best for large N (>= 1000) ; break ; sinon, un peu instable avec VarVisc
-			case 15 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, MODIFIED_GS, PREC_RIGHT, 2, Var_integrale, Var_derivee) ; break ; // STALD = true, ... (id. ci-dessus)  :  bon choix en général, mais pas avec vol_Sympl_dot
+			case 15 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, MODIFIED_GS, PREC_RIGHT, 2, Var_integrale, Var_derivee) ; break ; // STALD = true, ... (id. ci-dessus)  :  bon choix en gÃ©nÃ©ral, mais pas avec vol_Sympl_dot
 			case 16 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPGMR, CLASSICAL_GS, PREC_RIGHT, 2, Var_integrale, Var_derivee) ; break ; //
 			case 17: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, MODIFIED_GS, PREC_RIGHT, 2, Var_integrale, Var_derivee); break; // STALD = true, verbose = true, rootfind = NULL
 			case 18: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, CLASSICAL_GS, PREC_BOTH, 2, Var_integrale, Var_derivee); break; // le + rapide : best for large N (>= 1000) ; break ; sinon, un peu instable avec VarVisc
@@ -254,7 +254,7 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 			case 25: j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPBCGS, 1, PREC_BOTH, 2, Var_integrale, Var_derivee); break;
 			case 26 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPBCGS, 1, PREC_RIGHT, 2, Var_integrale, Var_derivee) ; break ; //
 			case 27 : j = cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPTFQMR, 1, PREC_RIGHT, 2, Var_integrale, Var_derivee) ; break ; //
-				case 28: j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, BAND, 2, Var_integrale, Var_derivee, true, true, NULL, 0, neq / 100, neq / 100); break; // mu = ml = neq/100 : marche très bien même si neq < 100 !
+				case 28: j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, BAND, 2, Var_integrale, Var_derivee, true, true, NULL, 0, neq / 100, neq / 100); break; // mu = ml = neq/100 : marche trÃ¨s bien mÃªme si neq < 100 !
 				case 29: j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, BAND, 2, Var_integrale, Var_derivee, true, true, NULL, 0, neq / 10, neq / 10); break; // mu = ml = neq/10 : OK
 				case 30: j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, BAND, 2, Var_integrale, Var_derivee, true, true, NULL, 0, neq / 3, neq / 3); break; // pas de rootfind, ; break ; mu = ml = neq/3 : OK
 				case 31: j = cvode_direct(fout, Y0, SegmentTimes, auxout, atol_, rtol, DENSE, 2, Var_integrale, Var_derivee); break; // solver = cvode DENSE, STALD = true
@@ -380,17 +380,17 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 		double TdC = TairK - 273.15;
 		//in g/L or mg/cm3
 		dEauPure = (999.83952 + TdC * (16.952577 + TdC * (- 0.0079905127 + TdC * (- 0.000046241757 + TdC * (0.00000010584601 + TdC * (- 0.00000000028103006)))))) / (1 + 0.016887236 * TdC); 
-		double siPhi = (30 - TdC) / (91 + TdC) ; // T_old = TairK_phloem ;//  R.Gilli 1997, after Mathlouthi & Génotelle 1995 - valid for any T :
+		double siPhi = (30 - TdC) / (91 + TdC) ; // T_old = TairK_phloem ;//  R.Gilli 1997, after Mathlouthi & GÃ©notelle 1995 - valid for any T :
 				
 		double C = 0.5 ; // (mmol / ml solution)
-		//  R.Gilli 1997, after Mathlouthi & Génotelle 1995 - valid for any T :
+		//  R.Gilli 1997, after Mathlouthi & GÃ©notelle 1995 - valid for any T :
 		//342.3 g/mol or mg/mmol
 		double PartMolalVol_ =0;// 0.2155;
 		double d = C * 342.3 + (1 - C * PartMolalVol_) * dEauPure ;//in mg/cm3
 		double siEnne = (100 * 342.30 * C) / d ; // actually this is sc = sucrose content (g.suc. % g.solution) ; 342.30 = molar mass of sacch.
 		siEnne /= 1900 - (18 * siEnne) ;
 		//mPa s
-		mu =  pow(10, ((22.46 * siEnne) - 0.114 + (siPhi * (1.1 + 43.1 * pow(siEnne, 1.25) )))) ; // peut atteindre des valeurs > 1.e200 !! (sans signification évidemment -- le sucre doit précipiter bien avant !!)
+		mu =  pow(10, ((22.46 * siEnne) - 0.114 + (siPhi * (1.1 + 43.1 * pow(siEnne, 1.25) )))) ; // peut atteindre des valeurs > 1.e200 !! (sans signification Ã©videmment -- le sucre doit prÃ©cipiter bien avant !!)
 		mu = mu /(24*60*60)/100/1000; //mPa s to hPa d, 1.11837e-10 hPa d for pure water at 293.15K
 		
 	}
@@ -468,24 +468,24 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 		
 		//Test
 			if(exud_k[nodeID]<0.){
-				std::cout<<"exud_k[nodeID]: loop n°"<<k<<", node "<<nodeID<<" "<<exud_k[nodeID]<<" "<<(exud_k[nodeID]<0.);
+				std::cout<<"exud_k[nodeID]: loop nÂ°"<<k<<", node "<<nodeID<<" "<<exud_k[nodeID]<<" "<<(exud_k[nodeID]<0.);
 				std::cout<<" "<<" "<<(exud_k[nodeID]==0.)<<" "<<" "<<(exud_k[nodeID]>0.)<<std::endl;
 				assert(false);
 			}
 			if(krm2[nodeID]<0.){
-				std::cout<<"krm2: loop n°"<<k<<", node "<<nodeID<<" "<<krm2[nodeID]<<std::endl;
+				std::cout<<"krm2: loop nÂ°"<<k<<", node "<<nodeID<<" "<<krm2[nodeID]<<std::endl;
 				assert(false);
 			}
 			if(Q_Grmax[nodeID ]<0.){
-				std::cout<<"gr: loop n°"<<k<<", node "<<nodeID<<" "<<Q_Grmax[nodeID]<<" "<< deltaSucOrgNode_.at(k).at(-1)<<std::endl;
+				std::cout<<"gr: loop nÂ°"<<k<<", node "<<nodeID<<" "<<Q_Grmax[nodeID]<<" "<< deltaSucOrgNode_.at(k).at(-1)<<std::endl;
 				assert(false);
 			}
 			if(Q_Exudmax[nodeID ]<0.){
-				std::cout<<"exud: loop n°"<<k<<", node "<<nodeID<<" "<<Q_Exudmax[nodeID]<<" "<< l<<" "<<Radii[k-1]<<std::endl;
+				std::cout<<"exud: loop nÂ°"<<k<<", node "<<nodeID<<" "<<Q_Exudmax[nodeID]<<" "<< l<<" "<<Radii[k-1]<<std::endl;
 				assert(false);
 			}
 			if(Q_Rmmax[nodeID ]<=0.){
-				std::cout<<"rm: loop n°"<<k<<", node "<<nodeID<<" "<<Q_Rmmax[nodeID]<<" "<< krm1<<" "<<StructSucrose<<std::endl;
+				std::cout<<"rm: loop nÂ°"<<k<<", node "<<nodeID<<" "<<Q_Rmmax[nodeID]<<" "<< krm1<<" "<<StructSucrose<<std::endl;
 				assert(false);
 			}
 			//
@@ -846,7 +846,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			
 			int nNodes = org->getNumberOfNodes();
 			if ((nNodes==1)||(ot == 2)) {//organ not represented because below dx limit or is root
-				nodeIds_.push_back(-1); //because count start at 1 => for normal organs, dón t count 1st node
+				nodeIds_.push_back(-1); //because count start at 1 => for normal organs, dÃ³n t count 1st node
 				nodeIds_.push_back(org->getNodeId(nNodes-1));	//globalID of parent node for small organs or tip of root
 								
 			}else{nodeIds_ = org->getNodeIds();}
@@ -1131,15 +1131,15 @@ void PhloemFlux::setKrm2(std::vector<std::vector<double>> values) {
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			krm2_f = std::bind(&PhloemFlux::krm2_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant " << values[0][0] << " -\n";
+			std::cout << "krm2 is constant " << values[0][0] << " -\n";
 		} 
 	} else {
 		if (values[0].size()==1) {
 			krm2_f = std::bind(&PhloemFlux::krm2_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
+			std::cout << "krm2 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
 		} else {
 			krm2_f  = std::bind(&PhloemFlux::krm2_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+			std::cout << "krm2 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
 		}
 	}
 }	
