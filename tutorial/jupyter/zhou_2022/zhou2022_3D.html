@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Plotly.js -->
+  <script type="text/javascript" charset="UTF-8"  src="plotly.js"></script>
+  	<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+</head>
+
+<body>
+	<div style="">
+	<table style="self-align: center; margin: auto">
+	<tr>
+	<td>
+		<form   >
+  <label for="select_plant">&nbsp; Choose a plant to visualize:</label>
+  <select name="plants" id="select_plant" onchange="plot()">
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.05cm_lateral_radius.xml_16_0_0_0_res_10_water_r_xyl_5rst_1_15-6-29-13-21.csv">Study1 Plant1</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.05cm_lateral_radius.xml_16_1_0_0_res_10_water_r_xyl_5rst_1_15-6-29-13-24.csv">Study1 Plant2</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.05cm_lateral_radius.xml_16_2_0_0_res_10_water_r_xyl_5rst_1_15-6-29-13-27.csv">Study1 Plant3</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.025cm_lateral_radius.xml_16_1_0.1_0_res_2nd_10_trans_trsv6vml_15-6-29-15-30.csv">Study2 Plant1</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.05cm_lateral_radius.xml_16_1_0.1_0_res_2nd_10_trans_trsv6vml_15-6-29-15-33.csv">Study2 Plant2</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.075cm_lateral_radius.xml_16_1_0.1_0_res_2nd_10_trans_trsv6vml_15-6-29-15-36.csv">Study2 Plant3</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_3_lateral_radius.xml_16_1_1_case_3_fixed_res_main_5_trsv9_15-6-29-13-58.csv">Study3 Plant1</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_3_lateral_radius.xml_16_1_1_case_3_fixed_res_main_5_trsv8_15-6-29-13-55.csv.csv">Study3 Plant2</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_3_lateral_radius.xml_16_1_1_case_3_fixed_res_main_5_trsv5_15-6-29-13-46.csv">Study3 Plant3</option>
+  </select>
+</form> 
+
+</td>
+<td>
+	<form >
+  <label for="select_figure">&nbsp; Select figure to be changed:</label>
+  <select name="select figure" id="select_figure" onchange="plot()">
+    <option value="0" selected>Figure upper left</option>
+    <option value="1">Figure upper right</option>
+    <option value="2">Figure lower left</option>
+    <option value="3">Figure lower right</option>
+  </select>
+</form>
+
+</td>
+<td>
+<form >
+  <label for="select_column">&nbsp; Change target column:</label>
+  <select name="select column" id="select_column" onchange="plot()">
+    <option value="P_ST" data-unit="MPa" selected>Sieve-tube Pressue</option>
+    <option value="P_Xyl" data-unit="MPa" >Xylem Pressure</option>
+    <option value="Q_ST" data-unit="mmol">Carbon Content</option>
+    <option value="C_ST" data-unit="mmol/ml">Sieve-tube Concentration</option>
+    <option value="growth_rate" data-unit="cm/day">growth_rate</option>
+    <option value="c_demand" data-unit="mmol">Carbon Demand</option>
+    <option value="c_satis" data-unit="dimensionless">Carbon Satisfactory Ratio</option>
+    <option value="exudation" data-unit="mmol">Exudation</option>
+    <option value="order" data-unit="dimensionless" >Order</option>
+    <option value="organ_id" data-unit="dimensionless">organ_id</option>
+    <option value="organ_id" data-unit="dimensionless">organ_id</option>
+  </select>
+</form>
+</td>
+</tr>
+	</div>
+  <div id="myDiv" style="width:95vw; height:95vh"><!-- Plotly chart will be drawn inside this DIV --></div>
+  
+  <script>
+  const plant_name = "https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.075cm_lateral_radius.xml_16_1_0.1_0_res_2nd_10_trans_trsv6vml_15-6-29-15-36.csv";
+  var figure_data= [
+  { "column_name": "P_ST", "column_text": "Sieve-tube Pressue", "column_unit" : "MPa" },
+  { "column_name": "P_Xyl", "column_text": "Xylem Pressure", "column_unit" : "MPa"},
+  { "column_name": "Q_ST", "column_text": "Carbon Content", "column_unit" : "mmol"},
+  { "column_name": "growth_rate", "column_text": "Growth Rate", "column_unit" : "cm/day"}
+  ];
+  
+  function plot(initial = false){
+  
+  
+  
+  
+  const figure_no = document.getElementById("select_figure").value;
+  const plant_name = document.getElementById("select_plant").value;
+  const column = document.getElementById("select_column");
+  const column_name = document.getElementById("select_column").value;
+  const column_text = column.options[column.selectedIndex].text;
+  const column_unit = column.options[column.selectedIndex].dataset.unit;
+  
+  
+  
+  initial == false ? figure_data[figure_no] = { "column_name": column_name, "column_text": column_text, "column_unit": column_unit } : {};
+  
+	d3.csv(plant_name, function(err, rows){
+		function unpack(rows, key) {
+			return rows.map(function(row)
+			
+			{ return row[key]; });}
+		
+		var trace1 = {
+			
+			x: unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			name: figure_data[0]["column_text"],
+			time: unpack(rows, 'time'),
+			text: unpack(rows, figure_data[0]["column_name"]),
+			customdata: unpack(rows, 'id'),
+			hovertemplate: '<i>X</i>: %{x:.2f}' +
+								'<br><b>y</b>: %{y:.2f}' +
+								'<br><b>z</b>: %{z:.2f}' +
+								'<br><b>'+figure_data[0]["column_text"]+'</b>:%{text:.2f} '+figure_data[0]["column_unit"]+'</b>'+
+								'<br><b>id</b>: %{customdata:.1f}<br>'+
+								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
+			mode: 'markers',
+			marker: {
+				size: unpack(rows, 'radius').map(function(radius)
+			{ return radius*100; }),
+			line: {
+			  color: 'rgb(231, 99, 250)',
+			  width: 0
+			},
+				opacity: 0.8,
+				color: unpack(rows, figure_data[0]["column_name"]),
+				coloraxis: 'coloraxis',
+			
+			showscale: false,
+			
+				
+				},
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: 1
+		  }],
+			
+				scene: "scene1",
+			type: 'scatter3d'
+		};
+
+		var trace2 = {
+			x:unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			name:figure_data[1]["column_text"],
+			time: unpack(rows, 'time'),
+			text: unpack(rows, figure_data[1]["column_name"]),
+			customdata: unpack(rows, 'id'),
+			hovertemplate: '<i>X</i>: %{x:.2f}' +
+								'<br><b>y</b>: %{y:.2f}' +
+								'<br><b>z</b>: %{z:.2f}' +
+								'<br><b>'+figure_data[1]["column_text"]+'</b>:%{text:.2f} MPa</b>'+
+								'<br><b>id</b>: %{customdata:.0f}' +
+								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
+			mode: 'markers',
+			marker: {
+				size: unpack(rows, 'radius').map(function(radius)
+			{ return radius*100; }),
+			line: {
+			  color: 'rgb(231, 99, 250)',
+			  width: 0
+			},
+				opacity: 0.8,
+				color: unpack(rows, figure_data[1]["column_name"]),
+				coloraxis: 'coloraxis2',
+			
+			showscale: false,
+			
+				
+				},
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: 1
+		  }],
+			
+			scene: "scene2",
+			type: 'scatter3d'
+		};
+
+		var trace3 = {
+			x:unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			name:figure_data[2]["column_text"],
+			time: unpack(rows, 'time'),
+			text: unpack(rows, figure_data[2]["column_name"]),
+			customdata: unpack(rows, 'id'),
+			hovertemplate: '<i>X</i>: %{x:.2f}' +
+								'<br><b>y</b>: %{y:.2f}' +
+								'<br><b>z</b>: %{z:.2f}' +
+								'<br><b>'+figure_data[2]["column_text"]+'</b>:%{text:.2f} mmol</b>'+
+								'<br><b>id</b>: %{customdata:.0f}' +
+								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
+			mode: 'markers',
+			marker: {
+				size: unpack(rows, 'radius').map(function(radius)
+			{ return radius*100; }),
+			line: {
+			  color: 'rgb(231, 99, 250)',
+			  width: 0
+			},
+				opacity: 0.8,
+				color: unpack(rows, figure_data[2]["column_name"]),
+				coloraxis: 'coloraxis3',
+			
+			showscale: false,
+			
+				
+				},
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: 1
+		  }],
+			
+			scene: "scene3",
+			type: 'scatter3d'
+		};
+
+		var trace4 = {
+			x:unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			name:figure_data[3]["column_text"],
+			time: unpack(rows, 'time'),
+			text: unpack(rows, figure_data[3]["column_name"]),
+			customdata: unpack(rows, 'id'),
+			hovertemplate: '<i>X</i>: %{x:.2f}' +
+								'<br><b>y</b>: %{y:.2f}' +
+								'<br><b>z</b>: %{z:.2f}' +
+								'<br><b>'+figure_data[3]["column_text"]+'</b>:%{text:.2f} cm/day</b>'+
+								'<br><b>id</b>: %{customdata:.0f}' +
+								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
+			mode: 'markers',
+			marker: {
+				size: unpack(rows, 'radius').map(function(radius)
+			{ return radius*100; }),
+			line: {
+			  color: 'rgb(231, 99, 250)',
+			  width: 0
+			},
+				opacity: 0.8,
+				color: unpack(rows, figure_data[3]["column_name"]),
+				coloraxis: 'coloraxis4',
+			
+			showscale: false,
+			
+				
+				},
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: 1
+		  }],
+			
+			scene: "scene4",
+			type: 'scatter3d'
+		};
+		var layout= {
+			annotations: [{
+				text: figure_data[0]["column_text"],
+				  font: {
+				  size: 16,
+				   color: 'black',
+				},
+				showarrow: false,
+				align: 'center',
+				x: 0.22,
+				y: 1,
+				xref: 'paper',
+				yref: 'paper',
+			  },
+				{
+					text: figure_data[1]["column_text"],
+				  font: {
+				  size: 16,
+				  color: 'black',
+				},
+				showarrow: false,
+				align: 'center',
+				x: 0.79,
+				y: 1,
+				xref: 'paper',
+				yref: 'paper',
+				},{
+				text: figure_data[2]["column_text"],
+				  font: {
+				  size: 16,
+				   color: 'black',
+				},
+				showarrow: false,
+				align: 'center',
+				x: 0.22,
+				y: 0.49,
+				xref: 'paper',
+				yref: 'paper',
+			  },
+				{
+					text: figure_data[3]["column_text"],
+				  font: {
+				  size: 16,
+				  color: 'black',
+				},
+				showarrow: false,
+				align: 'center',
+				x: 0.79,
+				y: 0.49,
+				xref: 'paper',
+				yref: 'paper',
+				}
+			  ],
+			margin:{t: 5},
+			autosize: true,
+			//width: 1600,
+			//height: 800,
+			coloraxis: {
+			colorbar:{
+				title:{
+				text:figure_data[0]["column_unit"],
+				side:"top",
+				},
+				
+				x:0.45,
+				y:0.7,
+				xanchor :"left",
+				yanchor :"botton",
+				len:0.4,
+				thickness:10,
+				},
+			colorscale: 'Hot',
+			showscale: true,
+
+		  },
+			coloraxis2: {
+			colorbar:{
+			title:{
+				text:figure_data[1]["column_unit"],
+				side:"top",
+				},
+				x:0.95,
+				y:0.7,
+				xanchor :"left",
+				yanchor :"botton",
+				len:0.4,
+				thickness:10,
+				},
+			colorscale: 'Hot',
+			showscale: true,
+
+		  },coloraxis3: {
+			colorbar:{
+			title:{
+				text:figure_data[2]["column_unit"],
+				side:"top",
+				},
+				x:0.45,
+				y:0.2,
+				xanchor :"left",
+				yanchor :"botton",
+				len:0.4,
+				thickness:10,
+				},
+			colorscale: 'Hot',
+			showscale: true,
+
+		  },coloraxis4: {
+			colorbar:{
+			title:{
+				text:figure_data[3]["column_unit"],
+				side:"top",
+				},
+				x:0.95,
+				y:0.2,
+				xanchor :"left",
+				yanchor :"botton",
+				len:0.4,
+				thickness:10,
+				},
+			colorscale: 'Hot',
+			showscale: true,
+
+		  },
+			scene1:{
+			aspectratio:{x:1,y:1,z:1},
+			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
+			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			domain: {
+					x: [0.0,  0.5],
+					y: [0.5, 1.0]
+				},
+			camera: {
+			center: {x:0,y:0,z:0},
+			eye:{x:1,y:1,z:-0.2},
+			up:{x:0,y:0,z:1},
+			
+			
+			
+			}
+			
+			
+			},
+			scene2:{
+			aspectratio:{x:1,y:1,z:1},
+			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
+			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+
+			domain: {
+					x: [0.5,  1.0],
+					y: [0.5, 1.0]
+				},
+			camera: {
+			center: {x:0,y:0,z:0},
+			eye:{x:1,y:1,z:-0.2},
+			up:{x:0,y:0,z:1}
+			}
+			
+			
+			},
+			scene3:{
+			aspectratio:{x:1,y:1,z:1},
+			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
+			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+
+			domain: {
+					x: [0,  0.5],
+					y: [ 0,   0.5]
+				},
+			camera: {
+			center: {x:0,y:0,z:0},
+			eye:{x:1,y:1,z:-0.2},
+			up:{x:0,y:0,z:1}
+			}
+			
+			
+			},
+			scene4:{
+			aspectratio:{x:1,y:1,z:1},
+			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
+			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+
+			domain: {
+					x: [0.5,  1.0],
+					y: [ 0,   0.5]
+				},
+			camera: {
+			center: {x:0,y:0,z:0},
+			eye:{x:1,y:1,z:-0.2},
+			up:{x:0,y:0,z:1}
+			}
+			
+			
+			},
+			
+			sliders: [{
+			  pad: {t: 30},
+			  x: 0.05,
+			  len: 0.95,
+			  currentvalue: {
+				xanchor: 'right',
+				prefix: 'day: ',
+				font: {
+				  color: '#888',
+				  size: 20
+				}
+			  },
+			  transition: {duration: 500},
+			 
+			  steps: []
+			}],
+			updatemenus: [{
+			  type: 'buttons',
+			  showactive: false,
+			  x: 0.05,
+			  y: 0,
+			  xanchor: 'right',
+			  yanchor: 'top',
+			  pad: {t: 60, r: 20},
+			  buttons: [{
+				label: 'Play',
+				method: 'animate',
+				args: [null, {
+				  fromcurrent: true,
+				  frame: {redraw: true, duration: 1000},
+				  transition: {duration: 500}
+				}]
+			  }]
+			}]
+		  };
+		  
+
+		  
+		var frames = [];
+		  
+		  
+			for (let i= 1 ;  i<16; i++ ){
+			
+			var step = {
+				label: i.toString(),
+				method: 'animate',
+				args: [[i.toString()], {
+				  mode: 'immediate',
+				  frame: {redraw: true, duration: 500},
+				  transition: {duration: 500}
+				}]
+			   };
+			
+			layout['sliders'][0]["steps"].push(step);
+			
+			var frame = {
+			
+			name: i.toString(),
+			data: [{x:unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: i
+		  }]}, {x:unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: i
+		  }]}, {x:unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: i
+		  }]}, {x:unpack(rows, 'coor_x'), 
+			y: unpack(rows, 'coor_y'), 
+			z: unpack(rows, 'coor_z'),
+			transforms: [{
+			type: 'filter',
+			target: unpack(rows, 'time'),
+			operation: '=',
+			value: i
+		  }]}]
+			
+			};
+			
+			frames.push(frame);
+
+
+		}
+		var data = [trace1,trace2,trace3,trace4];
+		Plotly.newPlot('myDiv', {
+			data: data,
+			layout: layout,
+			frames: frames,
+		  });
+		});
+		  };
+  plot(name);
+  </script>
+</body>
+</html>
