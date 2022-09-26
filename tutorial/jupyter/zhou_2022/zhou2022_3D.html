@@ -21,7 +21,7 @@
     <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.05cm_lateral_radius.xml_16_1_0.1_0_res_2nd_10_trans_trsv6vml_15-6-29-15-33.csv">Study2 Plant2</option>
     <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.075cm_lateral_radius.xml_16_1_0.1_0_res_2nd_10_trans_trsv6vml_15-6-29-15-36.csv">Study2 Plant3</option>
     <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_3_lateral_radius.xml_16_1_1_case_3_fixed_res_main_5_trsv9_15-6-29-13-58.csv">Study3 Plant1</option>
-    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_3_lateral_radius.xml_16_1_1_case_3_fixed_res_main_5_trsv8_15-6-29-13-55.csv.csv">Study3 Plant2</option>
+    <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_3_lateral_radius.xml_16_1_1_case_3_fixed_res_main_5_trsv8_15-6-29-13-55.csv">Study3 Plant2</option>
     <option value="https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_3_lateral_radius.xml_16_1_1_case_3_fixed_res_main_5_trsv5_15-6-29-13-46.csv">Study3 Plant3</option>
   </select>
 </form> 
@@ -91,9 +91,9 @@
 	d3.csv(plant_name, function(err, rows){
 		function unpack(rows, key) {
 			return rows.map(function(row)
-			
 			{ return row[key]; });}
 		
+			
 		var trace1 = {
 			
 			x: unpack(rows, 'coor_x'), 
