@@ -45,15 +45,17 @@
   <select name="select column" id="select_column" onchange="plot()">
     <option value="P_ST" data-unit="MPa" selected>Sieve-tube Pressue</option>
     <option value="P_Xyl" data-unit="MPa" >Xylem Pressure</option>
-    <option value="Q_ST" data-unit="mmol">Carbon Content</option>
-    <option value="C_ST" data-unit="mmol/ml">Sieve-tube Concentration</option>
-    <option value="growth_rate" data-unit="cm/day">growth_rate</option>
-    <option value="c_demand" data-unit="mmol">Carbon Demand</option>
+    <option value="Q_ST" data-unit="mmol sucrose">Carbon Content</option>
+    <option value="carbon_q" data-unit="g carbon/ day">Carbon Available</option>
+    <option value="C_ST" data-unit="mmol sucrose/ml">Sieve-tube Concentration</option>
+    <option value="growth_rate" data-unit="cm/day">Growth Rate</option>
+    <option value="c_demand_2" data-unit="g carbon/day">Carbon Demand</option>
     <option value="c_satis" data-unit="dimensionless">Carbon Satisfactory Ratio</option>
-    <option value="exudation" data-unit="mmol">Exudation</option>
+    <option value="exudation" data-unit="mmol sucrose">Exudation</option>
     <option value="order" data-unit="dimensionless" >Order</option>
-    <option value="organ_id" data-unit="dimensionless">organ_id</option>
-    <option value="organ_id" data-unit="dimensionless">organ_id</option>
+    <option value="organ_id" data-unit="dimensionless">Organ ID</option>
+    <option value="organ_type" data-unit="dimensionless">Organ Type</option>
+    <option value="sub_type" data-unit="dimensionless">Sub-Organ Type</option>
   </select>
 </form>
 </td>
@@ -65,7 +67,7 @@
   const plant_name = "https://raw.githubusercontent.com/xiaoranzhou/cpb-binder/master/tutorial/jupyter/case_01_0.075cm_lateral_radius.xml_16_1_0.1_0_res_2nd_10_trans_trsv6vml_15-6-29-15-36.csv";
   var figure_data= [
   { "column_name": "P_ST", "column_text": "Sieve-tube Pressue", "column_unit" : "MPa" },
-  { "column_name": "P_Xyl", "column_text": "Xylem Pressure", "column_unit" : "MPa"},
+  { "column_name": "carbon_q", "column_text": "Carbon Available", "column_unit" : "g carbon/ day"},
   { "column_name": "Q_ST", "column_text": "Carbon Content", "column_unit" : "mmol"},
   { "column_name": "growth_rate", "column_text": "Growth Rate", "column_unit" : "cm/day"}
   ];
@@ -104,7 +106,7 @@
 			hovertemplate: '<i>X</i>: %{x:.2f}' +
 								'<br><b>y</b>: %{y:.2f}' +
 								'<br><b>z</b>: %{z:.2f}' +
-								'<br><b>'+figure_data[0]["column_text"]+'</b>:%{text:.2f} '+figure_data[0]["column_unit"]+'</b>'+
+								'<br><b>'+figure_data[0]["column_text"]+'</b>:%{text:.4f} '+figure_data[0]["column_unit"]+'</b>'+
 								'<br><b>id</b>: %{customdata:.1f}<br>'+
 								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
 			mode: 'markers',
@@ -145,7 +147,7 @@
 			hovertemplate: '<i>X</i>: %{x:.2f}' +
 								'<br><b>y</b>: %{y:.2f}' +
 								'<br><b>z</b>: %{z:.2f}' +
-								'<br><b>'+figure_data[1]["column_text"]+'</b>:%{text:.2f} MPa</b>'+
+								'<br><b>'+figure_data[1]["column_text"]+'</b>:%{text:.4f} '+figure_data[1]["column_unit"]+'</b>'+
 								'<br><b>id</b>: %{customdata:.0f}' +
 								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
 			mode: 'markers',
@@ -186,7 +188,7 @@
 			hovertemplate: '<i>X</i>: %{x:.2f}' +
 								'<br><b>y</b>: %{y:.2f}' +
 								'<br><b>z</b>: %{z:.2f}' +
-								'<br><b>'+figure_data[2]["column_text"]+'</b>:%{text:.2f} mmol</b>'+
+								'<br><b>'+figure_data[2]["column_text"]+'</b>:%{text:.4f} '+figure_data[2]["column_unit"]+'</b>'+
 								'<br><b>id</b>: %{customdata:.0f}' +
 								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
 			mode: 'markers',
@@ -227,7 +229,7 @@
 			hovertemplate: '<i>X</i>: %{x:.2f}' +
 								'<br><b>y</b>: %{y:.2f}' +
 								'<br><b>z</b>: %{z:.2f}' +
-								'<br><b>'+figure_data[3]["column_text"]+'</b>:%{text:.2f} cm/day</b>'+
+								'<br><b>'+figure_data[3]["column_text"]+'</b>:%{text:.4f} '+figure_data[3]["column_unit"]+'</b>'+
 								'<br><b>id</b>: %{customdata:.0f}' +
 								'<br><b>radius</b>: %{marker.size:.2f} mm<br>',
 			mode: 'markers',
@@ -257,6 +259,7 @@
 			type: 'scatter3d'
 		};
 		var layout= {
+		showlegend: false,
 			annotations: [{
 				text: figure_data[0]["column_text"],
 				  font: {
@@ -384,7 +387,7 @@
 			aspectratio:{x:1,y:1,z:1},
 			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
 			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
-			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.25,0.17],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
 			domain: {
 					x: [0.0,  0.5],
 					y: [0.5, 1.0]
@@ -404,7 +407,7 @@
 			aspectratio:{x:1,y:1,z:1},
 			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
 			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
-			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.25,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
 
 			domain: {
 					x: [0.5,  1.0],
@@ -422,7 +425,7 @@
 			aspectratio:{x:1,y:1,z:1},
 			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
 			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
-			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.25,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
 
 			domain: {
 					x: [0,  0.5],
@@ -440,7 +443,7 @@
 			aspectratio:{x:1,y:1,z:1},
 			xaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1], gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true, },
 			yaxis:{showticklabels:false, title:{text:""},range:[-0.1,0.1],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
-			zaxis:{showticklabels:false, title:{text:""},range:[-0.21,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
+			zaxis:{showticklabels:false, title:{text:""},range:[-0.25,0.18],  gridcolor:"white", color:"black" ,backgroundcolor:"rgba(0, 0, 0, 0.1)",showbackground: true,},
 
 			domain: {
 					x: [0.5,  1.0],
@@ -456,7 +459,7 @@
 			},
 			
 			sliders: [{
-			  pad: {t: 30},
+			  pad: {t: 0},
 			  x: 0.05,
 			  len: 0.95,
 			  currentvalue: {
@@ -478,7 +481,7 @@
 			  y: 0,
 			  xanchor: 'right',
 			  yanchor: 'top',
-			  pad: {t: 60, r: 20},
+			  pad: {t: 30, r: 20},
 			  buttons: [{
 				label: 'Play',
 				method: 'animate',
