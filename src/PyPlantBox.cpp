@@ -489,7 +489,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
            .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
            .def("addData", &SegmentAnalyser::addData)
-           .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}))
+           .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}), py::arg("doPack") =true)
            .def_readwrite("nodes", &SegmentAnalyser::nodes)
            .def_readwrite("segments", &SegmentAnalyser::segments)
            .def_readwrite("segO", &SegmentAnalyser::segO)
@@ -844,7 +844,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-		.def_readwrite("organParam", &MappedSegments::plantParam);
+		.def_readwrite("organParam", &MappedSegments::plantParam)
+		.def_readwrite("node_Decapitate", &MappedSegments::node_Decapitate);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
@@ -885,7 +886,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
-			.def_readwrite("psi_air", &XylemFlux::psi_air);
+			.def_readwrite("psi_air", &XylemFlux::psi_air)
+			.def_readwrite("diffpg", &XylemFlux::diffpg);
 
     /*
      * Plant.h
@@ -953,6 +955,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("ci", &Photosynthesis::ci)
             .def_readwrite("Jw", &Photosynthesis::Jw)
             .def_readwrite("Ev", &Photosynthesis::Ev)
+            .def_readwrite("deltagco2", &Photosynthesis::deltagco2)
             .def_readwrite("plant", &Photosynthesis::plant)
             .def_readwrite("Ag4Phloem", &Photosynthesis::Ag4Phloem)
             .def_readwrite("minLoop", &Photosynthesis::minLoop)
@@ -970,6 +973,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("alpha", &Photosynthesis::alpha)
             .def_readwrite("a1", &Photosynthesis::a1)
             .def_readwrite("a3", &Photosynthesis::a3)
+            .def_readwrite("sh", &Photosynthesis::sh)
+            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
+            .def_readwrite("Rd_ref", &Photosynthesis::Rd_ref)
+            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref)
+            .def_readwrite("ci_adapt", &Photosynthesis::ci_adapt)
             .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
@@ -1000,6 +1008,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)
             .def_readwrite("Q_out_dot",&PhloemFlux::Q_out_dotv)
+            .def_readwrite("Q_Rmmax1",&PhloemFlux::Q_Rmmax1v)
             .def_readwrite("a_ST",&PhloemFlux::a_STv)
             .def_readwrite("vol_ST",&PhloemFlux::vol_STv)
             .def_readwrite("vol_Meso",&PhloemFlux::vol_Mesov)

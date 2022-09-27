@@ -427,6 +427,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			if(ot==2){
 				Q_Exudmax[nodeID ] =   2 * M_PI * a_seg * l*exud_k[nodeID] ;
 			}
+			if(doTroubleshooting){std::cout<<"node data "<<st<<" "<<ot<<std::endl;}
 			if(doTroubleshooting){std::cout<<"QexudMax "<<Q_Exudmax[nodeID ]<<std::endl;}
 			
 			
@@ -484,7 +485,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 				std::cout<<"exud: loop n°"<<k<<", node "<<nodeID<<" "<<Q_Exudmax[nodeID]<<" "<< l<<" "<<Radii[k-1]<<std::endl;
 				assert(false);
 			}
-			if(Q_Rmmax[nodeID ]<=0.){
+			if(Q_Rmmax[nodeID ]<0.){
 				std::cout<<"rm: loop n°"<<k<<", node "<<nodeID<<" "<<Q_Rmmax[nodeID]<<" "<< krm1<<" "<<StructSucrose<<std::endl;
 				assert(false);
 			}
@@ -503,6 +504,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	exud_k[1]=0;Q_Exudmax[1]=0;
 	
 	//for post processing in python
+	this->Q_Rmmax1v = Q_Rmmax.toCppVector();
 	this->Q_Grmaxv = Q_Grmax.toCppVector();
 	this->r_ST_refv = r_ST_ref.toCppVector();
 	this->Agv = Ag.toCppVector();
@@ -765,13 +767,14 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			int f_gf_ind = org->getParameter("gf");//-1;//what is the growth dynamic?
 			//auto orp = org->getOrganism->getOrganRandomParameter(ot).at(stold)
 			//if(orp!= NULL) {orp->f_gf->CW_Gr = cWGrRoot;}	
-			if(f_gf_ind != 3)//(f_gf_ind != 3)
+			if(f_gf_ind < 3)//(f_gf_ind != 3)
 			{
 				std::cout<<"org id "<<org->getId()<<" ot "<<ot<<" st "<<st<<" Linit "<<Linit<<" numNodes ";
 				std::cout<<org->getNumberOfNodes()<<" "<<rmax<<" f_gf_ind "<<f_gf_ind<<std::endl;
-				assert((f_gf_ind == 3)&&"PhloemFlux::waterLimitedGrowth: organ does not use carbon-limited growth");
+				assert((f_gf_ind < 3)&&"PhloemFlux::waterLimitedGrowth: organ does not use carbon-limited growth");
 			}
-			f_gf_ind = 1; // take negative exponential growth dynamic [f_gf_ind == 1] to compute max growth 
+			if(f_gf_ind == 3){f_gf_ind = 1;} // take negative exponential growth dynamic to compute max growth 
+			if(f_gf_ind == 4){f_gf_ind = 2;} // take linear growth dynamic to compute max growth 
 			auto f_gf =  plant->createGrowthFunction(f_gf_ind);
 			double age_ = f_gf->getAge(Linit, rmax, org->getParameter("k"), org->shared_from_this());
 			
@@ -845,7 +848,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			double deltavol = org->orgVolume(targetlength, false) - org->orgVolume(Linit, false);//volume from theoretical length
 			
 			int nNodes = org->getNumberOfNodes();
-			if ((nNodes==1)||(ot == 2)) {//organ not represented because below dx limit or is root
+			if ((nNodes==1)||(ot == 2)||((ot == 3)&&(useStemTip))) {//organ not represented because below dx limit or is root
 				nodeIds_.push_back(-1); //because count start at 1 => for normal organs, dón t count 1st node
 				nodeIds_.push_back(org->getNodeId(nNodes-1));	//globalID of parent node for small organs or tip of root
 								
@@ -924,11 +927,13 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 				deltaVol_tot += deltavolSeg;
 				if(doTroubleshooting){
 					std::cout<<"		k "<<k<<" "<<" id:"<<nodeId<<" idh:"<<nodeId_h<<" Flen:"<<Flen <<" Fpsi:"<< Fpsi[nodeId];
-					std::cout<<" Rtip:"<<isRootTip<<" Lseg:"<<Lseg<<" "<<deltavolSeg<<std::endl;
+					std::cout<<" Rtip:"<<isRootTip<<" "<<isStemTip<<" "<<useStemTip<<" Lseg:"<<Lseg<<" "<<deltavolSeg<<std::endl;
 					
 						std::cout<<"		"<<org->getId()<<" ot:"<<ot<<" Li:"<<Linit<<" Le:"<<targetlength;
 						std::cout<<" rorg "<<e<<" "<<deltavol<<" "<<(targetlength-Linit)<<std::endl;
 						std::cout<<"		"<<org->getLength(true)<<" "<<org->getEpsilon()<<std::endl;
+						std::cout<<"		 to suc temp "<<deltaSucTemp<<" "<<nodeId<<" " <<org->getId()
+						<<" "<<ot<<" "<<st<<" "<<rhoSucrose_f(st,ot)<<std::endl;
 				}
 			}
 			if(doTroubleshooting){
@@ -945,8 +950,10 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 		}else{
 			if(doTroubleshooting){
 				std::cout<<"skip organ "<<org->getId()<<" "<<orgID2<<" "<<org->getAge();
-				std::cout<<" "<<org->isAlive()<<" "<<org->isActive()<<" "<<org->getNumberOfNodes()<<std::endl;
+				std::cout<<" "<<org->isAlive()<<" "<<org->isActive()<<" "<<org->getNumberOfNodes()
+				<<" "<<org->getLength(true)<<" "<<" "<<org->getLength(false)<<std::endl;
 			}
+				BackUpMaxGrowth[orgID2] =org->getLength(false);
 		}
 		orgID2 += 1;
 	}
@@ -1132,15 +1139,15 @@ void PhloemFlux::setKrm2(std::vector<std::vector<double>> values) {
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			krm2_f = std::bind(&PhloemFlux::krm2_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant " << values[0][0] << " -\n";
+			std::cout << "krm2 is constant " << values[0][0] << " -\n";
 		} 
 	} else {
 		if (values[0].size()==1) {
 			krm2_f = std::bind(&PhloemFlux::krm2_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
+			std::cout << "krm2 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
 		} else {
 			krm2_f  = std::bind(&PhloemFlux::krm2_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+			std::cout << "krm2 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
 		}
 	}
 }	

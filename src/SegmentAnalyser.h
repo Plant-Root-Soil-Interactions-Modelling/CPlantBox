@@ -68,7 +68,7 @@ public:
     void addData(std::string name, std::vector<double> data); ///< adds user data that are written into the VTP file, @see SegmentAnalyser::writeVTP
 
     // some exports
-    void write(std::string name, std::vector<std::string>  types = { "radius", "subType", "creationTime", "organType" }); ///< writes simulation results (type is determined from file extension in name)
+    void write(std::string name, std::vector<std::string>  types = { "radius", "subType", "creationTime", "organType" }, bool doPack = true); ///< writes simulation results (type is determined from file extension in name)
     void writeVTP(std::ostream & os, std::vector<std::string>  types = { "radius", "subType", "creationTime", "organType"  }) const; ///< writes a VTP file
     void writeRBSegments(std::ostream & os) const; ///< Writes the segments of the root system, mimics the Matlab script getSegments()
     void writeDGF(std::ostream & os) const; ///< Writes the segments of the root system in DGF format used by DuMux

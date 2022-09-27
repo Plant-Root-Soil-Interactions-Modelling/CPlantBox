@@ -202,9 +202,10 @@ void Photosynthesis::getError(double simTime)
 		assert(!std::isnan(this->psiXyl[i]) && "Photosynthesis xylcurrent is nan" );
 		assert(!std::isnan(psiXyl_old[i]) && "Photosynthesis xylold is nan" );
 		//std::cout<<this->psiXylnew[i]<<" "<<(this->psiXylnew[i]<=0)<<" "<<std::flush;
-		if(this->psiXyl[i]>0){
+		if((this->psiXyl[i]>0)&&(plant->node_Decapitate.size()==0)){
 			std::cout<< "Photosynthesis xyl >0, "<<i<<" "<<this->psiXyl[i]<<std::endl;
-			assert(false);}
+			assert(false);
+			}
 			
 		double tempVal = 1;
 		
@@ -453,6 +454,8 @@ void Photosynthesis::loopCalcs(double simTime){
 		}
 		double p_lhPa =(rxi + rxj)*0.5*0.9806806;// cm => hPa
 		//(mg mmol-1)* hPa /((hPa cm3K−1mmol−1) mg cm-3 K) =(-)
+		if(!diffpg){this->pg.at(i) = (rxi + rxj)*0.5;}
+		
 		double HRleaf = std::exp(Mh2o*this->pg.at(i)*0.9806806 /(rho_h2o*R_ph*TleafK)) ;//fractional relative humidity in the intercellular spaces
 		//double ea = es - VPD;
 		double ea_leaf = es * HRleaf;//hPa
@@ -482,16 +485,32 @@ void Photosynthesis::loopCalcs(double simTime){
 			
 			//ci and pg
 			//gruard cell wat. pot. to havee water flux from xylem to gard cell. kr = permeability of xylem membrane only.
-			this->pg.at(i) = (-1/2.)*((Ev.at(i))/(-fv.at(i)*(1./(tauv.at(i)*dv.at(i)))
-				*(2.-std::exp(-tauv.at(i)*l)-std::exp(tauv.at(i)*l))) - (rxi + rxj)) ;//cm
+			if(diffpg){
+				this->pg.at(i) = (-1/2.)*((Ev.at(i))/(-fv.at(i)*(1./(tauv.at(i)*dv.at(i)))
+					*(2.-std::exp(-tauv.at(i)*l)-std::exp(tauv.at(i)*l))) - (rxi + rxj)) ;//cm
+				k_stomatas.at(i) = Jw.at(i)/(this->pg.at(i) - psi_air);
+			}//else{
+				//todo?
+				// double perimeter = plant->leafBladeSurface.at(li)/l*2; 
+				// fv = -perimeter*kr;
+				// tauv = std::sqrt(perimeter*kr/kx);
+				// dv = std::exp(-tauv.at(li_)*l)-std::exp(tauv.at(li_)*l);
+				// E_temp = -fv*(1./(tauv*dv))*(rx[i]-psi_s+rx[j]-psi_s)*(2.-std::exp(-tauv*l)-std::exp(tau*l));
 				
-			k_stomatas.at(i) = Jw.at(i)/(this->pg.at(i) - psi_air);
+				// func = lambda tau : R - ((1.0 - np.exp(-tau))/(1.0 - np.exp(-a*tau)))
+			//}
+				
+			
 			if((verbose_photosynthesis ==2)){
 																				
 				std::cout<<"sizes "<<An.size()<<" "<< gco2.size()<<" "<<ci.size()<<" "<<ci_old.size() <<std::endl;
 
 			}
-			ci.at(i) = (cs*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)) ;//Eq 26	
+			if(ci_adapt){
+				ci.at(i) =(cs*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)) ;//Eq 26
+			}else{
+				ci.at(i) = cs - (An.at(i) + Rd)/gco2.at(i);//	
+			}
 			if((!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))) {
 			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl;
 			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J<<" "<<Vcmax.at(i)<<" "<<Kc<<" "<<Ko<<" ";

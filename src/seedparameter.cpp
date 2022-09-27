@@ -70,11 +70,12 @@ std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
     double dRC = std::max(delayRC + p->randn()*delayRCs, 0.);
     double nz_ = std::max(nz , 0.);
 
+    int fSt = std::max(firstSt + p->randn()*firstSts, 0.);
     double st = std::max(simtime + p->randn()*simtimes, 0.);
 	double fTi = std::max(firstTi + p->randn()*firstTis, 0.);
     double dTi = std::max(delayTi + p->randn()*delayTis, 0.);
     int maxtil = std::max(maxTil + p->randn()*maxTils, 0.);
-    return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st,fTi, dTi);
+    return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st,fTi, dTi, fSt);
 }
 
 /**
@@ -120,6 +121,7 @@ void SeedRandomParameter::bindParameters()
     bindParameter("delaySB", &delaySB, "Time delay between the shoot borne roots [day]", &delaySBs);
     bindParameter("delayRC", &delayRC, "Delay between the root crowns [day]", &delayRCs);
     bindParameter("nz", &nz, "Distance between the root crowns along the shoot [cm]", &nzs );
+	bindParameter("firstSt", &firstSt, "Emergence of main stem [day]", &firstSts);
 	bindParameter("firstTi", &firstTi, "Emergence of first tiller [day]", &firstTis);
     bindParameter("delayTi", &delayTi, "Time delay between the tillers [day]", &delayTis);
     bindParameter("maxTi", &maxTil, "Maximal number of tillers [1]", &maxTils);

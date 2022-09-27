@@ -75,7 +75,13 @@ public:
 	std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	Vector3d getMinBounds();		
 		// calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
-	virtual void calcExchangeZoneCoefs(){throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object");};		
+	virtual void calcExchangeZoneCoefs(){throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object");};	
+	
+	//		decapitation
+	//bool decapitate = false;
+	//int orgID_decapitate;
+	//double length_decapitate;
+	std::vector<int> node_Decapitate;	
 
 protected:
 
@@ -146,6 +152,9 @@ public:
 	void calcExchangeZoneCoefs() override;					 
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
 	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module		
+	
+	
+	
  protected:
 	void initialize_(int basaltype, int shootbornetype, bool verbose = true, bool stochastic = true, bool LB = true);	
 };

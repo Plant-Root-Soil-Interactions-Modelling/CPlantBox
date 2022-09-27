@@ -75,7 +75,7 @@ std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 {
-	bool verbose = true;
+	bool verbose = false;
 	if(verbose){
 		std::cout<<"StemRandomParameter::realize() "<<successorST.size()<<" "<<lb<<" "<<la<<" "<<ln<<std::endl;
     }
@@ -243,12 +243,12 @@ default:
 	}
 	double delayLat_ = std::max(delayLat + p->randn()*delayLats, 0.);
 	if(verbose){
-	std::cout<<"to std::make_shared<StemSpecificParameter> ";
-	std::cout<<subType<<" "<<lb_<<" "<<la_<<" "<<r_<<" "<<hasLaterals<<" "<<this->nodalGrowth;
-	std::cout<<" "<<delayNGStart_<<" "<< delayNGEnd_<<" "<< delayLat_<<std::endl;
-	std::cout<<"ln: "<<std::endl;
-	for (int j = 0; j<ln_.size(); j++) {std::cout<< ln_.at(j)<<" ";}
-	std::cout<<std::endl;
+		std::cout<<"to std::make_shared<StemSpecificParameter> ";
+		std::cout<<subType<<" "<<lb_<<" "<<la_<<" "<<r_<<" "<<hasLaterals<<" "<<this->nodalGrowth;
+		std::cout<<" "<<delayNGStart_<<" "<< delayNGEnd_<<" "<< delayLat_<<std::endl;
+		std::cout<<"ln: "<<std::endl;
+		for (int j = 0; j<ln_.size(); j++) {std::cout<< ln_.at(j)<<" ";}
+		std::cout<<std::endl;
 	}
     return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, 
 			this->nodalGrowth, delayNGStart_, delayNGEnd_, delayLat_);

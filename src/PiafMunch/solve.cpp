@@ -262,6 +262,33 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 			
 		}
 		if (C_amont[j] < 0.) C_amont[j] = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)
+			bool find1 = false;
+			bool find2 = false;
+		if(doTroubleshooting){
+			std::cout<<" plant->node_Decapitate.size() "<<plant->node_Decapitate.size()<<" "<<j<<" upflow "<<I_Upflow[j]<<" downflow "<<I_Downflow[j]<<" ";
+			std::cout<< find1<<" "<<find2<<std::endl;
+			for(int b = 0;b < plant->node_Decapitate.size();b++){std::cout<<plant->node_Decapitate.at(b)<<" ";}std::cout<<std::endl;
+		
+		
+		}
+		if(plant->node_Decapitate.size()> 0)
+		{
+			find1 = (std::find(plant->node_Decapitate.begin(), plant->node_Decapitate.end(), I_Upflow[j]  ) != plant->node_Decapitate.end());
+			find2 = (std::find(plant->node_Decapitate.begin(), plant->node_Decapitate.end(), I_Downflow[j]) != plant->node_Decapitate.end());
+			if(doTroubleshooting){
+				std::cout<<"find? "<< find1<<" "<<find2<<std::endl;
+			}
+			if(find1 || find2)//segment cut
+			{//also set photosyntheis and water flow to 0 in photosynthesis module.
+				JW_ST[j] = 0.;
+				if(find1){C_ST[I_Upflow[j]] = 0.;Q_ST[I_Upflow[j]]= 0.;}
+				if(find2){C_ST[I_Downflow[j]] = 0.;Q_ST[I_Downflow[j]]= 0.;}
+				C_amont[j] = 0.;
+			}
+			if(doTroubleshooting){
+				std::cout<<"effect "<< C_ST[I_Upflow[j]] <<" "<<C_ST[I_Downflow[j]]<<std::endl;
+			}
+		}
 	}
 	if(update_viscosity_){update_viscosity() ;}
 	JW_ST /= r_ST;

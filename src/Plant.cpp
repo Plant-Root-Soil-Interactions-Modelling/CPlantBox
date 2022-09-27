@@ -242,7 +242,9 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  */
 	void Plant::simulate(double dt, bool verbose)	
 {	
+	if(verbose){std::cout<<"Plant::simulate"<<std::endl;}
 	abs2rel();
+	if(verbose){std::cout<<"did abs2rel"<<std::endl;}
 	relCoord = true;
     Organism::simulate(dt, verbose);	
 	rel2abs();
@@ -331,6 +333,7 @@ std::shared_ptr<GrowthFunction>Plant::createGrowthFunction(int gft) {
     case gft_negexp: return std::make_shared<ExponentialGrowth>();
     case gft_linear: return std::make_shared<LinearGrowth>();
     case gft_CWLim: return std::make_shared<CWLimitedGrowth>();
+    case gft_CWLim_lin: return std::make_shared<CWLimitedGrowth_lin>();
     default: throw std::invalid_argument( "Plant::createGrowthFunction() growth function type not implemented" );
     }
 }

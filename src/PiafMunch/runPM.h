@@ -143,6 +143,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 
 
 	//		for python post-processing and checks
+	std::vector<double> Q_Rmmax1v;
 	std::vector<double> a_STv;
 	vector<double> Q_outv;//Y0 vector at end of simulation
 	vector<double> Q_init;//Y0 vector at beginning of simulation
@@ -202,7 +203,6 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	bool sameVolume_meso_st = true; //use same volume for mesophyll and leaf st compartment?
 	bool withInitVal = false;//use initValST and initValMeso
 	int solver = 1;//which solver to use
-	bool doTroubleshooting =false; //do extra printing
 	bool useCWGr; //use water- and carbon- limited growth?
 	int expression = 1;//if implement several possible expression in C_fluxes
 	bool useStemTip = true;

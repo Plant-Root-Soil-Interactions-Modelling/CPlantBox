@@ -53,6 +53,7 @@ void Seed::initialize(bool verbose)
 	auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
 	bool plantBox = stemP.size()>0;
 	auto rootP = p->getOrganRandomParameter(Organism::ot_root);
+	
 	bool hasRoot = (rootP).size()>0;
 	if (verbose) {
 		if (plantBox) {
@@ -154,7 +155,7 @@ void Seed::initialize(bool verbose)
 	if (plantBox) { // i.e. if a stem is defined
 		// Stem
 		Matrix3d isHeading(Vector3d(0, 0, 1), Vector3d(0, 1, 0), Vector3d(1, 0, 0)); // initial Stem heading
-		std::shared_ptr<Organ> mainstem = createStem(plant.lock(), mainStemType, isHeading, 0.); // main stem has subtype 1
+		std::shared_ptr<Organ> mainstem = createStem(plant.lock(), mainStemType, isHeading, sp->firstSt); // main stem has subtype 1
 		mainstem->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 		children.push_back(mainstem);
 		// Optional tillers

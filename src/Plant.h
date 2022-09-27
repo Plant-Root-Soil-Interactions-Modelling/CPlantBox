@@ -36,7 +36,7 @@ class Plant :public Organism
 public:
 
   enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5,  tt_antigravi2gravi = 6};  ///< plant tropism types
-  enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 , gft_CWLim = 3 }; // plant growth function
+  enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 , gft_CWLim = 3 , gft_CWLim_lin = 4 }; // plant growth function
 
   Plant(double seednum  = 0.);
   virtual ~Plant() { };

@@ -79,7 +79,7 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
-	bool verbose = true;
+	bool verbose = false;
 	bool hasLaterals = (successorST.size()>0);
 	auto p = plant.lock();
 	//define the parameters outside fo the if functions:
@@ -143,8 +143,8 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
 	if(verbose)
 	{
-	std::cout<<"leaf=> lnf is "<<lnf<<" "<<subType<<std::endl;
-	std::cout<<"leaf=> in create lat branch "<<nob1<< " " <<nob_<<" "<<latMissing<<" "<<latExtra1<<" "<<latExtra2<<std::endl;
+		std::cout<<"leaf=> lnf is "<<lnf<<" "<<subType<<std::endl;
+		std::cout<<"leaf=> in create lat branch "<<nob1<< " " <<nob_<<" "<<latMissing<<" "<<latExtra1<<" "<<latExtra2<<std::endl;
 	}
 	switch(lnf) {
 	case 0: // homogeneously distributed leaf nodes
@@ -256,11 +256,11 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	double delayLat_ = std::max(delayLat + p->randn()*delayLats, 0.);
 	if(verbose)
 	{
-	std::cout<<"to std::make_shared<LeafSpecificParameter> ";
-	std::cout<<subType<<" "<<lb_<<" "<<la_<<" "<<r_<<" "<<hasLaterals<<std::endl;
-	std::cout<<"ln: "<<std::endl;
-	for (int j = 0; j<ln_.size(); j++) {std::cout<< ln_.at(j)<<" ";}
-	std::cout<<std::endl;
+		std::cout<<"to std::make_shared<LeafSpecificParameter> ";
+		std::cout<<subType<<" "<<lb_<<" "<<la_<<" "<<r_<<" "<<hasLaterals<<std::endl;
+		std::cout<<"ln: "<<std::endl;
+		for (int j = 0; j<ln_.size(); j++) {std::cout<< ln_.at(j)<<" ";}
+		std::cout<<std::endl;
 	}
 	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, 
 			hasLaterals, Width_blade_, Width_petiole_, delayLat_);

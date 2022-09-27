@@ -44,7 +44,7 @@ SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::
  */
 SegmentAnalyser::SegmentAnalyser(const Organism& plant)
 {
-    //std::cout << "construct from Organism\n";
+    std::cout << "construct from Organism\n";
     nodes = plant.getNodes();
     segments = plant.getSegments();
     auto segCTs = plant.getSegmentCTs();
@@ -55,7 +55,16 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     auto radii = std::vector<double>(segments.size());
     auto subType = std::vector<double>(segments.size());
     auto id = std::vector<double>(segments.size());
+	// std::cout<<" "<<sego.size()<<" "<<segments.size()<<" "<<nodes.size();
+	// std::cout<<" "<< segCTs.size() <<std::endl;
+	// for (size_t i=0; i<nodes.size(); i++) {
+		// std::cout<<i<<" "<<nodes[i].toString()<<std::endl;
+	// }
+	// for (size_t i=0; i<segments.size(); i++) {
+		// std::cout<<i<<" "<<segments[i].toString()<<std::endl;
+	// }
     for (size_t i=0; i<segments.size(); i++) {
+		//std::cout<<i<<" "<<segments[i].toString()<<std::endl;
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
         radii[i] = segO[i].lock()->getParameter("radius");
         subType[i] = segO[i].lock()->getParameter("type");
@@ -64,6 +73,7 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     data["radius"] = radii;
     data["subType"] = subType;
     data["id"] = id;
+	
 }
 
 /**
@@ -90,6 +100,20 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     data["radius"] = plant.radii;
     data["subType"] = subTypesd;
     data["organType"] = organTypesd;
+	
+	
+	// std::cout<<"SegmentAnalyser::SegmentAnalyser "<< segments.size() << " "<< nodes.size()<<std::endl;
+	// std::cout << "<Points>\n";
+    // for (const auto& n : nodes) {
+		// std::cout << n.x << " "<< n.y <<" "<< n.z<< " ";
+    // }
+	// std::cout <<std::endl;
+    // // segments (Lines)
+	// std::cout << "<Lines>\n";
+    // for (const auto& s : segments) {
+        // std::cout << s.x << " " << s.y << " ";
+    // }
+	// std::cout <<std::endl;
 }
 
 /**
@@ -361,22 +385,31 @@ void SegmentAnalyser::filter(std::string name, double value)
  * only delete segments, not unused nodes
  */
 void SegmentAnalyser::pack() {
+	//std::cout<<"SegmentAnalyser::pack()"<<std::endl;
     std::vector<double> ni(nodes.size());
     std::fill(ni.begin(),ni.end(), -1.);
     std::vector<Vector3d> newnodes;
+	int sid = 0;
     for (auto& s:segments) {
+		// std::cout<<"sid "<<sid<<" "<<s.toString()<<" ";
+		// std::cout<< ni.at(s.x)<<" "<< nodes.at(s.x).toString()<<" ";
+		// std::cout<< ni.at(s.y)<<" "<< nodes.at(s.y).toString()<<"\n";
+		
         if (ni.at(s.x) == -1.) { // the node is new
             newnodes.push_back(nodes.at(s.x));
             ni.at(s.x) = newnodes.size()-1; // set index of the new node
-        }
+			//std::cout<<"(ni.at(s.x) == -1.) "<<newnodes.size();
+			//std::cout<<s.x<<" "<<newnodes.size()<<" "<< nodes.at(s.x).toString()<<"\n";
+		}
         s.x = ni.at(s.x);
         if (ni.at(s.y) == -1.) { // the node is new
             newnodes.push_back(nodes.at(s.y));
             ni.at(s.y) = newnodes.size()-1; // set index of the new node
         }
         s.y = ni.at(s.y);
+		sid++;
     }
-    // std::cout << "pack(): nodes: " << nodes.size() << " -> " << newnodes.size() << ", " << double(newnodes.size())/double(nodes.size()) << " \n";
+    //std::cout << "pack(): nodes: " << nodes.size() << " -> " << newnodes.size() << ", " << double(newnodes.size())/double(nodes.size()) << " \n";
     nodes = newnodes; // kabum!
 }
 
@@ -842,9 +875,9 @@ void SegmentAnalyser::addData(std::string name, std::vector<double> values)
  * @param types 	Optionally, for vtp we can determine the cell data by a vector of parameter names
  *                  (default = { "radius", "subType", "creationTime", "organType" })
  */
-void SegmentAnalyser::write(std::string name, std::vector<std::string> types)
+void SegmentAnalyser::write(std::string name, std::vector<std::string> types, bool doPack)
 {
-    this->pack(); // a good idea before writing any file
+    if(doPack){this->pack();} // a good idea before writing any file
     std::ofstream fos;
     fos.open(name.c_str());
     std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
@@ -888,19 +921,26 @@ void SegmentAnalyser::writeVTP(std::ostream & os, std::vector<std::string> types
     os << "\n</CellData>\n";
     // nodes (Points)
     os << "<Points>\n"<<"<DataArray type=\"Float32\" Name=\"Coordinates\" NumberOfComponents=\"3\" format=\"ascii\" >\n";
+	//std::cout<<"writeVTP "<< segments.size() << " "<< nodes.size()<<std::endl;
+	//std::cout << "<Points>\n";
     for (const auto& n : nodes) {
         os << n.x << " "<< n.y <<" "<< n.z<< " ";
+		//std::cout << n.x << " "<< n.y <<" "<< n.z<< " ";
     }
+	//std::cout <<std::endl;
     os << "\n</DataArray>\n"<< "</Points>\n";
     // segments (Lines)
+	//std::cout << "<Lines>\n";
     os << "<Lines>\n"<<"<DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
     for (const auto& s : segments) {
         os << s.x << " " << s.y << " ";
+        //std::cout << s.x << " " << s.y << " ";
     }
     os << "\n</DataArray>\n"<<"<DataArray type=\"Int32\" Name=\"offsets\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
     for (size_t i=0; i<segments.size(); i++) {
         os << 2*i+2 << " ";
     }
+	//std::cout <<std::endl;
     os << "\n</DataArray>\n";
     os << "\n</Lines>\n";
     //

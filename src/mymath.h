@@ -335,14 +335,15 @@ template <class IntOrDouble>
 void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
 	bool replaceByDefault,
 	std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
-{	std::cout<<std::endl<<std::endl;
-	std::cout<<"queryStringAttribute "<<key->Attribute("name")<<" ";
-	std::cout<<defaultVal<<" "<<sizeVector<<" ";
-	std::cout<<keyNames.size()<<" "<<replaceByDefault<<std::endl<<std::endl<<std::endl;
+{	
+	//std::cout<<std::endl<<std::endl;
+	// std::cout<<"queryStringAttribute "<<key->Attribute("name")<<" ";
+	// std::cout<<defaultVal<<" "<<sizeVector<<" ";
+	// std::cout<<keyNames.size()<<" "<<replaceByDefault<<std::endl<<std::endl<<std::endl;
 	int success = -1;
 	std::vector<IntOrDouble> dummy;
 	for(int i = 0; (i < keyNames.size())&&(tinyxml2::XML_SUCCESS != success); i++){
-		std::cout<<"		"<<keyNames.at(i);
+		//std::cout<<"		"<<keyNames.at(i);
 		const char* cckey;
 		//std::string cckey;
 		success = key->QueryStringAttribute(keyNames.at(i).c_str(),&cckey);
@@ -350,7 +351,7 @@ void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defa
 			//use default val to defin type of element in vector
 			dummy = string2vector(cckey, defaultVal);
 		}
-		std::cout<< " "<<success<<std::endl;
+		//std::cout<< " "<<success<<std::endl;
 		
 	}
 	if(tinyxml2::XML_SUCCESS != success){
@@ -363,9 +364,9 @@ void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defa
 		vToFill.insert( vToFill.end(), dummy.begin(), dummy.end() );
 	}
 	
-	std::cout<<" did vToFill "<< vToFill.size() <<std::endl;
-	for(int k = 0;k < vToFill.size(); k++){std::cout<<vToFill.at(k)<<" ";}
-	std::cout<<std::endl;
+	// std::cout<<" did vToFill "<< vToFill.size() <<std::endl;
+	// for(int k = 0;k < vToFill.size(); k++){std::cout<<vToFill.at(k)<<" ";}
+	// std::cout<<std::endl;
 }
 
 template <class IntOrDouble2>

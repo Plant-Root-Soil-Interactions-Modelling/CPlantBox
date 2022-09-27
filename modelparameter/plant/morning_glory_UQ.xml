@@ -4,6 +4,8 @@
     <parameter name="seedPos.x" value="0"/>
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-2.5"/>
+	<!--time laps video youtube.com/watch?v=jiVIz8R0JWI-->
+    <parameter name="firstSt" value="5" dev="0"/>
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
@@ -22,7 +24,7 @@
 	<!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
 	<parameter name="a" value="0.055" dev="0.0055"/>
 	<parameter name="dx" value="1.5"/>
-	<parameter name="dxMin" value="1"/>
+	<parameter name="dxMin" value="0.5"/>
 	<!--Axial resolution [cm] (maximal segment size)-->
 	<parameter name="la" value="3.0699999" dev="2.9400001"/>
 	<!--Apical zone [cm]-->
@@ -52,7 +54,7 @@
 	<!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
 	<parameter name="a" value="0.0275" dev="0.00275"/>
 	<parameter name="dx" value="1.5"/>
-	<parameter name="dxMin" value="1"/>
+	<parameter name="dxMin" value="0.5"/>
 	<!--Axial resolution [cm] (maximal segment size)-->
 	<parameter name="la" value="7.9200001" dev="0.792"/>
 	<!--Apical zone [cm]-->
@@ -82,7 +84,7 @@
 	<!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
 	<parameter name="a" value="0.02" dev="0.0020000001"/>
 	<parameter name="dx" value="1.5"/>
-	<parameter name="dxMin" value="1"/>
+	<parameter name="dxMin" value="0.5"/>
 	<!--Axial resolution [cm] (maximal segment size)-->
 	<parameter name="la" value="10" dev="1"/>
 	<!--Apical zone [cm]-->
@@ -106,36 +108,41 @@
 
 <organ type="stem" name="mainstem" subType="1">
 	<parameter name="lb" value="3" dev="0"/>
-	<!--Basal zone [cm]-->
-	<parameter name="la" value="2" dev="0"/>
-	<!--Apical zone [cm];-->
-	<parameter name="ln" value="4" dev="0" functiontype="0"/>
+	<!--dummy val, Basal zone [cm]-->
+	<parameter name="la" value="0" dev="0"/>
+	<!--dummy val, Apical zone [cm];-->
+	<parameter name="ln" value="3.5" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm], from Barillot, L-pea;-->
-	<parameter name="lmax" value="53" dev="0"/>
-	<parameter name="r" value="5" dev="0"/>
+	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
+	<parameter name="lmax" value="28" dev="0"/>
+	<!--3.5cm every 2 days, a bit higher because neg exp-->
+	<parameter name="r" value="1.8" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>
 	<parameter name="tropismT" value="0"/>
 	<parameter name="tropismN" value="1"/>
 	<parameter name="tropismS" value="0"/>
 	<!--from thesis of cate;-->
-	<parameter name="delayLat" value="2.5" dev="0" />
+	<parameter name="delayLat" value="2" dev="0" />
 	<parameter name="dx" value="5"/>
-	<parameter name="dxMin" value="1"/>
+	<parameter name="dxMin" value="0.5"/>
 	<parameter name="theta" value="0" dev="0"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
-	<parameter name="gf" value="3"/>
+	<parameter name="gf" value="4"/>
+	<!--~2 developping branch, barillot2014-->
 	<parameter name="successor" numLat="1" subType="2" organType="3" percentage="1" where="-1"/>
 	<parameter name="successor" numLat="1" subType="1" organType="4" percentage="1" where="-1"/>
 </organ>
 
 <organ type="stem" name="bud" subType="2">
-	<parameter name="lb" value="1" dev="0"/>
-	<!--Basal zone [cm]-->
+	<parameter name="lb" value="2" dev="0"/>
+	<!--dummy val, Basal zone [cm]-->
 	<parameter name="la" value="1" dev="0"/>
-	<!--Apical zone [cm];-->
-	<parameter name="ln" value="4" dev="0" functiontype="0"/>
+	<!--dummy val, Apical zone [cm];-->
+	<parameter name="ln" value="3.5" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm], from Barillot, L-pea;-->
-	<parameter name="lmax" value="50" dev="0"/>
+	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
+	<parameter name="lmax" value="21" dev="0"/>
+	<!--max length [cm], from Barillot, L-pea;-->
 	<parameter name="r" value="0.00000001" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>
 	<parameter name="tropismT" value="1"/>
@@ -146,10 +153,10 @@
 	<parameter name="dx" value="5"/>
     <parameter name="RotBeta" value="1"/>
     <parameter name="BetaDev" value="0.1"/>
-	<parameter name="dxMin" value="1"/>
+	<parameter name="dxMin" value="0.5"/>
 	<parameter name="theta" value="0.2" dev="0.2"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
-	<parameter name="gf" value="3"/>
+	<parameter name="gf" value="4"/>
 	<parameter name="successor" number="1" subType="1" organType="4" percentage="1" where = "-1" />
 </organ>
 
@@ -158,12 +165,13 @@
 	<parameter name="lb" value="0" dev="0"/>
 	<!--2 leaves at ~ mid distance-->
 	<parameter name="la" value="4" dev="0"/>
-	<parameter name="shapeType" value="1" />
+	<!--shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2-->
+	<parameter name="shapeType" value="0" />
 	<!--Apical zone [cm];-->
 	<parameter name="ln" value="5" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm];-->
 	<parameter name="lmax" value="9" dev="0"/>
-	<parameter name="r" value="5" dev="0"/>
+	<parameter name="r" value="1" dev="0"/>
 	<parameter name="a" value="0.3" dev="0.0"/>
 	<parameter name="tropismT" value="1"/>
 	<parameter name="tropismN" value="10"/>
@@ -171,26 +179,28 @@
 	<!--from thesis of cate;-->
 	<parameter name="delayLat" value="0" dev="0" />
 	<parameter name="dx" value="5"/>
-	<parameter name="dxMin" value="1"/>
+	<parameter name="dxMin" value="0.5"/>
 	<parameter name="theta" value="0.5" dev="0"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
-	<parameter name="gf" value="3"/>
+	<parameter name="gf" value="4"/>
 	<parameter name="successor" organType ="4" subType="2" numLat="2" percentage="1"/>
 </organ>
 
-<organ type="leaf" name="lateral1" subType="2">
+<organ type="leaf" name="blade" subType="2">
     <parameter name="lb" value="0" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="3.54" dev="0"/>
+    <parameter name="lmax" value="2.5" dev="0"/>
+    <!--max distance == mean diameter (from Kong2020) to side distance-->
     <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.35" dev="0.002"/>
     <parameter name="Width_petiole" value="0.35" />
-    <parameter name="Width_blade" value="3.54" />
+    <parameter name="Width_blade" value="2.5" />
     <parameter name="RotBeta" value="1"/>
+	<!--shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2-->
     <parameter name="shapeType" value="1" />
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="0"/>
@@ -198,10 +208,10 @@
     <parameter name="tropismN" value="20"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="dx" value="4"/>
-    <parameter name="dxMin" value="1"/>
+	<parameter name="dxMin" value="0.5"/>
     <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="3"/>
+    <parameter name="gf" value="4"/>
 	<parameter name="areaMax" value="12.57"/>
     <parameter name="geometryN" value="100"/>
     <parameter name="parametrisationType" value="1"/>

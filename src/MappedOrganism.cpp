@@ -474,7 +474,7 @@ void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbo
  * @param verbose   turns console output on or off
  */
 void MappedRootSystem::simulate(double dt, bool verbose)
-{
+{	
 	if (soil_index==nullptr) {
 		throw std::invalid_argument("MappedRootSystem::simulate():soil was not set, use MappedRootSystem::simulate::setSoilGrid" );
 	}
@@ -507,8 +507,14 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	}
 	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
 	segments.resize(segments.size()+newsegs.size());
+	if (verbose) {
+		std::cout << "segments to add "<< newsegs.size() << "\n" << std::flush;
+	}
 	for (auto& ns : newsegs) {
 		segments[ns.y-1] = ns;
+		if (verbose) {
+			std::cout << ns.toString() << std::flush;
+		}
 	}
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
@@ -609,52 +615,126 @@ void MappedPlant::mapSubTypes(){
  */
 void MappedPlant::simulate(double dt, bool verbose)
 {
+	std::cout<<"MappedPlant::simulate"<<std::endl;
+	//std::streambuf *coutbuf;// = std::cout.rdbuf(); //save old buf
+	// if(verbose){
+		// std::string filename("outputMO_");
+		// filename.append(std::to_string(simtime)); 
+		// filename.append(".txt");
+		// std::ofstream out(filename);
+		// coutbuf = std::cout.rdbuf();
+		// std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+	// }
+	
 	if (soil_index==nullptr) {
 		throw std::invalid_argument("MappedPlant::simulate():soil was not set, use MappedPlant::simulate::setSoilGrid" );
 	}
+	if (verbose) {
+		std::cout<<"MappedPlant::simulate"<<std::endl;
+	}
 	Plant::simulate( dt,  verbose);
-	auto uni = this->getUpdatedNodeIndices(); // move nodes
+	if (verbose) {
+		std::cout<<"MappedPlant::ENDsimulate"<<std::endl;
+	}
+	auto uni = this->getUpdatedNodeIndices(); // all nodes
 	auto unodes = this->getUpdatedNodes();
 	auto uncts = this->getUpdatedNodeCTs();
+	if (verbose) {
+		std::cout<<"got uni "<<uni.size()<<std::endl;
+		std::cout<<"got unodes "<<unodes.size()<<std::endl;
+		std::cout<<"got uncts "<<uncts.size()<<std::endl;
+	}
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
+	//auto newnodes = this->getNewNodes(); // add nodes
+	int numnodes = uni.size() + 1;//this->getNumberOfNodes();
+	nodes.resize(numnodes);//nodes.size()+newnodes.size());
+	// if (verbose) {
+		// std::cout << "nodes TO add "<< newnodes.size() << "\n" << std::flush;
+	// }
+	
+	// for (auto& nn : newnodes) {
+		// nodes.push_back(nn);
+		// if (verbose) {
+			// std::cout << nodes.size() <<" "<< nn.toString() << std::flush;
+		// }
+	// }
+	// auto newnode_cts = this->getNewNodeCTs(); // add node cts
+	nodeCTs.resize(numnodes);//nodeCTs.size()+newnode_cts.size());
+	// for (auto& nct : newnode_cts) {
+		// nodeCTs.push_back(nct);
+	// }
+	// if (verbose) {
+		// std::cout << "\n"<<"new nodes added " << newnodes.size() << "\n" << std::flush;
+	// }
+	if (verbose) {
+		std::cout << "nodes added ";
+		std::cout<<" "<<nodes.size()<<" "<<nodeCTs.size() << "\n" << std::flush;
+	}
 	int c = 0;
+	if (verbose) {
+		std::cout << "nodes TO move "<< uni.size()<<" "<<unodes.size();
+		std::cout<<" "<<uncts.size();
+		std::cout<<" "<<nodes.size()<<" "<<nodeCTs.size() << "\n" << std::flush;
+	}
 	for (int i : uni) {
+		if (verbose) {
+			std::cout << c<<") "<< i<<" ";
+			std::cout<< unodes[c].toString() <<" "<< std::flush;
+			std::cout<< uncts[c] << " "<<std::flush;
+		}
 		nodes.at(i) = unodes[c];
 		nodeCTs.at(i) = uncts[c];
 		c++;
 	}
 
 	if (verbose) {
-		std::cout << "nodes moved "<< uni.size() << "\n" << std::flush;
+		std::cout << "\n"<<"nodes moved "<< uni.size() << "\n" << std::flush;
 	}
-	auto newnodes = this->getNewNodes(); // add nodes
-	nodes.reserve(nodes.size()+newnodes.size());
-	for (auto& nn : newnodes) {
-		nodes.push_back(nn);
-	}
-	auto newnode_cts = this->getNewNodeCTs(); // add node cts
-	nodeCTs.reserve(nodeCTs.size()+newnode_cts.size());
-	for (auto& nct : newnode_cts) {
-		nodeCTs.push_back(nct);
-	}
-	if (verbose) {
-		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
-	}
+	// auto updatedsegs = this->getUpdatedSegments(); // add segments (TODO cutting)
+	// if (verbose) {
+		// std::cout << "segments to update "<< updatedsegs.size() << "\n" << std::flush;
+	// }
+	// for (auto& ns : updatedsegs) {
+		// segments[ns.y-1] = ns;
+		// if (verbose) {
+			// std::cout << ns.toString() << std::flush;
+		// }
+	// }
+	// if (verbose) {
+		// std::cout << "\n"<<"segments updated "<< updatedsegs.size() << "\n" << std::flush;
+	// }
+	
 	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
-	segments.resize(segments.size()+newsegs.size());
+	segments.resize(newsegs.size());//segments.size()+
+	//segments.resize(0);segments.resize(newsegs.size());
+	if (verbose) {
+		std::cout << "segments to add "<< newsegs.size() << "\n" << std::flush;
+	}
 	for (auto& ns : newsegs) {
 		segments[ns.y-1] = ns;
+		if (verbose) {
+			std::cout << ns.toString() << std::flush;
+		}
 	}
 	if (verbose) {
-		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
+		std::cout << "\n"<<"segments added "<< newsegs.size() << "\n" << std::flush;
+	}
+	if (verbose) {
+		std::cout << "\n"<<"current segments "<< segments.size() << "\n" << std::flush;
+		for (auto& ns : segments) {
+			std::cout << ns.toString()<<" " << std::flush;
+			
+		}
+		std::cout << "\n" << std::flush;
+
 	}
 	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
-	radii.resize(radii.size()+newsegO.size());
-	subTypes.resize(subTypes.size()+newsegO.size());
-	organTypes.resize(organTypes.size()+newsegO.size());
-	segVol.resize(segVol.size()+newsegO.size());
-	bladeLength.resize(bladeLength.size()+newsegO.size());
-	leafBladeSurface.resize(leafBladeSurface.size()+newsegO.size()); 
+	radii.resize(newsegO.size());//radii.size()+newsegO.size());
+	subTypes.resize(newsegO.size());//subTypes.size()+newsegO.size());
+	organTypes.resize(newsegO.size());//organTypes.size()+newsegO.size());
+	segVol.resize(newsegO.size());//segVol.size()+newsegO.size());
+	bladeLength.resize(newsegO.size());//bladeLength.size()+newsegO.size());
+	leafBladeSurface.resize(newsegO.size());//leafBladeSurface.size()+newsegO.size()); 
 	c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
@@ -731,6 +811,8 @@ void MappedPlant::simulate(double dt, bool verbose)
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
+	
+	//if(verbose){std::cout.rdbuf(coutbuf);} //reset to standard output again
 
 }
 

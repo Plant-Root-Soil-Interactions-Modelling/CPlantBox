@@ -123,6 +123,42 @@ public:
 
 };
 
+
+/**
+ * CWLimitedGrowth uses growth given by phloem module
+ */
+class CWLimitedGrowth_lin : public LinearGrowth
+{
+public:
+
+
+	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override {
+		double length_;
+		if (this->CW_Gr.empty()  ){//
+			double length = LinearGrowth::getLength(t, r, k, o);
+			return length;
+		} else {
+			if((CW_Gr.count(o->getId()) ==0)||(this->CW_Gr.find(o->getId())->second<0)){length_ = 0; //org created at this time step
+				if((t> o->getOrganism()->getDt())&&(this->CW_Gr.find(o->getId())->second<-1e-5)){//possible rounding errors?
+					assert(false);
+				}
+			}else{
+				length_= o->getLength(false) +this->CW_Gr.find(o->getId())->second; // o->getParameter("length");
+				const_cast<double&>( this->CW_Gr.find(o->getId())->second ) = -1.;//sucrose is spent
+			}
+			return length_;
+		}
+	} ///< @copydoc GrowthFunction::getLegngth
+
+	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
+		return LinearGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
+	}  ///< @copydoc GrowthFunction::getAge
+
+	std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<CWLimitedGrowth_lin>(*this); }
+
+};
+
+
 } // end namespace CPlantBox
 
 

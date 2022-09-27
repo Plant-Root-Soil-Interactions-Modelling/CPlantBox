@@ -77,7 +77,10 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double 
 			creationTime = parent->getNodeCT(pni)+delay;
 		}
 		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);//create first node. relative coordinate = (0,0,0)
-}}
+	}
+	//std::cout<<"leaf created "<<getId()<<" "<<getNodeId(0)<<" "<<pni<<" "<<parent->getNodeId(pni)<<std::endl;
+
+}
 
 /**
  * Deep copies the organ into the new plant @param rs.
@@ -106,6 +109,7 @@ std::shared_ptr<Organ> Leaf::copy(std::shared_ptr<Organism> p)
  */
 void Leaf::simulate(double dt, bool verbose)
 {
+	
 	if(verbose){std::cout<<"leaf::simulate "<<getId()<<" "<<this->param_->subType
 				<<" "<<dt<<" "<<age<<" ";
 				std::cout<<length<<" "<< children.size()<<" "<< nodes.size()<<std::endl;}
@@ -233,7 +237,7 @@ void Leaf::simulate(double dt, bool verbose)
 			active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
 		}
 	} // if alive
-	if(verbose){std::cout<<"stem id "<<getId()<<" end simulate "<<length<<" "<< epsilonDx <<" ";
+	if(verbose){std::cout<<"leaf id "<<getId()<<" end simulate "<<length<<" "<< epsilonDx <<" ";
 				std::cout<<p.ln.size()<<" "<< p.laterals <<" "<< children.size()<<std::endl;
 				std::cout<<nodes.size()<<" "<<getLength(int(nodes.size() - 1))<<std::endl;
 				}
@@ -291,7 +295,7 @@ double Leaf::leafArea(bool realized, bool withPetiole) const
 	double length_ = getLength(realized);
 	double surface_ = 0;
 	double surfacePetiole = 0;
-	if (param()->laterals) {
+	if (param()->laterals) {//no blade
 		return 0.;
 	} else {
 		int shapeType = getLeafRandomParameter()->shapeType;
@@ -360,7 +364,7 @@ double Leaf::leafArea(bool realized, bool withPetiole) const
 double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole)
 {
 	double surface_ = 0.;
-	if (param()->laterals) {
+	if (param()->laterals) {//no blade
 		return 0.;
 	} else {
 		int shapeType = getLeafRandomParameter()->shapeType;
@@ -455,9 +459,9 @@ double Leaf::leafLengthAtSeg(int localSegId, bool withPetiole)
 double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
 {
 	double vol_ = 0.;
-	if (param()->laterals) {
-		return 0.;
-	} else {
+	//if (param()->laterals) {
+	//	return 0.;
+	//} else {
 		int shapeType = getLeafRandomParameter()->shapeType;
 		auto n1 = nodes.at(localSegId);
 		auto n2 = nodes.at(localSegId + 1);
@@ -501,7 +505,7 @@ double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
 			default:
 				throw  std::runtime_error("Leaf::leafVolAtSeg: undefined leaf shape type");
 		}
-	}
+	//}
 	if(!std::isfinite(vol_ )){
 		std::stringstream errMsg;
 		errMsg <<"Leaf::leafVolAtSeg:END computation of leaf volume failed "<<localSegId<<" "<<getParameter("Width_petiole")
@@ -731,7 +735,7 @@ void Leaf::addleafphytomerID(int subtype)
  */
 void Leaf::createLateral(bool silence)
 {
-	bool verbose = true;
+	bool verbose = silence;
 	auto rp = getLeafRandomParameter(); // rename
 	auto sp = param(); // rename
 	Matrix3d h = Matrix3d(); //not needed anymore
@@ -764,22 +768,25 @@ void Leaf::createLateral(bool silence)
 				int st = rp->successorST.at(i).at(p_id);
 				double ageLN = this->calcAge(sp->lb); // age of stem when lateral node is created
 				double delay = sp->delayLat * created_linking_node;
-				if(verbose){std::cout<<"data 4 lat "<<ot<<" "<<st<<" "<<p_id<<" "<< (nodes.size() - 1) <<std::endl;}
+				if(verbose){std::cout<<"from leaf data 4 lat "<<getId()<<" "<<ot<<" "<<st<<" "<<p_id<<" "<< (nodes.size() - 1) ;
+				
+						std::cout<<" "<<getNodeId(nodes.size() - 1)<<" "<<getNodeId(0)<<std::endl;
+						}
 				switch(ot){
 					case Organism::ot_root:{
 						double  beta = i*M_PI*getLeafRandomParameter()->rotBeta;
 						Vector3d newHeading = iHeading.times(Vector3d::rotAB(0,beta));
-						auto lateral = std::make_shared<Root>(plant.lock(), st, newHeading, delay/2, shared_from_this(),  nodes.size() - 1);
+						auto lateral = std::make_shared<Root>(plant.lock(), st, newHeading, delay, shared_from_this(),  nodes.size() - 1);
 						children.push_back(lateral);
 						lateral->simulate(age-ageLN,verbose); 
 						break;}
 					case Organism::ot_stem:{
-						auto lateral = std::make_shared<Stem>(plant.lock(), st, h, delay/2, shared_from_this(),  nodes.size() - 1);
+						auto lateral = std::make_shared<Stem>(plant.lock(), st, h, delay, shared_from_this(),  nodes.size() - 1);
 						children.push_back(lateral);
 						lateral->simulate(age-ageLN,verbose); 
 						break;}
 					case Organism::ot_leaf:{
-						auto lateral = std::make_shared<Leaf>(plant.lock(), st, h, delay/2, shared_from_this(),  nodes.size() - 1);
+						auto lateral = std::make_shared<Leaf>(plant.lock(), st, h, delay, shared_from_this(),  nodes.size() - 1);
 						children.push_back(lateral);
 						lateral->simulate(age-ageLN,verbose); 
 						break;}

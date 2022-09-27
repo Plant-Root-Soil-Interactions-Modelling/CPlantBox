@@ -19,8 +19,19 @@ class TestStemParameter(unittest.TestCase):
         self.srp.successorST = [[4, 5, 6]]
         self.srp.successorP = [[0.4, 0.1, 0.5]]
 
-        # print(self.srp.successorP[0])
+    def stem_example2(self):
+        self.plant = pb.Organism()
+        self.srp = pb.StemRandomParameter(self.plant)
+        self.srp.la = 1.5
+        self.srp.lb = 5.5
+        self.srp.ln = 1.25
+        self.srp.lns = 0.12
+        self.srp.lmax = 7 * self.srp.ln + self.srp.la + self.srp.lb
+        # print(self.srp.las)
 
+        self.srp.successorST = [[4, 5, 6]]
+        self.srp.successorP = [[0.4, 0.1, 0.5]]
+        
     def test_constructors(self):
         """ tests constructor and copy """
         plant = pb.Organism()

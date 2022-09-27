@@ -173,18 +173,60 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  */
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
+	//std::cout<<"Organ::addNode "<<n.toString()<<" "<< id<<" "<< t<<" "<< index<<" "<< shift<<" " <<nodes.size()<<" "<< nodeIds.size()<<std::endl;
 	if(!shift){//node added at the end of organ										
 		nodes.push_back(n); // node
 		nodeIds.push_back(id); //unique id
 		nodeCTs.push_back(t); // exact creation time
 	}
 	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?) 
+		// std::cout<<"node list before "<<std::endl;
+		// for(int u = 0; u< nodes.size();u++)
+		// {
+			// std::cout<<nodes.at(u).toString()<<" ";
+		// }std::cout<<"\n";
+		// std::cout<<"nodeCT list before "<<std::endl;
+		// for(int u = 0; u< nodes.size();u++)
+		// {
+			// std::cout<<nodeCTs.at(u)<<" ";
+		// }std::cout<<"\n";
+		// std::cout<<"nodeID list before "<<std::endl;
+		// for(int u = 0; u< nodes.size();u++)
+		// {
+			// std::cout<<nodeIds.at(u)<<" ";
+		// }std::cout<<"\n";
+		
+		
+		
 		nodes.insert(nodes.begin() + index, n);//add the node at index
-		//add a global index. 
-		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
-		nodeIds.push_back(id);  
-		nodeCTs.insert(nodeCTs.begin() + index-1, t);
+		// std::cout<<"node list after "<<std::endl;
+		// for(int u = 0; u< nodes.size();u++)
+		// {
+			// std::cout<<nodes.at(u).toString()<<" ";
+		// }std::cout<<"\n";
+		
+		nodeCTs.insert(nodeCTs.begin() + index, t);//why -1 here?
+		//std::cout<<"nodeCT list after "<<std::endl;
+		// for(int u = 0; u< nodes.size();u++)
+		// {
+			// std::cout<<nodeCTs.at(u)<<" ";
+		// }std::cout<<"\n";
+		// add a global index. 
+		// no need for the nodes to keep the same global index and makes the update of the nodes position 
+		// for MappedPlant object more simple)
+		// also better when mapping data to node Id
+		// nodeIds.push_back(id);  
+		// NO : for phloem flow and water, need to keep same gloabID for nodes
+		nodeIds.insert(nodeIds.begin() + index, id);//add the node at index
+		//std::cout<<"nodeID list after "<<std::endl;
+		// for(int u = 0; u< nodes.size();u++)
+		// {
+			// std::cout<<nodeIds.at(u)<<" ";
+		// }std::cout<<"\n";
+		
+		// std::cout<<"children number "<<children.size()<<" "<<index<<" "<<nodes.size()<<std::endl;
 		for(auto kid : children){//if carries children after the added node, update their "parent node index"
+				//std::cout<<"move kids? "<<kid->parentNI<<std::endl;
 			if(kid->parentNI >= index-1){
 				kid->moveOrigin(kid->parentNI + 1);
 				}
@@ -192,6 +234,7 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 		}
 		
 	}
+	//std::cout<<"addNodeEnd "<<std::endl;
 }
 
 /**
@@ -201,8 +244,18 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
  */
 void Organ::moveOrigin(int idx)
 {
+	//std::cout<<"Organ::moveOrigin"<<std::endl;
 	this->parentNI = idx;
-	nodeIds.at(0) = getParent()->getNodeId(idx);
+	nodeIds.at(0) = getParent()->getNodeId(idx);//not needed anymore?
+	
+		//std::cout<<"children number "<<children.size()<<" "<<idx<<" "<<nodes.size()<<std::endl;
+	for(auto kid : children){//if carries children after the added node, update their "parent node index"
+				//std::cout<<"move kids? "<<kid->parentNI<<std::endl;
+		if(kid->parentNI == 0){
+			kid->moveOrigin(0);
+		}
+		
+	}
 	
 }
 

@@ -71,7 +71,8 @@ public:
 
     double psi_air = -954378; // air water potential [cm] for T = 20°C and RH = 0.5
 	std::vector<double> k_stomatas;//stomatal radial conductance for Photosynthesis
-	
+	bool diffpg = true;
+	bool doTroubleshooting =false; //do extra printing
 protected:
 
 	//type correspond to subtype or to the leaf segment number
@@ -79,7 +80,11 @@ protected:
 	{
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
-			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr.at(0).at(0) + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0){
+				if(diffpg){
+					return 1/(1/kr.at(0).at(0) + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0.;}
 		} else { return kr.at(0).at(0); }
 	}
 
@@ -87,14 +92,22 @@ protected:
 	{
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
-			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr.at(organType - 2).at(0) + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0){
+				if(diffpg){
+					return 1/(1/kr.at(organType - 2).at(0) + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0;}
 		} else { return kr.at(organType - 2).at(0); }
 	} //per organ type (goes from 2 (root) to 4 (leaf))
     double kr_perType(int si,double age, int type, int organType, int numleaf)
 	{
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
-			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr.at(organType - 2).at(type) + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0){
+				if(diffpg){
+					return 1/(1/kr.at(organType - 2).at(type) + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0;}
 		} else { return kr.at(organType - 2).at(type); }
 	}//per subtype and organ type (goes from 2 (root) to 4 (leaf))
     double kr_table(int si,double age, int type, int organType, int numleaf)
@@ -102,7 +115,11 @@ protected:
 		double kr_ = Function::interp1(age, kr_t.at(0), kr.at(0));
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
-			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr_ + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0){
+				if(diffpg){
+					return 1/(1/kr_ + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0;}
 		} else { return kr_; }
 	} //constant for all type/subtype and age dependant
 
@@ -112,31 +129,63 @@ protected:
 		double kr_ = Function::interp1(age, krs_t.at(organType-2).at(0), krs.at(organType-2).at(0));
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
-			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr_ + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0)
+			{
+				if(diffpg){
+					return 1/(1/kr_ + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0;}
 		} else  { return kr_; }
 	}//constant for all subtype but type and age dependant
 
-		double kr_tablePerType(int si,double age, int type, int organType, int numleaf) {
+	double kr_tablePerType(int si,double age, int type, int organType, int numleaf) {
 		double kr_ = Function::interp1(age, krs_t.at(organType-2).at(type), krs.at(organType-2).at(type));
 	    if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
-			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr_ + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0)
+			{
+				if(diffpg){
+					return 1/(1/kr_ + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0;}
 		} else {return kr_;}
 	} //subtype, type and age dependant
 	double kr_valuePerSegment(int si, double age, int type, int organType, int numleaf)
 	{
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
-			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr.at(0).at(si) + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0)
+			{
+				if(diffpg){
+					return 1/(1/kr.at(0).at(si) + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0;}
 		} else { return kr.at(0).at(si); }
 	}
 	double kr_RootExchangeZonePerType(int si,double age, int type, int organType, int numleaf)//when use carbon- and water-limited growth, canNOT use "kr_tablePerType" instead of this function
 	{
+		if(rs->node_Decapitate.size()> 0)
+		{
+			auto seg_ = rs->segments[si];
+			int node_x = seg_.x;
+			int node_y = seg_.y;
+			bool find1 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_y) != rs->node_Decapitate.end());
+			bool find2 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_x) != rs->node_Decapitate.end());
+			
+			if(find1 || find2)//segment cut
+			{//also set photosyntheis and water flow to 0 in photosynthesis module.
+				return 0;
+			}
+		}
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
 
-			if(k_stomatas.at(numleaf) > 0){
-				return 1/(1/kr.at(organType - 2).at(type) + 1/k_stomatas.at(numleaf));}else{return 0;}
+			if(k_stomatas.at(numleaf) > 0)
+			{
+				if(diffpg){
+					return 1/(1/kr.at(organType - 2).at(type) + 1/k_stomatas.at(numleaf));
+				}else{return k_stomatas.at(numleaf);}
+			}else{return 0;}
 		}
 		if (organType == Organism::ot_root){
 			double coef = rs->exchangeZoneCoefs.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
@@ -147,7 +196,23 @@ protected:
 
     double kx_const(int si,double age, int type, int organType) { return kx.at(0).at(0); } //k constant
     double kx_perOrgType(int si,double age, int type, int organType) { return kx.at(organType - 2)[0]; } //per organ type (goes from 2 (root) to 4 (leaf))
-    double kx_perType(int si,double age, int type, int organType) { return kx.at(organType - 2).at(type); } //per subtype and organ type (goes from 2 (root) to 4 (leaf))
+    double kx_perType(int si,double age, int type, int organType) 
+	{ 
+		if(rs->node_Decapitate.size()> 0)
+		{
+			auto seg_ = rs->segments[si];
+			int node_x = seg_.x;
+			int node_y = seg_.y;
+			bool find1 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_y) != rs->node_Decapitate.end());
+			bool find2 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_x) != rs->node_Decapitate.end());
+			
+			if(find1 || find2)//segment cut
+			{//also set photosyntheis and water flow to 0 in photosynthesis module.
+				return 1.e-16;
+			}
+		}
+		return kx.at(organType - 2).at(type); 
+	} //per subtype and organ type (goes from 2 (root) to 4 (leaf))
 	double kx_table(int si,double age, int type, int organType) { return Function::interp1(age, kx_t[0], kx[0]); } //constant for all type/subtype and age dependant
     double kx_tablePerOrgType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(0), kxs.at(organType-2).at(0)); } //constant for all subtype but type and age dependant
     double kx_tablePerType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(type), kxs.at(organType-2).at(type)); } //subtype, type and age dependant

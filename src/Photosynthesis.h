@@ -54,12 +54,12 @@ public:
 	std::vector<double> Jw;
 	std::vector<double> Ev;
 	std::vector<double> pg;//leaf guard cell water potential [cm]
-	std::vector<double> outputFlux;
+	std::vector<double> outputFlux;//cm3/day/segment
 	std::vector<double> fw;
 	std::vector<double> psiXyl4Phloem; //sum of psiXyl + gravitational wat. pot.
 	std::vector<double> gco2;
 	bool doLog = false; int verbose_photosynthesis = 0;
-	
+	bool ci_adapt = true;
 	//		to evaluate convergence, @see Photosynthesis::getError
 	int maxLoop = 1000; int minLoop = 1;
     int loop;double limMaxErr = 1e-4;
@@ -103,26 +103,27 @@ public:
 	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
 	
-protected:
-	//Compute variables which do not vary during one "solve_photosynthesis " computation
-	void initCalcs(double sim_time_);
-	void initStruct(double sim_time_);
-	void initVcVjRd();
-	
+	//ref value at T = T_ref
+	double Kc_ref = 302e-6; double Ko_ref = 256e-3; //mmol mmol-1
+	double Rd_ref = 0.32e-6;//mol m-2s-1
+	double Tref = 293.2;//K
+	double S = 700;//enthropy mJ mmol-1 K-1
+	double Mh2o = 18;//molar weight, g mol-1, mg mmol-1
+	double R_ph = 83.143;//perfect gas constant, hPa cm3K−1mmol−1
+	double rho_h2o = 1000;//water density mg cm-3
+	double M_Chla = 893.51;//chlorophyle a molar mass (g / mol)
 	//			physicall constant (no need to parametrise)
 	double a2 = 1.6; //gco2[i] * a2 = gh2o
 	//(de)activate parameters
     double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
     double Eard = 53000;double Eav = 58520;
     double Edj =  220000;double Edv = 220000;
-	//ref value at T = T_ref
-	double Kc_ref = 302e-6; double Ko_ref = 256e-3; //mmol mmol-1
-	double Rd_ref = 0.32e-6;double Tref = 293.2;//K
-	double S = 700;//enthropy mJ mmol-1 K-1
-	double Mh2o = 18;//molar weight, g mol-1, mg mmol-1
-	double R_ph = 83.143;//perfect gas constant, hPa cm3K−1mmol−1
-	double rho_h2o = 1000;//water density mg cm-3
-	double M_Chla = 893.51;//chlorophyle a molar mass (g / mol)
+protected:
+	//Compute variables which do not vary during one "solve_photosynthesis " computation
+	void initCalcs(double sim_time_);
+	void initStruct(double sim_time_);
+	void initVcVjRd();
+	
 	
 	//			other parameters and runtime variables
 	std::vector<std::shared_ptr<Organ>> orgsVec;

@@ -80,6 +80,10 @@ def theta2H(vg,theta):#(-) to cm
 
 def sinusoidal(t):
     return (np.sin(np.pi*t*2)+1)/2
+def stairs(t):
+    hours = t%1
+    coef = int(hours>=0.5)
+    return coef
 
 def qair2rh(qair, es_, press):
     e =qair * press / (0.378 * qair + 0.622)
@@ -92,18 +96,18 @@ def weather(simDuration):
     vgSoil = [0.059, 0.45, 0.00644, 1.503, 1]
     
     Qmin = 0; Qmax = 960e-6 #458*2.1
-    Tmin = 15.8; Tmax = 22
+    Tmin = 22; Tmax = 25
     specificHumidity = 0.0097
     Pair = 1010.00 #hPa
     thetaInit = 30/100
 
-    coefhours = sinusoidal(simDuration)
+    coefhours = stairs(simDuration)#sinusoidal(simDuration)
     TairC_ = Tmin + (Tmax - Tmin) * coefhours
     Q_ = Qmin + (Qmax - Qmin) * coefhours
-    cs = 850e-6 #co2 paartial pressure at leaf surface (mol mol-1)
+    cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
     #RH = 0.5 # relative humidity
     es =  6.112 * np.exp((17.67 * TairC_)/(TairC_ + 243.5))
-    RH = qair2rh(specificHumidity, es, Pair)
+    RH = 0.6#qair2rh(specificHumidity, es, Pair)
     
     pmean = theta2H(vgSoil, thetaInit)
     
@@ -183,11 +187,11 @@ def setKrKx_xylem(TairC, RH): #inC
     kr_r1 = 7.9e-5  * hPa2cm 
     kr_r2 = 7.9e-5  * hPa2cm  
     kr_r3 = 6.8e-5  * hPa2cm 
-    l_kr = 0.8 #cm
+    l_kr = 100 #cm
     #r.setKr([[kr_r0], [kr_s], [kr_l]], kr_length_=l_kr)
     #r.setKx([[kz_r0],[kz_s],[kz_l]])
-    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ,kr_s,kr_s ],[kr_l,kr_l]], kr_length_=l_kr)
-    r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s,kz_s,kz_s ],[kz_l,kz_l]])
+    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ,kr_s,kr_s ],[kr_s,kr_l]], kr_length_=l_kr)
+    r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s,kz_s,kz_s ],[kz_s,kz_l]])
     
     
     Rgaz=8.314 #J K-1 mol-1 = cm^3*MPa/K/mol
@@ -268,9 +272,9 @@ def setKrKx_phloem(): #inC
 """ Parameters """
 
 weatherInit = weather(0)
-simInit = 10
+simInit = 7
 simDuration = simInit # [day] init simtime
-simMax =simInit+40
+simMax =21
 depth = 60
 dt = 1/24 #1h
 verbose = True
@@ -334,7 +338,7 @@ initial = weatherInit["p_mean"]#mean matric potential [cm] pressure head
 # #s.setCriticalPressure(wilting_point)
 
 # sx = s.getSolutionHead()  # inital condition, solverbase.py
-p_mean = -187
+p_mean = weatherInit["p_mean"]#-187
 p_bot = p_mean + depth/2
 p_top = p_mean - depth/2
 sx = np.linspace(p_top, p_bot, depth)
@@ -352,13 +356,6 @@ r = PhloemFluxPython(pl,psiXylInit = min(sx),ciInit = weatherInit["cs"]*0.5) #Xy
 r2 = PhloemFluxPython(pl2,psiXylInit = min(sx),ciInit = weatherInit["cs"]*0.5) #XylemFluxPython(pl)#
 
 setKrKx_phloem()
-r.g0 = 8e-3
-r.VcmaxrefChl1 =1.28#/2
-r.VcmaxrefChl2 = 8.33#/2
-r.a1 = 0.6/0.4#0.7/0.3#0.6/0.4 #ci/(cs - ci) for ci = 0.6*cs
-r.a3 = 1.5
-r.alpha = 0.4#0.2#/2
-r.theta = 0.6#0.9#/2
 r.k_meso = 1e-3#1e-4
 r.setKrm2([[2e-5]])
 r.setKrm1([[10e-2]])#([[2.5e-2]])
@@ -533,6 +530,14 @@ Q_Parbu      = np.array([0.])
 Q_mesobu    = np.array([0.])
 
 
+r.g0 = 8e-2
+r.VcmaxrefChl1 =1.28
+r.VcmaxrefChl2 = 8.33
+r.a1 = 2#0.8/0.2
+r.a3 = 2.2
+r.Rd_ref = 4e-6
+r.alpha = 0.27
+r.theta = 0.51
 
 
 while simDuration < simMax: 
@@ -555,7 +560,29 @@ while simDuration < simMax:
     stepphloem = 1    
     errLeuning = sum(r.outputFlux)
     fluxes = np.array(r.outputFlux)
-    
+    segIdx = r.get_segments_index(4)
+    idleafBlade = np.where(np.array(r.plant.leafBladeSurface)[segIdx] > 0)
+    r.ci_adapt = False
+    print("An",np.mean(np.array(r.An)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#An.append
+    print("Rd",r.Rd*1e6, "mumol CO2 m-2 s-1")#An.append
+    print("Vc",np.mean(np.array(r.Vc)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vc.append
+    #print("Vcmax",np.mean(r.Vcmax)*1e6, "mumol CO2 m-2 s-1")#Vc.append
+    print("Vj",np.mean(np.array(r.Vj)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vj.append
+    #print("Vjmax",np.mean(r.Vjmax)*1e6, "mumol CO2 m-2 s-1")#Vj.append
+    print("gco2",np.mean(np.array(r.gco2)[idleafBlade]), "mol CO2 m-2 s-1")#gco2.append
+    print("gh2o",np.mean(np.array(r.gco2)[idleafBlade])*1.6, "mol H2O m-2 s-1")#gco2.append
+    print("cics",np.mean(np.array(r.ci)[idleafBlade])/r.cs,"mol mol-1")#cics.append
+    print("ci",np.mean(np.array(r.ci)[idleafBlade]), "mol mol-1")#fw.append
+    print("deltagco2",np.mean(np.array(r.deltagco2)[idleafBlade]), "mol mol-1")#fw.append
+    print("fw",np.mean(np.array(r.fw)[idleafBlade]), "-")#fw.append
+    print("fluxes ", sum(fluxes))
+    segRootIdx = r.get_segments_index(2)
+    print("trans ",sum(fluxes[segIdx]),sum(fluxes[segRootIdx]), "cm3/day")
+    #print(fluxes[segIdx],r.plant.leafBladeSurface)
+    print("trans ",sum(fluxes[segIdx]),sum(r.plant.leafBladeSurface))
+    #print(np.array(r.fw)[idleafBlade])
+    #print(np.array(r.ci)[idleafBlade])
+    #print(np.array(r.plant.leafBladeSurface)[segIdx][idleafBlade])
     ana = pb.SegmentAnalyser(r.plant.mappedSegments())
     
     cutoff = 1e-15 #is get value too small, makes paraview crash

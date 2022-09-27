@@ -355,7 +355,7 @@ std::vector<double> Organism::getSegmentCTs(int ot) const
     auto nodeCT = getNodeCTs(); // of all nodes (otherwise indices are tricky)
     auto segs = getSegments(ot);
     std::vector<double> cts = std::vector<double>(segs.size());
-    for (int i=0; i<cts.size(); i++) {
+    for (int i=1; i<cts.size(); i++) {
         cts[i] = nodeCT[segs[i].y]; // segment creation time is the node creation time of the second node
     }
     return cts;
@@ -370,7 +370,7 @@ std::vector<int> Organism::getSegmentIds(int ot) const
 {
     auto segments = getSegments(ot); // of all nodes (otherwise indices are tricky)
     std::vector<int> segId = std::vector<int>(segments.size());
-    for (int i=0; i<segments.size(); i++) {
+    for (int i=1; i<segments.size(); i++) {
         segId[i] = segments[i].y-1;
     }
     return segId;
@@ -388,12 +388,15 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
     auto organs = getOrgans(ot);
     auto segs = std::vector<std::shared_ptr<Organ>>(0);
     segs.reserve(this->getNumberOfSegments(ot)); // for speed up
+	//std::cout<<"Organism::getSegmentOrigins(int ot) "<<this->getNumberOfSegments(ot)<<" ";
     for (const auto& o : organs) {
         auto s = o->getSegments();
+		//std::cout<<s.size()<<" ";
         for (int i=0; i<s.size(); i++) {
             segs.push_back(o);
         }
     }
+	//std::cout<<"\nend getSegmentOrigins "<<segs.size()<<std::endl;
     return segs;
 }
 
@@ -405,16 +408,19 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
  */
 std::vector<int> Organism::getUpdatedNodeIndices() const
 {
+	//std::cout<<"Organism::getUpdatedNodeIndices"<<std::endl;
     auto organs = this->getOrgans();
     std::vector<int> ni = std::vector<int>(0);
     for (const auto& o : organs) {
-        if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
-			if((o->organType() >2)){//is stem or leaf
-				int onon =  o->getOldNumberOfNodes();//because of tropism and internodal growth, all nodes can move
-				for(int i = 1; i < onon; i++){
+        if ((o->getNumberOfNodes()>1)) {//o->hasMoved()&&
+			if(true){//(o->organType() > 2)//is stem or leaf
+				int onon =  o->getNumberOfNodes();//because of tropism and internodal growth, all nodes can move
+				for(int i = 1; i < onon; i++){//0 =>initial node can also moove.
+					//std::cout<<i<<" "<<o->getNumberOfNodes()<<" ";
+					//std::cout<<o->getNodeId(i)<<std::endl;
 					ni.push_back(o->getNodeId(i));
 				}
-			}else{ni.push_back(o->getNodeId(o->getOldNumberOfNodes()-1));}
+			}else{ni.push_back(o->getNodeId(o->getNumberOfNodes()-1));}
         }
     }
     return ni;
@@ -430,13 +436,13 @@ std::vector<Vector3d> Organism::getUpdatedNodes() const
     auto organs = this->getOrgans();
     std::vector<Vector3d> nv = std::vector<Vector3d>(0);
     for (const auto& o : organs) {
-        if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
-			if((o->organType() > 2)){
-				int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
+        if ((o->getNumberOfNodes()>1)) {//o->hasMoved()&&
+			if(true){//(o->organType() > 2)
+				int onon =  o->getNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
 				for(int i = 1; i < onon; i++){
 					nv.push_back(o->getNode(i));
 				}
-			}else{nv.push_back(o->getNode(o->getOldNumberOfNodes()-1));}
+			}else{nv.push_back(o->getNode(o->getNumberOfNodes()-1));}
         }
     }
     return nv;
@@ -451,13 +457,13 @@ std::vector<double> Organism::getUpdatedNodeCTs() const
     auto organs = this->getOrgans();
     std::vector<double> nv = std::vector<double>(0);
     for (const auto& o : organs) {
-        if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
-			if((o->organType() > 2)){
-				int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
+        if ((o->getNumberOfNodes()>1)) {//o->hasMoved()&&
+			if(true){//(o->organType() > 2)
+				int onon =  o->getNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
 				for(int i = 1; i < onon; i++){
 					nv.push_back(o->getNodeCT(i));
 				}
-			}else{nv.push_back(o->getNodeCT(o->getOldNumberOfNodes()-1));}
+			}else{nv.push_back(o->getNodeCT(o->getNumberOfNodes()-1));}
         }
     }
     return nv;
@@ -469,8 +475,10 @@ std::vector<double> Organism::getUpdatedNodeCTs() const
  */
 std::vector<Vector3d> Organism::getNewNodes() const
 {
+	//std::cout<<"Organism::getNewNodes() "<<std::endl;
     auto organs = this->getOrgans();
     std::vector<Vector3d> nv(this->getNumberOfNewNodes());
+	//std::cout<<"got getNumberOfNewNodes"<<std::endl;
     for (const auto& o : organs) {
         int onon = o->getOldNumberOfNodes();
         for (size_t i=onon; i<o->getNumberOfNodes(); i++) { // loop over all new nodes
@@ -512,13 +520,37 @@ std::vector<Vector2i> Organism::getNewSegments(int ot) const
 {
     auto organs = this->getOrgans(ot);
     std::vector<Vector2i> si = std::vector<Vector2i>(0);
-    si.reserve(this->getNumberOfNewNodes());
+    //si.reserve(this->getNumberOfNewNodes());
+	si.reserve(this->getNumberOfNodes());
     for (const auto& o :organs) {
-        int onon = o->getOldNumberOfNodes();
+        int onon = 1;// o->getOldNumberOfNodes();
         for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments
             Vector2i v(o->getNodeId(i),o->getNodeId(i+1));
             si.push_back(v);
         }
+    }
+    return si;
+}
+/**
+ * Creates a vector of new created segments that were created during the last time step
+ *
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          a vector of newly created segments
+ */
+std::vector<Vector2i> Organism::getUpdatedSegments() const
+{
+    auto organs = this->getOrgans(-1);
+    std::vector<Vector2i> si = std::vector<Vector2i>(0);
+    //si.reserve(this->getNumberOfNewNodes());
+	si.reserve(oldNumberOfNodes);
+    for (const auto& o :organs) {
+        if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
+			//int onon = o->getOldNumberOfNodes();
+			for (size_t i=0; i<o->getOldNumberOfNodes()-1; i++) { // loop over new segments
+				Vector2i v(o->getNodeId(i),o->getNodeId(i+1));
+				si.push_back(v);
+			}
+		}
     }
     return si;
 }
@@ -536,7 +568,7 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
     auto organs = this->getOrgans(ot);
     std::vector<std::shared_ptr<Organ>> so;
     for (auto& o :organs) {
-        int onon = o->getOldNumberOfNodes();
+        int onon = 1;// o->getOldNumberOfNodes();
         for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments
             so.push_back(o);
         }

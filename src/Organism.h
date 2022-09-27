@@ -88,6 +88,7 @@ public:
     std::vector<Vector3d> getNewNodes() const; ///< nodes created in the previous time step
     std::vector<double> getNewNodeCTs() const; ///< nodes created in the previous time step
     std::vector<Vector2i> getNewSegments(int ot=-1) const; ///< Segments created in the previous time step
+	std::vector<Vector2i> getUpdatedSegments() const;
     std::vector<std::shared_ptr<Organ>> getNewSegmentOrigins(int ot=-1) const; ///< Copies a pointer to the root containing the new segments
 
     /* io */

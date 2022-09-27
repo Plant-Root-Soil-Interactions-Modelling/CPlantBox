@@ -170,3 +170,9 @@ class PhloemFluxPython(PhloemFlux):
         """ not used anymore (?) """
         return np.array(list(map(lambda x: np.array(x, dtype), x)), dtype)  # is there a better way?
 
+    def off_withTheirHeads(orgId, length):
+        """ to take out nodes and segs?
+            rather set CST, kr, kx to 0 and stop growth
+        
+        """
+        return 0

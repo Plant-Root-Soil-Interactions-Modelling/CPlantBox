@@ -802,4 +802,3 @@ class AnimateRoots:
             self.actors.extend(meshActor)
             self.bounds = grid.GetBounds()
 
-

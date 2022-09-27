@@ -110,12 +110,12 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         }else{perimeter = 2 * M_PI * a;}
         double vz = v.z / l; // normed direction
 
-        double cii, cij, bi;
+        double cii, cij, bi, tau, delta,idelta ;
 
         if (perimeter * kr>1.e-16) {
-            double tau = std::sqrt(perimeter * kr / kx); // Eqn (6)
-            double delta = std::exp(-tau * l) - std::exp(tau * l); // Eqn (12)
-            double idelta = 1. / delta;
+             tau = std::sqrt(perimeter * kr / kx); // Eqn (6)
+             delta = std::exp(-tau * l) - std::exp(tau * l); // Eqn (12)
+             idelta = 1. / delta;
             cii = -kx * idelta * tau * (std::exp(-tau * l) + std::exp(tau * l)); // Eqn (23)
             cij = 2 * kx * idelta * tau;  // Eqn 24
             bi = kx * vz; //  # Eqn 25
@@ -125,6 +125,12 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
             bi = kx * vz;
             psi_s = 0;
         }
+		if(doTroubleshooting) {
+			std::cout << "XylemFlux::linearSystem. segIdx "<<si<<" "<<i<<" "<<j<<" organType "<<organType<<" subType "<<subType;
+			std::cout <<" tau " << tau << ", l " << l << ", d "<<" perimeter "<<perimeter<<" kr "<<kr<<" kx "<<kx<<" delta ";
+			std::cout<< delta<<", psi_s " << psi_s <<" "<<cii<<" "<<cij<< "\n";
+			//throw std::runtime_error("XylemFlux::segFluxes: nan or Inf fExact");
+		}
 
         aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
 		
