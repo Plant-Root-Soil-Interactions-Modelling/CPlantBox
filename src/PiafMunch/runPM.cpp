@@ -545,7 +545,8 @@ void PhloemFlux::computeOrgGrowth(double t){
 		int orgID = org->getId();
 		std::vector<int> nodeIds_;
 		int ot = org->organType();
-		int st = org->getParameter("subType");
+		int stold = org->getParameter("subType");
+		int st = plant->st2newst[std::make_tuple(ot,stold)];
 		int nNodes = org->getNumberOfNodes();
 		if(doTroubleshooting){std::cout<<"org "<<orgID<<" "<<st<<" "<<ot<<" "<<nNodes<<std::endl;}
 		
