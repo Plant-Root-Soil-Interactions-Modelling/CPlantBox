@@ -139,6 +139,9 @@ class App:
             for _ in root:
                 brc += 1
         lc = 0
+        for root in self.data.lat_root_indices:
+            for _ in root:
+                lc += 1
         rstr = "\n{:s}\n{:s}\n{:g}\n{:g}\n{:g}\n".format(fname, metadata.software, nof, brc, lc)
         self.label_general_l.set(lstr)
         self.label_general_r.set(rstr)
