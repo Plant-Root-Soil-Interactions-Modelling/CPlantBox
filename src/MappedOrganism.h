@@ -58,8 +58,10 @@ public:
     std::vector<double> radii; ///< radii [cm]
     std::vector<int> subTypes; ///< types [1]
     std::vector<int> organTypes; ///< types of the organ[1]
-
-    Vector3d minBound;
+    //std::vector<int> organID; ///< per segment
+	std::vector<std::shared_ptr<Organ>> allSegO;
+    
+	Vector3d minBound;
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;

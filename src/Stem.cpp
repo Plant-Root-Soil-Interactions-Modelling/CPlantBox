@@ -107,15 +107,39 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p)
  */
 void Stem::simulate(double dt, bool verbose)
 {
-	if(verbose){std::cout<<"stem::simulate "<<getId()<<" "<<this->param_->subType
+	if(verbose)
+	{
+		std::cout<<"stem::simulate "<<getId()<<" "<<this->param_->subType
 				<<" "<<dt<<" "<<age<<" ";
 				std::cout<<"length "<<length<<" "<<getLength(int(nodes.size()-1))<<" "
 				<<getLength(true)<<" "<<getLength(false);
-				std::cout<<" kid/node "<< children.size()<<" "<< nodes.size()<<std::endl;}
+				std::cout<<" kid/node "<< children.size()<<" "<< nodes.size()<<std::endl;
+				
+				
+		std::cout<<"get kid pni"<<std::endl;
+		for(int u = 0; u < children.size();u++)
+		{
+			std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+		}std::cout<<std::endl;
+		std::cout<<"get node"<<std::endl;
+		for(int u = 0; u < nodes.size();u++)
+		{
+			std::cout<<u<<") "<<getLength(u)<<", ";
+		}std::cout<<std::endl;
+				
+				
+	}
 	if(!getOrganism()->hasRelCoord()){
 		throw std::runtime_error("organism no set in rel coord");
 	}
 	const StemSpecificParameter& p = *param(); // rename
+	
+	if(children.size()>0)
+	{
+		double l_ = getLength(children.at(0)->parentNI);
+		if( p.lb - l_ > 1e-11){std::cout<<"START first ked below lb "<<getId()<<" "<<l_<<" "<<p.lb<<std::endl;assert(false);}
+	}
+	
 	firstCall = true;
 	oldNumberOfNodes = nodes.size();
 	auto p_all = plant.lock();
@@ -163,10 +187,47 @@ void Stem::simulate(double dt, bool verbose)
 		if (age>0) { // unborn  roots have no children
 
 			// children first (lateral roots grow even if base root is inactive)
+			if(children.size()>0)
+			{
+				double l_ = getLength(children.at(0)->parentNI);
+				if( p.lb - l_ > 1e-11){std::cout<<"before kid first ked below lb "<<l_<<" "<<p.lb<<std::endl;assert(false);}
+			}
 			for (auto l:children) {
 				l->simulate(dt,verbose);
 			}
+			if(children.size()>0)
+			{
+				double l_ = getLength(children.at(0)->parentNI);
+				if( p.lb - l_ > 1e-11){std::cout<<"after kid first ked below lb "<<getId()<<" "<<l_<<" "<<p.lb<<std::endl;assert(false);}
+			}
 
+			if(verbose){std::cout<<"stem::simulateAFTERCHILDREN "<<getId()<<" "<<this->param_->subType
+				<<" "<<dt<<" "<<age<<" ";
+				std::cout<<"length "<<length<<" "<<getLength(int(nodes.size()-1))<<" "
+				<<getLength(true)<<" "<<getLength(false);
+				std::cout<<" kid/node "<< children.size()<<" "<< nodes.size()<<std::endl;
+				
+				
+				std::cout<<"get kid pni"<<std::endl;
+				for(int u = 0; u < children.size();u++)
+				{
+					std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+				}std::cout<<std::endl;
+				std::cout<<"get node"<<std::endl;
+				for(int u = 0; u < nodes.size();u++)
+				{
+					std::cout<<u<<") "<<getLength(u)<<", ";
+				}std::cout<<std::endl;
+						
+				
+				}
+				
+				
+			if(children.size()>0)
+			{
+				double l_ = getLength(children.at(0)->parentNI);
+				if( p.lb - l_ > 1e-11){std::cout<<"afterkid first ked below lb "<<getId()<<" "<<l_<<" "<<p.lb<<std::endl;assert(false);}
+			}
 			if (active) {
 
 				// length increment
@@ -221,6 +282,7 @@ void Stem::simulate(double dt, bool verbose)
 							createSegments(ddx,verbose);
 							dl-=ddx; // ddx already has been created
 							length=p.lb;
+							
 							//if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
 							//	throw std::runtime_error("Stem::simulate: p.lb - length < dxMin");
 							//}
@@ -233,93 +295,182 @@ void Stem::simulate(double dt, bool verbose)
 					//p.ln.size()+1
 					//if (((children.size()-additional_childern)<(maxNumKids))&&(length>=p.lb)) 
 						//+1??
+						//bool longEnough = (length>=p.lb);
+					//if(longEnough&&(created_linking_node==0)){createLateral(verbose);}//1rst lat after basal zone
+					//objectif length once "created_linking_node" are created
+						//bool shortEnough = (length < std::accumulate(p.ln.begin(),p.ln.begin()+created_linking_node),p.lb); 
+						if(verbose){std::cout<<"to branching zone "<<std::endl;}
+						double objectifLength = std::accumulate(p.ln.begin(),p.ln.begin()+std::max(0,created_linking_node-1),p.lb); 
+						bool longEnough = ((length- objectifLength) > -1e-11);
+						bool needLat = (created_linking_node < (p.ln.size() + 1));
+						bool canGrow = ((dl>0)||(getStemRandomParameter()->createFirst && needLat) );
+					//internodal elongation, if the basal zone of the stem is created and still has to grow
 					if(verbose){
-						std::cout<<"create nodes? "<<created_linking_node <<" "<< (p.ln.size())<<" "
-						<<length<<" "<<p.lb<<" "<<(length>=p.lb)<<" "<< nodes.size()<<std::endl;
+						std::cout<<"create nodes? "<<getId()<<" "<<created_linking_node <<" "<< (p.ln.size())<<" length "
+						<<length<<" "<<p.lb<<" "<<(length>=p.lb)<<" non "<< nodes.size()<<" objLen ";
+						std::cout<< objectifLength <<" "<< longEnough <<" needl "<< needLat<<" canGrow "<< canGrow <<std::endl;
 					}
-						if((created_linking_node < (p.ln.size()))&&(length>=p.lb))
+						while((length>=p.lb) && canGrow && (!longEnough || needLat))
 					{
+						
 						if(verbose){
-							std::cout<<"create nodes! "<<" "<< nodes.size()<<std::endl;
+							std::cout<<"create lat?"<<getId()<<" "<<" "<<this->param_->subType<<" "<< longEnough <<" "<< needLat<<" "
+							<<created_linking_node <<" "<<  (p.ln.size() + 1) <<" "<<
+							 length<<" "<< objectifLength<<" "<< length- objectifLength<<std::endl;
 						}
-						for (size_t i=0; (i<p.ln.size()); i++) 
-						{
-							if(verbose){
-								std::cout<<"to create lateral "<<i<<" "<<created_linking_node <<" "<< nodes.size()<<std::endl;
+						//current objective length before creating next linkging nodes
+						//while (needGrow && canGrow) 
+						//{
+							//
+							// create seg
+							if(longEnough && needLat){
+								std::cout<<"create segment "<<created_linking_node<<" "<<(created_linking_node>0)<<std::endl;
+								
+								std::cout<<"get kid pni"<<std::endl;
+								for(int u = 0; u < children.size();u++)
+								{
+									std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+								}std::cout<<std::endl;
+								std::cout<<"get node"<<std::endl;
+								for(int u = 0; u < nodes.size();u++)
+								{
+									std::cout<<u<<") "<<getLength(u)<<", ";
+								}std::cout<<std::endl;
+								if(created_linking_node>0){
+									firstCall = false;
+									createSegments(this->dxMin(),verbose, -1);
+									dl-=this->dxMin();
+									length+=this->dxMin();
+								std::cout<<"create segment ! "<<created_linking_node<<" "<<(created_linking_node>0)<<std::endl;
+								
+								std::cout<<"get kid pni"<<std::endl;
+								for(int u = 0; u < children.size();u++)
+								{
+									std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+								}std::cout<<std::endl;
+								std::cout<<"get node"<<std::endl;
+								for(int u = 0; u < nodes.size();u++)
+								{
+									std::cout<<u<<") "<<getLength(u)<<", ";
+								}std::cout<<std::endl;
+								}
+								if(verbose){
+									std::cout<<"to create lateral "<<getId()<<" "<<this->param_->subType<<" "
+									<<children.size()<<" "<<created_linking_node 
+									<<" "<< nodes.size()<<std::endl;
+								}
+								
+								//create lat
+								createLateral(verbose);
+								
+								//s += p.ln.at(created_linking_node - 2);//new obj length
+								objectifLength = std::accumulate(p.ln.begin(),p.ln.begin()+(created_linking_node-1),p.lb); 
+								longEnough = ((length- objectifLength) > -1e-11);
+								needLat = (created_linking_node < (p.ln.size() + 1));
+								if(verbose){
+									std::cout<<"after lat "<<getId()<<" "<<this->param_->subType<<" "
+									<< longEnough <<" "<< needLat<<" "
+									<<created_linking_node <<" "<<  (p.ln.size() + 1) <<" "<<
+									 length<<" "<< objectifLength<<" "<< length- objectifLength
+									<<" "<<this->param_->subType <<std::endl;
+								}
 							}
-							createLateral(verbose);
 							if(verbose){
-								std::cout<<"to create segment after lateral "<<i<<" "<<created_linking_node <<" "<< nodes.size()<<std::endl;
+								std::cout<<"to create segment after lateral "<<children.size()<<" "<<this->param_->subType
+								<<" "<<created_linking_node 
+								<<" "<<p.ln.size()<<" "<< nodes.size()<<std::endl;
 							}
-							// if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2)
-							// {
-								// leafGrow(verbose);
-							// }
-							//if(p.ln.at(children.size()-additional_childern-1)>0){//(p.ln.at(children.size()-additional_childern-1)>0){
-								createSegments(this->dxMin(),verbose);
-								dl-=this->dxMin();
-								length+=this->dxMin();
 							//}
-						}
-						createLateral(verbose);
+							//growth 
+							//double maxInternodeDistance = s - p.lb;
+							if(verbose){
+								std::cout<<"nodalgrowth? "<<getId()<<" "<<this->param_->subType<<" "<<objectifLength <<" "<<p.getK()
+								<<" "<<dl<<" "<< nodes.size()<<" "<<children.size()<<" "<<
+								created_linking_node<<" "<<p.ln.size()<<" "<<
+								length<<" "<< length- objectifLength<<" "<<this->param_->subType<<std::endl;
+								std::cout<<"get kid pni"<<std::endl;
+								for(int u = 0; u < children.size();u++)
+								{
+									std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+								}std::cout<<std::endl;
+								std::cout<<"get node"<<std::endl;
+								for(int u = 0; u < nodes.size();u++)
+								{
+									std::cout<<u<<") "<<getLength(u)<<", ";
+								}std::cout<<std::endl;
+							}
+							 
+							if((dl>0)&&(!longEnough))
+							{
+								int nn = children.at(children.size()-1)->parentNI; //node carrying the last lateral == end of branching zone
+								double currentLength = getLength(nn);// - p.lb; //actual length of branching zone
+								//double maxInternodeDistance = std::accumulate(p.ln.begin(),p.ln.begin()+created_linking_node -1,p.lb);
+								double ddx = std::min(objectifLength-currentLength, dl);//length to add to branching zone 
+								
+								if(verbose){
+									std::cout<<"elongation? "<<" "<<this->param_->subType<<" "
+									<<objectifLength<<" "<<p.getK()<<" "<<dl<< " ";
+									std::cout<<nn<<" "<< nodes.size()<<" "<<currentLength<<" "<<ddx<<std::endl;
+								}
+								
+								if(ddx > 0){
+									internodalGrowth(ddx, verbose);
+									dl -= ddx;
+								length += ddx;
+									
+								}
+								
+								
+							}
+									
+							canGrow = ((dl>0)||(getStemRandomParameter()->createFirst && needLat));
+							longEnough = ((length- objectifLength) > -1e-11);
+							
+							//check for next loop
+							//needGrow = (created_linking_node < (p.ln.size()));
+							
+						//}
+						//not needed anymore?
+						//createLateral(verbose);
 						// if (getStemRandomParameter()->getLateralType(getNode(nodes.size()-1))==2){
 										// leafGrow(verbose);
 						// }
 					}
-					if((length>=p.lb)&&((p.ln.size()+1)!=created_linking_node)){
+					if((length>=p.lb)&&(((p.ln.size()+1)!=created_linking_node))&&(getStemRandomParameter()->createFirst)){
 						std::stringstream errMsg;
 						errMsg <<"Stem::simulate(): different number of realized laterals ("<<created_linking_node<<
 						") and max laterals ("<<p.ln.size()+1<<")";
 						throw std::runtime_error(errMsg.str().c_str());
 					}
 					
-					//internodal elongation, if the basal zone of the stem is created and still has to grow
-					double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
-					if(verbose){
-						std::cout<<"nodalgrowth? "<<maxInternodeDistance <<" "<<p.getK()
-						<<" "<<dl<<" "<< nodes.size()<<" "<<children.size()<<" "<<
-						created_linking_node<<" "<<p.ln.size()<<std::endl;
-					}
-					if((dl>0)&&(length>=p.lb)&&(maxInternodeDistance>0)){
-							int nn = children.at(children.size()-1)->parentNI; //node carrying the last lateral == end of branching zone
-							double currentInternodeDistance = getLength(nn) - p.lb; //actual length of branching zone
-							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone 
-							
-							if(verbose){
-								std::cout<<"elongation? "
-								<<maxInternodeDistance <<" "<<p.getK()<<" "<<dl<< " ";
-								std::cout<<nn<<" "<< nodes.size()<<" "<<currentInternodeDistance<<" "<<ddx<<std::endl;
-							}
-							
-							if(ddx > 0){
-								internodalGrowth(ddx, verbose);
-								dl -= ddx;
-							length += ddx;
-								
-							}
-						}
+					
 					/* apical zone */
 					//only grows once the basal and branching nodes are developped
+					//double maxInternodeDistance = std::accumulate(p.ln.begin(),p.ln.end(),0.);
 					if(verbose){
 								
-						std::cout<<"to apical growth? "<<dl<<" "<<length
-						<<" "<<maxInternodeDistance<<" "<<p.lb<<" "<<
-						(dl>0)<<" "<<(length-(maxInternodeDistance + p.lb))<<std::endl;
+						std::cout<<"to apical growth? "<<" "<<this->param_->subType<<" "<<dl<<" "<<length
+						<<" "<<objectifLength<<" "<<p.lb<<" "<<
+						(dl>0)<<" "<<(length-objectifLength)<<std::endl;
 					}
-					if ((dl>0)&&(length-(maxInternodeDistance + p.lb) > -1e-11)) {
+					if ((length>=p.lb) && canGrow && (longEnough || !needLat))
+					{
+					//((dl>0)&&(length-(maxInternodeDistance + p.lb) > -1e-11)) {
 						createSegments(dl,verbose);
 						length+=dl;
+						dl = 0;
 					} 
 				} else { // no laterals
 					if (dl>0) {
 						createSegments(dl,verbose);
 						length+=dl;
+						dl = 0;
 						
 						}
 				} // if lateralgetLengths
 			if(dl <0){ //to keep in memory that realised length is too long, as created nodes to carry children
 									
-				this->epsilonDx = dl;//targetlength + e - length;
+				this->epsilonDx += dl;//targetlength + e - length;
 				length += this->epsilonDx;//go back to having length = theoratical length
 			}
 			} // if active
@@ -329,11 +480,28 @@ void Stem::simulate(double dt, bool verbose)
 			active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
 		}
 	} // if alive
-	if(verbose){std::cout<<"stem id "<<getId()<<" end simulate "<<length<<" "<< epsilonDx <<" ";
+	if(verbose){std::cout<<"stem id "<<getId()<<" "<<this->param_->subType<<" end simulate "<<length<<" "<< epsilonDx <<" ";
 				std::cout<<p.ln.size()<<" "<< p.laterals <<" "<< children.size()<<std::endl;
 				std::cout<<nodes.size()<<" "<<getLength(int(nodes.size() - 1))<<std::endl;
+			std::cout<<"get kid pni"<<std::endl;
+			for(int u = 0; u < children.size();u++)
+			{
+				std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+			}std::cout<<std::endl;
+			std::cout<<"get node"<<std::endl;
+			for(int u = 0; u < nodes.size();u++)
+			{
+				std::cout<<u<<") "<<getLength(u)<<", ";
+			}std::cout<<std::endl;
 				}
+	if(children.size()>0)
+	{
+		double l_ = getLength(children.at(0)->parentNI);
+		if( p.lb - l_ > 1e-11){std::cout<<"END first ked below lb "<<getId()<<" "<<l_<<" "<<p.lb<<std::endl;assert(false);}
+	}
 }
+
+
 
 /**
  * Simulates internodal growth of dl for this stem
@@ -348,56 +516,65 @@ void Stem::simulate(double dt, bool verbose)
 void Stem::internodalGrowth(double dl, bool verbose)
 {
 	if(verbose){
-		std::cout<<"Stem::internodalGrowth"<<std::endl;
+		std::cout<<"Stem::internodalGrowth "<<std::endl;
 	}
 	const StemSpecificParameter& p = *param(); // rename
-	std::vector<double> toGrow(p.ln.size());
+	std::vector<double> toGrow(created_linking_node - 1);//p.ln.size());
 	double dl_;
 	//wont be needed anymore no? only if stochasticity makes ssome ln at 0
-	const int ln_0 = std::count(p.ln.cbegin(), p.ln.cend(), 0);//number of laterals wich grow on smae branching point as the one before
+	//number of laterals wich grow on smae branching point as the one before
+	const int ln_0 = std::count(p.ln.cbegin(), p.ln.cbegin() + created_linking_node, 0);
 	if(p.nodalGrowth==0){//sequentiall growth
 		toGrow[0] = dl;
 		std::fill(toGrow.begin()+1,toGrow.end(),0) ;
 	}
 	if(p.nodalGrowth ==1)
 	{//equal growth
-		std::fill(toGrow.begin(),toGrow.end(),dl/(p.ln.size()-ln_0)) ; 
+		std::fill(toGrow.begin(),toGrow.end(),dl/(toGrow.size()-ln_0)) ; 
 	}
 	
 	int numPhyto = 0; int numPhyto_ =0;
 	int firstLat = 0; int secLat;
-	while( (dl >0)&&(firstLat < (children.size()-1))) {//(numPhyto_ <(p.ln.size()*2)) 
+	while( (dl > 1e-12)&&(firstLat < (children.size()-1))) {//(numPhyto_ <(p.ln.size()*2)) 
 		//if the phytomere can do a growth superior to the mean phytomere growth, we add the value of "missing" 
 		//(i.e., length left to grow to get the predefined total growth of the branching zone)
 		int nn1 = children.at(firstLat)->parentNI; //node at the beginning of phytomere
 		secLat = firstLat + 1;
-		while(children.at(secLat)->parentNI == nn1 ){secLat++;}//look for id of next linking node
-		int nn2 = children.at(secLat)->parentNI; //node at end of phytomere
-		double availableForGrowth = p.ln.at(numPhyto) -( getLength(nn2) - getLength(nn1) ) ;//difference between maximum and current length of the phytomere
-		dl_ = std::min(std::min(toGrow[numPhyto],availableForGrowth), dl);
-		if((numPhyto+1)< p.ln.size()){
-			toGrow[numPhyto + 1] +=  toGrow[numPhyto] - dl_ ;
-		}
-		if(verbose){
-			std::cout<<"in nodal growth elongation_a "<< numPhyto <<" "<<nn1<<" "<<nn2<<" "<<firstLat
-			<<" "<<secLat<<" "<<p.ln.at(numPhyto) <<" "<< getLength(nn2) <<" "<< getLength(nn1) <<" "
-			<<availableForGrowth<<std::endl;
-		}
-		if(dl_ > 0){
+		for (secLat = firstLat + 1;(secLat < children.size())&&(children.at(secLat)->parentNI == nn1 );secLat ++){
 			if(verbose){
-								std::cout<<"in nodal growth elongation "
-								<<dl_ <<" "<<(numPhyto+1)<<std::endl;
-							}
-			createSegments(dl_,verbose, nn2); dl -= dl_;}
-			if(verbose){
-				std::cout<<"back to internodalGrowth "<<numPhyto<<" "<< numPhyto_<<" "<<firstLat <<" "<<secLat;
-				std::cout<<" "<<p.ln.size()<<" "<<children.size()<<" "<<	dl<<std::endl;
+				std::cout<<"add seclat "<<nn1<<" "<<children.at(secLat)->parentNI<<" "<<firstLat<<" "<<secLat<<" "<<children.size()<<std::endl;
 			}
-		//back to internodalGrowth 1 1 1 2 2 2.22045e-16
-		//do the loop at most twice
-		numPhyto ++;numPhyto_ ++;
-		firstLat = secLat;
-		if(numPhyto>=p.ln.size()){numPhyto=0;}
+			//secLat++;
+			}//look for id of next linking node
+		int nn2 = children.at(secLat)->parentNI; //node at end of phytomere
+		if(nn2 != nn1)
+		{
+			double availableForGrowth = p.ln.at(numPhyto) -( getLength(nn2) - getLength(nn1) ) ;//difference between maximum and current length of the phytomere
+			dl_ = std::min(std::min(toGrow[numPhyto],availableForGrowth), dl);
+			if((numPhyto+1)< toGrow.size()){//p.ln.size()){
+				toGrow[numPhyto + 1] +=  toGrow[numPhyto] - dl_ ;
+			}
+			if(verbose){
+				std::cout<<"in nodal growth elongation_a "<< numPhyto <<" "<<nn1<<" "<<nn2<<" "<<firstLat
+				<<" "<<secLat<<" "<<p.ln.at(numPhyto) <<" "<< getLength(nn2) <<" "<< getLength(nn1) <<" "
+				<<availableForGrowth<<std::endl;
+			}
+			if(dl_ > 0){
+				if(verbose){
+									std::cout<<"in nodal growth elongation "
+									<<dl_ <<" "<<(numPhyto+1)<<std::endl;
+								}
+				createSegments(dl_,verbose, nn2); dl -= dl_;}
+				if(verbose){
+					std::cout<<"back to internodalGrowth "<<numPhyto<<" "<< numPhyto_<<" "<<firstLat <<" "<<secLat;
+					std::cout<<" "<<p.ln.size()<<" "<<children.size()<<" "<<	dl<<std::endl;
+				}
+			//back to internodalGrowth 1 1 1 2 2 2.22045e-16
+			//do the loop at most twice
+			numPhyto ++;numPhyto_ ++;
+			if(numPhyto>=toGrow.size()){numPhyto=0;}
+		}
+			firstLat = secLat;
 	}
 	if(std::abs(dl)> 1e-6){//this sould not happen as computed dl to be <= sum(availableForGrowth)
 		std::stringstream errMsg;
@@ -526,9 +703,9 @@ void Stem::createLateral(bool verbose)
 				if(rp->successorOT.size()>i){ot = rp->successorOT.at(i).at(p_id);
 				}else{ot = getParameter("organType");}//default
 				int st = rp->successorST.at(i).at(p_id);
-				double ageLN = this->calcAge(sp->lb); // age of stem when lateral node is created
+				double ageLN = this->calcAge(length); // sp->lb age of stem when lateral node is created
 				double delay = sp->delayLat * created_linking_node;
-				if(verbose){std::cout<<"from stem data 4 lat "<<getId()<<" "<<ot<<" "<<st<<" "<<p_id<<" "<< (nodes.size() - 1) ;
+				if(verbose){std::cout<<"from stem data 4 lat "<<getId()<<" "<<ot<<" "<<st<<" "<<p_id<<" "<< (nodes.size() - 1)<<" ageLN "<<ageLN<<" "<<age;
 				
 						std::cout<<" "<<getNodeId(nodes.size() - 1)<<" "<<getNodeId(0)<<std::endl;}
 				switch(ot){
@@ -702,7 +879,7 @@ void Stem::createSegments(double l, bool verbose, int nodeIdx)
 	double shiftl = 0; // length produced by shift
 	int nn = nodes.size();
 	if(verbose){
-		std::cout<<"Stem::createSegments "<<std::endl;
+		std::cout<<"Stem::createSegments "<<l<<" "<<nodeIdx<<std::endl;
 	}
   if( nodeIdx >= 0){ //if we are doing internodal growth,  nodeIdx >= 0.
 		//autonodeIdx o = children.at(nodeIdx);
@@ -710,15 +887,24 @@ void Stem::createSegments(double l, bool verbose, int nodeIdx)
 		if(verbose){
 			std::cout<<"nodeIdx >= 0 "<<nn<<std::endl;
 		}
-	}										   
+	}else
+	{
+		if(verbose){
+			std::cout<<"nodeIdx < 0 "<<nn<< " "<<firstCall<<" "<<(firstCall||(nodeIdx >= 0))<<std::endl;
+		}
+	}		
 	if (firstCall||(nodeIdx >= 0)) { // first call of createSegments (in Root::simulate)
 		firstCall = false;
-
-		
+		if(verbose){
+			std::cout<<"in make move nn:"<<nn<<" "<<(nn>1)<<" ";
+		}
 		if ((nn>1)) { // don't move first node
 			Vector3d h = nodes[nn-1];
 			double olddx = h.length(); // length of last segment
-			if (olddx<dx()*0.99) { // shift node instead of creating a new node
+			if(verbose){
+				std::cout<<"len "<<h.length()<<" dx "<<dx()<<" "<<olddx<<" "<<dx()*0.99;
+			}
+			if (dx()-olddx > 1e-13) { // shift node instead of creating a new node
 				shiftl = std::min(dx()-olddx, l);
 				double sdx = olddx + shiftl; // length of new segment
 				h.normalize();  
@@ -729,12 +915,16 @@ void Stem::createSegments(double l, bool verbose, int nodeIdx)
 				if (l<=0) { // ==0 should be enough
 					return;
 				}
+				if(verbose){
+					std::cout<<" shift "<<shiftl<<" "<<sdx<<std::endl;
+				}
 			} 
 		} 
 	}
 	// create n+1 new nodes
 	double sl = 0; // summed length of created segment
 	int n = floor(l/dx());
+	if(verbose){std::cout<<"seg to create "<<l<<" "<<n<<" "<<dx()<<" "<<this->epsilonDx<<"\n";}
 	for (int i = 0; i < n + 1; i++) {
 
 		double sdx; // segment length (<=dx)
@@ -748,10 +938,10 @@ void Stem::createSegments(double l, bool verbose, int nodeIdx)
 				}
 				if( nodeIdx >= 0){
 					this->epsilonDx += sdx;
-				}else{this->epsilonDx = sdx;}
+				}else{this->epsilonDx += sdx;}
 				return;
 			}
-			this->epsilonDx = 0; //no residual
+			//this->epsilonDx = 0; //no residual
 		}
 		sl += sdx;
 		Vector3d newnode = Vector3d(sdx, 0., 0.);
@@ -759,7 +949,10 @@ void Stem::createSegments(double l, bool verbose, int nodeIdx)
 		// in case of impeded growth the node emergence time is not exact anymore,
 		// but might break down to temporal resolution
 		bool shift = (nodeIdx >= 0); //node will be insterted between 2 nodes. only happens if we have internodal growth (PhytoIdx >= 0)
-		//std::cout<<"stem addNode "<<getId()<<" "<<newnode.toString()<<" "<<size_t(nn+i)<<" "<<shift<<" "<<nodeIdx<<std::endl;
+		if(verbose){
+			std::cout<<"stem addNode "<<getId()<<" "<<newnode.toString()<<" "<<size_t(nn+i)<<" "<<shift<<" "<<nodeIdx
+			<<" "<<this->epsilonDx<<std::endl;
+		}
 		addNode(newnode, et, size_t(nn+i), shift);
 	}
 }

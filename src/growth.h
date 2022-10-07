@@ -116,7 +116,9 @@ public:
 	} ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
-		return ExponentialGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
+		if (this->CW_Gr.empty()  ){//
+			return ExponentialGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
+		} else { return o->getAge();}
 	}  ///< @copydoc GrowthFunction::getAge
 
 	std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<CWLimitedGrowth>(*this); }
@@ -151,7 +153,9 @@ public:
 	} ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
-		return LinearGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
+		if (this->CW_Gr.empty()  ){//
+			return LinearGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
+		} else { return o->getAge();}
 	}  ///< @copydoc GrowthFunction::getAge
 
 	std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<CWLimitedGrowth_lin>(*this); }

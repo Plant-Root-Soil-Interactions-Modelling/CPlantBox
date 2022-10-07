@@ -997,6 +997,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKx_st",&PhloemFlux::setKx_st)
             .def("setRmax_st",&PhloemFlux::setRmax_st)
             .def("setAcross_st",&PhloemFlux::setAcross_st)
+            .def("setAcross_st_table",&PhloemFlux::setAcross_st_table)
+            .def("setKx_st_table",&PhloemFlux::setKx_st_table)
             .def("setRhoSucrose",&PhloemFlux::setRhoSucrose)
             .def("setKrm1",&PhloemFlux::setKrm1)
             .def("setKrm2",&PhloemFlux::setKrm2)
@@ -1004,6 +1006,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
             .def_readwrite("psiMax", &PhloemFlux::psiMax)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
+			
+            .def_readwrite("CSTthreshold", &PhloemFlux::CSTthreshold)
+            .def_readwrite("activeAtThreshold", &PhloemFlux::activeAtThreshold)
 			
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)
@@ -1036,6 +1041,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("usePsiXyl",&PhloemFlux::usePsiXyl)
             .def_readwrite("expression",&PhloemFlux::expression)
             .def_readwrite("JW_ST",&PhloemFlux::JW_STv)
+            .def_readwrite("JS_ST",&PhloemFlux::JS_STv)
             .def_readwrite("Gr_Y",&PhloemFlux::Gr_Y)
             .def_readwrite("solver",&PhloemFlux::solver)
             .def_readwrite("atol",&PhloemFlux::atol_double)

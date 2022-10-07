@@ -273,8 +273,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		}
 		if(plant->node_Decapitate.size()> 0)
 		{
-			find1 = (std::find(plant->node_Decapitate.begin(), plant->node_Decapitate.end(), I_Upflow[j]  ) != plant->node_Decapitate.end());
-			find2 = (std::find(plant->node_Decapitate.begin(), plant->node_Decapitate.end(), I_Downflow[j]) != plant->node_Decapitate.end());
+			find1 = (std::find(plant->node_Decapitate.begin(), plant->node_Decapitate.end(), I_Upflow[j] -1 ) != plant->node_Decapitate.end());
+			find2 = (std::find(plant->node_Decapitate.begin(), plant->node_Decapitate.end(), I_Downflow[j] -1 ) != plant->node_Decapitate.end());
 			if(doTroubleshooting){
 				std::cout<<"find? "<< find1<<" "<<find2<<std::endl;
 			}

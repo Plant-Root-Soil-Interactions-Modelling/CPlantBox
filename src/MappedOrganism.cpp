@@ -677,11 +677,11 @@ void MappedPlant::simulate(double dt, bool verbose)
 		std::cout<<" "<<nodes.size()<<" "<<nodeCTs.size() << "\n" << std::flush;
 	}
 	for (int i : uni) {
-		if (verbose) {
-			std::cout << c<<") "<< i<<" ";
-			std::cout<< unodes[c].toString() <<" "<< std::flush;
-			std::cout<< uncts[c] << " "<<std::flush;
-		}
+		// if (verbose) {
+			// std::cout << c<<") "<< i<<" ";
+			// std::cout<< unodes[c].toString() <<" "<< std::flush;
+			// std::cout<< uncts[c] << " "<<std::flush;
+		// }
 		nodes.at(i) = unodes[c];
 		nodeCTs.at(i) = uncts[c];
 		c++;
@@ -712,29 +712,30 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	for (auto& ns : newsegs) {
 		segments[ns.y-1] = ns;
-		if (verbose) {
-			std::cout << ns.toString() << std::flush;
-		}
+		// if (verbose) {
+			// std::cout << ns.toString() << std::flush;
+		// }
 	}
 	if (verbose) {
 		std::cout << "\n"<<"segments added "<< newsegs.size() << "\n" << std::flush;
 	}
-	if (verbose) {
-		std::cout << "\n"<<"current segments "<< segments.size() << "\n" << std::flush;
-		for (auto& ns : segments) {
-			std::cout << ns.toString()<<" " << std::flush;
+	// if (verbose) {
+		// std::cout << "\n"<<"current segments "<< segments.size() << "\n" << std::flush;
+		// // for (auto& ns : segments) {
+			// // std::cout << ns.toString()<<" " << std::flush;
 			
-		}
-		std::cout << "\n" << std::flush;
+		// // }
+		// // std::cout << "\n" << std::flush;
 
-	}
+	// }
 	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
 	radii.resize(newsegO.size());//radii.size()+newsegO.size());
 	subTypes.resize(newsegO.size());//subTypes.size()+newsegO.size());
 	organTypes.resize(newsegO.size());//organTypes.size()+newsegO.size());
 	segVol.resize(newsegO.size());//segVol.size()+newsegO.size());
 	bladeLength.resize(newsegO.size());//bladeLength.size()+newsegO.size());
-	leafBladeSurface.resize(newsegO.size());//leafBladeSurface.size()+newsegO.size()); 
+	leafBladeSurface.resize(newsegO.size());//leafBladeSurface.size()+newsegO.size());
+	allSegO.resize(newsegO.size());//orgpointer per segs
 	c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
@@ -746,7 +747,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 		radii[segIdx] = so->getParam()->a;
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];//new st 
-		
+		allSegO.at(segIdx) =so;
 		if(organTypes[segIdx] == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{
 			int index;

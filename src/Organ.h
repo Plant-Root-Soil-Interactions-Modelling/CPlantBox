@@ -90,7 +90,7 @@ public:
 	virtual void rel2abs(){ throw std::runtime_error( "rel2abs() not implemented" );  }///should be overwritten
     virtual void abs2rel(){ throw std::runtime_error( "abs2rel() not implemented" );  }///should be overwritten
     void moveOrigin(int idx);//change idx of first node, in case of nodal growth
-
+	//void setActive(bool aa){active = aa;}
     /* last time step */
     virtual bool hasMoved() const { return moved; }; ///< have any nodes moved during the last simulate call
     int getOldNumberOfNodes() const { return oldNumberOfNodes; } ///< the number of nodes before the last simulate call
@@ -116,6 +116,9 @@ public:
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
+	bool activePhloem = false;
+	
+
 protected:
 
     /* up and down the organ tree */

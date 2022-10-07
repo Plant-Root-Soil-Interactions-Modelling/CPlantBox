@@ -289,6 +289,7 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	this->Flv = Input.toCppVector() ;
 	this->r_STv = r_ST.toCppVector() ;
 	this->JW_STv = JW_ST.toCppVector() ;
+	this->JS_STv = JS_ST.toCppVector() ;
     std::cout<<"computeOrgGrowth"<<std::endl;
 	computeOrgGrowth(tf-t0);
 	if(doTroubleshooting){std::cout.rdbuf(coutbuf);} //reset to standard output again
@@ -345,6 +346,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	assert((Nc == (Nt -1))&&"Wrong seg and node number");
 	atol_= Fortran_vector(Nt*neq_coef, atol_double);//1e-017
 	r_ST_ref = Fortran_vector(Nc)	; 
+	auto r_ST_refnol = Fortran_vector(Nc)	; 
 	I_Upflow = I_Downflow = vector<int>(Nc +1) ;
 	vector<int> orgTypes = plant->organTypes;//per seg
 	vector<int> subTypes = plant->subTypes;
@@ -395,6 +397,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 		
 	}
 	
+	//doTroubleshooting = true;
 	for ( int k=1 ;k <= Nc;k++ ) 
 	{
 			ot = orgTypes[k-1]; st = subTypes[k-1];
@@ -405,19 +408,38 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			
 			nodeID = I_Downflow[k];
 			len_leaf[nodeID] = l;assert((len_leaf[nodeID]>0)&&"len_seg[nodeID] <=0");
+			auto ptrOrg = plant->allSegO.at(k-1);
+			auto allids = ptrOrg->getNodeIds();
+			auto found = std::find(allids.begin(), allids.end(), segmentsPlant[k-1].y );// != plant->node_Decapitate.end());
+			int localID = -1; double lenFromTip = -1.0;
+			if(found != allids.end())//segment cut
+			{
+				localID = found - allids.begin();
+				assert((allids.at(localID) == segmentsPlant[k-1].y)&&"found loc id diff from real loc if");
+				lenFromTip = ptrOrg->getLength(true) - ptrOrg->getLength(localID);
+			}else{
+				throw std::runtime_error("local id not found");
+			}
 			
-			double Across_ST =  Across_st_f(st,ot);assert((Across_ST>0)&&"Across_ST <=0");
+			double Across_ST =  Across_st_f(st,ot, lenFromTip);
 			a_STv[k-1] = Across_ST;
 			
 			vol_ST[nodeID] = Across_ST * l;
 			
 		//general
-			r_ST_ref[k] = 1/kx_st_f(  st,ot)*l;
+			double kk= kx_st_f(  st,ot, lenFromTip);
+			r_ST_ref[k] = 1/kk*l;
+			r_ST_refnol[k] = 1/kk;
 			if(not update_viscosity_)
 			{
 				r_ST_ref[k] = mu*r_ST_ref[k];
 			}assert((r_ST_ref[k]>0)&&"r_ST_ref[k] <=0");
-			
+			if(doTroubleshooting)
+			{
+				std::cout<<"KrAcross data "<<ptrOrg->getId()<<" "<<ot<<" "<<st<<" "<<segmentsPlant[k-1].y<<" "<<localID<<" "<<ptrOrg->getLength(true)<<" "<<
+						ptrOrg->getLength(localID)<<" "<<Across_ST<<" "<< kk<<" "<<lenFromTip<<" "<<
+						allids.at(localID)<<" "<<segmentsPlant[k-1].y <<std::endl;
+			}assert((Across_ST>0)&&"Across_ST <=0");
 		//Fl
 			Ag[nodeID] = Ag4Phloem[segmentsPlant[k-1].y] ;//can be negative at night
 		//Fu
@@ -492,6 +514,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			//
 		}
 		
+	//doTroubleshooting = false;
 	//for seed node:
 	a_STv.at(0) = a_STv.at(1);
 	len_leaf[1] = len_leaf[2];
@@ -506,7 +529,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	//for post processing in python
 	this->Q_Rmmax1v = Q_Rmmax.toCppVector();
 	this->Q_Grmaxv = Q_Grmax.toCppVector();
-	this->r_ST_refv = r_ST_ref.toCppVector();
+	this->r_ST_refv = r_ST_refnol.toCppVector();
 	this->Agv = Ag.toCppVector();
 	this->vol_STv = vol_ST.toCppVector();
 	this->vol_Mesov = vol_ParApo.toCppVector();
@@ -544,10 +567,12 @@ void PhloemFlux::computeOrgGrowth(double t){
 	int orgID2 = 0;//needed as max(orgID) can be > plant->getOrgans(-1, true).size()
 	Q_GrUnbornv_i = std::vector<double>(nNode, 0.);
 	for(auto org: orgs){
+		//double meanCST = org->getNodeIds()
 		int orgID = org->getId();
 		std::vector<int> nodeIds_;
 		int ot = org->organType();
-		int st = org->getParameter("subType");
+		int stold = org->getParameter("subType");
+		int st = plant->st2newst[std::make_tuple(ot,stold)];
 		int nNodes = org->getNumberOfNodes();
 		if(doTroubleshooting){std::cout<<"org "<<orgID<<" "<<st<<" "<<ot<<" "<<nNodes<<std::endl;}
 		
@@ -756,7 +781,6 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 		if(((org->getAge()+dt)>0)&&(org->isAlive())&&(org->isActive()))
 		{
 		//organ alive and active at this time step
-			
 			double age = org->getAge();
 			int ot = org->organType(); 
 			int stold = org->getParameter("subType");
@@ -899,7 +923,14 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 					Fpsi[nodeId] = std::max((std::min(psiXyl[nodeId], psiMax) - psiMin)/(psiMax - psiMin),0.);
 					assert((Fpsi[nodeId] >= 0)&&"PhloemFlux::waterLimitedGrowth: Fpsi[nodeId] < 0");
 				}else{Fpsi[nodeId] = 1.;}
-				double deltavolSeg = deltavol * Flen * Fpsi[nodeId];
+				int goAhead = 1;double cst = -1;
+				if((org->getNumberOfNodes()>1)&&( org->organType() ==3)&&
+						(org->getParameter("subType")==2)&&(!org->activePhloem)&&activeAtThreshold)
+						{
+							if(C_STv.size() > nodeId){cst = C_STv.at(nodeId);}
+							if(cst > CSTthreshold){org->activePhloem = true;}else{goAhead = 0;}
+						}
+				double deltavolSeg = deltavol * Flen * Fpsi[nodeId] * goAhead;
 				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){
 					//could be error of pressision (if l = Lmax)
 					// or that, because of nodal growth and dxMin, org->getEpsilon() <0
@@ -1020,15 +1051,15 @@ void PhloemFlux::setKx_st(std::vector<std::vector<double>> values) {
     kx_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
-			kx_st_f = std::bind(&PhloemFlux::kx_st_const, this, std::placeholders::_1, std::placeholders::_2);
+			kx_st_f = std::bind(&PhloemFlux::kx_st_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::cout << "Kx_st is constant " << values[0][0] << " cm3 day-1 \n";
 		} 
 	} else {
 		if (values[0].size()==1) {
-			kx_st_f = std::bind(&PhloemFlux::kx_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
+			kx_st_f = std::bind(&PhloemFlux::kx_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::cout << "Kx_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
 		} else {
-			kx_st_f  = std::bind(&PhloemFlux::kx_st_perType, this, std::placeholders::_1, std::placeholders::_2);
+			kx_st_f  = std::bind(&PhloemFlux::kx_st_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::cout << "Kx_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm3 day-1 \n";
 		}
 	}
@@ -1036,23 +1067,41 @@ void PhloemFlux::setKx_st(std::vector<std::vector<double>> values) {
 
 
 //type/subtype dependent
+void PhloemFlux::setKx_st_table(std::vector<std::vector<std::vector<double>>> values,
+					std::vector<std::vector<std::vector<double>>> lengthsKx) {
+    kx_st4len = values;
+	kx_st_lengths = lengthsKx;
+	kx_st_f = std::bind(&PhloemFlux::kx_st_len, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	std::cout << "Kx_st from len " <<kx_st4len.size()<<" "<<kx_st4len.at(0).size() <<" \n";
+}
+
+//type/subtype dependent
 void PhloemFlux::setAcross_st(std::vector<std::vector<double>> values) {
     Across_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
-			Across_st_f = std::bind(&PhloemFlux::Across_st_const, this, std::placeholders::_1, std::placeholders::_2);
+			Across_st_f = std::bind(&PhloemFlux::Across_st_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::cout << "Across_st is constant " << values[0][0] << " cm2\n";
 		} 
 	} else {
 		if (values[0].size()==1) {
-			Across_st_f = std::bind(&PhloemFlux::Across_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
+			Across_st_f = std::bind(&PhloemFlux::Across_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::cout << "Across_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 \n";
 		} else {
-			Across_st_f  = std::bind(&PhloemFlux::Across_st_perType, this, std::placeholders::_1, std::placeholders::_2);
+			Across_st_f  = std::bind(&PhloemFlux::Across_st_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			std::cout << "Across_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm2 \n";
 		}
 	}
 }	
+
+//type/subtype dependent
+void PhloemFlux::setAcross_st_table(std::vector<std::vector<std::vector<double>>> values,
+					std::vector<std::vector<std::vector<double>>> lengthsAcross) {
+    Across_st4len = values;
+	Across_st_lengths = lengthsAcross;
+	Across_st_f = std::bind(&PhloemFlux::Across_st_len, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+	std::cout << "Across_st from len " <<Across_st4len.size()<<" "<<Across_st4len.at(0).size() <<" \n";
+}
 
 
 //type/subtype dependent ==> to compute Rhat Fhat

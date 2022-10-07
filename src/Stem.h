@@ -75,7 +75,7 @@ protected:
     void shootBorneRootGrow(bool silence);
 
     Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
-    void createSegments(double l, bool silence, int PhytoIdx = -1); ///< creates segments of length l, called by stem::simulate()
+    void createSegments(double l, bool verbose, int nodeIdx = -1); ///< creates segments of length l, called by stem::simulate()
 
     bool firstCall = true;
 

@@ -205,6 +205,12 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 						Y0[z + 1 + Nt ] = initValMeso * vol_ParApo[z + 1];
 					}
 				}
+				for(int zz = 0; zz < plant->node_Decapitate.size();zz++){
+					int z = plant->node_Decapitate.at(zz);
+					
+					Y0[z + 1] = 0; 
+					Y0[z + 1 + Nt ] = 0;
+				}
 				this->Q_init = Y0.toCppVector(); //for post processing
 			}
 		}

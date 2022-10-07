@@ -290,18 +290,24 @@ public:
 	 * not in the binding, use scipy instead
 	 */
 	static double interp1(double x, std::vector<double> x_,std::vector<double> y_) {
+		//std::cout<<"Function::interp1: "<<x<<" "<<x_.size()<<" "<<y_.size()<<std::endl;
 		if (x > x_.back()) { // check bounds
+			//std::cout<<"x > x_.back() "<<x_.back()<<" "<<y_.back()<<std::endl;
 			return y_.back();
 		}
 		if (x < x_[0]) {
+			//std::cout<<"x < x_[0] "<<x_[0]<<" "<<y_[0]<<std::endl;
 			return y_[0];
 		}
 
 		double lookUpIndex = std::distance(x_.begin(), std::lower_bound(x_.begin(), x_.end(), x));     // if we are within bounds find the index of the lower bound
 		if (lookUpIndex == 0) {
+			//std::cout<<"lookUpIndex == 0 "<<x_[0]<<" "<<y_[0]<<std::endl;
 			return y_[0];
 		}
 		double ipLinear = (x - x_[lookUpIndex-1])/(x_[lookUpIndex] - x_[lookUpIndex-1]);
+			//std::cout<<"lookUpIndex != 0 "<<lookUpIndex<<" "<<ipLinear<<" "<<x_[lookUpIndex] <<" "<< x_[lookUpIndex-1]<<" "<<
+			//y_[lookUpIndex] <<" "<< y_[lookUpIndex-1]<<std::endl;
 		return (1.-ipLinear)*y_[lookUpIndex-1] + (ipLinear)*y_[lookUpIndex];
 	}
 

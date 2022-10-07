@@ -116,6 +116,7 @@ public:
 	double delayNGEnds = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
 	double delayLat = 0.;		///< delay between stem creation and start of nodal growth [day]
 	double delayLats = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
+	bool createFirst = false;
     std::vector<std::vector<int> > successorST = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
     
 	std::vector<std::vector<double>> successorP = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]

@@ -55,3 +55,6 @@ print("Bounding box", minx, maxx, miny, maxy, minz, maxz)
 print("\n4. Plot")
 vp.plot_roots(rs, "subType")
 # vp.plot_roots(ana, "subType")  # DOES NOT WORK (TODO)
+
+
+#ln -s home/m.giraud/CRootBox/examples/modelparameter modelparameter

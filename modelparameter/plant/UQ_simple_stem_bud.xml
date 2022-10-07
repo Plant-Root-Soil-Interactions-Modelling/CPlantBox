@@ -115,15 +115,15 @@
 	<parameter name="ln" value="3.5" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm],3.5 from Barillot, L-pea;-->
 	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
-	<parameter name="lmax" value="28" dev="0"/>
+	<parameter name="lmax" value="67.5" dev="0"/>
 	<!--3.5cm every 2 days, a bit higher because neg exp-->
 	<parameter name="r" value="1.8" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>
 	<parameter name="tropismT" value="0"/>
 	<parameter name="tropismN" value="1"/>
 	<parameter name="tropismS" value="0"/>
-	<!--from thesis of cate;-->
-	<parameter name="delayLat" value="3" dev="0" />
+	<!--from thesis of cate; set 3-->
+	<parameter name="delayLat" value="0" dev="0" />
 	<parameter name="dx" value="1"/>
 	<parameter name="dxMin" value="0.25"/>
 	<parameter name="theta" value="0" dev="0"/>
@@ -135,22 +135,22 @@
 </organ>
 
 <organ type="stem" name="bud" subType="2">
-	<parameter name="lb" value="6" dev="0"/>
+	<parameter name="lb" value="3.5" dev="0"/>
 	<!--dummy val, Basal zone [cm]-->
-	<parameter name="la" value="1" dev="0"/>
+	<parameter name="la" value="0" dev="0"/>
 	<!--dummy val, Apical zone [cm];-->
 	<parameter name="ln" value="3.5" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm], from Barillot, L-pea;-->
 	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
-	<parameter name="lmax" value="21" dev="0"/>
+	<parameter name="lmax" value="24.5" dev="0"/>
 	<!--max length [cm], from Barillot, L-pea;-->
-	<parameter name="r" value="0.5" dev="0"/>
+	<parameter name="r" value="0.1" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>
 	<parameter name="tropismT" value="1"/>
 	<parameter name="tropismN" value="10"/>
 	<parameter name="tropismS" value="0.05"/>
 	<!--from thesis of cate;-->
-	<parameter name="delayLat" value="3" dev="0" />
+	<parameter name="delayLat" value="0" dev="0" />
 	<parameter name="dx" value="1"/>
     <parameter name="RotBeta" value="1"/>
     <parameter name="BetaDev" value="0.1"/>

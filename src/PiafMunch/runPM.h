@@ -109,8 +109,14 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
 	void setKr_st(std::vector<std::vector<double>> values, double kr_length_); ///< sets a callback for kr_suc:=kr_suc(ot,type), 
 	void setKx_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setKx_st_table(std::vector<std::vector<std::vector<double>>> values,
+					std::vector<std::vector<std::vector<double>>> lengthsKx);
+					
 	void setRmax_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	void setAcross_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setAcross_st_table(std::vector<std::vector<std::vector<double>>> values,
+					std::vector<std::vector<std::vector<double>>> lengthsAcross);
+	
 	void setPerimeter_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
 	void setRhoSucrose(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
 	void setKrm1(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
@@ -119,10 +125,10 @@ class PhloemFlux: public CPlantBox::Photosynthesis
     std::function<double(int, int, int)> kr_st_f = []( int type, int orgtype, int si) {
 		throw std::runtime_error("kr_st_f not implemented"); 
 		return 0.; };
-    std::function<double(int,int)> kx_st_f = [](int type, int orgtype) {
+    std::function<double(int,int, double)> kx_st_f = [](int type, int orgtype, double ll) {
 		throw std::runtime_error("kx_st_f not implemented"); 
 		return 0.; };
-    std::function<double(int, int)> Across_st_f = [](int type, int orgtype) {//cross-sectional area of all the sieve tubes in segment
+    std::function<double(int, int, double)> Across_st_f = [](int type, int orgtype, double ll) {//cross-sectional area of all the sieve tubes in segment
 		throw std::runtime_error("get_Across_st not implemented"); 
 		return 0.; };
     std::function<double(int, int)> Perimeter_st_f = [](int type, int orgtype) {//cross-sectional area of all the sieve tubes in segment
@@ -135,10 +141,10 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 		throw std::runtime_error("get_rhoSucrose not implemented"); 
 		return 0.; };
     std::function<double(int,int)> krm1_f = []( int type, int orgtype){//maximum initial growth rate use by phloem module
-		throw std::runtime_error("get_rhoSucrose not implemented"); 
+		throw std::runtime_error("krm1_f not implemented"); 
 		return 0.; };
     std::function<double(int,int)> krm2_f = []( int type, int orgtype){//maximum initial growth rate use by phloem module
-		throw std::runtime_error("get_rhoSucrose not implemented"); 
+		throw std::runtime_error("krm2_f not implemented"); 
 		return 0.; };
 
 
@@ -172,6 +178,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	std::vector<double> Flv ;//sucrose flow from mesophyll to sieve tube, (mmol Suc d-1)
 	std::vector<double> vol_Mesov;//volume of mesophyll (same as leaf blade volume), (cm3)
 	std::vector<double> JW_STv;//sieve tube water flow, (cm3 d-1)
+	std::vector<double> JS_STv;//sieve tube sucrose flow, (mmol d-1)
 	std::vector<double> Fpsi;//water scarcity factor for growth, (-)
 	std::vector<std::map<int,double>> deltaSucOrgNode_;//maximal sucrose need for growth per node, (mmol Suc d-1)
 	
@@ -206,7 +213,10 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	bool useCWGr; //use water- and carbon- limited growth?
 	int expression = 1;//if implement several possible expression in C_fluxes
 	bool useStemTip = true;
-	
+	int growthType = 0; //0: standard; 1: threshold value for start; 2: 
+	bool krFromLen = true;
+	bool activeAtThreshold = false;
+	double CSTthreshold = 0.3;
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters & constants (implemented in 'initialize.cpp')
 	void initialize_hydric() ;							// initializes hydric system parameters & constants (implemented in 'initialize.cpp')
@@ -240,14 +250,30 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 		return kr_st.at(organType - 2).at(type);  
 	} //subtype, type and depend on distance to tip for roots
 	
-	double kx_st_const( int type, int organType) { return kx_st.at(0).at(0); }  //constant
-    double kx_st_perOrgType( int type, int organType) { return kx_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
-    double kx_st_perType( int type, int organType) {return kx_st.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
+	double kx_st_const( int type, int organType, double ll) { return kx_st.at(0).at(0); }  //constant
+    double kx_st_perOrgType( int type, int organType, double ll) { return kx_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
+    double kx_st_perType( int type, int organType, double ll) {return kx_st.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
+	double kx_st_len( int type, int organType, double ll)
+	{
+		std::vector<double> AA = kx_st4len.at(organType - 2).at(type);
+		std::vector<double> LL = kx_st_lengths.at(organType - 2).at(type);
+		double aa = CPlantBox::Function::interp1(ll, LL, AA);
+		return aa;
+	}
 	
-	double Across_st_const( int type, int organType) { return Across_st.at(0).at(0); }  //constant
-    double Across_st_perOrgType( int type, int organType) { return Across_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
-    double Across_st_perType( int type, int organType) {return Across_st.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
-    
+	double Across_st_const( int type, int organType, double ll) { return Across_st.at(0).at(0); }  //constant
+    double Across_st_perOrgType( int type, int organType, double ll) { return Across_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
+    double Across_st_perType( int type, int organType, double ll) {return Across_st.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
+    double Across_st_len( int type, int organType, double ll)
+	{
+		
+		std::vector<double> AA = Across_st4len.at(organType - 2).at(type);
+		std::vector<double> LL = Across_st_lengths.at(organType - 2).at(type);
+		double aa = CPlantBox::Function::interp1(ll, LL, AA);
+		return aa;
+
+	}
+	
 	double Perimeter_st_const( int type, int organType) { return Perimeter_st.at(0).at(0); }  //constant
     double Perimeter_st_perOrgType( int type, int organType) { return Perimeter_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
     double Perimeter_st_perType( int type, int organType) {return Perimeter_st.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
@@ -270,8 +296,12 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	
     std::vector<std::vector<double>> kr_st;//  [mmol hPa-1 day-1]
 	 std::vector<std::vector<double>> kx_st; //  [cm3 hPa-1 day-1]
+    std::vector<std::vector<std::vector<double>>> kx_st4len; // [cm2]
+    std::vector<std::vector<std::vector<double>>> kx_st_lengths;
     std::vector<std::vector<double>> Across_st; // [cm2]
-    std::vector<std::vector<double>> Perimeter_st; // [cm]
+    std::vector<std::vector<std::vector<double>>> Across_st4len; // [cm2]
+    std::vector<std::vector<std::vector<double>>> Across_st_lengths;
+	std::vector<std::vector<double>> Perimeter_st; // [cm]
 	 std::vector<std::vector<double>> Rmax_st; // [cm day-1]
 	std::vector<std::vector<double>> rhoSucrose;
 	 std::vector<std::vector<double>> krm1v; 
