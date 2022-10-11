@@ -4,7 +4,7 @@ from rsml_data import RsmlData
 import plantbox as pb
 import rsml_reader
 from estimate_params import *
-
+import math
 import numpy as np
 import os
 
@@ -84,16 +84,20 @@ class EstimateDataModel:
         base root indices are the sum of taps and basals (treating shootborne and basals as equal for now) """
         # 1. find base root indices and all indices
         self.base_root_indices = []
+        self.lat_root_indices = []
         self.root_indices = []
         for i, data in enumerate(self.rsmls):  # plants
             pp = data.properties["parent-poly"]
             self.base_root_indices.append([])
+            self.lat_root_indices.append([])
             self.root_indices.append([])
             for j, _ in enumerate(data.polylines):
                 self.root_indices[-1].append(j)
                 if pp[j] == -1:  # add if base root
                     self.base_root_indices[-1].append(j)
-        # 2. find tap and basal indices
+                else:
+                    self.lat_root_indices[-1].append(j)
+                    # 2. find tap and basal indices
         n = len(self.times)
         self.tap_root_indices = [None] * n
         self.basal_root_indices = [None] * n
@@ -200,9 +204,13 @@ class EstimateDataModel:
         see aggregate_parameters, to obtain mean and sd 
         """
         for i, j_ in enumerate(indices):
+            coordina = self.rsmls[i].polylines[0]
+            for m in range(1,len(self.rsmls[i].polylines)):
+                coordina = np.concatenate((coordina, self.rsmls[i].polylines[m]))
             for j in j_:
                 kids = self.pick_kids(i, j)  # print("kids", kids[:, 0])
-                # print(kids.shape)
+                #print("kids", len(kids[:, 0]))
+                #print(kids.shape)
                 if kids.shape[0] > 0:
                     ii = [self.rsmls[i].properties["parent-node"][kids[m, 0]] for m in range (0, kids.shape[0])]
                     base_polyline = self.rsmls[i].polylines[j]
@@ -221,33 +229,48 @@ class EstimateDataModel:
                     self.estimates[i][(j, "ln")] = ln_
                     self.estimates[i][(j, "la")] = la
 
-    def create_theta(self, indices):
-        for i, j_ in enumerate(indices):
-            for j in j_:
-                pni = self.rsmls[i].properties["parent-node"][j]
-                for ni in range(0, len(self.rsmls[i].polylines[j])):
+                #set radius 'a'
+                if "diameter" in self.rsmls[i].properties:
+                    a_ = np.divide([self.rsmls[i].properties["diameter"][j]][0],2)
+                elif "diameter" in self.rsmls[i].functions:
+                    a_ = np.mean(np.divide([self.rsmls[i].functions["diameter"][j]][0],2)) #a is the mean of all roots of a specific order, all these roots are weighted equally, no matter how long they are
+                else:
+                    a_ = np.mean([self.rsmls[i].functions["radius"][j]][0])
+                    
+                self.estimates[i][(j, "a")] = a_
 
-                    if pni > 0:
-                        p = base_polyline[j];  # polylines[0][j]
-                        p0 = base_polyline[j - 1];  # polylines[0][j - 1]
-                        if len(polylines[i]) > 2:
-                            p2 = polylines[i][2]
-                        else:
-                            p2 = polylines[i][0]  # tap root
-                #         v1 = p - p0
-                #         v2 = p2 - p
-                #         v1 = v1 / np.linalg.norm(v1)
-                #         # v1 = [0, 0, -1] # also makes sense
-                #         v2 = v2 / np.linalg.norm(v2)
-                #         angle = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
-                #         theta.append(angle)
-                # return theta
+                #set branching angle 'theta'
+                ii = [self.rsmls[i].properties["parent-node"]][0]
+
+                if int(ii[j])==-1: #basal root angle
+                    p = np.asarray(self.rsmls[i].polylines[j][0])
+                    p2 = np.asarray(self.rsmls[i].polylines[j][1]) #take the node after since there is no previous node
+                    #print('p, p2',p, p2)
+                    v1 = [0, 0, -1]
+                    v2 = p2 - p
+                    v1 = v1 / np.linalg.norm(v1)
+                    v2 = v2 / np.linalg.norm(v2)
+                    theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+                else:
+                    p = coordina[(int(ii[j]))]
+                    p0 = coordina[(int(ii[j]-1))]
+                    p2 = np.asarray(self.rsmls[i].polylines[j][0])
+                    #print('p0, p, p2',p0, p, p2)
+                    v1 = p - p0
+                    v2 = p2 - p
+                    v1 = v1 / np.linalg.norm(v1)
+                    v2 = v2 / np.linalg.norm(v2)
+                    theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+                angle = theta_/math.pi*180
+                if angle>90:
+                    angle = 180-angle
+                self.estimates[i][(j, "theta")] = angle
 
     def aggregate_parameters_(self, indices, target_type):
         """ aggregates the individual root parameters into mean and sd, 
         and adds it to the parameters (of type list of RootRandomParameters) at index target_type  
         """
-        la_, lb_, ln_, delay_ = [], [], [], []
+        la_, lb_, ln_, delay_, a_, theta_ = [], [], [], [], [], []
         # a_, theta
         for i, j_ in enumerate(indices):
             for j in j_:
@@ -260,18 +283,31 @@ class EstimateDataModel:
                     lb_.append(self.estimates[i][(j, "lb")])
                 if (j, "ln") in self.estimates[i]:
                     ln_.extend(self.estimates[i][(j, "ln")])
-        # print(la_)
-        # print(lb_)
-        # print(ln_)
+                if (j, "a") in self.estimates[i]:
+                    a_.append(self.estimates[i][(j, "a")])
+                if (j, "theta") in self.estimates[i]:
+                    theta_.append(self.estimates[i][(j, "theta")])                                          
         p = self.parameters[target_type]
-        p.lb = np.mean(lb_)
-        p.lbs = np.std(lb_)
-        p.ln = np.mean(ln_)
-        p.lns = np.std(ln_)
-        p.la = np.mean(la_) - p.ln / 2  # because the next internodal distance is emerging
-        p.las = np.std(la_)
-        p.ldelay = np.mean(delay_)
-        p.ldelays = np.std(delay_)
+        if lb_: 
+            p.lb = np.mean(lb_)
+            p.lbs = np.std(lb_)
+        if ln_: 
+            p.ln = np.nanmean(ln_)
+            p.lns = np.nanstd(ln_)
+        if la_:
+            #p.la = np.nanmean(la_)
+            if math.isnan(p.ln): 
+                p.la = np.nanmean(la_) 
+            else:
+                p.la = np.nanmean(la_) - p.ln / 2
+            p.las = np.nanstd(la_)
+        if delay_: 
+            p.ldelay = np.nanmean(delay_)
+            p.ldelays = np.nanstd(delay_)
+        p.a = np.nanmean(a_)
+        p.a_s = np.nanstd(a_)
+        p.theta = np.nanmean(theta_)
+        p.thetas = np.nanstd(theta_)
 
     def compute_age(self, indices, target_type, apical_method):
         """ assumes the target_type has already a given age, and a fitted r, lmax;  
