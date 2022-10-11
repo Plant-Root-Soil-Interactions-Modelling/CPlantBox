@@ -98,16 +98,16 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 
         lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
         la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-		nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 	
+		nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches
         double res = lb_ - floor(lb_/dx)* dx;
-		
+
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ lb_ -= res;
 			}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
-		}	
-		
+		}
+
 		res = la_-floor(la_ / dx)*dx;
-		
+
 		if(res < dxMin && res != 0){
 			if(res <= dxMin/2){ la_ -= res;
 			}else{la_ =  floor(la_ / dx)*dx + dxMin;}
@@ -122,12 +122,12 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 		int latMissing = nob_real - nob_;
 		int latExtra1 = floor(latMissing/nob_);//mean number of extra laterals per branching point to keep correct number
 		int latExtra2 = latMissing - latExtra1*(nob_);
-			
-		int latExtra2_ = latExtra2;							
+
+		int latExtra2_ = latExtra2;
 		assert((latMissing >= 0)&&"root parameters realize latmissing< 0");
 		//at end of basal zone
 		for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-		if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}		
+		if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
         double sum_ln = nob_*ln_mean; // mean length of lateral zone
         for (int i = 0; i<nob_-1; i++) { // create inter-root distances
         	double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
@@ -138,16 +138,16 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 			if(res < dxMin && res != 0){
 				if(res <= dxMin/2){d -= res;
 				}else{d = floor(d / dx)*dx + dxMin;}
-				
+
 				} //make ln compatible with dx() and dxMin().
-			
+
 			ln_.push_back(d);
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
-			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}  
+			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
         }
     }
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
-    double a_ = std::max(a + p->randn()*as, 0.); // radius
+    double a_ = std::max(a + p->randn()*as, 0.01); // radius
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
 
