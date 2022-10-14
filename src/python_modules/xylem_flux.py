@@ -84,6 +84,47 @@ class XylemFluxPython(XylemFlux):
             hs[1:] = sxx
             self.aB = Kr * hs
 
+    def solveD2_(self, value):
+        Q, b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, value)
+        return self.dirichletB.solve(np.array(b))
+
+    def solveN2_(self, value):
+        Q, b = self.bc_neumann(self.Q, self.aB, self.neumann_ind, value)
+        return self.neumannB.solve(np.array(b))
+
+    def init_solve_static(self, sim_time:float, sxx, cells:bool, wilting_point, soil_k = []):
+        """ speeds up computation for static root system (not growing, no change in conductivities), 
+        by computing LU factorizations for Neumann and Dirichlet  
+        """
+        # print("switching to static solve (static root system, static conductivities) ")
+
+        if len(soil_k) > 0:
+            self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
+        else:
+            self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
+
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        self.neumannB = LA.splu(Q)
+
+        Q, b = self.bc_dirichlet(Q, self.aB, [0], [wilting_point])
+        self.dirichletB = LA.splu(Q)
+
+        self.Q = Q
+        self.solveD_ = self.solveD2_
+        self.solveN_ = self.solveN2_
+
+    def solveD_(self, value):
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, value)
+        x = LA.spsolve(Q, b, use_umfpack = True)
+        return x
+
+    def solveN_(self, value):
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        Q, b = self.bc_neumann(Q, self.aB, self.neumann_ind, value)
+        x = LA.spsolve(Q, b, use_umfpack = True)
+        return x
+
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
@@ -94,7 +135,6 @@ class XylemFluxPython(XylemFlux):
                                         conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root xylem pressure per root system node         
          """
-        # start = timeit.default_timer()
         if isinstance(value, (float, int)):
             n = len(self.neumann_ind)
             value = [value / n] * n
@@ -104,12 +144,7 @@ class XylemFluxPython(XylemFlux):
         else:
             self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
 
-        self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-        self.Q = sparse.csc_matrix(self.Q)
-        self.Q, self.b = self.bc_neumann(self.Q, self.aB, self.neumann_ind, value)  # cm3 day-1
-
-        x = LA.spsolve(self.Q, self.b, use_umfpack = True)  # direct
-        return x
+        return self.solveN_(value)
 
     def solve_dirichlet(self, sim_time:float, value:list, sxc:float, sxx, cells:bool, soil_k = []):
         """ solves the flux equations, with a dirichlet boundary condtion, see solve()
@@ -131,12 +166,7 @@ class XylemFluxPython(XylemFlux):
         else:
             self.linearSystem(sim_time, sxx, cells)
 
-        self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-        self.Q = sparse.csc_matrix(self.Q)
-        self.Q, self.b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, value)
-
-        x = LA.spsolve(self.Q, self.b, use_umfpack = True)
-        return x
+        return self.solveD_(value)
 
     def solve(self, sim_time:float, trans:list, sx:float, sxx, cells:bool, wilting_point:float, soil_k = []):
         """ solves the flux equations using Neumann and switching to dirichlet in case wilting point is reached in root collar 
@@ -439,6 +469,7 @@ class XylemFluxPython(XylemFlux):
             if i != s_[1] - 1:
                 raise "Segment indices are mixed up"
         print(len(segments), "segments")
+        print(len(nodes), "nodes")
         # 1b check if there are multiple basal roots (TODO)
         print("Segment 0", segments[0])
         for s in segments[1:]:
@@ -465,6 +496,9 @@ class XylemFluxPython(XylemFlux):
         for seg_id, cell_id in map.items():
             if cell_id < 0:
                 print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
+        # 5 radii range
+        radii = self.rs.radii
+        print("radii range from", np.min(radii), "to", np.max(radii))
         print()
 
     def plot_conductivities(self, monocot = True, plot_now = True, axes_ind = [], lateral_ind = []):
@@ -501,7 +535,7 @@ class XylemFluxPython(XylemFlux):
             ax1.plot(axes_age, kx_, axes_cols[j])
         kx_max = np.max(kx_)
         ax1.legend(axes_str)
-        ax1.set_title("Axis")
+        ax1.set_title("Primary roots")
         ax1.set_xlabel("age [day]")
         ax1.set_ylabel("axial conductance [cm$^3$ day$^{-1}$]")
         for j, st in enumerate(lateral_ind):
@@ -642,6 +676,8 @@ class XylemFluxPython(XylemFlux):
             print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
             print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))
             print()
+
+        # TODO we might assign the artificial shoot type 0
 
         return pb.MappedSegments(nodes2, cts, segs2, segRadii, segTypes)  # root system grid
 

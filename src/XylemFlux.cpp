@@ -37,14 +37,14 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
     std::fill(aJ.begin(), aJ.end(), 0);
     size_t k=0;
     size_t numleaf = 0;
-	
+
 	typedef Eigen::Triplet<double> Tri;
 	tripletList.clear();
 	tripletList.reserve(Ns*4);
 	b = Eigen::VectorXd(N);
 	Eigen::SparseMatrix<double> mat(N,N);
 	mat.reserve(Eigen::VectorXi::Constant(N,2));
-	
+
     for (int si = 0; si<Ns; si++) {
 
         int i = rs->segments[si].x;
@@ -127,7 +127,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         }
 
         aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
-		
+
 		if(withEigen){ //when build with photosynthesis but do not want to use eigensolve
 			b(i) = aB[i];
 			tripletList.push_back(Tri(i,i,cii));
@@ -135,9 +135,9 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 			aI[k] = i; aJ[k]= i; aV[k] = cii;
 		}
         k += 1;
-		
+
 		if(withEigen){ tripletList.push_back(Tri(i,j,cij));
-		}else{		
+		}else{
 			aI[k] = i; aJ[k] = j;  aV[k] = cij;
 		}
         k += 1;
@@ -153,7 +153,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 			aI[k] = i; aJ[k]= i; aV[k] = cii;
 		}
         k += 1;
-		
+
 		if(withEigen){ tripletList.push_back(Tri(i,j,cij));
 		}else{
 			aI[k] = i; aJ[k] = j;  aV[k] = cij;

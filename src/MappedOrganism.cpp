@@ -406,7 +406,7 @@ std::vector<double> MappedSegments::segOuterRadii(int type, const std::vector<do
  */
 std::vector<double> MappedSegments::segLength() const {
 	std::vector<double> lengths = std::vector<double>(segments.size());
-	for(int i=0; i<lengths.size(); i++) {
+	for (int i=0; i<lengths.size(); i++) {
 		auto n1 = nodes[segments[i].x];
 		auto n2 = nodes[segments[i].y];
 		lengths[i] = (n2.minus(n1)).length();
@@ -414,6 +414,27 @@ std::vector<double> MappedSegments::segLength() const {
 	return lengths;
 }
 
+/**
+ * Returns seg2cell as vector
+ */
+std::vector<int> MappedSegments::getSegmentMapper() const {
+    std::vector<int> mapper = std::vector<int>(segments.size());
+    for (int i=0; i<mapper.size(); i++) {
+        mapper[i] = seg2cell.at(i);
+    }
+    return mapper;
+}
+
+/**
+ * Calculates the z-coordinates of the segment
+ */
+std::vector<double> MappedSegments::getSegmentZ() const {
+    std::vector<double> z = std::vector<double>(segments.size());
+    for (int i=0; i<z.size(); i++) {
+        z[i] = 0.5*(nodes[segments[i].x].z + nodes[segments[i].y].z);
+    }
+    return z;
+}
 
 /**
  * Calculates the minimum of node coordinates
@@ -421,7 +442,7 @@ std::vector<double> MappedSegments::segLength() const {
  * value not cached
  */
 Vector3d MappedSegments::getMinBounds() {
-    Vector3d min_ = Vector3d(nodes[0].x, nodes[0].y, nodes[0].z); 
+    Vector3d min_ = Vector3d(nodes[0].x, nodes[0].y, nodes[0].z);
     for (const auto& n : nodes) {
         if (n.x < min_.x) {
             min_.x = n.x;
@@ -452,7 +473,7 @@ void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbo
 	if(LB){
 		RootSystem::initializeLB( basaltype, shootbornetype, verbose);
 	}else{RootSystem::initializeDB( basaltype, shootbornetype, verbose);}
-	
+
 	segments = this->getShootSegments();
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();
@@ -654,7 +675,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	organTypes.resize(organTypes.size()+newsegO.size());
 	segVol.resize(segVol.size()+newsegO.size());
 	bladeLength.resize(bladeLength.size()+newsegO.size());
-	leafBladeSurface.resize(leafBladeSurface.size()+newsegO.size()); 
+	leafBladeSurface.resize(leafBladeSurface.size()+newsegO.size());
 	c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
@@ -665,26 +686,26 @@ void MappedPlant::simulate(double dt, bool verbose)
 		vsegIdx.push_back(segIdx);
 		radii[segIdx] = so->getParam()->a;
 		organTypes.at(segIdx) = so->organType();
-		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];//new st 
-		
+		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];//new st
+
 		if(organTypes[segIdx] == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{
 			int index;
 			auto nodeIds = so->getNodeIds();
 			auto it = find(nodeIds.begin(), nodeIds.end(), newsegs[c].y);
 			if (it != nodeIds.end()){ index = it - nodeIds.begin() -1;
-			}else { 
+			}else {
 				throw std::runtime_error("MappedPlant::simulate: global segment index not found in organ");
 			}
 			int localSegId = index;
 			bool realized = true; bool withPetiole = false;
-			segVol.at(segIdx) = -1; 
+			segVol.at(segIdx) = -1;
 			bladeLength.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafLengthAtSeg(localSegId, withPetiole);
 			leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(localSegId,realized, withPetiole);
 			withPetiole = true;
 			segVol.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafVolAtSeg(localSegId, realized, withPetiole);//* thickness;
 			assert((segVol.at(segIdx) >= 0)&&"MappedPlant::simulate: computation of leaf volume failed");
-			
+
 		}else{ //stems and roots are cylinder
 			auto s = segments.at(segIdx);
 			double length_seg = (nodes.at(s.x).minus(nodes.at(s.y))).length();

@@ -46,6 +46,11 @@ public:
     std::vector<double> segOuterRadii(int type = 0, const std::vector<double>& vols = std::vector<double>(0)) const; ///< outer cylinder radii to match cell volume
     std::vector<double> segLength() const; ///< calculates segment lengths [cm]
 
+    int getNumberOfSegments() const { return segments.size(); };  // for the python binding
+    std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
+    std::vector<double> getSegmentZ() const; // z-coordinate of segment mid
+
+
     std::map<int, int> seg2cell; // root segment to soil cell mapper
     std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
 
@@ -67,15 +72,15 @@ public:
     const double eps = 1.e-5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
 	double kr_length = -1.0; //define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
-	//% of segment length in the root exchange zone, see MappedPlant::simulate. 
+	//% of segment length in the root exchange zone, see MappedPlant::simulate.
 	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)
-	std::vector<double> exchangeZoneCoefs; 
+	std::vector<double> exchangeZoneCoefs;
 	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
 	std::vector<double> segVol; //segment volume <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
-	Vector3d getMinBounds();		
+	Vector3d getMinBounds();
 		// calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
-	virtual void calcExchangeZoneCoefs(){throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object");};		
+	virtual void calcExchangeZoneCoefs(){throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object");};
 
 protected:
 
@@ -102,17 +107,16 @@ public:
     void initialize(bool verbose = true) override { initializeLB(4, 5, verbose); }; ///< overridden, to map initial shoot segments,
     void initializeLB(int basaltype, int shootbornetype, bool verbose = true) override { bool LB = true; initialize_(basaltype, shootbornetype, verbose, LB); }; ///< overridden, to map initial shoot segments,
 	void initializeDB(int basaltype, int shootbornetype, bool verbose = true) override { bool LB = false; initialize_(basaltype, shootbornetype, verbose, LB); }; ///< overridden, to map initial shoot segments,
-	
+
     void simulate(double dt, bool verbose = false) override; ///< build nodes and segments sequentially
 
     /* segments are shoot and root segments */
-
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
  protected:
 	void initialize_(int basaltype, int shootbornetype, bool verbose = true, bool LB = true);
-																					   
+
 
 };
 
@@ -126,7 +130,7 @@ public:
     using Plant::Plant;
 	MappedPlant(double seednum = 0): Plant(seednum){}; ///< constructor
     virtual ~MappedPlant() { }; ///< destructor
-	
+
     void initializeLB(bool verbose = true, bool stochastic = true) { bool LB = true; initialize_(verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
 	void initializeDB(bool verbose = true, bool stochastic = true) { bool LB = false; initialize_(verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
 	void initialize(bool verbose = true, bool stochastic = true) { initializeLB(verbose, stochastic); }; ///< overridden, to map initial shoot segments,
@@ -142,12 +146,12 @@ public:
     virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
 	virtual double randn() override {if(stochastic){return std::min(std::max(ND(gen),-1.),1.);} else {return 0.5; } }  ///< normally distributed random number (0,1)
 	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
-	//for photosynthesis and phloem module:	   
-	void calcExchangeZoneCoefs() override;					 
+	//for photosynthesis and phloem module:
+	void calcExchangeZoneCoefs() override;
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
-	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module		
+	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module
  protected:
-	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);	
+	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);
 };
 
 }
