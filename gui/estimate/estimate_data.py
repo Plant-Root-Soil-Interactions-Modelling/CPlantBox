@@ -19,6 +19,7 @@ class EstimateDataModel:
         self.estimates = [{}]  # list of dictionary of parameters per root
         self.plant = pb.Plant()  # to own the CPlantBox parameters
         self.parameters = []  # list of CPlantBox parameters of type , index = subType, max = 10
+        self.pparameters = []  # list of CPlantBox Root System parameters 
         self.times = []
         self.base_root_indices = []  # tap roots and basal roots
         self.tap_root_indices = []
@@ -58,6 +59,7 @@ class EstimateDataModel:
                         self.times.append(0)
         self.estimates = [None] * len(self.times)
         self.parameters = [pb.RootRandomParameter(self.plant) for _ in range(0, 10)]
+        self.pparameters = [pb.SeedRandomParameter(self.plant)][0]
         self.create_length()  # add a length tag to properties
         self.initialize_roots_()  # find base roots
 
@@ -165,15 +167,47 @@ class EstimateDataModel:
                 for j in j_:
                   length_basals[i].append(self.rsmls[i].properties["length"][j])
                 length_basals[i].sort()
+                #indx = sorted(range(len(length_basals[i])), key=lambda k: length_basals[i][k])
+                #indx = [int(x) for x in indx]
+                #a = np.array(indices[i])
+                #print('a, indx', a, indx)
+                #a = a[indx]
+                #indices[i] = list(a)
             res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
             print("production rate", res.x[0])
+
+            #compute seed params
+            delayB_, firstB_, maxB_ = [], [], []
+            for i in ages:
+                if i:
+                    delayB_.append(np.mean(np.diff(np.sort(i))))
+                    firstB_.append(np.min(i))
+                    maxB_.append(len(i))
+
+            #print('delayB_, firstB_, maxB_', delayB_, firstB_, maxB_)
+
+            srp = self.pparameters
+            if delayB_:
+                srp.delayB = np.mean(delayB_)
+                srp.delayBs = np.std(delayB_)
+            if firstB_:
+                srp.firstB = np.mean(firstB_)
+                srp.firstBs = np.std(firstB_)
+            if maxB_:
+                srp.maxB = np.mean(maxB_)
+                srp.maxBs = np.std(maxB_)
+            #print('checkallParams', srp.delayB, srp.delayBs,srp.firstB,srp.firstBs, srp.maxB, srp.maxBs)
+            
             # res, f, ages = estimate_order0_rrate(np.array(length_basals), p.r, p.lmax, self.times)
             # print("production rate", res.x[0], "elongation rate", res.x[1])
 
             # add basal ages accordingly
+            #print('indices', indices)
             for i, j_ in enumerate(indices):
-                for j in j_:
-                    self.estimates[i][(j, "age")] = ages[i][j]
+                for j in range(0,len(j_)):
+                    #print('i,j', i,j)
+                    #print('ages', ages)
+                    self.estimates[i][(j_[j], "age")] = ages[i][j]
             self.fit_root_length_(indices, base_method, target_type = target_type)  # 1
             self.add_r_(indices, target_type)  # 2
             if apical_method == 0:  # delay based
@@ -197,6 +231,7 @@ class EstimateDataModel:
             indices = self.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
             c = np.array([len(x) for x in indices])
             # print("new length", np.sum(c), "at order", order, "indices", c)  # TODO change while criteria [[],[],[]] will pass
+
 
     def estimate_zones_(self, indices):
         """ creates lb, ln, la per root (if possible)
@@ -271,10 +306,9 @@ class EstimateDataModel:
         and adds it to the parameters (of type list of RootRandomParameters) at index target_type  
         """
         la_, lb_, ln_, delay_, a_, theta_ = [], [], [], [], [], []
-        # a_, theta
         for i, j_ in enumerate(indices):
             for j in j_:
-                # print(i, j)
+                #print('i,j', i,j)
                 if (j, "la") in self.estimates[i]:
                     la_.append(self.estimates[i][(j, "la")])
                 if (j, "delay") in self.estimates[i]:
@@ -286,7 +320,8 @@ class EstimateDataModel:
                 if (j, "a") in self.estimates[i]:
                     a_.append(self.estimates[i][(j, "a")])
                 if (j, "theta") in self.estimates[i]:
-                    theta_.append(self.estimates[i][(j, "theta")])                                          
+                    theta_.append(self.estimates[i][(j, "theta")])
+     
         p = self.parameters[target_type]
         if lb_: 
             p.lb = np.mean(lb_)
@@ -453,5 +488,12 @@ class EstimateDataModel:
             p.subType = i
             p.organType = 2
             self.plant.setOrganRandomParameter(p)
+        #check if fibrous rootsystem (TODO: should be done with base_method maybe...) 
+        brc = []
+        for elem in self.base_root_indices:
+            brc.append(len(elem))
+        if np.mean(brc) >1: #if fibrous root system
+            srp = self.pparameters
+            self.plant.setOrganRandomParameter(srp)
         self.plant.writeParameters(filename)
 
