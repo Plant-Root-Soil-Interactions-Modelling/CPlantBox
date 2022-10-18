@@ -70,11 +70,13 @@ class App:
         tab_base = ttk.Frame(tabControl)
         tab_laterals = ttk.Frame(tabControl)
         tab_base_params = ttk.Frame(tabControl)
+        tab_plant_params = ttk.Frame(tabControl)
         tab_lateral_params = ttk.Frame(tabControl)
         tabControl.add(tab_info, text = 'Information')
         tabControl.add(tab_base, text = 'Base roots')
         tabControl.add(tab_laterals, text = 'Laterals')
         tabControl.add(tab_base_params, text = 'Parameters')
+        tabControl.add(tab_plant_params, text = 'Plant Parameters')
         tabControl.pack(expand = 1, fill = "both")
         # tab_info
         lf_general = ttk.LabelFrame(tab_info, text = 'General')
@@ -121,6 +123,15 @@ class App:
             self.label_basal_params_r.append(tkinter.StringVar())
             ttk.Label(lf_basal_params, textvariable = self.label_basal_params_l[-1], anchor = "w", width = 50).grid(column = 0, row = 0)
             ttk.Label(lf_basal_params, textvariable = self.label_basal_params_r[-1], anchor = "w", width = 50).grid(column = 1, row = 0)
+        # tab_plant_parameters
+        self.label_plant_params_l, self.label_plant_params_r = [], []
+        names_ = 'Plant parameters [mean, sd]'  
+        lf_plant_params = ttk.LabelFrame(tab_plant_params, text = names_)
+        lf_plant_params.grid(column = 0, row = 1, padx = 20, pady = 10)
+        self.label_plant_params_l = tkinter.StringVar()
+        self.label_plant_params_r = tkinter.StringVar()
+        ttk.Label(lf_plant_params, textvariable = self.label_plant_params_l, anchor = "w", width = 50).grid(column = 0, row = 0)
+        ttk.Label(lf_plant_params, textvariable = self.label_plant_params_r, anchor = "w", width = 70).grid(column = 1, row = 0)
 
     def parse_gui(self):
         """ converts values of Entry fields into CPlantbox lmax parameter """
@@ -204,6 +215,12 @@ class App:
         # double ldelay = 1.;     ///< Lateral root emergence delay [day], only used by RootDelay, @see RootDelay, RootSystem::initializeDB
         # double ldelays = 0.;     ///< Standard deviation of lateral root emergence delay [day]
         return rstr
+    
+    def pparameters_pstr_(self):
+        srp = self.data.pparameters
+        pstr = "\n\n[{:g}, {:g}]\n[{:g}, {:g}]\n[{:g}, {:g}]\n\n".format(srp.delayB, srp.delayBs, srp.firstB, srp.firstBs, srp.maxB, srp.maxBs)
+        pstr += "\n"
+        return pstr
 
     def update_parameters_tap(self):
         """ update first parameter tap """
@@ -215,6 +232,12 @@ class App:
             self.label_basal_params_l[i].set(lstr)
             self.label_basal_params_r[i].set(self.parameters_rstr_(i))
 
+    def update_plant_parameters(self):
+        """ update first parameter tap """
+        lstr = "\nTime delay between the basal roots [day]\nEmergence of first basal root [day]\nMaximal number of basal roots [1]\n\n"
+        self.label_plant_params_l.set(lstr)
+        self.label_plant_params_r.set(self.pparameters_pstr_())
+
     def update_all(self, event = None):
         """ updates the view """
         if self.data.exists():
@@ -222,6 +245,7 @@ class App:
             self.update_info()
             self.data.create_params(self.combo0.current(), self.combo1.current(), self.combo2.current())  # does the fitting for the current settings
             self.update_parameters_tap()
+            self.update_plant_parameters()
             estimate_plots.plot_baseroots(self.data, self.combo1.current(), self.ax)
             estimate_plots.plot_laterals(self.data, self.combo1.current(), self.combo2.current(), self.ax2)
             self.canvas.draw()
