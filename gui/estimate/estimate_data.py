@@ -19,7 +19,8 @@ class EstimateDataModel:
         self.estimates = [{}]  # list of dictionary of parameters per root
         self.plant = pb.Plant()  # to own the CPlantBox parameters
         self.parameters = []  # list of CPlantBox parameters of type , index = subType, max = 10
-        self.pparameters = []  # list of CPlantBox Root System parameters 
+        self.pparameters = []  # list of CPlantBox Root System parameters
+        self.orders = [] #list of root orders 
         self.times = []
         self.base_root_indices = []  # tap roots and basal roots
         self.tap_root_indices = []
@@ -301,11 +302,24 @@ class EstimateDataModel:
                     angle = 180-angle
                 self.estimates[i][(j, "theta")] = angle
 
+                #find maximum lateral root order
+                if "order" in self.rsmls[i].properties:
+                    order = [self.rsmls[i].properties["order"][j]][0]
+                elif "order" in self.rsmls[i].functions:
+                    order = np.max([self.rsmls[i].functions["order"][j]][0])
+                elif "subType" in self.rsmls[i].properties:
+                    order = [self.rsmls[i].properties["subType"][j]][0]-1
+                elif "subType" in self.rsmls[i].functions:
+                    order = np.max([self.rsmls[i].functions["subType"][j]][0])
+                else:
+                    order = int(3)
+                self.estimates[i][(j, "order")] = order
+
     def aggregate_parameters_(self, indices, target_type):
         """ aggregates the individual root parameters into mean and sd, 
         and adds it to the parameters (of type list of RootRandomParameters) at index target_type  
         """
-        la_, lb_, ln_, delay_, a_, theta_ = [], [], [], [], [], []
+        la_, lb_, ln_, delay_, a_, theta_, order_ = [], [], [], [], [], [], []
         for i, j_ in enumerate(indices):
             for j in j_:
                 #print('i,j', i,j)
@@ -321,6 +335,8 @@ class EstimateDataModel:
                     a_.append(self.estimates[i][(j, "a")])
                 if (j, "theta") in self.estimates[i]:
                     theta_.append(self.estimates[i][(j, "theta")])
+                if (j, "order") in self.estimates[i]:
+                    order_.append(self.estimates[i][(j, "order")])
      
         p = self.parameters[target_type]
         if lb_: 
@@ -343,6 +359,8 @@ class EstimateDataModel:
         p.a_s = np.nanstd(a_)
         p.theta = np.nanmean(theta_)
         p.thetas = np.nanstd(theta_)
+
+        self.orders.append(np.max(order_))
 
     def compute_age(self, indices, target_type, apical_method):
         """ assumes the target_type has already a given age, and a fitted r, lmax;  
@@ -482,7 +500,7 @@ class EstimateDataModel:
     def write_parameters(self, filename):
         """
         """
-        for i in range(0, 3):
+        for i in range(0, np.max(self.orders)+1): #only writes the existing number of root orders
             p = self.parameters[i]
             p.name = "root order {:g}".format(i)
             p.subType = i
