@@ -42,24 +42,24 @@ int Nt, Nc ; // Nt = Total number of nodes, Nc = total number of connections in 
 int N1R ; // Number of  'root tip's, i.e. nodes of conn.order 1 that have imposed soil water potential as a limit condition.
 extern int N1L ; // Organ type # 1L : 'leaf end' ; has imposed transpiration stream as a limit condition
 extern Index_vector i_[] ; // i_[o = 0..8][k = 1..No] = id# of kth node in (1-based list)  list of all nodes of conn.ord. co(o). For o=0: No=N1L ; o=1: No=N1R ; o=2..8: No=N[o] :
-extern Index_vector &RootEnds, &LeafEnds ; // (= i_[1] and i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
+extern Index_vector andRootEnds, andLeafEnds ; // (= i_[1] and i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
 vector<int> jf_RootEnds ; // indices to label end nodes = those of conn.order 1
 extern vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# du noeud amont (resp. aval) : jf = JF(i,i2) > 0 si I_Upflow[(abs(jf)]==i, i.e. si I_Downflow[(abs(jf)]==i2
 SpUnit_matrix Delta2 ; // describe hydraulic architecture (topology)
 SpUnit_matrix Delta2abs ; // describe hydraulic architecture (topology)
 Sparse_matrix Deltaabs ; // describe hydraulic architecture (topology)
 Sparse_matrix Delta2W;
-Sparse_matrix X ;	// intermédiaires de calcul ;
-int** ipiv_ptr ; void**TM_ptr ; // id. -- initialisé dans inialize_hydric()
+Sparse_matrix X ;	// intermediaires de calcul ;
+int** ipiv_ptr ; void**TM_ptr ; // id. -- initialise dans inialize_hydric()
 #ifdef Full_Matrix // solve full linear system for all hydraulic variables, chained as YY below :
-Fortran_vector YY, SM ; // resp., inconnue et second membre de l'éq. matricielle
+Fortran_vector YY, SM ; // resp., inconnue et second membre de l'eq. matricielle
 #else // reduce linear system to only one unknown hydraulic variable (P_ST) => significant speed up and reduce required memory -- needs pre-solving recalculation if local model is changed
 SpUnit_matrix Delta ; // =  - Transpose(Delta2) : describe hydraulic architecture (topology)
-Sparse_matrix M1, Delta_rxyl, Delta_rphl ;	// intermédiaires de calcul ;
-Fortran_vector Km, rG, O ; //  intermédiaires de calcul (Km : rien à voir avec Michaelis !)
-Fortran_vector inv_Km, rs_rG, inv_rPhlM, inv_rG ; //  intermédiaires de calcul, dérivés ou inverses des précédents
+Sparse_matrix M1, Delta_rxyl, Delta_rphl ;	// intermediaires de calcul ;
+Fortran_vector Km, rG, O ; //  intermediaires de calcul (Km : rien a voir avec Michaelis !)
+Fortran_vector inv_Km, rs_rG, inv_rPhlM, inv_rG ; //  intermediaires de calcul, derives ou inverses des precedents
 # endif
-double C, _0089_099803 = 0.089/0.99803 ; // intermédiaire de celcul de la molalité
+double C, _0089_099803 = 0.089/0.99803 ; // intermediaire de celcul de la molalite
 extern int jf, i ; int is ; // is = # of current integration time segment (first = 1)
 
 /******************************************  Environmental Variables: *********************************************/
@@ -68,7 +68,7 @@ extern double T ; // (K) absolute temperature : set in GUI, but may be updated a
 extern Fortran_vector Transpirat		; // Leaf transpiration rate (used in water-fluxes calc.)				(mmol / h)
 extern Fortran_vector PsiSoil			; // Soil water potential at root end (used in water-fluxes calc.)		(MPa)
 
-/******************************************  Constants & Parameters: *********************************************/
+/******************************************  Constants and Parameters: *********************************************/
 #define R 83.14//0.0083143	// constante des gaz parfaits -											(MPa ml K-1 mmol-1)
 double TdC, dEauPure,  siPhi, newPhi ; // pour visc. calc. par  www.seas.upenn.edu et/ou NonLinPsi
 bool Adv_BioPhysics ; // true if  non-zero sugar specific volume, osmotic pot.=non-linear function of molality (Thompson and Holbrook), and viscosity changes with C_TC (Thompson and Holbrook ; Seas, Flanagan)  ; set in IntroDialogBox
@@ -105,7 +105,7 @@ void vector_init(double t, double *y, double *y_dot);
 extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
 extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl ;
-extern Fortran_vector JS_ST, C_amont, JS_Sympl, JS_Apo, RespMaint ;
+extern Fortran_vector JS_ST, C_amont, JS_Sympl, JS_Apo, RespMaint;// Auxin ;
 extern Fortran_vector vol_ST, vol_PhlApo, vol_ParApo ;
 extern Fortran_vector r_abs, PsiSoil, Transpirat, Input, Q_RespMaintSyn ;
 extern Fortran_vector P_ST_dot, P_Sympl_dot ; /******* variation rate of any variable X is noted: X_dot = dX/dt *******/
@@ -116,9 +116,9 @@ extern Fortran_vector C_SymplUpflow, C_ApoUpflow ; // to derive JS_Sympl, and ma
 // ******************  auxiliary sugar- or anatomy- related, non-hydraulic variables or parameters that may be involved in water-system equations ********** :
 extern Fortran_vector C_ST, C_PhlApo		; // Concentration of sugar in phloem  sieve tubes  and  apoplasm, resp.							(mmol / ml)   (ml of solution)
 extern Fortran_vector  JS_PhlMb, JS_ParMb ; //  (if Adv_BioPhysics)  to compute NZS and NZSP (see next line)
-// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_PhlMb * PartMolalVol (=0.2155 in Thompson & Holbrook -- 0.214 might be more accurate)
+// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_PhlMb * PartMolalVol (=0.2155 in Thompson and Holbrook -- 0.214 might be more accurate)
 extern Fortran_vector C_Sympl, C_ParApo		; // Concentration of sugar in lateral tissue symplasm  and  apoplasm, resp.								(mmol / ml)   (ml of solution)
-extern Fortran_vector Delta_JS_ST ; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
+extern Fortran_vector Delta_JS_ST ; // sera la composante purement phloemienne de Q_TC_dot[ ]							(mmol / h)
 
 // tracer-specific add-ins :
 extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
@@ -126,7 +126,7 @@ extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_
 extern Fortran_vector TracerJS_ST, TracerC_Sympl, TracerC_ST, TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb, TracerJS_PhlMb, TracerC_PhlApo, TracerC_ParApo ;
 extern Fortran_vector TracerQ_RespMaintSyn, TracerInput, TracerRespMaint, TracerC_SymplUpflow, TracerC_ApoUpflow ;
 extern Fortran_vector TracerRatioSympl, TracerRatioQ_RespMaint ;
-extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
+extern Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloemienne de Q_TC_dot[ ]							(mmol / h)
 
 /*************************** VARIABLES INVOLVED IN HYDRIC SYSTEM (Water fluxes): ******************************* */
 extern double* vol_Sympl_dot ; // Rate of symplasmic vol. change (eq. 8)
@@ -153,7 +153,7 @@ Fortran_vector JW_Sympl		; // Lateral parenchyma to phloem ST Symplasmic liquid 
 
 
 double  PartMolalVol =0;
-//comes from Genotelle, J. Expression de la viscosite´ des solutions sucrees. Ind. Aliment. Agric. 1978, 95, 747-755
+//comes from Genotelle, J. Expression de la viscosite  des solutions sucrees. Ind. Aliment. Agric. 1978, 95, 747-755
 //prooved to hold by https://doi.org/10.1021/ie000266e
 //taken here as presented in "Sucrose Properties and Applications" for pure sucrose solution
 //see 10.1007/978-1-4615-2676-6_6
@@ -166,11 +166,11 @@ void PhloemFlux::update_viscosity() { // called if (Adv_BioPhysics)
 		TdC = TairK_phloem - 273.15;
 		//in g/L or mg/cm3
 		dEauPure = (999.83952 + TdC * (16.952577 + TdC * (- 0.0079905127 + TdC * (- 0.000046241757 + TdC * (0.00000010584601 + TdC * (- 0.00000000028103006)))))) / (1 + 0.016887236 * TdC); 
-		siPhi = (30 - TdC) / (91 + TdC) ;  T_old = TairK_phloem ;//  R.Gilli 1997, after Mathlouthi & Génotelle 1995 - valid for any T :
+		siPhi = (30 - TdC) / (91 + TdC) ;  T_old = TairK_phloem ;//  R.Gilli 1997, after Mathlouthi and Genotelle 1995 - valid for any T :
 	}
    for (int i=1 ; i <= Nc ; i++) { // this loop computes the viscosity profile, temporarily stored as vector r_ST_ before scaling to actual r_ST values:
 		C = C_amont[i] ; // (mmol / ml solution)
-		//  R.Gilli 1997, after Mathlouthi & Génotelle 1995 - valid for any T :
+		//  R.Gilli 1997, after Mathlouthi and Genotelle 1995 - valid for any T :
 		if (C < 0.) C = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)
 		//342.3 g/mol or mg/mmol
 		double PartMolalVol_ = 0;//0.2155;
@@ -178,7 +178,7 @@ void PhloemFlux::update_viscosity() { // called if (Adv_BioPhysics)
 		siEnne = (100 * 342.30 * C) / d ; // actually this is sc = sucrose content (g.suc. % g.solution) ; 342.30 = molar mass of sacch.
 		siEnne /= 1900 - (18 * siEnne) ;
 		//mPa s
-		mu =  pow(10, ((22.46 * siEnne) - 0.114 + (siPhi * (1.1 + 43.1 * pow(siEnne, 1.25) )))) ; // peut atteindre des valeurs > 1.e200 !! (sans signification évidemment -- le sucre doit précipiter bien avant !!)
+		mu =  pow(10, ((22.46 * siEnne) - 0.114 + (siPhi * (1.1 + 43.1 * pow(siEnne, 1.25) )))) ; // peut atteindre des valeurs > 1.e200 !! (sans signification evidemment -- le sucre doit precipiter bien avant !!)
 		mu = mu /(24*60*60)/100/1000; //mPa s to hPa d, 1.11837e-10 hPa d for pure water at 293.15K
 		r_ST[i] = mu*r_ST_ref[i];
    }
@@ -258,7 +258,7 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 			outfile<<" pst: "<<P_ST[I_Upflow[j]]<<" "<<P_ST[I_Downflow[j]] <<std::flush;
 			outfile<<" vol: "<<vol_ST[I_Upflow[j]]<<" "<<vol_ST[I_Downflow[j]] <<std::flush;
 			outfile<<std::endl<<std::flush;
-			assert(false&&"PhloemFlux::C_fluxes : negative maximal flux of sucrose concentration");
+			assert(falseandand"PhloemFlux::C_fluxes : negative maximal flux of sucrose concentration");
 			
 		}
 		if (C_amont[j] < 0.) C_amont[j] = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)

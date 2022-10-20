@@ -21,40 +21,13 @@ import vtk_plot as vp
 #import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# main_dir=os.environ['PWD']#dir of the file
-# directoryN = "/"+os.path.basename(__file__)[:-3]+"/"#"/a_threshold/"
-# results_dir = main_dir +"/results"+directoryN
-
-# if not os.path.exists(results_dir):
-    # os.makedirs(results_dir)
-# #not do as will rin in parallele
-# #else:
- # #   test = os.listdir(results_dir)
-  # #  for item in test:
-   # #     os.remove(results_dir+item)
-
 isCluster = (os.environ['HOME'] == '/home/m.giraud')
-if isCluster:
+if False:
     def print(*args, **kwargs):
         """ custom print() function.
             for cluster: can get output even if program stop
             unexpectedly (i.e., without creating the outputfile)
         """
-        # Adding new arguments to the print function signature
-        # is probably a bad idea.
-        # Instead consider testing if custom argument keywords
-        # are present in kwargs
-        # if 'sep' in kwargs:
-            # sep = kwargs['sep']
-        # else:
-            # sep = ' '
-        # home_dir = os.getcwd()
-        # dir_name =  "/results"+directoryN
-        # dir_name2 = home_dir + dir_name
-        # name2 = dir_name2 + 'prints.txt'
-        # with open(name2, 'a') as log:
-            # for arg in args: log.write(str(arg) + sep)
-            # log.write('\n')
         pass
 
 
@@ -73,7 +46,7 @@ def sinusoidal(t):
     return (np.sin(np.pi*t*2)+1)/2
 def stairs(t):
     hours = t%1
-    coef = int(hours<=(16/24))
+    coef = int(hours<=(12/24))
     return coef
 
 def qair2rh(qair, es_, press):
@@ -87,7 +60,7 @@ def weather(simDuration, Qmax):
     vgSoil = [0.059, 0.45, 0.00644, 1.503, 1]
     
     Qmin = 0;# Qmax = 1000e-6 #458*2.1
-    Tmin = 18; Tmax = 23
+    Tmin = 10; Tmax = 22
     specificHumidity = 0.0097
     Pair = 1010.00 #hPa
     thetaInit = 30/100
@@ -98,7 +71,7 @@ def weather(simDuration, Qmax):
     cs = 350e-6 #co2 paartial pressure at leaf surface (mol mol-1)
     #RH = 0.5 # relative humidity
     es =  6.112 * np.exp((17.67 * TairC_)/(TairC_ + 243.5))
-    RH = 0.6#qair2rh(specificHumidity, es, Pair)
+    RH = 0.3#qair2rh(specificHumidity, es, Pair)
     
     pmean = theta2H(vgSoil, thetaInit)
     
@@ -160,8 +133,8 @@ def setKrKx_xylem(TairC, RH): #inC
     kr_r3 = 6.8e-5  * hPa2cm 
     l_kr = 100 #cm
                                      
-    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ,kr_s,kr_s ],[kr_l,kr_l]], kr_length_=l_kr)
-    r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s,kz_s,kz_s ],[kz_l,kz_l]])
+    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ,kr_s,kr_s ],[kr_l,kr_l,kr_l,kr_l]], kr_length_=l_kr)
+    r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s,kz_s,kz_s ],[kz_l,kz_l,kz_l,kz_l]])
     
     
     Rgaz=8.314 #J K-1 mol-1 = cm^3*MPa/K/mol
@@ -216,8 +189,8 @@ def setKrKx_phloem(): #inC
     kr_r3 = 0#5e-2
     l_kr = 0.8 #cm
     
-    r.setKr_st([[kr_r0,kr_r1 ,kr_r2 ,kr_r0],[kr_s,kr_s, kr_s,kr_s],[kr_l,kr_l]] , kr_length_= l_kr)
-    r.setKx_st([[kz_r0,kz_r12,kz_r12,kz_r0],[kz_l,kz_l, kz_l,kz_l],[kz_l,kz_l]])
+    r.setKr_st([[kr_r0,kr_r1 ,kr_r2 ,kr_r0],[kr_s,kr_s, kr_s,kr_s],[kr_l,kr_l,kr_l,kr_l]] , kr_length_= l_kr)
+    r.setKx_st([[kz_r0,kz_r12,kz_r12,kz_r0],[kz_l,kz_l, kz_l,kz_l],[kz_l,kz_l,kz_l,kz_l]])
     
     Across_s_l   = numL*VascBundle_leaf *(a_ST[2][0]**2)*np.pi# (0.00025 **2)# * 2; rad_x_l_2   = (0.0005 **4) * 2   
     Across_s_s   = numS *VascBundle_stem * (a_ST[1][0]**2)*np.pi#(0.00019 **2) #* 3; rad_x_s_2   = (0.0008 **4) * 1     
@@ -234,32 +207,32 @@ def setKrKx_phloem(): #inC
     #r.a_ST = a_ST #to check for water equilibrium assumption
     #tot surface/np.pi of sieve tube  (np.pi added after)
     #r.a_ST_eqs = [[rad_s_r0,rad_s_r12,rad_s_r12,rad_s_r0],[rad_s_s,rad_s_s],[rad_s_l]]
-    r.setAcross_st([[Across_s_r0,Across_s_r12,Across_s_r12,Across_s_r0],[Across_s_s,Across_s_s,Across_s_s,Across_s_s],[Across_s_l,Across_s_l]])
+    r.setAcross_st([[Across_s_r0,Across_s_r12,Across_s_r12,Across_s_r0],[Across_s_s,Across_s_s,Across_s_s,Across_s_s],[Across_s_l,Across_s_l,Across_s_l,Across_s_l]])
     #actually, don t use perimeter currently
     #r.setPerimeter_st([[0,Perimeter_s_r0,Perimeter_s_r12,Perimeter_s_r12,Perimeter_s_r0],[0,Perimeter_s_s,Perimeter_s_s],[0,Perimeter_s_l]])
     
 
-def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapitation = False,
-          num = 0):
+def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False, 
+            nodeD = 3, simInit = 7, thread = 0,  verbosebase = False, testTime=7):
+    doDecapitation = (nodeD > 0)
     directoryN = directoryN_
     strQ = str(int(np.round(Qmax_*1e6)))
     strTh = str(int(threshold*10))
-    strDecap = str(doDecapitation)[0]
+    strDecap = str(nodeD)#[0]
     def write_file_array(name, data):
         name2 = 'results'+ directoryN+ name+ "_"+ strQ + "_"+strTh+"_"+strDecap+ '.txt'
         with open(name2, 'a') as log:
             log.write(','.join([num for num in map(str, data)])  +'\n')
 
     def write_file_float(name, data):
-        #name2 = 'results' + directoryN+  name+ "_"+ strQ + "_"+strTh+"_"+strDecap+ '.txt'
-        name2 = 'results' + directoryN+  name+  '.txt'
+        name2 = 'results' + directoryN+  name+ "_"+ strQ + "_"+strTh+"_"+strDecap+ '.txt'
+                                                      
         with open(name2, 'a') as log:
             log.write(repr( data)  +'\n')
             
     weatherInit = weather(0, Qmax_)
-    simInit = 15
-    simDuration = simInit # [day] init simtime
-    simMax =22
+    
+    simDuration = 0#simInit # [day] init simtime
     depth = 60
     dt = 1/24 #1h
     verbose = False
@@ -279,7 +252,12 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
 
 
     pl.initialize(verbose = False)#, stochastic = False)
-    pl.simulate(simDuration, False)#, "outputpm15.txt")
+    pl.simulate(dt, False)#, "outputpm15.txt")
+    simDuration += dt
+    while (len(pl.getOrgans(3, False)) ==0 ) or (pl.getOrgans(3, False)[0].getNumberOfLinkingNodes() <3):
+        pl.simulate(dt, False)#, "outputpm15.txt")
+        simDuration += dt
+    simMax = 100#simDuration + testTime #if !doDecapitation
 
     """ Coupling to soil """
 
@@ -326,7 +304,7 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
     #density and rho in mmol suc or carbon?
     rho_org = np.array([np.array(xi) for xi in rho_org])*density/2 #/2 => glucose to sucrose
     r.setRhoSucrose(rho_org)
-    grRate = [[4.,2.,1.0,4.],[2.,2.,3.],[3.,3.]]
+    grRate = [[4.,2.,1.0,4.],[2.,2.,3.],[3.,3.,3.,3.]]
     grRate = np.array([np.array(xi) for xi in grRate],dtype=object)
     grRate[1:] *= 10 #[1:]
 
@@ -420,20 +398,6 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
     #raise Exception
     ö=0
 
-#     orgs_all2 = r2.plant.getOrgans(-1, True)
-#     volOrgini2 = sum(np.array([org.orgVolume(-1 ,True) for org in orgs_all2]) )#true:realized
-#     volOrgi_th2 = 0.
-
-
-#     volOrgini2_type =  np.array([sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(2, True)]),
-#                                  sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(3, True)]), 
-#                                  sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(4, True)])]) 
-                                 
-#     sucOrgini2_type =  np.array([sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(2, True)])*r.rhoSucrose_f(0,2),
-#                                  sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(3, True)])*r.rhoSucrose_f(0,3), 
-#                                  sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(4, True)])*r.rhoSucrose_f(0,4)]) 
-
-
                                  
     volOrgini_type =  np.array([sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(2, True)]),
                                 sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(3, True)]), 
@@ -500,12 +464,12 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
 
     r.doTroubleshooting = False
 
-    print(r.activeAtThreshold,r.CSTthreshold,r.canStartActivating)
+    print("r.activeAtThreshold,r.CSTthreshold,r.canStartActivating:",r.activeAtThreshold,r.CSTthreshold,r.canStartActivating)
     r.activeAtThreshold = True
     r.canStartActivating = False
     r.CSTthreshold = threshold #0.8#[[-1],[-1,0.3,-1],[-1]]
     orgs_stems = r.plant.getOrgans(3, True)
-    print(r.activeAtThreshold,r.CSTthreshold)
+    print("r.activeAtThreshold,r.CSTthreshold,r.canStartActivating:",r.activeAtThreshold,r.CSTthreshold,r.canStartActivating)
     
     def killChildren(orgToKill):
         toFill = orgToKill.getNodeIds()
@@ -515,23 +479,78 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
             toFill = toFill + toFill_
         return toFill
     
-    if doDecapitation: 
-        org_ = r.plant.getOrgans(3, False)[0] #get first (==main) stem
-        yy = np.array([org_.getNodeId(org_.getNumberOfNodes()-2), org_.getNodeId(org_.getNumberOfNodes()-1)])
-        kid_pni = np.array([org_.getChild(ni).getNodeId(0) for ni in range(org_.getNumberOfChildren())])
-        selectKids = np.where(kid_pni == org_.getNodeId(org_.getNumberOfNodes()-1))[0]
-        k_ =[killChildren(org_.getChild(ni)) for ni in selectKids]
-        toFill_ = [item for sublist in k_ for item in sublist]
-        toKil  = np.unique(toFill_)
-        r.plant.node_Decapitate = toKil
+    
+    
+    if doVTP:
+        ana = pb.SegmentAnalyser(r.plant.mappedSegments())
+        vp.plot_plant(r.plant,p_name =["subtype"],
+                        filename = "results"+ directoryN +"plotplant_psi_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö))
 
+    
+        
+        ###
+        #4UQ
+        #
+        ###
+        write_file_float("time", simDuration)
+        write_file_float("doDecapitation", doDecapitation)
+        write_file_float("simMax", simMax)
+        orgs = r.plant.getOrgans(-1, False)
+        id_orgs = [np.full(org.getNumberOfNodes()-1,org.getId()) for org in orgs]
+        id_orgs = np.array([item for sublist in id_orgs for item in sublist])
+        write_file_array("id_orgsPerNodes", id_orgs)
+        
+        idnodeOfOrg = [org.getNodeIds()[1:] for org in orgs]
+        idnodeOfOrg = np.array([item for sublist in idnodeOfOrg for item in sublist])
+        write_file_array("idnodeOfOrg", idnodeOfOrg)
+        
+        lengthth_org = np.array([org.getLength(False) for org in orgs])
+        length_org = np.array([org.getLength(True) for org in orgs])
+        parentOrgId = np.array([org.getParent().getId() for org in orgs])
+        ownOrgId = np.array([org.getId() for org in orgs])
+        distFromParentBase = np.array([org.getParent().getLength(org.parentNI) for org in orgs])
+        write_file_array("length_org", length_org)
+        write_file_array("lengthth_org", lengthth_org)
+        write_file_array("parentOrgId", parentOrgId)
+        write_file_array("ownOrgId", ownOrgId)
+        write_file_array("distFromParentBase", distFromParentBase)
+        
+        cstPerOrg = [np.nan for org in orgs]
+        write_file_array("cstPerOrg", cstPerOrg)
+        Q_GrmaxPerOrg = [np.nan for org in orgs]
+        write_file_array("Q_GrmaxPerOrg", Q_GrmaxPerOrg)
+        Q_GrPerOrg = [np.nan for org in orgs]
+        write_file_array("Q_GrPerOrg", Q_GrPerOrg)
+        ot_orgs = np.array([org.organType() for org in orgs])
+        st_orgs = np.array([org.getParameter("subType") for org in orgs])
+        write_file_array("ot_orgsUQ", ot_orgs)
+        write_file_array("st_orgsUQ", st_orgs)
+        
+        activated = np.array([org.activePhloem for org in orgs]) 
+        write_file_array("activated", activated)
+        ###
+        #4UQ
+        #
+        ###
     while  simDuration < simMax: #
         
         print('simDuration:',simDuration )
         
-        # ot_4phloem = r.plant.organTypes # np.insert(,0,2)
-        # ot_4phloem.insert(0,2)#first node 
-        # ot_4phloem = np.array(ot_4phloem)
+        numLNodes = r.plant.getOrgans(3, False)[0].getNumberOfLinkingNodes()
+        if doDecapitation and (numLNodes == nodeD): 
+            org_ = r.plant.getOrgans(3, False)[0] #get first (==main) stem
+            yy = np.array([org_.getNodeId(org_.getNumberOfNodes()-2), org_.getNodeId(org_.getNumberOfNodes()-1)])
+            kid_pni = np.array([org_.getChild(ni).getNodeId(0) for ni in range(org_.getNumberOfChildren())])
+            selectKids = np.where(kid_pni == org_.getNodeId(org_.getNumberOfNodes()-1))[0]
+            k_ =[killChildren(org_.getChild(ni)) for ni in selectKids]
+            toFill_ = [item for sublist in k_ for item in sublist]
+            toKil  = np.unique(toFill_)
+            r.plant.node_Decapitate = toKil
+            doDecapitation = False
+            simMax = simDuration + testTime #end 7 days after decapitation
+
+        if doDecapitation and (numLNodes > nodeD): 
+            raise Exception("too many linking nodes")
         
         weatherX = weather(simDuration, Qmax_)
 
@@ -545,7 +564,22 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
             verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"] )
         #print(r.psiXyl)
         #raise Exception
-        
+        if verbosebase:
+            segIdx = r.get_segments_index(4)
+            idleafBlade = np.where(np.array(r.plant.leafBladeSurface)[segIdx] > 0)
+            print("An",np.mean(np.array(r.An)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#An.append
+            print("Rd",r.Rd*1e6, "mumol CO2 m-2 s-1")#An.append
+            print("Vc",np.mean(np.array(r.Vc)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vc.append
+            #print("Vcmax",np.mean(r.Vcmax)*1e6, "mumol CO2 m-2 s-1")#Vc.append
+            print("Vj",np.mean(np.array(r.Vj)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vj.append
+            #print("Vjmax",np.mean(r.Vjmax)*1e6, "mumol CO2 m-2 s-1")#Vj.append
+            print("gco2",np.mean(np.array(r.gco2)[idleafBlade]), "mol CO2 m-2 s-1")#gco2.append
+            print("gh2o",np.mean(np.array(r.gco2)[idleafBlade])*1.6, "mol H2O m-2 s-1")#gco2.append
+            print("cics",np.mean(np.array(r.ci)[idleafBlade])/r.cs,"mol mol-1")#cics.append
+            print("ci",np.mean(np.array(r.ci)[idleafBlade]), "mol mol-1")#fw.append
+            print("deltagco2",np.mean(np.array(r.deltagco2)[idleafBlade]), "mol mol-1")#fw.append
+            print("fw",np.mean(np.array(r.fw)[idleafBlade]), "-")#fw.a
+            
         ots = np.concatenate((np.array([0]), r.get_organ_types()))#per node
         leavesSegs = np.where(ots[1:] ==4)
         fluxes = np.array(r.outputFlux)
@@ -560,21 +594,6 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
             write_file_array("fluxes_leaves", fluxes_leaves)
             raise Exception
             
-        # segIdx = r.get_segments_index(4)
-        # idleafBlade = np.where(np.array(r.plant.leafBladeSurface)[segIdx] > 0)
-        # print("An",np.mean(np.array(r.An)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#An.append
-        # print("Rd",r.Rd*1e6, "mumol CO2 m-2 s-1")#An.append
-        # print("Vc",np.mean(np.array(r.Vc)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vc.append
-        # #print("Vcmax",np.mean(r.Vcmax)*1e6, "mumol CO2 m-2 s-1")#Vc.append
-        # print("Vj",np.mean(np.array(r.Vj)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vj.append
-        # #print("Vjmax",np.mean(r.Vjmax)*1e6, "mumol CO2 m-2 s-1")#Vj.append
-        # print("gco2",np.mean(np.array(r.gco2)[idleafBlade]), "mol CO2 m-2 s-1")#gco2.append
-        # print("gh2o",np.mean(np.array(r.gco2)[idleafBlade])*1.6, "mol H2O m-2 s-1")#gco2.append
-        # print("cics",np.mean(np.array(r.ci)[idleafBlade])/r.cs,"mol mol-1")#cics.append
-        # print("ci",np.mean(np.array(r.ci)[idleafBlade]), "mol mol-1")#fw.append
-        # print("deltagco2",np.mean(np.array(r.deltagco2)[idleafBlade]), "mol mol-1")#fw.append
-        # print("fw",np.mean(np.array(r.fw)[idleafBlade]), "-")#fw.a
-        #trans = np.array(r.outputFlux)
         """ dumux """    
         fluxesSoil = r.soilFluxes(simDuration, r.psiXyl, sx, approx=False)
         
@@ -623,17 +642,6 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
         Q_in   += sum(np.array(r.AgPhl)*dt)
         Q_out   = Q_Rm + Q_Exud + Q_Gr
         error   = sum(Q_ST +Q_Par+ Q_meso + Q_out )- Q_in - sum(Q_ST_init)  - sum(Q_meso_init)
-        # # Q_ST_dot    = np.array(r.Q_out_dot[0:Nt])
-        # # Q_meso_dot  = np.array(r.Q_out_dot[Nt:(Nt*2)])
-        # # Q_Rm_dot    = np.array(r.Q_out_dot[(Nt*2):(Nt*3)])
-        # # Q_Exud_dot  = np.array(r.Q_out_dot[(Nt*3):(Nt*4)])
-        # # Q_Gr_dot    = np.array(r.Q_out_dot[(Nt*4):(Nt*5)])
-        
-        # #delta_ls_max += sum(np.array(r2.rmaxSeg(dt, r.k_gr)) * dt)
-        # delta_ls_max_i = np.array(r.delta_ls_org_imax)
-        # delta_ls_max = np.array(r.delta_ls_org_max)
-        # delta_ls_i = np.array(r.delta_ls_org_i)
-        # delta_ls = np.array(r.delta_ls_org)
         
         Q_Rmmax       = np.array(r.Q_out[(Nt*5):(Nt*6)])
         Q_Grmax       = np.array(r.Q_out[(Nt*6):(Nt*7)])
@@ -643,14 +651,6 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
         #Q_Par_i       = Q_out     - Q_Parbu
         Q_Rm_i        = Q_Rm      - Q_Rmbu
         Q_Gr_i        = Q_Gr      - Q_Grbu
-        # Q_Gr4_i       = Q_Gr_i[np.where(ot_4phloem==4)[0]]#Q_Gr4     - Q_Gr4bu
-        # Q_Gr3_i       = Q_Gr_i[np.where(ot_4phloem==3)[0]]#Q_Gr3     - Q_Gr3bu
-        # Q_Gr2_i       = Q_Gr_i[np.where(ot_4phloem==2)[0]]#Q_Gr2     - Q_Gr2bu
-        
-        # #Q_Gr_ith        = Q_Grth      - Q_Grbuth
-        # #Q_Gr4_ith       = Q_Gr4th     - Q_Gr4buth
-        # #Q_Gr3_ith       = Q_Gr3th     - Q_Gr3buth
-        # #Q_Gr2_ith       = Q_Gr2th     - Q_Gr2buth
         
         Q_Exud_i      = Q_Exud    - Q_Exudbu
         Q_meso_i      = Q_meso    - Q_mesobu
@@ -662,52 +662,14 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
         Q_out_i       = Q_Rm_i    + Q_Exud_i      + Q_Gr_i
         Q_outmax_i    = Q_Rmmax_i + Q_Exudmax_i   + Q_Grmax_i
         
-        
-        # orgs = r.plant.getOrgans(-1, True)
-        # id_orgs = np.array([org.getId() for org in orgs])
-        # orgs_all = r.plant.getOrgans(-1, True)
-        # ot_orgs_all = np.array([org.organType() for org in orgs_all])
-        # volOrgi_th = 0#volOrg2 - volOrgini2
-        
-        # volOrg2 = np.array([org.orgVolume(-1,False) for org in r.plant.getOrgans(2, True)])
-        # volOrg3 = np.array([org.orgVolume(-1,False) for org in r.plant.getOrgans(3, True)])
-        # volOrg4 = np.array([org.orgVolume(-1,False) for org in r.plant.getOrgans(4, True)])
-        
-        # volOrg_typei = volOrg_type - volOrgini_type
-        # volOrg2_typei = volOrg2_type - volOrgini2_type
-        
-        # JW_ST = np.array(r.JW_ST)
-        # length_ST = np.array(r.plant.segLength())
-        # #0.0001037
-        # Lp = 0.005#0.004320 #cm d-1 hPa, assumed resistance between xylem and phloem
-        # Rgaz =  83.14 #hPa cm3 K-1 mmol-1
-        # a_STs = np.array(r.a_ST)#np.array([a_ST[ot][st] for ot, st in ])
-        #RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * (2/a_STs) * length_ST * Lp /np.abs(JW_ST) /   ((a_STs**2)*np.pi)  
-        #RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * 2 /a_STs* length_ST * Lp /np.abs(JW_ST) *   (25*a_STs*a_STs*np.pi) 
-        #first part of RhatFhat (add perimeter to get min Lp afterwards):
-        # RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * length_ST  /np.abs(JW_ST) #* Lp *  perimeter  
-        
         """ATT
         
         # C_ST_ = C_ST[1:]
         
         """
         
-        # ids = np.where(RhatFhat ==  min(RhatFhat))
-        # if (min(RhatFhat) < 1) :
-            # #print()
-            # C_ST_ = C_ST[1:]
-            # ids = np.where(RhatFhat ==  min(RhatFhat))
-            # print(min(RhatFhat))
-            # print(C_ST_[ids] , Rgaz  )
-            # print(a_STs[ids]  )
-            # print(length_ST[ids]   )
-            # print(JW_ST[ids]) 
-            # print( RhatFhat[ids],(weatherX["TairC"] + 273.15)  )
-            # print("issue RhatFhat")
-            #raise Exception
         
-        if verbose :
+        if verbosebase :
             print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h",  round(r.Qlight *1e6),"mumol m-2 s-1")
             print("Error in Suc_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(error, div0f(error,Q_in, 1.)))
             #print("Error in growth:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(errorGri, relErrorGri))
@@ -730,16 +692,8 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
             print("abs val for max :\n\tRm   {:5.5f}\tGr   {:5.5f}\tExud {:5.5f}".format(sum(Q_Rmmax_i), 
                  sum(Q_Grmax_i),sum(Q_Exudmax_i)))
             print("Q_Par {:5.2e}, C_Par {:5.2e}".format(sum(Q_Par), np.mean(C_Par)))
-            print("growth (cm)\ttot {:5.2e}\ti {:5.2e}".format(sum(delta_ls), sum(delta_ls_i)))      
-            print("max growth (cm)\ttot {:5.2e}\ti {:5.2e}".format(sum(delta_ls_max), sum(delta_ls_max_i)))     
             print("amount Suc (cm)\tAn {:5.2e}\tGr {:5.2e}\tRGr {:5.2e}\tRm {:5.2e}\tExud {:5.2e}".format(AnSum, sum(Q_Gr)*r.Gr_Y,sum(Q_Gr)*(1-r.Gr_Y), sum(Q_Rm), sum(Q_Exud))) 
-            #print("growth (cm3)\n\tobs {:5.2e}\ttotth {:5.2e}\ttotobs {:5.2e}".format(sum(volOrgi_obs), volOrgi_th,volOrg_obstot ))  
-            print("growth (cm3) per type\n\ttotobs", volOrg_typei )       
-            #print("growth (cm3) per type\n\ttotobs", volOrg_typei , volOrg2_typei)       
-            print("sucOrg obs (mmol)\t", sucOrg_type - sucOrgini_type)  
-            #print("sucOrg obs (mmol)\t th (mmol)\t", sucOrg_type - sucOrgini_type, sucOrg2_type - sucOrgini2_type)       
-            #print("Grobs (mmol) root\tstem\tleaf\t", sum(Q_Gr2bu)*r.Gr_Y,sum(Q_Gr3bu)*r.Gr_Y, sum(Q_Gr4bu)*r.Gr_Y)# , gr4ith) 
-            #print("RhatFhat ", min(RhatFhat),C_ST_[ids],a_STs[ids], length_ST[ids], JW_ST[ids]  )
+            
         assert abs(error) < 1e-3, "error Suc balance"
         if abs(error) > 1e-3:
             print("suc error too high")
@@ -836,98 +790,15 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
                                     filename = "results"+ directoryN +"plotplant_suc_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö),
                                     range_ = [0,3])   
         ö +=1
-        # r_ST_ref = np.array(r.r_ST_ref)
-        # r_ST = np.array(r.r_ST)
         
-        # #with open("results"+ directoryN +"CWGr_max_15pm.txt",  'a') as data: 
-         # #     data.write(str(r.deltaSucOrgNode))
-              
-        #ots_org = np.concatenate((np.array([0]), r.get_organ_types()))#per org
-        #write_file_array("id_org", ot_orgs_all)
-        #write_file_array("ots_org", ot_orgs_all)
-        #sucOrg_unit =  np.array([org.orgVolume(-1,False)*r.rhoSucrose[org.organType()] for org in r.plant.getOrgans(-1, True)])
-        #typeOrg_unit =  np.array([org.organType() for org in r.plant.getOrgans(-1, True)])
-        
-        # write_file_array("Fpsi", r.Fpsi)
-        # write_file_array("deltasucorgbu_type", typeOrg_unit)
-        # write_file_array("deltasucorgbu_phloem", deltasucorgbu)
-        # write_file_array("deltasucorgbu_plant",  (sucOrg_unit - sucOrgini_unit)[idOrg_unit.argsort()])
-        # write_file_array("deltasucorgbu_plantid",  idOrg_unit[idOrg_unit.argsort()])
-        
-        #write_file_array("volOrg2", volOrg2-volOrgini2)
-        #write_file_array("volOrg3", volOrg3-volOrgini3)
-        #write_file_array("volOrg4", volOrg4-volOrgini4)
-        
-        # write_file_array("leafBladeSurface", np.array(r.plant.leafBladeSurface))
-        # write_file_array("fw", r.fw)
-        # write_file_array("gco2", r.gco2)
-        
-        # #write_file_array("length_blade", length_blade)
-        # write_file_array("ots", ots)
-        # write_file_array("soilWatPot", sx)
-        # write_file_array("fluxes", fluxes)#cm3 day-1
-        # write_file_array("volST", volST)
-        # write_file_array("volOrg",  volOrg) #with epsilon
-        # write_file_array("Fl", Fl)
-        # write_file_array("AgPhl", np.array(r.AgPhl))
-        # write_file_array("Q_ST_dot", Q_ST_i/dt)
-        # write_file_array("Q_meso_dot", Q_meso_i/dt)
-        # write_file_array("Q_Rm_dot", Q_Rm_i/dt)
-        # write_file_array("Q_Exud_dot", Q_Exud_i/dt)
-        # write_file_array("Q_Gr_dot", Q_Gr_i/dt)
-        # write_file_array("Q_Rmmax_dot", Q_Rmmax_i/dt)
-        # write_file_array("Q_Exudmax_dot", Q_Exudmax_i/dt)
-        # write_file_array("Q_Grmax_dot", Q_Grmax_i/dt)
-        
-        # write_file_array("Q_Par", Q_Par)
-        # write_file_array("C_Par", C_Par)
-        # write_file_array("Q_ST", Q_ST)
-        # write_file_array("C_ST", C_ST)
-        # write_file_array("C_meso", C_meso)
-        # write_file_array("Q_meso", Q_meso)
-        # write_file_array("Q_Rm", Q_Rm)
-        # write_file_array("Q_Exud", Q_Exud)
-        # write_file_array("Q_Gr", Q_Gr)
-        # write_file_array("psiXyl", r.psiXyl)
-        # write_file_array("trans", r.Ev)
-        # write_file_array("transrate",r.Jw)
-        # write_file_array("Q_Grmax", Q_Grmax)
-        # write_file_array("Q_Rmmax", Q_Rmmax)
-        # write_file_array("Q_Exudmax", r.Q_Exudmax)
-        
-        
-        # write_file_array("ratio_Gr ", div0(Q_Gr_i,Q_Grmax_i, np.nan))
-        # write_file_array("ratio_Rm ", Q_Rm_i/Q_Rmmax_i)
-        # write_file_array("ratio_Exud ", div0(Q_Exud_i,Q_Exudmax_i, np.nan))
-        # write_file_array("satisfaction ", Q_out_i/Q_outmax_i)
-        
-        # write_file_array("r_ST_ref", r_ST_ref)
-        # write_file_array("r_ST", r_ST)
-        # write_file_array("mu", r_ST/r_ST_ref)#hPa d
-        
-        # write_file_array("id_orgs", id_orgs)
-        # write_file_array("ot_orgs", ot_orgs)
-        # write_file_array("ot_orgs_all", ot_orgs)#with arg to small to be represented
-        # write_file_array("st_orgs", st_orgs)
-        # write_file_array("delta_ls", delta_ls)
-        # write_file_array("Q_Ag", r.AgPhl)
-        # write_file_array("delta_ls_max", delta_ls_max)
-        # write_file_array("delta_ls_i", delta_ls_i)
-        # write_file_array("delta_ls_max_i", delta_ls_max_i)
-        if(num == 0):#just need it once
-            write_file_float("time", simDuration)
-        # write_file_float("computeTime", datetime.now() - beginning)
-        # organTypes = r.get_organ_types()
-        # subTypes =r.get_subtypes()
-        # nodes_organtype = np.concatenate(([1], organTypes))#seg_Indx = node_y_Indx - 1. just need to add organ type for seed (set to type 'root')     #np.zeros(len(nods))#-1)
-        # nodes_subtype = np.concatenate(([1], subTypes))
-        # write_file_array("organTypes ", organTypes)
-        # write_file_array("subTypes ", subTypes)
         
         ###
         #4UQ
         #
         ###
+        write_file_float("time", simDuration)
+        write_file_float("doDecapitation", doDecapitation)
+        write_file_float("simMax", simMax)
         orgs = r.plant.getOrgans(-1, False)
         id_orgs = [np.full(org.getNumberOfNodes()-1,org.getId()) for org in orgs]
         id_orgs = np.array([item for sublist in id_orgs for item in sublist])
@@ -965,87 +836,12 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
         #4UQ
         #
         ###
-        
-        # 
-        # #Ntbu2 = Nt2
-        # orgs_all = r.plant.getOrgans(-1, True)
-        # NOrgbu = len(orgs_all)
-        # orgradibu= np.array([org.getParameter("a") for org in orgs_all])
-        # volOrgbu = np.array([org.orgVolume(-1,False) for org in orgs_all])
-        # lenOrgbu = np.array([org.getLength(False) for org in orgs_all])
-        # Orgidsbu = np.array([org.getId() for org in orgs_all]) 
-        
         verbose_simulate = False
-        r.plant.simulate(dt, False)#, "outputpm15.txt") #time span in days /(60*60*24)
-        #r2.plant.simulate(dt,  False)#, "outputpm15.txt")
-        
-        # volOrg2_type =  np.array([sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(2, True)]),
-                                # sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(3, True)]), 
-                                # sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(4, True)])]) 
-        
-        
-        # volOrg_type =  np.array([sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(2, True)]),
-                                # sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(3, True)]), 
-                                # sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(4, True)])])
-        
-        
-        # # lenOrg_type =  np.array([sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(2, True)]),
-                                # # sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(3, True)]), 
-                                # # sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(4, True)])]) 
-        
-        # sucOrg2_type =  np.array([sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(2, True)])*r.rhoSucrose_f(0,2),
-                                # sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(3, True)])*r.rhoSucrose_f(0,3), 
-                                # sum([org.orgVolume(-1,False) for org in r2.plant.getOrgans(4, True)])*r.rhoSucrose_f(0,4)]) 
-        # sucOrg_type =  np.array([sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(2, True)])*r.rhoSucrose_f(0,2),
-                                # sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(3, True)])*r.rhoSucrose_f(0,3), 
-                                # sum([org.orgVolume(-1,False) for org in r.plant.getOrgans(4, True)])*r.rhoSucrose_f(0,4)]) 
-                                
-        # sucOrg_unit =  np.array([org.orgVolume(-1,False)*r.rhoSucrose_f(int(org.getParameter("subType")-1),org.organType()) for org in r.plant.getOrgans(-1, True)])
-        # typeOrg_unit =  np.array([org.organType() for org in r.plant.getOrgans(-1, True)])
-        # idOrg_unit =  np.array([org.getId() for org in r.plant.getOrgans(-1, True)])
-        
-        # deltasucorgbu = np.array(r.delta_suc_org)   
-        
-        # write_file_array("volOrgth", volOrg2_type)
-        # write_file_array("volOrgobs", volOrg_type)
-        # write_file_array("sucOrgth", sucOrg2_type)
-        # write_file_array("sucOrgobs", sucOrg_type)
-        
-        # orgs_all2 = r2.plant.getOrgans(-1, True)
-        # volOrgi_th2 =  sum(np.array([org.orgVolume(-1,False) for org in orgs_all2]) )#true:realized
-        
-        # orgs = r.plant.getOrgans(-1, True)
-        # orgs_all = r.plant.getOrgans(-1, True)
+        r.plant.simulate(dt, False)
         Ntbu = Nt
         Nt = len(r.plant.nodes)
-        #NOrg = len(orgs_all)#r.plant.getNumberOfOrgans()#att! not same number
-        # sucOrgini_unit = np.concatenate((sucOrgini_unit, np.full(NOrg - NOrgbu, 0.)))
-        
-        # orgradi= np.array([org.getParameter("a") for org in orgs_all])
-        # orgradibu = np.concatenate((orgradibu, np.full(NOrg - NOrgbu, 0.)))
-        # #Orgidsbu = Orgids
-        # Orgids = np.array([org.getId() for org in orgs_all]) 
-        
-        # Orgidsbu = np.concatenate((Orgidsbu, np.full(NOrg - NOrgbu, 0.)))
-        
-        # volOrg = np.array([org.orgVolume(-1,False) for org in orgs_all])
-        # ot_orgs = np.array([org.organType() for org in orgs_all])
-        # st_orgs = np.array([org.getParameter("subType") for org in orgs_all])
-        # stroot = st_orgs[np.where(ot_orgs==2)]
-        # # errorst = sum(np.where(stroot > 3))
-        # # if errorst > 0:
-            # # raise Exception
-        
-        # volOrgbu     = np.concatenate((volOrgbu, np.full(NOrg - NOrgbu, 0.)))#len(volOrg) - len(volOrgbu), 0.)))
-        # #volOrgi_th = sum(Q_Gr_i)*r.Gr_Y/r.rhoSucrose
         
         
-        # #not sur I get the organs always in same order
-        # lenOrg = np.array([org.getLength(False) for org in orgs_all]) #true:realized
-        # lenOrgbu     = np.concatenate((lenOrgbu, np.full(NOrg - NOrgbu, 0.)))#len(volOrg) - len(volOrgbu), 0.)))
-        # lenOrgi_th = np.concatenate((delta_ls_i, np.full(NOrg - NOrgbu, 0.)))
-        
-        # #delta_ls_max =  np.concatenate((delta_ls_max, np.full(Nt2 - Ntbu2, 0.)))
         Q_Rmbu       =   np.concatenate((Q_Rm, np.full(Nt - Ntbu, 0.)))
         Q_Grbu       =   np.concatenate((Q_Gr, np.full(Nt - Ntbu, 0.))) 
         Q_Exudbu     =   np.concatenate((Q_Exud, np.full(Nt - Ntbu, 0.))) 
@@ -1056,133 +852,12 @@ def runSim(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDecapi
         
         Q_STbu       =   np.concatenate((Q_ST, np.full(Nt - Ntbu, 0.)))
         Q_mesobu     =   np.concatenate((Q_meso, np.full(Nt - Ntbu, 0.)))
-        # delta_ls_bu  =   np.concatenate((delta_ls, np.full(NOrg - NOrgbu, 0.)))
         
-        # Q_Gr4bu= Q_Gr4
-        # Q_Gr3bu =Q_Gr3
-        # Q_Gr2bu= Q_Gr2
-        # ##
-        # #       CHECKS
-        # ##
-        # highNeed1 = sum(Q_Rm_i[np.greater(Q_Rm_i,Q_Rmmax_i)] - Q_Rmmax_i[np.greater(Q_Rm_i,Q_Rmmax_i)])
-        # highNeed2 = sum(Q_Gr_i[np.greater(Q_Gr_i,Q_Grmax_i)] - Q_Grmax_i[np.greater(Q_Gr_i,Q_Grmax_i)])
-        # highNeed3 = sum(Q_Exud_i[np.greater(Q_Exud_i,Q_Exudmax_i)] - Q_Exudmax_i[np.greater(Q_Exud_i,Q_Exudmax_i)])
-        
-        # if ((highNeed1 - abs(error)) > 1e-5):
-            # print(np.where([np.greater(Q_Rm_i,Q_Rmmax_i)]))
-            # print(Q_Rm_i[np.where([np.greater(Q_Rm_i,Q_Rmmax_i)])[0]])
-            # print(Q_Rmmax_i[np.where([np.greater(Q_Rm_i,Q_Rmmax_i)])[0]])
-            # print(Q_Rm_i[np.greater(Q_Rm_i,Q_Rmmax_i)] - Q_Rmmax_i[np.greater(Q_Rm_i,Q_Rmmax_i)])
-            # print("issue high needs 1", highNeed1,  abs(error))
-            # raise Exception
-        # #assert div0f(error,Q_in,1.) < 1e-3, "balance error > 0.1%"
-        
-        # if (len(Orgids) != len(Orgidsbu)):
-            # print(len(Orgids), len(Orgidsbu), NOrg, NOrgbu, Nt, Ntbu)
-        # orderId  = Orgids - Orgidsbu
-        
-        # lenOrgi_obs = lenOrg - lenOrgbu
-        # lenOrgi_obs2 = sum(lenOrg) - sum(lenOrgbu)
-        # errorleni = lenOrgi_obs -  lenOrgi_th 
-        # errorleni2 = lenOrgi_obs2 -  sum(lenOrgi_th) 
         simDuration += dt
         if ö>=2:
             r.canStartActivating = True
         
         
-    # structSum = 0
-    # orgs_all = r.plant.getOrgans(-1, True)
-
-    # for org in orgs_all: #cm3 * mmol Suc /cm3 = mmol Suc 
-        # structSum += org.orgVolume(-1,False) * r.rhoSucrose_f(int(org.getParameter("subType")-1),org.organType())
-
-
-    # GrowthSum = structSum - structSumInit
-    # print("simDuration", simDuration, "d")
-    # end = datetime.now()
-    # print(end - beginning)
-    if doVTP:
-        ana = pb.SegmentAnalyser(r.plant.mappedSegments())
-
-        #print(C_ST)
-        #raise Exception
-        cutoff = 1e-15 #is get value too small, makes paraview crash
-        C_ST_p = C_ST
-        C_ST_p[abs(C_ST_p) < cutoff] = 0
-        fluxes_p = fluxes
-        fluxes_p[abs(fluxes_p) < cutoff] = 0
-        Q_Exud_i_p = Q_Exud_i
-        Q_Exud_i_p[abs(Q_Exud_i_p) < cutoff] = 0
-        Q_Rm_i_p = Q_Rm_i
-        Q_Rm_i_p[abs(Q_Rm_i_p) < cutoff] = 0
-        Q_Gr_i_p = Q_Gr_i
-        Q_Gr_i_p[abs(Q_Gr_i_p) < cutoff] = 0
-
-        Q_Exudmax_i_p = Q_Exudmax_i
-        Q_Exudmax_i_p[abs(Q_Exudmax_i_p) < cutoff] = 0
-        Q_Rmmax_i_p = Q_Rmmax_i
-        Q_Rmmax_i_p[abs(Q_Rmmax_i_p) < cutoff] = 0
-        Q_Grmax_i_p = Q_Grmax_i
-        Q_Grmax_i_p[abs(Q_Grmax_i_p) < cutoff] = 0
-
-
-        C_Exud_i_p = Q_Exud_i/volST
-        C_Exud_i_p[abs(C_Exud_i_p ) < cutoff] = 0
-        C_Rm_i_p = Q_Rm_i/volST
-        C_Rm_i_p[abs(C_Rm_i_p) < cutoff] = 0
-        C_Gr_i_p = Q_Gr_i/volST
-        C_Gr_i_p[abs(C_Gr_i_p) < cutoff] = 0
-
-        C_Exudmax_i_p = Q_Exudmax_i/volST
-        C_Exudmax_i_p[abs(C_Exudmax_i_p) < cutoff] = 0
-        C_Rmmax_i_p = Q_Rmmax_i/volST
-        C_Rmmax_i_p[abs(C_Rmmax_i_p) < cutoff] = 0
-        C_Grmax_i_p = Q_Grmax_i/volST
-        C_Grmax_i_p[abs(C_Grmax_i_p) < cutoff] = 0
-
-        psiXyl_p = np.array(r.psiXyl)
-        psiXyl_p[abs(psiXyl_p) < cutoff] = 0
-        ana.addData("CST", C_ST_p)
-        #do as konz or div per vol or surf?
-        #ana.addData("Q_Exud", Q_Exud)  # cut off for vizualisation
-        ana.addData("fluxes", fluxes_p)
-        ana.addData("Fpsi", np.array(r.Fpsi))
-
-        ana.addData("QExud", Q_Exud_i_p)  # cut off for vizualisation
-        ana.addData("QRm", Q_Rm_i_p)  # cut off for vizualisation
-        ana.addData("QGr", Q_Gr_i_p)  # cut off for vizualisation
-        ana.addData("QExudmax", Q_Exudmax_i_p)  # cut off for vizualisation
-        ana.addData("QRmmax", Q_Rmmax_i_p)  # cut off for vizualisation
-        ana.addData("QGrmax", Q_Grmax_i_p)  # cut off for vizualisation
-
-        ana.addData("CExud", C_Exud_i_p)  # cut off for vizualisation
-        ana.addData("CRm", C_Rm_i_p)  # cut off for vizualisation
-        ana.addData("CGr", C_Gr_i_p)  # cut off for vizualisation
-        ana.addData("CExudmax", C_Exudmax_i_p)  # cut off for vizualisation
-        ana.addData("CRmmax", C_Rmmax_i_p)  # cut off for vizualisation
-        ana.addData("CGrmax", C_Grmax_i_p)  # cut off for vizualisation
-
-        ana.addData("psi_Xyl",psiXyl_p)
-        ana.write("results"+directoryN+"plotplant_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö) +".vtp", ["CST", "fluxes","psi_Xyl",
-                            "QExud", "QGr", "QRm",
-                            "CExud", "CGr", "CRm",
-                            "QExudmax", "QGrmax", "QRmmax",
-                            "CExudmax", "CGrmax", "CRmmax",
-                            "organType", "subType", "Fpsi"]) 
-
-
-        fluxes_p = np.insert(fluxes_p,0,0)# "[sucrose]",
-
-        #need to adapt plot_plant for this to work
-        if(simDuration > 0):#if(simDuration > (simMax -1)):
-            vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)"],
-                                vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p], 
-                                filename = "results"+ directoryN +"plotplant_psi_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö),
-                                range_ = [300,1450])
-            vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","sucrose concentration (mmol/cm3)"],
-                                vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, C_ST_p], 
-                                filename = "results"+ directoryN +"plotplant_suc_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö),
-                                range_ = [0,3])   
    
 if __name__ == '__main__':
     main_dir=os.environ['PWD']#dir of the file
@@ -1194,6 +869,9 @@ if __name__ == '__main__':
     else:
        test = os.listdir(results_dir)
        for item in test:
-           os.remove(results_dir+item)
-    runSim(directoryN_=directoryN,Qmax_ = 77e-6, threshold = 0.1, doVTP = False, 
-           doDecapitation = False, num = 0 )
+            try:
+                os.remove(results_dir+item)
+            except:
+                pass
+    runSim(directoryN_=directoryN,Qmax_ = 100e-6, threshold = 0.4, doVTP = True, 
+           nodeD = 0, thread = 0, verbosebase = True, simInit= 3 )

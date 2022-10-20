@@ -3,21 +3,26 @@
 
 import sys;
 import os
-currentpath = os.getcwd()
-if currentpath[-4:] == "tBox":
-    path_ = "/applications/phloem_flow/"
-    CPBdir = ""
-else:
-    path_ = ""
-    CPBdir = "../.."
+CPBdir = "../.."
 
-#directoryN = "/"+sys.argv[0].split('.')[0]+"/"
-directoryN = "/branching_noCnoW_stem_bud/"
-sys.path.append(path_+"../.."); sys.path.append(path_+"../../src/python_modules")
-sys.path.append('/home/rbtlm640/4UQ/CPlantBox/src/python_modules')
+main_dir=os.environ['PWD']#dir of the file
+directoryN = "/"+os.path.basename(__file__)[:-3]+"/"#"/a_threshold/"
+results_dir = main_dir +"/results"+directoryN
+
+sys.path.append("../.."); sys.path.append("../../src/python_modules")
 #import matplotlib
 #matplotlib.use('AGG') #otherwise "import matplotlib.pyplot" hangs
 
+if not os.path.exists(results_dir):
+    os.makedirs(results_dir)
+else:
+   test = os.listdir(results_dir)
+   for item in test:
+        try:
+            os.remove(results_dir+item)
+        except:
+            pass
+        
 from phloem_flux import PhloemFluxPython  # Python hybrid solver
 #from Leuning_speedup import Leuning #about 0.7 for both
 #from photosynthesis_cython import Leuning
@@ -32,30 +37,6 @@ import vtk_plot as vp
 #import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-
-def delete_verbose():
-    home_dir = os.getcwd()
-    dir_name = ""#"/results"
-    dir_name2 = home_dir + dir_name
-    test = os.listdir(dir_name2)
-    for item in test:
-        if item.startswith("/results"+directoryN):
-            os.remove(os.path.join(dir_name2, item))
-        if item.startswith("outphoto"):
-            os.remove(os.path.join(dir_name2, item))
-        if item.startswith("fluxesphoto"):
-            os.remove(os.path.join(dir_name2, item))
-        if item.startswith("loopphoto"):
-            os.remove(os.path.join(dir_name2, item))
-        if item.startswith("errphoto"):
-            os.remove(os.path.join(dir_name2, item))
-        if item.startswith("/results"+directoryN+"prints"):
-            os.remove(os.path.join(dir_name2, item))
-    dir_name2 = dir_name2+"/results"+directoryN
-    test = os.listdir(dir_name2)
-    for item in test:
-        os.remove(os.path.join(dir_name2, item))
-delete_verbose()
 
 
 isCluster = (os.environ['HOME'] == '/home/m.giraud')
@@ -139,26 +120,15 @@ def div0f(a, b, c):
         return a/c
         
 def write_file_array(name, data):
-    name2 = 'results'+ directoryN+ name+ '_15pm.txt'
+    name2 = 'results'+ directoryN+ name+ "_"+ strQ + "_"+strTh+"_"+strDecap+ '.txt'
     with open(name2, 'a') as log:
         log.write(','.join([num for num in map(str, data)])  +'\n')
 
 def write_file_float(name, data):
-    name2 = 'results' + directoryN+  name+ '_15pm.txt'
+    #name2 = 'results' + directoryN+  name+ "_"+ strQ + "_"+strTh+"_"+strDecap+ '.txt'
+    name2 = 'results' + directoryN+  name+  '.txt'
     with open(name2, 'a') as log:
         log.write(repr( data)  +'\n')
-
-home_dir = os.getcwd()
-dir_name = "/results"+directoryN
-dir_name2 = home_dir + dir_name
-test = os.listdir(dir_name2)
-for item in test:
-    if item.endswith("_15pm.txt"):
-        os.remove(os.path.join(dir_name2, item))
-    if item.endswith("uqr15.vtk"):
-        os.remove(os.path.join(dir_name2, item))
-    if item.startswith("15pm"):
-        os.remove(os.path.join(dir_name2, item))
 
 """ Parameters """
 
@@ -173,9 +143,8 @@ verbose_simulate = False
 # plant system 
 pl = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
 pl2 = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
-path = "/home/rbtlm640/4UQ/CPlantBox/modelparameter/plant/"
-name = "UQ_simple_stem_bud"# #"UQ_test"#
-"UQ_stem"# "morning_glory_UQ"#
+path = CPBdir+"/modelparameter/plant/"
+name = "UQ_simple_stem_bud"
 
 print(path + name + ".xml")
 
@@ -284,4 +253,4 @@ while simDuration <= simMax:#7
 # print("leaf")
 print("simDuration", simDuration, "d", len(pl.getOrgans(pb.leaf)))
 #vp.plot_plant(pl,p_name = "organType")
-print("results"+directoryN+"15pm_"+ str(ö) +".vtp")
+print("results"+directoryN)

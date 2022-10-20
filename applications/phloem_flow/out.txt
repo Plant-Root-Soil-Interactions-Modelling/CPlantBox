@@ -1,0 +1,1536 @@
+Hello, World! I am process 143 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/143.txt
+Hello, World! I am process 70 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/70.txt
+Hello, World! I am process 210 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/210.txt
+Hello, World! I am process 59 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/59.txt
+Hello, World! I am process 128 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/128.txt
+Hello, World! I am process 107 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/107.txt
+Hello, World! I am process 30 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/30.txt
+Hello, World! I am process 139 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/139.txt
+Hello, World! I am process 165 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/165.txt
+Hello, World! I am process 56 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/56.txt
+Hello, World! I am process 2 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/2.txt
+Hello, World! I am process 16 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/16.txt
+Hello, World! I am process 138 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/138.txt
+Hello, World! I am process 18 of 512 on node01.
+Hello, World! I am process 87 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/87.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/18.txt
+Hello, World! I am process 148 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/148.txt
+Hello, World! I am process 243 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/243.txt
+Hello, World! I am process 105 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/105.txt
+Hello, World! I am process 63 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/63.txt
+Hello, World! I am process 85 of 512 on node01.
+Hello, World! I am process 96 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/85.txt
+Hello, World! I am process 131 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/96.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/131.txt
+Hello, World! I am process 117 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/117.txt
+Hello, World! I am process 191 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/191.txt
+Hello, World! I am process 155 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/155.txt
+Hello, World! I am process 126 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/126.txt
+Hello, World! I am process 118 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/118.txt
+Hello, World! I am process 127 of 512 on node01.
+Hello, World! I am process 205 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/127.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/205.txt
+Hello, World! I am process 112 of 512 on node01.
+Hello, World! I am process 250 of 512 on node01.
+Hello, World! I am process 157 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/112.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/157.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/250.txt
+Hello, World! I am process 249 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/249.txt
+Hello, World! I am process 88 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/88.txt
+Hello, World! I am process 232 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/232.txt
+Hello, World! I am process 58 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/58.txt
+Hello, World! I am process 187 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/187.txt
+Hello, World! I am process 171 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/171.txt
+Hello, World! I am process 235 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/235.txt
+Hello, World! I am process 206 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/206.txt
+Hello, World! I am process 144 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/144.txt
+Hello, World! I am process 236 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/236.txt
+Hello, World! I am process 69 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/69.txt
+Hello, World! I am process 61 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/61.txt
+Hello, World! I am process 132 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/132.txt
+Hello, World! I am process 38 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/38.txt
+Hello, World! I am process 199 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/199.txt
+Hello, World! I am process 36 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/36.txt
+Hello, World! I am process 25 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/25.txt
+Hello, World! I am process 72 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/72.txt
+Hello, World! I am process 23 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/23.txt
+Hello, World! I am process 40 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/40.txt
+Hello, World! I am process 125 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/125.txt
+Hello, World! I am process 141 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/141.txt
+Hello, World! I am process 93 of 512 on node01.
+Hello, World! I am process 53 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/93.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/53.txt
+Hello, World! I am process 193 of 512 on node01.
+Hello, World! I am process 79 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/193.txt
+Hello, World! I am process 110 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/110.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/79.txt
+Hello, World! I am process 92 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/92.txt
+Hello, World! I am process 102 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/102.txt
+Hello, World! I am process 183 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/183.txt
+Hello, World! I am process 158 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/158.txt
+Hello, World! I am process 226 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/226.txt
+Hello, World! I am process 77 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/77.txt
+Hello, World! I am process 14 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/14.txt
+Hello, World! I am process 239 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/239.txt
+Hello, World! I am process 115 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/115.txt
+Hello, World! I am process 228 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/228.txt
+Hello, World! I am process 181 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/181.txt
+Hello, World! I am process 122 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/122.txt
+Hello, World! I am process 68 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/68.txt
+Hello, World! I am process 164 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/164.txt
+Hello, World! I am process 52 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/52.txt
+Hello, World! I am process 135 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/135.txt
+Hello, World! I am process 10 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/10.txt
+Hello, World! I am process 44 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/44.txt
+Hello, World! I am process 151 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/151.txt
+Hello, World! I am process 103 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/103.txt
+Hello, World! I am process 1 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/1.txt
+Hello, World! I am process 15 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/15.txt
+Hello, World! I am process 73 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/73.txt
+Hello, World! I am process 254 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/254.txt
+Hello, World! I am process 19 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/19.txt
+Hello, World! I am process 237 of 512 on node01.
+Hello, World! I am process 179 of 512 on node01.
+Hello, World! I am process 177 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/237.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/179.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/177.txt
+Hello, World! I am process 120 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/120.txt
+Hello, World! I am process 230 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/230.txt
+Hello, World! I am process 221 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/221.txt
+Hello, World! I am process 94 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/94.txt
+Hello, World! I am process 188 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/188.txt
+Hello, World! I am process 150 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/150.txt
+Hello, World! I am process 8 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/8.txt
+Hello, World! I am process 106 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/106.txt
+Hello, World! I am process 185 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/185.txt
+Hello, World! I am process 123 of 512 on node01.
+Hello, World! I am process 37 of 512 on node01.
+Hello, World! I am process 67 of 512 on node01.
+Hello, World! I am process 142 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/123.txt
+Hello, World! I am process 42 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/142.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/37.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/67.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/42.txt
+Hello, World! I am process 175 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/175.txt
+Hello, World! I am process 216 of 512 on node01.
+Hello, World! I am process 195 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/216.txt
+Hello, World! I am process 169 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/195.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/169.txt
+Hello, World! I am process 212 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/212.txt
+Hello, World! I am process 197 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/197.txt
+Hello, World! I am process 240 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/240.txt
+Hello, World! I am process 76 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/76.txt
+Hello, World! I am process 95 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/95.txt
+Hello, World! I am process 11 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/11.txt
+Hello, World! I am process 173 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/173.txt
+Hello, World! I am process 213 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/213.txt
+Hello, World! I am process 196 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/196.txt
+Hello, World! I am process 253 of 512 on node01.
+Hello, World! I am process 55 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/55.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/253.txt
+Hello, World! I am process 104 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/104.txt
+Hello, World! I am process 220 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/220.txt
+Hello, World! I am process 3 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/3.txt
+Hello, World! I am process 215 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/215.txt
+Hello, World! I am process 149 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/149.txt
+Hello, World! I am process 217 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/217.txt
+Hello, World! I am process 137 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/137.txt
+Hello, World! I am process 202 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/202.txt
+Hello, World! I am process 108 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/108.txt
+Hello, World! I am process 200 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/200.txt
+Hello, World! I am process 172 of 512 on node01.
+Hello, World! I am process 252 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/172.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/252.txt
+Hello, World! I am process 90 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/90.txt
+Hello, World! I am process 97 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/97.txt
+Hello, World! I am process 46 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/46.txt
+Hello, World! I am process 51 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/51.txt
+Hello, World! I am process 5 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/5.txt
+Hello, World! I am process 198 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/198.txt
+Hello, World! I am process 119 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/119.txt
+Hello, World! I am process 74 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/74.txt
+Hello, World! I am process 60 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/60.txt
+Hello, World! I am process 116 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/116.txt
+Hello, World! I am process 35 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/35.txt
+Hello, World! I am process 168 of 512 on node01.
+Hello, World! I am process 231 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/231.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/168.txt
+Hello, World! I am process 26 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/26.txt
+Hello, World! I am process 98 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/98.txt
+Hello, World! I am process 111 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/111.txt
+Hello, World! I am process 80 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/80.txt
+Hello, World! I am process 9 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/9.txt
+Hello, World! I am process 224 of 512 on node01.
+Hello, World! I am process 28 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/224.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/28.txt
+Hello, World! I am process 83 of 512 on node01.
+Hello, World! I am process 24 of 512 on node01.
+Hello, World! I am process 136 of 512 on node01.
+Hello, World! I am process 234 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/24.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/136.txt
+Hello, World! I am process 247 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/83.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/234.txt
+Hello, World! I am process 209 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/247.txt
+Hello, World! I am process 48 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/209.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/48.txt
+Hello, World! I am process 140 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/140.txt
+Hello, World! I am process 166 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/166.txt
+Hello, World! I am process 89 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/89.txt
+Hello, World! I am process 41 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/41.txt
+Hello, World! I am process 86 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/86.txt
+Hello, World! I am process 160 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/160.txt
+Hello, World! I am process 29 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/29.txt
+Hello, World! I am process 207 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/207.txt
+Hello, World! I am process 154 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/154.txt
+Hello, World! I am process 17 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/17.txt
+Hello, World! I am process 178 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/178.txt
+Hello, World! I am process 22 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/22.txt
+Hello, World! I am process 152 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/152.txt
+Hello, World! I am process 223 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/223.txt
+Hello, World! I am process 7 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/7.txt
+Hello, World! I am process 27 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/27.txt
+Hello, World! I am process 182 of 512 on node01.
+Hello, World! I am process 255 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/255.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/182.txt
+Hello, World! I am process 251 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/251.txt
+Hello, World! I am process 248 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/248.txt
+Hello, World! I am process 246 of 512 on node01.
+Hello, World! I am process 192 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/246.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/192.txt
+Hello, World! I am process 45 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/45.txt
+Hello, World! I am process 62 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/62.txt
+Hello, World! I am process 159 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/159.txt
+Hello, World! I am process 21 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/21.txt
+Hello, World! I am process 75 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/75.txt
+Hello, World! I am process 20 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/20.txt
+Hello, World! I am process 241 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/241.txt
+Hello, World! I am process 71 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/71.txt
+Hello, World! I am process 180 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/180.txt
+Hello, World! I am process 229 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/229.txt
+Hello, World! I am process 203 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/203.txt
+Hello, World! I am process 153 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/153.txt
+Hello, World! I am process 57 of 512 on node01.
+Hello, World! I am process 109 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/57.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/109.txt
+Hello, World! I am process 32 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/32.txt
+Hello, World! I am process 174 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/174.txt
+Hello, World! I am process 0 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/0.txt
+Hello, World! I am process 129 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/129.txt
+Hello, World! I am process 184 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/184.txt
+Hello, World! I am process 130 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/130.txt
+Hello, World! I am process 145 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/145.txt
+Hello, World! I am process 64 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/64.txt
+Hello, World! I am process 49 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/49.txt
+Hello, World! I am process 43 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/43.txt
+Hello, World! I am process 238 of 512 on node01.
+Hello, World! I am process 167 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/167.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/238.txt
+Hello, World! I am process 222 of 512 on node01.
+Hello, World! I am process 34 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/222.txt
+Hello, World! I am process 39 of 512 on node01.
+Hello, World! I am process 219 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/39.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/34.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/219.txt
+Hello, World! I am process 47 of 512 on node01.
+Hello, World! I am process 186 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/186.txt
+Hello, World! I am process 170 of 512 on node01.
+Hello, World! I am process 31 of 512 on node01.
+Hello, World! I am process 156 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/31.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/170.txt
+Hello, World! I am process 66 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/156.txt
+Hello, World! I am process 208 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/208.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/66.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/47.txt
+Hello, World! I am process 113 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/113.txt
+Hello, World! I am process 99 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/99.txt
+Hello, World! I am process 163 of 512 on node01.
+Hello, World! I am process 225 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/163.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/225.txt
+Hello, World! I am process 245 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/245.txt
+Hello, World! I am process 33 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/33.txt
+Hello, World! I am process 124 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/124.txt
+Hello, World! I am process 244 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/244.txt
+Hello, World! I am process 6 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/6.txt
+Hello, World! I am process 81 of 512 on node01.
+Hello, World! I am process 13 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/13.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/81.txt
+Hello, World! I am process 242 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/242.txt
+Hello, World! I am process 54 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/54.txt
+Hello, World! I am process 4 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/4.txt
+Hello, World! I am process 114 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/114.txt
+Hello, World! I am process 201 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/201.txt
+Hello, World! I am process 65 of 512 on node01.
+Hello, World! I am process 194 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/65.txt
+Hello, World! I am process 84 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/84.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/194.txt
+Hello, World! I am process 147 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/147.txt
+Hello, World! I am process 233 of 512 on node01.
+Hello, World! I am process 82 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/82.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/233.txt
+Hello, World! I am process 218 of 512 on node01.
+Hello, World! I am process 121 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/121.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/218.txt
+Hello, World! I am process 50 of 512 on node01.
+Hello, World! I am process 162 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/50.txt
+Hello, World! I am process 211 of 512 on node01.
+Hello, World! I am process 91 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/91.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/162.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/211.txt
+Hello, World! I am process 133 of 512 on node01.
+Hello, World! I am process 176 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/133.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/176.txt
+Hello, World! I am process 134 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/134.txt
+Hello, World! I am process 161 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/161.txt
+Hello, World! I am process 204 of 512 on node01.
+Hello, World! I am process 12 of 512 on node01.
+Hello, World! I am process 214 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/12.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/204.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/214.txt
+Hello, World! I am process 146 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/146.txt
+Hello, World! I am process 189 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/189.txt
+Hello, World! I am process 78 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/78.txt
+Hello, World! I am process 100 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/100.txt
+Hello, World! I am process 101 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/101.txt
+Hello, World! I am process 190 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/190.txt
+Hello, World! I am process 227 of 512 on node01.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/227.txt
+Hello, World! I am process 361 of 512 on node02.
+Hello, World! I am process 406 of 512 on node02.
+Hello, World! I am process 418 of 512 on node02.
+Hello, World! I am process 489 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/361.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/406.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/418.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/489.txt
+Hello, World! I am process 258 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/258.txt
+Hello, World! I am process 285 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/285.txt
+Hello, World! I am process 395 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/395.txt
+Hello, World! I am process 277 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/277.txt
+Hello, World! I am process 313 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/313.txt
+Hello, World! I am process 405 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/405.txt
+Hello, World! I am process 332 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/332.txt
+Hello, World! I am process 364 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/364.txt
+Hello, World! I am process 358 of 512 on node02.
+Hello, World! I am process 416 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/358.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/416.txt
+Hello, World! I am process 454 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/454.txt
+Hello, World! I am process 483 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/483.txt
+Hello, World! I am process 276 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/276.txt
+Hello, World! I am process 453 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/453.txt
+Hello, World! I am process 340 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/340.txt
+Hello, World! I am process 331 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/331.txt
+Hello, World! I am process 445 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/445.txt
+Hello, World! I am process 469 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/469.txt
+Hello, World! I am process 381 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/381.txt
+Hello, World! I am process 359 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/359.txt
+Hello, World! I am process 369 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/369.txt
+Hello, World! I am process 419 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/419.txt
+Hello, World! I am process 507 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/507.txt
+Hello, World! I am process 447 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/447.txt
+Hello, World! I am process 321 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/321.txt
+Hello, World! I am process 476 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/476.txt
+Hello, World! I am process 345 of 512 on node02.
+Hello, World! I am process 344 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/345.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/344.txt
+Hello, World! I am process 272 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/272.txt
+Hello, World! I am process 379 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/379.txt
+Hello, World! I am process 392 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/392.txt
+Hello, World! I am process 399 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/399.txt
+Hello, World! I am process 287 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/287.txt
+Hello, World! I am process 409 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/409.txt
+Hello, World! I am process 260 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/260.txt
+Hello, World! I am process 456 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/456.txt
+Hello, World! I am process 450 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/450.txt
+Hello, World! I am process 259 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/259.txt
+Hello, World! I am process 504 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/504.txt
+Hello, World! I am process 500 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/500.txt
+Hello, World! I am process 264 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/264.txt
+Hello, World! I am process 288 of 512 on node02.
+Hello, World! I am process 509 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/288.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/509.txt
+Hello, World! I am process 404 of 512 on node02.
+Hello, World! I am process 311 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/311.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/404.txt
+Hello, World! I am process 448 of 512 on node02.
+Hello, World! I am process 493 of 512 on node02.
+Hello, World! I am process 336 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/448.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/493.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/336.txt
+Hello, World! I am process 289 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/289.txt
+Hello, World! I am process 314 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/314.txt
+Hello, World! I am process 279 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/279.txt
+Hello, World! I am process 312 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/312.txt
+Hello, World! I am process 446 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/446.txt
+Hello, World! I am process 410 of 512 on node02.
+Hello, World! I am process 294 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/410.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/294.txt
+Hello, World! I am process 266 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/266.txt
+Hello, World! I am process 284 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/284.txt
+Hello, World! I am process 459 of 512 on node02.
+Hello, World! I am process 380 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/459.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 10.
+Hello, World! I am process 310 of 512 on node02.
+results/husain_i_TEST/380.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/310.txt
+Hello, World! I am process 422 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/422.txt
+Hello, World! I am process 356 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/356.txt
+Hello, World! I am process 291 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/291.txt
+Hello, World! I am process 342 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/342.txt
+Hello, World! I am process 328 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/328.txt
+Hello, World! I am process 362 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/362.txt
+Hello, World! I am process 441 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/441.txt
+Hello, World! I am process 360 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/360.txt
+Hello, World! I am process 333 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/333.txt
+Hello, World! I am process 334 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/334.txt
+Hello, World! I am process 472 of 512 on node02.
+Hello, World! I am process 374 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/472.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/374.txt
+Hello, World! I am process 265 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/265.txt
+Hello, World! I am process 477 of 512 on node02.
+Hello, World! I am process 308 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/308.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/477.txt
+Hello, World! I am process 351 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/351.txt
+Hello, World! I am process 475 of 512 on node02.
+Hello, World! I am process 503 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/475.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/503.txt
+Hello, World! I am process 339 of 512 on node02.
+Hello, World! I am process 327 of 512 on node02.
+Hello, World! I am process 449 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/339.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/449.txt
+Hello, World! I am process 425 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/327.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/425.txt
+Hello, World! I am process 325 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/325.txt
+Hello, World! I am process 306 of 512 on node02.
+Hello, World! I am process 357 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/306.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/357.txt
+Hello, World! I am process 400 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/400.txt
+Hello, World! I am process 303 of 512 on node02.
+Hello, World! I am process 286 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/286.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/303.txt
+Hello, World! I am process 397 of 512 on node02.
+Hello, World! I am process 497 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/397.txt
+Hello, World! I am process 269 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/497.txt
+Hello, World! I am process 506 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/269.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/506.txt
+Hello, World! I am process 393 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/393.txt
+Hello, World! I am process 390 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/390.txt
+Hello, World! I am process 337 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/337.txt
+Hello, World! I am process 315 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/315.txt
+Hello, World! I am process 411 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/411.txt
+Hello, World! I am process 278 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/278.txt
+Hello, World! I am process 320 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/320.txt
+Hello, World! I am process 304 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/304.txt
+Hello, World! I am process 348 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/348.txt
+Hello, World! I am process 413 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/413.txt
+Hello, World! I am process 428 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/428.txt
+Hello, World! I am process 455 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/455.txt
+Hello, World! I am process 382 of 512 on node02.
+Hello, World! I am process 437 of 512 on node02.
+Hello, World! I am process 281 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/281.txt
+Hello, World! I am process 341 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/437.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/382.txt
+Hello, World! I am process 307 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/307.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/341.txt
+Hello, World! I am process 378 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/378.txt
+Hello, World! I am process 426 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/426.txt
+Hello, World! I am process 470 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/470.txt
+Hello, World! I am process 479 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/479.txt
+Hello, World! I am process 335 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/335.txt
+Hello, World! I am process 299 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/299.txt
+Hello, World! I am process 297 of 512 on node02.
+Hello, World! I am process 300 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/300.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/297.txt
+Hello, World! I am process 452 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/452.txt
+Hello, World! I am process 309 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/309.txt
+Hello, World! I am process 457 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/457.txt
+Hello, World! I am process 352 of 512 on node02.
+Hello, World! I am process 267 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/267.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/352.txt
+Hello, World! I am process 468 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/468.txt
+Hello, World! I am process 347 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/347.txt
+Hello, World! I am process 420 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/420.txt
+Hello, World! I am process 318 of 512 on node02.
+Hello, World! I am process 350 of 512 on node02.
+Hello, World! I am process 349 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/318.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/350.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/349.txt
+Hello, World! I am process 316 of 512 on node02.
+Hello, World! I am process 384 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/384.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/316.txt
+Hello, World! I am process 387 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/387.txt
+Hello, World! I am process 391 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/391.txt
+Hello, World! I am process 460 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/460.txt
+Hello, World! I am process 383 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/383.txt
+Hello, World! I am process 496 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/496.txt
+Hello, World! I am process 505 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/505.txt
+Hello, World! I am process 293 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/293.txt
+Hello, World! I am process 274 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/274.txt
+Hello, World! I am process 377 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/377.txt
+Hello, World! I am process 495 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/495.txt
+Hello, World! I am process 375 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/375.txt
+Hello, World! I am process 326 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/326.txt
+Hello, World! I am process 435 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/435.txt
+Hello, World! I am process 494 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/494.txt
+Hello, World! I am process 486 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/486.txt
+Hello, World! I am process 323 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/323.txt
+Hello, World! I am process 282 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/282.txt
+Hello, World! I am process 491 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/491.txt
+Hello, World! I am process 498 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/498.txt
+Hello, World! I am process 408 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/408.txt
+Hello, World! I am process 305 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/305.txt
+Hello, World! I am process 376 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/376.txt
+Hello, World! I am process 261 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/261.txt
+Hello, World! I am process 257 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/257.txt
+Hello, World! I am process 442 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/442.txt
+Hello, World! I am process 398 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/398.txt
+Hello, World! I am process 355 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/355.txt
+Hello, World! I am process 451 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/451.txt
+Hello, World! I am process 298 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/298.txt
+Hello, World! I am process 353 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/353.txt
+Hello, World! I am process 388 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/388.txt
+Hello, World! I am process 487 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/487.txt
+Hello, World! I am process 480 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/480.txt
+Hello, World! I am process 466 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/466.txt
+Hello, World! I am process 330 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/330.txt
+Hello, World! I am process 368 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/368.txt
+Hello, World! I am process 502 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/502.txt
+Hello, World! I am process 273 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/273.txt
+Hello, World! I am process 402 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/402.txt
+Hello, World! I am process 256 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/256.txt
+Hello, World! I am process 373 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/373.txt
+Hello, World! I am process 371 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/371.txt
+Hello, World! I am process 424 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/424.txt
+Hello, World! I am process 302 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/302.txt
+Hello, World! I am process 394 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/394.txt
+Hello, World! I am process 363 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/363.txt
+Hello, World! I am process 490 of 512 on node02.
+Hello, World! I am process 367 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/490.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/367.txt
+Hello, World! I am process 427 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/427.txt
+Hello, World! I am process 389 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/389.txt
+Hello, World! I am process 467 of 512 on node02.
+Hello, World! I am process 290 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/467.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/290.txt
+Hello, World! I am process 343 of 512 on node02.
+Hello, World! I am process 421 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/343.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/421.txt
+Hello, World! I am process 407 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/407.txt
+Hello, World! I am process 462 of 512 on node02.
+Hello, World! I am process 464 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/462.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/464.txt
+Hello, World! I am process 417 of 512 on node02.
+Hello, World! I am process 429 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/429.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/417.txt
+Hello, World! I am process 262 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/262.txt
+Hello, World! I am process 365 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/365.txt
+Hello, World! I am process 372 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/372.txt
+Hello, World! I am process 463 of 512 on node02.
+Hello, World! I am process 280 of 512 on node02.
+Hello, World! I am process 401 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/401.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/463.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/280.txt
+Hello, World! I am process 431 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/431.txt
+Hello, World! I am process 270 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/270.txt
+Hello, World! I am process 268 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/268.txt
+Hello, World! I am process 485 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/485.txt
+Hello, World! I am process 478 of 512 on node02.
+Hello, World! I am process 484 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/478.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/484.txt
+Hello, World! I am process 440 of 512 on node02.
+Hello, World! I am process 501 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/440.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/501.txt
+Hello, World! I am process 443 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/443.txt
+Hello, World! I am process 283 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/283.txt
+Hello, World! I am process 434 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/434.txt
+Hello, World! I am process 508 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/508.txt
+Hello, World! I am process 488 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/488.txt
+Hello, World! I am process 324 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/324.txt
+Hello, World! I am process 322 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/322.txt
+Hello, World! I am process 317 of 512 on node02.
+Hello, World! I am process 510 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/317.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/510.txt
+Hello, World! I am process 481 of 512 on node02.
+Hello, World! I am process 296 of 512 on node02.
+Hello, World! I am process 414 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/296.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/414.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/481.txt
+Hello, World! I am process 461 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/461.txt
+Hello, World! I am process 474 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/474.txt
+Hello, World! I am process 439 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/439.txt
+Hello, World! I am process 386 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/386.txt
+Hello, World! I am process 346 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/346.txt
+Hello, World! I am process 473 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/473.txt
+Hello, World! I am process 263 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 0, rootGrate: 10.
+results/husain_i_TEST/263.txt
+Hello, World! I am process 492 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/492.txt
+Hello, World! I am process 329 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/329.txt
+Hello, World! I am process 403 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/403.txt
+Hello, World! I am process 471 of 512 on node02.
+Hello, World! I am process 275 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/471.txt
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/275.txt
+Hello, World! I am process 458 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 10, rhosratio: 10, rootGrate: 10.
+results/husain_i_TEST/458.txt
+Hello, World! I am process 432 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/432.txt
+Hello, World! I am process 511 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/511.txt
+Hello, World! I am process 436 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/436.txt
+Hello, World! I am process 301 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 0, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/301.txt
+Hello, World! I am process 465 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/465.txt
+Hello, World! I am process 366 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 1, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/366.txt
+Hello, World! I am process 433 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/433.txt
+Hello, World! I am process 271 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 0, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/271.txt
+Hello, World! I am process 444 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 1, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/444.txt
+Hello, World! I am process 499 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 1, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/499.txt
+Hello, World! I am process 319 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 6, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/319.txt
+Hello, World! I am process 292 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 1.
+results/husain_i_TEST/292.txt
+Hello, World! I am process 438 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 4, kzratio: 0, rhosratio: 10, rootGrate: 0.
+results/husain_i_TEST/438.txt
+Hello, World! I am process 415 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 1, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/415.txt
+Hello, World! I am process 482 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/482.txt
+Hello, World! I am process 396 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/396.txt
+Hello, World! I am process 423 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 0, rootGrate: 0.
+results/husain_i_TEST/423.txt
+Hello, World! I am process 370 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 10, rhosratio: 0, rootGrate: 1.
+results/husain_i_TEST/370.txt
+Hello, World! I am process 354 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 8, kzratio: 0, rhosratio: 1, rootGrate: 0.
+results/husain_i_TEST/354.txt
+Hello, World! I am process 412 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/412.txt
+Hello, World! I am process 338 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 7, kzratio: 1, rhosratio: 1, rootGrate: 10.
+results/husain_i_TEST/338.txt
+Hello, World! I am process 430 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 3, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/430.txt
+Hello, World! I am process 385 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 0, kzratio: 0, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/385.txt
+Hello, World! I am process 295 of 512 on node02.
+Goddnight, World! selected data was Qs: 0, MulimSuc: 0, nodeD: 5, kzratio: 10, rhosratio: 10, rootGrate: 1.
+results/husain_i_TEST/295.txt

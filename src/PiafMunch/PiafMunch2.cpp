@@ -37,7 +37,7 @@ extern int N1L ; // number of nodes of type # 1L  'leaf end' : conn.order = 1 ; 
 extern int N1R ; // number of nodes of type # 1R 'root end' : conn.order = 1 ; has imposed soil water potential as a limit condition
 extern int Nt, Nc, N[] ; // N[o = 1..8] : number of nodes of conn.order o (N[1] = N1L + N1R) ; Nt : Tot. nb of nodes = N[1] + N[2] + N[3] + ... + N[8] ; Nc : tot. nb of connectors
 extern Index_vector i_[] ; // i_[o = 0..8][k = 1..No] = id# of kth node in (1-based list)  list of all nodes of conn.ord. co(o). For o=0: No=N1L ; o=1: No=N1R ; o=2..8: No=N[o] :
-extern Index_vector &RootEnds, &LeafEnds ; // (= i_[1] and i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
+extern Index_vector andRootEnds, andLeafEnds ; // (= i_[1] and i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
 extern vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# du noeud amont (resp. aval) : jf = JF(i,i2) > 0 si I_Upflow[(abs(jf)]==i, i.e. si I_Downflow[(abs(jf)]==i2
 extern vector<Index_vector> Connect ; // Connect[i][j] = Id# of (j)th node (as ranked in input .ini file) connected to node #i (i = 1..Nt ; j = 1..co(i))
 #ifndef co
@@ -82,7 +82,7 @@ Fortran_vector JS_Apo						; // apoplasmic sugar flux from phloem to Lateral par
 extern Fortran_vector JW_ParMb, JW_Apo, JW_Sympl ; // water fluxes corresponding to above 3 sugar fluxes   (ml / h)
 Fortran_vector C_SymplUpflow					; // upflow concentration (mmol / ml) for JS_Sympl
 Fortran_vector C_PhlApo, C_ParApo, C_ApoUpflow ; // (mmol / ml) apoplasmic sugar conc., resp. in phloem and lat.parenchyma, and upflow conc. for JS_Apo
-Fortran_vector Delta_JS_ST ; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
+Fortran_vector Delta_JS_ST ; // sera la composante purement phloemienne de Q_TC_dot[ ]							(mmol / h)
 extern Fortran_vector P_Sympl		; // Lateral parenchyma symplasmic turgor pressure 								(MPa)
 double Q_Rm_dot_alt ; // for an alternate, target-oriented,  expression of starch variation rate
 
@@ -101,8 +101,8 @@ Fortran_vector TracerC_ST							; // Concentration of soluble tracer in sieve tu
 Fortran_vector TracerC_PhlApo, TracerC_ParApo ; // Concentration of soluble tracer in apoplasms					(MBq / ml solution))
 Fortran_vector TracerRatioSympl ; //   TracerQ_Mesophyll / Q_Mesophyll = TracerC_Sympl / C_Sympl  (MBq / mmol)
 Fortran_vector TracerRatioQ_RespMaint ; //   = TracerQ_RespMaint / Q_RespMaint (MBq / mmol)
-Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_Rmmax_dot[ ]
-Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif opposé à JS_Trsv !!!
+Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloemienne de Q_Rmmax_dot[ ]
+Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif oppose a JS_Trsv !!!
 Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol / ml) for TracerJS_Sympl
 Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
 
@@ -112,7 +112,7 @@ double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, 
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
 
-/********************* C-FLUXES-RELATED BIOPHYSICAL & PHYSIOLOGICAL PARAMETERS **********************************/
+/********************* C-FLUXES-RELATED BIOPHYSICAL and PHYSIOLOGICAL PARAMETERS **********************************/
 Fortran_vector kML						; // kinetic parameter / Michaelis - phloem loading					(mmol / ml)
 Fortran_vector vML					; // kinetic parameter / phloem loading								(mmol /h)
 Fortran_vector kMU						; // kinetic parameter / Michaelis - phloem unloading					(mmol / ml)
@@ -158,7 +158,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		double Q_Rmmax_ ;double Q_Exudmax_;double Fu_lim;
 		Q_out_dot[i] = 0;// not used currently
 		
-		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
+		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from StanfieldandBartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
 		double CSTi_delta = max(0.,CSTi-Csoil); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
@@ -201,7 +201,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		}
 		
 		//check if error
-		if(((Q_ST[i]<= 0) &&(Q_ST_dot[i] < 0))||((Q_Rm_dot[i]<0)||(Q_Gtot_dot[i]<0)||(Q_Exud_dot[i]<0))){
+		if(((Q_ST[i]<= 0) andand(Q_ST_dot[i] < 0))||((Q_Rm_dot[i]<0)||(Q_Gtot_dot[i]<0)||(Q_Exud_dot[i]<0))){
 			std::cout<<"error, see file errors.txt"<<std::endl;
 			std::ofstream outfile;
 			outfile.open("errors.txt", std::ios_base::app); // append instead of overwrite

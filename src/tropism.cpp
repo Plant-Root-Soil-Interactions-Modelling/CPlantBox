@@ -123,7 +123,7 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
                 j++;
             }
 
-            if ((d>0)&&(o->organType()== Organism::ot_root))  {
+            if ((d>0)&&(o->organType()== Organism::ot_root))  {//only roots are affected by boundary
                 a = a + M_PI/2./double(alphaN);
             }
 

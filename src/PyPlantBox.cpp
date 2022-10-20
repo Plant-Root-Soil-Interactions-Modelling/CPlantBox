@@ -305,7 +305,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("orgVolume",&Organ::orgVolume, py::arg("length_")=-1, py::arg("realized")=false)
 			.def("orgVolume2Length",&Organ::orgVolume2Length)
             .def_readwrite("iHeading", &Organ::iHeading)
-            .def_readwrite("parentNI", &Organ::parentNI);
+            .def_readwrite("parentNI", &Organ::parentNI)
+            .def_readwrite("activePhloem", &Organ::activePhloem);
 
     /*
      * Organism.h
@@ -1009,6 +1010,7 @@ PYBIND11_MODULE(plantbox, m) {
 			
             .def_readwrite("CSTthreshold", &PhloemFlux::CSTthreshold)
             .def_readwrite("activeAtThreshold", &PhloemFlux::activeAtThreshold)
+            .def_readwrite("canStartActivating", &PhloemFlux::canStartActivating)
 			
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)

@@ -149,6 +149,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 
 
 	//		for python post-processing and checks
+	vector<double> Aux_STv;//Suc_ST for python byding
 	std::vector<double> Q_Rmmax1v;
 	std::vector<double> a_STv;
 	vector<double> Q_outv;//Y0 vector at end of simulation
@@ -216,7 +217,16 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	int growthType = 0; //0: standard; 1: threshold value for start; 2: 
 	bool krFromLen = true;
 	bool activeAtThreshold = false;
+    bool canStartActivating = true;
 	double CSTthreshold = 0.3;
+	bool activeAtThreshold_auxin = false;
+	double auxin_threshold = 0.3;
+	double auxin_P = 0.3;
+	double auxin_D = 0.3;
+	double auxin_alpha = 0.3;//there is only one way down so we should be fine
+    
+    
+    
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters & constants (implemented in 'initialize.cpp')
 	void initialize_hydric() ;							// initializes hydric system parameters & constants (implemented in 'initialize.cpp')

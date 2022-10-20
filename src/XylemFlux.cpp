@@ -58,11 +58,13 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 				if(organType == Organism::ot_leaf){
 					std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
 					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-				}
+                     psi_s = psi_air;
+				}else{
                 if(sx.size()>1) {
                     psi_s = sx.at(cellIndex);
                 } else {
                     psi_s = sx.at(0);
+                }
                 }
             } else {
 				if(organType == Organism::ot_root)
@@ -214,18 +216,20 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         double psi_s;
         if (cells) { // soil matric potential given per cell
             int cellIndex = rs->seg2cell[si];
-            if (cellIndex>=0) {
-				if(organType ==Organism::ot_leaf){ //add a runtime error?
+            if (cellIndex>=0)  {
+				if(organType == Organism::ot_leaf){
 					std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
 					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-				}
+                     psi_s = psi_air;
+				}else{
                 if(sx.size()>1) {
                     psi_s = sx.at(cellIndex);
                 } else {
                     psi_s = sx.at(0);
                 }
+                }
             } else {
-				if(organType == Organism::ot_root) //add a runtime error?
+				if(organType == Organism::ot_root)
 				{
 					std::cout<<"XylemFlux::linearSystem: Root segment n#"<<si<<" aboveground. OrganType: ";
 					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
@@ -305,8 +309,9 @@ std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxe
     std::map<int,double> fluxes;
     for (int si = 0; si<rs->segments.size(); si++) {
         int j = rs->segments[si].y;
+        int organType = rs->organTypes[si];
         int segIdx = j-1;
-        if (rs->seg2cell.count(segIdx)>0) {
+        if ((rs->seg2cell.count(segIdx)>0)&&(organType==Organism::ot_root)) {
             int cellIdx = rs->seg2cell[segIdx];
             if (cellIdx>=0) {
                 if (fluxes.count(cellIdx)==0) {
