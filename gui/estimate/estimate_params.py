@@ -4,7 +4,7 @@ from scipy.optimize import minimize
 
 
 def negexp_length(t, r, k):
-    return k * (1 - np.exp(-(r / k) * t))
+    return k * (1 - np.exp(-(r / max(k,1.e-9)) * t))
 
 
 def negexp_age(l, r, k):
@@ -16,7 +16,7 @@ def negexp_age(l, r, k):
 
 def negexp_rate(l, k, t):
     try:
-        return -k / t * np.log(1 - l / k)
+        return -k / max(t,1.e-9) * np.log(max(1 - l /max(k,1.e-9),1.e-9))
     except:
         return 1.e-9  # if k = 0 growth is probably slow
 
@@ -36,8 +36,9 @@ def target_rate(rate, lengths:np.array, r:float, lmax:float, times:float):
     for ii in range(0, n):
         nn = len(lengths[ii])
         for i in range(0, nn):
-            ages.append(max(times[ii] - (i + 1) * rate, 0.))
+            ages.append(min(max(times[ii] - (i + 1) * rate, 0.),times[ii]))
             lengths2.append(lengths[ii][i])
+    #print('target rate', rate, np.array(lengths2), np.array(ages))
     x = target_length(r, lmax, np.array(lengths2), np.array(ages))
     return x
 
@@ -51,7 +52,7 @@ def target_length(r:float, k:float, lengths:np.array, ages:np.array):
     for i in range(0, lengths.shape[0]):
         l = negexp_length(ages[i], r, k)
         sum += (l - lengths[i]) ** 2
-    return np.sqrt(sum / (lengths.shape[0] - 2))  # -(k+1)
+    return np.sqrt(sum / (np.max([lengths.shape[0] -2,1])))  # -(k+1)
 
 
 def fit_taproot_r(length, times, k):
@@ -95,7 +96,7 @@ def estimate_order0_rate(lengths:np.array, r:float, k:float, times:float):
         ages[ii] = []
         nn = len(lengths[ii])
         for i in range(0, nn):
-            ages[ii].append(max(times[ii] - (i + 1) * res.x[0], 0.))
+            ages[ii].append(min(max(times[ii] - (i + 1) * res.x[0], 0.),times[ii]))
     return res, f, ages
 
 
@@ -115,7 +116,7 @@ def estimate_order0_rrate(lengths:np.array, r0:float, k:float, times:float):
         ages[ii] = []
         nn = len(lengths[ii])
         for i in range(0, nn):
-            ages[ii].append(times[ii] - (i + 1) * res.x[0])
+            ages[ii].append(min(times[ii] - (i + 1) * res.x[0],times[ii]))
     return res, f, ages
 
 
