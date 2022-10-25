@@ -111,6 +111,9 @@ class EstimateDataModel:
             bri = np.array(self.base_root_indices[i], dtype = np.int64)
             lengths = np.array(self.rsmls[i].properties["length"])
             tap_index = np.argmax(lengths[bri])  # longest base root is tap root (not perfect)
+            lo_ = np.argsort(lengths[bri])
+            lo = lo_[::-1]
+            self.base_root_indices[i] = [self.base_root_indices[i][j] for j in lo]
             self.tap_root_indices[i].append(self.base_root_indices[i][tap_index])
             # print("tap roots", self.tap_root_indices[-1], "tap index", tap_index, "root", self.base_root_indices[i][tap_index])
             self.basal_root_indices[i] = self.base_root_indices[i].copy()
@@ -167,7 +170,6 @@ class EstimateDataModel:
                 length_basals[i] = []
                 for j in j_:
                   length_basals[i].append(self.rsmls[i].properties["length"][j])
-                length_basals[i].sort()
                 #indx = sorted(range(len(length_basals[i])), key=lambda k: length_basals[i][k])
                 #indx = [int(x) for x in indx]
                 #a = np.array(indices[i])
@@ -175,15 +177,20 @@ class EstimateDataModel:
                 #a = a[indx]
                 #indices[i] = list(a)
             res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
-            print("production rate", res.x[0])
+            if res.x[0]<0:
+                print("ERROR: negative growth rate!!!")
+            else: 
+                print("production rate", res.x[0])
+            
+
 
             #compute seed params
             delayB_, firstB_, maxB_ = [], [], []
-            for i in ages:
-                if i:
-                    delayB_.append(np.mean(np.diff(np.sort(i))))
-                    firstB_.append(np.min(i))
-                    maxB_.append(len(i))
+            #print('times', self.times)
+            for i in range(0,len(ages)):
+                delayB_.append(np.mean(np.diff(np.sort(ages[i]))))
+                firstB_.append(self.times[i]-np.max(ages[i]))
+                maxB_.append(len(ages[i]))
 
             #print('delayB_, firstB_, maxB_', delayB_, firstB_, maxB_)
 
@@ -313,6 +320,7 @@ class EstimateDataModel:
                     order = np.max([self.rsmls[i].functions["subType"][j]][0])
                 else:
                     order = int(3)
+                order = min(order,3) 
                 self.estimates[i][(j, "order")] = order
 
     def aggregate_parameters_(self, indices, target_type):
