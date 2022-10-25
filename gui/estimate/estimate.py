@@ -224,7 +224,8 @@ class App:
 
     def update_parameters_tap(self):
         """ update first parameter tap """
-        for i in range(0, 3):
+        for i in range(0, len(self.label_basal_params_l)):
+        #for i in range(0, np.max(self.data.orders)+1):
             lstr = "\nInitial growth rate [cm day-1]\nMaximal root length [cm]\n\n"
             lstr += "Basal zone [cm]\nApical zone [cm]\nInter-lateral distance [cm]\n\n"
             lstr += "Root radius [cm]\nAngle between root and parent root [deg]\n"
@@ -240,7 +241,8 @@ class App:
 
     def update_all(self, event = None):
         """ updates the view """
-        if self.data.exists():
+        #if self.data.exists():
+        if self.data:
             self.parse_gui()
             self.update_info()
             self.data.create_params(self.combo0.current(), self.combo1.current(), self.combo2.current())  # does the fitting for the current settings
