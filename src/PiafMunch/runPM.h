@@ -149,12 +149,12 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 
 
 	//		for python post-processing and checks
-	vector<double> Aux_STv;//Suc_ST for python byding
+    std::vector<int> orgTypes;
 	std::vector<double> Q_Rmmax1v;
 	std::vector<double> a_STv;
-	vector<double> Q_outv;//Y0 vector at end of simulation
+	vector<double> Q_initOutv;//Y0 vector at end of simulation
 	vector<double> Q_init;//Y0 vector at beginning of simulation
-	vector<double> Q_out_dotv;
+	vector<double> Q_initOut_dotv;
 	vector<double> C_STv;//Suc_ST for python byding
 	vector<double> vol_STv;//void(*aux)(double,double*),
 	vector<double> r_ST_refv; 
@@ -219,11 +219,30 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	bool activeAtThreshold = false;
     bool canStartActivating = true;
 	double CSTthreshold = 0.3;
+    
+    
+	//		Auxin
 	bool activeAtThreshold_auxin = false;
 	double auxin_threshold = 0.3;
-	double auxin_P = 0.3;
-	double auxin_D = 0.3;
+	double auxin_P = 0.3;//production rate
+	double auxin_D = 0.3;//decay
 	double auxin_alpha = 0.3;//there is only one way down so we should be fine
+    SpUnit_matrix Delta2updown;
+    SpUnit_matrix Deltaupdown;
+    Fortran_vector Alpha_st;
+    Fortran_vector JAuxin_ST1;
+    Fortran_vector JAuxin_ST2;
+	double initValAuxin = 0.9;//initial concentration in active tip
+    Fortran_vector A_amont;
+    Fortran_vector i_amont_auxin;
+    std::vector<double> C_Auxinv;//Suc_ST for python byding
+    std::vector<double> Delta_JA_STv;
+    std::vector<int> AuxinSource;
+    Fortran_vector Delta_JA_ST ;
+    Fortran_vector C_AuxinOut;
+    std::vector<double> C_AuxinOutv;
+    std::vector<double> JAuxin_ST2v;
+
     
     
     
@@ -244,7 +263,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	Fortran_vector Q_GrmaxBU ;
 	//bool hayErrores = false;
 	int errorID = -1;
-	int neq_coef = 9;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
+	int neq_coef = 10;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
 	std::vector<double> BackUpMaxGrowth;//to check at runtime if growth is correct
 	
 	//retrieve tissue-specific parameters

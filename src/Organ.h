@@ -117,6 +117,7 @@ public:
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
 	bool activePhloem = false;
+	bool activeAuxin = false;
 	
 
 protected:

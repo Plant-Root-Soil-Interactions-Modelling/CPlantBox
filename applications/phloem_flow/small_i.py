@@ -240,7 +240,7 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
     # plant system 
     pl = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
     path = CPBdir+"/modelparameter/plant/"
-    name = "UQ_simple_stem_bud"#"morning_glory_UQ"#
+    name = "smallPlant_mgiraud"#"UQ_simple_stem_bud"#"morning_glory_UQ"#
 
     pl.readParameters(path + name + ".xml")
 
@@ -252,17 +252,11 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
 
 
     pl.initialize(verbose = False)#, stochastic = False)
-    pl.simulate(dt, False)#, "outputpm15.txt")
-    simDuration += dt
-    while (len(pl.getOrgans(3, False)) ==0 ) or (pl.getOrgans(3, False)[0].getNumberOfLinkingNodes() <3):
-        pl.simulate(dt, False)#, "outputpm15.txt")
-        simDuration += dt
+    pl.simulate(30, False)#, "outputpm15.txt")
+    simDuration = 30
     simMax = 100#simDuration + testTime #if !doDecapitation
 
     """ Coupling to soil """
-
-
-
     min_b = [-3./2, -12./2, -61.]#distance between wheat plants
     max_b = [3./2, 12./2, 0.]
     cell_number = [6, 24, 61]#1cm3? 
@@ -331,7 +325,7 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
     r.atol = 1e-12
     r.rtol = 1e-8
     #r.doNewtonRaphson = False;r.doOldEq = False
-    SPAD= 60.0
+    SPAD= 31.0
     chl_ = (0.114 *(SPAD**2)+ 7.39 *SPAD+ 10.6)/10
     r.Chl = np.array( [chl_]) 
     r.Csoil = 1e-4
@@ -464,7 +458,15 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
 
     r.doTroubleshooting = False
 
+    print("r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha:",r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha)
+    print("r.initValAuxin",r.initValAuxin)
+    r.activeAtThreshold_auxin = True
+    r.auxin_D = 3e-7
+    r.auxin_P = 6e-7
+    r.auxin_alpha = 2.4e-6
+    print("r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha:",r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha)
     print("r.activeAtThreshold,r.CSTthreshold,r.canStartActivating:",r.activeAtThreshold,r.CSTthreshold,r.canStartActivating)
+    print("r.initValAuxin",r.initValAuxin)
     r.activeAtThreshold = True
     r.canStartActivating = False
     r.CSTthreshold = threshold #0.8#[[-1],[-1,0.3,-1],[-1]]
@@ -532,14 +534,7 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
         #4UQ
         #
         ###
-    print("r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha:",r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha)
-    print("r.initValAuxin",r.initValAuxin)
-    r.activeAtThreshold_auxin = True
-    r.auxin_D = 3e-7
-    r.auxin_P = 6e-7
-    r.auxin_alpha = 2.4e-6
-    print("r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha:",r.activeAtThreshold_auxin,r.auxin_threshold,r.auxin_alpha)
-    while  ö<100:#simDuration < simMax: #
+    while  ö < 1: #
         
         print('simDuration:',simDuration )
         
@@ -586,7 +581,10 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
             print("ci",np.mean(np.array(r.ci)[idleafBlade]), "mol mol-1")#fw.append
             print("deltagco2",np.mean(np.array(r.deltagco2)[idleafBlade]), "mol mol-1")#fw.append
             print("fw",np.mean(np.array(r.fw)[idleafBlade]), "-")#fw.a
-            
+        #print("psiXyl", r.psiXyl)   
+        #print(r.get_segments())
+        #print(r.get_nodes())
+        #print(r.plant.organTypes)
         ots = np.concatenate((np.array([0]), r.get_organ_types()))#per node
         leavesSegs = np.where(ots[1:] ==4)
         fluxes = np.array(r.outputFlux)
@@ -616,6 +614,7 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
         
         filename = "results"+ directoryN +"inPM_"+str(ö)+ "_"+ strQ + "_"+strTh+"_"+strDecap+".txt"
         print("startpm")
+        
         r.useStemTip = True
         r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
         if r.withInitVal and (len(Q_ST_init) ==0) :
@@ -674,11 +673,14 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
         Q_AuxinInit  = np.array(r.Q_init[(Nt*9):(Nt*10)])
         errorAuxin   = sum(Q_Auxin) - sum(Q_AuxinInit)-sum(InAuxin)+sum(OutAuxin)
         C_Auxin      = np.array(r.C_Auxin)
-        AuxinSource = np.array(r.AuxinSource)
+        AuxinSource  = np.array(r.AuxinSource)
+        C_AuxinOut   = np.array(r.C_AuxinOut)
+        JAuxin_ST2   = np.array(r.JAuxin_ST2)
+        Delta_JA_ST  = np.array(r.Delta_JA_ST)
         
         """ATT
         
-        C_ST_ = C_ST[1:]
+        # C_ST_ = C_ST[1:]
         
         """
         
@@ -705,13 +707,16 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
                  sum(Q_Grmax_i)/sum(Q_outmax_i)*100,sum(Q_Exudmax_i)/sum(Q_outmax_i)*100))
             print("abs val for max :\n\tRm   {:5.5f}\tGr   {:5.5f}\tExud {:5.5f}".format(sum(Q_Rmmax_i), 
                  sum(Q_Grmax_i),sum(Q_Exudmax_i)))
-            print("Q_Par {:5.2e}, C_Par {:5.2e}".format(sum(Q_Par), np.mean(C_Par)))
-            print("amount Suc (cm)\tAn {:5.2e}\tGr {:5.2e}\tRGr {:5.2e}\tRm {:5.2e}\tExud {:5.2e}".format(AnSum, sum(Q_Gr)*r.Gr_Y,sum(Q_Gr)*(1-r.Gr_Y), sum(Q_Rm), sum(Q_Exud)))  
+            print("\tQ_Par {:5.2e}, C_Par {:5.2e}".format(sum(Q_Par), np.mean(C_Par)))
+            print("amount Suc (mmol):\n\tAn {:5.2e}\tGr {:5.2e}\tRGr {:5.2e}\n\tRm {:5.2e}\tExud {:5.2e}".format(AnSum, sum(Q_Gr)*r.Gr_Y,sum(Q_Gr)*(1-r.Gr_Y), sum(Q_Rm), sum(Q_Exud))) 
             print("Auxin (mmol):\n\tPl {:5.2e}\tInit {:5.2e}\tIn {:5.2e}\n\tOut {:5.2e}".format(sum(Q_Auxin), sum(Q_AuxinInit),sum(InAuxin), sum(OutAuxin))) 
             print("Error in Aux_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(errorAuxin, div0f(errorAuxin,sum(Q_AuxinInit)+sum(InAuxin), 1.)))
-            print(errorAuxin,r.AuxinSource)
+            print(errorAuxin)#,r.AuxinSource)
             print("C_Auxin (mmol ml-1):\n\tmean {:.2e}\tmin  {:5.2e} at {:d} segs \tmax  {:5.2e}".format(np.mean(C_Auxin), min(C_Auxin), len(np.where(C_Auxin == min(C_Auxin) )[0]), max(C_Auxin)))
             print(C_Auxin)
+            print(AuxinSource, max(AuxinSource))
+            print("JAuxin_ST2",JAuxin_ST2)
+            print("Delta_JA_ST",Delta_JA_ST)
             
         assert abs(error) < 1e-3, "error Suc balance"
         if abs(error) > 1e-3:
@@ -720,10 +725,10 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
         if min(C_ST) < 0.0:
             print("min(C_ST) < 0.0", min(C_ST),np.mean(C_ST),max(C_ST))
             raise Exception
+            
         if max(AuxinSource) ==0:
             print("no auxin source")
             raise Exception  
-            
         # write_file_array("RhatFhat", RhatFhat)
         # write_file_array("a_STs", a_STs)
         # write_file_array("JW_ST", JW_ST)#cm3/d
@@ -736,8 +741,15 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
             #print(C_ST)
             #raise Exception
             cutoff = 1e-15 #is get value too small, makes paraview crash
+            Delta_JA_ST_p = C_Auxin
+            Delta_JA_ST_p[abs(Delta_JA_ST_p) < cutoff] = 0
+            C_AuxinOut_p = C_AuxinOut
+            C_AuxinOut_p[abs(C_AuxinOut_p) < cutoff] = 0
+            JAuxin_ST2_p = JAuxin_ST2
+            JAuxin_ST2_p[abs(JAuxin_ST2_p) < cutoff] = 0
             C_Auxin_p = C_Auxin
             C_Auxin_p[abs(C_Auxin_p) < cutoff] = 0
+            
             C_ST_p = C_ST
             C_ST_p[abs(C_ST_p) < cutoff] = 0
             fluxes_p = fluxes
@@ -774,8 +786,15 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
             psiXyl_p = np.array(r.psiXyl)
             psiXyl_p[abs(psiXyl_p) < cutoff] = 0
             
+            
+            ana.addData("JAuxin_ST2", JAuxin_ST2_p)
+            ana.addData("C_AuxinOut", C_AuxinOut_p)
+            ana.addData("Delta_JA_ST", Delta_JA_ST_p)
             ana.addData("AuxinSource", AuxinSource)
             ana.addData("C_Auxin", C_Auxin_p)
+            
+            
+            
             ana.addData("CST", C_ST_p)
             #do as konz or div per vol or surf?
             #ana.addData("Q_Exud", Q_Exud)  # cut off for vizualisation
@@ -797,8 +816,8 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
             ana.addData("CGrmax", C_Grmax_i_p)  # cut off for vizualisation
             
             ana.addData("psi_Xyl",psiXyl_p)
-            ana.write("results"+directoryN+"plotplant_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö) +".vtp", 
-                              ["CST", "fluxes","psi_Xyl","C_Auxin","AuxinSource",
+            ana.write("results"+directoryN+"plotplant_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö) +".vtp", ["CST", "fluxes","psi_Xyl",
+  "C_Auxin","AuxinSource","Delta_JA_ST","C_AuxinOut","JAuxin_ST2",
                                 "QExud", "QGr", "QRm",
                                 "CExud", "CGr", "CRm",
                                 "QExudmax", "QGrmax", "QRmmax",
@@ -810,9 +829,9 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
             
             #need to adapt plot_plant for this to work
             if(False):#(simDuration > 0):#if(simDuration > (simMax -1)):
-                vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)","C_Auxin"],
-                                    vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p,C_Auxin], 
-                                    filename = "results"+ directoryN +"plotplant_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö),
+                vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)"],
+                                    vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p], 
+                                    filename = "results"+ directoryN +"plotplant_psi_"+strQ + "_"+strTh+"_"+strDecap+"_"+ str(ö),
                                     range_ = [300,1450])
                 vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","sucrose concentration (mmol/cm3)"],
                                     vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, C_ST_p], 
@@ -825,6 +844,13 @@ def runSim(directoryN_,Qmax_ = 400e-6, threshold = 0.8, doVTP = False,
         #4UQ
         #
         ###
+        write_file_float("OutAuxin", OutAuxin)
+        write_file_float("Q_Auxin", Q_Auxin)
+        write_file_float("InAuxin", InAuxin)
+        write_file_float("Delta_JA_ST", Delta_JA_ST)
+        write_file_float("JAuxin_ST2", JAuxin_ST2)
+        
+        
         write_file_float("time", simDuration)
         write_file_float("doDecapitation", doDecapitation)
         write_file_float("simMax", simMax)
@@ -902,5 +928,6 @@ if __name__ == '__main__':
                 os.remove(results_dir+item)
             except:
                 pass
-    runSim(directoryN_=directoryN,Qmax_ = 1000e-6, threshold = 0.4, doVTP = True, 
+    #raise Exception
+    runSim(directoryN_=directoryN,Qmax_ = 100e-6, threshold = 0.4, doVTP = True, 
            nodeD = 0, thread = 0, verbosebase = True, simInit= 3 )

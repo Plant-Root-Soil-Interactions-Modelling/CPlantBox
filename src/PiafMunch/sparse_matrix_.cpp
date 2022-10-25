@@ -68,7 +68,7 @@ int * Sparse_addsubdiag_i_set_ij_ = NULL ;
 int Sparse_addsubdiag_set_ij_max = 100;
 
 
-Sparse_matrix::Sparse_matrix(): m_(0), n_(0), ntnz_(0), npnz_(0), ij_(NULL), v_(NULL) { // constructeur par defaut, ne cree pas les arrays ij_ et v_
+Sparse_matrix::Sparse_matrix(): m_(0), n_(0), ntnz_(0), npnz_(0), ij_(NULL), v_(NULL) { // constructeur par défaut, ne crée pas les arrays ij_ et v_
 }
 
 Sparse_matrix::Sparse_matrix(const int &m, const int &n, const int &npnz): m_(m), n_(n), ntnz_(0), npnz_(npnz), ij_(NULL), v_(NULL) {
@@ -82,7 +82,7 @@ Sparse_matrix::Sparse_matrix(const int &m, const int &n, const int &npnz): m_(m)
 }
 
 Sparse_matrix::Sparse_matrix(const Sparse_matrix &S, const int &npnz): m_(S.m_), n_(S.n_), ntnz_(S.ntnz_), npnz_(npnz), ij_(NULL), v_(NULL) {
-	// constructeur par recopie : si npnz = -1 (defaut), garde le S.npnz_ ; si = -2, restreint npnz_ a ntnz_ .
+	// constructeur par recopie : si npnz = -1 (défaut), garde le S.npnz_ ; si = -2, restreint npnz_ à ntnz_ .
 	if (npnz == -1) {
 		npnz_ = S.npnz_ ;
 	}else {
@@ -128,7 +128,7 @@ Sparse_matrix::Sparse_matrix(const SpUnit_matrix &U): m_(U.m_), n_(U.n_), ntnz_(
 	}
 }
 
-Sparse_matrix& Sparse_matrix::operator=(const Sparse_matrix &S) { // operateur de recopie inconditionnelle => perte des infos des registres Sparse_XXX_set_ij_ :
+Sparse_matrix& Sparse_matrix::operator=(const Sparse_matrix &S) { // opérateur de recopie inconditionnelle => perte des infos des registres Sparse_XXX_set_ij_ :
 	Sparse_XXX_set_ij_uncount(ij_) ;
 	int nt = S.n_ + S.m_ + S.npnz_ + S.npnz_ ;
 	if (nt != n_+m_+npnz_+npnz_) {
@@ -180,7 +180,7 @@ void Sparse_matrix::reset_npnz(int npnz) {
 	}
 }
 
-const double& Sparse_matrix::operator()(int i, int j) const { // retourne la valeur de l'element d'indices i,j
+const double& Sparse_matrix::operator()(int i, int j) const { // retourne la valeur de l'élément d'indices i,j
 	if ((i < 1) || (i > m_) || (j < 1) || (j > n_)) assert(false) ;
 	int* ni_ = ij_  ; int* nj_ = ij_ + n_ ; r = 0. ;
 	if ((nj_[i-1] == 0) || (ni_[j-1] == 0))   	return r ;
@@ -205,7 +205,7 @@ const double& Sparse_matrix::operator()(int i, int j) const { // retourne la val
 }
 
 void Sparse_matrix::add_(int i, int j, double a, int ad) {
-	// affecte (si ad =0, macro 'set_(i,j,a)'), ajoute (si (ad =1) ou soustrait (si ad =-1, macro 'sub_(i,j,a)') la valeur a a l'element d'indices (i,j)
+	// affecte (si ad =0, macro 'set_(i,j,a)'), ajoute (si (ad =1) ou soustrait (si ad =-1, macro 'sub_(i,j,a)') la valeur a à l'élément d'indices (i,j)
 	if ((i < 1) || (i > m_) || (j < 1) || (j > n_)) assert(false) ;
 	assert((ad == 0) || (ad == 1) || (ad == -1)) ;
 	int* ni_ = ij_  ; int* nj_ = ij_ + n_ ;
@@ -278,7 +278,7 @@ void Sparse_matrix::add_(int i, int j, double a, int ad) {
 		}
 		T_ij[n_ + i-1] = nj_[i-1] + 1 ;
 		tempT_ij += p + k ; temp_ij += p + k - 1 ;
-		nt = ntnz_ - p - k ; for (kj = nt ; kj > 0 ; kj --)  tempT_ij[kj] = temp_ij[kj] ; // copie de la fin de rmj_, decalee de 1
+		nt = ntnz_ - p - k ; for (kj = nt ; kj > 0 ; kj --)  tempT_ij[kj] = temp_ij[kj] ; // copie de la fin de rmj_, décalée de 1
 		*tempT_ij = j ;
 		tempT_v += p + k ; temp_v += p + k - 1 ;
 		for (ki = nt ; ki > 0 ; ki --)  tempT_v[ki] = temp_v[ki] ;
@@ -300,7 +300,7 @@ int Sparse_matrix::ntnz() const { return ntnz_; }
 
 int Sparse_matrix::npnz() const { return npnz_; }
 
-void Sparse_matrix::set(const Sparse_matrix &S, bool check) { // n'impose pas l'egalite des npnz_ .  si (check) --> verifie le nombre et la position  des NZ
+void Sparse_matrix::set(const Sparse_matrix &S, bool check) { // n'impose pas l'égalité des npnz_ .  si (check) --> vérifie le nombre et la position  des NZ
 	if ((S.m_ != m_) || (S.n_ != n_)) assert(false) ;
 	if (S.ntnz_ != ntnz_) { operator=(S) ; return ; }
 	int k, kk, nt = n_+m_+ ntnz_ , *tempS_ij = S.ij_ , *temp_ij = ij_ ; bool OK = true ;
@@ -517,7 +517,7 @@ void Sparse_matrix::add_diag(const Fortran_vector &V, int ad) {
 
 Sparse_matrix diag(const double &a, const int m, int n) {
 	int ntnz ;
-	if (n == -1) { n = m ; ntnz = m ;} // (n = -1) : valeur par defaut = convention signalant une matrice carree
+	if (n == -1) { n = m ; ntnz = m ;} // (n = -1) : valeur par défaut = convention signalant une matrice carrée
 	else  ntnz = min(m, n) ;
 	Sparse_matrix T(m, n, ntnz) ;
 	T.set_diag(a);
@@ -539,7 +539,7 @@ Sparse_matrix diag(const Fortran_vector & V) {
 	return T ;
 }
 
-Sparse_matrix transpose(const Sparse_matrix & S, int npnz) { // si npnz = -1 (defaut), garde le S.npnz_ ; si = -2, restreint npnz_ a ntnz_ .
+Sparse_matrix transpose(const Sparse_matrix & S, int npnz) { // si npnz = -1 (défaut), garde le S.npnz_ ; si = -2, restreint npnz_ à ntnz_ .
 	int ntnz = S.ntnz_ ;
 	if (npnz == -1) {
 		npnz = S.npnz_ ;
@@ -554,7 +554,7 @@ Sparse_matrix transpose(const Sparse_matrix & S, int npnz) { // si npnz = -1 (de
 		}
 	}
 	assert(npnz != 0) ;
-	Sparse_matrix T ; // sans arguments ----> matrice nulle (constructeur par defaut)
+	Sparse_matrix T ; // sans arguments ----> matrice nulle (constructeur par défaut)
 	T.m_ = S.n_ ; T.n_ = S.m_ ; T.ntnz_ = ntnz ; T.npnz_ = npnz ;
 	int k, nt = S.n_ + S.m_ + npnz + npnz ;
 	T.ij_ = new int[nt] ;	T.v_ = new double[npnz + npnz] ;
@@ -578,10 +578,10 @@ Sparse_matrix transpose(const Sparse_matrix & S, int npnz) { // si npnz = -1 (de
 	return T;
 }
 
-/**** arithmetique matricielle ordinaire ******************************************************************/
+/**** arithmétique matricielle ordinaire ******************************************************************/
 
 Sparse_matrix Sparse_matrix::operator-() {
-	//   - S (operateur unaire de changement de signe)
+	//   - S (opérateur unaire de changement de signe)
 	assert(npnz_ != 0) ;
 	Sparse_matrix T ;
 	int k, nt = n_ + m_ + npnz_ + npnz_ ;
@@ -693,7 +693,7 @@ Sparse_matrix matmult(const Sparse_matrix &S1, const Sparse_matrix &S2, Fortran_
 	return TM;
 }
 
-/**** arithmetique matricielle 'in-place' *****************************************************************/
+/**** arithmétique matricielle 'in-place' *****************************************************************/
 
 Sparse_matrix & Sparse_matrix::operator+=(Sparse_matrix &S) {
 	//  M += S
@@ -1067,11 +1067,11 @@ void Sparse_matrix::row_elediv(const Fortran_vector &v) {
 	}
 }
 
-/**** Arithmetique matricielle 'inplace' composite ********************************************************************/
+/**** Arithmétique matricielle 'inplace' composite ********************************************************************/
 
 void Sparse_matrix::add_add(const Sparse_matrix &S1, const Sparse_matrix &S2, int ad, bool save_count) {
 	if ((n_ != S1.n_) || (m_ != S1.m_) || (n_ != S2.n_) || (m_ != S2.m_)) assert(false);
-	if (ad != 0) assert(false) ;	// seule la fonction  set_add(S1,S2), soit (*this) = S1+S2, est implementee
+	if (ad != 0) assert(false) ;	// seule la fonction  set_add(S1,S2), soit (*this) = S1+S2, est implémentée
 	bool Sparse_add_set_ij_done = Sparse_add_set_ij_check(ij_, S1.ij_, S2.ij_) ;
 	if (! Sparse_add_set_ij_done) {
 		Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1122,7 +1122,7 @@ void Sparse_matrix::add_add(const Sparse_matrix &S1, const Sparse_matrix &S2, in
 
 void Sparse_matrix::add_add(const Sparse_matrix &S, const SpUnit_matrix &U, int ad, bool save_count) {
 	if ((n_ != S.n_) || (m_ != S.m_) || (n_ != U.n_) || (m_ != U.m_)) assert(false);
-	if (ad != 0) assert(false) ;	// seule la fonction  set_add(S,U), soit (*this) = S+U, est implementee
+	if (ad != 0) assert(false) ;	// seule la fonction  set_add(S,U), soit (*this) = S+U, est implémentée
 	bool Sparse_add_set_ij_done = Sparse_add_set_ij_check(ij_, S.ij_, U.ij_) ;
 	if (! Sparse_add_set_ij_done) {
 		Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1183,7 +1183,7 @@ void Sparse_matrix::add_add(const SpUnit_matrix &U, const Sparse_matrix &S, int 
 
 void Sparse_matrix::add_add(const SpUnit_matrix &U1, const SpUnit_matrix &U2, int ad, bool save_count) {
 	if ((n_ != U1.n_) || (m_ != U1.m_) || (n_ != U2.n_) || (m_ != U2.m_)) assert(false);
-	if (ad != 0) assert(false) ;	// seule la fonction  set_add(U1,U2), soit (*this) = U1+U2, est implementee
+	if (ad != 0) assert(false) ;	// seule la fonction  set_add(U1,U2), soit (*this) = U1+U2, est implémentée
 	bool Sparse_add_set_ij_done = Sparse_add_set_ij_check(ij_, U1.ij_, U2.ij_) ;
 	if (! Sparse_add_set_ij_done) {
 		Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1247,7 +1247,7 @@ void Sparse_matrix::add_add(const SpUnit_matrix &U1, const SpUnit_matrix &U2, in
 
 void Sparse_matrix::add_sub(const Sparse_matrix &S1, const Sparse_matrix &S2, int ad, bool save_count) {
 	if ((n_ != S1.n_) || (m_ != S1.m_) || (n_ != S2.n_) || (m_ != S2.m_)) assert(false);
-	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(S1,S2), soit (*this) = S1-S2, est implementee
+	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(S1,S2), soit (*this) = S1-S2, est implémentée
 	bool Sparse_add_set_ij_done = Sparse_add_set_ij_check(ij_, S1.ij_, S2.ij_) ;
 	if (! Sparse_add_set_ij_done) {
 		Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1298,7 +1298,7 @@ void Sparse_matrix::add_sub(const Sparse_matrix &S1, const Sparse_matrix &S2, in
 
 void Sparse_matrix::add_sub(const SpUnit_matrix &U, const Sparse_matrix &S, int ad, bool save_count) {
 	if ((n_ != S.n_) || (m_ != S.m_) || (n_ != U.n_) || (m_ != U.m_)) assert(false);
-	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(U,S), soit (*this) = U-S, est implementee
+	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(U,S), soit (*this) = U-S, est implémentée
 	bool Sparse_add_set_ij_done = Sparse_add_set_ij_check(ij_, S.ij_, U.ij_) ;
 	if (! Sparse_add_set_ij_done) {
 		Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1355,7 +1355,7 @@ void Sparse_matrix::add_sub(const SpUnit_matrix &U, const Sparse_matrix &S, int 
 
 void Sparse_matrix::add_sub(const Sparse_matrix &S, const SpUnit_matrix &U, int ad, bool save_count) {
 	if ((n_ != S.n_) || (m_ != S.m_) || (n_ != U.n_) || (m_ != U.m_)) assert(false);
-	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(S,U), soit (*this) = S-U, est implementee
+	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(S,U), soit (*this) = S-U, est implémentée
 	bool Sparse_add_set_ij_done = Sparse_add_set_ij_check(ij_, S.ij_, U.ij_) ;
 	if (! Sparse_add_set_ij_done) {
 		Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1412,7 +1412,7 @@ void Sparse_matrix::add_sub(const Sparse_matrix &S, const SpUnit_matrix &U, int 
 
 void Sparse_matrix::add_sub(const SpUnit_matrix &U1, const SpUnit_matrix &U2, int ad, bool save_count) {
 	if ((n_ != U1.n_) || (m_ != U1.m_) || (n_ != U2.n_) || (m_ != U2.m_)) assert(false);
-	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(U1,U2), soit (*this) = U1-U2, est implementee
+	if (ad != 0) assert(false) ;	// seule la fonction  set_sub(U1,U2), soit (*this) = U1-U2, est implémentée
 	bool Sparse_add_set_ij_done = Sparse_add_set_ij_check(ij_, U1.ij_, U2.ij_) ;
 	if (! Sparse_add_set_ij_done) {
 		Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1473,7 +1473,7 @@ void Sparse_matrix::add_sub(const SpUnit_matrix &U1, const SpUnit_matrix &U2, in
 }
 
 void Sparse_matrix::set_matmult(const Sparse_matrix &S1, const Sparse_matrix &S2, Fortran_vector* temp_v, bool save_count) {
-	// n'autorise (*this = S1) ou (*this = S2) que si nnz_ reste inchange.
+	// n'autorise (*this = S1) ou (*this = S2) que si nnz_ reste inchangé.
 	//   si temp_v est fourni, il doit pointer sur un vecteur  de taille  n = S1.n_  qui servira de tampon.
 	int m = S1.m_, n = S1.n_, p = S2.n_ ;
 	if ((S2.m_ != n) || (m_ != m) || (n_ != p)) assert(false);
@@ -1529,7 +1529,7 @@ void Sparse_matrix::set_matmult(const Sparse_matrix &S1, const Sparse_matrix &S2
 }
 
 void Sparse_matrix::set_matmult(const SpUnit_matrix &U1, const Sparse_matrix &S2, Fortran_vector* temp_v, bool save_count) {
-	// n'autorise (*this = U1) ou (*this = S2) que si nnz_ reste inchange.
+	// n'autorise (*this = U1) ou (*this = S2) que si nnz_ reste inchangé.
 	//   si temp_v est fourni, il doit pointer sur un vecteur  de taille  n = U1.n_  qui servira de tampon.
 	int m = U1.m_, n = U1.n_, p = S2.n_ ;
 	if ((S2.m_ != n) || (m_ != m) || (n_ != p)) assert(false);
@@ -1593,7 +1593,7 @@ void Sparse_matrix::set_matmult(const SpUnit_matrix &U1, const Sparse_matrix &S2
 }
 
 void Sparse_matrix::set_matmult(const Sparse_matrix &S1, const SpUnit_matrix &U2, Fortran_vector* temp_v, bool save_count) {
-	// n'autorise (*this = S1) ou (*this = U2) que si nnz_ reste inchange.
+	// n'autorise (*this = S1) ou (*this = U2) que si nnz_ reste inchangé.
 	//   si temp_v est fourni, il doit pointer sur un vecteur  de taille  n = S1.n_  qui servira de tampon.
 	int m = S1.m_, n = S1.n_, p = U2.n_ ;
 	if ((U2.m_ != n) || (m_ != m) || (n_ != p)) assert(false);
@@ -1656,7 +1656,7 @@ void Sparse_matrix::set_matmult(const Sparse_matrix &S1, const SpUnit_matrix &U2
 }
 
 void Sparse_matrix::set_matmult(const SpUnit_matrix &U1, const SpUnit_matrix &U2, Index_vector* temp_v, bool save_count) {
-	// n'autorise (*this = U1) ou (*this = U2) que si nnz_ reste inchange.
+	// n'autorise (*this = U1) ou (*this = U2) que si nnz_ reste inchangé.
 	//   si temp_v est fourni, il doit pointer sur un vecteur d'entiers  de taille  n = U1.n_  qui servira de tampon.
 	int m = U1.m_, n = U1.n_, p = U2.n_ ;
 	if ((U2.m_ != n) || (m_ != m) || (n_ != p)) assert(false);
@@ -1721,7 +1721,7 @@ void Sparse_matrix::set_matmult(const SpUnit_matrix &U1, const SpUnit_matrix &U2
 
 void Sparse_matrix::add_elemult(const Sparse_matrix &S1, const Sparse_matrix &S2, int ad, bool save_count) {
 	if ((n_ != S1.n_) || (m_ != S1.m_) || (n_ != S2.n_) || (m_ != S2.m_)) assert(false);
-	if (ad == 0) {	// seule la fonction  set_elemult(S1,S2), soit (*this) = S1*S2, est implementee... pour le moment
+	if (ad == 0) {	// seule la fonction  set_elemult(S1,S2), soit (*this) = S1*S2, est implémentée... pour le moment
 		bool Sparse_elemult_set_ij_done = Sparse_elemult_set_ij_check(ij_, S1.ij_, S2.ij_) ;
 		if (! Sparse_elemult_set_ij_done) {
 			Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1769,12 +1769,12 @@ void Sparse_matrix::add_elemult(const Sparse_matrix &S1, const Sparse_matrix &S2
 			}
 		}
 	}
-	else assert(false) ;// seule la fonction  set_elemult(S1,S2), soit (*this) = S1*S2, est implementee
+	else assert(false) ;// seule la fonction  set_elemult(S1,S2), soit (*this) = S1*S2, est implémentée
 }
 
 void Sparse_matrix::add_elemult(const SpUnit_matrix &U1, const Sparse_matrix &S2, int ad, bool save_count) {
 	if ((n_ != U1.n_) || (m_ != U1.m_) || (n_ != S2.n_) || (m_ != S2.m_)) assert(false);
-	if (ad == 0) {	// seule la fonction  set_elemult(U1,S2), soit (*this) = U1*S2, est implementee
+	if (ad == 0) {	// seule la fonction  set_elemult(U1,S2), soit (*this) = U1*S2, est implémentée
 		bool Sparse_elemult_set_ij_done = Sparse_elemult_set_ij_check(ij_, U1.ij_, S2.ij_) ;
 		if (! Sparse_elemult_set_ij_done) {
 			Sparse_XXX_set_ij_uncount(ij_) ;
@@ -1822,7 +1822,7 @@ void Sparse_matrix::add_elemult(const SpUnit_matrix &U1, const Sparse_matrix &S2
 			}
 		}
 	}
-	else assert(false) ;// seule la fonction  set_elemult(U1,S2), soit (*this) = U1*S2, est implementee
+	else assert(false) ;// seule la fonction  set_elemult(U1,S2), soit (*this) = U1*S2, est implémentée
 }
 
 void Sparse_matrix::add_elemult(const Sparse_matrix &S, const SpUnit_matrix &U, int ad, bool save_count) {
@@ -2536,7 +2536,7 @@ void Sparse_matrix::add_row_elediv(const SpUnit_matrix &U, const Fortran_vector 
 /***** Classe SpUnit_matrix *********************************************************************/
 
 SpUnit_matrix::SpUnit_matrix(): m_(0), n_(0), nnz_(0), ij_(NULL)
-{	// constructeur par defaut, donne une matrice nulle
+{	// constructeur par défaut, donne une matrice nulle
 }
 
 SpUnit_matrix::SpUnit_matrix(const int &m, const int &n, const int &nnz): m_(m), n_(n), nnz_(nnz), ij_(NULL) {
@@ -2656,7 +2656,7 @@ SpUnit_matrix transpose(const SpUnit_matrix &U) {
 }
 
 SpUnit_matrix SpUnit_matrix::operator-() {
-	//   - S (operateur unaire de changement de signe)
+	//   - S (opérateur unaire de changement de signe)
 	assert(nnz_ != 0) ;
 	SpUnit_matrix T ;
 	int k, nt = n_ + m_ + 4 * nnz_ ;
@@ -2821,7 +2821,7 @@ SpUnit_matrix & SpUnit_matrix::operator*=(const SpUnit_matrix &U) {
 
 void SpUnit_matrix::add_elemult(const SpUnit_matrix &U1, const SpUnit_matrix &U2, int ad, bool save_count) {
 	if ((n_ != U1.n_) || (m_ != U1.m_) || (n_ != U2.n_) || (m_ != U2.m_)) assert(false);
-	if (ad == 0) {	// seule la fonction  set_elemult(U1,U2), soit (*this) = U1*U2, est implementee
+	if (ad == 0) {	// seule la fonction  set_elemult(U1,U2), soit (*this) = U1*U2, est implémentée
 		bool Sparse_elemult_set_ij_done = Sparse_elemult_set_ij_check(ij_, U1.ij_, U2.ij_) ;
 		if (! Sparse_elemult_set_ij_done) {
 			Sparse_XXX_set_ij_uncount(ij_) ;
@@ -2868,13 +2868,13 @@ void SpUnit_matrix::add_elemult(const SpUnit_matrix &U1, const SpUnit_matrix &U2
 			}
 		}
 	}
-	else assert(false) ;// seule la fonction  set_elemult(U1,U2), soit (*this) = U1*U2, est implementee
+	else assert(false) ;// seule la fonction  set_elemult(U1,U2), soit (*this) = U1*U2, est implémentée
 }
 
 
-/**** les fonctions suivantes sont appelees par les fonctions 'add_XXX()' ************************************************/
+/**** les fonctions suivantes sont appelées par les fonctions 'add_XXX()' ************************************************/
 
-bool Sparse_add_set_ij_check(int * ij_, int * ij_1, int * ij_2) { // indique si la matrice(ij_) a deja ete calculee comme somme/diff. des matrices (ij_1, ij_2)
+bool Sparse_add_set_ij_check(int * ij_, int * ij_1, int * ij_2) { // indique si la matrice(ij_) a déjà été calculée comme somme/diff. des matrices (ij_1, ij_2)
 	int i, k ;
 	if (Sparse_add_set_ij_count == 0)
 		Sparse_add_set_ij_ = new int* [30] ;
@@ -2908,7 +2908,7 @@ void Sparse_matrix::Sparse_add_set_ij_set(const Sparse_matrix & S1, const Sparse
 	Sparse_add_set_ij_count_update(ij_, S1_ij, S2_ij) ;
 }
 
-int Sparse_add_set_nnz_(int * ij1, int * ij2, const int & m, const int & n, const int & npnz1, const int & npnz2) { // donne ntnz de la matrice resultante
+int Sparse_add_set_nnz_(int * ij1, int * ij2, const int & m, const int & n, const int & npnz1, const int & npnz2) { // donne ntnz de la matrice résultante
 	int i, j1, j2, ntnz = 0 ;
 	int * nj_1 = ij1 + n  ;	int * nj_2 = ij2 + n  ;
 	int * rmj_1 = nj_1 + m + npnz1 ;	int * rmj_2 = nj_2 + m + npnz2 ;	int * rmj1_max, * rmj2_max ;
@@ -2967,7 +2967,7 @@ void Sparse_add_fill_ij_(int* ij, int*ij1, int* ij2, const int& m, const int& n,
 void Sparse_add_set_ij_count_update(int * ij_, int * ij_1, int * ij_2) {
 	int k = 3 * Sparse_add_set_ij_count ;
 	if (Sparse_add_set_ij_count == Sparse_add_set_ij_max) {
-		cout << "on a atteint Sparse_add_set_ij_max : extension de la zone reservee correspondante" << endl ;
+		cout << "on a atteint Sparse_add_set_ij_max : extension de la zone réservée correspondante" << endl ;
 		Sparse_add_set_ij_max += 10 ;
 		int ** temp = new int* [3 * Sparse_add_set_ij_max] ;
 		for (int i = 0 ; i < k ; i ++)  temp[i] = Sparse_add_set_ij_[i] ;
@@ -2980,7 +2980,7 @@ void Sparse_add_set_ij_count_update(int * ij_, int * ij_1, int * ij_2) {
 	Sparse_add_set_ij_[k] = ij_ ; Sparse_add_set_ij_[k+1] = ij_1 ; Sparse_add_set_ij_[k+2] = ij_2 ;
 }
 
-void Sparse_XXX_set_ij_uncount(int * ij_) { // dereferencie ij_ de tous les registres  Sparse_XXX_set_ij : a appeler  juste avant  tout  'delete[ ] ij_'
+void Sparse_XXX_set_ij_uncount(int * ij_) { // déréférencie ij_ de tous les registres  Sparse_XXX_set_ij : à appeler  juste avant  tout  'delete[ ] ij_'
 	int i, j, *r_count, **reg, **reg_count = new int*[3], *** registres = new int**[3] ;
 	reg_count[0] = &Sparse_add_set_ij_count ; reg_count[1] = &Sparse_elemult_set_ij_count ; reg_count[2] = &Sparse_matmult_set_ij_count ;
 	registres[0] = Sparse_add_set_ij_ ; registres[1] = Sparse_elemult_set_ij_ ; registres[2] = Sparse_matmult_set_ij_ ;
@@ -3220,7 +3220,7 @@ int Sparse_matmult_set_nnz_(int* ij1, int* ij2, const int &m, const int &n, cons
 }
 
 void Sparse_matmult_fill_ij_(int* ij, int*ij1, int* ij2, const int &m, const int &n, const int &p, const int &npnz, const int &npnz1, const int &npnz2, double* v) {
-	// v (requis) = un double* dimensionne a  (n = S1.n_) + 1
+	// v (requis) = un double* dimensionné à  (n = S1.n_) + 1
 	int i, j, k ;
 	int * ni_2 = ij2 - 1 ; int * nj_1 = ij1 + n - 1 ;
 	int * ni_ = ij - 1 ; int * nj_ = ij + p - 1 ; int * cmi_ = ij + m + p ; int * rmj_ = cmi_ + npnz ;
@@ -3259,7 +3259,7 @@ void Sparse_matmult_fill_ij_(int* ij, int*ij1, int* ij2, const int &m, const int
 }
 
 void Sparse_matrix::SpUnit_matmult_set_ij_set(const SpUnit_matrix & U1, const SpUnit_matrix & U2, int * v) {
-	// v (requis) = un double* dimensionne a  (n = U1.n_) + 1
+	// v (requis) = un double* dimensionné à  (n = U1.n_) + 1
 	int * U1_ij = U1.ij_ ; int U1_nnz = U1.nnz_ ; int * U2_ij = U2.ij_ ; int U2_nnz = U2.nnz_ ;
 	int ntnz = SpUnit_matmult_set_nnz_(U1_ij, U2_ij, m_, U1.n_, n_, U1_nnz, U2_nnz, v) ;
 	if (npnz_ < ntnz) {
@@ -3399,7 +3399,7 @@ void Sparse_matrix::check_addsubdiag_set_ij_(const int & i1, const int & i2) {
 			ntnz ++ ; rmj_min = rmj_max ;
 		}
 		if (ntnz != ntnz_) {
-			npnz_ = ntnz ; // a revoir ?
+			npnz_ = ntnz ; // à revoir ?
 			int * temp_ij = new int[n_ + m_ + npnz_ + npnz_] ;
 			double * temp_v = new double[npnz_ + npnz_] ;
 			if (( temp_v == NULL ) || (temp_ij == NULL)) {

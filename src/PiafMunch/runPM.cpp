@@ -3,7 +3,7 @@
 *
 * Copyright (C) 2004-2019 INRA
 *
-* Author: A. Lacointe, UMR PIAF, Clermont-Ferrand, France
+* Author: A. Lacointe, UMR PIAF, Clermont-Ferrand, Francef
 *
 * File: Main.cpp
 *
@@ -81,12 +81,12 @@ string AllNodeVariablesNamesQList[] = {
 int NumAllConnVariablesNames = 5 ; // 5 internode connector flux variables :
 string AllConnVariablesNamesQList[] = { "C_Upflow (mmol / ml)", "JS_ST (mmol / h)", "JW_ST (ml / h)", "JW_Xyl (ml / h)", "TracerJS_ST (MBq / h)" } ;
 
-extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // *Q_Auxin, components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
+extern double *Q_ST, *Q_Auxin, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_AuxinOut ;		  // *Q_Auxin, components of vector y as used in diff. system f()...
+extern double *Q_ST_dot,*Q_Auxin_dot,  *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_AuxinOut_dot ; //... and its derivatives.  ;
 extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
 extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl, *vol_Sympl_dot ;
-extern Fortran_vector Psi_Xyl, JW_ST, JS_ST, C_Sympl, C_ST, A_ST, C_amont, JS_Sympl, JS_Apo, JS_ParMb, JS_PhlMb, Psi_Sympl, C_PhlApo, C_ParApo, P_ST, Absorb, RespMaint ;//, Auxin
+extern Fortran_vector Psi_Xyl, JW_ST, JS_ST, C_Sympl, C_ST, C_Auxin, C_amont, JS_Sympl, JS_Apo, JS_ParMb, JS_PhlMb, Psi_Sympl, C_PhlApo, C_ParApo, P_ST, Absorb, RespMaint ;//, Auxin
 extern Fortran_vector JW_Trsv, JW_Xyl, JW_PhlMb, JW_ParMb, JW_Apo, JW_Sympl, P_Sympl, Psi_ST, P_Xyl, Psi_PhlApo, Psi_ParApo, P_PhlApo, P_ParApo ;
 extern Fortran_vector r_Xyl, r_ST, r_ST_ref, r_Trsv, r_PhlMb, r_ParMb, r_Apo, r_Sympl, vol_ST, vol_PhlApo, vol_ParApo ;
 extern Fortran_vector r_abs, PsiSoil, Transpirat, Input, Q_RespMaintSyn ;
@@ -189,7 +189,7 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 		std::cout <<"set out put vec "<<t0<<" "<<t1<<" "<<tf<<" "<<nbv<<std::endl;
 	}
 	initializePM_(tf-t0, TairK);
-	initialize_carbon(this->Q_outv) ;		// sizes C-fluxes-related variable vectors
+	initialize_carbon(this->Q_initOutv) ;		// sizes C-fluxes-related variable vectors
     initialize_hydric() ;		// sizes water-fluxes-related variable vectors and sets up hydric system
 	
 	// building up output times vector OutputTimes according to GUI seetings :
@@ -270,19 +270,36 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
         
     }
     // ********************* OUTPUT *********************************
+    
+    std::cout<<"JAuxin_ST2 before MEMORY LIBERATIONS"<<std::endl;
+    JAuxin_ST1.display();
+    JAuxin_ST2.display();
     std::cout<<"MEMORY LIBERATIONS"<<std::endl;
     // MEMORY LIBERATIONS:
     delete [] y_dot;
 	//for python:
     std::cout<<"fortran to python vector"<<std::endl;
-	this->Q_outv = Y0.toCppVector();//att: now has several outputs
+	this->Q_initOutv = Y0.toCppVector();//att: now has several outputs
 	
-	this->Q_out_dotv = std::vector<double>(Y0.size(),0);
+	this->Q_initOut_dotv = std::vector<double>(Y0.size(),0);
 	for(int j = 1 ; j <= Y0.size() ; j ++) 
 	{
-		this->Q_out_dotv[j-1] = y_dot[j] ; 
+		this->Q_initOut_dotv[j-1] = y_dot[j] ; 
 	}
+    
+	this->Delta_JA_STv = Delta_JA_ST.toCppVector();
 	this->C_STv = C_ST.toCppVector();
+	this->C_Auxinv = C_Auxin.toCppVector();
+	this->C_AuxinOutv = C_AuxinOut.toCppVector();
+    std::cout<<"JAuxin_ST2 at the end "<<std::endl;
+    JAuxin_ST1.display();
+    JAuxin_ST2.display();
+	this->JAuxin_ST2v = JAuxin_ST2.toCppVector();
+    for(int u = 0;u<this->JAuxin_ST2v.size();u++)
+    {
+        std::cout<<this->JAuxin_ST2v.at(u)<<" ";
+    }std::cout<<std::endl;
+    
 	this->vol_STv = vol_ST.toCppVector();
 	this->Q_Grmaxv = Q_Grmax.toCppVector();
 	this->Q_Exudmaxv = Q_Exudmax.toCppVector();
@@ -325,6 +342,12 @@ void PhloemFlux::aux(double t, double * y) {	// launch auxiliary calculations to
 				std::cout<<"negative Q_ST value at j = "<<j<<", Q_ST[j] = "<< Q_ST[j] <<std::endl;
 				assert(false);
 			}
+			if(Q_Auxin[j]<0.)
+			{
+				std::cout<< "at t = " << t << " : Y0.size() = " << Y0.size()<<std::endl;
+				std::cout<<"negative Q_Auxin value at j = "<<j<<", Q_Auxin[j] = "<< Q_Auxin[j] <<std::endl;
+				assert(false);
+			}
 		}
 	}
 	
@@ -335,6 +358,11 @@ void PhloemFlux::aux(double t, double * y) {	// launch auxiliary calculations to
 	}// update Y0
 	std::cout << "at t = " << t << " : Y0.size() = " << Y0.size();
 	std::cout<<std::endl;
+    
+    std::cout<<"JAuxin_ST12 int aux "<<std::endl;
+    JAuxin_ST1.display();
+    JAuxin_ST2.display();
+    std::cout<<"JAuxin_ST12 int auxEND "<<std::endl;
 }
 
 
@@ -349,7 +377,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	r_ST_ref = Fortran_vector(Nc)	; 
 	auto r_ST_refnol = Fortran_vector(Nc)	; 
 	I_Upflow = I_Downflow = vector<int>(Nc +1) ;
-	vector<int> orgTypes = plant->organTypes;//per seg
+	orgTypes = plant->organTypes;//per seg
 	vector<int> subTypes = plant->subTypes;
 	vector<double> Radii = plant->radii;
 	vector<double> Lengthvec = plant->segLength();
@@ -367,13 +395,13 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	vol_Seg=Fortran_vector(Nt, 0.);//for postprocessing	
 	exud_k=Fortran_vector(Nt, 0.);
 	krm2=Fortran_vector(Nt, 0.);
+	AuxinSource = std::vector<int>(Nt , 0)  ;//reset
 	deltaSucOrgNode_ = waterLimitedGrowth(dt);//water limited growth
 	if(doTroubleshooting){cout<<"initializePM_new "<<Nc<<" "<<Nt<<endl;}
 	int nodeID;
 	double StructSucrose;//double deltaStructSucrose;
 	double cmH2O_to_hPa = 0.980638	;//cm to hPa
 	double krm1;
-	
 	if(psiXyl4Phloem.size() == Nt){Psi_Xyl = Fortran_vector(psiXyl4Phloem,cmH2O_to_hPa); //computed by xylem object
 	}else{Psi_Xyl = Fortran_vector(Nt, 0.);}
 	
@@ -765,6 +793,7 @@ void PhloemFlux::computeOrgGrowth(double t){
 std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 {
 	
+    //doTroubleshooting = true;
 	if(doTroubleshooting){std::cout<<"PhloemFlux::waterLimitedGrowth_start"<<std::endl;}
 	int Nr = plant->nodes.size();
 	std::map<int,double> initMap = { { -1,0. } };//-1 : total need per node
@@ -779,7 +808,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 	for(auto org: orgs)
 	{
 		double dt = t;
-		if(((org->getAge()+dt)>0)&&(org->isAlive())&&(org->isActive()))
+		if(((org->getAge()+dt)>0)&&(org->isAlive()))//&&(org->isActive()))
 		{
 		//organ alive and active at this time step
 			double age = org->getAge();
@@ -924,16 +953,63 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 					Fpsi[nodeId] = std::max((std::min(psiXyl[nodeId], psiMax) - psiMin)/(psiMax - psiMin),0.);
 					assert((Fpsi[nodeId] >= 0)&&"PhloemFlux::waterLimitedGrowth: Fpsi[nodeId] < 0");
 				}else{Fpsi[nodeId] = 1.;}
-				int goAhead = 1;double cst = -1;
-				if((org->getNumberOfNodes()>1)&&( org->organType() ==3)&&
-						(org->getParameter("subType")==2)&&(!org->activePhloem)&&activeAtThreshold)
-						{
-							if(C_STv.size() > nodeId){cst = C_STv.at(nodeId);}
-							if((cst > CSTthreshold)&&canStartActivating){org->activePhloem = true;}else{goAhead = 0;}
-						}
+                double cst = -1;double iaa = -1;
+                //int toActivate = activeAtThreshold_auxin + activeAtThreshold;
+                //int activatedCA =  activePhloem + activeAuxin;
+				int goAhead = 1;//activatedCA - toActivate + 1;
+                if(doTroubleshooting)
+                    {std::cout<<"before auxin "<<org->organType()<<" "<<org->getParameter("subType")<<std::endl;}
 				if(( org->organType() !=3)||(org->getParameter("subType") !=2))
-                    {org->activePhloem = true;}
-                
+                {
+                        org->activePhloem = true;
+                        org->activeAuxin = true;
+                    if(doTroubleshooting)
+                        {std::cout<<"not using auxin "<<org->activePhloem<<" "<<org->activeAuxin<<std::endl;}
+                }else
+                {
+                    if(doTroubleshooting)
+                        {std::cout<<"Does use auxin "<<org->getNumberOfNodes()<<" "<<org->activePhloem<<std::endl;}
+                    if(org->getNumberOfNodes()>1)
+                    {
+                        if(!org->activePhloem)//(goAhead <= 0))
+                        {
+                            if(doTroubleshooting)
+                        {std::cout<<"suc activation? "<<C_STv.size()<<" "<<canStartActivating<<" "<<activeAtThreshold<<" ";}
+							if(C_STv.size() > nodeId){cst = C_STv.at(nodeId);}
+							if(((cst >= CSTthreshold)&&canStartActivating)||(!activeAtThreshold))
+                            {
+                                 org->activePhloem = true;
+                            }else{goAhead = 0;}
+                            if(doTroubleshooting)
+                        {std::cout<<org->activePhloem<<" "<<canStartActivating<<" "<<goAhead<<std::endl;}
+						}
+                        if(!org->activeAuxin)//(goAhead <= 0))
+						{
+                            if(doTroubleshooting)
+                        {std::cout<<"auxine activation? "<<C_Auxinv.size()<<" "<<canStartActivating<<" "<<activeAtThreshold_auxin<<" ";}
+							if(C_Auxinv.size() > nodeId){iaa = C_Auxinv.at(nodeId);}
+							if(((iaa <= auxin_threshold)&&canStartActivating)||(!activeAtThreshold_auxin))
+                            {
+                                 org->activeAuxin = true;
+                            }else{goAhead = 0;}
+                            if(doTroubleshooting)
+                        {std::cout<<org->activeAuxin<<" "<<canStartActivating<<" "<<goAhead<<std::endl;}
+						}
+                    }
+                }
+                if(doTroubleshooting)
+                {
+                    std::cout<<"after auxin "<<nodeId<<" "<<AuxinSource.size()<<" "<<goAhead<<std::endl;
+                    std::cout<<activeAtThreshold_auxin <<" "<< org->activePhloem <<" "<< org->activeAuxin <<" "<< isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<std::endl;
+                }
+                if(AuxinSource.at(nodeId) == 0)//not yet a source there
+                {
+                    AuxinSource.at(nodeId) = activeAtThreshold_auxin*(org->activePhloem)*(org->activeAuxin)*isStemTip*(org->getParameter("subType") <=2);
+                }
+                if(doTroubleshooting)
+                {
+                    std::cout<<"AuxinSource "<<AuxinSource[nodeId] <<" "<< activeAtThreshold_auxin <<" "<< org->activePhloem <<" "<< org->activeAuxin <<" "<< isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<std::endl;
+                }
 				double deltavolSeg = deltavol * Flen * Fpsi[nodeId] * goAhead;
 				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){
 					//could be error of pressision (if l = Lmax)
@@ -1011,7 +1087,18 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			throw runtime_error("PhloemFlux::waterLimitedGrowth: wrong values in deltaSucOrgNode map");
 		}
     }
-	
+	if(doTroubleshooting)
+    {
+        std::cout<<"sumary auxine source ";
+        int maxSource =0;
+        for(int o = 0; o < AuxinSource.size(); o++)
+        {
+            std::cout<<AuxinSource.at(o)<<" ";
+            maxSource = (maxSource < AuxinSource.at(o)) ? AuxinSource.at(o) : maxSource;
+        }std::cout<<std::endl;
+        if(maxSource < 1){assert(false&&"noAuxineSource");}
+    }
+    //doTroubleshooting = false;
 	return deltaSucOrgNode;
 }
 

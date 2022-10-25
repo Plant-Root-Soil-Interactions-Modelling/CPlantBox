@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<plant name="maize" filetype="parameters">
+<plant name="small_MG" filetype="parameters">
 <organ type="seed" subType="0">
     <parameter name="seedPos.x" value="0"/>
     <parameter name="seedPos.y" value="0"/>
@@ -19,19 +19,41 @@
 <organ type="root" name="taproot" subType="1">
     <parameter name="lb" value="1" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="2.0" dev="0"/>
+    <parameter name="la" value="2" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0.1" dev="0"/>
+    <parameter name="ln" value="1" dev="0"/>
     <parameter name="lnk" value="-0.01" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="10" dev="0"/>
-    <parameter name="r" value="0.3" dev="0"/>
+    <parameter name="lmax" value="3" dev="0"/>
+    <parameter name="r" value="30" dev="0"/>
     <parameter name="a" value="0.30000000000000001" dev="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.261799"/>
-    <parameter name="dx" value="0.25"/>
-    <parameter name="dxMin" value="0.2"/>
+    <parameter name="dx" value="1"/>
+    <parameter name="dxMin" value="0.95"/>
+    <parameter name="theta" value="1" dev="0"/>
+    <parameter name="rlt" value="1000000000" dev="0"/>
+    <parameter name="gf" value="3"/>
+    <parameter name="successor" number="0" type="2" percentage="1"/>
+	
+</organ>
+<organ type="root" name="latroot" subType="2">
+    <parameter name="lb" value="3" dev="0"/>
+    <!--Basal zone [cm]-->
+    <parameter name="la" value="0" dev="0"/>
+    <!--Apical zone [cm];-->
+    <parameter name="ln" value="0" dev="0"/>
+    <parameter name="lnk" value="-0.01" dev="0"/>
+    <!--Inter-lateral distance [cm];-->
+    <parameter name="lmax" value="3" dev="0"/>
+    <parameter name="r" value="30" dev="0"/>
+    <parameter name="a" value="0.30000000000000001" dev="0"/>
+    <parameter name="tropismT" value="1"/>
+    <parameter name="tropismN" value="1"/>
+    <parameter name="tropismS" value="0.261799"/>
+    <parameter name="dx" value="1"/>
+    <parameter name="dxMin" value="0.95"/>
     <parameter name="theta" value="1" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
@@ -39,14 +61,14 @@
 </organ>
 
 <organ type="stem" name="mainstem" subType="1">
-    <parameter name="lb" value="1" dev="0"/>
+    <parameter name="lb" value="2" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="0.25" dev="0"/>
+    <parameter name="la" value="3" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="0.4" dev="0" functiontype="0"/>
+    <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="5" dev="0"/>
-    <parameter name="r" value="0.3" dev="0"/>
+    <parameter name="r" value="30" dev="0"/>
     <parameter name="a" value="0.50000000000000001" dev="0"/>
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="0"/>
@@ -54,60 +76,47 @@
     <parameter name="tropismT" value="0"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0"/>
-    <parameter name="dx" value="0.25"/>
-    <parameter name="dxMin" value="0.2"/>
+    <parameter name="dx" value="1"/>
+    <parameter name="dxMin" value="0.95"/>
     <parameter name="theta" value="0" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
-    <parameter name="successor" number="0" type="2" percentage="1"/>
+	<parameter name="successor" numLat="1" subType="1" organType="4" percentage="1" where="-1"/>
 </organ>
 
-<organ type="stem" name="bulb" subType="2">
+
+
+<organ type="leaf" name="lateral1" subType="1">
     <parameter name="lb" value="0" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
     <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="0" dev="0"/>
-    <parameter name="r" value="2" dev="0"/>
-    <parameter name="a" value="0.50000000000000001" dev="0"/>
-    <parameter name="RotBeta" value="0"/>
-    <parameter name="BetaDev" value="0"/>
-    <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="0"/>
-    <parameter name="tropismN" value="1"/>
-    <parameter name="tropismS" value="0"/>
-    <parameter name="dx" value="1"/>
-    <parameter name="theta" value="0.2" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="3"/>
-
-</organ>
-
-
-
-<organ type="leaf" name="lateral1" subType="2">
-    <parameter name="lb" value="0.25" dev="0"/>
-    <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
-    <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="0.25" dev="0"/>
-    <parameter name="r" value="0.3" dev="0"/>
-    <parameter name="a" value="0.10000000000000001" dev="0"/>
+    <parameter name="lmax" value="1" dev="0"/>
+    <!--max distance == mean diameter (from Kong2020) to side distance-->
+    <parameter name="r" value="10" dev="0"/>
+    <parameter name="a" value="0.35" dev="0.002"/>
+    <parameter name="Width_petiole" value="1" />
+    <parameter name="Width_blade" value="1" />
     <parameter name="RotBeta" value="1"/>
+	<!--shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2-->
+    <parameter name="shapeType" value="1" />
     <parameter name="BetaDev" value="0"/>
     <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
-    <parameter name="tropismN" value="3"/>
-    <parameter name="tropismS" value="0"/>
-    <parameter name="dx" value="0.25"/>
-    <parameter name="dxMin" value="0.2"/>
-    <parameter name="theta" value="0.3" dev="0"/>
+    <parameter name="tropismN" value="20"/>
+    <parameter name="tropismS" value="0.2"/>
+    <parameter name="dx" value="1"/>
+    <parameter name="dxMin" value="0.95"/>
+    <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="3"/>
+    <parameter name="gf" value="4"/>
+	<parameter name="areaMax" value="1"/>
+    <parameter name="geometryN" value="100"/>
+    <parameter name="parametrisationType" value="1"/>
+    <!--only for VTP representation. Actual shape comes from Width_petiole and Width_blade-->
+	<parameter name="leafGeometry" phi="-1.571, -1.178, -0.785, -0.393,  0.,  0.393,  0.785,  1.178, 1.571" x="1., 1., 1., 1., 1., 1., 1., 1., 1."/>							
 </organ>
 
 

@@ -66,6 +66,7 @@ extern Fortran_vector C_amont					; //  (mmol / ml) : ST Sugar concentration at 
 extern Fortran_vector Input					; // Local C input (photosynthetic assimilation rate in leaves, but may be defined anywhere) (boundary condition)			(mmol / h)
 extern Fortran_vector C_Sympl						; // Concentration of sugar in parenchyma = Q_Par / vol_Sympl			(mmol / ml)
 extern Fortran_vector C_ST							; // Concentration of sugar in sieve tubes								(mmol / ml solution))
+extern Fortran_vector C_Auxin							; // Concentration of sugar in sieve tubes								(mmol / ml solution))
 //extern Index_vector i_amont					; // i_amont[i] = Id# of upflow node  ; def. ONLY FOR i > 1  (i_amont[1] = NA)
 extern Fortran_vector i_amont					;
 extern Fortran_vector JS_Sympl						; // Symplasmic flux of sugar from Lateral parenchyma to phloem ST (mmol / h)
@@ -74,7 +75,7 @@ extern Fortran_vector JS_Apo						; // apoplasmic sugar flux from phloem to Late
 extern Fortran_vector JW_ParMb, JW_Apo, JW_Sympl ; // water fluxes corresponding to above 3 sugar fluxes   (ml / h)
 extern Fortran_vector C_SymplUpflow					; // upflow concentration (mmol / ml) for JS_Sympl
 extern Fortran_vector C_PhlApo, C_ParApo, C_ApoUpflow ; // (mmol / ml) apoplasmic sugar conc., resp. in phloem and lat.parenchyma, and upflow conc. for JS_Apo
-extern Fortran_vector Delta_JS_ST ; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
+extern Fortran_vector Delta_JS_ST; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
 
 /******** TRACER-RELATED VARIABLES ***********************************************************/
 extern double TracerDecay_k, TracerHalfLife ;
@@ -169,7 +170,17 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
     i_amont = Fortran_vector(Nc, 0.)	; //  Index_vector(Nc)	; // true upflow node : sera I_Upflow[j]  ou  I_Downflow[j] suivant le sens réel du flux
     C_amont = Fortran_vector(Nc, 0.)	; //  (mmol / ml) : ST Sugar concentration at true upflow node
 	C_ST = Fortran_vector(Nt, 0.);
-	if(doTroubleshooting){
+	
+    Delta_JA_ST = Fortran_vector(Nt, 0.) ;
+	Alpha_st = Fortran_vector(Nt, 0.) ;
+    JAuxin_ST1 = Fortran_vector(Nc, 0.);
+    JAuxin_ST2 = Fortran_vector(Nc, 0.);
+    C_Auxin = Fortran_vector(Nt, 0.);
+    C_AuxinOut = Fortran_vector(Nt, 0.);
+	A_amont = Fortran_vector(Nc, 0.)	;
+    i_amont_auxin = Fortran_vector(Nc, 0.)	;
+        
+    if(doTroubleshooting){
 		std::cout<<"initial size of vector: "<<vecIn.size()<<" nodes: "<<Nt<<" connections "<<Nc<<" "<<std::endl;
 	}
     if(vecIn.size() == (Nt*neq_coef)){ //gave input vector with starting values 
@@ -205,13 +216,26 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 						Y0[z + 1 + Nt ] = initValMeso * vol_ParApo[z + 1];
 					}
 				}
+				for(int z = 0; z < Nt;z++){
+					Y0[z + 1 + Nt * 9] = initValAuxin * vol_ST[z + 1]; //conz to content
+				}
 				for(int zz = 0; zz < plant->node_Decapitate.size();zz++){
 					int z = plant->node_Decapitate.at(zz);
 					
 					Y0[z + 1] = 0; 
 					Y0[z + 1 + Nt ] = 0;
+					Y0[z + 1 + Nt*9 ] = 0;
 				}
 				this->Q_init = Y0.toCppVector(); //for post processing
+                
+                if(doTroubleshooting)
+                {
+                    std::cout<<"Qinit "<<std::endl;
+                    for(int y = 0; y <this->Q_init.size(); y++ )
+                    {
+                        std::cout<<this->Q_init.at(y)<<" ";
+                    }std::cout<<std::endl;
+                }
 			}
 		}
 	}
@@ -265,19 +289,47 @@ void PhloemFlux::initialize_hydric() {
 	// les signes ci-dessous sont donnés en cohérence avec eq. (1) à (4), i.e. considérant que j=JW_ST (et sens opposé à JW_Xyl) :
 	Sparse_matrix* Delta2_ = new Sparse_matrix(Nt, Nc, 2*Nc) ;//IM shape : ligne shape = Nt; column.size = Nc, 
 	Sparse_matrix* Delta2_abs = new Sparse_matrix(Nt, Nc, 2*Nc) ;//IM shape : ligne shape = Nt; column.size = Nc, 
-	
-	for(j = 1 ; j <= Nc ; j ++) { 
+	Sparse_matrix* Delta2_updown = new Sparse_matrix(Nt, Nc, 2*Nc) ;//IM shape : ligne shape = Nt; column.size = Nc, 
+			//I_Upflow[k] = segmentsPlant[k-1].x +1;
+			//I_Downflow[k] = segmentsPlant[k-1].y +1;
+			
+    if(doTroubleshooting)
+    {std::cout<<"PhloemFlux::initialize_hydric()"<<std::endl;}
+	for(j = 1 ; j <= Nc ; j ++) 
+    { 
 		Delta2_->set_(I_Upflow[j], j, -1.) ; 
 		Delta2_->set_(I_Downflow[j], j, 1.) ; 
 		
 		Delta2_abs->set_(I_Upflow[j], j, 0.5) ; 
 		Delta2_abs->set_(I_Downflow[j], j, 0.5) ; 	
-		}
+        
+        int ot = orgTypes[j-1];
+        int valj;
+        if(ot > 2)
+        {//auxin goes toward x
+            //Delta2_updown->set_(I_Upflow[j], j, 1.) ; 
+            valj=-1;
+            Delta2_updown->set_(I_Downflow[j], j, valj) ; 
+        }else
+        {//auxin goes toward y
+            //Delta2_updown->set_(I_Upflow[j], j, -1.) ; 
+            valj= 1;
+            Delta2_updown->set_(I_Downflow[j], j, valj) ; 
+        }
+        if(doTroubleshooting)
+        {
+            std::cout<<ot<<" "<<j<<" "<<I_Upflow[j]<<" "<<I_Downflow[j]<<" "<<valj<<std::endl;
+        }
+	}
 	Delta2 = SpUnit_matrix(*Delta2_) ; delete Delta2_ ;
-	Sparse_matrix Delta2abs = *Delta2_abs ; delete Delta2_abs ;
-
 	Delta = -transpose(Delta2) ;
+    
+	Delta2updown = SpUnit_matrix(*Delta2_updown) ; delete Delta2_updown ;
+	Deltaupdown = transpose(Delta2updown) ;
+    
+	Sparse_matrix Delta2abs = *Delta2_abs ; delete Delta2_abs ;
 	Deltaabs = transpose(Delta2abs) ;
+    
 	Delta_rphl = Delta / r_ST_ref ;
 			
 	ipiv_ptr = NULL ; TM_ptr = NULL;

@@ -1,15 +1,15 @@
 /*
-* PiafMunch (v.2) -- Implementing and Solving the Munch model of phloem sap flow in higher plants
+* PiafMunch (v.2) -- Implementing & Solving the Munch model of phloem sap flow in higher plants
 *
 * Copyright (C) 2004-2019 INRA
 *
-* Author: A. Lacointe, UMR PIAF, Clermont-Ferrand, France
+* Author: A. Lacointe, UMR PIAF, Clermont-Ferr&, France
 *
 * File: solve.cpp
 *
-* This file is part of PiafMunch. PiafMunch is free software: you can redistribute it and/or
+* This file is part of PiafMunch. PiafMunch is free software: you can redistribute it &/or
 * modify it under the terms of the GNU General Public License version 3.0 as published by
-* the Free Software Foundation and appearing in the file LICENSE.GPL included in the
+* the Free Software Foundation & appearing in the file LICENSE.GPL included in the
 * packaging of this file. Please  review the following information to ensure the GNU
 * General Public License version 3.0  requirements will be met:
 * http://www.gnu.org/copyleft/gpl.html.
@@ -42,7 +42,7 @@ int Nt, Nc ; // Nt = Total number of nodes, Nc = total number of connections in 
 int N1R ; // Number of  'root tip's, i.e. nodes of conn.order 1 that have imposed soil water potential as a limit condition.
 extern int N1L ; // Organ type # 1L : 'leaf end' ; has imposed transpiration stream as a limit condition
 extern Index_vector i_[] ; // i_[o = 0..8][k = 1..No] = id# of kth node in (1-based list)  list of all nodes of conn.ord. co(o). For o=0: No=N1L ; o=1: No=N1R ; o=2..8: No=N[o] :
-extern Index_vector andRootEnds, andLeafEnds ; // (= i_[1] and i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
+extern Index_vector &RootEnds, &LeafEnds ; // (= i_[1] & i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
 vector<int> jf_RootEnds ; // indices to label end nodes = those of conn.order 1
 extern vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# du noeud amont (resp. aval) : jf = JF(i,i2) > 0 si I_Upflow[(abs(jf)]==i, i.e. si I_Downflow[(abs(jf)]==i2
 SpUnit_matrix Delta2 ; // describe hydraulic architecture (topology)
@@ -53,7 +53,7 @@ Sparse_matrix X ;	// intermediaires de calcul ;
 int** ipiv_ptr ; void**TM_ptr ; // id. -- initialise dans inialize_hydric()
 #ifdef Full_Matrix // solve full linear system for all hydraulic variables, chained as YY below :
 Fortran_vector YY, SM ; // resp., inconnue et second membre de l'eq. matricielle
-#else // reduce linear system to only one unknown hydraulic variable (P_ST) => significant speed up and reduce required memory -- needs pre-solving recalculation if local model is changed
+#else // reduce linear system to only one unknown hydraulic variable (P_ST) => significant speed up & reduce required memory -- needs pre-solving recalculation if local model is changed
 SpUnit_matrix Delta ; // =  - Transpose(Delta2) : describe hydraulic architecture (topology)
 Sparse_matrix M1, Delta_rxyl, Delta_rphl ;	// intermediaires de calcul ;
 Fortran_vector Km, rG, O ; //  intermediaires de calcul (Km : rien a voir avec Michaelis !)
@@ -63,15 +63,15 @@ double C, _0089_099803 = 0.089/0.99803 ; // intermediaire de celcul de la molali
 extern int jf, i ; int is ; // is = # of current integration time segment (first = 1)
 
 /******************************************  Environmental Variables: *********************************************/
-extern double T ; // (K) absolute temperature : set in GUI, but may be updated anytime in function 'parameter_and_boundary_conditions()' at the end of file 'PiafMunch2.cpp'.
-// The following 2 environment data are set by the user in function  'parameter_and_boundary_conditions()'  at the end of file 'PiafMunch2.cpp' :
+extern double T ; // (K) absolute temperature : set in GUI, but may be updated anytime in function 'parameter_&_boundary_conditions()' at the end of file 'PiafMunch2.cpp'.
+// The following 2 environment data are set by the user in function  'parameter_&_boundary_conditions()'  at the end of file 'PiafMunch2.cpp' :
 extern Fortran_vector Transpirat		; // Leaf transpiration rate (used in water-fluxes calc.)				(mmol / h)
 extern Fortran_vector PsiSoil			; // Soil water potential at root end (used in water-fluxes calc.)		(MPa)
 
-/******************************************  Constants and Parameters: *********************************************/
+/******************************************  Constants & Parameters: *********************************************/
 #define R 83.14//0.0083143	// constante des gaz parfaits -											(MPa ml K-1 mmol-1)
 double TdC, dEauPure,  siPhi, newPhi ; // pour visc. calc. par  www.seas.upenn.edu et/ou NonLinPsi
-bool Adv_BioPhysics ; // true if  non-zero sugar specific volume, osmotic pot.=non-linear function of molality (Thompson and Holbrook), and viscosity changes with C_TC (Thompson and Holbrook ; Seas, Flanagan)  ; set in IntroDialogBox
+bool Adv_BioPhysics ; // true if  non-zero sugar specific volume, osmotic pot.=non-linear function of molality (Thompson & Holbrook), & viscosity changes with C_TC (Thompson & Holbrook ; Seas, Flanagan)  ; set in IntroDialogBox
 
 // Hydro Resistance Parameters (set in GUI) :
 Fortran_vector r_Xyl			; //(MPa h / ml) : xylem water resistance
@@ -102,8 +102,8 @@ void Smooth_Parameter_and_BoundaryConditions_Changes(int s, double t) ; // User-
 void vector_init(double t, double *y, double *y_dot);
 
 // ******************  mere C-fluxes related variables or parameters ********** :
-extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
+extern double *Q_ST, *Q_Auxin, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_AuxinOut ;		  // components of vector y as used in diff. system f()...
+extern double *Q_ST_dot, *Q_Auxin_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_AuxinOut_dot ; //... & its derivatives.  ;
 extern double *vol_Sympl ;
 extern Fortran_vector JS_ST, C_amont, JS_Sympl, JS_Apo, RespMaint;// Auxin ;
 extern Fortran_vector vol_ST, vol_PhlApo, vol_ParApo ;
@@ -111,18 +111,18 @@ extern Fortran_vector r_abs, PsiSoil, Transpirat, Input, Q_RespMaintSyn ;
 extern Fortran_vector P_ST_dot, P_Sympl_dot ; /******* variation rate of any variable X is noted: X_dot = dX/dt *******/
 //Index_vector i_amont					; // i_amont[i] =Id# of  *true*  upflow node
 Fortran_vector i_amont					;
-extern Fortran_vector C_SymplUpflow, C_ApoUpflow ; // to derive JS_Sympl, and maybe JS_Apo, from resp. water fluxes JW_xxx
+extern Fortran_vector C_SymplUpflow, C_ApoUpflow ; // to derive JS_Sympl, & maybe JS_Apo, from resp. water fluxes JW_xxx
 
 // ******************  auxiliary sugar- or anatomy- related, non-hydraulic variables or parameters that may be involved in water-system equations ********** :
-extern Fortran_vector C_ST, C_PhlApo		; // Concentration of sugar in phloem  sieve tubes  and  apoplasm, resp.							(mmol / ml)   (ml of solution)
-extern Fortran_vector  JS_PhlMb, JS_ParMb ; //  (if Adv_BioPhysics)  to compute NZS and NZSP (see next line)
-// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_PhlMb * PartMolalVol (=0.2155 in Thompson and Holbrook -- 0.214 might be more accurate)
-extern Fortran_vector C_Sympl, C_ParApo		; // Concentration of sugar in lateral tissue symplasm  and  apoplasm, resp.								(mmol / ml)   (ml of solution)
+extern Fortran_vector C_ST, C_Auxin, C_PhlApo		; // Concentration of sugar in phloem  sieve tubes  &  apoplasm, resp.							(mmol / ml)   (ml of solution)
+extern Fortran_vector  JS_PhlMb, JS_ParMb ; //  (if Adv_BioPhysics)  to compute NZS & NZSP (see next line)
+// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_PhlMb * PartMolalVol (=0.2155 in Thompson & Holbrook -- 0.214 might be more accurate)
+extern Fortran_vector C_Sympl, C_ParApo		; // Concentration of sugar in lateral tissue symplasm  &  apoplasm, resp.								(mmol / ml)   (ml of solution)
 extern Fortran_vector Delta_JS_ST ; // sera la composante purement phloemienne de Q_TC_dot[ ]							(mmol / h)
 
 // tracer-specific add-ins :
 extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
-extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
+extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... & its derivatives.  ;
 extern Fortran_vector TracerJS_ST, TracerC_Sympl, TracerC_ST, TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb, TracerJS_PhlMb, TracerC_PhlApo, TracerC_ParApo ;
 extern Fortran_vector TracerQ_RespMaintSyn, TracerInput, TracerRespMaint, TracerC_SymplUpflow, TracerC_ApoUpflow ;
 extern Fortran_vector TracerRatioSympl, TracerRatioQ_RespMaint ;
@@ -155,22 +155,22 @@ Fortran_vector JW_Sympl		; // Lateral parenchyma to phloem ST Symplasmic liquid 
 double  PartMolalVol =0;
 //comes from Genotelle, J. Expression de la viscosite  des solutions sucrees. Ind. Aliment. Agric. 1978, 95, 747-755
 //prooved to hold by https://doi.org/10.1021/ie000266e
-//taken here as presented in "Sucrose Properties and Applications" for pure sucrose solution
+//taken here as presented in "Sucrose Properties & Applications" for pure sucrose solution
 //see 10.1007/978-1-4615-2676-6_6
 //Mathlouthi, M.; Reiser, P., 1995
 //eq. 6.29
 void PhloemFlux::update_viscosity() { // called if (Adv_BioPhysics)
-	static double T_old(-9999.);//V_ref(-9999.) ; // memory of previous T (do not compute dEauPure, siPhi, etc. if T unchanged), and V_ref
+	static double T_old(-9999.);//V_ref(-9999.) ; // memory of previous T (do not compute dEauPure, siPhi, etc. if T unchanged), & V_ref
 	double d, siEnne,  mu ; 
 	if (T_old != TairK_phloem) {
 		TdC = TairK_phloem - 273.15;
 		//in g/L or mg/cm3
 		dEauPure = (999.83952 + TdC * (16.952577 + TdC * (- 0.0079905127 + TdC * (- 0.000046241757 + TdC * (0.00000010584601 + TdC * (- 0.00000000028103006)))))) / (1 + 0.016887236 * TdC); 
-		siPhi = (30 - TdC) / (91 + TdC) ;  T_old = TairK_phloem ;//  R.Gilli 1997, after Mathlouthi and Genotelle 1995 - valid for any T :
+		siPhi = (30 - TdC) / (91 + TdC) ;  T_old = TairK_phloem ;//  R.Gilli 1997, after Mathlouthi & Genotelle 1995 - valid for any T :
 	}
    for (int i=1 ; i <= Nc ; i++) { // this loop computes the viscosity profile, temporarily stored as vector r_ST_ before scaling to actual r_ST values:
 		C = C_amont[i] ; // (mmol / ml solution)
-		//  R.Gilli 1997, after Mathlouthi and Genotelle 1995 - valid for any T :
+		//  R.Gilli 1997, after Mathlouthi & Genotelle 1995 - valid for any T :
 		if (C < 0.) C = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)
 		//342.3 g/mol or mg/mmol
 		double PartMolalVol_ = 0;//0.2155;
@@ -190,7 +190,7 @@ void PhloemFlux::update_viscosity() { // called if (Adv_BioPhysics)
 double R_ = 83.14;//cm^3 hPa K-1 mmol-1
 void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be processed by the solver
 	
-	double RT = R_*TairK_phloem ; // int k ; T may be changed anytime, in function 'parameter_and_boundary_conditions(t)  in PiafMunch2.cpp
+	double RT = R_*TairK_phloem ; // int k ; T may be changed anytime, in function 'parameter_&_boundary_conditions(t)  in PiafMunch2.cpp
 	static Fortran_vector dummy(Nt);
 	Q_ST = y ;							// note: zero_indices  Q_ST[0],..., Q_RespMaint[0]... are ignored
 	Q_Mesophyll = Q_ST + Nt ; 
@@ -203,7 +203,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	Q_Exudationmax = Q_Growthtotmax + Nt ; 
 	
 	//if delete, lower neq
-	Q_out = Q_Exudationmax + Nt;//for intermediary compartment between ST and outside. useless (not implemented) delete?
+	Q_AuxinOut = Q_Exudationmax + Nt;//for intermediary compartment between ST & outside. useless (not implemented) delete?
+    Q_Auxin = Q_AuxinOut + Nt ;
 	
 	for (int i=1; i<=Nt; i++)  {
 		double volSTi = vol_ST[i];
@@ -212,7 +213,9 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		if (QSTi < 0.){ QSTi = 0. ; Q_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		if (Q_Mesophyll[i] < 0.){ Q_Mesophyll[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		C_ST[i] = QSTi / volSTi ; // Concentration of sugar in sieve tubes		(mmol / ml)
-	
+		if (Q_Auxin[i] < 0.){ Q_Auxin[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+        C_Auxin[i] = Q_Auxin[i] / volSTi ;
+        C_AuxinOut[i] = Q_AuxinOut[i] / volSTi ;
 	}
 	Q_ST_dot = y_dot ; 
 	Q_Mesophyll_dot = Q_ST_dot + Nt ; 
@@ -225,7 +228,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	Q_Exudmax_dot = Q_Gtotmax_dot + Nt ; 
 	
 	
-	Q_out_dot = Q_Exudmax_dot + Nt ;//useless, delete?
+	Q_AuxinOut_dot = Q_Exudmax_dot + Nt ;//useless, delete?
+    Q_Auxin_dot = Q_AuxinOut_dot + Nt ;
 	
 	//Add later
 	/*if (Adv_BioPhysics) {
@@ -239,7 +243,24 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	P_ST *= RT;
 	if(usePsiXyl){P_ST += Psi_Xyl ;}
 	JW_ST.set_matmult(Delta, P_ST) ; 
+			//I_Upflow[k]   = segmentsPlant[k-1].x +1;
+			//I_Downflow[k] = segmentsPlant[k-1].y +1;
+    Alpha_st.set(auxin_alpha);
+    JAuxin_ST1.set_matmult(Deltaupdown, Alpha_st) ; 
+    
+    if(doTroubleshooting){
+        std::cout<<"JW_ST"<<std::endl;
+        JW_ST.display();
+        std::cout<<"Jalpha_ST"<<std::endl;
+        JAuxin_ST1.display();
+        Deltaupdown.display();
+        Delta2updown.display();
+    }
+    
 	for(int j = 1 ; j <= Nc ; j ++) {
+        //set flow rate from upflow to downflow
+        //Delta_JA_ST[I_Downflow[j]] = - auxin_alpha * Q_Auxin[I_Downflow[j]];
+        //Delta_JA_ST[I_Upflow[j]]   =   auxin_alpha * Q_Auxin[I_Downflow[j]];   
 		//int i_aval; double C_aval;
 		if(JW_ST[j] > 0)
 		{  
@@ -247,8 +268,14 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		}else{  
 			i_amont[j] = I_Downflow[j] ; 
 		}
+		if(JAuxin_ST1[j] > 0)
+		{  
+			i_amont_auxin[j] = I_Upflow[j] ; 
+		}else{  
+			i_amont_auxin[j] = I_Downflow[j] ; 
+		}
 		C_amont[j] = C_ST[i_amont[j]] ; 
-		
+		A_amont[j] = C_Auxin[i_amont_auxin[j]] ; 
 		if((errorID == I_Upflow[j])||(errorID == I_Downflow[j]))//found an error in last run of C_fluxes function
 		{
 			std::ofstream outfile;
@@ -258,10 +285,11 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 			outfile<<" pst: "<<P_ST[I_Upflow[j]]<<" "<<P_ST[I_Downflow[j]] <<std::flush;
 			outfile<<" vol: "<<vol_ST[I_Upflow[j]]<<" "<<vol_ST[I_Downflow[j]] <<std::flush;
 			outfile<<std::endl<<std::flush;
-			assert(falseandand"PhloemFlux::C_fluxes : negative maximal flux of sucrose concentration");
+			assert(false&&"PhloemFlux::C_fluxes : negative maximal flux of sucrose concentration");
 			
 		}
 		if (C_amont[j] < 0.) C_amont[j] = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)
+		if (A_amont[j] < 0.) A_amont[j] = 0. ; // fix any artefact from solver (may try C<0 even if actual C never does)
 			bool find1 = false;
 			bool find2 = false;
 		if(doTroubleshooting){
@@ -279,11 +307,21 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 				std::cout<<"find? "<< find1<<" "<<find2<<std::endl;
 			}
 			if(find1 || find2)//segment cut
-			{//also set photosyntheis and water flow to 0 in photosynthesis module.
+			{//also set photosyntheis & water flow to 0 in photosynthesis module.
 				JW_ST[j] = 0.;
-				if(find1){C_ST[I_Upflow[j]] = 0.;Q_ST[I_Upflow[j]]= 0.;}
-				if(find2){C_ST[I_Downflow[j]] = 0.;Q_ST[I_Downflow[j]]= 0.;}
+                JAuxin_ST1[j]=0.;
+				if(find1)
+                {
+                    C_ST[I_Upflow[j]] = 0.;Q_ST[I_Upflow[j]]= 0.;
+                    C_Auxin[I_Upflow[j]] = 0.;Q_Auxin[I_Upflow[j]]= 0.;
+                }
+				if(find2)
+                {
+                    C_ST[I_Downflow[j]] = 0.;Q_ST[I_Downflow[j]]= 0.;
+                    C_Auxin[I_Downflow[j]] = 0.;Q_Auxin[I_Downflow[j]]= 0.;
+                }
 				C_amont[j] = 0.;
+                A_amont[j] = 0.;
 			}
 			if(doTroubleshooting){
 				std::cout<<"effect "<< C_ST[I_Upflow[j]] <<" "<<C_ST[I_Downflow[j]]<<std::endl;
@@ -295,7 +333,23 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	
 	JS_ST.set_elemult(JW_ST, C_amont) ;	// 	i.e.   JS_ST = JW_ST * C_amont			   (eq. 11)
 	Delta_JS_ST.set_matmult(Delta2, JS_ST) ;
-	
+    
+	JAuxin_ST2.set_elemult(JAuxin_ST1, A_amont) ;
+	Delta_JA_ST.set_matmult(Delta2, JAuxin_ST2) ;
+    
+    if(doTroubleshooting){
+        std::cout<<"JS_ST.display()"<<std::endl;
+        C_amont.display();
+        JS_ST.display();
+        Delta_JS_ST.display();
+
+        std::cout<<"JAuxin_ST2.display()"<<std::endl;
+        A_amont.display();
+        JAuxin_ST2.display();
+        Delta_JA_ST.display();
+    }
+    
+    
 	C_fluxes(t, Nt) ; //see PiafMunch2.cpp
 	
 }

@@ -56,8 +56,8 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
             int cellIndex = rs->seg2cell[si];
             if (cellIndex>=0) {
 				if(organType == Organism::ot_leaf){
-					//std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
-					//std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
+					std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
+					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
                      psi_s = psi_air;
 				}else{
                 if(sx.size()>1) {
@@ -89,9 +89,6 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         } catch(...) {
             std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
-			std::cout << "XylemFlux::linearSystem. segIdx "<<si<<" "<<i<<" "<<j<<" organType "<<organType<<" subType "<<subType<<std::flush;
-			std::cout <<" kr "<<kr<<" kx "<<kx<<std::flush;
-            assert(false&&"XylemFlux::segFluxes: conductivities failed");
         }
         if (soil_k.size()>0) {
             kr = std::min(kr, soil_k[si]);
@@ -221,8 +218,8 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
             int cellIndex = rs->seg2cell[si];
             if (cellIndex>=0)  {
 				if(organType == Organism::ot_leaf){
-					//std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
-					//std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
+					std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
+					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
                      psi_s = psi_air;
 				}else{
                 if(sx.size()>1) {
@@ -256,9 +253,6 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         } catch(...) {
             std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
-			std::cout << "XylemFlux::linearSystem. segIdx "<<si<<" "<<i<<" "<<j<<" organType "<<organType<<" subType "<<subType<<std::flush;
-			std::cout <<" kr "<<kr<<" kx "<<kx<<std::flush;
-            assert(false&&"XylemFlux::segFluxes: conductivities failed");
         }
         if (soil_k.size()>0) {
             kr = std::min(kr, soil_k[si]);
@@ -598,7 +592,6 @@ std::vector<double> XylemFlux::getEffKr(double simtime) {
         } catch(...) {
             std::cout << "\n XylemFlux::segFluxes: radial conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
-            assert(false);
         }
     }
     return kr;
