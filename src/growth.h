@@ -99,12 +99,16 @@ public:
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override {
 		double length_;
-		if (this->CW_Gr.empty()  ){//
+        
+		if (this->CW_Gr.empty() ||(!o->getOrganism()->useCWGr) ){//
 			double length = ExponentialGrowth::getLength(t, r, k, o);
 			return length;
 		} else {
-			if((CW_Gr.count(o->getId()) ==0)||(this->CW_Gr.find(o->getId())->second<0)){length_ = 0; //org created at this time step
+			if((CW_Gr.count(o->getId()) ==0)||(this->CW_Gr.find(o->getId())->second<0))
+            {
+                length_ = 0; //org created at this time step
 				if((t> o->getOrganism()->getDt())&&(this->CW_Gr.find(o->getId())->second<-1e-5)){//possible rounding errors?
+                std::cout<<t<<" "<< o->getOrganism()->getDt()<<" "<<this->CW_Gr.find(o->getId())->second<<std::flush;
 					assert(false);
 				}
 			}else{
@@ -116,7 +120,7 @@ public:
 	} ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
-		if (this->CW_Gr.empty()  ){//
+		if (this->CW_Gr.empty() ||(!o->getOrganism()->useCWGr) ){//
 			return ExponentialGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
 		} else { return o->getAge();}
 	}  ///< @copydoc GrowthFunction::getAge
@@ -136,12 +140,15 @@ public:
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override {
 		double length_;
-		if (this->CW_Gr.empty()  ){//
+		if ((this->CW_Gr.empty() )||(!o->getOrganism()->useCWGr)){//
 			double length = LinearGrowth::getLength(t, r, k, o);
 			return length;
 		} else {
-			if((CW_Gr.count(o->getId()) ==0)||(this->CW_Gr.find(o->getId())->second<0)){length_ = 0; //org created at this time step
+			if((CW_Gr.count(o->getId()) ==0)||(this->CW_Gr.find(o->getId())->second<0))
+            {
+                length_ = 0; //org created at this time step
 				if((t> o->getOrganism()->getDt())&&(this->CW_Gr.find(o->getId())->second<-1e-5)){//possible rounding errors?
+                std::cout<<t<<" "<< o->getOrganism()->getDt()<<" "<<this->CW_Gr.find(o->getId())->second<<std::flush;
 					assert(false);
 				}
 			}else{
@@ -153,7 +160,7 @@ public:
 	} ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
-		if (this->CW_Gr.empty()  ){//
+		if (this->CW_Gr.empty()||(!o->getOrganism()->useCWGr)  ){//
 			return LinearGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
 		} else { return o->getAge();}
 	}  ///< @copydoc GrowthFunction::getAge

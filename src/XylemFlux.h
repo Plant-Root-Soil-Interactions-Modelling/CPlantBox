@@ -169,8 +169,8 @@ protected:
 			auto seg_ = rs->segments[si];
 			int node_x = seg_.x;
 			int node_y = seg_.y;
-			bool find1 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_y) != rs->node_Decapitate.end());
 			bool find2 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_x) != rs->node_Decapitate.end());
+			bool find1 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_y) != rs->node_Decapitate.end());
 			
 			if(find1 || find2)//segment cut
 			{//also set photosyntheis and water flow to 0 in photosynthesis module.

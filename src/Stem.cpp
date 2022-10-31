@@ -229,6 +229,13 @@ void Stem::simulate(double dt, bool verbose)
 				if( p.lb - l_ > 1e-11){std::cout<<"afterkid first ked below lb "<<getId()<<" "<<l_<<" "<<p.lb<<std::endl;assert(false);}
 			}
 			if (active) {
+                
+                double dt_; // time step
+                if (age<dt) { // the root emerged in this time step, adjust time step
+                    dt_= age;
+                } else {
+                    dt_=dt;
+                }
 
 				// length increment
 				double age__ = age;
@@ -241,9 +248,24 @@ void Stem::simulate(double dt, bool verbose)
 				/*as we currently do not implement impeded growth for stem and leaves
 				*we can use directly the organ's age to cumpute the target length
 				*/
-				double targetlength = calcLength(age__)+ this->epsilonDx;
-				double e = targetlength-length; // store value of elongation to add
+                double e;
+                //int f_gf_ind = org->getParameter("gf");
+                if(this->getOrganRandomParameter()->f_gf->CW_Gr.empty())
+                {
+                    double iniL = calcLength(calcAge(length));
+                    double targetlength = calcLength(calcAge(length)+dt_) + this->epsilonDx;
+                    e = targetlength-iniL; // store value of elongation to add
+                }else{
+                    double targetlength = calcLength(age__)+ this->epsilonDx;
+                    e = targetlength-length; // store value of elongation to add
+                }
 				//can be negative
+                if((((!this->activePhloem)&&(plant.lock()->activeAtThreshold))||((!this->activeAuxin)&&(plant.lock()->activeAtThreshold_auxin)))
+                  &&(getParameter("subType")==2))
+                {
+                    //double toDo = std::max(0.,std::max(this->epsilonDx, dxMin - getLength(true)));
+                    e = std::min(e,std::max(0., dxMin() - getLength(true)));//this->epsilonDx;
+                }
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
 				length = getLength(true);
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
@@ -473,11 +495,11 @@ void Stem::simulate(double dt, bool verbose)
 				this->epsilonDx += dl;//targetlength + e - length;
 				length += this->epsilonDx;//go back to having length = theoratical length
 			}
+                active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
 			} // if active
 			//set limit below 1e-10, as the test files see if correct length 
 			//once rounded at the 10th decimal
 			//@see test/test_stem_ng.py
-			active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
 		}
 	} // if alive
 	if(verbose){std::cout<<"stem id "<<getId()<<" "<<this->param_->subType<<" end simulate "<<length<<" "<< epsilonDx <<" ";

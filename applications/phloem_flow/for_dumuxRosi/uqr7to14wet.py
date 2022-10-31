@@ -1,20 +1,11 @@
 """ water movement within the root (static soil) """
 directoryN = "/7to14wet/"
 import sys; 
-CPBdir = "../../../../CPB2506/CPlantBox"
-sys.path.append(CPBdir+"/src");
-sys.path.append(CPBdir);
-sys.path.append("../../..");sys.path.append(".."); 
-sys.path.append(CPBdir+"/src/python_modules");
-sys.path.append("../build-cmake/cpp/python_binding/") # dumux python binding
-sys.path.append("../../build-cmake/cpp/python_binding/")
-sys.path.append("../modules/") # python wrappers 
-
+import sys; sys.path.append("../.."); sys.path.append("../../src/python_modules")
+CPBdir = "../.."
 #import matplotlib
 #matplotlib.use('AGG') #otherwise "import matplotlib.pyplot" hangs
 
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from richards import RichardsWrapper  # Python part
 from phloem_flux import PhloemFluxPython  # Python hybrid solver
 #from Leuning_speedup import Leuning #about 0.7 for both
 #from photosynthesis_cython import Leuning
@@ -291,22 +282,29 @@ layers = depth; soilvolume = (depth / layers) * 3 * 12
 k_soil = []
 initial = weatherInit["p_mean"]#mean matric potential [cm] pressure head
 
-s = RichardsWrapper(RichardsSP())
-s.initialize()
-periodic = True
-s.createGrid(min_b, max_b, cell_number, periodic)  # [cm]
-s.setHomogeneousIC(initial, True)  # cm pressure head, equilibrium
-s.setTopBC("noFlux")
-s.setBotBC("fleeFlow")
-s.setVGParameters([weatherInit['vg']])
-s.initializeProblem()
-# Sets the critical pressure to limit flow for boundary conditions constantFlow, constantFlowCyl, and atmospheric 
-#wilting_point = -15000000  # cm
-#s.setCriticalPressure(wilting_point)
+# s = RichardsWrapper(RichardsSP())
+# s.initialize()
+# periodic = True
+# s.createGrid(min_b, max_b, cell_number, periodic)  # [cm]
+# s.setHomogeneousIC(initial, True)  # cm pressure head, equilibrium
+# s.setTopBC("noFlux")
+# s.setBotBC("fleeFlow")
+# s.setVGParameters([weatherInit['vg']])
+# s.initializeProblem()
+# # Sets the critical pressure to limit flow for boundary conditions constantFlow, constantFlowCyl, and atmospheric 
+# #wilting_point = -15000000  # cm
+# #s.setCriticalPressure(wilting_point)
 
-sx = s.getSolutionHead()  # inital condition, solverbase.py
+# sx = s.getSolutionHead()  # inital condition, solverbase.py
+p_mean = -187
+p_bot = p_mean + depth/2
+p_top = p_mean - depth/2
+sx = np.linspace(p_top, p_bot, depth)
+print(sx)
+#p_g = -2000 # water potential of the gua
+picker = lambda x,y,z : max(int(np.floor(-z)),-1) #abovegroud nodes get index -1
 
-picker = lambda x, y, z: s.pick([x, y, z])    
+#picker = lambda x, y, z: s.pick([x, y, z])    
 pl.setSoilGrid(picker)  # maps segment
 pl2.setSoilGrid(picker)  # maps segment
 
@@ -329,7 +327,7 @@ r.setKrm1([[10e-2]])#([[2.5e-2]])
 r.setRhoSucrose([[0.51],[0.65],[0.56]])#0.51
 r.setRmax_st([[14.4,9.0,6.0,14.4],[5.,5.],[15.]])#*6 for roots, *1 for stem, *24/14*1.5 for leaves
 #r.setRmax_st([[12,9.0,6.0,12],[5.,5.],[15.]])
-r.KMrm = 0.1#VERY IMPORTANT TO KEEP IT HIGH
+r.KMfu = 0.1#VERY IMPORTANT TO KEEP IT HIGH
 #r.exud_k = np.array([2.4e-4])#*10#*(1e-1)
 #r.k_gr = 1#0
 r.sameVolume_meso_st = False
@@ -514,19 +512,22 @@ while simDuration < simMax:
         
     setKrKx_xylem(weatherX["TairC"], weatherX["RH"])
     
+    #r.maxLoop = 3
     r.solve_photosynthesis(sim_time_ = simDuration, sxx_=sx, cells_ = True,RH_ = weatherX["RH"],
         verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"] )
+    #print(r.psiXyl)
+    #raise Exception
         
     #trans = np.array(r.outputFlux)
     """ dumux """    
     fluxesSoil = r.soilFluxes(simDuration, r.psiXyl, sx, approx=False)
-    s.setSource(fluxesSoil.copy())  # richards.py 
-    s.solve(dt)
-    sx = s.getSolutionHead()  # richards.py    
-    min_sx, min_rx, max_sx, max_rx = np.min(sx), np.min(r.psiXyl), np.max(sx), np.max(r.psiXyl)
-    n = round((simDuration- simInit)/(simMax-simInit) * 100.)
-    print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}"
-            .format(min_sx, max_sx, min_rx, max_rx, s.simTime, r.psiXyl[0]))
+    #s.setSource(fluxesSoil.copy())  # richards.py 
+    #s.solve(dt)
+    #sx = s.getSolutionHead()  # richards.py    
+    #min_sx, min_rx, max_sx, max_rx = np.min(sx), np.min(r.psiXyl), np.max(sx), np.max(r.psiXyl)
+    #n = round((simDuration- simInit)/(simMax-simInit) * 100.)
+    #print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}"
+     #       .format(min_sx, max_sx, min_rx, max_rx, s.simTime, r.psiXyl[0]))
           
                                                                                                                                   
     #print(r.Ag4Phloem)
@@ -629,13 +630,14 @@ while simDuration < simMax:
     volOrg2_typei = volOrg2_type - volOrgini2_type
     
     JW_ST = np.array(r.JW_ST)
-    length_ST = np.array(r.segLength())
+    length_ST = np.array(r.plant.segLength())
     #0.0001037
     Lp = 0.005#0.004320 #cm d-1 hPa, assumed resistance between xylem and phloem
     Rgaz =  83.14 #hPa cm3 K-1 mmol-1
     a_STs = np.array(r.a_ST)#np.array([a_ST[ot][st] for ot, st in ])
     #RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * (2/a_STs) * length_ST * Lp /np.abs(JW_ST) /   ((a_STs**2)*np.pi)  
-    #first part of RhatFhat: 9compute rest afterwards
+    #RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * 2 /a_STs* length_ST * Lp /np.abs(JW_ST) *   (25*a_STs*a_STs*np.pi) 
+    #first part of RhatFhat (add perimeter to get min Lp afterwards):
     RhatFhat =   (weatherX["TairC"] + 273.15) * C_ST[1:] * Rgaz * length_ST  /np.abs(JW_ST) #* Lp *  perimeter  
     C_ST_ = C_ST[1:]
     ids = np.where(RhatFhat ==  min(RhatFhat))
@@ -765,13 +767,15 @@ while simDuration < simMax:
     rl_ = ana.distribution("length", 0., -depth, layers, True)                   
     rl_ = np.array(rl_)/ soilvolume  # convert to density
     fluxes_p = np.insert(fluxes_p,0,0)# "[sucrose]",
-    if(simDuration > 0):#if(simDuration > (simMax -1)):
-        vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)"],
-                            vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p], 
-                            filename = "results"+ directoryN +"plotplant_psi_"+ str(ö), range_ = [300,1450])
-        vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","sucrose concentration (mmol/cm3)"],
-                            vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, C_ST_p], 
-                            filename = "results"+ directoryN +"plotplant_suc_"+ str(ö), range_ = [0,3])   
+    
+    #need to adapt plot_plant for this to work
+    # if(simDuration > 0):#if(simDuration > (simMax -1)):
+        # vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)"],
+                            # vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p], 
+                            # filename = "results"+ directoryN +"plotplant_psi_"+ str(ö), range_ = [300,1450])
+        # vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","sucrose concentration (mmol/cm3)"],
+                            # vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, C_ST_p], 
+                            # filename = "results"+ directoryN +"plotplant_suc_"+ str(ö), range_ = [0,3])   
     ö +=1
     r_ST_ref = np.array(r.r_ST_ref)
     r_ST = np.array(r.r_ST)

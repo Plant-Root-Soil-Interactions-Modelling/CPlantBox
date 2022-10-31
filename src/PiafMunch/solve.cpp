@@ -32,7 +32,7 @@
 
 //extern Fortran_vector Q_FuFl_seg;
 //extern Fortran_vector Q_FuFl_node;
-Fortran_vector Q_ST_seg_init;
+//Fortran_vector Q_ST_seg_init;
 
 extern Fortran_vector  Q_Exud_seg, Q_Gr_seg, Q_Rm_seg, Q_Fl_seg;
 extern Fortran_vector C_ST_seg, Q_ST_seg, Q_ST_seg_new, Q_ST_newFuFl, grad_Q_ST_seg;
@@ -148,6 +148,16 @@ Fortran_vector JW_PhlMb		; // Transmembrane Phloem (ST,CC) Apoplasm to Symplasm 
 Fortran_vector JW_ParMb		; // Transmembrane Parenchyma Apoplasm to Symplasm water flux
 Fortran_vector JW_Apo			; // Lateral parenchyma to phloem Apoplastic water flux									(ml / h)
 Fortran_vector JW_Sympl		; // Lateral parenchyma to phloem ST Symplasmic liquid flux									(ml / h)
+Fortran_vector JAuxin_ST1			; 
+Fortran_vector JAuxin_ST2			;
+
+Fortran_vector A_amont;
+Fortran_vector i_amont_auxin;
+SpUnit_matrix Delta2updown;
+SpUnit_matrix Deltaupdown;
+Fortran_vector Alpha_st;
+Fortran_vector Delta_JA_ST ;
+Fortran_vector C_AuxinOut;
 
 /********************* WATER SYSTEM EQUATIONS  ***************************/
 
@@ -310,16 +320,16 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 			{//also set photosyntheis & water flow to 0 in photosynthesis module.
 				JW_ST[j] = 0.;
                 JAuxin_ST1[j]=0.;
-				if(find1)
-                {
-                    C_ST[I_Upflow[j]] = 0.;Q_ST[I_Upflow[j]]= 0.;
-                    C_Auxin[I_Upflow[j]] = 0.;Q_Auxin[I_Upflow[j]]= 0.;
-                }
-				if(find2)
-                {
-                    C_ST[I_Downflow[j]] = 0.;Q_ST[I_Downflow[j]]= 0.;
-                    C_Auxin[I_Downflow[j]] = 0.;Q_Auxin[I_Downflow[j]]= 0.;
-                }
+				// if(find1)
+				// {
+				// C_ST[I_Upflow[j]] = 0.;Q_ST[I_Upflow[j]]= 0.;
+				// C_Auxin[I_Upflow[j]] = 0.;Q_Auxin[I_Upflow[j]]= 0.;
+				// }
+				// if(find2)
+				// {
+				// C_ST[I_Downflow[j]] = 0.;Q_ST[I_Downflow[j]]= 0.;
+				// C_Auxin[I_Downflow[j]] = 0.;Q_Auxin[I_Downflow[j]]= 0.;
+				// }
 				C_amont[j] = 0.;
                 A_amont[j] = 0.;
 			}

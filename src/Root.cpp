@@ -133,6 +133,10 @@ void Root::simulate(double dt, bool verbose)
 
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+                // if(((!this->activePhloem)&&(plant.lock()->activeAtThreshold))||((!this->activeAuxin)&&(plant.lock()->activeAtThreshold_auxin)))
+                // {
+                //     e = this->epsilonDx;
+                // }
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
 		length = getLength();
 		this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)

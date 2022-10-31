@@ -116,8 +116,19 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         double vz = v.z / l; // normed direction
 
         double cii, cij, bi, tau, delta,idelta ;
+        bool find1 = false; 
+        bool find2 =false ;
+        if(rs->node_Decapitate.size()> 0)
+		{
+			auto seg_ = rs->segments[si];
+			int node_x = seg_.x;
+			int node_y = seg_.y;
+			find2 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_x) != rs->node_Decapitate.end());
+			find1 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_y) != rs->node_Decapitate.end());
+			
+		}
 
-        if (perimeter * kr>1.e-16) {
+        if ((perimeter * kr>1.e-16)&&(!find1)&&(!find2)) {
              tau = std::sqrt(perimeter * kr / kx); // Eqn (6)
              delta = std::exp(-tau * l) - std::exp(tau * l); // Eqn (12)
              idelta = 1. / delta;
@@ -280,8 +291,21 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
 			perimeter = rs->leafBladeSurface[si] / l *2;
             numleaf +=1;
         }else{perimeter = 2 * M_PI * a;} //cylinder shape
+        
+        bool find1 = false;
+        bool find2 = false;
+        if(rs->node_Decapitate.size()> 0)
+		{
+			auto seg_ = rs->segments[si];
+			int node_x = seg_.x;
+			int node_y = seg_.y;
+			find2 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_x) != rs->node_Decapitate.end());
+			find1 = (std::find(rs->node_Decapitate.begin(), rs->node_Decapitate.end(), node_y) != rs->node_Decapitate.end());
+			
+		}
 
-        if (perimeter * kr>1.e-16) { // only relevant for exact solution
+
+        if ((perimeter * kr>1.e-16)&&(!find1)&&(!find2)) { // only relevant for exact solution
             double f = -perimeter*kr; // flux is proportional to f // *rho*g
             double fApprox = f*l*(psi_s - rx[j]); // cm3 / day
 
@@ -299,6 +323,11 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         } else {
             fluxes[si] = 0.;
         }
+		if(doTroubleshooting) {
+            	std::cout << "XylemFlux::segFluxes:  segIdx "<<si<<" "<<i<<" "<<j<<" organType "<<organType<<" subType "<<subType;
+				std::cout  << ", l " << l<<" perimeter "<<perimeter<<" kr "<<kr;
+				std::cout<< ", rx "<< rx[i] <<" "<< rx[j] << ", psi_s " << psi_s <<  "\n";
+		}
 
     }
     return fluxes;

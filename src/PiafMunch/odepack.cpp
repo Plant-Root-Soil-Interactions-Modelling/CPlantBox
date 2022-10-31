@@ -26,35 +26,35 @@
 #include <PiafMunch/odepack.h>
 #include <time.h>
 
-// La fonction suivante "habille" un Fortran_vector en N_Vector, i.e. "crée" un N_Vector
+// La fonction suivante "habille" un Fortran_vector en N_Vector, i.e. "cree" un N_Vector
 // qui PARTAGE LES MEMES DONNEES (atributs v_ et NV_DATA_S, resp.)  que le Fortran_vector d'origine.
-// Ceci permet d'appliquer "in-place" à un Fortran_vector les fonctions appliquables à un N_Vector :
+// Ceci permet d'appliquer "in-place" a un Fortran_vector les fonctions appliquables a un N_Vector :
 //
 N_Vector InPlace_NVector(Fortran_vector &v) {
          double* v_ = InPlace_Array(v);
 		return(N_VMake_Serial((sunindextype)v_[0], (realtype*)(v_ + 1)));
 }
 
-int check_flag(void *flagvalue, string funcname_, int opt);   // utilisé en 'verbose' dans cvode
+int check_flag(void *flagvalue, string funcname_, int opt);   // utilise en 'verbose' dans cvode
 const time_t current = time(NULL) ;
 Fortran_vector y ;
-void* cvode_mem ;        // espace de travail du solveur; éventuellement utilisé par la fonction aux()
-void* arkode_mem;        // espace de travail du solveur; éventuellement utilisé par la fonction aux()
+void* cvode_mem ;        // espace de travail du solveur; eventuellement utilise par la fonction aux()
+void* arkode_mem;        // espace de travail du solveur; eventuellement utilise par la fonction aux()
 
 void (*ff)(double t ,double* y, double* ydot) ;
 
 inline int ffff(realtype t, N_Vector yy, N_Vector yydot, void *f_data) {
-// Forme de f compatible avec cvode: noter décalage des indices entre double* y et NV_DATA_S(N_Vector y)
+// Forme de f compatible avec cvode: noter decalage des indices entre double* y et NV_DATA_S(N_Vector y)
     ff(t, NV_DATA_S(yy) - 1, NV_DATA_S(yydot) - 1) ;
 	return 0;
 }
 
-// les 2 fonctions suivantes sont à reformuler avec fonctions 'synonymes' à traiter comme f
-// pour devenir indépendantes du nom d'appel ('rootfind'...)
-extern void rootfind(double t, double* y, double* g);       // (optionnel) définit d'éventuelles équations g(t,y)=0 à résoudre
+// les 2 fonctions suivantes sont a reformuler avec fonctions 'synonymes' a traiter comme f
+// pour devenir independantes du nom d'appel ('rootfind'...)
+extern void rootfind(double t, double* y, double* g);       // (optionnel) definit d'eventuelles equations g(t,y)=0 a resoudre
 
 inline int gg(realtype t, N_Vector yy, realtype *g, void *g_data) {  // Idem pour rootfind / gg :
-    rootfind(t, NV_DATA_S(yy) - 1, g-1) ; // retourne le nb d'équations dans la var. n
+    rootfind(t, NV_DATA_S(yy) - 1, g-1) ; // retourne le nb d'equations dans la var. n
     return 0;
 }
 
@@ -70,23 +70,23 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 	sunindextype *colptrs = SUNSparseMatrix_IndexPointers(J);
 	sunindextype *rowvals = SUNSparseMatrix_IndexValues(J);
 	realtype *data = SUNSparseMatrix_Data(J);
-	N_Vector  ftemp; // stockera temporairement  f(y + inc) = f(y) + (df/dy[j]) * dy[j] = valeur de f quand y[j] est décalé de inc=dy[j]
+	N_Vector  ftemp; // stockera temporairement  f(y + inc) = f(y) + (df/dy[j]) * dy[j] = valeur de f quand y[j] est decale de inc=dy[j]
 	realtype fnorm, minInc, inc, yjsaved, srur, conj;
 	realtype *y_data, *fy_data, *ftemp_data, *ewt_data, *cns_data;
-	sunindextype i, j, N, NNZ, NNZ0, retval, npnz, ntnz = 0; // ntnz sera le nombre de NZ effectivement trouvé, y compris les éléments diagonaux même si nuls
+	sunindextype i, j, N, NNZ, NNZ0, retval, npnz, ntnz = 0; // ntnz sera le nombre de NZ effectivement trouve, y compris les elements diagonaux meme si nuls
 	realtype J_ij ; bool nnz_str_changed(false) ;
 	cv_mem = (CVodeMem)cvode_mem;
 	SUNMatZero(J);
 	y_data = N_VGetArrayPointer(y);
 	retval = 0;
 	npnz = NNZ = NNZ0 = SM_NNZ_S(J);// npnz de Sparse_matrix
-	// access matrix dimension  et  vérif. cohérence J, y, fy :
+	// access matrix dimension  et  verif. coherence J, y, fy :
 	N = SM_COLUMNS_S(J);
 	assert(SM_ROWS_S(J) == N);
 	assert(NV_LENGTH_S(y) == N);
 	assert(NV_LENGTH_S(fy) == N);
-	sunindextype** KLU_Ai = NULL; realtype ** KLU_Ax = NULL; // serviront éventuellement de tampon de stockage si nnz_eff dépasse NNZ
-	sunindextype n_KLU_ptrs_1(-1), n_KLU_ptrs_2(N - 1); //   n_KLU_ptrs_1 =  nombre de tampons de taille N déjà utilisés  - 1
+	sunindextype** KLU_Ai = NULL; realtype ** KLU_Ax = NULL; // serviront eventuellement de tampon de stockage si nnz_eff depasse NNZ
+	sunindextype n_KLU_ptrs_1(-1), n_KLU_ptrs_2(N - 1); //   n_KLU_ptrs_1 =  nombre de tampons de taille N deja utilises  - 1
 	/* Rename work vector for readibility */
 	ftemp = tmp1;
 	/* Obtain pointers to the data for ewt, y */
@@ -115,14 +115,14 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 			else if (SUNRabs(conj) == TWO) { if ((yjsaved + inc)*conj <= ZERO) inc = -inc; }
 		}
 		y_data[j] += inc; // = y[j] + dy[j]
-		retval = cv_mem->cv_f(t, y, ftemp, cv_mem->cv_user_data); // ftemp = y_dot(t, y + inc)     (y+inc ne diffère de y qu par sa jème composante)
+		retval = cv_mem->cv_f(t, y, ftemp, cv_mem->cv_user_data); // ftemp = y_dot(t, y + inc)     (y+inc ne differe de y qu par sa jeme composante)
 		if (retval != 0) break;
 		y_data[j] = yjsaved; // restaure y
 		for (i = 0; i < N; i++) { // ligne i de la colonne j
 			if ((ftemp_data[i] != fy_data[i]) || (i == j)) {
 				if (ftemp_data[i] != fy_data[i])   J_ij = (ftemp_data[i] - fy_data[i]) / inc;   else  J_ij = ZERO;
-				if (ntnz >= NNZ0) { // avec celui-ci en plus, on va dépasser l'espace réservé pour J
-					if (ntnz == NNZ0) cout << "ntnz = "  << ntnz << " va dépasser NNZ = " << NNZ0 << " => création des tampons :" << endl;
+				if (ntnz >= NNZ0) { // avec celui-ci en plus, on va depasser l'espace reserve pour J
+					if (ntnz == NNZ0) cout << "ntnz = "  << ntnz << " va depasser NNZ = " << NNZ0 << " => creation des tampons :" << endl;
 					if (!KLU_Ai) {
 						assert(!KLU_Ax);
 						KLU_Ai = new sunindextype*[N]; KLU_Ax = new realtype*[N];
@@ -130,7 +130,7 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 					}
 					n_KLU_ptrs_2++;
 					if (n_KLU_ptrs_2 == N) {
-						n_KLU_ptrs_2 = 0; // de la ligne KLU_Ai[1 + n_KLU_ptrs_1], qui n'est pas encore utilisée, et donc n'a pas encore été initialisée :
+						n_KLU_ptrs_2 = 0; // de la ligne KLU_Ai[1 + n_KLU_ptrs_1], qui n'est pas encore utilisee, et donc n'a pas encore ete initialisee :
 						n_KLU_ptrs_1++; assert(n_KLU_ptrs_1 < N);
 						KLU_Ai[n_KLU_ptrs_1] = new sunindextype[N]; KLU_Ax[n_KLU_ptrs_1] = new realtype[N];
 	//					cout << "KLU_Ai[...ptrs1] , _Ax[...ptrs1] = new ...type[N]" << endl;
@@ -149,16 +149,16 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 		}
 	}
 	if (ntnz > NNZ0) { // on a dû stocker des valeurs dans les tampons KLU_A.[0 .. n_KLU_ptrs_1 ][ ]
-//		cout << "ntnz > NNZ : réallocation matrice J ; utilisation et destruction des tampons :" << endl;
-		npnz = ntnz / N ; // (provisoirement) nombre de lignes  pleines de longueur N, pouvant contenir tous les ntnz 'zéros'
+//		cout << "ntnz > NNZ : reallocation matrice J ; utilisation et destruction des tampons :" << endl;
+		npnz = ntnz / N ; // (provisoirement) nombre de lignes  pleines de longueur N, pouvant contenir tous les ntnz 'zeros'
 		assert(npnz * N <= ntnz) ;
 		if (npnz * N < ntnz) npnz ++ ; // on dimensionne le nouveau 'NNZ' = npnz  en multiples entiers de N :
-		npnz = N * npnz ; assert(npnz >= ntnz) ; // le vrai nouveau npnz à réserver
+		npnz = N * npnz ; assert(npnz >= ntnz) ; // le vrai nouveau npnz a reserver
 		SUNSparseMatrix_Reallocate(J, npnz) ;	// nouveau NNZ officiel = SM_NNZ_S(J) = npnz de Sparse_matrix ; conserve les valeurs d'index < NNZ
 		rowvals = SUNSparseMatrix_IndexValues(J);
 		data = SUNSparseMatrix_Data(J);
 		colptrs = SUNSparseMatrix_IndexPointers(J); // n'a pas dû changer...
-		for (i = 0; i < n_KLU_ptrs_1; i++) { // recopie les lignes KLU_A.[ ] complètes à coup sûr (s'il y en a, i.e. si n_KLU_ptrs_1 >= 1)
+		for (i = 0; i < n_KLU_ptrs_1; i++) { // recopie les lignes KLU_A.[ ] completes a coup sûr (s'il y en a, i.e. si n_KLU_ptrs_1 >= 1)
 			for (j = 0; j < N; j++) {
 				rowvals[NNZ] = KLU_Ai[i][j]; data[NNZ] = KLU_Ax[i][j];
 				NNZ++;
@@ -166,7 +166,7 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 			delete[] KLU_Ai[i]; delete[] KLU_Ax[i];
 //			cout << "delete[] KLU_Ai[i] , _Ax[i] ; " ;
 		}
-		for (j = 0; j <= n_KLU_ptrs_2; j++) { // la dernière ligne, éventuellement incomplète
+		for (j = 0; j <= n_KLU_ptrs_2; j++) { // la derniere ligne, eventuellement incomplete
 			rowvals[NNZ] = KLU_Ai[n_KLU_ptrs_1][j]; data[NNZ] = KLU_Ax[n_KLU_ptrs_1][j];
 			NNZ++;
 		}
@@ -174,14 +174,14 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 //		cout << "delete[] KLU_Ai[...ptrs1] , _Ax[...ptrs1] ; " ;
 		delete[] KLU_Ai; delete[] KLU_Ax;
 //		cout << "delete[] KLU_Ai , _Ax" << endl;
-		assert(NNZ == ntnz); // attention, ce n'est plus le NNZ officiel ! -- qui reste stocké en NNZ0
+		assert(NNZ == ntnz); // attention, ce n'est plus le NNZ officiel ! -- qui reste stocke en NNZ0
 	}
 	if (colptrs[N] != ntnz) {
 		colptrs[N] = ntnz;
 		nnz_str_changed = true;
 	}
 	if (nnz_str_changed) {
-		if (LS) { // le solveur a déjà été initialisé par cvode_direct( ), donc une réinit. PARTIAL suffit :
+		if (LS) { // le solveur a deja ete initialise par cvode_direct( ), donc une reinit. PARTIAL suffit :
 			SUNLinSol_KLUReInit(LS, J, ntnz, SUNKLU_REINIT_PARTIAL);
 		}
 	}
@@ -195,17 +195,17 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
   int itol = 1 ;
 /* 	itol = 1 (= CV_SS) : atol & rtol tous 2 scalaires ;
 		itol = 2 (= CV_SV) : atol vecteur, rtol scalaire ;
-		itol = 3 (= CV_WF) : ewt[i] défini par une fonction utilisateur (non encore implémenté ; cf. doc CVODE p.29) */
+		itol = 3 (= CV_WF) : ewt[i] defini par une fonction utilisateur (non encore implemente ; cf. doc CVODE p.29) */
   if (atol.size() > 1) itol ++ ;
   if (rtol.size() > 1) itol += 2 ;
-  if (itol == 3) {_LogMessage("Erreur itol = CV_WF : cas non encore traité par cvode") ; return -1;}
-  if (itol == 4) {_LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traité par cvode") ; return -1 ;}
-  int neq = y.size();							 // taille du problème = nb d'équations = nb de variables y[i]
+  if (itol == 3) {_LogMessage("Erreur itol = CV_WF : cas non encore traite par cvode") ; return -1;}
+  if (itol == 4) {_LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traite par cvode") ; return -1 ;}
+  int neq = y.size();							 // taille du probleme = nb d'equations = nb de variables y[i]
   int nbt = T.size() ;							 // nombre de temps où l'on veut la solution, y compris t0 = T[1]
   int i, j, flag, flagr ;
   double t, tout, t_sav, dt ;
   N_Vector abstol(InPlace_NVector(atol)) ;
-  N_Vector yy(InPlace_NVector(y));              // "habille" le Fortran_vector y en N_Vector sans occuper de mémoire suppl.
+  N_Vector yy(InPlace_NVector(y));              // "habille" le Fortran_vector y en N_Vector sans occuper de memoire suppl.
   SUNMatrix A;
   double* y_ = InPlace_Array(y);	// y_ = y.v_
 	t = t_sav = T[1] ;
@@ -219,11 +219,11 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 		  assert(Var_primitive[j]) ;
 		  assert(Var_dot[j]) ;
 	  }
-	  assert(Var_primitive[nbVar_dot] == NULL) ; assert(Var_dot[nbVar_dot] == NULL) ; // préviendra l'utilisateur si on a déclaré moins de dérivées que l'on n'en a dimensionnées
+	  assert(Var_primitive[nbVar_dot] == NULL) ; assert(Var_dot[nbVar_dot] == NULL) ; // previendra l'utilisateur si on a declare moins de derivees que l'on n'en a dimensionnees
 	  Var_primitive_sav = new Fortran_vector*[nbVar_dot] ;
 	  for (j = 0 ; j < nbVar_dot ; j ++) 	  Var_primitive_sav[j] = new Fortran_vector(Var_primitive[j]->size()) ;
   }
-  cvode_mem = CVodeCreate(CV_BDF);    // init. le solveur avec la méthode d'intégr. BDF (et la résol. de type Newton)
+  cvode_mem = CVodeCreate(CV_BDF);    // init. le solveur avec la methode d'integr. BDF (et la resol. de type Newton)
     if (check_flag(cvode_mem, "CVodeCreate", 0)) {_LogMessage("erreur CVodeCreate") ; return -1 ; }
   flag = CVodeInit(cvode_mem, ffff, T[1], yy); // alloue l'espace de travail du solveur
     if (check_flag(&flag, "CVodeInit", 1)) {_LogMessage("erreur CVodeInit") ; return -1 ; }
@@ -233,13 +233,13 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 	flag = CVodeSVtolerances(cvode_mem, rtol[1], abstol);
 	if (check_flag(&flag, "CVodeSVtolerances", 1)) return(1);
 
-  if (STALD) {                // algorithme de détection/correction de stabilité aux ordres > 2 (intégration par méthode BDF)
-      flag = CVodeSetStabLimDet(cvode_mem, SUNTRUE);    // FALSE par défaut
+  if (STALD) {                // algorithme de detection/correction de stabilite aux ordres > 2 (integration par methode BDF)
+      flag = CVodeSetStabLimDet(cvode_mem, SUNTRUE);    // FALSE par defaut
         if (check_flag(&flag, "CVodeSetStabLimDet", 1)) {_LogMessage("erreur CVodeSetStabLimDet") ; return -1 ; }
   }
   int* rootsfound = NULL ;
   if (rootfind != NULL) {
-      if(nrootfns < 1) {_LogMessage("erreur RootFind : nrootfns =< 0 éq. à résoudre !") ; return -1 ; }
+      if(nrootfns < 1) {_LogMessage("erreur RootFind : nrootfns =< 0 eq. a resoudre !") ; return -1 ; }
       rootsfound = new int[nrootfns] ;
 	  flag = CVodeRootInit(cvode_mem, nrootfns, gg);
 	  if (check_flag(&flag, "CVodeRootInit", 1)) {_LogMessage("erreur CVodeRootInit") ; return -1 ; }
@@ -263,8 +263,8 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 			  LS = SUNLinSol_Band(yy, A);
 			  if (!LS) { _LogMessage("erreur SUNLinSol_Band"); return -1; }
 		  } else {
-				if (solver == KLU) {// crée les 3 espaces mémoire (KLU::Ax, Ai, Ap) dimensionnés ; on pourra les redimensionner ultérieurement...
-					A = SUNSparseMatrix(neq, neq, neq, CSC_MAT);// 3ème arg : nnz = neq = le + petit a priori (la diag.)
+				if (solver == KLU) {// cree les 3 espaces memoire (KLU::Ax, Ai, Ap) dimensionnes ; on pourra les redimensionner ulterieurement...
+					A = SUNSparseMatrix(neq, neq, neq, CSC_MAT);// 3eme arg : nnz = neq = le + petit a priori (la diag.)
 					if (check_flag((void *)A, "SUNSparseMatrix", 0)) return(1);
 					/* Create KLU solver object for use by CVode */
 					LS = SUNLinSol_KLU(yy, A);
@@ -281,17 +281,17 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 		  if (check_flag(&flag, "CVodeSetJacFn", 1)) return(1); // Non-zero = erreur
 	  }
   }
-  flag = CVodeSetMaxConvFails(cvode_mem, 100) ; // pour prévenir l'erreur de non-convergence (error code = -4), sauf si la convergence n'est effectivement jamais atteinte !
+  flag = CVodeSetMaxConvFails(cvode_mem, 100) ; // pour prevenir l'erreur de non-convergence (error code = -4), sauf si la convergence n'est effectivement jamais atteinte !
   for (i = 2 ; i <= nbt ; i++) {						// pour chaque instant où l'on souhaite la solution
 	tout=T[i];
 	if (verbose) {
-			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n°" << i-1 << " (tf = " << tout << ")" << endl ;
+			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n#" << i-1 << " (tf = " << tout << ")" << endl ;
 			Update_Output(i == 2) ;
 	}
 	while (t < tout) {
 		flag = -9999 ; // bidon
 		while (flag != CV_SUCCESS) {
-			  flag = CVode(cvode_mem, tout, yy, &t, CV_ONE_STEP); // appel au solveur en mode 'CV_ONE_STEP' // attention : cette instruction MAJ  t, qui peut donc maintenant être > tout !!
+			  flag = CVode(cvode_mem, tout, yy, &t, CV_ONE_STEP); // appel au solveur en mode 'CV_ONE_STEP' // attention : cette instruction MAJ  t, qui peut donc maintenant etre > tout !!
 			  if (flag == CV_ROOT_RETURN) {
 				 flagr = CVodeGetRootInfo(cvode_mem, rootsfound);
 				   if (check_flag(&flagr, "CVodeGetRootInfo", 1)) { _LogMessage(" Erreur CVodeGetRootInfo") ;
@@ -307,7 +307,7 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 			  }
 			  else {
 				   if (flag != CV_SUCCESS) {
-				  //    if (check_flag(&flag, "CVode", 1)) break ; // routine à  reprendre...
+				  //    if (check_flag(&flag, "CVode", 1)) break ; // routine a  reprendre...
 					   (void)sprintf(message, "error-flag CVode = %d", flag) ; _LogMessage(message) ;
 						strftime(message, 50, "%H:-%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output(true) ;
 					   return i ;
@@ -322,9 +322,9 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 			}
 			if (t < tout)  t_sav = t;
 		}
-	} // fin boucle  while(t < tout) : les 8 lignes suivantes sont donc exécutées si (t > tout) :
-		if (aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermédiaires
-								// à ce stade t_curr est juste supérieur à tout : on interpole y à y_out = y(tout) :
+	} // fin boucle  while(t < tout) : les 8 lignes suivantes sont donc executees si (t > tout) :
+		if (aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermediaires
+								// a ce stade t_curr est juste superieur a tout : on interpole y a y_out = y(tout) :
 			flag = CVodeGetDky(cvode_mem, tout, 0, yy);
 			check_flag(&flag, "CVodeGetDky", 1);
 			aux(T[i], y_);
@@ -356,7 +356,7 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
   }
   /* Free integrator memory : */
   CVodeFree(&cvode_mem);
-  N_VDestroy_Serial(yy) ; N_VDestroy_Serial(abstol) ; // heureusement, ne désallouent pas leurs 'double* NV_DATA_S()' car issus de 'N_VMake_Serial'
+  N_VDestroy_Serial(yy) ; N_VDestroy_Serial(abstol) ; // heureusement, ne desallouent pas leurs 'double* NV_DATA_S()' car issus de 'N_VMake_Serial'
   if (rootfind != NULL) delete [] rootsfound ;
   if (nbVar_dot) {
 	  for (j = 0 ; j < nbVar_dot ; j ++) 	 delete Var_primitive_sav[j] ;
@@ -375,16 +375,16 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 	int itol = 1;
 	// 		itol = 1 (= CV_SS) : atol & rtol tous 2 scalaires ;
 	//		itol = 2 (= CV_SV) : atol vecteur, rtol scalaire ;
-	//		itol = 3 (= CV_WF) : ewt[i] défini par une fonction utilisateur (non encore implémenté ; cf. doc CVODE p.29)
+	//		itol = 3 (= CV_WF) : ewt[i] defini par une fonction utilisateur (non encore implemente ; cf. doc CVODE p.29)
 	if (atol.size() > 1) itol++;
 	if (rtol.size() > 1) itol += 2;
-	if (itol == 3) { _LogMessage("Erreur itol = CV_WF : cas non encore traité par cvode"); return -1; }
-	if (itol == 4) { _LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traité par cvode"); return -1; }
-	int neq = y.size();							 // taille du problème = nb d'équations = nb de variables y[i]
+	if (itol == 3) { _LogMessage("Erreur itol = CV_WF : cas non encore traite par cvode"); return -1; }
+	if (itol == 4) { _LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traite par cvode"); return -1; }
+	int neq = y.size();							 // taille du probleme = nb d'equations = nb de variables y[i]
 	int nbt = T.size();							 // nombre de temps où l'on veut la solution, y compris t0 = T[1]
 	int i, j, flag, flagr;
 	double t, tout, t_sav, dt;
-	N_Vector yy(InPlace_NVector(y));              // "habille" le Fortran_vector y en N_Vector sans occuper de mémoire suppl.
+	N_Vector yy(InPlace_NVector(y));              // "habille" le Fortran_vector y en N_Vector sans occuper de memoire suppl.
 	N_Vector abstol(InPlace_NVector(atol));
 	double* y_ = NV_DATA_S(yy) - 1;
 	t = t_sav = T[1];
@@ -398,11 +398,11 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 			assert(Var_primitive[j]);
 			assert(Var_dot[j]);
 		}
-		assert(Var_primitive[nbVar_dot] == NULL); assert(Var_dot[nbVar_dot] == NULL); // préviendra l'utilisateur si on a déclaré moins de dérivées que l'on n'en a dimensionnées
+		assert(Var_primitive[nbVar_dot] == NULL); assert(Var_dot[nbVar_dot] == NULL); // previendra l'utilisateur si on a declare moins de derivees que l'on n'en a dimensionnees
 		Var_primitive_sav = new Fortran_vector*[nbVar_dot];
 		for (j = 0; j < nbVar_dot; j++) 	  Var_primitive_sav[j] = new Fortran_vector(Var_primitive[j]->size());
 	}
-	cvode_mem = CVodeCreate(CV_BDF);    // init. le solveur avec la méthode d'intégr. BDF et la résol. de type Newton
+	cvode_mem = CVodeCreate(CV_BDF);    // init. le solveur avec la methode d'integr. BDF et la resol. de type Newton
 	if (check_flag((void *)cvode_mem, "CVodeCreate", 0)) { _LogMessage("erreur CVodeCreate"); return -1; }
 
 	flag = CVodeInit(cvode_mem, ffff, T[1], yy); // alloue l'espace de travail du solveur
@@ -413,13 +413,13 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 	flag = CVodeSVtolerances(cvode_mem, rtol[1], abstol);
 	if (check_flag(&flag, "CVodeSVtolerances", 1)) return(1);
 
-	if (STALD) {                // algorithme de détection/correction de stabilité aux ordres > 2 (intégration par méthode BDF)
-		flag = CVodeSetStabLimDet(cvode_mem, SUNTRUE);    // FALSE par défaut
+	if (STALD) {                // algorithme de detection/correction de stabilite aux ordres > 2 (integration par methode BDF)
+		flag = CVodeSetStabLimDet(cvode_mem, SUNTRUE);    // FALSE par defaut
 		if (check_flag(&flag, "CVodeSetStabLimDet", 1)) { _LogMessage("erreur CVodeSetStabLimDet"); return -1; }
 	}
 	int* rootsfound = NULL;
 	if (rootfind != NULL) {
-		if (nrootfns < 1) { _LogMessage("erreur RootFind : nrootfns =< 0 éq. à résoudre !"); return -1; }
+		if (nrootfns < 1) { _LogMessage("erreur RootFind : nrootfns =< 0 eq. a resoudre !"); return -1; }
 		rootsfound = new int[nrootfns];
 		flag = CVodeRootInit(cvode_mem, nrootfns, gg);
 		if (check_flag(&flag, "CVodeRootInit", 1)) { _LogMessage("erreur CVodeRootInit"); return -1; }
@@ -464,11 +464,11 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 		cout << "CVBandPrecInit flag = " << flag << endl;
 		if (check_flag(&flag, "CVBandPrecInit", 1)) { _LogMessage("erreur CVBandPrecInit"); return -1; }
 	}
-  flag = CVodeSetMaxConvFails(cvode_mem, 100) ; // pour prévenir l'erreur de non-convergence (error code = -4), sauf si la convergence n'est effectivement jamais atteinte !
+  flag = CVodeSetMaxConvFails(cvode_mem, 100) ; // pour prevenir l'erreur de non-convergence (error code = -4), sauf si la convergence n'est effectivement jamais atteinte !
   for (i = 2 ; i <= nbt ; i++) {						// pour chaque instant où l'on souhaite la solution
 	tout=T[i];
 	if (verbose) {
-			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n°" << i-1 << " (tf = " << tout << ")" << endl ;
+			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n#" << i-1 << " (tf = " << tout << ")" << endl ;
 			Update_Output(i == 2) ;
 	}
 	while (t < tout) {
@@ -492,7 +492,7 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 			  }
 			  else {
 				  if (flag != CV_SUCCESS) {
-				  //    if (check_flag(&flag, "CVode", 1)) break ; // routine à  reprendre...
+				  //    if (check_flag(&flag, "CVode", 1)) break ; // routine a  reprendre...
 					   (void)sprintf(message, "error-flag CVode = %d", flag) ; _LogMessage(message) ;
 					   	strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output() ;
 					   return i ;
@@ -507,10 +507,10 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 			}
 			if (t < tout)  t_sav = t;
 		}
-	  } // fin boucle  while(t < tout) : les 8 lignes suivantes sont donc exécutées si (t > tout) :
-	  if (aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermédiaires
-		//if (true){//aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermédiaires
-								// à ce stade t_curr est juste supérieur à tout : on interpole y à y_out = y(tout) :
+	  } // fin boucle  while(t < tout) : les 8 lignes suivantes sont donc executees si (t > tout) :
+	  if (aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermediaires
+		//if (true){//aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermediaires
+								// a ce stade t_curr est juste superieur a tout : on interpole y a y_out = y(tout) :
 		  flag = CVodeGetDky(cvode_mem, tout, 0, yy);
 		  check_flag(&flag, "CVodeGetDky", 1);
 		  aux(T[i], y_);
@@ -540,7 +540,7 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
   }
   // Free integrator memory :
   CVodeFree(&cvode_mem);
-  N_VDestroy_Serial(yy) ; N_VDestroy_Serial(abstol) ; // heureusement, ne désallouent pas leurs 'double* NV_DATA_S()' car issus de 'N_VMake_Serial'
+  N_VDestroy_Serial(yy) ; N_VDestroy_Serial(abstol) ; // heureusement, ne desallouent pas leurs 'double* NV_DATA_S()' car issus de 'N_VMake_Serial'
   if (rootfind != NULL) delete [] rootsfound ;
   if (nbVar_dot) {
 	  for (j = 0 ; j < nbVar_dot ; j ++) 	 delete Var_primitive_sav[j] ;
@@ -594,17 +594,17 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 	int itol = 1;
 	/* 	itol = 1 (= CV_SS) : atol & rtol tous 2 scalaires ;
 	itol = 2 (= CV_SV) : atol vecteur, rtol scalaire ;
-	itol = 3 (= CV_WF) : ewt[i] défini par une fonction utilisateur (non encore implémenté ; cf. doc CVODE p.29) */
+	itol = 3 (= CV_WF) : ewt[i] defini par une fonction utilisateur (non encore implemente ; cf. doc CVODE p.29) */
 	if (atol.size() > 1) itol++;
 	if (rtol.size() > 1) itol += 2;
-	if (itol == 3) { _LogMessage("Erreur itol = CV_WF : cas non encore traité par cvode"); return -1; }
-	if (itol == 4) { _LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traité par cvode"); return -1; }
-	//int neq = y.size();							 // taille du problème = nb d'équations = nb de variables y[i]
+	if (itol == 3) { _LogMessage("Erreur itol = CV_WF : cas non encore traite par cvode"); return -1; }
+	if (itol == 4) { _LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traite par cvode"); return -1; }
+	//int neq = y.size();							 // taille du probleme = nb d'equations = nb de variables y[i]
 	int nbt = T.size();							 // nombre de temps où l'on veut la solution, y compris t0 = T[1]
 	int i, j, flag, flagr;
 	double t, tout, t_sav, dt;
 	N_Vector abstol(InPlace_NVector(atol));
-	N_Vector yy(InPlace_NVector(y));              // "habille" le Fortran_vector y en N_Vector sans occuper de mémoire suppl.
+	N_Vector yy(InPlace_NVector(y));              // "habille" le Fortran_vector y en N_Vector sans occuper de memoire suppl.
 	double* y_ = InPlace_Array(y);	// y_ = y.v_
 	t = t_sav = T[1];
 	Fortran_vector** Var_primitive_sav;
@@ -617,7 +617,7 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 			assert(Var_primitive[j]);
 			assert(Var_dot[j]);
 		}
-		assert(Var_primitive[nbVar_dot] == NULL); assert(Var_dot[nbVar_dot] == NULL); // préviendra l'utilisateur si on a déclaré moins de dérivées que l'on n'en a dimensionnées
+		assert(Var_primitive[nbVar_dot] == NULL); assert(Var_dot[nbVar_dot] == NULL); // previendra l'utilisateur si on a declare moins de derivees que l'on n'en a dimensionnees
 		Var_primitive_sav = new Fortran_vector*[nbVar_dot];
 		for (j = 0; j < nbVar_dot; j++) 	  Var_primitive_sav[j] = new Fortran_vector(Var_primitive[j]->size());
 	}
@@ -630,7 +630,7 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 	if (check_flag(&flag, "ERKStepSVtolerances", 1)) return(1);
 	int* rootsfound = NULL;
 	if (rootfind != NULL) {
-		if (nrootfns < 1) { _LogMessage("erreur RootFind : nrootfns =< 0 éq. à résoudre !"); return -1; }
+		if (nrootfns < 1) { _LogMessage("erreur RootFind : nrootfns =< 0 eq. a resoudre !"); return -1; }
 		rootsfound = new int[nrootfns];
 		flag = ERKStepRootInit(arkode_mem, nrootfns, gg);
 		if (check_flag(&flag, "ERKStepRootInit", 1)) { _LogMessage("erreur ERKStepRootInit"); return -1; }
@@ -638,13 +638,13 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 	for (i = 2; i <= nbt; i++) {						// pour chaque instant où l'on souhaite la solution
 		tout = T[i];
 		if (verbose) {
-			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n°" << i - 1 << " (tf = " << tout << ")" << endl;
+			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n#" << i - 1 << " (tf = " << tout << ")" << endl;
 			Update_Output(i == 2);
 		}
 		while (t < tout) {
 			flag = -9999; // bidon
 			while (flag != ARK_SUCCESS) {
-				flag = ERKStepEvolve(arkode_mem, tout, yy, &t, ARK_ONE_STEP); // appel au solveur en mode 'ARK_ONE_STEP' // attention : cette instruction MAJ  t, qui peut donc maintenant être > tout !!
+				flag = ERKStepEvolve(arkode_mem, tout, yy, &t, ARK_ONE_STEP); // appel au solveur en mode 'ARK_ONE_STEP' // attention : cette instruction MAJ  t, qui peut donc maintenant etre > tout !!
 				if (flag == ARK_ROOT_RETURN) {
 					flagr = ERKStepGetRootInfo(arkode_mem, rootsfound);
 					if (check_flag(&flagr, "ERKStepGetRootInfo", 1)) {
@@ -661,7 +661,7 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 				}
 				else {
 					if (flag != ARK_SUCCESS) {
-						//    if (check_flag(&flag, "CVode", 1)) break ; // routine à  reprendre...
+						//    if (check_flag(&flag, "CVode", 1)) break ; // routine a  reprendre...
 						(void)sprintf(message, "error-flag Arkode = %d", flag); _LogMessage(message);
 						strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; Update_Output(true);
 						return i;
@@ -676,9 +676,9 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 				}
 				if (t < tout) 	t_sav = t;
 			}
-		} // fin boucle  while(t < tout) : les 8 lignes suivantes sont donc exécutées si (t > tout) :
-		if (aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermédiaires
-								// à ce stade t_curr est juste supérieur à tout : on interpole y à y_out = y(tout) :
+		} // fin boucle  while(t < tout) : les 8 lignes suivantes sont donc executees si (t > tout) :
+		if (aux != NULL) {		// calculs auxiliaires, par ex. sauvegarder var. intermediaires
+								// a ce stade t_curr est juste superieur a tout : on interpole y a y_out = y(tout) :
 			flag = ERKStepGetDky(arkode_mem, tout, 0, yy);
 			check_flag(&flag, "ERKStepGetDky", 1);
 			aux(T[i], y_);
@@ -699,7 +699,7 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 	}
 	/* Free integrator memory : */
 	ERKStepFree(&arkode_mem);
-	N_VDestroy_Serial(yy); N_VDestroy_Serial(abstol); // heureusement, ne désallouent pas leurs 'double* NV_DATA_S()' car issus de 'N_VMake_Serial'
+	N_VDestroy_Serial(yy); N_VDestroy_Serial(abstol); // heureusement, ne desallouent pas leurs 'double* NV_DATA_S()' car issus de 'N_VMake_Serial'
 	if (rootfind != NULL) delete[] rootsfound;
 	if (nbVar_dot) {
 		for (j = 0; j < nbVar_dot; j++) 	 delete Var_primitive_sav[j];

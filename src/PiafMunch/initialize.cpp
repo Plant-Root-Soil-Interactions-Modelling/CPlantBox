@@ -115,12 +115,21 @@ extern Fortran_vector JW_Apo			; // Phloem to Lateral parenchyma Apoplastic wate
 extern Fortran_vector JW_Sympl		; // Lateral parenchyma to phloem ST Symplasmic liquid flux									(ml / h)
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 extern Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
-// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_Trsv * PartMolalVol (=0.2155 in Thompson & Holbrook -- 0.214 might be more accurate)
+// NZS : optional non-zero volume sugar flow (not a distinct variable)   (ml / h) : NZS = JS_Trsv * PartMolalVol (=0.2155 in Thompson & Holbrook -- 0.214 might be more accurate
+extern Fortran_vector JAuxin_ST1			; 
+extern Fortran_vector JAuxin_ST2			; 
+extern Fortran_vector A_amont;
+extern Fortran_vector i_amont_auxin;
+extern SpUnit_matrix Delta2updown;
+extern SpUnit_matrix Deltaupdown;
+extern Fortran_vector Alpha_st;
+extern Fortran_vector Delta_JA_ST ;
+extern Fortran_vector C_AuxinOut;
 
 /******************************************  Constants & Parameters: *********************************************/
 extern double TdC, dEauPure, PartMolalVol, siPhi, newPhi ; // pour visc. calc. par  www.seas.upenn.edu
 extern bool Adv_BioPhysics ; // true if  non-zero sugar specific volume, osmotic pot.=non-linear function of molality (Thompson and Holbrook), and viscosity changes with C_TC (Thompson and Holbrook ; Seas, Flanagan)  ; set in IntroDialogBox
-extern Fortran_vector Q_ST_seg_init;
+//extern Fortran_vector Q_ST_seg_init;
 // Hydro Resistance Parameters (set in GUI) :
 extern Fortran_vector r_Xyl		; // (MPa h / ml)  : axial xylem water resistance
 extern Fortran_vector r_ST			; // (MPa h / ml) : axial phloem water resistance
@@ -240,6 +249,18 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 		}
 	}
 	
+        SucSTLost.resize(Nt,0.);
+        SucMesoLost.resize(Nt,0.);
+        AuxinLost.resize(Nt,0.);
+        for(int zz = 0; zz < plant->node_Decapitate.size();zz++){
+            int z = plant->node_Decapitate.at(zz);
+            SucSTLost[z]   += Y0[z + 1];
+            SucMesoLost[z] += Y0[z + 1 + Nt ];
+            AuxinLost[z]   += Y0[z + 1 + Nt*9] ;
+            Y0[z + 1] = 0; 
+            Y0[z + 1 + Nt ] = 0;
+            Y0[z + 1 + Nt*9 ] = 0;
+        }
 	if(doTroubleshooting){cout<<"Y0_STinit "<<Y0[1]<<" "<<Nc<<" "<<Nt<<" "<<Nt_old<<endl;}
 	Nt_old = Nt; //BU Nt
 	

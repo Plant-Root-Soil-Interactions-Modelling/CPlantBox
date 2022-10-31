@@ -148,13 +148,20 @@ extern Fortran_vector r_Xyl, r_Trsv, r_ST, r_ST_ref, r_Sympl, r_Apo, r_PhlMb, r_
 extern int resistance_changed ;
 Fortran_vector  radius_ST ; // vol_Sympl is considered a variable, driven by its variation rate -- see function  Smooth_Parameter_&_BoundaryConditions_Changes()  below
 
+extern Fortran_vector A_amont, C_Auxin,JAuxin_ST1,JAuxin_ST2;
+extern Fortran_vector i_amont_auxin;
+extern SpUnit_matrix Delta2updown;
+extern SpUnit_matrix Deltaupdown;
+extern Fortran_vector Alpha_st;
+extern Fortran_vector Delta_JA_ST ;
+extern Fortran_vector C_AuxinOut;
 
 void PhloemFlux::C_fluxes(double t, int Nt)  
 {
 	TairC = TairK_phloem - 273.15;
-    std::cout<<"PhloemFlux::C_fluxes(double t, int Nt)"<<std::endl;
-    Delta_JA_ST.display();
-    JAuxin_ST2.display();
+    //std::cout<<"PhloemFlux::C_fluxes(double t, int Nt)"<<std::endl;
+    //Delta_JA_ST.display();
+    //JAuxin_ST2.display();
 	for (int i = 1 ; i <= Nt ; i++) 
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
@@ -162,7 +169,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
 		double Q_Rmmax_ ;double Q_Exudmax_;double Fu_lim;
-		Q_AuxinOut_dot[i] = 0;// not used currently
+		//Q_AuxinOut_dot[i] = 0;// not used currently
 		
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
@@ -174,8 +181,8 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
 		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i];//variation of sucrose content in node
 		
-        Q_Auxin_dot[i] = AuxinSource.at(i-1) * auxin_P - auxin_D * C_Auxin[i] + Delta_JA_ST[i];
-        Q_AuxinOut_dot[i] =auxin_D * C_Auxin[i];
+        Q_AuxinOut_dot[i] = C_Auxin[i] * (auxin_D * (1 - deleteAtRootTip) + auxin_D * isRootTip.at(i-1) * deleteAtRootTip);
+        Q_Auxin_dot[i] = AuxinSource.at(i-1) * auxin_P  + Delta_JA_ST[i] - Q_AuxinOut_dot[i];
 		//Q_meso_dot:
 		Q_Mesophyll_dot[i] = Ag[i] -Q_Fl[i];//variaiton of sucrose content in mesophyll compartment 
 		

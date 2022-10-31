@@ -306,7 +306,10 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("orgVolume2Length",&Organ::orgVolume2Length)
             .def_readwrite("iHeading", &Organ::iHeading)
             .def_readwrite("parentNI", &Organ::parentNI)
-            .def_readwrite("activePhloem", &Organ::activePhloem);
+            .def_readwrite("activePhloem", &Organ::activePhloem)
+            .def_readwrite("activeAuxin", &Organ::activeAuxin)
+            .def_readwrite("alive", &Organ::alive)
+            .def_readwrite("active", &Organ::active);
 
     /*
      * Organism.h
@@ -363,6 +366,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNodeIndex", &Organism::getNodeIndex)
 
             .def("setMinDx", &Organism::setMinDx)
+            .def_readwrite("activeAtThreshold", &Organism::activeAtThreshold)
+            .def_readwrite("activeAtThreshold_auxin",&Organism::activeAtThreshold_auxin)
+			.def_readwrite("useCWGr",&Organism::useCWGr)
             .def("setSeed", &Organism::setSeed)
             .def("rand", &Organism::rand)
             .def("randn", &Organism::randn)
@@ -847,6 +853,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("resolution", &MappedSegments::resolution)
 		.def_readwrite("organParam", &MappedSegments::plantParam)
 		.def_readwrite("node_Decapitate", &MappedSegments::node_Decapitate);
+    
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
@@ -1009,7 +1016,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
 			
             .def_readwrite("CSTthreshold", &PhloemFlux::CSTthreshold)
-            .def_readwrite("activeAtThreshold", &PhloemFlux::activeAtThreshold)
             .def_readwrite("canStartActivating", &PhloemFlux::canStartActivating)
 			
             .def_readwrite("Q_out",&PhloemFlux::Q_initOutv)
@@ -1023,7 +1029,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("C_ST",&PhloemFlux::C_STv)
         
             .def_readwrite("C_Auxin",&PhloemFlux::C_Auxinv)
-            .def_readwrite("activeAtThreshold_auxin",&PhloemFlux::activeAtThreshold_auxin)
             .def_readwrite("auxin_threshold",&PhloemFlux::auxin_threshold)
             .def_readwrite("auxin_D",&PhloemFlux::auxin_D)
             .def_readwrite("auxin_P",&PhloemFlux::auxin_P)
@@ -1033,6 +1038,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("C_AuxinOut",&PhloemFlux::C_AuxinOutv)
             .def_readwrite("Delta_JA_ST",&PhloemFlux::Delta_JA_STv)
             .def_readwrite("JAuxin_ST2",&PhloemFlux::JAuxin_ST2v)
+            .def_readwrite("deleteAtRootTip",&PhloemFlux::deleteAtRootTip)
+            .def_readwrite("isRootTip",&PhloemFlux::isRootTip)
+            .def_readwrite("burnInTime",&PhloemFlux::burnInTime)
+            .def_readwrite("SucSTLost",&PhloemFlux::SucSTLost)
+            .def_readwrite("SucMesoLost",&PhloemFlux::SucMesoLost)
+            .def_readwrite("AuxinLost",&PhloemFlux::AuxinLost)
         
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
             .def_readwrite("r_ST",&PhloemFlux::r_STv)
@@ -1066,7 +1077,6 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("sameVolume_meso_seg",&PhloemFlux::sameVolume_meso_seg)
 			//.def_readwrite("Cobj_ST",&PhloemFlux::Cobj_ST)
 			.def_readwrite("Vmaxloading",&PhloemFlux::Vmaxloading)
-			.def_readwrite("useCWGr",&PhloemFlux::useCWGr)
 			.def_readwrite("beta_loading",&PhloemFlux::beta_loading)
 			.def_readwrite("Mloading",&PhloemFlux::Mloading)
 			.def_readwrite("withInitVal",&PhloemFlux::withInitVal)

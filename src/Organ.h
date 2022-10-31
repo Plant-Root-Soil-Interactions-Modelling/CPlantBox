@@ -116,9 +116,11 @@ public:
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
-	bool activePhloem = false;
-	bool activeAuxin = false;
+	bool activePhloem = false;//((organType()!= 3)||(getParameter("subType")!=2));//false;
+	bool activeAuxin = false;//((organType()!= 3)||(getParameter("subType")!=2));//false;
 	
+    bool alive = true; ///< true: alive, false: dead
+    bool active = true; ///< true: active, false: organ stopped growing
 
 protected:
 
@@ -132,8 +134,6 @@ protected:
     std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ (@see getParam())
 
     /* Parameters are changing over time */
-    bool alive = true; ///< true: alive, false: dead
-    bool active = true; ///< true: active, false: organ stopped growing
     double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
 	double epsilonDx = 0; ///< growth increment too small to be added to organ. kept in memory and added to growth of next simulation step

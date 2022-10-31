@@ -211,40 +211,40 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	bool sameVolume_meso_st = true; //use same volume for mesophyll and leaf st compartment?
 	bool withInitVal = false;//use initValST and initValMeso
 	int solver = 1;//which solver to use
-	bool useCWGr; //use water- and carbon- limited growth?
 	int expression = 1;//if implement several possible expression in C_fluxes
 	bool useStemTip = true;
 	int growthType = 0; //0: standard; 1: threshold value for start; 2: 
 	bool krFromLen = true;
-	bool activeAtThreshold = false;
     bool canStartActivating = true;
 	double CSTthreshold = 0.3;
     
     
 	//		Auxin
-	bool activeAtThreshold_auxin = false;
 	double auxin_threshold = 0.3;
 	double auxin_P = 0.3;//production rate
 	double auxin_D = 0.3;//decay
 	double auxin_alpha = 0.3;//there is only one way down so we should be fine
-    SpUnit_matrix Delta2updown;
-    SpUnit_matrix Deltaupdown;
-    Fortran_vector Alpha_st;
-    Fortran_vector JAuxin_ST1;
-    Fortran_vector JAuxin_ST2;
+    //Fortran_vector JAuxin_ST1;
+    //Fortran_vector JAuxin_ST2;
 	double initValAuxin = 0.9;//initial concentration in active tip
-    Fortran_vector A_amont;
-    Fortran_vector i_amont_auxin;
     std::vector<double> C_Auxinv;//Suc_ST for python byding
     std::vector<double> Delta_JA_STv;
     std::vector<int> AuxinSource;
-    Fortran_vector Delta_JA_ST ;
-    Fortran_vector C_AuxinOut;
     std::vector<double> C_AuxinOutv;
     std::vector<double> JAuxin_ST2v;
-
-    
-    
+    bool deleteAtRootTip = false;
+    std::vector<bool> isRootTip;
+    bool burnInTime = false;
+    std::vector<double> SucSTLost;
+    std::vector<double> SucMesoLost;
+    std::vector<double> AuxinLost;
+    // Fortran_vector A_amont;
+    // Fortran_vector i_amont_auxin;
+    // SpUnit_matrix Delta2updown;
+    // SpUnit_matrix Deltaupdown;
+    // Fortran_vector Alpha_st;
+    // Fortran_vector Delta_JA_ST ;
+    // Fortran_vector C_AuxinOut;
     
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters & constants (implemented in 'initialize.cpp')
