@@ -470,10 +470,11 @@ Vector3d MappedSegments::getMinBounds() {
  */
 void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbose, bool LB) {
 	std::cout << "MappedRootSystem::initialize \n" << std::flush;
-	if(LB){
-		RootSystem::initializeLB( basaltype, shootbornetype, verbose);
-	}else{RootSystem::initializeDB( basaltype, shootbornetype, verbose);}
-
+	if (LB) {
+		RootSystem::initializeLB(basaltype, shootbornetype, verbose);
+	} else {
+	    RootSystem::initializeDB(basaltype, shootbornetype, verbose);
+	}
 	segments = this->getShootSegments();
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();
@@ -484,6 +485,7 @@ void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbo
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //root organ type = 2
 	mapSegments(segments);
+	std::cout << "\nnumber of root crowns" << this->numberOfCrowns << "\n\n";
 }
 
 

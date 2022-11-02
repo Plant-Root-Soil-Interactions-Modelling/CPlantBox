@@ -98,6 +98,10 @@ public:
 
     std::string toString() const override; ///< infos about current root system state (for debugging)
 
+protected:
+
+    int numberOfCrowns = 0;
+
 private:
 
     void initialize_(int basal = 4, int shootborne = 5, bool verbose = true);
@@ -109,7 +113,6 @@ private:
     std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
     mutable std::vector<std::shared_ptr<Root>> roots = std::vector<std::shared_ptr<Root>>(); // buffer for getRoots()
-    int numberOfCrowns = 0;
 
     std::vector<RootSystemState> stateStack;
 };
