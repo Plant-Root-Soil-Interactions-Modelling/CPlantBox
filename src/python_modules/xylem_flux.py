@@ -274,7 +274,12 @@ class XylemFluxPython(XylemFlux):
         """ returns the exact transpirational flux of the xylem model solution @param rx
             @see axial_flux        
         """
-        return self.axial_flux(0, sim_time, rx, sxx, k_soil, cells, ij = True)
+        segs = self.rs.segments
+        for i in range(0, len(segs)):
+            if segs[i].x == 0:
+                collar_ind = i
+                break
+        return self.axial_flux(collar_ind, sim_time, rx, sxx, k_soil, cells, ij = True)
 
     def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the axial fluxes 
@@ -493,7 +498,7 @@ class XylemFluxPython(XylemFlux):
         print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))
         # 4 check for unmapped indices
         map = self.rs.seg2cell
-        for seg_id, cell_id in map.items():
+        for cell_id in map:
             if cell_id < 0:
                 print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
         # 5 radii range
