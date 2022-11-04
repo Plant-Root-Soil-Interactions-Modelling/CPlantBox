@@ -467,6 +467,9 @@ PYBIND11_MODULE(plantbox, m) {
            .def("addSegments",(void (SegmentAnalyser::*)(const Organism&)) &SegmentAnalyser::addSegments) //overloads
            .def("addSegments",(void (SegmentAnalyser::*)(const SegmentAnalyser&)) &SegmentAnalyser::addSegments) //overloads
            .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
+           .def("addConductivities", &SegmentAnalyser::addConductivities)
+           .def("addFluxes", &SegmentAnalyser::addFluxes)
+           .def("addCellIds", &SegmentAnalyser::addCellIds)
            .def("crop", &SegmentAnalyser::crop)
            .def("cropDomain", &SegmentAnalyser::cropDomain)
            .def("filter", (void (SegmentAnalyser::*)(std::string, double, double)) &SegmentAnalyser::filter) //overloads
@@ -785,8 +788,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setSoil", &RootSystem::setSoil)
             .def("reset", &RootSystem::reset)
             .def("initialize", (void (RootSystem::*)(bool)) &RootSystem::initialize, py::arg("verbose") = true)
-            .def("initializeLB", (void (RootSystem::*)(int, int, bool)) &RootSystem::initializeLB, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
-            .def("initializeDB", (void (RootSystem::*)(int, int, bool)) &RootSystem::initializeDB, py::arg("basal"), py::arg("shootborne"), py::arg("verbose") = true)
+            .def("initializeLB", (void (RootSystem::*)(int, int, bool)) &RootSystem::initializeLB, py::arg("basal") = 4, py::arg("shootborne") = 5, py::arg("verbose") = true)
+            .def("initializeDB", (void (RootSystem::*)(int, int, bool)) &RootSystem::initializeDB, py::arg("basal") = 4, py::arg("shootborne") = 5, py::arg("verbose") = true)
 			.def("setTropism", &RootSystem::setTropism)
             .def("simulate",(void (RootSystem::*)(double,bool)) &RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
             .def("simulate",(void (RootSystem::*)()) &RootSystem::simulate)

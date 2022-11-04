@@ -485,7 +485,10 @@ void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbo
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //root organ type = 2
 	mapSegments(segments);
-	std::cout << "\nnumber of root crowns" << this->numberOfCrowns << "\n\n";
+//	for (int i =0; i<segments.size(); i++) {
+//	    std::cout << segments[i].toString() << "\n";
+//	}
+//	std::cout << "\nNumber of root crowns " << this->numberOfCrowns << "\n\n";
 }
 
 

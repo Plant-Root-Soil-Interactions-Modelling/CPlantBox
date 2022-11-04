@@ -63,7 +63,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create roots
 	 */
-	const double maxT = 365.; // maximal simulation time
+	const double maxT = 120.; // maximal simulation time
 	auto sp = this->param(); // rename
 	Vector3d iheading(0,0,-1);
 
@@ -95,7 +95,7 @@ void Seed::initialize(bool verbose)
 		double delay = sp->firstB;
 		for (int i=0; i<maxB; i++) {
 			std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, iheading, delay);
-			basalroot->addNode(getNode(0), getNodeId(0), delay);
+			basalroot->addNode(getNode(0), getNodeId(0), 0.);
 			this->addChild(basalroot);
 			delay += sp->delayB;
 		}
@@ -112,9 +112,9 @@ void Seed::initialize(bool verbose)
 				p->getOrganRandomParameter(Organism::ot_root, shootborneType); // if the type is not defined an exception is thrown
 			} catch (...) {
 				if (verbose) {
-					std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
+					std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using basal root parameters instead\n";
 				}
-				auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
+				auto srtp =  p->getOrganRandomParameter(Organism::ot_root, basalType)->copy(plant.lock());
 				srtp->subType = shootborneType;
 				p->setOrganRandomParameter(srtp);
 			}
@@ -131,7 +131,7 @@ void Seed::initialize(bool verbose)
 				for (int j=1; j<sp->nC; j++) {
 					std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, iheading ,delay);
 					// TODO fix the initial radial heading
-					shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0),delay);
+					shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0), 0.);
 					this->addChild(shootborne);
 					delay += sp->delaySB;
 				}

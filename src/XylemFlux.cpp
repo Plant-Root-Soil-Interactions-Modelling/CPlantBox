@@ -8,7 +8,7 @@ namespace CPlantBox {
 
 
 
-XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs){}
+XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs) { }
 
 
 /**

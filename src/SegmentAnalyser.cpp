@@ -4,12 +4,13 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "MappedOrganism.h"
+#include "XylemFlux.h"
+
 #include <algorithm>
 #include <iomanip>
 #include <istream>
 #include <iostream>
 #include <string>
-
 #include <fstream>
 #include <set>
 #include <math.h>
@@ -29,13 +30,13 @@ namespace CPlantBox {
  */
 SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::vector<Vector2i>& segments,
     const std::vector<double>& segCTs, const std::vector<double>& radii) :nodes(nodes), segments(segments)
-{
+    {
     assert((segments.size() == segCTs.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
     assert((segments.size() == radii.size()) && "SegmentAnalyser::SegmentAnalyser(): Unequal vector sizes");
     data["creationTime"] = segCTs;
     data["radius"] = radii;
     segO = std::vector<std::weak_ptr<Organ>>(segments.size()); // create expired
-}
+    }
 
 /**
  * Copies the line segments representing the plant to the analysis class
@@ -55,15 +56,18 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     auto radii = std::vector<double>(segments.size());
     auto subType = std::vector<double>(segments.size());
     auto id = std::vector<double>(segments.size());
+    auto organType = std::vector<double>(segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
         radii[i] = segO[i].lock()->getParameter("radius");
         subType[i] = segO[i].lock()->getParameter("type");
         id[i] = segO[i].lock()->getParameter("id");
+        organType[i] = Organism::ot_root; // = 2
     }
     data["radius"] = radii;
     data["subType"] = subType;
     data["id"] = id;
+    data["organType"] = organType;
 }
 
 /**
@@ -77,12 +81,11 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.subTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.organTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
-    std::vector<double> segCTs;
+    std::vector<double> segCTs(plant.segments.size());
     std::vector<double> subTypesd(plant.subTypes.size()); // convert to double
     std::vector<double> organTypesd(plant.organTypes.size()); // convert to double
-    segCTs.reserve(plant.nodeCTs.size()-1);
     for (size_t i=0; i<segments.size(); i++) {
-        segCTs.push_back(plant.nodeCTs.at(segments[i].y));
+        segCTs[i] = plant.nodeCTs.at(segments[i].y);
         subTypesd[i] = double(plant.subTypes[i]);
         organTypesd[i] = double(plant.organTypes[i]);
     }
@@ -168,6 +171,84 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
     }
 }
 
+/**
+ * Adds kr and kx to the user data for vizualisation ("kr", "kx"),
+ *
+ * @param rs    XylemFlux for determination of radial and axial conductivities (kr, and kx)
+ */
+void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime)
+{
+    // std::cout << "creationTime " << data["creationTime"].size() << ", " << data["subType"].size() << ", " << data["organType"].size() << "\n";
+
+    std::vector<double> kr(segments.size());
+    std::vector<double> kx(segments.size());
+
+    for (size_t i=0; i<kr.size(); i++) {
+        double age = simTime - data["creationTime"].at(i);
+        int subType = (int) data["subType"].at(i);
+        int organType = (int) data["organType"].at(i);
+        kr.at(i) = rs.kr_f(i, age, subType, organType, 0);
+        if (age > simTime - 1.e-12) {
+            kr.at(i) = 0.; // for shoot (for vizualisation only)
+        } else {
+            kx.at(i) = rs.kx_f(i, age, subType, organType);
+        }
+
+    }
+
+    this->addData("kr",kr);
+    this->addData("kx",kx);
+}
+
+/**
+ * Adds radial and axial fluxes to the user data for vizualisation,
+ * ("radial_flux" [cm3/cm2 / day], and "axial_flux" [cm3/day])
+ *
+ * use addConductivities before!
+ */
+void SegmentAnalyser::addFluxes(XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
+
+    std::vector<double> radial_flux = rs.segFluxes(simTime, rx, sx, false, false); // volumetric flux
+    std::vector<double> a = data["radius"];
+    for (int i =0; i< radial_flux.size(); i++) {
+        radial_flux[i] /= (2.*M_PI*a.at(i));
+    }
+    this->addData("radial_flux",radial_flux);
+
+    //    auto& kr = data["kr"]; // use addConductivities before!
+    auto& kx = data["kx"]; // use addConductivities before!
+    std::vector<double> axial_flux(segments.size());
+    for (size_t i=0; i<axial_flux.size(); i++) {
+        //        double age = simTime - data["creationTime"].at(i);
+        //        int subType = (int)data["subType"].at(i);
+        //        int organType = (int)data["organType"].at(i);
+        auto s = segments[i];
+        auto n1 = nodes.at(s.x);
+        auto n2 = nodes.at(s.y);
+        auto v = n2.minus(n1);
+        double l = v.length();
+        v.normalize();
+        //        double p_s = sx.at(i);
+        double dpdz0;
+        //        if (a.at(i)*kr.at(i)>1.e-16) {
+        //            double tau = std::sqrt(2 * a * M_PI * kr.at(i) / kx.at(i));  // cm-2 // TODO exact value is missing, see xylem_flux.py, axial_flux
+        //        } else {
+        //        }
+        dpdz0 = (rx[s.y] - rx[s.x]) / l;
+        axial_flux.at(i) = kx.at(i) * (dpdz0 + v.z);
+    }
+    this->addData("axial_flux",axial_flux);
+}
+
+
+void SegmentAnalyser::addCellIds(const MappedSegments& plant)
+{
+    std::vector<double> cell_id(segments.size());
+    for (size_t i=0; i<segments.size(); i++) {
+        cell_id[i] = plant.seg2cell.at(i);
+    }
+    this->addData("cell_id",cell_id);
+}
 /**
  * Returns a specific parameter per root segment.
  *
@@ -608,13 +689,13 @@ void SegmentAnalyser::map2D() {
  * @return The origin's of the segments, i.e. the organ's where the segments are part of (unique, no special ordering)
  */
 std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
-{
+    {
     std::set<std::shared_ptr<Organ>> rootset;  // praise the stl
     for (auto o : segO) {
         rootset.insert(o.lock());
     }
     return std::vector<std::shared_ptr<Organ>>(rootset.begin(), rootset.end());
-}
+    }
 
 /**
  * @return The number of different organs
@@ -754,7 +835,7 @@ std::vector<SegmentAnalyser> SegmentAnalyser::distribution(double top, double bo
  * @return          vector of size @param n containing the summed parameter in this layer
  */
 std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name, double top, double bot, double left, double right, int n, int m, bool exact) const
-{
+    {
     std::vector<std::vector<double>> d(n);
     double dz = (top-bot)/double(n);
     assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
@@ -777,7 +858,7 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name
         d.at(i)=row; // store the row (n rows)
     }
     return d;
-}
+    }
 
 /**
  *  Creates a vertical distribution
@@ -791,7 +872,7 @@ std::vector<std::vector<double>> SegmentAnalyser::distribution2(std::string name
  * @return          vector of size @param n containing the summed parameter in this layer
  */
 std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double top, double bot, double left, double right, int n, int m) const
-{
+    {
     std::vector<std::vector<SegmentAnalyser>> d(n);
     double dz = (top-bot)/double(n);
     assert(dz > 0 && "SegmentAnalyser::distribution2: top must be larger than bot" );
@@ -807,7 +888,7 @@ std::vector<std::vector<SegmentAnalyser>> SegmentAnalyser::distribution2(double 
         }
     }
     return d;
-}
+    }
 
 /**
  * Adds user data that can be accessed by SegmentAnalyser::getParameter, and that can be written to the VTP file
@@ -961,20 +1042,20 @@ void SegmentAnalyser::writeRBSegments(std::ostream & os) const
     for (size_t i=0; i<segments.size(); i++) { // write output
         //int parent_node_id = std::find(segments.y, segments.y, s.at(i).x);
         os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i])
-                                                     << " " << std::get<2>(ctime_seg[i])
-                                                     << " " << std::get<3>(ctime_seg[i])
-                                                     << " " << std::get<4>(ctime_seg[i])
-                                                     << " " << std::get<5>(ctime_seg[i])
-                                                     << " " << std::get<6>(ctime_seg[i])
-                                                     << " " << std::get<7>(ctime_seg[i])
-                                                     << " " << std::get<8>(ctime_seg[i])
-                                                     << " " << std::get<9>(ctime_seg[i])
-                                                     << " " << std::get<10>(ctime_seg[i])
-                                                     << " " << std::get<0>(ctime_seg[i])
-                                                     << " " << std::get<11>(ctime_seg[i])
-                                                     << " " << std::get<12>(ctime_seg[i])
-                                                     << " " << std::get<13>(ctime_seg[i])
-                                                     << " " << std::get<14>(ctime_seg[i])<< " " <<" \n";
+                                                         << " " << std::get<2>(ctime_seg[i])
+                                                         << " " << std::get<3>(ctime_seg[i])
+                                                         << " " << std::get<4>(ctime_seg[i])
+                                                         << " " << std::get<5>(ctime_seg[i])
+                                                         << " " << std::get<6>(ctime_seg[i])
+                                                         << " " << std::get<7>(ctime_seg[i])
+                                                         << " " << std::get<8>(ctime_seg[i])
+                                                         << " " << std::get<9>(ctime_seg[i])
+                                                         << " " << std::get<10>(ctime_seg[i])
+                                                         << " " << std::get<0>(ctime_seg[i])
+                                                         << " " << std::get<11>(ctime_seg[i])
+                                                         << " " << std::get<12>(ctime_seg[i])
+                                                         << " " << std::get<13>(ctime_seg[i])
+                                                         << " " << std::get<14>(ctime_seg[i])<< " " <<" \n";
         //for debug//        os << std::fixed << std::setprecision(4)<< std::get<1>(ctime_seg[i]) << " " << std::get<2>(ctime_seg[i]) << " " << std::get<0>(ctime_seg[i]) <<" "  << "\n"; << branchnumber << " " << n1.x << " " << n1.y << " " << n1.z << " " << n2.x << " " << n2.y << " " << n2.z << " " << radius << " " << std::get<1>(ctime_seg[i])<< " " << age<<" " <<subType<< " " <<organ << " " <<" \n";
 
     }

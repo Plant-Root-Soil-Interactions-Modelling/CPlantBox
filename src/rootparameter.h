@@ -26,10 +26,10 @@ class RootSpecificParameter :public OrganSpecificParameter
 public:
 
     RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
-    RootSpecificParameter(int type, double lb, double la, 
-		const std::vector<double>& ln, double r, double a, 
+    RootSpecificParameter(int type, double lb, double la,
+		const std::vector<double>& ln, double r, double a,
 		double theta, double rlt, bool laterals = false):
-		OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), 
+		OrganSpecificParameter(type, a),  lb(lb), la(la), r(r),
 			theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
 
     /*
@@ -41,7 +41,7 @@ public:
     double theta;           ///< Angle between root and parent root [rad]
     double rlt;             ///< Root life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
-	bool laterals = false;				   
+	bool laterals = false;
 
     int nob() const { return ln.size()+ laterals; } ///< return the maximal number of lateral branching nodes [1]
     double getK() const; ///< Returns the exact maximal root length of this realization [cm]
@@ -68,7 +68,7 @@ public:
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 
     int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
-    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean maximal number of branching nodes [1]
+    double nob() const { return std::max((lmax-la-lb)/ln+1, 0.); }  ///< returns the mean maximal number of branching nodes [1]
     double nobs() const; ///< returns the standard deviation of number of branching nodes [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging
@@ -120,6 +120,10 @@ public:
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth
+
+protected:
+
+    double snap(double x);
 
 };
 

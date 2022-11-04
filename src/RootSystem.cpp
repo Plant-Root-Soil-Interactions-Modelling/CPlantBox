@@ -227,6 +227,7 @@ void RootSystem::initialize_(int basal, int shootborne, bool verbose)
     seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
     baseOrgans = seed->copyBaseOrgans();
+    numberOfCrowns = seed->getNumberOfRootCrowns(); // a bit redundant...
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();
 }
@@ -456,18 +457,17 @@ std::vector<int> RootSystem::getRootBases() const
 std::vector<Vector2i> RootSystem::getShootSegments() const
 {
     std::vector<Vector2i> seg = std::vector<Vector2i>(0);
-    seg.push_back(Vector2i(0,baseOrgans.at(0)->getNodeId(0))); // connect  basal roots node (seed) to artificial shoot
     int n1=0, n2=0;
+    if (numberOfCrowns>0) { // connect to basal roots node (seed)
+        seg.push_back(Vector2i(0,baseOrgans.back()->getNodeId(0)));
+    }
     for (int i=0; i<numberOfCrowns-1; i++) { // connecting root crowns
         int brn = baseOrgans.size()-1;
         n1 = baseOrgans.at(brn-i*seedParam.nC)->getNodeId(0);
         n2 = baseOrgans.at(brn-(i+1)*seedParam.nC)->getNodeId(0);
         seg.push_back(Vector2i(n1,n2));
     }
-    if (numberOfCrowns>0) { // connect to basal roots node (seed)
-        int ti = baseOrgans.at(0)->getNodeId(0);
-        seg.push_back(Vector2i(n2,ti));
-    }
+    seg.push_back(Vector2i(n2,baseOrgans.at(0)->getNodeId(0))); // connect  basal roots node (seed) to artificial shoot
     return seg;
 }
 
