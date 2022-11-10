@@ -63,7 +63,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create roots
 	 */
-	const double maxT = 120.; // maximal simulation time
+	const double maxT = 95.; // maximal simulation time
 	auto sp = this->param(); // rename
 	Vector3d iheading(0,0,-1);
 
@@ -95,7 +95,7 @@ void Seed::initialize(bool verbose)
 		double delay = sp->firstB;
 		for (int i=0; i<maxB; i++) {
 			std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, iheading, delay);
-			basalroot->addNode(getNode(0), getNodeId(0), 0.);
+			basalroot->addNode(getNode(0), getNodeId(0), delay); // first organ node
 			this->addChild(basalroot);
 			delay += sp->delayB;
 		}
@@ -121,22 +121,21 @@ void Seed::initialize(bool verbose)
 			Vector3d sbpos = sp->seedPos;
 			sbpos.z=sbpos.z/2.; // half way up the mesocotyl
 			numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
+			double fixedBeta = 2*M_PI/sp->nC;
 			double delay = sp->firstSB;
 			for (int i=0; i<numberOfRootCrowns; i++) {
-				std::shared_ptr<Organ>  shootborne0 = createRoot(plant.lock(), shootborneType, iheading ,delay);
-				// TODO fix the initial radial heading
+				std::shared_ptr<Organ>  shootborne0 = createShootborne(plant.lock(), shootborneType, iheading ,delay,0.);
 				shootborne0->addNode(sbpos,delay);
 				this->addChild(shootborne0);
 				delay += sp->delaySB;
 				for (int j=1; j<sp->nC; j++) {
-					std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, iheading ,delay);
-					// TODO fix the initial radial heading
-					shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0), 0.);
+					std::shared_ptr<Organ>  shootborne = createShootborne(plant.lock(), shootborneType, iheading ,delay, j*fixedBeta);
+					shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0), delay);
 					this->addChild(shootborne);
 					delay += sp->delaySB;
 				}
 				sbpos.z+=sp->nz;  // move up, for next root crown
-				delay = sp->firstSB + i*sp->delayRC; // reset age
+				delay = sp->firstSB + (i+1)*sp->delayRC; // reset age
 			}
 		} else {
 			numberOfRootCrowns = 0;
@@ -214,13 +213,23 @@ std::string Seed::toString() const
 	return Organ::toString() + newstring.str();
 }
 
+
 /**
  * todo doc
  */
 std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay)
 {
-	return std::make_shared<Root>(plant, type, heading, delay, shared_from_this(), 0);
+    return std::make_shared<Root>(plant, type, heading, delay, shared_from_this(), 0);
 }
+
+/**
+ * todo doc
+ */
+std::shared_ptr<Organ> Seed::createShootborne(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay, double fixedBeta)
+{
+    return std::make_shared<Root>(plant, type, heading, delay, shared_from_this(), 0, fixedBeta);
+}
+
 
 /**
  * todo doc// overwrite if you want to change the types

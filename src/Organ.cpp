@@ -173,24 +173,23 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  */
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
-	if(!shift){//node added at the end of organ										
+	if(!shift){//node added at the end of organ
 		nodes.push_back(n); // node
 		nodeIds.push_back(id); //unique id
 		nodeCTs.push_back(t); // exact creation time
 	}
-	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?) 
+	else { //could be quite slow  to insert, but we won t have that many (node-)tillers (?)
 		nodes.insert(nodes.begin() + index, n);//add the node at index
-		//add a global index. 
+		//add a global index.
 		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
-		nodeIds.push_back(id);  
+		nodeIds.push_back(id);
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
 		for(auto kid : children){//if carries children after the added node, update their "parent node index"
-			if(kid->parentNI >= index-1){
+			if(kid->parentNI >= index-1) {
 				kid->moveOrigin(kid->parentNI + 1);
-				}
-			
+			}
 		}
-		
+
 	}
 }
 
@@ -203,7 +202,7 @@ void Organ::moveOrigin(int idx)
 {
 	this->parentNI = idx;
 	nodeIds.at(0) = getParent()->getNodeId(idx);
-	
+
 }
 
 /**
@@ -289,7 +288,7 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v, bool all)
 	//might have age <0 and node.size()> 1 when adding organ manuelly @see test_organ.py
 	bool forCarbon_limitedGrowth = (all && (this->getAge()>0));//when ask for "all" organs which have age > 0 even if nodes.size() == 1
 	bool notSeed = ( this->organType() != Organism::ot_seed);
-	
+
 	if ((this->nodes.size()>1 || forCarbon_limitedGrowth)&& notBulb &&notSeed) {
 		if ((ot<0) || (ot==this->organType())) {
 			v.push_back(shared_from_this());

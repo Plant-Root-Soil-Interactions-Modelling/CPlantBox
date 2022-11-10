@@ -467,6 +467,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("addSegments",(void (SegmentAnalyser::*)(const Organism&)) &SegmentAnalyser::addSegments) //overloads
            .def("addSegments",(void (SegmentAnalyser::*)(const SegmentAnalyser&)) &SegmentAnalyser::addSegments) //overloads
            .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
+           .def("addAge", &SegmentAnalyser::addAge)
            .def("addConductivities", &SegmentAnalyser::addConductivities)
            .def("addFluxes", &SegmentAnalyser::addFluxes)
            .def("addCellIds", &SegmentAnalyser::addCellIds)

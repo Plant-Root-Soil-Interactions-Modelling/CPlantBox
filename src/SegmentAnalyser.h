@@ -37,6 +37,7 @@ public:
     void addSegment(Vector2i seg, double ct, double radius, bool insert = false); ///< adds a single segment
 
     // to visualize results
+    void addAge(double simtime);
     void addConductivities(const XylemFlux& xylem, double simtime);
     void addFluxes(XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime);
     void addCellIds(const MappedSegments& plant);

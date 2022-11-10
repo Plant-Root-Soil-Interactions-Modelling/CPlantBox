@@ -29,7 +29,7 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
 
 
 /**
- * Constructor: Should be only called during simulation by Root::createLateral().
+ * Constructor: Should be only called during simulation by Seed::initialize() and Root::createLateral().
  * For base roots the initial node and node creation time must be set from outside
  *
  * @param rs 			points to RootSystem
@@ -45,6 +45,37 @@ Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d iHeading_, double de
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
+    double theta = param()->theta;
+    if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
+        double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
+        theta*=scale;
+    }
+    insertionAngle = theta;
+    Vector3d newHeading = iHeading.times(Vector3d::rotAB(theta,beta));
+    iHeading = Matrix3d::ons(newHeading); // new initial heading
+    if (parent->organType()!=Organism::ot_seed) { // the first node of the base roots must be created in RootSystem::initialize()
+        addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
+    }
+}
+
+/**
+ * Constructor: Should be only called during simulation by Seed::initialize() and Root::createLateral().
+ * For base roots the initial node and node creation time must be set from outside
+ *
+ * @param rs            points to RootSystem
+ * @param type          type of root that is created
+ * @param heading       heading of parent root at emergence
+ * @param delay         to give apical zone of parent time to develop
+ * @param parent        parent root
+ * @param pbl           parent base length
+ * @param pni           parent node index
+ * @param fixedBeta     fixed insertion angle beta
+ */
+Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d iHeading_, double delay, std::shared_ptr<Organ> parent, int pni, double fixedBeta)
+    :Organ(rs, parent, Organism::ot_root, type, delay, Matrix3d::ons(iHeading_), pni) // <- OrganRandomParameter::realize() is called here
+{
+    assert(parent!=nullptr && "Root::Root parent must be set");
+    double beta = fixedBeta; // initial rotation
     double theta = param()->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
         double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
@@ -136,9 +167,9 @@ void Root::simulate(double dt, bool verbose)
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
 		length = getLength();
 		this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
-                
+
                 // create geometry
-                if (p.laterals ) { // root has children 
+                if (p.laterals ) { // root has children
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {

@@ -38,6 +38,7 @@ public:
     std::vector<std::shared_ptr<Organ>> copyBaseOrgans(); ///< shallow copy of the childs
 
     virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay); ///< overwrite if you want to change class types
+    virtual std::shared_ptr<Organ> createShootborne(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay, double fixedBeta); ///< overwrite if you want to change class types
     virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay); ///< overwrite if you want to change class types
 
     // default positions (unused) (TODO) make nicer

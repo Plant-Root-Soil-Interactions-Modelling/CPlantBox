@@ -171,6 +171,20 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
     }
 }
 
+
+void SegmentAnalyser::addAge(double simTime)
+/**
+ * adds "age" for vizualisation (cuts off negative values)
+ */
+{
+    std::vector<double> age(segments.size());
+    for (size_t i=0; i<age.size(); i++) {
+        double a = simTime - data["creationTime"].at(i);
+        age.at(i) = std::max(a,0.);
+    }
+    this->addData("age",age);
+}
+
 /**
  * Adds kr and kx to the user data for vizualisation ("kr", "kx"),
  *

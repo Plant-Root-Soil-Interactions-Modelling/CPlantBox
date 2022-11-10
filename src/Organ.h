@@ -81,14 +81,14 @@ public:
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
     void addNode(Vector3d n, double t, size_t index, bool shift); //< adds a node to the root
     void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
-	void addNode(Vector3d n, int id, double t){addNode( n,  id, t, size_t(0), false);} //< for pybind, overwise error with parameter repartition
-    void addNode(Vector3d n,  double t){addNode( n,   t, size_t(0),false);}; //< for link with pybind
+	void addNode(Vector3d n, int id, double t){ addNode( n,  id, t, size_t(0), false); } //< for pybind, overwise error with parameter repartition
+    void addNode(Vector3d n,  double t){ addNode( n,   t, size_t(0),false); }; //< for link with pybind
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
 	double dx() const; ///< returns the max axial resolution
 	double dxMin() const; ///< returns the min axial resolution
 	virtual void rel2abs(){ throw std::runtime_error( "rel2abs() not implemented" );  }///should be overwritten
     virtual void abs2rel(){ throw std::runtime_error( "abs2rel() not implemented" );  }///should be overwritten
-    
+
 	void moveOrigin(int idx);//change idx of first node, in case of nodal growth
 
     /* last time step */
@@ -108,7 +108,7 @@ public:
     /* Parameters that are constant over the organ life time*/
     virtual Vector3d getiHeading0() const {return iHeading.column(0);}
     Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
-	
+
     int parentNI; ///< local parent node index
 	 /* useful */
     virtual Vector3d heading() const; ///< current (absolute) heading of the organs tip

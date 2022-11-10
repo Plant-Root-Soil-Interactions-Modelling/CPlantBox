@@ -46,6 +46,26 @@ class XylemFluxPython(XylemFlux):
         self.Q = None  # store linear system
         self.b = None
 
+        self.Vmax = 45 * 62 * 1.e-11 * (24.*3600.)  # kg/(m2 day) -> York et. al (2016) (Lynch group)
+        self.Km = 10.67 * 62 * 1.e-6  # kg/m3
+        self.CMin = 4.4 * 62 * 1.e-6  # kg/m3
+
+    def solute_fluxes(self, c):
+        """ concentrations @param c [kg/m3], returns [cm3/day]
+        self.Vmax [kg/(m2 day)]
+        self.Km [kg/m3]
+        self.Cmin [kg/m3]
+        """
+        segs = self.rs.segments
+        a = self.rs.radii
+        l = self.rs.segLength()
+        assert(len(segs) == len(c))
+        sf = np.zeros(len(segs),)
+        for i, s in enumerate(segs):
+            sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.CMin) * self.Vmax / (self.Km + (c[i] - self.CMin)))  # kg/day
+        sf = np.minimum(sf, 0.)
+        return sf * 1.e3  # kg/day -> cm3/day
+
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
         """
@@ -479,7 +499,7 @@ class XylemFluxPython(XylemFlux):
         print("Segment 0", segments[0])
         for s in segments[1:]:
             if s[0] == 0:
-                print("warning multiple segments emerge from node 0")
+                print("warning multiple segments emerge from node 0", s)
         # 2 check for very small segments
         seg_length = self.rs.segLength()
         c = 0
