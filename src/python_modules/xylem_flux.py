@@ -51,7 +51,7 @@ class XylemFluxPython(XylemFlux):
         self.CMin = 4.4 * 62 * 1.e-6  # kg/m3
 
     def solute_fluxes(self, c):
-        """ concentrations @param c [kg/m3], returns [cm3/day]
+        """ concentrations @param c [kg/m3], returns [g/day]
         self.Vmax [kg/(m2 day)]
         self.Km [kg/m3]
         self.Cmin [kg/m3]
@@ -64,7 +64,7 @@ class XylemFluxPython(XylemFlux):
         for i, s in enumerate(segs):
             sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.CMin) * self.Vmax / (self.Km + (c[i] - self.CMin)))  # kg/day
         sf = np.minimum(sf, 0.)
-        return sf * 1.e3  # kg/day -> cm3/day
+        return sf * 1.e3  # kg/day -> g/day
 
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 

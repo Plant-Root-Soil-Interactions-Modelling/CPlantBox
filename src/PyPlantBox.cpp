@@ -828,7 +828,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("sort",&MappedSegments::sort)
         .def("segOuterRadii",&MappedSegments::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
 		.def("segLength",&MappedSegments::segLength)
-		.def("getNumberOfSegments",&MappedSegments::getNumberOfSegments)
+		.def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
         .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
         .def("getSegmentZ",&MappedSegments::getSegmentZ)
         .def_readwrite("nodes", &MappedSegments::nodes)
@@ -866,6 +866,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)
             .def("getEffKr", &XylemFlux::getEffKr)
+            .def("getKr", &XylemFlux::getKr)
             .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>(),py::arg("withEigen") = false)

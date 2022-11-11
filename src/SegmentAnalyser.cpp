@@ -203,7 +203,7 @@ void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime)
         int organType = (int) data["organType"].at(i);
         kr.at(i) = rs.kr_f(i, age, subType, organType, 0);
         if (age > simTime - 1.e-12) {
-            kr.at(i) = 0.; // for shoot (for vizualisation only)
+            kr.at(i) = 0.; // e.g. for shoot (for vizualisation only)
         } else {
             kx.at(i) = rs.kx_f(i, age, subType, organType);
         }

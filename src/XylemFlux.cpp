@@ -587,6 +587,26 @@ std::vector<double> XylemFlux::getEffKr(double simtime) {
 }
 
 /**
+ * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
+ */
+std::vector<double> XylemFlux::getKr(double simtime) {
+    std::vector<double> kr = std::vector<double>(rs->segments.size());
+    for (int si = 0; si<rs->segments.size(); si++) {
+        int j = rs->segments[si].y;
+        int organType = rs->organTypes[si];
+        double age = simtime - rs->nodeCTs[j];
+        int subType = rs->subTypes[si];
+        try {
+            kr[si] = kr_f(si, age, subType, organType, 0);
+        } catch(...) {
+            std::cout << "\n XylemFlux::segFluxes: radial conductivities failed" << std::flush;
+            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
+        }
+    }
+    return kr;
+}
+
+/**
  * Returns radial conductivities per segment for a specific simulation time
  */
 std::vector<double> XylemFlux::getKx(double simtime) {

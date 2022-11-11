@@ -46,7 +46,7 @@ public:
     std::vector<double> segOuterRadii(int type = 0, const std::vector<double>& vols = std::vector<double>(0)) const; ///< outer cylinder radii to match cell volume
     std::vector<double> segLength() const; ///< calculates segment lengths [cm]
 
-    int getNumberOfSegments() const { return segments.size(); };  // for the python binding
+    int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
     std::vector<double> getSegmentZ() const; // z-coordinate of segment mid
 
