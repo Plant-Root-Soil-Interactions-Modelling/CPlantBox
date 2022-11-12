@@ -107,25 +107,25 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p)
  */
 void Stem::simulate(double dt, bool verbose)
 {
-	if(verbose)
+	if(verbose||(active &&(getParameter("subType")==2)&&plant.lock()->verboseh&&this->activeAuxin))
 	{
-		std::cout<<"stem::simulate "<<getId()<<" "<<this->param_->subType
+		std::cout<<"          stem::simulate "<<getId()<<" "<<this->param_->subType
 				<<" "<<dt<<" "<<age<<" ";
 				std::cout<<"length "<<length<<" "<<getLength(int(nodes.size()-1))<<" "
-				<<getLength(true)<<" "<<getLength(false);
-				std::cout<<" kid/node "<< children.size()<<" "<< nodes.size()<<std::endl;
+				<<getLength(true)<<" "<<getLength(false)<<" this->activePhloem "<<this->activePhloem<<" "<<this->activeAuxin<<std::endl;
+				//std::cout<<" kid/node "<< children.size()<<" "<< nodes.size()<<std::endl;
 				
 				
-		std::cout<<"get kid pni"<<std::endl;
-		for(int u = 0; u < children.size();u++)
-		{
-			std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
-		}std::cout<<std::endl;
-		std::cout<<"get node"<<std::endl;
-		for(int u = 0; u < nodes.size();u++)
-		{
-			std::cout<<u<<") "<<getLength(u)<<", ";
-		}std::cout<<std::endl;
+// 		std::cout<<"get kid pni";
+// 		for(int u = 0; u < children.size();u++)
+// 		{
+// 			std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+// 		}std::cout<<std::endl;
+// 		std::cout<<"get node"<<std::endl;
+// 		for(int u = 0; u < nodes.size();u++)
+// 		{
+// 			std::cout<<u<<") "<<getLength(u)<<", ";
+// 		}std::cout<<std::endl;
 				
 				
 	}
@@ -250,21 +250,35 @@ void Stem::simulate(double dt, bool verbose)
 				*/
                 double e;
                 //int f_gf_ind = org->getParameter("gf");
+                if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh&&this->activeAuxin))
+                {
+                    std::cout<<"stem::simulate, check growth rate "<<getOrganism()->useCWGr<<" "<<this->getOrganRandomParameter()->f_gf->CW_Gr.empty()<<" "<<age__<<std::endl;
+                }
                 if(this->getOrganRandomParameter()->f_gf->CW_Gr.empty())
                 {
                     double iniL = calcLength(calcAge(length));
                     double targetlength = calcLength(calcAge(length)+dt_) + this->epsilonDx;
                     e = targetlength-iniL; // store value of elongation to add
+                    if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh&&this->activeAuxin))
+                {
+                    std::cout<<"yes empty "<<iniL<<" "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
+                }
+                    
                 }else{
                     double targetlength = calcLength(age__)+ this->epsilonDx;
                     e = targetlength-length; // store value of elongation to add
+                    if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh))
+                {
+                    std::cout<<"NO has was "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
+                }
                 }
 				//can be negative
-                if((((!this->activePhloem)&&(plant.lock()->activeAtThreshold))||((!this->activeAuxin)&&(plant.lock()->activeAtThreshold_auxin)))
+                if((((!this->activePhloem)&&(plant.lock()->activeAtThreshold)) /*suc not activated*/
+                    ||((!this->activeAuxin)&&(plant.lock()->activeAtThreshold_auxin)))/*auxin not activated*/
                   &&(getParameter("subType")==2))
                 {
                     //double toDo = std::max(0.,std::max(this->epsilonDx, dxMin - getLength(true)));
-                    e = std::min(e,std::max(0., dxMin() - getLength(true)));//this->epsilonDx;
+                    e = std::min(e,std::max(0., plant.lock()->maxLBud - getLength(true)));//this->epsilonDx;
                 }
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
 				length = getLength(true);
@@ -346,36 +360,37 @@ void Stem::simulate(double dt, bool verbose)
 							//
 							// create seg
 							if(longEnough && needLat){
-								std::cout<<"create segment "<<created_linking_node<<" "<<(created_linking_node>0)<<std::endl;
+								//std::cout<<"create segment "<<created_linking_node<<" "<<(created_linking_node>0)<<std::endl;
 								
-								std::cout<<"get kid pni"<<std::endl;
-								for(int u = 0; u < children.size();u++)
-								{
-									std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
-								}std::cout<<std::endl;
-								std::cout<<"get node"<<std::endl;
-								for(int u = 0; u < nodes.size();u++)
-								{
-									std::cout<<u<<") "<<getLength(u)<<", ";
-								}std::cout<<std::endl;
+								//std::cout<<"get kid pni"<<std::endl;
+								//for(int u = 0; u < children.size();u++)
+								//{
+								//	std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+								//}std::cout<<std::endl;
+								//std::cout<<"get node"<<std::endl;
+								//for(int u = 0; u < nodes.size();u++)
+								//{
+								//	std::cout<<u<<") "<<getLength(u)<<", ";
+								//}std::cout<<std::endl;
 								if(created_linking_node>0){
 									firstCall = false;
 									createSegments(this->dxMin(),verbose, -1);
 									dl-=this->dxMin();
 									length+=this->dxMin();
-								std::cout<<"create segment ! "<<created_linking_node<<" "<<(created_linking_node>0)<<std::endl;
+								//std::cout<<"create segment ! "<<created_linking_node<<" "<<(created_linking_node>0)<<std::endl;
 								
-								std::cout<<"get kid pni"<<std::endl;
-								for(int u = 0; u < children.size();u++)
-								{
-									std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
-								}std::cout<<std::endl;
-								std::cout<<"get node"<<std::endl;
-								for(int u = 0; u < nodes.size();u++)
-								{
-									std::cout<<u<<") "<<getLength(u)<<", ";
-								}std::cout<<std::endl;
-								}
+								// std::cout<<"get kid pni"<<std::endl;
+								// for(int u = 0; u < children.size();u++)
+								// {
+								// 	std::cout<<u<<") "<<children.at(u)->parentNI<<" "<<getLength(children.at(u)->parentNI)<<", ";
+								// }std::cout<<std::endl;
+								// std::cout<<"get node"<<std::endl;
+								// for(int u = 0; u < nodes.size();u++)
+								// {
+								// 	std::cout<<u<<") "<<getLength(u)<<", ";
+								// }std::cout<<std::endl;
+								// 
+                                }
 								if(verbose){
 									std::cout<<"to create lateral "<<getId()<<" "<<this->param_->subType<<" "
 									<<children.size()<<" "<<created_linking_node 

@@ -123,6 +123,8 @@ public:
 	bool activeAtThreshold_auxin = false;
 	bool activeAtThreshold = false; 
 	bool useCWGr = true; //use water- and carbon- limited growth?
+	bool verboseh = false;
+    double maxLBud = 0.;
 
 protected:
 

@@ -44,14 +44,15 @@ n_jobs = min((maxrun - totrun),
 print("leftToDo:", maxrun - totrun)
 tasks_iterator = (delayed(runSim)
                         (directoryN_ = directoryN, doVTP = False, verbosebase = False,
-                         PRate_ = 0, thresholdAux = 0, 
-                         RatiothresholdAux =0,
+                         PRate_ = 0, thresholdAux = 0, RatiothresholdAux =0,
        Qmax_ = Qsv[i+totrun], thresholdSuc = MulimSucv[i+totrun], 
        useCWGr = True, UseRatiothresholdAux = False,
                          nodeD = nodeDv[i+totrun], thread = i,
        activeAtThreshold_auxin = False, activeAtThreshold_suc = True,
                          testTime=7, dtBefore = 1/24, dtAfter= 1/24,
-                        start_time = start_time_)
+                        start_time = start_time_,
+                         doPrint = True, doDict = False,
+                         dt_write = 0, dtSIM_write = 1, auxin_D=0.)
                     for i in range(n_jobs))
 
 parallelizer(tasks_iterator)

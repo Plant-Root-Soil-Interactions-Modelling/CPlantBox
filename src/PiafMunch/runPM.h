@@ -81,7 +81,7 @@
 //take those functions out
 extern int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 void TimeSegmentConfig() ; // User-editable (implemented in 'PiafMunch2.cpp')
-void OutputSettings() ;
+void OutputSettings(bool doTroubleshooting_ = false) ;
 void BreakpointSharpParameterChanges(int s, double t) ; // User-editable (implemented in 'PiafMunch2.cpp') ; s = # of integration segment (first = 1) ; t = time
 void aux(double t, double * y) ;	
 
@@ -238,6 +238,11 @@ class PhloemFlux: public CPlantBox::Photosynthesis
     std::vector<double> SucSTLost;
     std::vector<double> SucMesoLost;
     std::vector<double> AuxinLost;
+    std::vector<double> manualAddST;
+    std::vector<double> manualAddMeso;
+    std::vector<double> manualAddAux;
+    bool StopLoss = false;
+    double minLforSource = 0.;
     // Fortran_vector A_amont;
     // Fortran_vector i_amont_auxin;
     // SpUnit_matrix Delta2updown;

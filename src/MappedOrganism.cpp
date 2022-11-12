@@ -574,7 +574,8 @@ void MappedRootSystem::simulate(double dt, bool verbose)
  */
 void MappedPlant::initialize_(int basaltype, int shootbornetype, bool verbose, bool stochastic, bool LB) {
 	reset(); // just in case
-	std::cout << "MappedPlant::initialize \n" << std::flush;
+	if(verbose)
+    {std::cout << "MappedPlant::initialize \n" << std::flush;}
 	this->stochastic = stochastic;
 	if(LB){	Plant::initializeLB(basaltype, shootbornetype, verbose);
 	}else{Plant::initializeDB(basaltype, shootbornetype, verbose);}
@@ -615,7 +616,7 @@ void MappedPlant::mapSubTypes(){
  */
 void MappedPlant::simulate(double dt, bool verbose)
 {
-	std::cout<<"MappedPlant::simulate"<<std::endl;
+	//std::cout<<"MappedPlant::simulate"<<std::endl;
 	//std::streambuf *coutbuf;// = std::cout.rdbuf(); //save old buf
 	// if(verbose){
 		// std::string filename("outputMO_");

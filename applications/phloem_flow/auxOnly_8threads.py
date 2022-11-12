@@ -37,7 +37,7 @@ else:
         
 
 isCluster = (os.environ['HOME'] == '/home/m.giraud')
-maxcore = 8
+maxcore = 256
 parallelizer = Parallel(n_jobs=maxcore - 1)
 
 PRate =np.array([1+i*2 for i in range(6)])
@@ -63,15 +63,18 @@ temp_time = time.time()
 print("leftToDo:", maxrun - totrun,temp_time , start_time_)
 print("This sampling run took %5.4f seconds." % (temp_time - start_time_))
 tasks_iterator = (delayed(runSim)
-                        (directoryN_ = directoryN, doVTP = False, verbosebase = False,
-                         PRate_ = PRatev[i+totrun], thresholdAux = Mulimauxv[i+totrun], 
-                         RatiothresholdAux =10,
-       Qmax_ = 0, thresholdSuc = 0.8,
-       useCWGr = False, UseRatiothresholdAux = False,
-                         nodeD = nodeDv[i+totrun], thread = i,
-       activeAtThreshold_auxin = True, activeAtThreshold_suc = False,
-                         testTime=7, dtBefore = 1/24, dtAfter= 1/24, 
-                         start_time = start_time_)
+                            (directoryN_ = directoryN, doVTP = False, verbosebase = False,
+                             PRate_ = PRatev[i+totrun], thresholdAux = Mulimauxv[i+totrun], 
+                             RatiothresholdAux =10,
+           Qmax_ = 0, thresholdSuc = 0.8,
+           useCWGr = False, UseRatiothresholdAux = False,
+                             nodeD = nodeDv[i+totrun], thread = i,
+           activeAtThreshold_auxin = True, activeAtThreshold_suc = False,
+                             testTime=7, dtBefore = 1/24, dtAfter= 1/24, 
+                             start_time = start_time_, 
+                             doPrint = False, doDict = True, 
+          dt_write = 10, #in s
+                             auxin_D=0.)
                     for i in range(n_jobs))
 parallelizer(tasks_iterator)
 totrun += n_jobs

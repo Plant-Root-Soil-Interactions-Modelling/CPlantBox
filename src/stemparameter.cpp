@@ -356,7 +356,7 @@ void StemRandomParameter::readXML(tinyxml2::XMLElement* element)
 	std::vector<std::string> lookfor ;
 	bool replaceByDefaultValue;
 	int ruleId = 0;
-	bool verbose = true;
+	bool verbose = false;
     while(p) {
         std::string key = p->Attribute("name");
 		if(verbose){

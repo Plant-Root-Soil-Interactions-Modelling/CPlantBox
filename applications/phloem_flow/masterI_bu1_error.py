@@ -20,7 +20,6 @@ import numpy as np
 
 #import matplotlib.pyplot as plt
 import time
-import vtk_plot as vp
 isCluster = (os.environ['HOME'] == '/home/m.giraud')
 
 
@@ -213,7 +212,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             nodeD, thread,  
            activeAtThreshold_auxin,activeAtThreshold_suc,
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
-           doPrint ,doDict,auxin_D = 0., GrRatio = 10, minLforSource = 0., maxLBud = 0.5):#start_time = 0.,doPrint =True,auxin_D = 0.
+           doPrint ,doDict,auxin_D = 0.):#start_time = 0.,doPrint =True,auxin_D = 0.
     dt_lastWrote = time.time() - dt_write * 2
     dtSIM_lastWrote = -dtSIM_write*2
     temp_time  = time.time()
@@ -257,11 +256,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     def delete_file(name):
         if doPrint:
             name2 = 'results'+ directoryN+ name+dir4allResults+ '.txt'
-            my_file = Path(name2)
-            if my_file.is_file():
-                os.remove(name2)
-            else:
-                print("file running missing",thread, name2)
+            os.remove(name2)
     
     namef = 'results'+ directoryN+ "running"+ dir4allResults+ '.txt'
     my_file = Path(namef)
@@ -280,10 +275,10 @@ def runSim(directoryN_,doVTP, verbosebase,
     write_file_float("running", thread)  
     write_file_array("input", np.array(["directoryN_","doVTP", "verbosebase","PRate_", "thresholdAux", "RatiothresholdAux",
            "Qmax_", "thresholdSuc","useCWGr", "UseRatiothresholdAux","nodeD", "thread","testTime", "dtBefore", "dtAfter",
-                                       "activeAtThreshold_auxin","activeAtThreshold_suc,auxin_D, GrRatio, minLforSource, maxLBud"])) 
+                                       "activeAtThreshold_auxin","activeAtThreshold_suc,auxin_D"])) 
     write_file_array("input", np.array([directoryN_,doVTP, verbosebase,PRate_, thresholdAux, RatiothresholdAux,
            Qmax_, thresholdSuc,useCWGr, UseRatiothresholdAux,nodeD, thread,testTime, dtBefore, dtAfter,
-                                       activeAtThreshold_auxin,activeAtThreshold_suc,auxin_D, GrRatio, minLforSource, maxLBud])) 
+                                       activeAtThreshold_auxin,activeAtThreshold_suc,auxin_D])) 
     doPrint = doPrintbu
     doDict = doDictbu
     weatherInit = weather(0, Qmax_)
@@ -360,7 +355,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.setRhoSucrose(rho_org)
     grRate = [[4.,2.,1.0,4.],[2.,2.,3.],[3.,3.,3.,3.]]
     grRate = np.array([np.array(xi) for xi in grRate],dtype=object)
-    grRate[1:] *= GrRatio #[1:]
+    grRate[1:] *= 10 #[1:]
 
     r.setRmax_st(grRate)
     r.KMfu = 0.2
@@ -401,9 +396,8 @@ def runSim(directoryN_,doVTP, verbosebase,
     for org in orgs_all:
         if org.organType() < 2:
             raise Exception("ot < 3")
-        structSumInit += org.orgVolume(-1,False) * r.rhoSucrose_f(
-            int(org.getParameter("subType")-1),
-                           org.organType())
+        structSumInit += org.orgVolume(-1,False) * r.rhoSucrose_f(int(org.getParameter("subType")-1),
+                                                                    org.organType())
 
     AnSum = 0
     Nt = len(r.plant.nodes) 
@@ -513,7 +507,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     Q_Grmaxbu   = np.array([0.])
     Q_Exudmaxbu = np.array([0.])
     Q_STbu      = np.array([0.])
-    Q_Parbu     = np.array([0.])
+    Q_Parbu      = np.array([0.])
     Q_mesobu    = np.array([0.])
 
 
@@ -522,18 +516,14 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.auxin_threshold = thresholdAux
     r.auxin_D = auxin_D #e-6#muM /d  #e-6#3e-7
     r.auxin_P = PRate_ #muM /d  #*1e-6# 6e-7
-    r.auxin_alpha = 0.002727303 #0.00245669#0.02 #5#e-6# 2.4e-3
+    r.auxin_alpha = 0.00245669#0.02 #5#e-6# 2.4e-3
     r.initValAuxin = 0 #0.2
     r.deleteAtRootTip = True
     r.plant.useCWGr = useCWGr 
     InAuxin = 0
     r.canStartActivating = False
     r.CSTthreshold = thresholdSuc
-    r.StopLoss = True
-    if thread == 0 :
-        print(r.minLforSource, r.plant.maxLBud)
-    r.minLforSource = minLforSource
-    r.plant.maxLBud = maxLBud
+    r.StopLoss = False
     orgs_stems = r.plant.getOrgans(3, True)
     
     def killChildren(orgToKill):
@@ -548,10 +538,9 @@ def runSim(directoryN_,doVTP, verbosebase,
     
     
     burninDuration = simDuration
-    r.burnInTime = True#activeAtThreshold_auxin
+    r.burnInTime = activeAtThreshold_auxin
 
     changedSimMax = False
-    oo = 0
     while  simDuration < simMax:#
         #if(ö>=120):
         
@@ -662,10 +651,10 @@ def runSim(directoryN_,doVTP, verbosebase,
         Q_out   = Q_Rm + Q_Exud + Q_Gr
         Q_STLost = np.array(r.SucSTLost)
         Q_MesoLost = np.array(r.SucMesoLost)
-        manualAddST =  np.array(r.manualAddST)
-        manualAddMeso =  np.array(r.manualAddMeso)
+        manualAddC =  np.array(r.manualAdd[0:Nt])
+        manualAddmeso =  np.array(r.manualAdd[Nt:(Nt*2)])
         
-        error   = sum(Q_ST +Q_meso + Q_out + Q_STLost + Q_MesoLost)- Q_in - sum(Q_ST_init)  - sum(Q_meso_init) - sum(manualAddST) -sum(manualAddMeso)
+        error   = sum(Q_ST +Q_meso + Q_out + Q_STLost + Q_MesoLost)- Q_in - sum(Q_ST_init)  - sum(Q_meso_init) - sum(manualAddC) -sum(manualAddmeso)
         
         Q_Rmmax       = np.array(r.Q_out[(Nt*5):(Nt*6)])
         Q_Grmax       = np.array(r.Q_out[(Nt*6):(Nt*7)])
@@ -704,10 +693,10 @@ def runSim(directoryN_,doVTP, verbosebase,
         InAuxin  += sum(np.array(r.AuxinSource)) * r.auxin_P * dt
         #Q_AuxinInit  = np.array(r.Q_init[(Nt*9):(Nt*10)])
         AuxinDecap   = np.array(r.AuxinLost)
-        manualAddAux =  np.array(r.manualAddAux)
+        manualAddAux =  np.array(r.manualAdd[(Nt*2):(Nt*3)])
         errorAuxin   = sum(Q_Auxin_stem) + sum(Q_Auxin_other) - sum(Q_AuxinInit)- InAuxin +sum(OutAuxin) + sum(AuxinDecap) - sum(manualAddAux)
-        #print("sum(Q_Auxin_stem)",sum(Q_Auxin_stem) , sum(Q_Auxin_other) , sum(Q_AuxinInit), InAuxin ,sum(OutAuxin) , sum(AuxinDecap) , sum(manualAddAux))
-        #print("errorAuxin",errorAuxin)
+        print("sum(Q_Auxin_stem)",sum(Q_Auxin_stem) , sum(Q_Auxin_other) , sum(Q_AuxinInit), InAuxin ,sum(OutAuxin) , sum(AuxinDecap) , sum(manualAddAux))
+        print("errorAuxin",errorAuxin)
         C_Auxin      = np.array(r.C_Auxin)
         AuxinSource  = np.array(r.AuxinSource)
         C_AuxinOut   = np.array(r.C_AuxinOut)
@@ -723,7 +712,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         mainStemAux_mean = np.mean(mainStemAux[1:])
         
         if verbosebase :
-            print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h", int(((simDuration%1)%24)*(24*60)),"mn", round(r.Qlight *1e6),"mumol m-2 s-1",r.burnInTime ,doDecapitation)
+            print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h",  round(r.Qlight *1e6),"mumol m-2 s-1",r.burnInTime ,doDecapitation)
             if Q_in >0.:
                 print("Error in Suc_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(error, div0f(error,Q_in, 1.)))
             #print("Error in growth:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(errorGri, relErrorGri))
@@ -772,10 +761,8 @@ def runSim(directoryN_,doVTP, verbosebase,
         #
         ###
         
-        orgsF = r.plant.getOrgans(3, False)
-        orgs = r.plant.getOrgans(3, True)
-        toKeep = np.array([org.getParameter("subType") <= 2 for org in orgs])
-        orgs = np.array(orgs)[toKeep]
+        orgs = r.plant.getOrgans(-1, False)
+        
         idnodeOfOrg = [org.getNodeIds()[(org.getId()!=1):] for org in orgs]
         idnodeOfOrg = np.array([item for sublist in idnodeOfOrg for item in sublist])
         activePhloemv_ = [np.full(len(org.getNodeIds()[(org.getId()!=1):]),org.activePhloem) for org in orgs]
@@ -787,11 +774,9 @@ def runSim(directoryN_,doVTP, verbosebase,
         
         temp_time = time.time()
         #print("num ",thread,temp_time , start_time, "has started. This sampling run took %5.4f seconds." % (temp_time - start_time),'simDuration:',simDuration )
+        write_file_array("time_all", np.array([thread, simDuration,simMax,temp_time , start_time,temp_time - start_time]))
         
-        dtreal = ( time.time() - dt_lastWrote)
-        dtsimsim = simDuration - dt - dtSIM_lastWrote
-        if(not r.burnInTime) and (doDict or ((dtreal >= dt_write) and (dtsimsim >= dtSIM_write) )):
-            write_file_array("time_all", np.array([thread, simDuration,simMax,temp_time , start_time,temp_time - start_time]))
+        if not r.burnInTime:
             write_file_float("time", simDuration)
             #write_file_array("OutAuxin", OutAuxin)
             #write_file_array("Q_Auxin", Q_Auxin)
@@ -804,7 +789,7 @@ def runSim(directoryN_,doVTP, verbosebase,
 
             #write_file_float("doDecapitation", doDecapitation)
             #write_file_float("simMax", simMax)
-            #write_file_float("numLNodes",numLNodes)
+            write_file_float("numLNodes",numLNodes)
             id_orgs = [np.full(org.getNumberOfNodes()-1,org.getId()) for org in orgs]
             id_orgs = np.array([item for sublist in id_orgs for item in sublist])
             #write_file_array("id_orgsPerNodes", id_orgs)
@@ -824,11 +809,11 @@ def runSim(directoryN_,doVTP, verbosebase,
             write_file_array("ownOrgId", ownOrgId)
             write_file_array("distFromParentBase", distFromParentBase)
 
-            cstPerOrg = [np.mean(C_ST[org.getNodeIds()]) for org in orgs]#[1:]
+            cstPerOrg = [np.mean(C_ST[org.getNodeIds()[1:]]) for org in orgs]
             write_file_array("cstPerOrg", cstPerOrg)#only take shoot C
-            #Q_GrmaxPerOrg = [np.mean(Q_Grmax[org.getNodeIds()[1:]]) for org in orgs]
+            Q_GrmaxPerOrg = [np.mean(Q_Grmax[org.getNodeIds()[1:]]) for org in orgs]
             #write_file_array("Q_GrmaxPerOrg", Q_GrmaxPerOrg)
-            #Q_GrPerOrg = [np.mean(Q_Gr[org.getNodeIds()[1:]]) for org in orgs]
+            Q_GrPerOrg = [np.mean(Q_Gr[org.getNodeIds()[1:]]) for org in orgs]
             #write_file_array("Q_GrPerOrg", Q_GrPerOrg)
             ot_orgs = np.array([org.organType() for org in orgs])
             st_orgs = np.array([org.getParameter("subType") for org in orgs])
@@ -840,54 +825,34 @@ def runSim(directoryN_,doVTP, verbosebase,
             activatedaux = np.array([org.activeAuxin for org in orgs]) 
             write_file_array("activatedAUX", activatedaux)
             
-            ststdistFromParentBase = distFromParentBase[(ot_orgs == 3)* (st_orgs == 2)]
-            ststlactivatedaux = activatedaux[(ot_orgs == 3)* (st_orgs == 2) ]
-            ststactivatedSUC = activated[(ot_orgs == 3)* (st_orgs == 2) ]
-            ststlengthth_org = lengthth_org[(ot_orgs == 3)* (st_orgs == 2) ]
+            ststdistFromParentBase = distFromParentBase[(ot_orgs == 3)* (st_orgs == 2)]#* activatedaux]
+            ststlactivatedaux = activatedaux[(ot_orgs == 3)* (st_orgs == 2) ]#* activatedaux]
+            ststlengthth_org = lengthth_org[(ot_orgs == 3)* (st_orgs == 2) ]#* activatedaux]
             ststlengthth_org2 = [x for _,x in sorted(zip(ststdistFromParentBase,ststlengthth_org))]
             #ststlengthth_org[ststdistFromParentBase]
             mainStemLen = np.array([org_.getLength(nn) for nn in range(org_.getNumberOfNodes())])
             isbase = np.array([lenlen in ststdistFromParentBase for lenlen in mainStemLen])
-            if False:#thread == 100:
-                print("Q_ST_stem", len(C_ST))
-                # print(sum(mainStemAux[1:] <= r.auxin_threshold))
+            if thread == 100:
+                print("Q_Auxin_stem")
+                print(sum(mainStemAux[1:] <= r.auxin_threshold))
                 print(C_ST[maintstemNodesId])
-                print(C_ST[maintstemNodesId] >= r.CSTthreshold)
-                
-                # print(Q_Auxin_stem)
-                # print(manualAddST)
-                # print("mainStemAux", len(mainStemAux))
-                # print(mainStemAux)
-                # print("manualAddAux")
-                # print((manualAddAux/volST)[maintstemNodesId])
-                # print(mainStemAux <= r.auxin_threshold)
-                # print(r.auxin_threshold, simDuration)
+                #print(Q_Auxin_stem)
+                print(manualAddC)
+                print("mainStemAux")
+                print(mainStemAux)
+                print(manualAddAux)
+                print(mainStemAux <= r.auxin_threshold)
+                print(r.auxin_threshold, simDuration)
                 print("mainStemLen")
                 print(mainStemLen)
-                # print("aux\t",mainStemAux[isbase])
-                print("suc\t",C_ST[maintstemNodesId][isbase])
+                print("aux\t",mainStemAux[isbase])
                 print("dist\t",mainStemLen[isbase])
-                # print("len\t",ststdistFromParentBase)
+                #print("len\t",ststdistFromParentBase)
                 print("len\t",ststlengthth_org)
-                print("act\t",ststactivatedSUC)#ststlactivatedaux)
-                print(maintstemNodesId)
-                print("done")
+                print("act\t",ststlactivatedaux)
                 print()
-                if ( (sum(C_ST[maintstemNodesId][isbase] >= r.CSTthreshold ) > sum(ststactivatedSUC))  ):
-                    print("sum(C_ST[maintstemNodesId][isbase] >= r.CSTthreshold ) > sum(ststactivatedSUC)")
-                    oo += 1
-                    #r.doTroubleshooting = True
-                    if (oo > 1):
-                        raise Exception
-            if not doDict:
-                dt_lastWrote = time.time()
-                dtSIM_lastWrote = simDuration - dt
-                #if (sum(mainStemAux[1:] <= r.auxin_threshold)) and not changedSimMax:
-                 #   print("(sum(mainStemAux[1:] <= r.auxin_threshold)) and not changedSimMax")
-                  #  raise Exception
-                #if sum((manualAddAux/volST)[maintstemNodesId]) > 0.:
-                 #   print((manualAddAux/volST)[maintstemNodesId])
-                    #raise Exception
+                if (sum(mainStemAux[1:] <= r.auxin_threshold)) and not changedSimMax:
+                    raise Exception
             
         ###
         #4UQ
@@ -1052,9 +1017,9 @@ def runSim(directoryN_,doVTP, verbosebase,
         Ntbu = Nt
         Nt = len(r.plant.nodes)
         
-        #if (Ntbu != Nt) and (not r.burnInTime ): #STOP THERE! plant grew. try and do new balance
-         #   r.burnInTime = True
-          #  r.canStartActivating = False
+        if (Ntbu != Nt) and (not r.burnInTime ): #STOP THERE! plant grew. try and do new balance
+            r.burnInTime = True
+            r.canStartActivating = False
         #     Q_ST    = np.array(r.Q_out[0:Ntbu])
         #     Q_meso  = np.array(r.Q_out[Ntbu:(Ntbu*2)])
         #     Q_Auxin = np.array(r.Q_out[(Ntbu*9):(Ntbu*10)])
@@ -1084,9 +1049,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         else :
             simDuration += dt
             
-        if r.burnInTime and \
-         ((activeAtThreshold_suc and (min(C_ST)>0.)) or \
-         (activeAtThreshold_auxin and (mainStemAux_std < 0.01) and (mainStemAux_mean > 1) )):
+        if (mainStemAux_std < 0.01) and (mainStemAux_mean > 1) and ( r.burnInTime):#(day4burnin <= 0) :
             r.burnInTime = False
             
             r.canStartActivating = True
@@ -1140,7 +1103,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             if abs(errorAuxinBU) < abs(errorAuxin):
                 print("errorAuxinBU < errorAuxin", errorAuxinBU , errorAuxin)
                 print(sum(Q_Auxin) , sum(Q_AuxinInit), InAuxin ,sum(OutAuxin) , sum(AuxinDecap))
-        
             
         if doDict and (( time.time() - dt_lastWrote) >= dt_write) and (( simDuration - dt - dtSIM_lastWrote ) >= dtSIM_write)  :
             #print("write",time.time())
@@ -1159,7 +1121,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             outputsDict_array.clear()
             outputsDict_float.clear()
             dt_lastWrote = time.time()
-            dtSIM_lastWrote = simDuration - dt
     if doDict:        
         for keykey in outputsDict_array.keys():
             name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.txt'
@@ -1176,36 +1137,8 @@ def runSim(directoryN_,doVTP, verbosebase,
         outputsDict_array.clear()
         outputsDict_float.clear()
         
-    dtreal = ( time.time() - dt_lastWrote)
-    dtsimsim = simDuration - dt - dtSIM_lastWrote
-    if (not doDict):# and (dtreal >= dt_write) and (dtsimsim >= dtSIM_write)  
-        write_file_array("time_all", np.array([thread, simDuration,simMax,temp_time , start_time,temp_time - start_time]))
-        write_file_float("time", simDuration)
-        write_file_array("C_Auxin_mainStem", mainStemAux[1:])
-
-        write_file_float("numLNodes",numLNodes)
-        write_file_array("lengthth_org", lengthth_org)
-        write_file_array("ownOrgId", ownOrgId)
-        write_file_array("distFromParentBase", distFromParentBase)
-
-        write_file_array("cstPerOrg", cstPerOrg)#only take shoot C
-        write_file_array("ot_orgsUQ", ot_orgs)
-        write_file_array("st_orgsUQ", st_orgs)
-
-        write_file_array("activatedSUC", activated)
-        write_file_array("activatedAUX", activatedaux)
-        
-    ana = pb.SegmentAnalyser(r.plant.mappedSegments())
-    ana.write("results"+directoryN+"plotplant_"+dir4allResults +".vtp", 
-              ["organType", "subType"]) 
-    # organType = r.plant.organTypes
-    # subType = r.plant.subTypes
-    # vp.plot_plant(r.plant,p_name = ["organType", "subType"],
-    #                     vals =[ organType, subType], 
-    #                     filename = "results"+ directoryN +"plotplant_psi_"+dir4allResults,
-    #                     range_ = [0,10])  
     delete_file("running")
-    print("finished", thread, time.time() - start_time)
+    print("finished", thread)
     return 0
 
 if __name__ == '__main__':
@@ -1224,28 +1157,11 @@ if __name__ == '__main__':
             except:
                 pass
 
-    # runSim(directoryN_=directoryN,doVTP = False, verbosebase = False,
-    #        PRate_ = 0.1, thresholdAux = 0, RatiothresholdAux =0.544,
-    #        Qmax_ = 0, thresholdSuc = 0.8,
-    #        useCWGr = False, UseRatiothresholdAux = True,
-    #        activeAtThreshold_auxin = True,activeAtThreshold_suc = False,
-    #         nodeD = 6, thread = 100,  testTime=7,start_time = start_time_,
-    #       dtBefore = 1/24, dtAfter= 1/(24*60*60), doPrint = False, doDict = True, 
-    #       dt_write = 2, dtSIM_write = 1/24, auxin_D=0.)
-    
-    runSim(
-        directoryN_ = directoryN, doVTP = False, 
-        verbosebase = True, PRate_ = 1, 
-        thresholdAux = 0, RatiothresholdAux =0.46,
-        Qmax_ = 230e-6, thresholdSuc = 0.1, 
-        useCWGr = True, UseRatiothresholdAux = True,
-        nodeD = 7, thread = 100,
-        activeAtThreshold_auxin = True, activeAtThreshold_suc = False,
-        testTime=7, dtBefore = 1/24, dtAfter= 1/(60*24),
-        start_time = start_time_,
-        doPrint = True, doDict = False,
-        dt_write = 0, dtSIM_write = 1, auxin_D=0.,
-        GrRatio = 10, minLforSource = 0., maxLBud = 0.5
-    )
-    end_time_ = time.time()
-    print(end_time_ - start_time_ )
+    runSim(directoryN_=directoryN,doVTP = False, verbosebase = True,
+           PRate_ = 0.1, thresholdAux = 0, RatiothresholdAux =0.544,
+           Qmax_ = 0, thresholdSuc = 0.8,
+           useCWGr = False, UseRatiothresholdAux = True,
+           activeAtThreshold_auxin = True,activeAtThreshold_suc = False,
+            nodeD = 6, thread = 100,  testTime=7,start_time = start_time_,
+          dtBefore = 1/24, dtAfter= 1/(24*60*60), doPrint = False, doDict = True, 
+          dt_write = 2, dtSIM_write = 1/24, auxin_D=0.)

@@ -206,7 +206,36 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 			if(doTroubleshooting){std::cout<<"complete y0 "<<std::endl;}
 			Y0 =  Fortran_vector(Nt*neq_coef, 0.) ;
 			Y0.sequentialFill(vecIn, Nt_old, Nt);
-			
+			//Y0.sequentialFill2(vecIn, Nt_old, Nt);StopLoss
+            if(doTroubleshooting){
+            std::cout<<"PhloemFlux::initialize_carbon StopLoss? "<<(vecIn.size()/neq_coef)<<" "<<Nt_old<<" "<<Nt<<std::endl;
+            }
+			if(StopLoss)
+            {
+			//I_Upflow[k] = segmentsPlant[k-1].x +1;
+			//I_Downflow[k] = segmentsPlant[k-1].y +1;
+                for(int z = (vecIn.size()/neq_coef); z < Nt;z++){
+                    int nodeyIdx = z+1;
+                    int segIdx = nodeyIdx-1;
+                    int nodexIdx = I_Upflow[segIdx];
+                    if(doTroubleshooting){
+                        std::cout<< z<<" "<<nodeyIdx<<" "<<I_Downflow[segIdx]<<" "<<I_Upflow[segIdx]<<" "<<Y0[nodeyIdx+ Nt*9] <<" "<< Y0[nodexIdx+ Nt*9] <<std::endl;
+                        std::cout<<nodeyIdx-1 <<" "<<(Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx])<<std::endl;
+                    }
+                    if(nodeyIdx!=I_Downflow[segIdx])
+                    {
+                        
+                        assert((nodeyIdx==I_Downflow[segIdx])&&"nodeyIdx!=I_Downflow[segIdx]");
+                    }
+                    
+					Y0[nodeyIdx] = Y0[nodexIdx]/ vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
+					Y0[nodeyIdx + Nt] = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx]; //conz to content
+					Y0[nodeyIdx + Nt*9] = Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; //conz to content
+                    manualAddST.at(nodeyIdx -1) = Y0[nodexIdx] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
+                    manualAddMeso.at(nodeyIdx-1) = Y0[nodexIdx+ Nt] / vol_ParApo[nodexIdx]* vol_ParApo[nodeyIdx];
+                    manualAddAux.at(nodeyIdx-1) = Y0[nodexIdx+ Nt*9] / vol_ST[nodexIdx]* vol_ST[nodeyIdx]; 
+				}
+            }
 			Fortran_vector Q_GrowthtotBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;
 			Q_GrowthtotBU.append(Q_GrowthtotBU_temp);
 			Fortran_vector Q_GrmaxBU_temp = Fortran_vector(Nt - Nt_old, 0.) ;

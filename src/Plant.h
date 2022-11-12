@@ -78,6 +78,7 @@ public:
   void setRelCoord(bool isrel) {relCoord = isrel;}
   void abs2rel();
   void rel2abs();
+  
 protected:
     std::shared_ptr<Seed> seed = nullptr;
   void initialize_(int basal = 4, int shootborne = 5, bool verbose = true);

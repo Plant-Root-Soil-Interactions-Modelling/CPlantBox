@@ -374,7 +374,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def("randn", &Organism::randn)
             //        .def_readwrite("seed_nC_", &Organism::seed_nC_)
             //        .def_readwrite("seed_nZ_", &Organism::seed_nZ_)
-            .def("__str__",&Organism::toString);
+            .def("__str__",&Organism::toString)
+        
+           .def_readwrite("verboseh", &Organism::verboseh)
+           .def_readwrite("maxLBud", &Organism::maxLBud);
 
 
     py::enum_<Organism::OrganTypes>(m, "OrganTypes")
@@ -1088,7 +1091,12 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
 			.def_readwrite("Q10",&PhloemFlux::Q10)
 			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10)
-			.def_readwrite("useStemTip",&PhloemFlux::useStemTip);
+			.def_readwrite("useStemTip",&PhloemFlux::useStemTip)
+			.def_readwrite("StopLoss",&PhloemFlux::StopLoss)
+			.def_readwrite("manualAddST",&PhloemFlux::manualAddST)
+			.def_readwrite("manualAddMeso",&PhloemFlux::manualAddMeso)
+			.def_readwrite("manualAddAux",&PhloemFlux::manualAddAux)
+			.def_readwrite("minLforSource",&PhloemFlux::minLforSource);
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

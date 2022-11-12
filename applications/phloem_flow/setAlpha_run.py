@@ -34,7 +34,7 @@ maxcore =256
 if maxcore>1:
     parallelizer = Parallel(n_jobs=maxcore - 1)
 minAlhpa = 1e-3
-maxAlpha = 0.075
+maxAlpha = 0.0039249
 alphas = np.linspace(minAlhpa,maxAlpha,max(1,maxcore - 1))
 maxrun = len(alphas)
 

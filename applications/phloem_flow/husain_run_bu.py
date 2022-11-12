@@ -27,12 +27,9 @@ def runSimTest(directoryN_,Qmax_ = 1000e-6, threshold = 0.8, doVTP = False, doDe
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)
 else:
-   test = os.listdir(results_dir)
-   for item in test:
-        try:
-            os.remove(results_dir+item)
-        except:
-            pass
+    import shutil
+    shutil.rmtree(results_dir)
+    os.makedirs(results_dir)
 
 isCluster = (os.environ['HOME'] == '/home/m.giraud')
 maxcore = 8
@@ -67,24 +64,24 @@ nodeDv=nodeDv.flatten()
 assert len(Qsv) == (len(Qs) * len(MulimSuc) * len(nodeD)),"len(Qsv) != maxrun"
 
 totrun = 0
-while totrun < maxrun:
-    n_jobs = min((maxrun - totrun),
-                     maxcore - 1)
-    print("leftToDo:", maxrun - totrun)
-    # tasks_iterator = (delayed(runSim)
-    #                         (directoryN_ = directoryN,
-    #                          Qmax_ = Qsv[i+totrun],
-    #                          threshold = MulimSucv[i+totrun], 
-    #                          doVTP = False,
-    #                          doDecapitation =decapitatev[i+totrun]) 
-    #                     for i in range(n_jobs))
-    tasks_iterator = (delayed(runSim)
-                            (directoryN_ = directoryN,
-                             Qmax_ = Qsv[i+totrun],
-                             threshold = MulimSucv[i+totrun], 
-                             doVTP = False,
-                             nodeD = nodeDv[i+totrun],
-                            thread = i) 
-                        for i in range(n_jobs))
-    parallelizer(tasks_iterator)
-    totrun += n_jobs
+#while totrun < maxrun:
+n_jobs = min((maxrun - totrun),
+                 maxcore - 1)
+print("leftToDo:", maxrun - totrun)
+# tasks_iterator = (delayed(runSim)
+#                         (directoryN_ = directoryN,
+#                          Qmax_ = Qsv[i+totrun],
+#                          threshold = MulimSucv[i+totrun], 
+#                          doVTP = False,
+#                          doDecapitation =decapitatev[i+totrun]) 
+#                     for i in range(n_jobs))
+tasks_iterator = (delayed(runSim)
+                        (directoryN_ = directoryN,
+                         Qmax_ = Qsv[i+totrun],
+                         threshold = MulimSucv[i+totrun], 
+                         doVTP = False,
+                         nodeD = nodeDv[i+totrun],
+                        thread = i) 
+                    for i in range(n_jobs))
+parallelizer(tasks_iterator)
+totrun += n_jobs

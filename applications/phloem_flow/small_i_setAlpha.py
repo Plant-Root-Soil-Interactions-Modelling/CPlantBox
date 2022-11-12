@@ -215,7 +215,7 @@ def runSim(directoryN_,auxin_alpha =0.075, thread = 0,verbosebase = True, Array2
     testTime = 10/24 
     if not verbosebase:
         def print(*args, **kwargs):
-            pass
+             pass
     doDecapitation = (nodeD > 0)
     directoryN = directoryN_
     strPRate_ = str(int(np.round(PRate_)))
@@ -877,9 +877,16 @@ def runSim(directoryN_,auxin_alpha =0.075, thread = 0,verbosebase = True, Array2
             
             write_file_array("mainStemAux", mainStemAux[idToKeep])
             write_file_array("maintstemLen", maintstemLen[idToKeep])
+            write_file_array("maintstemLenAll", maintstemLen[1:])
+            print(idToKeep)
+            print(maintstemLen)
+            print(maintstemLen[idToKeep])
+            
             if not r.burnInTime:
                 mainStemAuxRatio = (mainStemAux/mainStemAux_mean)[idToKeep]
+                mainStemAuxRatioAll = (mainStemAux/mainStemAux_mean)
                 write_file_array("mainStemAuxRatio", mainStemAuxRatio,doLogalpha_= True)
+                write_file_array("mainStemAuxRatioAll", mainStemAuxRatioAll[1:],doLogalpha_= True)
                 timeAlpha  += dt
                 write_file_float("timeAlpha", timeAlpha)
                 
@@ -1119,5 +1126,5 @@ if __name__ == '__main__':
             except:
                 pass
     #raise Exception
-    MSE = runSim(directoryN_=directoryN,auxin_alpha =0.075, thread = 0,verbosebase = True)#10 hrs simTimedirectoryN_,auxin_alpha =0.075, thread = 0,verbosebase = True
+    MSE = runSim(directoryN_=directoryN,auxin_alpha =0.002, thread = 0,verbosebase = True)#10 hrs simTimedirectoryN_,auxin_alpha =0.075, thread = 0,verbosebase = True
     print(MSE)

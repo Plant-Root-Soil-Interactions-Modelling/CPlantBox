@@ -639,14 +639,14 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
                     otp->organType = ot; // in depricated case, readXML will a give wrong value
                     setOrganRandomParameter(otp);
                 } else { // skip prototype
-                    std::cout << "Organism::readParameters: warning, skipping " << tagname <<
-                        ", no random parameter class defined, use initializeReader()\n" << std::flush;
+                    //std::cout << "Organism::readParameters: warning, skipping " << tagname <<
+                    //    ", no random parameter class defined, use initializeReader()\n" << std::flush;
                 }
                 p = p->NextSiblingElement();
             } // while
         } else {
             if (basetag.compare("plant") == 0) { // try old spelling
-                std::cout << "Organism::readParameters: plant tag was not found in xml file, retrying with Plant " << std::endl;
+                //std::cout << "Organism::readParameters: plant tag was not found in xml file, retrying with Plant " << std::endl;
                 readParameters(name, "Plant"); // rerun
                 return;
             }
