@@ -278,7 +278,8 @@ void Stem::simulate(double dt, bool verbose)
                   &&(getParameter("subType")==2))
                 {
                     //double toDo = std::max(0.,std::max(this->epsilonDx, dxMin - getLength(true)));
-                    e = std::min(e,std::max(0., plant.lock()->maxLBud - getLength(true)));//this->epsilonDx;
+                    //e = std::min(e,std::max(0., plant.lock()->maxLBud - getLength(true)));//this->epsilonDx;
+                    e = std::min(e,std::max(0., dxMin() - getLength(true)));
                 }
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
 				length = getLength(true);

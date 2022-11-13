@@ -28,14 +28,11 @@ if isCluster:
 parallelizer = Parallel(n_jobs=maxcore - 1)
 
 
-
-params = toTry()
-Qsv=params['Qsv']
-MulimSucv=params['MulimSucv']
-nodeDv=params['nodeDv']
-thrsholdv= params['Ratiothrshold']
-totrun = (maxcore - 1)*2
-maxrun = len(Qsv)
+Qs =np.array([ 120.,  230.,  340.,  450.,  560., ])*1e-6
+MulimSuc =np.array([0.1,0.2,0.3])#np.array([0.1*i for i in range(4,20)])
+Ratiothrshold = np.linspace(0.1,1,6) #np.array([1/10*i for i in range(10)])
+nodeD = np.array([0,3,4,5,6,7,8])
+maxrun = len(Qs) * len(MulimSuc) * len(nodeD) * len(Ratiothrshold)
 
 n_jobs = min((maxrun - totrun),
                  maxcore - 1)

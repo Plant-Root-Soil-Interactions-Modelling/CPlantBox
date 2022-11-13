@@ -51,7 +51,7 @@ tasks_iterator = (delayed(runSim)
                          testTime=7, dtBefore = 1/24, dtAfter= 1/(60*24),
                         start_time = start_time_,
                          doPrint = True, doDict = False,
-                         dt_write = 0, dtSIM_write = 1, auxin_D=0.)
+                         dt_write = 0, dtSIM_write = 10/(60*24),auxin_D=0.)
                     for i in range(n_jobs))
 
 parallelizer(tasks_iterator)

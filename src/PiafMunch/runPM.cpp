@@ -956,7 +956,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			}
 			//delta_length to delta_vol
 			double deltavol = std::max(0.,org->orgVolume(targetlength, false) - org->orgVolume(Linit, false));//volume from theoretical length
-			double deltavol_bulb = std::min(deltavol, std::max(0.,plant->maxLBud - org->orgVolume(Linit, false)));//volume from theoretical length
+			//double deltavol_bulb = std::min(deltavol, std::max(0.,plant->maxLBud - org->orgVolume(Linit, false)));//volume from theoretical length
 			int nNodes = org->getNumberOfNodes();
 			if ((nNodes==1)||(ot == 2)||((ot == 3)&&(useStemTip))) {//organ not represented because below dx limit or is root
 				nodeIds_.push_back(-1); //because count start at 1 => for normal organs, dn t count 1st node
@@ -1083,7 +1083,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                 {
                     std::cout<<"AuxinSource "<<AuxinSource[nodeId] <<" "<< plant->activeAtThreshold_auxin <<" "<< org->activePhloem <<" "<< org->activeAuxin <<" "<< isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<std::endl;
                 }
-				double deltavolSeg = deltavol * Flen * Fpsi.at(nodeId) * goAhead + deltavol_bulb * (1 - goAhead);
+				double deltavolSeg = deltavol * Flen * Fpsi.at(nodeId) * goAhead;// + deltavol_bulb * (1 - goAhead);
 				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){
 					//could be error of pressision (if l = Lmax)
 					// or that, because of nodal growth and dxMin, org->getEpsilon() <0

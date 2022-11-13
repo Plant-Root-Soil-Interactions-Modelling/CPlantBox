@@ -284,6 +284,11 @@ def runSim(directoryN_,doVTP, verbosebase,
     write_file_array("input", np.array([directoryN_,doVTP, verbosebase,PRate_, thresholdAux, RatiothresholdAux,
            Qmax_, thresholdSuc,useCWGr, UseRatiothresholdAux,nodeD, thread,testTime, dtBefore, dtAfter,
                                        activeAtThreshold_auxin,activeAtThreshold_suc,auxin_D, GrRatio, minLforSource, maxLBud])) 
+    # if RatiothresholdAux == 0 and UseRatiothresholdAux and activeAtThreshold_auxin:
+    #     print(thread, RatiothresholdAux,UseRatiothresholdAux ,activeAtThreshold_auxin)
+    #     print("issue ratio threshold")
+    #     write_file_float("stop", thread)
+    #     raise Exception
     doPrint = doPrintbu
     doDict = doDictbu
     weatherInit = weather(0, Qmax_)
@@ -837,6 +842,11 @@ def runSim(directoryN_,doVTP, verbosebase,
 
             activated = np.array([org.activePhloem for org in orgs]) 
             write_file_array("activatedSUC", activated)
+            if len(orgs) != len(activated):
+                print(activated, len(activated))
+                print(ot_orgs,len(ot_orgs))
+                print(len(orgs))
+                raise Exception
             activatedaux = np.array([org.activeAuxin for org in orgs]) 
             write_file_array("activatedAUX", activatedaux)
             
@@ -1237,14 +1247,14 @@ if __name__ == '__main__':
         directoryN_ = directoryN, doVTP = False, 
         verbosebase = True, PRate_ = 1, 
         thresholdAux = 0, RatiothresholdAux =0.46,
-        Qmax_ = 230e-6, thresholdSuc = 0.1, 
+        Qmax_ = 450e-6, thresholdSuc = 1.68, 
         useCWGr = True, UseRatiothresholdAux = True,
         nodeD = 7, thread = 100,
-        activeAtThreshold_auxin = True, activeAtThreshold_suc = False,
+        activeAtThreshold_auxin = True, activeAtThreshold_suc = True,
         testTime=7, dtBefore = 1/24, dtAfter= 1/(60*24),
         start_time = start_time_,
         doPrint = True, doDict = False,
-        dt_write = 0, dtSIM_write = 1, auxin_D=0.,
+        dt_write = 0, dtSIM_write = 10/(60*24), auxin_D=0.,
         GrRatio = 10, minLforSource = 0., maxLBud = 0.5
     )
     end_time_ = time.time()
