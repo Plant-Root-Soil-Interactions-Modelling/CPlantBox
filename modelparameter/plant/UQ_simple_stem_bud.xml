@@ -156,7 +156,7 @@
 	<parameter name="dx" value="0.5"/>
 	<parameter name="dxMin" value="0.45"/>
     <parameter name="BetaDev" value="0.1"/>
-	<parameter name="dxMin" value="0.25"/>
+	<!--parameter name="dxMin" value="0.25"/-->
 	<parameter name="theta" value="0.7" dev="0"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
 	<parameter name="gf" value="4"/>

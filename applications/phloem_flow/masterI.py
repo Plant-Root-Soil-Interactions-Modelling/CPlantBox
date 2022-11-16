@@ -380,7 +380,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.Vmaxloading = 0.3 #mmol/d, needed mean loading rate:  0.3788921068507634
     r.Mloading = 0.2
     r.Gr_Y = 0.75
-    r.CSTimin = 0.05#4
+    r.CSTimin = 0.1#4
     #r.surfMeso=0.0025
     r.cs = weatherInit["cs"]
 
