@@ -297,7 +297,7 @@ class XylemFluxPython(XylemFlux):
         segs = self.rs.segments
         for i in range(0, len(segs)):
             if segs[i].x == 0:
-                collar_ind = i
+                collar_ind = i  # segment index of root collar
                 break
         return self.axial_flux(collar_ind, sim_time, rx, sxx, k_soil, cells, ij = True)
 

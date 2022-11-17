@@ -77,7 +77,7 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
  */
 SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments)
 {
-    std::cout << "construct from MappedSegments\n";
+    // std::cout << "construct from MappedSegments\n";
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.subTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.organTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");

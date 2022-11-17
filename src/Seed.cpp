@@ -135,6 +135,7 @@ void Seed::initialize(bool verbose)
 					delay += sp->delaySB;
 				}
 				sbpos.z+=sp->nz;  // move up, for next root crown
+				std::cout << "root crown position "<< sbpos.z << "\n";
 				delay = sp->firstSB + (i+1)*sp->delayRC; // reset age
 			}
 		} else {

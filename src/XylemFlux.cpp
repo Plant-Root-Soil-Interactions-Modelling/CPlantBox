@@ -326,10 +326,10 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
     auto lengths =  this->rs->segLength();
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     std::fill(fluxes.begin(), fluxes.end(), 0.);
-    auto map = rs->cell2seg;
+    std::map<int, std::vector<int>> map = rs->cell2seg;
     for(auto iter = map.begin(); iter != map.end(); ++iter) {
         int cellId =  iter->first;
-        auto segs = map.at(cellId);
+        std::vector<int> segs = map.at(cellId);
         double v = 0.;  // calculate sum over cell
         for (int i : segs) {
             if (type==0) { // volume
@@ -349,7 +349,7 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
             } else if (type==2) { // length
                 t = lengths[i]/v;
             }
-            fluxes[i] = t*soilFluxes.at(cellId);
+            fluxes[i] = t*soilFluxes.at(cellId); // fails if cellId = -1
         }
     }
     return fluxes;
