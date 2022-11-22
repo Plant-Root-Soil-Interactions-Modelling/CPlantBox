@@ -347,6 +347,7 @@ int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vec
 		Q_GrowthtotBU = Fortran_vector(Nt, 0.) ;
         Q_GrmaxBU = Fortran_vector(Nt, 0.) ;
     }
+    if(!burnInTime){updateBudStage(tf);}
 	if(doTroubleshooting){std::cout.rdbuf(coutbuf);} //reset to standard output again
 	return(1) ;
 	
@@ -400,7 +401,7 @@ void PhloemFlux::aux(double t, double * y) {	// launch auxiliary calculations to
         std::cout << "at t = " << t << " : Y0.size() = " << Y0.size();
         std::cout<<std::endl;
     }
-    
+    ////
     // std::cout<<"JAuxin_ST12 int aux "<<std::endl;
     // JAuxin_ST1.display();
     // JAuxin_ST2.display();
@@ -442,6 +443,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
     manualAddST.resize(Nt , 0.)  ;
     manualAddMeso.resize(Nt , 0.)  ;
     manualAddAux.resize(Nt , 0.)  ;
+    
 	deltaSucOrgNode_ = waterLimitedGrowth(dt);//water limited growth
 	if(doTroubleshooting){cout<<"initializePM_new "<<Nc<<" "<<Nt<<endl;}
 	int nodeID;
@@ -834,6 +836,48 @@ void PhloemFlux::computeOrgGrowth(double t){
 	if(doTroubleshooting){std::cout<<"PhloemFlux::computeOrgGrowth_end"<<std::endl;}
 }
 
+void PhloemFlux::updateBudStage(double EndTime)
+{
+	bool allOrgs = true;
+	auto orgs = plant->getOrgans(3,allOrgs);//also org with length - Epsilon == 0
+    for(auto org: orgs)
+	{
+      if(org->getParameter("subType")==2)
+      {
+          int bu_bs = org->budStage;
+                int stemTip = org->getNodeId(org->getNumberOfNodes()-1) ;
+                double suc =  C_STv.at(stemTip) ;
+            switch(org->budStage)
+            {
+                case 1://active bud
+                {
+                    //double sucFact = suc * 10.;//mM/100 => M*10
+                    double auxaux = C_Auxinv.at(org->getNodeId(0) );
+                    //double RA = C_Auxinv.at(org->getNodeId(0) )/auxin_init_mean;//auxin ratio from 
+                    //org->BerthFact = ((RA*10+1)/(sucFact+0.2))*(1-(0.15/(sucFact+0.2))) / 10;    // "/10" to go from mm to cm
+                    org->BerthFact = computeBerth(suc, auxaux);
+                    //if(org->BerthFact <= org->getLength(false)){org->budStage = 2;}//congrats! you are a branch
+                    if(org->BerthFact <= org->age){org->budStage = 2;}//congrats! you are a branch
+                    if(org->BerthFact > L_dead_threshold){org->budStage = -1;}//sorry! you are dead
+                    break;
+                }
+                case 0://dormant
+                {
+                    if(suc >= CSTthreshold)
+                    {
+                        org->budStage = 1;
+                        org->age = 0.; //reset age
+                    }//congrats! you are released
+                    break;
+                }
+
+            }
+          if(bu_bs != org->budStage)
+          { org->budStageChange[org->budStage+1]=EndTime;}
+      }
+    }
+}
+
 
 	/*water limited deltaSuc per node*/
 std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
@@ -863,7 +907,21 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			int st = plant->st2newst[std::make_tuple(ot,stold)];
 			double orgLT = org->getParameter("rlt");
 			double Linit = org->getLength(false);//theoretical length 
-			double rmax = Rmax_st_f(st,ot);
+            
+            
+            
+            
+			double rmax, Lmax;
+            switch(org->budStage) 
+            {
+                case -1:{rmax = 0.;break;} //dead
+                case 0:{rmax = 0.;break;}//dormant
+                case 1 :{rmax = plant->budGR;Lmax = plant->maxLBud;break;}//1 mm/d
+                case 2 :{rmax = Rmax_st_f(st,ot);
+                         Lmax = org->getParameter("k");break;}//1 mm/d
+                default:{std::cout<<"org->budStage not recognised "<<std::flush;
+                        assert(false);}
+            }
 			int f_gf_ind = org->getParameter("gf");//-1;//what is the growth dynamic?
 			//auto orp = org->getOrganism->getOrganRandomParameter(ot).at(stold)
 			//if(orp!= NULL) {orp->f_gf->CW_Gr = cWGrRoot;}	
@@ -876,7 +934,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			if(f_gf_ind == 3){f_gf_ind = 1;} // take negative exponential growth dynamic to compute max growth 
 			if(f_gf_ind == 4){f_gf_ind = 2;} // take linear growth dynamic to compute max growth 
 			auto f_gf =  plant->createGrowthFunction(f_gf_ind);
-			double age_ = f_gf->getAge(Linit, rmax, org->getParameter("k"), org->shared_from_this());
+			double age_ = f_gf->getAge(Linit, rmax, Lmax, org->shared_from_this());
 			
 			
 			if((not((org->getOrganRandomParameter()->f_gf->CW_Gr.empty()) || 
@@ -942,20 +1000,20 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
             }
             
             //double age_temp = f_gf->getAge(Linit,rmax, org->getParameter("k"), org->shared_from_this());//calcAge(Linit);
-            double LinitTemp = f_gf->getLength(age_  , rmax, org->getParameter("k"), org->shared_from_this());
-			double targetlength = f_gf->getLength(age_ +dt_ , rmax, org->getParameter("k"), org->shared_from_this());
+            double LinitTemp = f_gf->getLength(age_  , rmax, Lmax, org->shared_from_this());
+			double targetlength = f_gf->getLength(age_ +dt_ , rmax, Lmax, org->shared_from_this());
 			double e = std::max(0.,targetlength-LinitTemp); // unimpeded elongation in time step dt
 			BackUpMaxGrowth[orgID2] = Linit + e;// targetlength ;
 			
 			std::vector<int> nodeIds_;// = org->getNodeIds();
-			if(doTroubleshooting){std::cout<<"rmax: "<<rmax<<" "<<1<<std::endl;} 
-			if((e + Linit) - org->getParameter("k")> 1e-10){
+			if(doTroubleshooting){std::cout<<"rmax: "<<rmax<<" "<<Lmax<<std::endl;} 
+			if((e + Linit) - Lmax> 1e-10){
 				std::cout<<"Photosynthesis::rmaxSeg: target length too high "<<e<<" "<<dt<<" "<<Linit;
-				std::cout<<" "<<org->getParameter("k")<<" "<<org->getId()<<std::endl;
+				std::cout<<" "<<Lmax<<" "<<org->getId()<<std::endl;
 				assert(false);
 			}
 			//delta_length to delta_vol
-			double deltavol = std::max(0.,org->orgVolume(targetlength, false) - org->orgVolume(Linit, false));//volume from theoretical length
+			double deltavol = std::max(0.,org->orgVolume(Linit + e, false) - org->orgVolume(Linit, false));//volume from theoretical length
 			//double deltavol_bulb = std::min(deltavol, std::max(0.,plant->maxLBud - org->orgVolume(Linit, false)));//volume from theoretical length
 			int nNodes = org->getNumberOfNodes();
 			if ((nNodes==1)||(ot == 2)||((ot == 3)&&(useStemTip))) {//organ not represented because below dx limit or is root
@@ -1014,62 +1072,15 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                         assert((Fpsi.at(nodeId) >-1e-13) &&(Fpsi.at(nodeId) -1<1e-13)&&"PhloemFlux::waterLimitedGrowth: Fpsi[nodeId] incorrect");
                     }
 				}else{Fpsi[nodeId] = 1.;}
-                double cst = -1;double iaa = auxin_threshold +1;
-                //int toActivate = activeAtThreshold_auxin + activeAtThreshold;
-                //int activatedCA =  activePhloem + activeAuxin;
-				int goAhead = 1;//activatedCA - toActivate + 1;
+                
                 if(doTroubleshooting)
                     {std::cout<<"before auxin "<<org->organType()<<" "<<org->getParameter("subType")<<std::endl;}
-				if(( org->organType() !=3)||(org->getParameter("subType") !=2))
-                {
-                        org->activePhloem = true;
-                        org->activeAuxin = true;
-                    if(doTroubleshooting)
-                        {std::cout<<"not using auxin "<<org->activePhloem<<" "<<org->activeAuxin<<std::endl;}
-                }else
-                {
-                    if(doTroubleshooting)
-                        {std::cout<<"Does use auxin "<<org->getNumberOfNodes()<<" "<<org->activePhloem<<std::endl;}
-                    if(org->getNumberOfNodes()>1)
-                    {
-                        if(!org->activePhloem)//(goAhead <= 0))
-                        {
-                            if(doTroubleshooting)
-                        {std::cout<<"suc activation? "<<C_STv.size()<<" "<<canStartActivating<<" "<<plant->activeAtThreshold<<" ";}
-							if(C_STv.size() > nodeId){cst = C_STv.at(nodeId);}
-							if(((cst >= CSTthreshold)&&canStartActivating)||(!plant->activeAtThreshold))
-                            {
-                                 org->activePhloem = true;
-                            }else{goAhead = 0;}
-                            if(doTroubleshooting)
-                        {std::cout<<org->activePhloem<<" "<<canStartActivating<<" "<<goAhead<<std::endl;}
-						}
-                        if(!org->activeAuxin)//(goAhead <= 0))
-						{
-                            if(doTroubleshooting)
-                        {std::cout<<"auxine activation? "<<C_Auxinv.size()<<" "<<canStartActivating<<" "<<plant->activeAtThreshold_auxin<<" ";}
-                            //use auxin concentration in base node of parent.
-                            int auxinNode1 = org->getNodeId(0);
-                            int auxinNode2 = org->getParent()->getNodeId(org->parentNI);
-                            assert((auxinNode1==auxinNode2)&&"auxinNode1!=auxinNode2");
-							if(C_Auxinv.size() > auxinNode2){iaa = C_Auxinv.at(auxinNode2);}
-							if(((iaa <= auxin_threshold)&&canStartActivating)||(!plant->activeAtThreshold_auxin))
-                            {
-                                 org->activeAuxin = true;
-                            }else{goAhead = 0;}
-                            if(doTroubleshooting)
-                        {std::cout<<org->activeAuxin<<" "<<canStartActivating<<" "<<goAhead<<std::endl;}
-						}
-                    }
-                }
-                if(doTroubleshooting)
-                {
-                    std::cout<<"after auxin "<<nodeId<<" "<<AuxinSource.size()<<" "<<goAhead<<std::endl;
-                    std::cout<<plant->activeAtThreshold_auxin <<" "<< org->activePhloem <<" "<< org->activeAuxin <<" "<< isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<std::endl;
-                }
+                
+       
+                
                 if(AuxinSource.at(nodeId) == 0)//not yet a source there
                 {
-                    AuxinSource.at(nodeId) = (org->activePhloem)*(org->activeAuxin)*isStemTip*(org->getParameter("subType") <=2)*(org->getLength(false) > minLforSource);//plant->activeAtThreshold_auxin*
+                    AuxinSource.at(nodeId) = (org->budStage >= 1)*isStemTip*(org->getParameter("subType") <=2);
                 }
                 
                 if(plant->node_Decapitate.size()> 0)
@@ -1081,9 +1092,9 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                 
                 if(doTroubleshooting)
                 {
-                    std::cout<<"AuxinSource "<<AuxinSource[nodeId] <<" "<< plant->activeAtThreshold_auxin <<" "<< org->activePhloem <<" "<< org->activeAuxin <<" "<< isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<std::endl;
+                    std::cout<<"AuxinSource "<<AuxinSource[nodeId] <<" "<<  isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<std::endl;
                 }
-				double deltavolSeg = deltavol * Flen * Fpsi.at(nodeId) * goAhead;// + deltavol_bulb * (1 - goAhead);
+				double deltavolSeg = deltavol * Flen * Fpsi.at(nodeId);
 				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){
 					//could be error of pressision (if l = Lmax)
 					// or that, because of nodal growth and dxMin, org->getEpsilon() <0

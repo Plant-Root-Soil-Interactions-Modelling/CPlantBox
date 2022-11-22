@@ -107,12 +107,12 @@ std::shared_ptr<Organ> Stem::copy(std::shared_ptr<Organism> p)
  */
 void Stem::simulate(double dt, bool verbose)
 {
-	if(verbose||(active &&(getParameter("subType")==2)&&plant.lock()->verboseh&&this->activeAuxin))
+	if(verbose||(active &&(getParameter("subType")==2)&&plant.lock()->verboseh))
 	{
 		std::cout<<"          stem::simulate "<<getId()<<" "<<this->param_->subType
 				<<" "<<dt<<" "<<age<<" ";
 				std::cout<<"length "<<length<<" "<<getLength(int(nodes.size()-1))<<" "
-				<<getLength(true)<<" "<<getLength(false)<<" this->activePhloem "<<this->activePhloem<<" "<<this->activeAuxin<<std::endl;
+				<<getLength(true)<<" "<<getLength(false)<<std::endl;
 				//std::cout<<" kid/node "<< children.size()<<" "<< nodes.size()<<std::endl;
 				
 				
@@ -249,41 +249,61 @@ void Stem::simulate(double dt, bool verbose)
 				*we can use directly the organ's age to cumpute the target length
 				*/
                 double e;
-                //int f_gf_ind = org->getParameter("gf");
-                if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh&&this->activeAuxin))
+                
+                if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh))
                 {
                     std::cout<<"stem::simulate, check growth rate "<<getOrganism()->useCWGr<<" "<<this->getOrganRandomParameter()->f_gf->CW_Gr.empty()<<" "<<age__<<std::endl;
                 }
+                double rmax, Lmax;
+                switch(budStage) 
+                {
+                    case -1:{Lmax = length; break;}
+                    case 0:{Lmax = length; break;}
+                    case 1 :{rmax = plant.lock()->budGR;Lmax = plant.lock()->maxLBud;break;}//1 mm/d
+                    case 2 :{rmax = getParameter("r");
+                             Lmax = getParameter("k");break;}//1 mm/d
+                    default:{std::cout<<"stem::simulate: budStage not recognised "<< budStage<<std::flush;
+                            assert(false);}
+                }
+                
                 if(this->getOrganRandomParameter()->f_gf->CW_Gr.empty())
                 {
-                    double iniL = calcLength(calcAge(length));
-                    double targetlength = calcLength(calcAge(length)+dt_) + this->epsilonDx;
-                    e = targetlength-iniL; // store value of elongation to add
-                    if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh&&this->activeAuxin))
-                {
-                    std::cout<<"yes empty "<<iniL<<" "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
-                }
                     
+                    if(Lmax - length < -1e-10)
+                    {
+                        std::cout<<"Lmax - length < -1e-10 "<<getId()<<" "<<Lmax<<" "<<
+                            length<<" "<<this->epsilonDx<<std::flush;
+                        assert(false);
+                    }  
+                    
+                    double age_ = getStemRandomParameter()->f_gf->getAge(length, rmax, Lmax, shared_from_this());
+                    double LinitTemp = getStemRandomParameter()->f_gf->getLength(age_  , rmax, Lmax, shared_from_this());
+                    double targetlength = getStemRandomParameter()->f_gf->getLength(age_ +dt_ , rmax, Lmax, shared_from_this()) + this->epsilonDx;
+                    e = std::max(0.,targetlength-LinitTemp); // unimpeded elongation in time step dt
+                    
+                    if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh))
+                    {
+                        std::cout<<"yes empty "<<LinitTemp<<" "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
+                    }
+                    
+                    if((e + length) - Lmax> 1e-10){
+                        std::cout<<"Stem::simulate: target length too high "<<e<<" "<<dt<<" "<<length;
+                        std::cout<<" "<<Lmax<<" "<<getId()<<" "<<budStage<<std::endl;
+                        assert(false);
+                    }
                 }else{
-                    double targetlength = calcLength(age__)+ this->epsilonDx;
+                    double targetlength = calcLength(age__)+ this->epsilonDx;//length from piafmunch module
                     e = targetlength-length; // store value of elongation to add
                     if(verbose || ((getParameter("subType")==2)&&plant.lock()->verboseh))
-                {
-                    std::cout<<"NO has was "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
+                    {
+                        std::cout<<"NO has was "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
+                    }
                 }
-                }
-				//can be negative
-                if((((!this->activePhloem)&&(plant.lock()->activeAtThreshold)) /*suc not activated*/
-                    ||((!this->activeAuxin)&&(plant.lock()->activeAtThreshold_auxin)))/*auxin not activated*/
-                  &&(getParameter("subType")==2))
-                {
-                    //double toDo = std::max(0.,std::max(this->epsilonDx, dxMin - getLength(true)));
-                    //e = std::min(e,std::max(0., plant.lock()->maxLBud - getLength(true)));//this->epsilonDx;
-                    e = std::min(e,std::max(0., dxMin() - getLength(true)));
-                }
+                assert(((budStage !=1)||(length - 1 < 1e-10))&&"!(((budStage !=1)||(length - 1 < 1e-10)))");
+                assert(((budStage !=0)||(length < 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
 				length = getLength(true);
-				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
+				this->epsilonDx = 0.; // now it is "spent" on length (no need for -this->epsilonDx in the following)
 				// create geometry
 				if (p.laterals||bool(additional_childern)) { // stem has laterals
 					//std::cout<<"sim seed nC is"<< nC<<"\n";
@@ -328,14 +348,7 @@ void Stem::simulate(double dt, bool verbose)
 					/* branching zone */
 					//go into branching zone if organ has laterals and has reached 
 					//the end of the basal zone
-					//int nob = std::accumulate(successorNo.begin(),successorNo.end)
-					//p.ln.size()+1
-					//if (((children.size()-additional_childern)<(maxNumKids))&&(length>=p.lb)) 
-						//+1??
-						//bool longEnough = (length>=p.lb);
-					//if(longEnough&&(created_linking_node==0)){createLateral(verbose);}//1rst lat after basal zone
-					//objectif length once "created_linking_node" are created
-						//bool shortEnough = (length < std::accumulate(p.ln.begin(),p.ln.begin()+created_linking_node),p.lb); 
+                    
 						if(verbose){std::cout<<"to branching zone "<<std::endl;}
 						double objectifLength = std::accumulate(p.ln.begin(),p.ln.begin()+std::max(0,created_linking_node-1),p.lb); 
 						bool longEnough = ((length- objectifLength) > -1e-11);
@@ -757,6 +770,9 @@ void Stem::createLateral(bool verbose)
 					case Organism::ot_stem:{
 						auto lateral = std::make_shared<Stem>(plant.lock(), st, h, delay, shared_from_this(),  nodes.size() - 1);
 						children.push_back(lateral);
+                        if(st == 2)//auxillary bud
+                        {lateral->budStage = 0; //dormant bud
+                        }
 						lateral->simulate(age-ageLN,verbose); 
 						break;}
 					case Organism::ot_leaf:{

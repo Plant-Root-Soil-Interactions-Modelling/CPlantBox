@@ -242,14 +242,12 @@ class PhloemFlux: public CPlantBox::Photosynthesis
     std::vector<double> manualAddMeso;
     std::vector<double> manualAddAux;
     bool StopLoss = false;
-    double minLforSource = 0.;
-    // Fortran_vector A_amont;
-    // Fortran_vector i_amont_auxin;
-    // SpUnit_matrix Delta2updown;
-    // SpUnit_matrix Deltaupdown;
-    // Fortran_vector Alpha_st;
-    // Fortran_vector Delta_JA_ST ;
-    // Fortran_vector C_AuxinOut;
+    double L_dead_threshold = 2.;
+    double auxin_init_mean;
+    void updateBudStage(double EndTime);
+    
+   std::function<double(double, double)> computeBerth = [](double ss_, double aa_){
+		throw std::runtime_error("computeBerth not implemented"); return 0.; };
     
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters & constants (implemented in 'initialize.cpp')

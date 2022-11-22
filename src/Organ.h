@@ -37,6 +37,8 @@ class Organ : public std::enable_shared_from_this<Organ>
 {
 public:
 
+    enum budStages { bs_do = 0, bs_ac = 1, bs_br = 2, bs_de = -1 }; ///< coarse classification
+    //dormant bud, released bud, branch, dead bud
     Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     		Matrix3d iHeading, int pni, bool moved = false, int oldNON = 0); ///< creates everything from scratch
     Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
@@ -116,13 +118,14 @@ public:
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
-	bool activePhloem = false;//((organType()!= 3)||(getParameter("subType")!=2));//false;
-	bool activeAuxin = false;//((organType()!= 3)||(getParameter("subType")!=2));//false;
+	//bool activePhloem = false;//((organType()!= 3)||(getParameter("subType")!=2));//false;
+	//bool activeAuxin = false;//((organType()!= 3)||(getParameter("subType")!=2));//false;
+    int budStage = 2;
+    double BerthFact = -1.;
+    std::vector<double> budStageChange = std::vector<double>(4,-1.);
 	
-    bool alive = true; ///< true: alive, false: dead
-    bool active = true; ///< true: active, false: organ stopped growing
 
-protected:
+//protected:
 
     /* up and down the organ tree */
     std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of
@@ -134,6 +137,8 @@ protected:
     std::shared_ptr<const OrganSpecificParameter> param_; ///< the parameter set of this organ (@see getParam())
 
     /* Parameters are changing over time */
+    bool alive = true; ///< true: alive, false: dead
+    bool active = true; ///< true: active, false: organ stopped growing
     double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
 	double epsilonDx = 0; ///< growth increment too small to be added to organ. kept in memory and added to growth of next simulation step

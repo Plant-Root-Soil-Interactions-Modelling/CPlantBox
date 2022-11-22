@@ -10,20 +10,26 @@ import numpy as np
 def toTry():
     
     Qs =np.array([ 120.,  230.,  340.,  450.,  560., ])*1e-6
-    MulimSuc =np.linspace(0.4,2.0,6)#np.array([0.1*i for i in range(4,20)])
-    Ratiothrshold = np.linspace(0.1,1,6) #np.array([1/10*i for i in range(10)])
-    nodeD = np.array([0,3,4,5,6,7,8])
-    maxrun = len(Qs) * len(MulimSuc) * len(nodeD) * len(Ratiothrshold)
+    MulimSuc =np.array([0.1,0.2,0.3])
+    GrRatio = np.array([3]) 
+    nodeD = np.array([3,4,5,6,7,8])#0
+    kss_ = np.array([0.02,0.2,2.0])
+    kaa_ = np.array([0.1,1.0,10.])
+    maxrun = len(Qs) * len(MulimSuc) * len(nodeD) * len(GrRatio)* len(kss_) *len(kaa_)
 
 
-    Qsv,MulimSucv, nodeDv,Ratiothrsholdv = np.meshgrid(Qs,MulimSuc, nodeD,Ratiothrshold)
+    Qsv,MulimSucv, nodeDv,GrRatiov, kss_v, kaa_v = np.meshgrid(Qs,MulimSuc, nodeD,GrRatio, kss_, kaa_)
     Qsv=Qsv.flatten()
     MulimSucv=MulimSucv.flatten()
     nodeDv=nodeDv.flatten()
-    Ratiothrsholdv = Ratiothrsholdv.flatten()
+    GrRatiov = GrRatiov.flatten()
+    kss_v = kss_v.flatten()
+    kaa_v = kaa_v.flatten()
     dictPara= {'Qsv' : Qsv,
                     'nodeDv':nodeDv, 
                'MulimSucv':MulimSucv,
-              'Ratiothrshold':Ratiothrsholdv}
+              'GrRatiov':GrRatiov,
+              'kss_v': kss_v,
+              'kaa_v': kaa_v}
     return dictPara
 

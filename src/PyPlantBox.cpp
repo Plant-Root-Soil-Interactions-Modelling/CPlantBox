@@ -306,10 +306,11 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("orgVolume2Length",&Organ::orgVolume2Length)
             .def_readwrite("iHeading", &Organ::iHeading)
             .def_readwrite("parentNI", &Organ::parentNI)
-            .def_readwrite("activePhloem", &Organ::activePhloem)
-            .def_readwrite("activeAuxin", &Organ::activeAuxin)
             .def_readwrite("alive", &Organ::alive)
-            .def_readwrite("active", &Organ::active);
+            .def_readwrite("active", &Organ::active)
+            .def_readwrite("budStage", &Organ::budStage)
+            .def_readwrite("budStageChange", &Organ::budStageChange)
+            .def_readwrite("BerthFact", &Organ::BerthFact);
 
     /*
      * Organism.h
@@ -366,8 +367,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNodeIndex", &Organism::getNodeIndex)
 
             .def("setMinDx", &Organism::setMinDx)
-            .def_readwrite("activeAtThreshold", &Organism::activeAtThreshold)
-            .def_readwrite("activeAtThreshold_auxin",&Organism::activeAtThreshold_auxin)
+            //.def_readwrite("activeAtThreshold", &Organism::activeAtThreshold)
+            //.def_readwrite("activeAtThreshold_auxin",&Organism::activeAtThreshold_auxin)
 			.def_readwrite("useCWGr",&Organism::useCWGr)
             .def("setSeed", &Organism::setSeed)
             .def("rand", &Organism::rand)
@@ -377,7 +378,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("__str__",&Organism::toString)
         
            .def_readwrite("verboseh", &Organism::verboseh)
-           .def_readwrite("maxLBud", &Organism::maxLBud);
+           .def_readwrite("maxLBud", &Organism::maxLBud)
+           .def_readwrite("budGR", &Organism::budGR);
 
 
     py::enum_<Organism::OrganTypes>(m, "OrganTypes")
@@ -1014,12 +1016,13 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKrm1",&PhloemFlux::setKrm1)
             .def("setKrm2",&PhloemFlux::setKrm2)
 			.def("startPM",&PhloemFlux::startPM)
+			.def("updateBudStage",&PhloemFlux::updateBudStage)
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
             .def_readwrite("psiMax", &PhloemFlux::psiMax)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
 			
             .def_readwrite("CSTthreshold", &PhloemFlux::CSTthreshold)
-            .def_readwrite("canStartActivating", &PhloemFlux::canStartActivating)
+            //.def_readwrite("canStartActivating", &PhloemFlux::canStartActivating)
 			
             .def_readwrite("Q_out",&PhloemFlux::Q_initOutv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)
@@ -1047,6 +1050,15 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("SucSTLost",&PhloemFlux::SucSTLost)
             .def_readwrite("SucMesoLost",&PhloemFlux::SucMesoLost)
             .def_readwrite("AuxinLost",&PhloemFlux::AuxinLost)
+			.def_readwrite("useStemTip",&PhloemFlux::useStemTip)
+			.def_readwrite("StopLoss",&PhloemFlux::StopLoss)
+			.def_readwrite("manualAddST",&PhloemFlux::manualAddST)
+			.def_readwrite("manualAddMeso",&PhloemFlux::manualAddMeso)
+			.def_readwrite("manualAddAux",&PhloemFlux::manualAddAux)
+			.def_readwrite("L_dead_threshold",&PhloemFlux::L_dead_threshold)
+			.def_readwrite("auxin_init_mean",&PhloemFlux::auxin_init_mean)
+			.def_readwrite("computeBerth",&PhloemFlux::computeBerth)
+            //.def("computeBerth", (void (PhloemFlux::*)(const std::function<double(double,double)>&)) &PhloemFlux::computeBerth)
         
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
             .def_readwrite("r_ST",&PhloemFlux::r_STv)
@@ -1090,13 +1102,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("Q_GrmaxUnbornv_i",&PhloemFlux::Q_GrmaxUnbornv_i)
 			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
 			.def_readwrite("Q10",&PhloemFlux::Q10)
-			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10)
-			.def_readwrite("useStemTip",&PhloemFlux::useStemTip)
-			.def_readwrite("StopLoss",&PhloemFlux::StopLoss)
-			.def_readwrite("manualAddST",&PhloemFlux::manualAddST)
-			.def_readwrite("manualAddMeso",&PhloemFlux::manualAddMeso)
-			.def_readwrite("manualAddAux",&PhloemFlux::manualAddAux)
-			.def_readwrite("minLforSource",&PhloemFlux::minLforSource);
+			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10);
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

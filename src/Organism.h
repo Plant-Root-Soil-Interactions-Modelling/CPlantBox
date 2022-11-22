@@ -120,11 +120,12 @@ public:
 	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism								
 	virtual bool	hasRelCoord(){return false;} ///< overriden by @Plant::hasRelCoord()
 																			 
-	bool activeAtThreshold_auxin = false;
-	bool activeAtThreshold = false; 
+	//bool activeAtThreshold_auxin = false;
+	//bool activeAtThreshold = false; 
 	bool useCWGr = true; //use water- and carbon- limited growth?
 	bool verboseh = false;
-    double maxLBud = 0.;
+    double maxLBud = 1.;
+    double budGR = 0.1;//1mm/d
 
 protected:
 

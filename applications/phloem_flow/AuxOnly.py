@@ -55,8 +55,9 @@ print("This sampling run took %5.4f seconds." % (temp_time - start_time_))
 tasks_iterator = (delayed(runSim)
                         (directoryN_ = directoryN, doVTP = False, verbosebase = False,
                          PRate_ = 1, thresholdAux = 0, 
-                         RatiothresholdAux = thrsholdv[i + totrun] ,
-       Qmax_ = 0, thresholdSuc = 0.8,
+                         RatiothresholdAux = thrsholdv[i + totrun] ,maxLBud = 1., budGR = 0.1,L_dead_threshold=100.,
+                         kss=1,kaa=0.2,
+       Qmax_ = 0, thresholdSuc = 0.8,GrRatio = 10,
        useCWGr = False, UseRatiothresholdAux = True,
                          nodeD = nodeDv[i+totrun], thread = i,
        activeAtThreshold_auxin = True, activeAtThreshold_suc = False,
