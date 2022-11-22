@@ -17,7 +17,7 @@ def plot_baseroots(data, base_method, ax):
     for i, j_ in enumerate(data.tap_root_indices):
         for j in j_:
             age_.append(data.estimates[i][(j, "age")])
-            l_.append(data.rsmls[i].properties["length"][j])
+            l_.append(data.rsmls[i].properties["length"][j]/float(data.rsmls[i].metadata.resolution))
             if age_[-1] > 6 and l_[-1] < 5:
                 print("short! measurement", i, "root", j)
     ax.plot(age_, l_, "r*", label = "tap roots")  # scatter plot
@@ -27,7 +27,8 @@ def plot_baseroots(data, base_method, ax):
     for i, j_ in enumerate(data.basal_root_indices):
         for j in j_:
             age_.append(data.estimates[i][(j, "age")])
-            l_.append(data.rsmls[i].properties["length"][j])
+            l_.append(data.rsmls[i].properties["length"][j]/float(data.rsmls[i].metadata.resolution))
+    #l_ = np.sort(l_) #shortest basal root is the youngest 
     if base_method < 2:  # basal = tap
         ax.plot(age_, l_, "r*")  # scatter plot
     else:
@@ -61,7 +62,7 @@ def plot_laterals(data, base_method, calibration_method, ax):
         for i, j_ in enumerate(indices):
             for j in j_:
                 age_.append(data.estimates[i][(j, "age")])
-                l_.append(data.rsmls[i].properties["length"][j])
+                l_.append(data.rsmls[i].properties["length"][j]/float(data.rsmls[i].metadata.resolution))
         ax.plot(age_, l_, col_[order], label = "{:g} order lateras".format(order))
         order += 1
         indices = data.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
