@@ -280,7 +280,7 @@ class EstimateDataModel:
                 else:
                     a_ = np.mean([self.rsmls[i].functions["radius"][j]][0])
                     
-                self.estimates[i][(j, "a")] = a_
+                self.estimates[i][(j, "a")] = a_ #/float(self.rsmls[i].metadata.resolution)
 
                 #set branching angle 'theta'
                 ii = [self.rsmls[i].properties["parent-node"]][0]
