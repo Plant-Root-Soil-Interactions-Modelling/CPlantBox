@@ -59,11 +59,11 @@ extern Fortran_vector Ag, Q_Grmax, Q_Rmmax, Q_Exudmax, exud_k, krm2, len_leaf;
 #define PARMB 64
 #define RABS 128
 
-std::shared_ptr<PhloemFlux> phloem_; 
+std::weak_ptr<PhloemFlux> phloem_; 
 vector<double> extra_output_times, breakpoint_times ; // may contain already existing output time points
 extern int is, solver ; // (see below) solver config.# -- default = 1 = cvode (SPILS: SPFGMR, MODIFIED_GS, PREC_NONE... Try diff. value if calc. fails or too slow !
-void auxout(double t, double * y){phloem_->aux(t, y);} ;	// launch auxiliary calculations to store dynamics of temporary variables
-void fout(double t, double *y, double *y_dot){phloem_->f(t, y, y_dot);} ; // the function to be processed by the solver  (implemented in 'solve.cpp')
+void auxout(double t, double * y){phloem_.lock()->aux(t, y);} ;	// launch auxiliary calculations to store dynamics of temporary variables
+void fout(double t, double *y, double *y_dot){phloem_.lock()->f(t, y, y_dot);} ; // the function to be processed by the solver  (implemented in 'solve.cpp')
 
 // Full list of printable/savable variables -- to be updated in case of hard-updating the model (number and nature of local compartments within each archit. element) :
 int NumAllNodeVariablesNames = 62 ; // 62 node variables :
@@ -183,31 +183,46 @@ bool AutoQuit(false); // will be TRUEd if launched with '-q' (which will also di
 
 int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double TairK, bool verbose, std::string filename) {
 	//std::string nametroubleshootingfile = "outputPM"+"_"+ std::to_string(simTime)+".txt"
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
+    
 	std::ofstream out;
 	std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
 	if(doTroubleshooting){
-        out  = ofstream(filename);
-		std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+        if(!verbose){
+            out  = ofstream(filename);
+            std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+        }
 		cout<<"extainr TairK "<<TairK<<" "<<StartTime<<" "<<EndTime<<" "<<OutputStep<<" verbose "<<verbose<<std::endl;
 	}
 	
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
     t0  = StartTime; tf  = EndTime;	nbv = OutputStep; T = TairK; TairK_phloem = TairK;
 	
 	nl = 0;
 	if(doTroubleshooting){
 		std::cout <<"set out put vec "<<t0<<" "<<t1<<" "<<tf<<" "<<nbv<<std::endl;
 	}
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
 	initializePM_(tf-t0, TairK);
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
 	initialize_carbon(this->Q_initOutv) ;		// sizes C-fluxes-related variable vectors
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
     initialize_hydric() ;		// sizes water-fluxes-related variable vectors and sets up hydric system
 	
 	// building up output times vector OutputTimes according to GUI seetings :
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
     pas = (tf-t0)/double(nbv);
 	t1 = t0 + pas ; //nbv = (int)((tf-t0)/pas) ; // pas = initial output step = between first 2 output steps t0 and t1 as set in GUI
 	if(doTroubleshooting){
 		std::cout <<"set out put vec "<<t0<<" "<<t1<<" "<<tf<<" "<<pas<<" "<<nbv<<std::endl;}
 	
 	OutputSettings(doTroubleshooting) ; // sets up file and graph outputs, including possible breakpoint- and/or extra-output- times as stated above
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
 
     // *************** SOLVING THE DIFFERENTIAL EQUATION SYSTEM ************************************* :
     int neq = Y0.size() ;							// number of differential eq. = problem size (= 8*Nt apres ajouts FAD)
@@ -221,6 +236,8 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
     // 1) Oversize both 'Var_integrale' and 'Var_derivee' pointers and initialize all of them to NULL :
     Fortran_vector** Var_integrale = new Fortran_vector*[100] ; Fortran_vector** Var_derivee = new Fortran_vector*[100] ;
     for (i = 0 ; i < 100 ; i ++) {Var_integrale[i] = Var_derivee[i] = NULL ;}
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
     // 2) initialize pointers to derivatives (and corresponding integrals) that are actually used (or may be so), in this case for...
     Var_integrale[0] = &P_Sympl ; Var_derivee[0] = &P_Sympl_dot ; //...elastic changes of symplastic volume in function (PiafMunch2.cpp)Smooth_Parameter_and_BoundaryConditions_Changes()
     Var_integrale[1] = &P_ST ; Var_derivee[1] = &P_ST_dot ;
@@ -229,13 +246,19 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	if(doTroubleshooting){
 		std::cout <<"add pointer "<<std::endl;
 	}
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
 	phloem_ = this->Phloem();
-    for(is = 1 ; is < Breakpoint_index.size() ; is ++) { // allows several integration segments in relation to breakpoints (if any -- OK if none)
-        SegmentTimes = subvector(OutputTimes, Breakpoint_index(is), Breakpoint_index(is+1))  ; // time segment between 2 breakpoints (Breakpoint_index(1) = 1 ; Breakpoint_index(Breakpoint_index.size()) = 1 + nbv)
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
+    for(is = 1 ; is < Breakpoint_index.size() ; is ++) { 
+        SegmentTimes = subvector(OutputTimes, Breakpoint_index(is), Breakpoint_index(is+1))  ; 
+        if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
         if(doTroubleshooting){cout << endl << "starting integration on time segment #" << is << " = [" << SegmentTimes[1] << ", " << SegmentTimes[SegmentTimes.size()] << "] "<< Breakpoint_index.size()<<" "<<SegmentTimes.size()<< endl ;}
          // ***** the following solver configs are ranked from the most efficient (in most tested situations) to the least (in most tested situations). Can change in different situations ! *****
         //   see  SUNDIALS  documentation  for  cvode  solver options (SPxxxx, xxxx_GS, PREC_xxxx, BAND, etc.)
 		if(doTroubleshooting){cout <<"solver, Y0: "<<solver <<endl;}
+        
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
 		switch (solver) {
                 
 int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vector &T, void(*aux)(double,double*), Fortran_vector& atol, Fortran_vector& rtol,
@@ -283,6 +306,8 @@ int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vec
 		if (j > 0) break ; // simulation run-time error
         
     }
+    
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
     // ********************* OUTPUT *********************************
     
     // std::cout<<"JAuxin_ST2 before MEMORY LIBERATIONS"<<std::endl;
@@ -301,6 +326,7 @@ int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vec
 // 	}
     delete [] y_dot;
     
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
 	//for python:
     if(doTroubleshooting){
 		std::cout<<"fortran to python vector"<<std::endl;
@@ -308,6 +334,7 @@ int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vec
 	this->Q_initOutv = Y0.toCppVector();//att: now has several outputs
 	
     
+    if(stopAt == StopAt_){return(0);}else{StopAt_ ++;}
 //     std::cout<<"JAuxin_ST2 at the end "<<std::endl;
 //     JAuxin_ST1.display();
 //     JAuxin_ST2.display();
@@ -348,7 +375,7 @@ int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vec
         Q_GrmaxBU = Fortran_vector(Nt, 0.) ;
     }
     if(!burnInTime){updateBudStage(tf);}
-	if(doTroubleshooting){std::cout.rdbuf(coutbuf);} //reset to standard output again
+	if(doTroubleshooting&&(!verbose)){std::cout.rdbuf(coutbuf);} //reset to standard output again
 	return(1) ;
 	
 }

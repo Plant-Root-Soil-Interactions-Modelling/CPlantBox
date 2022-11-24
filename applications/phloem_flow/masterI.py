@@ -39,9 +39,10 @@ def theta2H(vg,theta):#(-) to cm
 
 def sinusoidal(t):
     return (np.sin(np.pi*t*2)+1)/2
+
 def stairs(t):
     hours = t%1
-    coef = int(hours<=(12/24))
+    coef = int((hours)<=(12/24))
     return coef
 
 def qair2rh(qair, es_, press):
@@ -206,6 +207,9 @@ def setKrKx_phloem(): #inC
     #actually, don t use perimeter currently
     #r.setPerimeter_st([[0,Perimeter_s_r0,Perimeter_s_r12,Perimeter_s_r12,Perimeter_s_r0],[0,Perimeter_s_s,Perimeter_s_s],[0,Perimeter_s_l]])
 
+def doConditionDefault(rinput, timeSinceDecap_):
+    return False
+
 from pathlib import Path
 def runSim(directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, UseRatiothresholdAux,
@@ -213,8 +217,8 @@ def runSim(directoryN_,doVTP, verbosebase,
            GrRatio ,  maxLBud , budGR,L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
-           doPrint ,doDict, auxin_D = 0.,kss=0.2,kaa=1.):
-    
+           doPrint ,doDict, auxin_D = 0.,kss=0.2,kaa=1., 
+           fileparam = "UQ_simple_stem_bud", doCondition = doConditionDefault):
     useCWGr = True
     dt_lastWrote = time.time() - dt_write * 2
     dtSIM_lastWrote = -dtSIM_write*2
@@ -278,7 +282,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         print(namef)        
         print("runningfile already exists")
         raise Exception
-    
+    toAdd = 0
     doPrintbu = doPrint
     doDictbu = doDict
     doDict = False
@@ -315,7 +319,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     # plant system 
     pl = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
     path = CPBdir+"/modelparameter/plant/"
-    name = "UQ_simple_stem_bud"#"smallPlant_mgiraud"#"morning_glory_UQ"#
+    name = fileparam
 
     pl.readParameters(path + name + ".xml")
 
@@ -549,8 +553,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     #r.canStartActivating = False
     r.CSTthreshold = thresholdSuc
     r.StopLoss = True
-    if thread == 0 :
-        print(r.L_dead_threshold, r.plant.maxLBud)
+    
     r.L_dead_threshold = L_dead_threshold
     r.plant.maxLBud = maxLBud
     r.plant.budGR = budGR
@@ -606,6 +609,7 @@ def runSim(directoryN_,doVTP, verbosebase,
                 simMax = simDuration + testTime #end 7 days after decapitation
                 changedSimMax = True
                 dt = dtAfter #1MIN
+                toAdd = np.ceil(simDuration) - simDuration #to have start of day after decapitation
 
         if doDecapitation and (numLNodes > nodeD): 
             raise Exception("too many linking nodes")
@@ -618,7 +622,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         if r.burnInTime:
             weatherX = weather(burninDuration, Qmax_)
         else:
-            weatherX = weather(simDuration, Qmax_)
+            weatherX = weather(simDuration+toAdd, Qmax_)
             
 
         r.Qlight = weatherX["Qlight"] #; TairC = weatherX["TairC"] ; text = "night"
@@ -630,23 +634,6 @@ def runSim(directoryN_,doVTP, verbosebase,
         #r.doTroubleshooting = False
         r.solve_photosynthesis(sim_time_ = simDuration, sxx_=sx, cells_ = True,RH_ = weatherX["RH"],
             verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"] )
-        #print(r.psiXyl)
-        #raise Exception
-        if False:#verbosebase:
-            segIdx = r.get_segments_index(4)
-            idleafBlade = np.where(np.array(r.plant.leafBladeSurface)[segIdx] > 0)
-            print("An",np.mean(np.array(r.An)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#An.append
-            print("Rd",r.Rd*1e6, "mumol CO2 m-2 s-1")#An.append
-            print("Vc",np.mean(np.array(r.Vc)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vc.append
-            #print("Vcmax",np.mean(r.Vcmax)*1e6, "mumol CO2 m-2 s-1")#Vc.append
-            print("Vj",np.mean(np.array(r.Vj)[idleafBlade])*1e6, "mumol CO2 m-2 s-1")#Vj.append
-            #print("Vjmax",np.mean(r.Vjmax)*1e6, "mumol CO2 m-2 s-1")#Vj.append
-            print("gco2",np.mean(np.array(r.gco2)[idleafBlade]), "mol CO2 m-2 s-1")#gco2.append
-            print("gh2o",np.mean(np.array(r.gco2)[idleafBlade])*1.6, "mol H2O m-2 s-1")#gco2.append
-            print("cics",np.mean(np.array(r.ci)[idleafBlade])/r.cs,"mol mol-1")#cics.append
-            print("ci",np.mean(np.array(r.ci)[idleafBlade]), "mol mol-1")#fw.append
-            print("deltagco2",np.mean(np.array(r.deltagco2)[idleafBlade]), "mol mol-1")#fw.append
-            print("fw",np.mean(np.array(r.fw)[idleafBlade]), "-")#fw
             
         ots = np.concatenate((np.array([0]), r.get_organ_types()))#per node
         leavesSegs = np.where(ots[1:] ==4)
@@ -665,16 +652,18 @@ def runSim(directoryN_,doVTP, verbosebase,
         
         # save_stdout = sys.stdout
         # sys.stdout = open('trash', 'w')
-        verbose_phloem = False
+        verbose_phloem = True
         
         filename = "results"+ directoryN +"inPM_"+str(ö)+dir4allResults+ '.txt'
         #print("startpm")
         
         r.useStemTip = True
         doStartPM = True
+        r.doTroubleshooting = False
+        r.stopAt = -1 #error between 8 and 9
         if doStartPM:
             r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
-        else:
+        if ((r.stopAt >= 0) and (r.stopAt < 13)) or (not doStartPM): 
             r.Q_out = np.full(Nt*10,0.)
             r.C_ST = np.full(Nt,0.)
             r.vol_ST = np.full(Nt,1.)
@@ -893,22 +882,20 @@ def runSim(directoryN_,doVTP, verbosebase,
             write_file_array("BerthFact", BerthFact)
             budStageChange = np.array([org.budStageChange for org in orgs]) 
             write_file_array("bSChange", budStageChange)
+            
+            if(changedSimMax):
+                timeSinceDecap = simDuration - (simMax - testTime)
+            else:
+                timeSinceDecap = -1
+            outcondition = doCondition(r,timeSinceDecap, thread)
+            if (outcondition != 0): #success or falur
+                simMax = -1
+                
             if len(orgs) != len(budStage):
                 print(budStage, len(budStage))
                 print(ot_orgs,len(ot_orgs))
                 print(len(orgs))
                 raise Exception
-            #activatedaux = np.array([org.activeAuxin for org in orgs]) 
-            #write_file_array("activatedAUX", activatedaux)
-            
-            #ststdistFromParentBase = distFromParentBase[(ot_orgs == 3)* (st_orgs == 2)]
-            #ststlactivatedaux = activatedaux[(ot_orgs == 3)* (st_orgs == 2) ]
-            #ststactivatedSUC = activated[(ot_orgs == 3)* (st_orgs == 2) ]
-            #ststlengthth_org = lengthth_org[(ot_orgs == 3)* (st_orgs == 2) ]
-            #ststlengthth_org2 = [x for _,x in sorted(zip(ststdistFromParentBase,ststlengthth_org))]
-            #ststlengthth_org[ststdistFromParentBase]
-            #mainStemLen = np.array([org_.getLength(nn) for nn in range(org_.getNumberOfNodes())])
-            #isbase = np.array([lenlen in ststdistFromParentBase for lenlen in mainStemLen])
             if False:#thread == 100:
                 print("Q_ST_stem", len(C_ST))
                 # print(sum(mainStemAux[1:] <= r.auxin_threshold))
@@ -943,12 +930,6 @@ def runSim(directoryN_,doVTP, verbosebase,
             if not doDict:
                 dt_lastWrote = time.time()
                 dtSIM_lastWrote = simDuration - dt
-                #if (sum(mainStemAux[1:] <= r.auxin_threshold)) and not changedSimMax:
-                 #   print("(sum(mainStemAux[1:] <= r.auxin_threshold)) and not changedSimMax")
-                  #  raise Exception
-                #if sum((manualAddAux/volST)[maintstemNodesId]) > 0.:
-                 #   print((manualAddAux/volST)[maintstemNodesId])
-                    #raise Exception
             
         ###
         #4UQ
@@ -1068,19 +1049,19 @@ def runSim(directoryN_,doVTP, verbosebase,
                                     filename = "results"+ directoryN +"plotplant_suc_"+dir4allResults+"_"+ str(ö),
                                     range_ = [0,3])   
 
-        if abs(error) > 1e-3:
-            print("suc error too high")
-            raise Exception    
-        if abs(div0f(errorAuxin,InAuxin, 1.)) > 1e-3:
-            print("auxin error too high")
-            raise Exception    
-        if min(C_ST) < 0.0:
-            print("min(C_ST) < 0.0", min(C_ST),np.mean(C_ST),max(C_ST))
-            raise Exception
+#         if abs(error) > 1e-3:
+#             print("suc error too high")
+#             raise Exception    
+#         if abs(div0f(errorAuxin,InAuxin, 1.)) > 1e-3:
+#             print("auxin error too high")
+#             raise Exception    
+#         if min(C_ST) < 0.0:
+#             print("min(C_ST) < 0.0", min(C_ST),np.mean(C_ST),max(C_ST))
+#             raise Exception
             
-        if (max(AuxinSource) ==0) and doDecapitation and doStartPM:
-            print("no auxin source")
-            raise Exception  
+#         if (max(AuxinSource) ==0) and doDecapitation and doStartPM:
+#             print("no auxin source")
+#             raise Exception  
             
         if (min(r.Ev) < 0) or (min(r.Jw) < 0) or (abs(errLeuning) > 1e-3) or (min(fluxes_leaves) < 0):
             write_file_array("psiXyl", r.psiXyl)
@@ -1147,7 +1128,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             #r.canStartActivating = True
             #if UseRatiothresholdAux and (r.auxin_threshold ==0):#only set it tyhe first time
              #   r.auxin_threshold =mainStemAux_mean*RatiothresholdAux
-            print(r.auxin_init_mean)
+            #print(r.auxin_init_mean)
             r.auxin_init_mean = mainStemAux_mean
             
             with open('results'+ directoryN+"input"+dir4allResults+ '.txt', 'r+') as f:
@@ -1226,6 +1207,8 @@ def runSim(directoryN_,doVTP, verbosebase,
             outputsDict_float.clear()
             dt_lastWrote = time.time()
             dtSIM_lastWrote = simDuration - dt
+        
+        
     if doDict:        
         for keykey in outputsDict_array.keys():
             name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.txt'
@@ -1259,30 +1242,24 @@ def runSim(directoryN_,doVTP, verbosebase,
         write_file_array("st_orgsUQ", st_orgs)
         write_file_array("budStage", budStage)
         write_file_array("bSChange", budStageChange)
-        #write_file_array("activatedSUC", activated)
-        #write_file_array("activatedAUX", activatedaux)
         
-    #ana = pb.SegmentAnalyser(r.plant.mappedSegments())
-    #ana.write("results"+directoryN+"plotplant_"+dir4allResults +".vtp", 
-     #         ["organType", "subType"]) 
-    # organType = r.plant.organTypes
-    # subType = r.plant.subTypes
-    # vp.plot_plant(r.plant,p_name = ["organType", "subType"],
-    #                     vals =[ organType, subType], 
-    #                     filename = "results"+ directoryN +"plotplant_psi_"+dir4allResults,
-    #                     range_ = [0,10])  
     delete_file("running")
-    print("finished", thread, time.time() - start_time)
+    outId = -1
+    if outcondition >= 0:
+        outId = thread
+        
+    #print("finished", thread, time.time() - start_time)
     #os._exit(os.EX_OK)
     del r
     del pl
     gc.collect()
-    import psutil
-    print("intern pid",psutil.Process().pid)
-    return 0
+    #import psutil
+    #print("intern pid",psutil.Process().pid)#, r.burnInTime)
+    return outId
 
 
 if __name__ == '__main__':
+    import psutil
     start_time_ = time.time()
     main_dir=os.environ['PWD']#dir of the file
     directoryN = "/"+os.path.basename(__file__)[:-3]+"/"#"/a_threshold/"
@@ -1298,6 +1275,7 @@ if __name__ == '__main__':
             except:
                 pass
     
+    print("intern pid_start",psutil.Process().memory_info())
     runSim(
         directoryN_ = directoryN, doVTP = False,verbosebase = False, 
         PRate_ = 6.8e-3,thresholdAux = 0, RatiothresholdAux =0.46,
@@ -1311,6 +1289,7 @@ if __name__ == '__main__':
         doPrint = True, doDict = False,auxin_D=0.
     )
    
+    print("intern pid_end",psutil.Process().memory_info())
     end_time_ = time.time()
     print(end_time_ - start_time_ )
     sys.exit(0)

@@ -94,12 +94,14 @@ void aux(double t, double * y) ;
  * CplantBox object making link with PiafMunh
  * Wraps a Photosynthesis class
  */
-class PhloemFlux: public CPlantBox::Photosynthesis
+class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_from_this<PhloemFlux>
 {
 	public:
 	PhloemFlux(std::shared_ptr<CPlantBox::MappedPlant> plant_, double psiXylInit = -500., double ciInit = 350e-6): 
 		CPlantBox::Photosynthesis(plant_, psiXylInit, ciInit){};
-    std::shared_ptr<PhloemFlux> Phloem() { return std::make_shared<PhloemFlux>(*this); }; // up-cast for Python binding
+    std::weak_ptr<PhloemFlux> Phloem() { 
+        return shared_from_this();//std::make_shared<PhloemFlux>(*this); 
+    }; // up-cast for Python binding
 	virtual ~PhloemFlux() { }
 	int startPM(double StartTime ,double EndTime, int OutputStep,double TairK, bool verbose = true , 
 		std::string filename= "outpm.txt");///< main function called from python
@@ -220,6 +222,8 @@ class PhloemFlux: public CPlantBox::Photosynthesis
     
     
 	//		Auxin
+    double StopAt_ = 0;
+    double stopAt =-1;
 	double auxin_threshold = 0.3;
 	double auxin_P = 0.3;//production rate
 	double auxin_D = 0.3;//decay

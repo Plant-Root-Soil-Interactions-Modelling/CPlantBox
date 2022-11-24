@@ -1058,6 +1058,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("L_dead_threshold",&PhloemFlux::L_dead_threshold)
 			.def_readwrite("auxin_init_mean",&PhloemFlux::auxin_init_mean)
 			.def_readwrite("computeBerth",&PhloemFlux::computeBerth)
+			.def_readwrite("stopAt",&PhloemFlux::stopAt)
             //.def("computeBerth", (void (PhloemFlux::*)(const std::function<double(double,double)>&)) &PhloemFlux::computeBerth)
         
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
