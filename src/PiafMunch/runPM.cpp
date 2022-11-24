@@ -879,7 +879,10 @@ void PhloemFlux::updateBudStage(double EndTime)
                 case 1://active bud
                 {
                     //double sucFact = suc * 10.;//mM/100 => M*10
-                    double auxaux = C_Auxinv.at(org->getNodeId(0) );
+                    assert((org->getParent()->getNumberOfNodes() >= org->parentNI+1 )&&"(org->parent->getNumberOfNodes() >= org->parentNI+1 )");
+                    //concentration in node above (not affected by own outflux)
+                    double auxaux = C_Auxinv.at(org->getParent()->getNodeId(org->parentNI+1) );
+                    //double auxaux = std::max(0.,C_Auxinv.at(org->getNodeId(0) ) - C_Auxinv.at(org->getNodeId(1) ));
                     //double RA = C_Auxinv.at(org->getNodeId(0) )/auxin_init_mean;//auxin ratio from 
                     //org->BerthFact = ((RA*10+1)/(sucFact+0.2))*(1-(0.15/(sucFact+0.2))) / 10;    // "/10" to go from mm to cm
                     org->BerthFact = computeBerth(suc, auxaux);
