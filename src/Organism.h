@@ -126,6 +126,8 @@ public:
 	bool verboseh = false;
     double maxLBud = 1.;
     double budGR = 0.1;//1mm/d
+    
+	int thread = -1;
 
 protected:
 

@@ -81,8 +81,8 @@ modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py', 'astropy', 'pandas']
 show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
-	#subprocess.run(["pip3", "install", mymodule]) 
-	subprocess.run(["conda", "install", mymodule]) 
+	subprocess.run(["pip3", "install", mymodule]) 
+	#subprocess.run(["conda", "install", mymodule]) 
       
 show_message("(1/3) Step completed. All prerequistes found.")
 

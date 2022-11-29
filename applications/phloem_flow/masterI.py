@@ -129,8 +129,8 @@ def setKrKx_xylem(TairC, RH): #inC
     kr_r3 = 6.8e-5  * hPa2cm 
     l_kr = 100 #cm
                                      
-    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ,kr_s,kr_s ],[kr_l,kr_l,kr_l,kr_l]], kr_length_=l_kr)
-    r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s,kz_s,kz_s ],[kz_l,kz_l,kz_l,kz_l]])
+    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ,kr_s,kr_s,kr_s,kr_s ,kr_s,kr_s ],[kr_l,kr_l,kr_l,kr_l,kr_l,kr_l,kr_l]], kr_length_=l_kr)
+    r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s,kz_s,kz_s,kz_s,kz_s,kz_s,kz_s ],[kz_l,kz_l,kz_l,kz_l,kz_l,kz_l,kz_l]])
     
     
     Rgaz=8.314 #J K-1 mol-1 = cm^3*MPa/K/mol
@@ -185,8 +185,8 @@ def setKrKx_phloem(): #inC
     kr_r3 = 0#5e-2
     l_kr = 0.8 #cm
     
-    r.setKr_st([[kr_r0,kr_r1 ,kr_r2 ,kr_r0],[kr_s,kr_s, kr_s,kr_s],[kr_l,kr_l,kr_l,kr_l]] , kr_length_= l_kr)
-    r.setKx_st([[kz_r0,kz_r12,kz_r12,kz_r0],[kz_l,kz_l, kz_l,kz_l],[kz_l,kz_l,kz_l,kz_l]])
+    r.setKr_st([[kr_r0,kr_r1 ,kr_r2 ,kr_r0],[kr_s,kr_s, kr_s,kr_s,kr_s,kr_s, kr_s,kr_s],[kr_l,kr_l,kr_l,kr_l,kr_l,kr_l,kr_l,kr_l]] , kr_length_= l_kr)
+    r.setKx_st([[kz_r0,kz_r12,kz_r12,kz_r0],[kz_l,kz_l, kz_l,kz_l,kz_l,kz_l, kz_l,kz_l],[kz_l,kz_l,kz_l,kz_l,kz_l,kz_l,kz_l,kz_l]])
     
     Across_s_l   = numL*VascBundle_leaf *(a_ST[2][0]**2)*np.pi# (0.00025 **2)# * 2; rad_x_l_2   = (0.0005 **4) * 2   
     Across_s_s   = numS *VascBundle_stem * (a_ST[1][0]**2)*np.pi#(0.00019 **2) #* 3; rad_x_s_2   = (0.0008 **4) * 1     
@@ -203,7 +203,7 @@ def setKrKx_phloem(): #inC
     #r.a_ST = a_ST #to check for water equilibrium assumption
     #tot surface/np.pi of sieve tube  (np.pi added after)
     #r.a_ST_eqs = [[rad_s_r0,rad_s_r12,rad_s_r12,rad_s_r0],[rad_s_s,rad_s_s],[rad_s_l]]
-    r.setAcross_st([[Across_s_r0,Across_s_r12,Across_s_r12,Across_s_r0],[Across_s_s,Across_s_s,Across_s_s,Across_s_s],[Across_s_l,Across_s_l,Across_s_l,Across_s_l]])
+    r.setAcross_st([[Across_s_r0,Across_s_r12,Across_s_r12,Across_s_r0],[Across_s_s,Across_s_s,Across_s_s,Across_s_s],[Across_s_l,Across_s_l,Across_s_l,Across_s_l,Across_s_l,Across_s_l,Across_s_l,Across_s_l]])
     #actually, don t use perimeter currently
     #r.setPerimeter_st([[0,Perimeter_s_r0,Perimeter_s_r12,Perimeter_s_r12,Perimeter_s_r0],[0,Perimeter_s_s,Perimeter_s_s],[0,Perimeter_s_l]])
 
@@ -214,7 +214,8 @@ from pathlib import Path
 def runSim(directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, UseRatiothresholdAux,
            Qmax_, thresholdSuc,
-           GrRatio ,  maxLBud , budGR,L_dead_threshold ,
+           GrRatio ,  CarbonCost,
+           maxLBud , budGR,L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
            doPrint ,doDict, auxin_D = 0.,kss=0.2,kaa=1., 
@@ -294,14 +295,14 @@ def runSim(directoryN_,doVTP, verbosebase,
            "GrRatio" ,  "maxLBud" , "budGR","L_dead_threshold" ,
            "nodeD", "thread",  
            "testTime", "dtBefore", "dtAfter", "start_time", "dt_write","dtSIM_write",
-           "doPrint" ,"doDict", "auxin_D","kss", "kaa" ])) 
+           "doPrint" ,"doDict", "auxin_D","kss", "kaa" ,"CarbonCost"])) 
     write_file_array("input", np.array([directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, UseRatiothresholdAux,
            Qmax_, thresholdSuc,
            GrRatio ,  maxLBud , budGR,L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
-           doPrint ,doDict, auxin_D,kss,kaa ])) 
+           doPrint ,doDict, auxin_D,kss,kaa,CarbonCost ])) 
     # if RatiothresholdAux == 0 and UseRatiothresholdAux and activeAtThreshold_auxin:
     #     print(thread, RatiothresholdAux,UseRatiothresholdAux ,activeAtThreshold_auxin)
     #     print("issue ratio threshold")
@@ -355,7 +356,6 @@ def runSim(directoryN_,doVTP, verbosebase,
     sx = np.linspace(p_top, p_bot, depth)
     picker = lambda x,y,z : max(int(np.floor(-z)),-1) #abovegroud nodes get index -1
 
-    #picker = lambda x, y, z: s.pick([x, y, z])    
     pl.setSoilGrid(picker)  # maps segment
 
 
@@ -376,12 +376,12 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.setKrm2([[0]])#2e-4
     r.setKrm1([[1.3e-3]])#3e-03#([[2.5e-2]])
     #r.setRhoSucrose([[0.51],[0.65],[0.56]])
-    rho_org = [[1.34],[1.44],[1.56]]#g C/gDW?
+    rho_org = [[1.34,1.34,1.34,1.34],[1.44*CarbonCost,1.44*CarbonCost,1.56,1.56],[1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56]]#g C/gDW?
     density = 0.17 #g DW/cm3?
     #density and rho in mmol suc or carbon?
-    rho_org = np.array([np.array(xi) for xi in rho_org])*density/2 #/2 => glucose to sucrose
+    rho_org = np.array([np.array(xi) for xi in rho_org],dtype=object)*density/2 #/2 => glucose to sucrose
     r.setRhoSucrose(rho_org)
-    grRate = [[4.,2.,1.0,4.],[2.,2.,3.],[3.,3.,3.,3.]]
+    grRate = [[4.,2.,1.0,4.],[2.,2.,3.,3.],[3.,3.,3.,3.,3.,3.,3.,3.]]
     grRate = np.array([np.array(xi) for xi in grRate],dtype=object)
     grRate[1:] *= GrRatio #[1:]
 
@@ -541,6 +541,7 @@ def runSim(directoryN_,doVTP, verbosebase,
 
 
     r.doTroubleshooting = False
+    r.thread = thread
 
     r.auxin_threshold = thresholdAux
     r.auxin_D = auxin_D #e-6#muM /d  #e-6#3e-7
@@ -660,9 +661,13 @@ def runSim(directoryN_,doVTP, verbosebase,
         r.useStemTip = True
         doStartPM = True
         r.doTroubleshooting = False
-        r.stopAt = -1 #error between 8 and 9
+        r.stopAt = -1 
         if doStartPM:
-            r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
+            try:
+                r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
+            except:
+                print("error while running r.startPM",thread, simDuration)
+                raise Exception("error while running r.startPM")
         if ((r.stopAt >= 0) and (r.stopAt < 13)) or (not doStartPM): 
             r.Q_out = np.full(Nt*10,0.)
             r.C_ST = np.full(Nt,0.)
@@ -1245,9 +1250,10 @@ def runSim(directoryN_,doVTP, verbosebase,
         
     delete_file("running")
     outId = -1
-    if outcondition >= 0:
+    if (outcondition >= 0) and (changedSimMax):
         outId = thread
-        
+    if not changedSimMax:
+        print(outId,"fail, not reached changedSimMax", nodeD,budStage)
     #print("finished", thread, time.time() - start_time)
     #os._exit(os.EX_OK)
     del r
@@ -1294,5 +1300,4 @@ if __name__ == '__main__':
     print(end_time_ - start_time_ )
     sys.exit(0)
     
-     #directoryN_,doVTP,verbosebase,PRate_,thresholdAux,RatiothresholdAux,UseRatiothresholdAux,Qmax_,thresholdSuc,GrRatio,maxLBud,budGR,L_dead_threshold,nodeD,thread,testTime,dtBefore,dtAfter,start_time,dt_write,dtSIM_write,doPrint,doDict,auxin_D,kss,kaa,mainStemAux_mean
-#/AllAuxC1/,False,False,0.0068,0,1,True,0.00033999999999999997,0.1,3,1.0,0.1,100.0,8,159,7,0.041666666666666664,0.0006944444444444445,1669007380.5957625,0,0.006944444444444444,True,False,0.0,2.0,0.1,2.4897462814892175
+     

@@ -36,6 +36,7 @@ Qsv= params['Qsv']
 MulimSucv= params['MulimSucv']
 nodeDv=params['nodeDv']
 GrRatiov= params['GrRatiov']
+CarbonCostv= params['CarbonCost']
 kssv=params['kssv']
 kaav= params['kaav']
 maxrun = len(Qsv) #tot to do
@@ -56,27 +57,42 @@ def doCondition_(rinput, timeSinceDecap_, tt):
     toKeep = np.array([org.getParameter("subType") <= 2 for org in orgs])
     orgs = np.array(orgs)[toKeep]
     budStage = np.array([org.budStage for org in orgs]) 
+    budLength = np.array([org.getLength(False) for org in orgs])[1:] 
+    maxbudL = np.where(budLength == max(budLength))[0][0] +1
     nodeD_ = len(budStage) - 1 #decapitated under node
     sumBr = sum(budStage[1:]>1)
+    sumactiv = sum(budStage[1:]>0)
     msbs = budStage[0]
+    if (msbs == 2) and (sumactiv > 0): #thrshold too low
+        print(tt,nodeD_,"fail (msbs == 2) and (sumactiv > 0)",  budStage, timeSinceDecap_)
+        return -1
     if (msbs == 2) and (sumBr > 0): #thrshold too low
-        print(tt,"fail (msbs == 2) and (sumBr > 0)",nodeD_, budStage, timeSinceDecap_)
+        print(tt,nodeD_,"fail (msbs == 2) and (sumBr > 0)", budStage, timeSinceDecap_)
+        return -1
+    if(timeSinceDecap_ >=2) and (sumactiv ==0): #thrshold too high
+        print(tt,nodeD_,"fail (timeSinceDecap_ >=2) and (sumactiv ==0)",budStage, timeSinceDecap_)
         return -1
     if(timeSinceDecap_ >= 6.9) and (sumBr ==0): #thrshold too high
-        print(tt,"fail (timeSinceDecap_ >= 6.9) and (sumBr ==0)",nodeD_,budStage, timeSinceDecap_)
+        print(tt,nodeD_,"fail (timeSinceDecap_ >= 6.9) and (sumBr ==0)",budStage, timeSinceDecap_)
         return -1
     if((sumBr >3) and (nodeD_ != 5) and (nodeD_ != 6)): #thrshold too low
-        print(tt,"(fail sumBr >3) and (nodeD_ != 5) and (nodeD_ != 6)",nodeD_,budStage, timeSinceDecap_)
+        print(tt,nodeD_,"(fail sumBr >3) and (nodeD_ != 5) and (nodeD_ != 6)",budStage, timeSinceDecap_)
         return -1
     if (timeSinceDecap_ >= 6.9) and (nodeD_ >= 6) and (budStage[nodeD_-1] < 2):#last branch did not grow
-        print(tt,"fail  (timeSinceDecap_ >= 6.9) and (nodeD >= 6) and (budStage[nodeD-2] < 2)",nodeD_,budStage, timeSinceDecap_)
+        print(tt,nodeD_,"fail  (timeSinceDecap_ >= 6.9) and (nodeD >= 6) and (budStage[nodeD-2] < 2)",budStage, timeSinceDecap_)
+        return -1
+    if (timeSinceDecap_ >= 6.9) and (nodeD_ >= 6) and (maxbudL != nodeD_-1):#last branch did not dominate
+        print(tt,nodeD_,"fail  (timeSinceDecap_ >= 6.9) and (nodeD >= 6) and (maxbudL != nodeD_-1)",maxbudL, budStage, timeSinceDecap_)
         return -1
     if (timeSinceDecap_ >= 6.9) and (nodeD_ < 6) and (budStage[2] < 2):#branch 2 did not grow 
-        print(tt,"fail (timeSinceDecap_ >= 6.9) and (nodeD < 6) and (budStage[2] < 2)",nodeD_,budStage, timeSinceDecap_)
+        print(tt,nodeD_,"fail (timeSinceDecap_ >= 6.9) and (nodeD < 6) and (budStage[2] < 2)",budStage, timeSinceDecap_)
         return -1
-    if (nodeD_ == 4) and (budStage[3] ==2):#last branch of four grew
-        print(tt,"fail (nodeD == 4) and (budStage[3] ==2)",nodeD_,budStage, timeSinceDecap_)
+    if (timeSinceDecap_ >= 6.9) and (nodeD_ < 6) and (maxbudL != 2):#branch 2 did not dominate 
+        print(tt,nodeD_,"fail (timeSinceDecap_ >= 6.9) and (nodeD < 6) and (maxbudL != 2)",budStage, timeSinceDecap_)
         return -1
+    if (timeSinceDecap_ >= 6.9) and (nodeD_ == 4) and (budStage[3] ==2):#last branch of four grew #might be too difficult
+        print(tt,nodeD_,"fail (nodeD == 4) and (budStage[3] ==2)",budStage, timeSinceDecap_)
+        #return -1
     return 0
 
 tasks_iterator = (delayed(runSim)
@@ -84,7 +100,7 @@ tasks_iterator = (delayed(runSim)
                          PRate_ = 6.8e-3, thresholdAux = 0, 
                          RatiothresholdAux = 1,
        Qmax_ = Qsv[i+totrun], thresholdSuc = MulimSucv[i+totrun], 
-                         GrRatio = GrRatiov[i+totrun], 
+                         GrRatio = GrRatiov[i+totrun], CarbonCost = CarbonCostv[i+totrun],
                          maxLBud = 1., budGR = 0.1,L_dead_threshold=100.,
                          kss=kssv[i+totrun],kaa=kaav[i+totrun],
        UseRatiothresholdAux = True,
@@ -92,7 +108,7 @@ tasks_iterator = (delayed(runSim)
                          testTime=7, dtBefore = 1/24, dtAfter= 30/(60*24),
                         start_time = start_time_,
                          doPrint = True, doDict = False,
-                         dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
+                         dt_write = 0, dtSIM_write = 20/(60*24),auxin_D=0.,
                         doCondition = doCondition_)
                     for i in range(n_jobs))
 

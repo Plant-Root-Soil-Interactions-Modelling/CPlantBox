@@ -8,7 +8,7 @@ import psutil
 start_time_ = time.time()
 
 from masterI import runSim
-from CalibP1Database import toTry
+from CalibP4Database import toTry
 
 
 #def AllAuxCmasterFunc(N):
@@ -32,11 +32,12 @@ if isCluster:
 
 totrun = (maxcore - 1) * (N -1)#how much done
 params = toTry()
-Qsv=params['Qsv']
-MulimSucv=params['MulimSucv']
+Qsv= params['Qsv']
+MulimSucv= params['MulimSucv']
 nodeDv=params['nodeDv']
 GrRatiov= params['GrRatiov']
-CarbonCostv= params['CarbonCostv']
+kssv=params['kssv']
+kaav= params['kaav']
 maxrun = len(Qsv) #tot to do
 n_jobs = min((maxrun - totrun),#left to do
              maxcore - 1) #can do
@@ -51,33 +52,16 @@ print("isCluster:",isCluster,"maxcore",maxcore,"to do",maxrun,"already did:", to
 
 #-1 failur, 1 succes, 0 wait
 def doCondition_(rinput, timeSinceDecap_, tt):
-    orgs = rinput.plant.getOrgans(3, True)
-    toKeep = np.array([org.getParameter("subType") <= 2 for org in orgs])
-    orgs = np.array(orgs)[toKeep]
-    budStage = np.array([org.budStage for org in orgs]) 
-    sumactiv = sum(budStage[1:]>0)
-    msbs = budStage[0]
-    nodeD_ = len(budStage) - 1 #decapitated under node
-    if (msbs == 2) and (sumactiv > 0): #thrshold too low
-        print(tt,nodeD_,"fail", budStage, timeSinceDecap_)
-        return -1
-    if(timeSinceDecap_ >=2) and (sumactiv ==0): #thrshold too high
-        print(tt,nodeD_,"fail",budStage, timeSinceDecap_)
-        return -1
-    if(timeSinceDecap_ >= 0) and (sumactiv > 0): #thrshold too high
-        print(tt,nodeD_,"success",budStage, timeSinceDecap_)
-        return 1
-    else:
-        return 0
+    return 0
 
 tasks_iterator = (delayed(runSim)
                         (directoryN_ = directoryN, doVTP = False, verbosebase = False,
                          PRate_ = 6.8e-3, thresholdAux = 0, 
                          RatiothresholdAux = 1,
        Qmax_ = Qsv[i+totrun], thresholdSuc = MulimSucv[i+totrun], 
-                         GrRatio = GrRatiov[i+totrun], CarbonCost = CarbonCostv[i + totrun],
+                         GrRatio = GrRatiov[i+totrun], 
                          maxLBud = 1., budGR = 0.1,L_dead_threshold=100.,
-                         #kss=kss_v[i+totrun],kaa=kaa_v[i+totrun],
+                         kss=kssv[i+totrun],kaa=kaav[i+totrun],
        UseRatiothresholdAux = True,
                          nodeD = nodeDv[i+totrun], thread = i,
                          testTime=7, dtBefore = 1/24, dtAfter= 30/(60*24),
@@ -89,29 +73,3 @@ tasks_iterator = (delayed(runSim)
 
         
 results = parallelizer(tasks_iterator)
-
-def write_file_array(name, data):
-    name2 = 'results'+ directoryN+ name+ '.txt'
-    with open(name2, 'a') as log:
-        log.write(','.join([num for num in map(str, data)])  +'\n')
-        
-write_file_array("successThreads", results)
-print("DONE", directoryN)
-subproc_after = set([p.pid for p in current_process.children(recursive=True)]) - subproc_before
-
-# for subproc in subproc_after:
-#     kid_process = psutil.Process(subproc)
-#     print('Killing n1 process with pid {}'.format(subproc))
-#     kid_process.terminate()
-print("successThreads",results)
-    
-#     import signal
-# import platform
-# # get the current PID for safe terminate server if needed:
-# PID = os.getpid()
-# if platform.system() is not 'Windows':
-#     PGID = os.getpgid(PID)
-# if platform.system() is not 'Windows':
-#     os.killpg(PGID, signal.SIGKILL)
-# else:
-#     os.kill(PID, signal.SIGTERM)

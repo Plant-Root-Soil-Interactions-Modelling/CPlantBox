@@ -374,7 +374,10 @@ int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vec
 		Q_GrowthtotBU = Fortran_vector(Nt, 0.) ;
         Q_GrmaxBU = Fortran_vector(Nt, 0.) ;
     }
-    if(!burnInTime){updateBudStage(tf);}
+    
+    if(!burnInTime){
+        updateBudStage(tf);
+    }
 	if(doTroubleshooting&&(!verbose)){std::cout.rdbuf(coutbuf);} //reset to standard output again
 	return(1) ;
 	
@@ -504,7 +507,8 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	//doTroubleshooting = true;
 	for ( int k=1 ;k <= Nc;k++ ) 
 	{
-			ot = orgTypes[k-1]; st = subTypes[k-1];
+			ot = orgTypes[k-1]; 
+            st = subTypes[k-1];
 			a_seg = Radii[k-1];
 			l = Lengthvec[k-1];
 			I_Upflow[k] = segmentsPlant[k-1].x +1;
@@ -878,17 +882,35 @@ void PhloemFlux::updateBudStage(double EndTime)
             {
                 case 1://active bud
                 {
-                    //double sucFact = suc * 10.;//mM/100 => M*10
-                    assert((org->getParent()->getNumberOfNodes() >= org->parentNI+1 )&&"(org->parent->getNumberOfNodes() >= org->parentNI+1 )");
-                    //concentration in node above (not affected by own outflux)
-                    double auxaux = C_Auxinv.at(org->getParent()->getNodeId(org->parentNI+1) );
-                    //double auxaux = std::max(0.,C_Auxinv.at(org->getNodeId(0) ) - C_Auxinv.at(org->getNodeId(1) ));
-                    //double RA = C_Auxinv.at(org->getNodeId(0) )/auxin_init_mean;//auxin ratio from 
-                    //org->BerthFact = ((RA*10+1)/(sucFact+0.2))*(1-(0.15/(sucFact+0.2))) / 10;    // "/10" to go from mm to cm
-                    org->BerthFact = computeBerth(suc, auxaux);
-                    //if(org->BerthFact <= org->getLength(false)){org->budStage = 2;}//congrats! you are a branch
-                    if(org->BerthFact <= org->age){org->budStage = 2;}//congrats! you are a branch
-                    if(org->BerthFact > L_dead_threshold){org->budStage = -1;}//sorry! you are dead
+                    try{
+                        double auxaux;
+                        if(org->getParent()->getNumberOfNodes() > (org->parentNI+1) )
+                        {
+                            auxaux = C_Auxinv.at(org->getParent()->getNodeId(org->parentNI+1) );//concentration above
+                        }else{
+                            if(org->getNumberOfNodes() >1)//concentration base - concentration next to it
+                            {
+                                auxaux = C_Auxinv.at(org->getNodeId(0) ) -  C_Auxinv.at(org->getNodeId(1) ) ;
+                            }else{
+                                auxaux = C_Auxinv.at(org->getNodeId(0) )  ;//no solutions
+                            }
+                        }
+
+                        //concentration in node above (not affected by own outflux)
+
+                        //double auxaux = std::max(0.,C_Auxinv.at(org->getNodeId(0) ) - C_Auxinv.at(org->getNodeId(1) ));
+                        
+                        org->BerthFact = computeBerth(suc, auxaux);
+                        //if(org->BerthFact <= org->getLength(false)){org->budStage = 2;}//congrats! you are a branch
+                        
+                        if(org->BerthFact <= org->age){org->budStage = 2;}//congrats! you are a branch
+                        if(org->BerthFact > L_dead_threshold){org->budStage = -1;}//sorry! you are dead
+                    }catch(...){
+                        std::cout<<"PhloemFlux::updateBudStage "<<EndTime<<" "<<org->getId()<<" "<<org->getParent()->getNumberOfNodes() <<" "<<org->parentNI
+                            <<" "<<org->getNumberOfNodes()<<" "<<C_Auxinv.size()<<std::flush;
+                        std::cout<<"thread issue "<<plant->thread<<std::flush;
+                        assert(false);
+                    }
                     break;
                 }
                 case 0://dormant

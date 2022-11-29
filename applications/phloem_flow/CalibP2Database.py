@@ -5,33 +5,23 @@ import sys;
 import math
 import os
 import numpy as np
-
+import pandas as pd
 
 def toTry():
     
-    #Qs =np.array([ 120.,  230.,  340.,  450.,  560., ])*1e-6
-    Qs =np.array([230.])*1e-6
-    #MulimSuc =np.array([0.3,0.6,0.9,1.2,1.5])
-    MulimSuc =np.array([0.6,0.9,1.2])
-    GrRatio = np.array([3]) 
-    nodeD = np.array([3,4,5,6,7,8])
-    kss = np.array([0.01, 0.100, 0.2, 0.3, 0.4])
-    kaa = np.array([ 1. , 3.,  5.,  7.,  9., 11.,15,17])
-    maxrun = len(Qs) * len(MulimSuc) * len(nodeD) * len(GrRatio)*len(kaa)*len(kss)
+    dfP2 = pd.read_csv('results/forP2.csv')
 
 
-    Qsv,MulimSucv,kssv,kaav, nodeDv,GrRatiov = np.meshgrid(Qs,MulimSuc,kss,kaa,nodeD,GrRatio)
-    Qsv=Qsv.flatten()
-    MulimSucv=MulimSucv.flatten()
-    kaav=kaav.flatten()
-    kssv = kssv.flatten()
-    nodeDv=nodeDv.flatten()
-    GrRatiov = GrRatiov.flatten()
-    dictPara= {'Qsv' : Qsv,
-                    'nodeDv':nodeDv, 
-               'MulimSucv':MulimSucv,
-                    'kaav':kaav, 
-               'kssv':kssv,
-              'GrRatiov':GrRatiov}
-    return dictPara
+    # dictPara= {'Qsv' : dfP2['Qsv'],
+    #                 'nodeDv':dfP2['nodeDv'], 
+    #            'MulimSucv':dfP2['MulimSucv'],
+    #                 'kaav':dfP2['kaav'], 
+    #            'kssv':dfP2['kssv'],
+    #           'GrRatiov':dfP2['GrRatiov'],
+    #           'CarbonCostv':dfP2['CarbonCostv']}
+    # df = pd.DataFrame(data=dictPara)
+    if sum(dfP2.duplicated()) > 0 :
+        print("CalibP2Database::toTry(): sum(df.duplicated()) > 0")
+        raise Exception
+    return dfP2 #dictPara
 

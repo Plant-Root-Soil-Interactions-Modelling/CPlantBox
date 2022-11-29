@@ -123,7 +123,6 @@ public:
     int budStage = 2;
     double BerthFact = -1.;
     std::vector<double> budStageChange = std::vector<double>(4,-1.);
-	
 
 //protected:
 

@@ -379,7 +379,8 @@ PYBIND11_MODULE(plantbox, m) {
         
            .def_readwrite("verboseh", &Organism::verboseh)
            .def_readwrite("maxLBud", &Organism::maxLBud)
-           .def_readwrite("budGR", &Organism::budGR);
+           .def_readwrite("budGR", &Organism::budGR)
+           .def_readwrite("thread", &Organism::thread);
 
 
     py::enum_<Organism::OrganTypes>(m, "OrganTypes")
