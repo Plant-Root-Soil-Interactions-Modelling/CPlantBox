@@ -9,7 +9,7 @@ import pandas as pd
 
 def toTry():
     
-    dfP2 = pd.read_csv('results/forP2.csv')
+    dfP2 = pd.read_csv('resultsConsolidated/forP2.csv')
 
 
     # dictPara= {'Qsv' : dfP2['Qsv'],
