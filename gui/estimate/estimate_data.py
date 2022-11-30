@@ -182,8 +182,6 @@ class EstimateDataModel:
             else: 
                 print("production rate", res.x[0])
             
-
-
             #compute seed params
             delayB_, firstB_, maxB_ = [], [], []
             #print('times', self.times)
@@ -299,8 +297,28 @@ class EstimateDataModel:
                     p0 = coordina[(int(ii[j]-1))]
                     p2 = np.asarray(self.rsmls[i].polylines[j][0])
                     #print('p0, p, p2',p0, p, p2)
+
+                    # growth angle should be measured between segments >1cm
                     v1 = p - p0
+                    if np.linalg.norm(v1)<1:
+                        dummy = 2
+                        while np.linalg.norm(v1)<1:
+                            if ii[j]<dummy:
+                                break
+                            p0 = coordina[(int(ii[j]-dummy))]
+                            v1 = p - p0
+                            dummy = dummy+1
+                            
                     v2 = p2 - p
+                    if np.linalg.norm(v2)<1:
+                        dummy = 1
+                        while np.linalg.norm(v2)<1:
+                            if len(self.rsmls[i].polylines[j])<=dummy:
+                                break
+                            p2 = np.asarray(self.rsmls[i].polylines[j][dummy])
+                            v2 = p2 - p
+                            dummy = dummy+1
+
                     v1 = v1 / np.linalg.norm(v1)
                     v2 = v2 / np.linalg.norm(v2)
                     theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
