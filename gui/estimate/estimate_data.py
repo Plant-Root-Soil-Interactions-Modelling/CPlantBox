@@ -169,14 +169,12 @@ class EstimateDataModel:
             for i, j_ in enumerate(indices):
                 length_basals[i] = []
                 for j in j_:
-                  length_basals[i].append(self.rsmls[i].properties["length"][j])
-                #indx = sorted(range(len(length_basals[i])), key=lambda k: length_basals[i][k])
-                #indx = [int(x) for x in indx]
-                #a = np.array(indices[i])
-                #print('a, indx', a, indx)
-                #a = a[indx]
-                #indices[i] = list(a)
-            res, f, ages = estimate_order0_rate(np.array(length_basals), p.r, p.lmax, self.times)
+                    length_basals[i].append(self.rsmls[i].properties["length"][j])
+
+            #idx_act = np.asarray([i for i,x in enumerate(length_basals) if not x])
+            length_basals_ = [l or [1e-14] for l in length_basals]
+            print(length_basals_) 
+            res, f, ages = estimate_order0_rate(np.array(length_basals_), p.r, p.lmax, self.times)
             if res.x[0]<0:
                 print("ERROR: negative growth rate!!!")
             else: 
@@ -282,16 +280,25 @@ class EstimateDataModel:
 
                 #set branching angle 'theta'
                 ii = [self.rsmls[i].properties["parent-node"]][0]
-
-                if int(ii[j])==-1: #basal root angle
+                if (int(ii[j])==-1) or (int(ii[j])==1) : #basal root angle
                     p = np.asarray(self.rsmls[i].polylines[j][0])
                     p2 = np.asarray(self.rsmls[i].polylines[j][1]) #take the node after since there is no previous node
-                    #print('p, p2',p, p2)
                     v1 = [0, 0, -1]
                     v2 = p2 - p
+                    if np.linalg.norm(v2)<1:
+                        dummy = 2
+                        while np.linalg.norm(v2)<1:
+                            if len(self.rsmls[i].polylines[j])<=dummy:
+                                break
+                            p2 = np.asarray(self.rsmls[i].polylines[j][dummy])
+                            v2 = p2 - p
+                            dummy = dummy+1
+                    
                     v1 = v1 / np.linalg.norm(v1)
                     v2 = v2 / np.linalg.norm(v2)
-                    theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+                    #theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+                    angle = np.arccos(np.dot(v1, v2))/math.pi*180
+                    #print('basal vectors', p, p2, angle)
                 else:
                     p = coordina[(int(ii[j]))]
                     p0 = coordina[(int(ii[j]-1))]
@@ -299,14 +306,14 @@ class EstimateDataModel:
                     #print('p0, p, p2',p0, p, p2)
 
                     # growth angle should be measured between segments >1cm
-                    v1 = p - p0
+                    v1 = p0-p
                     if np.linalg.norm(v1)<1:
                         dummy = 2
                         while np.linalg.norm(v1)<1:
                             if ii[j]<dummy:
                                 break
                             p0 = coordina[(int(ii[j]-dummy))]
-                            v1 = p - p0
+                            v1 = p0 - p
                             dummy = dummy+1
                             
                     v2 = p2 - p
@@ -321,8 +328,9 @@ class EstimateDataModel:
 
                     v1 = v1 / np.linalg.norm(v1)
                     v2 = v2 / np.linalg.norm(v2)
-                    theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
-                angle = theta_/math.pi*180
+                    #theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+                    angle = np.arccos(np.dot(v1, v2))/math.pi*180
+                    
                 if angle>90:
                     angle = 180-angle
                 self.estimates[i][(j, "theta")] = angle
