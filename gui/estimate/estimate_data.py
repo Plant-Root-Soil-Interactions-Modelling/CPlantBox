@@ -171,9 +171,7 @@ class EstimateDataModel:
                 for j in j_:
                     length_basals[i].append(self.rsmls[i].properties["length"][j])
 
-            #idx_act = np.asarray([i for i,x in enumerate(length_basals) if not x])
             length_basals_ = [l or [1e-14] for l in length_basals]
-            print(length_basals_) 
             res, f, ages = estimate_order0_rate(np.array(length_basals_), p.r, p.lmax, self.times)
             if res.x[0]<0:
                 print("ERROR: negative growth rate!!!")
