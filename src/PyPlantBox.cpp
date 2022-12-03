@@ -310,7 +310,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("active", &Organ::active)
             .def_readwrite("budStage", &Organ::budStage)
             .def_readwrite("budStageChange", &Organ::budStageChange)
-            .def_readwrite("BerthFact", &Organ::BerthFact);
+            .def_readwrite("BerthFact", &Organ::BerthFact)
+            .def_readwrite("parentLinkingNode", &Organ::parentLinkingNode)
+            .def_readwrite("sucTested", &Organ::sucTested)
+            //.def_readwrite("memAux", &Organ::memAux)
+            .def_readwrite("auxTested", &Organ::auxTested);
 
     /*
      * Organism.h
@@ -378,6 +382,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("__str__",&Organism::toString)
         
            .def_readwrite("verboseh", &Organism::verboseh)
+           .def_readwrite("maxLBudDormant", &Organism::maxLBudDormant)
+           .def_readwrite("maxLBudDormant_1", &Organism::maxLBudDormant_1)
            .def_readwrite("maxLBud", &Organism::maxLBud)
            .def_readwrite("budGR", &Organism::budGR)
            .def_readwrite("thread", &Organism::thread);
@@ -966,6 +972,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("es", &Photosynthesis::es)
             .def_readwrite("ea", &Photosynthesis::ea)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
+            .def_readwrite("Qlights", &Photosynthesis::Qlights)
             .def_readwrite("ci", &Photosynthesis::ci)
             .def_readwrite("Jw", &Photosynthesis::Jw)
             .def_readwrite("Ev", &Photosynthesis::Ev)
@@ -1060,6 +1067,11 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("auxin_init_mean",&PhloemFlux::auxin_init_mean)
 			.def_readwrite("computeBerth",&PhloemFlux::computeBerth)
 			.def_readwrite("stopAt",&PhloemFlux::stopAt)
+			.def_readwrite("BerthLim",&PhloemFlux::BerthLim)
+			.def_readwrite("useLength",&PhloemFlux::useLength)
+			.def_readwrite("doMemAux",&PhloemFlux::doMemAux)
+			.def_readwrite("PRBA",&PhloemFlux::PRBA)
+			.def_readwrite("PRBD",&PhloemFlux::PRBD)
             //.def("computeBerth", (void (PhloemFlux::*)(const std::function<double(double,double)>&)) &PhloemFlux::computeBerth)
         
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)

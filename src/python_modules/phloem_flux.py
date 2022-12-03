@@ -176,3 +176,41 @@ class PhloemFluxPython(PhloemFlux):
         
         """
         return 0
+    
+    def computeLight(self,Klight, isMain):
+        leaves =  self.plant.getOrgans(4, True)#GET THE LEAVES
+        leafRank = np.array([org.parentLinkingNode for org in leaves]) 
+        leafArea = np.array([org.getLength(False) * org.getParameter("Width_blade") for org in leaves]) 
+        segNum =sum( np.array([org.getNumberOfNodes() -1  for org in leaves]) )
+        QlightsTemp = np.array([])
+        QlightsTempID = np.array([])
+        lightMax = self.Qlight
+        ranktmp = -1 
+        if True:# isMain:
+            print("leafRank", leafRank,leafArea)
+        for n,leaf in enumerate(leaves):
+            
+            ranktmp = leafRank[n]
+            
+            areaAbove = sum(leafArea[leafRank > ranktmp])
+            Q =  lightMax *  np.exp(-Klight * areaAbove )
+            QlightsTemp = np.concatenate((QlightsTemp,np.full(leaf.getNumberOfNodes() -1,Q)))
+            segID = np.array([ndId -1 for ndId in leaf.getNodeIds()[1:]])
+            QlightsTempID = np.concatenate((QlightsTempID,segID))
+            #print(n, Q,leafRank[n],areaAbove,-Klight * areaAbove,np.exp(-Klight * areaAbove ), QlightsTemp, segID, QlightsTempID)
+        order = QlightsTempID.argsort()
+        QlightsTemp_ = QlightsTemp[order]
+        self.Qlights = QlightsTemp_
+        if isMain:
+            print("Qlight",QlightsTemp,QlightsTemp_,QlightsTempID)
+        
+    def doVTPf(self,doIt,directoryN,dir4allResults,ö, isMain):
+        if (doIt >= 1) or isMain:
+            ana = pb.SegmentAnalyser(self.plant.mappedSegments())
+            cutoff = 1e-15
+            Ag4Phloem_p = np.array(self.Ag4Phloem)
+            Ag4Phloem_p[abs(Ag4Phloem_p) < cutoff] = 0
+            ana.addData("Ag4Phloem", Ag4Phloem_p)
+            ana.write("results"+directoryN+"plotplant_"+dir4allResults+"_"+ str(ö) +".vtp", 
+                      ["Ag4Phloem","organType", "subType"]) 
+            

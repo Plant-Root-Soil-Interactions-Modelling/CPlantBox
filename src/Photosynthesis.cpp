@@ -384,9 +384,12 @@ void Photosynthesis::initVcVjRd(){
 		expo2 = std::exp((S * TleafK - Edj)/(R_ph *0.1* TleafK));
 		double Jmax = std::min(Jrefmax * expo1 / (1. + expo2), Jrefmax); //Eq 24
 		//J
+        double Qlight_ = Qlight;
+        if(Qlights.size() == seg_leaves_idx.size())
+        {Qlight_ = Qlights.at(li_);}
 		double coefa = theta;
-		double coefb = -(alpha * Qlight + Jmax);
-		double coefc = alpha * Qlight * Jmax;
+		double coefb = -(alpha * Qlight_ + Jmax);
+		double coefc = alpha * Qlight_ * Jmax;
 		double dis = std::pow(coefb,2.) - (4.*coefa*coefc);
 		J =  ((-coefb- std::sqrt(dis))/(2.*coefa));
 		

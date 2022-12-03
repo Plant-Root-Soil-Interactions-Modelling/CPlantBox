@@ -108,7 +108,7 @@
 </root>
 
 <organ type="stem" name="mainstem" subType="1">
-	<parameter name="lb" value="3" dev="0"/>
+	<parameter name="lb" value="0" dev="0"/>
 	<!--dummy val, Basal zone [cm]-->
 	<parameter name="la" value="0" dev="0"/>
 	<!--dummy val, Apical zone [cm];-->
@@ -129,12 +129,13 @@
 	<parameter name="theta" value="0" dev="0"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
 	<parameter name="gf" value="4"/>
+    <parameter name="nZ" value="1"/>
 	<!--~2 developping branch, barillot2014-->
 	<parameter name="successor" numLat="1" subType="2" organType="3" percentage="1" where="-1"/>
 	<parameter name="successor" numLat="1" subType="3" organType="3" percentage="1" where="3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19"/>
 	<parameter name="successor" numLat="1" subType="4" organType="3" percentage="1" where="2"/>
-	<parameter name="successor" numLat="2" subType="2" organType="4" percentage="1" where="0"/>
-	<parameter name="successor" numLat="2" subType="3" organType="4" percentage="1" where="1"/>
+	<parameter name="successor" numLat="1" subType="2" organType="4" percentage="1" where="0"/>
+	<parameter name="successor" numLat="1" subType="3" organType="4" percentage="1" where="1"/>
 </organ>
 
 <organ type="stem" name="bud" subType="2">
@@ -242,7 +243,7 @@
     <parameter name="tropismN" value="20"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.25"/>
+	<parameter name="dxMin" value="0.01"/>
     <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="4"/>
@@ -274,7 +275,7 @@
     <parameter name="tropismN" value="20"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.25"/>
+	<parameter name="dxMin" value="0.01"/>
     <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="4"/>
@@ -292,7 +293,7 @@
     <!--Apical zone [cm];-->
     <parameter name="ln" value="0" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="2" dev="0"/>
+    <parameter name="lmax" value="1" dev="0"/>
     <!--max distance == mean diameter (from Kong2020) to side distance-->
     <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.5" dev="0.002"/>
@@ -307,7 +308,7 @@
     <parameter name="tropismN" value="20"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.25"/>
+	<parameter name="dxMin" value="0.01"/>
     <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="4"/>
@@ -340,7 +341,7 @@
     <parameter name="tropismN" value="20"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.25"/>
+	<parameter name="dxMin" value="0.01"/>
     <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="4"/>
@@ -373,7 +374,7 @@
     <parameter name="tropismN" value="20"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.25"/>
+	<parameter name="dxMin" value="0.01"/>
     <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="4"/>
@@ -406,7 +407,7 @@
     <parameter name="tropismN" value="20"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.25"/>
+	<parameter name="dxMin" value="0.01"/>
     <parameter name="theta" value="0.5" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="4"/>

@@ -124,6 +124,8 @@ public:
 	//bool activeAtThreshold = false; 
 	bool useCWGr = true; //use water- and carbon- limited growth?
 	bool verboseh = false;
+    double maxLBudDormant_1 = 0.;
+    double maxLBudDormant = 0.;
     double maxLBud = 1.;
     double budGR = 0.1;//1mm/d
     

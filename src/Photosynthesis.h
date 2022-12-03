@@ -84,6 +84,7 @@ public:
 	double TleafK; //[K]
 	double TairC = 20; //[°C]
 	double Qlight = 900e-6;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
+    std::vector<double> Qlights; //Qlight for each segment, size == seg_leaves_idx.size()
 	std::vector<double>  Chl = std::vector<double>(1,55.); 
 	double oi = 210e-3;//leaf internal [O2] [mol mol-1]
 	

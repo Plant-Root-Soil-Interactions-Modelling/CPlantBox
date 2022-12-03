@@ -468,7 +468,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	vol_Seg=Fortran_vector(Nt, 0.);//for postprocessing	
 	exud_k=Fortran_vector(Nt, 0.);
 	krm2=Fortran_vector(Nt, 0.);
-	AuxinSource = std::vector<int>(Nt , 0)  ;//reset
+	AuxinSource = std::vector<double>(Nt , 0.)  ;//reset
     isRootTip = std::vector<bool>(Nt , false)  ;
     manualAddST.resize(Nt , 0.)  ;
     manualAddMeso.resize(Nt , 0.)  ;
@@ -877,6 +877,7 @@ void PhloemFlux::updateBudStage(double EndTime)
       {
           int bu_bs = org->budStage;
                 int stemTip = org->getNodeId(org->getNumberOfNodes()-1) ;
+          //use the org_mean instead?
                 double suc =  C_STv.at(stemTip) ;
             switch(org->budStage)
             {
@@ -899,12 +900,26 @@ void PhloemFlux::updateBudStage(double EndTime)
                         //concentration in node above (not affected by own outflux)
 
                         //double auxaux = std::max(0.,C_Auxinv.at(org->getNodeId(0) ) - C_Auxinv.at(org->getNodeId(1) ));
-                        
-                        org->BerthFact = computeBerth(suc, auxaux);
+                        double lenFact = 1;
+                        if(useLength >= 1){lenFact = org->getLength(false);}
+                        double suc_ =  suc * lenFact;///plant->maxLBud);
+                        if(doMemAux >= 1)
+                        {
+                            if(org->auxTested > auxaux)
+                            {
+                                org->auxTested = auxaux;
+                            }
+                        }else{
+                                org->auxTested = auxaux;
+                            }
+                        org->BerthFact = computeBerth(suc_, org->auxTested);
                         //if(org->BerthFact <= org->getLength(false)){org->budStage = 2;}//congrats! you are a branch
                         
-                        if(org->BerthFact <= org->age){org->budStage = 2;}//congrats! you are a branch
+                        double limToUse = BerthLim;
+                        if(BerthLim < 0){limToUse = org->age;}
+                        if(org->BerthFact <= limToUse){org->budStage = 2;}//congrats! you are a branch
                         if(org->BerthFact > L_dead_threshold){org->budStage = -1;}//sorry! you are dead
+                        org->sucTested = suc;
                     }catch(...){
                         std::cout<<"PhloemFlux::updateBudStage "<<EndTime<<" "<<org->getId()<<" "<<org->getParent()->getNumberOfNodes() <<" "<<org->parentNI
                             <<" "<<org->getNumberOfNodes()<<" "<<C_Auxinv.size()<<std::flush;
@@ -915,10 +930,37 @@ void PhloemFlux::updateBudStage(double EndTime)
                 }
                 case 0://dormant
                 {
-                    if(suc >= CSTthreshold)
+                    
+                        double auxaux;
+                        if(org->getParent()->getNumberOfNodes() > (org->parentNI+1) )
+                        {
+                            auxaux = C_Auxinv.at(org->getParent()->getNodeId(org->parentNI+1) );//concentration above
+                        }else{
+                            if(org->getNumberOfNodes() >1)//concentration base - concentration next to it
+                            {
+                                auxaux = C_Auxinv.at(org->getNodeId(0) ) -  C_Auxinv.at(org->getNodeId(1) ) ;
+                            }else{
+                                auxaux = C_Auxinv.at(org->getNodeId(0) )  ;//no solutions
+                            }
+                        }
+                    double lenFact = 1;
+                        if(useLength >= 2){lenFact = org->getLength(false);}
+                    double suc_ =  suc * lenFact;// * (org->getLength(false)/plant->maxLBudDormant);//content and not concentration is important
+                        org->sucTested = suc;
+                        if(doMemAux >= 2)
+                        {
+                            if(org->auxTested > auxaux)
+                            {
+                                org->auxTested = auxaux;
+                            }
+                        }else{
+                                org->auxTested = auxaux;
+                            }
+                    if(suc_ >= CSTthreshold)
                     {
                         org->budStage = 1;
                         org->age = 0.; //reset age
+                        //org->auxTested = -1;
                     }//congrats! you are released
                     break;
                 }
@@ -967,7 +1009,13 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
             switch(org->budStage) 
             {
                 case -1:{rmax = 0.;break;} //dead
-                case 0:{rmax = 0.;break;}//dormant
+                case 0:{rmax = plant->budGR;//1 mm/d
+                            Lmax = plant->maxLBudDormant; 
+                            if(org->parentLinkingNode == 1)//2nd bud
+                            {
+                                Lmax = plant->maxLBudDormant_1; 
+                            };
+                        break;}//dormant
                 case 1 :{rmax = plant->budGR;Lmax = plant->maxLBud;break;}//1 mm/d
                 case 2 :{rmax = Rmax_st_f(st,ot);
                          Lmax = org->getParameter("k");break;}//1 mm/d
@@ -1130,9 +1178,13 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                 
        
                 
-                if(AuxinSource.at(nodeId) == 0)//not yet a source there
+                
+                    double Bs = org->budStage;
+                    double Rate = ( (Bs == 1)*PRBA) +  ( (Bs == 0)*PRBD)+  ( (Bs ==2 ));
+                    double tempAuxS = Rate*isStemTip*(org->getParameter("subType") <=2);
+                if(AuxinSource.at(nodeId) < tempAuxS)//not yet a source there
                 {
-                    AuxinSource.at(nodeId) = (org->budStage >= 1)*isStemTip*(org->getParameter("subType") <=2);
+                    AuxinSource.at(nodeId) = tempAuxS;
                 }
                 
                 if(plant->node_Decapitate.size()> 0)

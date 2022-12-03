@@ -145,23 +145,11 @@ void Stem::simulate(double dt, bool verbose)
 	auto p_all = plant.lock();
 	auto p_stem = p_all->getOrganRandomParameter(Organism::ot_stem);
 
-	int nC = getPlant()->getSeed()->param()->nC; //number of the shoot born root
-	double nZ = getPlant()->getSeed()->param()->nz; // distance between shoot born root and the seed
-	double res = nZ -floor(nZ / dx())*dx();
-	if(res < dxMin() && res != 0){
-		if(res <= dxMin()/2){ nZ -= res;
-		}else{nZ =  floor(nZ / dx())*dx() + dxMin();}
-		if(verbose){std::cout<<"\nStem::simulate: nZ changed to "<<nZ<<" for compatibility with dx and dxMin"<<std::endl;}
-	}			//make nZ compatible with dx() and dxMin()
 
 
 	int additional_childern;
-	if (p.subType == 1)
-	{
-		additional_childern= (int)round(nC); //if it is the main stem, the children should include the shoot borne root
-	} else {
-		additional_childern = 0;
-	}
+	additional_childern = 0;
+	
 
 	if (alive) { // dead roots wont grow
 
@@ -258,7 +246,13 @@ void Stem::simulate(double dt, bool verbose)
                 switch(budStage) 
                 {
                     case -1:{Lmax = length; break;}
-                    case 0:{Lmax = length; break;}
+                    case 0:{rmax = plant.lock()->budGR;//1 mm/d
+                            Lmax = plant.lock()->maxLBudDormant; 
+                            if(parentLinkingNode == 1)//2nd bud
+                            {
+                                Lmax = plant.lock()->maxLBudDormant_1; 
+                            }
+                            break;}
                     case 1 :{rmax = plant.lock()->budGR;Lmax = plant.lock()->maxLBud;break;}//1 mm/d
                     case 2 :{rmax = getParameter("r");
                              Lmax = getParameter("k");break;}//1 mm/d
@@ -286,8 +280,8 @@ void Stem::simulate(double dt, bool verbose)
                         std::cout<<"yes empty "<<LinitTemp<<" "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
                     }
                     
-                    if((e + length) - Lmax> 1e-10){
-                        std::cout<<"Stem::simulate: target length too high "<<e<<" "<<dt<<" "<<length;
+                    if((e + getLength(true)) - Lmax> 1e-10){
+                        std::cout<<"Stem::simulate: target length too high "<<e<<" "<<dt<<" "<<getLength(false);
                         std::cout<<" "<<Lmax<<" "<<getId()<<" "<<budStage<<std::endl;
                         assert(false);
                     }
@@ -299,8 +293,9 @@ void Stem::simulate(double dt, bool verbose)
                         std::cout<<"NO has was "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
                     }
                 }
-                assert(((budStage !=1)||(length - 1 < 1e-10))&&"!(((budStage !=1)||(length - 1 < 1e-10)))");
-                assert(((budStage !=0)||(length < 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
+                assert(((budStage !=1)||(length - plant.lock()->maxLBud < 1e-10))&&"!(((budStage !=1)||(length - 1 < 1e-10)))");
+                assert(((budStage !=0)||(parentLinkingNode == 1)||(length - plant.lock()->maxLBudDormant < 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
+                assert(((budStage !=0)||(parentLinkingNode != 1)||(length - plant.lock()->maxLBudDormant_1 < 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
 				length = getLength(true);
 				this->epsilonDx = 0.; // now it is "spent" on length (no need for -this->epsilonDx in the following)
@@ -310,23 +305,23 @@ void Stem::simulate(double dt, bool verbose)
 					//std::cout<<"sim seed nZ is"<< nZ<<"\n";
 					/*
                     shoot born root
-					 */
-					if ((dl>0)&&(length< nZ)) {
-						if (length+dl <= nZ) {
-							createSegments(dl,verbose);
-							length+=dl ;
-							dl=0;
-						} else {
-							double ddx = nZ - length;
-							createSegments(ddx,verbose);//should it not be ddx here?
+// 					 */
+// 					if ((dl>0)&&(length< nZ)) {
+// 						if (length+dl <= nZ) {
+// 							createSegments(dl,verbose);
+// 							length+=dl ;
+// 							dl=0;
+// 						} else {
+// 							double ddx = nZ - length;
+// 							createSegments(ddx,verbose);//should it not be ddx here?
 
-							dl-=ddx;
-							shootBorneRootGrow(verbose);
-							length = nZ;
-						}
+// 							dl-=ddx;
+// 							shootBorneRootGrow(verbose);
+// 							length = nZ;
+// 						}
 
 
-					}
+// 					}
 
 					/* basal zone */
 					if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
@@ -759,17 +754,21 @@ void Stem::createLateral(bool verbose)
 				if(verbose){std::cout<<"from stem data 4 lat "<<getId()<<" "<<ot<<" "<<st<<" "<<p_id<<" "<< (nodes.size() - 1)<<" ageLN "<<ageLN<<" "<<age;
 				
 						std::cout<<" "<<getNodeId(nodes.size() - 1)<<" "<<getNodeId(0)<<std::endl;}
+                        int created_linking_node_ = created_linking_node;
+                        if(getParameter("subType") != 1){created_linking_node_ = this->parentLinkingNode;}
 				switch(ot){
 					case Organism::ot_root:{
 						double  beta = i*M_PI*getStemRandomParameter()->rotBeta;
 						Vector3d newHeading = iHeading.times(Vector3d::rotAB(0,beta));
 						auto lateral = std::make_shared<Root>(plant.lock(), st, newHeading, delay, shared_from_this(),  nodes.size() - 1);
 						children.push_back(lateral);
+                        lateral->parentLinkingNode = created_linking_node_ ; 
 						lateral->simulate(age-ageLN,verbose); 
 						break;}
 					case Organism::ot_stem:{
 						auto lateral = std::make_shared<Stem>(plant.lock(), st, h, delay, shared_from_this(),  nodes.size() - 1);
 						children.push_back(lateral);
+                        lateral->parentLinkingNode = created_linking_node_ ; 
                         if(st == 2)//auxillary bud
                         {lateral->budStage = 0; //dormant bud
                         }
@@ -778,6 +777,7 @@ void Stem::createLateral(bool verbose)
 					case Organism::ot_leaf:{
 						auto lateral = std::make_shared<Leaf>(plant.lock(), st, h, delay, shared_from_this(),  nodes.size() - 1);
 						children.push_back(lateral);
+                        lateral->parentLinkingNode = created_linking_node_; 
 						lateral->simulate(age-ageLN,verbose); 
 						break;}
 				}

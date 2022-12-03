@@ -207,7 +207,7 @@ def setKrKx_phloem(): #inC
     #actually, don t use perimeter currently
     #r.setPerimeter_st([[0,Perimeter_s_r0,Perimeter_s_r12,Perimeter_s_r12,Perimeter_s_r0],[0,Perimeter_s_s,Perimeter_s_s],[0,Perimeter_s_l]])
 
-def doConditionDefault(rinput, timeSinceDecap_):
+def doConditionDefault(rinput, timeSinceDecap_,i, simtime, memoryCondition, nodeD):
     return False
 
 from pathlib import Path
@@ -215,11 +215,14 @@ def runSim(directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, UseRatiothresholdAux,
            Qmax_, thresholdSuc,
            GrRatio ,  CarbonCost,
-           maxLBud , budGR,L_dead_threshold ,
+           maxLBud , maxLBudDormant,maxLBudDormant_1,
+           budGR,L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
            doPrint ,doDict, auxin_D = 0.,kss=0.2,kaa=1., 
-           fileparam = "UQ_simple_stem_bud", doCondition = doConditionDefault):
+           fileparam ="UQ_1Leaf" , doCondition = doConditionDefault,
+          doDiffLights = False, Klight = 0.05):#"UQ_simple_stem_bud"
+    outcondition = 0
     useCWGr = True
     dt_lastWrote = time.time() - dt_write * 2
     dtSIM_lastWrote = -dtSIM_write*2
@@ -242,7 +245,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     dir4allResults=dir4allResults.replace(".", "o")
     def write_file_array(name, data):
         if doPrint :
-            name2 = 'results'+ directoryN+ name+ dir4allResults+ '.txt'
+            name2 = 'results'+ directoryN+ name+ dir4allResults+ '.csv'
             with open(name2, 'a') as log:
                 log.write(','.join([num for num in map(str, data)])  +'\n')
         if doDict:
@@ -253,7 +256,7 @@ def runSim(directoryN_,doVTP, verbosebase,
 
     def write_file_float(name, data):
         if doPrint:
-            name2 = 'results'+ directoryN+ name+ dir4allResults+ '.txt'
+            name2 = 'results'+ directoryN+ name+ dir4allResults+ '.csv'
             with open(name2, 'a') as log:
                 log.write(repr( data)  +'\n')
         if doDict:
@@ -263,14 +266,14 @@ def runSim(directoryN_,doVTP, verbosebase,
 
     def delete_file(name):
         if doPrint:
-            name2 = 'results'+ directoryN+ name+dir4allResults+ '.txt'
+            name2 = 'results'+ directoryN+ name+dir4allResults+ '.csv'
             my_file = Path(name2)
             if my_file.is_file():
                 os.remove(name2)
             else:
                 print("file running missing",thread, name2)
     
-    namef = 'results'+ directoryN+ "running"+ dir4allResults+ '.txt'
+    namef = 'results'+ directoryN+ "running"+ dir4allResults+ '.csv'
     my_file = Path(namef)
     if my_file.is_file():
         print("input", np.array([directoryN_,doVTP, verbosebase,
@@ -279,7 +282,7 @@ def runSim(directoryN_,doVTP, verbosebase,
            GrRatio ,  maxLBud , budGR,L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
-           doPrint ,doDict, auxin_D ]))
+           doPrint ,doDict, auxin_D,Klight ]))
         print(namef)        
         print("runningfile already exists")
         raise Exception
@@ -295,14 +298,14 @@ def runSim(directoryN_,doVTP, verbosebase,
            "GrRatio" ,  "maxLBud" , "budGR","L_dead_threshold" ,
            "nodeD", "thread",  
            "testTime", "dtBefore", "dtAfter", "start_time", "dt_write","dtSIM_write",
-           "doPrint" ,"doDict", "auxin_D","kss", "kaa" ,"CarbonCost"])) 
+           "doPrint" ,"doDict", "auxin_D","kss", "kaa" ,"CarbonCost","Klight"])) 
     write_file_array("input", np.array([directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, UseRatiothresholdAux,
            Qmax_, thresholdSuc,
            GrRatio ,  maxLBud , budGR,L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
-           doPrint ,doDict, auxin_D,kss,kaa,CarbonCost ])) 
+           doPrint ,doDict, auxin_D,kss,kaa,CarbonCost ,Klight])) 
     # if RatiothresholdAux == 0 and UseRatiothresholdAux and activeAtThreshold_auxin:
     #     print(thread, RatiothresholdAux,UseRatiothresholdAux ,activeAtThreshold_auxin)
     #     print("issue ratio threshold")
@@ -334,11 +337,31 @@ def runSim(directoryN_,doVTP, verbosebase,
     #pl.activeAtThreshold_auxin = activeAtThreshold_auxin
     #pl.activeAtThreshold = activeAtThreshold_suc
     pl.initialize(verbose = False)#, stochastic = False)
-    
-    while (len(pl.getOrgans(3, False)) ==0 ) or (pl.getOrgans(3, False)[0].getNumberOfLinkingNodes() <3):
-        pl.simulate(dt, False)#, "outputpm15.txt")
+    pl.maxLBud = maxLBud
+    pl.maxLBudDormant = maxLBudDormant
+    pl.maxLBudDormant_1 = maxLBudDormant_1
+    pl.budGR = budGR
+    leafArea = np.array([])
+    while (len(pl.getOrgans(3, False)) ==0 ) or (pl.getOrgans(3, False)[0].getNumberOfLinkingNodes() <3) or (len(leafArea)==0) or (sum(leafArea) < (0.69)):
+        pl.simulate(dt, False)
+        scalLeaves = pl.getOrgans(4, True)
+        leafArea = np.array([org.getLength(True) * org.getParameter("Width_blade") for org in scalLeaves])
+        if __name__ == '__main__':
+            print(leafArea)
+        if((len(pl.getOrgans(3, False)) >0 ) and (__name__ == '__main__')):
+            print(pl.getOrgans(3, False)[0].getNumberOfLinkingNodes(), pl.getOrgans(3, False)[0].getNumberOfChildren())
+        leafArea[:2]
         simDuration += dt
+    #print(pl.getOrgans(3, False)[0].getNumberOfLinkingNodes())    
+    stems = np.array(pl.getOrgans(3, True))
+    toKeep = np.array([org.getParameter("subType") <= 2 for org in stems])
+    stems  = stems[toKeep]
+    stemlengths = np.array([org.getLength(False) for org in stems])
+    if(min(stemlengths) == 0):
+        print("min(stemlengths) == 0)",stemlengths )
+        raise Exception
         
+    
     simMax = 100#simDuration + testTime #if !doDecapitation
 
     """ Coupling to soil """
@@ -376,14 +399,23 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.setKrm2([[0]])#2e-4
     r.setKrm1([[1.3e-3]])#3e-03#([[2.5e-2]])
     #r.setRhoSucrose([[0.51],[0.65],[0.56]])
-    rho_org = [[1.34,1.34,1.34,1.34],[1.44*CarbonCost,1.44*CarbonCost,1.56,1.56],[1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56]]#g C/gDW?
+    GrRatioLeaf = 10
+    GrRatioRoot = 1
+    CarbonCostRoot = 1/10
+    CarbonCostLeaf = 1/5
+    rho_org = [[1.34,1.34,1.34,1.34],[1.44*CarbonCost,1.44*CarbonCost,1.56*CarbonCostLeaf,1.56*CarbonCostLeaf],[1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56,1.56]]#g C/gDW?
+    
     density = 0.17 #g DW/cm3?
     #density and rho in mmol suc or carbon?
     rho_org = np.array([np.array(xi) for xi in rho_org],dtype=object)*density/2 #/2 => glucose to sucrose
+    rho_org[2] *= CarbonCostLeaf
     r.setRhoSucrose(rho_org)
-    grRate = [[4.,2.,1.0,4.],[2.,2.,3.,3.],[3.,3.,3.,3.,3.,3.,3.,3.]]
+    grRate = [[4.,2.,1.0,4.],[2.*10,2.,3.*GrRatioLeaf,3.*GrRatioLeaf],[3.,3.,3.,3.,3.,3.,3.,3.]]
     grRate = np.array([np.array(xi) for xi in grRate],dtype=object)
-    grRate[1:] *= GrRatio #[1:]
+    grRate[0] *= GrRatioRoot
+
+    grRate[1] *= GrRatio #[1:]
+    grRate[2] *= GrRatioLeaf
 
     r.setRmax_st(grRate)
     r.KMfu = 0.2
@@ -556,8 +588,6 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.StopLoss = True
     
     r.L_dead_threshold = L_dead_threshold
-    r.plant.maxLBud = maxLBud
-    r.plant.budGR = budGR
     orgs_stems = r.plant.getOrgans(3, True)
     r.computeBerth = lambda ss_, aa_: ((aa_+kaa)/(ss_*10+kss))*(1-(0.15/(ss_*10+kss)))*2 
     
@@ -579,41 +609,75 @@ def runSim(directoryN_,doVTP, verbosebase,
     changedSimMax = False
     oo = 0
     while  simDuration < simMax:#
-        #if(ö>=120):
+        if( ö == 1):
+            r.doVTPf(doVTP,directoryN,dir4allResults,ö, __name__ == '__main__')
         
         temp_time = time.time()
-        #print("num ",thread,temp_time , start_time, "has started. This sampling run took %5.4f seconds." % (temp_time - start_time),'simDuration:',simDuration )
         numLNodes = r.plant.getOrgans(3, False)[0].getNumberOfLinkingNodes()
         Mstem = r.plant.getOrgans(3, False)[0]
         kids4distbase = np.array([Mstem.getChild(nkdb) for nkdb in range(Mstem.getNumberOfChildren())])
-        tempstst = np.array([nkdb.getParameter("subType") for nkdb in kids4distbase ])
-        kids4distbase = kids4distbase[tempstst == 2][-2:]
-        distbase4decap = np.array([nkdb.getParent().getLength(nkdb.parentNI) for nkdb in kids4distbase])
-        
-        if  (numLNodes >= nodeD) and (not r.burnInTime)and (nodeD !=0) and ((distbase4decap[1] - distbase4decap[0])>=1): 
+        tempstst = np.array([nkdb.parentLinkingNode for nkdb in kids4distbase ])+1
+        distbase4decap = np.array([0,0])
+        leaves =  r.plant.getOrgans(4, True)
+        leafRank = np.array([org.parentLinkingNode for org in leaves]) +1
+        leafArea = np.array([org.getLength(True) * org.getParameter("Width_blade") for org in leaves])[leafRank == (nodeD -1)] 
+        maxLeafArea = np.array([org.getParameter("k") * org.getParameter("Width_blade") for org in leaves])[leafRank == (nodeD -1)] 
+        expandedLeaf = False
+        if (max(tempstst) >=  nodeD) and (max(leafRank) >= (nodeD -1 )):
+            tempstst_ = np.array([np.argmax(tempstst == (nodeD-1)),np.argmax(tempstst == nodeD)])
+            kids4distbase = kids4distbase[tempstst_]
+            distbase4decap = np.array([nkdb.getParent().getLength(nkdb.parentNI) for nkdb in kids4distbase])
+            expandedLeaf = sum(leafArea)/len(leafArea) > 0.5*sum(maxLeafArea)/len(leafArea)
+        if __name__ == '__main__':
+            print()
+            print()
+            print(np.round(simDuration*1000)/1000,ö,r.burnInTime,numLNodes,leafRank,distbase4decap,leafArea,changedSimMax)
+            print(tempstst)
+        try:
+            forDecapitate = (numLNodes >= nodeD) and (not r.burnInTime) and (nodeD !=0) and ((distbase4decap[1] - distbase4decap[0])>=1) and expandedLeaf and (not changedSimMax)
+        except:
+            MsgEroor = str(thread)+" "+str("for forDecapitate")+" "+str(numLNodes)+" "+str(nodeD)+" "+str(r.burnInTime)+" "+str(distbase4decap[1])+" "+str(distbase4decap[0])+" "+str(expandedLeaf)+" "+str(changedSimMax)+" "+str(distbase4decap)
+            raise Exception(MsgEroor)
+        if  (numLNodes >= nodeD) and (not r.burnInTime) and (nodeD !=0) and ((distbase4decap[1] - distbase4decap[0])>=1) and expandedLeaf and (not changedSimMax): 
             org_ = r.plant.getOrgans(3, False)[0] #get first (==main) stem
             org_.active = False
             org_.budStage = -1
-            toKil = np.array([org_.getNodeId(org_.getNumberOfNodes()-1)])#org_.getNodeId(org_.getNumberOfNodes()-2),
-            kid_pni = np.array([oo.getNodeId(0) for oo in r.plant.getOrgans(-1, True)])
+            lastNode = kids4distbase[0].parentNI+1
+            toKil = np.array([org_.getNodeId(nnid) for nnid in range(lastNode,org_.getNumberOfNodes())])#-1
+            kid_pni = np.array([org_.getChild(kkiidd).getNodeId(0) for kkiidd in range(org_.getNumberOfChildren())])
+            kid_id = np.array([org_.getChild(kkiidd).getId() for kkiidd in range(org_.getNumberOfChildren())])
+            
+            if __name__ == '__main__':
+                print(toKil,org_.getNumberOfChildren())
+                print("kid_pni",kid_pni,kid_id)
             if len(kid_pni) > 0:
-                selectKids =np.where( kid_pni ==toKil[0] )[0]#np.concatenate((,np.where(kid_pni==toKil[1])[0]))
-                dying_kids = np.array(r.plant.getOrgans(-1, True))[selectKids]
+                selectKids =np.concatenate(([np.where( kid_pni ==toKill_)[0] for toKill_ in toKil]))#,np.where(kid_pni==toKil[1])[0]
+                if __name__ == '__main__':
+                    print("selectKids",selectKids)
+                dying_kids = np.array([org_.getChild(kkiidd) for kkiidd in selectKids])
                 k_ =[killChildren(ni) for ni in dying_kids]
                 toFill_ = [item for sublist in k_ for item in sublist]
                 toFill_= np.concatenate((toFill_,toKil))
                 toKil  = np.array(np.unique(toFill_),dtype = np.int32)
             r.plant.node_Decapitate = toKil
-            
             doDecapitation = False
+            if __name__ == '__main__':
+                print("toKil end",toKil)
             if not changedSimMax:
                 simMax = simDuration + testTime #end 7 days after decapitation
                 changedSimMax = True
                 dt = dtAfter #1MIN
                 toAdd = np.ceil(simDuration) - simDuration #to have start of day after decapitation
+            # orgs = r.plant.getOrgans(3, True)
+            # toKeep = np.array([org.getParameter("subType") <= 2 for org in orgs])
+            # orgs = np.array(orgs)[toKeep]
+            # budStage = np.array([org.budStage for org in orgs]) 
+            # kidpni = np.array([org.budStage for org in orgs]) 
+            # print(budStage,kid_id)
+            # raise Exception
 
-        if doDecapitation and (numLNodes > nodeD): 
-            raise Exception("too many linking nodes")
+        #if doDecapitation and (numLNodes > nodeD): 
+         #   raise Exception("too many linking nodes")
         
         if (not doDecapitation) and (not changedSimMax) and (nodeD ==0) and (numLNodes ==8): 
             simMax = simDuration + testTime
@@ -625,17 +689,20 @@ def runSim(directoryN_,doVTP, verbosebase,
         else:
             weatherX = weather(simDuration+toAdd, Qmax_)
             
-
+            
         r.Qlight = weatherX["Qlight"] #; TairC = weatherX["TairC"] ; text = "night"
             
             
         setKrKx_xylem(weatherX["TairC"], weatherX["RH"])
         
         #r.maxLoop = 3
-        #r.doTroubleshooting = False
+        #r.doTroubleshooting = FalseKlight
+        if doDiffLights: 
+            r.computeLight(Klight, __name__ == '__main__')  
         r.solve_photosynthesis(sim_time_ = simDuration, sxx_=sx, cells_ = True,RH_ = weatherX["RH"],
             verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"] )
-            
+        if changedSimMax:
+            r.doVTPf(doVTP,directoryN,dir4allResults,ö, __name__ == '__main__')
         ots = np.concatenate((np.array([0]), r.get_organ_types()))#per node
         leavesSegs = np.where(ots[1:] ==4)
         fluxes = np.array(r.outputFlux)
@@ -764,8 +831,9 @@ def runSim(directoryN_,doVTP, verbosebase,
         mainStemAux =  np.array(C_Auxin[maintstemNodesId])
         mainStemAux_mean = np.mean(mainStemAux[1:])
         
-        if verbosebase :
-            print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h", int(((simDuration%1)%24)*(24*60)),"mn", round(r.Qlight *1e6),"mumol m-2 s-1",r.burnInTime ,doDecapitation)
+        if __name__ == '__main__':
+            #int(((simDuration%1)%24)*(24*60)),"mn",
+            print("\n\n\n\t\tat ", int(np.floor(simDuration)),"d", int((simDuration%1)*24),"h",round(r.Qlight *1e6),"mumol m-2 s-1",r.burnInTime,doDecapitation)
             if Q_in >0.:
                 print("Error in Suc_balance:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(error, div0f(error,Q_in, 1.)))
             #print("Error in growth:\n\tabs (mmol) {:5.2e}\trel (-) {:5.2e}".format(errorGri, relErrorGri))
@@ -838,7 +906,8 @@ def runSim(directoryN_,doVTP, verbosebase,
             #write_file_array("OutAuxin", OutAuxin)
             #write_file_array("Q_Auxin", Q_Auxin)
             #write_file_array("C_Auxin", C_Auxin)
-            write_file_array("C_Auxin_mainStem", mainStemAux[1:])
+            auxTested= np.array([org.auxTested for org in orgs])
+            write_file_array("auxTested", auxTested)
             #write_file_array("InAuxin", np.array(r.AuxinSource)* r.auxin_P * dt)
             #write_file_array("Delta_JA_ST", Delta_JA_ST)
             #write_file_array("JAuxin_ST2", JAuxin_ST2)
@@ -862,12 +931,18 @@ def runSim(directoryN_,doVTP, verbosebase,
             distFromParentBase = np.array([org.getParent().getLength(org.parentNI) for org in orgs])
             #write_file_array("length_org", length_org)
             write_file_array("lengthth_org", lengthth_org)
+            
+            if(min(lengthth_org[:2]) == 0):
+                print("min(stemlengths) == 0)",lengthth_org )
+                raise Exception
+                
+            #raise Exception
             #write_file_array("parentOrgId", parentOrgId)
             write_file_array("ownOrgId", ownOrgId)
             write_file_array("distFromParentBase", distFromParentBase)
 
-            cstPerOrg = [np.mean(C_ST[org.getNodeIds()]) for org in orgs]#[1:]
-            write_file_array("cstPerOrg", cstPerOrg)#only take shoot C
+            sucTested = np.array([org.sucTested for org in orgs])
+            write_file_array("sucTested", sucTested)#only take shoot C
             #Q_GrmaxPerOrg = [np.mean(Q_Grmax[org.getNodeIds()[1:]]) for org in orgs]
             #write_file_array("Q_GrmaxPerOrg", Q_GrmaxPerOrg)
             #Q_GrPerOrg = [np.mean(Q_Gr[org.getNodeIds()[1:]]) for org in orgs]
@@ -887,13 +962,22 @@ def runSim(directoryN_,doVTP, verbosebase,
             write_file_array("BerthFact", BerthFact)
             budStageChange = np.array([org.budStageChange for org in orgs]) 
             write_file_array("bSChange", budStageChange)
+            parentLinkingNode = np.array([org.parentLinkingNode for org in orgs]) 
+            write_file_array("parentLinkingNode", parentLinkingNode)
             
             if(changedSimMax):
                 timeSinceDecap = simDuration - (simMax - testTime)
+                if(not (budStage[(nodeD):] ==-1).all()):
+                    print(thread, "not (arr[(nodeD+1):] ==-1).all()")
+                    print(budStage,nodeD,budStage[(nodeD+1):] ,(budStage[(nodeD):] ==-1),(not (budStage[(nodeD):] ==-1).all()))
+                    errorMessage = str(thread)+" not (arr[(nodeD+1):] ==-1).all() "
+                    erM2 = str(budStage) +" "+str(nodeD) +" "+str(budStage[(nodeD+1):]) +" "+str((budStage[(nodeD):] ==-1)) +" "+str((not (budStage[(nodeD):] ==-1).all()))
+                    raise Exception(errorMessage + erM2)
             else:
                 timeSinceDecap = -1
-            outcondition = doCondition(r,timeSinceDecap, thread)
-            if (outcondition != 0): #success or falur
+            outcondition = doCondition(r,timeSinceDecap, thread,(temp_time - start_time)/(60*60*24), outcondition, nodeD)
+            
+            if ((temp_time - start_time)/(60*60*24) > 2):#outcondition != 0): #success or falur
                 simMax = -1
                 
             if len(orgs) != len(budStage):
@@ -901,7 +985,7 @@ def runSim(directoryN_,doVTP, verbosebase,
                 print(ot_orgs,len(ot_orgs))
                 print(len(orgs))
                 raise Exception
-            if False:#thread == 100:
+            if False:
                 print("Q_ST_stem", len(C_ST))
                 # print(sum(mainStemAux[1:] <= r.auxin_threshold))
                 print(C_ST[maintstemNodesId])
@@ -916,7 +1000,7 @@ def runSim(directoryN_,doVTP, verbosebase,
                 # print(mainStemAux <= r.auxin_threshold)
                 # print(r.auxin_threshold, simDuration)
                 print("mainStemLen")
-                print(mainStemLen)
+                print(r.plant.getOrgans(3, False)[0].getLength(False))
                 # print("aux\t",mainStemAux[isbase])
                 print("suc\t",C_ST[maintstemNodesId][isbase])
                 print("dist\t",mainStemLen[isbase])
@@ -941,7 +1025,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         #
         ###
         
-        if doVTP:
+        if doVTP == 2:
             ana = pb.SegmentAnalyser(r.plant.mappedSegments())
             
             #print(C_ST)
@@ -997,7 +1081,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             psiXyl_p[abs(psiXyl_p) < cutoff] = 0
             
             
-            ana.addData("Ag4Phloem_p", Ag4Phloem_p)
+            ana.addData("Ag4Phloem", Ag4Phloem_p)
             ana.addData("JAuxin_ST2", JAuxin_ST2_p)
             ana.addData("C_AuxinOut", C_AuxinOut_p)
             ana.addData("Delta_JA_ST", Delta_JA_ST_p)
@@ -1007,7 +1091,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             
             #ana.addData("activePhloem",activePhloemv) 
             #ana.addData("activeAuxin",activeAuxinv)  
-            ana.addData("budStage",budStage)             
+            #ana.addData("budStage",budStage)             
             
             ana.addData("CST", C_ST_p)
             #do as konz or div per vol or surf?
@@ -1068,7 +1152,7 @@ def runSim(directoryN_,doVTP, verbosebase,
 #             print("no auxin source")
 #             raise Exception  
             
-        if (min(r.Ev) < 0) or (min(r.Jw) < 0) or (abs(errLeuning) > 1e-3) or (min(fluxes_leaves) < 0):
+        if (min(r.Ev) < 0) or (min(r.Jw) < 0) or (abs(errLeuning) > 1e-3) or (min(fluxes_leaves) < -abs(errLeuning)):
             write_file_array("psiXyl", r.psiXyl)
             write_file_array("trans", r.Ev)
             write_file_array("transrate",r.Jw)
@@ -1081,7 +1165,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             print(np.array(r.psiXyl)[toKil])
             print(np.where(np.array(r.psiXyl)<-10000))
             print(np.where(fluxes_leaves<-0))
-            print("leaf gaines water", min(r.Ev),min(r.Jw), min(fluxes_leaves))
+            print(thread, "leaf gaines water", min(r.Ev),min(r.Jw), min(fluxes_leaves))
             
             org_ = r.plant.getOrgans(3, False)[0] #get first (==main) stem
             print("org_.active",org_.active,LL, org._getLength())
@@ -1093,7 +1177,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         
         if not r.burnInTime:
             r.plant.simulate(dt, False)
-            
+              
             
         Ntbu = Nt
         Nt = len(r.plant.nodes)
@@ -1136,11 +1220,11 @@ def runSim(directoryN_,doVTP, verbosebase,
             #print(r.auxin_init_mean)
             r.auxin_init_mean = mainStemAux_mean
             
-            with open('results'+ directoryN+"input"+dir4allResults+ '.txt', 'r+') as f:
+            with open('results'+ directoryN+"input"+dir4allResults+ '.csv', 'r+') as f:
                 lines = f.read().splitlines()
             lines[0] = lines[0] + ",mainStemAux_mean"
             lines[1] = lines[1] + "," + repr(mainStemAux_mean)
-            with open('results'+ directoryN+"input"+dir4allResults+ '.txt', 'w') as f:
+            with open('results'+ directoryN+"input"+dir4allResults+ '.csv', 'w') as f:
                 f.write(lines[0])
                 f.write("\n")
                 f.write(lines[1])
@@ -1197,13 +1281,13 @@ def runSim(directoryN_,doVTP, verbosebase,
         if doDict and (( time.time() - dt_lastWrote) >= dt_write) and (( simDuration - dt - dtSIM_lastWrote ) >= dtSIM_write)  :
             #print("write",time.time())
             for keykey in outputsDict_array.keys():
-                name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.txt'
+                name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.csv'
                 datas = outputsDict_array[keykey]
                 with open(name2, 'a') as log:
                     for data in datas:
                         log.write(','.join([num for num in map(str, data)])  +'\n')
             for keykey in outputsDict_float.keys():
-                name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.txt'
+                name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.csv'
                 datas = outputsDict_float[keykey]
                 with open(name2, 'a') as log:
                     for data in datas:
@@ -1216,13 +1300,13 @@ def runSim(directoryN_,doVTP, verbosebase,
         
     if doDict:        
         for keykey in outputsDict_array.keys():
-            name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.txt'
+            name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.csv'
             datas = outputsDict_array[keykey]
             with open(name2, 'a') as log:
                 for data in datas:
                     log.write(','.join([num for num in map(str, data)])  +'\n')
         for keykey in outputsDict_float.keys():
-            name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.txt'
+            name2 = 'results'+ directoryN+ keykey+ dir4allResults+ '.csv'
             datas = outputsDict_float[keykey]
             with open(name2, 'a') as log:
                 for data in datas:
@@ -1253,9 +1337,10 @@ def runSim(directoryN_,doVTP, verbosebase,
     if (outcondition >= 0) and (changedSimMax):
         outId = thread
     if not changedSimMax:
-        print(outId,"fail, not reached changedSimMax", nodeD,budStage)
+        print(outId,nodeD,"fail, not reached changedSimMax", nodeD,budStage)
     #print("finished", thread, time.time() - start_time)
     #os._exit(os.EX_OK)
+    r.doVTPf(doVTP,directoryN,dir4allResults,ö, __name__ == '__main__')
     del r
     del pl
     gc.collect()
@@ -1282,19 +1367,35 @@ if __name__ == '__main__':
                 pass
     
     print("intern pid_start",psutil.Process().memory_info())
-    runSim(
-        directoryN_ = directoryN, doVTP = False,verbosebase = False, 
-        PRate_ = 6.8e-3,thresholdAux = 0, RatiothresholdAux =0.46,
-        UseRatiothresholdAux = True,
-        Qmax_ = 450e-6, thresholdSuc = 1.68,  
-        GrRatio = 10, maxLBud = 1., budGR = 0.1,L_dead_threshold=2.,
-        nodeD = 3, thread = 0,
-        testTime=0.5, dtBefore = 1/24, dtAfter= 1/24,
-        start_time = start_time_,
-        dt_write = 0, dtSIM_write = 1, 
-        doPrint = True, doDict = False,auxin_D=0.
-    )
-   
+    from CalibP1Database import toTry
+    from CalibP1Database import doCondition_
+    params = toTry()
+    Qsv=params['Qsv']
+    MulimSucv=params['MulimSucv']
+    nodeDv=params['nodeDv']
+    GrRatiov= params['GrRatiov']
+    CarbonCostv= params['CarbonCostv']
+    Klightv= params['Klightv']
+    i = 1
+    totrun = 255*2
+    runSim(directoryN_ = directoryN, doVTP = 0, verbosebase = False,
+             PRate_ = 6.8e-3, thresholdAux = 0, 
+             RatiothresholdAux = 1,
+             Qmax_ = 700*1e-6,#Qsv[i+totrun],
+           Klight = Klightv[i+totrun],
+             thresholdSuc =1.4,# MulimSucv[i+totrun], 
+             GrRatio = GrRatiov[i+totrun], CarbonCost = CarbonCostv[i + totrun],
+             maxLBud = 1.,  maxLBudDormant = 0.1,maxLBudDormant_1 = 0.3,
+             budGR = 0.1,L_dead_threshold=100.,
+             #kss=kss_v[i+totrun],kaa=kaa_v[i+totrun],
+            UseRatiothresholdAux = True,
+             nodeD = nodeDv[i+totrun], thread = i,
+             testTime=2.1, dtBefore = 1/24, dtAfter= 30/(60*24),
+            start_time = start_time_,
+             doPrint = True, doDict = False,
+             dt_write = 0, dtSIM_write = 1/(60*24),auxin_D=0.,
+            doCondition = doCondition_)
+    #42 4 fail (nodeD_ == 4) and (budStage[3] > 0) [-1  1  1  2  0] 2.083333333333348
     print("intern pid_end",psutil.Process().memory_info())
     end_time_ = time.time()
     print(end_time_ - start_time_ )

@@ -233,7 +233,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double initValAuxin = 0.9;//initial concentration in active tip
     std::vector<double> C_Auxinv;//Suc_ST for python byding
     std::vector<double> Delta_JA_STv;
-    std::vector<int> AuxinSource;
+    std::vector<double> AuxinSource;
     std::vector<double> C_AuxinOutv;
     std::vector<double> JAuxin_ST2v;
     bool deleteAtRootTip = false;
@@ -249,6 +249,11 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     double L_dead_threshold = 2.;
     double auxin_init_mean;
     void updateBudStage(double EndTime);
+    double BerthLim = -1;
+    int useLength = 0;
+    double PRBA =0;
+    double PRBD =0;
+    double doMemAux = 0.;
     
    std::function<double(double, double)> computeBerth = [](double ss_, double aa_){
 		throw std::runtime_error("computeBerth not implemented"); return 0.; };

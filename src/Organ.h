@@ -112,6 +112,7 @@ public:
     Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
 	
     int parentNI; ///< local parent node index
+    int parentLinkingNode = -1; ///< local parent node index
 	 /* useful */
     virtual Vector3d heading() const; ///< current (absolute) heading of the organs tip
     virtual Vector3d heading(int i)  const { throw std::runtime_error( "heading(i) not implemented" );  }///should be overwritten ; ///< current (absolute) heading of the organs tip
@@ -123,6 +124,8 @@ public:
     int budStage = 2;
     double BerthFact = -1.;
     std::vector<double> budStageChange = std::vector<double>(4,-1.);
+    double sucTested = -1.;
+    double auxTested = 100.;
 
 //protected:
 

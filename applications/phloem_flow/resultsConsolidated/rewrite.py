@@ -29,7 +29,7 @@ def doRewrite(srcdir_old, results_dir):
             #     f.write(lines[0])
             #     f.write(lines[1])
         else:
-            if log.endswith(".txt"):
+            if log.endswith(".csv"):
                 with open(srcdir_old + "/"+log, 'r') as f:
                     lines = f.read().splitlines()
                     last_line = lines[-1]
@@ -37,8 +37,8 @@ def doRewrite(srcdir_old, results_dir):
                     f.write(last_line)
 
 
-srcdir_olds = "AllAuxC"
-for i in range(4):
-    print("../results/"+srcdir_olds + repr(i +1 ), srcdir_olds + repr(i +1) + "_rewrote")
-    doRewrite("../results/"+srcdir_olds + repr(i +1 ), srcdir_olds + repr(i +1) + "_rewrote" )
+srcdir_olds = "CalibPart2_"
+for i in range(3):
+    print("../results/"+srcdir_olds + repr(i +1 ), "../results/"+srcdir_olds + repr(i +1) + "_rewrote")
+    doRewrite("../results/"+srcdir_olds + repr(i +1 ), "../results/"+srcdir_olds + repr(i +1) + "_rewrote" )
     

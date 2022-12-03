@@ -103,7 +103,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     } else {
     lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
 	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-	nob_real = std::max((lmax-la_-lb_)/ln+1, 1.);//std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 			  
+	nob_real = std::max((lmax-la_-lb_)/ln+1, 1.) ;//std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 			  
 	res = lb_ - floor(lb_/dx)* dx;	
 	if((res < dxMin) && (res != 0)){
 		if(res <= dxMin/2){ lb_ -= res;
@@ -135,7 +135,6 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 		//at end of basal zone
 		for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 		if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}
-		
 		switch(lnf) {
 		case 0: // homogeneously distributed stem nodes
 		for (int i = 0; i<nob_-1; i++) { // create inter-stem distances
@@ -146,8 +145,9 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 				}else{d = floor(d / dx)*dx + dxMin;}
 				
 				} //make ln compatible with dx() and dxMin().
-			
-			ln_.push_back(d);
+			if((i == 0) && (nZ >= 0 ))
+            {ln_.push_back(nZ);
+            }else{ln_.push_back(d);}
 			for (int j = 0; j<latExtra1; j++) { ln_.push_back(0);}
 			if (latExtra2_> 0) {ln_.push_back(0);latExtra2_--;}  
 
@@ -570,6 +570,7 @@ void StemRandomParameter::bindParmeters()
     bindParameter("delayNGStart", &delayNGStart, "delay between stem creation and start of nodal growth", &delayNGStarts);
     bindParameter("delayNGEnd", &delayNGEnd, "delay between stem creation and start of nodal growth", &delayNGEnds);
     bindParameter("delayLat", &delayLat, "delay between latteral creation and start of nodal growth", &delayLats);
+    bindParameter("nZ", &nZ, "hi i am nZ");
      // other parameters (descriptions only)
     description["successorST"] = "Sub type of lateral stems";
     description["successorP"] = "Probability of each sub type to occur";

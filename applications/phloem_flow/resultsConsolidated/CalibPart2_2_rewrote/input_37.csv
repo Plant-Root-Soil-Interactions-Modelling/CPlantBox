@@ -1,0 +1,2 @@
+directoryN_,doVTP,verbosebase,PRate_,thresholdAux,RatiothresholdAux,UseRatiothresholdAux,Qmax_,thresholdSuc,GrRatio,maxLBud,budGR,L_dead_threshold,nodeD,thread,testTime,dtBefore,dtAfter,start_time,dt_write,dtSIM_write,doPrint,doDict,auxin_D,kss,kaa,CarbonCost,Klight,mainStemAux_mean
+/CalibPart2_2/,False,False,0.0068,0,1,True,400.0,1.4,6,1.0,0.1,100.0,7,37,7,0.041666666666666664,0.020833333333333332,1670023816.424177,0,0.013888888888888888,True,False,0.0,0.01,1.0,1,0.001,2.4893846369188917
