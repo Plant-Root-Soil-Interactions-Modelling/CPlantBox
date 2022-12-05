@@ -46,7 +46,9 @@ class XylemFluxPython(XylemFlux):
         self.Q = None  # store linear system
         self.b = None
 
-        self.Vmax = 45 * 62 * 1.e-11 * (24.*3600.)  # kg/(m2 day) -> York et. al (2016) (Lynch group)
+        # nitrate 62 g/mol
+        # 1e-12*1.e4*1.e-3 = 1.e-11
+        self.Vmax = 45.25 * 62 * 1.e-11 * (24.*3600.)  # kg/(m2 day) -> York et. al (2016) (Lynch group)
         self.Km = 10.67 * 62 * 1.e-6  # kg/m3
         self.CMin = 4.4 * 62 * 1.e-6  # kg/m3
 
