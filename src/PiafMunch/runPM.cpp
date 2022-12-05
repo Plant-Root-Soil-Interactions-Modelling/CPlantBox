@@ -1006,21 +1006,37 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
             
             
 			double rmax, Lmax;
+                double maxLBudDormant_ = plant->maxLBudDormant.at(plant->maxLBudDormant.size()-1);
+                double maxLBud_ = plant->maxLBud.at(plant->maxLBud.size()-1);
+                
+                    try {
+                if(org->parentLinkingNode < plant->maxLBudDormant.size())
+                {
+                     maxLBudDormant_ = plant->maxLBudDormant.at(org->parentLinkingNode);
+                }
+                if(org->parentLinkingNode < plant->maxLBud.size())
+                {
+                     maxLBud_ = plant->maxLBud.at(org->parentLinkingNode);
+                }
+                    }catch(...){
+                    std::cout<<"runPM select maxLbud "<<plant->maxLBudDormant.size()<<" "<<plant->maxLBud.size()<<" "<<org->parentLinkingNode<<std::flush;
+                    assert(false);
+                    }
             switch(org->budStage) 
             {
-                case -1:{rmax = 0.;break;} //dead
-                case 0:{rmax = plant->budGR;//1 mm/d
-                            Lmax = plant->maxLBudDormant; 
-                            if(org->parentLinkingNode == 1)//2nd bud
-                            {
-                                Lmax = plant->maxLBudDormant_1; 
-                            };
-                        break;}//dormant
-                case 1 :{rmax = plant->budGR;Lmax = plant->maxLBud;break;}//1 mm/d
-                case 2 :{rmax = Rmax_st_f(st,ot);
-                         Lmax = org->getParameter("k");break;}//1 mm/d
-                default:{std::cout<<"org->budStage not recognised "<<std::flush;
-                        assert(false);}
+                    case -1:{rmax =0; break;}
+                    case 0:{rmax = plant->budGR;//1 mm/d
+                            Lmax = maxLBudDormant_; 
+                            // if(parentLinkingNode == 1)//2nd bud
+                            // {
+                            //     Lmax = plant->maxLBudDormant_1; 
+                            // }
+                            break;}
+                    case 1 :{rmax = plant->budGR;Lmax = maxLBud_;break;}//1 mm/d
+                    case 2 :{rmax = org->getParameter("r");
+                             Lmax = org->getParameter("k");break;}//1 mm/d
+                    default:{std::cout<<"stem::simulate: budStage not recognised "<< org->budStage<<std::flush;
+                            assert(false);}
             }
 			int f_gf_ind = org->getParameter("gf");//-1;//what is the growth dynamic?
 			//auto orp = org->getOrganism->getOrganRandomParameter(ot).at(stold)

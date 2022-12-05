@@ -8,6 +8,7 @@ import shutil
 
 def doRewrite(srcdir_old, results_dir):
     if not os.path.exists(srcdir_old):
+        print(srcdir_old)
         raise Exception
 
     if not os.path.exists(results_dir):
@@ -37,7 +38,7 @@ def doRewrite(srcdir_old, results_dir):
                     f.write(last_line)
 
 
-srcdir_olds = "CalibPart2_"
+srcdir_olds = "CalibPart2_0412_"
 for i in range(3):
     print("../results/"+srcdir_olds + repr(i +1 ), "../results/"+srcdir_olds + repr(i +1) + "_rewrote")
     doRewrite("../results/"+srcdir_olds + repr(i +1 ), "../results/"+srcdir_olds + repr(i +1) + "_rewrote" )

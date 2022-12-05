@@ -383,7 +383,7 @@ PYBIND11_MODULE(plantbox, m) {
         
            .def_readwrite("verboseh", &Organism::verboseh)
            .def_readwrite("maxLBudDormant", &Organism::maxLBudDormant)
-           .def_readwrite("maxLBudDormant_1", &Organism::maxLBudDormant_1)
+           //.def_readwrite("maxLBudDormant_1", &Organism::maxLBudDormant_1)
            .def_readwrite("maxLBud", &Organism::maxLBud)
            .def_readwrite("budGR", &Organism::budGR)
            .def_readwrite("thread", &Organism::thread);
@@ -1072,6 +1072,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("doMemAux",&PhloemFlux::doMemAux)
 			.def_readwrite("PRBA",&PhloemFlux::PRBA)
 			.def_readwrite("PRBD",&PhloemFlux::PRBD)
+			//.def_readwrite("CarbonCostDormant",&PhloemFlux::CarbonCostDormant)
             //.def("computeBerth", (void (PhloemFlux::*)(const std::function<double(double,double)>&)) &PhloemFlux::computeBerth)
         
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)

@@ -144,7 +144,7 @@ verbose_simulate = False
 pl = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
 pl2 = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
 path = CPBdir+"/modelparameter/plant/"
-name = "UQ_simple_stem_bud"
+name = "UQ_1Leaf"
 
 print(path + name + ".xml")
 
@@ -173,44 +173,8 @@ ana.write("results"+directoryN+name + "_"+ str(0) +".vtp")
 orgs = pl.getOrgans()
 #print(p.segLength())
 
-for org in orgs:#age Ö 5
-     print("org.getId(), ",org.getId(),"ot", org.organType(),"st", org.getParameter("subType"),"length",org.getLength(),org.getLength(org.getNumberOfNodes()-1),
-           "lmax",org.getParameter("lmax"),"age",org.getAge(),
-          np.array( org.getOrigin()),"non", org.getNumberOfNodes(),"numKids",org.getNumberOfChildren(), "node0_id",org.getNodeId(0))
-     print("     ",org.getNode(org.getNumberOfNodes() - 1))
-
-     nns = [ np.array(org.getNode(n_))
-             for n_ in range(org.getNumberOfNodes())]
-     print("     ",nns)
-     nns = [ org.getNodeId(n_)
-             for n_ in range(org.getNumberOfNodes())]
-     print("     ",nns)
-     for nkid in range(org.getNumberOfChildren()):
-         orgkid = org.getChild(nkid)
-         print("     ","kid :",orgkid.getId(), orgkid.organType(), orgkid.getOrigin(), orgkid.getNumberOfNodes(),
-               orgkid.getNumberOfChildren(),orgkid.getNodeId(0))
-         print("     ",orgkid.getNode(orgkid.getNumberOfNodes() - 1))
-
-
-
 orgs = pl.getOrgans()
 pl.getNumberOfOrgans()
-#print(p.segLength())
-for org in orgs:
-     print(org.getId(), org.organType(), org.getParameter("subType"),
-          np.array( org.getOrigin()), org.getNumberOfNodes(),
-           org.getNumberOfChildren(), org.getNodeId(0))
-     print("     ",org.getNode(org.getNumberOfNodes() - 1))
-
-     nns = [ np.array(org.getNode(n_))
-             for n_ in range(org.getNumberOfNodes())]
-     print(nns)
-     for nkid in range(org.getNumberOfChildren()):
-         orgkid = org.getChild(nkid)
-         print("kid :",orgkid.getId(), orgkid.organType(), orgkid.getOrigin(), orgkid.getNumberOfNodes(),
-               orgkid.getNumberOfChildren(),orgkid.getNodeId(0))
-         print("     ",orgkid.getNode(orgkid.getNumberOfNodes() - 1))
-     #print(nns)
 ö = 0
 
 #vp.plot_plant(pl,p_name = "organType")

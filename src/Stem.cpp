@@ -243,17 +243,34 @@ void Stem::simulate(double dt, bool verbose)
                     std::cout<<"stem::simulate, check growth rate "<<getOrganism()->useCWGr<<" "<<this->getOrganRandomParameter()->f_gf->CW_Gr.empty()<<" "<<age__<<std::endl;
                 }
                 double rmax, Lmax;
+                double maxLBudDormant_ = plant.lock()->maxLBudDormant.at(plant.lock()->maxLBudDormant.size()-1);
+                double maxLBud_ = plant.lock()->maxLBud.at(plant.lock()->maxLBud.size()-1);
+                
+                    try {
+                if(parentLinkingNode < plant.lock()->maxLBudDormant.size())
+                {
+                     maxLBudDormant_ = plant.lock()->maxLBudDormant.at(parentLinkingNode);
+                }
+                if(parentLinkingNode < plant.lock()->maxLBud.size())
+                {
+                     maxLBud_ = plant.lock()->maxLBud.at(parentLinkingNode);
+                }
+                    }catch(...){
+                    std::cout<<"stem::simulate select maxLbud "<<plant.lock()->maxLBudDormant.size()<<" "<<plant.lock()->maxLBud.size()<<" "<<parentLinkingNode<<std::flush;
+                    assert(false);
+                    }
+                
                 switch(budStage) 
                 {
                     case -1:{Lmax = length; break;}
                     case 0:{rmax = plant.lock()->budGR;//1 mm/d
-                            Lmax = plant.lock()->maxLBudDormant; 
-                            if(parentLinkingNode == 1)//2nd bud
-                            {
-                                Lmax = plant.lock()->maxLBudDormant_1; 
-                            }
+                            Lmax = maxLBudDormant_; 
+                            // if(parentLinkingNode == 1)//2nd bud
+                            // {
+                            //     Lmax = plant.lock()->maxLBudDormant_1; 
+                            // }
                             break;}
-                    case 1 :{rmax = plant.lock()->budGR;Lmax = plant.lock()->maxLBud;break;}//1 mm/d
+                    case 1 :{rmax = plant.lock()->budGR;Lmax = maxLBud_;break;}//1 mm/d
                     case 2 :{rmax = getParameter("r");
                              Lmax = getParameter("k");break;}//1 mm/d
                     default:{std::cout<<"stem::simulate: budStage not recognised "<< budStage<<std::flush;
@@ -281,7 +298,7 @@ void Stem::simulate(double dt, bool verbose)
                     }
                     
                     if((e + getLength(true)) - Lmax> 1e-10){
-                        std::cout<<"Stem::simulate: target length too high "<<e<<" "<<dt<<" "<<getLength(false);
+                        std::cout<<"Stem::simulate: target length too high "<<e<<" "<<dt<<" "<<getLength(false)<<" "<<getLength(true);
                         std::cout<<" "<<Lmax<<" "<<getId()<<" "<<budStage<<std::endl;
                         assert(false);
                     }
@@ -293,9 +310,14 @@ void Stem::simulate(double dt, bool verbose)
                         std::cout<<"NO has was "<<targetlength<<" "<<e  <<" "<<length<<" "<<this->epsilonDx<<std::endl;
                     }
                 }
-                assert(((budStage !=1)||(length - plant.lock()->maxLBud < 1e-10))&&"!(((budStage !=1)||(length - 1 < 1e-10)))");
-                assert(((budStage !=0)||(parentLinkingNode == 1)||(length - plant.lock()->maxLBudDormant < 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
-                assert(((budStage !=0)||(parentLinkingNode != 1)||(length - plant.lock()->maxLBudDormant_1 < 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
+                if((budStage == 0)&&(getParameter("subType")==2))
+                    {
+                        
+                        
+                        e = maxLBudDormant_ -  getLength(true);
+                    }
+                assert(((budStage !=1)||(length - maxLBud_ < 1e-10))&&"!(((budStage !=1)||(length - 1 < 1e-10)))");
+                assert(((budStage !=0)||(length - maxLBudDormant_< 1e-10))&&"!(((budStage !=0)||(length < 1e-10)))");
 				double dl = e;//length increment = calculated length + increment from last time step too small to be added
 				length = getLength(true);
 				this->epsilonDx = 0.; // now it is "spent" on length (no need for -this->epsilonDx in the following)

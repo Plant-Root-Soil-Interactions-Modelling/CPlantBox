@@ -1391,7 +1391,7 @@ if __name__ == '__main__':
     params = toTry()
     Qsv=params['Qsv']
     MulimSucv=params['MulimSucv']
-    nodeDv=8
+    nodeDv=4
     GrRatiov= params['GrRatiov']
     CarbonCostv= params['CarbonCostv']
     Klightv= params['Klightv']
