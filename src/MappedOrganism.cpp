@@ -568,7 +568,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
  */
 void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
 	reset(); // just in case
-	std::cout << "MappedPlant::initialize \n" << std::flush;
+	//std::cout << "MappedPlant::initialize \n" << std::flush;
 	this->stochastic = stochastic;
 	if(LB){	Plant::initializeLB(verbose);
 	}else{Plant::initializeDB(verbose);}

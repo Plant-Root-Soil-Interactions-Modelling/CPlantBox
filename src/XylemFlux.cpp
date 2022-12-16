@@ -403,14 +403,14 @@ void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::
                 std::cout << "Kr is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
             } else {
 				if(kr_length_ > 0.){
-					std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
+					//std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
 					rs->kr_length = kr_length_; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
 					rs->calcExchangeZoneCoefs();	//computes coefficient used by XylemFlux::kr_RootExchangeZonePerType
 					kr_f  = std::bind(&XylemFlux::kr_RootExchangeZonePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 				}else{
 					kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
 				}
-                std::cout << "Kr is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " 1 day-1 \n";
+                //std::cout << "Kr is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " 1 day-1 \n";
             }
         }
     } else {
@@ -433,7 +433,7 @@ void XylemFlux::setKx(std::vector<double> values, std::vector<double> age) {
             std::cout << "Kx is constant " << values[0] << " cm3 day-1 \n";
         } else {
             kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-            std::cout << "Kx is constant per subtype, subtype 0 = " << values[0] << " cm3 day-1 \n";
+            //std::cout << "Kx is constant per subtype, subtype 0 = " << values[0] << " cm3 day-1 \n";
         }
     } else {
         kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
@@ -452,7 +452,7 @@ void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::
                 std::cout << "Kx is constant " << values[0][0] << " cm3 day-1 \n";
             } else {
                 kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per subtype, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
+                //std::cout << "Kx is constant per subtype, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
             }
         } else {
             if (values[0].size()==1) {
@@ -460,7 +460,7 @@ void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::
                 std::cout << "Kx is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
             } else {
                 kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
+                //std::cout << "Kx is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
             }
         }
     } else {

@@ -94,12 +94,12 @@ void aux(double t, double * y) ;
  * CplantBox object making link with PiafMunh
  * Wraps a Photosynthesis class
  */
-class PhloemFlux: public CPlantBox::Photosynthesis
+class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_from_this<PhloemFlux>
 {
 	public:
 	PhloemFlux(std::shared_ptr<CPlantBox::MappedPlant> plant_, double psiXylInit = -500., double ciInit = 350e-6): 
 		CPlantBox::Photosynthesis(plant_, psiXylInit, ciInit){};
-    std::shared_ptr<PhloemFlux> Phloem() { return std::make_shared<PhloemFlux>(*this); }; // up-cast for Python binding
+    std::shared_ptr<PhloemFlux> Phloem() {  return shared_from_this(); }; // up-cast for Python binding
 	virtual ~PhloemFlux() { }
 	int startPM(double StartTime ,double EndTime, int OutputStep,double TairK, bool verbose = true , 
 		std::string filename= "outpm.txt");///< main function called from python
@@ -215,7 +215,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis
 	void update_viscosity() ;
 	void C_fluxes(double t, int Nt) ; // in  PiafMunch2.cpp
 	
-	protected:
+	//protected:
 	//internal parameters
 	double TairK_phloem;//temperature in K for phloem tissue
 	int Nt_old = 0; //BU old seg size

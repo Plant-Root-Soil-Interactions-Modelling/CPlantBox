@@ -392,6 +392,20 @@ void Photosynthesis::initVcVjRd(){
 		
 		Rd = Rd_ref * std::exp(Eard/(R_ph*Tref*0.1)*(1.-Tref/TleafK));
 		deltagco2.at(li_) = (delta + Kc*Rd*(1. + oi/Ko)/Vcmax.at(li_))/(1-Rd/Vcmax.at(li_));
+        
+        if((!std::isfinite(J))||(!std::isfinite(delta))) {
+			std::cout<<"Jrefmax "<<Jrefmax<<" Jmax "<<Jmax<<" theta "<<theta<<" alpha "<<alpha
+                <<" Vcrefmax "<<Vcrefmax<<" expo1 "<<expo1<<" expo2 "<<expo2<<std::endl;
+			std::cout<<"coefa "<<coefa<<" coefb "<<coefb<<" coefc "<<coefc<<" dis "<<dis<<" J "<<J<<" Rd "<<Rd<<" Ko "<<Ko<<" ";
+			std::cout<<" Kc "<<Kc<<" oi "<<oi<<" delta "<<delta<<std::endl;
+			std::cout<<"deltagco2 "<<deltagco2.at(li_)<<std::endl;
+				throw std::runtime_error("Phtotosynthesis: (!std::isfinite(J))||(!std::isfinite(delta))");
+			}
+        //Jrefmax 0.000612282 Vcrefmax 0.00056221 expo1 1.31815 expo2 0.0121272
+        //coefa 1.25156 coefb -0.000879469 coefc 1.63594e-07 dis -4.55263e-08 J -nan Rd 4.75326e-07 Ko 0.334937  
+        //Kc 0.000470649 oi 0.410156 delta 6.37688e-05
+        //deltagco2 6.43832e-05
+        
 	}
 }
 
@@ -492,15 +506,15 @@ void Photosynthesis::loopCalcs(double simTime){
 
 			}
 			ci.at(i) = (cs*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)) ;//Eq 26	
-			if((!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))) {
-			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl;
-			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J<<" "<<Vcmax.at(i)<<" "<<Kc<<" "<<Ko<<" ";
-			std::cout<<" "<<delta<<" "<<oi<<" "<<eps<<std::endl;
-			std::cout<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd<<" "<< deltagco2.at(i)<<std::endl;
-			std::cout<<"forJW, Jw "<<Jw.at(i)<<" drout_in "<<(this->pg.at(i) - (rxi + rxj)/2)<<" "<<ea_leaf <<" "<< ea<<" "<<Patm<<" "<<Mh2o<<" "<<rho_h2o <<std::endl;
-			std::cout<<"forpg "<<sideArea <<" "<< Jw.at(i)<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
+			if((!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))||(!std::isfinite(Vj.at(i)))||(!std::isfinite(Vc.at(i)))) {
+			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" ciOld "<<ci_old.at(i)<<" ci "<<ci.at(i)<<std::endl;
+			std::cout<<"an calc An "<<An.at(i)<<" Vc "<<Vc.at(i)<<" Vj "<< Vj.at(i)<<" J "<<J<<" Vcmax "<<Vcmax.at(i)<<" Kc "<<Kc<<" Ko "<<Ko<<" ";
+			std::cout<<" delta "<<delta<<" oi "<<oi<<" eps "<<eps<<std::endl;
+			std::cout<<"forgco2 "<<gco2.at(i) <<" g0 "<< g0<<" fw "<<  fw.at(i) <<" a1 "<<  a1 <<" An "<< An.at(i)<<" Rd "<< Rd<<" deltagco2 "<< deltagco2.at(i)<<std::endl;
+			std::cout<<"forJW, Jw "<<Jw.at(i)<<" drout_in "<<(this->pg.at(i) - (rxi + rxj)/2)<<" ea_leaf "<<ea_leaf <<" ea "<< ea<<" Patm "<<Patm<<" Mh2o "<<Mh2o<<" rho_h2o "<<rho_h2o <<std::endl;
+			std::cout<<"forpg sideArea "<<sideArea <<" Jw "<< Jw.at(i)<<" fv "<<fv.at(i)<<" tauv "<<tauv.at(i)<<" dv "<<dv.at(i)<<" l "<<l<<" rxi "<<rxi <<" rxj "<< rxj<<" pg "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
 			std::cout<<"diff Ev and lat fluw: "<<Ev.at(i)<<std::endl;//<<" "<<outputFluxL.at(i)
-				throw std::runtime_error("Phtotosynthesis: nan or Inf k_stomatas.at(i) of pg.at(i)");
+				throw std::runtime_error("Phtotosynthesis: nan or Inf val");
 			}
 			
 		}else{ci.at(i) = 0.0;}

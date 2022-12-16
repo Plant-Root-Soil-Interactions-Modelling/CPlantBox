@@ -876,6 +876,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("aB", &XylemFlux::aB)
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
+            .def_readwrite("k_stomatas", &XylemFlux::k_stomatas)
             .def_readwrite("rs", &XylemFlux::rs)
 			.def_readwrite("psi_air", &XylemFlux::psi_air);
 
@@ -966,7 +967,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("k_stomatas_old", &Photosynthesis::k_stomatas_old)
-            .def_readwrite("doLog", &Photosynthesis::doLog);
+            .def_readwrite("doLog", &Photosynthesis::doLog)
+            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
+            .def_readwrite("sh", &Photosynthesis::sh)
+            .def_readwrite("fwr", &Photosynthesis::fwr)
+            .def_readwrite("oi", &Photosynthesis::oi);
 			
 	/*
      * runPM.h

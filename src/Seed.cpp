@@ -52,13 +52,13 @@ void Seed::initialize(bool verbose)
 	auto p = plant.lock();
 	auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
 	bool plantBox = stemP.size()>0;
-	if (verbose) {
-		if (plantBox) {
-			std::cout << "Seed::initialize: Plant \n";
-		} else {
-			std::cout << "Seed::initialize: RootSystem \n";
-		}
-	}
+	//if (verbose) {
+	//	if (plantBox) {
+	//		std::cout << "Seed::initialize: Plant \n";
+	//	} else {
+	//		std::cout << "Seed::initialize: RootSystem \n";
+	//	}
+	//}
 
 	/*
 	 * Create roots
@@ -82,7 +82,7 @@ void Seed::initialize(bool verbose)
 			p->getOrganRandomParameter(Organism::ot_root, basalType); // if the type is not defined an exception is thrown
 		} catch (...) {
 			if (verbose) {
-				std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
+				//std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
 			}
 			auto brtp = p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
 			brtp->subType = basalType;
@@ -157,9 +157,9 @@ void Seed::initialize(bool verbose)
 			try {
 				p->getOrganRandomParameter(Organism::ot_stem, tillerType);
 			} catch (...) {
-				if (verbose) {
-					std::cout << "Tiller stem type #" << tillerType << " was not defined, using main stem parameters instead, ";
-				}
+				//if (verbose) {
+				//	std::cout << "Tiller stem type #" << tillerType << " was not defined, using main stem parameters instead, ";
+				//}
 				auto tillParam = p->getOrganRandomParameter(Organism::ot_stem, 1)->copy(plant.lock());
 				tillParam->subType = tillerType;
 				p->setOrganRandomParameter(tillParam);
