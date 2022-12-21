@@ -1253,15 +1253,16 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                 
             if((deltaVol_tot -deltavol)>=1e-10)
             {
-                std::cout<<"		k "<<k<<" "<<" id:"<<nodeId<<" idh:"<<nodeId_h<<" Flen:"<<Flen <<" Fpsi:"<< Fpsi.at(nodeId);
+						std::stringstream errMsg;
+						errMsg <<"		k "<<k<<" "<<" id:"<<nodeId<<" idh:"<<nodeId_h<<" Flen:"<<Flen <<" Fpsi:"<< Fpsi.at(nodeId);
 					std::cout<<" Rtip:"<<isRootTip.at(nodeId)<<" "<<isStemTip<<" "<<useStemTip<<" Lseg:"<<Lseg<<" "<<deltavolSeg<<std::endl;
 					
 						std::cout<<"		"<<org->getId()<<" ot:"<<ot<<" Li:"<<Linit<<" Le:"<<targetlength;
 						std::cout<<" rorg "<<e<<" deltaVol_tot "<<deltaVol_tot<<" deltavol "<<deltavol<<" "<<(targetlength-Linit)<<std::endl;
 						std::cout<<"		"<<org->getLength(true)<<" "<<org->getEpsilon()<<std::endl;
 						std::cout<<"		 to suc temp "<<deltaSucTemp<<" "<<nodeId<<" " <<org->getId()
-						<<" "<<ot<<" "<<st<<" "<<rhoSucrose_f(st,ot)<<std::endl;
-                assert(((deltaVol_tot -deltavol)<1e-10)&&"deltavol_tot too high");//deltaVol_tot <=deltavol
+						<<" "<<ot<<" "<<st<<" "<<rhoSucrose_f(st,ot)<<" "<<deltaVol_tot <<" "<<deltavol<<"deltavol_tot too high";
+						throw std::runtime_error(errMsg.str().c_str());
             }
 			}
 			if(doTroubleshooting){

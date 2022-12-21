@@ -293,20 +293,29 @@ def runSim(directoryN_,doVTP, verbosebase,
     doDict = False
     doPrint = True
     write_file_float("running", thread)  
-    write_file_array("input", np.array(["directoryN_","doVTP", "verbosebase",
+    write_file_array("input", 
+            np.array(["directoryN_","doVTP", "verbosebase",
            "PRate_", "thresholdAux", "RatiothresholdAux", "UseRatiothresholdAux",
-           "Qmax_", "thresholdSuc",
-           "GrRatio" ,  "maxLBud" , "budGR","L_dead_threshold" ,
+           "Qmax_", "thresholdSuc","useLength",
+           "GrRatio" ,  "CarbonCost", 
+            "maxLBud[0]" , "maxLBudDormant[0]","maxLBudDormant[1]","maxLBudDormant[2]",
+                      "budGR","L_dead_threshold" ,
            "nodeD", "thread",  
            "testTime", "dtBefore", "dtAfter", "start_time", "dt_write","dtSIM_write",
-           "doPrint" ,"doDict", "auxin_D","kss", "kaa" ,"CarbonCost","Klight"])) 
+           "doPrint" ,"doDict", "auxin_D","kss", "kaa" ,
+                       "fileparam"  , "doMemAux",
+          "doDiffLights" , "Klight" , "BerthLim" ,"PRBA",  "PRBD"])) 
     write_file_array("input", np.array([directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, UseRatiothresholdAux,
-           Qmax_, thresholdSuc,
-           GrRatio ,  maxLBud , budGR,L_dead_threshold ,
+           Qmax_, thresholdSuc,useLength,
+           GrRatio ,  CarbonCost,
+           maxLBud[0] , maxLBudDormant[0],maxLBudDormant[1],maxLBudDormant[2],
+           budGR,L_dead_threshold ,
            nodeD, thread,  
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
-           doPrint ,doDict, auxin_D,kss,kaa,CarbonCost ,Klight])) 
+           doPrint ,doDict, auxin_D ,kss,kaa, 
+           fileparam  , doMemAux,
+          doDiffLights , Klight , BerthLim ,PRBA,  PRBD])) 
     # if RatiothresholdAux == 0 and UseRatiothresholdAux and activeAtThreshold_auxin:
     #     print(thread, RatiothresholdAux,UseRatiothresholdAux ,activeAtThreshold_auxin)
     #     print("issue ratio threshold")
@@ -639,7 +648,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         expandedLeaf = False
         if __name__ == '__main__':
             print("leaf",nodeD,leafArea,maxLeafArea,np.array([org.getLength(True) * org.getParameter("Width_blade") for org in leaves]),np.array([org.parentLinkingNode for org in leaves]) +1)
-        if (max(tempstst) >=  nodeD) and (max(leafRank) >= (nodeD -1 )):
+        if (max(tempstst) >=  nodeD) and (max(leafRank) >= (nodeD -1 )) and (nodeD > 0):
             tempstst_ = np.array([np.argmax(tempstst == (nodeD-1)),np.argmax(tempstst == nodeD)])
             kids4distbase = kids4distbase[tempstst_]
             distbase4decap = np.array([nkdb.getParent().getLength(nkdb.parentNI) for nkdb in kids4distbase])
@@ -695,7 +704,7 @@ def runSim(directoryN_,doVTP, verbosebase,
         #if doDecapitation and (numLNodes > nodeD): 
          #   raise Exception("too many linking nodes")
         
-        if (not doDecapitation) and (not changedSimMax) and (nodeD ==0) and (numLNodes ==8): 
+        if (not doDecapitation) and (not changedSimMax) and (nodeD ==0) and (numLNodes ==7): 
             simMax = simDuration + testTime
             changedSimMax = True
             dt = dtAfter #1MIN
@@ -996,7 +1005,7 @@ def runSim(directoryN_,doVTP, verbosebase,
                 #print("AuxinSource",AuxinSource)
             if(changedSimMax):
                 timeSinceDecap = simDuration - (simMax - testTime)
-                if(not (budStage[(nodeD):] ==-1).all()):
+                if((not (budStage[(nodeD):] ==-1).all()) and (nodeD>0)):
                     print(thread, "not (arr[(nodeD+1):] ==-1).all()")
                     print(budStage,nodeD,budStage[(nodeD+1):] ,(budStage[(nodeD):] ==-1),(not (budStage[(nodeD):] ==-1).all()))
                     errorMessage = str(thread)+" not (arr[(nodeD+1):] ==-1).all() "
@@ -1374,7 +1383,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     if (outcondition >= 0) and (changedSimMax):
         outId = thread
     if not changedSimMax:
-        print(outId,nodeD,"fail, not reached changedSimMax", nodeD,budStage)
+        print(thread, outId,nodeD,"fail, not reached changedSimMax", budStage, simMax)
     #print("finished", thread, time.time() - start_time)
     #os._exit(os.EX_OK)
     r.doVTPf(doVTP,directoryN,dir4allResults,ö, __name__ == '__main__')
@@ -1395,7 +1404,7 @@ if __name__ == '__main__':
     params = toTry()
     Qsv=params['Qsv']
     MulimSucv=params['MulimSucv']
-    nodeDv=7
+    nodeDv=0
     GrRatiov= params['GrRatiov']
     CarbonCostv= params['CarbonCostv']
     Klightv= params['Klightv']

@@ -26,6 +26,7 @@ def toTry():
     nodeD = np.array([4,7])
     Berthlim = np.array([ 1,2,3,4,6,8 ])
     Klight = np.array([0,0.005,0.01,0.02])
+    typePlant = np.array(["wt","wtd","slm","dw"])
 
 
     Qsv,MulimSucv,Berthlim, Klightv, nodeDv = np.meshgrid(Qs,MulimSuc,Berthlim,Klight, nodeD)
