@@ -1,4 +1,4 @@
-# Install script for directory: /home/rbtlm640/CPBWUrg/CPlantBox
+# Install script for directory: /p/home/jusers/giraud1/juwels/cpbTemp/CPlantBox
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -29,7 +29,7 @@ endif()
 
 # Install shared libraries without execute permission?
 if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
-  set(CMAKE_INSTALL_SO_NO_EXE "1")
+  set(CMAKE_INSTALL_SO_NO_EXE "0")
 endif()
 
 # Is this installation the result of a crosscompile?
@@ -37,10 +37,15 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
+# Set default install directory permissions.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/p/software/juwels/stages/2020/software/binutils/2.36.1-GCCcore-10.3.0/bin/objdump")
+endif()
+
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/rbtlm640/CPBWUrg/CPlantBox/src/cmake_install.cmake")
-  include("/home/rbtlm640/CPBWUrg/CPlantBox/tutorial/cmake_install.cmake")
+  include("/p/home/jusers/giraud1/juwels/cpbTemp/CPlantBox/src/cmake_install.cmake")
+  include("/p/home/jusers/giraud1/juwels/cpbTemp/CPlantBox/tutorial/cmake_install.cmake")
 
 endif()
 
@@ -52,5 +57,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/rbtlm640/CPBWUrg/CPlantBox/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/p/home/jusers/giraud1/juwels/cpbTemp/CPlantBox/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
