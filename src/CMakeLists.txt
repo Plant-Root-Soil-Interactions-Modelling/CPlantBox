@@ -148,26 +148,6 @@ pybind11_add_module(plantbox SHARED
 
 #adapted from https://stackoverflow.com/questions/69525592/undefined-symbol-error-when-linking-pybind11-with-a-dynamic-library-that-calls-a
 target_link_libraries(plantbox PUBLIC 
-            CPlantBox
-			sundials_sunnonlinsolnewton
-			sundials_sunmatrixsparse
-			sundials_sunmatrixdense
-			sundials_sunmatrixband
-			sundials_sunlinsolsptfqmr
-			sundials_sunlinsolspgmr
-			sundials_sunlinsolspfgmr
-			sundials_sunlinsolspbcgs
-			sundials_sunlinsolpcg
-			sundials_sunlinsolklu
-			sundials_sunlinsoldense
-			sundials_sunlinsolband
-			sundials_nvecserial
-			sundials_cvode
-			suitesparseconfig
-			libcolamd
-			arkode
-			libbtf
-			libklu 
-			libamd )
+            CPlantBox )
 			
 set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
