@@ -484,7 +484,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 				std::cout<<"exud: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Exudmax[nodeID]<<" "<< l<<" "<<Radii[k-1]<<std::endl;
 				assert(false);
 			}
-			if(Q_Rmmax[nodeID ]<=0.){
+			if(Q_Rmmax[nodeID ]< 0.){
 				std::cout<<"rm: loop n#"<<k<<", node "<<nodeID<<" "<<Q_Rmmax[nodeID]<<" "<< krm1<<" "<<StructSucrose<<std::endl;
 				assert(false);
 			}
