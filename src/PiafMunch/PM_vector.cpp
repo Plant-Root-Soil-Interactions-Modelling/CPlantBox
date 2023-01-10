@@ -119,7 +119,7 @@ void Fortran_vector::set(const double &a) {
 }
 
 void Fortran_vector::set(const Fortran_vector &v) {
-	// identique à l'opérateur=(), mais impose l'égalité des tailles des 2 vecteurs arguments.
+	// identique a l'operateur=(), mais impose l'egalite des tailles des 2 vecteurs arguments.
 	int i, n = (int)v_[0] ;
 	
 	if (n != (int)v.v_[0])	{
@@ -135,7 +135,7 @@ void Fortran_vector::set(const Fortran_vector &v) {
 }
 
 void Fortran_vector::add_subvectorx(const Index_vector &index, const Fortran_vector &v, int ad) {
-	// remplace (ou ajoute ou soustrait à, si ad != 0) les valeurs d'indices spécifiés par index, (par) celles du vecteur v de même taille que index
+	// remplace (ou ajoute ou soustrait a, si ad != 0) les valeurs d'indices specifies par index, (par) celles du vecteur v de meme taille que index
 	int i, *temp = index.v_ ;
 	int n = temp[0], n_ = (int)v_[0];
 	double *temp1 = v.v_ ;
@@ -150,7 +150,7 @@ void Fortran_vector::add_subvectorx(const Index_vector &index, const Fortran_vec
 }
 
 void Fortran_vector::add_subvector(const int &i1, const int &i2, const Fortran_vector &v, int ad) {
-	// remplace (ou additionne, ou soustrait à...) les éléments d'indices i1 à i2 (par) les éléments de v, dont la taille doit correspondre :
+	// remplace (ou additionne, ou soustrait a...) les elements d'indices i1 a i2 (par) les elements de v, dont la taille doit correspondre :
 	int i, nx = i2 - i1 + 1 ; //, incx = 1;
 	int n_ = (int)v_[0];
 	if ((i1 < 1) || (i1 > i2) || (i2 > n_)) assert(false);
@@ -265,10 +265,10 @@ Fortran_vector subvector(const Fortran_vector & V, const int &i1, const int &i2)
 	return T;
 }
 
-/**** arithmétique vectorielle ordinaire ******************************************************************/
+/**** arithmetique vectorielle ordinaire ******************************************************************/
 
 Fortran_vector Fortran_vector::operator-() {
-	//   - v (opérateur unaire de changement de signe)
+	//   - v (operateur unaire de changement de signe)
 	int n = (int)v_[0];
 	Fortran_vector v(n);
 	double *temp = v.v_ ;
@@ -313,7 +313,7 @@ Fortran_vector operator-(const double &a, const Fortran_vector &v) {
 }
 
 Fortran_vector Fortran_vector::operator*(const Fortran_vector &v2) {
-	//   v * v2 , multiplication elementwise (v et v2 doivent avoir la même taille)
+	//   v * v2 , multiplication elementwise (v et v2 doivent avoir la meme taille)
 	Fortran_vector v((int)v_[0]);
 	v.set_elemult((*this), v2);
 	return v;
@@ -341,7 +341,7 @@ Sparse_matrix Fortran_vector::operator*(const SpUnit_matrix &U) {
 }
 
 Fortran_vector Fortran_vector::operator/(const Fortran_vector &v2) {
-	//   v / v2 , division elementwise (v et v2 doivent avoir la même taille)
+	//   v / v2 , division elementwise (v et v2 doivent avoir la meme taille)
 	Fortran_vector v((int)v_[0]);
 	v.set_elediv((*this), v2);
 	return v;
@@ -361,7 +361,7 @@ Fortran_vector operator/(const double &a, const Fortran_vector &v) {
 	return Tv;
 }
 
-/**** arithmétique vectorielle 'in-place' *****************************************************************/
+/**** arithmetique vectorielle 'in-place' *****************************************************************/
 
 Fortran_vector & Fortran_vector::operator+=(const Fortran_vector &v2) {
 	//  v += v2
@@ -398,7 +398,7 @@ Fortran_vector & Fortran_vector::operator-=(const double &a) {
 }
 
 Fortran_vector & Fortran_vector::operator*=(const Fortran_vector &v2) {
-	//   v = v * v2 , multiplication elementwise (v et v2 doivent avoir la même taille)
+	//   v = v * v2 , multiplication elementwise (v et v2 doivent avoir la meme taille)
 	int i, n = (int)v_[0];
 	double*temp(v_), *temp2 = v2.v_ ;
 	if ((int)temp2[0] != n) assert(false);
@@ -414,7 +414,7 @@ Fortran_vector & Fortran_vector::operator*=(double a) {
 }
 
 Fortran_vector & Fortran_vector::operator/=(const Fortran_vector &v2) {
-	//   v = v/v2 , division elementwise (v et v2 doivent avoir la même taille)
+	//   v = v/v2 , division elementwise (v et v2 doivent avoir la meme taille)
 	int i, n = (int)v_[0];
 	double*temp(v_), *temp2 = v2.v_ ;
 	if ((int)temp2[0] != n) assert(false);
@@ -429,7 +429,7 @@ Fortran_vector & Fortran_vector::operator/=(const double &a) {
 	return *this;
 }
 
-/**** Arithmétique vectorielle 'inplace' composite (fonctions membres de la classe Fortran_vector) ************/
+/**** Arithmetique vectorielle 'inplace' composite (fonctions membres de la classe Fortran_vector) ************/
 
 void Fortran_vector::set_matmult(const Sparse_matrix &S, const Fortran_vector &v1) {
 	// v = S*v1 (mult.matricielle); S.m_= v.size ; S.n_= v1.size
@@ -644,7 +644,7 @@ void Fortran_vector::add_matmult(const Sparse_matrix &S, const Fortran_vector &v
 }
 
 void Fortran_vector::add_matmult(const SpUnit_matrix &U, const Fortran_vector &v1, int ad) {
-	//  v += U*v1 : multiplication par une matrice à +-1 (ou :  v = U*v1, ou  v -= U*v1, suivant la valeur de ad)
+	//  v += U*v1 : multiplication par une matrice a +-1 (ou :  v = U*v1, ou  v -= U*v1, suivant la valeur de ad)
 	int m = U.m_, n = U.n_, nnz = U.nnz_ ;
 	double * temp_v = v1.v_ ;
 	if (((int)v_[0] != m) || ((int)temp_v[0]!= n)) assert(false);
