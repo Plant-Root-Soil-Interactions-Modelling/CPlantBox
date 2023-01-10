@@ -82,7 +82,7 @@ Fortran_vector JS_Apo						; // apoplasmic sugar flux from phloem to Lateral par
 extern Fortran_vector JW_ParMb, JW_Apo, JW_Sympl ; // water fluxes corresponding to above 3 sugar fluxes   (ml / h)
 Fortran_vector C_SymplUpflow					; // upflow concentration (mmol / ml) for JS_Sympl
 Fortran_vector C_PhlApo, C_ParApo, C_ApoUpflow ; // (mmol / ml) apoplasmic sugar conc., resp. in phloem and lat.parenchyma, and upflow conc. for JS_Apo
-Fortran_vector Delta_JS_ST ; // sera la composante purement phloémienne de Q_TC_dot[ ]							(mmol / h)
+Fortran_vector Delta_JS_ST ; // sera la composante purement phloemienne de Q_TC_dot[ ]							(mmol / h)
 extern Fortran_vector P_Sympl		; // Lateral parenchyma symplasmic turgor pressure 								(MPa)
 double Q_Rm_dot_alt ; // for an alternate, target-oriented,  expression of starch variation rate
 
@@ -101,8 +101,8 @@ Fortran_vector TracerC_ST							; // Concentration of soluble tracer in sieve tu
 Fortran_vector TracerC_PhlApo, TracerC_ParApo ; // Concentration of soluble tracer in apoplasms					(MBq / ml solution))
 Fortran_vector TracerRatioSympl ; //   TracerQ_Mesophyll / Q_Mesophyll = TracerC_Sympl / C_Sympl  (MBq / mmol)
 Fortran_vector TracerRatioQ_RespMaint ; //   = TracerQ_RespMaint / Q_RespMaint (MBq / mmol)
-Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloémienne de Q_Rmmax_dot[ ]
-Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif opposé à JS_Trsv !!!
+Fortran_vector Delta_TracerJS_ST ; // sera la composante purement phloemienne de Q_Rmmax_dot[ ]
+Fortran_vector TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb ; // Lateral (Sympl., Apopl.; cross-membr...) soluble tracer fluxes FROM sieve tubes INTO parenchyma							(MBq / h)     !!! ATTENTION : sens positif oppose a JS_Trsv !!!
 Fortran_vector TracerC_SymplUpflow					;  // upflow tracer concentration (mmol / ml) for TracerJS_Sympl
 Fortran_vector TracerC_ApoUpflow ;				; // upflow tracer concentration (mmol / ml) for TracerJS_Apo
 
@@ -112,7 +112,7 @@ double * TracerQ_Mesophyll_dot=NULL, * Q_Rmmax_dot=NULL, * TracerQ_Rm_dot=NULL, 
 // Next 2 variables are not considered as such, but as possible inputs to compute vol_Sympl_dot :
 Fortran_vector P_ST_dot, P_Sympl_dot			; //  dP_ST/dt , dP_Sympl/dt					(MPa h / h)    -- for elasticity...
 
-/********************* C-FLUXES-RELATED BIOPHYSICAL & PHYSIOLOGICAL PARAMETERS **********************************/
+/********************* C-FLUXES-RELATED BIOPHYSICAL and PHYSIOLOGICAL PARAMETERS **********************************/
 Fortran_vector kML						; // kinetic parameter / Michaelis - phloem loading					(mmol / ml)
 Fortran_vector vML					; // kinetic parameter / phloem loading								(mmol /h)
 Fortran_vector kMU						; // kinetic parameter / Michaelis - phloem unloading					(mmol / ml)

@@ -95,37 +95,37 @@ Les solveurs :
  cvode_spils(f, y, T, aux, atol, rtol [, solver [, GSType [, prectype [, nbVar_dot [, Var_primitive [, Var_dot [, verbose [, STALD [, rootfind, nrootfns [, mu, ml [, maxl]]]]]]]]]]] )
  arkode(f, y, T, aux, atol, rtol [, nbVar_dot [, Var_primitive [, Var_dot [, verbose [, rootfind, nrootfns]]]]] )
 
- impliquent 6 arguments obligatoires, plus 6 à 12 facultatifs :
+ impliquent 6 arguments obligatoires, plus 6 a 12 facultatifs :
 
  arguments obligatoires :
 
- f(double t, double* y, double* ydot) : fonction exprimant le système à résoudre :  ydot[] = dy[]/dt  en fonction de t et de y.
- y  : Fortran_vector des variables d'état décrivant le système ; doit être initialisé à  y0 = y(t=t0)  avant l'appel du solveur.
- T  : Fortran_vector spécifiant les valeurs de t pour lesquelles on désire la solution, y compris le temps initial t0 = T[1].
- aux(double t, double* y) : définit une tâche auxiliaire (NULL si aucune) à exécuter à chacun des instants  t  de T  demandés
-		et également aux éventuels instants t solutions de rootfind (cf. ci-après).
- atol, rtol : (Fortran_Vector) précision  absolue, relative -> erreur sur y[i] ~ ewt[i]= (rtol[i]* |y[i]|) + atol[i];
-		si xtol (= atol ou rtol) est de size 1, alors pour chaque composante (i= 1 à neq), xtol[i] = xtol[1].
-		Actuellement, seule la forme scalaire de rtol est gérée ; l'option CV_WF de cvode (p. ...) n'est pas encore gérée.
+ f(double t, double* y, double* ydot) : fonction exprimant le systeme a resoudre :  ydot[] = dy[]/dt  en fonction de t et de y.
+ y  : Fortran_vector des variables d'etat decrivant le systeme ; doit etre initialise a  y0 = y(t=t0)  avant l'appel du solveur.
+ T  : Fortran_vector specifiant les valeurs de t pour lesquelles on desire la solution, y compris le temps initial t0 = T[1].
+ aux(double t, double* y) : definit une tache auxiliaire (NULL si aucune) a executer a chacun des instants  t  de T  demandes
+		et egalement aux eventuels instants t solutions de rootfind (cf. ci-apres).
+ atol, rtol : (Fortran_Vector) precision  absolue, relative -> erreur sur y[i] ~ ewt[i]= (rtol[i]* |y[i]|) + atol[i];
+		si xtol (= atol ou rtol) est de size 1, alors pour chaque composante (i= 1 a neq), xtol[i] = xtol[1].
+		Actuellement, seule la forme scalaire de rtol est geree ; l'option CV_WF de cvode (p. ...) n'est pas encore geree.
 
-arguments facultatifs pour le calcul des dérivées de variables accessibles mais ne figurant pas dans le vecteur y des var. 'réservoirs' vérifiant dy/dt = f(t, y, y') :
+arguments facultatifs pour le calcul des derivees de variables accessibles mais ne figurant pas dans le vecteur y des var. 'reservoirs' verifiant dy/dt = f(t, y, y') :
 
- NbVar_dot : nb de variables (Fortran_vectors) dont on souhaite la dérivée à chaque instant.
- Fortran_vector** Var_primitive : tableau (de taille NbVar_dot) des adresses des NbVar_dot variables (Fortran_vectors) dont on souhaite la dérivée à chaque instant.
- Fortran_vector** Var_dot : tableau (de taille NbVar_dot) des adresses des NbVar_dot  dérivées (Fortran_vectors) dont on souhaite la valeur à chaque instant.
+ NbVar_dot : nb de variables (Fortran_vectors) dont on souhaite la derivee a chaque instant.
+ Fortran_vector** Var_primitive : tableau (de taille NbVar_dot) des adresses des NbVar_dot variables (Fortran_vectors) dont on souhaite la derivee a chaque instant.
+ Fortran_vector** Var_dot : tableau (de taille NbVar_dot) des adresses des NbVar_dot  derivees (Fortran_vectors) dont on souhaite la valeur a chaque instant.
 
 arguments facultatifs annexes :
 
- solver : (int) -- un des 2 ou 3 disponibles, suivant la fonction :	{DENSE (par défaut), BAND, DIAG ou KLU}  pour cvode_direct  ;  {SPGMR (par défaut), SPFGMR, SPBCGS, PCG ou SPTFQMR}  pour cvode_spils.
- GSType  : (spéc. cvode_spils) int (ignoré si solver <> SPGMR ou SPFGMR) type d'orthogonalis. Gram-Schmidt: CLASSICAL_GS ou (par défaut) MODIFIED_GS.
- prectype: (spéc. cvode_spils) int : une des 4 constantes {PREC_NONE (par défaut), PREC_LEFT, PREC_RIGHT, PREC_BOTH} : le type de précond. de la mat.
- verbose: booléen (true par défaut) : si true =>  affiche le déroulement (pas par pas) ;
- STALD : (spéc. cvode_xxxx) : booléen (true par défaut)  : si true => active l'algorithme de détection/corr. d'instab. lié aux ordres >2.
- rootfind : (spéc. cvode_xxxx) : fonction (NULL si aucune) définissant un système de nrootfns éq. à résoudre en cours
-           d'intégration : g[i](t, y) = 0   [i = 1..nroots]. Décl. suivant le prototype: rootfind(double t, double* y, double* g).
- nrootfns : (spéc. cvode_xxxx) : int : nombre d'équations  g[i](t, y) = 0  (ci-dessus) éventuellement à résoudre ; ignoré si rootfind = NULL.
- mu, ml : (spéc. cvode_xxxx) : int : pris en compte seulement si solver = BAND ou si prectype <> PREC_NONE : nb de super-diag. resp. supérieures et inférieures.
- maxl : (spéc. cvode_spils) : int (= 5 par défaut) : la taille max. du sous-espace de Krylov.
+ solver : (int) -- un des 2 ou 3 disponibles, suivant la fonction :	{DENSE (par defaut), BAND, DIAG ou KLU}  pour cvode_direct  ;  {SPGMR (par defaut), SPFGMR, SPBCGS, PCG ou SPTFQMR}  pour cvode_spils.
+ GSType  : (spec. cvode_spils) int (ignore si solver <> SPGMR ou SPFGMR) type d'orthogonalis. Gram-Schmidt: CLASSICAL_GS ou (par defaut) MODIFIED_GS.
+ prectype: (spec. cvode_spils) int : une des 4 constantes {PREC_NONE (par defaut), PREC_LEFT, PREC_RIGHT, PREC_BOTH} : le type de precond. de la mat.
+ verbose: booleen (true par defaut) : si true =>  affiche le deroulement (pas par pas) ;
+ STALD : (spec. cvode_xxxx) : booleen (true par defaut)  : si true => active l'algorithme de detection/corr. d'instab. lie aux ordres >2.
+ rootfind : (spec. cvode_xxxx) : fonction (NULL si aucune) definissant un systeme de nrootfns eq. a resoudre en cours
+           d'integration : g[i](t, y) = 0   [i = 1..nroots]. Decl. suivant le prototype: rootfind(double t, double* y, double* g).
+ nrootfns : (spec. cvode_xxxx) : int : nombre d'equations  g[i](t, y) = 0  (ci-dessus) eventuellement a resoudre ; ignore si rootfind = NULL.
+ mu, ml : (spec. cvode_xxxx) : int : pris en compte seulement si solver = BAND ou si prectype <> PREC_NONE : nb de super-diag. resp. superieures et inferieures.
+ maxl : (spec. cvode_spils) : int (= 5 par defaut) : la taille max. du sous-espace de Krylov.
 */
 
 #endif

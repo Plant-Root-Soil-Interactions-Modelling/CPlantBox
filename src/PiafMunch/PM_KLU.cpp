@@ -46,9 +46,9 @@ void KLU_LogMessage(const char* message) {
 double RCOND_LIM = pow(DBL_EPSILON, 2.0 / 3.0);
 double CONDEST_LIM = 1. / RCOND_LIM;
 
-int set_KLU_solve_(double*x, int p, const Sparse_matrix &S, double*b, int** ipiv_ptr, void** TM_ptr, bool full_check = false) ; // résoud   Sx = b    en retournant  x =  inv(S) * b
+int set_KLU_solve_(double*x, int p, const Sparse_matrix &S, double*b, int** ipiv_ptr, void** TM_ptr, bool full_check = false) ; // resoud   Sx = b    en retournant  x =  inv(S) * b
 
-void KLU_allocate(const Sparse_matrix &S, int*** ipiv_ptr_ptr, void*** TM_ptr_ptr) { // crée les espaces de travail appropriés pour la matrice S
+void KLU_allocate(const Sparse_matrix &S, int*** ipiv_ptr_ptr, void*** TM_ptr_ptr) { // cree les espaces de travail appropries pour la matrice S
 	assert((!(*ipiv_ptr_ptr)) && (!(*TM_ptr_ptr)));
 	int i, r, n = S.n_, m = S.m_, ntnz = S.ntnz_;
 	assert(m == n);
@@ -65,7 +65,7 @@ void KLU_allocate(const Sparse_matrix &S, int*** ipiv_ptr_ptr, void*** TM_ptr_pt
 	r = klu_sort(Symbolic, Numeric, Common_ptr);  assert(r);
 }
 
-void KLU_free(int*** ipiv_ptr_ptr, void*** TM_ptr_ptr) { // libère et anNULLe les espaces de travail
+void KLU_free(int*** ipiv_ptr_ptr, void*** TM_ptr_ptr) { // libere et anNULLe les espaces de travail
 	if (*ipiv_ptr_ptr) {
 		assert(*TM_ptr_ptr);
 		if ((*ipiv_ptr_ptr)[0]){ delete[] (*ipiv_ptr_ptr)[0];} (*ipiv_ptr_ptr)[0] = NULL;
@@ -79,12 +79,12 @@ void KLU_free(int*** ipiv_ptr_ptr, void*** TM_ptr_ptr) { // libère et anNULLe le
 	}
 	else {
 		assert(! (*TM_ptr_ptr));
-		cout << "KLU_free : Warning : les espaces ipiv_ptr (Ap, Ax) et TM_ptr (Common, Symbolic, Numeric) avaient déjà été libérés" << endl;
+		cout << "KLU_free : Warning : les espaces ipiv_ptr (Ap, Ax) et TM_ptr (Common, Symbolic, Numeric) avaient deja ete liberes" << endl;
 	}
 }
 
-Fortran_vector KLU_solve(const Sparse_matrix &S, const Fortran_vector &y, int** ipiv_ptr, void** TM_ptr, bool full_check) { // résoud   Sx = y    en retournant  x =  inv(S) * y
-	// si les espaces de travail (ipiv_ptr et TM_ptr) propres à la matrice S  sont NULLs, ils sont créés provisoirement et détruits à la sortie ; sinon, ils sont MAJ si nécessaire.
+Fortran_vector KLU_solve(const Sparse_matrix &S, const Fortran_vector &y, int** ipiv_ptr, void** TM_ptr, bool full_check) { // resoud   Sx = y    en retournant  x =  inv(S) * y
+	// si les espaces de travail (ipiv_ptr et TM_ptr) propres a la matrice S  sont NULLs, ils sont crees provisoirement et detruits a la sortie ; sinon, ils sont MAJ si necessaire.
 	Fortran_vector x(y.size());
 	r = x.set_KLU_solve(S, y, ipiv_ptr, TM_ptr, full_check);
 	if (!r) {
@@ -94,15 +94,15 @@ Fortran_vector KLU_solve(const Sparse_matrix &S, const Fortran_vector &y, int** 
 	return x;
 }
 
-int Fortran_vector::set_KLU_solve(const Sparse_matrix &S, const Fortran_vector &y, int** ipiv_ptr, void** TM_ptr, bool full_check) { // résoud   Sx = y    en retournant  x =  inv(S) * y
-	// si les espaces de travail (ipiv_ptr et TM_ptr) propres à la matrice S  sont NULLs, ils sont créés provisoirement et détruits à la sortie ; sinon, ils sont MAJ si nécessaire.
+int Fortran_vector::set_KLU_solve(const Sparse_matrix &S, const Fortran_vector &y, int** ipiv_ptr, void** TM_ptr, bool full_check) { // resoud   Sx = y    en retournant  x =  inv(S) * y
+	// si les espaces de travail (ipiv_ptr et TM_ptr) propres a la matrice S  sont NULLs, ils sont crees provisoirement et detruits a la sortie ; sinon, ils sont MAJ si necessaire.
 	int n = S.n_; assert((int)y.v_[0] == n) ; assert((int)v_[0] == n) ;
 	return(set_KLU_solve_(v_ + 1, 1, S, y.v_ + 1, ipiv_ptr, TM_ptr, full_check));
 }
 
-int set_KLU_solve_(double*x, int p, const Sparse_matrix &S, double*b, int** ipiv_ptr, void** TM_ptr, bool full_check) { // résoud   Sx = b    en retournant  x =  inv(S) * b
-	// p = nb de cols de la matrice B, donnée en 1! array=B.v_+1 -- si p=1 c'est un vecteur. !!! suppose l'array x déjà réservé (b l'est par définition du problème Sx = b) !!!
-	// si les espaces de travail (ipiv_ptr et TM_ptr) propres à la matrice S  sont NULLs, ils sont créés provisoirement et détruits à la sortie ; sinon, ils sont MAJ si nécessaire.
+int set_KLU_solve_(double*x, int p, const Sparse_matrix &S, double*b, int** ipiv_ptr, void** TM_ptr, bool full_check) { // resoud   Sx = b    en retournant  x =  inv(S) * b
+	// p = nb de cols de la matrice B, donnee en 1! array=B.v_+1 -- si p=1 c'est un vecteur. !!! suppose l'array x deja reserve (b l'est par definition du probleme Sx = b) !!!
+	// si les espaces de travail (ipiv_ptr et TM_ptr) propres a la matrice S  sont NULLs, ils sont crees provisoirement et detruits a la sortie ; sinon, ils sont MAJ si necessaire.
 	int i, r, n = S.n_, m = S.m_, ntnz = S.ntnz_; bool null_input_buffers(false);
 	assert(m == n);
 	for (i = 0; i < n*p; i++)   x[i] = b[i] ;
