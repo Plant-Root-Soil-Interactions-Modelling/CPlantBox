@@ -944,6 +944,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			}
 			assert(((deltaVol_tot -deltavol)<1e-10)&&"deltavol_tot too high");//deltaVol_tot <=deltavol
 		}else{
+			BackUpMaxGrowth[orgID2] =org->getLength(false);
 			if(doTroubleshooting){
 				std::cout<<"skip organ "<<org->getId()<<" "<<orgID2<<" "<<org->getAge();
 				std::cout<<" "<<org->isAlive()<<" "<<org->isActive()<<" "<<org->getNumberOfNodes()<<std::endl;
