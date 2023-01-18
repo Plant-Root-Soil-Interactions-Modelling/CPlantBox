@@ -63,6 +63,7 @@ class XylemFluxPython(XylemFlux):
         l = self.rs.segLength()
         assert(len(segs) == len(c))
         sf = np.zeros(len(segs),)
+        c = np.maximum(c, self.CMin)  ###############################################
         for i, s in enumerate(segs):
             sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.CMin) * self.Vmax / (self.Km + (c[i] - self.CMin)))  # kg/day
         sf = np.minimum(sf, 0.)
@@ -537,7 +538,7 @@ class XylemFluxPython(XylemFlux):
         @param lateral_ind  for monocots a list of two root types for "1st order laterals", "2nd order laterals"
                             for dicots a list of three root types for "1st order laterals", "2nd order laterals", "3rd order laterals"          
         """
-        axes_age = np.linspace(-5, 100, 500)
+        axes_age = np.linspace(-2, 50, 500)
         lateral_age = np.linspace(-2, 25, 125)
         lateral_cols = ["r", "g:", "m--", "b--"]
         axes_cols = ["r", "g:", "m--", "b--"]
@@ -578,7 +579,7 @@ class XylemFluxPython(XylemFlux):
             ax3.plot(axes_age, kr_, axes_cols[j])
         kr_max = np.max(kr_)
         ax3.legend(axes_str)
-        ax3.set_title("Axis")
+        ax3.set_title("Primary roots")
         ax3.set_xlabel("age [day]")
         ax3.set_ylabel("radial conductance [day$^{-1}$]")
         for j, st in enumerate(lateral_ind):
@@ -592,7 +593,7 @@ class XylemFluxPython(XylemFlux):
         print(kx_max)
         print(kr_max)
         ax1.set_ylim([0, kx_max * 1.1])
-        ax2.set_ylim([0, kx_max * 1.1])
+        # ax2.set_ylim([0, kx_max * 1.1])
         ax3.set_ylim([0, kr_max * 1.1])
         ax4.set_ylim([0, kr_max * 1.1])
         print()
@@ -601,6 +602,7 @@ class XylemFluxPython(XylemFlux):
             print("SubType {:g} for old root age: kx = {:g}, kr = {:g}".format(st, self.kx_f(100, st, 2), self.kr_f(100, st, 2, 0)))
         print()
         if plot_now:
+            plt.tight_layout()
             plt.show()
         return fig
 
