@@ -614,8 +614,16 @@ void PhloemFlux::computeOrgGrowth(double t){
 			std::cout<<l_<<" "<<l_check<<" "<<vol<<" "<<vol_check<<std::endl;
 			assert(false);
 		}
-		double newl = org->orgVolume2Length(vol + delta_volOrg);
-		double newl_max = org->orgVolume2Length(vol + delta_volOrgmax);
+		double newl = l_;
+		double newl_max = l_;
+		if(delta_volOrg > 0)//if vol + delta_volOrg == 0 can lead to nan
+		{
+			newl =org->orgVolume2Length(vol + delta_volOrg);
+		}
+		if(delta_volOrgmax > 0)
+		{
+			newl_max = org->orgVolume2Length(vol + delta_volOrgmax);
+		}
 		double orgGr = newl - l_;
 		double delta_lmax = newl_max - l_;
 		if(doTroubleshooting){
