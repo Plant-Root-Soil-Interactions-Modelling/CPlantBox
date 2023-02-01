@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 from datetime import datetime, timedelta
-from small_i_setAlpha import runSim
+from checkAlpha1601 import runSim
 
 main_dir=os.environ['PWD']#dir of the file
 directoryN = "/"+os.path.basename(__file__)[:-3]+"/"#"/a_threshold/"

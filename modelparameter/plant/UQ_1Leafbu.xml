@@ -112,12 +112,12 @@
 	<!--dummy val, Basal zone [cm]-->
 	<parameter name="la" value="0" dev="0"/>
 	<!--dummy val, Apical zone [cm];-->
-	<parameter name="ln" value="1" dev="0" functiontype="0"/>
+	<parameter name="ln" value="3.5" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm],3.5 from Barillot, L-pea;-->
 	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
-	<parameter name="lmax" value="60" dev="0"/>
+	<parameter name="lmax" value="67.5" dev="0"/>
 	<!--3.5cm every 2 days, a bit higher because neg exp-->
-	<parameter name="r" value="0.9" dev="0"/>
+	<parameter name="r" value="1.8" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>
 	<parameter name="tropismT" value="0"/>
 	<parameter name="tropismN" value="1"/>
@@ -139,16 +139,16 @@
 </organ>
 
 <organ type="stem" name="bud" subType="2">
-	<parameter name="lb" value="1" dev="0"/>
+	<parameter name="lb" value="3" dev="0"/>
 	<!--dummy val, Basal zone [cm]-->
 	<parameter name="la" value="0" dev="0"/>
 	<!--dummy val, Apical zone [cm];-->
-	<parameter name="ln" value="1" dev="0" functiontype="0"/>
-	<!--Inter-lateral distance [cm],3.5 from Barillot, L-pea;-->
+	<parameter name="ln" value="3.5" dev="0" functiontype="0"/>
+	<!--Inter-lateral distance [cm], from Barillot, L-pea;-->
 	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
 	<parameter name="lmax" value="67.5" dev="0"/>
-	<!--3.5cm every 2 days, a bit higher because neg exp-->
-	<parameter name="r" value="0.9" dev="0"/>
+	<!--max length [cm], from Barillot, L-pea;-->
+	<parameter name="r" value="1.8" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>
 	<parameter name="tropismT" value="1"/>
 	<parameter name="tropismN" value="10"/>
@@ -175,7 +175,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="1" dev="0"/>
     <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
+    <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.2" dev="0.0"/>
     <parameter name="Width_petiole" value="0.2"/>
     <parameter name="Width_blade" value="0.2"/>
@@ -208,7 +208,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="1" dev="0"/>
     <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
+    <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.5" dev="0.002"/>
     <parameter name="Width_petiole" value="0.5"/>
     <parameter name="Width_blade" value="0.5"/>
@@ -241,7 +241,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="4" dev="0"/>
     <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
+    <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.35" dev="0.002"/>
     <parameter name="Width_petiole" value="4.7"/>
     <parameter name="Width_blade" value="4.7"/>
@@ -276,7 +276,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="5" dev="0"/>
     <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
+    <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.35" dev="0.002"/>
     <parameter name="Width_petiole" value="6.8"/>
     <parameter name="Width_blade" value="6.8"/>

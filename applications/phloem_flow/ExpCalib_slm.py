@@ -66,7 +66,7 @@ tasks_iterator = (delayed(runSim)
                          maxLBudDormant = np.array([0.1,0.15,0.05]),
                          budGR = 0.1,L_dead_threshold=200.,
                          kss=0.2,kaa=1,
-                        BerthLim = 100,
+                        BerthLim = 100,#so high, as if no threshold 
                          UseRatiothresholdAux = True,
                          nodeD = nodeDv[i+totrun], thread = i,
                          testTime=7, dtBefore = 1/24, dtAfter= 30/(60*24),

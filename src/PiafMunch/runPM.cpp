@@ -912,7 +912,7 @@ void PhloemFlux::updateBudStage(double EndTime)
                         }else{
                                 org->auxTested = auxaux;
                             }
-                        org->BerthFact = computeBerth(suc_, org->auxTested);
+                        org->BerthFact = computeBerth(suc_, org->auxTested, org->shared_from_this());
                         //if(org->BerthFact <= org->getLength(false)){org->budStage = 2;}//congrats! you are a branch
                         
                         double limToUse = BerthLim;
@@ -1033,7 +1033,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                             // }
                             break;}
                     case 1 :{rmax = plant->budGR;Lmax = maxLBud_;break;}//1 mm/d
-                    case 2 :{rmax = org->getParameter("r");
+                    case 2 :{rmax =  Rmax_st_f(st,ot);//org->getParameter("r");
                              Lmax = org->getParameter("k");break;}//1 mm/d
                     default:{std::cout<<"stem::simulate: budStage not recognised "<< org->budStage<<std::flush;
                             assert(false);}
@@ -1061,6 +1061,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 				std::cout<<org->getId()<<" "<<org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<<std::endl;
 				std::cout<<org->calcLength(1)<<" "<< ot <<" "<<org->getAge()<<std::endl;
 				throw std::runtime_error("PhloemFlux::waterLimitedGrowth: sucrose for growth has not been used at last time step");
+                assert(false);
 			}
 			
 			
@@ -1194,14 +1195,37 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                 
        
                 
+                double tempAuxS;
+                if(leafAsIAASource)//does the node carries an expending leaf?
+                {
+                    int isActive_ = 1 * (org->isActive()) * (org->getLength(false) < org->getParameter("k")*limLenActive);
+                    if((k==1)&&(ot==4)&&(isActive_))
+                    {
+                        int nodeSourceId = org->getNodeId(0);//= global pni
+                        try{
+                            AuxinSource.at(nodeSourceId) += PRBLeaf; //can carry several expanding leaves == several sources
+                        }catch(...){
+                            std::cout<<nodeIds_.size()<<" "<<nodeSourceId<<" "<<AuxinSource.size()<<" "<<org->getId()<<" "<<nodeIds_.size()<<std::flush;
+                            std::cout<<org->parentNI<<" "<<org->getParent()->getNumberOfNodes()<<std::flush;
+                            std::cout<<org->getParent()->getNodeId(org->parentNI)<<std::flush;
+                            std::cout<<"error at AuxinSource.at(nodeSourceId) += PRBA"<<std::flush;
+                            assert("error at AuxinSource.at(nodeSourceId) += PRBA"&&false);
+                        }
+                    }
+                    // tempAuxS = isStemTip*(org->getParameter("subType") <=1);//add stem meristem
+                    // if(AuxinSource.at(nodeId) < tempAuxS)//not yet a source there
+                    // {
+                    //     AuxinSource.at(nodeId) = tempAuxS;
+                    // }
+                }
                 
                     double Bs = org->budStage;
-                    double Rate = ( (Bs == 1)*PRBA) +  ( (Bs == 0)*PRBD)+  ( (Bs ==2 ));
-                    double tempAuxS = Rate*isStemTip*(org->getParameter("subType") <=2);
-                if(AuxinSource.at(nodeId) < tempAuxS)//not yet a source there
-                {
-                    AuxinSource.at(nodeId) = tempAuxS;
-                }
+                    double Rate = ( (Bs == 1)*PRBA) +  ( (Bs == 0)*PRBD)+  ( (Bs ==2 )*PRBr);
+                    tempAuxS = Rate*isStemTip*(org->getParameter("subType") <=2);
+                    if(AuxinSource.at(nodeId) < tempAuxS)//not yet a source there
+                    {
+                        AuxinSource.at(nodeId) = tempAuxS;
+                    }
                 
                 if(plant->node_Decapitate.size()> 0)
                 {
@@ -1212,7 +1236,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                 
                 if(doTroubleshooting)
                 {
-                    std::cout<<"AuxinSource "<<AuxinSource[nodeId] <<" "<<  isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<std::endl;
+                    std::cout<<"AuxinSource "<<AuxinSource[nodeId] <<" "<<  isStemTip <<" "<< org->getParameter("organType") <<" "<< org->getParameter("subType")<<" "<<st<<std::endl;
                 }
 				double deltavolSeg = deltavol * Flen * Fpsi.at(nodeId);
 				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){

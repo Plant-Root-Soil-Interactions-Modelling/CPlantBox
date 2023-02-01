@@ -219,6 +219,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	bool krFromLen = true;
     bool canStartActivating = true;
 	double CSTthreshold = 0.3;
+    bool leafAsIAASource = false;
     
     
 	//		Auxin
@@ -251,11 +252,14 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     void updateBudStage(double EndTime);
     double BerthLim = -1;
     int useLength = 0;
+    double limLenActive;
     double PRBA =0;
     double PRBD =0;
+    double PRBr = 0;
+    double PRBLeaf = 0;
     double doMemAux = 0.;
     
-   std::function<double(double, double)> computeBerth = [](double ss_, double aa_){
+   std::function<double(double, double, std::shared_ptr<CPlantBox::Organ>)> computeBerth = [](double ss_, double aa_, std::shared_ptr<CPlantBox::Organ> o = nullptr){
 		throw std::runtime_error("computeBerth not implemented"); return 0.; };
     
 	//internal PiafMunch functions but cannot protect

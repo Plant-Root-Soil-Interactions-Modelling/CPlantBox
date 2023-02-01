@@ -7,9 +7,9 @@ import time
 import psutil
 start_time_ = time.time()
 
-from masterI_0412 import runSim
-from DBrepExp import toTry
-from DBrepExp import doCondition_
+from masterI_1201 import runSim
+from DBrepExp_DW import toTry
+from DBrepExp_DW import doCondition_
 
 
 #def AllAuxCmasterFunc(N):
@@ -57,22 +57,24 @@ print("isCluster:",isCluster,"maxcore",maxcore,"to do",maxrun,"already did:", to
 
 tasks_iterator = (delayed(runSim)
                         (directoryN_ = directoryN, doVTP = 0, verbosebase = False,
-             PRate_ = 6.8e-3, PRBA = 1,  PRBD=1, thresholdAux = 0, 
-                         RatiothresholdAux = 1,useLength = 1,
-                         Qmax_ = Qsv[i+totrun], Klight = Klightv[i+totrun],
-                         thresholdSuc = MulimSucv[i+totrun], 
-                         GrRatio = 3, CarbonCost =1,#BerthLim = 0.5,
-                         maxLBud = np.array([1.]),  maxLBudDormant = np.array([0.1,0.15,0.05]),
-                         budGR = 0.1,L_dead_threshold=100.,
-                         kss=0.2,kaa=1,
-                        BerthLim = Berthlim[i+totrun],
-                         UseRatiothresholdAux = True,
-                         nodeD = nodeDv[i+totrun], thread = i,
-                         testTime=7, dtBefore = 1/24, dtAfter= 30/(60*24),
-                        start_time = start_time_,
-                         doPrint = True, doDict = False,
-                         dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
-                        doCondition = doCondition_)
+    PRate_ = 6.8e-3, PRBA = 1,  PRBD=1, thresholdAux = 0, 
+     RatiothresholdAux = 1,useLength = 2,doMemAux =3,
+     Qmax_ =200*1e-6, Klight = 0.,
+     thresholdSuc = 3e-2, 
+     GrRatio = 5, CarbonCost =1,
+     maxLBud = np.array([1.]),  maxLBudDormant = np.array([0.05,0.15,0.05]), #([0.1,0.15,0.05])
+     budGR = 0.1,L_dead_threshold=100.,
+     kss=0.2,kaa=1,
+    BerthLim = 10.,
+     UseRatiothresholdAux = True,
+     nodeD = 0, thread = 1,
+     testTime=10, dtBefore = 1/24, dtAfter= 30/(60*24),
+    start_time = start_time_,
+     doPrint = True, doDict = False,
+     dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
+    #doCondition = doCondition_
+                         fileparam ="UQ_1Leaf"
+          )
                     for i in range(n_jobs))
 
         
@@ -92,14 +94,3 @@ subproc_after = set([p.pid for p in current_process.children(recursive=True)]) -
 #     print('Killing n1 process with pid {}'.format(subproc))
 #     kid_process.terminate()
 print("successThreads",results)
-    
-#     import signal
-# import platform
-# # get the current PID for safe terminate server if needed:
-# PID = os.getpid()
-# if platform.system() is not 'Windows':
-#     PGID = os.getpgid(PID)
-# if platform.system() is not 'Windows':
-#     os.killpg(PGID, signal.SIGKILL)
-# else:
-#     os.kill(PID, signal.SIGTERM)

@@ -8,8 +8,8 @@ import psutil
 start_time_ = time.time()
 
 from masterI_1201 import runSim
-from DBrepExp_DW import toTry
-from DBrepExp_DW import doCondition_
+from DBrepExp_WT import toTry
+from DBrepExp_WT import doCondition_
 
 
 #def AllAuxCmasterFunc(N):
@@ -54,31 +54,47 @@ print("isCluster:",isCluster,"maxcore",maxcore,"to do",maxrun,"already did:", to
 
 #-1 failur, 1 succes, 0 wait
 
+if n_jobs > 1:
+    tasks_iterator = (delayed(runSim)
+                            (directoryN_ = directoryN, doVTP = 0, verbosebase = False,
+                 PRate_ = 6.8e-3, PRBA = 1,  PRBD=1, thresholdAux = 0, 
+                             RatiothresholdAux = 1,useLength = 1,
+                             Qmax_ = Qsv[i+totrun], Klight = Klightv[i+totrun],
+                             thresholdSuc = MulimSucv[i+totrun], 
+                             GrRatio = 3, CarbonCost =1,#BerthLim = 0.5,
+                             maxLBud = np.array([1.]),  maxLBudDormant = np.array([0.1,0.15,0.05]),
+                             budGR = 0.1,L_dead_threshold=100.,
+                             kss=0.2,kaa=1,
+                            BerthLim = Berthlim[i+totrun],
+                             UseRatiothresholdAux = True,
+                             nodeD = nodeDv[i+totrun], thread = i,
+                             testTime=7, dtBefore = 1/24, dtAfter= 30/(60*24),
+                            start_time = start_time_,
+                             doPrint = True, doDict = False,
+                             dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
+                            doCondition = doCondition_)
+                        for i in range(n_jobs))
 
-tasks_iterator = (delayed(runSim)
-                        (directoryN_ = directoryN, doVTP = 0, verbosebase = False,
-             PRate_ = 6.8e-3, PRBA = 1,  PRBD=1, thresholdAux = 0, 
-                         RatiothresholdAux = 1,useLength = 1,
-                         Qmax_ = Qsv[i+totrun], Klight = Klightv[i+totrun],
-                         thresholdSuc = MulimSucv[i+totrun], 
-                         GrRatio = 3, CarbonCost =1,#BerthLim = 0.5,
-                         maxLBud = np.array([1.]),  
-                         maxLBudDormant = np.array([0.1,0.15,0.05]),
-                         budGR = 0.1,L_dead_threshold=100.,
-                         kss=0.2,kaa=1,
-                        BerthLim = Berthlim[i+totrun],
-                         UseRatiothresholdAux = True,
-                         nodeD = nodeDv[i+totrun], thread = i,
-                         testTime=7, dtBefore = 1/24, dtAfter= 30/(60*24),
-                        start_time = start_time_,
-                         doPrint = True, doDict = False,
-                         dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
-                        doCondition = doCondition_,
-                        fileparam ="UQ_1Leaf_DW")
-                    for i in range(n_jobs))
 
-        
-results = parallelizer(tasks_iterator)
+    results = parallelizer(tasks_iterator)
+else:
+    runSim(directoryN_ = directoryN, doVTP = 0, verbosebase = False,
+            PRate_ = 6.8e-3, PRBA = 1,  PRBD=1, thresholdAux = 0, 
+             RatiothresholdAux = 1,useLength = 1,
+             Qmax_ =300., Klight = 0.,
+             thresholdSuc = 1., 
+             GrRatio = 3, CarbonCost =1,#BerthLim = 0.5,
+             maxLBud = np.array([1.]),  maxLBudDormant = np.array([0.1,0.15,0.05]),
+             budGR = 0.1,L_dead_threshold=100.,
+             kss=0.2,kaa=1,
+            BerthLim = 3.,
+             UseRatiothresholdAux = True,
+             nodeD = 7, thread = 1,
+             testTime=7, dtBefore = 1/24, dtAfter= 30/(60*24),
+            start_time = start_time_,
+             doPrint = True, doDict = False,
+             dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
+            doCondition = doCondition_)
 
 def write_file_array(name, data):
     name2 = 'results'+ directoryN+ name+ '.txt'

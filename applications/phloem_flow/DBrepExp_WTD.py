@@ -9,15 +9,15 @@ import pandas as pd
 
 def toTry():
     
-    Qs = 1e-6*np.array([200.,300.,400.,500.])#,  500.,700 ])*
-    MulimSuc =np.array([0.4,0.9,1.25,1.5,2.])#np.array([0.4,0.9,1.4])
+    Qs =1e-6*np.array([200.])#,300.,400.,500.])#,  500.,700 ])*1e-6
+    MulimSuc = np.array([0.5,0.6,0.7,0.9,1.25,1.3,1.4])#np.array([0.4,0.9,1.25,1.5,2.])#np.array([0.4,0.9,1.4])
     GrRatio = np.array([3]) 
     CarbonCost = np.array([1]) 
-    nodeD = np.array([0]) #3,4,5,6,7,
+    nodeD = np.array([7]) #3,4,5,6,7,
     kss = np.array([0.02])#0.01, 0.4,0.6])
     kaa = np.array([ 1. ])#, 3.,  5.,  10.])
     Klight = np.array([0])#0.001,0.005,0.01,0.02])
-    Berthlim = np.array([ 1,2,3,4,6,8 ])
+    Berthlim = np.array([ 1])#,2,3,4,6,8 ])
 
 
     Qsv,MulimSucv,GrRatiov, CarbonCostv, kssv,kaav,Klightv,Berthlimv, nodeDv = np.meshgrid(Qs,MulimSuc,GrRatio, CarbonCost, kss,kaa,Klight,Berthlim,nodeD)
@@ -59,7 +59,17 @@ def doCondition_(rinput, timeSinceDecap_, tt, simDuration, memory,nodeD_,allInpu
     #    return -1
     if memory >=0:
         if simDuration > 2/24:
-            print(tt,nodeD_,"too slow", budStage, timeSinceDecap_)
+            print(tt,nodeD_,"too slow", budStage, timeSinceDecap_, simDuration)
+            return -1
+        if (msbs == 2) and (sumactiv > 0): #thrshold too low
+            print(tt,nodeD_,"fail (msbs == 2) and (sumactiv > 0)", budStage, timeSinceDecap_,allInputs[7] ,allInputs[8])
+            return -1
+        if(timeSinceDecap_ >=2/24) and (sumactiv ==0) and (msbs != 2): #thrshold too high
+            print(tt,nodeD_,"fail (timeSinceDecap_ >=2/24) and (sumactiv ==0) and (msbs != 2)",budStage,np.round( timeSinceDecap_*24*10)/10,
+                 allInputs[7] ,allInputs[8])
+            return -1
+        if(timeSinceDecap_ >= 6.9) and (sumBr ==0) and (msbs != 2): #thrshold too high
+            print(tt,nodeD_,"fail (timeSinceDecap_ >= 6.9) and (sumBr ==0) and (msbs != 2)",budStage, timeSinceDecap_)
             return -1
         
     return memory

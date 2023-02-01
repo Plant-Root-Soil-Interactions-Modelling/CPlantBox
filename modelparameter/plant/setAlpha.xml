@@ -5,7 +5,7 @@
     <parameter name="seedPos.y" value="0"/>
     <parameter name="seedPos.z" value="-2.5"/>
 	<!--time laps video youtube.com/watch?v=jiVIz8R0JWI-->
-    <parameter name="firstSt" value="5" dev="0"/>
+    <parameter name="firstSt" value="0" dev="0"/>
     <parameter name="firstB" value="0" dev="0"/>
     <parameter name="delayB" value="0" dev="0"/>
     <parameter name="maxB" value="0" dev="0"/>
@@ -108,16 +108,16 @@
 </root>
 
 <organ type="stem" name="mainstem" subType="1">
-	<parameter name="lb" value="0" dev="0"/>
+	<parameter name="lb" value="3" dev="0"/>
 	<!--dummy val, Basal zone [cm]-->
 	<parameter name="la" value="0" dev="0"/>
 	<!--dummy val, Apical zone [cm];-->
-	<parameter name="ln" value="1" dev="0" functiontype="0"/>
+	<parameter name="ln" value="4" dev="0" functiontype="0"/>
 	<!--Inter-lateral distance [cm],3.5 from Barillot, L-pea;-->
 	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
-	<parameter name="lmax" value="60" dev="0"/>
+	<parameter name="lmax" value="67.5" dev="0"/>
 	<!--3.5cm every 2 days, a bit higher because neg exp-->
-	<parameter name="r" value="0.9" dev="0"/>
+	<parameter name="r" value="17" dev="0"/>
 	<parameter name="a" value="0.5" dev="0.02"/>
 	<parameter name="tropismT" value="0"/>
 	<parameter name="tropismN" value="1"/>
@@ -129,145 +129,13 @@
 	<parameter name="theta" value="0" dev="0"/>
 	<parameter name="rlt" value="1000000000" dev="0"/>
 	<parameter name="gf" value="4"/>
-    <parameter name="nZ" value="1"/>
 	<!--~2 developping branch, barillot2014-->
-	<parameter name="successor" numLat="1" subType="2" organType="3" percentage="1" where="-1"/>
-	<parameter name="successor" numLat="1" subType="1" organType="4" percentage="1" where="0"/>
-	<parameter name="successor" numLat="1" subType="2" organType="4" percentage="1" where="1"/>
-	<parameter name="successor" numLat="1" subType="3" organType="4" percentage="1" where="2"/>
-	<parameter name="successor" numLat="1" subType="4" organType="4" percentage="1" where="3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19"/>
+	<!--parameter name="successor" numLat="1" subType="2" organType="3" percentage="1" where="-1"/-->
+	<!--parameter name="successor" numLat="1" subType="3" organType="3" percentage="1" where="2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19"/-->
+	<parameter name="successor" numLat="1" subType="1" organType="4" percentage="1" where="-1"/>
 </organ>
 
-<organ type="stem" name="bud" subType="2">
-	<parameter name="lb" value="1" dev="0"/>
-	<!--dummy val, Basal zone [cm]-->
-	<parameter name="la" value="0" dev="0"/>
-	<!--dummy val, Apical zone [cm];-->
-	<parameter name="ln" value="1" dev="0" functiontype="0"/>
-	<!--Inter-lateral distance [cm],3.5 from Barillot, L-pea;-->
-	<!--max = 80. here up to 21cm (20 days, 7 lats)-->
-	<parameter name="lmax" value="67.5" dev="0"/>
-	<!--3.5cm every 2 days, a bit higher because neg exp-->
-	<parameter name="r" value="0.9" dev="0"/>
-	<parameter name="a" value="0.5" dev="0.02"/>
-	<parameter name="tropismT" value="1"/>
-	<parameter name="tropismN" value="10"/>
-	<parameter name="tropismS" value="0.05"/>
-	<!--from thesis of cate;-->
-	<parameter name="delayLat" value="0" dev="0" />
-	<parameter name="dx" value="0.5"/>
-	<parameter name="dxMin" value="0.45"/>
-    <parameter name="BetaDev" value="0.1"/>
-	<!--parameter name="dxMin" value="0.25"/-->
-	<parameter name="theta" value="0.7" dev="0"/>
-	<parameter name="rlt" value="1000000000" dev="0"/>
-	<parameter name="gf" value="4"/>
-	<parameter name="successor" numLat="1" subType="3" organType="4" percentage="1" where="-1"/>
-</organ>
-
-
-<organ type="leaf" name="1small" subType="1">
-    <parameter name="lb" value="0" dev="0"/>
-    <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
-    <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="1" dev="0"/>
-    <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
-    <parameter name="a" value="0.2" dev="0.0"/>
-    <parameter name="Width_petiole" value="0.2"/>
-    <parameter name="Width_blade" value="0.2"/>
-    <parameter name="RotBeta" value="1"/>
-	<!--shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2-->
-    <parameter name="shapeType" value="1" />
-    <parameter name="BetaDev" value="0"/>
-    <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="1"/>
-    <parameter name="tropismN" value="20"/>
-    <parameter name="tropismS" value="0.2"/>
-    <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.01"/>
-    <parameter name="theta" value="0.5" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="4"/>
-	<parameter name="areaMax" value="0.2"/>
-    <parameter name="geometryN" value="100"/>
-    <parameter name="parametrisationType" value="1"/>
-    <!--only for VTP representation. Actual shape comes from Width_petiole and Width_blade-->
-	<parameter name="leafGeometry" phi="-1.571, -1.178, -0.785, -0.393,  0.,  0.393,  0.785,  1.178, 1.571" x="1., 1., 1., 1., 1., 1., 1., 1., 1."/>
-</organ>
-    
-<organ type="leaf" name="2small" subType="2">
-    <parameter name="lb" value="0" dev="0"/>
-    <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
-    <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="1" dev="0"/>
-    <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
-    <parameter name="a" value="0.5" dev="0.002"/>
-    <parameter name="Width_petiole" value="0.5"/>
-    <parameter name="Width_blade" value="0.5"/>
-    <parameter name="RotBeta" value="1"/>
-	<!--shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2-->
-    <parameter name="shapeType" value="1"/>
-    <parameter name="BetaDev" value="0"/>
-    <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="1"/>
-    <parameter name="tropismN" value="20"/>
-    <parameter name="tropismS" value="0.2"/>
-    <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.01"/>
-    <parameter name="theta" value="0.5" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="4"/>
-	<parameter name="areaMax" value="0.5"/>
-    <parameter name="geometryN" value="100"/>
-    <parameter name="parametrisationType" value="1"/>
-    <!--only for VTP representation. Actual shape comes from Width_petiole and Width_blade-->
-	<parameter name="leafGeometry" phi="-1.571, -1.178, -0.785, -0.393,  0.,  0.393,  0.785,  1.178, 1.571" x="1., 1., 1., 1., 1., 1., 1., 1., 1."/>
-    </organ>
-
-<organ type="leaf" name="leaf1" subType="3">
-    <parameter name="lb" value="0" dev="0"/>
-    <!--Basal zone [cm]-->
-    <parameter name="la" value="0" dev="0"/>
-    <!--Apical zone [cm];-->
-    <parameter name="ln" value="0" dev="0" functiontype="0"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="4" dev="0"/>
-    <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
-    <parameter name="a" value="0.35" dev="0.002"/>
-    <parameter name="Width_petiole" value="4.7"/>
-    <parameter name="Width_blade" value="4.7"/>
-    <parameter name="RotBeta" value="1"/>
-	<!--shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2-->
-    <parameter name="shapeType" value="1" />
-    <parameter name="BetaDev" value="0"/>
-    <parameter name="InitBeta" value="0"/>
-    <parameter name="tropismT" value="1"/>
-    <parameter name="tropismN" value="20"/>
-    <parameter name="tropismS" value="0.2"/>
-    <parameter name="dx" value="4"/>
-	<parameter name="dxMin" value="0.01"/>
-    <parameter name="theta" value="0.5" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
-    <parameter name="gf" value="4"/>
-	<parameter name="areaMax" value="5.7"/>
-    <parameter name="geometryN" value="100"/>
-    <parameter name="parametrisationType" value="1"/>
-    <!--only for VTP representation. Actual shape comes from Width_petiole and Width_blade-->
-	<parameter name="leafGeometry" phi="-1.571, -1.178, -0.785, -0.393,  0.,  0.393,  0.785,  1.178, 1.571" x="1., 1., 1., 1., 1., 1., 1., 1., 1."/>
-</organ>
-
-
-
-<organ type="leaf" name="default" subType="4">
+<organ type="leaf" name="default" subType="1">
     <parameter name="lb" value="0" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
@@ -276,7 +144,7 @@
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="5" dev="0"/>
     <!--max distance == mean diameter (from Kong2020) to side distance-->
-    <parameter name="r" value="0.33" dev="0"/>
+    <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.35" dev="0.002"/>
     <parameter name="Width_petiole" value="6.8"/>
     <parameter name="Width_blade" value="6.8"/>
@@ -299,5 +167,5 @@
     <!--only for VTP representation. Actual shape comes from Width_petiole and Width_blade-->
 	<parameter name="leafGeometry" phi="-1.571, -1.178, -0.785, -0.393,  0.,  0.393,  0.785,  1.178, 1.571" x="1., 1., 1., 1., 1., 1., 1., 1., 1."/>
 </organ>        
-  
+
 </Plant>

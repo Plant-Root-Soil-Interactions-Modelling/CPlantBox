@@ -1070,8 +1070,12 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("BerthLim",&PhloemFlux::BerthLim)
 			.def_readwrite("useLength",&PhloemFlux::useLength)
 			.def_readwrite("doMemAux",&PhloemFlux::doMemAux)
+			.def_readwrite("leafAsIAASource",&PhloemFlux::leafAsIAASource)
+			.def_readwrite("limLenActive",&PhloemFlux::limLenActive)
 			.def_readwrite("PRBA",&PhloemFlux::PRBA)
 			.def_readwrite("PRBD",&PhloemFlux::PRBD)
+			.def_readwrite("PRBr",&PhloemFlux::PRBr)
+			.def_readwrite("PRBLeaf",&PhloemFlux::PRBLeaf)
 			//.def_readwrite("CarbonCostDormant",&PhloemFlux::CarbonCostDormant)
             //.def("computeBerth", (void (PhloemFlux::*)(const std::function<double(double,double)>&)) &PhloemFlux::computeBerth)
         
