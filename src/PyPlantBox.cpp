@@ -877,7 +877,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kr", &XylemFlux::kr)
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
-			.def_readwrite("psi_air", &XylemFlux::psi_air);
+			.def_readwrite("psi_air", &XylemFlux::psi_air)
+			.def_readwrite("k_stomatas", &XylemFlux::k_stomatas);
 
     /*
      * Plant.h
@@ -954,19 +955,29 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("TairC", &Photosynthesis::TairC)
             .def_readwrite("Chl", &Photosynthesis::Chl)
             .def_readwrite("g0", &Photosynthesis::g0)
+            .def_readwrite("g_bl", &Photosynthesis::g_bl)
+            .def_readwrite("g_canopy", &Photosynthesis::g_canopy)
+            .def_readwrite("g_air", &Photosynthesis::g_air)
             .def_readwrite("theta", &Photosynthesis::theta)
             .def_readwrite("gamma0", &Photosynthesis::gamma0)
             .def_readwrite("gamma1", &Photosynthesis::gamma1)
             .def_readwrite("gamma2", &Photosynthesis::gamma2)
             .def_readwrite("alpha", &Photosynthesis::alpha)
             .def_readwrite("a1", &Photosynthesis::a1)
+            .def_readwrite("a2_stomata", &Photosynthesis::a2_stomata)
+            .def_readwrite("a2_bl", &Photosynthesis::a2_bl)
+            .def_readwrite("a2_canopy", &Photosynthesis::a2_canopy)
+            .def_readwrite("a2_air", &Photosynthesis::a2_air)
             .def_readwrite("a3", &Photosynthesis::a3)
+            .def_readwrite("Rd_ref", &Photosynthesis::Rd_ref)
+            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref)
             .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("k_stomatas_old", &Photosynthesis::k_stomatas_old)
-            .def_readwrite("doLog", &Photosynthesis::doLog);
+            .def_readwrite("doLog", &Photosynthesis::doLog)
+            .def_readwrite("R_ph", &Photosynthesis::R_ph);
 			
 	/*
      * runPM.h
@@ -1037,8 +1048,13 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("Q_GrUnbornv_i",&PhloemFlux::Q_GrUnbornv_i)
 			.def_readwrite("Q_GrmaxUnbornv_i",&PhloemFlux::Q_GrmaxUnbornv_i)
 			.def_readwrite("Fpsi",&PhloemFlux::Fpsi)
+			.def_readwrite("Flen",&PhloemFlux::Flen)
 			.def_readwrite("Q10",&PhloemFlux::Q10)
-			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10);
+			.def_readwrite("TrefQ10",&PhloemFlux::TrefQ10)
+			.def_readwrite("leafGrowthZone",&PhloemFlux::leafGrowthZone)
+			.def_readwrite("StemGrowthPerPhytomer",&PhloemFlux::StemGrowthPerPhytomer)
+			.def_readwrite("GrowthZone",&PhloemFlux::GrowthZone)
+			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat);
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

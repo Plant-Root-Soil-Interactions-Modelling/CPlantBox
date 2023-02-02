@@ -302,9 +302,17 @@ public:
 		double ipLinear = (x - x_[lookUpIndex-1])/(x_[lookUpIndex] - x_[lookUpIndex-1]);
 		return (1.-ipLinear)*y_[lookUpIndex-1] + (ipLinear)*y_[lookUpIndex];
 	}
+    
+    static int findIndexOfSum(const std::vector<double> &vec, int target_sum) {
+    double current_sum = 0.;
+    int i = 0;
+    for (;( i < vec.size())&&(current_sum - target_sum < 1e-10) ; i++) {
+        current_sum += vec[i];
+    }
+    return std::max(0,i-1);
+}
 
 };
-
 
 
 

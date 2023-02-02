@@ -58,9 +58,11 @@ public:
 	std::vector<double> fw;
 	std::vector<double> psiXyl4Phloem; //sum of psiXyl + gravitational wat. pot.
 	std::vector<double> gco2;
-	bool doLog = false; int verbose_photosynthesis = 0;
-	
+    
+    
 	//		to evaluate convergence, @see Photosynthesis::getError
+	bool doLog = false; int verbose_photosynthesis = 0;
+    bool oldciEq = false;
 	int maxLoop = 1000; int minLoop = 1;
     int loop;double limMaxErr = 1e-4;
 	double maxMaxErr;
@@ -86,6 +88,9 @@ public:
 	double Qlight = 900e-6;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
 	std::vector<double>  Chl = std::vector<double>(1,55.); 
 	double oi = 210e-3;//leaf internal [O2] [mol mol-1]
+	double g_bl = 2.8;//leaf boundary molar conductance [mol CO2 m-2 s-1]
+	double g_canopy = 6.1;//aerodynamic molar conductance [mol CO2 m-2 s-1]
+	double g_air = 11.4;//aerodynamic molar conductance [mol CO2 m-2 s-1]
 	
 	//			parameter to re-parametrise , put in phloem files
 	//water stress factor, parametrised from data of Corso2020
@@ -103,14 +108,11 @@ public:
 	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
 	
-protected:
-	//Compute variables which do not vary during one "solve_photosynthesis " computation
-	void initCalcs(double sim_time_);
-	void initStruct(double sim_time_);
-	void initVcVjRd();
-	
 	//			physicall constant (no need to parametrise)
-	double a2 = 1.6; //gco2[i] * a2 = gh2o
+	double a2_stomata = 1.6; //gco2 * a2 = gh2o
+	double a2_bl = 1.37;//gco2 * a2 = gh2o
+	double a2_canopy = 1;//gco2 * a2 = gh2o
+	double a2_air = 1;//gco2 * a2 = gh2o
 	//(de)activate parameters
     double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
     double Eard = 53000;double Eav = 58520;
@@ -123,6 +125,14 @@ protected:
 	double R_ph = 83.143;//perfect gas constant, hPa cm3K−1mmol−1
 	double rho_h2o = 1000;//water density mg cm-3
 	double M_Chla = 893.51;//chlorophyle a molar mass (g / mol)
+    
+    
+protected:
+	//Compute variables which do not vary during one "solve_photosynthesis " computation
+	void initCalcs(double sim_time_);
+	void initStruct(double sim_time_);
+	void initVcVjRd();
+	
 	
 	//			other parameters and runtime variables
 	std::vector<std::shared_ptr<Organ>> orgsVec;

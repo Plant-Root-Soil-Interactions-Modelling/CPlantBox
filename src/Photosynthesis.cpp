@@ -476,7 +476,9 @@ void Photosynthesis::loopCalcs(double simTime){
 			// mol H2O m-2 s-1 MPa-1
 			//double k_stomate_1 = (gco2.at(i) * a2) / Patm;
 			//(mol m-2 s-1)*(mmol/mol)*(hPa/hPa) * (mg mmol-1) /(mg cm-3) *(h/d)*(s/h)*(m2 m-2) =  ( cm3)/d*(cm-2)
-			Jw.at(i) = (gco2.at(i) * a2) *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
+            double g_eq = 1/(1/(gco2.at(i) * a2_stomata) + 1/(g_bl * a2_bl) + 1/(g_canopy * a2_canopy) + 1/(g_air * a2_air) );
+			//Jw.at(i) = (gco2.at(i) * a2) *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
+            Jw.at(i) = g_eq *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24. * 3600 * 1e-4 ;//in cm3 cm-2 d-1
 			Ev.at(i) = Jw.at(i)* sideArea; //in cm3 d-1
             //double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
 			
@@ -491,16 +493,25 @@ void Photosynthesis::loopCalcs(double simTime){
 				std::cout<<"sizes "<<An.size()<<" "<< gco2.size()<<" "<<ci.size()<<" "<<ci_old.size() <<std::endl;
 
 			}
-			ci.at(i) = (cs*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)) ;//Eq 26	
-			if((!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))) {
+            if(oldciEq)
+            {
+                ci.at(i) = (cs*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)) ;//Eq 26	
+            }else{
+                double g_eq_co2 = 1/(1/(gco2.at(i) ) + 1/(g_bl) + 1/(g_canopy ) + 1/(g_air ) );
+                ci.at(i) = cs - (An.at(i) - Rd) / g_eq_co2;
+            }
+			if((!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)) {
+                
+            std::cout<<(!std::isfinite(this->pg.at(i)))<<" "<<(!std::isfinite(k_stomatas.at(i)))<<" "<<(!std::isfinite(ci.at(i)))<<" "<<(ci.at(i)<0)<<std::endl;
 			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl;
 			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J<<" "<<Vcmax.at(i)<<" "<<Kc<<" "<<Ko<<" ";
 			std::cout<<" "<<delta<<" "<<oi<<" "<<eps<<std::endl;
-			std::cout<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd<<" "<< deltagco2.at(i)<<std::endl;
+                std::cout<<"forgeq "<<gco2.at(i) <<" "<< g0<<" "<< g_bl<<" "<< g_canopy<<" "<< g_air<<" "<< oldciEq<<std::endl;
+			std::cout<<"forgco2 "<< fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd<<" "<< deltagco2.at(i)<<std::endl;
 			std::cout<<"forJW, Jw "<<Jw.at(i)<<" drout_in "<<(this->pg.at(i) - (rxi + rxj)/2)<<" "<<ea_leaf <<" "<< ea<<" "<<Patm<<" "<<Mh2o<<" "<<rho_h2o <<std::endl;
 			std::cout<<"forpg "<<sideArea <<" "<< Jw.at(i)<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
 			std::cout<<"diff Ev and lat fluw: "<<Ev.at(i)<<std::endl;//<<" "<<outputFluxL.at(i)
-				throw std::runtime_error("Phtotosynthesis: nan or Inf k_stomatas.at(i) of pg.at(i)");
+				throw std::runtime_error("Phtotosynthesis: nan or Inf k_stomatas.at(i) or pg.at(i) or ci, or ci < 0");
 			}
 			
 		}else{ci.at(i) = 0.0;}

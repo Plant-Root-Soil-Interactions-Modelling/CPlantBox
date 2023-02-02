@@ -172,6 +172,9 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	std::vector<double> vol_Mesov;//volume of mesophyll (same as leaf blade volume), (cm3)
 	std::vector<double> JW_STv;//sieve tube water flow, (cm3 d-1)
 	std::vector<double> Fpsi;//water scarcity factor for growth, (-)
+    std::vector<double> Flen;
+    std::vector<int> GrowthZone;
+    std::vector<int> GrowthZoneLat;
 	std::vector<std::map<int,double>> deltaSucOrgNode_;//maximal sucrose need for growth per node, (mmol Suc d-1)
 	
 	
@@ -194,6 +197,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double rtol_double = 1e-023;//max realtive error
 	double initValST = 0.8;//initial concentration in sieve tube
 	double initValMeso = 0.9;//initial concentration in mesophyll
+    double leafGrowthZone = 1000000;//cm
 	
 	//		boolean choices
 	bool update_viscosity_ = true;
@@ -205,6 +209,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	bool doTroubleshooting =false; //do extra printing
 	bool useCWGr; //use water- and carbon- limited growth?
 	int expression = 1;//if implement several possible expression in C_fluxes
+    bool StemGrowthPerPhytomer = true;
 	
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters and constants (implemented in 'initialize.cpp')
