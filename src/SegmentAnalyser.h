@@ -37,10 +37,10 @@ public:
     void addSegment(Vector2i seg, double ct, double radius, bool insert = false); ///< adds a single segment
 
     // to visualize results
-    void addAge(double simtime);
-    void addConductivities(const XylemFlux& xylem, double simtime);
-    void addFluxes(XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime);
-    void addCellIds(const MappedSegments& plant);
+    void addAge(double simtime);  // "age"
+    void addConductivities(const XylemFlux& xylem, double simtime); // "kr", "kx"
+    void addFluxes(XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime); // "axial_flux", "radial_flux"
+    void addCellIds(const MappedSegments& plant); // "cell_id"
 
     // reduce number of segments
     void crop(std::shared_ptr<SignedDistanceFunction> geometry); ///< crops the data to a geometry
