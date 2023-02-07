@@ -9,6 +9,7 @@ import plantbox as pb
 from plantbox import XylemFlux
 import rsml_reader as rsml
 
+
 class HydraulicsDoussan(XylemFlux):
     """  Root hydraulic model (following Doussn et al. )
     
@@ -33,7 +34,7 @@ class HydraulicsDoussan(XylemFlux):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs """
         segs = self.rs.segments
         sn = len(segs)
-        nn = len(self.rs.nodes)
+        nn = len(self.rs.nodes)  # TODO write getter
         ii_, jj_, vv_ = [], [], []
         for i, s in enumerate(segs):  # build incidence matrix from edges
             ii_.append(i)
@@ -54,15 +55,35 @@ class HydraulicsDoussan(XylemFlux):
         kr = np.zeros((IM.shape[1],))
         kr[1:] = np.array(self.getEffKr(sim_time))  #  change to getKr(), use that instead
         Kr = sparse.diags(kr)
-        self.A = IMt @ Kx @ IM + Kr
+        self.A = IMt @ Kx @ IM + Kr  # Laplacian IMt @ Kx @ IM =: L_{N-1} in Hess paper
         if cells:
             hs = np.zeros((IM.shape[1],))
-            hs[1:] = self.getKs(sim_time)
-            self.aB = Kr * hs
+            hs[1:] = self.getHs(sxx)
+            self.b = Kr * hs
         else:
             hs = np.zeros((IM.shape[1],))
             hs[1:] = sxx
-            self.aB = Kr * hs
+            self.b = Kr * hs
+
+    def get_soil_matrix(self):
+        """ maps nodes to soil layers B = number_of_layers x number_of_nodes """
+        soil2matrix = {}
+        segs = self.rs.segments
+        nn = len(self.rs.nodes)  # TODO write getter
+        ii_, jj_, vv_ = [], [], []
+        mic = 0  # matrix index counter
+        for i, s in enumerate(segs):
+            soil_layer_index = self.rs.seg2cell[i]
+            if not soil_layer_index in soil2matrix:
+                soil2matrix[soil_layer_index] = mic
+                mic += 1
+            node_index = s.y
+            ii_.append(soil2matrix[soil_layer_index])
+            jj_.append(node_index)
+            vv_.append(1.)
+
+        B = sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (mic, nn))
+        return B, soil2matrix
 
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
@@ -84,11 +105,9 @@ class HydraulicsDoussan(XylemFlux):
         else:
             self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
 
-        self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-        self.Q = sparse.csc_matrix(self.Q)
-        self.Q, self.b = self.bc_neumann(self.Q, self.aB, self.neumann_ind, value)  # cm3 day-1
+        b = self.bc_neumann(self.b.copy(), self.neumann_ind, value)  # cm3 day-1
+        x = LA.spsolve(self.A, b, use_umfpack = True)
 
-        x = LA.spsolve(self.Q, self.b, use_umfpack = True)  # direct
         return x
 
     def solve_dirichlet(self, sim_time:float, value:list, sxc:float, sxx, cells:bool, soil_k = []):
@@ -111,11 +130,9 @@ class HydraulicsDoussan(XylemFlux):
         else:
             self.linearSystem(sim_time, sxx, cells)
 
-        self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-        self.Q = sparse.csc_matrix(self.Q)
-        self.Q, self.b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, value)
+        A, b = self.bc_dirichlet(self.Q.copy(), self.aB.copy(), self.dirichlet_ind, value)
 
-        x = LA.spsolve(self.Q, self.b, use_umfpack = True)
+        x = LA.spsolve(A, b, use_umfpack = True)
         return x
 
     def solve(self, sim_time:float, trans:list, sx:float, sxx, cells:bool, wilting_point:float, soil_k = []):
@@ -140,9 +157,7 @@ class HydraulicsDoussan(XylemFlux):
 
             if x[0] <= wilting_point:
 
-                Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-                Q = sparse.csc_matrix(Q)
-                Q, b = self.bc_dirichlet(Q, self.aB, [0], [float(wilting_point)])
+                Q, b = self.bc_dirichlet(self.A.copy(), self.b.copy(), [0], [float(wilting_point)])
                 x = LA.spsolve(Q, b, use_umfpack = True)
                 self.last = "dirichlet"
 
@@ -151,74 +166,6 @@ class HydraulicsDoussan(XylemFlux):
             x = self.solve_dirichlet(sim_time, wilting_point, sx, sxx, cells, soil_k)
 
         return x
-
-    def axial_flux(self, seg_ind, sim_time, rx, sxx, k_soil = [], cells = True, ij = True):
-        """ returns the exact axial flux of segment ij of xylem model solution @param rx
-            @param seg_ind              segment index 
-            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
-            @param rx [cm]              root xylem matric potentials per root system node
-            @param sxx [cm]             soil matric potentials given per segment or per soil cell
-            @param k_soil [day-1]       optionally, soil conductivities can be prescribed per segment, 
-                                        conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil) 
-            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
-            @param ij                   True: calculate axial flux in node i, False: in node j; note that they are not equal due to radial fluxes 
-            @return [cm3 day-1] axial volumetric flow rate             
-        """
-        s = self.rs.segments[seg_ind]
-        nodes = self.rs.nodes
-        numleaf = 0
-        organTypes = self.get_organ_types()
-        ot = int(organTypes[seg_ind])  # for conductivities kr, kx
-        if len(k_soil) > 0:
-            ksoil = k_soil[seg_ind]
-        else:
-            ksoil = 1.e9  # much
-        # node x and y of stem and leave segments are revers with regards to the nodes x and y of roots.
-        if sum(((not ij) , (ot == 4) or (ot == 3))) == 1:  # check if only one of the condition is true
-            j, i = int(s.x), int(s.y)  # node indices
-        else:
-            i, j = int(s.x), int(s.y)
-        n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
-        v = n2.minus(n1)
-        l = v.length()  # length of segment
-        v.normalize()  # normalized v.z is needed for qz
-        if cells:
-            cell_ind = self.rs.seg2cell[seg_ind]
-            if cell_ind >= 0:  # y node belowground
-                if len(sxx) > 1:
-                    p_s = sxx[cell_ind]  # soil pressure at collar segment
-                else:
-                    p_s = sxx[0]
-            else:
-                p_s = self.airPressure
-        else:
-            p_s = sxx[seg_ind]
-
-        a = self.rs.radii[seg_ind]  # radius
-        st = int(self.rs.subTypes[seg_ind])  # conductivities kr, kx
-        age = sim_time - self.rs.nodeCTs[int(s.y)]
-        if ot == 4:  # to know which x-th leaf segment it is, to fetch the right gs value
-                indices = [i for i, x in enumerate(organTypes) if x == 4]
-                numleaf = indices.index(seg_ind)
-                if self.pg[0] != 0:
-                    p_s = self.pg[numleaf]
-        kr = self.kr_f(age, st, ot, numleaf, seg_ind)  # c++ conductivity call back functions
-        kr = min(kr, ksoil)
-        kx = self.kx_f(age, st, ot, seg_ind)
-        if a * kr > 1.e-16:
-            tau = np.sqrt(2 * a * np.pi * kr / kx)  # cm-2
-            AA = np.array([[1, 1], [np.exp(tau * l), np.exp(-tau * l)] ])
-            bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
-            d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
-            dpdz0 = d[0] * tau - d[1] * tau  # insert z = 0, z = l into exact solution
-        else:  # solution for kr = 0, or a = 0
-            dpdz0 = (rx[j] - rx[i]) / l
-
-        f = kx * (dpdz0 + v.z)
-        if ij:
-            f = f * (-1)
-
-        return f
 
     def collar_flux(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the exact transpirational flux of the xylem model solution @param rx
@@ -604,15 +551,14 @@ class HydraulicsDoussan(XylemFlux):
         return Q, b
 
     @staticmethod
-    def bc_neumann(Q, b, n0, f):
+    def bc_neumann(b, n0, f):
         """ prescribes a Neumann boundary condition for the root system Qx=b
-        @param Q                      system matrix
-        @param b                      rhs vector
+        @param b                      load vector
         @param n0                     list of node indices, where the Neumann boundary condition is applied
         @param f [cm3 day-1]          list of Neumann values   
         @return Q, b, the updated matrix, and rhs vector                 
         """
         for c in range(0, len(n0)):
             b[int(n0[c])] += f[c]
-        return Q, b
+        return b
 
