@@ -79,10 +79,10 @@ class HydraulicsDoussan(XylemFlux):
                 mic += 1
             node_index = s.y
             ii_.append(soil2matrix[soil_layer_index])
-            jj_.append(node_index)
+            jj_.append(node_index - 1)
             vv_.append(1.)
 
-        B = sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (mic, nn))
+        B = sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (mic, nn - 1))
         return B, soil2matrix
 
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k = []):
