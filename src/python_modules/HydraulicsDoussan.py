@@ -171,7 +171,7 @@ class HydraulicsDoussan(XylemFlux):
         """ returns the exact transpirational flux of the xylem model solution @param rx
             @see axial_flux        
         """
-        return self.axial_flux(0, sim_time, rx, sxx, k_soil, cells, ij = True)
+        return self.axial_flux(0, sim_time, rx, sxx, k_soil, cells)
 
     def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the axial fluxes 
@@ -179,6 +179,51 @@ class HydraulicsDoussan(XylemFlux):
         """
         n = len(self.rs.segments)
         return np.array([self.axial_flux(i, sim_time, rx, sxx, k_soil, cells, True) for i in range(0, n)])
+
+    def axial_flux(self, seg_ind, sim_time, rx, sxx, k_soil = [], cells = True):
+        """ returns the exact axial flux of segment ij of xylem model solution @param rx
+            @param seg_ind              segment index 
+            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
+            @param rx [cm]              root xylem matric potentials per root system node
+            @param sxx [cm]             soil matric potentials given per segment or per soil cell
+            @param k_soil [day-1]       optionally, soil conductivities can be prescribed per segment, 
+                                        conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil) 
+            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
+            @return [cm3 day-1] axial volumetric flow rate             
+        """
+        s = self.rs.segments[seg_ind]
+        i = s.x
+        j = s.y
+        nodes = self.rs.nodes
+        if len(k_soil) > 0:
+            ksoil = k_soil[seg_ind]
+        else:
+            ksoil = 1.e9  # much
+        n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
+        v = n2.minus(n1)
+        l = v.length()  # length of segment
+        v.normalize()  # normalized v.z is needed for qz
+        if cells:
+            cell_ind = self.rs.seg2cell[seg_ind]
+            if cell_ind >= 0:  # y node belowground
+                if len(sxx) > 1:
+                    p_s = sxx[cell_ind]  # soil pressure at collar segment
+                else:
+                    p_s = sxx[0]
+            else:
+                p_s = self.airPressure
+        else:
+            p_s = sxx[seg_ind]
+
+        a = self.rs.radii[seg_ind]  # radius
+        st = int(self.rs.subTypes[seg_ind])  # conductivities kr, kx
+        age = sim_time - self.rs.nodeCTs[int(s.y)]
+        kr = self.kr_f(age, st)  # c++ conductivity call back functions
+        kr = min(kr, ksoil)
+        kx = self.kx_f(age, st)
+        dpdz0 = (rx[j] - rx[i]) / l
+        f = -kx * (dpdz0)
+        return f
 
     def radial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the exact radial fluxes (calls base class)
