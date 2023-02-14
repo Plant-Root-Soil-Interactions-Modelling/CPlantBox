@@ -126,7 +126,11 @@ void Photosynthesis::solve_photosynthesis(double sim_time_,std::vector<double> s
 	getAg4Phloem();
 	doAddGravity(); 
 	
-	
+	if(loop>maxLoop)
+	{
+		throw std::runtime_error("photosynthesis::solve: did not reach convergence");
+	}
+
 	if((verbose_photosynthesis  > 0))
 	{
 		std::cout<<"leuning computation module stopped after "<<(loop-1)<<" trials. "
