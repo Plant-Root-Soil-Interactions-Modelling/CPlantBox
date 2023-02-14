@@ -61,7 +61,7 @@ void Photosynthesis::solve_photosynthesis(double sim_time_,std::vector<double> s
 	this->seg_leaves_idx = plant->getSegmentIds(4);//ids of leaf segments
 	this->TairC = TairC_;
 	this->TleafK = TairC_ + 273.15;
-	this->es = 0.61078 * std::exp(17.27 * this->TairC / (this->TairC + 237.3)) /10;//hPa
+	this->es = 0.61078 * std::exp(17.27 * this->TairC / (this->TairC + 237.3))*10;//hPa
 	this->ea = this->es * RH_ ;//hPa
 	//cm = log(-) * (mg cm-3) * (hPa cm3 K−1 mmol−1) * K * (1/[mg mmol-1]) * (cm/hPa)
 	this->psi_air = std::log(RH_) * rho_h2o * R_ph * (this->TairC + 237.3)/Mh2o * (1/0.9806806)  ; //in cm
