@@ -37,14 +37,14 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
     std::fill(aJ.begin(), aJ.end(), 0);
     size_t k=0;
     size_t numleaf = 0;
-	
+
 	typedef Eigen::Triplet<double> Tri;
 	tripletList.clear();
 	tripletList.reserve(Ns*4);
 	b = Eigen::VectorXd(N);
 	Eigen::SparseMatrix<double> mat(N,N);
 	mat.reserve(Eigen::VectorXi::Constant(N,2));
-	
+
     for (int si = 0; si<Ns; si++) {
 
         int i = rs->segments[si].x;
@@ -127,7 +127,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         }
 
         aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
-		
+
 		if(withEigen){ //when build with photosynthesis but do not want to use eigensolve
 			b(i) = aB[i];
 			tripletList.push_back(Tri(i,i,cii));
@@ -135,9 +135,9 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 			aI[k] = i; aJ[k]= i; aV[k] = cii;
 		}
         k += 1;
-		
+
 		if(withEigen){ tripletList.push_back(Tri(i,j,cij));
-		}else{		
+		}else{
 			aI[k] = i; aJ[k] = j;  aV[k] = cij;
 		}
         k += 1;
@@ -153,7 +153,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 			aI[k] = i; aJ[k]= i; aV[k] = cii;
 		}
         k += 1;
-		
+
 		if(withEigen){ tripletList.push_back(Tri(i,j,cij));
 		}else{
 			aI[k] = i; aJ[k] = j;  aV[k] = cij;
@@ -585,6 +585,27 @@ std::vector<double> XylemFlux::getEffKr(double simtime) {
     }
     return kr;
 }
+
+/**
+ * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
+ */
+std::vector<double> XylemFlux::getKr(double simtime) {
+    std::vector<double> kr = std::vector<double>(rs->segments.size());
+    for (int si = 0; si<rs->segments.size(); si++) {
+        int j = rs->segments[si].y;
+        int organType = rs->organTypes[si];
+        double age = simtime - rs->nodeCTs[j];
+        int subType = rs->subTypes[si];
+        try {
+            kr[si] = kr_f(si, age, subType, organType, 0);
+        } catch(...) {
+            std::cout << "\n XylemFlux::segFluxes: radial conductivities failed" << std::flush;
+            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
+        }
+    }
+    return kr;
+}
+
 
 /**
  * Returns radial conductivities per segment for a specific simulation time

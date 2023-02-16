@@ -859,6 +859,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)
             .def("getEffKr", &XylemFlux::getEffKr)
+            .def("getKr", &XylemFlux::getKr)
             .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
             		py::arg("soil_k") = std::vector<double>(),py::arg("withEigen") = false)
@@ -916,17 +917,17 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
-			
+
 	/*
      * Photosynthesis.h
      */
     py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit") ,  py::arg("ciInit"))
-			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("sim_time_")=1.0 , 
+			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("sim_time_")=1.0 ,
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
-					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(), 
+					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
 					py::arg("doLog_")=false, py::arg("verbose_")=true, py::arg("RH_") = 0.5, py::arg("TairC_") = 25)
-			
+
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
             .def_readwrite("limMaxErr", &Photosynthesis::limMaxErr)
@@ -967,16 +968,16 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("k_stomatas_old", &Photosynthesis::k_stomatas_old)
             .def_readwrite("doLog", &Photosynthesis::doLog);
-			
+
 	/*
      * runPM.h
      */
     py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),
 			py::arg("psiXylInit"),  py::arg("ciInit") )
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
             .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0)
-			
+
             .def("setKx_st",&PhloemFlux::setKx_st)
             .def("setRmax_st",&PhloemFlux::setRmax_st)
             .def("setAcross_st",&PhloemFlux::setAcross_st)
@@ -987,7 +988,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
             .def_readwrite("psiMax", &PhloemFlux::psiMax)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
-			
+
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)
             .def_readwrite("Q_out_dot",&PhloemFlux::Q_out_dotv)

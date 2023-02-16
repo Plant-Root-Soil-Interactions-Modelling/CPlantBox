@@ -4,7 +4,7 @@
 
 #include "MappedOrganism.h"
 #include <external/Eigen/Dense>
-#include <external/Eigen/Sparse> 
+#include <external/Eigen/Sparse>
 
 namespace CPlantBox {
 
@@ -58,6 +58,7 @@ public:
 		throw std::runtime_error("kx_f not implemented"); return 1.; };
 
     std::vector<double> getEffKr(double simtime);
+    std::vector<double> getKr(double simtime);
     std::vector<double> getKx(double simtime);
     std::vector<double> getHs(const std::vector<double>& sx);
 
@@ -71,7 +72,7 @@ public:
 
     double psi_air = -954378; // air water potential [cm] for T = 20°C and RH = 0.5
 	std::vector<double> k_stomatas;//stomatal radial conductance for Photosynthesis
-	
+
 protected:
 
 	//type correspond to subtype or to the leaf segment number
@@ -152,9 +153,9 @@ protected:
     double kx_tablePerOrgType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(0), kxs.at(organType-2).at(0)); } //constant for all subtype but type and age dependant
     double kx_tablePerType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(type), kxs.at(organType-2).at(type)); } //subtype, type and age dependant
     double kx_valuePerSegment(int si, double age, int type, int organType) { return kx.at(0).at(si); };
-	
+
 	//for Photosynthesis::linearSystemSolve
-	std::vector<Eigen::Triplet<double>> tripletList; 
+	std::vector<Eigen::Triplet<double>> tripletList;
 	Eigen::VectorXd b;
 };
 
