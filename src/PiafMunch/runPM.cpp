@@ -759,6 +759,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 	Flen = std::vector<double>(Nr,0.); //for post processing
 	GrowthZone = std::vector<int>(Nr,0); //for post processing
 	GrowthZoneLat = std::vector<int>(Nr,0); //for post processing
+    psi_p_symplasm = std::vector<double>(Nr,0.); //for post processing
 	int orgID2 = 0;
 	for(auto org: orgs)
 	{
@@ -878,15 +879,15 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                         nnEnd = k;
                     }
                     
-                if(doTroubleshooting){
-                    std::cout<<"4growth areaLEAF "<<nn1<<" "<<nnEnd<<" "<< org->getNodeIds().size()<<std::endl;
-                    std::cout<<org->getLength(nnEnd) <<" "<< org->getLength(nn1)<<" "<<L_growth_area<<std::endl;
-                    std::cout<<"leafGrowthZone "<<leafGrowthZone<<std::endl;
-                    std::cout<<"nodeIds_.size() "<<nodeIds_.size()<<std::endl;
+                    if(doTroubleshooting){
+                        std::cout<<"4growth areaLEAF "<<nn1<<" "<<nnEnd<<" "<< org->getNodeIds().size()<<std::endl;
+                        std::cout<<org->getLength(nnEnd) <<" "<< org->getLength(nn1)<<" "<<L_growth_area<<std::endl;
+                        std::cout<<"leafGrowthZone "<<leafGrowthZone<<std::endl;
+                        std::cout<<"nodeIds_.size() "<<nodeIds_.size()<<std::endl;
 
-                    for(int k=0;k< nodeIds_.size();k++){std::cout<<nodeIds_[k]<<" ";}
-                    std::cout<<std::endl;
-                }
+                        for(int k=0;k< nodeIds_.size();k++){std::cout<<nodeIds_[k]<<" ";}
+                        std::cout<<std::endl;
+                    }
                 }
                 if(ot == 3)//only for nodes in the growing phytomeres
                 {
@@ -894,14 +895,43 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                     if(StemGrowthPerPhytomer)
                     {
                         
-                        //bool StartGrowingZone = false;
                         
                         auto stemParams = std::static_pointer_cast<CPlantBox::Stem>(org)->param();
-                        //need to take theoretical vs realized length issue into account
-                        nn1 = CPlantBox::Function::findIndexOfSum(stemParams->ln, Linit);//go after grown internods
+                        int PhytoIdx = 0; bool foundPhytoIdx = false;
+                       if(doTroubleshooting){
+                                 std::cout<<"let's search for phytoID" <<std::endl;
+                       }
+                        for(;((PhytoIdx < stemParams->ln.size())&(!foundPhytoIdx));PhytoIdx++)
+                        {
+                            double maxPhytoLen = stemParams->ln.at(PhytoIdx);
+                            double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->parentNI) - org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI);
+                            if(doTroubleshooting){
+                                std::cout<<"at "<<PhytoIdx<<" phytomer lengths max" <<maxPhytoLen<<" current "<< currentPhytoLen <<" at kids "<< org->getLength(org->getChild(PhytoIdx+1)->parentNI)<<" "<< org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI) <<std::endl;
+                            }
+                            foundPhytoIdx = (maxPhytoLen - currentPhytoLen > 1e-10);//first still growing phytomere
+                            if(doTroubleshooting){
+                                std::cout<<"(maxPhytoLen - currentPhytoLen > 1e-10) "<<(maxPhytoLen - currentPhytoLen < 1e-10)<<std::endl;
+                            }
+                            if(maxPhytoLen - currentPhytoLen < -1e-10){throw std::runtime_error("maxPhytoLen - currentPhytoLen < -1e10;");}
+                            
+                        }
+                        nn1 = org->getChild(std::max(0,PhytoIdx-1))->parentNI;
+                        if(doTroubleshooting){
+                                std::cout<<"retained phytoID "<<std::max(0,PhytoIdx-1) <<" "<< nn1<<std::endl;
+                            }
+                        
                         auto allIDs = org->getNodeIds();
                         nodeIds_.insert(nodeIds_.end(), std::begin(allIDs)+ nn1 ,std::end(allIDs) ); 
-                        
+                        if(doTroubleshooting){
+                            std::cout<<"stem parameters "<<org->getParameter("nodalGrowth")<<" "<< PhytoIdx <<std::endl;
+                            std::cout<<"phytomer lengths max" <<std::endl;
+                            for(int k=0;k< stemParams->ln.size();k++){std::cout<<stemParams->ln.at(k)<<" ";}std::cout<<std::endl;
+                            std::cout<<"phytomer lengths real" <<std::endl;
+                            for(int k=0;k< stemParams->ln.size();k++){std::cout<<org->getLength(org->getChild(k)->parentNI) - org->getLength(org->getChild(std::max(0,k))->parentNI)<<" ";}std::cout<<std::endl;
+                            std::cout<<"pnis" <<std::endl;
+                            for(int k=0;k< stemParams->ln.size();k++){std::cout<<org->getChild(k)->parentNI<<" ";}
+                            std::cout<<std::endl;
+                        }
                         
 
                     }else{
@@ -910,11 +940,14 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                      if(doTroubleshooting){
                          
                     std::cout<<"4growth areaSTEM "<<nn1<<" "<<nnEnd<<" "<< org->getNodeIds().size()<<std::endl;
-                    std::cout <<"lengthtot "<<org->getLength(nnEnd) <<" lengthBeforelim "<< org->getLength(nn1)<<std::endl;
-                    std::cout<<" lengthAfterlim "<< org->getLength(std::min(nn1+1,nnEnd))<<"Lenth "<<Linit<<std::endl;
+                    std::cout <<"lengthtot "<<org->getLength(nnEnd) <<" lengthAtlim "<< org->getLength(nn1)<<std::endl;
+                    std::cout<<" lengthAfterlim "<< org->getLength(std::min(nn1+1,nnEnd))<<" Length_th "<<Linit<<std::endl;
                     std::cout<<"nodeIds_.size() "<<nodeIds_.size()<<std::endl;
 
                     for(int k=0;k< nodeIds_.size();k++){std::cout<<nodeIds_[k]<<" ";}
+                    std::cout<<"seg lengths "<<nodeIds_.size()<<std::endl;
+
+                    for(int k=0;k< nodeIds_.size();k++){std::cout<<" ("<<org->getLength(k)<<"-"<<org->getLength(k) - org->getLength(std::max(0,k-1))<<"); ";}
                     std::cout<<std::endl;
                 }
                 }
@@ -964,24 +997,41 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 				}else{
 					
 					nodeId_h = nodeIds_.at(k-1);
-					Lseg = org->getLength(k) - org->getLength(k-1);//getLength uses local node ID
+					auto nodei = plant->nodes.at(nodeId_h);
+					auto nodej = plant->nodes.at(nodeId);
+					//double length2 = nodej.minus(nodei).length();
+					//Lseg = org->getLength(k) - org->getLength(k-1);//getLength uses local node ID
+                    Lseg = nodej.minus(nodei).length();
 					Flen.at(nodeId) = (Lseg/L_growth_area) * double(ot != 2) ;
-					auto nodei = org->getNode(k-1);
-					auto nodej = org->getNode(k);
-					double length2 = nodej.minus(nodei).length();
 					if(doTroubleshooting){
-						std::cout<<"		long stem or leaf "<<nodeId<<" "<<nodeId_h<<" "<<org->getLength(k) <<" "<< org->getLength(k-1)<<" "<<Lseg;
-						std::cout<<" "<<length2<<std::endl;
+						std::cout<<"		long stem or leaf "<<nodeId<<" "<<nodeId_h<<" "<<Lseg<<std::endl;;
+						//std::cout<<" "<<org->getLength(k) <<" "<< org->getLength(k-1)<<" "<<length2<<std::endl;
 					}
 				}//att! for this division we need the realized length, not the theoretical one
 				
 				if(psiXyl.size()>0){
 					if(doTroubleshooting){
-						std::cout<<"do Fpdi "<<psiXyl.size()<<" "<<nodeId<<" "<<psiXyl.at(nodeId)<<" "<<psiMax<<" "<<psiMin<<std::endl;
+						std::cout<<"do Fpdi "<<psiXyl.size()<<" "<<nodeId<<" "<<psiXyl.at(nodeId)<<" "<<psi_osmo_proto<<" "<<psiMin<<" "<< alpha_p_symplasm <<std::endl;
 					}
-					Fpsi.at(nodeId) = std::max((std::min(psiXyl[nodeId], psiMax) - psiMin)/(psiMax - psiMin),0.);
-					assert((Fpsi.at(nodeId) >= 0)&&"PhloemFlux::waterLimitedGrowth: Fpsi.at(nodeId) < 0");
-				}else{Fpsi.at(nodeId) = 1.;}
+                    //double psi_p_symplasm_max = psiXyl.at(nodeId) - psi_osmo_proto;
+                    //if(psi_p_symplasm_max < (psiMin - 1e-10))
+                    //{Fpsi.at(nodeId) = 0.;psi_p_symplasm.at(nodeId) = psi_p_symplasm_max;
+                    //}else{
+                        //psi_p_symplasm.at(nodeId) = alpha_p_symplasm * psi_p_symplasm_max + (1 - alpha_p_symplasm) * psiMin;
+                    psi_p_symplasm.at(nodeId) =  psiXyl.at(nodeId) - psi_osmo_proto;
+                    if(-psi_osmo_proto - psiMin>1e-5){
+                        Fpsi.at(nodeId) = std::max((std::max(psi_p_symplasm.at(nodeId), psiMin) - psiMin)/(-psi_osmo_proto - psiMin),0.);
+                    }else{Fpsi.at(nodeId) = 0.;}
+                    //}
+                    if(doTroubleshooting)
+                    {
+                        std::cout<<"4Fpsi "<<psi_p_symplasm.at(nodeId)<<" "<<psi_osmo_proto<<Fpsi.at(nodeId)<<std::endl;
+                    }
+					if((Fpsi.at(nodeId) >(1+1e-6))||(Fpsi.at(nodeId) < -1e-6))
+                    {
+                        throw std::runtime_error("Fpsi < 0 or Fpsi > 1");
+                    }
+				}else{Fpsi.at(nodeId) = 1.;psi_p_symplasm.at(nodeId) = 1.;}
 				double deltavolSeg = deltavol * Flen.at(nodeId) * Fpsi.at(nodeId);
 				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){
 					//could be error of pressision (if l = Lmax)

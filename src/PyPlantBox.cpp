@@ -926,7 +926,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("sim_time_")=1.0 , 
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
 					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(), 
-					py::arg("doLog_")=false, py::arg("verbose_")=true, py::arg("RH_") = 0.5, py::arg("TairC_") = 25)
+					py::arg("doLog_")=false, py::arg("verbose_")=true, py::arg("ea_") = 17, py::arg("TairC_") = 25)
 			
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
@@ -936,19 +936,32 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Vc", &Photosynthesis::Vc)
             .def_readwrite("Vj", &Photosynthesis::Vj)
             .def_readwrite("fw", &Photosynthesis::fw)
+            .def_readwrite("fwr", &Photosynthesis::fwr)
+            .def_readwrite("sh", &Photosynthesis::sh)
+            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
             .def_readwrite("ci", &Photosynthesis::ci)
+            .def_readwrite("oldciEq", &Photosynthesis::oldciEq)
+            .def_readwrite("oi", &Photosynthesis::oi)
             .def_readwrite("Rd", &Photosynthesis::Rd)
             .def_readwrite("gco2", &Photosynthesis::gco2)
             .def_readwrite("es", &Photosynthesis::es)
             .def_readwrite("ea", &Photosynthesis::ea)
+            .def_readwrite("PVD",&Photosynthesis::PVD)
+            .def_readwrite("EAL",&Photosynthesis::EAL)
+            .def_readwrite("hrelL",&Photosynthesis::hrelL)
+            .def_readwrite("gm",&Photosynthesis::gm)
+            .def_readwrite("usePg4Fw",&Photosynthesis::usePg4Fw)
+            .def_readwrite("followTrace",&Photosynthesis::followTrace)
+            .def_readwrite("pg",&Photosynthesis::pg)
+            .def_readwrite("pg_old",&Photosynthesis::pg_old)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
-            .def_readwrite("ci", &Photosynthesis::ci)
             .def_readwrite("Jw", &Photosynthesis::Jw)
             .def_readwrite("Ev", &Photosynthesis::Ev)
             .def_readwrite("plant", &Photosynthesis::plant)
             .def_readwrite("Ag4Phloem", &Photosynthesis::Ag4Phloem)
             .def_readwrite("minLoop", &Photosynthesis::minLoop)
             .def_readwrite("maxLoop", &Photosynthesis::maxLoop)
+            .def_readwrite("loop", &Photosynthesis::loop)
             .def_readwrite("Patm", &Photosynthesis::Patm)
             .def_readwrite("cs", &Photosynthesis::cs)
             .def_readwrite("TleafK", &Photosynthesis::TleafK)
@@ -996,7 +1009,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKrm2",&PhloemFlux::setKrm2)
 			.def("startPM",&PhloemFlux::startPM)
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
-            .def_readwrite("psiMax", &PhloemFlux::psiMax)
+            //.def_readwrite("psiMax", &PhloemFlux::psiMax)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
 			
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
@@ -1054,7 +1067,10 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("leafGrowthZone",&PhloemFlux::leafGrowthZone)
 			.def_readwrite("StemGrowthPerPhytomer",&PhloemFlux::StemGrowthPerPhytomer)
 			.def_readwrite("GrowthZone",&PhloemFlux::GrowthZone)
-			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat);
+			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
+			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
+			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
+			.def_readwrite("alpha_p_symplasm",&PhloemFlux::alpha_p_symplasm);
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)

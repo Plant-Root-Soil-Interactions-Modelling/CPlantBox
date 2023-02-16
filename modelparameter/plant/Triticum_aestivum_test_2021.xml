@@ -62,8 +62,8 @@
     <!--parameter name="ln" value="0.15" dev="0.01"/-->
     <!--Inter-lateral distance [cm]-->
     <parameter name="lmax" value="10"/>
-    <!--Inter-lateral distance [cm];-->
-    <parameter name="r" value="1.5" dev="0"/>
+    <!--Inter-lateral distance [cm]1.5;-->
+    <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.020" dev="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
@@ -77,10 +77,10 @@
 </organ>
 
 <organ type="root" name="lateral2" subType="3">
-    <parameter name="lmax" value="5" dev="0"/>
+    <parameter name="lmax" value="4" dev="0"/>
     <parameter name="lb" value="1" dev="0"/>
     <parameter name="la" value="3" dev="0"/>
-    <!--Inter-lateral distance [cm];-->
+    <!-5-0.6-->
     <parameter name="r" value="0.6" dev="0"/>
     <parameter name="a" value="0.02" dev="0"/>
     <parameter name="tropismT" value="1"/>
@@ -106,14 +106,17 @@
     <!--delayNG = 33.4 - lb/r;-->
 	<!--parameter name="delayNG" value="29.4" dev="6.3" /-->
 	<parameter name="delayLat" value="10" dev="0" />
-	<parameter name="nodalGrowth" value="1" />
+	<parameter name="nodalGrowth" value="0" />
+	<parameter name="delayNGStart" value="4"  />
+	<parameter name="delayNGEnd" value="24"  />
     <parameter name="a" value="0.15" dev="0" />
     <!--parameter name="a_x_eq" value="0.3068" /!-->
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.01"/>
-    <parameter name="dx" value="9"/>
-    <parameter name="dxMin" value="2"/>
+    <parameter name="dx" value="1"/>
+    <!--parameter name="dxMin" value="2"/-->
+    <parameter name="dxMin" value="0.1"/>
     <parameter name="theta" value="0" dev="0"/>
     <!--parameter name="BetaDev" value="1" dev="0"/-->
     <!--parameter name="RotBeta" value="1" dev="0"/-->

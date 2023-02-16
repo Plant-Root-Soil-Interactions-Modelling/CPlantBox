@@ -42,40 +42,6 @@ Photosynthesis::Photosynthesis(std::shared_ptr<CPlantBox::MappedPlant> plant_, d
 }
 
 
-/**
- * A "photosyntehsis" object, as needed for water flux computations + sucrose assimilation + stomatale opening
- *
- * @param plant_     	MappedPlant object
- * @param psiXylInit   	Initial guess for the value of xylem wat. pot [cm]
- * @param ciInit      	Initial guess for intracellular CO2 partial pressure [mol mol-1]
- */
-void Photosynthesis::toFile(std::string fileName,std::vector<double>& descriptorsValues)
-{
-    std::fstream data_file;
-	data_file.open (fileName, std::ios_base::app | std::ios_base::in);
-    //data_file.write(reinterpret_cast<char*>(&descriptorsValues[0]), descriptorsValues.size()*sizeof(double)); 
-    //
-    //if(loop == 0)
-    //{
-      //  std::cout<<fileName<<" "<<descriptorsValues.size()<<std::endl;
-    //}
-    for(int i=0;i<descriptorsValues.size()-1;i++)
-    {
-        data_file<<descriptorsValues.at(i)<<", ";
-        //if(loop == 0)
-        //{
-        //    std::cout<<descriptorsValues.at(i)<<", ";
-        //}
-    } 
-    data_file<<descriptorsValues[descriptorsValues.size()-1]<<std::endl;
-    //if(loop == 0)
-    //{
-    //    std::cout<<descriptorsValues.at(descriptorsValues.size()-1)<<std::endl;
-    //}
-    //data_file.close();
-}
-
-
 	/* solves the coupled water flux + carbon assimilation and stomatal opening, 
 		@param sim_time_ [day]           simulation time
 		@param sxx_ [cm]                 soil matric potentials given per segment or per soil cell
@@ -142,18 +108,9 @@ void Photosynthesis::solve_photosynthesis(double sim_time_,std::vector<double> s
 		if((verbose_photosynthesis > 1)){std::cout<<"to getError"<<std::endl;}
 		getError(sim_time_);
 		
-		if(followTrace)
-        {
-            toFile("./loopPg.csv",pg);
-            toFile("./loopCi.csv",ci);
-            toFile("./loopAn.csv",An);
-            toFile("./loopGco2.csv",gco2);
-            toFile("./loopFw.csv",fw);
-            toFile("./loopEv.csv",Ev);
-        }
-        
 		loop++ ;
 		this->stop = ((loop > maxLoop) || ((maxMaxErr < limMaxErr)&&(loop>minLoop)));//reached convergence or max limit of loops?
+		
 		if(!this->stop){
 			outputFlux_old = outputFlux;
 			k_stomatas_old = k_stomatas; ci_old = this->ci; pg_old = this->pg;
@@ -529,11 +486,7 @@ void Photosynthesis::loopCalcs(double simTime){
             {
                 p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa
             }
-			//fw.at(i) = fwr + (1.- fwr)*std::exp(-std::exp(-sh*(p_lhPa*0.0001 - p_lcrit)*10228.)) ;//Eq 5
-            fw.at(i) = (1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa)));
-
-
-
+			fw.at(i) = fwr + (1.- fwr)*std::exp(-std::exp(-sh*(p_lhPa*0.0001 - p_lcrit)*10228.)) ;//Eq 5
 			// mol CO2 m-2 s-1
 			gco2.at(i) = g0 + fw.at(i) *( a1 *( An.at(i) + Rd)/(ci.at(i) - deltagco2.at(i)));//tuzet2003
             

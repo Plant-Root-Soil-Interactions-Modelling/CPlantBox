@@ -39,6 +39,7 @@ public:
 	
 	void doAddGravity(); ///< add gravitational wat. pot to total wat. pot. (used in phloem module)
 	//void r_forPhloem(double lightTimeRatio, int ot);
+    void toFile(std::string fileName,  std::vector<double>& descriptorsValues);
 	
 	//		intermediary results and outputs
     std::vector<double>  tauv, fv,  lengths, deltagco2, dv; 
@@ -53,16 +54,22 @@ public:
 	std::vector<double> ci;
 	std::vector<double> Jw;
 	std::vector<double> Ev;
+	std::vector<double> PVD;
+	std::vector<double> EAL;
+	std::vector<double> hrelL;
 	std::vector<double> pg;//leaf guard cell water potential [cm]
 	std::vector<double> outputFlux;
 	std::vector<double> fw;
 	std::vector<double> psiXyl4Phloem; //sum of psiXyl + gravitational wat. pot.
 	std::vector<double> gco2;
+	std::vector<double> gtotOx;
+    float gm = 0.05; //mesophyll resistance 
     
     
 	//		to evaluate convergence, @see Photosynthesis::getError
 	bool doLog = false; int verbose_photosynthesis = 0;
-    bool oldciEq = false;
+    bool oldciEq = false;bool followTrace = false;
+    bool usePg4Fw = false; //keep false or it does not converge I think
 	int maxLoop = 1000; int minLoop = 1;
     int loop;double limMaxErr = 1e-4;
 	double maxMaxErr;
@@ -95,8 +102,10 @@ public:
 	//			parameter to re-parametrise , put in phloem files
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
-	double sh = 3.765e-4;//sensibility to water stress
-	double p_lcrit = -0.869;//min psiXil for stomatal opening [Mpa]
+	double sh = 4e-4;//3.765e-4;//sensibility to water stress
+    
+
+	double p_lcrit = -15000/2;//-0.869;//min psiXil for stomatal opening [Mpa]
 	//influence of N contant, to reparametrise!, 
 	double VcmaxrefChl1 = 1.28/2;//otherwise value too high, original: 1.31
 	double VcmaxrefChl2 = 8.33/2; //otherwise value too high, original: 8,52

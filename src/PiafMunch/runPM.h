@@ -171,16 +171,21 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	std::vector<double> Flv ;//sucrose flow from mesophyll to sieve tube, (mmol Suc d-1)
 	std::vector<double> vol_Mesov;//volume of mesophyll (same as leaf blade volume), (cm3)
 	std::vector<double> JW_STv;//sieve tube water flow, (cm3 d-1)
+    
+    //for growth
 	std::vector<double> Fpsi;//water scarcity factor for growth, (-)
     std::vector<double> Flen;
     std::vector<int> GrowthZone;
     std::vector<int> GrowthZoneLat;
 	std::vector<std::map<int,double>> deltaSucOrgNode_;//maximal sucrose need for growth per node, (mmol Suc d-1)
-	
+	double psi_osmo_proto = -4000*1.0197;
+	//double psiMax = 0; 
+    double psiMin = 2000*1.0197;//limit wat. pot. in xylem for water-limited growth, [cm]
+    std::vector<double> psi_p_symplasm;
+    double alpha_p_symplasm = 0.9;
 	
 	//		To calibrate
 	double Q10 = 2.; double TrefQ10 = 20;//to compute effect of T on growth (see CN-wheat, residual respiration @Barillot 2016, appendix)
-	double psiMax = 0; double psiMin = -2000*(1/0.9806806);//limit wat. pot. in xylem for water-limited growth, [cm]
 	//double KMgr = 0.16; //@see C_fluxes,Michaelis menten coef for growth, not implemented
 	double KMfu = 0.2; //@see C_fluxes,Michaelis menten coef for active sucrose usage
 	//double k_meso = 1e-4;//conductivity if implement ohm analogy for Fl, not implemented
