@@ -184,8 +184,8 @@ void RootSystem::writeParameters(std::ostream& os) const
 void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
 {
 	reset(); // just in case
-    getNodeIndex(); // introduce an extra node at nodes[0] (todo why?)
-	seed = std::make_shared<Seed>(shared_from_this());
+    getNodeIndex(); // introduce an extra node at nodes[0] 
+	seed = std::make_shared<Seed>(shared_from_this()); // introduce a 2nd node =>  2 nodes to make a seed segment
 	initialize_(basal, shootborne, verbose);
 }
 
@@ -204,7 +204,7 @@ void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
 void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
 {
 	reset(); // just in case
-    getNodeIndex(); // introduce an extra node at nodes[0] (todo why?)
+    getNodeIndex(); // introduce an extra node used with node created by seed to have a seed segment.
 
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
