@@ -41,7 +41,7 @@ It will create a "DUMUX" folder and install inside the dependencies necessary to
 This script might work on other linux OS but has not been tested.
 
 If you want to install CPlantBox without Dumux, download the python file "installCPlantBox.py".
-This installaiton files requires a conda environment with python3.7 or python3.8.
+This installaiton files requires a conda environment with python >= 3.7
 run
 ```bash
 conda create -n cpb_py38 python=3.8
