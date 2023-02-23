@@ -1,4 +1,4 @@
-# Install script for directory: /home/rbtlm640/CPBWUrg/CPlantBox
+# Install script for directory: /home/daniel/workspace/DUMUX/CPlantBox
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -37,10 +37,15 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
+# Set default install directory permissions.
+if(NOT DEFINED CMAKE_OBJDUMP)
+  set(CMAKE_OBJDUMP "/usr/bin/objdump")
+endif()
+
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/rbtlm640/CPBWUrg/CPlantBox/src/cmake_install.cmake")
-  include("/home/rbtlm640/CPBWUrg/CPlantBox/tutorial/cmake_install.cmake")
+  include("/home/daniel/workspace/DUMUX/CPlantBox/src/cmake_install.cmake")
+  include("/home/daniel/workspace/DUMUX/CPlantBox/tutorial/cmake_install.cmake")
 
 endif()
 
@@ -52,5 +57,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/rbtlm640/CPBWUrg/CPlantBox/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/daniel/workspace/DUMUX/CPlantBox/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
