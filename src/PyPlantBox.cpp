@@ -878,6 +878,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
 			.def_readwrite("psi_air", &XylemFlux::psi_air)
+			//.def_readwrite("k_leaf", &XylemFlux::k_leaf)
 			.def_readwrite("k_stomatas", &XylemFlux::k_stomatas);
 
     /*
@@ -922,24 +923,40 @@ PYBIND11_MODULE(plantbox, m) {
      * Photosynthesis.h
      */
     py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit") ,  py::arg("ciInit"))
-			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("sim_time_")=1.0 , 
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit") ,  py::arg("ciInit") )
+			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("ea_"),py::arg("es_") ,
+                 py::arg("sim_time_")=1.0 , 
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
 					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(), 
-					py::arg("doLog_")=false, py::arg("verbose_")=true, py::arg("ea_") = 17, py::arg("TairC_") = 25)
+					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
 			
+            //.def("setKr_meso",&PhloemFlux::setKr_meso, py::arg("values"))
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
             .def_readwrite("limMaxErr", &Photosynthesis::limMaxErr)
 			.def_readwrite("psiXyl", &Photosynthesis::psiXyl)
             .def_readwrite("An", &Photosynthesis::An)
+            .def_readwrite("Theta_ag", &Photosynthesis::Theta_ag)
             .def_readwrite("Vc", &Photosynthesis::Vc)
+            .def_readwrite("Vcrefmax", &Photosynthesis::Vcrefmax)
+            .def_readwrite("Jrefmax", &Photosynthesis::Jrefmax)
+            .def_readwrite("Jrefmax", &Photosynthesis::Jrefmax)
             .def_readwrite("Vj", &Photosynthesis::Vj)
+            .def_readwrite("useVc", &Photosynthesis::useVc)
+            .def_readwrite("useVj", &Photosynthesis::useVj)
+            .def_readwrite("fw_old", &Photosynthesis::fw_old)
+            .def_readwrite("fw_very_old", &Photosynthesis::fw_very_old)
             .def_readwrite("fw", &Photosynthesis::fw)
             .def_readwrite("fwr", &Photosynthesis::fwr)
             .def_readwrite("sh", &Photosynthesis::sh)
             .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
+            .def_readwrite("fwmesophyll", &Photosynthesis::fwmesophyll)
+            .def_readwrite("fwrmesophyll", &Photosynthesis::fwrmesophyll)
+            .def_readwrite("shmesophyll", &Photosynthesis::shmesophyll)
+            .def_readwrite("p_lcritmesophyll", &Photosynthesis::p_lcritmesophyll)
             .def_readwrite("ci", &Photosynthesis::ci)
+            .def_readwrite("deltagco2", &Photosynthesis::deltagco2)
+            .def_readwrite("delta", &Photosynthesis::delta)
             .def_readwrite("oldciEq", &Photosynthesis::oldciEq)
             .def_readwrite("oi", &Photosynthesis::oi)
             .def_readwrite("Rd", &Photosynthesis::Rd)
@@ -951,6 +968,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("hrelL",&Photosynthesis::hrelL)
             .def_readwrite("gm",&Photosynthesis::gm)
             .def_readwrite("usePg4Fw",&Photosynthesis::usePg4Fw)
+            .def_readwrite("doWiggle",&Photosynthesis::doWiggle)
+            .def_readwrite("DoSun2012",&Photosynthesis::DoSun2012)
+            .def_readwrite("alternativeAn",&Photosynthesis::alternativeAn)
             .def_readwrite("followTrace",&Photosynthesis::followTrace)
             .def_readwrite("pg",&Photosynthesis::pg)
             .def_readwrite("pg_old",&Photosynthesis::pg_old)
@@ -989,6 +1009,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("k_stomatas_old", &Photosynthesis::k_stomatas_old)
+			//.def_readwrite("k_stomatas", &Photosynthesis::k_stomatas)
             .def_readwrite("doLog", &Photosynthesis::doLog)
             .def_readwrite("R_ph", &Photosynthesis::R_ph);
 			

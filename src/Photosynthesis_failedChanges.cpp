@@ -121,8 +121,8 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	hrelL= std::vector<double>( seg_leaves_idx.size(), 0.);
 	EAL= std::vector<double>( seg_leaves_idx.size(), 0.);
 	gtotOx= std::vector<double>( seg_leaves_idx.size(), 0.);
-															 
-	k_stomatas.resize( seg_leaves_idx.size(), 0.);
+	k_leaf.resize( seg_leaves_idx.size(),-1.);												
+    fwmesophyll.resize( seg_leaves_idx.size(), 1.);
 	fw_old= std::vector<double>( seg_leaves_idx.size(), -1.);
 	fw_very_old= std::vector<double>( seg_leaves_idx.size(), -1.);
 														 
@@ -132,13 +132,14 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	outputFlux_old.resize(psiXyl.size(), 0.);
 	outputFlux.resize(plant->segments.size(), 0.);
 	psiXyl_old = psiXyl; pg_old = pg; k_stomatas_old = k_stomatas;
-	
+	//VERY IMPORTANT
 	k_stomatas.clear();//to not take k_stomatas into account in @Photosynthesis::initCalcs
 	assert(k_stomatas.empty() &&"Photosynthesis::initStruct: k_stomatas not empty");
+    k_leaf.clear();
+	assert(k_leaf.empty() &&"Photosynthesis::initStruct: k_leaf not empty");
 	
 	//		compute parameters which do not change between the loops
 	initCalcs(sim_time_);
-	k_stomatas = k_stomatas_old ;											
     		
 	if(followTrace)
         {
@@ -379,6 +380,11 @@ void Photosynthesis::initCalcs(double sim_time_){
 		@param sim_time_ [day]           simulation time, needed time-dependent conductivity
 	*/
 void Photosynthesis::initStruct(double sim_time_){
+    //VERY IMPORTANT
+    k_stomatas.clear();//to not take k_stomatas into account in @Photosynthesis::initCalcs
+	assert(k_stomatas.empty() &&"Photosynthesis::initStruct: k_stomatas not empty");
+    k_leaf.clear();
+	assert(k_leaf.empty() &&"Photosynthesis::initStruct: k_leaf not empty");
 	lengths =  this->plant->segLength();
 	assert((plant->leafBladeSurface.size() == plant->segments.size())&&"plant->leafBladeSurface.size() != plant->segments.size()");
 	//sideSurface_leaf = this->plant->leafSurfacePerSeg();
@@ -398,10 +404,12 @@ void Photosynthesis::initStruct(double sim_time_){
 		kr = 0.;
         try {
             kx = kx_f(li, sim_time_, st, ot);
-            kr = kr_f(li, sim_time_, st, ot, li_);
+            kr =fwmesophyll.at(li_) *kr_meso_f(st);
         } catch(...) {
             std::cout << "\n Photosynthesis::initStruct: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<ot<< " subtype " << st <<std::flush;
+            
+                throw std::runtime_error("Photosynthesis::initStruct: conductivities failed");
         }
 		double perimeter = plant->leafBladeSurface.at(li)/l*2; 
 		fv.at(li_) = -perimeter*kr;
@@ -419,7 +427,9 @@ void Photosynthesis::initStruct(double sim_time_){
 			assert((dv[li_]>0)&&"dv[li_]<=0");
 		}
 	}
-	
+	//make big again
+	k_stomatas.resize( seg_leaves_idx.size(), 1.);
+	k_leaf.resize( seg_leaves_idx.size(), 0.);
 }
 
 	/* Computes variables constants at each loop needed for computing carboxylation (Vc) and photon flux rates (J)
@@ -563,6 +573,7 @@ void Photosynthesis::loopCalcs(double simTime){
             }
 			//fw.at(i) = fwr + (1.- fwr)*std::exp(-std::exp(-sh*(p_lhPa*0.0001 - p_lcrit)*10228.)) ;//Eq 5
             fw.at(i) = fwr + (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa)));
+            fwmesophyll.at(i) = fwrmesophyll + (1.- fwrmesophyll)*(1+std::exp(shmesophyll*p_lcritmesophyll))/(1+std::exp(sh*(p_lcritmesophyll-p_lhPa)));
             bool fwWiggle = (( fw.at(i) > std::min(fw_old.at(i),fw_very_old.at(i)) ) && ( fw.at(i) < std::max(fw_old.at(i),fw_very_old.at(i)) ) );
             
             if(DoSun2012&&doWiggle)
@@ -653,9 +664,9 @@ void Photosynthesis::loopCalcs(double simTime){
 			// mol H2O m-2 s-1 MPa-1
 			//double k_stomate_1 = (gco2.at(i) * a2) / Patm;
 			//(mol m-2 s-1)*(mmol/mol)*(hPa/hPa) * (mg mmol-1) /(mg cm-3) *(h/d)*(s/h)*(m2 cm-2) =  ( cm3)/d*(cm-2)
-            if((gco2.at(i)>0.)&&(gm*fw.at(i)>0.)&&(g_bl>0.)&&(g_canopy>0.)&&(g_air>0.))
+            if((gco2.at(i)>0.)&&(g_bl>0.)&&(g_canopy>0.)&&(g_air>0.))
             {
-                gtotOx.at(i) = 1/(1/(gco2.at(i) * a2_stomata)+1/(gm*fw.at(i) ) + 1/(g_bl * a2_bl) + 1/(g_canopy * a2_canopy) + 1/(g_air * a2_air) );
+                gtotOx.at(i) = 1/(1/(gco2.at(i) * a2_stomata)+ 1/(g_bl * a2_bl) + 1/(g_canopy * a2_canopy) + 1/(g_air * a2_air) );
             }else
             {
                 gtotOx.at(i) = 0.;
@@ -684,12 +695,22 @@ void Photosynthesis::loopCalcs(double simTime){
 				*(2.-std::exp(-tauv.at(i)*l)-std::exp(tauv.at(i)*l))) - (rxi + rxj)) ;//cm
 				
 			k_stomatas.at(i) = Jw.at(i)/(this->pg.at(i) - psi_air);
+            double krmesophyll = 0.;
+            int st = this->plant->subTypes.at(i);
+            try {
+                krmesophyll =kr_meso_f(st);
+            } catch(...) {
+                std::cout << "\n Photosynthesis::calcsloop: conductivities failed" << std::flush;
+                std::cout  << " subtype " << st <<std::flush;
+                throw std::runtime_error("Photosynthesis::calcsloop: conductivities failed");
+            }
+            k_leaf.at(i) = 1/(1/(krmesophyll*fwmesophyll.at(i))+1/k_stomatas.at(i));
 			if((verbose_photosynthesis ==2)){
 																				
 				std::cout<<"sizes "<<An.size()<<" "<< gco2.size()<<" "<<ci.size()<<" "<<ci_old.size() <<std::endl;
 
 			}
-            bool erroHappened = (!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)||(fw.at(i)>1)||(fw.at(i)<0);
+            bool erroHappened = (!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)||(fw.at(i)>1)||(fw.at(i)<0)||(this->pg.at(i)>0.);
 			if(erroHappened) {
                 
             std::cout<<(!std::isfinite(this->pg.at(i)))<<" "<<(!std::isfinite(k_stomatas.at(i)))<<" "<<(!std::isfinite(ci.at(i)))<<" "<<(ci.at(i)<0)<<std::endl;
@@ -697,7 +718,10 @@ void Photosynthesis::loopCalcs(double simTime){
 			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J<<" "<<Vcmax.at(i)<<" "<<Kc<<" "<<Ko<<" ";
 			std::cout<<" "<<delta<<" "<<oi<<" "<<eps<<std::endl;
                 std::cout<<"forgeq "<<gco2.at(i) <<" "<< g0<<" "<< g_bl<<" "<< g_canopy<<" "<< g_air<<" "<< R_eq_co2<<" "<<oldciEq<<std::endl;
+                
 			std::cout<<"forgco2 "<< fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd<<" "<< deltagco2.at(i)<<std::endl;
+                std::cout<<"4krleaf "<<krmesophyll<<" "<<fwmesophyll.at(i)<<" "<<k_stomatas.at(i)<<" "<<k_leaf.at(i) <<std::endl;
+                
                 std::cout<<"fw.at(i) "<<fw.at(i)<<" fwtemp "<<fwtemp<<" fwold:"<<fw_old.at(i)<<" very old "<<fw_very_old.at(i)<<" doWhat"<<doWiggle<<" "<<DoSun2012<<" "<<loop<<std::endl;
 			std::cout<<"forJW, Jw "<<Jw.at(i)<<" drout_in "<<(this->pg.at(i) - (rxi + rxj)/2)<<" "<<ea_leaf <<" "<< ea<<" "<<Patm<<" "<<Mh2o<<" "<<rho_h2o <<std::endl;
 			std::cout<<"forpg "<<sideArea <<" "<< Jw.at(i)<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
@@ -723,6 +747,21 @@ void Photosynthesis::loopCalcs(double simTime){
 }
 			   
 
-	/* Computes water-limited growth*/
+// type/subtype dependent
+void Photosynthesis::setKr_meso(std::vector<double> values) {
+    kr_meso = values;
+	if (values.size()==1) {
+        
+			kr_meso_f = std::bind(&Photosynthesis::kr_meso_const, this, std::placeholders::_1);
+			std::cout << "Kr_meso is constant " << values[0] << " day-1 \n";
+		
+	} else {
+    
+			kr_meso_f = std::bind(&Photosynthesis::kr_meso_perOrgType, this, std::placeholders::_1);
+			std::cout << "Kr_meso is constant per leaf subtype, for subtype 1 = " << values[0] << " day-1 \n";
+
+	}
+}	
+
 
 }//end namespace

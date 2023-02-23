@@ -436,8 +436,6 @@ void Photosynthesis::initVcVjRd(){
 		//gco2.resize(seg_leaves_idx.size(), 0.);
 		Jw.resize(seg_leaves_idx.size(), 0.);
 		Ev.resize(seg_leaves_idx.size(), 0.);
-        Vcrefmax = std::vector<double>(seg_leaves_idx.size(), 0.);
-        Jrefmax = std::vector<double>(seg_leaves_idx.size(), 0.);
 		//outputFluxL.resize(seg_leaves_idx.size(), 0.);
 	}
 	double Chl_;
@@ -449,12 +447,12 @@ void Photosynthesis::initVcVjRd(){
 			Chl_ = Chl.at(0);
 		}else{Chl_ = Chl.at(li_);}
 		//prewprint from qian replaced with actuall article
-		Vcrefmax.at(li_) = (VcmaxrefChl1* Chl_ + VcmaxrefChl2)*1e-6 ;//double mol m-2 s-1
+		double Vcrefmax = (VcmaxrefChl1* Chl_ + VcmaxrefChl2)*1e-6 ;//double mol m-2 s-1
 		//std::cout<<Vcrefmax <<" "<< VcmaxrefChl1<<" "<< Chl_ <<" "<< VcmaxrefChl2<<" "<<std::endl;
 		//Vcmax
 		double expo1 = std::exp(Eav /(R_ph*0.1*Tref)*(1. - Tref/TleafK));
 		double expo2 = std::exp((S* TleafK - Edv)/(R_ph*0.1* TleafK));
-		Vcmax.at(li_) = Vcrefmax.at(li_) * expo1 / (1. + expo2); //Eq 11
+		Vcmax.at(li_) = Vcrefmax * expo1 / (1. + expo2); //Eq 11
 		//for Vc
 		//mmol mmol-1 * exp(mJ mmol-1/(hPa cm3K−1mmol−1 *(mJ/(hPa/cm3))*K)*(-))=mmol mmol-1 * exp(-)
 		Ko = Ko_ref * std::exp(Eao/(R_ph*0.1*Tref)*(1.-Tref/TleafK)); //Eq 9
@@ -463,11 +461,11 @@ void Photosynthesis::initVcVjRd(){
 		
 		//electron transport rate
 		//Jrefmax
-		Jrefmax.at(li_) = Vcrefmax.at(li_) * a3 ;//Eq 25
+		double Jrefmax = Vcrefmax * a3 ;//Eq 25
 		//Jmax
 		expo1 = std::exp(Eaj /(R_ph*0.1*Tref)*(1. - Tref/TleafK));
 		expo2 = std::exp((S * TleafK - Edj)/(R_ph *0.1* TleafK));
-		double Jmax = std::min(Jrefmax.at(li_) * expo1 / (1. + expo2), Jrefmax.at(li_)); //Eq 24
+		double Jmax = std::min(Jrefmax * expo1 / (1. + expo2), Jrefmax); //Eq 24
 		//J
 		double coefa = theta;
 		double coefb = -(alpha * Qlight + Jmax);
@@ -648,18 +646,12 @@ void Photosynthesis::loopCalcs(double simTime){
 
 
 			// mol CO2 m-2 s-1
-			gco2.at(i) = g0 + fw.at(i) * ( a1 *( An.at(i) + Rd)/(ci.at(i) - deltagco2.at(i)));//tuzet2003
+			gco2.at(i) = g0 + fw.at(i) *( a1 *( An.at(i) + Rd)/(ci.at(i) - deltagco2.at(i)));//tuzet2003
             
 			// mol H2O m-2 s-1 MPa-1
 			//double k_stomate_1 = (gco2.at(i) * a2) / Patm;
 			//(mol m-2 s-1)*(mmol/mol)*(hPa/hPa) * (mg mmol-1) /(mg cm-3) *(h/d)*(s/h)*(m2 cm-2) =  ( cm3)/d*(cm-2)
-            if((gco2.at(i)>0.)&&(gm*fw.at(i)>0.)&&(g_bl>0.)&&(g_canopy>0.)&&(g_air>0.))
-            {
-                gtotOx.at(i) = 1/(1/(gco2.at(i) * a2_stomata)+1/(gm*fw.at(i) ) + 1/(g_bl * a2_bl) + 1/(g_canopy * a2_canopy) + 1/(g_air * a2_air) );
-            }else
-            {
-                gtotOx.at(i) = 0.;
-            }
+            gtotOx.at(i) = 1/(1/(gco2.at(i) * a2_stomata)+1/gm + 1/(g_bl * a2_bl) + 1/(g_canopy * a2_canopy) + 1/(g_air * a2_air) );
 			//Jw.at(i) = (gco2.at(i) * a2) *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
             Jw.at(i) = gtotOx.at(i) *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24. * 3600 * 1e-4 ;//in cm3 cm-2 d-1
              

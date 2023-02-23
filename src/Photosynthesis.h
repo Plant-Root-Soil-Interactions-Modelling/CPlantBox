@@ -7,7 +7,6 @@
 #include <map>
 #include <iostream>
 #include <fstream>
-
 namespace CPlantBox {
 
 /**
@@ -26,10 +25,10 @@ public:
 	
     std::shared_ptr<CPlantBox::MappedPlant> plant;
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
-	void solve_photosynthesis(double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) , 
+	void solve_photosynthesis(double ea_,double es_, double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) , 
 				bool cells_ = true, std::vector<double> soil_k_ = std::vector<double>(),
-				bool doLog_ = false, int verbose_ = 0, double RH_=0.5, 
-				double TairC_=25); ///< main function, makes looping until convergence
+				bool doLog_ = false, int verbose_ = 0, 
+				double TairC_=25, std::string outputDir_=""); ///< main function, makes looping until convergence
 	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, 
 				const std::vector<double> soil_k_);///< main function, solves the flux equations
 	
@@ -60,17 +59,24 @@ public:
 	std::vector<double> pg;//leaf guard cell water potential [cm]
 	std::vector<double> outputFlux;
 	std::vector<double> fw;
+    std::vector<double> fwmesophyll;
 	std::vector<double> psiXyl4Phloem; //sum of psiXyl + gravitational wat. pot.
 	std::vector<double> gco2;
 	std::vector<double> gtotOx;
+    std::vector<double> kr_meso;
+    //std::vector<double> k_stomatas;
+    std::vector<double> Vcrefmax;std::vector<double> Jrefmax;
     float gm = 0.05; //mesophyll resistance 
     
     
 	//		to evaluate convergence, @see Photosynthesis::getError
 	bool doLog = false; int verbose_photosynthesis = 0;
-    bool oldciEq = false;bool followTrace = false;
-    bool usePg4Fw = false; //keep false or it does not converge I think
-	int maxLoop = 1000; int minLoop = 1;
+    bool oldciEq = true;bool followTrace = false;
+    bool usePg4Fw = true; //keep false or it does not converge I think//
+    bool DoSun2012 = false; bool doWiggle = false;
+    bool alternativeAn = false;
+    bool useVc = true; bool useVj = true;
+	int maxLoop = 1000; int minLoop = 1;std::string outputDir="";
     int loop;double limMaxErr = 1e-4;
 	double maxMaxErr;
 	std::vector<double> maxErr= std::vector<double>(9, 0.);	
@@ -81,6 +87,8 @@ public:
 	std::vector<double> ci_old ;
 	std::vector<double> pg_old ;
 	std::vector<double> k_stomatas_old ;
+	std::vector<double> fw_old ;
+	std::vector<double> fw_very_old ;
 	
 	
 	//			initial guesses
@@ -103,13 +111,15 @@ public:
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
 	double sh = 4e-4;//3.765e-4;//sensibility to water stress
-    
-
 	double p_lcrit = -15000/2;//-0.869;//min psiXil for stomatal opening [Mpa]
+    double fwrmesophyll = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
+	double shmesophyll = 4e-4;//3.765e-4;//sensibility to water stress
+	double p_lcritmesophyll = -15000/2;//-0.869;//min psiXil for stomatal opening [Mpa]
 	//influence of N contant, to reparametrise!, 
 	double VcmaxrefChl1 = 1.28/2;//otherwise value too high, original: 1.31
 	double VcmaxrefChl2 = 8.33/2; //otherwise value too high, original: 8,52
 	//for Vc, Vj, Ag, to reparametrise!
+    double Theta_ag = 0.98;//empirical parameter that governs the transition between Vc, Vj
 	double a1=4.; //g0+ fw[i] * a1 *( An[i] + Rd)/(ci[i] - deltagco2[i]);//tuzet2003
 	double a3 = 1.7;//Jrefmax = Vcrefmax * a3 ;//Eq 25
 	double alpha = 0.2; //or 0.44 , coefb = -(alpha * Qlight + Jmax);, alpha * Qlight * Jmax;
@@ -135,6 +145,10 @@ public:
 	double rho_h2o = 1000;//water density mg cm-3
 	double M_Chla = 893.51;//chlorophyle a molar mass (g / mol)
     
+	//void setKr_meso(std::vector<double> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+    //std::function<double(int)> kr_meso_f = [](int type) {
+		//throw std::runtime_error("kr_meso_f not implemented"); 
+		//return 0.; };
     
 protected:
 	//Compute variables which do not vary during one "solve_photosynthesis " computation
@@ -147,6 +161,11 @@ protected:
 	std::vector<std::shared_ptr<Organ>> orgsVec;
 	std::vector<int> seg_leaves_idx;
     bool stop = false;
+    
+    
+	//double kr_meso_const(  int type) { return kr_meso.at(0); }  //constant
+    //double kr_meso_perOrgType( int type) { return kr_meso.at(type ); } //per organ type (goes from 2 (root) to 4 (leaf))
+    
 
 };
 
