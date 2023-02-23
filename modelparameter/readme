@@ -1,0 +1,12 @@
+CPlantBox parameter XMLs are divided into
+modelparameter/structural 
+modelparameter/functional
+
+modelparameter/structural is divided into 
+plant/ for whole plant parameter sets, and
+rootsystem/ for rootsystem only parameters.
+
+modelparameter/functional contain additional parameter sets 
+(e.g. hydraulic parameters for soil and plants, climate data, ...)
+
+
