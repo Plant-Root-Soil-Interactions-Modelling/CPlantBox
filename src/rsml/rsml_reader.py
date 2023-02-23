@@ -58,10 +58,11 @@ def read_rsml(name:str) -> (list, dict, dict, Metadata):
     name(str): file name of the rsml file
 
     Returns: 
-    (list, dict, dict):
+    (list, dict, dict, Metadata):
     (1) a (flat) list of polylines, with one polyline per root
     (2) a dictionary of properties, one per root, adds "parent_poly" holding the index of the parent root in the list of polylines
-    (3) a dictionary of functions     
+    (3) a dictionary of functions  
+    (4) metadata   
     """
     root = ET.parse(name).getroot()
 

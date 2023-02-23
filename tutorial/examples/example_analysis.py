@@ -1,12 +1,13 @@
 """ analysis and plots a root system """
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
-import numpy as np
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
-import vtk_plot as vp
-from xylem_flux import XylemFluxPython
+from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+import visualisation.vtk_plot as vp
 
-path = "../../../modelparameter/rootsystem/"  # to cplantbox parameter folder
+import numpy as np
+
+path = "../../modelparameter/structural/rootsystem/"
 name = "Moraes2018_dry_2008"  # of xml cplantbox parameter file
 
 simtime = 154

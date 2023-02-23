@@ -1,21 +1,20 @@
 """root system length over time"""
-import sys
-sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
+from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+import visualisation.vtk_plot as vp
+import rsml.rsml_reader as rsml
 
 import numpy as np
 import matplotlib.pyplot as plt
-import rsml_reader as rsml
-import math
-from xylem_flux import XylemFluxPython  # Python hybrid solver
-import vtk_plot as vp
 
 """ Read RSML file and test whether it is OK """
-r = XylemFluxPython("RootSystem.rsml")
+r = XylemFluxPython("../../../dumux-rosi/grids/RootSystem.rsml")
 r.test()  # here you could add the addition of artificial shoot and creation time (using the viewer as template)
 
 """Retrieve information from the RSML file"""
-polylines, props, functions, metadata = rsml.read_rsml("RootSystem.rsml")
+polylines, props, functions, metadata = rsml.read_rsml("../../../dumux-rosi/grids/RootSystem.rsml")
 print(len(polylines), "roots")
 # print(props["parent-poly"])
 # print(props["parent-node"])
@@ -33,15 +32,14 @@ krs = r.get_krs(0.)
 print("Krs: ", krs)
 
 """ eswp for specific soil scenario """
-p_s = np.linspace(-500, -100, 300)   # 3 m down, resolution in cm
-soil_index = lambda x, y, z : int(-1* z)
+p_s = np.linspace(-500, -100, 300)  # 3 m down, resolution in cm
+soil_index = lambda x, y, z: int(-1 * z)
 r.rs.setSoilGrid(soil_index)
-eswp = r.get_eswp(0.,p_s)
-print("eswp: ",eswp)
+eswp = r.get_eswp(0., p_s)
+print("eswp: ", eswp)
 
 """ vtk plot """
 ana = pb.SegmentAnalyser(r.rs)
-ana.addData("suf", suf) 
-#vp.plot_roots(ana, "suf", "Soil uptake fraction (cm3 day)")  # "fluxes"
-
+ana.addData("suf", suf)
+# vp.plot_roots(ana, "suf", "Soil uptake fraction (cm3 day)")  # "fluxes"
 

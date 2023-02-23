@@ -1,13 +1,15 @@
 """ coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled """
-import sys; sys.path.append("../../../"); sys.path.append("../../../src/python_modules/") # cplantbox
-sys.path.append("../../../../dumux-rosi/build-cmake/cpp/python_binding/") # dumux python binding
-sys.path.append("../../../../dumux-rosi/python/modules/") # python wrappers 
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
+sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
+
+import plantbox as pb
+import visualisation.vtk_plot as vp
+from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+from functional.root_conductivities import *  # hard coded conductivities
+
 from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part
-from xylem_flux import XylemFluxPython  # Python hybrid solver
-from root_conductivities import *  # hard coded conductivities
-import plantbox as pb
-import vtk_plot as vp
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,7 +52,7 @@ max_b = [4., 4., 0.]
 cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 periodic = False
 
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 loam = [0.08, 0.43, 0.04, 1.6, 50]
 initial = -659.8 + 12.5  # -659.8
@@ -79,14 +81,14 @@ rs = pb.MappedRootSystem()
 rs.readParameters(path + name + ".xml")
 if not periodic:
     sdf = pb.SDF_PlantBox(0.99 * (max_b[0] - min_b[0]), 0.99 * (max_b[1] - min_b[1]), max_b[2] - min_b[2])
-else :
+else:
     sdf = pb.SDF_PlantBox(np.Inf, np.Inf, max_b[2] - min_b[2])
 rs.setGeometry(sdf)
 r = XylemFluxPython(rs)
 init_conductivities(r, age_dependent)
 
 """ Coupling (map indices) """
-picker = lambda x, y, z : s.pick([x, y, z])
+picker = lambda x, y, z: s.pick([x, y, z])
 r.rs.setSoilGrid(picker)  # maps segments
 r.rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), True)
 
