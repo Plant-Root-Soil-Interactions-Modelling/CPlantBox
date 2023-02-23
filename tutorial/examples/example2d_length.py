@@ -1,12 +1,12 @@
 """root system length over time"""
-import sys
-sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Brassica_napus_a_Leitner_2010"
 
 rs = pb.RootSystem()

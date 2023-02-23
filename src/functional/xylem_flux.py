@@ -1,3 +1,5 @@
+import sys; sys.path.append(".."); sys.path.append("../..");
+
 import timeit
 
 import numpy as np
@@ -7,7 +9,7 @@ import matplotlib.pyplot as plt
 
 import plantbox as pb
 from plantbox import XylemFlux
-import rsml_reader as rsml
+import rsml.rsml_reader as rsml
 
 
 def sinusoidal(t):

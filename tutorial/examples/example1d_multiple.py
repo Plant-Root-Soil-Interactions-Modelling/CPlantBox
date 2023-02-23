@@ -1,10 +1,10 @@
 """multiple root systems"""
-import sys
-sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
-import plantbox as pb
-import vtk_plot as vp
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-path = "../../../modelparameter/rootsystem/"
+import plantbox as pb
+import visualisation.vtk_plot as vp
+
+path = path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_4_Leitner_2014"
 
 simtime = 120

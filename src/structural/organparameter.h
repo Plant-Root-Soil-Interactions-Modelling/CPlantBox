@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-#include "external/tinyxml2/tinyxml2.h"
+#include "tinyxml2.h"
 
 /**
  * This file describes the classes OrganSpecificParameter and OrganRandomParameter.

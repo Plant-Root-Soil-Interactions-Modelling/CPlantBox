@@ -1,12 +1,12 @@
 """root system surface density"""
-import sys
-sys.path.append("../../..")
-sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
 import numpy as np
+
 import matplotlib.pyplot as plt
 
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Brassica_napus_a_Leitner_2010"  # "Crypsis_aculeata_Clausnitzer_1994"
 
 rs = pb.RootSystem()
@@ -25,8 +25,8 @@ for i in range(0, runs):
 
 soilvolume = (depth / layers) * 10 * 10
 rl_ = np.array(rl_) / soilvolume  # convert to density
-rl_mean = np.mean(rl_, axis=0)
-rl_err = np.std(rl_, axis=0) / np.sqrt(runs)
+rl_mean = np.mean(rl_, axis = 0)
+rl_err = np.std(rl_, axis = 0) / np.sqrt(runs)
 
 z_ = np.linspace(0, -depth, layers)  # z - axis
 plt.plot(rl_mean, z_, "b")

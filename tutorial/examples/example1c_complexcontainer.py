@@ -1,14 +1,15 @@
 """"more complex geometries"""
-import sys
-sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
-import vtk_plot as vp
-import math
+import visualisation.vtk_plot as vp
+
+import numpy as np
 
 rs = pb.RootSystem()
 
 # Open plant and root parameter from a file
-path = "../../../modelparameter/rootsystem/"
+path = path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_4_Leitner_2014"
 rs.readParameters(path + name + ".xml")
 
@@ -16,7 +17,7 @@ rs.readParameters(path + name + ".xml")
 r, h, alpha = 20, 4, 45
 rhizotron2 = pb.SDF_PlantContainer(r, r, h, True)
 posA = pb.Vector3d(0, r, -h / 2)  # origin before rotation
-A = pb.Matrix3d.rotX(alpha / 180.*math.pi)
+A = pb.Matrix3d.rotX(alpha / 180.*np.pi)
 posA = A.times(posA)  # origin after rotation
 rotatedRhizotron = pb.SDF_RotateTranslate(rhizotron2, alpha, 0, posA.times(-1))
 

@@ -1,8 +1,9 @@
 """ water movement within the root (static soil) """
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
-from xylem_flux import XylemFluxPython  # Python hybrid solver
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
-import vtk_plot as vp
+import visualisation.vtk_plot as vp
+from functional.xylem_flux import XylemFluxPython
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ simtime = 14  # [day] for task b
 
 """ root system """
 rs = pb.MappedRootSystem()
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")
 rs.initialize()
@@ -45,7 +46,12 @@ plt.title("Xylem matric potential (cm)")
 plt.show()
 
 """ Additional vtk plot """
+print("rx", rx.shape)
+print("fluxes", len(fluxes))
+print("segments", len(rs.getSegments()))
 ana = pb.SegmentAnalyser(r.rs)
+print(len(ana.nodes))
+print(len(ana.segments))
 ana.addData("rx", rx)
 ana.addData("fluxes", np.maximum(fluxes, -1.e-3))  # cut off for vizualisation
 vp.plot_roots(ana, "rx", "Xylem matric potential (cm)")  # "fluxes", subType

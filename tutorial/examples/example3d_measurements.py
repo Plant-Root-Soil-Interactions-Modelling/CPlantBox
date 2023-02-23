@@ -1,6 +1,6 @@
 """ nodes and segments from measurements """
-import sys; sys.path.append("../../..")
-sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
 
 # Data from any source, as Python types

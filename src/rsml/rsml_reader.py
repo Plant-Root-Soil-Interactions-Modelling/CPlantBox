@@ -4,7 +4,7 @@ import matplotlib
 import numpy as np
 from scipy.spatial import distance
 
-from rsml_writer import Metadata
+from rsml.rsml_writer import Metadata
 
 """ 
 RSML Reader, by Daniel Leitner (2019-2021), see also rsml_data.py

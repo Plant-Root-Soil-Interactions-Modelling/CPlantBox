@@ -1,12 +1,10 @@
 """sensitivity analysis: impact of insertion angle on root tip distribution"""
-import sys
-sys.path.append("../../..")
-sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
 
-import math
-from multiprocessing import Pool
 import numpy as np
+from multiprocessing import Pool
 import matplotlib.pyplot as plt
 
 
@@ -22,12 +20,12 @@ def set_all_sd(rs, s):
 
 
 # Parameters
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"
 simtime = 25
 N = 25  # resolution of paramter
 runs = 25  # iterations
-theta0_ = np.linspace(0, math.pi / 2, N)
+theta0_ = np.linspace(0, np.pi / 2, N)
 
 
 # One simulation
@@ -47,7 +45,7 @@ def simulate(i):
     roots = rs.getPolylines()
     for r in roots:
         depth += r[-1].z
-        rad_dist += math.hypot(r[-1].x, r[-1].y)
+        rad_dist += np.hypot(r[-1].x, r[-1].y)
     depth /= len(roots)
     rad_dist /= len(roots)
     return depth, rad_dist

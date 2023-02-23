@@ -1,8 +1,10 @@
 """user defined tropism in python"""
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
-import numpy as np
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
-import vtk_plot as vp
+import visualisation.vtk_plot as vp
+
+import numpy as np
 
 
 class My_Info_Tropism(pb.Tropism):
@@ -39,7 +41,7 @@ class My_Age_Tropism(pb.Tropism):
 
 # set up the root system
 rs = pb.RootSystem()
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 rs.initialize()

@@ -1,12 +1,12 @@
 """analysis of results using signed distance functions"""
-import sys; sys.path.append("../../..")
-sys.path.append("../../../src/python_modules")
-import numpy as np
-import matplotlib.pyplot as plt
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 
-path = "../../../modelparameter/rootsystem/"
+import numpy as np
+import matplotlib.pyplot as plt
+
+path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"  # Zea_mays_1_Leitner_2010, Brassica_napus_a_Leitner_2010
 
 rs = pb.RootSystem()
@@ -35,7 +35,7 @@ ana = pb.SegmentAnalyser(rs)
 ana.cropDomain(20, 20, depth)  # ana.mapPeriodic(20, 20)
 rl_ = []
 axes[0].set_title('All roots in 20*20*100')
-for t in times :
+for t in times:
     ana.filter("creationTime", 0, t)
     rl_.append(ana.distribution("length", 0., -depth, layers, True))
     axes[0].plot(np.array(rl_[-1]) / layerVolume, z_)
@@ -48,7 +48,7 @@ ana.crop(geom)
 ana.pack()
 rl_ = []
 axes[1].set_title('Soil core')
-for t in times :
+for t in times:
     ana.filter("creationTime", 0, t)
     rl_.append(ana.distribution("length", 0., -depth, layers, True))
     axes[1].plot(np.array(rl_[-1]) / layerVolume, z_)

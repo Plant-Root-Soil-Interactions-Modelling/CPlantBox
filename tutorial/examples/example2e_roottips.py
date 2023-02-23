@@ -1,12 +1,12 @@
 """find root tips and bases (two approaches)"""
-import sys
-sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Brassica_napus_a_Leitner_2010"
 
 rs = pb.RootSystem()
@@ -22,8 +22,8 @@ polylines = rs.getPolylines()
 bases = np.zeros((len(polylines), 3))
 tips = np.zeros((len(polylines), 3))
 for i, r in enumerate(polylines):
-    bases[i, :] = [r[0].x, r[0].y, r[0].z]  # first index is the base
-    tips[i, :] = [r[-1].x, r[-1].y, r[-1].z]  # last index is the tip
+    bases[i,:] = [r[0].x, r[0].y, r[0].z]  # first index is the base
+    tips[i,:] = [r[-1].x, r[-1].y, r[-1].z]  # last index is the tip
 
 # Or, use node indices to find tip or base nodes
 nodes = np.array((list(map(np.array, rs.getNodes()))))
@@ -41,5 +41,5 @@ plt.savefig("results/example_2e.png")
 plt.show()
 
  # check if the two approaches yield the same result
-uneq = np.sum(nodes[baseI, :] != bases) + np.sum(nodes[tipI, :] != tips)
+uneq = np.sum(nodes[baseI,:] != bases) + np.sum(nodes[tipI,:] != tips)
 print("Unequal tips and basals:", uneq)

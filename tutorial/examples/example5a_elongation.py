@@ -1,11 +1,13 @@
 """scales the root elongation rate"""
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
-import math
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
-import vtk_plot as vp
+import visualisation.vtk_plot as vp
+
+import numpy as np
 
 rs = pb.RootSystem()
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 

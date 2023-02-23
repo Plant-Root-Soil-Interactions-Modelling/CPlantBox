@@ -1,7 +1,7 @@
 #ifndef EXUDATIONMODEL_H
 #define EXUDATIONMODEL_H
 
-#include "external/gauss_legendre/gauss_legendre.h"
+#include "gauss_legendre/gauss_legendre.h"
 #include "soil.h"
 #include "sdf_rs.h"
 #include "RootSystem.h"

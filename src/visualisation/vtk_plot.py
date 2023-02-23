@@ -1,5 +1,5 @@
 import plantbox as pb
-from vtk_tools import *
+from visualisation.vtk_tools import *
 
 import time
 import numpy as np

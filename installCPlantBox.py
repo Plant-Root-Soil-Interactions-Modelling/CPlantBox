@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-One click install script for dumux-rosi
+One click install script for CPlantBox
 adapted from installdumux.py of the Dumux developers
 """
 import os
@@ -38,7 +38,7 @@ def git_clone(url, branch=None):
 
 
 # clear the log file
-open('installdumux.log', 'w').close()
+open('installCPlantBox.log', 'w').close()
 
 show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n only works for ubuntu >= 20.04")
 
@@ -111,7 +111,7 @@ else:
     os.chdir("..")
 
 
-show_message("(3/3) Step completed. Succesfully configured and built CPlantBox, dune and dumux.")
+show_message("(3/3) Step completed. Succesfully configured and built CPlantBox.")
 
 
-show_message("to test installation, run n\ cd ~/CPB/CPlantBox/tutorial/examples/python \n python3 example1a_small.py")
+show_message("to test installation, run n\ cd ~/CPB/CPlantBox/tutorial/examples/ \n python3 example1a_small.py")

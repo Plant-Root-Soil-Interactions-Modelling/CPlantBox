@@ -4,7 +4,7 @@
 
 #include "mymath.h"
 
-#include "external/tinyxml2/tinyxml2.h"
+#include "tinyxml2.h"
 
 #include <chrono>
 #include <random>
@@ -76,7 +76,7 @@ public:
     virtual std::vector<double> getNodeCTs() const; ///< node creation times, corresponding to Organism::getNodes
     virtual std::vector<Vector2i> getSegments(int ot=-1) const; ///< line segment containing two node indices, corresponding to Organism::getNodes
     virtual std::vector<double> getSegmentCTs(int ot=-1) const; ///< line creation times, corresponding to Organism::getSegments
-	virtual std::vector<int> getSegmentIds(int ot=-1) const; ///< line segment indices, corresponding to Organism::getSegments  
+	virtual std::vector<int> getSegmentIds(int ot=-1) const; ///< line segment indices, corresponding to Organism::getSegments
     virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< points to the organ which contains the segment, corresponding to Organism::getSegments
 
     /* last time step */
@@ -116,16 +116,16 @@ public:
 	double getSeedVal(){return seed_val;}
 	void setStochastic(bool stochastic_){stochastic = stochastic_;}
 	bool getStochastic(){return stochastic;}
-	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism								
+	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
 	virtual bool	hasRelCoord(){return false;} ///< overriden by @Plant::hasRelCoord()
-																			  
+
 
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
     virtual tinyxml2:: XMLElement* getRSMLScene(tinyxml2::XMLDocument& doc) const;
 
-    
+
     static const int numberOfOrganTypes = 5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
 
@@ -140,7 +140,7 @@ protected:
     int rsmlSkip = 0; // skips points
     double minDx = 1.e-6; ///< threshold value, smaller segments will be skipped, otherwise root tip direction can become NaN
 
-	double seed_val;///<value to use as seed, keep in memory to send to tropism			 
+	double seed_val;///<value to use as seed, keep in memory to send to tropism
     std::mt19937 gen;
     std::uniform_real_distribution<double> UD;
     std::normal_distribution<double> ND;

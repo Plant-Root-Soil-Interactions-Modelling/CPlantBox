@@ -3,8 +3,8 @@
 #define XYLEM_FLUX_H_
 
 #include "MappedOrganism.h"
-#include <external/Eigen/Dense>
-#include <external/Eigen/Sparse>
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 namespace CPlantBox {
 

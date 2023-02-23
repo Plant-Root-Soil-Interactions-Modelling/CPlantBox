@@ -1,11 +1,11 @@
 """dgf and vtp, and rsml export example"""
-import sys; sys.path.append("../../..")
-sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
 
 rs = pb.RootSystem()
-path = "../../../modelparameter/rootsystem/"
-name = "wheat"  # "Brassica_napus_a_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"  # "Anagallis_femina_Leitner_2010"  # 
+path = "../../modelparameter/structural/rootsystem/"
+name = "wheat"  # "Brassica_napus_a_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"  # "Anagallis_femina_Leitner_2010"  #
 rs.readParameters(path + name + ".xml")
 
 rhizotron = pb.SDF_PlantBox(7, 7, 14)

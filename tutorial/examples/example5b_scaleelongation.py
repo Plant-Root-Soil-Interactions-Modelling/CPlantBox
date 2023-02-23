@@ -1,11 +1,13 @@
 """Scale root elongation based on EquidistantGrid1D"""
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/python_modules")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
+import visualisation.vtk_plot as vp
+
 import numpy as np
-import vtk_plot as vp
 
 rs = pb.RootSystem()
-path = "../../../modelparameter/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
@@ -29,7 +31,7 @@ anim.min = np.array([-10, -10, -50])
 anim.max = np.array([10, 10, 0.])
 anim.res = np.array([1, 1, 1])
 anim.start()
-
+path = "../../../modelparameter/rootsystem/"
 simtime = 60.
 dt = 0.1  # small, for animation
 for i in range(0, round(simtime / dt)):  # Simulation

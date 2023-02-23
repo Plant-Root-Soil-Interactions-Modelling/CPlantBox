@@ -18,7 +18,7 @@
 #include "soil.h"
 #include "tropism.h"
 #include "growth.h"
-#include "external/tinyxml2/tinyxml2.h"
+#include "tinyxml2.h"
 
 namespace CPlantBox {
 
@@ -61,7 +61,7 @@ public:
   void initialize(bool verbose = true, bool test = false) { initializeLB(verbose, test); };
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
-  void simulate(double dt, bool verbose = false) override; 
+  void simulate(double dt, bool verbose = false) override;
 
   /* call back function creation */
   void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()

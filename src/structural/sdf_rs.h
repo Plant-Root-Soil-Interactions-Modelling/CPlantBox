@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdexcept>
 
-#include "external/aabbcc/AABB.h"
+#include "aabbcc/AABB.h"
 
 #include "sdf.h"
 #include "Organism.h"
