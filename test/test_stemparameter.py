@@ -1,7 +1,8 @@
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
+
 import plantbox as pb
-from rsml_reader import *
+from rsml.rsml_reader import *
 
 
 class TestStemParameter(unittest.TestCase):

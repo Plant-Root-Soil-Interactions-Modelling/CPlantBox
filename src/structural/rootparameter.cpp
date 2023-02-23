@@ -258,7 +258,7 @@ void RootRandomParameter::readXML(tinyxml2::XMLElement* element)
     }
     double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
     if  ((p_<1) && (p_!=0))  {
-        std::cout << "RootRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
+        std::cout << "RootRandomParameter::readXML: Warning! percentages do not add up to 1. \n";
     }
     assert(successor.size()==successorP.size() &&
         "RootTypeParameter::readXML: Successor sub type and probability vector does not have the same size" );

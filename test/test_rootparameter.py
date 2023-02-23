@@ -1,8 +1,8 @@
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import sys
-sys.path.append(".."); sys.path.append("../src/python_modules")
+
 import plantbox as pb
-from rsml_reader import *
+from rsml.rsml_reader import *
 
 
 class TestStemParameter(unittest.TestCase):
@@ -74,15 +74,15 @@ class TestStemParameter(unittest.TestCase):
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
-        self.root_example()        
+        self.root_example()
         rrp = self.rrp  # rename
         rrp.name = "lateral"
         rrp.subType = 2
         rrp.writeXML("root.xml")
         otp2 = pb.RootRandomParameter(self.plant)
         otp2.readXML("root.xml")
-        self.assertEqual(otp2.ldelay, rrp.ldelay, "xml: value unexpected")        
-        self.assertEqual(otp2.ldelays, rrp.ldelays, "xml: value unexpected")        
+        self.assertEqual(otp2.ldelay, rrp.ldelay, "xml: value unexpected")
+        self.assertEqual(otp2.ldelays, rrp.ldelays, "xml: value unexpected")
         self.assertEqual(otp2.name, rrp.name, "xml: value unexpected")
         self.assertEqual(otp2.organType, rrp.organType, "xml: value unexpected")
         self.assertEqual(otp2.subType, rrp.subType, "xml: value unexpected")

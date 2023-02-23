@@ -1,13 +1,15 @@
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
-import numpy as np
 
 import plantbox as pb
+import rsml.rsml_reader as rsml_reader
+import rsml.rsml_writer as rsml_writer
+import visualisation.vtk_tools as vt
+import visualisation.vtk_plot as vp
+
 import matplotlib.pyplot as plt
-import rsml_reader 
-import rsml_writer
-import vtk_tools as vt
-import vtk_plot as vp
+import numpy as np
+
 
 class TestOrganism(unittest.TestCase):
 
@@ -39,7 +41,6 @@ class TestOrganism(unittest.TestCase):
         self.little_finger.addNode(pb.Vector3d(0, 1, 1.6), lf, 3)
         self.little_finger.addNode(pb.Vector3d(0, 1.7, 2.5), 3)
 
-
     def test_rsml_cplantbox(self):
         """ checks cplantbox rmsl writer functionality with Python rsml reader """
         self.hand_example()
@@ -54,11 +55,11 @@ class TestOrganism(unittest.TestCase):
         """ checks vtk_tools rmsl writer functionality, first reading with the Python rsml reader 
         TODO this is not a test, yet
         """
-        pd = vt.read_vtp("Dumux-VTP.vtp")      
+        pd = vt.read_vtp("Dumux-VTP.vtp")
         meta = rsml_writer.Metadata()
         meta.unit = "m"
         meta.add_property(rsml_writer.Property("radius [m]", "float", "m", None))
-        order_id = 5 
+        order_id = 5
         vt.write_rsml("organism2.rsml", pd, order_id, meta)  # meta is optional now
 
 
