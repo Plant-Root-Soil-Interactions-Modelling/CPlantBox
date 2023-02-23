@@ -191,7 +191,7 @@ class Leuning(XylemFluxPython):  # PhloemFlux,
         self.segments = self.get_segments()
         self.seg_radii = np.array(self.rs.radii)
         self.organTypes = np.array(self.rs.organTypes)
-        self.seg_length = np.array(self.segLength())
+        self.seg_length = np.array(self.rs.segLength())
         self.seg_indxs = np.array(self.get_segments_index(4))
         radii_leaf = self.seg_radii[self.seg_indxs]
         length_leaf = self.seg_length[self.seg_indxs]
