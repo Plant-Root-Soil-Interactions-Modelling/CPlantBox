@@ -22,10 +22,10 @@ namespace CPlantBox {
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d iHeading, int pni, bool moved, int oldNON)
- :Organ(id, param, alive, active, age, length, Matrix3d::ons(iHeading), pni, moved,  oldNON )
-{
+     :Organ(id, param, alive, active, age, length, Matrix3d::ons(iHeading), pni, moved,  oldNON )
+      {
     insertionAngle = this->param()->theta;
-}
+      }
 
 
 /**
@@ -41,7 +41,7 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param pni			parent node index
  */
 Root::Root(std::shared_ptr<Organism> rs, int type, Vector3d iHeading_, double delay, std::shared_ptr<Organ> parent, int pni)
-    :Organ(rs, parent, Organism::ot_root, type, delay, Matrix3d::ons(iHeading_), pni) // <- OrganRandomParameter::realize() is called here
+:Organ(rs, parent, Organism::ot_root, type, delay, Matrix3d::ons(iHeading_), pni) // <- OrganRandomParameter::realize() is called here
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
@@ -85,6 +85,7 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
+    // std::cout << "\nstart" << getId() <<  std::flush;
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
@@ -134,11 +135,11 @@ void Root::simulate(double dt, bool verbose)
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
-		length = getLength();
-		this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
-                
+                length = getLength();
+                this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
+
                 // create geometry
-                if (p.laterals ) { // root has children 
+                if (p.laterals ) { // root has children
                     /* basal zone */
                     if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                         if (length+dl<=p.lb) {
@@ -150,36 +151,36 @@ void Root::simulate(double dt, bool verbose)
                             createSegments(ddx,dt_,verbose);
                             dl-=ddx; // ddx already has been created
                             length=p.lb;
-//							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-//								throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
-//							} // this could happen, if the tip ends in this section
+                            //							if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+                            //								throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
+                            //							} // this could happen, if the tip ends in this section
                         }
                     }
                     /* branching zone */
                     if ((dl>0)&&(length>=p.lb)) {
-						double s = p.lb; // summed length
+                        double s = p.lb; // summed length
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
                                 if (i==children.size()) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
-								if(length < s)//because with former check we have (length<=s)
-								{
-									if (length+dl<=s) { // finish within inter-lateral distance i
-										createSegments(dl,dt_,verbose);
-										length+=dl; //- this->epsilonDx;
-										dl=0;
-									} else { // grow over inter-lateral distance i
-										double ddx = s-length;
-										createSegments(ddx,dt_,verbose);
-										dl-=ddx;
-										length=s;
-	//									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-	//										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
-	//									} // this could happen, if the tip ends in this section
-									}
-								}
+                                if(length < s)//because with former check we have (length<=s)
+                                {
+                                    if (length+dl<=s) { // finish within inter-lateral distance i
+                                        createSegments(dl,dt_,verbose);
+                                        length+=dl; //- this->epsilonDx;
+                                        dl=0;
+                                    } else { // grow over inter-lateral distance i
+                                        double ddx = s-length;
+                                        createSegments(ddx,dt_,verbose);
+                                        dl-=ddx;
+                                        length=s;
+                                        //									if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
+                                        //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
+                                        //									} // this could happen, if the tip ends in this section
+                                    }
+                                }
                             }
                         }
                         if (p.ln.size()==children.size()&& (getLength(true)>=s)){
@@ -201,7 +202,7 @@ void Root::simulate(double dt, bool verbose)
             active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
-
+    // std::cout << "end" << getId() << "\n" << std::flush;
 }
 
 /**
@@ -218,10 +219,10 @@ double Root::calcCreationTime(double length, double dt)
     double age_ = calcAge(std::max(length,0.)); // root age as if grown unimpeded (lower than real age)
     double a = std::max(age_, age-dt /*old age*/);
     a = std::min(a, age); // a in [age-dt, age]
-//    if ((a+nodeCTs[0]) > 59.9) { // for debugging
-//    	std::cout << length << " cm, " << dt << ", calcAge " << age_ << ", age-dt " << age-dt << ", " << a+nodeCTs[0] << ", " <<nodeCTs[0] << "\n";
-//    	std::cout << param()->getK() << ", [" << param()->la <<", " << param()->getK()-param()->la-param()->lb<< ", " << param()->lb << "], " << param()->ln.size() << "\n";;
-//    }
+    //    if ((a+nodeCTs[0]) > 59.9) { // for debugging
+    //    	std::cout << length << " cm, " << dt << ", calcAge " << age_ << ", age-dt " << age-dt << ", " << a+nodeCTs[0] << ", " <<nodeCTs[0] << "\n";
+    //    	std::cout << param()->getK() << ", [" << param()->la <<", " << param()->getK()-param()->la-param()->lb<< ", " << param()->lb << "], " << param()->ln.size() << "\n";;
+    //    }
     return a+nodeCTs[0];
 }
 
@@ -260,7 +261,7 @@ std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const
 /**
  * @return Parameters of the specific root
  */
- std::shared_ptr<const RootSpecificParameter> Root::param() const
+std::shared_ptr<const RootSpecificParameter> Root::param() const
 {
     return std::static_pointer_cast<const RootSpecificParameter>(param_);
 }
@@ -274,6 +275,7 @@ std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const
  */
 void Root::createLateral(double dt, bool verbose)
 {
+    //std::cout << "(" << std::flush;
     int lt = getRootRandomParameter()->getLateralType(nodes.back());
     if (lt>0) {
         double ageLN = this->calcAge(getLength(true)); // age of root when lateral node is created
@@ -286,6 +288,7 @@ void Root::createLateral(double dt, bool verbose)
         children.push_back(lateral);
         lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
     }
+    //std::cout << ")" << std::flush;
 }
 
 /**
@@ -328,19 +331,19 @@ void Root::createSegments(double l, double dt, bool verbose)
     int nn = nodes.size();
     if (firstCall) { // first call of createSegments (in Root::simulate)
         firstCall = false;
-		if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)) ) { // don't move a child base node
-            Vector3d n2 = nodes[nn-2];
-            Vector3d n1 = nodes[nn-1];
+        if ((nn>1) && (children.empty() || (nn-1 != std::static_pointer_cast<Root>(children.back())->parentNI)) ) { // don't move a child base node
+            Vector3d n2 = nodes.at(nn-2);
+            Vector3d n1 = nodes.at(nn-1);
             Vector3d h = n1.minus(n2);
             double olddx = h.length(); // length of last segment
-			if (olddx<dx()*0.99) { // shift node instead of creating a new node
+            if (olddx<dx()*0.99) { // shift node instead of creating a new node
                 shiftl = std::min(dx()-olddx, l);
                 double sdx = olddx + shiftl; // length of new segment
                 // Vector3d newdxv = getIncrement(n2, sdx);
                 h.normalize();
-                nodes[nn-1] = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
+                nodes.at(nn-1) = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
                 double et = this->calcCreationTime(getLength(true)+shiftl, dt);
-                nodeCTs[nn-1] = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
+                nodeCTs.at(nn-1) = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
                 if (l<=0) { // ==0 should be enough
@@ -365,12 +368,12 @@ void Root::createSegments(double l, double dt, bool verbose)
             sdx = l-n*dx();
             if (sdx<dxMin()*0.99) { //plant.lock()->getMinDx()) { // quit if l is too small
                 if (verbose&& sdx != 0) {
-					std::cout <<"Root::createSegments(): length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
+                    std::cout <<"Root::createSegments(): length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
                 }
-				this->epsilonDx = sdx;
+                this->epsilonDx = sdx;
                 return;
             }
-			this->epsilonDx = 0; //no residual
+            this->epsilonDx = 0; //no residual
         }
         sl += sdx;
         Vector3d newdx = getIncrement(nodes.back(), sdx);

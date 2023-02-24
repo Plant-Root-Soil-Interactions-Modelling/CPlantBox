@@ -75,7 +75,6 @@ std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<
 std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 {
     assert(dx > dxMin && "RootRandomParameter::realize(): dxMin must be smaller than dx");
-
     auto p = plant.lock();
     double lb_; //define the parameters outside of the if functions:
     double la_;
@@ -99,9 +98,8 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
         int nob_ = std::min(std::max(round(nob1 + nob_sd), 0.), double(nob_real)); // maximal number of branches +1
         int latMissing = nob_real - nob_;
         assert((latMissing >= 0) && "RootRandomParameter::realize(): latMissing < 0");
-        int latExtraMean = floor(latMissing/nob_); // mean number of extra laterals per branching point to keep correct number
+        int latExtraMean = floor(latMissing/nob_real); // mean number of extra laterals per branching point to keep correct number
         int latExtra = latMissing - latExtraMean*(nob_);
-
         for (int j = 0; j<latExtraMean; j++) { //at end of basal zone
             ln_.push_back(0);
         }
@@ -110,6 +108,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
             latExtra--;
         }
         double sum_ln = nob_*ln_mean; // mean length of lateral zone
+
         for (int i = 0; i<nob_-1; i++) { // create inter-root distances
             double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
             double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
@@ -136,12 +135,12 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
 }
 
 /**
- * snaps to the grid, to make it compatible with dx() and dxMin().
+ * snaps to the grid, to make it compatible with dx() and dxMin()
  */
 double RootRandomParameter::snap(double x)
 {
-    double res = x - floor(x / dx)*dx;
-    if(res < dxMin && res != 0) { //make ln compatible with dx() and dxMin().
+    double res = x - floor(x / dx)*dx; // res < dx
+    if ((res < dxMin) && (res != 0)) { //make ln compatible with dx() and dxMin().
         if(res <= dxMin/2){
             x -= res;
         } else {
