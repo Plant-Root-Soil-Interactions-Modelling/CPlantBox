@@ -6,8 +6,7 @@ import scipy.sparse.linalg as LA
 import matplotlib.pyplot as plt
 
 import plantbox as pb
-from plantbox import XylemFlux
-from xylem_flux import XylemFluxPython
+from functional.xylem_flux import XylemFluxPython
 
 
 class HydraulicsDoussan(XylemFluxPython):
