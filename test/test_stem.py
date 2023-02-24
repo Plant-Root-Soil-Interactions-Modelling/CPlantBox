@@ -1,22 +1,23 @@
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
-import numpy as np
+
 import plantbox as pb
-import math
+
+import numpy as np
 
 
-def stemAge(l, r, k,delayNGStart, delayNGEnd, lb):  # stem age at a certain length
-    t= -np.log(1 - l / k) * k / r
+def stemAge(l, r, k, delayNGStart, delayNGEnd, lb):  # stem age at a certain length
+    t = -np.log(1 - l / k) * k / r
     if t > delayNGStart:
-        return t + (delayNGEnd-delayNGStart)
+        return t + (delayNGEnd - delayNGStart)
 
 
-def stemLength(t, r, k,delayNGStart, delayNGEnd,  lb):  # stem length at a certain age
+def stemLength(t, r, k, delayNGStart, delayNGEnd, lb):  # stem length at a certain age
     t_ = t
     if t > delayNGStart:
         if t > delayNGEnd:
             t_ = t - (delayNGEnd - delayNGStart)
-        else :
+        else:
             t_ = delayNGStart
     return k * (1 - np.exp(-r * t_ / k))
 
@@ -33,7 +34,7 @@ class TestStem(unittest.TestCase):
 
     def stem_example_rtp(self, phytomereGrowth = "sequential"):
         """ an example used in the tests below, a main stem with laterals """
-        self.partialiheading = pb.Vector3d.rotAB(0,0)
+        self.partialiheading = pb.Vector3d.rotAB(0, 0)
         self.plant = pb.Plant()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.StemRandomParameter(self.plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin = "main", 1, 10., 10., 100., 1., 1.5, 1, 0.5
@@ -61,7 +62,7 @@ class TestStem(unittest.TestCase):
         # test == True => no need to give root parameter
         self.plant.initialize(verbose = False, test = True)
         paramS = srp.realize()
-        self.seed = self.plant.getSeed()#
+        self.seed = self.plant.getSeed()  #
 
         param0 = p0.realize()  # set up stem by hand (without a stem system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
@@ -73,7 +74,7 @@ class TestStem(unittest.TestCase):
         self.parentstem = parentstem  # store parent (not owned by child Organ)
         self.seed.addChild(self.parentstem)
         self.stem = pb.Stem(self.plant, p0.subType, self.ons, 0, self.parentstem , 0)
-        self.parentstem.addChild(self.stem)                                   
+        self.parentstem.addChild(self.stem)
         self.stem.setOrganism(self.plant)
 
     def stem_length_test(self, dt, l):
@@ -105,9 +106,9 @@ class TestStem(unittest.TestCase):
             str(i + 1) + " " + str(dt[i]) + " " + str(sum(dt[:(i + 1)])) + " " + str(nlth[i]) + " " + str(nl[i]) + " " + str(nl2[i]))
             self.assertAlmostEqual(nl[i], nl2[i], 10, "the two realised lengths do not agree in time step " + str(i + 1))
             self.assertLessEqual(nlth[i] - nl[i], self.p0.dxMin, "epsilonDx is too large in time step " + str(i + 1))
-            self.assertLessEqual(round(max(sd),10), self.p0.dx, "axial resolution dx is too large")
+            self.assertLessEqual(round(max(sd), 10), self.p0.dx, "axial resolution dx is too large")
             # do not take into account first node as relative coordinates == [0,0,0]
-            self.assertLessEqual(self.p0.dxMin, round(min(sd[1:]),10), "axial resolution dx is unexpected small")
+            self.assertLessEqual(self.p0.dxMin, round(min(sd[1:]), 10), "axial resolution dx is unexpected small")
 
     def test_dynamics(self):
         ''' tests if nodes created in last time step are correct '''
@@ -120,7 +121,7 @@ class TestStem(unittest.TestCase):
         self.stem.getOrganism().setRelCoord(False)
         # because of nodal growth, hasMoved() == True for leaves and stems
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
-        
+
         self.plant.abs2rel()
         self.stem.getOrganism().setRelCoord(True)
         r.simulate(1, False)
@@ -128,7 +129,7 @@ class TestStem(unittest.TestCase):
         self.stem.getOrganism().setRelCoord(False)
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         non = r.getNumberOfNodes()
-        
+
         self.plant.abs2rel()
         self.stem.getOrganism().setRelCoord(True)
         r.simulate(20, False)
@@ -137,7 +138,7 @@ class TestStem(unittest.TestCase):
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
         dx = r.getStemRandomParameter().dx
         p = r.param()
-        stemLength_ = stemLength(22, p.r, p.getK(),  p.delayNGStart, p.delayNGEnd, p.lb)  # r.getParameter("length")
+        stemLength_ = stemLength(22, p.r, p.getK(), p.delayNGStart, p.delayNGEnd, p.lb)  # r.getParameter("length")
 
         basalZoneLength = min(r.param().lb, stemLength_)
         basalZoneNodes = np.ceil(basalZoneLength / dx) + 1  # initial node
@@ -194,7 +195,7 @@ class TestStem(unittest.TestCase):
         dt = np.diff(times)
         k = self.stem.param().getK()  # maximal stem length
         self.assertAlmostEqual(k, 100, 12, "example stem has wrong maximal length")
-        l = [stemLength(t, self.p0.r, k,self.p0.delayNGStart, self.p0.delayNGEnd,self.p0.lb) for t in times[1:]]  # analytical stem length
+        l = [stemLength(t, self.p0.r, k, self.p0.delayNGStart, self.p0.delayNGEnd, self.p0.lb) for t in times[1:]]  # analytical stem length
         stem = self.stem.copy(self.plant)
         self.stem_length_test(dt, l)
 
@@ -227,7 +228,7 @@ class TestStem(unittest.TestCase):
             numeric_total = sum(nlth)
             self.assertAlmostEqual(numeric_total, analytic_total, 1,
             "numeric and analytic total lengths do not agree in time step " + str(i) + \
-            "\nnumeric, realized: " + str(nl) + " theoretic: " + str(nlth) + " nob: " + str(len(nl) - 1) + "\nanalytice, main stem: " +\
+            "\nnumeric, realized: " + str(nl) + " theoretic: " + str(nlth) + " nob: " + str(len(nl) - 1) + "\nanalytice, main stem: " + \
             str(l) + " lat: " + str(l1) + " nob: " + str(p.nob()) + \
             "\n" + str(analytic_total) + " " + str(numeric_total))
 
@@ -272,7 +273,7 @@ class TestStem(unittest.TestCase):
         self.stem.getOrganism().setRelCoord(False)
         r = self.stem
         p = r.param()
-        stemLength_th = stemLength(simtime, p.r, p.getK(), p.delayNGStart, p.delayNGEnd,p.lb)
+        stemLength_th = stemLength(simtime, p.r, p.getK(), p.delayNGStart, p.delayNGEnd, p.lb)
         numPhytomeres_th = p.nob() - 1
         basalZoneLength_th = min(r.param().lb, stemLength_th)
         branchingZoneLength_th = stemLength_th - basalZoneLength_th
@@ -298,7 +299,7 @@ class TestStem(unittest.TestCase):
         self.stem.simulate(simtime, False)
         r = self.stem
         p = r.param()
-        stemLength_th = stemLength(simtime, p.r, p.getK(), p.delayNGStart, p.delayNGEnd,p.lb)
+        stemLength_th = stemLength(simtime, p.r, p.getK(), p.delayNGStart, p.delayNGEnd, p.lb)
         numPhytomeres_th = p.nob() - 1
         basalZoneLength_th = min(r.param().lb, stemLength_th)
         branchingZoneLength_th = stemLength_th - basalZoneLength_th

@@ -1,7 +1,8 @@
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
+
 import plantbox as pb
-from rsml_reader import *
+from rsml.rsml_reader import *
 
 
 def rootAge(l, r, k):  # root age at a certain length
@@ -129,7 +130,7 @@ class TestRootSystem(unittest.TestCase):
         seed = 110  # random seed
         name = "Brassica_oleracea_Vansteenkiste_2014"
         rs = pb.RootSystem()  # the original
-        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
+        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
         rs.setSeed(seed)
         rs.initialize(False)
         rs2 = rs.copy()  # copy root system
@@ -142,7 +143,7 @@ class TestRootSystem(unittest.TestCase):
         n2 = rs.rand()
         self.assertEqual(rs2.rand(), n2, "copy: simulation is not deterministic")
         rs3 = pb.RootSystem()  # rebuild same
-        rs3.readParameters("../modelparameter/rootsystem/" + name + ".xml")
+        rs3.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
         rs3.setSeed(seed)
         rs3.initialize(False)
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
@@ -153,7 +154,7 @@ class TestRootSystem(unittest.TestCase):
         """checks if the polylines have the right tips and bases """
         name = "Brassica_napus_a_Leitner_2010"
         rs = pb.RootSystem()
-        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
+        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
         rs.initialize(False)
         rs.simulate(7)  # days young
         polylines = rs.getPolylines()  # Use polyline representation of the roots
@@ -187,7 +188,7 @@ class TestRootSystem(unittest.TestCase):
         """ incremental root system growth like needed for coupling"""
         name = "Anagallis_femina_Leitner_2010"  # "maize_p2"  # "Anagallis_femina_Leitner_2010"  # "Zea_mays_4_Leitner_2014"
         rs = pb.RootSystem()
-        rs.readParameters("../modelparameter/rootsystem/" + name + ".xml")
+        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
         rs.initialize(False)
         simtime = 60  # days
         dt = 1

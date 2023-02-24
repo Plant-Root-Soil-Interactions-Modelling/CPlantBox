@@ -1,10 +1,10 @@
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
-
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import matplotlib.pyplot as plt
 
 import plantbox as pb
-from rsml_reader import *
+from rsml.rsml_reader import *
+
+import matplotlib.pyplot as plt
 
 
 class TestOrganism(unittest.TestCase):

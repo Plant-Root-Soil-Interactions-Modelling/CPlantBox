@@ -1,0 +1,7 @@
+CPlantBox source code 
+
+structural/ 		CPlantBox code describing plant geometry (C++ and Python)
+functional/ 		Functional models (Xylem water movement, StomataModel, Carbon movement, etc.) (C++ and Python)
+rsml/ 				RSML reader and writer (Python)
+visualisation/		Visualization related scripts (Python)
+

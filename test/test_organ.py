@@ -1,5 +1,6 @@
-import unittest
-import sys; sys.path.append("..")import plantbox as pb
+import sys; sys.path.append("..")
+
+import unittestimport plantbox as pb
 
 
 class TestOrgan(unittest.TestCase):

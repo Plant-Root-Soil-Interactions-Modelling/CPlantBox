@@ -1,11 +1,11 @@
-import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-import vtk_plot as vp
-import vtk_tools as vt
+import functional.xylem_flux as xylem_flux
+import visualisation.vtk_plot as vp
+import visualisation.vtk_tools as vt
 from viewer_data import ViewerDataModel
 import viewer_plots
 import viewer_conductivities
-import xylem_flux
 
 import tkinter
 from tkinter import ttk

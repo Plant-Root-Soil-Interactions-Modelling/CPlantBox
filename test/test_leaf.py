@@ -7,14 +7,13 @@ Copyright 2019, Forschungszentrum Jülich GmbH, licensed under GNU GPLv3
 TODO length, area (with no laterals)
 TODO lenght, area (with laterals)
 """
-
+import sys; sys.path.append("..")
 import unittest
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
-import numpy as np
-import matplotlib.pyplot as plt
 
 import plantbox as pb
-import vtk_plot as vp
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def leafAge(l, r, k):  # leaf age at a certain length
@@ -41,31 +40,31 @@ class TestLeaf(unittest.TestCase):
         ons = pb.Matrix3d(pb.Vector3d(0., 0., 1.), pb.Vector3d(0., 1., 0.), pb.Vector3d(1., 0., 0.))
         plant = pb.Plant()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.LeafRandomParameter(plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "leaf", 1, 3.5, 1., 7.5, 3, 1, 0.1   
-          
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "leaf", 1, 3.5, 1., 7.5, 3, 1, 0.1
+
         phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
         l = np.array([3, 2.2, 1.7, 2, 3.5])
         N = 100  # N is rather high for testing
-        p0.createLeafRadialGeometry(phi, l, N)            
+        p0.createLeafRadialGeometry(phi, l, N)
 #         y = np.array([-3, -3 * 0.7, 0., 3.5 * 0.7, 3.5])
 #         l = np.array([0., 2.2 * 0.7, 1.7, 1.8 * 0.7, 0.])
 #         N = 105  # N is rather high for testing
-#         p0.createLeafGeometry(y, l, N)   
-               
-        plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership        
-        plant.setOrganRandomParameter(pb.SeedRandomParameter(plant))       
+#         p0.createLeafGeometry(y, l, N)
+
+        plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
+        plant.setOrganRandomParameter(pb.SeedRandomParameter(plant))
         # because we cannot pass a nullptr to pb.Leaf(...) L48
         param0 = p0.realize()  # set up leaf by hand (without a leaf syleaf)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
         parentleaf = pb.Leaf(1, param0, True, True, 0., 0., ons, 0, False, 0)  # takes ownership of param0
-        parentleaf.setOrganism(plant)     
-        parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python   
+        parentleaf.setOrganism(plant)
+        parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
 
         leaf = pb.Leaf(plant, p0.subType, ons, 0, parentleaf , 0)
         leaf.setOrganism(plant)
         leaf.simulate(7)
-        vp.plot_leaf(leaf)
-        
+        # vp.plot_leaf(leaf)
+
 #         nodes = []
 #         nodes_leaf = []
 #         for i in range(0, leaf.getNumberOfNodes()):
@@ -75,8 +74,8 @@ class TestLeaf(unittest.TestCase):
 #             for n_ in n2:
 #                 print(n_)
 #                 nodes_leaf.append(np.array([n_.x, n_.y, n_.z]))
-#         nodes_leaf = np.array(nodes_leaf)        
-#         nodes = np.array(nodes)        
+#         nodes_leaf = np.array(nodes_leaf)
+#         nodes = np.array(nodes)
 #         print(nodes)
 #         fig = plt.figure()
 #         ax = fig.add_subplot(projection='3d')
@@ -118,12 +117,12 @@ class TestLeaf(unittest.TestCase):
 #         nl, nl2, non, meanDX = [], [], [], []
 #         for t in dt:
 #             for i in range(0, subDt):
-# 
+#
 #                 self.leaf.simulate(t / subDt)
 #             nl.append(self.leaf.getParameter("length"))
 #             non.append(self.leaf.getNumberOfNodes())
 #             meanDX.append(nl[-1] / non[-1])
-# 
+#
 #             # length from geometry
 #             poly = np.zeros((non[-1], 3))  #
 #             for i in range(0, non[-1]):
@@ -139,7 +138,7 @@ class TestLeaf(unittest.TestCase):
 #             self.assertAlmostEqual(l[i], nl2[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
 #             self.assertLessEqual(meanDX[i], 0.5, "axial resolution dx is too large")
 #             self.assertLessEqual(0.25, meanDX[i], "axial resolution dx is unexpected small")
-# 
+#
 #     def test_constructors(self):
 #         """ tests two kinds of constructors and copy"""
 #         self.leaf_example_rtp()
@@ -157,7 +156,7 @@ class TestLeaf(unittest.TestCase):
 #         self.assertEqual(str(leaf), str(leaf3), "deep copy: the organs shold be equal")
 #         self.assertIsNot(leaf.getParam(), leaf3.getParam(), "deep copy: organs have same parameter set")
 #         # TODO check if OTP were copied
-# 
+#
 #     def test_leaf_length(self):
 #         """ tests if numerical leaf length agrees with analytic solutions at 4 points in time with two scales of dt"""
 #         self.leaf_example_rtp()
@@ -170,7 +169,7 @@ class TestLeaf(unittest.TestCase):
 #         self.leaf_length_test(dt, l, 1)  # large dt
 #         self.leaf = leaf
 #         self.leaf_length_test(dt, l, 1000)  # very fine dt
-# 
+#
 #     def test_leaf_length_including_laterals(self):
 #         """ tests if numerical leaf length agrees with analytic solution including laterals """
 #         self.leaf_example_rtp()
@@ -191,7 +190,7 @@ class TestLeaf(unittest.TestCase):
 #         for t in times[1:]:
 #             l1.append(leafLateralLength(t, et, r2, k2))
 #         analytic_total = l + l1
-# 
+#
 #         for subDX in [1, 1000]:
 #             numeric_total = []
 #             for t in times[1:]:
@@ -205,11 +204,11 @@ class TestLeaf(unittest.TestCase):
 #                 self.leaf = leaf
 #             for i in range(0, len(times[1:])):
 #                 self.assertAlmostEqual(numeric_total[i], analytic_total[i], 10, "numeric and analytic total lengths do not agree in time step " + str(i + 1))
-# 
+#
 #     def test_geometry(self):
 #         """ tests if nodes can be retrieved from the organ """
 #         # TODO make plot for plausibility
-# 
+#
 #     def test_parameter(self):
 #         """ tests some parameters on sequential organ list """
 #         self.leaf_example_rtp()
@@ -226,7 +225,7 @@ class TestLeaf(unittest.TestCase):
 #         self.assertEqual(order, [1.0, 2.0, 2.0, 2.0, 2.0], "getParameter: unexpected leaf sub types")  # +1, because of artificial parent leaf
 #         for i in range(0, 5):
 #             self.assertEqual(age[i], 30 - ct[i], "getParameter: unexpected leaf sub types")  # +1, because of artificial parent leaf
-# 
+#
 #     def test_dynamics(self):
 #         """ tests if nodes created in last time step are correct """  #
 #         self.leaf_example_rtp()
@@ -239,7 +238,7 @@ class TestLeaf(unittest.TestCase):
 #         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
 #         r.simulate(2.4, True)
 #         self.assertEqual(r.getNumberOfNodes() - r.getOldNumberOfNodes(), 5, "dynamics: unexcpected number of new nodes")
-#     
+#
 #     def test_leafgrow(self):
 #         """ tests if the leaf can create leaf """  #
 #         self.leaf_example_rtp()

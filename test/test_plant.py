@@ -1,14 +1,16 @@
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import sys; sys.path.append(".."); sys.path.append("../src/python_modules")
+
 import plantbox as pb
-from rsml_reader import *
+from rsml.rsml_reader import *
 
-path = "../modelparameter/plant/"
-
+path = "../modelparameter/structural/plant/"
 
 
 def rootLength(t, r, k):  # root length at a certain age
-    return k * (1 - np.exp(-r * t / k))   
+    return k * (1 - np.exp(-r * t / k))
+
+
 class TestPlant(unittest.TestCase):
 
     def test_CPlantBox(self):
@@ -51,17 +53,17 @@ class TestPlant(unittest.TestCase):
         p.openXML(path + "Heliantus_Pagès_2013.xml")
         p.initialize()
         p.simulate(76)
-        nodes = np.array([np.array(a) / 100 for a in p.getNodes()])  # convert to numpy array, and from cm to m 
-        print(nodes.shape)         
+        nodes = np.array([np.array(a) / 100 for a in p.getNodes()])  # convert to numpy array, and from cm to m
+        print(nodes.shape)
         rseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.root)])  # root system segments
         print(rseg.shape)
         sseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.stem)])  # stem system segments
         print(sseg.shape)
 #         lseg = v2ai(plant.getNodesOrganType())
-        l = np.array([ o.getParameter("organType") for o in p.getSegmentOrigins()])        
+        l = np.array([ o.getParameter("organType") for o in p.getSegmentOrigins()])
         print(l.shape)
-#         plant_ana = pb.SegmentAnalyser(p) 
-#         node_connection_o = seg2a(p.getSegments(15)) # plant segments        
+#         plant_ana = pb.SegmentAnalyser(p)
+#         node_connection_o = seg2a(p.getSegments(15)) # plant segments
         pass
 
     def test_DB_delay(self):
@@ -78,12 +80,13 @@ class TestPlant(unittest.TestCase):
         tl, rl = [], []
         for i, r in enumerate(p.getOrgans(pb.root)):
             rl.append(r.getLength())
-            et, dl = 0, 0 #no delay for basal roots
+            et, dl = 0, 0  # no delay for basal roots
             rsp = r.getParam()
             if rsp.subType > 1:
-                dl = r.getParent().getOrganRandomParameter().ldelay #only works because deviation == 0
+                dl = r.getParent().getOrganRandomParameter().ldelay  # only works because deviation == 0
                 et = r.getParent().getNodeCT(r.parentNI) + dl
-            self.assertAlmostEqual(r.getAge(), (time -et), 10, "numeric and analytic age of root n#" + str(i + 1) +" do not agree")
+            self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
+
 
 if __name__ == '__main__':
     # MANY tests missing !!!

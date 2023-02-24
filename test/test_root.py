@@ -1,8 +1,9 @@
+import sys; sys.path.append(".."); sys.path.append("../src/")
 import unittest
-import sys; sys.path.append("..")
-import numpy as np
+
 import plantbox as pb
-from scipy.linalg import norm
+
+import numpy as npfrom scipy.linalg import norm
 
 
 def rootAge(l, r, k):  # root age at a certain length
@@ -38,13 +39,13 @@ class TestRoot(unittest.TestCase):
         self.plant.setOrganRandomParameter(p1)
         srp = pb.SeedRandomParameter(self.plant)
         self.plant.setOrganRandomParameter(srp)
-        
+
         param0 = p0.realize()  # set up root by hand (without a root system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
         parentroot = pb.Root(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
-        
+
         self.parentroot = parentroot  # store parent (not owned by child Organ)
         self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0)
         self.root.setOrganism(self.plant)
@@ -65,8 +66,8 @@ class TestRoot(unittest.TestCase):
                 poly[i, 0] = v.x
                 poly[i, 1] = v.y
                 poly[i, 2] = v.z
-            d = np.diff(poly, axis=0)
-            sd = np.sqrt((d ** 2).sum(axis=1))
+            d = np.diff(poly, axis = 0)
+            sd = np.sqrt((d ** 2).sum(axis = 1))
             nl2.append(sum(sd))
         for i in range(0, len(dt)):
             self.assertAlmostEqual(l[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
@@ -126,9 +127,9 @@ class TestRoot(unittest.TestCase):
 
         for t in times[1:]:
             l1.append(rootLateralLength(t, et, r2, k2))
-            
+
         analytic_total = l + l1
-     
+
         for subDX in [1, 1000]:
             numeric_total = []
             for t in times[1:]:
@@ -147,7 +148,7 @@ class TestRoot(unittest.TestCase):
         """ tests some parameters on sequential organ list """
         self.root_example_rrp()
         simtime = 30.
-        self.root.simulate(simtime, False)        
+        self.root.simulate(simtime, False)
         organs = self.root.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
         for o in organs:
@@ -156,7 +157,7 @@ class TestRoot(unittest.TestCase):
             ct.append(o.getParameter("creationTime"))
             radius.append(o.getParameter("radius"))
             order.append(o.getParameter("order"))
-        
+
         nol = round(self.root.getParameter("numberOfLaterals"))
         type_ = [1.]
         type_.extend([2.] * nol)
@@ -164,17 +165,17 @@ class TestRoot(unittest.TestCase):
         self.assertEqual(order, type_, "getParameter: unexpected root order")  # +1, because of artificial parent root
         for i in range(0, nol):
             # print(i, nol, age[i], simtime - ct[i])
-            self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree") 
+            self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree")
 
     def test_dynamics(self):
-        """ tests if nodes created in last time step are correct """  
+        """ tests if nodes created in last time step are correct """
         self.root_example_rrp()
         r = self.root
         r.simulate(.5, False)
         self.assertEqual(r.hasMoved(), False, "dynamics: node is creaetd during first step")
-        r.simulate(1e-1, False)        
+        r.simulate(1e-1, False)
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
-        non = r.getNumberOfNodes() 
+        non = r.getNumberOfNodes()
         r.simulate(2.4, False)
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
         dx = r.getRootRandomParameter().dx
@@ -189,12 +190,12 @@ class TestRoot(unittest.TestCase):
         p0.successorP = [1.]
         p1 = pb.RootRandomParameter(self.plant)
         p1.name, p1.subType, p1.lmax, p1.r, p1.dx = "lateral", 2, 2., 2., 2.
-        
+
         self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
         self.plant.setOrganRandomParameter(p1)
         srp = pb.SeedRandomParameter(self.plant)
         self.plant.setOrganRandomParameter(srp)
-        
+
         print("root p0, initial parameters: lmax = ", p0.lmax, ", lb = ", p0.lb, ", la = ", p0.la, ", ln = ", p0.ln)
         param0 = p0.realize()  # set up root by hand (without a root system)
         print("root p0, realized parameters: lmax = ", sum((sum(param0.ln), param0.lb, param0.la)), ", lb = ", param0.lb, ", la = ", param0.la, ", mean ln = ", np.mean(param0.ln))
@@ -206,17 +207,17 @@ class TestRoot(unittest.TestCase):
             print(param0.la % p0.dx)
         if(any([(lni % p0.dx > 0 and  lni % p0.dx < p0.dxMin * 0.99) for lni in param0.ln])):
             print("ln value does not fit with dx and dxMin")
-            
+
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
         parentroot = pb.Root(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.addNode(pb.Vector3d(0, 0, -1), 0)  # there is no nullptr in Python
-        
+
         self.parentroot = parentroot  # store parent (not owned by child Organ)
         self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0, 0)
         self.root.setOrganism(self.plant)
         self.p0 = p0
-        
+
     def root_dxMin_test(self, dt):
         """ simulates a single root and checks length against analytic length """
         self.root_example_rrp2()
@@ -234,7 +235,7 @@ class TestRoot(unittest.TestCase):
             nl.append(self.root.getParameter("length"))
             l_th = rootLength(tot_dt, self.p0.r, k)  # analytical root length
             res = l_th % self.p0.dx
-            
+
             if(res < self.p0.dxMin * 0.99):
                 l_th -= res
             nl_th.append(l_th)
@@ -246,7 +247,7 @@ class TestRoot(unittest.TestCase):
                 poly[i, 0] = v.x
                 poly[i, 1] = v.y
                 poly[i, 2] = v.z
-            d = np.diff(poly, axis=0)
+            d = np.diff(poly, axis = 0)
             length_segments = np.array([round(norm(di), 6) for di in d])
             if(np.min(length_segments) < self.p0.dxMin * 0.99):
                 print("minimum segment length ", np.min(length_segments), " below dxMin ", self.p0.dxMin)
@@ -254,7 +255,7 @@ class TestRoot(unittest.TestCase):
                 print("maximum segment length ", np.max(length_segments), " above dx ", self.p0.dx)
             if(len(np.where(ln <= (l_th - effectiveLa))[0]) != self.root.getParameter("numberOfLaterals")):
                 print("\n\n\nnumeric and analytic number of laterals different: ", ln, l_th , effectiveLa, l_th - effectiveLa, len(np.where(ln <= (l_th - effectiveLa))[0]), self.root.getParameter("numberOfLaterals"))
-            
+
         for i in range(0, len(dt)):
             self.assertAlmostEqual(nl_th[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
         print("end of test")

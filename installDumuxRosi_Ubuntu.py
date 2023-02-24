@@ -17,7 +17,7 @@ def show_message(message):
 
 
 def run_command(command):
-    with open("../installdumux.log", "a") as log:
+    with open("../installDumuxRosi.log", "a") as log:
         popen = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         for line in popen.stdout:
             log.write(line)
@@ -45,7 +45,7 @@ def git_clone(url, branch=None):
 
 
 # clear the log file
-open('installdumux.log', 'w').close()
+open('installDumuxRosi.log', 'w').close()
 
 show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n only works for ubuntu >= 20.04")
 

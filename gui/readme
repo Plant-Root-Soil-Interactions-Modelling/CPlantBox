@@ -1,0 +1,5 @@
+Applications that come with a GUI
+
+viewer			RSML viewer (run $python3 rsml_viewer.py)
+estimate 		tool for estimating root parameters from 2d images (run $python3 estimate.py)
+
