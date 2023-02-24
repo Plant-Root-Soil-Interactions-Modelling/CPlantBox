@@ -1,6 +1,6 @@
-import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
-import vtk_plot as vp
+import visualisation.vtk_plot as vp
 from estimate_data import EstimateDataModel
 import estimate_plots
 
@@ -125,7 +125,7 @@ class App:
             ttk.Label(lf_basal_params, textvariable = self.label_basal_params_r[-1], anchor = "w", width = 50).grid(column = 1, row = 0)
         # tab_plant_parameters
         self.label_plant_params_l, self.label_plant_params_r = [], []
-        names_ = 'Plant parameters [mean, sd]'  
+        names_ = 'Plant parameters [mean, sd]'
         lf_plant_params = ttk.LabelFrame(tab_plant_params, text = names_)
         lf_plant_params.grid(column = 0, row = 1, padx = 20, pady = 10)
         self.label_plant_params_l = tkinter.StringVar()
@@ -215,7 +215,7 @@ class App:
         # double ldelay = 1.;     ///< Lateral root emergence delay [day], only used by RootDelay, @see RootDelay, RootSystem::initializeDB
         # double ldelays = 0.;     ///< Standard deviation of lateral root emergence delay [day]
         return rstr
-    
+
     def pparameters_pstr_(self):
         srp = self.data.pparameters
         pstr = "\n\n[{:g}, {:g}]\n[{:g}, {:g}]\n[{:g}, {:g}]\n\n".format(srp.delayB, srp.delayBs, srp.firstB, srp.firstBs, srp.maxB, srp.maxBs)
@@ -225,7 +225,7 @@ class App:
     def update_parameters_tap(self):
         """ update first parameter tap """
         for i in range(0, len(self.label_basal_params_l)):
-        #for i in range(0, np.max(self.data.orders)+1):
+        # for i in range(0, np.max(self.data.orders)+1):
             lstr = "\nInitial growth rate [cm day-1]\nMaximal root length [cm]\n\n"
             lstr += "Basal zone [cm]\nApical zone [cm]\nInter-lateral distance [cm]\n\n"
             lstr += "Root radius [cm]\nAngle between root and parent root [deg]\n"
@@ -241,7 +241,7 @@ class App:
 
     def update_all(self, event = None):
         """ updates the view """
-        #if self.data.exists():
+        # if self.data.exists():
         if self.data:
             self.parse_gui()
             self.update_info()
