@@ -19,9 +19,10 @@ class PerirhizalPython(Perirhizal):
 
     def get_default_volumes_(self):
         """ returns the volumes of a rectangular grid (default) """
+        ms = self.ms  # rename
         width = ms.maxBound.minus(ms.minBound)
         vol = width.x * width.y * width.z / ms.resolution.x / ms.resolution.y / ms.resolution.z
-        return np.ones((ms.resolution.x * ms.resolution.y * ms.resolution.z,)) * vol
+        return np.ones((int(ms.resolution.x * ms.resolution.y * ms.resolution.z),)) * vol
 
     def get_density(self, type:str, volumes:list = []):
         """ retrives length, surface or volume density
@@ -39,14 +40,15 @@ class PerirhizalPython(Perirhizal):
             raise
         if not volumes:
             volumes = self.get_default_volumes_()
-        cell2seg = self.cell2seg
-        l = self.segLength()
-        n = np.max(cell2seg.keys())
+        cell2seg = self.ms.cell2seg
+        l = self.ms.segLength()
+        radii = self.ms.radii
+        n = max(cell2seg.keys()) + 1  # index is starting at 0
         d = np.zeros((n,))
         for i in range(0, n):
             if i in cell2seg:
                 for si in cell2seg[i]:
-                    d[i] += f(self.radii[si], l[si])
+                    d[i] += f(radii[si], l[si])
         return np.divide(d, volumes)  # cm/cm3, cm2/cm3, or cm3/cm3
 
     def get_outer_radii(self, type:str, volumes:list = []):
