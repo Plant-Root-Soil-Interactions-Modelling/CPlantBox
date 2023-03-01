@@ -37,6 +37,7 @@ add_library(CPlantBox SHARED
 			
             functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp
+			functional/Perirhizal.cpp
             
 			external/tinyxml2/tinyxml2.cpp		
 			external/aabbcc/AABB.cc
@@ -154,6 +155,7 @@ pybind11_add_module(plantbox SHARED
             
             functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp            
+			functional/Perirhizal.cpp    
             
 			external/tinyxml2/tinyxml2.cpp		
 			external/aabbcc/AABB.cc
