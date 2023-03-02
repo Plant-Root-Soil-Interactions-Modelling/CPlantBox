@@ -114,4 +114,4 @@ else:
 show_message("(3/3) Step completed. Succesfully configured and built CPlantBox.")
 
 
-show_message("to test installation, run n\ cd ~/CPB/CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
+show_message("to test installation, run n\ cd CPB/CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
