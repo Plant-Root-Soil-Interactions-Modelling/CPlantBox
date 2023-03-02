@@ -77,9 +77,6 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         } else {
             psi_s = sx.at(si); // j-1 = segIdx = s.y-1
         }
-        if((organType == Organism::ot_leaf)&(pg.size()>numleaf)){
-					psi_s = pg.at(numleaf);
-				}
         double a = rs->radii[si]; // si is correct, with ordered and unordered segmetns
         double age = simTime - rs->nodeCTs[j];
         int subType = rs->subTypes[si];
@@ -234,9 +231,6 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         } else {
             psi_s = sx.at(si); // j-1 = segIdx = s.y-1
         }
-        if((organType == Organism::ot_leaf)&(pg.size()>numleaf)){
-					psi_s = pg.at(numleaf);
-				}
 
 
         double a = rs->radii[si]; // si is correct, with ordered and unordered segments

@@ -71,7 +71,6 @@ public:
 
     double psi_air = -954378; // air water potential [cm] for T = 20°C and RH = 0.5
 	std::vector<double> k_stomatas;//stomatal radial conductance for Photosynthesis
-	std::vector<double> pg;//stomatal radial conductance for Photosynthesis
     
 	
 protected:

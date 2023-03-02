@@ -56,7 +56,7 @@ public:
 	std::vector<double> PVD;
 	std::vector<double> EAL;
 	std::vector<double> hrelL;
-	//std::vector<double> pg;//leaf guard cell water potential [cm]
+	std::vector<double> pg;//leaf guard cell water potential [cm]
 	std::vector<double> outputFlux;
 	std::vector<double> fw;
     std::vector<double> fwmesophyll;

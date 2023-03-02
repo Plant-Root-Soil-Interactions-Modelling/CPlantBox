@@ -36,7 +36,7 @@ Photosynthesis::Photosynthesis(std::shared_ptr<CPlantBox::MappedPlant> plant_, d
 	EAL.resize(seg_leaves_idx.size(), 0.);
     gtotOx.resize(seg_leaves_idx.size(), 0.);
 											  
-	//k_stomatas.resize(seg_leaves_idx.size(), 0.);
+	k_stomatas.resize(seg_leaves_idx.size(), 0.);
 										  
 	//std::cout<<"segleafnum "<<seg_leaves_idx.size()<<std::endl;
 }
@@ -109,7 +109,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
     {
         throw std::runtime_error("Photosynthesis::solve_photosynthesis : (RH_>=1)||(RH_<=0)");
     }
-	this->psi_air = std::log(RH_) * rho_h2o * R_ph * (this->TairC + 237.3)/Mh2o * (1/0.9806806)  +200; //in cm psi air at 2m
+	this->psi_air = std::log(RH_) * rho_h2o * R_ph * (this->TairC + 237.3)/Mh2o * (1/0.9806806)  ; //in cm
 	assert(((plant->kr_length < 0)||(plant->exchangeZoneCoefs.size()==plant->segments.size()))&&"(plant->exchangeZoneCoefs.size()==plant->segments.size()) while kr_length >0");
 	//		creat first guesses arrays + "old" values
 	psiXyl.resize( plant->nodes.size(), psiXylInit);//-500
@@ -122,7 +122,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	EAL= std::vector<double>( seg_leaves_idx.size(), 0.);
 	gtotOx= std::vector<double>( seg_leaves_idx.size(), 0.);
 															 
-	//k_stomatas.resize( seg_leaves_idx.size(), 0.);
+	k_stomatas.resize( seg_leaves_idx.size(), 0.);
 	fw_old= std::vector<double>( seg_leaves_idx.size(), -1.);
 	fw_very_old= std::vector<double>( seg_leaves_idx.size(), -1.);
 														 
@@ -131,14 +131,14 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	An_old = An; gco2_old = gco2; ci_old = ci;
 	outputFlux_old.resize(psiXyl.size(), 0.);
 	outputFlux.resize(plant->segments.size(), 0.);
-	psiXyl_old = psiXyl; pg_old = pg; //k_stomatas_old = k_stomatas;
+	psiXyl_old = psiXyl; pg_old = pg; k_stomatas_old = k_stomatas;
 	
 	k_stomatas.clear();//to not take k_stomatas into account in @Photosynthesis::initCalcs
 	assert(k_stomatas.empty() &&"Photosynthesis::initStruct: k_stomatas not empty");
 	
 	//		compute parameters which do not change between the loops
 	initCalcs(sim_time_);
-	//k_stomatas = k_stomatas_old ;											
+	k_stomatas = k_stomatas_old ;											
     		
 	if(followTrace)
         {
@@ -180,8 +180,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 		this->stop = ((loop > maxLoop) || ((maxMaxErr < limMaxErr)&&(loop>minLoop)));//reached convergence or max limit of loops?
 		if(!this->stop){
 			outputFlux_old = outputFlux;
-			//k_stomatas_old = k_stomatas; 
-            ci_old = this->ci; pg_old = this->pg;
+			k_stomatas_old = k_stomatas; ci_old = this->ci; pg_old = this->pg;
 			psiXyl_old = this->psiXyl; An_old = this->An; gco2_old = this->gco2;
 			fw_very_old = fw_old; fw_old = fw;
 		}
@@ -332,13 +331,13 @@ void Photosynthesis::getError(double simTime)
 		
 		//	if(doLog){myfile1 <<"in if(plant->organTypes[i] == 4){"<<std::endl;} }
 		
-		//if(this->k_stomatas[i] !=0){tempVal=std::min(std::abs(this->k_stomatas[i]),std::abs(this->k_stomatas_old[i])) ;}else{tempVal=1.;}
-		maxErr[6] =0;//std::max(std::abs((this->k_stomatas[i]-k_stomatas_old[i])/tempVal),maxErr[6]);
+		if(this->k_stomatas[i] !=0){tempVal=std::min(std::abs(this->k_stomatas[i]),std::abs(this->k_stomatas_old[i])) ;}else{tempVal=1.;}
+		maxErr[6] =std::max(std::abs((this->k_stomatas[i]-k_stomatas_old[i])/tempVal),maxErr[6]);
 		if(doLog){
 			myfile1 <<i<<" "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
-			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;//<<" ks: ";
-			//myfile1 << k_stomatas[i]<<" ksold: "<< k_stomatas_old[i] <<std::endl;
+			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<" ks: ";
+			myfile1 << k_stomatas[i]<<" ksold: "<< k_stomatas_old[i] <<std::endl;
 		}
 		assert(!std::isnan(pg[i]) && "Photosynthesis psi old guard cell is nan");
 		assert(!std::isnan(pg_old[i]) && "Photosynthesis psi old guard cell is nan");
@@ -546,11 +545,9 @@ void Photosynthesis::loopCalcs(double simTime){
 					
 			if(doLog ){myfile4<<"new rxj "<<plant->segments.at(idl).y<<" "<< vz <<" "<<rxj<<std::endl;}
 		}
-        auto n1 = plant->nodes[plant->segments.at(idl).x].z;
-        auto n2 = plant->nodes[plant->segments.at(idl).y].z;
 		double p_lhPa =(rxi + rxj)*0.5*0.9806806;// cm => hPa
 		//(mg mmol-1)* hPa /((hPa cm3K−1mmol−1) mg cm-3 K) =(-)
-		double HRleaf = std::exp(Mh2o*(this->pg.at(i) + (n1+n2)/2)*0.9806806 /(rho_h2o*R_ph*TleafK)) ;//fractional relative humidity in the intercellular spaces
+		double HRleaf = std::exp(Mh2o*this->pg.at(i)*0.9806806 /(rho_h2o*R_ph*TleafK)) ;//fractional relative humidity in the intercellular spaces
 		//double ea = es - VPD;
 		double ea_leaf = es * HRleaf;//hPa
         
@@ -562,7 +559,7 @@ void Photosynthesis::loopCalcs(double simTime){
 			//fw (-)
             if(usePg4Fw)
             {
-                p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
+                p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa
             }
 			//fw.at(i) = fwr + (1.- fwr)*std::exp(-std::exp(-sh*(p_lhPa*0.0001 - p_lcrit)*10228.)) ;//Eq 5
             fw.at(i) = fwr + (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa)));
@@ -686,16 +683,16 @@ void Photosynthesis::loopCalcs(double simTime){
 			this->pg.at(i) = (-1/2.)*((Ev.at(i))/(-fv.at(i)*(1./(tauv.at(i)*dv.at(i)))
 				*(2.-std::exp(-tauv.at(i)*l)-std::exp(tauv.at(i)*l))) - (rxi + rxj)) ;//cm
 				
-			//k_stomatas.at(i) = Jw.at(i)/(this->pg.at(i) - psi_air);
+			k_stomatas.at(i) = Jw.at(i)/(this->pg.at(i) - psi_air);
 			if((verbose_photosynthesis ==2)){
 																				
 				std::cout<<"sizes "<<An.size()<<" "<< gco2.size()<<" "<<ci.size()<<" "<<ci_old.size() <<std::endl;
 
-			}//||(!std::isfinite(k_stomatas.at(i)))<<" "<<(!std::isfinite(k_stomatas.at(i)))
-            bool erroHappened = (!std::isfinite(this->pg.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)||(fw.at(i)>1)||(fw.at(i)<0);
+			}
+            bool erroHappened = (!std::isfinite(this->pg.at(i)))||(!std::isfinite(k_stomatas.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)||(fw.at(i)>1)||(fw.at(i)<0);
 			if(erroHappened) {
                 
-            std::cout<<(!std::isfinite(this->pg.at(i)))<<" "<<(!std::isfinite(ci.at(i)))<<" "<<(ci.at(i)<0)<<std::endl;
+            std::cout<<(!std::isfinite(this->pg.at(i)))<<" "<<(!std::isfinite(k_stomatas.at(i)))<<" "<<(!std::isfinite(ci.at(i)))<<" "<<(ci.at(i)<0)<<std::endl;
 			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl;
 			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J<<" "<<Vcmax.at(i)<<" "<<Kc<<" "<<Ko<<" ";
 			std::cout<<" "<<delta<<" "<<oi<<" "<<eps<<std::endl;
