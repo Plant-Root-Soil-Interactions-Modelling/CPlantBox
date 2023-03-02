@@ -45,7 +45,7 @@ def plot_plant(plant, p_name, render = True):
 
     leafes = plant.getOrgans(pb.leaf)
     for l in leafes:
-        create_leaf(l, leaf_points, leaf_polys)
+        create_leaf_(l, leaf_points, leaf_polys)
 
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
@@ -64,7 +64,8 @@ def plot_plant(plant, p_name, render = True):
     return [tube_plot_actor, actor], color_bar
 
 
-def create_leaf(leaf, leaf_points, leaf_polys):
+def create_leaf_(leaf, leaf_points, leaf_polys):
+    """ used by plot plant """
     offs = leaf_points.GetNumberOfPoints()
 
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
@@ -108,6 +109,7 @@ def create_leaf(leaf, leaf_points, leaf_polys):
 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
+    """ used by create_leaf_ """
     q = vtk.vtkPolygon()
     q.GetPointIds().SetNumberOfIds(4)
     for j in range(0, 4):
@@ -123,10 +125,10 @@ def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
 
 def solver_to_polydata(solver, min_, max_, res_):
     """ Creates vtkPolydata from dumux-rosi solver as a structured grid
-    @param solver
-    @param min_
-    @param max_
-    @param res_
+    @param solver      dumux-rosi solver (RichardsSP, or RichardsNCSP)
+    @param min_        minimum of bounding box
+    @param max_        maximum of bounding box
+    @param res_        resolution, number of cells
     """
     pd = uniform_grid(min_, max_, res_)
     data = solver.getSolutionHead()
@@ -230,16 +232,17 @@ def render_window(actor, title, scalarBar, bounds):
         ren.AddActor(a)  # Add the actors to the renderer, set the background and size
 
     if scalarBar:
-#         if isinstance(scalarBar, list):
-#             c = 0.
-#             for sb in scalarBar:  # TODO looks awful
-#                 x = sb.GetPosition()
-#                 y = (x[0] + c, x[1])
-#                 sb.SetPosition(y)
-#                 ren.AddActor2D(sb)
-#                 c -= 0.2
-#         else:
-        ren.AddActor2D(scalarBar)
+        if not isinstance(scalarBar, list):
+            scalarBar = [scalarBar]
+        n = len(scalarBar)
+        height = (0.9 / n)
+        width = 0.1
+        for i, sb in enumerate(scalarBar):
+            y = (0.85, 0.1 + i * height)
+            sb.SetHeight(0.9 * height)
+            sb.SetWidth(width)
+            sb.SetPosition(y)
+            ren.AddActor2D(sb)
 
     axes = vtk.vtkAxesActor()
     axes.AxisLabelsOff()  # because i am too lazy to change font size
@@ -450,8 +453,7 @@ def plot_mesh(grid, p_name, win_title = "", render = True):
     mapper = vtk.vtkDataSetMapper()
     mapper.SetInputData(grid)
     mapper.Update()
-    # mapper.SetArrayName(p_name)
-    mapper.SelectColorArray(p_name)  # ? to choosvtkScalarBarActore cell data or point data
+    mapper.SelectColorArray(p_name)
     mapper.UseLookupTableScalarRangeOn()
     meshActor = vtk.vtkActor()
     meshActor.SetMapper(mapper)
@@ -524,54 +526,11 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True):
     return actors, scalar_bar
 
 
-def plot_mesh_yz(s, p_name , min_b, max_b, cell_number, x = -4, render = False):
-    """ TODO """
-    grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
-    soil_water_content = vtk_data(np.array(s.getWaterContent()))
-    soil_water_content.SetName("water content")
-    grid.GetCellData().AddArray(soil_water_content)
-    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
-    soil_pressure.SetName("pressure head")  # in macroscopic soil
-    grid.GetCellData().AddArray(soil_pressure)
-    bounds = grid.GetBounds()
-    p = vtk.vtkPlane()
-    p.SetOrigin(x, 0, 0)
-    p.SetNormal(1, 0, 0)
-
-    lut = create_lookup_table()
-    scalar_bar = create_scalar_bar(lut, grid, p_name)
-
-    actors = []  # create cutter, mappers, and actors
-    cutter = vtk.vtkCutter()
-    cutter.SetInputData(grid)
-    # cutter.SetInputConnection(tubeFilter.GetOutputPort()) # for root system (tube plot)
-    cutter.SetCutFunction(p)
-    cutter.Update()
-    m = vtk.vtkDataSetMapper()
-    m.SetInputConnection(cutter.GetOutputPort())
-    m.Update()
-    m.SetArrayName(p_name)
-    m.SelectColorArray(p_name)
-    m.UseLookupTableScalarRangeOn()
-    m.SetLookupTable(lut)
-    m.SetColorModeToMapScalars();
-    a = vtk.vtkActor()  # create plane actor
-#         a.GetProperty().SetColor(1.0, 1, 0)
-#         a.GetProperty().SetLineWidth(2)
-    a.SetMapper(m)
-    actors.append(a)
-
-    if render:
-        render_window(actors, win_title, scalar_bar, grid.GetBounds()).Start()
-
-    return actors, scalar_bar, grid
-
-
-def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str, sol_ind = 0):
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
-    @param s
+    @param s             soil, of type RichardsSP, or RichardsNCSP
     @param rp            root parameter segment data (will be added)
     @param periodic      if yes the root system will be mapped into the domain
     @param min_b         minimum of domain boundaries
@@ -602,11 +561,42 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
 
     rootActor, rootCBar = plot_roots(pd, pname, "", False)
     meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
-    lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
-    rootActor.GetMapper().SetLookupTable(lut)
     meshActors.extend([rootActor])
-    render_window(meshActors, filename, meshCBar, pd.GetBounds()).Start()
+    render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds()).Start()
 
+    if filename:
+        path = "results/"
+        write_vtp(path + filename + ".vtp", pd)
+        write_vtu(path + filename + ".vtu", soil_grid)
+
+
+def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = ""):
+    """ Plots soil slices and roots, additionally saves both grids as files
+    @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
+    @param pname_root    root parameter that will be visualized 
+    @param mesh          vtk grid
+    @param pname_mesh    name of grid cell data array that will be visualized 
+    @param periodic      if yes the root system will be mapped into the domain
+    @param xx, yy        witdh and height of periodic domain    
+    @param filename      file name (without extension)
+    
+    how to add data to a vtk grid: 
+    
+    celldata = vtk.vtkDoubleArray()
+    celldata.SetName("data")
+    celldata.SetNumberOfValues(n)
+    for j in range(0, n):
+        celldata.SetValue(j, data[j])
+    grid.GetCellData().AddArray(celldata)    
+    """
+    ana = pb.SegmentAnalyser(rs)
+    if periodic:
+        ana.mapPeriodic(xx, yy)
+    pd = segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", pname_root])
+    rootActor, rootCBar = plot_roots(pd, pname_root, "", False)
+    meshActors, meshCBar = plot_mesh_cuts(mesh, pname_mesh, 7, "", False)
+    meshActors.extend([rootActor])
+    render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds()).Start()
     if filename:
         path = "results/"
         write_vtp(path + filename + ".vtp", pd)
@@ -646,7 +636,7 @@ def plot_roots_and_soil_files(filename: str, pname:str):
 
 
 class AnimateRoots:
-    """ class to make an interactive animation """
+    """ class to make an interactive animation (TODO unfinished and doc)"""
 
     def __init__(self, rootsystem = None):
         self.rootsystem = rootsystem
