@@ -41,15 +41,14 @@ It will create a "DUMUX" folder and install inside the dependencies necessary to
 This script might work on other linux OS but has not been tested.
 
 If you want to install CPlantBox without Dumux, download the python file "installCPlantBox.py".
-This installaiton files requires a conda environment with python >= 3.7
+This installaiton files requires a conda environment with python >= 3.7 and < 3.10 (for compatibility with vtk)
 run
 ```bash
-conda create -n cpb_py38 python=3.8
-conda activate cpb_py38 
+conda create -n cpb_py39 python=3.9
+conda activate cpb_py39 
 python3 installCPlantBox.py
 ```
 It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.
-
 # Folder sructure
 
 `/modelparameter`		Plant parameter files\
