@@ -63,7 +63,7 @@ for program in programs:
         error.append(program)
 
    
-programs = ['default-jre', 'libboost-all-dev', 'python3-pip'] 
+programs = ['default-jre', 'libboost-all-dev', 'python3-pip','libeigen3-dev'] 
 
 for program in programs:
     output = subprocess.run(["dpkg", "-l", program], capture_output=True)
