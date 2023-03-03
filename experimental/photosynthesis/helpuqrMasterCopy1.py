@@ -2,7 +2,7 @@
 #directoryN = "/7to14dry/"
 
 import sys; 
-CPBdir = "../../../../newPhoto/CPlantBox"
+CPBdir = "../../../../cpb3101/CPlantBox"
 sys.path.append(CPBdir+"/src");
 sys.path.append(CPBdir);
 sys.path.append("../../..");sys.path.append(".."); 
@@ -14,9 +14,9 @@ sys.path.append("../modules/") # python wrappers
 #import matplotlib
 #matplotlib.use('AGG') #otherwise "import matplotlib.pyplot" hangs
 
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from richards import RichardsWrapper  # Python part
-from functional.phloem_flux import PhloemFluxPython  # Python hybrid solver
+#from rosi_richards import RichardsSP  # C++ part (Dumux binding)
+#from richards import RichardsWrapper  # Python part
+from phloem_flux import PhloemFluxPython  # Python hybrid solver
 #from Leuning_speedup import Leuning #about 0.7 for both
 #from photosynthesis_cython import Leuning
 import plantbox as pb
@@ -25,13 +25,35 @@ import plantbox as pb
 import math
 import os
 import numpy as np
-import visualisation.vtk_plot as vp
+#import vtk_plot as vp
 #import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
 
 
 isCluster = (os.environ['HOME'] == '/home/m.giraud')
+#if isCluster:
+ #   def print(*args, **kwargs):
+  #      """ custom print() function.
+   #         for cluster: can get output even if program stop
+    #        unexpectedly (i.e., without creating the outputfile)
+     #   """
+      #  # Adding new arguments to the print function signature
+      #  # is probably a bad idea.
+   #     # Instead consider testing if custom argument keywords
+   #     # are present in kwargs
+   #     if 'sep' in kwargs:
+   #         sep = kwargs['sep']
+   #     else:
+   #         sep = ' '
+   #     home_dir = os.getcwd()
+   #     dir_name =  "/results"+directoryN
+   #     dir_name2 = home_dir + dir_name
+   #     name2 = dir_name2 + 'prints.txt'
+   #     with open(name2, 'a') as log:
+   #         for arg in args: log.write(str(arg) + sep)
+   #         log.write('\n')
+
 #       qr, qs, alpha, n, ks (in [cm/d])
 #vgSoil = [0.059, 0.45, 0.00644, 1.503, 1]
 def theta2H(vg,theta):#(-) to cm
@@ -71,7 +93,7 @@ def div0f(a, b, c):
 
 
 
-def setKrKx_xylem(TairC, RH,r): #inC
+def setKrKx_xylem(TairC, RH,r,kr_l): #inC
     #mg/cm3
     hPa2cm = 1.0197
     dEauPure = (999.83952 + TairC * (16.952577 + TairC * 
@@ -96,7 +118,7 @@ def setKrKx_xylem(TairC, RH,r): #inC
     rad_x_r3_1  = (0.00068**4) * 1      
 
     # axial conductivity [cm^3/day]  
-    betaXylX = 1#0.1      
+    betaXylX =1# 0.1      
     kz_l  = VascBundle_leaf *(rad_x_l_1 + rad_x_l_2)    *np.pi /(mu * 8)  * betaXylX
     kz_s  = VascBundle_stem *(rad_x_s_1 + rad_x_s_2)    *np.pi /(mu * 8) * betaXylX 
     kz_r0 = VascBundle_root * rad_x_r0_1                *np.pi /(mu * 8) * betaXylX  
@@ -106,7 +128,7 @@ def setKrKx_xylem(TairC, RH,r): #inC
 
     #radial conductivity [1/day],0.00014 #
     betaXyl = 1#0.1#0.1
-    kr_l  = 3.83e-3 * hPa2cm * betaXyl# init: 3.83e-5  3.83e-4 cm/d/hPa
+    #kr_l  = 3.83e-5 * hPa2cm * betaXyl# init: 3.83e-4 cm/d/hPa
     kr_s  = 0.#1.e-20  * hPa2cm # set to almost 0
     kr_r0 =6.37e-5 * hPa2cm * betaXyl
     kr_r1 =7.9e-5  * hPa2cm * betaXyl
@@ -114,6 +136,7 @@ def setKrKx_xylem(TairC, RH,r): #inC
     kr_r3 =6.8e-5  * hPa2cm * betaXyl
     l_kr = 0.8 #cm
     r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ],[kr_l]], kr_length_=l_kr) 
+    #r.setKr_meso([kr_l]) 
     r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s ],[kz_l]])
     
     
@@ -197,7 +220,7 @@ def setKrKx_phloem(r): #inC
     return r
     
 """ Parameters """
-def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, simEnd):
+def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration):
     def write_file_array(name, data):
         name2 = 'results'+ directoryN+ name+ '.txt'
         with open(name2, 'a') as log:
@@ -216,10 +239,9 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             Tnigh = 15.8; Tday = 22
             #Tnigh = 13; Tday = 20.7
             #specificHumidity = 0.0097
-            RHday = 0.6; RHnigh = 0.88
+            RHday = 0.60; RHnigh = 0.88
             Pair = 1010.00 #hPa
-            thetaInit = 0.4#
-            #thetaInit = 15.59/100 
+            thetaInit = 40/100
             if csChoise == "yesCS":
                 cs = 390e-6#50e-6
             elif csChoise == "noCS": 
@@ -231,10 +253,9 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             Tnigh = 20.7; Tday = 30.27
             #Tnigh = 15.34; Tday = 23.31
             #specificHumidity = 0.0097# 0.0111
-            RHday = 0.44; RHnigh = 0.78
+            RHday = 0.7; RHnigh =0.7#0.44; RHnigh = 0.78
             Pair = 1070.00 #hPa
             thetaInit = 28/100   
-            #thetaInit = 10.47/100
             #cs = 1230e-6
             if csChoise == "yesCS":
                 cs = 1230e-6
@@ -259,8 +280,8 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
         assert ea < es
         #RH = ea/es
         assert ((RH_ > 0) and(RH_ < 1))
-        bl_thickness = 1/1000 #1mm * m_per_mm
-        diffusivity= 2.5e-5#m2/sfor 25*C
+        bl_thickness = 1/1000 #m
+        diffusivity= 2.5e-5#m2/sfor 25°C
         rbl =bl_thickness/diffusivity #s/m 13
         #cs = 350e-6
         Kcanopymean = 1e-1 # m2/s
@@ -288,7 +309,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
     weatherInit = weather(0,0)
     simDuration = simInit # [day] init simtime
     #spellDuration = 5
-    simMax = simEnd#25#simStartSim+ spellDuration
+    simMax = 25#simStartSim+ spellDuration
     depth = 60
     dt = 1/24 #10min
     verbose = True
@@ -296,7 +317,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
     # plant system 
     pl = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
     #pl2 = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
-    path = CPBdir+"/modelparameter/structural/plant/"
+    path = CPBdir+"/modelparameter/plant/"
     name = "Triticum_aestivum_adapted_2023"#"Triticum_aestivum_adapted_2021"#
 
     pl.readParameters(path + name + ".xml")
@@ -330,7 +351,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
 
     min_b = [-3./2, -12./2, -41.]#distance between wheat plants
     max_b = [3./2, 12./2, 0.]
-    rez = 1#0.5
+    rez = 0.5
     cell_number = [int(6*rez), int(24*rez), int(40*rez)]#1cm3? 
     layers = depth; soilvolume = (depth / layers) * 3 * 12
     k_soil = []
@@ -352,7 +373,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
     else:
         p_mean = initial
         p_bot = p_mean + depth/2
-        p_top = p_mean - depth/2
+        p_top = initial - depth/2
         sx = np.linspace(p_top, p_bot, depth)
         picker = lambda x,y,z : max(int(np.floor(-z)),-1) 
     sx_static_bu = sx    
@@ -365,13 +386,15 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
     #r2 = PhloemFluxPython(#pl2,psiXylInit = min(sx),ciInit = weatherInit["cs"]*0.5) #XylemFluxPython(pl)#
 
     r = setKrKx_phloem(r)
+    print("oldciEq ",r.oldciEq)
+    r.oldciEq = True
     
+    print("oldciEq2 ",r.oldciEq)
     r.Rd_ref = 0 #to avoid error (C < 0 in meso, mention this in paper)
-    r.g0 = 8e-6
+    r.g0 = 8e-3
     r.VcmaxrefChl1 =1.28#/2
     r.VcmaxrefChl2 = 8.33#/2
-    #r.a1 = 0.6/0.4#0.7/0.3#0.6/0.4 #ci/(cs - ci) for ci = 0.6*cs
-    r.a1=6
+    r.a1 = 0.6/0.4#0.7/0.3#0.6/0.4 #ci/(cs - ci) for ci = 0.6*cs
     r.a3 = 1.5
     r.alpha = 0.4#0.2#/2
     r.theta = 0.6#0.9#/2
@@ -400,16 +423,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
     r.leafGrowthZone = 2 # cm
     r.StemGrowthPerPhytomer = True # 
     r.psi_osmo_proto = -10000*1.0197 #schopfer2006
-    r.fwr = 0#0.1
-    r.sh = 4e-4
-    r.gm=0.025#4
-    
-    r.alternativeAn = True
-    r.Theta_ag =1# 0.9
-    r.limMaxErr = 1/100
-    r.maxLoop = 10000
-    r.minLoop=100
-   
+    r.fwr = 0
 
     r.cs = weatherInit["cs"]
 
@@ -597,51 +611,36 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             s.createGrid(min_b, max_b, cell_number, periodic)  # [cm]
             s.setHomogeneousIC(weatherX["p_mean"], True)  # cm pressure head, equilibrium
             s.setTopBC("noFlux")
-            s.setBotBC("noFlux")
+            s.setBotBC("fleeFlow")
             s.setVGParameters([weatherX['vg']])
             s.initializeProblem()
             s.setCriticalPressure(-15000)
             sx = s.getSolutionHead()  # inital condition, solverbase.py
             picker = lambda x, y, z: s.pick([x, y, z])    
             pl.setSoilGrid(picker)  # maps segment
-            dtWater = 1/24/60
-            
+            dtWater = 1/24/6
         if not dynamic_soil:
             sx = sx_static_bu
             picker = lambda x,y,z : max(int(np.floor(-z)),-1) 
             pl.setSoilGrid(picker)  # maps segment
             dtWater = dt#1/24
         
-        #r.es = weatherX["es"]
+        r.es = weatherX["es"]
         
+        if dynamic_soil:
+            waterDt = 1/2/24
             
             
         dtWatertot = 0
         Evdt =0
-        EvAlldt = 0
         Andt = 0
         print(dtWatertot , dt,Andt)
         while dtWatertot < dt:
             dtWatertot += dtWater
             print("#### IN WATER ####",dtWatertot , dtWater)
-            
-            
-            try:
-                r.followTrace = False
-                r.solve_photosynthesis(sim_time_ = simDuration, sxx_=sx, cells_ = True,ea_ = weatherX["ea"],es_=weatherX["es"],
-                    verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"],outputDir_= "./results"+directoryN)
-                
-                write_file_float("loop", r.loop)
-            except:
-                #raise Exception("state when fail")
-                r.maxLoop = 1000
-                r.followTrace = True
-                #r.useVc = False
-                #r.alternativeAn =False
-                r.solve_photosynthesis(sim_time_ = simDuration, sxx_=sx, cells_ = True,ea_ = weatherX["ea"],es_=weatherX["es"],
-                    verbose_ = 1, doLog_ = True,TairC_= weatherX["TairC"],outputDir_= "./results"+directoryN )
-                #raise Exception("failed computation on the first time")
-                
+
+            r.solve_photosynthesis(sim_time_ = simDuration, sxx_=sx, cells_ = True,ea_ = weatherX["ea"],
+                verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"] )
 
             #trans = np.array(r.outputFlux)
             """ dumux """   
@@ -707,8 +706,6 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             Andt += np.array(r.Ag4Phloem)*dtWater
             EvSum += np.sum(r.Ev)*dtWater
             Evdt += np.sum(r.Ev)*dtWater
-            EvAlldt += np.array(r.Ev)*dtWater
-            print("r.Ev",r.Ev)
         r.Ag4Phloem = Andt/dt
         startphloem= simDuration
         endphloem = startphloem + dt
@@ -726,13 +723,13 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
         #raise Exception
         filename = "results"+ directoryN +"inPM_"+str(ö)+".txt"
         print("startpm", hp)
-        r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
-        #try:
-        #    r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
-        #except:
-        #    #print("startpm WITH troubleshoot NONO", hp)
-        #    #r.doTroubleshooting = True
-        #    r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
+        
+        try:
+            r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
+        except:
+            #print("startpm WITH troubleshoot NONO", hp)
+            #r.doTroubleshooting = True
+            r.startPM(startphloem, endphloem, stepphloem, ( weatherX["TairC"]  +273.15) , verbose_phloem, filename)
             
         try:
             os.remove(filename)
@@ -830,11 +827,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
         C_ST_ = C_ST[1:]
         ids = np.where(RhatFhat ==  min(RhatFhat))
         
-        rootLength = np.array([mr.getLength(False) for mr in r.plant.getOrgans(2, False)])
-        st4leng = np.array([mr.getParameter("subType") for mr in r.plant.getOrgans(2, False)])
-        root1Length = sum([mr.getLength(False)*((mr.getParameter("subType")==1)or(mr.getParameter("subType")==4)) for mr in r.plant.getOrgans(2, False)])
-        root2Length = sum([mr.getLength(False)*((mr.getParameter("subType")==2))  for mr in r.plant.getOrgans(2, False)])
-        root3Length = sum([mr.getLength(False)*((mr.getParameter("subType")==3))  for mr in r.plant.getOrgans(2, False)])
+        rootLength = sum([mr.getLength(False) for mr in r.plant.getOrgans(2, False)])
         leafLength = sum([mr.getLength(False) for mr in r.plant.getOrgans(4, False)])
         if False:#min(RhatFhat) < 1) :
             #print()
@@ -879,8 +872,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             print("sucOrg obs (mmol)\t th (mmol)\t", sucOrg_type - sucOrgini_type)#, sucOrg2_type - sucOrgini2_type)       
             print("Grobs (mmol) root\tstem\tleaf\t", sum(Q_Gr2bu)*r.Gr_Y,sum(Q_Gr3bu)*r.Gr_Y, sum(Q_Gr4bu)*r.Gr_Y)# , gr4ith) 
             print("RhatFhat ", min(RhatFhat))#,C_ST_[ids],a_STs[ids], length_ST[ids], JW_ST[ids]  )
-            print("root length {:5.2e}\tlef length {:5.2e}".format(sum(rootLength),leafLength))
-            print("length root1 {:5.2e}\troot2 {:5.2e}\troot3 {:5.2e}".format(root1Length,root2Length,root3Length))
+            print("root length {:5.2e}\tlef length {:5.2e}".format(rootLength,leafLength))#,C_ST_[ids],a_STs[ids], length_ST[ids], JW_ST[ids]  )
         #raise Exception     
         if min(C_ST) < 0.0:
             print("min(C_ST) < 0.015", min(C_ST),np.mean(C_ST),max(C_ST))
@@ -898,7 +890,6 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
         ana = pb.SegmentAnalyser(r.plant.mappedSegments())
 
         cutoff = 1e-15 #is get value too small, makes paraview crash
-        nodeIds = np.array(r.plant.getNodeIds(-1))
         C_ST_p = C_ST
         C_ST_p[abs(C_ST_p) < cutoff] = 0
         fluxes_p = fluxes
@@ -938,7 +929,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
         psi_p_symplasm_p = np.array(r.psi_p_symplasm)
         psi_p_symplasm_p[abs(psi_p_symplasm_p) < cutoff] = 0
         
-        ana.addData("nodeIds",nodeIds)
+        
         ana.addData("CST", C_ST_p)
         #do as konz or div per vol or surf?
         #ana.addData("Q_Exud", Q_Exud)  # cut off for vizualisation
@@ -964,9 +955,9 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
 
         ana.addData("psi_Xyl",psiXyl_p)
         ana.addData("psi_p_symplasm_p",psi_p_symplasm_p)
-        if False:
+        if True:
             ana.write("results"+directoryN+"plot_"+str(int(simStartSim))+str(condition)+"at"+ str(ö) +".vtp", 
-                      ["organType", "subType","nodeIds",
+                      ["organType", "subType",
                        "CST", "fluxes","psi_Xyl",
                        "QExud", "QGr", "QRm",
                        "CExud", "CGr", "CRm",
@@ -977,22 +968,13 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
 
     #     fluxes_p = np.insert(fluxes_p,0,0)# "[sucrose]",
         dtVTP += dt
-        
+        print(simDuration,dtVTP)
         if((simDuration > 0) and (dtVTP >=0.29/24)):
             dtVTP = 0
-            ana.write("results"+directoryN+"plot_"+str(int(simStartSim))+str(condition)+"at"+ str(ö) +".vtp", 
-                      ["organType", "subType","nodeIds",
-                       "CST", "fluxes","psi_Xyl",
-                       "QExud", "QGr", "QRm",
-                       "CExud", "CGr", "CRm",
-                       "QExudmax", "QGrmax", "QRmmax",
-                       "CExudmax", "CGrmax", "CRmmax",
-                       "Fpsi","Flen","GrowthZone","GrowthZoneLat",
-                      "psi_p_symplasm"]) 
-            #vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)","sucrose concentration (mmol/cm3)"],
-             #                   vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p, C_ST_p], 
-              #                  filename = "results"+ directoryN +"plotpsi_"+str(int(simStartSim))+str(condition)+"at"+ str(ö), 
-               #           range_ = [0,5000])
+            vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","xylem pressure (cm)","sucrose concentration (mmol/cm3)"],
+                                vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, psiXyl_p, C_ST_p], 
+                                filename = "results"+ directoryN +"plotpsi_"+str(int(simStartSim))+str(condition)+"at"+ str(ö), 
+                          range_ = [0,5000])
             #vp.plot_plant(r.plant,p_name = [ "fluxes","Exud","Gr","Rm","sucrose concentration (mmol/cm3)"],
              #                   vals =[ fluxes_p, Q_Exud_i_p, Q_Gr_i_p, Q_Rm_i_p, C_ST_p], 
               #                  filename = "results"+ directoryN +"plotsuc_"+str(int(simStartSim))+str(condition)+"at"+ str(ö), range_ = [0,3])   
@@ -1032,7 +1014,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             write_file_array("fw", r.fw)
             write_file_array("gco2", r.gco2)
             write_file_array("pvd", r.PVD)
-            assert r.loop < r.maxLoop
+            write_file_array("pg", r.pg)
             write_file_float("ea", r.ea)
             write_file_float("es", r.es)
             write_file_float("psi_air", r.psi_air)
@@ -1040,6 +1022,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             write_file_array("EAL", r.EAL)
             write_file_array("hrelL", r.hrelL)
             write_file_array("ci", r.ci)
+            write_file_array("k_stomatas", r.k_stomatas)
 
             #write_file_array("length_blade", length_blade)
             write_file_array("ots", ots)
@@ -1048,9 +1031,6 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             write_file_array("volST", volST)
             write_file_array("volOrg",  volOrg) #with epsilon
             write_file_array("Fl", Fl)
-            write_file_array("An", np.array(r.An))
-            write_file_array("Vc", np.array(r.Vc))
-            write_file_array("Vj", np.array(r.Vj))
             write_file_array("AgPhl", np.array(r.AgPhl))
             write_file_array("Q_ST_dot", Q_ST_i/dt)
             write_file_array("Q_meso_dot", Q_meso_i/dt)
@@ -1074,7 +1054,6 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
             write_file_array("psi_p_symplasm", r.psi_p_symplasm)
             write_file_float("trans", EvSum)
             write_file_float("transrate",Evdt)
-            write_file_array("transRateAll",EvAlldt/dt)
             write_file_array("Anrate",Andt)
             
             leavesSegs = np.where(ots[1:] ==4)
@@ -1203,23 +1182,12 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
         ##
         #       CHECKS
         ##
-        try:
-            highNeed1 = max(Q_Rm_i[np.greater(Q_Rm_i,Q_Rmmax_i)] - Q_Rmmax_i[np.greater(Q_Rm_i,Q_Rmmax_i)])
-            highNeed2 = max(Q_Gr_i[np.greater(Q_Gr_i,Q_Grmax_i)] - Q_Grmax_i[np.greater(Q_Gr_i,Q_Grmax_i)])
-            #highNeed3 = max(Q_Exud_i[np.greater(Q_Exud_i,Q_Exudmax_i)] - Q_Exudmax_i[np.greater(Q_Exud_i,Q_Exudmax_i)])
+        highNeed1 = sum(Q_Rm_i[np.greater(Q_Rm_i,Q_Rmmax_i)] - Q_Rmmax_i[np.greater(Q_Rm_i,Q_Rmmax_i)])
+        highNeed2 = sum(Q_Gr_i[np.greater(Q_Gr_i,Q_Grmax_i)] - Q_Grmax_i[np.greater(Q_Gr_i,Q_Grmax_i)])
+        highNeed3 = sum(Q_Exud_i[np.greater(Q_Exud_i,Q_Exudmax_i)] - Q_Exudmax_i[np.greater(Q_Exud_i,Q_Exudmax_i)])
 
-            if highNeed1 > 1e-3:
-                print(np.where([np.greater(Q_Rm_i,Q_Rmmax_i)]))
-                print(Q_Rm_i-Q_Rmmax_i)
-                print(highNeed1)
-                assert False
-            if highNeed2 > 1e-3:
-                print(np.where([np.greater(Q_Gr_i,Q_Grmax_i)]))
-                print(Q_Gr_i-Q_Grmax_i)
-                print(highNeed1)
-                assert False
-        except:
-            pass
+        if highNeed1 > abs(error):
+            print(np.where([np.greater(Q_Rm_i,Q_Rmmax_i)]))
         #assert div0f(error,Q_in,1.) < 1e-3, "balance error > 0.1%"
 
         if (len(Orgids) != len(Orgidsbu)):
@@ -1262,20 +1230,16 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
 
 if __name__ == '__main__':
     simInit = sys.argv[1]
-    spellStart = sys.argv[2]
-    spellDuration = sys.argv[3]
-    simEnd = sys.argv[4]
-    condition = sys.argv[5]
+    simStartSim = sys.argv[2]
+    condition = sys.argv[3]
     csChoise = "noCS"#sys.argv[4]
-    #spellDuration = 7
-    spellEnd = str(int(float(spellStart) + float(spellDuration)))
-    #simEnd = str(28)
-    directoryN = "/"+os.path.basename(__file__)[:-3]+"/"+simInit+"to"+spellStart+"to"+spellEnd+"to"+simEnd+condition+"/"
-    print(directoryN)
-    
+    spellDuration = 7
+    spellEnd = str(int(simStartSim) + spellDuration)
+    simEnd = str(28)
+    directoryN = "/"+os.path.basename(__file__)[:-3]+"/"+simInit+"to"+simStartSim+"to"+simEnd+condition+"lowerRez/"
 
-    #simInit = float(simInit)
-    #simStartSim = float(simStartSim)
+    simInit = float(simInit)
+    simStartSim = float(simStartSim)
 
     main_dir=os.environ['PWD']#dir of the file
     results_dir = main_dir +"/results"+directoryN
@@ -1287,4 +1251,4 @@ if __name__ == '__main__':
         os.makedirs(results_dir)
 
 
-    launchUQR(directoryN,float(simInit),float(spellStart), condition,csChoise,float(spellDuration),float(simEnd))
+    launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration)
