@@ -82,7 +82,10 @@ show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + ".
 
 for mymodule in modules:
 	#subprocess.run(["pip3", "install", mymodule]) 
-	subprocess.run(["conda", "install", mymodule]) 
+	if ((mymodule =='vtk') and (sys.version_info.minor == 10)):
+		subprocess.run(["pip3", "install", mymodule]) 	#conda install not working for vtk with py3.10 (?)
+	else:
+		subprocess.run(["conda", "install", mymodule]) 
       
 show_message("(1/3) Step completed. All prerequistes found.")
 
