@@ -197,6 +197,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("__str__",&SignedDistanceFunction::toString);
     py::class_<SDF_PlantBox, SignedDistanceFunction, std::shared_ptr<SDF_PlantBox>>(m, "SDF_PlantBox")
             .def(py::init<double,double,double>());
+    py::class_<SDF_Cuboid, SignedDistanceFunction, std::shared_ptr<SDF_Cuboid>>(m, "SDF_Cuboid")
+            .def(py::init<Vector3d,Vector3d>());
     py::class_<SDF_PlantContainer, SignedDistanceFunction, std::shared_ptr<SDF_PlantContainer>>(m,"SDF_PlantContainer")
             .def(py::init<>())
             .def(py::init<double,double,double,double>());
