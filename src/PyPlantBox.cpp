@@ -192,6 +192,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<SignedDistanceFunction, std::shared_ptr<SignedDistanceFunction>>(m,"SignedDistanceFunction")
             .def(py::init<>())
             .def("getDist",&SignedDistanceFunction::getDist)
+            .def("dist",&SignedDistanceFunction::dist)
             .def("writePVPScript", (std::string (SignedDistanceFunction::*)() const) &SignedDistanceFunction::writePVPScript) // overloads
             .def("getGradient",  &SignedDistanceFunction::getGradient, py::arg("p"), py::arg("eps") = 5.e-4) // defaults
             .def("__str__",&SignedDistanceFunction::toString);

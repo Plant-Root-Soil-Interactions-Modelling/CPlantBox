@@ -8,6 +8,7 @@
 #include <vector>
 #include <stdexcept>
 #include <memory>
+#include <vector>
 
 namespace CPlantBox {
 
@@ -31,6 +32,9 @@ public:
      * \return      signed distance [cm], a minus sign means inside, plus outside
      */
     virtual double getDist(const Vector3d& v) const { return -1e100; } ///< Returns the signed distance to the next boundary
+
+    virtual double dist(const std::vector<double>& v) const { return this->getDist(Vector3d(v)); } // for Python coupling
+
 
     /**
      * Returns a string representation of the object (for debugging)
