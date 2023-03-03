@@ -224,7 +224,7 @@ class XylemFluxPython(XylemFlux):
                 numleaf = indices.index(seg_ind)
                 if self.pg[0] != 0:
                     p_s = self.pg[numleaf]
-        kr = self.kr_f(age, st, ot, numleaf, seg_ind)  # c++ conductivity call back functions
+        kr = self.kr_f(age, st, ot, seg_ind)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot, seg_ind)
         if a * kr > 1.e-16:
@@ -423,9 +423,9 @@ class XylemFluxPython(XylemFlux):
             eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
         return eswp
 
-    def kr_f(self, age, st, ot = 2 , numleaf = 2, seg_ind = 0):
+    def kr_f(self, age, st, ot = 2 , seg_ind = 0):
         """ root radial conductivity [1 day-1] for backwards compatibility """
-        return self.kr_f_cpp(seg_ind, age, st, ot, numleaf)  # kr_f_cpp is XylemFlux::kr_f
+        return self.kr_f_cpp(seg_ind, age, st, ot)  # kr_f_cpp is XylemFlux::kr_f
 
     def kx_f(self, age, st, ot = 2, seg_ind = 0):
         """ root axial conductivity [cm3 day-1]  for backwards compatibility """

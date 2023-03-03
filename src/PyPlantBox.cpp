@@ -911,7 +911,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getKr", &XylemFlux::getKr)
             .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
-                    py::arg("soil_k") = std::vector<double>(),py::arg("withEigen") = false)
+                    py::arg("soil_k") = std::vector<double>())
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
                     py::arg("soil_k") = std::vector<double>())
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
@@ -978,7 +978,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
-            .def_readwrite("k_stomatas_old", &Photosynthesis::k_stomatas_old)
             .def_readwrite("doLog", &Photosynthesis::doLog);
 
 	/*

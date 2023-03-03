@@ -591,25 +591,6 @@ void Stem::shootBorneRootGrow(bool verbose)
 			std::cout<<"root grow number "<<i<<"\n";
 		}
 	}
-
-	//    auto sp = param(); // rename
-	//    int lt = getStemRandomParameter()->getLateralType(getNode(nodes.size()-1));
-	//    //    std::cout << "ShootBorneRootGrow createLateral()\n";
-	//    //    std::cout << "ShootBorneRootGrow lateral type " << lt << "\n";
-	//
-	//    if ( lt > 0 ) {
-	//        double ageLN = this->calcAge(length); // age of stem when lateral node is created
-	//        double ageLG = this->calcAge(length+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-	//        double delay = ageLG-ageLN; // time the lateral has to wait
-	//        int nodeToGrowShotBorneRoot = 2;
-	//        Vector3d sbrheading(0,0,-1); //just a test heading
-	//        auto shootBorneRootGrow = std::make_shared<Root>(plant.lock() , 5, sbrheading, delay ,shared_from_this(), length, nodeToGrowShotBorneRoot);
-	//        if (nodes.size() > nodeToGrowShotBorneRoot ) {
-	//            //                                ShootBorneRootGrow->addNode(getNode(NodeToGrowShotBorneRoot), length);
-	//            children.push_back(shootBorneRootGrow);
-	//            shootBorneRootGrow->simulate(age-ageLN,silence);// pass time overhead (age we want to achieve minus current age)
-	//        }
-	//    }
 }
 
 /**
