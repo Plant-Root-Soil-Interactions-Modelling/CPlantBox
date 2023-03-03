@@ -29,10 +29,10 @@ public:
 	
     std::shared_ptr<CPlantBox::MappedPlant> plant;
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
-	void solve_photosynthesis(double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) , 
+	void solve_photosynthesis(double ea_,double es_, double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) , 
 				bool cells_ = true, std::vector<double> soil_k_ = std::vector<double>(),
-				bool doLog_ = false, int verbose_ = 0, double RH_=0.5, 
-				double TairC_=25); ///< main function, makes looping until convergence
+				bool doLog_ = false, int verbose_ = 0, 
+				double TairC_=25, std::string outputDir_=""); ///< main function, makes looping until convergence
 	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, 
 				const std::vector<double> soil_k_);///< main function, solves the flux equations
 	
@@ -56,15 +56,20 @@ public:
 	std::vector<double> ci;
 	std::vector<double> Jw;
 	std::vector<double> Ev;
+	std::vector<double> PVD;
+	std::vector<double> EAL;
+	std::vector<double> hrelL;
 	std::vector<double> pg;//leaf guard cell water potential [cm]
 	std::vector<double> outputFlux;
 	std::vector<double> fw;
 	std::vector<double> psiXyl4Phloem; //sum of psiXyl + gravitational wat. pot.
 	std::vector<double> gco2;
 	bool doLog = false; int verbose_photosynthesis = 0;
-	
+	std::vector<double> gtotOx;
+    std::vector<double> Vcrefmax;std::vector<double> Jrefmax;
+    float gm = 0.05; //mesophyll resistance 
 	//		to evaluate convergence, @see Photosynthesis::getError
-	int maxLoop = 1000; int minLoop = 1;
+	int maxLoop = 1000; int minLoop = 1;std::string outputDir="";
     int loop;double limMaxErr = 1e-4;
 	double maxMaxErr;
 	std::vector<double> maxErr= std::vector<double>(9, 0.);	
@@ -88,12 +93,15 @@ public:
 	double Qlight = 900e-6;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
 	std::vector<double>  Chl = std::vector<double>(1,55.); 
 	double oi = 210e-3;//leaf internal [O2] [mol mol-1]
+	double g_bl = 2.8;//leaf boundary molar conductance [mol CO2 m-2 s-1]
+	double g_canopy = 6.1;//aerodynamic molar conductance [mol CO2 m-2 s-1]
+	double g_air = 11.4;//aerodynamic molar conductance [mol CO2 m-2 s-1]
 	
 	//			parameter to re-parametrise , put in phloem files
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
 	double sh = 3.765e-4;//sensibility to water stress
-	double p_lcrit = -0.869;//min psiXil for stomatal opening [Mpa]
+	double p_lcrit = -15000/2;//min psiXil for stomatal opening [Mpa]
 	//influence of N contant, to reparametrise!, 
 	double VcmaxrefChl1 = 1.28/2;//otherwise value too high, original: 1.31
 	double VcmaxrefChl2 = 8.33/2; //otherwise value too high, original: 8,52
@@ -107,14 +115,16 @@ public:
 	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) override;
 	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
 	
-protected:
 	//Compute variables which do not vary during one "solve_photosynthesis " computation
 	void initCalcs(double sim_time_);
 	void initStruct(double sim_time_);
 	void initVcVjRd();
 	
 	//			physicall constant (no need to parametrise)
-	double a2 = 1.6; //gco2[i] * a2 = gh2o
+	double a2_stomata = 1.6; //gco2 * a2 = gh2o
+	double a2_bl = 1.37;//gco2 * a2 = gh2o
+	double a2_canopy = 1;//gco2 * a2 = gh2o
+	double a2_air = 1;//gco2 * a2 = gh2o
 	//(de)activate parameters
     double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
     double Eard = 53000;double Eav = 58520;
@@ -132,6 +142,7 @@ protected:
 	std::vector<std::shared_ptr<Organ>> orgsVec;
 	std::vector<int> seg_leaves_idx;
     bool stop = false;
+protected:
 	//for Photosynthesis::linearSystemSolve
 	std::vector<Eigen::Triplet<double>> tripletList;
 	Eigen::VectorXd b;
