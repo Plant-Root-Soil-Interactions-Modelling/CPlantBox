@@ -8,6 +8,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+
 namespace CPlantBox {
 
 /**
@@ -71,7 +74,6 @@ public:
 	std::vector<double> gco2_old ;
 	std::vector<double> ci_old ;
 	std::vector<double> pg_old ;
-	std::vector<double> k_stomatas_old ;
 	
 	
 	//			initial guesses
@@ -102,6 +104,8 @@ public:
 	double theta = 0.9;//or 0.67 coefa = theta;
 	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
+	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) override;
+	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
 	
 protected:
 	//Compute variables which do not vary during one "solve_photosynthesis " computation
@@ -128,6 +132,10 @@ protected:
 	std::vector<std::shared_ptr<Organ>> orgsVec;
 	std::vector<int> seg_leaves_idx;
     bool stop = false;
+	//for Photosynthesis::linearSystemSolve
+	std::vector<Eigen::Triplet<double>> tripletList;
+	Eigen::VectorXd b;
+	
 
 };
 

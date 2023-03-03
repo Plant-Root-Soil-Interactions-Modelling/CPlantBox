@@ -63,6 +63,9 @@ public:
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;
+	
+	virtual double getPerimeter(int si_, double l_){return 2 * M_PI * radii[si_];} ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
+	virtual int getSegment2leafId(int si_);
 
     const double eps = 1.e-5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
@@ -85,6 +88,7 @@ protected:
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
     void unmapSegments(const std::vector<Vector2i>& segs); ///< remove segments from the mappers
+	
 
 };
 
@@ -145,9 +149,15 @@ public:
 	//for photosynthesis and phloem module:	   
 	void calcExchangeZoneCoefs() override;					 
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
-	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module		
+	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module	
+	double getPerimeter(int si_, double l_) override; ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter	
+	
+	int getSegment2leafId(int si_) override; ///< fill segment2Leaf vector
+	std::vector<int> segment2leafIds;///< to go from vector of size segment to vectoer of size leaf_segment
+	
  protected:
 	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);	
+	void getSegment2leafIds(); ///< fill segment2Leaf vector
 };
 
 }

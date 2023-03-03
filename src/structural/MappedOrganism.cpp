@@ -317,6 +317,8 @@ void MappedSegments::unmapSegments(const std::vector<Vector2i>& segs) {
 	}
 }
 
+
+
 /**
  * Maps a point into a cell and return the cells linear index (for a equidistant rectangular domain)
  */
@@ -442,6 +444,12 @@ Vector3d MappedSegments::getMinBounds() {
     }
     return min_;
 }
+
+int MappedSegments::getSegment2leafId(int si_){
+		throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of");
+		return -1;
+	}
+	
 
 
 
@@ -664,14 +672,14 @@ void MappedPlant::simulate(double dt, bool verbose)
 	segVol.resize(segVol.size()+newsegO.size());
 	bladeLength.resize(bladeLength.size()+newsegO.size());
 	leafBladeSurface.resize(leafBladeSurface.size()+newsegO.size());
+	
 	c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
 	}
-	std::vector<int> vsegIdx;
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
-		vsegIdx.push_back(segIdx);
+		
 		radii[segIdx] = so->getParam()->a;
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];//new st
@@ -734,6 +742,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
+	getSegment2leafIds();
 
 }
 
@@ -828,6 +837,23 @@ std::vector<int> MappedPlant::getSegmentIds(int ot) const
 }
 
 /**
+ *	index of node of organtype ot
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+void MappedPlant::getSegment2leafIds() 
+{
+	segment2leafIds = std::vector<int>(organTypes.size(),-1);
+	int leafId = 0;
+    for (int i=0; i<organTypes.size(); i++) {
+		if(organTypes.at(i) == Organism::ot_leaf){
+			segment2leafIds.at(i) = leafId;
+			leafId +=1;
+		}
+    }
+}
+
+/**
  * index of segment of organ type ot
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          Id of each segment
@@ -842,5 +868,30 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
     }
 	return nodeId;
 }
+
+/**
+ * index of segment of organ type ot
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+double MappedPlant::getPerimeter(int si_, double l_) 
+{
+	if (organTypes.at(si_) == Organism::ot_leaf) {
+	//perimeter of the leaf blade
+	// "*2" => C3 plant has stomatas on both sides.
+	//later make it as option to have C4, i.e., stomatas on one side
+	int leafId = getSegment2leafId(si_);
+	return leafBladeSurface.at(leafId) / l_ *2;
+    
+    }else{return 2 * M_PI * radii[si_];}
+}
+
+int MappedPlant::getSegment2leafId(int si_) {
+		int leafSi = segment2leafIds.at(si_);
+		if(leafSi == -1){
+			throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of non-leaf segment");
+			}
+		return leafSi;
+	}
 
 } // namespace
