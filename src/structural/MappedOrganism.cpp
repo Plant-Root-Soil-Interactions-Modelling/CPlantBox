@@ -881,7 +881,7 @@ double MappedPlant::getPerimeter(int si_, double l_)
 	// "*2" => C3 plant has stomatas on both sides.
 	//later make it as option to have C4, i.e., stomatas on one side
 	int leafId = getSegment2leafId(si_);
-	return leafBladeSurface.at(leafId) / l_ *2;
+	return leafBladeSurface.at(si_) / l_ *2;
     
     }else{return 2 * M_PI * radii[si_];}
 }
