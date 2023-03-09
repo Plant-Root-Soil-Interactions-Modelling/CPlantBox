@@ -18,7 +18,7 @@ int Organism::instances = 0; // number of instances
  * Constructs organism, initializes random number generator
  * @param seednum    option to set seed (for creation of random number) default = 0.
  */
-Organism::Organism(double seednum)
+Organism::Organism(unsigned int seednum)
 {
     instances++;
 	if(seednum >0){

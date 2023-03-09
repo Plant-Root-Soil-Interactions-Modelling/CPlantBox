@@ -314,7 +314,7 @@ PYBIND11_MODULE(plantbox, m) {
      * Organism.h
      */
     py::class_<Organism, std::shared_ptr<Organism>>(m, "Organism")
-            .def(py::init<double>(),  py::arg("seednum") = 0)
+            .def(py::init<unsigned int>(),  py::arg("seednum") = 0)
             .def("copy", &Organism::copy)
             .def("organTypeNumber", &Organism::organTypeNumber)
             .def("organTypeName", &Organism::organTypeName)
@@ -850,7 +850,7 @@ PYBIND11_MODULE(plantbox, m) {
      * Plant.h
      */
     py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
-            .def(py::init<double>(),  py::arg("seednum")=0)
+            .def(py::init<unsigned int>(),  py::arg("seednum")=0)
             .def("getSeed", &Plant::getSeed)
             .def("initialize", &Plant::initialize, py::arg("verbose") = true, py::arg("test") = false)
 			.def("initializeLB", &Plant::initialize, py::arg("verbose") = true, py::arg("test") = false)
@@ -872,7 +872,7 @@ PYBIND11_MODULE(plantbox, m) {
 
 
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")
-			.def(py::init<double>(),  py::arg("seednum")=0)
+			.def(py::init<unsigned int>(),  py::arg("seednum")=0)
 			.def("mappedSegments", &MappedPlant::mappedSegments)
 			.def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("initializeLB", &MappedPlant::initializeLB, py::arg("verbose") = true, py::arg("stochastic") = true)

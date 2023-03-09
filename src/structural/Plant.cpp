@@ -14,7 +14,7 @@ namespace CPlantBox {
  * Constructs plant, initializes random number generator
  * @param seednum    option to set seed (for creation of random number) default = 0.
  */
-Plant::Plant(double seednum): Organism(seednum)
+Plant::Plant(unsigned int seednum): Organism(seednum)
 { }
 
 /**

@@ -42,7 +42,7 @@ public:
     static int organTypeNumber(std::string name); ///< organ type number from a string
     static std::string organTypeName(int ot); ///< organ type name from an organ type number
 
-    Organism(double seednum  = 0.); ///< constructor
+    Organism(unsigned int seednum  = 0); ///< constructor
     virtual ~Organism() { }; ///< destructor
 
     virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism
@@ -113,7 +113,7 @@ public:
 
     virtual double rand() {if(stochastic){return UD(gen); } else {return 0.5; } }  ///< uniformly distributed random number [0, 1[
     virtual double randn() {if(stochastic){return ND(gen); } else {return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
-	double getSeedVal(){return seed_val;}
+	unsigned int  getSeedVal(){return seed_val;}
 	void setStochastic(bool stochastic_){stochastic = stochastic_;}
 	bool getStochastic(){return stochastic;}
 	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
@@ -140,7 +140,7 @@ protected:
     int rsmlSkip = 0; // skips points
     double minDx = 1.e-6; ///< threshold value, smaller segments will be skipped, otherwise root tip direction can become NaN
 
-	double seed_val;///<value to use as seed, keep in memory to send to tropism
+	unsigned int seed_val;///<value to use as seed, keep in memory to send to tropism
     std::mt19937 gen;
     std::uniform_real_distribution<double> UD;
     std::normal_distribution<double> ND;
