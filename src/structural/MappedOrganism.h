@@ -128,7 +128,7 @@ class MappedPlant : public MappedSegments, public Plant
 public:
 
     using Plant::Plant;
-	MappedPlant(double seednum = 0): Plant(seednum){}; ///< constructor
+	MappedPlant(unsigned int seednum = 0): Plant(seednum){}; ///< constructor
     virtual ~MappedPlant() { }; ///< destructor
 	
     void initializeLB(bool verbose = true, bool stochastic = true) { bool LB = true; initialize_(verbose, stochastic, LB); }; ///< overridden, to map initial shoot segments,
