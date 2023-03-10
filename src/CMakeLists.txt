@@ -125,6 +125,13 @@ target_link_libraries(CPlantBox
 						libamd 
 						libklu
 						)
+set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+target_include_directories(
+                        CPlantBox
+                        PUBLIC
+                        ${PROJECT_BINARY_DIR}/src/external/sundials/include
+                        ${PROJECT_BINARY_DIR}/src/external/suitsparse/include
+)
 
 #
 # 2. Make CPlantBox Pyhthon binding
@@ -136,69 +143,9 @@ find_package( PythonLibs 3.7 REQUIRED )
 add_subdirectory(external/pybind11)
 
 pybind11_add_module(plantbox SHARED 
-            sdf.cpp
-            organparameter.cpp
-            Organ.cpp
-            Organism.cpp
-            
-            rootparameter.cpp
-			seedparameter.cpp
-			leafparameter.cpp
-			stemparameter.cpp			
-            
-            Root.cpp
-            RootDelay.cpp
-            Seed.cpp
-			Stem.cpp
-			Leaf.cpp
-			Plant.cpp
-			            
-            Plant.cpp            
-            RootSystem.cpp
-            MappedOrganism.cpp
-			XylemFlux.cpp
-           
-            SegmentAnalyser.cpp            
-            tropism.cpp
-            
-			external/tinyxml2/tinyxml2.cpp
-            external/aabbcc/AABB.cc
-            external/gauss_legendre/gauss_legendre.cpp
-	    	
-			PyPlantBox.cpp
-			
-			Photosynthesis.cpp
-			PiafMunch/runPM.cpp     
-			PiafMunch/PiafMunch2.cpp
-			PiafMunch/index_vector.cpp
-			PiafMunch/initialize.cpp
-			PiafMunch/odepack.cpp
-			PiafMunch/PM_KLU.cpp
-			PiafMunch/PM_matrix.cpp
-			PiafMunch/PM_vector.cpp
-			PiafMunch/solve.cpp
-			PiafMunch/sparse_matrix.cpp									
+			PyPlantBox.cpp   								
 			)
 target_link_libraries(plantbox PUBLIC 
-			sundials_sunnonlinsolnewton
-			sundials_sunmatrixsparse
-			sundials_sunmatrixdense
-			sundials_sunmatrixband
-			sundials_sunlinsolsptfqmr
-			sundials_sunlinsolspgmr
-			sundials_sunlinsolspfgmr
-			sundials_sunlinsolspbcgs
-			sundials_sunlinsolpcg
-			sundials_sunlinsolklu
-			sundials_sunlinsoldense
-			sundials_sunlinsolband
-			sundials_nvecserial
-			sundials_cvode
-			suitesparseconfig
-			libcolamd
-			arkode
-			libbtf
-			libklu 
-			libamd )
+			CPlantBox)
 			
 set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
