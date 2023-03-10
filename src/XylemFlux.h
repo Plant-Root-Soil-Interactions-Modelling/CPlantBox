@@ -97,7 +97,16 @@ protected:
 		if ((organType == Organism::ot_leaf) && (k_stomatas.size() > 0))
 		{
 			if(k_stomatas.at(numleaf) > 0){return 1/(1/kr.at(organType - 2).at(type) + 1/k_stomatas.at(numleaf));}else{return 0;}
-		} else { return kr.at(organType - 2).at(type); }
+		} else { 
+        try {
+            return kr.at(organType - 2).at(type); 
+            } catch(...) {
+            std::cout << "sizeA "<<kr.size()<< std::flush;
+            if(kr.size()>(organType - 2)){std::cout << " sizeB "<<kr.at(organType - 2).size()<< std::flush;}
+            throw std::runtime_error("coucou");
+        }
+        return 0.;
+        }
 	}//per subtype and organ type (goes from 2 (root) to 4 (leaf))
     double kr_table(int si,double age, int type, int organType, int numleaf)
 	{

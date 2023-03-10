@@ -725,6 +725,8 @@ void MappedPlant::simulate(double dt, bool verbose)
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
+    
+	getSegment2leafIds();
 
 }
 
@@ -834,4 +836,28 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
 	return nodeId;
 }
 
+/**
+ *	index of node of organtype ot
+ * @param ot        the expected organ type, where -1 denotes all organ types (default)
+ * @return          Id of each segment
+ */
+void MappedPlant::getSegment2leafIds() 
+{
+	segment2leafIds = std::vector<int>(organTypes.size(),-1);
+	int leafId = 0;
+    for (int i=0; i<organTypes.size(); i++) {
+		if(organTypes.at(i) == Organism::ot_leaf){
+			segment2leafIds.at(i) = leafId;
+			leafId +=1;
+		}
+    }
+}
+
+int MappedPlant::getSegment2leafId(int si_) {
+		int leafSi = segment2leafIds.at(si_);
+		if(leafSi == -1){
+			throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of non-leaf segment");
+			}
+		return leafSi;
+	}
 } // namespace

@@ -612,6 +612,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("lmaxs", &LeafRandomParameter::lmaxs)
             .def_readwrite("areaMax", &LeafRandomParameter::areaMax)
             .def_readwrite("areaMaxs", &LeafRandomParameter::areaMaxs)
+            .def_readwrite("Width_petiole", &LeafRandomParameter::Width_petiole)
+            .def_readwrite("Width_blade", &LeafRandomParameter::Width_blade)
             .def_readwrite("r", &LeafRandomParameter::r)
             .def_readwrite("rs", &LeafRandomParameter::rs)
             .def_readwrite("RotBeta", &LeafRandomParameter::rotBeta)

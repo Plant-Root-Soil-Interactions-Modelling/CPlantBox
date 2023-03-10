@@ -901,25 +901,33 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                        if(doTroubleshooting){
                                  std::cout<<"let's search for phytoID" <<std::endl;
                        }
-                        for(;((PhytoIdx < stemParams->ln.size())&(!foundPhytoIdx));PhytoIdx++)
+                        if((org->getLength(true)<=stemParams->lb)||( org->getNumberOfChildren()==0))
                         {
-                            double maxPhytoLen = stemParams->ln.at(PhytoIdx);
-                            double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->parentNI) - org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI);
-                            if(doTroubleshooting){
-                                std::cout<<"at "<<PhytoIdx<<" phytomer lengths max" <<maxPhytoLen<<" current "<< currentPhytoLen <<" at kids "<< org->getLength(org->getChild(PhytoIdx+1)->parentNI)<<" "<< org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI) <<std::endl;
-                            }
-                            foundPhytoIdx = (maxPhytoLen - currentPhytoLen > 1e-10);//first still growing phytomere
-                            if(doTroubleshooting){
-                                std::cout<<"(maxPhytoLen - currentPhytoLen > 1e-10) "<<(maxPhytoLen - currentPhytoLen < 1e-10)<<std::endl;
-                            }
-                            if(maxPhytoLen - currentPhytoLen < -1e-10){throw std::runtime_error("maxPhytoLen - currentPhytoLen < -1e10;");}
                             
-                        }
-                        nn1 = org->getChild(std::max(0,PhytoIdx-1))->parentNI;
-                        if(doTroubleshooting){
-                                std::cout<<"retained phytoID "<<std::max(0,PhytoIdx-1) <<" "<< nn1<<std::endl;
+                               if(doTroubleshooting){
+                                         std::cout<<"stem still in basal zone "<<org->getLength(true)<<" "<<stemParams->lb <<" "<<org->getNumberOfChildren()<<std::endl;
+                               }
+                            nn1=0;
+                        }else{
+                            for(;((PhytoIdx < stemParams->ln.size())&(!foundPhytoIdx));PhytoIdx++)
+                            {
+                                double maxPhytoLen = stemParams->ln.at(PhytoIdx);
+                                double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->parentNI) - org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI);
+                                if(doTroubleshooting){
+                                    std::cout<<"at "<<PhytoIdx<<" phytomer lengths max" <<maxPhytoLen<<" current "<< currentPhytoLen <<" at kids "<< org->getLength(org->getChild(PhytoIdx+1)->parentNI)<<" "<< org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI) <<std::endl;
+                                }
+                                foundPhytoIdx = (maxPhytoLen - currentPhytoLen > 1e-10);//first still growing phytomere
+                                if(doTroubleshooting){
+                                    std::cout<<"(maxPhytoLen - currentPhytoLen > 1e-10) "<<(maxPhytoLen - currentPhytoLen < 1e-10)<<std::endl;
+                                }
+                                if(maxPhytoLen - currentPhytoLen < -1e-10){throw std::runtime_error("maxPhytoLen - currentPhytoLen < -1e10;");}
+
                             }
-                        
+                            nn1 = org->getChild(std::max(0,PhytoIdx-1))->parentNI;
+                            if(doTroubleshooting){
+                                    std::cout<<"retained phytoID "<<std::max(0,PhytoIdx-1) <<" "<< nn1<<std::endl;
+                                }
+                        }
                         auto allIDs = org->getNodeIds();
                         nodeIds_.insert(nodeIds_.end(), std::begin(allIDs)+ nn1 ,std::end(allIDs) ); 
                         if(doTroubleshooting){

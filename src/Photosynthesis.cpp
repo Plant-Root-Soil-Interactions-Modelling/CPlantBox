@@ -300,6 +300,11 @@ void Photosynthesis::getError(double simTime)
 				}else{tempVal=1.;}
 			maxErr[5] =std::max(std::abs((this->outputFlux[i]-outputFlux_old[i])/tempVal),maxErr[5]);
 			maxErr[7] += 0;//std::abs((this->outputFlux[i]-outputFlux_old[i])/tempVal);//becasue sum of fluxes important 
+            if(plant->organTypes.at(i)==4)
+			{
+				maxErr[6] =std::max(std::abs((this->outputFlux[i]-Ev[plant->getSegment2leafId(i)])/tempVal),maxErr[6]);
+						
+			}
 		}
 		
 		if(doLog){
@@ -332,8 +337,6 @@ void Photosynthesis::getError(double simTime)
 		
 		//	if(doLog){myfile1 <<"in if(plant->organTypes[i] == 4){"<<std::endl;} }
 		
-		//if(this->k_stomatas[i] !=0){tempVal=std::min(std::abs(this->k_stomatas[i]),std::abs(this->k_stomatas_old[i])) ;}else{tempVal=1.;}
-		maxErr[6] =0;//std::max(std::abs((this->k_stomatas[i]-k_stomatas_old[i])/tempVal),maxErr[6]);
 		if(doLog){
 			myfile1 <<i<<" "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
@@ -403,6 +406,8 @@ void Photosynthesis::initStruct(double sim_time_){
         } catch(...) {
             std::cout << "\n Photosynthesis::initStruct: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<ot<< " subtype " << st <<std::flush;
+            std::cout  << "\n "<<li<<" "<< sim_time_<<" "<< st<<" "<< ot<<" "<< li_ <<std::flush;
+            throw std::runtime_error("\n Photosynthesis::initStruct: conductivities failed");
         }
 		double perimeter = plant->leafBladeSurface.at(li)/l*2; 
 		fv.at(li_) = -perimeter*kr;

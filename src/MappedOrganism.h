@@ -146,8 +146,11 @@ public:
 	void calcExchangeZoneCoefs() override;					 
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
 	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module		
+	int getSegment2leafId(int si_) ; ///< fill segment2Leaf vector
+	std::vector<int> segment2leafIds;///< to go from vector of size segment to vectoer of size leaf_segment
  protected:
 	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);	
+	void getSegment2leafIds(); ///< fill segment2Leaf vector
 };
 
 }

@@ -7,10 +7,10 @@ import numpy as np
 import plantbox as pb
 from plantbox import PhloemFlux
 #import rsml_reader as rsml
+from xylem_flux import XylemFluxPython
 
 
-
-class PhloemFluxPython(PhloemFlux):
+class PhloemFluxPython(PhloemFlux, XylemFluxPython):
     """  wrapper for photosynthesis
        
     """
