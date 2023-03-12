@@ -358,19 +358,37 @@ class XylemFluxPython(XylemFlux):
         tipleaves = tipleaves - np.ones(tipleaves.shape, dtype = np.int64)  # segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
 
-    def get_suf(self, sim_time, approx = False):
-        """ calculates the surface uptake fraction [1] of the root system at simulation time @param sim_time [day]
-            (suf is constant for age independent conductivities)  """
+    def get_suf(self, sim_time, approx = False, organType_=2):
+        """ calculates the surface uptake fraction [1] at simulation time @param sim_time [day]
+            (suf is constant for age independent conductivities) 
+            for the root system  (organType_=2)
+            the shoot (organType_=4)
+        """
         segs = self.rs.segments
         nodes = self.rs.nodes
         p_s = np.zeros((len(segs),))
+        organType = self.get_organ_types()
         for i, s in enumerate(segs):
-            p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
-        rx = self.solve_neumann(sim_time, -1.e5, p_s, cells = False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
+            if (organType[i] ==2):
+                p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+            else:
+                p_s[i] =self.airPressure- 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+        if(4 in organType):#we have a whole plant
+            rx = self.solve_neumann(sim_time, 0, p_s, cells = False)
+            #transpiration == leaf radial flux. adapt sign to get positive SUF
+        else:
+            transpiration = -1.e5
+            rx = self.solve_neumann(sim_time,transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
         # print("rx", np.min(rx), np.max(rx), np.mean(rx))
         fluxes = self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
+        
+        if(4 in organType):
+            transpiration = sum(np.array(fluxes)[organType == 4])*(-1*(organType_==2)+1*(organType_==4))
         # print("fluxes ", np.min(fluxes) / -1.e5, np.max(fluxes) / -1.e5, np.mean(fluxes) / -1.e5)
-        return np.array(fluxes) / -1.e5  # [1]
+        if transpiration != 0:
+            return np.array(fluxes)[organType == organType_] /transpiration  # [1]
+        else:
+            return np.full(len(np.array(fluxes)[organType == organType_]),0.)
 
     def get_mean_suf_depth(self, sim_time):
         """  mean depth [cm] of water uptake based suf """
@@ -395,32 +413,72 @@ class XylemFluxPython(XylemFlux):
         print("XylemFluxPython.find_base_segments(): base segment indices for node indics", self.dirichlet_ind, "are", s_)
         return s_
 
-    def get_krs(self, sim_time, seg_ind = [0]):
-        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] 
+    def get_krs(self, sim_time, seg_ind = [0], plant=False):
+        """ calculatets root system conductivity [cm2/day] (plant=False)
+        or root, shoot and total conductivity (plant=True)
+        at simulation time @param sim_time [day] 
         if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments        
         """
         segs = self.rs.segments
         nodes = self.rs.nodes
         p_s = np.zeros((len(segs),))
+        organType = self.get_organ_types()
         for i, s in enumerate(segs):
-            p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
-        rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
-        jc = 0
-        for i in seg_ind:
-            jc -= self.axial_flux(i, sim_time, rx, p_s, [], cells = False, ij = True)
-        krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[self.dirichlet_ind[0]])
-        return krs , jc
+            if (organType[i] ==2):
+                p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+            else:
+                p_s[i] =self.airPressure- 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+        if plant:
+            rx = self.solve_neumann(sim_time,  0., p_s, cells = False)
+            fluxes = self.segFluxes(sim_time, rx, p_s, approx = False, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
+            jc = sum(np.array(fluxes)[organType == 4])
+            root_p_s = p_s[organType == 2]
+            eswp = self.get_eswp(sim_time, root_p_s, cells = False, organType_ = 2)
+            leaf_p_s = p_s[organType == 4]
+            
+            eawp = self.get_eswp(sim_time, leaf_p_s, cells = False, organType_ = 4)
+            
+            rootOs = self.rs.getOrgans(2)
+            ShootRoots = [rootO for rootO in rootOs if rootO.getParameter("subType")==self.rs.getSeed().shootborneType]#[0]
+            if len(ShootRoots )>0:#ATT! does not work if tiller separation is below the higher Shoot-root
+                ShootRoot = ShootRoots[0]
+                rootCollar = ShootRoot.getNodeId(0)
+            else: #noo shoot root: we can take the wat pot at the seed
+                rootCollar=0
+            
+            if eswp == 0: #no transpiration
+                print("esp == 0, no transpiration?")
+                return np.nan,np.nan,np.nan, 0, np.nan, np.nan, rx[rootCollar]
+            
+            kr_roots = jc / (eswp - rx[rootCollar])
+            kr_shoot = jc / (rx[rootCollar] - eawp)
+            kr_plant = jc / (eswp - eawp)
+            #conductivites, transpirations and equvalient water potentials
+            return kr_roots, kr_shoot,kr_plant , jc, eswp,eawp, rx[rootCollar]
+        else:
+            rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
+            jc = 0
+            for i in seg_ind:
+                jc -= self.axial_flux(i, sim_time, rx, p_s, [], cells = False, ij = True)
+            krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[self.dirichlet_ind[0]])
+            return krs , jc
 
-    def get_eswp(self, sim_time, p_s):
-        """ calculates the equivalent soil water potential [cm] at simulation time @param sim_time [day] for 
-        the soil matric potential @param p_s [cm] given per cell """
-        segs = self.rs.segments
+    def get_eswp(self, sim_time, p_s, cells = True, organType_ = 2):
+        """ calculates the equivalent soil water potential [cm] (organType_ = 2)
+        or air water potential (organType_ = 4)
+        at simulation time @param sim_time [day] for 
+        the potential @param p_s [cm] given per cell """
+        organType = self.get_organ_types()
+        segs = np.array(self.rs.segments)[organType == organType_]
         nodes = self.rs.nodes
         seg2cell = self.rs.seg2cell
-        suf = self.get_suf(sim_time)
+        suf = self.get_suf(sim_time, organType_ = organType_)
         eswp = 0.
         for i, s in enumerate(segs):
-            eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
+            if cells:
+                eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
+            else:
+                eswp += suf[i] * (p_s[i] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
         return eswp
 
     def kr_f(self, age, st, ot = 2 , seg_ind = 0):

@@ -320,7 +320,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("organTypeName", &Organism::organTypeName)
             .def("getOrganRandomParameter", (std::shared_ptr<OrganRandomParameter> (Organism::*)(int, int) const)  &Organism::getOrganRandomParameter) //overloads
             .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
-            .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
+            .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)			
+            .def("getSeed", &Organism::getSeed)
 
             .def("addOrgan", &Organism::addOrgan)
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)
@@ -844,7 +845,6 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
             .def(py::init<unsigned int>(),  py::arg("seednum")=0)
-            .def("getSeed", &Plant::getSeed)
             .def("initialize", &Plant::initialize, py::arg("verbose") = true)
 			.def("initializeLB", &Plant::initialize, py::arg("verbose") = true)
             .def("initializeDB", &Plant::initialize, py::arg("verbose") = true)
