@@ -3,6 +3,7 @@
 #include "Leaf.h"
 #include "Root.h"
 #include "Plant.h"
+#include "Seed.h"
 #include <algorithm>
 
 namespace CPlantBox {

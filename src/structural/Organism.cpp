@@ -2,6 +2,7 @@
 #include "Organism.h"
 
 #include "Organ.h"
+#include "Seed.h"
 #include "organparameter.h"
 
 #include <stdexcept>

@@ -2,6 +2,7 @@
 #include "stemparameter.h"
 
 #include "Organism.h"
+#include "Seed.h"
 
 #include <cmath>
 #include <iostream>
@@ -106,7 +107,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 		}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
 	}	
 	
-	double nC = plant->getSeed()->param()->nC; 
+	double nC = p->getSeed()->param()->nC; 
 	if((lb_< dxMin*2)&&(nC >0))//lb must be longer than nZ. TODO:remove when root laterals is implemented
 	{
 		lb_ = dxMin*2;

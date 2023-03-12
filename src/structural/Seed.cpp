@@ -144,7 +144,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create Stem
 	 */
-	std::shared_ptr<Stem> mainstem;
+	std::shared_ptr<Organ> mainstem;
 	if (plantBox) { // i.e. if a stem is defined
 		// Stem
 		mainstem = createStem(plant.lock(), mainStemType,0.); // main stem has subtype 1

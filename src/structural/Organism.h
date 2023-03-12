@@ -12,7 +12,6 @@
 #include <array>
 #include <memory>
 #include <iostream>
-#include "organparameter.h"
 
 namespace CPlantBox {
 
