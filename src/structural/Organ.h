@@ -3,6 +3,7 @@
 #define ORGAN_H_
 
 #include "mymath.h"
+#include "organparameter.h"
 
 #include "tinyxml2.h"
 

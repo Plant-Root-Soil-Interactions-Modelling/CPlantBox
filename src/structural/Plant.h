@@ -42,8 +42,6 @@ public:
 
   std::shared_ptr<Organism> copy() override; ///< deep copies the organism
 
-  /* organs */
-  std::shared_ptr<Seed> getSeed(); ///< the plant seed
 
   /* parameters */
   void initializeReader() override; ///< initializes XML reader

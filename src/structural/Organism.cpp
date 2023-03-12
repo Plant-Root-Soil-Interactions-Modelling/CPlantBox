@@ -733,5 +733,12 @@ void Organism::setSeed(unsigned int seed)
     this->gen = std::mt19937(seed);
 }
 
+/**
+ * Returns the seed of the plant
+ */
+std::shared_ptr<Seed> Organism::getSeed()
+{
+	return std::static_pointer_cast<Seed>(baseOrgans.at(0));
+}
 
 } // namespace

@@ -34,13 +34,6 @@ std::shared_ptr<Organism> Plant::copy()
     return no;
 }
 
-/**
- * Returns the seed of the plant
- */
-std::shared_ptr<Seed> Plant::getSeed()
-{
-	return std::static_pointer_cast<Seed>(baseOrgans.at(0));
-}
 
 /**
  * todo docme , this could be made unique? and probably should be protected
