@@ -37,7 +37,7 @@ class TestLeaf(unittest.TestCase):
 
     def test_leaf(self):
         """ leaf without lateral leafs """
-        ons = pb.Matrix3d(pb.Vector3d(0., 0., 1.), pb.Vector3d(0., 1., 0.), pb.Vector3d(1., 0., 0.))
+        ons = pb.Vector3d(0., 0., 1.)
         plant = pb.Plant()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.LeafRandomParameter(plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "leaf", 1, 3.5, 1., 7.5, 3, 1, 0.1
@@ -60,7 +60,7 @@ class TestLeaf(unittest.TestCase):
         parentleaf.setOrganism(plant)
         parentleaf.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
 
-        leaf = pb.Leaf(plant, p0.subType, ons, 0, parentleaf , 0)
+        leaf = pb.Leaf(plant, p0.subType, 0, parentleaf , 0)
         leaf.setOrganism(plant)
         leaf.simulate(7)
         # vp.plot_leaf(leaf)

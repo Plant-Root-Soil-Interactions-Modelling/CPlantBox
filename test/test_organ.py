@@ -7,15 +7,15 @@ class TestOrgan(unittest.TestCase):
 
     def hand_example(self):
         """ an example used in the tests below, a hand with two fingers """
-        self.ons = pb.Matrix3d(pb.Vector3d(0., 0., 1.), pb.Vector3d(0., 1., 0.), pb.Vector3d(1., 0., 0.))
+        self.ons = pb.Vector3d(0., 0., 1.)
         self.human1 = pb.Organism()  # same example as in test_constructor ...
         otp = pb.OrganRandomParameter(self.human1)
         self.human1.setOrganRandomParameter(otp)
         op = otp.realize()
         self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., self.ons, 0, False, 0)
         self.hand.setOrganism(self.human1)
-        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4, self.ons, 0)  # delayedfor 4 days
-        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3, self.ons, 0)  # delayed for 3 days
+        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4,  0)  # delayedfor 4 days
+        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3,  0)  # delayed for 3 days
         self.hand.addChild(self.thumb)
         self.hand.addChild(self.little_finger)
 
@@ -36,7 +36,7 @@ class TestOrgan(unittest.TestCase):
 
     def test_constructors(self):
         """ tests three different kinds of constructors """
-        ons = pb.Matrix3d(pb.Vector3d(0., 0., 1.), pb.Vector3d(0., 1., 0.), pb.Vector3d(1., 0., 0.))
+        ons = pb.Vector3d(0., 0., 1.)
         human1 = pb.Organism()
         otp = pb.OrganRandomParameter(human1)
         human1.setOrganRandomParameter(otp)
@@ -45,8 +45,8 @@ class TestOrgan(unittest.TestCase):
         hand = pb.Organ(human1.getOrganIndex(), op, True, True, 0., 15., ons, 0, False, 0)
         hand.setOrganism(human1)
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        thumb = pb.Organ(human1, hand, 0, 0, 4, ons, 0)
-        little_finger = pb.Organ(human1, hand, 0, 0, 3, ons, 0)
+        thumb = pb.Organ(human1, hand, 0, 0, 4,  0)
+        little_finger = pb.Organ(human1, hand, 0, 0, 3,  0)
         hand.addChild(thumb)
         hand.addChild(little_finger)
         # 3. deep copy (with a factory function)
@@ -71,7 +71,7 @@ class TestOrgan(unittest.TestCase):
         """ tests if the the organ tree can be represented in a seqential list"""
         self.hand_example()
         self.add_nodes()  # only organs with number of nodes > 1 are considered
-        ring = pb.Organ(self.human1, self.thumb, 0, 0, 4, self.ons, 0)  # add a ring to the thumb
+        ring = pb.Organ(self.human1, self.thumb, 0, 0, 4,  0)  # add a ring to the thumb
         self.thumb.addChild(ring)
         ring.addNode(pb.Vector3d(0, -1, 1.6), self.thumb.getNodeId(1), 4)
         ring.addNode(pb.Vector3d(0, -1, 1.6), 4)

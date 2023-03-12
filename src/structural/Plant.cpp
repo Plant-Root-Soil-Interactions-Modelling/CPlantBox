@@ -132,8 +132,8 @@ void Plant::initializeDB(bool verbose, bool test)
 
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
-    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay) override {
-    		return std::make_shared<RootDelay>(plant, type, heading, delay, shared_from_this(), 0);
+    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type,  double delay) override {
+    		return std::make_shared<RootDelay>(plant, type, delay, shared_from_this(), 0);
     	};
     };
 
@@ -237,10 +237,8 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 	void Plant::simulate(double dt, bool verbose)	
 {	
 	abs2rel();
-	relCoord = true;
     Organism::simulate(dt, verbose);	
 	rel2abs();
-	relCoord = false;
 }
 
 /**

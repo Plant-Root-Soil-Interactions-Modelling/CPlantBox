@@ -26,8 +26,8 @@ class Root :public Organ
 public:
 
     Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        Vector3d iheading, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
-    Root(std::shared_ptr<Organism> rs, int type, Vector3d heading, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
+        Vector3d partialIHeading_, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
+    Root(std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
     virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
@@ -40,7 +40,6 @@ public:
     std::string toString() const override;
 
     /* From analytical equations */
-    double calcCreationTime(double length, double dt); ///< analytical creation (=emergence) time of a node at a length
     double calcLength(double age); ///< analytical length of the root
     double calcAge(double length); ///< analytical age of the root
 
@@ -53,11 +52,6 @@ public:
 protected:
 
     virtual void createLateral(double dt, bool silence); ///< creates a new lateral, called by Root::simulate()
-
-    virtual Vector3d getIncrement(const Vector3d& p, double sdx); ///< called by createSegments, to determine growth direction
-    void createSegments(double l, double dt, bool silence); ///< creates segments of length l, called by Root::simulate()
-
-    bool firstCall = true; ///< firstCall of createSegments in simulate
 
 };
 

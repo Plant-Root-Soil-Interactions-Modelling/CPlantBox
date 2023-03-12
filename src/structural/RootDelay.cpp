@@ -31,7 +31,7 @@ std::string RootDelay::toString() const
     std::string str = Organ::toString();
     str.replace(0, 6, "Delay");
     std::stringstream newstring;
-    newstring << "; initial heading: " << iHeading.toString() << ", parent node index" << parentNI << ".";
+    newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
     return str+newstring.str();
 }
 
@@ -49,7 +49,7 @@ void RootDelay::createLateral(double dt, bool verbose)
     int lt = rrp->getLateralType(nodes.back());
     if (lt>0) {
     	double delay = std::max(rrp->ldelay + plant.lock()->randn()*rrp->ldelays, 0.);
-        auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,  heading(), delay,  shared_from_this(), nodes.size()-1);
+        auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,   delay,  shared_from_this(), nodes.size()-1);
         children.push_back(lateral);
     	double ageLN = this->calcAge(length); // age of root when lateral node is created
         ageLN = std::max(ageLN, age-dt); // dt_*(1-dl/dl0) are ready

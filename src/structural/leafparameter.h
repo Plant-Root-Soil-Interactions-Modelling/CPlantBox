@@ -5,7 +5,6 @@
 #include "mymath.h"
 #include "soil.h"
 #include "organparameter.h"
-#include "tropism.h"
 #include "growth.h"
 
 #include <vector>
@@ -123,7 +122,6 @@ public:
 	//how is the shape of the leaf deined? cylinder (a = radius), cuboid (a = thickness, Width_blade, Width_petiole), 2D (leafGeometryPhi, leafGeometryX, areaMax)
 	int shapeType = 2; //default: 2D shape
 	/* call back functions */
-    std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability function

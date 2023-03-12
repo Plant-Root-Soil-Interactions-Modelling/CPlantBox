@@ -37,9 +37,9 @@ class Organ : public std::enable_shared_from_this<Organ>
 public:
 
     Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-    		Matrix3d iHeading, int pni, bool moved = false, int oldNON = 0); ///< creates everything from scratch
+    		Vector3d partialIHeading_,  int pni, bool moved = false, int oldNON = 0); ///< creates everything from scratch
     Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
-    		Matrix3d iHeading, int pni); ///< used within simulation
+    		int pni); ///< used within simulation
     virtual ~Organ() { }
 
     virtual std::shared_ptr<Organ> copy(std::shared_ptr<Organism> plant); ///< deep copies the organ tree
@@ -67,7 +67,7 @@ public:
     bool isActive() const { return active; } ///< checks if active
     double getAge() const { return age; } ///< return age of the organ
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
-    virtual  double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
+    double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
 	virtual double calcAge(double length){throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
 	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
@@ -86,8 +86,8 @@ public:
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
 	double dx() const; ///< returns the max axial resolution
 	double dxMin() const; ///< returns the min axial resolution
-	virtual void rel2abs(){ throw std::runtime_error( "rel2abs() not implemented" );  }///should be overwritten
-    virtual void abs2rel(){ throw std::runtime_error( "abs2rel() not implemented" );  }///should be overwritten
+    void rel2abs() ;
+	void abs2rel() ;
 
 	void moveOrigin(int idx);//change idx of first node, in case of nodal growth
 
@@ -105,19 +105,19 @@ public:
     virtual std::string toString() const; ///< info for debugging
     void writeRSML(tinyxml2::XMLDocument& doc, tinyxml2::XMLElement* parent) const; ///< writes this organs RSML tag
 
-    /* Parameters that are constant over the organ life time*/
-    virtual Vector3d getiHeading0() const {return iHeading.column(0);}
-    Matrix3d iHeading; ///< the initial coordinate system of the root, when it was created, tip heading is iHeading.column(0)
-
-    int parentNI; ///< local parent node index
 	 /* useful */
-    virtual Vector3d heading() const; ///< current (absolute) heading of the organs tip
-    virtual Vector3d heading(int i)  const { throw std::runtime_error( "heading(i) not implemented" );  }///should be overwritten ; ///< current (absolute) heading of the organs tip
+    int parentNI; ///< local parent node index
+    Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
+    Vector3d getiHeading0() const ;///< the initial coordinate system of the root, when it was created
+	bool gethasRelCoord(){return nodes.at(0) == Vector3d(0.,0.,0.);}
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
 protected:
 
+    Vector3d partialIHeading;
+	Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
+    void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
     /* up and down the organ tree */
     std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of
     std::weak_ptr<Organ> parent; ///< pointer to the parent organ (nullptr if it has no parent)
@@ -142,6 +142,7 @@ protected:
     /* last time step */
     bool moved = false; ///< nodes moved during last time step
     int oldNumberOfNodes = 0; ///< number of nodes at the end of previous time step
+    bool firstCall = true;
 };
 
 } // namespace CPlantBox

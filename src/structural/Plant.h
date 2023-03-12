@@ -73,13 +73,10 @@ public:
   void writeVTP(int otype, std::ostream & os) const;
 
   std::vector<int> leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-  bool	hasRelCoord() override {return relCoord;}  //is currently with relative coordinates? see @Leaf::getLength(i) or Stem::getLength(i)
-  void setRelCoord(bool isrel) {relCoord = isrel;}
   void abs2rel();
   void rel2abs();
 protected:
   void initialize_(bool verbose = true, bool test = false);
-  bool  relCoord = false;
   std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
   std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 

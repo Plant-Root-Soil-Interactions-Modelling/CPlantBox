@@ -47,7 +47,7 @@ class TestRoot(unittest.TestCase):
         parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
 
         self.parentroot = parentroot  # store parent (not owned by child Organ)
-        self.root = pb.Root(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0)
+        self.root = pb.Root(self.plant, p0.subType,  0, self.parentroot , 0)
         self.root.setOrganism(self.plant)
 
     def root_length_test(self, dt, l, subDt):
@@ -84,7 +84,7 @@ class TestRoot(unittest.TestCase):
         root.setOrganism(self.plant)
         root.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        root2 = pb.Root(self.plant, self.p1.subType, pb.Vector3d(0, 0, -1), 0, root, 0)
+        root2 = pb.Root(self.plant, self.p1.subType, 0, root, 0)
         root.addChild(root2)
         # 3. deep copy (with a factory function)
         plant2 = pb.Organism()
