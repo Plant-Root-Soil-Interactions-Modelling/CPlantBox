@@ -52,11 +52,11 @@ public:
   void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; }  ///< optionally, sets a confining geometry (call before Plant::initialize())
   void setSoil(std::shared_ptr<SoilLookUp> soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before Plant::initialize())
   void reset(); ///< resets the plant class, keeps the organ type parameters
-  void initializeLB(bool verbose = true, bool test = false);
+  void initializeLB(bool verbose = true);
   ///< creates the base roots (length based lateral emergence times), call before simulation and after setting plant and root parameters
-  void initializeDB(bool verbose = true, bool test = false);
+  void initializeDB(bool verbose = true);
   ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting plant and root parameters
-  void initialize(bool verbose = true, bool test = false) { initializeLB(verbose, test); };
+  void initialize(bool verbose = true) override { initializeLB(verbose); };
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
   void simulate(double dt, bool verbose = false) override;
@@ -74,7 +74,7 @@ public:
   void abs2rel();
   void rel2abs();
 protected:
-  void initialize_(bool verbose = true, bool test = false);
+  void initialize_(bool verbose = true);
   std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
   std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
