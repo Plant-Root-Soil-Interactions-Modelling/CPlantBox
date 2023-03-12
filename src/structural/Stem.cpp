@@ -559,19 +559,20 @@ void Stem::shootBorneRootGrow(bool verbose)
 		//onyl main shoot carries shoot-born roots
 	if (stem_p->subType == 1)//tillers have another subtype
 		{
-		int nC = getPlant()->getSeed()->param()->nC;
-		double nZ = getPlant()->getSeed()->param()->nz;
-		if ( nC>0 ) { // only if there are any shootborne roots && (p_seed->firstSB+p_seed->delaySB<maxT)
-			std::cout<<"seed nC is "<< nC <<"\n";
-			std::cout<<"seed nZ is "<< nZ <<"\n";
-			double ageLN = this->calcAge(getLength(true)); // age of stem when lateral node is created
-			double ageLG = this->calcAge(getLength(true)+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-			double delay = ageLG-ageLN; // time the lateral has to wait
-			for (int i=0; i< nC; i++) {
-				auto shootBorneRoot = std::make_shared<Root>(plant.lock() , shootborneType, newHeading, delay,
-						shared_from_this(), nodes.size() - 1);
-				children.push_back(shootBorneRoot);
-				shootBorneRoot->simulate(age-ageLN,verbose);
+			int nC = getPlant()->getSeed()->param()->nC;
+			double nZ = getPlant()->getSeed()->param()->nz;
+			if ( nC>0 ) { // only if there are any shootborne roots && (p_seed->firstSB+p_seed->delaySB<maxT)
+				std::cout<<"seed nC is "<< nC <<"\n";
+				std::cout<<"seed nZ is "<< nZ <<"\n";
+				double ageLN = this->calcAge(getLength(true)); // age of stem when lateral node is created
+				double ageLG = this->calcAge(getLength(true)+sp->la); // age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
+				double delay = ageLG-ageLN; // time the lateral has to wait
+				for (int i=0; i< nC; i++) {
+					auto shootBorneRoot = std::make_shared<Root>(plant.lock() , shootborneType, delay,
+							shared_from_this(), nodes.size() - 1);
+					children.push_back(shootBorneRoot);
+					shootBorneRoot->simulate(age-ageLN,verbose);
+				}
 			}
 		}
 }

@@ -90,6 +90,7 @@ public:
 	void abs2rel() ;
 
 	void moveOrigin(int idx);//change idx of first node, in case of nodal growth
+	double calcCreationTime(double length, double dt); ///< analytical creation (=emergence) time of a node at a length
 
     /* last time step */
     virtual bool hasMoved() const { return moved; }; ///< have any nodes moved during the last simulate call
@@ -109,7 +110,7 @@ public:
     int parentNI; ///< local parent node index
     Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
     Vector3d getiHeading0() const ;///< the initial coordinate system of the root, when it was created
-	bool gethasRelCoord(){return nodes.at(0) == Vector3d(0.,0.,0.);}
+	bool hasRelCoord() const {return nodes.at(0) == Vector3d(0.,0.,0.);}
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume

@@ -183,15 +183,6 @@ void Seed::initialize(bool verbose)
 				
 			}else{
 				
-				if(sp->nz> mainstem->param_->lb)
-				{
-					sp->nz= mainstem->param_->lb-minSegLen;
-					if(verbose){
-						std::cout<<"\nStem::simulate: nz changed to "<<(sp->nz);
-						std::cout<<" for compatibility with lb ("<<param_->lb<<") and min ("<<minSegLen<<")";
-					std::cout<<" segment length of main shoot"<<std::endl;}
-					
-				}
 				double res = sp->nz -floor(sp->nz / maxSegLen)*maxSegLen;
 				if(res < dxMin() && res != 0){
 					if(res <= dxMin()/2){

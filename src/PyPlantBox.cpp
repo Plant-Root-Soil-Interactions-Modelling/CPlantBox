@@ -261,8 +261,8 @@ PYBIND11_MODULE(plantbox, m) {
      * Organ.h
      */
     py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ")
-            .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, Matrix3d, int>())
-            .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
+            .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, int>())
+            .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
             .def("copy",&Organ::copy)
             .def("organType",&Organ::organType)
             .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
@@ -274,7 +274,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("addChild",&Organ::addChild)
             .def("getNumberOfChildren",&Organ::getNumberOfChildren)
             .def("getChild",&Organ::getChild)
-
+			.def("calcCreationTime", &Organ::calcCreationTime)
             .def("getId",&Organ::getId)
             .def("getParam",&Organ::getParam)
             .def("getOrganRandomParameter",&Organ::getOrganRandomParameter)
