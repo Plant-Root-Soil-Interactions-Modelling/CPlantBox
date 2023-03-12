@@ -107,8 +107,8 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 		}else{lb_ =  floor(lb_ / dx)*dx + dxMin;}
 	}	
 	
-	double nC = p->getSeed()->param()->nC; 
-	if((lb_< dxMin*2)&&(nC >0))//lb must be longer than nZ. TODO:remove when root laterals is implemented
+	bool hasSeed = (p->baseOrgans.size()>0)&&(p->baseOrgans.at(0)->organType()==Organism::ot_seed); 
+	if(hasSeed&&(lb_< dxMin*2)&&(p->getSeed()->param()->nC >0))//lb must be longer than nZ. TODO:remove when root laterals is implemented
 	{
 		lb_ = dxMin*2;
 	}

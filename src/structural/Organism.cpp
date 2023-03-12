@@ -96,12 +96,12 @@ std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParam
 std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, int subType) const
 {
     try {
-        //                std::cout << "reading organ type " << ot << " sub type " << subtype <<": ";
-        //                for (auto& p : organParam[ot]) {
-        //                    std::cout << p.first;
-        //                }
-        //                std::cout << "\n" << std::flush;
-        return organParam[ot].at(subType);
+            //            std::cout << "reading organ type " << ot << " sub type " << subType <<": ";
+             //           for (auto& p : organParam.at(ot)) {
+              //              std::cout << p.first;
+              //          }
+              //          std::cout << "\n" << std::flush;
+        return organParam.at(ot).at(subType);
     } catch(...) { // const std::out_of_range& oor
         throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for "+ Organism::organTypeName(ot) + ", of sub type " +
             std::to_string(subType) + " was not set");
@@ -739,7 +739,7 @@ void Organism::setSeed(unsigned int seed)
  */
 std::shared_ptr<Seed> Organism::getSeed()
 {
-	return std::static_pointer_cast<Seed>(baseOrgans.at(0));
+	return std::static_pointer_cast<Seed>(baseOrgans.at(0));	
 }
 
 } // namespace

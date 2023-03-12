@@ -114,6 +114,7 @@ void Stem::simulate(double dt, bool verbose)
 	oldNumberOfNodes = nodes.size();
 	auto p_all = plant.lock();
 	auto p_stem = p_all->getOrganRandomParameter(Organism::ot_stem);
+	
 
 	int nC ; //number of the shoot born root
 	double nZ ; // distance between shoot born root and the seed

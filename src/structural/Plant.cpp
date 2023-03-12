@@ -103,8 +103,8 @@ void Plant::initializeLB(bool verbose , bool test )
 
     // create seed
     auto seed = std::make_shared<Seed>(shared_from_this());
-	if(!test){seed->initialize(verbose);}
     baseOrgans.push_back(seed);
+	if(!test){seed->initialize(verbose);}
     initialize_(verbose, test);
 	
 }
@@ -131,8 +131,8 @@ void Plant::initializeDB(bool verbose, bool test)
     };
 
     auto seed = std::make_shared<SeedDB>(shared_from_this());
-	if(!test){seed->initialize(verbose);}
     baseOrgans.push_back(seed);
+	if(!test){seed->initialize(verbose);}
     initialize_(verbose, test);
 }
 
