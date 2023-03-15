@@ -87,12 +87,11 @@ class PerirhizalPython(Perirhizal):
         radii = ms.radii
         lengths = ms.segLength()
         width = ms.maxBound.minus(ms.minBound)
-        print("width", width)
         outer_r = np.zeros((len(radii),))
         if not volumes:
             n = ms.resolution.x * ms.resolution.y * ms.resolution.z
             volumes = np.ones(int(n)) * (width.x * width.y * width.z) / n
-            print("each volume has", (width.x * width.y * width.z) / n, "cm3")
+            # print("PerirhizalPython.get_outer_radii_() each volume has", (width.x * width.y * width.z) / n, "cm3")
 
         for cell_id, seg_ids in cell2seg.items():
             tt = np.sum(np.array([f(radii[i], lengths[i]) for i in seg_ids]))
@@ -105,30 +104,46 @@ class PerirhizalPython(Perirhizal):
 
     def get_outer_radii_voronoi(self):
         """ todo """
+
         min_b = self.ms.minBound
         max_b = self.ms.maxBound
         domain = pb.SDF_Cuboid(min_b, max_b)
+
         nodes_ = self.ms.nodes
         nodes = np.array([[n.x, n.y, n.z] for n in nodes_])
+        segs = self.ms.segments
+        lengths = self.ms.segLength()
+
         vor = Voronoi(nodes)
         vol = np.zeros(vor.npoints)
+        outer_r = np.zeros(vol.shape)
         # quader, planes_quader = self.create_quader_from_bounding_box_([min_b.x, min_b.y, min_b.z], [max_b.x, max_b.y, max_b.z])
         # print(quader, planes_quader)
 
         for i, reg_num in enumerate(vor.point_region):
+            # print(i, reg_num)
             indices = vor.regions[reg_num]
             if -1 in indices:  # some regions can be opened
                 vol[i] = -1
             else:
                 inside = True
                 for j in indices:
-                    if domain.getDist(vor.vertices[j]) >= 0:  # negative values mean inside the domain (sdf)
+                    if domain.dist(vor.vertices[j]) >= 0:  # negative values mean inside the domain (sdf)
                         inside = False
                         break
                 if inside:
                     vol[i] = ConvexHull(vor.vertices[indices]).volume
                 else:
                     vol[i] = 0
+
+        print("shaping... ", vol.shape, nodes.shape, vor.npoints, len(vor.point_region), np.min(vor.point_region), np.max(vor.point_region))  # node indices
+        # one point too much in point_region?????
+
+        dd
+
+        for si, seg in enumerate(segs):
+            v = vol[seg.y - 1]
+            outer_r[si] = np.sqrt(v / (np.pi * lengths[si]) + radii[si] * radii[si])
 
         # for i, reg_num in enumerate(vor.point_region):
         #     indices = vor.regions[reg_num]
@@ -138,7 +153,7 @@ class PerirhizalPython(Perirhizal):
         #         vol[i] = ConvexHull(vor.vertices[indices]).volume
         #         vol[i] = min(vol[i], 8.)
 
-        return vol  # TODO unfinished...
+        return outer_r  # TODO unfinished...
 
     def intersect_polygon_quader_(self, polygon, quader):
         """ 
