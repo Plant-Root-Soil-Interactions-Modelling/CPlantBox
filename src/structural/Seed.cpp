@@ -10,7 +10,7 @@ namespace CPlantBox {
  * todo docme
  */
 Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length, bool moved, int oldNON)
-		:Organ(id, param, alive, active, age, length, Matrix3d(Vector3d(0,0,1), Vector3d(0,1,0), Vector3d(1,0,0)), 0, moved, oldNON)
+		:Organ(id, param, alive, active, age, length, Vector3d(0,0,1), 0, moved, oldNON)
 { }
 
 
@@ -18,8 +18,7 @@ Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * todo docme
  */
 Seed::Seed(std::shared_ptr<Organism> plant)
-		:Organ(plant, nullptr, Organism::ot_seed, 0, 0.,
-				Matrix3d(Vector3d(0,0,1), Vector3d(0,1,0), Vector3d(1,0,0)), 0)
+		:Organ(plant, nullptr, Organism::ot_seed, 0, 0., 0)																   
 {
 	addNode(param()->seedPos, 0.); // realize() is called in Organ constructor
 }
@@ -65,10 +64,9 @@ void Seed::initialize(bool verbose)
 	 */
 	const double maxT = 365.; // maximal simulation time
 	auto sp = this->param(); // rename
-	Vector3d iheading(0,0,-1);
 
 	// Taproot
-	std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, iheading ,0); // tap root has root type 1
+	std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, 0); // tap root has root type 1
 	taproot->addNode(getNode(0), getNodeId(0), 0);
 	this->addChild(taproot);
 
@@ -94,7 +92,7 @@ void Seed::initialize(bool verbose)
 		}
 		double delay = sp->firstB;
 		for (int i=0; i<maxB; i++) {
-			std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType, iheading, delay);
+			std::shared_ptr<Organ> basalroot = createRoot(plant.lock(), basalType,  delay);
 			basalroot->addNode(getNode(0), getNodeId(0), delay);
 			this->addChild(basalroot);
 			delay += sp->delayB;
@@ -123,13 +121,13 @@ void Seed::initialize(bool verbose)
 			numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
 			double delay = sp->firstSB;
 			for (int i=0; i<numberOfRootCrowns; i++) {
-				std::shared_ptr<Organ>  shootborne0 = createRoot(plant.lock(), shootborneType, iheading ,delay);
+				std::shared_ptr<Organ>  shootborne0 = createRoot(plant.lock(), shootborneType, delay);
 				// TODO fix the initial radial heading
 				shootborne0->addNode(sbpos,delay);
 				this->addChild(shootborne0);
 				delay += sp->delaySB;
 				for (int j=1; j<sp->nC; j++) {
-					std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, iheading ,delay);
+					std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, delay);
 					// TODO fix the initial radial heading
 					shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0),delay);
 					this->addChild(shootborne);
@@ -146,10 +144,10 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create Stem
 	 */
+	std::shared_ptr<Organ> mainstem;
 	if (plantBox) { // i.e. if a stem is defined
 		// Stem
-		Matrix3d isHeading(Vector3d(0, 0, 1), Vector3d(0, 1, 0), Vector3d(1, 0, 0)); // initial Stem heading
-		std::shared_ptr<Organ> mainstem = createStem(plant.lock(), mainStemType, isHeading, 0.); // main stem has subtype 1
+		mainstem = createStem(plant.lock(), mainStemType,0.); // main stem has subtype 1
 		mainstem->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 		children.push_back(mainstem);
 		// Optional tillers
@@ -167,10 +165,49 @@ void Seed::initialize(bool verbose)
 			int maxTi = sp->maxTil;
 			double delay = sp->firstTi;
 			for (int i=0; i<maxTi; i++) {
-				std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType, isHeading, delay);
+				std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType,  delay);
 				tiller->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 				children.push_back(tiller);
 				delay += sp->delayTi;
+			}
+		}
+				//TODO: delete once root laterals are implemented for shoot organs
+		if(sp->nC>0)
+		{
+			double maxSegLen = mainstem->dx();
+			double minSegLen = mainstem->dxMin();
+			if(sp->nz ==0)
+			{
+				std::cout<<"distance between seed and root crown (nz) cannot be "<<sp->nz<<std::endl;
+				std::cout<<"nz is set to minimum segment length of main shoot (dxMin()): "<<minSegLen<<std::endl;
+				const_cast<double&>( sp->nz) =minSegLen;//mainstem->getParameter("lb") >0 minSegLen *2
+				
+			}else{
+				double stemlb = mainstem->getParameter("lb");
+				if(sp->nz> stemlb)
+				{
+					const_cast<double&>( sp->nz)= stemlb -minSegLen;
+					if(verbose){
+						std::cout<<"\nStem::simulate: nz changed to "<<(sp->nz);
+						std::cout<<" for compatibility with lb ("<<stemlb<<") and min ("<<minSegLen<<")";
+					std::cout<<" segment length of main shoot"<<std::endl;}
+					
+				}else{
+				
+					double res = sp->nz -floor(sp->nz / maxSegLen)*maxSegLen;
+					if(res < dxMin() && res != 0){
+						if(res <= dxMin()/2){
+							const_cast<double&>( sp->nz) -= res;
+						}else
+						{
+							const_cast<double&>( sp->nz) =  floor(sp->nz / maxSegLen)*maxSegLen + minSegLen;
+						}
+						if(verbose){
+							std::cout<<"\nStem::simulate: nz changed to "<<sp->nz;
+							std::cout<<" for compatibility with max ("<<maxSegLen<<") and min ("<<minSegLen<<")";
+						std::cout<<" segment length of main shoot"<<std::endl;}
+					}				//make nZ compatible with dx() and dxMin()
+				}
 			}
 		}
 	}
@@ -217,17 +254,17 @@ std::string Seed::toString() const
 /**
  * todo doc
  */
-std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay)
+std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay)
 {
-	return std::make_shared<Root>(plant, type, heading, delay, shared_from_this(), 0);
+	return std::make_shared<Root>(plant, type,delay, shared_from_this(), 0);
 }
 
 /**
  * todo doc// overwrite if you want to change the types
  */
-std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type, Matrix3d iHeading, double delay)
+std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int type,  double delay)
 {
-	return std::make_shared<Stem>(plant, type, iHeading, delay, shared_from_this(), 0);
+	return std::make_shared<Stem>(plant, type,delay, shared_from_this(), 0);
 }
 
 } // namespace CPlantBox

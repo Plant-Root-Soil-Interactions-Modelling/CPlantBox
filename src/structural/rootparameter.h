@@ -6,7 +6,6 @@
 #include "soil.h"
 #include "growth.h"
 #include "organparameter.h"
-#include "tropism.h"
 
 /**
  * This file describes the classes RootSpecificParameter and RootRandomParameter.
@@ -116,7 +115,6 @@ public:
     /*
      * Callback functions for the Root (set up by the class RootSystem)
      */
-    std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth

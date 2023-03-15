@@ -12,6 +12,8 @@
 
 namespace CPlantBox {
 
+class OrganSpecificParameter;
+
 /**
  * SeedSpecificParameter contains all plant specific parameters like planting depth and describing
  * the emergence times of basal and shoot borne roots

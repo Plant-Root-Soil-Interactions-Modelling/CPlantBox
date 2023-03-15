@@ -30,10 +30,13 @@ class TestRelCoord(unittest.TestCase):
         pl.readParameters(path + name + ".xml")
         # stochastic = False => thus rand() always give 0.5 for Tropism. => result only change according to sigma
         pl.initialize(stochastic = False)
+        print("after init simulate")
         dt = 1
         steps = 100
+        print("before simulate")
         for step in range(steps):
             pl.simulate(1, False)
+        print("after simulate")
         pl.write("test_relcoord.vtp")
         params = pl.organParam
         seedPosx = params[1][0].seedPos.x
@@ -42,18 +45,66 @@ class TestRelCoord(unittest.TestCase):
         # print(params[1][0].seedPos)
         roots = pl.getOrgans(2)
         leaves = pl.getOrgans(4)
-        # stems = pl.getOrgans(3)
+        mainStem = pl.getOrgans(3)[0]
+        stems = pl.getOrgans(3)[1:]
 
         rootSubtypes = [ o.param().subType for o in roots]
-        # stemSubtypes = [ o.param().subType for o in stems]
+                                                            
 
-        # roots1 = np.array(roots)[np.where([st == 1 for st in rootSubtypes])[0]]
-        # roots2 = np.array(roots)[np.where([st == 2 for st in rootSubtypes])[0]]
+        roots1 = np.array(roots)[np.where([st == 1 for st in rootSubtypes])[0]]
+        roots2 = np.array(roots)[np.where([st == 2 for st in rootSubtypes])[0]]
         roots3 = np.array(roots)[np.where([st == 3 for st in rootSubtypes])[0]]
 
-        # stems1 = np.array(roots)[np.where([st == 1 for st in stemSubtypes])[0]]
-        # stems3 = np.array(roots)[np.where([st == 3 for st in stemSubtypes])[0]]
+                                                                                 
+                                                                                 
 
+        rootTipsX = [np.array(r.getNode(r.getNumberOfNodes() - 1))[0] for r in roots1]
+        rootTipsY = [np.array(r.getNode(r.getNumberOfNodes() - 1))[1] for r in roots1]
+        rootTipsZ = [np.array(r.getNode(r.getNumberOfNodes() - 1))[2] for r in roots1]
+        stemTipsX = [np.array(r.getNode(r.getNumberOfNodes() - 1))[0] for r in [mainStem]]
+        stemTipsY = [np.array(r.getNode(r.getNumberOfNodes() - 1))[1] for r in [mainStem]]
+        stemTipsZ = [np.array(r.getNode(r.getNumberOfNodes() - 1))[2] for r in [mainStem]]
+        for i in range(0, len(rootTipsX)):
+            self.assertAlmostEqual(rootTipsX[i] - seedPosx, -(stemTipsX[i] - seedPosx), 10, "coord X for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        for i in range(0, len(rootTipsY)):
+            # print(rootTipsY[i]*10**16, leafTipsY[i]*10**16)
+            self.assertAlmostEqual(rootTipsY[i] * 10 ** 16, stemTipsY[i] * 10 ** 16, 10, "coord Y for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        for i in range(0, len(rootTipsZ)):
+            # print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
+            self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(stemTipsZ[i] - seedPosz), 10, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        
+        rootTipsX = [np.array(r.getNode(0))[0] for r in roots2]
+        rootTipsY = [np.array(r.getNode(0))[1] for r in roots2]
+        rootTipsZ = [np.array(r.getNode(0))[2] for r in roots2]
+        stemTipsX = [np.array(r.getNode(0))[0] for r in stems]
+        stemTipsY = [np.array(r.getNode(0))[1] for r in stems]
+        stemTipsZ = [np.array(r.getNode(0))[2] for r in stems]
+        for i in range(0, len(rootTipsX)):
+            self.assertAlmostEqual(rootTipsX[i] - seedPosx, -(stemTipsX[i] - seedPosx),5, "coord X for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        for i in range(0, len(rootTipsY)):
+            # print(rootTipsY[i]*10**16, leafTipsY[i]*10**16)
+            self.assertAlmostEqual(rootTipsY[i] , stemTipsY[i], 5, "coord Y for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        for i in range(0, len(rootTipsZ)):
+            # print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
+            self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(stemTipsZ[i] - seedPosz), 10, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        
+        rootTipsX = [np.array(r.getNode(r.getNumberOfNodes() - 1))[0] for r in roots2]
+        rootTipsY = [np.array(r.getNode(r.getNumberOfNodes() - 1))[1] for r in roots2]
+        rootTipsZ = [np.array(r.getNode(r.getNumberOfNodes() - 1))[2] for r in roots2]
+        stemTipsX = [np.array(r.getNode(r.getNumberOfNodes() - 1))[0] for r in stems]
+        stemTipsY = [np.array(r.getNode(r.getNumberOfNodes() - 1))[1] for r in stems]
+        stemTipsZ = [np.array(r.getNode(r.getNumberOfNodes() - 1))[2] for r in stems]
+        for i in range(0, len(rootTipsX)):
+            # print(rootTipsX[i], leafTipsX[i])
+            self.assertAlmostEqual(rootTipsX[i] - seedPosx, -(stemTipsX[i] - seedPosx),5, "coord X for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        for i in range(0, len(rootTipsY)):
+            # print(rootTipsY[i]*10**16, leafTipsY[i]*10**16)
+            self.assertAlmostEqual(rootTipsY[i] , stemTipsY[i], 5, "coord Y for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        for i in range(0, len(rootTipsZ)):
+            # print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
+            self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(stemTipsZ[i] - seedPosz), 5, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        
+        
         rootTipsX = [np.array(r.getNode(r.getNumberOfNodes() - 1))[0] for r in roots3]
         rootTipsY = [np.array(r.getNode(r.getNumberOfNodes() - 1))[1] for r in roots3]
         rootTipsZ = [np.array(r.getNode(r.getNumberOfNodes() - 1))[2] for r in roots3]
@@ -62,15 +113,15 @@ class TestRelCoord(unittest.TestCase):
         leafTipsY = [np.array(r.getNode(r.getNumberOfNodes() - 1))[1] for r in leaves]
         leafTipsZ = [np.array(r.getNode(r.getNumberOfNodes() - 1))[2] for r in leaves]
 
-        for i in range(0, len(rootTipsX)):
-            # print(rootTipsX[i], leafTipsX[i])
-            self.assertAlmostEqual(rootTipsX[i] - seedPosx, -(leafTipsX[i] - seedPosx), 10, "tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+        for i in range(0, len(rootTipsX)-1):
+                                               
+            self.assertAlmostEqual(rootTipsX[i] - seedPosx, -(leafTipsX[i] - seedPosx), 10, "coord X for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
         for i in range(0, len(rootTipsY)):
             # print(rootTipsY[i]*10**16, leafTipsY[i]*10**16)
-            self.assertAlmostEqual(rootTipsY[i] * 10 ** 16, leafTipsY[i] * 10 ** 16, 10, "tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+            self.assertAlmostEqual(rootTipsY[i] * 10 ** 16, leafTipsY[i] * 10 ** 16, 10, "coord Y for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
         for i in range(0, len(rootTipsZ)):
             # print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
-            self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(leafTipsZ[i] - seedPosz), 10, "tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
+            self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(leafTipsZ[i] - seedPosz), 10, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
 
 
 if __name__ == '__main__':

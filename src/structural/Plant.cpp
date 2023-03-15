@@ -34,13 +34,6 @@ std::shared_ptr<Organism> Plant::copy()
     return no;
 }
 
-/**
- * Returns the seed of the plant
- */
-std::shared_ptr<Seed> Plant::getSeed()
-{
-	return std::static_pointer_cast<Seed>(baseOrgans.at(0));
-}
 
 /**
  * todo docme , this could be made unique? and probably should be protected
@@ -79,16 +72,13 @@ void Plant::reset()
  * If not used for test file: Call this method before simulation and after setting geometry, 
  * plant and root parameters
  * @param verbose       print information
- * @param test          is it used for a test file 
- *						(in which case only initialize seed and not the other organs)? 
- *						@See CPlantBox/test/test_stem.py
  */
-void Plant::initialize_(bool verbose , bool test )
+void Plant::initialize_(bool verbose)
 {
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
 
     // further initializations
-	if(!test){ initCallbacks();}
+	initCallbacks();
 }
 
 /**
@@ -97,22 +87,19 @@ void Plant::initialize_(bool verbose , bool test )
  *
  * LB, Length based: Delay for lateral root is calculated from the apical length (classical RootBox approach)
  *
- * If not used for test file: Call this method before simulation and after setting geometry, 
+ * Call this method before simulation and after setting geometry, 
  * plant and root parameters
  * @param verbose       print information
- * @param test          is it used for a test file 
- *						(in which case only initialize seed and not the other organs)? 
- *						@See CPlantBox/test/test_stem.py
  */
-void Plant::initializeLB(bool verbose , bool test )
+void Plant::initializeLB(bool verbose )
 {
     reset(); // just in case
 
     // create seed
     auto seed = std::make_shared<Seed>(shared_from_this());
-	if(!test){seed->initialize(verbose);}
     baseOrgans.push_back(seed);
-    initialize_(verbose, test);
+	seed->initialize(verbose);
+    initialize_(verbose);
 	
 }
 /**
@@ -121,26 +108,25 @@ void Plant::initializeLB(bool verbose , bool test )
  *
  * DB, Delay based: Delay for lateral root is predefined, apical length therefore not constant
  *
- * If not used for test file: Call this method before simulation and after setting geometry, 
+ * Call this method before simulation and after setting geometry, 
  * plant and root parameters
  * @param verbose       print information
- * @param test          is it used for a test file 
  */
-void Plant::initializeDB(bool verbose, bool test)
+void Plant::initializeDB(bool verbose)
 {
 	reset(); // just in case
 
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
-    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, Vector3d heading, double delay) override {
-    		return std::make_shared<RootDelay>(plant, type, heading, delay, shared_from_this(), 0);
+    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type,  double delay) override {
+    		return std::make_shared<RootDelay>(plant, type, delay, shared_from_this(), 0);
     	};
     };
 
     auto seed = std::make_shared<SeedDB>(shared_from_this());
-	if(!test){seed->initialize(verbose);}
     baseOrgans.push_back(seed);
-    initialize_(verbose, test);
+	seed->initialize(verbose);
+    initialize_(verbose);
 }
 
 /**
@@ -237,10 +223,8 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 	void Plant::simulate(double dt, bool verbose)	
 {	
 	abs2rel();
-	relCoord = true;
     Organism::simulate(dt, verbose);	
 	rel2abs();
-	relCoord = false;
 }
 
 /**

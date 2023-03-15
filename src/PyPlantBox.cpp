@@ -261,8 +261,8 @@ PYBIND11_MODULE(plantbox, m) {
      * Organ.h
      */
     py::class_<Organ, std::shared_ptr<Organ>>(m, "Organ")
-            .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, Matrix3d, int>())
-            .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
+            .def(py::init<std::shared_ptr<Organism>, std::shared_ptr<Organ>, int, int, double, int>())
+            .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
             .def("copy",&Organ::copy)
             .def("organType",&Organ::organType)
             .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
@@ -274,7 +274,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("addChild",&Organ::addChild)
             .def("getNumberOfChildren",&Organ::getNumberOfChildren)
             .def("getChild",&Organ::getChild)
-
+			.def("calcCreationTime", &Organ::calcCreationTime)
             .def("getId",&Organ::getId)
             .def("getParam",&Organ::getParam)
             .def("getOrganRandomParameter",&Organ::getOrganRandomParameter)
@@ -307,7 +307,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("__str__",&Organ::toString)
             .def("orgVolume",&Organ::orgVolume, py::arg("length_")=-1, py::arg("realized")=false)
 			.def("orgVolume2Length",&Organ::orgVolume2Length)
-            .def_readwrite("iHeading", &Organ::iHeading)
+            .def("getiHeading0", &Organ::getiHeading0)
             .def_readwrite("parentNI", &Organ::parentNI);
 
     /*
@@ -320,7 +320,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("organTypeName", &Organism::organTypeName)
             .def("getOrganRandomParameter", (std::shared_ptr<OrganRandomParameter> (Organism::*)(int, int) const)  &Organism::getOrganRandomParameter) //overloads
             .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
-            .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
+            .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)			
+            .def("getSeed", &Organism::getSeed)
 
             .def("addOrgan", &Organism::addOrgan)
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)
@@ -717,10 +718,9 @@ PYBIND11_MODULE(plantbox, m) {
      * Root.h
      */
     py::class_<Root, Organ, std::shared_ptr<Root>>(m, "Root")
-            .def(py::init<std::shared_ptr<Organism>, int, Vector3d, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
-			.def("calcCreationTime", &Root::calcCreationTime)
-            .def("calcLength", &Root::calcLength)
+			.def("calcLength", &Root::calcLength)
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
@@ -746,11 +746,10 @@ PYBIND11_MODULE(plantbox, m) {
      * Leaf.h
      */
     py::class_<Leaf, Organ, std::shared_ptr<Leaf>>(m, "Leaf")
-            .def(py::init<std::shared_ptr<Organism>, int, Matrix3d, double, std::shared_ptr<Organ>, int>())
-            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Matrix3d, int, bool, int>())
+            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
 			.def("getLeafVis", &Leaf::getLeafVis)
 			.def("getLeafVisX", &Leaf::getLeafVisX)
-            .def("calcCreationTime", &Leaf::calcCreationTime)
             .def("calcLength", &Leaf::calcLength)
             .def("calcAge", &Leaf::calcAge)
             .def("getLeafRandomParameter", &Leaf::getLeafRandomParameter)
@@ -759,22 +758,17 @@ PYBIND11_MODULE(plantbox, m) {
             .def("param", &Leaf::param)
             .def("leafArea", &Leaf::leafArea, py::arg("realized")=false, py::arg("withPetiole")=false)
             .def("leafCenter", &Leaf::leafCenter, py::arg("realized")=false)
-            .def("leafLength", &Leaf::leafLength, py::arg("realized")=false)
-            .def("abs2rel", &Leaf::abs2rel)
-            .def("rel2abs", &Leaf::rel2abs);
+            .def("leafLength", &Leaf::leafLength, py::arg("realized")=false);
     /**
      * Stem.h
      */
     py::class_<Stem, Organ, std::shared_ptr<Stem>>(m, "Stem")
-           .def(py::init<std::shared_ptr<Organism>, int, Matrix3d, double, std::shared_ptr<Organ>, int>())
+           .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
-           .def("calcCreationTime", &Stem::calcCreationTime)
            .def("calcLength", &Stem::calcLength)
            .def("calcAge", &Stem::calcAge)
            .def("getStemRandomParameter", &Stem::getStemRandomParameter)
-           .def("param", &Stem::param)
-           .def("abs2rel", &Stem::abs2rel)
-           .def("rel2abs", &Stem::rel2abs);
+           .def("param", &Stem::param);
     /*
      * RootSystem.h
      */
@@ -851,10 +845,9 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<Plant, Organism, std::shared_ptr<Plant>>(m, "Plant")
             .def(py::init<unsigned int>(),  py::arg("seednum")=0)
-            .def("getSeed", &Plant::getSeed)
-            .def("initialize", &Plant::initialize, py::arg("verbose") = true, py::arg("test") = false)
-			.def("initializeLB", &Plant::initialize, py::arg("verbose") = true, py::arg("test") = false)
-            .def("initializeDB", &Plant::initialize, py::arg("verbose") = true, py::arg("test") = false)
+            .def("initialize", &Plant::initialize, py::arg("verbose") = true)
+			.def("initializeLB", &Plant::initialize, py::arg("verbose") = true)
+            .def("initializeDB", &Plant::initialize, py::arg("verbose") = true)
 			.def("setGeometry", &Plant::setGeometry)
             .def("setSoil", &Plant::setSoil)
             .def("reset", &Plant::reset)
@@ -866,7 +859,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
             .def("write", &Plant::write)
-            .def("setRelCoord", &Plant::setRelCoord)
             .def("abs2rel", &Plant::abs2rel)
             .def("rel2abs", &Plant::rel2abs);
 

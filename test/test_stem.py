@@ -57,23 +57,25 @@ class TestStem(unittest.TestCase):
 
         srp = pb.SeedRandomParameter(self.plant)
         self.plant.setOrganRandomParameter(srp)
-
-        # creates seed organ (otherwise throws error in plant::simulate())
+        # creates seed and root organ (otherwise throws error in plant::simulate())
+        p0r = pb.RootRandomParameter(self.plant)
+        p0r.name, p0r.subType, p0r.la, p0r.lb, p0r.lmax, p0r.ln, p0r.r, p0r.dx = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5
+        self.plant.setOrganRandomParameter(p0r)  # the organism manages the type parameters and takes ownership
         # test == True => no need to give root parameter
-        self.plant.initialize(verbose = False, test = True)
+        self.plant.initialize(verbose = False)#, test = True)
         paramS = srp.realize()
         self.seed = self.plant.getSeed()  #
 
         param0 = p0.realize()  # set up stem by hand (without a stem system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-        self.ons = pb.Matrix3d(pb.Vector3d(0., 0., 1.), pb.Vector3d(0., 1., 0.), pb.Vector3d(1., 0., 0.))
+        self.ons =pb.Vector3d(0., 0., 1.)
         parentstem = pb.Stem(1, param0, True, True, 0., 0., self.partialiheading, 0, False, 0)  # takes ownership of param0
         parentstem.setOrganism(self.plant)
         parentstem.setParent(self.seed)
         parentstem.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
         self.parentstem = parentstem  # store parent (not owned by child Organ)
         self.seed.addChild(self.parentstem)
-        self.stem = pb.Stem(self.plant, p0.subType, self.ons, 0, self.parentstem , 0)
+        self.stem = pb.Stem(self.plant, p0.subType, 0, self.parentstem , 0)
         self.parentstem.addChild(self.stem)
         self.stem.setOrganism(self.plant)
 
@@ -82,10 +84,8 @@ class TestStem(unittest.TestCase):
         nl, nl2, nlth, non = [], [], [], []
         for t in dt:
             self.plant.abs2rel()
-            self.stem.getOrganism().setRelCoord(True)
             self.stem.simulate(t , False)
             self.plant.rel2abs()
-            self.stem.getOrganism().setRelCoord(False)
             nl.append(self.stem.getParameter("length"))
             nlth.append(self.stem.getParameter("lengthTh"))
             non.append(self.stem.getNumberOfNodes())
@@ -115,26 +115,20 @@ class TestStem(unittest.TestCase):
         self.stem_example_rtp()
         r = self.stem
         self.plant.abs2rel()
-        self.stem.getOrganism().setRelCoord(True)
         r.simulate(2, False)
         self.plant.rel2abs()
-        self.stem.getOrganism().setRelCoord(False)
         # because of nodal growth, hasMoved() == True for leaves and stems
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
 
         self.plant.abs2rel()
-        self.stem.getOrganism().setRelCoord(True)
         r.simulate(1, False)
         self.plant.rel2abs()
-        self.stem.getOrganism().setRelCoord(False)
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         non = r.getNumberOfNodes()
 
         self.plant.abs2rel()
-        self.stem.getOrganism().setRelCoord(True)
         r.simulate(20, False)
         self.plant.rel2abs()
-        self.stem.getOrganism().setRelCoord(False)
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
         dx = r.getStemRandomParameter().dx
         p = r.param()
@@ -179,7 +173,7 @@ class TestStem(unittest.TestCase):
         stem.setOrganism(self.plant)
         stem.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        stem2 = pb.Stem(self.plant, self.p1.subType, self.ons , 0, stem, 0)
+        stem2 = pb.Stem(self.plant, self.p1.subType,0, stem, 0)
         stem.addChild(stem2)
         # 3. deep copy (with a factory function)
         plant2 = pb.Organism()
@@ -241,10 +235,8 @@ class TestStem(unittest.TestCase):
         self.stem_example_rtp()
         simtime = 30.
         self.plant.abs2rel()
-        self.plant.setRelCoord(True)
         self.stem.simulate(simtime, False)
         self.plant.rel2abs()
-        self.plant.setRelCoord(False)
         organs = self.stem.getOrgans()
         type, age, radius, order, ct = [], [], [], [], []
         for o in organs:
@@ -267,10 +259,8 @@ class TestStem(unittest.TestCase):
         self.stem_example_rtp("equal")
         simtime = 50.
         self.plant.abs2rel()
-        self.plant.setRelCoord(True)
         self.stem.simulate(simtime, False)
         self.plant.rel2abs()
-        self.stem.getOrganism().setRelCoord(False)
         r = self.stem
         p = r.param()
         stemLength_th = stemLength(simtime, p.r, p.getK(), p.delayNGStart, p.delayNGEnd, p.lb)
@@ -295,7 +285,6 @@ class TestStem(unittest.TestCase):
 
         self.stem_example_rtp("sequential")
         self.plant.abs2rel()
-        self.plant.setRelCoord(True)
         self.stem.simulate(simtime, False)
         r = self.stem
         p = r.param()

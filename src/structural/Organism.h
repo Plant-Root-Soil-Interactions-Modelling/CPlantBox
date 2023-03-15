@@ -17,6 +17,7 @@ namespace CPlantBox {
 
 class Organ;
 class OrganRandomParameter;
+class Seed;
 
 /**
  * Organism
@@ -46,6 +47,8 @@ public:
     virtual ~Organism() { }; ///< destructor
 
     virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism
+	/* organs */
+	std::shared_ptr<Seed> getSeed(); ///< the plant seed
 
     /* organ parameter management */
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter

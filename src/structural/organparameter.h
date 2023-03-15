@@ -10,6 +10,7 @@
 #include <string>
 
 #include "tinyxml2.h"
+#include "tropism.h"
 
 /**
  * This file describes the classes OrganSpecificParameter and OrganRandomParameter.
@@ -82,6 +83,7 @@ public:
 	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 
     std::weak_ptr<Organism> plant;
+	std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<GrowthFunction> f_gf;
 	std::vector<double> string2vector(std::string xmlInput);///<convert string to vector<double>, to simplifiy xml input
 
