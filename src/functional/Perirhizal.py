@@ -167,7 +167,10 @@ class PerirhizalPython(Perirhizal):
 
         points_array = vtk.vtkPoints()  # Add the Voronoi vertices as points
         for v in vor.vertices:
-            points_array.InsertNextPoint(v)
+            if domain.dist(v) <= 0:
+                points_array.InsertNextPoint(v)
+            else:
+                points_array.InsertNextPoint([0, 0, 0])  # simpler for vizualizing in ParaView
         grid.SetPoints(points_array)
 
         vol = []
@@ -207,25 +210,20 @@ class PerirhizalPython(Perirhizal):
         return grid
 
     def make_periodic_(self, nodes, width):
-        """
+        """ maps the point periodically into [-width / 2., width / 2.] for x and y         
         """
         nodes_ = nodes.copy()
         for n in nodes_:
             n[0] = n[0] - ((n[0] + width[0] / 2.) // width[0]) * width[0]
             n[1] = n[1] - ((n[1] + width[1] / 2.) // width[1]) * width[1]
-
-            if n[0] < -width[0] / 2:
-                print("n[0] < -width[0] / 2", n)
-
-            if n[0] > width[0] / 2:
-                print("n[0] > width[0] / 2", n)
-
-            if n[1] < -width[1] / 2:
-                print("n[1] < -width[0] / 2", n)
-
-            if n[1] > width[1] / 2:
-                print("n[1] > width[0] / 2", n)
-
+            # if n[0] < -width[0] / 2:
+            #     print("n[0] < -width[0] / 2", n)
+            # if n[0] > width[0] / 2:
+            #     print("n[0] > width[0] / 2", n)
+            # if n[1] < -width[1] / 2:
+            #     print("n[1] < -width[0] / 2", n)
+            # if n[1] > width[1] / 2:
+            #     print("n[1] > width[0] / 2", n)
         return nodes_
 
     def intersect_polygon_quader_(self, polygon, quader):
