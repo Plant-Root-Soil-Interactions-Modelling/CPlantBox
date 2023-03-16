@@ -538,8 +538,13 @@ void Organ::abs2rel()
  */
 Vector3d Organ::getiHeading0()  const
 {
-    if (!getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) have no parent
-        Vector3d vparentHeading = Vector3d(0, 0, -1);
+    if (!getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent
+	Vector3d vparentHeading ;
+		if(organType() <= Organism::ot_root){//root (2) or unrecognized organ (0)
+			vparentHeading = Vector3d(0, 0, -1);
+		}else{//stem (3) or leaf(4)
+			vparentHeading = Vector3d(0, 0, 1);
+		}
         Matrix3d parentHeading = Matrix3d::ons(vparentHeading);
         return parentHeading.times(this->partialIHeading);
     }
