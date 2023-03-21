@@ -478,7 +478,7 @@ void LeafRandomParameter::bindParameters()
  * and normalizes (see normalize())
  */
 void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std::vector<double> l, int N) {
-	if (phi.size()>0 && (l.size()==l.size())) {
+	if (phi.size()>0 && (phi.size()==l.size())) {
 		leafGeometry.resize(N);
 		auto y_ = Function::linspace(0., leafLength(), N);
 		for (int i = 0; i<N; i++) {
