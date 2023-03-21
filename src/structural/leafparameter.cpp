@@ -496,6 +496,7 @@ void LeafRandomParameter::createLeafRadialGeometry(std::vector<double> phi, std:
  * resamples incoming leaf geometry
  */
 void LeafRandomParameter::createLeafGeometry(std::vector<double> y, std::vector<double> l, int N) {
+	leafGeometry.clear();//needed because we use push_back() later on
 	if (y.size()>0 && (y.size()==l.size())) {
 		double midy = leafMid();
 		leafGeometry.resize(N);
