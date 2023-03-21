@@ -477,6 +477,13 @@ double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
 				//TODO: compute it better later? not sur how to do it if the leaf is not convex
 				// how to take into account possible petiole area? add perimeter  *lengthInPetiole /2 ?
 				vol_ = (lengthInBlade / leafLength(realized)) * leafArea(realized) *a;
+				if(vol_ < 0)
+				{
+					std::stringstream errMsg;
+					errMsg <<"Leaf::leafVolAtSeg: computation of leaf volume failed "<<lengthInBlade<<" "
+					<<leafLength(realized)<<" "<<leafArea(realized)<<" "<<a<<"\n";
+					throw std::runtime_error(errMsg.str().c_str());
+				}
 			} break;
 			
 			default:

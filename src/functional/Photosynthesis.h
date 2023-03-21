@@ -67,9 +67,9 @@ public:
 	bool doLog = false; int verbose_photosynthesis = 0;
 	std::vector<double> gtotOx;
     std::vector<double> Vcrefmax;std::vector<double> Jrefmax;
-    float gm = 0.05; //mesophyll resistance 
+    float gm = 0.01; //mesophyll resistance 
 	//		to evaluate convergence, @see Photosynthesis::getError
-	int maxLoop = 1000; int minLoop = 1;std::string outputDir="";
+	int maxLoop = 5000; int minLoop = 1;std::string outputDir="";
     int loop;double limMaxErr = 1e-4;
 	double maxMaxErr;
 	std::vector<double> maxErr= std::vector<double>(9, 0.);	
