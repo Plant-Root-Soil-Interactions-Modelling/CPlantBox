@@ -4,7 +4,6 @@ from visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
-from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -32,9 +31,8 @@ def plot_leaf(leaf):
     render_window([actor], "plot_plant", [], [-10, 10, -10, 10, -10, 10]).Start()
 
 
-def plot_plant(plant, p_name, render = True, interactiveImage = True):
+def plot_plant(plant, p_name, render = True):
     """
-        @param interactiveImage         make image interactive or static (should be static for google Colab)
         plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons
     """
     # plant as tube plot
@@ -62,9 +60,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
-        ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(),interactiveImage)
-        if interactiveImage:
-            ren.Start()
+        render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds()).Start()
     return [tube_plot_actor, actor], color_bar
 
 
@@ -193,14 +189,13 @@ def uniform_grid(min_, max_, res):
     return grid
 
 
-def render_window(actor, title, scalarBar, bounds,interactiveImage=True):
+def render_window(actor, title, scalarBar, bounds):
     """ puts a vtk actor on the stage (renders an interactive window)
 
     @param actor                    a (single) actor, or a list of actors (ensemble)
     @param title                    window title
     @param scalarBar                one or a list of vtkScalarBarActor (optional)
     @param bounds                   spatial bounds (to set axes actor, and camera position and focal point)
-    @param interactiveImage         make image interactive or static (should be static for google Colab)
     @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write png
 
     (built in)
@@ -273,34 +268,17 @@ def render_window(actor, title, scalarBar, bounds,interactiveImage=True):
     renWin.SetSize(1200, 1000)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
-    
-    if interactiveImage:
-        iren = vtk.vtkRenderWindowInteractor()
-        iren.SetRenderWindow(renWin)
-        renWin.Render()
-        iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
-        iren.AddObserver('KeyPressEvent', lambda obj, ev:keypress_callback_(obj, ev, bounds), 1.0)
-        iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
-        for a in ren.GetActors():
-            a.Modified()  #
-        renWin.Render()
-        return iren
-    else: #necessary?
-        renWin.SetOffScreenRendering(1)
-        renWin.SetDeviceIndex(0)
-        renWin.SetShowWindow(True)
-        windowToImageFilter = vtk.vtkWindowToImageFilter()
-        windowToImageFilter.SetInput(renWin)
-        windowToImageFilter.Update()
-          
-        writer = vtk.vtkPNGWriter()
-        writer.SetWriteToMemory(1)
-        writer.SetInputConnection(windowToImageFilter.GetOutputPort())
-        writer.Write()
-        
-        #move this somewhere else?
-        im = Image(writer.GetResult(),format="png")
-        display(im)
+
+    iren = vtk.vtkRenderWindowInteractor()
+    iren.SetRenderWindow(renWin)
+    renWin.Render()
+    iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
+    iren.AddObserver('KeyPressEvent', lambda obj, ev:keypress_callback_(obj, ev, bounds), 1.0)
+    iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
+    for a in ren.GetActors():
+        a.Modified()  #
+    renWin.Render()
+    return iren
 
 
 def keypress_callback_(obj, ev, bounds):
@@ -414,13 +392,12 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
-def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True):
     """ plots the root system
-    @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
-    @param p_name                   parameter name of the data to be visualized
-    @param win_title                the windows titles (optionally, defaults to p_name)
-    @param render                   render in a new interactive window (default = True)
-    @param interactiveImage         make image interactive or static (should be static for google Colab)
+    @param pd         RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
+    @param p_name     parameter name of the data to be visualized
+    @param win_title  the windows titles (optionally, defaults to p_name)
+    @param render     render in a new interactive window (default = True)
     @return a tuple of a vtkActor and the corresponding color bar vtkScalarBarActor
     """
     if isinstance(pd, pb.RootSystem):
@@ -458,13 +435,11 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
     mapper.SetLookupTable(lut)
 
     if render:
-        ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(),interactiveImage)
-        if interactiveImage:
-            ren.Start()
+        render_window(plantActor, win_title, scalar_bar, pd.GetBounds()).Start()
     return plantActor, scalar_bar
 
 
-def plot_mesh(grid, p_name, win_title = "", render = True,interactiveImage=True):
+def plot_mesh(grid, p_name, win_title = "", render = True):
     """ Plots the grid as wireframe
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
@@ -489,13 +464,11 @@ def plot_mesh(grid, p_name, win_title = "", render = True,interactiveImage=True)
     mapper.SetLookupTable(lut)
 
     if render:
-        ren = render_window(meshActor, win_title, scalar_bar, grid.GetBounds(),interactiveImage)
-        if interactiveImage:
-            ren.Start()
+        render_window(meshActor, win_title, scalar_bar, grid.GetBounds()).Start()
     return [meshActor], scalar_bar
 
 
-def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True,interactiveImage=True):
+def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True):
     """ plots orthogonal nz vertical cuts z[:-1] (xy-planes), with z = linspace(min_z, max_z, nz+1),
     and two additonal sclices at x=0 (yz-plane), y=0 (xz-plane)
     @param grid         some vtk grid (structured or unstructured)
@@ -548,14 +521,12 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True,interacti
         actors.append(a)
 
     if render:
-        ren = render_window(actors, win_title, scalar_bar, grid.GetBounds(),interactiveImage)
-        if interactiveImage:
-            ren.Start()
+        render_window(actors, win_title, scalar_bar, grid.GetBounds()).Start()
 
     return actors, scalar_bar
 
 
-def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0,interactiveImage=True):
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -591,9 +562,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     rootActor, rootCBar = plot_roots(pd, pname, "", False)
     meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
     meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(),interactiveImage)
-    if interactiveImage:
-        ren.Start()
+    render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds()).Start()
 
     if filename:
         path = "results/"
@@ -601,7 +570,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         write_vtu(path + filename + ".vtu", soil_grid)
 
 
-def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "",interactiveImage=True):
+def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = ""):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname_root    root parameter that will be visualized 
@@ -627,9 +596,7 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
     rootActor, rootCBar = plot_roots(pd, pname_root, "", False)
     meshActors, meshCBar = plot_mesh_cuts(mesh, pname_mesh, 7, "", False)
     meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(),interactiveImage)
-    if interactiveImage:
-        ren.Start()
+    render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds()).Start()
     if filename:
         path = "results/"
         write_vtp(path + filename + ".vtp", pd)
@@ -652,7 +619,7 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
     write_vtu(filename + ".vtu", soil_grid)
 
 
-def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True):
+def plot_roots_and_soil_files(filename: str, pname:str):
     """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil()
     @param filename      file name (without extension)
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -665,9 +632,7 @@ def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True)
     lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
     rootActor.GetMapper().SetLookupTable(lut)
     meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, meshCBar, soil_grid.GetBounds(),interactiveImage)
-    if interactiveImage:
-        ren.Start()
+    render_window(meshActors, filename, meshCBar, soil_grid.GetBounds()).Start()
 
 
 class AnimateRoots:
