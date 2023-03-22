@@ -1,3 +1,4 @@
+import numpy as np
 
 """avoid division per 0 during post processing"""
 def div0(a, b, c):        
@@ -22,34 +23,29 @@ def theta2H(vg,theta):#(-) to cm
 def sinusoidal(t):
     return (np.sin(np.pi*t*2)+1)/2
 
-"""compute air relative humidity"""
-def qair2rh(qair, es_, press):
-    e =qair * press / (0.378 * qair + 0.622)
-    rh = e / es_
-    rh=max(min(rh, 1.),0.)
-    return rh
 
 """get environmental conditions"""
 def weather(simDuration):
     vgSoil = [0.059, 0.45, 0.00644, 1.503, 1] #van Gemuchten parameters
-    
-    Qmin = 0; Qmax = 960e-6 #incoming light
-    Tmin = 15.8; Tmax = 22 #temperature
-    specificHumidity = 0.0097 #specific air humidity
+    nightPart = 0.3
+    Qnight = 0; Qday = 1000e-6 /nightPart #absorbed light
+    Tnight = 15.8; Tday = 22 #temperature
+    RHnight = 0.8; RHday = 0.5
     Pair = 1010.00 #hPa
     thetaInit = 30/100 #soil water content
 
     coefhours = sinusoidal(simDuration) #sinusoidal coeficient to get daily variation
-    TairC_ = Tmin + (Tmax - Tmin) * coefhours
-    Q_ = Qmin + (Qmax - Qmin) * coefhours
+    RH = RHnight + (RHday - RHnight) * coefhours
+    TairC_ = Tnight + (Tday - Tnight) * coefhours
+    Q_ = Qnight + (Qday - Qnight) *max(0, coefhours -nightPart)
     cs = 850e-6 #co2 paartial pressure at leaf surface (mol mol-1)
     es =  6.112 * np.exp((17.67 * TairC_)/(TairC_ + 243.5)) 
-    RH = qair2rh(specificHumidity, es, Pair)
+    ea = es * RH
     
     pmean = theta2H(vgSoil, thetaInit)
     
     weatherVar = {'TairC' : TairC_,
-                    'Qlight': Q_,
+                    'Qlight': Q_,'ea':ea,'es':es,
                     'cs':cs, 'RH':RH, 'p_mean':pmean, 'vg':vgSoil}
     return weatherVar
 
@@ -144,7 +140,7 @@ def setKrKx_phloem(r):
     kr_r3 = 5e-2
     l_kr = 0.8 #cm zone from root tip at which exudation occures
     
-    r.setKr_st([[kr_r0,kr_r1 ,kr_r2 ,kr_r0],[kr_s,kr_s ],[kr_l]] , kr_length_= l_kr)
+    r.setKr_st([[kr_r0,kr_r1 ,kr_r2 ,kr_r0],[kr_s,kr_s ],[kr_l]])
     r.setKx_st([[kz_r0,kz_r12,kz_r12,kz_r0],[kz_s,kz_s ],[kz_l]])
     
     #cross-sectional area, to switch between length and volume
@@ -156,3 +152,17 @@ def setKrKx_phloem(r):
     Across_s_r3  =  numr3 *VascBundle_root *(a_ST[0][2]**2)*np.pi   
     r.setAcross_st([[Across_s_r0,Across_s_r12,Across_s_r12,Across_s_r0],[Across_s_s,Across_s_s],[Across_s_l]])
     return(r)
+
+def setPhotosynthesisParameters(r,weatherInit):
+    r.g0 = 8e-3              #residual stomatal opening at night 
+    r.VcmaxrefChl1 =1.28     #influence of leaf chlorophyl content on carboxylation rate
+    r.VcmaxrefChl2 = 8.33    #influence of leaf chlorophyl content on carboxylation rate
+    r.a1 = 0.5               #ci/(cs - ci)
+    r.a3 = 1.5               # VcrefMax to VjrefMax ratio
+    r.alpha = 0.4            #effect of light on photon flux rate
+    r.theta = 0.6            #effect of light on photon flux rate
+    r.cs = weatherInit["cs"] #external CO2 partial rpessure
+    SPAD= 41.0
+    chl_ = (0.114 *(SPAD**2)+ 7.39 *SPAD+ 10.6)/10
+    r.Chl = np.array( [chl_]) #leaf chlorophyle content (mean value or defined per leaf segment)
+    return r
