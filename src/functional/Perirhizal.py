@@ -117,6 +117,9 @@ class PerirhizalPython(Perirhizal):
         domain = pb.SDF_Cuboid(min_b, max_b)
         nodes_ = self.ms.nodes
         nodes = np.array([[n.x, n.y, n.z] for n in nodes_])  # to numpy array
+        width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
+        print("making periodic", width)
+        nodes = self.make_periodic_(nodes, width)
         vor = Voronoi(nodes)
         vol = np.zeros(vor.npoints)
 
@@ -125,17 +128,18 @@ class PerirhizalPython(Perirhizal):
             i = reg_num - 1
             if i >= 0:
                 if -1 in indices:  # some regions can be opened
-                    vol[i] = -1
+                    vol[i] = np.nan
                 else:
-                    inside = True
+                    inside = True  # convex polygon is within bounding box
                     for j in indices:
                         if domain.dist(vor.vertices[j]) >= 0:  # negative values mean inside the domain (sdf)
                             inside = False
                             break
+
                     if inside:
                         vol[i] = ConvexHull(vor.vertices[indices]).volume
                     else:
-                        vol[i] = 0
+                        vol[i] = np.nan
 
         outer_r = vol.copy()
         radii = self.ms.radii
@@ -226,39 +230,11 @@ class PerirhizalPython(Perirhizal):
             #     print("n[1] > width[0] / 2", n)
         return nodes_
 
-    def intersect_polygon_quader_(self, polygon, quader):
-        """ 
-            This code first defines the polygon and quader vertices as numpy arrays. 
-            Then, it defines the planes of the polygon and the quader using the cross product and dot product. 
-            It then checks for an intersection using the separating axis theorem by computing the dot product of each vertex with each plane and checking
-        """
-        # Define planes of polygon
-        planes_polygon = []
-        for i in range(len(polygon)):
-            p1 = polygon[i]
-            p2 = polygon[(i + 1) % len(polygon)]
-            normal = np.cross(p2 - p1, [0, 0, 1])
-            d = -np.dot(normal, p1)
-            planes_polygon.append(np.hstaverck([normal, d]))
-
-        # Check for intersection using separating axis theorem
-        for plane in planes_polygon + planes_quader:
-            dpoly = np.dot(polygon, plane[:3]) + plane[3]
-            dquader = np.dot(quader, plane[:3]) + plane[3]
-            if np.all(dpoly < 0) or np.all(dquader < 0):
-                print("No intersection")
-                break
-        else:
-            # Find intersection points
-            intersection_points = []
-            for i in range(len(polygon)):
-                p1 = polygon[i]
-                p2 = polygon[(i + 1) % len(polygon)]
-                for plane in planes_quader:
-                    normal = plane[:3]
-                    d = plane[3]
-                    t = -(np.dot(normal, p1) + d) / np.dot(normal, p2 - p1)
-                    if 0 <= t <= 1:
-                        intersection_points.append(p1 + t * (p2 - p1))
-            return intersection_points
+    def to_range_(self, radii, min_, max_):
+        """ limits the radii for histograms by throwing out unwanted values """
+        radii_ = []
+        for r in radii:
+            if r > min_ and r < max_:
+                radii_.append(r)
+        return radii_
 
