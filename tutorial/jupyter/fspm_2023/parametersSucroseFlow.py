@@ -165,4 +165,5 @@ def setPhotosynthesisParameters(r,weatherInit):
     SPAD= 41.0
     chl_ = (0.114 *(SPAD**2)+ 7.39 *SPAD+ 10.6)/10
     r.Chl = np.array( [chl_]) #leaf chlorophyle content (mean value or defined per leaf segment)
+    r.Rd_ref= 0.
     return r
