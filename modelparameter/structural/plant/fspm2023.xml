@@ -93,7 +93,7 @@
 </organ>
 
 <organ type="stem" name="mainstem" subType="1">
-    <parameter name="lb" value="1" dev="0"/>
+    <parameter name="lb" value="10" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="1" dev="0"/>
     <!--Apical zone [cm];-->
@@ -120,7 +120,7 @@
 
 
 <organ type="stem" name="latstem" subType="3">
-    <parameter name="lb" value="1" dev="0"/>
+    <parameter name="lb" value="10" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
@@ -178,7 +178,7 @@
     <parameter name="r" value="0.5" />
     <parameter name="a" value="0.016"/>
     <parameter name="tropismT" value="6"/>
-    <parameter name="tropismN" value="18"/>
+    <parameter name="tropismN" value="9"/>
     <parameter name="tropismS" value="0.2"/>
     <parameter name="tropismAge" value="10"/>
     <parameter name="dx" value="1"/>
