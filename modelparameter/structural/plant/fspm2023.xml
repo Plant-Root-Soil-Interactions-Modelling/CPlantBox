@@ -99,9 +99,9 @@
     <!--Apical zone [cm];-->
     <parameter name="ln" value="4" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="10" dev="0"/>
+    <parameter name="lmax" value="20" dev="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="r" value="1" dev="0"/>
+    <parameter name="r" value="10" dev="0"/>
     <parameter name="a" value="0.20000000000000001" dev="0"/>
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="10"/>
