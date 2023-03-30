@@ -125,7 +125,7 @@ class PerirhizalPython(Perirhizal):
             i = reg_num - 1
             if i >= 0:
                 if -1 in indices:  # some regions can be opened
-                    vol[i] = -1
+                    vol[i] = np.nan
                 else:
                     inside = True
                     for j in indices:
@@ -135,7 +135,7 @@ class PerirhizalPython(Perirhizal):
                     if inside:
                         vol[i] = ConvexHull(vor.vertices[indices]).volume
                     else:
-                        vol[i] = 0
+                        vol[i] = np.nan
 
         outer_r = vol.copy()
         radii = self.ms.radii
