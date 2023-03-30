@@ -120,7 +120,7 @@
 
 
 <organ type="stem" name="latstem" subType="3">
-    <parameter name="lb" value="10" dev="0"/>
+    <parameter name="lb" value="1" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
     <!--Apical zone [cm];-->
