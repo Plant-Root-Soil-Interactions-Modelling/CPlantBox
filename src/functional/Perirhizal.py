@@ -230,11 +230,11 @@ class PerirhizalPython(Perirhizal):
             #     print("n[1] > width[0] / 2", n)
         return nodes_
 
-    def to_range_(self, radii, min_, max_):
-        """ limits the radii for histograms by throwing out unwanted values """
-        radii_ = []
-        for r in radii:
-            if r > min_ and r < max_:
-                radii_.append(r)
-        return radii_
+    def to_range_(self, x:list, min_:float, max_:float):
+        """ returns ths list with values within min and max (and drops nans) """
+        y = []
+        for x_ in x:
+            if (not np.isnan(x_)) and x_ >= min_ and x_ <= max_:
+                y.append(x_)
+        return y
 
