@@ -189,14 +189,14 @@ class EstimateDataModel:
 
             srp = self.pparameters
             if delayB_:
-                srp.delayB = np.mean(delayB_)
-                srp.delayBs = np.std(delayB_)
+                srp.delayB = np.nanmean(delayB_)
+                srp.delayBs = np.nanstd(delayB_)
             if firstB_:
-                srp.firstB = np.mean(firstB_)
-                srp.firstBs = np.std(firstB_)
+                srp.firstB = np.nanmean(firstB_)
+                srp.firstBs = np.nanstd(firstB_)
             if maxB_:
-                srp.maxB = np.mean(maxB_)
-                srp.maxBs = np.std(maxB_)
+                srp.maxB = np.nanmean(maxB_)
+                srp.maxBs = np.nanstd(maxB_)
             # print('checkallParams', srp.delayB, srp.delayBs,srp.firstB,srp.firstBs, srp.maxB, srp.maxBs)
 
             # res, f, ages = estimate_order0_rrate(np.array(length_basals), p.r, p.lmax, self.times)
