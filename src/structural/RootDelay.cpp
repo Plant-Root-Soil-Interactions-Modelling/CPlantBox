@@ -24,7 +24,7 @@ std::shared_ptr<Organ> RootDelay::copy(std::shared_ptr<Organism> rs)
 
 /**
  * @return Quick info about the object for debugging
- * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
+ * additionally, use param()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string RootDelay::toString() const
 {
@@ -46,7 +46,8 @@ void RootDelay::createLateral(double dt, bool verbose)
 {
 	// std::cout<< "create delayed root\n";
 	auto rrp = getRootRandomParameter(); // rename
-    int lt = rrp->getLateralType(nodes.back());
+	int rule_id = 0;
+    int lt = rrp->getLateralType(nodes.back(), rule_id);
     if (lt>0) {
     	double delay = std::max(rrp->ldelay + plant.lock()->randn()*rrp->ldelays, 0.);
         auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,   delay,  shared_from_this(), nodes.size()-1);

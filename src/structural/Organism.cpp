@@ -95,15 +95,25 @@ std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParam
  */
 std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, int subType) const
 {
+	//std::cout<<"in get organ random parameter "<<Organism::organTypeName(ot) <<" ("+std::to_string(ot)+"), of sub type " <<
+      //      std::to_string(subType) <<std::endl<<std::flush;
+	
     try {
             //            std::cout << "reading organ type " << ot << " sub type " << subType <<": ";
              //           for (auto& p : organParam.at(ot)) {
               //              std::cout << p.first;
               //          }
               //          std::cout << "\n" << std::flush;
+			  
+		if((ot == Organism::ot_leaf)&&(subType==1)&&(organParam.at(ot).at(subType)==NULL))
+		{
+			std::cout<<"parameter set for leaf subtype 1 is not set. for backward compatibility,";
+			std::cout<<" use subtype 2 instead"<<std::endl;
+			subType = 2;
+		}
         return organParam.at(ot).at(subType);
     } catch(...) { // const std::out_of_range& oor
-        throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for "+ Organism::organTypeName(ot) + ", of sub type " +
+        throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for "+ Organism::organTypeName(ot) +" ("+std::to_string(ot)+") "+ ", of sub type " +
             std::to_string(subType) + " was not set");
     }
 }
@@ -518,6 +528,13 @@ std::vector<Vector2i> Organism::getNewSegments(int ot) const
         int onon = o->getOldNumberOfNodes();
         for (size_t i=onon-1; i<o->getNumberOfNodes()-1; i++) { // loop over new segments
             Vector2i v(o->getNodeId(i),o->getNodeId(i+1));
+			if (v.y ==0){
+				std::stringstream errMsg;
+				errMsg <<"Organism::getNewSegments "<<o->organType()<<" "<<o->getParameter("subType")
+				<<": segment no "<<i<<" not in order: "<<o->getNodeId(i)<<" "<< o->getNodeId(i+1)<<std::endl;
+				throw std::runtime_error(errMsg.str().c_str());
+			}
+			
             si.push_back(v);
         }
     }

@@ -30,8 +30,8 @@ class TestRoot(unittest.TestCase):
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.RootRandomParameter(self.plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5
-        p0.successor = [2]
-        p0.successorP = [1.]
+        p0.successor = [[2]]
+        p0.successorP = [[1.]]
         p1 = pb.RootRandomParameter(self.plant)
         p1.name, p1.subType, p1.lmax, p1.r, p1.dx = "lateral", 2, 25., 2., 0.1
         self.p0, self.p1 = p0, p1  # needed at later point
@@ -49,6 +49,7 @@ class TestRoot(unittest.TestCase):
         self.parentroot = parentroot  # store parent (not owned by child Organ)
         self.root = pb.Root(self.plant, p0.subType,  0, self.parentroot , 0)
         self.root.setOrganism(self.plant)
+        print("finish setup")
 
     def root_length_test(self, dt, l, subDt):
         """ simulates a single root and checks length against analytic length """
@@ -171,12 +172,13 @@ class TestRoot(unittest.TestCase):
         """ tests if nodes created in last time step are correct """
         self.root_example_rrp()
         r = self.root
-        r.simulate(.5, False)
+        verbose = False
+        r.simulate(.5, verbose)
         self.assertEqual(r.hasMoved(), False, "dynamics: node is creaetd during first step")
-        r.simulate(1e-1, False)
+        r.simulate(1e-1, verbose)
         self.assertEqual(r.hasMoved(), True, "dynamics: node was expected to move, but did not")
         non = r.getNumberOfNodes()
-        r.simulate(2.4, False)
+        r.simulate(2.4, verbose)
         self.assertEqual(r.getOldNumberOfNodes(), non, "dynamics: wrong number of old nodes")
         dx = r.getRootRandomParameter().dx
         self.assertEqual(r.getNumberOfNodes() - non, round(2.4 * r.param().r / dx), "dynamics: unexpected number of new nodes")  # initially, close to linear growth
@@ -186,8 +188,8 @@ class TestRoot(unittest.TestCase):
         self.plant = pb.RootSystem()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.RootRandomParameter(self.plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.lnk, p0.r, p0.dx, p0.dxMin = "taproot", 1, 0.95, 0.8, 10., 1.05, 0.01, 0.8, 0.25, 0.2
-        p0.successor = [2]
-        p0.successorP = [1.]
+        p0.successor = [[2]]
+        p0.successorP = [[1.]]
         p1 = pb.RootRandomParameter(self.plant)
         p1.name, p1.subType, p1.lmax, p1.r, p1.dx = "lateral", 2, 2., 2., 2.
 

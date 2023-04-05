@@ -1,5 +1,6 @@
 <plant>
     <seed name="undefined" subType="0">
+        <parameter name="delayDefinition" value="0"/>
         <parameter name="maxTi" value="0"/>
         <parameter name="a" value="0.1"/>
         <parameter name="delayB" value="3"/>
@@ -11,6 +12,7 @@
         <parameter name="firstB" value="10"/>
         <parameter name="firstSB" value="1e+09"/>
         <parameter name="firstTi" value="1e+09"/>
+        <parameter name="ldelay" value="-1"/>
         <parameter name="maxB" value="100"/>
         <parameter name="nC" value="0"/>
         <parameter name="nz" value="1"/>
@@ -30,7 +32,7 @@
         <parameter name="dxMin" value="1e-06"/>
         <parameter name="la" value="10"/>
         <parameter name="lb" value="2"/>
-        <parameter name="ldelay" value="1"/>
+        <parameter name="ldelay" value="-1"/>
         <parameter name="lmax" value="101"/>
         <parameter name="ln" value="4.6842103"/>
         <parameter name="lnk" value="0"/>
@@ -39,7 +41,7 @@
         <parameter name="theta" value="1.22"/>
         <parameter name="tropismN" value="1"/>
         <parameter name="tropismS" value="0.2"/>
-        <parameter name="successor" type="2" percentage="1"/>
+        <parameter name="successor" subType="2" percentage="1"/>
     </root>
     <root name="lateral" subType="2">
         <parameter name="gf" value="1"/>
@@ -52,7 +54,7 @@
         <parameter name="dxMin" value="1e-06"/>
         <parameter name="la" value="25"/>
         <parameter name="lb" value="0"/>
-        <parameter name="ldelay" value="1"/>
+        <parameter name="ldelay" value="-1"/>
         <parameter name="lmax" value="0"/>
         <parameter name="ln" value="0"/>
         <parameter name="lnk" value="0"/>

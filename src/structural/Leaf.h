@@ -71,7 +71,6 @@ protected:
     void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);
 
-    void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 
     bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 	std::vector<double> getLeafVisX_(double l);

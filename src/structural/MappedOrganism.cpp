@@ -541,8 +541,8 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		c++;
-		radii[segIdx] = so->getParam()->a;
-		subTypes[segIdx] = so->getParam()->subType;
+		radii[segIdx] = so->param()->a;
+		subTypes[segIdx] = so->param()->subType;
 		organTypes[segIdx] = so->organType();
 	}
 	// map new segments
@@ -658,14 +658,44 @@ void MappedPlant::simulate(double dt, bool verbose)
 		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
 	}
 	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
+	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
+	if (verbose) {
+		std::cout << "old segments "<<segments.size()<<" segments added "<< newsegs.size() << "\n" << std::flush;
+	}
 	segments.resize(segments.size()+newsegs.size());
+	std::vector<int> testSegments;
+	int i = 0;
 	for (auto& ns : newsegs) {
 		segments[ns.y-1] = ns;
+		if((std::find (testSegments.begin(), testSegments.end(), ns.y)!= testSegments.end()))
+		{
+			auto segsIssue = newsegO.at(i)->getSegments();
+			for (auto& nsI : segsIssue) {
+				std::cout <<nsI.toString()<<" ";
+			}std::cout <<std::endl;
+			std::stringstream errMsg;
+			errMsg <<"MappedPlant::simulate: node id "<<ns.y<<" at the end of two segments: "
+			<< segments[ns.y-1].x<<" "<< segments[ns.y-1].y<<" vs "<<
+			ns.x<<" "<< ns.y<<" id "<<newsegO.at(i)->getId()<<" ot "<<newsegO.at(i)->organType()<<" st "
+			<<newsegO.at(i)->getParameter("subType")<<std::endl;
+			throw std::runtime_error(errMsg.str().c_str());
+			
+		}
+		testSegments.push_back(ns.y);
+		i++;
 	}
-	if (verbose) {
-		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
+	for (int ns =0;ns< segments.size();ns++) {
+		int nodeYid = segments[ns].y;
+		if((nodeYid-1) != ns)
+		{
+			for (auto& nsI : segments) {
+				std::cout <<nsI.toString()<<" ";
+			}std::cout <<std::endl;
+			std::stringstream errMsg;
+			errMsg <<"MappedPlant::simulate: segment no "<<ns<<" not in order: "<< segments[ns].x<<" "<< segments[ns].y<<std::endl;
+			throw std::runtime_error(errMsg.str().c_str());
+		}
 	}
-	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
 	radii.resize(radii.size()+newsegO.size());
 	subTypes.resize(subTypes.size()+newsegO.size());
 	organTypes.resize(organTypes.size()+newsegO.size());
@@ -680,11 +710,11 @@ void MappedPlant::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		
-		radii[segIdx] = so->getParam()->a;
+		radii.at(segIdx) = so->param()->a;
 		organTypes.at(segIdx) = so->organType();
-		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];//new st
+		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
 
-		if(organTypes[segIdx] == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
+		if(organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{
 			int index;
 			auto nodeIds = so->getNodeIds();

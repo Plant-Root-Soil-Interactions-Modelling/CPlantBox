@@ -68,14 +68,8 @@ public:
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific stem from the stem parameter set
 
-    int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on stem parameter set
     double nob() const { return std::max((lmax-la-lb)/ln +1, 1.); }  ///< returns the mean number of branches [1]
     double nobs() const; ///< returns the standard deviation of number of branches [1]
-
-    std::string toString(bool verbose = true) const override; ///< info for debugging
-
-    void readXML(tinyxml2::XMLElement* element) override; ///< reads a single sub type organ parameter set
-    tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const override; ///< writes a organ stem parameter set
 
     /*
      * Parameters per stem type
@@ -113,11 +107,7 @@ public:
 	double delayNGStarts = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
 	double delayNGEnd = 0.;		///< delay between stem creation and start of nodal growth [day]
 	double delayNGEnds = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
-	double delayLat = 0.;		///< delay between stem creation and start of nodal growth [day]
-	double delayLats = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
-    std::vector<int> successor = std::vector<int>(0);			///< Lateral types [1]
-    std::vector<double> successorP = std::vector<double>(0);  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]
-
+    
     /*
      * Callback functions for the Stem (set up by the class StemSystem)
      */
@@ -127,7 +117,7 @@ public:
 
 protected:
 
-    void bindParmeters(); ///<sets up class introspection
+    void bindParameters(); ///<sets up class introspection
 
 };
 

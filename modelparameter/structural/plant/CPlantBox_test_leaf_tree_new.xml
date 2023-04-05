@@ -289,7 +289,7 @@
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
     <parameter name="successor" number="0" type="2" percentage="1"/>
-    <parameter name="successor" number="1" type="5" percentage="0"/>
+    <!--parameter name="successor" number="1" type="5" percentage="0"/-->
 </organ>
 
 <organ type="leaf" name="lateral1" subType="2">

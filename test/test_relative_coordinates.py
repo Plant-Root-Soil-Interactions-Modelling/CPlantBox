@@ -30,13 +30,13 @@ class TestRelCoord(unittest.TestCase):
         pl.readParameters(path + name + ".xml")
         # stochastic = False => thus rand() always give 0.5 for Tropism. => result only change according to sigma
         pl.initialize(stochastic = False)
-        print("after init simulate")
+        
         dt = 1
         steps = 100
-        print("before simulate")
+        
         for step in range(steps):
             pl.simulate(1, False)
-        print("after simulate")
+        
         pl.write("test_relcoord.vtp")
         params = pl.organParam
         seedPosx = params[1][0].seedPos.x
@@ -45,8 +45,28 @@ class TestRelCoord(unittest.TestCase):
         # print(params[1][0].seedPos)
         roots = pl.getOrgans(2)
         leaves = pl.getOrgans(4)
-        mainStem = pl.getOrgans(3)[0]
-        stems = pl.getOrgans(3)[1:]
+        allStems=pl.getOrgans(3)
+        mainStem = allStems[0]
+        stems = allStems[1:]
+        
+        #print("stems non",[r.getNumberOfNodes() for r in allStems])
+        #print("stems length",[r.getLength() for r in allStems])
+        #print("stems segLength",[np.array(stems[0].getSegments())])
+        segNodeId = np.array(list(map(lambda x: np.array(x), stems[0].getSegments())), dtype = np.int64)
+        nodesId = stems[0].getNodeIds()
+        nodes =  np.array(list(map(lambda x: np.array(x), [stems[0].getNode(i) for i in range(stems[0].getNumberOfNodes())])))
+        #print("nodes",nodes)
+        poly = np.zeros((stems[0].getNumberOfNodes(), 3))  #
+        for i in range( stems[0].getNumberOfNodes()):
+            v = stems[0].getNode(i)
+            poly[i, 0] = v.x
+            poly[i, 1] = v.y
+            poly[i, 2] = v.z
+        d = np.diff(poly, axis = 0)
+        sd = np.sqrt((d ** 2).sum(axis = 1))
+        #print("stems segLength",sd)
+        
+        #print("leaves pni",[r.parentNI for r in leaves])
 
         rootSubtypes = [ o.param().subType for o in roots]
                                                             
@@ -70,7 +90,7 @@ class TestRelCoord(unittest.TestCase):
             # print(rootTipsY[i]*10**16, leafTipsY[i]*10**16)
             self.assertAlmostEqual(rootTipsY[i] * 10 ** 16, stemTipsY[i] * 10 ** 16, 10, "coord Y for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
         for i in range(0, len(rootTipsZ)):
-            # print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
+            #print(rootTipsZ[i], stemTipsZ[i],rootTipsZ[i]-seedPosz, stemTipsZ[i]-seedPosz, seedPosz)
             self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(stemTipsZ[i] - seedPosz), 10, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
         
         rootTipsX = [np.array(r.getNode(0))[0] for r in roots2]
@@ -85,7 +105,7 @@ class TestRelCoord(unittest.TestCase):
             # print(rootTipsY[i]*10**16, leafTipsY[i]*10**16)
             self.assertAlmostEqual(rootTipsY[i] , stemTipsY[i], 5, "coord Y for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
         for i in range(0, len(rootTipsZ)):
-            # print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
+            #print(rootTipsZ[i], stemTipsZ[i],rootTipsZ[i]-seedPosz, stemTipsZ[i]-seedPosz, seedPosz)
             self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(stemTipsZ[i] - seedPosz), 10, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
         
         rootTipsX = [np.array(r.getNode(r.getNumberOfNodes() - 1))[0] for r in roots2]

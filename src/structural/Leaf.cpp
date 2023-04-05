@@ -77,6 +77,7 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 			creationTime = parent->getNodeCT(pni)+delay;
 		}
 		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);//create first node. relative coordinate = (0,0,0)
+		//std::cout<<"Leaf::Leaf "<<type<<" "<<pni<<std::endl;
 }}
 
 /**
@@ -177,8 +178,9 @@ void Leaf::simulate(double dt, bool verbose)
 									   
 							s+=p.ln.at(i);
 							if (length<s) {
-								if (i==children.size()) { // new lateral
-									createLateral(verbose);
+								if (i==created_linking_node) { // new lateral
+								double ageLN = this->calcAge(length);
+									createLateral(ageLN, verbose);
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
 									createSegments(dl, dt_, verbose);
@@ -192,8 +194,9 @@ void Leaf::simulate(double dt, bool verbose)
 								}
 							}
 						}
-						if (p.ln.size()==children.size()&& (getLength(true)>=s)) { // new lateral (the last one)
-							createLateral(verbose);
+						if (p.ln.size()==created_linking_node&& (getLength(true)>=s)) { // new lateral (the last one)
+							double ageLN = this->calcAge(length);
+							createLateral(ageLN, verbose);
 						}
 					}
 					/* apical zone */
@@ -232,8 +235,12 @@ double Leaf::getParameter(std::string name) const {
 	if (name=="rlt") { return param()->rlt; } // leaf life time [day]
 	if (name=="k") { return param()->getK(); }; // maximal leaf length [cm]
 	if (name=="lnMean") { // mean lateral distance [cm]
-		auto& v =param()->ln;
-		return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+        auto& v =param()->ln;
+		if(v.size()>0){
+			return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+		}else{
+			return 0;
+		}
 	}
 	if (name=="lnDev") { // standard deviation of lateral distance [cm]
 		auto& v =param()->ln;
@@ -247,7 +254,8 @@ double Leaf::getParameter(std::string name) const {
 	if (name=="surface_realized") { return leafArea(true); } // // realized leaf surface [cm^2]
 	if (name=="volume") { return orgVolume(-1, true); } // // realized leaf volume [cm^3]
 	if (name=="surface") { return leafArea(true); } // // realized leaf surface [cm^2]
-	if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
+    if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
+	if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
 	if (name=="parentNI") { return parentNI; } // local parent node index where the lateral emerges
 	return Organ::getParameter(name);
 }
@@ -692,66 +700,6 @@ void Leaf::addleafphytomerID(int subtype)
 }
 
 /**
- * Creates a new lateral by calling Leaf::createNewleaf().
- *
- * Overwrite this method to implement more specialized leaf classes.
- * 
- * This method was done in a rush, because there will be a following project specifically
- * focus on the leaves. This should be rewritten instead of kept. 
- * 
- */
-void Leaf::createLateral(bool silence)
-{
-
-	int lt = getLeafRandomParameter()->getLateralType(getNode(nodes.size()-1));
-
-	if (lt>0) {
-
-		int lnf = getLeafRandomParameter()->lnf;
-		double ageLN = this->calcAge(getLength(true)); // age of Leaf when lateral node is created
-		double meanLn = getLeafRandomParameter()->ln; // mean inter-lateral distance
-		double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-		double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the Leaf, when the lateral starts growing (i.e when the apical zone is developed)
-		double delay = ageLG-ageLN; // time the lateral has to wait
-		if (lnf==2&& lt>0) {
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  delay, shared_from_this(),nodes.size() - 1);
-			children.push_back(lateral);
-			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-			auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt,  delay, shared_from_this(),  nodes.size() - 1);
-			children.push_back(lateral2);
-			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		} else if (lnf==3&& lt>0) { //ln equal and both side leaf
-			auto lateral = std::make_shared<Leaf>(plant.lock(),  lt,  delay, shared_from_this(),  nodes.size() - 1);
-			children.push_back(lateral);
-			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-			auto lateral2 = std::make_shared<Leaf>(plant.lock(),  lt, delay, shared_from_this(),  nodes.size() - 1);
-			children.push_back(lateral2);
-			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		} else if (lnf==4 && lt>0) {//ln exponential decreasing and one side leaf
-			auto lateral = std::make_shared<Leaf>(plant.lock(),  lt, delay, shared_from_this(), nodes.size() - 1);
-			children.push_back(lateral);
-			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		} else if (lnf==5&& lt>0) { //ln exponential decreasing and both side leaf
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  delay,  shared_from_this(), nodes.size() - 1);
-			children.push_back(lateral);
-			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-			addleafphytomerID(getLeafRandomParameter()->subType);
-			auto lateral2 = std::make_shared<Leaf>(plant.lock(), lt,  delay,  shared_from_this(), nodes.size() - 1);
-			children.push_back(lateral2);
-			lateral2->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		} else if (lt>0) {
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt, delay, shared_from_this(), nodes.size() - 1);
-			children.push_back(lateral);
-			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		} else {
-			auto lateral = std::make_shared<Leaf>(plant.lock(), lt,  delay, shared_from_this(), nodes.size() - 1);
-			children.push_back(lateral);
-			lateral->simulate(age-ageLN,silence); // pass time overhead (age we want to achieve minus current age)
-		}
-	}
-}
-
-/**
  * @return The LeafTypeParameter from the plant
  */
 std::shared_ptr<LeafRandomParameter> Leaf::getLeafRandomParameter() const
@@ -769,7 +717,7 @@ std::shared_ptr<const LeafSpecificParameter>  Leaf::param() const
 
 /**
  * Quick info about the object for debugging
- * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
+ * additionally, use param()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string Leaf::toString() const
 {

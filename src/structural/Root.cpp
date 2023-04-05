@@ -44,24 +44,36 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
 Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
 :Organ(rs, parent, Organism::ot_root, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
 {
+	
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     double theta = param()->theta;
+	//std::cout<<"Root::Root organ creation "<<getId()<<" "<<pni<<" "<<delay<<" "<<parent->getParameter("subType")<<" "<<parent->hasRelCoord()<<std::endl;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
         double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta*=scale;
     }
     insertionAngle = theta;
 	this->partialIHeading = Vector3d::rotAB(theta,beta);
-																
-    if (parent->organType()==Organism::ot_root)  // the first node of the base roots must be created in RootSystem::initialize()
+			
+	if(!(parent->organType()==Organism::ot_seed))
+	{
+			double creationTime= parent->getNodeCT(pni)+delay;//default
+		if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
 		{
-        addNode(parent->getNode(pni), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
-    }else{
-		if (parent->organType()==Organism::ot_stem) {
-		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), parent->getNodeCT(pni)+delay);
+			addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+		}else{
+			if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
+			//if lateral of stem, initial creation time: 
+			//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
+			// @see stem::leafGrow
+			creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
+		}
+			addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
+			
 		}
 	}
+	
 }
 
 /**
@@ -91,7 +103,11 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
-    // std::cout << "\nstart" << getId() <<  std::flush;
+	//verbose = (hasRelCoord());
+	if(verbose)
+	{
+		std::cout << "\n Root::simulate start " << getId()<<" "<<dt<<" "<<length << std::endl<< std::flush;
+	}
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
@@ -141,6 +157,10 @@ void Root::simulate(double dt, bool verbose)
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+	if(verbose)
+	{
+		std::cout << "\n Root::simulate togrow " << getId()<<" "<<dl<<" "<<length <<" "<<this->epsilonDx << std::endl<< std::flush;
+	}
                 length = getLength();
                 this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 
@@ -169,8 +189,9 @@ void Root::simulate(double dt, bool verbose)
                             s+=p.ln.at(i);
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
 							
-                                if (i==children.size()) { // new lateral
-                                    createLateral(dt_, verbose);
+                                if (i==created_linking_node) { // new lateral
+									double ageLN = this->calcAge(length);
+                                    createLateral(ageLN, verbose);
                                 }
 		
                                 if(length < s)//because with former check we have (length<=s)
@@ -193,8 +214,9 @@ void Root::simulate(double dt, bool verbose)
                             }
                         }
 	  
-                        if (p.ln.size()==children.size()&& (getLength(true)-s>-1e-9)){
-                            createLateral(dt_, verbose);
+                        if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
+							double ageLN = this->calcAge(length);
+                            createLateral(ageLN, verbose);
                         }
                     }
                     /* apical zone */
@@ -209,6 +231,10 @@ void Root::simulate(double dt, bool verbose)
                     }
                 } // if lateralgetLengths
             } // if active
+	if(verbose)
+	{
+		std::cout << "\n Root::simulate end " << getId()<<" "<<dt<<" "<<length << std::endl<< std::flush;
+	}
             active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
         }
     } // if alive
@@ -255,30 +281,6 @@ std::shared_ptr<const RootSpecificParameter> Root::param() const
     return std::static_pointer_cast<const RootSpecificParameter>(param_);
 }
 
-/**
- * Creates a new lateral root and passes time overhead
- *
- * Overwrite this method to implement more spezialized root classes.
- *
- * @param verbose   turns console output on or off
- */
-void Root::createLateral(double dt, bool verbose)
-{
-    //std::cout << "(" << std::flush;
-    int lt = getRootRandomParameter()->getLateralType(nodes.back());
-    if (lt>0) {
-        double ageLN = this->calcAge(getLength(true)); // age of root when lateral node is created
-        ageLN = std::max(ageLN, age-dt);
-        double meanLn = getRootRandomParameter()->ln; // mean inter-lateral distance
-        double effectiveLa = std::max(param()->la-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-        double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
-        double delay = ageLG-ageLN; // time the lateral has to wait
-        auto lateral = std::make_shared<Root>(plant.lock(), lt,  delay,  shared_from_this(), nodes.size()-1);
-        children.push_back(lateral);
-        lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
-    }
-    //std::cout << ")" << std::flush;
-}
 
 
 
@@ -292,7 +294,8 @@ void Root::createLateral(double dt, bool verbose)
 double Root::getParameter(std::string name) const
 {
     // specific parameters
-    if (name=="type") { return this->param_->subType; }  // in CPlantBox the subType is often called just type
+    if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
+	if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -303,9 +306,13 @@ double Root::getParameter(std::string name) const
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
     if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
     // further
-    if (name=="lnMean") { // mean lateral distance [cm]
+    if (name=="lnMean") { // mean lateral distance [cm]	
         auto& v =param()->ln;
-        return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+		if(v.size()>0){
+			return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+		}else{
+			return 0;
+		}
     }
     if (name=="lnDev") { // standard deviation of lateral distance [cm]
         auto& v =param()->ln;
@@ -322,7 +329,7 @@ double Root::getParameter(std::string name) const
 
 /**
  * @return Quick info about the object for debugging
- * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
+ * additionally, use param()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string Root::toString() const
 {

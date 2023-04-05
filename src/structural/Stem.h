@@ -53,14 +53,11 @@ public:
 
 																										 
 protected:
-	int getLeafSubType();
+
 	void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
     int getphytomerId(int subtype) { return phytomerId[subtype]; }
     void addPhytomerId(int subtype) { phytomerId[subtype]++;  }
 
-    void createLateral(bool silence); ///< creates a new lateral, called by Stem::simulate()
-    void leafGrow(bool silence);
-    void shootBorneRootGrow(bool silence);
 
 };
 

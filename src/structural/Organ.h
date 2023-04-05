@@ -38,7 +38,7 @@ public:
 
     Organ(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     		Vector3d partialIHeading_,  int pni, bool moved = false, int oldNON = 0); ///< creates everything from scratch
-    Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double delay,
+    Organ(std::shared_ptr<Organism> plant, std::shared_ptr<Organ> parent, int organtype, int subtype, double forDelay,
     		int pni); ///< used within simulation
     virtual ~Organ() { }
 
@@ -61,7 +61,7 @@ public:
 
     /* parameters */
     int getId() const { return id; } ///< unique organ id
-    std::shared_ptr<const OrganSpecificParameter> getParam() const { return param_; } ///< organ parameters
+    std::shared_ptr<const OrganSpecificParameter> param() const { return param_; } ///< organ parameters
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;  ///< organ type parameter
     bool isAlive() const { return alive; } ///< checks if alive
     bool isActive() const { return active; } ///< checks if active
@@ -110,13 +110,15 @@ public:
     int parentNI; ///< local parent node index
     Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
     Vector3d getiHeading0() const ;///< the initial coordinate system of the root, when it was created
-	bool hasRelCoord() const {return nodes.at(0) == Vector3d(0.,0.,0.);}
+	bool hasRelCoord() const; //check if organ has relative coordinates
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
 protected:
 
     Vector3d partialIHeading;
+	
+	virtual void createLateral(double ageLN, bool silence); ///< creates a new lateral, called by Root::simulate(), overriden by @see RootDelay::createLateral()
 	Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
     void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
     /* up and down the organ tree */
@@ -134,6 +136,7 @@ protected:
     double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
 	double epsilonDx = 0; ///< growth increment too small to be added to organ. kept in memory and added to growth of next simulation step
+	size_t created_linking_node = 0;///number of nodes which carry childrens
 
     /* node data */
     std::vector<Vector3d> nodes; ///< nodes of the organ [cm]

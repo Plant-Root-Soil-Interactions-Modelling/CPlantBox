@@ -37,8 +37,8 @@ class TestRootSystem(unittest.TestCase):
         p0 = pb.RootRandomParameter(self.rs)
         p0.name, p0.subType, p0.la, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 10, 101, 89. / 19., 1, 0.5
         p0.lb = 2
-        p0.successor = [2]
-        p0.successorP = [1.]
+        p0.successor = [[2]]
+        p0.successorP = [[1.]]
         p1 = pb.RootRandomParameter(self.rs)
         p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
         self.p0, self.p1, self.srp = p0, p1, srp  # Python will garbage collect them away, if not stored
@@ -51,7 +51,7 @@ class TestRootSystem(unittest.TestCase):
         nl = []
         for t in dt:
             for i in range(0, subDt):
-                self.rs.simulate(t / subDt)
+                self.rs.simulate(t / subDt, True)
             ll = self.rs.getParameter("length")
             types = self.rs.getParameter("type")
             sl = 0  # summed length of basal roots
@@ -68,7 +68,7 @@ class TestRootSystem(unittest.TestCase):
         nl = []
         for t in dt:
             for i in range(0, subDt):
-                self.rs.simulate(t / subDt)
+                self.rs.simulate(t / subDt, True)
             # creation times
             cts1 = self.rs.getParameter("creationTime")
             poly_ct = self.rs.getPolylineCTs()
@@ -138,8 +138,8 @@ class TestRootSystem(unittest.TestCase):
         self.assertIsNot(rs2, rs, "copy: not a copy")
         self.assertEqual(str(rs), str(rs2), "copy: the organisms should be equal")
         self.assertEqual(rs2.rand(), n1, "copy: random generator seed was not copied")
-        rs.simulate(10)
-        rs2.simulate(10)
+        rs.simulate(10, True)
+        rs2.simulate(10, True)
         n2 = rs.rand()
         self.assertEqual(rs2.rand(), n2, "copy: simulation is not deterministic")
         rs3 = pb.RootSystem()  # rebuild same
@@ -147,7 +147,7 @@ class TestRootSystem(unittest.TestCase):
         rs3.setSeed(seed)
         rs3.initialize(False)
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
-        rs3.simulate(10)
+        rs3.simulate(10, True)
         self.assertEqual(rs3.rand(), n2, "copy: simulation is not deterministic")
 
     def test_polylines(self):
@@ -156,7 +156,7 @@ class TestRootSystem(unittest.TestCase):
         rs = pb.RootSystem()
         rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
         rs.initialize(False)
-        rs.simulate(7)  # days young
+        rs.simulate(7, True)  # days young
         polylines = rs.getPolylines()  # Use polyline representation of the roots
         bases = np.zeros((len(polylines), 3))
         tips = np.zeros((len(polylines), 3))
@@ -199,7 +199,7 @@ class TestRootSystem(unittest.TestCase):
         cts = rs.getSegmentCTs()
         nonm = 0
         for i in range(0, N):
-            rs.simulate(dt, False)
+            rs.simulate(dt, True)
             # MOVE NODES
             uni = np.array((list(map(np.array, rs.getUpdatedNodeIndices()))), dtype = np.int64)
             unodes = np.array((list(map(np.array, rs.getUpdatedNodes()))))
@@ -239,7 +239,7 @@ class TestRootSystem(unittest.TestCase):
         self.rs_example_rtp()
         self.rs.initialize(False)
         simtime = 60
-        self.rs.simulate(simtime)
+        self.rs.simulate(simtime, True)
         name = "test_rootsystem"
         self.rs.writeRSML(name + ".rsml")
         pl, props, funcs, _ = read_rsml(name + ".rsml")
@@ -252,7 +252,7 @@ class TestRootSystem(unittest.TestCase):
         self.rs_example_rtp()
         self.rs.initialize(False)
         simtime = 60
-        self.rs.simulate(simtime)
+        self.rs.simulate(simtime, True)
         name = "test_rootsystem"
         self.rs.write(name + ".vtp")
         with open(name + ".vtp", "r+") as file:

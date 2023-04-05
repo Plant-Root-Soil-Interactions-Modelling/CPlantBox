@@ -306,9 +306,6 @@ public:
 };
 
 
-
-
-
 } // end namespace CPlantBox
 
 #endif

@@ -66,16 +66,14 @@ public:
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 
-    int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on root parameter set
     double nob() const { return std::max((lmax-la-lb)/ln+1, 0.); }  ///< returns the mean maximal number of branching nodes [1]
     double nobs() const; ///< returns the standard deviation of number of branching nodes [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
     void readXML(tinyxml2::XMLElement* element) override; ///< reads a single sub type organ parameter set
-    tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const override; ///< writes a organ root parameter set RootSpecificParameter::nob()
-
-    // DEPRICATED
+    
+	// DEPRICATED
     void read(std::istream & cin); ///< reads a single root parameter set
     void write(std::ostream & cout) const; ///< writes a single root parameter set
 
@@ -105,24 +103,20 @@ public:
     double rlt = 1e9;       ///< Root life time (days)
     double rlts = 0.;       ///< Standard deviation root life time (days)
     int gf = 1;             ///< Growth function (1=negative exponential, 2=linear)
-    std::vector<int> successor = std::vector<int>(0);           ///< Lateral types [1]
-    std::vector<double> successorP = std::vector<double>(0);    ///< Probabilities of lateral type to emerge (sum of values == 1) [1]
-    // new
+    
+	// new
     double lnk = 0.;        ///< Slope of inter-lateral distances [1]
-    double ldelay = 1.;     ///< Lateral root emergence delay [day], only used by RootDelay, @see RootDelay, RootSystem::initializeDB
-    double ldelays = 0.;    ///< Standard deviation of lateral root emergence delay [day]
-
+    
     /*
      * Callback functions for the Root (set up by the class RootSystem)
      */
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth
-
 protected:
 
     double snap(double x);
-
+    
 };
 
 } // end namespace CPlantBox

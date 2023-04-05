@@ -115,7 +115,7 @@
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
     <parameter name="successor" number="0" type="2" percentage="1"/>
-    <parameter name="successor" number="1" type="3" percentage="0.29999999999999999"/>
+    <parameter name="successor" number="1" type="3,-1" percentage="0.3,0.7"/>
 </organ>
 
 <organ type="stem" name="1stbranch" subType="2">

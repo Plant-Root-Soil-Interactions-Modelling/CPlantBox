@@ -49,7 +49,7 @@ StemRandomParameter::StemRandomParameter(std::shared_ptr<Organism> plant) :Organ
     organType = Organism::ot_stem;
     subType = -1;
     f_tf = std::make_shared<Tropism>(plant);
-    bindParmeters();
+    bindParameters();
 }
 
 /**
@@ -59,7 +59,7 @@ std::shared_ptr<OrganRandomParameter> StemRandomParameter::copy(std::shared_ptr<
 {
     auto r = std::make_shared<StemRandomParameter>(*this); // copy constructor breaks class introspection
     r->plant = plant;
-    r->bindParmeters(); // fix class introspection
+    r->bindParameters(); // fix class introspection
     r->f_tf = f_tf->copy(plant); // copy call back classes
     r->f_gf = f_gf->copy();
     r->f_se = f_se->copy();
@@ -82,7 +82,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     std::vector<double> ln_; // stores the inter-distances
 	double res;
 	int nob_real = 0;
-	bool hasLaterals = (successor.size()>0);
+	bool hasLaterals = (successorST.size()>0);
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;
@@ -248,40 +248,15 @@ default:
 		std::cout<<"set delayNGEnd_ = delayNGStart_ = "<<delayNGStart_<<std::endl;
 		delayNGEnd_ = delayNGStart_;
 	}
-	double delayLat_ = std::max(delayLat + p->randn()*delayLats, 0.);
-    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNGStart_, delayNGEnd_, delayLat_);
+	double ldelay_ = std::max(ldelay + p->randn()*ldelays, 0.);
+	//std::cout<<"lb for stem "<<lb_<<", ln for stem"<<std::endl<<std::flush;
+	//for(size_t i =0; i < ln_.size();i++)
+	//{
+		//std::cout<<ln_.at(i)<<" ";
+	//}std::cout<<std::endl<<std::flush;
+    return std::make_shared<StemSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,hasLaterals, this->nodalGrowth, delayNGStart_, delayNGEnd_, ldelay_);
 }
 
-/**
- * Choose (dice) lateral type based on stem parameters successor and successorP
- *
- * @param pos       spatial position (for coupling to a soil model)
- * @return          stem sub type of the lateral stem
- */
-int StemRandomParameter::getLateralType(const Vector3d& pos)
-{
-    assert(successor.size()==successorP.size()
-        && "StemTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
-    if (successorP.size()>0) { // at least 1 successor type
-        double d = plant.lock()->rand(); // in [0,1]
-        int i=0;
-        double p=successorP.at(i);
-        i++;
-        while ((p<d) && (i<successorP.size())) {
-            p+=successorP.at(i);
-            i++;
-        }
-        if (p>=d) { // success
-            // std::cout << "lateral type " << successor.at(i-1) << "\n" << std::flush;
-            return successor.at(i-1);
-        } else { // no successors
-            // std::cout << "no lateral type " << std::flush;
-            return -1;
-        }
-    } else {
-        return -1; // no successors
-    }
-}
 
 /**
  * todo docme
@@ -300,96 +275,14 @@ double StemRandomParameter::nobs() const
     return std::max(nobs,0.);
 }
 
-/**
- * @copydoc OrganTypeParameter::toString()
- *
- * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
- */
-std::string StemRandomParameter::toString(bool verbose) const {
 
-    if (verbose) {
-        std::string s = OrganRandomParameter::toString(true);
-        std::stringstream str;
-        str << "successor\t";
-        for (int i=0; i<successor.size(); i++) {
-            str << successor[i] << " ";
-        }
-        str << "\t" << description.at("successor") << std::endl;
-        str << "successorP\t";
-        for (int i=0; i<successorP.size(); i++) {
-            str << successorP[i] << " ";
-        }
-        str << "\t" << description.at("successorP") << std::endl;
-        return s.insert(s.length()-4, str.str());
-    } else {
-        return OrganRandomParameter::toString(false);
-    }
-}
 
-/**
- * @copydoc OrganTypeParameter::readXML()
- *
- * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
- *
- * If the parameter successor or successorP are not in the element, they are set to zero size.
- */
-void StemRandomParameter::readXML(tinyxml2::XMLElement* element)
-{
-    OrganRandomParameter::readXML(element);
-    tinyxml2::XMLElement* p = element->FirstChildElement("parameter");
-    successor.resize(0);
-    successorP.resize(0);
-    while(p) {
-        std::string key = p->Attribute("name");
-        if (key.compare("successor")==0)  {
-            successor.push_back(p->IntAttribute("type"));
-            successorP.push_back(p->DoubleAttribute("percentage"));
-        }
-        p = p->NextSiblingElement("parameter");
-    }
-    double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
-    if  ((p_<1) && (p_!=0))  {
-        std::cout << "StemRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
-    }
-    assert(successor.size()==successorP.size() &&
-        "StemTypeParameter::readXML: Successor sub type and probability vector does not have the same size" );
-}
-
-/**
- * @copydoc OrganTypeParameter::writeXML()
- *
- * We need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
- */
-tinyxml2::XMLElement* StemRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
-{
-    assert(successor.size()==successorP.size() &&
-        "StemTypeParameter::writeXML: Successor sub type and probability vector does not have the same size" );
-    tinyxml2::XMLElement* element = OrganRandomParameter::writeXML(doc, comments);
-    for (int i = 0; i<successor.size(); i++) {
-        tinyxml2::XMLElement* p = doc.NewElement("parameter");
-        p->SetAttribute("name", "successor");
-        p->SetAttribute("number", i);
-        p->SetAttribute("type", successor[i]);
-        p->SetAttribute("percentage", float(successorP[i]));
-        element->InsertEndChild(p);
-        if (comments) {
-            std::string str = description.at("successor");
-            tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
-            element->InsertEndChild(c);
-        }
-    }
-    double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
-    if ((p_<1) && (p_!=0)) {
-        std::cout << "StemRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
-    }
-    return element;
-}
 
 /**
  * Sets up class introspection by linking parameter names to their class members,
  * additionally adds a description for each parameter, for toString and writeXML
  */
-void StemRandomParameter::bindParmeters()
+void StemRandomParameter::bindParameters()
 {
     OrganRandomParameter::bindParameters();
     bindParameter("lb", &lb, "Basal zone [cm]", &lbs);
@@ -412,10 +305,7 @@ void StemRandomParameter::bindParmeters()
 	bindParameter("nodalGrowth", &nodalGrowth, "nodal growth function (sequential = 0, equal = 0)");
     bindParameter("delayNGStart", &delayNGStart, "delay between stem creation and start of nodal growth", &delayNGStarts);
     bindParameter("delayNGEnd", &delayNGEnd, "delay between stem creation and start of nodal growth", &delayNGEnds);
-    bindParameter("delayLat", &delayLat, "delay between latteral creation and start of nodal growth", &delayLats);
-     // other parameters (descriptions only)
-    description["successor"] = "Sub type of lateral stems";
-    description["successorP"] = "Probability of each sub type to occur";
+    bindParameter("ldelay", &ldelay, "delay between latteral creation and start of nodal growth", &ldelays);
 }
 
 } // end namespace CPlantBox

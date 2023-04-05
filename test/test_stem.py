@@ -37,12 +37,13 @@ class TestStem(unittest.TestCase):
         self.partialiheading = pb.Vector3d.rotAB(0, 0)
         self.plant = pb.Plant()  # store organism (not owned by Organ, or OrganRandomParameter)
         p0 = pb.StemRandomParameter(self.plant)
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin = "main", 1, 10., 10., 100., 1., 1.5, 1, 0.5
-        p0.delayLat = 1.
+        self.lmax_th = 100
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin = "main", 1, 10., 10., self.lmax_th, 1., 1.5, 1, 0.5
+        p0.ldelay = 1.
         p0.delayNGStart = 0.
         p0.delayNGEnd = 2.
-        p0.successor = [5]
-        p0.successorP = [1.]
+        p0.successor = [[5]]
+        p0.successorP = [[1.]]
 
         if phytomereGrowth == "sequential":
             p0.nodalGrowth = 0
@@ -56,6 +57,7 @@ class TestStem(unittest.TestCase):
         self.plant.setOrganRandomParameter(p1)
 
         srp = pb.SeedRandomParameter(self.plant)
+        srp.delayDefinition = 1 #organ carries the delay of its laterals
         self.plant.setOrganRandomParameter(srp)
         # creates seed and root organ (otherwise throws error in plant::simulate())
         p0r = pb.RootRandomParameter(self.plant)
@@ -188,7 +190,7 @@ class TestStem(unittest.TestCase):
         times = np.array([0., 7., 15.])  # , 30., 60.])
         dt = np.diff(times)
         k = self.stem.param().getK()  # maximal stem length
-        self.assertAlmostEqual(k, 100, 12, "example stem has wrong maximal length")
+        self.assertAlmostEqual(k, self.lmax_th, 12, "example stem has wrong maximal length")
         l = [stemLength(t, self.p0.r, k, self.p0.delayNGStart, self.p0.delayNGEnd, self.p0.lb) for t in times[1:]]  # analytical stem length
         stem = self.stem.copy(self.plant)
         self.stem_length_test(dt, l)
@@ -203,7 +205,7 @@ class TestStem(unittest.TestCase):
 
         l = 0
         et_init = stemAge(p.lb, p.r, k, p.delayNGStart, p.delayNGEnd, p.lb)
-        et = [li * p.delayLat + et_init for li in range(p.nob())]
+        et = [li * rp.ldelay + et_init for li in range(p.nob())]
         r2 = self.p1.r
         k2 = self.p1.lmax  # consists of lateral zone only
         t = 0.

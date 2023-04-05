@@ -189,7 +189,7 @@
     <parameter name="theta" value="1.2" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="3" percentage="0"/>
+    <!--parameter name="successor" number="0" type="3" percentage="0"/-->
 </organ>
 
 <organ type="stem" name="2ndbranch" subType="3">
@@ -214,7 +214,7 @@
     <parameter name="theta" value="0.59999999999999998" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="4" percentage="0"/>
+    <!--parameter name="successor" number="0" type="4" percentage="0"/-->
 </organ>
 
 <organ type="stem" name="otherbranch1" subType="4">
@@ -239,7 +239,7 @@
     <parameter name="theta" value="0.40000000000000002" dev="0.20000000000000001"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="5" percentage="0"/>
+    <!--parameter name="successor" number="0" type="5" percentage="0"/-->
 </organ>
 
 <organ type="stem" name="otherbranch2" subType="5">

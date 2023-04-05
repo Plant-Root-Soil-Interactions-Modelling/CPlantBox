@@ -35,7 +35,7 @@ class Seed;
  */
 class Organism : public std::enable_shared_from_this<Organism> {
 public:
-
+	enum DelayDefinition { dd_distance = 0, dd_time_lat = 1, dd_time_self = 2}; ///< definition of the growth delay
     enum OrganTypes { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 }; ///< coarse organ classification
     static std::vector<std::string> organTypeNames; ///< names of the organ types
     static int instances; ///< the number of instances of this or derived classes
@@ -121,6 +121,7 @@ public:
 	bool getStochastic(){return stochastic;}
 	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
 	virtual bool	hasRelCoord(){return false;} ///< overriden by @Plant::hasRelCoord()
+	//0: distance based, 1: delay-based carried by the parent for all lateral, 2: delay-based carried by each lateral type
 
 
 protected:

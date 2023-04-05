@@ -171,45 +171,7 @@ void Seed::initialize(bool verbose)
 				delay += sp->delayTi;
 			}
 		}
-				//TODO: delete once root laterals are implemented for shoot organs
-		if(sp->nC>0)
-		{
-			double maxSegLen = mainstem->dx();
-			double minSegLen = mainstem->dxMin();
-			if(sp->nz ==0)
-			{
-				std::cout<<"distance between seed and root crown (nz) cannot be "<<sp->nz<<std::endl;
-				std::cout<<"nz is set to minimum segment length of main shoot (dxMin()): "<<minSegLen<<std::endl;
-				const_cast<double&>( sp->nz) =minSegLen;//mainstem->getParameter("lb") >0 minSegLen *2
-				
-			}else{
-				double stemlb = mainstem->getParameter("lb");
-				if(sp->nz> stemlb)
-				{
-					const_cast<double&>( sp->nz)= stemlb -minSegLen;
-					if(verbose){
-						std::cout<<"\nStem::simulate: nz changed to "<<(sp->nz);
-						std::cout<<" for compatibility with lb ("<<stemlb<<") and min ("<<minSegLen<<")";
-					std::cout<<" segment length of main shoot"<<std::endl;}
-					
-				}else{
-				
-					double res = sp->nz -floor(sp->nz / maxSegLen)*maxSegLen;
-					if(res < dxMin() && res != 0){
-						if(res <= dxMin()/2){
-							const_cast<double&>( sp->nz) -= res;
-						}else
-						{
-							const_cast<double&>( sp->nz) =  floor(sp->nz / maxSegLen)*maxSegLen + minSegLen;
-						}
-						if(verbose){
-							std::cout<<"\nStem::simulate: nz changed to "<<sp->nz;
-							std::cout<<" for compatibility with max ("<<maxSegLen<<") and min ("<<minSegLen<<")";
-						std::cout<<" segment length of main shoot"<<std::endl;}
-					}				//make nZ compatible with dx() and dxMin()
-				}
-			}
-		}
+		
 	}
 }
 
@@ -242,7 +204,7 @@ int Seed::getParamSubType(int organtype, std::string str)
 
 /**
  * Quick info about the object for debugging
- * additionally, use getParam()->toString() and getOrganRandomParameter()->toString() to obtain all information.
+ * additionally, use param()->toString() and getOrganRandomParameter()->toString() to obtain all information.
  */
 std::string Seed::toString() const
 {
