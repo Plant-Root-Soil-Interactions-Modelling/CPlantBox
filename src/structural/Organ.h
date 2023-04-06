@@ -69,7 +69,7 @@ public:
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
-	virtual double calcAge(double length){throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
+	virtual double calcAge(double length) const {throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
 	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
 	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
@@ -121,7 +121,10 @@ protected:
 	virtual void createLateral(double ageLN, bool silence); ///< creates a new lateral, called by Root::simulate(), overriden by @see RootDelay::createLateral()
 	Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
     void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
-    /* up and down the organ tree */
+    virtual double getLatInitialGrowth(double dt);
+	virtual double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const;
+	bool getApplyHere(int i) const;
+	/* up and down the organ tree */
     std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of
     std::weak_ptr<Organ> parent; ///< pointer to the parent organ (nullptr if it has no parent)
     std::vector<std::shared_ptr<Organ>> children; ///< the successive organs

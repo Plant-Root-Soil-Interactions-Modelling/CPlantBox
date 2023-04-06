@@ -41,7 +41,7 @@ public:
 
     /* From analytical equations */
     double calcLength(double age); ///< analytical length of the root
-    double calcAge(double length); ///< analytical age of the root
+    double calcAge(double length) const; ///< analytical age of the root
 
     /* Abbreviations */
     std::shared_ptr<RootRandomParameter> getRootRandomParameter() const;  ///< root type parameter of this root

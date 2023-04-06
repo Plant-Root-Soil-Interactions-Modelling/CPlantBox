@@ -62,6 +62,7 @@ Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_pt
 		if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
 		{
 			addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+			
 		}else{
 			if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
 			//if lateral of stem, initial creation time: 
@@ -103,7 +104,6 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
-	//verbose = (hasRelCoord());
 	if(verbose)
 	{
 		std::cout << "\n Root::simulate start " << getId()<<" "<<dt<<" "<<length << std::endl<< std::flush;
@@ -157,9 +157,14 @@ void Root::simulate(double dt, bool verbose)
                 double e = targetlength-length; // unimpeded elongation in time step dt
                 double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
-	if(verbose)
+		if(verbose)
 	{
 		std::cout << "\n Root::simulate togrow " << getId()<<" "<<dl<<" "<<length <<" "<<this->epsilonDx << std::endl<< std::flush;
+	}
+	if(verbose)
+	{
+		std::cout << "\n 					 " << age_<<" "<<age<<" "<<dt_ <<" "<<targetlength<<" "<<e<<" "<<scale<<" "<<p.laterals << std::endl<< std::flush;
+		std::cout << "\n 					 " << p.lb << std::endl<< std::flush;
 	}
                 length = getLength();
                 this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
@@ -182,16 +187,26 @@ void Root::simulate(double dt, bool verbose)
                             //							} // this could happen, if the tip ends in this section
                         }
                     }
+					
+	if(verbose)
+	{
+		std::cout << "\n after basal zone	 " << length<<" "<<p.lb << std::endl<< std::flush;
+		std::cout << "\n 					 " <<(length>=p.lb)<<" "<<dl << std::endl<< std::flush;
+	}
                     /* branching zone */
                     if ((dl>0)&&(length>=p.lb)) {
                         double s = p.lb; // summed length
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
+							if(verbose)
+	{
+		std::cout << "\n /* branching zone */	 " << p.ln.at(i)<<" "<<s << std::endl<< std::flush;
+		std::cout << "\n 					 " <<length<<" "<<i<<" "<<created_linking_node << std::endl<< std::flush;
+	}
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
 							
                                 if (i==created_linking_node) { // new lateral
-									double ageLN = this->calcAge(length);
-                                    createLateral(ageLN, verbose);
+                                    createLateral(dt_, verbose);
                                 }
 		
                                 if(length < s)//because with former check we have (length<=s)
@@ -215,8 +230,8 @@ void Root::simulate(double dt, bool verbose)
                         }
 	  
                         if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
-							double ageLN = this->calcAge(length);
-                            createLateral(ageLN, verbose);
+							
+                            createLateral(dt_, verbose);
                         }
                     }
                     /* apical zone */
@@ -259,7 +274,7 @@ double Root::calcLength(double age)
  * @param length   length of the root [cm]
  * @return local age [day]
  */
-double Root::calcAge(double length)
+double Root::calcAge(double length) const
 {
     assert(length >= 0 && "Root::calcAge() negative root length");
     return getRootRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this());

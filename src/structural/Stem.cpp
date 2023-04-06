@@ -180,8 +180,6 @@ void Stem::simulate(double dt, bool verbose)
 				this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
 				// create geometry
 				if (p.laterals) { // stem has laterals
-					double ageLb;
-
 					/* basal zone */
 					if(verbose){
 						std::cout<<"Stem::simulate "<<p.lb<<" "<<length<<" "<<dl<<std::endl<<std::flush;
@@ -196,7 +194,6 @@ void Stem::simulate(double dt, bool verbose)
 							createSegments(ddx,dt_,verbose);
 							dl-=ddx; // ddx already has been created
 							length=p.lb;
-							ageLb = this->calcAge(length);
 						}
 					}
 					/* branching zone */
@@ -209,7 +206,7 @@ void Stem::simulate(double dt, bool verbose)
 					if (((children.size())<(p.ln.size()+1))&&(length>=p.lb)) 
 					{
 						for (size_t i=0; (i<p.ln.size()); i++) {
-							createLateral(ageLb, verbose);
+							createLateral(dt_, verbose);
 							if(verbose){
 								std::cout<<"create one lateral "<<(children.size())<<" "<<p.ln.size()<<" "<<created_linking_node
 								<<", length "<<length<<" node.size "<< nodes.size()<<std::endl<<std::flush;
@@ -224,7 +221,7 @@ void Stem::simulate(double dt, bool verbose)
 						std::cout<<"createD all laterals "<<(p.ln.size())<<" "<< (children.size()) <<" "<<created_linking_node
 						<<", length "<<length<<" node.size "<< nodes.size()<<std::endl<<std::flush;
 					}
-						createLateral(ageLb, verbose);
+						createLateral(dt_, verbose);
 						if(verbose){
 							std::cout<<"created last lat? "<<(children.size())<<" "<<p.ln.size()<<std::endl<<std::flush;
 						}
@@ -274,6 +271,85 @@ void Stem::simulate(double dt, bool verbose)
 			active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
 		}
 	} // if alive
+}
+
+//all laterals are created at the same time currently
+double Stem::getLatInitialGrowth(double dt)
+{
+	double ageLN = this->calcAge(param()->lb); // MINIMUM age of root when lateral node is created
+    ageLN = std::max(ageLN, age-dt);
+	return age-ageLN;
+}
+
+double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
+{
+	
+	bool verbose = false;
+	auto rp = getOrganRandomParameter(); // rename
+	double forDelay; //store necessary variables to define lateral growth delay
+	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
+
+	assert(std::isfinite(delayDefinition)&&(delayDefinition>=0)); 
+			if(verbose){std::cout<<"create lat, delay def "<<delayDefinition<<" "
+			<<getId()<<" "<< (nodes.size() - 1)<<" "<<age
+			<<" "<<getNodeId(nodes.size() - 1)<<" "<<getNodeId(0)<<std::endl;
+			}
+	if(verbose){std::cout<<"create lat, delay def "<<delayDefinition<<std::endl;}
+	//count the number of laterals of subtype st already created on this organ std::function<double(int, int, std::shared_ptr<Organ>)> 
+	auto correctST = [ot_lat, st_lat](std::shared_ptr<Organ> org) -> double
+		{
+			return double((org->getParameter("organType") == ot_lat)&&(org->getParameter("subType")==st_lat));
+		};//return 1. if organ of correct type and subtype, 0. otherwise
+	
+	double multiplyDelay = double(std::count_if(children.begin(), children.end(),
+									 correctST));
+
+	switch(delayDefinition){
+		case Organism::dd_distance:
+		{
+			double meanLn = getParameter("lnMean"); // mean inter-lateral distance
+			double effectiveLa = std::max(getParameter("la")-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+			if(verbose)
+			{
+				std::cout<<"case Organism::dd_distance "<<organType()<<" "<<getParameter("subType")<<" "<<getLength(true)
+				<<" "<<effectiveLa<<" "<<getParameter("la")<<" "<<meanLn<<std::endl;
+			}
+			double ageLN = this->calcAge(param()->lb); // age of root when lateral node is created
+			ageLN = std::max(ageLN, age-dt);
+			double ageLG = this->calcAge(param()->lb+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+			forDelay = ageLG-ageLN; // time the lateral has to wait
+			multiplyDelay = 1;//in this case, even for stems, it does not matter how many laterals there were before.
+			break;
+		}
+		case Organism::dd_time_lat:
+		{
+			// time the lateral has to wait
+			forDelay = std::max(rp->ldelay + plant.lock()->randn()*rp->ldelays, 0.);
+			break;
+		}
+		case Organism::dd_time_self:
+		{
+			
+			//get delay per lateral
+			auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
+			forDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
+			if(verbose){
+				std::cout<<"create lat, delay output "<<forDelay<<std::endl;
+				std::cout<<"						 "<<ot_lat<<", "<<st_lat <<" "<<latRp->ldelay<<" "
+				<< latRp->ldelays<<" "<<forDelay<<" "<<nodes.size()<<std::endl;
+			}
+			break;
+		}
+		default:
+		{
+			std::cout<<"delayDefinition "<<delayDefinition<<" "<<Organism::dd_distance<<" ";
+			std::cout<< Organism::dd_time_lat<<" "<< Organism::dd_time_self<<std::endl<<std::flush;
+			std::cout<<"				"<<(delayDefinition==Organism::dd_distance)<<" ";
+			std::cout<<(delayDefinition== Organism::dd_time_lat)<<" "<< (delayDefinition==Organism::dd_time_self)<<std::endl<<std::flush;
+			throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
+		}
+	}
+	return forDelay*multiplyDelay;
 }
 
 /**
@@ -409,7 +485,7 @@ double Stem::calcLength(double age)
  * otherwise cannot compute exact age between delayNGStart and delayNGEnd
  * @param length   length of the stem [cm]
  */
-double Stem::calcAge(double length)
+double Stem::calcAge(double length) const
 {
 	assert(length>=0 && "Stem::calcAge() negative root age");
 	double age__ = getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());

@@ -91,16 +91,32 @@ class TestPlant(unittest.TestCase):
     def test_DB_delay(self):
         p = pb.MappedPlant(2)
         p.readParameters(path + "Heliantus_Pagès_2013.xml")
+        
+        p.initializeDB()
+        time = 76
+        print("did simulate")
+        
         rrp = p.getOrganRandomParameter(pb.root)[1]
         rrp.ldelay = 3
+        rrp.ldelays = 0.
+        #print(rrp)
+        p.setOrganRandomParameter(rrp)
+        
         rrp = p.getOrganRandomParameter(pb.root)[2]
         rrp.ldelay = 5
+        rrp.ldelays = 0.
+        #print(rrp)
         p.setOrganRandomParameter(rrp)
-        p.initializeDB()#db
-        time = 76
-        p.simulate(time, False)
+        
+        rrp = p.getOrganRandomParameter(pb.root)[3]
+        rrp.ldelay = 5
+        rrp.ldelays = 0.
+        #print(rrp)
+        p.setOrganRandomParameter(rrp)
         tl, rl = [], []
+        p.simulate(time, False)
         for i, r in enumerate(p.getOrgans(pb.root)):
+            
             rl.append(r.getLength())
             et, dl = 0, 0  # no delay for basal roots
             rsp = r.getParam()

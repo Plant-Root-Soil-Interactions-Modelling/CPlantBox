@@ -179,8 +179,7 @@ void Leaf::simulate(double dt, bool verbose)
 							s+=p.ln.at(i);
 							if (length<s) {
 								if (i==created_linking_node) { // new lateral
-								double ageLN = this->calcAge(length);
-									createLateral(ageLN, verbose);
+									createLateral(dt_, verbose);
 								}
 								if (length+dl<=s) { // finish within inter-lateral distance i
 									createSegments(dl, dt_, verbose);
@@ -195,8 +194,7 @@ void Leaf::simulate(double dt, bool verbose)
 							}
 						}
 						if (p.ln.size()==created_linking_node&& (getLength(true)>=s)) { // new lateral (the last one)
-							double ageLN = this->calcAge(length);
-							createLateral(ageLN, verbose);
+							createLateral(dt_, verbose);
 						}
 					}
 					/* apical zone */
@@ -669,7 +667,7 @@ double Leaf::calcLength(double age)
  *
  * @param length   length of the leaf [cm]
  */
-double Leaf::calcAge(double length)
+double Leaf::calcAge(double length) const
 {
 	assert(length>=0 && "Leaf::calcAge() negative root length");
 	return getLeafRandomParameter()->f_gf->getAge(length,getLeafRandomParameter()->r,param()->getK(),shared_from_this());

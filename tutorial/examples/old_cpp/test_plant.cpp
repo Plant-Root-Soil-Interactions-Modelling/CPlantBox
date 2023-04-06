@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 	rs->readParameters(path + name + ".xml");
 	
 	rs->initialize(false);
-	rs->simulate(76,true);//db
+	rs->simulate(76,false);//db
 	std::cout <<path + name + ".xml"<<std::endl;
     return 0;
 }

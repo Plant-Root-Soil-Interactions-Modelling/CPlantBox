@@ -44,18 +44,33 @@ std::string RootDelay::toString() const
  */
 void RootDelay::createLateral(double dt, bool verbose)
 {
-	// std::cout<< "create delayed root\n";
 	auto rrp = getRootRandomParameter(); // rename
-	int rule_id = 0;
-    int lt = rrp->getLateralType(nodes.back(), rule_id);
-    if (lt>0) {
-    	double delay = std::max(rrp->ldelay + plant.lock()->randn()*rrp->ldelays, 0.);
-        auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,   delay,  shared_from_this(), nodes.size()-1);
-        children.push_back(lateral);
-    	double ageLN = this->calcAge(length); // age of root when lateral node is created
-        ageLN = std::max(ageLN, age-dt); // dt_*(1-dl/dl0) are ready
-        lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
-    }
+	for(int i = 0; i < rrp->successorST.size(); i++)
+	{//go through each successor rule
+		//found id
+		bool applyHere = getApplyHere(i);
+		if(applyHere)
+		{
+			int numlats = 1;//how many laterals? default = 1
+			if(rrp->successorNo.size()>i){numlats =  rrp->successorNo.at(i);}
+			for(int nn = 0; nn < numlats; nn++)
+			{
+					const Vector3d& pos = Vector3d();
+				int p_id = rrp->getLateralType(pos, i);
+				
+				int lt = rrp->successorST.at(i).at(p_id);
+				if (lt>0) {
+					double delay = std::max(rrp->ldelay + plant.lock()->randn()*rrp->ldelays, 0.);
+					auto lateral = std::make_shared<RootDelay>(plant.lock(), lt,   delay,  shared_from_this(), nodes.size()-1);
+					children.push_back(lateral);
+					double ageLN = this->calcAge(length); // age of root when lateral node is created
+					ageLN = std::max(ageLN, age-dt); // dt_*(1-dl/dl0) are ready
+					lateral->simulate(age-ageLN,verbose); // pass time overhead (age we want to achieve minus current age)
+				}
+			}
+		}
+	}
+	created_linking_node ++;
 }
 
 } // end namespace CPlantBox

@@ -3,7 +3,7 @@
         <version>1</version>
         <unit>cm</unit>
         <resolution>1</resolution>
-        <last-modified>5-4-2023</last-modified>
+        <last-modified>6-4-2023</last-modified>
         <software>OrganicBox</software>
     </metadata>
     <scene>
@@ -12,9 +12,9 @@
                 <geometry>
                     <polyline>
                         <point x="0" y="0" z="0"/>
-                        <point x="0" y="0" z="-1.5"/>
-                        <point x="0" y="-1" z="-1.6"/>
-                        <point x="0" y="1" z="-1.6"/>
+                        <point x="0" y="0" z="1.5"/>
+                        <point x="0" y="-1" z="1.6"/>
+                        <point x="0" y="1" z="1.6"/>
                     </polyline>
                 </geometry>
                 <properties>
@@ -28,7 +28,7 @@
                 <root ID="1">
                     <geometry>
                         <polyline>
-                            <point x="0" y="-2" z="-2.5"/>
+                            <point x="0" y="-2" z="2.5"/>
                         </polyline>
                     </geometry>
                     <properties>
@@ -36,7 +36,7 @@
                         <subType value="0"/>
                         <length value="0"/>
                         <age value="-4"/>
-                        <parent-node value="2"/>
+                        <parent-node value="0"/>
                         <diameter value="0.2"/>
                     </properties>
                     <functions>
@@ -51,7 +51,7 @@
                 <root ID="2">
                     <geometry>
                         <polyline>
-                            <point x="0" y="1.7" z="-2.5"/>
+                            <point x="0" y="1.7" z="2.5"/>
                         </polyline>
                     </geometry>
                     <properties>
@@ -59,7 +59,7 @@
                         <subType value="0"/>
                         <length value="0"/>
                         <age value="-3"/>
-                        <parent-node value="3"/>
+                        <parent-node value="0"/>
                         <diameter value="0.2"/>
                     </properties>
                     <functions>

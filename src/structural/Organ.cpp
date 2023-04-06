@@ -180,7 +180,7 @@ void Organ::addChild(std::shared_ptr<Organ> c)
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
 	bool verbose;
-	if(id == 18594)
+	if(false)
 	{
 		std::cout<<"Organ::addNode "<<id<<" "<<getId()<<" "<<organType()<<" "<<getParameter("subType")<<std::endl;
 		std::cout<<"Organ::addNode "<<n.toString()<<" "<<t<<" "<<index<<" "<<shift<<std::endl;
@@ -195,9 +195,9 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 		nodes.insert(nodes.begin() + index-1, n);//add the node at index
 		//add a global index.
 		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
-		if(verbose){
-						std::cout<<"Organ::addNode "<<organType()<<" "<<id<<" "<<index<<std::endl<<std::flush;
-		}
+		//if(verbose){
+			//			std::cout<<"Organ::addNode "<<organType()<<" "<<id<<" "<<index<<std::endl<<std::flush;
+		//}
 		nodeIds.push_back(id);
 		nodeCTs.insert(nodeCTs.begin() + index-1, t);
 		for(auto kid : children){//if carries children after the added node, update their "parent node index"
@@ -675,9 +675,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 	if( stemElongation){
 		nn = PhytoIdx +1;
 	}
-	if(verbose){
-		std::cout<<"Organ::createSegments "<<l<<" "<<dt<<" "<<PhytoIdx<<" "<<nn<<" "<<hasRelCoord()<<std::endl;
-	}
+	//if(verbose){
+		//std::cout<<"Organ::createSegments "<<l<<" "<<dt<<" "<<PhytoIdx<<" "<<nn<<" "<<hasRelCoord()<<std::endl;
+	//}
     if (firstCall||stemElongation) { // first call of createSegments (in Organ::simulate)
 		if(!stemElongation){firstCall = false;}
 	//don t move first node
@@ -698,9 +698,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 				h = n1.minus(n2);
 			}
 			double olddx = h.length(); // length of last segment
-			if(verbose){
-						std::cout<<"before shift "<<h.toString()<<" "<<olddx<<" "<<dx()<<std::endl;
-			}
+			//if(verbose){
+				//		std::cout<<"before shift "<<h.toString()<<" "<<olddx<<" "<<dx()<<std::endl;
+			//}
             if (olddx<dx()*(1 - 1e-10)) { // shift node instead of creating a new node
                 shiftl = std::min(dx()-olddx, l);
                 double sdx = olddx + shiftl; // length of new segment
@@ -717,9 +717,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
                 nodeCTs.at(nn-1) = et; // in case of impeded growth the node emergence time is not exact anymore, but might break down to temporal resolution
                 moved = true;
                 l -= shiftl;
-				if(verbose){
-						std::cout<<"did shift "<<l<<" "<<shiftl<<" "<<sdx<<std::endl;
-				}
+				//if(verbose){
+					//	std::cout<<"did shift "<<l<<" "<<shiftl<<" "<<sdx<<std::endl;
+				//}
                 if (l<=0) { // ==0 should be enough
                     return;
                 }
@@ -733,13 +733,13 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
     // create n+1 new nodes
     double sl = 0; // summed length of created segment
     int n = floor(l/dx());
-	if(verbose){
-						std::cout<<"add new nodes after shift? "<<n<<" "<<l<<std::endl; 
-	}
+	//if(verbose){
+		//				std::cout<<"add new nodes after shift? "<<n<<" "<<l<<std::endl; 
+	//}
     for (int i = 0; i < n + 1; i++) {
-		if(verbose){
-						std::cout<<"i loop "<<i<<std::endl;
-		}
+		//if(verbose){
+			//			std::cout<<"i loop "<<i<<std::endl;
+		//}
 
         double sdx; // segment length (<=dx)
         if (i<n) {  // normal case
@@ -747,9 +747,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         } else
 		{ // last segment
             sdx = l-n*dx();
-			if(verbose){
-						std::cout<<"last segment "<<sdx<<" "<<l<<" "<<n<<" "<<dx()<<std::endl;
-			}
+			//if(verbose){
+				//		std::cout<<"last segment "<<sdx<<" "<<l<<" "<<n<<" "<<dx()<<std::endl;
+			//}
             if (sdx<dxMin()*(1-1e-10)) { //plant.lock()->getMinDx()) { // quit if l is too small
                 if (verbose&&( sdx != 0)) {
                     std::cout <<"Organ::createSegments(): "<<organType()<<" length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
@@ -773,9 +773,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         double et = this->calcCreationTime(getLength(true)+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
         // in case of impeded growth the node emergence time is not exact anymore,
         // but might break down to temporal resolution
-		if(verbose){
-						std::cout<<"to add node "<<sl<<" "<<sdx<<" "<<nn<<" "<<i<<std::endl;
-		}
+		//if(verbose){
+			//			std::cout<<"to add node "<<sl<<" "<<sdx<<" "<<nn<<" "<<i<<std::endl;
+		//}
         addNode(newnode, et,size_t(nn+i),stemElongation);
     }
 }
@@ -784,11 +784,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 /**
  * Creates a new lateral 
  */
-void Organ::createLateral(double ageLN, bool verbose)
+void Organ::createLateral(double dt, bool verbose)
 { 
-	//verbose = ((getId() == 261)||verbose);
 	auto rp = getOrganRandomParameter(); // rename
-	auto sp = param(); // rename
 	int ot;
 	if(verbose){
 		std::cout<<"Organ::createLateral "<<getId()<<" "<<created_linking_node<<" "<<children.size()<<std::endl;
@@ -796,24 +794,8 @@ void Organ::createLateral(double ageLN, bool verbose)
 		}
 	for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
 		//found id
-		bool applyHere;
-		if((rp->successorWhere.size()>i)&&(rp->successorWhere.at(i).size()>0)){
-			std::cout<<"Organ::createLateral where def for rul no "<<i<<" at 0 "<<rp->successorWhere.at(i).at(0)<<std::endl;
-			if(!std::signbit(rp->successorWhere.at(i).at(0)))//true if number is signed
-			{//gave which linking nodes to include
-				applyHere = (std::find (rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), created_linking_node)
-				!= rp->successorWhere.at(i).end());
-			}else{//gave which linking nodes to ignore
-				applyHere = !(std::find (rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), -double(created_linking_node))
-				!= rp->successorWhere.at(i).end());
-				std::cout<<"looking if not excluded"<<std::endl<<std::flush;
-				for(size_t ii_ = 0; ii_<rp->successorWhere.at(i).size();ii_++){
-					std::cout<<"("<<-double(created_linking_node)<<","<<rp->successorWhere.at(i).at(ii_)
-					<<","<<(rp->successorWhere.at(i).at(ii_) ==-double(created_linking_node))<<") ";
-					}std::cout<<std::endl<<std::flush;
-			}
-			
-		}else{applyHere = true;} //default
+		bool applyHere = getApplyHere(i);
+		
 		
 		if(verbose){
 			std::cout<<"at i "<<i<<" found "<<applyHere<<std::endl;
@@ -839,85 +821,25 @@ void Organ::createLateral(double ageLN, bool verbose)
 						
 				if((st>=0 )&& (ot>=0))
 				{
-					//double ageLN = this->calcAge(length); // sp->lb age of stem when lateral node is created
-					double forDelay, multiplyDelay; //store necessary variables to define lateral growth delay
-					int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
+					double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
+					double growth_dt = getLatInitialGrowth(dt);
 					
-					assert(std::isfinite(delayDefinition)&&(delayDefinition>=0)); 
-							if(verbose){std::cout<<"create lat, delay def "<<delayDefinition<<" "
-							<<getId()<<" "<<ot<<" "<<st<<" "<<p_id<<" "<< (nodes.size() - 1)<<" ageLN "<<ageLN<<" "<<age
-							<<" "<<getNodeId(nodes.size() - 1)<<" "<<getNodeId(0)<<std::endl;
-							}
-					if(verbose){std::cout<<"create lat, delay def "<<delayDefinition<<std::endl;}
-					//count the number of laterals of subtype st already created on this organ std::function<double(int, int, std::shared_ptr<Organ>)> 
-					auto correctST = [ot, st](std::shared_ptr<Organ> org) -> double
-						{
-							return double((org->getParameter("organType") == ot)&&(org->getParameter("subType")==st));
-						};//return 1. if organ of correct type and subtype, 0. otherwise
-					if(organType() == Organism::ot_stem)
-					{//stems create all there laterals in one go. So we need to add manually the increase in growth delay
-						multiplyDelay = double(std::count_if(children.begin(), children.end(),
-													 correctST));
-					}else{multiplyDelay = 1.;}
-					
-					switch(delayDefinition){
-						case Organism::dd_distance:
-						{
-							double meanLn = getParameter("lnMean"); // mean inter-lateral distance
-							double effectiveLa = std::max(getParameter("la")-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-							if(verbose)
-							{
-								std::cout<<"case Organism::dd_distance "<<organType()<<" "<<getParameter("subType")<<" "<<getLength(true)
-								<<" "<<effectiveLa<<" "<<getParameter("la")<<" "<<meanLn<<std::endl;
-							}
-							double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
-							forDelay = ageLG-ageLN; // time the lateral has to wait
-							break;
-						}
-						case Organism::dd_time_lat:
-						{
-							// time the lateral has to wait
-							forDelay = std::max(rp->ldelay + plant.lock()->randn()*rp->ldelays, 0.);
-							break;
-						}
-						case Organism::dd_time_self:
-						{
-							
-							//get delay per lateral
-							auto latRp = plant.lock()->getOrganRandomParameter(ot, st); // random parameter of lateral to create
-							forDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
-							if(verbose){
-								std::cout<<"create lat, delay output "<<forDelay<<" "<<(age-ageLN)<<std::endl;
-								std::cout<<"						 "<<ot<<", "<<st<<" "<<multiplyDelay <<" "<<latRp->ldelay<<" "
-								<< latRp->ldelays<<" "<<forDelay<<" "<<nodes.size()<<std::endl;
-							}
-							break;
-						}
-						default:
-						{
-							std::cout<<"delayDefinition "<<delayDefinition<<" "<<Organism::dd_distance<<" ";
-							std::cout<< Organism::dd_time_lat<<" "<< Organism::dd_time_self<<std::endl<<std::flush;
-							std::cout<<"				"<<(delayDefinition==Organism::dd_distance)<<" ";
-							std::cout<<(delayDefinition== Organism::dd_time_lat)<<" "<< (delayDefinition==Organism::dd_time_self)<<std::endl<<std::flush;
-							throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
-						}
-					}
 				
 					switch(ot){
 						case Organism::ot_root:{
-							auto lateral = std::make_shared<Root>(plant.lock(), st,  forDelay*multiplyDelay, shared_from_this(),  nodes.size() - 1);
+							auto lateral = std::make_shared<Root>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
 							children.push_back(lateral);
-							lateral->simulate(age-ageLN,verbose); 
+							lateral->simulate(growth_dt,verbose); 
 							break;}
 						case Organism::ot_stem:{
-							auto lateral = std::make_shared<Stem>(plant.lock(), st,  forDelay*multiplyDelay, shared_from_this(),  nodes.size() - 1);
+							auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(),  nodes.size() - 1);
 							children.push_back(lateral);
-							lateral->simulate(age-ageLN,verbose); 
+							lateral->simulate(growth_dt,verbose); 
 							break;}
 						case Organism::ot_leaf:{
-							auto lateral = std::make_shared<Leaf>(plant.lock(), st,  forDelay*multiplyDelay, shared_from_this(),  nodes.size() - 1);
+							auto lateral = std::make_shared<Leaf>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
 							children.push_back(lateral);
-							lateral->simulate(age-ageLN,verbose); 
+							lateral->simulate(growth_dt,verbose);//age-ageLN,verbose); 
 							break;}
 					}
 				}
@@ -933,6 +855,97 @@ void Organ::createLateral(double ageLN, bool verbose)
 	
 }
 
+bool Organ::getApplyHere(int i) const
+{
+	bool applyHere;
+	auto rp = getOrganRandomParameter(); // rename
+	if((rp->successorWhere.size()>i)&&(rp->successorWhere.at(i).size()>0)){
+			std::cout<<"Organ::createLateral where def for rul no "<<i<<" at 0 "<<rp->successorWhere.at(i).at(0)<<std::endl;
+			if(!std::signbit(rp->successorWhere.at(i).at(0)))//true if number is signed
+			{//gave which linking nodes to include
+				applyHere = (std::find (rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), created_linking_node)
+				!= rp->successorWhere.at(i).end());
+			}else{//gave which linking nodes to ignore
+				applyHere = !(std::find (rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), -double(created_linking_node))
+				!= rp->successorWhere.at(i).end());
+				std::cout<<"looking if not excluded"<<std::endl<<std::flush;
+				for(size_t ii_ = 0; ii_<rp->successorWhere.at(i).size();ii_++){
+					std::cout<<"("<<-double(created_linking_node)<<","<<rp->successorWhere.at(i).at(ii_)
+					<<","<<(rp->successorWhere.at(i).at(ii_) ==-double(created_linking_node))<<") ";
+					}std::cout<<std::endl<<std::flush;
+			}
+			
+		}else{applyHere = true;} //default
+	return applyHere;
+}
+
+double Organ::getLatInitialGrowth(double dt)
+{
+	double ageLN = this->calcAge(getLength(true)); // MINIMUM age of root when lateral node is created
+    ageLN = std::max(ageLN, age-dt);
+	return age-ageLN;
+}
+
+double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
+{
+	bool verbose = false;
+	auto rp = getOrganRandomParameter(); // rename
+	double growthDelay; //store necessary variables to define lateral growth delay
+	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
+
+	assert(std::isfinite(delayDefinition)&&(delayDefinition>=0)); 
+			if(verbose){std::cout<<"create lat, delay def "<<delayDefinition<<" "
+			<<getId()<<" "<< (nodes.size() - 1)<<" "<<age
+			<<" "<<getNodeId(nodes.size() - 1)<<" "<<getNodeId(0)<<std::endl;
+			}
+	if(verbose){std::cout<<"create lat, delay def "<<delayDefinition<<std::endl;}
+
+	switch(delayDefinition){
+		case Organism::dd_distance:
+		{
+			double meanLn = getParameter("lnMean"); // mean inter-lateral distance
+			double effectiveLa = std::max(getParameter("la")-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+			if(verbose)
+			{
+				std::cout<<"case Organism::dd_distance "<<organType()<<" "<<getParameter("subType")<<" "<<getLength(true)
+				<<" "<<effectiveLa<<" "<<getParameter("la")<<" "<<meanLn<<std::endl;
+			}
+			double ageLN = this->calcAge(getLength(true)); // theoretical age of root when lateral node is created
+			ageLN = std::max(ageLN, age-dt);
+			double ageLG = this->calcAge(getLength(true)+effectiveLa); // age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+			growthDelay = ageLG-ageLN; // time the lateral has to wait
+			break;
+		}
+		case Organism::dd_time_lat:
+		{
+			// time the lateral has to wait
+			growthDelay = std::max(rp->ldelay + plant.lock()->randn()*rp->ldelays, 0.);
+			break;
+		}
+		case Organism::dd_time_self:
+		{
+			
+			//get delay per lateral
+			auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
+			growthDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
+			if(verbose){
+				std::cout<<"create lat, delay output "<<growthDelay<<std::endl;
+				std::cout<<"						 "<<ot_lat<<", "<<st_lat<<" "<<latRp->ldelay<<" "
+				<< latRp->ldelays<<" "<<growthDelay<<" "<<nodes.size()<<std::endl;
+			}
+			break;
+		}
+		default:
+		{
+			std::cout<<"delayDefinition "<<delayDefinition<<" "<<Organism::dd_distance<<" ";
+			std::cout<< Organism::dd_time_lat<<" "<< Organism::dd_time_self<<std::endl<<std::flush;
+			std::cout<<"				"<<(delayDefinition==Organism::dd_distance)<<" ";
+			std::cout<<(delayDefinition== Organism::dd_time_lat)<<" "<< (delayDefinition==Organism::dd_time_self)<<std::endl<<std::flush;
+			throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
+		}
+	}
+	return growthDelay;
+}
 /**
  * Check if the organ has relative coordinates.
  * meaning: organ is not a basal/tap root and first node is at (0,0,0) but 
