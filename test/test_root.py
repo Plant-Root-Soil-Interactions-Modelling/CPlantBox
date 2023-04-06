@@ -262,6 +262,86 @@ class TestRoot(unittest.TestCase):
             self.assertAlmostEqual(nl_th[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
         print("end of test")
 
+    def root_example_rtp2(self,delay_definition = 1):
+        """ an example used in the tests below, a main root with laterals """
+        self.partialiheading = pb.Vector3d.rotAB(0, 0)
+        self.plant = pb.RootSystem()  # store organism (not owned by Organ, or OrganRandomParameter)
+        p0 = pb.RootRandomParameter(self.plant)
+        self.lmax_th = 100
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin = "main", 1, 10., 10., self.lmax_th, 1., 1.5, 1, 0.5
+        p0.ldelay = 1.
+        p0.successor = [[5]]
+        p0.successorP = [[1.]]
+
+        p1 = pb.RootRandomParameter(self.plant)
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.dxMin = "lateral", 5, 5., 2., 1, 0.5
+        p1.ldelay = 2.
+        self.p0, self.p1 = p0, p1  # needed at later point
+        self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
+        self.plant.setOrganRandomParameter(p1)
+
+        srp = pb.SeedRandomParameter(self.plant)
+        srp.delayDefinition = delay_definition #organ carries the delay of its laterals
+        self.plant.setOrganRandomParameter(srp)
+        # test == True => no need to give root parameter
+        self.plant.initialize(verbose = False)
+        paramS = srp.realize()
+        self.seed = self.plant.getSeed()  #
+
+        param0 = p0.realize()  # set up root by hand (without a root system)
+        param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
+        self.ons =pb.Vector3d(0., 0., 1.)
+        parentroot = pb.Root(1, param0, True, True, 0., 0., self.partialiheading, 0, False, 0)  # takes ownership of param0
+        parentroot.setOrganism(self.plant)
+        parentroot.setParent(self.seed)
+        parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
+        self.parentroot = parentroot  # store parent (not owned by child Organ)
+        self.seed.addChild(self.parentroot)
+        self.root = pb.Root(self.plant, p0.subType, 0, self.parentroot , 0)
+        self.parentroot.addChild(self.root)
+        self.root.setOrganism(self.plant)
+
+
+    def test_new_delay_types(self):
+        self.root_example_rtp2(delay_definition = 0) #depends on la
+        r = self.root
+        time = 100
+        r.simulate(time, False)
+        meanLn = self.root.getParameter("lnMean")# mean inter-lateral distance
+        effectiveLa = max(self.root.getParameter("la")-meanLn/2, 0.)#effective apical distance, observed apical distance is in la-ln/2, la+ln/2
+        
+        for i in range(self.root.getNumberOfChildren()):  
+            r = self.root.getChild(i)   
+            rparent = r.getParent()
+            lengthAtCreation = rparent.getLength(r.parentNI)
+            ageLN = rparent.calcAge(lengthAtCreation)# age of root when lateral node is created
+            ageLG = rparent.calcAge(lengthAtCreation+effectiveLa)# age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+            dl = ageLG-ageLN;   
+            et = ageLN + dl
+            print(r.getId(),r.getParameter("subType"),r.getNumberOfChildren(),r.getAge(),r.getParameter("creationTime"),r.getNodeCT(0) , dl)
+            self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
+                
+        self.root_example_rtp2(delay_definition = 1) #depends on ldelay of parent organ
+        r = self.root
+        time = 10
+        r.simulate(time, False)
+        for i in range(self.root.getNumberOfChildren()):  
+            r = self.root.getChild(i)
+            rsp = r.getParam()
+            dl = r.getParent().getOrganRandomParameter().ldelay # only works because deviation == 0
+            et = r.getParent().getNodeCT(r.parentNI) + dl
+            self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
+            
+        self.root_example_rtp2(delay_definition = 2) #depends on ldelay of lateral organ
+        r = self.root
+        time = 10
+        r.simulate(time, False)
+        for i in range(self.root.getNumberOfChildren()):  
+            r = self.root.getChild(i)
+            rsp = r.getParam()
+            dl = r.getOrganRandomParameter().ldelay # only works because deviation == 0
+            et = r.getParent().getNodeCT(r.parentNI) + dl
+            self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
 
 if __name__ == '__main__':
     unittest.main()

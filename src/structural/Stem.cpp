@@ -74,13 +74,13 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 		double creationTime;
 		if (parent->getNumberOfChildren() == 0){
 			creationTime = parent->getNodeCT(pni)+delay;
-			//std::cout<<"Stem::Stem first child "<<creationTime<<" "
-			//<<parent->getNodeCT(pni)<<" "<<delay<<std::endl;
+			std::cout<<"Stem::Stem first child "<<creationTime<<" "
+			<<parent->getNodeCT(pni)<<" "<<delay<<std::endl;
 		}else{
 			creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-			//std::cout<<"Stem::Stem subsequent child "<<creationTime<<" "
-			//<<parent->getChild(0)->getParameter("creationTime")<<" "<<delay<<" use pni? "
-			//<<parent->getNodeCT(pni)<<std::endl;
+			std::cout<<"Stem::Stem subsequent child "<<creationTime<<" "
+			<<parent->getChild(0)->getParameter("creationTime")<<" "<<delay<<" use pni? "
+			<<parent->getNodeCT(pni)<<std::endl;
 		}
 		
 		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
@@ -284,7 +284,7 @@ double Stem::getLatInitialGrowth(double dt)
 double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
 {
 	
-	bool verbose = false;
+	bool verbose = true;
 	auto rp = getOrganRandomParameter(); // rename
 	double forDelay; //store necessary variables to define lateral growth delay
 	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
@@ -325,6 +325,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
 		{
 			// time the lateral has to wait
 			forDelay = std::max(rp->ldelay + plant.lock()->randn()*rp->ldelays, 0.);
+			if(verbose){std::cout<<"Organism::dd_time_lat "<<rp->ldelay <<" "<<rp->ldelays<<" "<<forDelay<<std::endl;}
 			break;
 		}
 		case Organism::dd_time_self:
@@ -349,6 +350,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
 			throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
 		}
 	}
+	if(verbose){std::cout<<"create lat, delay defEND "<<forDelay<<" "<<multiplyDelay<<std::endl;}
 	return forDelay*multiplyDelay;
 }
 

@@ -94,7 +94,6 @@ class TestPlant(unittest.TestCase):
         
         p.initializeDB()
         time = 76
-        print("did simulate")
         
         rrp = p.getOrganRandomParameter(pb.root)[1]
         rrp.ldelay = 3

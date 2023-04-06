@@ -79,54 +79,6 @@ class TestStem(unittest.TestCase):
         self.stem = pb.Stem(self.plant, p0.subType, 0, self.parentstem , 0)
         self.parentstem.addChild(self.stem)
         self.stem.setOrganism(self.plant)
-        
-    def stem_example_rtp2(self, phytomereGrowth = "sequential", delay_definition = 1):
-        """ an example used in the tests below, a main stem with laterals """
-        self.partialiheading = pb.Vector3d.rotAB(0, 0)
-        self.plant = pb.Plant()  # store organism (not owned by Organ, or OrganRandomParameter)
-        p0 = pb.StemRandomParameter(self.plant)
-        self.lmax_th = 100
-        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin = "main", 1, 10., 0., self.lmax_th, 1., 1.5, 1, 0.5
-        p0.ldelay = 1.
-        p0.successor = [[5]]
-        p0.successorP = [[1.]]
-
-        if phytomereGrowth == "sequential":
-            p0.nodalGrowth = 0
-        if phytomereGrowth == "equal":
-            p0.nodalGrowth = 1
-
-        p1 = pb.StemRandomParameter(self.plant)
-        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.dxMin = "lateral", 5, 5., 2., 1, 0.5
-        p1.ldelay = 2.
-        self.p0, self.p1 = p0, p1  # needed at later point
-        self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
-        self.plant.setOrganRandomParameter(p1)
-
-        srp = pb.SeedRandomParameter(self.plant)
-        srp.delayDefinition = delay_definition #organ carries the delay of its laterals
-        self.plant.setOrganRandomParameter(srp)
-        # creates seed and root organ (otherwise throws error in plant::simulate())
-        p0r = pb.RootRandomParameter(self.plant)
-        p0r.name, p0r.subType, p0r.la, p0r.lb, p0r.lmax, p0r.ln, p0r.r, p0r.dx = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5
-        self.plant.setOrganRandomParameter(p0r)  # the organism manages the type parameters and takes ownership
-        # test == True => no need to give root parameter
-        self.plant.initialize(verbose = False)
-        paramS = srp.realize()
-        self.seed = self.plant.getSeed()  #
-
-        param0 = p0.realize()  # set up stem by hand (without a stem system)
-        param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-        self.ons =pb.Vector3d(0., 0., 1.)
-        parentstem = pb.Stem(1, param0, True, True, 0., 0., self.partialiheading, 0, False, 0)  # takes ownership of param0
-        parentstem.setOrganism(self.plant)
-        parentstem.setParent(self.seed)
-        parentstem.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
-        self.parentstem = parentstem  # store parent (not owned by child Organ)
-        self.seed.addChild(self.parentstem)
-        self.stem = pb.Stem(self.plant, p0.subType, 0, self.parentstem , 0)
-        self.parentstem.addChild(self.stem)
-        self.stem.setOrganism(self.plant)
 
     def stem_length_test(self, dt, l):
         ''' simulates a single stem and checks length against analytic length '''
@@ -366,38 +318,102 @@ class TestStem(unittest.TestCase):
 
 
 
-    def atest_new_delay_types(self):
+    
+    def stem_example_rtp2(self, phytomereGrowth = "sequential", delay_definition = 1):
+        """ an example used in the tests below, a main stem with laterals """
+        self.partialiheading = pb.Vector3d.rotAB(0, 0)
+        self.plant = pb.Plant()  # store organism (not owned by Organ, or OrganRandomParameter)
+        p0 = pb.StemRandomParameter(self.plant)
+        self.lmax_th = 100
+        p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.dxMin = "main", 1, 10., 10., self.lmax_th, 1., 1.5, 1, 0.5
+        p0.ldelay = 1.
+        p0.successor = [[5]]
+        p0.successorP = [[1.]]
+        if phytomereGrowth == "sequential":
+            p0.nodalGrowth = 0
+        if phytomereGrowth == "equal":
+            p0.nodalGrowth = 1
+
+        p1 = pb.StemRandomParameter(self.plant)
+        p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.dxMin = "lateral", 5, 5., 2., 1, 0.5
+        p1.ldelay = 2.
+        self.p0, self.p1 = p0, p1  # needed at later point
+        self.plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
+        self.plant.setOrganRandomParameter(p1)
+
+        srp = pb.SeedRandomParameter(self.plant)
+        srp.delayDefinition = delay_definition #organ carries the delay of its laterals
+        self.plant.setOrganRandomParameter(srp)
+        # creates seed and root organ (otherwise throws error in plant::simulate())
+        p0r = pb.RootRandomParameter(self.plant)
+        p0r.name, p0r.subType, p0r.la, p0r.lb, p0r.lmax, p0r.ln, p0r.r, p0r.dx = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5
+        self.plant.setOrganRandomParameter(p0r)  # the organism manages the type parameters and takes ownership
+        # test == True => no need to give root parameter
+        self.plant.initialize(verbose = False)
+        paramS = srp.realize()
+        self.seed = self.plant.getSeed()  #
+
+        param0 = p0.realize()  # set up stem by hand (without a stem system)
+        param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
+        self.ons =pb.Vector3d(0., 0., 1.)
+        parentstem = pb.Stem(1, param0, True, True, 0., 0., self.partialiheading, 0, False, 0)  # takes ownership of param0
+        parentstem.setOrganism(self.plant)
+        parentstem.setParent(self.seed)
+        parentstem.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
+        self.parentstem = parentstem  # store parent (not owned by child Organ)
+        self.seed.addChild(self.parentstem)
+        self.stem = pb.Stem(self.plant, p0.subType, 0, self.parentstem , 0)
+        self.parentstem.addChild(self.stem)
+        self.stem.setOrganism(self.plant)
+
+
+    def test_new_delay_types(self):
         self.stem_example_rtp2(delay_definition = 0) #depends on la
         r = self.stem
         self.plant.abs2rel()
-        r.simulate(10, False)
+        time = 100
+        r.simulate(time, False)
         self.plant.rel2abs()
-        print("num lat ",r.getNumberOfChildren())
-        meanLn = r.getParameter("lnMean") 
-        effectiveLa = max(r.getParameter("la")-meanLn/2, 0.) # effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
-        for ln in range(r.getNumberOfChildren()):
-            ll = r.getChild(ln)
-            lengthPni = ll.getParent().getLength(ll.parentNI)
-            CT = r.calcAge(lengthPni+effectiveLa) # age of the stem, when the lateral starts growing (i.e when the apical zone is developed)
-            print(CT, ll.getParameter("creationTime"))
+        meanLn = self.stem.getParameter("lnMean")# mean inter-lateral distance
+        effectiveLa = max(self.stem.getParameter("la")-meanLn/2, 0.)#effective apical distance, observed apical distance is in la-ln/2, la+ln/2
+        ageLN = self.stem.calcAge(self.stem.param().lb)# age of root when lateral node is created
+        ageLG = self.stem.calcAge(self.stem.param().lb+effectiveLa)# age of the root, when the lateral starts growing (i.e when the apical zone is developed)
+        forDelay = ageLG-ageLN; 
+        for i in range(self.stem.getNumberOfChildren()):  
+            r = self.stem.getChild(i)            
+            dl = forDelay
+            et = ageLN + dl
+            self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
+            
         self.stem_example_rtp2(delay_definition = 1) #depends on ldelay of parent organ
         r = self.stem
         self.plant.abs2rel()
-        r.simulate(10, False)
+        time = 10
+        r.simulate(time, False)
         self.plant.rel2abs()
-        print("num lat ",r.getNumberOfChildren())
-        for ln in range(r.getNumberOfChildren()):
-            ll = r.getChild(ln)
-            print(ll.getLength(), ll.getParameter("creationTime"))
-        self.stem_example_rtp2(delay_definition = 2) #depends on ldelay of child organ
+        firstChild = self.stem.getChild(0)
+        for i in range(self.stem.getNumberOfChildren()):  
+            r = self.stem.getChild(i)
+            rsp = r.getParam()
+            dl = r.getParent().getOrganRandomParameter().ldelay*i # only works because deviation == 0
+            et = firstChild.getParameter("creationTime") + dl
+            #print(r.getId(),r.getParameter("subType"),r.getNumberOfChildren(),r.getAge(),r.getParameter("creationTime"),r.getNodeCT(0) , dl)
+            self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
+            
+        self.stem_example_rtp2(delay_definition = 2) #depends on ldelay of lateral organ
         r = self.stem
         self.plant.abs2rel()
-        r.simulate(10, False)
+        time = 10
+        r.simulate(time, False)
         self.plant.rel2abs()
-        print("num lat ",r.getNumberOfChildren())
-        for ln in range(r.getNumberOfChildren()):
-            ll = r.getChild(ln)
-            print(ll.getLength(), ll.getParameter("creationTime"))
+        firstChild = self.stem.getChild(0)
+        for i in range(self.stem.getNumberOfChildren()):  
+            r = self.stem.getChild(i)
+            rsp = r.getParam()
+            dl = r.getOrganRandomParameter().ldelay*i # only works because deviation == 0
+            et = firstChild.getParameter("creationTime") + dl
+            #print(r.getId(),r.getParameter("subType"),r.getNumberOfChildren(),r.getAge(),r.getParameter("creationTime"),r.getNodeCT(0) , dl)
+            self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
 
 if __name__ == '__main__':
     unittest.main()
