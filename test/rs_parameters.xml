@@ -41,7 +41,7 @@
         <parameter name="theta" value="1.22"/>
         <parameter name="tropismN" value="1"/>
         <parameter name="tropismS" value="0.2"/>
-        <parameter name="successor" subType="2" percentage="1"/>
+        <parameter name="successor" ruleId="0" subType="2" percentage="1"/>
     </root>
     <root name="lateral" subType="2">
         <parameter name="gf" value="1"/>

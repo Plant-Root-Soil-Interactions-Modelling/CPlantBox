@@ -27,7 +27,7 @@ std::string StemSpecificParameter::toString() const
     std::stringstream str;
     str << "subType\t" << subType << std::endl;
     str << "lb\t" << lb << std::endl << "la\t" << la << std::endl;
-    str << "nob\t" << nob() << std::endl << "r\t" << r << std::endl << "a\t" << a << std::endl;
+    str << "number of branching points (nob)\t" << nob() << std::endl << "r\t" << r << std::endl << "a\t" << a << std::endl;
     str << "theta\t" << theta << std::endl << "rlt\t" << rlt << std::endl;
     str << "ln\t";
     for (int i=0; i<ln.size(); i++) {
@@ -100,7 +100,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     } else {
     lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
 	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 			  
+	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branching points			  
 	res = lb_ - floor(lb_/dx)* dx;	
 	if((res < dxMin) && (res != 0)){
 		if(res <= dxMin/2){ lb_ -= res;

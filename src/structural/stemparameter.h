@@ -44,7 +44,7 @@ public:
 	double delayNGStart;
 	double delayNGEnd;
 	double delayLat;
-    int nob() const { return ln.size() + laterals; } ///< return the maximal number of lateral branches [1]
+    int nob() const { return ln.size() + laterals; } ///< return the maximal number of branchin points != max number of laterals [1]
     double getK() const; ///< Returns the exact maximal stem length of this realization [cm]
 
     std::string toString() const override; ///< for debugging

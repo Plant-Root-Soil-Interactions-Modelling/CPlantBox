@@ -66,7 +66,7 @@ public:
     virtual std::string toString(bool verbose = true) const; ///< info for debugging
 
     virtual void readXML(tinyxml2::XMLElement* element); ///< reads a single sub type organ parameter set
-    int readSuccessor(tinyxml2::XMLElement* p, int ruleId);
+    void readSuccessor(tinyxml2::XMLElement* p);
 	void readXML(std::string name); ///< reads a single sub type organ parameter set
     virtual tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const; ///< writes a organ root parameter set
     void writeXML(std::string name) const; ///< writes a organ root parameter set
@@ -80,8 +80,8 @@ public:
 	std::vector<IntOrDouble> string2vector(const char* xmlInput, IntOrDouble defaultVal);
 	template <class IntOrDouble>
 	void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
-	bool replaceByDefault,
-	std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key);
+									bool replaceByDefault,
+									std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key);
 
     void bindParameter(std::string name, int* i, std::string descr = "", double* dev = nullptr); ///< binds integer to parameter name
     void bindParameter(std::string name, double* d, std::string descr = "", double* dev = nullptr); ///< binds double to parameter name

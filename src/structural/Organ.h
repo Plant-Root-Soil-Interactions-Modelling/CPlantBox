@@ -80,7 +80,7 @@ public:
 	std::vector<int> getNodeIds() const { return nodeIds; } ///< global node index of the i-th node, i is called the local node index
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
     void addNode(Vector3d n, double t, size_t index, bool shift); //< adds a node to the root
-    void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
+    virtual void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
 	void addNode(Vector3d n, int id, double t){addNode( n,  id, t, size_t(0), false);} //< for pybind, overwise error with parameter repartition
     void addNode(Vector3d n,  double t){addNode( n,   t, size_t(0),false);}; //< for link with pybind
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
@@ -119,6 +119,7 @@ protected:
     Vector3d partialIHeading;
 	
 	virtual void createLateral(double ageLN, bool silence); ///< creates a new lateral, called by Root::simulate(), overriden by @see RootDelay::createLateral()
+	virtual void storeLinkingNodeLocalId(int numCreatedLN, bool silence){;}; ///<  overriden by @see Stem::storeLinkingNodeLocalId()
 	Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
     void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
     virtual double getLatInitialGrowth(double dt);

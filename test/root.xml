@@ -37,6 +37,6 @@
     <!--Number of trials of root tropism-->
     <parameter name="tropismS" value="0.2"/>
     <!--Mean value of expected change of root tropism [1/cm]-->
-    <parameter name="successor" subType="4, 5, 6" percentage="0.4, 0.1, 0.5"/>
+    <parameter name="successor" ruleId="0" subType="4, 5, 6" percentage="0.4, 0.1, 0.5"/>
     <!--Sub type of lateral -->
 </root>

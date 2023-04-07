@@ -214,7 +214,6 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
     successorP.resize(0, std::vector<double>(0));//2D, double
     successorNo.resize(0);//1D, int
     successorWhere.resize(0, std::vector<double>(0));//2D, double
-	int ruleId = 0;
     auto p = element->FirstChildElement("parameter");
     while(p!=nullptr) {
         const char* str = p->Attribute("name");
@@ -233,7 +232,7 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
                 i++;
             }
 			if (key.compare("successor")==0) {
-				ruleId = readSuccessor(p,ruleId);
+				readSuccessor(p);
 				i++;
 			}
             if (i == 0) {
@@ -269,28 +268,42 @@ void OrganRandomParameter::readXML(std::string name)
     }
 }
 
-int OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, int ruleId)
+void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p)
 {
 	double p_ , defaultVald;
-	int defaultVal, defaultSize, numLat, success;
+	int defaultVal, defaultSize;
 	std::vector<std::string> lookfor ;
 	bool replaceByDefaultValue;
-	bool verbose = true;
+	bool verbose = false;
 	std::string key = p->Attribute("name");
 	if(verbose){
 		std::cout<<"OrganRandomParameter::readSuccessor ";
 		std::cout<<key<<" "<<key.compare("successor")<<std::endl;
 	}
 	if (key.compare("successor")==0)  {
-		if(successorNo.size()< (ruleId+1))//create a new rule
-		{
-			successorOT.push_back(std::vector<int>());
-			successorST.push_back(std::vector<int>());
-			successorWhere.push_back(std::vector<double>());
-			successorP.push_back(std::vector<double>());
-			successorNo.push_back(1);//default == make one lateral
+		
+		int ruleId = std::max(0,int(successorOT.size()-1));
+		int	success = p->QueryIntAttribute("ruleId",&ruleId);
+		if(success != tinyxml2::XML_SUCCESS){
+			success = p->QueryIntAttribute("number",&ruleId);
+			if(success != tinyxml2::XML_SUCCESS){
+				std::cout<<"OrganRandomParameter::readSuccessor: for parameter of organ "+std::to_string(organType)
+				+", subType "+std::to_string(subType)+", 'ruleId' (and 'number') not found in successor definition. ";
+				std::cout<<"Use defeault ruleId instead: "+ std::to_string(ruleId)+"\n";
+			}
 		}
 		
+		if(ruleId>= successorNo.size() )//create new rules
+		{
+			int toAdd = ruleId + 1;
+			successorOT.resize(toAdd,std::vector<int>());
+			successorST.resize(toAdd,std::vector<int>());
+			successorWhere.resize(toAdd,std::vector<double>());
+			successorP.resize(toAdd,std::vector<double>());
+			successorNo.resize(toAdd,1);//default == make one lateral
+		}
+		
+		int numLat;
 		success = p->QueryIntAttribute("numLat",&numLat);
 		if(success == tinyxml2::XML_SUCCESS){successorNo.at(ruleId) = numLat;}
 		
@@ -300,6 +313,7 @@ int OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, int ruleId)
 		lookfor = std::vector<std::string>{"where"};//parameter name
 		defaultVald = -0.0;
 		defaultSize = 0;//how many time do we need to repeat the value. Here: leave vectore empty == apply everywhere
+		
 		cpb_queryStringAttribute(lookfor,
 					defaultVald,defaultSize, replaceByDefaultValue,
 					successorWhere.at(ruleId), p);//name, default value, vector to fill, accept not found
@@ -358,15 +372,12 @@ int OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, int ruleId)
 			std::cout<<" did sucWhere "<< successorWhere.size() <<std::endl;
 			std::cout<<" did sucWhere "<< successorWhere.at(ruleId).size() <<std::endl;
 		}
-		if(p_ == 1.) //we gathered one group of successor
+		if(p_ > (1. + 1e-6)) //can be < 1 but not > 1
 		{
-			ruleId ++;
-			if(verbose){
-			std::cout<<"new ruleId "<<ruleId<<std::endl;
-			}
+			throw std::runtime_error("OrganRandomParameter::readSuccessor: probability of emergence for rule "+ std::to_string(ruleId)
+			+" is > 1: "+ std::to_string(p_));
 		}
 	}
-	return ruleId;
 }
 
 
@@ -470,6 +481,7 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
 	for (int j = 0; j<successorST.size(); j++) {
 			tinyxml2::XMLElement* p = doc.NewElement("parameter");
 			p->SetAttribute("name", "successor");
+			p->SetAttribute("ruleId",j);
 			if(successorNo.size()>j){p->SetAttribute("numLat", successorNo.at(j));}
 			if(successorWhere.size()>j){p->SetAttribute("Where", vector2string(successorWhere.at(j)).c_str());}
 			p->SetAttribute("subType", vector2string(successorST.at(j)).c_str());
@@ -482,8 +494,8 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
 				organ->InsertEndChild(c);
 			}
 			p_ += std::accumulate(successorP.at(j).begin(), successorP.at(j).end(), 0.);
-			if ((p_<1) && (p_!=0)) {
-				std::cout << "OrganRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
+			if (p_>1) {
+				std::cout << "OrganRandomParameter::writeXML: Warning! percentages "<< p_ <<"  > 1.\n";
 			}
 	}
     return organ;

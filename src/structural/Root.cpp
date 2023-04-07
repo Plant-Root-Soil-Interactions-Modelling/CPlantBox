@@ -317,7 +317,7 @@ double Root::getParameter(std::string name) const
     if (name=="theta") { return insertionAngle; } // angle between root and parent root [rad]
     if (name=="rlt") { return param()->rlt; } // root life time [day]
     // specific parameters member functions
-    if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes
+    if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes/branching points
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
     if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
     // further

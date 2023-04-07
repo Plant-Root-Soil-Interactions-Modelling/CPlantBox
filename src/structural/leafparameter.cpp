@@ -110,7 +110,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
     } else {
 	lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
 	la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
-	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 
+	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branching points
 	res = lb_ - floor(lb_/dx)* dx;	
 	if (res < dxMin) {
 		if (res <= dxMin/2){

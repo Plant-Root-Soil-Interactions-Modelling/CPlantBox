@@ -109,7 +109,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double la_;
     std::vector<double> ln_; // stores the inter-distances
     double nob_sd = p->randn()*nobs();
-    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branches
+    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
     bool hasLaterals = (successorST.size()>0) && (nob_real>0);
 
     if (!hasLaterals) { // no laterals

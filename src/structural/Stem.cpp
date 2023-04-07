@@ -74,16 +74,16 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 		double creationTime;
 		if (parent->getNumberOfChildren() == 0){
 			creationTime = parent->getNodeCT(pni)+delay;
-			std::cout<<"Stem::Stem first child "<<creationTime<<" "
-			<<parent->getNodeCT(pni)<<" "<<delay<<std::endl;
+			//std::cout<<"Stem::Stem first child "<<creationTime<<" "
+			//<<parent->getNodeCT(pni)<<" "<<delay<<std::endl;
 		}else{
 			creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-			std::cout<<"Stem::Stem subsequent child "<<creationTime<<" "
-			<<parent->getChild(0)->getParameter("creationTime")<<" "<<delay<<" use pni? "
-			<<parent->getNodeCT(pni)<<std::endl;
+			//std::cout<<"Stem::Stem subsequent child "<<creationTime<<" "
+			//<<parent->getChild(0)->getParameter("creationTime")<<" "<<delay<<" use pni? "
+			//<<parent->getNodeCT(pni)<<std::endl;
 		}
 		
-		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
+		Organ::addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);//do not know why, but i have to add "Organ::" now
 	}
 }
 
@@ -200,15 +200,15 @@ void Stem::simulate(double dt, bool verbose)
 					//go into branching zone if organ has laterals and has reached 
 					//the end of the basal zone
 					if(verbose){
-						std::cout<<"create all laterals "<<(p.ln.size())<<" "<< (children.size()) <<" "<<created_linking_node
+						std::cout<<"create all laterals "<<(p.ln.size())<<" "<< (localId_linking_nodes.size()) <<" "<<created_linking_node
 						<<", length "<<length<<" node.size "<< nodes.size()<<std::endl<<std::flush;
 					}
-					if (((children.size())<(p.ln.size()+1))&&(length>=p.lb)) 
+					if (((created_linking_node)<(p.ln.size()+1))&&(length>=p.lb)) 
 					{
 						for (size_t i=0; (i<p.ln.size()); i++) {
 							createLateral(dt_, verbose);
 							if(verbose){
-								std::cout<<"create one lateral "<<(children.size())<<" "<<p.ln.size()<<" "<<created_linking_node
+								std::cout<<"create one lateral "<<(localId_linking_nodes.size())<<" "<<p.ln.size()<<" "<<created_linking_node
 								<<", length "<<length<<" node.size "<< nodes.size()<<std::endl<<std::flush;
 							}
 							if(p.ln.at(created_linking_node-1)>0){
@@ -218,12 +218,12 @@ void Stem::simulate(double dt, bool verbose)
 							}
 						}
 					if(verbose){
-						std::cout<<"createD all laterals "<<(p.ln.size())<<" "<< (children.size()) <<" "<<created_linking_node
+						std::cout<<"createD all laterals "<<(p.ln.size())<<" "<< (localId_linking_nodes.size()) <<" "<<created_linking_node
 						<<", length "<<length<<" node.size "<< nodes.size()<<std::endl<<std::flush;
 					}
 						createLateral(dt_, verbose);
 						if(verbose){
-							std::cout<<"created last lat? "<<(children.size())<<" "<<p.ln.size()<<std::endl<<std::flush;
+							std::cout<<"created last lat? "<<(localId_linking_nodes.size())<<" "<<p.ln.size()<<std::endl<<std::flush;
 						}
 					}
 					if((length>=p.lb)&&((p.ln.size()+1)!=(created_linking_node))){
@@ -284,7 +284,7 @@ double Stem::getLatInitialGrowth(double dt)
 double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
 {
 	
-	bool verbose = true;
+	bool verbose = false;
 	auto rp = getOrganRandomParameter(); // rename
 	double forDelay; //store necessary variables to define lateral growth delay
 	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
@@ -379,7 +379,6 @@ void Stem::internodalGrowth(double dl,double dt, bool verbose)
 	{//equal growth
 		std::fill(toGrow.begin(),toGrow.end(),dl/(p.ln.size()-ln_0)) ; 
 	}
-	size_t childId=0;
 	int loopId = 0;
 	if(verbose){
 		std::cout<<"Stem::internodalGrowth "<<getParameter("subType")<<" "<<dl<<" "<<ln_0<<" "<<p.ln.size()<<std::endl;
@@ -388,36 +387,59 @@ void Stem::internodalGrowth(double dl,double dt, bool verbose)
 	while( (dl >0)&&(loopId<2) ) {//do the loop at most twice over the children
 		//if the phytomere can do a growth superior to the mean phytomere growth, we add the value of "missing" 
 		//(i.e., length left to grow to get the predefined total growth of the branching zone)
-		int nn1 = children.at(childId)->parentNI; //node at the beginning of phytomere		
-		int nn2 = children.at(childId+1)->parentNI; //node at end of phytomere (if nn1 != nn2)
+		int nn1 = localId_linking_nodes.at(phytomerId); //node at the beginning of phytomere		
+		int nn2 = localId_linking_nodes.at(phytomerId+1); //node at end of phytomere (if nn1 != nn2)
 		if(verbose){
-			std::cout<<"		MAYBE growth at "<<nn1<<" "<<nn2<<" "<<loopId<<" "<<phytomerId<<" "<<childId
+			std::cout<<"		MAYBE growth at "<<nn1<<" "<<nn2<<" "<<loopId<<" "<<phytomerId<<" "<< p.ln.size()<<" "<<nodes.size()
 			<<" "<<dl<<std::endl<<std::flush;
 		}
-		if(nn1 != nn2)//some laterals are on the same node
+		double length1 = getLength(nn1);
+		double availableForGrowth = p.ln.at(phytomerId) -( getLength(nn2) - length1 ) ;//difference between maximum and current length of the phytomer
+		if(availableForGrowth<-1e-3)
 		{
-			double length1 = getLength(nn1);
-			double availableForGrowth = p.ln.at(phytomerId) -( getLength(nn2) - length1 ) ;//difference between maximum and current length of the phytomer
-			if(availableForGrowth<-1e-3)
-			{
-				std::stringstream errMsg;
-				errMsg <<"Stem::internodalGrowth phytomere "<<phytomerId<<" is too long: "<<availableForGrowth<<" "<<
-				p.ln.at(phytomerId)<<" "<<getLength(nn2)<<" "<<length1<<std::endl;
-				throw std::runtime_error(errMsg.str().c_str());
-			}
-			dl_ = std::max(0.,std::min(std::min(toGrow[phytomerId],availableForGrowth), dl));
-			if(verbose){
-				std::cout<<"		INDEED growth "<<length1<<" "<<getLength(nn2)<<" "<<availableForGrowth
-				<<" "<<dl_<<std::endl<<std::flush;
-			}
-			if((phytomerId+1)< p.ln.size()){
-				toGrow.at(phytomerId+1) +=  toGrow.at(phytomerId) - dl_ ;
-			}
-			if(dl_ > 0){createSegments(dl_,dt,verbose, nn2 ); dl -= dl_;}	
-			phytomerId ++;
+			std::stringstream errMsg;
+			errMsg <<"Stem::internodalGrowth phytomere "<<phytomerId<<" is too long: "<<availableForGrowth<<" "<<
+			p.ln.at(phytomerId)<<" "<<getLength(nn2)<<" "<<length1<<std::endl;
+			throw std::runtime_error(errMsg.str().c_str());
 		}
-		childId++;
-		if(childId>=(children.size()-1)){childId=0;loopId++; phytomerId = 0;}	//loop twice other the children
+		dl_ = std::max(0.,std::min(std::min(toGrow[phytomerId],availableForGrowth), dl));
+		if(verbose){
+			std::cout<<"		INDEED growth "<<length1<<" "<<getLength(nn2)<<" "<<availableForGrowth
+			<<" "<<dl_<<std::endl<<std::flush;
+		}
+		if(dl_ > 0)
+		{
+			if(verbose){
+				std::cout<<"		old position of the laterals "<<std::endl;
+				for(int numkid = 0; numkid < localId_linking_nodes.size();numkid++)
+				{
+					std::cout<<getLength(localId_linking_nodes.at(numkid))<<" ";
+				}std::cout<<std::endl;
+				for(int numkid = 0; numkid < children.size();numkid++)
+				{
+					std::cout<<getLength(children.at(numkid)->parentNI)<<" ";
+				}std::cout<<std::endl;
+			}
+			createSegments(dl_,dt,verbose, nn2 ); dl -= dl_;
+			if(verbose){
+				std::cout<<"		new position of the laterals "<<std::endl;
+				for(int numkid = 0; numkid < localId_linking_nodes.size();numkid++)
+				{
+					std::cout<<getLength(localId_linking_nodes.at(numkid))<<" ";
+				}std::cout<<std::endl;
+				for(int numkid = 0; numkid < children.size();numkid++)
+				{
+					std::cout<<getLength(children.at(numkid)->parentNI)<<" ";
+				}std::cout<<std::endl;
+			}
+		}	
+		if((phytomerId+1)< p.ln.size()){
+			toGrow.at(phytomerId+1) +=  toGrow.at(phytomerId) - dl_ ;
+			phytomerId ++;
+		}else{
+			toGrow.at(0) +=  toGrow.at(phytomerId) - dl_ ;
+			loopId++; phytomerId = 0;
+		}	//loop twice other the children
 		
 	}
 	if(std::abs(dl)> 1e-6){//this sould not happen as computed dl to be <= sum(availableForGrowth)
@@ -438,7 +460,7 @@ double Stem::getParameter(std::string name) const
 	if (name=="delayNGStart") { return param()->delayNGStart; } // delay for nodal growth [day]
 	if (name=="delayNGEnd") { return param()->delayNGEnd; } // delay for nodal growth [day]
 	if (name=="la") { return param()->la; } // apical zone [cm]
-	if (name=="nob") { return param()->nob(); } // number of branches
+	if (name=="nob") { return param()->nob(); } // number of branching points
 	if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
 	if (name=="radius") { return param()->a; } // root radius [cm]
 	if (name=="a") { return param()->a; } // root radius [cm]
@@ -496,12 +518,26 @@ double Stem::calcAge(double length) const
 }
 
 
-
-
+/**
+ * stores the local id of the linking node. used by @see Stem::internodalGrowth()
+ */
+void Stem::storeLinkingNodeLocalId(int numCreatedLN, bool verbose)
+{
+	localId_linking_nodes.push_back(nodes.size()-1);
+	if(numCreatedLN!=localId_linking_nodes.size())
+	{
+		throw std::runtime_error("wrong number of linking nodes in stem: "+std::to_string(numCreatedLN)
+		+" against "+std::to_string(localId_linking_nodes.size()));
+	}
+	if(verbose)
+	{
+		std::cout<<"Stem::storeLinkingNodeLocalId "<<numCreatedLN<<" "<<(nodes.size()-1)<<" "<<localId_linking_nodes.size()<<std::endl;
+	}
+}
 
 
 /**
- * @return The RootTypeParameter from the plant
+ * @return The StemTypeParameter from the plant
  */
 std::shared_ptr<StemRandomParameter> Stem::getStemRandomParameter() const
 {
@@ -525,6 +561,58 @@ std::string Stem::toString() const
 	std::stringstream newstring;
 	newstring << "; initial heading: " << getiHeading0().toString() << ", parent node index" << parentNI << ".";
 	return Organ::toString()+newstring.str();
+}
+
+
+/**
+ * Adds a node to the organ.
+ *
+ * For simplicity nodes can not be deleted, organs can only become deactivated or die
+ *
+ * @param n        new node
+ * @param id       global node index
+ * @param t        exact creation time of the node
+ * @param index	   position were new node is to be added
+ * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
+ */
+void Stem::addNode(Vector3d n, int id, double t, size_t index, bool shift)
+{
+	bool verbose = false;
+	if(verbose)
+	{
+		std::cout<<"Organ::addNode "<<id<<" "<<getId()<<" "<<organType()<<" "<<getParameter("subType")<<std::endl;
+		std::cout<<"Organ::addNode "<<n.toString()<<" "<<t<<" "<<index<<" "<<shift<<std::endl;
+		
+	}
+	if(!shift){//node added at the end of organ
+		nodes.push_back(n); // node
+		nodeIds.push_back(id); //unique id
+		nodeCTs.push_back(t); // exact creation time
+	}
+	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?)
+		nodes.insert(nodes.begin() + index-1, n);//add the node at index
+		//add a global index.
+		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
+		//if(verbose){
+			//			std::cout<<"Organ::addNode "<<organType()<<" "<<id<<" "<<index<<std::endl<<std::flush;
+		//}
+		nodeIds.push_back(id);
+		nodeCTs.insert(nodeCTs.begin() + index-1, t);
+		for(auto kid : children){//if carries children after the added node, update their "parent node index"
+		
+			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
+				kid->moveOrigin(kid->parentNI + 1);
+				}
+
+		}
+		for(int numnode = 0; numnode < localId_linking_nodes.size();numnode++){//update the local ids of the linking nodes
+			if((localId_linking_nodes.at(numnode) >= index-1 )&&(localId_linking_nodes.at(numnode) > 0))
+			{
+				localId_linking_nodes.at(numnode) += 1;
+			}
+		}
+
+	}
 }
 
 } // namespace CPlantBox

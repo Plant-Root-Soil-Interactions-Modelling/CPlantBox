@@ -167,7 +167,7 @@ void Organ::addChild(std::shared_ptr<Organ> c)
 }
 
 /**
- * Adds a node to the organ.
+ * Adds a node to the organ. Overriden by @see Stem::addNode
  *
  * For simplicity nodes can not be deleted, organs can only become deactivated or die
  *
@@ -179,36 +179,9 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  */
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
-	bool verbose;
-	if(false)
-	{
-		std::cout<<"Organ::addNode "<<id<<" "<<getId()<<" "<<organType()<<" "<<getParameter("subType")<<std::endl;
-		std::cout<<"Organ::addNode "<<n.toString()<<" "<<t<<" "<<index<<" "<<shift<<std::endl;
-		verbose = true;
-	}
-	if(!shift){//node added at the end of organ
-		nodes.push_back(n); // node
-		nodeIds.push_back(id); //unique id
-		nodeCTs.push_back(t); // exact creation time
-	}
-	else{//could be quite slow  to insert, but we won t have that many (node-)tillers (?)
-		nodes.insert(nodes.begin() + index-1, n);//add the node at index
-		//add a global index.
-		//no need for the nodes to keep the same global index and makes the update of the nodes position for MappedPlant object more simple)
-		//if(verbose){
-			//			std::cout<<"Organ::addNode "<<organType()<<" "<<id<<" "<<index<<std::endl<<std::flush;
-		//}
-		nodeIds.push_back(id);
-		nodeCTs.insert(nodeCTs.begin() + index-1, t);
-		for(auto kid : children){//if carries children after the added node, update their "parent node index"
-		
-			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
-				kid->moveOrigin(kid->parentNI + 1);
-				}
-
-		}
-
-	}
+	nodes.push_back(n); // node
+	nodeIds.push_back(id); //unique id
+	nodeCTs.push_back(t); // exact creation time
 }
 
 /**
@@ -218,8 +191,12 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
  */
 void Organ::moveOrigin(int idx)
 {
-	//std::cout<< "Organ::moveOrigin "<<organType()<<" "<<getParameter("subType")<<" "<<parentNI<<" "<<idx<<" "
-	//<<nodes.at(0).toString()<<" "<<getParent()->getNode(idx).toString()<<std::endl<<std::flush;
+	bool verbose = false;
+	if(verbose)
+	{
+		std::cout<< "Organ::moveOrigin "<<organType()<<" "<<getParameter("subType")<<" "<<parentNI<<" "<<idx<<" "
+		<<nodes.at(0).toString()<<" "<<getParent()->getNode(idx).toString()<<std::endl<<std::flush;
+	}
 	this->parentNI = idx;
 	nodeIds.at(0) = getParent()->getNodeId(idx);
 
@@ -787,7 +764,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 void Organ::createLateral(double dt, bool verbose)
 { 
 	auto rp = getOrganRandomParameter(); // rename
-	int ot;
+	
 	if(verbose){
 		std::cout<<"Organ::createLateral "<<getId()<<" "<<created_linking_node<<" "<<children.size()<<std::endl;
 		std::cout<<"					 "<<organType()<<" "<<rp->successorST.size()<<" "<<rp->successorWhere.size()<<std::endl;
@@ -807,20 +784,20 @@ void Organ::createLateral(double dt, bool verbose)
 			if(verbose){std::cout<<"numlats "<<numlats <<std::endl;}
 			for(int nn = 0; nn < numlats; nn++)
 			{
-				// if(
-				// (std::adjacent_find( myvector.begin(), myvector.end(), std::not_equal_to<>() ) 
-				// == myvector.end())&&(successorP[i][0]==1.))
-				// {p=nn;}else{
-					const Vector3d& pos = Vector3d();
-					int p_id = rp->getLateralType(pos, i);//if probabilistic branching
-					//}//, soccessorOT[i], successorST[i])
-				if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
-					ot = rp->successorOT.at(i).at(p_id);
-				}else{ot = getParameter("organType");}//default
-				int st = rp->successorST.at(i).at(p_id);
+				
+				const Vector3d& pos = Vector3d();
+				int p_id = rp->getLateralType(pos, i);//if probabilistic branching
 						
-				if((st>=0 )&& (ot>=0))
+				if(p_id >=0)
 				{
+					int ot;
+				
+					if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
+						ot = rp->successorOT.at(i).at(p_id);
+					}else{ot = getParameter("organType");}//default
+					
+					int st = rp->successorST.at(i).at(p_id);
+				
 					double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
 					double growth_dt = getLatInitialGrowth(dt);
 					
@@ -842,13 +819,13 @@ void Organ::createLateral(double dt, bool verbose)
 							lateral->simulate(growth_dt,verbose);//age-ageLN,verbose); 
 							break;}
 					}
-				}
-				
+				}				
 			}
 		}
 		
 	}
 	created_linking_node ++;
+	storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
 	if(verbose){
 		std::cout<<"Organ::createLateral_END "<<getId()<<" "<<created_linking_node<<" "<<children.size()<<std::endl;
 		}

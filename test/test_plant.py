@@ -123,6 +123,18 @@ class TestPlant(unittest.TestCase):
                 dl = r.getParent().getOrganRandomParameter().ldelay  # only works because deviation == 0
                 et = r.getParent().getNodeCT(r.parentNI) + dl
             self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
+            
+    def atest_missing_laterals(self):
+        """can CPB handle it when no lateral appear at a branching point
+            because of probabilistic branching?
+        """
+        p = pb.MappedPlant(2)
+        p.readParameters(path + "test_missing_laterals.xml")        
+        p.initialize()
+        time = 76
+        p.simulate(time, False)
+        
+
 
 
 if __name__ == '__main__':
