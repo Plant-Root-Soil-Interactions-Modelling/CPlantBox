@@ -733,6 +733,8 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 
 /**
  * Creates a new lateral 
+ *  @param dt       time step [day]	  
+ *  @param verbose  turns console output on or off
  */
 void Organ::createLateral(double dt, bool verbose)
 { 
@@ -793,6 +795,12 @@ void Organ::createLateral(double dt, bool verbose)
 		
 }
 
+
+/**
+ * See if should apply successor rule at a specific linking node, @see Organ::createLateral
+ *  @param i       rule id  
+ *  @return whether to apply the rule
+ */
 bool Organ::getApplyHere(int i) const
 {
 	bool applyHere;
@@ -811,6 +819,12 @@ bool Organ::getApplyHere(int i) const
 	return applyHere;
 }
 
+
+/**
+ *  @see Organ::createLateral
+ *  @param dt       time step recieved by parent organ [day]	
+ *  @return growth period to send to lateral after creation
+ */
 double Organ::getLatInitialGrowth(double dt)
 {
 	double ageLN = this->calcAge(getLength(true)); // MINIMUM age of root when lateral node is created
@@ -818,6 +832,14 @@ double Organ::getLatInitialGrowth(double dt)
 	return age-ageLN;
 }
 
+
+/**
+ *  @see Organ::createLateral
+ *  @param ot_lat       organType of lateral to create	
+ *  @param st_lat       subType of lateral to create	
+ *  @param dt       time step recieved by parent organ [day]	
+ *  @return emergence delay to send to lateral after creation
+ */
 double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
 {
 	auto rp = getOrganRandomParameter(); // rename

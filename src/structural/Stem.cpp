@@ -248,7 +248,12 @@ void Stem::simulate(double dt, bool verbose)
 	} // if alive
 }
 
-//all laterals are created at the same time currently
+
+/**
+ *  @see Organ::createLateral
+ *  @param dt       time step recieved by parent organ [day]	
+ *  @return growth period to send to lateral after creation
+ */
 double Stem::getLatInitialGrowth(double dt)
 {
 	double ageLN = this->calcAge(param()->lb); // MINIMUM age of root when lateral node is created
@@ -256,6 +261,14 @@ double Stem::getLatInitialGrowth(double dt)
 	return age-ageLN;
 }
 
+
+/**
+ *  @see Organ::createLateral
+ *  @param ot_lat       organType of lateral to create	
+ *  @param st_lat       subType of lateral to create	
+ *  @param dt       time step recieved by parent organ [day]	
+ *  @return emergence delay to send to lateral after creation
+ */
 double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
 {
 	
