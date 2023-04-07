@@ -32,7 +32,7 @@ public:
     OrganSpecificParameter(int t, double a): subType(t), a(a)  { }
 
     virtual ~OrganSpecificParameter() { }
-
+	int created_linking_node = 0;
     int subType = -1; ///< sub type of the organ
     double a = 0.; ///< radius of the organ [cm]
     virtual std::string toString() const; ///< quick info for debugging
@@ -64,12 +64,23 @@ public:
 
     virtual std::string toString(bool verbose = true) const; ///< info for debugging
 
-    virtual void readXML(tinyxml2::XMLElement* element); ///< reads a single sub type organ parameter set
-    void readXML(std::string name); ///< reads a single sub type organ parameter set
+    virtual void readXML(tinyxml2::XMLElement* element, bool verbose); ///< reads a single sub type organ parameter set
+	void readSuccessor(tinyxml2::XMLElement* p, bool verbose);
+	void readXML(std::string name, bool verbose); ///< reads a single sub type organ parameter set
     virtual tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const; ///< writes a organ root parameter set
     void writeXML(std::string name) const; ///< writes a organ root parameter set
 
+	int getLateralType(const Vector3d& pos, int ruleId); ///< Choose (dice) lateral type based on stem parameter set
     virtual void bindParameters(); ///<sets up class introspection
+	
+	template <class IntOrDouble>
+	std::string vector2string(std::vector<IntOrDouble> vec) const;
+	template <class IntOrDouble>
+	std::vector<IntOrDouble> string2vector(const char* xmlInput, IntOrDouble defaultVal);
+	template <class IntOrDouble>
+	void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
+									bool replaceByDefault,
+									std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key);							
 
     void bindParameter(std::string name, int* i, std::string descr = "", double* dev = nullptr); ///< binds integer to parameter name
     void bindParameter(std::string name, double* d, std::string descr = "", double* dev = nullptr); ///< binds double to parameter name
@@ -81,11 +92,20 @@ public:
     double as = 0.; 		///< Standard deviation root radius [cm]
     double dx = 0.25; 		///< Maximal segment size [cm]
 	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
-
+	double ldelay = -1.;     ///< Lateral emergence delay [day], used by RootDelay, @see RootDelay, RootSystem::initializeDB or if Organism->delayDefinition != Organism::dd_distance
+    double ldelays = 0.;    ///< Standard deviation of lateral emergence delay [day]
+	
     std::weak_ptr<Organism> plant;
 	std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<GrowthFunction> f_gf;
-	std::vector<double> string2vector(std::string xmlInput);///<convert string to vector<double>, to simplifiy xml input
+	std::vector<std::vector<int> > successorST = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
+	std::vector<std::vector<double>> successorP = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]
+    std::vector<int>  successorNo = std::vector<int>(0);			///< Lateral types [1]
+	//need to use double to distiguish between -0 and 0
+	//default: vector empty == rule implemented everywhere
+    std::vector<std::vector<double> > successorWhere = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Where should rule be implemented [1] or not [-1]
+    std::vector<std::vector<int> > successorOT = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
+																																
 
 protected:
 

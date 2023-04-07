@@ -458,31 +458,6 @@ double Stem::calcAge(double length) const
 	return age__;
 }
 
-/**
- * Analytical length of the stem at a given age
- *
- * @param age          age of the stem [day]
- */
-double Stem::calcLength(double age)
-{
-	assert(age>=0 && "Stem::calcLength() negative root age");
-	return getStemRandomParameter()->f_gf->getLength(age,getStemRandomParameter()->r,param()->getK(),shared_from_this());
-}
-
-/**
- * Analytical age of the stem at a given length
- * no scaling of organ growth , so can return age directly
- * otherwise cannot compute exact age between delayNGStart and delayNGEnd
- * @param length   length of the stem [cm]
- */
-double Stem::calcAge(double length) const
-{
-	assert(length>=0 && "Stem::calcAge() negative root age");
-	double age__ = getStemRandomParameter()->f_gf->getAge(length,getStemRandomParameter()->r,param()->getK(),shared_from_this());
-	if(age__ >param()->delayNGStart ){age__ += (param()->delayNGEnd - param()->delayNGStart);}
-	return age__;
-}
-
 
 /**
  * stores the local id of the linking node. used by @see Stem::internodalGrowth()

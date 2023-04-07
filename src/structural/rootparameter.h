@@ -71,7 +71,7 @@ public:
 
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
-    void readXML(tinyxml2::XMLElement* element) override; ///< reads a single sub type organ parameter set
+    void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
     
     // DEPRICATED
     void read(std::istream & cin); ///< reads a single root parameter set

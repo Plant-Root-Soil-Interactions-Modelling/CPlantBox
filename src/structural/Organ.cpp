@@ -820,7 +820,6 @@ double Organ::getLatInitialGrowth(double dt)
 
 double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
 {
-	bool verbose = false;
 	auto rp = getOrganRandomParameter(); // rename
 	double growthDelay; //store necessary variables to define lateral growth delay
 	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;

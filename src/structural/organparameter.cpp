@@ -89,6 +89,7 @@ double OrganRandomParameter::getParameter(std::string name) const
     if (dparam.count(name)) { // looking for a double parameter
         return *dparam.at(name);
     }
+	throw std::runtime_error("OrganRandomParameter::getParameter: parameter "+name+" not found. Send NaN as output.");
     return std::numeric_limits<double>::quiet_NaN(); // default if name is unknown
 }
 
@@ -143,6 +144,44 @@ std::string OrganRandomParameter::toString(bool verbose) const
             str << std::endl;
         }
         str << "===" << std::endl;
+        str << "successor organ types\t";
+        for (int i=0; i<successorOT.size(); i++) {
+            for (int j=0; j<successorOT.at(i).size(); j++) {
+				str << successorOT.at(i).at(j) << " ";
+			}
+			str << "; ";
+        }		
+        str << "\t" << description.at("successorOT") << std::endl;
+        str << "successor sub types\t";
+        for (int i=0; i<successorST.size(); i++) {
+            for (int j=0; j<successorST.at(i).size(); j++) {
+				str << successorST.at(i).at(j) << " ";
+			}
+			str << "; ";
+        }		
+        str << "\t" << description.at("successorST") << std::endl;
+        str << "successor lateral number\t";
+        for (int i=0; i<successorNo.size(); i++) {
+            str << successorNo.at(i) << "; ";
+        }
+        str << "\t" << description.at("successorNo") << std::endl;
+        str << "successorP\t";
+        for (int i=0; i<successorP.size(); i++) {
+            for (int j=0; j<successorP.at(i).size(); j++) {
+				str << successorP.at(i).at(j) << " ";
+			}
+			str << "; ";
+        }
+        str << "\t" << description.at("successorP") << std::endl;
+        str << "successorWhere\t";
+        for (int i=0; i<successorWhere.size(); i++) {
+            for (int j=0; j<successorWhere.at(i).size(); j++) {
+				str << successorWhere.at(i).at(j) << " ";
+			}
+			str << "; ";
+        }
+        str << "\t" << description.at("successorWhere") << std::endl;
+        
         return str.str();
     } else {
         str << "name: " << name << ", " << "organType: "<< organType << ", " << "subType: " << subType << ".";
@@ -161,7 +200,7 @@ std::string OrganRandomParameter::toString(bool verbose) const
  *
  * @param element  The XML element containing the parameter tags
  */
-void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
+void OrganRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
 {
     subType = element->IntAttribute("subType", 0);
     const char* cname = element->Attribute("name");
@@ -170,6 +209,11 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
     } else {
         name = "undefined*";
     }
+	successorOT.resize(0, std::vector<int>(0));//2D, int
+    successorST.resize(0, std::vector<int>(0));//2D, int
+    successorP.resize(0, std::vector<double>(0));//2D, double
+    successorNo.resize(0);//1D, int
+    successorWhere.resize(0, std::vector<double>(0));//2D, double 
     auto p = element->FirstChildElement("parameter");
     while(p!=nullptr) {
         const char* str = p->Attribute("name");
@@ -187,10 +231,16 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
                 *param_sd[key] = p->DoubleAttribute("dev", *param_sd[key]); // if not found, leave default
                 i++;
             }
+			if (key.compare("successor")==0) {
+				readSuccessor(p, verbose);
+				i++;
+			}
             if (i == 0) {
-                if ((key.compare("successor")!=0)&&((key.compare("leafGeometry")!=0)||(organType!=Organism::ot_leaf))) {
-                    std::cout << "OrganRandomParameter::readXML: warning! parameter " << key <<
+                if ((key.compare("leafGeometry")!=0)||(organType!=Organism::ot_leaf)) {
+					if(verbose){
+						std::cout << "OrganRandomParameter::readXML: warning! parameter " << key <<
                         " is defined in the xml, but not available in organ " << Organism::organTypeName(organType) << "\n" << std::flush;
+					}
                 }
             }
             p = p->NextSiblingElement("parameter");
@@ -207,18 +257,147 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element)
  *
  * @param name      file name
  */
-void OrganRandomParameter::readXML(std::string name)
+void OrganRandomParameter::readXML(std::string name, bool verbose)
 {
     tinyxml2::XMLDocument doc;
     doc.LoadFile(name.c_str());
     if(doc.ErrorID() == 0) {
         tinyxml2::XMLElement* element = doc.FirstChildElement();
-        readXML(element);
+        readXML(element, verbose);
     } else {
         std::cout << "readXML(): could not open file\n" << std::flush;
     }
 }
 
+void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
+{
+	double p_ , defaultVald;
+	int defaultVal, defaultSize;
+	std::vector<std::string> lookfor ;
+	bool replaceByDefaultValue;
+	std::string key = p->Attribute("name");
+	if (key.compare("successor")==0)  {
+		
+		int ruleId = std::max(0,int(successorOT.size()-1));
+		int	success = p->QueryIntAttribute("ruleId",&ruleId);
+		if(success != tinyxml2::XML_SUCCESS){
+			success = p->QueryIntAttribute("number",&ruleId);
+			if(success != tinyxml2::XML_SUCCESS){
+				if(verbose)
+				{
+					std::cout<<"OrganRandomParameter::readSuccessor: for parameter of organ "+std::to_string(organType)
+					+", subType "+std::to_string(subType)+", 'ruleId' (and 'number') not found in successor definition. ";
+					std::cout<<"Use defeault ruleId instead: "+ std::to_string(ruleId)+"\n";
+				}
+			}
+		}
+		
+		if(ruleId>= successorNo.size() )//create new rules
+		{
+			int toAdd = ruleId + 1;
+			successorOT.resize(toAdd,std::vector<int>());
+			successorST.resize(toAdd,std::vector<int>());
+			successorWhere.resize(toAdd,std::vector<double>());
+			successorP.resize(toAdd,std::vector<double>());
+			successorNo.resize(toAdd,1);//default == make one lateral
+		}
+		
+		int numLat;
+		success = p->QueryIntAttribute("numLat",&numLat);
+		if(success == tinyxml2::XML_SUCCESS){successorNo.at(ruleId) = numLat;}
+		
+		
+		//default == empty vector == apply rule to all the linking nodes
+		replaceByDefaultValue = true;//replace by default value if not found (if false: throw an error)
+		lookfor = std::vector<std::string>{"where"};//parameter name
+		defaultVald = -0.0;
+		defaultSize = 0;//how many time do we need to repeat the value. Here: leave vectore empty == apply everywhere
+		
+		cpb_queryStringAttribute(lookfor,
+					defaultVald,defaultSize, replaceByDefaultValue,
+					successorWhere.at(ruleId), p);//name, default value, vector to fill, accept not found
+		
+		replaceByDefaultValue = false;lookfor = std::vector<std::string>{"subType","subtype","type"};//subtype (or type for backarwad compatibility)
+		defaultVal = 1.0;defaultSize = 0;
+		cpb_queryStringAttribute(lookfor,
+					defaultVal,defaultSize, replaceByDefaultValue,
+					successorST.at(ruleId), p);
+		
+		
+		
+		replaceByDefaultValue = true;
+		lookfor = std::vector<std::string>{"probability","percentage"};//probability (or percentage for backward compatibility)
+		defaultVald = successorNo.at(ruleId)/successorST.at(ruleId).size();//default = number of laterals / option for laterals 
+		defaultSize = (successorST.at(ruleId).size() - successorP.at(ruleId).size());
+		
+		if(!std::isfinite(defaultVal))
+		{
+			for(int k = 0;k < successorST.at(ruleId).size(); k++){
+				std::cout<<successorST.at(ruleId).at(k)<<" ";}
+			std::cout<<std::endl;
+			throw std::runtime_error("OrganRandomParameter::readSuccessor !std::isfinite(default growth probability) "+
+			std::to_string(defaultVald)+" , successorST.at(ruleId).size() == "+ std::to_string(successorST.at(ruleId).size()));
+		}
+		cpb_queryStringAttribute(lookfor,
+					defaultVald,defaultSize, replaceByDefaultValue,
+					successorP.at(ruleId), p);
+		
+		replaceByDefaultValue = true;lookfor = std::vector<std::string>{"organType","organtype"};
+		if((successorST.at(ruleId).at(0) == 2)&&(this->organType == Organism::ot_stem)){
+			if(verbose)
+			{
+				std::cout<<"OrganRandomParameter::readSuccessor: gave a stem a successor of subtype 2 and did not specify type.";
+				std::cout<<" For backward compatibility, this will be considered as a leaf successor"<<std::endl;
+			}
+			//for backward compatibility => 
+			//if (no organtype given) + (parent is stem) + (subtype == 2) == we want a leaf
+			defaultVal = Organism::ot_leaf; 
+		}else{defaultVal = this->organType;}
+		defaultSize = (successorST.at(ruleId).size() - successorOT.at(ruleId).size());
+		cpb_queryStringAttribute(lookfor,
+					defaultVal,defaultSize, replaceByDefaultValue,
+					successorOT.at(ruleId), p);
+		
+		//sum(p_) <= 1. 
+		p_ = std::accumulate(successorP.at(ruleId).begin(), successorP.at(ruleId).end(), 0.);
+		if(p_ > (1. + 1e-6)) //can be < 1 but not > 1
+		{
+			throw std::runtime_error("OrganRandomParameter::readSuccessor: probability of emergence for rule "+ std::to_string(ruleId)
+			+" is > 1: "+ std::to_string(p_));
+		}
+	}
+}
+
+
+
+
+template <class IntOrDouble>
+void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
+	bool replaceByDefault,
+	std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
+{	
+	int success = -1;
+	std::vector<IntOrDouble> dummy;
+	for(int i = 0; (i < keyNames.size())&&(tinyxml2::XML_SUCCESS != success); i++){
+		const char* cckey;
+		success = key->QueryStringAttribute(keyNames.at(i).c_str(),&cckey);
+		if (tinyxml2::XML_SUCCESS == success){
+			//use default val to defin type of element in vector
+			dummy = string2vector(cckey, defaultVal);
+		}
+		
+	}
+	if(tinyxml2::XML_SUCCESS != success){
+		assert(replaceByDefault && 
+		"mymath::queryStringAttribute: key not found in xml file without default value");
+		dummy = std::vector<IntOrDouble>(sizeVector, defaultVal);
+	};
+	if(vToFill.size() == 0){vToFill = dummy;
+	}else{
+		vToFill.insert( vToFill.end(), dummy.begin(), dummy.end() );
+	}
+	
+}				 
 /**
  * Creates a XML tag representing this organ type parameter
  * This works in derived classes for int and double parameters including deviation.*
@@ -276,6 +455,27 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
             }
         }
     }
+	double p_ = 0.;
+	for (int j = 0; j<successorST.size(); j++) {
+			tinyxml2::XMLElement* p = doc.NewElement("parameter");
+			p->SetAttribute("name", "successor");
+			p->SetAttribute("ruleId",j);
+			if(successorNo.size()>j){p->SetAttribute("numLat", successorNo.at(j));}
+			if(successorWhere.size()>j){p->SetAttribute("Where", vector2string(successorWhere.at(j)).c_str());}
+			p->SetAttribute("subType", vector2string(successorST.at(j)).c_str());
+			if(successorOT.size()>j){p->SetAttribute("organType", vector2string(successorOT.at(j)).c_str());}
+			p->SetAttribute("percentage", vector2string(successorP.at(j)).c_str());
+			organ->InsertEndChild(p);
+			if (comments) {
+				std::string str = description.at("successorST");
+				tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
+				organ->InsertEndChild(c);
+			}
+			p_ += std::accumulate(successorP.at(j).begin(), successorP.at(j).end(), 0.);
+			if (p_>1) {
+				std::cout << "OrganRandomParameter::writeXML: Warning! percentages "<< p_ <<"  > 1.\n";
+			}
+	}
     return organ;
 }
 
@@ -304,8 +504,15 @@ void OrganRandomParameter::bindParameters()
     bindParameter("a", &a, "radius [cm]", &as);
     bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");
     bindParameter("dxMin", &dxMin, "Axial resolution [cm] (minimal segment size)");
+	bindParameter("ldelay", &ldelay, "Lateral emergence delay [day]", &ldelays);
     // other parameters (descriptions only)
     description["name"]  = "Name of the sub type of the organ, e.g. small lateral";
+    // other parameters (descriptions only)
+    description["successorNo"] = "number of lateral ";
+    description["successorWhere"] = "linking node id of the lateral (no value = apply everywhere)";
+    description["successorOT"] = "organ type of lateral ";
+    description["successorST"] = "Sub type of lateral ";
+    description["successorP"] = "Probability of each sub type to occur";		
 }
 
 
@@ -354,22 +561,69 @@ void OrganRandomParameter::bindParameter(std::string name, double* d, std::strin
 
 /**
  *  converts string to vector of double see @LeafRandomParameter::readXML
- *	used for leaf shape 
+ *	used for leaf shape
  *  @param xmlInput     input array in xml
  *
  * @return xmlInput converted to vector double
  */
-std::vector<double> OrganRandomParameter::string2vector(std::string xmlInput)
+template <class IntOrDouble>
+std::vector<IntOrDouble> OrganRandomParameter::string2vector(const char* xmlInput, IntOrDouble defaultVal)//  
 {
-	
-    std::string buf;                 // Have a buffer string
-    std::stringstream ss(xmlInput);       // Insert the string into a stream
 
-    std::vector<double> tokens; // Create vector to hold our words
+	std::string buf;                 // Have a buffer string
+	std::stringstream ss(xmlInput);       // Insert the string into a stream
 
-    while (ss >> buf){tokens.push_back(std::stod(buf));}
-  
+	std::vector<IntOrDouble> tokens; // Create vector to hold our words
+
+	while (std::getline(ss, buf, ','))
+	{tokens.push_back(std::stod(buf));}
+
 	return tokens;
+}
+
+template <class IntOrDouble>
+std::string OrganRandomParameter::vector2string(std::vector<IntOrDouble> vec) const
+{
+    std::stringstream ss;
+    for (auto it = vec.begin(); it != vec.end(); it++)    {
+        if (it != vec.begin()) {
+            ss << ", ";
+        }
+        ss << *it;
+    }
+	return ss.str() ;
+}
+
+
+/**
+ * Choose (dice) lateral type based on stem parameters successor and successorP
+ *
+ * @param pos       spatial position (for coupling to a soil model)
+ * @return          stem sub type of the lateral stem
+ */
+int OrganRandomParameter::getLateralType(const Vector3d& pos, int ruleId)//
+{
+	 assert(successorST.at(ruleId).size()==successorP.at(ruleId).size()
+        && "StemTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
+    if (successorP.at(ruleId).size()>0) { // at least 1 successor type
+        double d = plant.lock()->rand(); // in [0,1]
+        int i=0;
+        double p=successorP.at(ruleId).at(i);
+        i++;
+        while ((p<d) && (i<successorP.at(ruleId).size())) {
+            p+=successorP.at(ruleId).at(i);
+            i++;
+        }
+        if (p>=d) { // success
+            // std::cout << "lateral type " << successor.at(i-1) << "\n" << std::flush;
+            return i-1;//successor.at(i-1);
+        } else { // no successors
+            // std::cout << "no lateral type " << std::flush;
+            return -1;
+        }
+    } else {
+        return -1; // no successors
+    }
 }
 
 } // namespace

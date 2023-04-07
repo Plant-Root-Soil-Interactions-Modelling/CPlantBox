@@ -192,9 +192,9 @@ std::string RootRandomParameter::toString(bool verbose) const {
  *
  * If the parameter successor or successorP are not in the element, they are set to zero size.
  */
-void RootRandomParameter::readXML(tinyxml2::XMLElement* element)
+void RootRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
 {
-    OrganRandomParameter::readXML(element);
+    OrganRandomParameter::readXML(element, verbose);
 }
 
 

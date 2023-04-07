@@ -568,7 +568,7 @@ std::string Organism::toString() const
  * @param basetag   name of the base tag (e.g. "organism", or "plant")
  * @param fromFile  @param name == file name (true) or data as string (false)
  */
-void Organism::readParameters(std::string name, std::string basetag, bool fromFile)
+void Organism::readParameters(std::string name, std::string basetag, bool fromFile, bool verbose)
 {
     tinyxml2::XMLDocument doc;
 	if(fromFile){doc.LoadFile(name.c_str()); //open xml file and read data
@@ -604,18 +604,22 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
 
                 if (prototype!=nullptr) { // read prototype
                     auto otp = prototype->copy(shared_from_this());
-                    otp->readXML(p);
+                    otp->readXML(p, verbose);
                     otp->organType = ot; // in depricated case, readXML will a give wrong value
                     setOrganRandomParameter(otp);
                 } else { // skip prototype
+				if(verbose){
                     std::cout << "Organism::readParameters: warning, skipping " << tagname <<
                         ", no random parameter class defined, use initializeReader()\n" << std::flush;
+				}
                 }
                 p = p->NextSiblingElement();
             } // while
         } else {
             if (basetag.compare("plant") == 0) { // try old spelling
+			if(verbose){
                 std::cout << "Organism::readParameters: plant tag was not found in xml file, retrying with Plant " << std::endl;
+			}
                 readParameters(name, "Plant"); // rerun
                 return;
             }

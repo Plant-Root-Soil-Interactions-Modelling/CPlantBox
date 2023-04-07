@@ -307,9 +307,9 @@ std::string LeafRandomParameter::toString(bool verbose) const {
  *
  * If the parameter successor or successorP are not in the element, they are set to zero size.
  */
-void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
+void LeafRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
 {
-	OrganRandomParameter::readXML(element);
+	OrganRandomParameter::readXML(element, verbose);
 	tinyxml2::XMLElement* p = element->FirstChildElement("parameter");						 
 	leafGeometryPhi.resize(0);
 	leafGeometryX.resize(0);
@@ -333,7 +333,9 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 	} else if (parametrisationType==1) {
 		createLeafGeometry(leafGeometryPhi, leafGeometryX, geometryN);
 	} else {
+		if(verbose){
 		std::cout << "LeafRandomParameter::readXML: Warning! unknown parametrisation type, could not create leaf geometry \n";
+		}
 	}
 }
 
