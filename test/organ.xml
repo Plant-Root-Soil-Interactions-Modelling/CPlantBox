@@ -5,4 +5,6 @@
     <!--Axial resolution [cm] (maximal segment size)-->
     <parameter name="dxMin" value="1e-06"/>
     <!--Axial resolution [cm] (minimal segment size)-->
+    <parameter name="ldelay" value="-1"/>
+    <!--Lateral emergence delay [day]-->
 </organ>

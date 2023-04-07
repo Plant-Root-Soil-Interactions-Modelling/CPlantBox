@@ -4,7 +4,7 @@
       <version>1</version>
       <unit>m</unit>
       <resolution>1</resolution>
-      <last-modified>23-February-2023</last-modified>
+      <last-modified>07-April-2023</last-modified>
       <software>Daniel's friendly RSML converter</software>
       <property-definitions>
          <property-definition>
@@ -24,7 +24,7 @@
          <root ID="1">
             <geometry>
                <polyline>
-                  <Point x="0.0" y="0.0" z="0.0"/>
+                  <Point x="-0.0" y="0.0" z="0.0"/>
                   <Point x="-0.00013669999316334724" y="-0.0002733999863266945" z="-0.004046319983899593"/>
                   <Point x="0.0009569000103510916" y="-0.0004101000085938722" z="-0.0096100103110075"/>
                   <Point x="0.0025973001029342413" y="-0.00013669999316334724" z="-0.013150500133633614"/>

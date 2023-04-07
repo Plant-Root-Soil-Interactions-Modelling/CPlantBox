@@ -16,7 +16,7 @@ class TestPlant(unittest.TestCase):
     def test_CPlantBox(self):
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013.xml")
+        p.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = False)
 
         seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
         roots = p.getOrganRandomParameter(pb.OrganTypes.root)
@@ -34,15 +34,15 @@ class TestPlant(unittest.TestCase):
         self.assertEqual([len(seeds), len(roots[1:]), len(stems[1:]), len(leafs[1:])], [1, 3, 3, 1],
                          "test_CPlantBox: read wrong number of random parameter from xml")
 
-        p.initialize(True)
-        p.simulate(76)
+        p.initialize(False)
+        p.simulate(76, False)
         p.write("morningglory.vtp")
 
     def test_CPlantBox_analysis(self):
         """tests the functions needed by CPlantBox_analysis defined in CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013.xml")
-        p.initialize()
+        p.readParameters(path + "Heliantus_Pagès_2013.xml", fromFile = True,verbose = False)
+        p.initialize(False)
         p.simulate(76)
         ana = pb.SegmentAnalyser(p)
         ana.write("morningglory_ama.vtp")
@@ -50,18 +50,18 @@ class TestPlant(unittest.TestCase):
     def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
         p = pb.Plant()
-        p.openXML(path + "Heliantus_Pagès_2013.xml")
-        p.initialize()
+        p.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = False)
+        p.initialize(False)
         p.simulate(76)
         nodes = np.array([np.array(a) / 100 for a in p.getNodes()])  # convert to numpy array, and from cm to m
-        print(nodes.shape)
+        #print(nodes.shape)
         rseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.root)])  # root system segments
-        print(rseg.shape)
+        #print(rseg.shape)
         sseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.stem)])  # stem system segments
-        print(sseg.shape)
+        #print(sseg.shape)
 #         lseg = v2ai(plant.getNodesOrganType())
         l = np.array([ o.getParameter("organType") for o in p.getSegmentOrigins()])
-        print(l.shape)
+        #print(l.shape)
 #         plant_ana = pb.SegmentAnalyser(p)
 #         node_connection_o = seg2a(p.getSegments(15)) # plant segments
         pass
@@ -69,13 +69,13 @@ class TestPlant(unittest.TestCase):
     def test_CPlantBox_step(self):
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
         p1 = pb.MappedPlant(2)
-        p1.openXML(path + "Heliantus_Pagès_2013.xml")
+        p1.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = False)
         p1.initialize(verbose = False, stochastic = False)
         p1.simulate(76, False)
         p1.write("test_CPlantBox_1step.vtp")
         
         p2 = pb.MappedPlant(2)
-        p2.openXML(path + "Heliantus_Pagès_2013.xml")
+        p2.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = False)
         p2.initialize(verbose = False, stochastic = False)
         for i in range(100) :
             p2.simulate(76/100, False)
@@ -92,7 +92,7 @@ class TestPlant(unittest.TestCase):
 
     def test_DB_delay(self):
         p = pb.MappedPlant(2)
-        p.readParameters(path + "Heliantus_Pagès_2013.xml")
+        p.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = False)
         
         p.initializeDB()
         time = 76
@@ -130,8 +130,8 @@ class TestPlant(unittest.TestCase):
             currently, just tests that cpb does not crash
         """
         p = pb.MappedPlant(2)
-        p.readParameters(path + "test_missing_laterals.xml")        
-        p.initialize()
+        p.readParameters(path + "test_missing_laterals.xml", fromFile = True,verbose = False)        
+        p.initialize(False)
         time = 76
         p.simulate(time, False)
         p.write("test_missing_laterals.vtp")

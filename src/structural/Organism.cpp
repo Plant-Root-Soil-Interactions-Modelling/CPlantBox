@@ -570,7 +570,7 @@ std::string Organism::toString() const
  */
 void Organism::readParameters(std::string name, std::string basetag, bool fromFile, bool verbose)
 {
-    tinyxml2::XMLDocument doc;
+	tinyxml2::XMLDocument doc;
 	if(fromFile){doc.LoadFile(name.c_str()); //open xml file and read data
 	}else{doc.Parse((const char*)name.c_str());} //get data directly from string
     if(doc.ErrorID() == 0) {
@@ -620,7 +620,7 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
 			if(verbose){
                 std::cout << "Organism::readParameters: plant tag was not found in xml file, retrying with Plant " << std::endl;
 			}
-                readParameters(name, "Plant"); // rerun
+                readParameters(name, "Plant", fromFile, verbose); // rerun
                 return;
             }
             throw std::invalid_argument ("Organism::readParameters: " + std::string(basetag.c_str()) + " tag was not found in xml file");

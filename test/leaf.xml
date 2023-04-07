@@ -33,6 +33,8 @@
     <!--Apical zone [cm]-->
     <parameter name="lb" value="6"/>
     <!--Basal zone [cm]-->
+    <parameter name="ldelay" value="-1"/>
+    <!--Lateral emergence delay [day]-->
     <parameter name="lmax" value="17"/>
     <!--Maximal leaf length [cm]-->
     <parameter name="ln" value="1.25" dev="0.12"/>
@@ -49,10 +51,6 @@
     <!--Number of trials of leaf tropism-->
     <parameter name="tropismS" value="0.2"/>
     <!--Mean value of expected change of leaf tropism [1/cm]-->
-    <parameter name="successor" number="0" type="4" percentage="0.40000001"/>
-    <!--Sub type of lateral leaf veins-->
-    <parameter name="successor" number="1" type="5" percentage="0.1"/>
-    <!--Sub type of lateral leaf veins-->
-    <parameter name="successor" number="2" type="6" percentage="0.5"/>
-    <!--Sub type of lateral leaf veins-->
+    <parameter name="successor" ruleId="0" subType="4, 5, 6" percentage="0.4, 0.1, 0.5"/>
+    <!--Sub type of lateral -->
 </leaf>

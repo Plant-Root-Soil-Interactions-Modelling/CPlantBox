@@ -49,7 +49,6 @@ class TestRoot(unittest.TestCase):
         self.parentroot = parentroot  # store parent (not owned by child Organ)
         self.root = pb.Root(self.plant, p0.subType,  0, self.parentroot , 0)
         self.root.setOrganism(self.plant)
-                             
 
     def root_length_test(self, dt, l, subDt):
         """ simulates a single root and checks length against analytic length """
@@ -172,7 +171,6 @@ class TestRoot(unittest.TestCase):
         """ tests if nodes created in last time step are correct """
         self.root_example_rrp()
         r = self.root
-                       
         r.simulate(.5, False)
         self.assertEqual(r.hasMoved(), False, "dynamics: node is creaetd during first step")
         r.simulate(1e-1, False)
@@ -262,7 +260,7 @@ class TestRoot(unittest.TestCase):
             self.assertAlmostEqual(nl_th[i], nl[i], 10, "numeric and analytic lengths do not agree in time step " + str(i + 1))
         print("end of test")
 
-def root_example_rtp2(self,delay_definition = 1):
+    def root_example_rtp2(self,delay_definition = 1):
         """ an example used in the tests below, a main root with laterals """
         self.partialiheading = pb.Vector3d.rotAB(0, 0)
         self.plant = pb.RootSystem()  # store organism (not owned by Organ, or OrganRandomParameter)
@@ -318,7 +316,6 @@ def root_example_rtp2(self,delay_definition = 1):
             ageLG = rparent.calcAge(lengthAtCreation+effectiveLa)# age of the root, when the lateral starts growing (i.e when the apical zone is developed)
             dl = ageLG-ageLN;   
             et = ageLN + dl
-            print(r.getId(),r.getParameter("subType"),r.getNumberOfChildren(),r.getAge(),r.getParameter("creationTime"),r.getNodeCT(0) , dl)
             self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
                 
         self.root_example_rtp2(delay_definition = 1) #depends on ldelay of parent organ
@@ -342,6 +339,5 @@ def root_example_rtp2(self,delay_definition = 1):
             dl = r.getOrganRandomParameter().ldelay # only works because deviation == 0
             et = r.getParent().getNodeCT(r.parentNI) + dl
             self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
-
 if __name__ == '__main__':
     unittest.main()

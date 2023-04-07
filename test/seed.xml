@@ -1,4 +1,6 @@
 <seed name="best_seed" subType="0">
+    <parameter name="delayDefinition" value="0"/>
+    <!--method implemented to evaluate lateral growth delay (0: distance based, 1: delay based defined by parent organ)-->
     <parameter name="maxTi" value="0"/>
     <!--Maximal number of tillers [1]-->
     <parameter name="a" value="0.1"/>
@@ -21,6 +23,8 @@
     <!--First emergence of a shoot borne root [day]-->
     <parameter name="firstTi" value="1e+09"/>
     <!--Emergence of first tiller [day]-->
+    <parameter name="ldelay" value="-1"/>
+    <!--Lateral emergence delay [day]-->
     <parameter name="maxB" value="0"/>
     <!--Maximal number of basal roots [1]-->
     <parameter name="nC" value="5"/>
