@@ -124,15 +124,17 @@ class TestPlant(unittest.TestCase):
                 et = r.getParent().getNodeCT(r.parentNI) + dl
             self.assertAlmostEqual(r.getAge(), (time - et), 10, "numeric and analytic age of root n#" + str(i + 1) + " do not agree")
             
-    def atest_missing_laterals(self):
+    def test_missing_laterals(self):
         """can CPB handle it when no lateral appear at a branching point
             because of probabilistic branching?
+            currently, just tests that cpb does not crash
         """
         p = pb.MappedPlant(2)
         p.readParameters(path + "test_missing_laterals.xml")        
         p.initialize()
         time = 76
         p.simulate(time, False)
+        p.write("test_missing_laterals.vtp")
         
 
 

@@ -41,7 +41,7 @@ p0, p1, p2 = pb.RootRandomParameter(rs), pb.RootRandomParameter(rs), pb.RootRand
 
 """ tap root """
 p0.name, p0.subType = "taproot", 1
-p0.successor, p0.successorP = [2], [1]  # add successors
+p0.successor, p0.successorP = [[2]], [[1]]  # add successors
 p0.dx = 0.5  # [cm] axial resolution
 # from faba_taproot, faba_laterals
 p0.a, p0.a_s = 0.125, 0.017  # [cm] radius TODO

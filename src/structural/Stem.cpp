@@ -226,16 +226,16 @@ void Stem::simulate(double dt, bool verbose)
 							std::cout<<"created last lat? "<<(localId_linking_nodes.size())<<" "<<p.ln.size()<<std::endl<<std::flush;
 						}
 					}
-					if((length>=p.lb)&&((p.ln.size()+1)!=(created_linking_node))){
+					if((length>=p.lb)&&((p.ln.size()+1)<(created_linking_node))){//we can have (p.ln.size()+1)>(created_linking_node) if one ln == 0cm
 						std::stringstream errMsg;
-						errMsg <<"Stem::simulate(): different number of realized laterals ("<<children.size()<<
-						") and max laterals ("<<p.ln.size()+1<<")";
+						errMsg <<"Stem::simulate(): higher number of realized linking nodes ("<<created_linking_node<<
+						") than of max laterals ("<<p.ln.size()+1<<")";
 						throw std::runtime_error(errMsg.str().c_str());
 					}
 					//internodal elongation, if the basal zone of the stem is created and still has to grow
 					double maxInternodeDistance = p.getK()-p.la - p.lb;//maximum length of branching zone
 					if((dl>0)&&(length>=p.lb)&&(maxInternodeDistance>0)){
-							int nn = children.at(p.ln.size())->parentNI; //node carrying the last lateral == end of branching zone
+							int nn = localId_linking_nodes.back(); //node carrying the last lateral == end of branching zone
 							double currentInternodeDistance = getLength(nn) - p.lb; //actual length of branching zone
 							double ddx = std::min(maxInternodeDistance-currentInternodeDistance, dl);//length to add to branching zone 
 

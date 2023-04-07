@@ -36,8 +36,7 @@ class TestRelCoord(unittest.TestCase):
         
         for step in range(steps):
             pl.simulate(1, False)
-        #pl.simulate(100, True)
-        pl.write("test_relcoord.vtp")
+        pl.write("test_relcoord_100steps.vtp")
         params = pl.organParam
         seedPosx = params[1][0].seedPos.x
         seedPosy = params[1][0].seedPos.y
@@ -150,14 +149,8 @@ class TestRelCoord(unittest.TestCase):
         pl.readParameters(path + name + ".xml")
         # stochastic = False => thus rand() always give 0.5 for Tropism. => result only change according to sigma
         pl.initialize(stochastic = False)
-        
-        dt = 1
-        steps = 100
-        
-        #for step in range(steps):
-         #   pl.simulate(1, True)
         pl.simulate(100, False)
-        pl.write("test_relcoord.vtp")
+        pl.write("test_relcoord_1step.vtp")
         params = pl.organParam
         seedPosx = params[1][0].seedPos.x
         seedPosy = params[1][0].seedPos.y
