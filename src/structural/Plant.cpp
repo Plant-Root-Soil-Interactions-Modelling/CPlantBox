@@ -244,9 +244,9 @@ void Plant::abs2rel()
 	auto s = getSeed();
 	for (int i = 0; i< s->getNumberOfChildren();i++) {
 		auto child = s->getChild(i);
-		if(child->organType() >2){ //if aboveground-organ
-			child->abs2rel();
-		}
+		//if(child->organType() >2){ //if aboveground-organ
+			child->abs2rel(); //apply to all organs
+		//}
 		
     }
 	
@@ -261,9 +261,9 @@ void Plant::rel2abs()
 	auto s = getSeed();
 	for (int i = 0; i< s->getNumberOfChildren();i++) {
 		auto child = s->getChild(i);
-		if(child->organType() >2){ //if aboveground-organ
-			child->rel2abs();
-		}
+		//if(child->organType() >2){ //if aboveground-organ
+			child->rel2abs();//apply to all organs
+		//}
 		
     }
 	

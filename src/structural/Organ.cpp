@@ -478,22 +478,22 @@ std::string Organ::toString() const
  */
 void Organ::rel2abs()
 {
-
-	nodes[0] = getOrigin(); //recompute postiion of the first node
-
-	for(size_t i=1; i<nodes.size(); i++)
+	if(hasRelCoord())
 	{
-		double sdx = nodes[i].length();
-		Vector3d newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
-		nodes[i] = nodes[i-1].plus(newdx); //replace relative by absolute position
+		nodes[0] = getOrigin(); //recompute postiion of the first node
+
+		for(size_t i=1; i<nodes.size(); i++)
+		{
+			double sdx = nodes[i].length();
+			Vector3d newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
+			nodes[i] = nodes[i-1].plus(newdx); //replace relative by absolute position
+		}
+		moved = true; //update position of existing nodes in MappedSegments
 	}
-	moved = true; //update position of existing nodes in MappedSegments
 	//if carry children, update their pos
 
 	for(size_t i=0; i<children.size(); i++){
-		//if((children[i])->organType()!=Organism::ot_root){
-		(children[i])->rel2abs();
-		//}
+		(children[i])->rel2abs();//even if parent does not have relCoordinate, the laterals might
 	}
 }
 
@@ -502,14 +502,17 @@ void Organ::rel2abs()
  */
 void Organ::abs2rel()
 {
-	for (int j = nodes.size(); j>1; j--) {
-		double sdx = (nodes.at(j-1).minus(nodes.at(j-2))).length();
-		nodes.at(j-1) = Vector3d(sdx,0.,0.);
-		//nodes.at(j-1) = nodes.at(j-1).minus(nodes.at(j-2));
+	bool isShoot = ((organType()==Organism::ot_stem)||(organType()==Organism::ot_leaf));
+	if(isShoot||(getParent()->hasRelCoord()))//convert to relative coordinate if is shoot organ or carried by shoot organs
+	{
+		for (int j = nodes.size(); j>1; j--) {
+			double sdx = (nodes.at(j-1).minus(nodes.at(j-2))).length();
+			nodes.at(j-1) = Vector3d(sdx,0.,0.);
+			//nodes.at(j-1) = nodes.at(j-1).minus(nodes.at(j-2));
+		}
+		nodes[0] = Vector3d(0.,0.,0.);
+		moved = true; //update position of existing nodes in MappedSegments
 	}
-	nodes[0] = Vector3d(0.,0.,0.);
-	moved = true; //update position of existing nodes in MappedSegments
-
 	for(size_t i=0; i<children.size(); i++){
 		//if((children[i])->organType()!=Organism::ot_root){
 			(children[i])->abs2rel();

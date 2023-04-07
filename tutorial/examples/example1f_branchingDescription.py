@@ -52,7 +52,7 @@ The probability for one successor rule must be < or = 1.
 '''
 successors= {
         "root":"""<parameter name="successor" ruleId="0" where="3, 5" organType="2" type="2" probability="1"/>""",
-        "stem":"""<parameter name="successor" ruleId="0" where="-3" numLat="4" organType="3,4,2" type="2,1,2" probability="0.2,0.3,0.3"/>
+        "stem":"""<parameter name="successor" ruleId="0" where="-3" numLat="4" organType="3,4,2" type="2,1,3" probability="0.2,0.3,0.3"/>
         <parameter name="successor" ruleId="1" numLat="1" organType="3" type="2" probability="1"/>"""
         }
         
@@ -72,15 +72,15 @@ vp.plot_plant(p, "organType")
 ### Several successor types, specific locations and probabilistic branching
 '''
 via "numlat" several laterals can grow at each selected linking nodes.
-Roots can also be shoot-born 
+Roots can grow shoot organs and vice-versa
 '''
 
 successors= {
         "root":
 """<parameter name="successor" ruleId="0" numLat="4" where="-1,-3,-5,-7" organType="2" type="2" probability="1"/>
-    <parameter name="successor" ruleId="1" numLat="1" organType="2" type="2" probability="1"/>
-    <parameter name="successor" ruleId="2" numLat="6" where="5" organType="2" type="3" probability="1"/>""",
-        "stem":"""<parameter name="successor" ruleId="0" where="4" organType="2" type="1" probability="1"/>
+    <parameter name="successor" ruleId="1" numLat="1" organType="4" type="1" probability="1"/>
+    <parameter name="successor" ruleId="2" numLat="6" organType="3" type="2" probability="1"/>""",
+        "stem":"""<parameter name="successor" ruleId="0" where="4,6,8" organType="2" type="1" probability="1"/>
         <parameter name="successor" ruleId="1" numLat="4" where="-3" organType="4" type="1" probability="1"/>"""
         }
         
