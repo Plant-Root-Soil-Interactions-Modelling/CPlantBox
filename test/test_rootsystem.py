@@ -37,8 +37,8 @@ class TestRootSystem(unittest.TestCase):
         p0 = pb.RootRandomParameter(self.rs)
         p0.name, p0.subType, p0.la, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 10, 101, 89. / 19., 1, 0.5
         p0.lb = 2
-        p0.successor = [2]
-        p0.successorP = [1.]
+        p0.successor = [[2]]
+        p0.successorP = [[1.]]
         p1 = pb.RootRandomParameter(self.rs)
         p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
         self.p0, self.p1, self.srp = p0, p1, srp  # Python will garbage collect them away, if not stored

@@ -253,10 +253,19 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("subType",&OrganRandomParameter::subType)
             .def_readwrite("a", &OrganRandomParameter::a)
             .def_readwrite("a_s", &OrganRandomParameter::as) // as is a keyword in python
-            .def_readwrite("dx", &RootRandomParameter::dx)
-            .def_readwrite("dxMin", &RootRandomParameter::dxMin)
+            .def_readwrite("dx", &OrganRandomParameter::dx)
+            .def_readwrite("dxMin", &OrganRandomParameter::dxMin)
 			.def_readwrite("plant",&OrganRandomParameter::plant)
-            .def_readwrite("f_gf", &RootRandomParameter::f_gf);
+            .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
+            .def_readwrite("successor", &OrganRandomParameter::successorST)//for backward compatibility
+            .def_readwrite("successorOT", &OrganRandomParameter::successorOT)
+            .def_readwrite("successorST", &OrganRandomParameter::successorST)
+            .def_readwrite("successorWhere", &OrganRandomParameter::successorWhere)
+            .def_readwrite("successorNo", &OrganRandomParameter::successorNo)
+            .def_readwrite("successorP", &OrganRandomParameter::successorP)
+			
+            .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
+            .def_readwrite("ldelays", &OrganRandomParameter::ldelays);
     /**
      * Organ.h
      */
@@ -276,7 +285,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getChild",&Organ::getChild)
 			.def("calcCreationTime", &Organ::calcCreationTime)
             .def("getId",&Organ::getId)
-            .def("getParam",&Organ::getParam)
+            .def("getParam",&Organ::param)//backward compatibility
+            .def("param",&Organ::param)
             .def("getOrganRandomParameter",&Organ::getOrganRandomParameter)
             .def("isAlive",&Organ::isAlive)
             .def("isActive",&Organ::isActive)
@@ -527,11 +537,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &RootRandomParameter::rlt)
             .def_readwrite("rlts", &RootRandomParameter::rlts)
             .def_readwrite("gf", &RootRandomParameter::gf)
-            .def_readwrite("successor", &RootRandomParameter::successor)
-            .def_readwrite("successorP", &RootRandomParameter::successorP)
             .def_readwrite("lnk", &RootRandomParameter::lnk)
-            .def_readwrite("ldelay", &RootRandomParameter::ldelay)
-            .def_readwrite("ldelays", &RootRandomParameter::ldelays)
 			.def_readwrite("f_tf", &RootRandomParameter::f_tf)
             .def_readwrite("f_se", &RootRandomParameter::f_se)
             .def_readwrite("f_sa", &RootRandomParameter::f_sa)
@@ -555,6 +561,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>>())
             .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
             .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
+            .def_readwrite("delayDefinition", &SeedRandomParameter::delayDefinition)	
             .def_readwrite("firstB", &SeedRandomParameter::firstB)
             .def_readwrite("firstBs", &SeedRandomParameter::firstBs)
             .def_readwrite("delayB", &SeedRandomParameter::delayB)
@@ -630,8 +637,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &LeafRandomParameter::rlt)
             .def_readwrite("rlts", &LeafRandomParameter::rlts)
             .def_readwrite("gf", &LeafRandomParameter::gf)
-            .def_readwrite("successor", &LeafRandomParameter::successor)
-            .def_readwrite("successorP", &LeafRandomParameter::successorP)
             .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
             .def_readwrite("f_se", &LeafRandomParameter::f_se)
             .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
@@ -684,8 +689,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &StemRandomParameter::rlt)
             .def_readwrite("rlts", &StemRandomParameter::rlts)
             .def_readwrite("gf", &StemRandomParameter::gf)
-            .def_readwrite("successor", &StemRandomParameter::successor)
-            .def_readwrite("successorP", &StemRandomParameter::successorP)
             .def_readwrite("f_tf", &StemRandomParameter::f_tf)
             .def_readwrite("f_se", &StemRandomParameter::f_se)
             .def_readwrite("f_sa", &StemRandomParameter::f_sa)
@@ -695,8 +698,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("delayNGStarts", &StemRandomParameter::delayNGStarts)
             .def_readwrite("delayNGEnd", &StemRandomParameter::delayNGEnd)
             .def_readwrite("delayNGEnds", &StemRandomParameter::delayNGEnds)
-            .def_readwrite("delayLat", &StemRandomParameter::delayLat)
-            .def_readwrite("delayLats", &StemRandomParameter::delayLats)
             .def_readwrite("tropismAge", &StemRandomParameter::tropismAge)
             .def_readwrite("tropismAges", &StemRandomParameter::tropismAges);
     py::class_<StemSpecificParameter, OrganSpecificParameter, std::shared_ptr<StemSpecificParameter>>(m, "StemSpecificParameter")
@@ -711,7 +712,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &StemSpecificParameter::rlt)
             .def("getK",&StemSpecificParameter::getK)
             .def("nob", &StemSpecificParameter::nob)
-            .def_readwrite("delayLat", &StemSpecificParameter::delayLat)
             .def_readwrite("delayNGStart", &StemSpecificParameter::delayNGStart)
             .def_readwrite("delayNGEnd", &StemSpecificParameter::delayNGEnd);
     /**

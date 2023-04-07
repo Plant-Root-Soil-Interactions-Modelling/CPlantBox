@@ -80,8 +80,8 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double la_;
     std::vector<double> ln_; // stores the inter-distances
     double nob_sd = p->randn()*nobs();
-    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branches
-    bool hasLaterals = (successor.size()>0) && (nob_real>0);
+    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
+    bool hasLaterals = (successorST.size()>0) && (nob_real>0);
 
     if (!hasLaterals) { // no laterals
         lb_ = 0;
@@ -151,36 +151,6 @@ double RootRandomParameter::snap(double x)
 }
 
 
-/**
- * Choose (dice) lateral type based on root parameters successor and successorP
- *
- * @param pos       spatial position (for coupling to a soil model)
- * @return          root sub type of the lateral root
- */
-int RootRandomParameter::getLateralType(const Vector3d& pos)
-{
-    assert(successor.size()==successorP.size()
-        && "RootTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
-    if (successorP.size()>0) { // at least 1 successor type
-        double d = plant.lock()->rand(); // in [0,1]
-        int i=0;
-        double p=successorP.at(i);
-        i++;
-        while ((p<d) && (i<successorP.size())) {
-            p+=successorP.at(i);
-            i++;
-        }
-        if (p>=d) { // success
-            // std::cout << "lateral type " << successor.at(i-1) << "\n" << std::flush;
-            return successor.at(i-1);
-        } else { // no successors
-            // std::cout << "no lateral type " << std::flush;
-            return -1;
-        }
-    } else {
-        return -1; // no successors
-    }
-}
 
 /**
  * The standard deviation of number of branches is calculated form root maximal length lmax, and
@@ -208,19 +178,7 @@ double RootRandomParameter::nobs() const
 std::string RootRandomParameter::toString(bool verbose) const {
 
     if (verbose) {
-        std::string s = OrganRandomParameter::toString(true);
-        std::stringstream str;
-        str << "successor\t";
-        for (int i=0; i<successor.size(); i++) {
-            str << successor[i] << " ";
-        }
-        str << "\t" << description.at("successor") << std::endl;
-        str << "successorP\t";
-        for (int i=0; i<successorP.size(); i++) {
-            str << successorP[i] << " ";
-        }
-        str << "\t" << description.at("successorP") << std::endl;
-        return s.insert(s.length()-4, str.str());
+        return OrganRandomParameter::toString(true);
     } else {
         return OrganRandomParameter::toString(false);
     }
@@ -237,58 +195,8 @@ std::string RootRandomParameter::toString(bool verbose) const {
 void RootRandomParameter::readXML(tinyxml2::XMLElement* element)
 {
     OrganRandomParameter::readXML(element);
-    tinyxml2::XMLElement* p = element->FirstChildElement("parameter");
-    successor.resize(0);
-    successorP.resize(0);
-    while(p!=nullptr) {
-        const char* str = p->Attribute("name");
-        if (str!=nullptr) {
-            std::string key = std::string(str);
-            if (key.compare("successor")==0)  {
-                successor.push_back(p->IntAttribute("type", 1.));
-                successorP.push_back(p->DoubleAttribute("percentage", 1.));
-            }
-        } else {
-            std::cout << "RootRandomParameter::readXML: warning! tag has no attribute 'name' \n" << std::flush;
-        }
-        p = p->NextSiblingElement("parameter");
-    }
-    double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
-    if  ((p_<1) && (p_!=0))  {
-        std::cout << "RootRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
-    }
-    assert(successor.size()==successorP.size() &&
-        "RootTypeParameter::readXML: Successor sub type and probability vector does not have the same size" );
 }
 
-/**
- * @copydoc OrganTypeParameter::writeXML()
- *
- * We only need to add the parameters that are not in the hashmaps (i.e. successor, and successorP)
- */
-tinyxml2::XMLElement* RootRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
-{
-    assert(successor.size()==successorP.size() &&
-        "RootTypeParameter::writeXML: Successor sub type and probability vector does not have the same size" );
-    tinyxml2::XMLElement* element = OrganRandomParameter::writeXML(doc, comments);
-    for (int i = 0; i<successor.size(); i++) {
-        tinyxml2::XMLElement* p = doc.NewElement("parameter");
-        p->SetAttribute("name", "successor");
-        p->SetAttribute("type", successor[i]);
-        p->SetAttribute("percentage", float(successorP[i]));
-        element->InsertEndChild(p);
-        if (comments) {
-            std::string str = description.at("successor");
-            tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
-            element->InsertEndChild(c);
-        }
-    }
-    double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
-    if ((p_<1) && (p_!=0)) {
-        std::cout << "RootRandomParameter:  double getK() const { return std::max(nob-1,double(0))*ln+la+lb; }  ///< returns the mean maximal leaf length [cm]:writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
-    }
-    return element;
-}
 
 /**
  * CPlantBox parameter reader (DEPRICATED)
@@ -303,18 +211,24 @@ void RootRandomParameter::read(std::istream & cin)
     cin >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
     int n;
     cin  >> s >> n;
-    successor.clear();
+    successorST.clear();
+    successorOT.clear();
+    successorWhere.clear();
+    successorNo.clear();
     int is;
     for (int i=0; i<n; i++) {
         cin >> is;
-        successor.push_back(is);
+        successorST.push_back(std::vector<int>(is));
+        successorOT.push_back(std::vector<int>(2));
+        successorNo.push_back(1);
+        successorWhere.push_back(std::vector<double>(0,0));
     }
     cin >> s >> n;
     successorP.clear();
     double ds;
     for (int i=0; i<n; i++) {
         cin >> ds;
-        successorP.push_back(ds);
+        successorP.push_back(std::vector<double>(ds));
     }
     cin >> s >> theta >> thetas >> s >> rlt >> rlts >> s >> gf >> s;
 }
@@ -328,13 +242,17 @@ void RootRandomParameter::write(std::ostream & cout) const {
     cout << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
         << "ln\t" << ln << "\t" << lns << "\n" << "lmax\t"<< lmax <<"\t"<< lmaxs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
         "a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
-        << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successor.size() << "\t";
-    for (size_t i=0; i<successor.size(); i++) {
-        cout << successor[i] << "\t";
+        << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successorST.size() << "\t";
+    for (size_t i=0; i<successorST.size(); i++) {
+        for (int j=0; i<successorST.at(i).size(); j++) {
+				cout << successorST.at(i).at(j) << "\t";
+		}
     }
     cout << "\n" << "successorP\t" << successorP.size() <<"\t";
     for (size_t i=0; i<successorP.size(); i++) {
-        cout << successorP[i] << "\t";
+        for (int j=0; i<successorP.at(i).size(); j++) {
+				cout << successorP.at(i).at(j) << "\t";
+		}
     }
     cout << "\n" << "theta\t" << theta << "\t" << thetas << "\n" << "rlt\t" << rlt << "\t" << rlts << "\n" << "gf\t" << gf << "\n";
 }
@@ -363,9 +281,6 @@ void RootRandomParameter::bindParameters()
     // NEW
     bindParameter("lnk", &lnk, "Slope of inter-lateral distances [1]");
     bindParameter("ldelay", &ldelay, "Lateral root emergence delay [day]", &ldelays);
-    // other parameters (descriptions only)
-    description["successor"] = "Sub type of lateral roots";
-    description["successorP"] = "Probability of each sub type to occur";
 }
 
 } // end namespace CPlantBox

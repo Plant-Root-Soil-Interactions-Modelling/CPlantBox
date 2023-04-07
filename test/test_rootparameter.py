@@ -17,8 +17,8 @@ class TestStemParameter(unittest.TestCase):
         self.rrp.lns = 0.12
         self.rrp.lmax = 7 * self.rrp.ln + self.rrp.la + self.rrp.lb
         self.rrp.subType = 1
-        self.rrp.successor = [4, 5, 6]
-        self.rrp.successorP = [0.4, 0.1, 0.5]
+        self.rrp.successor = [[4, 5, 6]]
+        self.rrp.successorP = [[0.4, 0.1, 0.5]]
         self.rrp.ldelay = 5
         self.rrp.ldelays = 2
 
@@ -89,9 +89,9 @@ class TestStemParameter(unittest.TestCase):
         self.assertEqual(otp2.nob(), rrp.nob(), "xml: value unexpected")  # value
         self.assertEqual(otp2.lns, rrp.lns, "xml: value unexpected")  # dev
         for i in range(0, 3):
-            self.assertEqual(otp2.successor[i], rrp.successor[i], "xml: value unexpected")
+            self.assertEqual(otp2.successor[0][i], rrp.successor[0][i], "xml: value unexpected")
         for i in range(0, 3):
-            self.assertAlmostEqual(otp2.successorP[i], rrp.successorP[i], 7, "xml: value unexpected")
+            self.assertAlmostEqual(otp2.successorP[0][i], rrp.successorP[0][i], 7, "xml: value unexpected")
 
     def test_realize(self):
         """ calls realize """

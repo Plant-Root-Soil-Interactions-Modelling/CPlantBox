@@ -170,7 +170,4 @@ if getImage:
     plt.axis('scaled')
     plt.show()
 
-    # zoom on leaf--realized
-    print("3D leaf shape of actual leaf")
-    vp.plot_leaf(lorg)
 

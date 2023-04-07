@@ -53,7 +53,7 @@ public:
 	/* exact from analytical equations */
 	double calcCreationTime(double lenght); ///< analytical creation (=emergence) time of a node at a length
 	double calcLength(double age); ///< analytical length of the leaf
-	double calcAge(double length); ///< analytical age of the leaf
+	double calcAge(double length) const; ///< analytical age of the leaf
 
 	/* abbreviations */
 	std::shared_ptr<LeafRandomParameter> getLeafRandomParameter() const;  ///< root type parameter of this root
@@ -70,8 +70,6 @@ protected:
     int getleafphytomerID(int subtype);
     void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);
-
-    void createLateral(bool silence); ///< creates a new lateral, called by Leaf::simulate()
 
     bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 	std::vector<double> getLeafVisX_(double l);

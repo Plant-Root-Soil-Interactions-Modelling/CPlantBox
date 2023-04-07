@@ -124,6 +124,7 @@ void SeedRandomParameter::bindParameters()
     bindParameter("delayTi", &delayTi, "Time delay between the tillers [day]", &delayTis);
     bindParameter("maxTi", &maxTil, "Maximal number of tillers [1]", &maxTils);
     bindParameter("simulationTime", &simtime, "Recommended final simulation time  [day]", &simtimes );
+	bindParameter("delayDefinition", &delayDefinition, "method implemented to evaluate lateral growth delay (0: distance based, 1: delay based defined by parent organ)");
 }
 
 } // namespace

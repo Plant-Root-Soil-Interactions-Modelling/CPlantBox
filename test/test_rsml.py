@@ -20,10 +20,10 @@ class TestOrganism(unittest.TestCase):
         otp = pb.OrganRandomParameter(self.human1)
         self.human1.setOrganRandomParameter(otp)
         op = otp.realize()
-        self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., self.ons, 0, False, 0)
+        self.hand = pb.Organ(self.human1.getOrganIndex(), op, True, True, 0, 15., pb.Vector3d(0, 0, -1), 0, False, 0)
         self.hand.setOrganism(self.human1)
-        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4, self.ons, 0)  # delayedfor 4 days
-        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3, self.ons, 0)  # delayed for 3 days
+        self.thumb = pb.Organ(self.human1, self.hand, 0, 0, 4,  0)  # delayedfor 4 days
+        self.little_finger = pb.Organ(self.human1, self.hand, 0, 0, 3, 0)  # delayed for 3 days
         self.hand.addChild(self.thumb)
         self.hand.addChild(self.little_finger)
         self.human1.addOrgan(self.hand)

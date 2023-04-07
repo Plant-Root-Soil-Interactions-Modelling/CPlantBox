@@ -40,7 +40,7 @@ public:
 	 *
 	 * \return      organ age [day] at specific length
 	 */
-	virtual double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const
+	virtual double getAge(double l, double r, double k, std::shared_ptr<const Organ> o) const
 	{ throw std::runtime_error( "getAge() not implemented" ); return 0; } ///< Returns the age of a root of length l
 
 
@@ -58,7 +58,7 @@ public:
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { return std::min(k,r*t); } ///< @copydoc GrowthFunction::getLegngth
 
-	double getAge(double l, double r, double k, std::shared_ptr<Organ> o)  const override { return l/r; } ///< @copydoc GrowthFunction::getAge
+	double getAge(double l, double r, double k, std::shared_ptr<const Organ> o)  const override { return l/r; } ///< @copydoc GrowthFunction::getAge
 
 	std::shared_ptr<GrowthFunction> copy() const override { return std::make_shared<LinearGrowth>(*this); } ///< @copydoc GrowthFunction::copy
 
@@ -74,7 +74,7 @@ public:
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { return k*(1-exp(-(r/k)*t)); } ///< @copydoc GrowthFunction::getLegngth
 
-	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override { ///< @copydoc GrowthFunction::getAge
+	double getAge(double l, double r, double k, std::shared_ptr<const Organ> o) const override { ///< @copydoc GrowthFunction::getAge
 
 		double age = - k/r*log(1-l/k);
 		if (std::isfinite(age)) { // the age can not be computed when root length approaches max length
@@ -115,7 +115,7 @@ public:
 		}
 	} ///< @copydoc GrowthFunction::getLegngth
 
-	double getAge(double l, double r, double k, std::shared_ptr<Organ> o) const override {
+	double getAge(double l, double r, double k, std::shared_ptr<const Organ> o) const override {
 		return ExponentialGrowth::getAge(l, r, k, o);//used to compute growth delay of root and leaf laterals
 	}  ///< @copydoc GrowthFunction::getAge
 
