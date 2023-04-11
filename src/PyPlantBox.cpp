@@ -938,7 +938,10 @@ PYBIND11_MODULE(plantbox, m) {
 
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
-            .def_readwrite("limMaxErr", &Photosynthesis::limMaxErr)
+            .def_readwrite("maxErrLim", &Photosynthesis::maxErrLim)
+            .def_readwrite("maxErrAbsLim", &Photosynthesis::maxErrAbsLim)
+            .def_readwrite("maxErr", &Photosynthesis::maxErr)
+            .def_readwrite("maxErrAbs", &Photosynthesis::maxErrAbs)
 			.def_readwrite("psiXyl", &Photosynthesis::psiXyl)
             .def_readwrite("An", &Photosynthesis::An)
             .def_readwrite("Vc", &Photosynthesis::Vc)
