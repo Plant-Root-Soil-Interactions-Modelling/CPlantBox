@@ -108,6 +108,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 		outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, std::vector<double>());//approx = false
 		if((verbose_photosynthesis > 1)){std::cout<<"to getError"<<std::endl;}
 		getError(sim_time_);
+		this->stop = canStop();
 
 		loop++ ;
 		
