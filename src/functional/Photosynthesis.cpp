@@ -98,7 +98,8 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	initCalcs(sim_time_);
 	//k_stomatas = k_stomatas_old ;
 	while(!this->stop){
-		std::fill(maxErr.begin(), maxErr.end(), 0.);//re-initialize error vector
+		std::fill(maxErrAbs.begin(), maxErrAbs.end(), 0.);//re-initialize absolute error vector
+		std::fill(maxErr.begin(), maxErr.end(), 0.);//re-initialize relative error vector
 		loopCalcs(sim_time_) ;//compute photosynthesis outputs
 		if((verbose_photosynthesis > 1)){std::cout<<"to linearSystem"<<std::endl;}
 		linearSystemSolve(sim_time_, sxx_, cells_, soil_k_); //compute psiXyl
@@ -109,8 +110,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 		getError(sim_time_);
 
 		loop++ ;
-		this->stop = ((loop > maxLoop) || ((maxMaxErr < limMaxErr)&&(loop>minLoop)));//reached convergence or max limit of loops?
-
+		
 		if(!this->stop){
 			outputFlux_old = outputFlux;
 			ci_old = this->ci; pg_old = this->pg;
@@ -120,9 +120,11 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 		if((verbose_photosynthesis > 0)){
 			std::cout<<"leuning computation module at "<<(loop-1)<<" trials. "
 			"Sum of max relative error calculated at the "
-			"last two trials: "<<maxMaxErr<<std::endl;
+			"last two trials: "<<(this->stop)<<std::endl;
 			std::cout<<"each val "<<maxErr[0]<<" "<<maxErr[1]<<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4];
 			std::cout<<" "<<maxErr[5]<<" "<<maxErr[6]<<" "<<maxErr[7]<<" "<<maxErr[8]<<std::endl;
+			std::cout<<"each val abs "<<maxErrAbs[0]<<" "<<maxErrAbs[1]<<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4];
+			std::cout<<" "<<maxErrAbs[5]<<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<std::endl;
 		}
 
 	}
@@ -146,9 +148,11 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	{
 		std::cout<<"leuning computation module stopped after "<<(loop-1)<<" trials. "
 		"Sum of max relative error calculated at the "
-		"last two trials: "<<maxMaxErr<<std::endl;
+		"last two trials: "<<(this->stop)<<std::endl;
 		std::cout<<"each val "<<maxErr[0]<<" "<<maxErr[1]<<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4];
 		std::cout<<" "<<maxErr[5]<<" "<<maxErr[6]<<" "<<maxErr[7]<<" "<<maxErr[8]<<std::endl;
+			std::cout<<"each val abs "<<maxErrAbs[0]<<" "<<maxErrAbs[1]<<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4];
+			std::cout<<" "<<maxErrAbs[5]<<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<std::endl;
 	}
 }
 
@@ -279,10 +283,26 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 }
 
 /*
+		Check if convergence reached
+*/
+
+bool Photosynthesis::canStop()
+{
+    bool canStop = true;
+    for(int tt = 0; tt<maxErr.size();tt++)
+    {
+        if((maxErr.at(tt)>maxErrLim.at(tt))&&(maxErrAbs.at(tt)>maxErrAbsLim.at(tt)))
+        {
+            canStop = false;
+        }
+    }
+    return canStop;
+}
+    
+/*
 		Computes error % for each segment for each of the variables of interestes.
 		@param sim_time_ [day]           simulation time, needed when doLog = true
 */
-
 void Photosynthesis::getError(double simTime)
 {
 	std::ofstream myfile1;
@@ -312,10 +332,13 @@ void Photosynthesis::getError(double simTime)
 		double tempVal = 1;
 
 		if(this->psiXyl[i] !=0){tempVal= std::min(std::abs(this->psiXyl[i]), std::abs(this->psiXyl_old[i]));}else{tempVal=1.;}
+		maxErrAbs[0] =std::max(std::abs((this->psiXyl[i]-psiXyl_old[i])),maxErrAbs[0]);
 		maxErr[0] =std::max(std::abs((this->psiXyl[i]-psiXyl_old[i])/tempVal),maxErr[0]);
 		if( i < (this->psiXyl.size() - 1)){
 			if(this->outputFlux[i] !=0){tempVal=  std::min(std::abs(this->outputFlux[i]), std::abs(this->outputFlux_old[i]));
 				}else{tempVal=1.;}
+			maxErrAbs[5] =std::max(std::abs((this->outputFlux[i]-outputFlux_old[i])),maxErrAbs[5]);
+			maxErrAbs[7] += std::abs((this->outputFlux[i]-outputFlux_old[i]));//becasue sum of fluxes important
 			maxErr[5] =std::max(std::abs((this->outputFlux[i]-outputFlux_old[i])/tempVal),maxErr[5]);
 			maxErr[7] += std::abs((this->outputFlux[i]-outputFlux_old[i])/tempVal);//becasue sum of fluxes important
 		}
@@ -325,7 +348,7 @@ void Photosynthesis::getError(double simTime)
 			myfile1<<" "<<psiXyl[i]<<" "<<psiXyl_old[i]<<" "<<i<<" "<< (this->psiXyl.size() - 1) ;
 			if( i < (this->psiXyl.size() - 1)){
 				myfile1<<" "<<std::abs((this->outputFlux[i]-outputFlux_old[i])/this->outputFlux[i]);
-				myfile1 <<" "<<outputFlux[i] <<" "<<outputFlux_old[i]<<" "<<maxErr[5];
+				myfile1 <<" "<<outputFlux[i] <<" "<<outputFlux_old[i]<<" "<<maxErr[5]<<" "<<maxErr[7];
 			}
 			myfile1 <<std::endl;
 		}
@@ -336,20 +359,30 @@ void Photosynthesis::getError(double simTime)
 
 		double tempVal = 1;
 		if(this->An[i] !=0){tempVal= std::min(std::abs(this->An[i]), std::abs(An_old[i]));}else{tempVal=1.;}
+		maxErrAbs[1] =std::max(std::abs((this->An[i]-An_old[i])),maxErrAbs[1]);
+		maxErrAbs[8] += std::abs((this->An[i]-An_old[i]));
+
 		maxErr[1] =std::max(std::abs((this->An[i]-An_old[i])/tempVal),maxErr[1]);
 		maxErr[8] += std::abs((this->An[i]-An_old[i])/tempVal);
 
 		if(this->gco2[i] !=0){tempVal=std::min(std::abs(this->gco2[i]), std::abs(this->gco2_old[i]));}else{tempVal=1.;}
+		maxErrAbs[2] =std::max(std::abs((this->gco2[i]-gco2_old[i])),maxErrAbs[2]);
 		maxErr[2] =std::max(std::abs((this->gco2[i]-gco2_old[i])/tempVal),maxErr[2]);
 
 		if(this->ci[i] !=0){tempVal=std::min(std::abs(this->ci[i]), std::abs(ci_old[i]));}else{tempVal=1.;}
+		maxErrAbs[3] =std::max(std::abs((this->ci[i]-ci_old[i])),maxErrAbs[3]);
 		maxErr[3] =std::max(std::abs((this->ci[i]-ci_old[i])/tempVal),maxErr[3]);
 
 		if(this->pg[i] !=0){tempVal=std::min(std::abs(this->pg[i]), std::abs(this->pg[i]));}else{tempVal=1.;}
+		maxErrAbs[4] =std::max(std::abs((this->pg[i]-pg_old[i])),maxErrAbs[4]);
 		maxErr[4] =std::max(std::abs((this->pg[i]-pg_old[i])/tempVal),maxErr[4]);
 
 		maxErr[6] =0.;
 		if(doLog){
+			myfile1 <<i<<" abs: "<<maxErrAbs[1] <<" "<<maxErrAbs[1] <<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4] <<" "<<maxErrAbs[5] <<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<" an: ";
+			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
+			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
+            
 			myfile1 <<i<<" "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
 			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
@@ -357,7 +390,6 @@ void Photosynthesis::getError(double simTime)
 		assert(!std::isnan(pg[i]) && "Photosynthesis psi old guard cell is nan");
 		assert(!std::isnan(pg_old[i]) && "Photosynthesis psi old guard cell is nan");
 	}
-	maxMaxErr = *std::max_element(maxErr.begin(), maxErr.end());
 }
 
 
