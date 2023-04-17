@@ -37,8 +37,8 @@ class TestRootSystem(unittest.TestCase):
         p0 = pb.RootRandomParameter(self.rs)
         p0.name, p0.subType, p0.la, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 10, 101, 89. / 19., 1, 0.5
         p0.lb = 2
-        p0.successor = [2]
-        p0.successorP = [1.]
+        p0.successor = [[2]]
+        p0.successorP = [[1.]]
         p1 = pb.RootRandomParameter(self.rs)
         p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
         self.p0, self.p1, self.srp = p0, p1, srp  # Python will garbage collect them away, if not stored
@@ -130,7 +130,7 @@ class TestRootSystem(unittest.TestCase):
         seed = 110  # random seed
         name = "Brassica_oleracea_Vansteenkiste_2014"
         rs = pb.RootSystem()  # the original
-        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
+        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose = False)
         rs.setSeed(seed)
         rs.initialize(False)
         rs2 = rs.copy()  # copy root system
@@ -143,7 +143,7 @@ class TestRootSystem(unittest.TestCase):
         n2 = rs.rand()
         self.assertEqual(rs2.rand(), n2, "copy: simulation is not deterministic")
         rs3 = pb.RootSystem()  # rebuild same
-        rs3.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
+        rs3.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose = False)
         rs3.setSeed(seed)
         rs3.initialize(False)
         self.assertEqual(rs3.rand(), n1, "copy: random generator seed was not copied")
@@ -154,7 +154,7 @@ class TestRootSystem(unittest.TestCase):
         """checks if the polylines have the right tips and bases """
         name = "Brassica_napus_a_Leitner_2010"
         rs = pb.RootSystem()
-        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
+        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose = False)
         rs.initialize(False)
         rs.simulate(7)  # days young
         polylines = rs.getPolylines()  # Use polyline representation of the roots
@@ -188,7 +188,7 @@ class TestRootSystem(unittest.TestCase):
         """ incremental root system growth like needed for coupling"""
         name = "Anagallis_femina_Leitner_2010"  # "maize_p2"  # "Anagallis_femina_Leitner_2010"  # "Zea_mays_4_Leitner_2014"
         rs = pb.RootSystem()
-        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml")
+        rs.readParameters("../modelparameter/structural/rootsystem/" + name + ".xml", verbose = False)
         rs.initialize(False)
         simtime = 60  # days
         dt = 1

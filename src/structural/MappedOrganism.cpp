@@ -541,8 +541,8 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		c++;
-		radii[segIdx] = so->getParam()->a;
-		subTypes[segIdx] = so->getParam()->subType;
+		radii[segIdx] = so->param()->a;
+		subTypes[segIdx] = so->param()->subType;
 		organTypes[segIdx] = so->organType();
 	}
 	// map new segments
@@ -680,11 +680,11 @@ void MappedPlant::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		
-		radii[segIdx] = so->getParam()->a;
+		radii.at(segIdx) = so->param()->a;
 		organTypes.at(segIdx) = so->organType();
-		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->getParam()->subType)];//new st
+		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
 
-		if(organTypes[segIdx] == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
+		if(organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{
 			int index;
 			auto nodeIds = so->getNodeIds();

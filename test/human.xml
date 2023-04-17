@@ -6,6 +6,8 @@
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral emergence delay [day]-->
     </organ>
     <organ name="eye" subType="2">
         <parameter name="a" value="0.1"/>
@@ -14,6 +16,8 @@
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral emergence delay [day]-->
     </organ>
     <root name="rootyhand" subType="1">
         <parameter name="a" value="0.1"/>
@@ -22,5 +26,7 @@
         <!--Axial resolution [cm] (maximal segment size)-->
         <parameter name="dxMin" value="1e-06"/>
         <!--Axial resolution [cm] (minimal segment size)-->
+        <parameter name="ldelay" value="-1"/>
+        <!--Lateral emergence delay [day]-->
     </root>
 </plant>

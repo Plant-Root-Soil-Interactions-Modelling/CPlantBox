@@ -79,7 +79,7 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
-	bool hasLaterals = (successor.size()>0);
+	bool hasLaterals = (successorST.size()>0);
 	auto p = plant.lock();
 	//define the parameters outside fo the if functions:
 	double lb_;
@@ -110,7 +110,7 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
     } else {
 	lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
 	la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
-	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branches 
+	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branchint points 
 	res = lb_ - floor(lb_/dx)* dx;	
 	if (res < dxMin) {
 		if (res <= dxMin/2){
@@ -253,36 +253,6 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 	return std::make_shared<LeafSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_,leafArea_, hasLaterals, Width_blade_, Width_petiole_);
 }
 
-/**
- * Choose (dice) lateral type based on leaf parameters successor and successorP
- *
- * @param pos       spatial position (for coupling to a soil model)
- * @return          leaf sub type of the lateral leaf
- */
-int LeafRandomParameter::getLateralType(const Vector3d& pos)
-{
-	assert(successor.size()==successorP.size()
-			&& "LeafTypeParameter::getLateralType: Successor sub type and probability vector does not have the same size");
-	if (successorP.size()>0) { // at least 1 successor type
-		double d = plant.lock()->rand(); // in [0,1]
-		int i=0;
-		double p=successorP.at(i);
-		i++;
-		while ((p<d) && (i<successorP.size())) {
-			p+=successorP.at(i);
-			i++;
-		}
-		if (p>=d) { // success
-			// std::cout << "lateral type " << successor.at(i-1) << "\n" << std::flush;
-			return successor.at(i-1);
-		} else { // no successors
-			// std::cout << "no lateral type " << std::flush;
-			return -1;
-		}
-	} else {
-		return -1; // no successors
-	}
-}
 
 /**
  * todo docme
@@ -311,17 +281,6 @@ std::string LeafRandomParameter::toString(bool verbose) const {
 	if (verbose) {
 		std::string s = OrganRandomParameter::toString(true);
 		std::stringstream str;
-		str << "successor\t";
-		for (int i=0; i<successor.size(); i++) {
-			str << successor[i] << " ";
-		}
-		str << "\t" << description.at("successor") << std::endl;
-		str << "successorP\t";
-		for (int i=0; i<successorP.size(); i++) {
-			str << successorP[i] << " ";
-		}
-		str << "\t" << description.at("successorP") << std::endl;
-		///
 		
 		str << "leafGeometryPhi\t";
 		for (int i=0; i<leafGeometryPhi.size(); i++) {
@@ -334,7 +293,7 @@ std::string LeafRandomParameter::toString(bool verbose) const {
 		}
 		str << "\t" << description.at("leafGeometryX") << std::endl;
 		
-		return s.insert(s.length()-4, str.str());
+		return s.insert(s.length(), str.str());
 	} else {
 		return OrganRandomParameter::toString(false);
 	}
@@ -348,26 +307,10 @@ std::string LeafRandomParameter::toString(bool verbose) const {
  *
  * If the parameter successor or successorP are not in the element, they are set to zero size.
  */
-void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
+void LeafRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
 {
-	OrganRandomParameter::readXML(element);
-	tinyxml2::XMLElement* p = element->FirstChildElement("parameter");
-	successor.resize(0);
-	successorP.resize(0);
-	while(p) {
-		std::string key = p->Attribute("name");
-		if (key.compare("successor")==0)  {
-			successor.push_back(p->IntAttribute("type"));
-			successorP.push_back(p->DoubleAttribute("percentage"));
-		}
-		p = p->NextSiblingElement("parameter");
-	}
-	double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
-	if  ((p_<1) && (p_!=0))  {
-		std::cout << "LeafRandomParameter::readXML: Warning! percentages to not add up to 1. \n";
-	}
-	//go back to start of the list?
-	p = element->FirstChildElement("parameter");						 
+	OrganRandomParameter::readXML(element, verbose);
+	tinyxml2::XMLElement* p = element->FirstChildElement("parameter");						 
 	leafGeometryPhi.resize(0);
 	leafGeometryX.resize(0);
 	while(p) {
@@ -375,9 +318,9 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 		if (key.compare("leafGeometry")==0)  {
 			if((p->Attribute("phi"))&&(p->Attribute("x")))
 			{
-				leafGeometryPhi = string2vector(p->Attribute("phi"));
+				leafGeometryPhi = string2vector(p->Attribute("phi"),0.0);
 													  
-				leafGeometryX = string2vector(p->Attribute("x"));
+				leafGeometryX = string2vector(p->Attribute("x"),0.0);
 			}else{
 				throw std::invalid_argument ("LeafRandomParameter::readXML: 'x' or 'phi' tag not found in leafGeometry parameter description");
 			}
@@ -390,7 +333,9 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
 	} else if (parametrisationType==1) {
 		createLeafGeometry(leafGeometryPhi, leafGeometryX, geometryN);
 	} else {
+		if(verbose){
 		std::cout << "LeafRandomParameter::readXML: Warning! unknown parametrisation type, could not create leaf geometry \n";
+		}
 	}
 }
 
@@ -401,27 +346,7 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element)
  */
 tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, bool comments) const
 {
-	assert(successor.size()==successorP.size() &&
-			"LeafTypeParameter::writeXML: Successor sub type and probability vector does not have the same size" );
 	tinyxml2::XMLElement* element = OrganRandomParameter::writeXML(doc, comments);
-	for (int i = 0; i<successor.size(); i++) {
-		tinyxml2::XMLElement* p = doc.NewElement("parameter");
-		p->SetAttribute("name", "successor");
-		p->SetAttribute("number", i);
-		p->SetAttribute("type", successor[i]);
-		p->SetAttribute("percentage", float(successorP[i]));
-		element->InsertEndChild(p);
-		if (comments) {
-			std::string str = description.at("successor");
-			tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
-			element->InsertEndChild(c);
-		}
-
-	}
-	double p_ = std::accumulate(successorP.begin(), successorP.end(), 0.);
-	if ((p_<1) && (p_!=0)) {
-		std::cout << "LeafRandomParameter::writeXML: Warning! percentages do not add up to 1. = " << p_ << "\n";
-	}
 	for (int i = 0; i<leafGeometryPhi.size(); i++) {
 		tinyxml2::XMLElement* p = doc.NewElement("parameter");
 		p->SetAttribute("name", "leafGeometry");
@@ -467,8 +392,6 @@ void LeafRandomParameter::bindParameters()
 	bindParameter("parametrisationType", &parametrisationType, "Leaf geometry parametrisation type");
 	bindParameter("geometryN", &geometryN, "leaf geometry resolution");
 	// other parameters (descriptions only)
-	description["successor"] = "Sub type of lateral leaf veins";
-	description["successorP"] = "Probability of each sub type to occur";
 	description["leafGeometryPhi"] = "Leaf geometry parametrisation parameter";
 	description["leafGeometryX"] = "Leaf geometry parametrisation";
 }

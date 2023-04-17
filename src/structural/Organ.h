@@ -61,7 +61,7 @@ public:
 
     /* parameters */
     int getId() const { return id; } ///< unique organ id
-    std::shared_ptr<const OrganSpecificParameter> getParam() const { return param_; } ///< organ parameters
+    std::shared_ptr<const OrganSpecificParameter> param() const { return param_; } ///< organ parameters
     std::shared_ptr<OrganRandomParameter> getOrganRandomParameter() const;  ///< organ type parameter
     bool isAlive() const { return alive; } ///< checks if alive
     bool isActive() const { return active; } ///< checks if active
@@ -69,7 +69,7 @@ public:
     double getLength(bool realized = true) const; ///< length of the organ (realized => dependent on dx() and dxMin())
     double getLength(int i) const; ///< length of the organ up to node index i, e.g. parent base length is getParent()->getLength(parentNI)
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
-	virtual double calcAge(double length){throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
+	virtual double calcAge(double length) const {throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
 	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
 	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
@@ -80,7 +80,7 @@ public:
 	std::vector<int> getNodeIds() const { return nodeIds; } ///< global node index of the i-th node, i is called the local node index
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
     void addNode(Vector3d n, double t, size_t index, bool shift); //< adds a node to the root
-    void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
+    virtual void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
 	void addNode(Vector3d n, int id, double t){addNode( n,  id, t, size_t(0), false);} //< for pybind, overwise error with parameter repartition
     void addNode(Vector3d n,  double t){addNode( n,   t, size_t(0),false);}; //< for link with pybind
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
@@ -110,16 +110,22 @@ public:
     int parentNI; ///< local parent node index
     Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
     Vector3d getiHeading0() const ;///< the initial coordinate system of the root, when it was created
-	bool hasRelCoord() const {return nodes.at(0) == Vector3d(0.,0.,0.);}
+	bool hasRelCoord() const; //check if organ has relative coordinates
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
 protected:
 
     Vector3d partialIHeading;
+	
+	virtual void createLateral(double ageLN, bool silence); ///< creates a new lateral, called by Root::simulate(), overriden by @see RootDelay::createLateral()
+	virtual void storeLinkingNodeLocalId(int numCreatedLN, bool silence){;}; ///<  overriden by @see Stem::storeLinkingNodeLocalId()
 	Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
     void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
-    /* up and down the organ tree */
+    virtual double getLatInitialGrowth(double dt);
+	virtual double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const;
+	bool getApplyHere(int i) const;
+	/* up and down the organ tree */
     std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of
     std::weak_ptr<Organ> parent; ///< pointer to the parent organ (nullptr if it has no parent)
     std::vector<std::shared_ptr<Organ>> children; ///< the successive organs
@@ -134,6 +140,7 @@ protected:
     double age = 0; ///< current age [days]
     double length = 0; ///< length of the organ [cm]
 	double epsilonDx = 0; ///< growth increment too small to be added to organ. kept in memory and added to growth of next simulation step
+	size_t created_linking_node = 0;///number of nodes which carry childrens
 
     /* node data */
     std::vector<Vector3d> nodes; ///< nodes of the organ [cm]

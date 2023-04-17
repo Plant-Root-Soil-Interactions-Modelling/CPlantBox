@@ -68,15 +68,14 @@ public:
 
 	std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific leaf from the leaf parameter set
 
-	int getLateralType(const Vector3d& pos); ///< Choose (dice) lateral type based on leaf parameter set
-    double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branches [1]
+	double nob() const { return std::max((lmax-la-lb)/ln+1, 1.); }  ///< returns the mean number of branching points [1]
     double nobs() const; ///< returns the standard deviation of number of branches [1]
     double leafLength() { return lmax-lb; }; // lb represents the leaf base
     double leafMid() { return lmax-la-lb; }; //
 
 	std::string toString(bool verbose = true) const override; ///< writes parameter to a string
 
-    void readXML(tinyxml2::XMLElement* element) override; ///< reads a single sub type organ parameter set
+    void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
     tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const override; ///< writes a organ leaf parameter set
 
 	/*
@@ -132,7 +131,7 @@ public:
 protected:
 
 	
-    void bindParameters(); ///<sets up class introspectionbindParameters
+    void bindParameters() override; ///<sets up class introspectionbindParameters
     std::vector<double> intersections(double y, std::vector<double> phi, std::vector<double> l); ///< returns the intersection of a horizontal line at y-coordinate with the leaf geometry
     void normalizeLeafNodes(); ///< scales leaf area to 1
 

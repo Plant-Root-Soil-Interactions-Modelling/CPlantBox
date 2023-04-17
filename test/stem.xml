@@ -15,8 +15,6 @@
     <!--RevRotation of the stem-->
     <parameter name="a" value="0.1"/>
     <!--Stem radius [cm]-->
-    <parameter name="delayLat" value="0"/>
-    <!--delay between latteral creation and start of nodal growth-->
     <parameter name="delayNGEnd" value="0"/>
     <!--delay between stem creation and start of nodal growth-->
     <parameter name="delayNGStart" value="0"/>
@@ -29,6 +27,8 @@
     <!--Apical zone [cm]-->
     <parameter name="lb" value="5.5"/>
     <!--Basal zone [cm]-->
+    <parameter name="ldelay" value="-1"/>
+    <!--delay between latteral creation and start of nodal growth-->
     <parameter name="lmax" value="15.75"/>
     <!--Maximal stem length [cm]-->
     <parameter name="ln" value="1.25" dev="0.12"/>
@@ -45,10 +45,6 @@
     <!--Number of trials of stem tropism-->
     <parameter name="tropismS" value="0.2"/>
     <!--Mean value of expected change of stem tropism [1/cm]-->
-    <parameter name="successor" number="0" type="4" percentage="0.40000001"/>
-    <!--Sub type of lateral stems-->
-    <parameter name="successor" number="1" type="5" percentage="0.1"/>
-    <!--Sub type of lateral stems-->
-    <parameter name="successor" number="2" type="6" percentage="0.5"/>
-    <!--Sub type of lateral stems-->
+    <parameter name="successor" ruleId="0" subType="4, 5, 6" percentage="0.4, 0.1, 0.5"/>
+    <!--Sub type of lateral -->
 </stem>
