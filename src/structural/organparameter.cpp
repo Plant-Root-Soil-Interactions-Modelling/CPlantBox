@@ -150,7 +150,7 @@ std::string OrganRandomParameter::toString(bool verbose) const
 				str << successorOT.at(i).at(j) << " ";
 			}
 			str << "; ";
-        }		
+        }
         str << "\t" << description.at("successorOT") << std::endl;
         str << "successor sub types\t";
         for (int i=0; i<successorST.size(); i++) {
@@ -158,7 +158,7 @@ std::string OrganRandomParameter::toString(bool verbose) const
 				str << successorST.at(i).at(j) << " ";
 			}
 			str << "; ";
-        }		
+        }
         str << "\t" << description.at("successorST") << std::endl;
         str << "successor lateral number\t";
         for (int i=0; i<successorNo.size(); i++) {
@@ -181,7 +181,7 @@ std::string OrganRandomParameter::toString(bool verbose) const
 			str << "; ";
         }
         str << "\t" << description.at("successorWhere") << std::endl;
-        
+
         return str.str();
     } else {
         str << "name: " << name << ", " << "organType: "<< organType << ", " << "subType: " << subType << ".";
@@ -213,7 +213,7 @@ void OrganRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
     successorST.resize(0, std::vector<int>(0));//2D, int
     successorP.resize(0, std::vector<double>(0));//2D, double
     successorNo.resize(0);//1D, int
-    successorWhere.resize(0, std::vector<double>(0));//2D, double 
+    successorWhere.resize(0, std::vector<double>(0));//2D, double
     auto p = element->FirstChildElement("parameter");
     while(p!=nullptr) {
         const char* str = p->Attribute("name");
@@ -277,7 +277,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 	bool replaceByDefaultValue;
 	std::string key = p->Attribute("name");
 	if (key.compare("successor")==0)  {
-		
+
 		int ruleId = std::max(0,int(successorOT.size()-1));
 		int	success = p->QueryIntAttribute("ruleId",&ruleId);
 		if(success != tinyxml2::XML_SUCCESS){
@@ -291,7 +291,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 				}
 			}
 		}
-		
+
 		if(ruleId>= successorNo.size() )//create new rules
 		{
 			int toAdd = ruleId + 1;
@@ -301,35 +301,35 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 			successorP.resize(toAdd,std::vector<double>());
 			successorNo.resize(toAdd,1);//default == make one lateral
 		}
-		
+
 		int numLat;
 		success = p->QueryIntAttribute("numLat",&numLat);
 		if(success == tinyxml2::XML_SUCCESS){successorNo.at(ruleId) = numLat;}
-		
-		
+
+
 		//default == empty vector == apply rule to all the linking nodes
 		replaceByDefaultValue = true;//replace by default value if not found (if false: throw an error)
 		lookfor = std::vector<std::string>{"where"};//parameter name
 		defaultVald = -0.0;
 		defaultSize = 0;//how many time do we need to repeat the value. Here: leave vectore empty == apply everywhere
-		
+
 		cpb_queryStringAttribute(lookfor,
 					defaultVald,defaultSize, replaceByDefaultValue,
 					successorWhere.at(ruleId), p);//name, default value, vector to fill, accept not found
-		
+
 		replaceByDefaultValue = false;lookfor = std::vector<std::string>{"subType","subtype","type"};//subtype (or type for backarwad compatibility)
 		defaultVal = 1.0;defaultSize = 0;
 		cpb_queryStringAttribute(lookfor,
 					defaultVal,defaultSize, replaceByDefaultValue,
 					successorST.at(ruleId), p);
-		
-		
-		
+
+
+
 		replaceByDefaultValue = true;
 		lookfor = std::vector<std::string>{"probability","percentage"};//probability (or percentage for backward compatibility)
-		defaultVald = successorNo.at(ruleId)/successorST.at(ruleId).size();//default = number of laterals / option for laterals 
+		defaultVald = successorNo.at(ruleId)/successorST.at(ruleId).size();//default = number of laterals / option for laterals
 		defaultSize = (successorST.at(ruleId).size() - successorP.at(ruleId).size());
-		
+
 		if(!std::isfinite(defaultVal))
 		{
 			for(int k = 0;k < successorST.at(ruleId).size(); k++){
@@ -341,7 +341,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 		cpb_queryStringAttribute(lookfor,
 					defaultVald,defaultSize, replaceByDefaultValue,
 					successorP.at(ruleId), p);
-		
+
 		replaceByDefaultValue = true;lookfor = std::vector<std::string>{"organType","organtype"};
 		if((successorST.at(ruleId).at(0) == 2)&&(this->organType == Organism::ot_stem)){
 			if(verbose)
@@ -349,16 +349,16 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 				std::cout<<"OrganRandomParameter::readSuccessor: gave a stem a successor of subtype 2 and did not specify type.";
 				std::cout<<" For backward compatibility, this will be considered as a leaf successor"<<std::endl;
 			}
-			//for backward compatibility => 
+			//for backward compatibility =>
 			//if (no organtype given) + (parent is stem) + (subtype == 2) == we want a leaf
-			defaultVal = Organism::ot_leaf; 
+			defaultVal = Organism::ot_leaf;
 		}else{defaultVal = this->organType;}
 		defaultSize = (successorST.at(ruleId).size() - successorOT.at(ruleId).size());
 		cpb_queryStringAttribute(lookfor,
 					defaultVal,defaultSize, replaceByDefaultValue,
 					successorOT.at(ruleId), p);
-		
-		//sum(p_) <= 1. 
+
+		//sum(p_) <= 1.
 		p_ = std::accumulate(successorP.at(ruleId).begin(), successorP.at(ruleId).end(), 0.);
 		if(p_ > (1. + 1e-6)) //can be < 1 but not > 1
 		{
@@ -375,7 +375,7 @@ template <class IntOrDouble>
 void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
 	bool replaceByDefault,
 	std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key)
-{	
+{
 	int success = -1;
 	std::vector<IntOrDouble> dummy;
 	for(int i = 0; (i < keyNames.size())&&(tinyxml2::XML_SUCCESS != success); i++){
@@ -385,19 +385,20 @@ void OrganRandomParameter::cpb_queryStringAttribute(std::vector<std::string> key
 			//use default val to defin type of element in vector
 			dummy = string2vector(cckey, defaultVal);
 		}
-		
+
 	}
 	if(tinyxml2::XML_SUCCESS != success){
-		assert(replaceByDefault && 
+		assert(replaceByDefault &&
 		"mymath::queryStringAttribute: key not found in xml file without default value");
 		dummy = std::vector<IntOrDouble>(sizeVector, defaultVal);
 	};
-	if(vToFill.size() == 0){vToFill = dummy;
-	}else{
+	if(vToFill.size() == 0){
+	    vToFill = dummy;
+	} else {
 		vToFill.insert( vToFill.end(), dummy.begin(), dummy.end() );
 	}
-	
-}				 
+
+}
 /**
  * Creates a XML tag representing this organ type parameter
  * This works in derived classes for int and double parameters including deviation.*
@@ -512,7 +513,7 @@ void OrganRandomParameter::bindParameters()
     description["successorWhere"] = "linking node id of the lateral (no value = apply everywhere)";
     description["successorOT"] = "organ type of lateral ";
     description["successorST"] = "Sub type of lateral ";
-    description["successorP"] = "Probability of each sub type to occur";		
+    description["successorP"] = "Probability of each sub type to occur";
 }
 
 
@@ -566,23 +567,29 @@ void OrganRandomParameter::bindParameter(std::string name, double* d, std::strin
  *
  * @return xmlInput converted to vector double
  */
-template <class IntOrDouble>
-std::vector<IntOrDouble> OrganRandomParameter::string2vector(const char* xmlInput, IntOrDouble defaultVal)//  
+std::vector<int> OrganRandomParameter::string2vector(const char* xmlInput, int defaultVal)
 {
-
 	std::string buf;                 // Have a buffer string
 	std::stringstream ss(xmlInput);       // Insert the string into a stream
-
-	std::vector<IntOrDouble> tokens; // Create vector to hold our words
-
-	while (std::getline(ss, buf, ','))
-	{tokens.push_back(std::stod(buf));}
-
+	std::vector<int> tokens; // Create vector to hold our words
+	while (std::getline(ss, buf, ',')) {
+	    tokens.push_back(std::stod(buf));
+	}
 	return tokens;
 }
+std::vector<double> OrganRandomParameter::string2vector(const char* xmlInput, double defaultVal)
+{
+    std::string buf;                 // Have a buffer string
+    std::stringstream ss(xmlInput);       // Insert the string into a stream
+    std::vector<double> tokens; // Create vector to hold our words
+    while (std::getline(ss, buf, ',')) {
+        tokens.push_back(std::stod(buf));
+    }
+    return tokens;
+}
 
-template <class IntOrDouble>
-std::string OrganRandomParameter::vector2string(std::vector<IntOrDouble> vec) const
+
+std::string OrganRandomParameter::vector2string(std::vector<int> vec) const
 {
     std::stringstream ss;
     for (auto it = vec.begin(); it != vec.end(); it++)    {
@@ -592,6 +599,17 @@ std::string OrganRandomParameter::vector2string(std::vector<IntOrDouble> vec) co
         ss << *it;
     }
 	return ss.str() ;
+}
+std::string OrganRandomParameter::vector2string(std::vector<double> vec) const
+{
+    std::stringstream ss;
+    for (auto it = vec.begin(); it != vec.end(); it++)    {
+        if (it != vec.begin()) {
+            ss << ", ";
+        }
+        ss << *it;
+    }
+    return ss.str() ;
 }
 
 

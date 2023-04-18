@@ -72,15 +72,6 @@ public:
 
 	int getLateralType(const Vector3d& pos, int ruleId); ///< Choose (dice) lateral type based on stem parameter set
     virtual void bindParameters(); ///<sets up class introspection
-	
-	template <class IntOrDouble>
-	std::string vector2string(std::vector<IntOrDouble> vec) const;
-	template <class IntOrDouble>
-	std::vector<IntOrDouble> string2vector(const char* xmlInput, IntOrDouble defaultVal);
-	template <class IntOrDouble>
-	void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
-									bool replaceByDefault,
-									std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key);							
 
     void bindParameter(std::string name, int* i, std::string descr = "", double* dev = nullptr); ///< binds integer to parameter name
     void bindParameter(std::string name, double* d, std::string descr = "", double* dev = nullptr); ///< binds double to parameter name
@@ -94,7 +85,7 @@ public:
 	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
 	double ldelay = -1.;     ///< Lateral emergence delay [day], used by RootDelay, @see RootDelay, RootSystem::initializeDB or if Organism->delayDefinition != Organism::dd_distance
     double ldelays = 0.;    ///< Standard deviation of lateral emergence delay [day]
-	
+
     std::weak_ptr<Organism> plant;
 	std::shared_ptr<Tropism> f_tf;  ///< tropism function (defined in constructor as new Tropism(plant))
     std::shared_ptr<GrowthFunction> f_gf;
@@ -105,7 +96,7 @@ public:
 	//default: vector empty == rule implemented everywhere
     std::vector<std::vector<double> > successorWhere = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Where should rule be implemented [1] or not [-1]
     std::vector<std::vector<int> > successorOT = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
-																																
+
 
 protected:
 
@@ -114,6 +105,18 @@ protected:
     std::map<std::string, int*> iparam; ///< Parameters with type double that can be read and written
     std::map<std::string, double*> param_sd; ///< Deviations of parameters
     std::map<std::string, std::string> description; ///< Parameter descriptions
+
+    std::string vector2string(std::vector<int> vec) const;
+    std::string vector2string(std::vector<double> vec) const;
+    std::vector<int> string2vector(const char* xmlInput, int defaultVal);
+    std::vector<double> string2vector(const char* xmlInput, double defaultVal);
+
+    template <class IntOrDouble>
+    void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
+                                    bool replaceByDefault,
+                                    std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key);
+
+
 };
 
 } // namespace
