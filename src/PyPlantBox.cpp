@@ -263,7 +263,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("successorWhere", &OrganRandomParameter::successorWhere)
             .def_readwrite("successorNo", &OrganRandomParameter::successorNo)
             .def_readwrite("successorP", &OrganRandomParameter::successorP)
-			
+
             .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
             .def_readwrite("ldelays", &OrganRandomParameter::ldelays);
     /**
@@ -330,7 +330,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("organTypeName", &Organism::organTypeName)
             .def("getOrganRandomParameter", (std::shared_ptr<OrganRandomParameter> (Organism::*)(int, int) const)  &Organism::getOrganRandomParameter) //overloads
             .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
-            .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)			
+            .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
             .def("getSeed", &Organism::getSeed)
 
             .def("addOrgan", &Organism::addOrgan)
@@ -561,7 +561,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>>())
             .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
             .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
-            .def_readwrite("delayDefinition", &SeedRandomParameter::delayDefinition)	
+            .def_readwrite("delayDefinition", &SeedRandomParameter::delayDefinition)
             .def_readwrite("firstB", &SeedRandomParameter::firstB)
             .def_readwrite("firstBs", &SeedRandomParameter::firstBs)
             .def_readwrite("delayB", &SeedRandomParameter::delayB)
@@ -822,6 +822,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("sort",&MappedSegments::sort)
         .def("segOuterRadii",&MappedSegments::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
 		.def("segLength",&MappedSegments::segLength)
+        .def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
+        .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
+        .def("getSegmentZ",&MappedSegments::getSegmentZ)
         .def_readwrite("nodes", &MappedSegments::nodes)
         .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
         .def_readwrite("segments", &MappedSegments::segments)
@@ -931,7 +934,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit") ,  py::arg("ciInit"))
 			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("ea_"),py::arg("es_") ,
-			py::arg("sim_time_")=1.0 ,	
+			py::arg("sim_time_")=1.0 ,
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
 					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
 					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
@@ -952,7 +955,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("fw", &Photosynthesis::fw)
             .def_readwrite("fwr", &Photosynthesis::fwr)
             .def_readwrite("sh", &Photosynthesis::sh)
-            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)	 
+            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
             .def_readwrite("ci", &Photosynthesis::ci)
             .def_readwrite("deltagco2", &Photosynthesis::deltagco2)
             .def_readwrite("delta", &Photosynthesis::delta)
@@ -964,7 +967,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("gm",&Photosynthesis::gm)
             .def_readwrite("PVD",&Photosynthesis::PVD)
             .def_readwrite("EAL",&Photosynthesis::EAL)
-            .def_readwrite("hrelL",&Photosynthesis::hrelL)			  
+            .def_readwrite("hrelL",&Photosynthesis::hrelL)
             .def_readwrite("pg",&Photosynthesis::pg)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
             .def_readwrite("Jw", &Photosynthesis::Jw)
@@ -995,7 +998,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a2_air", &Photosynthesis::a2_air)
             .def_readwrite("a3", &Photosynthesis::a3)
             .def_readwrite("Rd_ref", &Photosynthesis::Rd_ref)
-            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref) 
+            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref)
             .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)

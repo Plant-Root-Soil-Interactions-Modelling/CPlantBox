@@ -423,6 +423,29 @@ std::vector<double> MappedSegments::segLength() const {
 	return lengths;
 }
 
+/**
+ * Returns seg2cell as vector
+ */
+std::vector<int> MappedSegments::getSegmentMapper() const {
+    std::vector<int> mapper = std::vector<int>(segments.size());
+    for (int i=0; i<mapper.size(); i++) {
+        mapper[i] = seg2cell.at(i);
+    }
+    return mapper;
+}
+
+/**
+ * Calculates the z-coordinates of the segment
+ */
+std::vector<double> MappedSegments::getSegmentZ() const {
+    std::vector<double> z = std::vector<double>(segments.size());
+    for (int i=0; i<z.size(); i++) {
+        z[i] = 0.5*(nodes[segments[i].x].z + nodes[segments[i].y].z);
+    }
+    return z;
+}
+
+
 
 /**
  * Calculates the minimum of node coordinates
@@ -449,7 +472,7 @@ int MappedSegments::getSegment2leafId(int si_){
 		throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of");
 		return -1;
 	}
-	
+
 
 
 
@@ -672,14 +695,14 @@ void MappedPlant::simulate(double dt, bool verbose)
 	segVol.resize(segVol.size()+newsegO.size());
 	bladeLength.resize(bladeLength.size()+newsegO.size());
 	leafBladeSurface.resize(leafBladeSurface.size()+newsegO.size());
-	
+
 	c = 0;
 	if (verbose) {
 		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
 	}
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
-		
+
 		radii.at(segIdx) = so->param()->a;
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
@@ -846,7 +869,7 @@ std::vector<int> MappedPlant::getSegmentIds(int ot) const
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          Id of each segment
  */
-void MappedPlant::getSegment2leafIds() 
+void MappedPlant::getSegment2leafIds()
 {
 	segment2leafIds = std::vector<int>(organTypes.size(),-1);
 	int leafId = 0;
@@ -879,7 +902,7 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          Id of each segment
  */
-double MappedPlant::getPerimeter(int si_, double l_) 
+double MappedPlant::getPerimeter(int si_, double l_)
 {
 	if (organTypes.at(si_) == Organism::ot_leaf) {
 	//perimeter of the leaf blade
@@ -887,7 +910,7 @@ double MappedPlant::getPerimeter(int si_, double l_)
 	//later make it as option to have C4, i.e., stomatas on one side
 	//int leafId = getSegment2leafId(si_);
 	return leafBladeSurface.at(si_) / l_ *2;
-    
+
     }else{return 2 * M_PI * radii[si_];}
 }
 
