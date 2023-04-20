@@ -44,16 +44,7 @@ class HydraulicsDoussan(XylemFluxPython):
         kr = np.array(self.getEffKr(sim_time))
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
-        return (L[1:, 1:]).tocsc() + Kr, Kr, Kx  # L_{N-1} + Kr, se Hess paper
-
-        # if cells:
-        #     hs = np.zeros((IM.shape[1],))
-        #     hs[1:] = self.getHs(sxx)
-        #     self.b = Kr * hs
-        # else:
-        #     hs = np.zeros((IM.shape[1],))
-        #     hs[1:] = sxx
-        #     self.b = Kr * hs
+        return (L[1:, 1:]).tocsc() + Kr, Kr, kx_[0]  # L_{N-1} + Kr, se Hess paper
 
     def get_soil_matrix(self):
         """ maps nodes to soil matrix indices using the matrix B = (soil_matrix_indices) x (number_of_nodes-1) 
