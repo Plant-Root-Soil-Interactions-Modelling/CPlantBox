@@ -3,6 +3,7 @@
 
 #include "Organism.h"
 #include "Plant.h"
+#include <algorithm>
 #include <iostream>
 
 #include "organparameter.h"
