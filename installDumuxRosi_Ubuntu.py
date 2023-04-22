@@ -47,6 +47,7 @@ def git_clone(url, branch=None):
 # clear the log file
 open('installDumuxRosi.log', 'w').close()
 
+
 show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n only works for ubuntu >= 20.04")
 
 #################################################################
@@ -84,15 +85,21 @@ if len(error) > 0:
 import pip
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py', 'astropy', 'pandas'] 
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py', 'astropy', 'pandas', 'pybind11[global]', 'ipython'] 
 show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
-	subprocess.run(["pip3", "install", mymodule]) 
+    #subprocess.run(["pip3", "install", mymodule]) 
+    if ((mymodule =='vtk') and (sys.version_info.minor == 10)):
+        subprocess.run(["pip3", "install", mymodule]) 	#conda install not working for vtk with py3.10 (?)
+    else:
+        try:
+            subprocess.run(["conda", "install", mymodule]) 
+        except:
+            subprocess.run(["pip3", "install", mymodule]) 
       
 show_message("(1/3) Step completed. All prerequistes found.")
-
-
+raise Exception
 #################################################################
 #################################################################
 ## (2/3) Clone modules
@@ -169,14 +176,19 @@ else:
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    git_clone('https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git', branch = 'master')
-    os.chdir("CPlantBox")
-    subprocess.run(['cmake', '.']) 
-    subprocess.run(['make']) 
-    os.chdir("..")
+    subprocess.run(['git', 'clone', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
+os.chdir("CPlantBox")
 
+
+if os.path.exists("./src/external/pybind11"):
+    subprocess.run(['rm', '-rf', 'src/external/pybind11'])#delete folder
+subprocess.run(['git', 'rm', '-r','--cached', 'src/external/pybind11'])#take out git cache for pybind11
+subprocess.run(['git', 'submodule', 'add',  '--force', '-b', 'stable', '../../pybind/pybind11', './src/external/pybind11'])
+subprocess.run(['cmake', '.']) 
+subprocess.run(['make'])  
+os.chdir("..")
 
 show_message("(2/3) Step completed. All repositories have been cloned into a containing folder.")
 
