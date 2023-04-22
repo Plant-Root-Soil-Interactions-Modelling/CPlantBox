@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+#!/usr/bin/env python3
 
 """
 One click install script for CPlantBox
+adapted from installdumux.py of the Dumux developers
 """
 import os
 import sys
@@ -77,8 +79,8 @@ show_message("(2/3) Step completed. All prerequistes found.")
 #################################################################
 #################################################################
 # make a new folder containing everything
-os.makedirs("./CPB", exist_ok=True)
-os.chdir("CPB")
+#os.makedirs("./CPB", exist_ok=True)
+#os.chdir("CPB")
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
@@ -86,10 +88,13 @@ if not os.path.exists("CPlantBox"):
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 os.chdir("CPlantBox")
-if not os.path.exists("./src/external/pybind11"):
-    subprocess.run(['git', 'submodule', 'add', '-b', 'stable', '../../pybind/pybind11', 'src/external/pybind11'])
+
+if os.path.exists("./src/external/pybind11"):
+    subprocess.run(['rm', '-rf', 'src/external/pybind11'])#delete folder
+subprocess.run(['git', 'rm', '-r','--cached', 'src/external/pybind11'])#take out git cache for pybind11
+subprocess.run(['git', 'submodule', 'add', '-b', 'stable', '../../pybind/pybind11', './src/external/pybind11'])
 subprocess.run(['cmake', '.']) 
-subprocess.run(['make']) 
+subprocess.run(['make'])  
 os.chdir("..")
 
 
