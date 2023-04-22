@@ -929,13 +929,13 @@ PYBIND11_MODULE(plantbox, m) {
      * Photosynthesis.h
      */
     py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit") ,  py::arg("ciInit"))
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit")=-500.0 ,  py::arg("ciInit")= 350e-6)
 			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("ea_"),py::arg("es_") ,
 			py::arg("sim_time_")=1.0 ,	
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
 					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
 					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
-
+            .def_readwrite("PhotoType", &Photosynthesis::PhotoType)
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
             .def_readwrite("maxErrLim", &Photosynthesis::maxErrLim)
@@ -944,10 +944,14 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("maxErrAbs", &Photosynthesis::maxErrAbs)
 			.def_readwrite("psiXyl", &Photosynthesis::psiXyl)
             .def_readwrite("An", &Photosynthesis::An)
+            .def_readwrite("kp25", &Photosynthesis::kp25)
+            .def_readwrite("kp", &Photosynthesis::kp)
+            .def_readwrite("Vp", &Photosynthesis::Vp)
             .def_readwrite("Vc", &Photosynthesis::Vc)
             .def_readwrite("Vcrefmax", &Photosynthesis::Vcrefmax)
             .def_readwrite("Jrefmax", &Photosynthesis::Jrefmax)
-            .def_readwrite("Jrefmax", &Photosynthesis::Jrefmax)
+            .def_readwrite("Jmax", &Photosynthesis::Jmax)
+            .def_readwrite("J", &Photosynthesis::J)
             .def_readwrite("Vj", &Photosynthesis::Vj)
             .def_readwrite("fw", &Photosynthesis::fw)
             .def_readwrite("fwr", &Photosynthesis::fwr)
@@ -976,6 +980,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("loop", &Photosynthesis::loop)
             .def_readwrite("Patm", &Photosynthesis::Patm)
             .def_readwrite("cs", &Photosynthesis::cs)
+            .def_readwrite("vcs", &Photosynthesis::vcs)
             .def_readwrite("TleafK", &Photosynthesis::TleafK)
             .def_readwrite("TairC", &Photosynthesis::TairC)
             .def_readwrite("Chl", &Photosynthesis::Chl)
@@ -1002,6 +1007,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("doLog", &Photosynthesis::doLog)
             .def_readwrite("R_ph", &Photosynthesis::R_ph);
+	
+    py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes")
+            .value("C3", Photosynthesis::PhotoTypes::C3)
+            .value("C4", Photosynthesis::PhotoTypes::C4)
+            .export_values();
 
 	/*
      * runPM.h
