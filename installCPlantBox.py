@@ -2,7 +2,6 @@
 
 """
 One click install script for CPlantBox
-adapted from installdumux.py of the Dumux developers
 """
 import os
 import sys
