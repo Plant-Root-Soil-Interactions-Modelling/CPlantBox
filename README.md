@@ -56,6 +56,7 @@ It will create a "CPB" folder and install inside the dependencies necessary to r
 `/src`			CPlantBox C++ codes\
 `/test`   Python tests for all CPlantBox classes\
 `/tutorial` 		learn to use CPlantBox
+`/experimental`		Specific applications (in sub-folders). contrary to scripts in `/tutorial`, might not be kept up to date\
 
 # Code documentation
 
