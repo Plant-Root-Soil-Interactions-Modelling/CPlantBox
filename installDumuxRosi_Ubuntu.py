@@ -176,7 +176,7 @@ else:
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    subprocess.run(['git', 'clone', '-b', 'stable_v2.1', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 os.chdir("CPlantBox")
