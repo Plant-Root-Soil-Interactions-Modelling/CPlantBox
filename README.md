@@ -20,7 +20,12 @@ You can click the link to follow the guide there, just to click some buttons and
 CPlantBox is currently not available on windows. 
 Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 ### linux
- Run CMake which configures the CPlantBox libraries by 
+Download the latest stable release (status: 25/04/2023):
+```bash
+git clone -b stable_v2.1 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+cd CPlantBox
+```
+Run CMake which configures the CPlantBox libraries by 
 ```bash
 cmake . && make
 ```
@@ -49,7 +54,7 @@ conda create -n cpb_py39 python=3.9
 conda activate cpb_py39 
 python3 installCPlantBox.py
 ```
-It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.
+It will installCPlantBox and its dependencies.
 # Folder sructure
 
 `/modelparameter`		Plant parameter files\
