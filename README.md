@@ -61,7 +61,7 @@ It will installCPlantBox and its dependencies.
 `/src`			CPlantBox C++ codes\
 `/test`   Python tests for all CPlantBox classes\
 `/tutorial` 		learn to use CPlantBox
-`/experimental`		Specific applications (in sub-folders). contrary to scripts in `/tutorial`, might not be kept up to date\
+`/experimental`		Specific applications (in sub-folders). contrary to scripts in `/tutorial`, might not be kept up to date
 
 # Code documentation
 
