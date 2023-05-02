@@ -374,7 +374,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	if(psiXyl4Phloem.size() == Nt){Psi_Xyl = Fortran_vector(psiXyl4Phloem,cmH2O_to_hPa); //computed by xylem object
 	}else{Psi_Xyl = Fortran_vector(Nt, 0.);}
 	
-	if(not update_viscosity_)
+	if(! update_viscosity_)
 	{	
 
 		double TdC = TairK - 273.15;
@@ -413,7 +413,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			
 		//general
 			r_ST_ref[k] = 1/kx_st_f(  st,ot)*l;
-			if(not update_viscosity_)
+			if(! update_viscosity_)
 			{
 				r_ST_ref[k] = mu*r_ST_ref[k];
 			}assert((r_ST_ref[k]>0)&&"r_ST_ref[k] <=0");
@@ -790,7 +790,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			double age_ = f_gf->getAge(Linit, rmax, org->getParameter("k"), org->shared_from_this());
 			
 			
-			if((not((org->getOrganRandomParameter()->f_gf->CW_Gr.empty()) || 
+			if((!((org->getOrganRandomParameter()->f_gf->CW_Gr.empty()) || 
 					(org->getOrganRandomParameter()->f_gf->CW_Gr.count(org->getId()) ==0) ||
 					(org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<0.)))&&
 					org->isActive()&&useCWGr)
@@ -1029,7 +1029,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 					//could be error of pressision (if l = Lmax)
 					// or that, because of nodal growth and dxMin, org->getEpsilon() <0
 					if(((deltavolSeg>-1e-5)||(targetlength>0.))
-							&&(not(deltavolSeg != deltavolSeg))){
+							&&(deltavolSeg == deltavolSeg)){
 						deltavolSeg=0.;	//within margin of error
 					}else{
 						std::cout<<org->getId()<<" t:"<<dt<<" ot:"<<ot<<" Li:"<<Linit<<" Le:"<<targetlength<<std::endl;

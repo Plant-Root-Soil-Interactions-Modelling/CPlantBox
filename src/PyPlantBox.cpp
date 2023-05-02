@@ -35,6 +35,11 @@ namespace py = pybind11;
 #include "Photosynthesis.h"
 #include "PiafMunch/runPM.h"
 
+// visualisation
+#include "Quaternion.h"
+#include "CatmullRomSpline.h"
+#include "PlantVisualiser.h"
+
 #include "sdf_rs.h" // todo to revise ...
 
 namespace CPlantBox {
@@ -186,6 +191,40 @@ PYBIND11_MODULE(plantbox, m) {
             { sizeof(double) * 3,  sizeof(double) } /* Strides (in bytes) for each index */
         );
     });
+
+        py::class_<Quaternion>(m, "Quaternion", py::buffer_protocol())
+      .def(py::init<>())
+      .def(py::init<double, double, double, double>())
+      .def(py::init<const Quaternion&>())
+      .def(py::init<double, const Vector3d&>())
+      .def("__add__", [](const Quaternion& q1, const Quaternion& q2) { return q1 + q2; }, py::is_operator())
+      .def("__sub__", [](const Quaternion& q1, const Quaternion& q2) { return q1 - q2; }, py::is_operator())
+      .def("__mul__", [](const Quaternion& q1, const Quaternion& q2) { return q1 * q2; }, py::is_operator())
+      .def("__mul__", [](const Quaternion& q1, double d) { return q1 * d; }, py::is_operator())
+      .def("__mul__", [](double d, const Quaternion& q1) { return q1 * d; }, py::is_operator())
+      .def("__truediv__", [](const Quaternion& q1, double d) { return q1 / d; }, py::is_operator())
+      .def("norm", &Quaternion::norm)
+      .def("normalize", &Quaternion::normalize)
+      .def("inverse", &Quaternion::inverse)
+      .def("Forward", &Quaternion::Forward)
+      .def("Up", &Quaternion::Up)
+      .def("Right", &Quaternion::Right)
+      .def("Rotate", (Vector3d (Quaternion::*)(const Vector3d&) const) &Quaternion::Rotate)
+      .def_static("LookAt", &Quaternion::LookAt)
+      .def_static("SphericalInterpolation", &Quaternion::SphericalInterpolation)
+      .def_static("geodesicRotation", &Quaternion::geodesicRotation)
+      .def_buffer([](Quaternion &q) -> py::buffer_info { /* enables numpy conversion with np.array(quaternion_instance, copy = False) */
+        // this only really works if the variables are stored in a contiguous block of memory
+        return py::buffer_info(
+            &q.w,   
+            sizeof(double),    
+            py::format_descriptor<double>::format(),
+            1,                
+            { 4 },          
+            { sizeof(double) }   
+        );
+      })
+    ;
     /*
      * sdf
      */
@@ -1084,6 +1123,24 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
 			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm);
 
+    py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
+        .def(py::init<>())
+        .def("ComputeGeometryForOrgan",&PlantVisualiser::ComputeGeometryForOrgan, py::arg("organId"))
+        .def("ComputeGeometryForOrganType",&PlantVisualiser::ComputeGeometryForOrganType)
+        .def("ComputeGeometry",&PlantVisualiser::ComputeGeometry)
+        .def("GetGeometry",&PlantVisualiser::GetGeometry)
+        .def("GetGeometryColors",&PlantVisualiser::GetGeometryColors)
+        .def("GetGeometryNormals",&PlantVisualiser::GetGeometryNormals)
+        .def("GetGeometryIndices",&PlantVisualiser::GetGeometryIndices)
+        .def("GetGeometryTextureCoordinates",&PlantVisualiser::GetGeometryTextureCoordinates)
+        .def("GetGeometryNodeIds", &PlantVisualiser::GetGeometryNodeIds)
+        .def("SetGeometryResolution",&PlantVisualiser::SetGeometryResolution, py::arg("resolution"))
+        .def("SetLeafResolution",&PlantVisualiser::SetLeafResolution, py::arg("resolution"))
+        .def("SetComputeMidlineInLeaf", &PlantVisualiser::SetComputeMidlineInLeaf, py::arg("inCompute"))
+        .def("HasGeometry", &PlantVisualiser::HasGeometry)
+        .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
+    ;
+
     py::enum_<Plant::TropismTypes>(m, "TropismType")
             .value("plagio", Plant::TropismTypes::tt_plagio)
             .value("gravi", Plant::TropismTypes::tt_gravi)
@@ -1118,6 +1175,8 @@ PYBIND11_MODULE(plantbox, m) {
             .value("mps", ExudationModel::IntegrationType::mps )
             .value("mls", ExudationModel::IntegrationType::mls )
             .export_values();
+
+
 
     //   /*
     //    * sdf_rs.h todo revise
