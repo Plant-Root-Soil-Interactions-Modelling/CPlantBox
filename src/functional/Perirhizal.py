@@ -54,8 +54,10 @@ class PerirhizalPython(Perirhizal):
         d = np.zeros((n,))
         for i in range(0, n):
             if i in cell2seg:
-                for si in cell2seg[i]:
-                    d[i] += f(radii[si], l[si])
+                if cell2seg[i]:
+                    for si in cell2seg[i]:
+                        print(si, i)
+                        d[i] += f(radii[si], l[si])
         return np.divide(d, volumes)  # cm/cm3, cm2/cm3, or cm3/cm3
 
     def get_outer_radii(self, type:str, volumes:list = []):

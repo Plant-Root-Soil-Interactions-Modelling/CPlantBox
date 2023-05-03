@@ -184,7 +184,7 @@ void RootSystem::writeParameters(std::ostream& os) const
 void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
 {
 	reset(); // just in case
-    getNodeIndex(); // introduce an extra node at nodes[0] 
+    getNodeIndex(); // introduce an extra node at nodes[0]
 	seed = std::make_shared<Seed>(shared_from_this()); // introduce a 2nd node =>  2 nodes to make a seed segment
 	initialize_(basal, shootborne, verbose);
 }
@@ -208,8 +208,8 @@ void RootSystem::initializeDB(int basal, int shootborne, bool verbose)
 
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
-    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
-    		return std::make_shared<RootDelay>(plant, type,  delay, shared_from_this(), 0);
+    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay, double fixedBeta = 0.) override {
+    		return std::make_shared<RootDelay>(plant, type,  delay, shared_from_this(), 0, fixedBeta);
     	};
     };
 

@@ -37,7 +37,7 @@ public:
     std::vector<std::shared_ptr<Organ>> baseOrgans() { return children; } // created by initialize
     std::vector<std::shared_ptr<Organ>> copyBaseOrgans(); ///< shallow copy of the childs
 
-    virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay); ///< overwrite if you want to change class types
+    virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay, double fixedBeta = 0.); ///< overwrite if you want to change class types
     virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, double delay); ///< overwrite if you want to change class types
 
     // default positions (unused) (TODO) make nicer

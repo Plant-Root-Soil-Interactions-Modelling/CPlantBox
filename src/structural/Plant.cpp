@@ -69,7 +69,7 @@ void Plant::reset()
  * Sets up the plant according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.
  *
- * If not used for test file: Call this method before simulation and after setting geometry, 
+ * If not used for test file: Call this method before simulation and after setting geometry,
  * plant and root parameters
  * @param verbose       print information
  */
@@ -87,7 +87,7 @@ void Plant::initialize_(bool verbose)
  *
  * LB, Length based: Delay for lateral root is calculated from the apical length (classical RootBox approach)
  *
- * Call this method before simulation and after setting geometry, 
+ * Call this method before simulation and after setting geometry,
  * plant and root parameters
  * @param verbose       print information
  */
@@ -100,7 +100,7 @@ void Plant::initializeLB(bool verbose )
     baseOrgans.push_back(seed);
 	seed->initialize(verbose);
     initialize_(verbose);
-	
+
 }
 /**
  * Sets up the plant according to the plant parameters,
@@ -108,7 +108,7 @@ void Plant::initializeLB(bool verbose )
  *
  * DB, Delay based: Delay for lateral root is predefined, apical length therefore not constant
  *
- * Call this method before simulation and after setting geometry, 
+ * Call this method before simulation and after setting geometry,
  * plant and root parameters
  * @param verbose       print information
  */
@@ -118,8 +118,8 @@ void Plant::initializeDB(bool verbose)
 
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
-    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type,  double delay) override {
-    		return std::make_shared<RootDelay>(plant, type, delay, shared_from_this(), 0);
+    	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type,  double delay, double fixedBeta = 0.) override {
+    		return std::make_shared<RootDelay>(plant, type, delay, shared_from_this(), 0, fixedBeta);
     	};
     };
 
@@ -216,14 +216,14 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 }
 
 /**
- * Simulates plant growth 
+ * Simulates plant growth
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
-	void Plant::simulate(double dt, bool verbose)	
-{	
+	void Plant::simulate(double dt, bool verbose)
+{
 	abs2rel();
-    Organism::simulate(dt, verbose);	
+    Organism::simulate(dt, verbose);
 	rel2abs();
 }
 
@@ -239,34 +239,34 @@ void Plant::simulate()
 /**
  * go from absolute to relative coordinates for aboveground organs
  */
-void Plant::abs2rel()	
-{	
+void Plant::abs2rel()
+{
 	auto s = getSeed();
 	for (int i = 0; i< s->getNumberOfChildren();i++) {
 		auto child = s->getChild(i);
 		//if(child->organType() >2){ //if aboveground-organ
 			child->abs2rel(); //apply to all organs
 		//}
-		
+
     }
-	
+
 }
 
 
 /**
  * go from relative to absolute coordinates for aboveground organs
  */
-void Plant::rel2abs()	
-{	
+void Plant::rel2abs()
+{
 	auto s = getSeed();
 	for (int i = 0; i< s->getNumberOfChildren();i++) {
 		auto child = s->getChild(i);
 		//if(child->organType() >2){ //if aboveground-organ
 			child->rel2abs();//apply to all organs
 		//}
-		
+
     }
-	
+
 }
 
 

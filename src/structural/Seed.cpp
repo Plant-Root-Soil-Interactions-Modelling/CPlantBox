@@ -18,7 +18,7 @@ Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * todo docme
  */
 Seed::Seed(std::shared_ptr<Organism> plant)
-		:Organ(plant, nullptr, Organism::ot_seed, 0, 0., 0)																   
+		:Organ(plant, nullptr, Organism::ot_seed, 0, 0., 0)
 {
 	addNode(param()->seedPos, 0.); // realize() is called in Organ constructor
 }
@@ -119,22 +119,22 @@ void Seed::initialize(bool verbose)
 			Vector3d sbpos = sp->seedPos;
 			sbpos.z=sbpos.z/2.; // half way up the mesocotyl
 			numberOfRootCrowns = ceil((maxT-sp->firstSB)/sp->delayRC); // maximal number of root crowns
+			double fixedBeta = 2*M_PI/sp->nC;
 			double delay = sp->firstSB;
 			for (int i=0; i<numberOfRootCrowns; i++) {
 				std::shared_ptr<Organ>  shootborne0 = createRoot(plant.lock(), shootborneType, delay);
-				// TODO fix the initial radial heading
 				shootborne0->addNode(sbpos,delay);
 				this->addChild(shootborne0);
 				delay += sp->delaySB;
 				for (int j=1; j<sp->nC; j++) {
-					std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, delay);
+					std::shared_ptr<Organ>  shootborne = createRoot(plant.lock(), shootborneType, delay, j*fixedBeta);
 					// TODO fix the initial radial heading
 					shootborne->addNode(shootborne0->getNode(0), shootborne0->getNodeId(0),delay);
 					this->addChild(shootborne);
 					delay += sp->delaySB;
 				}
 				sbpos.z+=sp->nz;  // move up, for next root crown
-				delay = sp->firstSB + i*sp->delayRC; // reset age
+				delay = sp->firstSB + (i+1)*sp->delayRC; // reset age
 			}
 		} else {
 			numberOfRootCrowns = 0;
@@ -215,9 +215,9 @@ std::string Seed::toString() const
 /**
  * todo doc
  */
-std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay)
+std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay, double fixedBeta)
 {
-	return std::make_shared<Root>(plant, type,delay, shared_from_this(), 0);
+	return std::make_shared<Root>(plant, type,delay, shared_from_this(), 0, fixedBeta);
 }
 
 /**

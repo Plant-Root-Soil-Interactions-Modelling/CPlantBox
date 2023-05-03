@@ -14,20 +14,17 @@ namespace CPlantBox {
  * @param active    indicates if the organ is active (@see Organ::isActive)
  * @param age       the current age of the organ (@see Organ::getAge)
  * @param length    the current length of the organ (@see Organ::getLength)
- * @param iheading  the initial heading of this root
- * @param pbl       base length of the parent root, where this root emerges
+ * @param partialIHeading_  the initial heading of this root
  * @param pni       local node index, where this root emerges
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-     :Organ(id, param, alive, active, age, length, 
-	 partialIHeading_,pni, moved,  oldNON )
-      {
+        :Organ(id, param, alive, active, age, length, partialIHeading_,pni, moved,  oldNON )
+ {
     insertionAngle = this->param()->theta;
-      }
-
+ }
 
 /**
  * Constructor: Should be only called during simulation by Root::createLateral().
@@ -35,43 +32,49 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  *
  * @param rs 			points to RootSystem
  * @param type 		    type of root that is created
- * @param heading		heading of parent root at emergence
  * @param delay 		to give apical zone of parent time to develop
  * @param parent		parent root
- * @param pbl			parent base length
  * @param pni			parent node index
+ * @param fixedBeta     (default = 0. means random, for shootborne in case of RootSystem it can be fixed)
  */
-Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
+Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni, double fixedBeta)
 :Organ(rs, parent, Organism::ot_root, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
-    double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
+    double beta = 0.;
+    if (fixedBeta == 0.) { // default
+        beta = 2*M_PI*plant.lock()->rand(); // initial rotation
+    } else {
+        beta = fixedBeta;
+    }
     double theta = param()->theta;
     if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
         double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
         theta*=scale;
     }
     insertionAngle = theta;
-	this->partialIHeading = Vector3d::rotAB(theta,beta);
-			
-	if(!(parent->organType()==Organism::ot_seed))
-	{
-			double creationTime= parent->getNodeCT(pni)+delay;//default
-		if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
-		{
-			addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-			
-		}else{
-			if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
-			//if lateral of stem, initial creation time: 
-			//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-			// @see stem::leafGrow
-			creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-		}
-			addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
-		}
-	}
+    this->partialIHeading = Vector3d::rotAB(theta,beta);
+
+    if (!(parent->organType()==Organism::ot_seed)) {
+        double creationTime= parent->getNodeCT(pni)+delay;//default
+        if (!parent->hasRelCoord()) {  // the first node of the base roots must be created in RootSystem::initialize()
+            addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+        } else {
+            if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
+                //if lateral of stem, initial creation time:
+                //time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
+                // @see stem::leafGrow
+                creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
+            }
+            addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
+        }
+    }
 }
+
+
+
+
+
 
 /**
  * Deep copies the organ into the new plant @param rs.
@@ -177,11 +180,11 @@ void Root::simulate(double dt, bool verbose)
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
-							
+
                                 if (i==created_linking_node) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
-		
+
                                 if(length < s)//because with former check we have (length<=s)
                                 {
                                     if (length+dl<=s) { // finish within inter-lateral distance i
@@ -197,11 +200,11 @@ void Root::simulate(double dt, bool verbose)
                                         //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
                                         //									} // this could happen, if the tip ends in this section
                                     }
-		 
+
                                 }
                             }
                         }
-	  
+
                         if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
                             createLateral(dt_, verbose);
                         }
@@ -264,9 +267,6 @@ std::shared_ptr<const RootSpecificParameter> Root::param() const
     return std::static_pointer_cast<const RootSpecificParameter>(param_);
 }
 
-
-
-
 /**
  * @copydoc Organ::getParameter
  *
@@ -278,7 +278,7 @@ double Root::getParameter(std::string name) const
 {
     // specific parameters
     if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
-	if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
+    if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -289,13 +289,13 @@ double Root::getParameter(std::string name) const
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
     if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
     // further
-    if (name=="lnMean") { // mean lateral distance [cm]	
+    if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
-		if(v.size()>0){
-			return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
-		}else{
-			return 0;
-		}
+        if(v.size()>0){
+            return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+        }else{
+            return 0;
+        }
     }
     if (name=="lnDev") { // standard deviation of lateral distance [cm]
         auto& v =param()->ln;
@@ -308,7 +308,6 @@ double Root::getParameter(std::string name) const
     if (name=="surface") { return 2*param()->a*M_PI*getLength(true); } // root surface [cm^2]
     return Organ::getParameter(name); // pass to base class
 }
-
 
 /**
  * @return Quick info about the object for debugging
