@@ -4,6 +4,7 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "MappedOrganism.h"
+#include "XylemFlux.h"
 #include <algorithm>
 #include <iomanip>
 #include <istream>
@@ -55,15 +56,18 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     auto radii = std::vector<double>(segments.size());
     auto subType = std::vector<double>(segments.size());
     auto id = std::vector<double>(segments.size());
+    auto organType = std::vector<double>(segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
         radii[i] = segO[i].lock()->getParameter("radius");
         subType[i] = segO[i].lock()->getParameter("type");
         id[i] = segO[i].lock()->getParameter("id");
+        organType[i] = Organism::ot_root; // = 2
     }
     data["radius"] = radii;
     data["subType"] = subType;
     data["id"] = id;
+    data["organType"] = organType;
 }
 
 /**
@@ -73,16 +77,15 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
  */
 SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes), segments(plant.segments)
 {
-    std::cout << "construct from MappedSegments\n";
+    // std::cout << "construct from MappedSegments\n";
     assert((segments.size()==plant.radii.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.subTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
     assert((segments.size()==plant.organTypes.size()) && "SegmentAnalyser::SegmentAnalyser(MappedSegments p): Unequal vector sizes");
-    std::vector<double> segCTs;
+    std::vector<double> segCTs(plant.segments.size());
     std::vector<double> subTypesd(plant.subTypes.size()); // convert to double
     std::vector<double> organTypesd(plant.organTypes.size()); // convert to double
-    segCTs.reserve(plant.nodeCTs.size()-1);
     for (size_t i=0; i<segments.size(); i++) {
-        segCTs.push_back(plant.nodeCTs.at(segments[i].y));
+        segCTs[i] = plant.nodeCTs.at(segments[i].y);
         subTypesd[i] = double(plant.subTypes[i]);
         organTypesd[i] = double(plant.organTypes[i]);
     }
@@ -166,6 +169,94 @@ void SegmentAnalyser::addSegment(Vector2i seg, double ct, double radius, bool in
         std::string key =  iter->first;
         assert(segments.size() == data[key].size() && "SegmentAnalyser::addSegment(): Unequal vector sizes, segments and data" );
     }
+}
+
+void SegmentAnalyser::addAge(double simTime)
+/**
+ * adds "age" for vizualisation (cuts off negative values)
+ */
+{
+    std::vector<double> age(segments.size());
+    for (size_t i=0; i<age.size(); i++) {
+        double a = simTime - data["creationTime"].at(i);
+        age.at(i) = std::max(a,0.);
+    }
+    this->addData("age",age);
+}
+
+/**
+ * Adds kr and kx to the user data for vizualisation ("kr", "kx"),
+ *
+ * @param rs    XylemFlux for determination of radial and axial conductivities (kr, and kx)
+ */
+void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime)
+{
+    // std::cout << "creationTime " << data["creationTime"].size() << ", " << data["subType"].size() << ", " << data["organType"].size() << "\n";
+
+    std::vector<double> kr(segments.size());
+    std::vector<double> kx(segments.size());
+    for (size_t i=0; i<kr.size(); i++) {
+        double age = simTime - data["creationTime"].at(i);
+        int subType = (int) data["subType"].at(i);
+        int organType = (int) data["organType"].at(i);
+        kr.at(i) = rs.kr_f(i, age, subType, organType);
+        kx.at(i) = rs.kx_f(i, age, subType, organType);
+        if (age > simTime - 1.e-6) {
+            kx.at(i) = 0.; // for shoot (for vizualisation only)
+        }
+    }
+    this->addData("kr",kr);
+    this->addData("kx",kx);
+}
+
+/**
+ * Adds radial and axial fluxes to the user data for vizualisation,
+ * ("radial_flux" [cm3/cm2 / day], and "axial_flux" [cm3/day])
+ *
+ * use addConductivities before!
+ */
+void SegmentAnalyser::addFluxes(XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
+
+    std::vector<double> radial_flux = rs.segFluxes(simTime, rx, sx, false, false); // volumetric flux
+    std::vector<double> a = data["radius"];
+    for (int i =0; i< radial_flux.size(); i++) {
+        radial_flux[i] /= (2.*M_PI*a.at(i));
+    }
+    this->addData("radial_flux",radial_flux);
+
+    //    auto& kr = data["kr"]; // use addConductivities before!
+    auto& kx = data["kx"]; // use addConductivities before!
+    std::vector<double> axial_flux(segments.size());
+    for (size_t i=0; i<axial_flux.size(); i++) {
+        //        double age = simTime - data["creationTime"].at(i);
+        //        int subType = (int)data["subType"].at(i);
+        //        int organType = (int)data["organType"].at(i);
+        auto s = segments[i];
+        auto n1 = nodes.at(s.x);
+        auto n2 = nodes.at(s.y);
+        auto v = n2.minus(n1);
+        double l = v.length();
+        v.normalize();
+        //        double p_s = sx.at(i);
+        double dpdz0;
+        //        if (a.at(i)*kr.at(i)>1.e-16) {
+        //            double tau = std::sqrt(2 * a * M_PI * kr.at(i) / kx.at(i));  // cm-2 // TODO exact value is missing, see xylem_flux.py, axial_flux
+        //        } else {
+        //        }
+        dpdz0 = (rx[s.y] - rx[s.x]) / l;
+        axial_flux.at(i) = kx.at(i) * (dpdz0 + v.z);
+    }
+    this->addData("axial_flux",axial_flux);
+}
+
+
+void SegmentAnalyser::addCellIds(const MappedSegments& plant)
+{
+    std::vector<double> cell_id(segments.size());
+    for (size_t i=0; i<segments.size(); i++) {
+        cell_id[i] = plant.seg2cell.at(i);
+    }
+    this->addData("cell_id",cell_id);
 }
 
 /**
