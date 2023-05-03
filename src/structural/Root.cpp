@@ -35,7 +35,7 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * @param delay 		to give apical zone of parent time to develop
  * @param parent		parent root
  * @param pni			parent node index
- * @param fixedBeta     (default = 0. means random, for shootborne in case of RootSystem it can be fixed)
+ * @param fixedBeta     default = 0. means random, for shootborne in case of RootSystem it can be fixed
  */
 Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni, double fixedBeta)
 :Organ(rs, parent, Organism::ot_root, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
