@@ -62,9 +62,10 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
-        ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(),interactiveImage)
+        ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
+
     return [tube_plot_actor, actor], color_bar
 
 
@@ -193,7 +194,7 @@ def uniform_grid(min_, max_, res):
     return grid
 
 
-def render_window(actor, title, scalarBar, bounds,interactiveImage=True):
+def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     """ puts a vtk actor on the stage (renders an interactive window)
 
     @param actor                    a (single) actor, or a list of actors (ensemble)
@@ -273,7 +274,7 @@ def render_window(actor, title, scalarBar, bounds,interactiveImage=True):
     renWin.SetSize(1200, 1000)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
-    
+
     if interactiveImage:
         iren = vtk.vtkRenderWindowInteractor()
         iren.SetRenderWindow(renWin)
@@ -285,21 +286,21 @@ def render_window(actor, title, scalarBar, bounds,interactiveImage=True):
             a.Modified()  #
         renWin.Render()
         return iren
-    else: #necessary?
+    else:  # necessary?
         renWin.SetOffScreenRendering(1)
         renWin.SetDeviceIndex(0)
         renWin.SetShowWindow(True)
         windowToImageFilter = vtk.vtkWindowToImageFilter()
         windowToImageFilter.SetInput(renWin)
         windowToImageFilter.Update()
-          
+
         writer = vtk.vtkPNGWriter()
         writer.SetWriteToMemory(1)
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
-        
-        #move this somewhere else?
-        im = Image(writer.GetResult(),format="png")
+
+        # move this somewhere else?
+        im = Image(writer.GetResult(), format = "png")
         display(im)
 
 
@@ -368,7 +369,7 @@ def create_lookup_table(tableIdx = 15, numberOfColors = 256):
     lut = vtk.vtkLookupTable()
     lut.SetNumberOfTableValues(numberOfColors)
     for i in range(0, numberOfColors):
-        psi = (n - 1) * (float(i) / numberOfColors)
+        psi = (n - 1) * (float(i) / numberOfColors)  # float(i), float(numberOfColors - i - 1) to reverse
         i0 = np.floor(psi)
         theta = psi - i0
         col = (1 - theta) * np.array(lut_.GetTableValue(int(i0))) + theta * np.array(lut_.GetTableValue(int(i0) + 1))
@@ -458,13 +459,13 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
     mapper.SetLookupTable(lut)
 
     if render:
-        ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(),interactiveImage)
+        ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
     return plantActor, scalar_bar
 
 
-def plot_mesh(grid, p_name, win_title = "", render = True,interactiveImage=True):
+def plot_mesh(grid, p_name, win_title = "", render = True, interactiveImage = True):
     """ Plots the grid as wireframe
     @param grid         some vtk grid (structured or unstructured)
     @param p_name       parameter to visualize
@@ -489,13 +490,13 @@ def plot_mesh(grid, p_name, win_title = "", render = True,interactiveImage=True)
     mapper.SetLookupTable(lut)
 
     if render:
-        ren = render_window(meshActor, win_title, scalar_bar, grid.GetBounds(),interactiveImage)
+        ren = render_window(meshActor, win_title, scalar_bar, grid.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
     return [meshActor], scalar_bar
 
 
-def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True,interactiveImage=True):
+def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interactiveImage = True):
     """ plots orthogonal nz vertical cuts z[:-1] (xy-planes), with z = linspace(min_z, max_z, nz+1),
     and two additonal sclices at x=0 (yz-plane), y=0 (xz-plane)
     @param grid         some vtk grid (structured or unstructured)
@@ -548,14 +549,14 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True,interacti
         actors.append(a)
 
     if render:
-        ren = render_window(actors, win_title, scalar_bar, grid.GetBounds(),interactiveImage)
+        ren = render_window(actors, win_title, scalar_bar, grid.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
 
     return actors, scalar_bar
 
 
-def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0,interactiveImage=True):
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -591,7 +592,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     rootActor, rootCBar = plot_roots(pd, pname, "", False)
     meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
     meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(),interactiveImage)
+    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
     if interactiveImage:
         ren.Start()
 
@@ -601,7 +602,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         write_vtu(path + filename + ".vtu", soil_grid)
 
 
-def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "",interactiveImage=True):
+def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "", interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname_root    root parameter that will be visualized 
@@ -611,7 +612,7 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
     @param xx, yy        witdh and height of periodic domain    
     @param filename      file name (without extension)
     
-    how to add data to a vtk grid: 
+    How to add data to a vtk grid: 
     
     celldata = vtk.vtkDoubleArray()
     celldata.SetName("data")
@@ -627,7 +628,7 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
     rootActor, rootCBar = plot_roots(pd, pname_root, "", False)
     meshActors, meshCBar = plot_mesh_cuts(mesh, pname_mesh, 7, "", False)
     meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(),interactiveImage)
+    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
     if interactiveImage:
         ren.Start()
     if filename:
@@ -665,7 +666,7 @@ def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True)
     lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
     rootActor.GetMapper().SetLookupTable(lut)
     meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, meshCBar, soil_grid.GetBounds(),interactiveImage)
+    ren = render_window(meshActors, filename, meshCBar, soil_grid.GetBounds(), interactiveImage)
     if interactiveImage:
         ren.Start()
 
