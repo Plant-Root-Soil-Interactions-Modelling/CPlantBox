@@ -180,9 +180,9 @@ class Quaternion {
     static Quaternion FromForwardAndUp(const Vector3d& forward, const Vector3d& prev_up)
     {
       // initial copy of the previous up vector
-      Vector3d up = prev_up;
+      Vector3d up = vectorNormalized(prev_up);
       // calculate the right vector
-      Vector3d right = up.cross(forward);
+      Vector3d right = up.cross(vectorNormalized(forward));
       // calculate the new up vector
       up = forward.cross(right);
       // normalize the vectors
@@ -191,6 +191,17 @@ class Quaternion {
       // return the quaternion as calculated from the matrix
       return Quaternion::FromMatrix3d(Matrix3d(vectorNormalized(forward), right, up));
     }
+
+    static Quaternion FromForwardAndRight(const Vector3d& forward, const Vector3d& right)
+    {
+      // calculate the new up vector
+      Vector3d up = vectorNormalized(forward).cross(vectorNormalized(right));
+      // normalize the vectors
+      up.normalize();
+      // return the quaternion as calculated from the matrix
+      return Quaternion::FromMatrix3d({forward, right, up});
+    }
+
 
     /**
      * @brief Rotates a vector by the quaternion

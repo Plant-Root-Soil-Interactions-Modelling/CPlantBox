@@ -2,11 +2,13 @@
 #define _CPLANTBOX_PLANTVISUALIZER_H
 #pragma once
 
+#include "mymath.h"
 #include <vector>
 #include <functional>
 #include <string>
 #include <sstream>
 #include <tuple>
+#include <map>
 #include <memory>
 #include <assert.h>
 
@@ -31,8 +33,11 @@ class PlantVisualiser {
 public :
   PlantVisualiser();
   PlantVisualiser(const PlantVisualiser& pv);
-  PlantVisualiser(const std::shared_ptr<MappedPlant>& plant);
+  PlantVisualiser(std::shared_ptr<MappedPlant> plant);
   virtual ~PlantVisualiser();
+
+  double LeafWidthScaleFactor() const { return this->leaf_width_scale_factor_; }
+  void SetLeafWidthScaleFactor(double factor) { this->leaf_width_scale_factor_ = factor; }
 
   void SetGeometryResolution(int resolution) { this->geometry_resolution_ = resolution; } // set the resolution of the geometry (number of cells in each direction
   void SetLeafResolution(int resolution) { this->leaf_resolution_ = resolution;}
@@ -53,7 +58,7 @@ public :
    * This merges the individual organs into one geometry!
    * @param organType the type of the organ
   */
-  void ComputeGeometryForOrganType(int organType);
+  void ComputeGeometryForOrganType(int organType, bool clearFirst = true);
   /**
    * Compute the geometry of the whole plant
    * This merges the individual organs into one geometry!
@@ -84,13 +89,26 @@ public :
    * @param property the property to map
    * @param minMax the min and max values of the property
   */
-  void MapPropertyToColors(std::string property, 
-                           std::vector<double> minMax = std::vector<double>());
+  void MapPropertyToColors(std::vector<double> property, 
+                           std::pair<double, double> minMax = {0.0, 1.0});
+
+  void SetVerbose(bool verbose) { this->verbose_ = verbose; }
+  void SetAddVerticalLeafOffset(bool add) { this->add_vertical_leaf_offset_ = add; }
 
 protected:
-  std::shared_ptr<MappedPlant> plant_;
+  std::shared_ptr<MappedPlant> plant_{nullptr};
 
-  bool include_midline_in_leaf_ = true;
+  bool include_midline_in_leaf_{true};
+  bool verbose_{false};
+  bool add_vertical_leaf_offset_{false};
+
+  double leaf_width_scale_factor_{1.0};
+
+  /**
+   * A private method to build the attachment map for the leaf organs
+   * This is used to determine the attachment point of the leaf to the stem
+  */
+  void BuildAttachmentMap();
 
   /**
    * A private method to generate a geometry for the leaf
@@ -120,7 +138,8 @@ protected:
    * @note using a shared_ptr as parameter might be less efficient, but only O(1)
    */
     void GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o = 0, unsigned int c_o = 0);
-    void GenerateRadialLeafGeometryFromPhi(std::shared_ptr<Leaf> leaf, unsigned int p_o = 0, unsigned int c_o = 0);
+    
+  std::map<int, std::pair<int, Vector3d>> leaf_attachment_map_;
 
   /* Geometry buffers */
   std::vector<double> geometry_; // x,y,z coordinates
@@ -129,8 +148,8 @@ protected:
   std::vector<unsigned int> geometry_indices_; // indices for triangles
   std::vector<double> geometry_texture_coordinates_; // u,v coordinates
   std::vector<int> geometry_node_ids_; // the node ids for each vertex
-  unsigned int geometry_resolution_ = 8; // the resolution of the cylindric geometry
-  unsigned int leaf_resolution_ = 20; // the resolution of the leaf geometry
+  unsigned int geometry_resolution_{8}; // the resolution of the cylindric geometry
+  unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry
 };
 
 } // namespace CPlantBox

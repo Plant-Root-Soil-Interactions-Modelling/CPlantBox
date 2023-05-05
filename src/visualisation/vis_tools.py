@@ -15,7 +15,11 @@ def PolydataFromPlantGeometry(vis : pb.PlantVisualiser ) :
   points = vtk.vtkPoints()
   points.Reset()
   geom = np.array(vis.GetGeometry())
-  print(geom.shape)
+  geom = np.reshape(geom, (geom.shape[0]//3, 3))
+  num_points = geom.shape[0]
+  geom = vtknp.numpy_to_vtk(geom, deep=True)
+  geom.SetName("points")
+  points.SetData(geom)
   nodeids = np.array(vis.GetGeometryNodeIds())
   print(nodeids.shape)
   nodeids = vtknp.numpy_to_vtk(nodeids, deep=True)
@@ -33,15 +37,14 @@ def PolydataFromPlantGeometry(vis : pb.PlantVisualiser ) :
   normals = vtknp.numpy_to_vtk(normals, deep=True)
   normals.SetName("normals")
   pd.GetPointData().AddArray(normals)
-  points = vtk.vtkPoints()
-  points.SetNumberOfPoints(geom.shape[0]//3)
-  for i in range(geom.shape[0]//3) :
-    points.SetPoint(i, geom[i*3], geom[i*3+1], geom[i*3+2])
   # end for
   cell_data = np.array(vis.GetGeometryIndices())
   cell_data = np.reshape(cell_data, (cell_data.shape[0]//3, 3))
   cells = vtk.vtkCellArray()
   for i in range(cell_data.shape[0]) :
+    npcell = cell_data[i,:]
+    if any (npcell < 0) or any (npcell >= num_points) :
+      print("Error: cell data out of range")
     cells.InsertNextCell(3)
     cells.InsertCellPoint(cell_data[i, 0])
     cells.InsertCellPoint(cell_data[i, 1])
@@ -84,7 +87,8 @@ def WriteSimulationDataToFile(plant: pb.Plant, filename_prefix : str, times : li
     for o in Organs :
       vis.ComputeGeometryForOrganType(o)
     # Write the geometry to file
-    vis.WriteGeometryToFile(filename_prefix + "_geometry_" + str(t) + ".vtp")
+    data = PolydataFromPlantGeometry(vis)
+    WritePolydataToFile(data, filename_prefix + "_geometry_" + str(t) + ".vtp")
   # end for
 # end def WriteSimulationDataToFile
 

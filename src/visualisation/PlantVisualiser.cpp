@@ -99,12 +99,16 @@ PlantVisualiser::PlantVisualiser() :
     geometry_resolution_(10), leaf_resolution_(10), include_midline_in_leaf_(false) {}
 
 PlantVisualiser::PlantVisualiser(const PlantVisualiser& pv) = default;
-PlantVisualiser::PlantVisualiser(const std::shared_ptr<MappedPlant>& plant) :
-    geometry_resolution_(10), leaf_resolution_(10), include_midline_in_leaf_(false), plant_(plant) {}
+PlantVisualiser::PlantVisualiser(std::shared_ptr<MappedPlant> plant) :
+    geometry_resolution_(10), leaf_resolution_(10), include_midline_in_leaf_(false), plant_(plant) 
+    {
+      BuildAttachmentMap();
+    }
 PlantVisualiser::~PlantVisualiser() = default;
 
 void PlantVisualiser::setPlant(const std::shared_ptr<MappedPlant>& plant) {
   plant_ = plant;
+  BuildAttachmentMap();
 }
 
 void PlantVisualiser::ComputeGeometryForOrgan(int organId)
@@ -161,7 +165,7 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
   }
 }
 
-void PlantVisualiser::ComputeGeometryForOrganType(int organType)
+void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst)
 {
   auto organ_list = plant_->getOrgans(-1, false);
 		
@@ -194,18 +198,21 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType)
 		}
   }
   //std::cout << "Going to allocate " << point_space << " points and " << cell_space << " cells" << std::endl;
-  geometry_.clear();
-  geometry_normals_.clear();
-  geometry_colors_.clear();
-  geometry_indices_.clear();
-  geometry_texture_coordinates_.clear();
-  geometry_node_ids_.clear();
-  geometry_.reserve(point_space);
-  geometry_normals_.reserve(point_space);
-  geometry_colors_.reserve(point_space / 3 * 2);
-  geometry_indices_.reserve(cell_space);
-  geometry_texture_coordinates_.reserve(point_space);
-  geometry_node_ids_.reserve(point_space / 3 + 1);
+  if(clearFirst)
+  {
+    geometry_.clear();
+    geometry_normals_.clear();
+    geometry_colors_.clear();
+    geometry_indices_.clear();
+    geometry_texture_coordinates_.clear();
+    geometry_node_ids_.clear();
+  }
+  geometry_.reserve(geometry_.size() + point_space);
+  geometry_normals_.reserve(geometry_normals_.size() + point_space);
+  geometry_colors_.reserve(geometry_colors_.size() + (point_space / 3 * 2));
+  geometry_indices_.reserve(geometry_indices_.size() + cell_space);
+  geometry_texture_coordinates_.reserve(geometry_texture_coordinates_.size() + point_space);
+  geometry_node_ids_.reserve(geometry_node_ids_.size() + (point_space / 3 + 1));
 
 
   point_space = 0;
@@ -284,18 +291,22 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType)
 void PlantVisualiser::ComputeGeometry()
 {
   this->ComputeGeometryForOrganType(-1);
-	std::cout << "Sanity Check for C++ " << std::endl;
-	std::cout << "Geometry size: " << geometry_.size() << std::endl;
-	std::cout << "Geometry Indices size: " << geometry_indices_.size() << std::endl;
-	std::cout << "Geometry Normals size: " << geometry_normals_.size() << std::endl;
-	std::cout << "Geometry Colors size: " << geometry_colors_.size() << std::endl;
-	std::cout << "Geometry Texture Coordinates size: " << geometry_texture_coordinates_.size() << std::endl;
-	std::cout << "Geometry Node Ids size: " << geometry_node_ids_.size() << std::endl;
-	std::cout << "This would mean we have " << geometry_.size() / 3 << " points and " << geometry_indices_.size() / 3 << " cells." << std::endl;
+  if(verbose_)
+  {
+    std::cout << "Sanity Check for C++ " << std::endl;
+    std::cout << "Geometry size: " << geometry_.size() << std::endl;
+    std::cout << "Geometry Indices size: " << geometry_indices_.size() << std::endl;
+    std::cout << "Geometry Normals size: " << geometry_normals_.size() << std::endl;
+    std::cout << "Geometry Colors size: " << geometry_colors_.size() << std::endl;
+    std::cout << "Geometry Texture Coordinates size: " << geometry_texture_coordinates_.size() << std::endl;
+    std::cout << "Geometry Node Ids size: " << geometry_node_ids_.size() << std::endl;
+    std::cout << "This would mean we have " << geometry_.size() / 3 << " points and " << geometry_indices_.size() / 3 << " cells." << std::endl;
+  }
 }
 
 void PlantVisualiser::ResetGeometry()
 {
+  if(verbose_) std::cout << "Resetting the vis geometry" << std::endl;
   geometry_.clear();
   geometry_normals_.clear();
   geometry_colors_.clear();
@@ -304,9 +315,34 @@ void PlantVisualiser::ResetGeometry()
   geometry_node_ids_.clear();
 }
 
-void PlantVisualiser::MapPropertyToColors(std::string property, std::vector<double> minMax)
+void PlantVisualiser::MapPropertyToColors(std::vector<double> property, std::pair<double, double> minMax)
 {
-  
+  // TODO: This is a very naive implementation. It should be improved or outsourced to Unreal.
+  geometry_colors_.clear();
+  geometry_colors_.resize(geometry_.size(), 0.0);
+  for(int i = 0; i < geometry_colors_.size(); i++)
+  {
+    double value = property[i];
+    double range = minMax.second - minMax.first;
+    double normalized = (value - minMax.first) / range;
+    // cast the double to the unsigned short
+    geometry_colors_[i] = static_cast<unsigned short>(normalized * 65535.0);
+  }
+}
+
+void PlantVisualiser::BuildAttachmentMap()
+{
+  //std::cout << "Building attachment map" << std::endl;
+  leaf_attachment_map_.clear();
+  for(auto organ : plant_->getOrgans(Organism::OrganTypes::ot_leaf, true))
+  {
+    if(organ->getParent() != nullptr)
+    {
+      const Vector3d parent_position = organ->getParent()->getNode(organ->parentNI);
+      const Vector3d organ_position = organ->getNode(0);
+      leaf_attachment_map_[organ->getId()] = std::make_pair(organ->getParent()->getId(), vectorNormalized(organ_position - parent_position));
+    }
+  }
 }
 
 void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int petiole_zone, unsigned int p_o, unsigned int c_o)
@@ -349,7 +385,8 @@ void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned 
     }
     // This, in contrast, is for the texture mapping
     currentLength += (position - lastPosition).length() / totalLenght;
-    rot *= Quaternion::geodesicRotation(rot.Forward(), dist);
+    //rot *= Quaternion::geodesicRotation(rot.Forward(), dist);
+    rot = Quaternion::FromForwardAndUp(rot.Forward(), rot.Up());
 		//std::cout << "[Leaf] Rotating " << rot.toString() << " to get " << dist.toString() << std::endl;
     // TODO: Check with mona on what the Vector3d coordinates of
     // this function are, and if we need to change them
@@ -408,6 +445,7 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
   geometry_texture_coordinates_.resize(std::max(static_cast<std::size_t>((p_o/3*2) + stem->getNumberOfNodes() * geometry_resolution_ * 2), geometry_texture_coordinates_.size()),-1.0);
   geometry_node_ids_.resize(std::max(static_cast<std::size_t>((p_o/3) + stem->getNumberOfNodes() * geometry_resolution_), geometry_node_ids_.size()),-1);
   Quaternion lastRotation = Quaternion::geodesicRotation({1,0,0},{0,0,1});
+
   for(auto i = 0; i < stem->getNumberOfNodes(); ++i)
   {
     double diameter = stem->getParameter("radius");
@@ -489,6 +527,24 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 	// get leaf random parameter
 	auto lrp = leaf->getLeafRandomParameter();
 	auto stem = leaf->getParent();
+  Vector3d origin = leaf->getOrigin();
+  Vector3d origin_neighbor;
+  if(leaf->parentNI < stem->getNumberOfNodes() - 1)
+    origin_neighbor = stem->getNode(leaf->parentNI + 1);
+  else 
+    origin_neighbor = stem->getNode(leaf->parentNI - 1);
+  Vector3d direction = (origin_neighbor - origin).normalized();
+
+
+  // calculate the first right vector based on the angle between x axis and the tip of the leaf
+  const Vector3d last_node = leaf->getNode(leaf->getNumberOfNodes() - 1);
+  const double phi = std::atan2(last_node.y, last_node.x);
+  Vector3d right = Vector3d(std::sin(phi), std::cos(phi), 0);
+  // calculate the up vector
+  Vector3d up = direction.cross(right).normalized();
+  right = up.cross(direction).normalized();
+
+  //Quaternion lastRotation = Quaternion::FromMatrix3d({direction, right, up});
 	auto min_radius = stem->getParameter("radius");
 
   // std::cout << "Invoking create leaf radial geometry_ for leaf " << leaf->getId() << std::endl;
@@ -564,6 +620,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   float random_factor_1 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
   float random_factor_2 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
+  // computing the first quaternion from: stem is forward, right is angular direction and up is the cross product
 
 
 	for(auto i = 0; i < outer_geometry_points.size(); ++i)
@@ -589,8 +646,19 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		
 	  // input points, normaly, ids, texture coordinates
     // iterate through the points
-		Quaternion local_q = select_spline.computeOrientation(t);
-		auto up = local_q.Up();
+		// const Vector3d derivative = select_spline.derivative(t);
+		// Quaternion local_q = Quaternion::FromForwardAndRight(derivative, {0,0,1});
+    // Vector3d local_right = local_q.Right();
+		// auto up = local_q.Up();
+    // find out whether right or up is more similar to {0,0,1}
+
+    // local axis
+    direction = select_spline.derivative(t);
+    right = up.cross(direction).normalized();
+		right.z = 0.05 * right.z;
+		right.normalize();
+    up = direction.cross(right).normalized();
+
     // iterate through the points
     //std::cout << "Iterating through the points of the current line intersection " << i << std::endl;
 
@@ -611,7 +679,11 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 
 			float z_offset =  0.33 * (helper.isMirrored(p) ? -1.0 : 1.0);
 			// make two different sine waves for each side
-			if(helper.isMirrored(p))
+      if(!add_vertical_leaf_offset_)
+      {
+        z_offset = 0.0;
+      }
+			else if(helper.isMirrored(p))
 			{
 			  z_offset *= std::sin((2.0*random_factor_1 + 2.0) * l / M_PI);
       }
@@ -619,13 +691,13 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       {
         z_offset *= std::sin((2.0 * random_factor_2 + 2.0) * l / M_PI + M_PI);
       }
-			const Vector3d base_direction = 1.5 * r * Vector3d(0.0, 1.0, 0.0);
+			Vector3d base_direction = leaf_width_scale_factor_ * r * right;
 			// scale with width
 			
 			//std::cout << base_direction.toString() << std::endl;
-			Vector3d updated_direction = local_q.Rotate(base_direction);
-			updated_direction = (updated_direction.length() > min_radius) ? updated_direction : min_radius * vectorNormalized(updated_direction);
-			const Vector3d point = midpoint + updated_direction; //+ up * z_offset;
+			//Vector3d updated_direction = local_q.Rotate(base_direction);
+			base_direction = (base_direction.length() > min_radius) ? base_direction : min_radius * vectorNormalized(base_direction);
+			const Vector3d point = midpoint + base_direction +  up * z_offset;
       //std::cout << "V: " << point.toString() << "; ";
       // set the point
       //std::cout << "p" << " ";
@@ -777,15 +849,42 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       last_non_petiole = i;
 			last_amount = current_amount;
 		}
-		last_orientation = local_q;
+		//last_orientation = local_q;
 		last_position = midpoint;
 	}
 	std::cout << "In the end I ended up adding " << c_o - start_c_o << " where I thought I'd add " << index_buffer << std::endl;
 }
 
-void PlantVisualiser::GenerateRadialLeafGeometryFromPhi(std::shared_ptr<Leaf> leaf, unsigned int p_o, unsigned int c_o)
+std::vector<double> PlantVisualiser::GetGeometry() const
 {
+  return geometry_;
 }
 
+std::vector<unsigned int> PlantVisualiser::GetGeometryIndices() const
+{
+  return geometry_indices_;
 }
+
+std::vector<double> PlantVisualiser::GetGeometryNormals() const
+{
+  return geometry_normals_;
+}
+
+std::vector<unsigned short> PlantVisualiser::GetGeometryColors() const
+{
+  return geometry_colors_;
+}
+
+std::vector<double> PlantVisualiser::GetGeometryTextureCoordinates() const
+{
+  return geometry_texture_coordinates_;
+}
+
+std::vector<int> PlantVisualiser::GetGeometryNodeIds() const
+{
+  return geometry_node_ids_;
+}
+
+
+} // namespace CPlantBox
 

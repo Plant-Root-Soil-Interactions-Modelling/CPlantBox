@@ -27,7 +27,7 @@ class CatmullRomSpline
 
   Vector3d derivative(double t) const {
     double t_ = (t-t0)/(t1-t0);
-    return 0.5 * ((-y0 + y2) + (2.0*y0 - 5.0*y1 + 4.0*y2 - y3) * 2 * t_ + (-y0 + 3.0*y1 - 3.0*y2 + y3) * 3.0 * t_ * t_);
+    return 0.5 * ((-y0 + y2) + (2.0*y0 - 5.0*y1 + 4.0*y2 - y3) * 2.0 * t_ + (-y0 + 3.0*y1 - 3.0*y2 + y3) * 3.0 * t_ * t_);
   }
 
   Vector3d operator[](int i) {
@@ -50,6 +50,11 @@ class CatmullRomSpline
   double t0, t1;
   // the control points of the spline
   Vector3d y0, y1, y2, y3;
+  // the stages of the apline
+  Vector3d a0, a1, a2, a3;
+  Vector3d b0, b1, b2;
+  // spline parameter
+  double alpha = 0.5;
 };
 
 /**
