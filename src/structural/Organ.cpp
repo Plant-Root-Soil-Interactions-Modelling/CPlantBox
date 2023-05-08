@@ -850,11 +850,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 	double growthDelay; //store necessary variables to define lateral growth delay
 	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
 
-#ifdef _MSC_VER
-	assert(delayDefinition >= 0); // msvc does not support std::isfinite for types that are not float or double
-#else
-	assert(std::isfinite(delayDefinition) && (delayDefinition >= 0));
-#endif
+	assert(delayDefinition >= 0);
 	
 	switch(delayDefinition){
 		case Organism::dd_distance:
