@@ -330,9 +330,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 		lookfor = std::vector<std::string>{"probability","percentage"};//probability (or percentage for backward compatibility)
 		defaultVald = successorNo.at(ruleId)/successorST.at(ruleId).size();//default = number of laterals / option for laterals
 		defaultSize = (successorST.at(ruleId).size() - successorP.at(ruleId).size());
-#ifndef _MSC_VER // MSVC will instead throw a division by zero error
-		if(!std::isfinite(defaultVal))
-#endif
+		if(!std::isfinite(defaultVald))
 		{
 			for(int k = 0;k < successorST.at(ruleId).size(); k++){
 				std::cout<<successorST.at(ruleId).at(k)<<" ";}
