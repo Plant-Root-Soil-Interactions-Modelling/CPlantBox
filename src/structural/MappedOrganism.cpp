@@ -193,7 +193,7 @@ void MappedSegments::addSegment(Vector2i ns, double r,  int st, int ot, int ii) 
 	int im = soil_index(mid.x,mid.y,mid.z); // cell indices
 	int in1 = soil_index(n1.x,n1.y,n1.z);
 	int in2 = soil_index(n2.x,n2.y,n2.z);
-	if ((im!=in1) or (im!=in2)) { // cut
+	if ((im!=in1) || (im!=in2)) { // cut
 		// build SDF
 		auto width = maxBound.minus(minBound); // construct sdf
 		Vector3d dx(width.x/resolution.x, width.y/resolution.y, width.z/resolution.z);
@@ -213,7 +213,7 @@ void MappedSegments::addSegment(Vector2i ns, double r,  int st, int ot, int ii) 
 		im = sdf.getDist(mid)>0; // redo indices, since accuracy of pickking may differ
 		in1 = sdf.getDist(n1)>0;
 		in2 = sdf.getDist(n2)>0;
-		if ((im!=in1) or (im!=in2)) {
+		if ((im!=in1) || (im!=in2)) {
 			Vector3d cPoint;
 			if (im==in1) { // is one node at mid (sort accordingly)
 				// std::cout << "n1 " << sdf.getDist(n1) << " mid " << sdf.getDist(mid) << " n2 " << sdf.getDist(n2) << ",indices "<< in1 << ", " << im << ", " << in2 << "\n";
@@ -329,7 +329,7 @@ int MappedSegments::soil_index_(double x, double y, double z) {
 	auto p0 = p.minus(minBound);
 	std::array<double,3> i = { p0.x/w.x*r[0], p0.y/w.y*r[1], p0.z/w.z*r[2] };
 	for (int k=0; k<3; k++) {
-		if ((i[k] < 0) or (i[k] >= r[k])) {
+		if ((i[k] < 0) || (i[k] >= r[k])) {
 			return -1; // point is out of domain
 		}
 	}

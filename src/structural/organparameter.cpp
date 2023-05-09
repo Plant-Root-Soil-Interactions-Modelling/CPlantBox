@@ -7,6 +7,7 @@
 #include <limits>
 #include <iostream>
 #include <exception>
+#include <numeric>
 
 namespace CPlantBox {
 
@@ -329,8 +330,7 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 		lookfor = std::vector<std::string>{"probability","percentage"};//probability (or percentage for backward compatibility)
 		defaultVald = successorNo.at(ruleId)/successorST.at(ruleId).size();//default = number of laterals / option for laterals
 		defaultSize = (successorST.at(ruleId).size() - successorP.at(ruleId).size());
-
-		if(!std::isfinite(defaultVal))
+		if(!std::isfinite(defaultVald))
 		{
 			for(int k = 0;k < successorST.at(ruleId).size(); k++){
 				std::cout<<successorST.at(ruleId).at(k)<<" ";}

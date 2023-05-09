@@ -78,6 +78,7 @@ public:
     virtual Vector3d getNode(int i) const { return nodes.at(i); } ///< i-th node of the organ, absolute coordinates per defaul
     int getNodeId(int i) const { return nodeIds.at(i); } ///< global node index of the i-th node, i is called the local node index
 	std::vector<int> getNodeIds() const { return nodeIds; } ///< global node index of the i-th node, i is called the local node index
+    const std::vector<Vector3d>& getNodes() const { return nodes; } ///< all nodes of the organ, absolute coordinates per default
     double getNodeCT(int i) const { return nodeCTs.at(i); } ///< creation time of the i-th node
     void addNode(Vector3d n, double t, size_t index, bool shift); //< adds a node to the root
     virtual void addNode(Vector3d n, int id, double t, size_t index, bool shift); //< adds a node to the root
