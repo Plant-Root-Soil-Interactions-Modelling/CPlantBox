@@ -274,7 +274,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<int, std::shared_ptr<const OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
             .def("copy",&Organ::copy)
             .def("organType",&Organ::organType)
-            .def("simulate",&Organ::simulate,py::arg("dt"), py::arg("verbose") = bool(false) ) // default
+            .def("simulate",&Organ::simulate, py::arg("dt"), py::arg("verbose") = bool(false) ) // default
 			.def("getNumberOfLaterals", &Organ::getNumberOfLaterals)
 			.def("setParent",&Organ::setParent)
             .def("getParent",&Organ::getParent)
@@ -483,7 +483,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("addSegments",(void (SegmentAnalyser::*)(const SegmentAnalyser&)) &SegmentAnalyser::addSegments) //overloads
            .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
            .def("addAge", &SegmentAnalyser::addAge)
-           .def("addConductivities", &SegmentAnalyser::addConductivities)
+           .def("addConductivities", &SegmentAnalyser::addConductivities, py::arg("rs"), py::arg("simTime"), py::arg("kr_max") = 1.e6, py::arg("kx_max") = 1.e6)
            .def("addFluxes", &SegmentAnalyser::addFluxes)
            .def("addCellIds", &SegmentAnalyser::addCellIds)
            .def("crop", &SegmentAnalyser::crop)
