@@ -403,7 +403,12 @@ namespace aabb
         unsigned int node = allocateNode();
 
         // AABB size in each dimension.
+        // GCC supports variable length arrays, but MSVC does not.
+#ifdef _MSC_VER
+        std::vector<double> size(dimension);
+#else
         double size[dimension];
+#endif
 
         // Compute the AABB limits.
         for (unsigned int i=0;i<dimension;i++)
@@ -549,7 +554,13 @@ namespace aabb
         assert(nodes[node].isLeaf());
 
         // AABB size in each dimension.
+        
+        // GCC supports variable length arrays, but MSVC does not.
+#ifdef _MSC_VER
+        std::vector<double> size(dimension);
+#else
         double size[dimension];
+#endif
 
         // Compute the AABB limits.
         for (unsigned int i=0;i<dimension;i++)

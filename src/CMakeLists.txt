@@ -4,14 +4,15 @@
 
 include_directories(structural)
 include_directories(functional)
+include_directories(visualisation)
 
 include_directories(external/tinyxml2)
 find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 link_libraries (Eigen3::Eigen)
 
 include_directories(external/) # for PiafMunch
-include_directories(${PROJECT_BINARY_DIR}/src/external/suitsparse/include/) # for PiafMunch
-include_directories(${PROJECT_BINARY_DIR}/src/external/sundials/include/) # for PiafMunch
+include_directories(${PROJECT_SOURCE_DIR}/src/external/suitsparse/include/) # for PiafMunch
+include_directories(${PROJECT_SOURCE_DIR}/src/external/sundials/include/) # for PiafMunch
 
 
 add_library(CPlantBox SHARED
@@ -38,6 +39,11 @@ add_library(CPlantBox SHARED
             functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp
 			functional/Perirhizal.cpp
+
+			visualisation/Quaternion.h
+			visualisation/CatmullRomSpline.h
+			visualisation/PlantVisualiser.h
+			visualisation/PlantVisualiser.cpp
             
 			external/tinyxml2/tinyxml2.cpp		
 			external/aabbcc/AABB.cc

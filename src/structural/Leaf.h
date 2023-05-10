@@ -63,6 +63,7 @@ public:
     bool hasMoved() const override { return true; }; ///< always need to update the coordinates of the nodes for the MappedPlant
 	double orgVolume(double length_ = -1.,  bool realized = false) const override;
 	double orgVolume2Length(double volume_) override;	
+	bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
 
 protected:
 
@@ -71,7 +72,7 @@ protected:
     void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);
 
-    bool nodeLeafVis(double l); ///<  leaf base (false), branched leaf (false), or leaf surface area (true)
+  
 	std::vector<double> getLeafVisX_(double l);
 	bool ageDependentTropism = false;///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abs
     

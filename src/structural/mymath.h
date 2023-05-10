@@ -89,6 +89,7 @@ public:
 	};
 
 	void normalize() { double l=length(); x/=l; y/=l; z/=l; } ///< normalizes the vector
+	Vector3d normalized() const { const double l=length(); return Vector3d(x/l,y/l,z/l); } ///< returns a normalized copy of the vector
 
 	double times(const Vector3d& v) const { return v.x*x+v.y*y+v.z*z; } ///< inner product
 	double length() const { return sqrt(x*x+y*y+z*z); } ///< returns the Euclidian length
