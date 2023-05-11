@@ -28,7 +28,7 @@ public:
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
     		bool approx = false, const std::vector<double> soil_k = std::vector<double>()); // [cm3/day]
     std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-    		bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>()); // for each segment in [cm3/day]
+    		bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>()) const; // for each segment in [cm3/day]
     std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
 
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
@@ -56,7 +56,7 @@ public:
 		throw std::runtime_error("kx_f not implemented"); return 1.; };
 
 	virtual size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ; ///< fill the vectors aI, aJ, aV, aB
-	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_) ; ///< get the outer water potential [cm]
+	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const; ///< get the outer water potential [cm]
     std::vector<double> getEffKr(double simtime);
     std::vector<double> getKr(double simtime);
     std::vector<double> getKx(double simtime);
@@ -77,28 +77,28 @@ protected:
 	//type correspond to subtype or to the leaf segment number
     double kr_const(int si,double age, int type, int organType) //k constant
 	{
-		return kr.at(0).at(0); 
+		return kr.at(0).at(0);
 	}
 
 	double kr_perOrgType(int si,double age, int type, int organType)
 	{
-		return kr.at(organType - 2).at(0); 
+		return kr.at(organType - 2).at(0);
 	} //per organ type (goes from 2 (root) to 4 (leaf))
     double kr_perType(int si,double age, int type, int organType)
 	{
-		return kr.at(organType - 2).at(type); 
+		return kr.at(organType - 2).at(type);
 	}//per subtype and organ type (goes from 2 (root) to 4 (leaf))
     double kr_table(int si,double age, int type, int organType)
 	{
 		double kr_ = Function::interp1(age, kr_t.at(0), kr.at(0));
-		return kr_; 
+		return kr_;
 	} //constant for all type/subtype and age dependant
 
 
 	double kr_tablePerOrgType(int si,double age, int type, int organType)
 	{
 		double kr_ = Function::interp1(age, krs_t.at(organType-2).at(0), krs.at(organType-2).at(0));
-		return kr_; 
+		return kr_;
 	}//constant for all subtype but type and age dependant
 
 		double kr_tablePerType(int si,double age, int type, int organType) {
@@ -107,7 +107,7 @@ protected:
 	} //subtype, type and age dependant
 	double kr_valuePerSegment(int si, double age, int type, int organType)
 	{
-		return kr.at(0).at(si); 
+		return kr.at(0).at(si);
 	}
 	double kr_RootExchangeZonePerType(int si,double age, int type, int organType)//when use carbon- and water-limited growth, canNOT use "kr_tablePerType" instead of this function
 	{
@@ -125,7 +125,7 @@ protected:
     double kx_tablePerOrgType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(0), kxs.at(organType-2).at(0)); } //constant for all subtype but type and age dependant
     double kx_tablePerType(int si,double age, int type, int organType) { return Function::interp1(age, kxs_t.at(organType-2).at(type), kxs.at(organType-2).at(type)); } //subtype, type and age dependant
     double kx_valuePerSegment(int si, double age, int type, int organType) { return kx.at(0).at(si); };
-	
+
 
 };
 

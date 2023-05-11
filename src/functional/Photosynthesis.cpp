@@ -111,7 +111,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 		this->stop = canStop();
 
 		loop++ ;
-		
+
 		if(!this->stop){
 			outputFlux_old = outputFlux;
 			ci_old = this->ci; pg_old = this->pg;
@@ -131,8 +131,8 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	}
 
 
-	 
-																					 
+
+
 	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, std::vector<double>());//approx = false
 	loop++ ;
 
@@ -170,7 +170,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
  */
 void Photosynthesis::linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, const std::vector<double> soil_k_)
 {
-	
+
 	int Ns = rs->segments.size(); // number of segments
     int N = rs->nodes.size(); // number of nodes
 	tripletList.clear();
@@ -210,7 +210,7 @@ void Photosynthesis::linearSystemSolve(double simTime_, const std::vector<double
  * @param cij			value of variable c at row i col j [cm2/d]
  * @return k			next index for the row- and column-index vectors
  */
-size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
+size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s)
 {
 	typedef Eigen::Triplet<double> Tri;
 	aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
@@ -241,15 +241,15 @@ size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii
  * @param si 			segment index
  * @param sx        [cm] soil matric potential for each cell
  */
- 
-double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_) 
+
+double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_) const
 {
 	int organType = plant->organTypes.at(si);
     double psi_s;
 	if (cells) { // soil matric potential given per cell
-		int cellIndex = plant->seg2cell[si];
+		int cellIndex = plant->seg2cell.at(si);
 		if (cellIndex>=0) {
-			if(organType ==Organism::ot_leaf){ 
+			if(organType ==Organism::ot_leaf){
 				std::cout<<"Photosynthesis::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
 				std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
 				throw std::runtime_error("Photosynthesis::linearSystem: Leaf segment is belowground.");
@@ -259,18 +259,18 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 			} else {
 				psi_s = sx_.at(0);
 			}
-		} else 
+		} else
 		{
 			switch(organType) {
-				case Organism::ot_root: 
+				case Organism::ot_root:
 						std::cout<<"Photosynthesis::linearSystem: Root segment n#"<<si<<" aboveground. OrganType: ";
 						std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
 						throw std::runtime_error("Photosynthesis::linearSystem: root segment is aboveground.");
 					break;
-				case  Organism::ot_stem: 
+				case  Organism::ot_stem:
 					psi_s = psi_air;
 					break;
-				case Organism::ot_leaf: 
+				case Organism::ot_leaf:
 					psi_s = pg.at(plant->getSegment2leafId(si));
 					break;
 				default:
@@ -299,7 +299,7 @@ bool Photosynthesis::canStop()
     }
     return canStop;
 }
-    
+
 /*
 		Computes error % for each segment for each of the variables of interestes.
 		@param sim_time_ [day]           simulation time, needed when doLog = true
@@ -383,7 +383,7 @@ void Photosynthesis::getError(double simTime)
 			myfile1 <<i<<" abs: "<<maxErrAbs[1] <<" "<<maxErrAbs[1] <<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4] <<" "<<maxErrAbs[5] <<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
 			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
-            
+
 			myfile1 <<i<<" "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
 			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
@@ -485,7 +485,7 @@ void Photosynthesis::initVcVjRd(){
 		Jw.resize(seg_leaves_idx.size(), 0.);
 		Ev.resize(seg_leaves_idx.size(), 0.);
         Vcrefmax = std::vector<double>(seg_leaves_idx.size(), 0.);
-        Jrefmax = std::vector<double>(seg_leaves_idx.size(), 0.); 
+        Jrefmax = std::vector<double>(seg_leaves_idx.size(), 0.);
 		//outputFluxL.resize(seg_leaves_idx.size(), 0.);
 	}
 	double Chl_;
@@ -599,9 +599,9 @@ void Photosynthesis::loopCalcs(double simTime){
 		if(std::abs(fv.at(i)) > 1e-16)//i.e., perimeter * kr > 1e-16 like for @see Xylem::solveLinear
 		{
             double p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
-            
+
 			fw.at(i) = fwr + (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa)));
-            
+
 			ci.at(i) = std::max((cs*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)),deltagco2.at(i)+cs/100) ;
 			if((verbose_photosynthesis ==2)){std::cout<<"in compute gco2 "<<sideArea<<" "<<(sideArea > 1e-16)<<std::endl;}
 			//sideArea = 2. * M_PI * a ;//
@@ -612,7 +612,7 @@ void Photosynthesis::loopCalcs(double simTime){
 
 			//An mol m-2 s-1
 			An.at(i) = std::min(Vc.at(i), Vj.at(i)) - Rd;//Eq 6
-			
+
 			// mol CO2 m-2 s-1
 			gco2.at(i) = g0 + fw.at(i) * a1 *( An.at(i) + Rd)/(ci.at(i) - deltagco2.at(i));//tuzet2003
 			// mol H2O m-2 s-1 MPa-1
@@ -624,12 +624,12 @@ void Photosynthesis::loopCalcs(double simTime){
             }else
             {
                 gtotOx.at(i) = 0.;
-            }																							  
+            }
 			Jw.at(i) = gtotOx.at(i) *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
 			Ev.at(i) = Jw.at(i)* sideArea; //in cm3 d-1
             PVD.at(i) =  ea_leaf - ea ;
             EAL.at(i) =  ea_leaf;
-            hrelL.at(i) =  HRleaf;						 
+            hrelL.at(i) =  HRleaf;
             //double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
 
 			//ci and pg

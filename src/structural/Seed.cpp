@@ -18,7 +18,7 @@ Seed::Seed(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
  * todo docme
  */
 Seed::Seed(std::shared_ptr<Organism> plant)
-		:Organ(plant, nullptr, Organism::ot_seed, 0, 0., 0)																   
+		:Organ(plant, nullptr, Organism::ot_seed, 0, 0., 0)
 {
 	addNode(param()->seedPos, 0.); // realize() is called in Organ constructor
 }
@@ -62,7 +62,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create roots
 	 */
-	const double maxT = 365.; // maximal simulation time
+	const double maxT = 90.; // maximal simulation time
 	auto sp = this->param(); // rename
 
 	// Taproot

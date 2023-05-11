@@ -561,21 +561,24 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
     @param s             soil, of type RichardsSP, or RichardsNCSP
-    @param rp            root parameter segment data (will be added)
+    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is creaeted)
     @param periodic      if yes the root system will be mapped into the domain
     @param min_b         minimum of domain boundaries
     @param max_b         maximum of domain boundaries
     @param cell_number   domain resolution
     @param filename      file name (without extension)
     """
-    ana = pb.SegmentAnalyser(rs)
-    ana.addData(pname, rp)
+    if isinstance(rs, pb.SegmentAnalyser):
+        ana = rs
+    else:
+        ana = pb.SegmentAnalyser(rs)
+        ana.addData(pname, rp)
     if periodic:
         w = np.array(max_b) - np.array(min_b)
         ana.mapPeriodic(w[0], w[1])
-    pd = segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", pname])
+    pd = segs_to_polydata(ana, 1., [pname, "radius"])
 
-    pname_mesh = pname
+    pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
     soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
     soil_water_content = vtk_data(np.array(s.getWaterContent()))
     soil_water_content.SetName("water content")

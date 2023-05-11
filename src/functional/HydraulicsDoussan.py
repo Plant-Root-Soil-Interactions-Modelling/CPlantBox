@@ -35,6 +35,13 @@ class HydraulicsDoussan(XylemFluxPython):
             vv_.append(1.)
         return sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (sn, nn))
 
+    def collar_index(self):
+        """ returns the segment index of the collar segment """
+        segs = self.rs.segments
+        for i, s in enumerate(segs):
+            if s.x == 0:
+                return i
+
     def doussan_system_matrix(self, sim_time):
         """ """
         IM = self.get_incidence_matrix()
@@ -44,7 +51,8 @@ class HydraulicsDoussan(XylemFluxPython):
         kr = np.array(self.getEffKr(sim_time))
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
-        return (L[1:, 1:]).tocsc() + Kr, Kr, kx_[0]  # L_{N-1} + Kr, se Hess paper
+        L_ = L[1:, 1:].tocsc()
+        return  L_ + Kr, Kr, kx_[self.collar_index()]  # L_{N-1} + Kr, se Hess paper
 
     def get_soil_matrix(self):
         """ maps nodes to soil matrix indices using the matrix B = (soil_matrix_indices) x (number_of_nodes-1) 

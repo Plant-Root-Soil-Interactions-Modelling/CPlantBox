@@ -26,27 +26,27 @@ class Photosynthesis: public XylemFlux
 public:
     Photosynthesis(std::shared_ptr<CPlantBox::MappedPlant> plant_, double psiXylInit = -500., double ciInit = 350e-6);
 	virtual ~Photosynthesis() {}
-	
+
     std::shared_ptr<CPlantBox::MappedPlant> plant;
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
-	void solve_photosynthesis(double ea_,double es_, double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) , 
+	void solve_photosynthesis(double ea_,double es_, double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) ,
 				bool cells_ = true, std::vector<double> soil_k_ = std::vector<double>(),
-				bool doLog_ = false, int verbose_ = 0, 
+				bool doLog_ = false, int verbose_ = 0,
 				double TairC_=25, std::string outputDir_=""); ///< main function, makes looping until convergence
-	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, 
+	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_,
 				const std::vector<double> soil_k_);///< main function, solves the flux equations
-	
-	void loopCalcs(double simTime); ///<solves photosynthesis/stomatal opening equations 
+
+	void loopCalcs(double simTime); ///<solves photosynthesis/stomatal opening equations
 	void getAg4Phloem(); ///< Converts An [mol CO2 m-2 s-1] to Ag4Phloem [mmol Suc d-1]
 	void getError(double simTime);///< Computes error % for each segment for each of the variables of interestes.
-	
+
 	void doAddGravity(); ///< add gravitational wat. pot to total wat. pot. (used in phloem module)
 	//void r_forPhloem(double lightTimeRatio, int ot);
-	
+
 	//		intermediary results and outputs
-    std::vector<double>  tauv, fv,  lengths, deltagco2, dv; 
+    std::vector<double>  tauv, fv,  lengths, deltagco2, dv;
 	double Ko, Kc, delta, J, Rd;
-	double es,ea;// 
+	double es,ea;//
 	std::vector<double> psiXyl; //saves the wat. pot. values of xylem for photosynthesis and phloem modules
 	std::vector<double> Ag4Phloem;//gross assimilation rate per segment for phloem module [mmol Suc d-1]
 	std::vector<double> An; //gross assimilation rate assimilation per unit of surface [mol CO2 m-2 s-1]
@@ -67,15 +67,15 @@ public:
 	bool doLog = false; int verbose_photosynthesis = 0;
 	std::vector<double> gtotOx;
     std::vector<double> Vcrefmax;std::vector<double> Jrefmax;
-    float gm = 0.01; //mesophyll resistance 
+    float gm = 0.01; //mesophyll resistance
 	//		to evaluate convergence, @see Photosynthesis::getError
 	int maxLoop = 5000; int minLoop = 1;std::string outputDir="";
-    int loop;									   
-    std::vector<double> maxErrAbs= std::vector<double>(9, 0.);	
-	std::vector<double> maxErr= std::vector<double>(9, 0.);	
+    int loop;
+    std::vector<double> maxErrAbs= std::vector<double>(9, 0.);
+	std::vector<double> maxErr= std::vector<double>(9, 0.);
     //psi_x, An, gco2, ci, pg, outputFlux, 0, sum(F), sum(An)
-    std::vector<double> maxErrAbsLim = { 1.,1e-6 , 0.002, 1e-6, 1,1,1,1,1e-6 };	
-	std::vector<double> maxErrLim  =  std::vector<double>(9, 1e-4);  	
+    std::vector<double> maxErrAbsLim = { 1.,1e-6 , 0.002, 1e-6, 1,1,1,1,1e-6 };
+	std::vector<double> maxErrLim  =  std::vector<double>(9, 1e-4);
     bool canStop();
 	std::vector<double> outputFlux_old;
 	std::vector<double> psiXyl_old;
@@ -83,30 +83,30 @@ public:
 	std::vector<double> gco2_old ;
 	std::vector<double> ci_old ;
 	std::vector<double> pg_old ;
-	
-	
+
+
 	//			initial guesses
 	double psiXylInit; //initial guess for xylem total wat. pot. [cm]
 	double ciInit; //initial guess for leaf internal [CO2] [mol mol-1]
-	
+
 	//			default value of env variable, to re-set at runtime
 	double Patm = 1013.15;//default [hPa]
 	double cs = 350e-6; //example from Dewar2002 [mol mol-1]
 	double TleafK; //[K]
 	double TairC = 20; //[°C]
-	double Qlight = 900e-6;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
-	std::vector<double>  Chl = std::vector<double>(1,55.); 
+	double Qlight = 900e-6;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]
+	std::vector<double>  Chl = std::vector<double>(1,55.);
 	double oi = 210e-3;//leaf internal [O2] [mol mol-1]
 	double g_bl = 2.8;//leaf boundary molar conductance [mol CO2 m-2 s-1]
 	double g_canopy = 6.1;//aerodynamic molar conductance [mol CO2 m-2 s-1]
 	double g_air = 11.4;//aerodynamic molar conductance [mol CO2 m-2 s-1]
-	
+
 	//			parameter to re-parametrise , put in phloem files
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
 	double sh = 3.765e-4;//sensibility to water stress
 	double p_lcrit = -15000/2;//min psiXil for stomatal opening [Mpa]
-	//influence of N contant, to reparametrise!, 
+	//influence of N contant, to reparametrise!,
 	double VcmaxrefChl1 = 1.28/2;//otherwise value too high, original: 1.31
 	double VcmaxrefChl2 = 8.33/2; //otherwise value too high, original: 8,52
 	//for Vc, Vj, Ag, to reparametrise!
@@ -116,14 +116,14 @@ public:
 	double theta = 0.9;//or 0.67 coefa = theta;
 	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
-	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) override;
+	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const override;
 	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
-	
+
 	//Compute variables which do not vary during one "solve_photosynthesis " computation
 	void initCalcs(double sim_time_);
 	void initStruct(double sim_time_);
 	void initVcVjRd();
-	
+
 	//			physicall constant (no need to parametrise)
 	double a2_stomata = 1.6; //gco2 * a2 = gh2o
 	double a2_bl = 1.37;//gco2 * a2 = gh2o
@@ -141,7 +141,7 @@ public:
 	double R_ph = 83.143;//perfect gas constant, hPa cm3K−1mmol−1
 	double rho_h2o = 1000;//water density mg cm-3
 	double M_Chla = 893.51;//chlorophyle a molar mass (g / mol)
-	
+
 	//			other parameters and runtime variables
 	std::vector<std::shared_ptr<Organ>> orgsVec;
 	std::vector<int> seg_leaves_idx;
@@ -150,7 +150,7 @@ protected:
 	//for Photosynthesis::linearSystemSolve
 	std::vector<Eigen::Triplet<double>> tripletList;
 	Eigen::VectorXd b;
-	
+
 
 };
 
