@@ -250,9 +250,13 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 		int cellIndex = plant->seg2cell[si];
 		if (cellIndex>=0) {
 			if(organType ==Organism::ot_leaf){ 
-				std::cout<<"Photosynthesis::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
-				std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-				throw std::runtime_error("Photosynthesis::linearSystem: Leaf segment is belowground.");
+				if(verbose_photosynthesis>0)
+				{
+					std::cout<<"Photosynthesis::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
+					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
+				}
+				psi_s = 0;
+				//throw std::runtime_error("Photosynthesis::linearSystem: Leaf segment is belowground.");
 			}
 			if(sx_.size()>1) {
 				psi_s = sx_.at(cellIndex);
@@ -263,9 +267,13 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 		{
 			switch(organType) {
 				case Organism::ot_root: 
+						if(verbose_photosynthesis>0)
+					{
 						std::cout<<"Photosynthesis::linearSystem: Root segment n#"<<si<<" aboveground. OrganType: ";
 						std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-						throw std::runtime_error("Photosynthesis::linearSystem: root segment is aboveground.");
+					}
+					psi_s = 0;
+						//throw std::runtime_error("Photosynthesis::linearSystem: root segment is aboveground.");
 					break;
 				case  Organism::ot_stem: 
 					psi_s = psi_air;
@@ -755,6 +763,24 @@ void Photosynthesis::loopCalcs(double simTime){
 }
 
 
-	/* Computes water-limited growth*/
+
+double Photosynthesis::kr_f(int si, double age, int subType, int organType)
+{
+	//try{
+		//std::cout<<"Photosynthesis::kr_f "<<si<<" "<<subType<<" "<< organType<<" "<<plant->seg2cell.size()<<std::endl;
+		int cellIndex = plant->seg2cell.at(si);
+		if (((cellIndex>=0)&&(organType ==Organism::ot_leaf))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
+		{ 
+				return 0.;
+		}else
+		{ 
+			//std::cout<<"to XylemFlux::kr_f"<<std::endl;
+			return XylemFlux::kr_f(si, age, subType, organType);
+		}
+	//} catch(...) { 
+	//	return XylemFlux::kr_f(si, age, subType, organType);
+	//}
+	
+}
 
 }//end namespace
