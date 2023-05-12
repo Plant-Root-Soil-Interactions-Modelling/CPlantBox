@@ -110,9 +110,9 @@ def initPlant(simDuration, condition):
     pl = pb.MappedPlant(seednum=2)  # pb.MappedRootSystem() #pb.MappedPlant()
     # pl2 = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
     path = CPBdir + "/modelparameter/structural/plant/"
-    name = "Triticum_aestivum_adapted_2023"  # "Triticum_aestivum_adapted_2021"#
+    name = "P0_plant_new"  # "Triticum_aestivum_adapted_2021"#
 
-    pl.readParameters(path + name + ".xml")
+    pl.readParameters( name + ".xml")
 
     # raise Exception
     sdf = pb.SDF_PlantBox(np.Inf, np.Inf, depth)
@@ -342,3 +342,7 @@ resultsAnC3.to_csv("resultsAnC3.csv", index=False)
 resultsAnC4.to_csv("resultsAnC4.csv", index=False)
 variables.to_csv("variables.csv", index=False)
 
+isInSoil = np.array([rC4.plant.seg2cell[si] >= 0 for si in range(len(rC4.plant.segments))])
+ana = pb.SegmentAnalyser(rC4.plant.mappedSegments())
+ana.addData("isInSoil", isInSoil)
+ana.write("testphoto3.vtp", ["organType", "subType", "isInSoil"]) 
