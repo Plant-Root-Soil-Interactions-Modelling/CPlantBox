@@ -2,7 +2,7 @@
 #directoryN = "/7to14dry/"
 
 import sys; 
-CPBdir = "../../../../cpb3101/CPlantBox"
+CPBdir = "../.."
 sys.path.append(CPBdir+"/src");
 sys.path.append(CPBdir);
 sys.path.append("../../..");sys.path.append(".."); 
@@ -16,7 +16,7 @@ sys.path.append("../modules/") # python wrappers
 
 #from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 #from richards import RichardsWrapper  # Python part
-from phloem_flux import PhloemFluxPython  # Python hybrid solver
+from functional.phloem_flux import PhloemFluxPython  # Python hybrid solver
 #from Leuning_speedup import Leuning #about 0.7 for both
 #from photosynthesis_cython import Leuning
 import plantbox as pb
@@ -317,8 +317,9 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration):
     # plant system 
     pl = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
     #pl2 = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
-    path = CPBdir+"/modelparameter/plant/"
+    path = CPBdir+"/modelparameter/structural/plant/"
     name = "Triticum_aestivum_adapted_2023"#"Triticum_aestivum_adapted_2021"#
+    print("check file", path + name + ".xml")
 
     pl.readParameters(path + name + ".xml")
     #pl2.readParameters(path + name + ".xml")
