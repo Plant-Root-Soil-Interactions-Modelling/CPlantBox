@@ -529,7 +529,7 @@ void Photosynthesis::initVcVjRd(){
 		}
 
 
-		deltagco2.at(i) = (delta.at(i) + Kc.at(i)*Rd.at(i)*(1. + oi/Ko.at(i))/Vcmax.at(i))/(1-Rd.at(i)/Vcmax.at(i));
+		deltagco2.at(i) = std::max(0.,(delta.at(i) + Kc.at(i)*Rd.at(i)*(1. + oi/Ko.at(i))/Vcmax.at(i))/(1-Rd.at(i)/Vcmax.at(i)));
 	}
 }
 
