@@ -20,6 +20,11 @@ You can click the link to follow the guide there, just to click some buttons and
 CPlantBox is currently not available on windows. 
 Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 ### linux
+Clone the repository by running:
+```bash
+git clone --depth 1 -b stable_v2.1 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+```
+
  Run CMake which configures the CPlantBox libraries by 
 ```bash
 cmake . && make
