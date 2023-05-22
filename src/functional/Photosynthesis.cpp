@@ -297,12 +297,21 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 
 bool Photosynthesis::canStop()
 {
-    bool canStop = true;
-    for(int tt = 0; tt<maxErr.size();tt++)
+    bool canStop = false;
+    if(loop > maxLoop)
     {
-        if((maxErr.at(tt)>maxErrLim.at(tt))&&(maxErrAbs.at(tt)>maxErrAbsLim.at(tt)))
+        canStop = true;
+    }else{
+        if(loop > minLoop)
         {
-            canStop = false;
+            canStop = true;
+            for(int tt = 0; tt<maxErr.size();tt++)
+            {
+                if((maxErr.at(tt)>maxErrLim.at(tt))&&(maxErrAbs.at(tt)>maxErrAbsLim.at(tt)))
+                {
+                    canStop = false;
+                }
+            }
         }
     }
     return canStop;
