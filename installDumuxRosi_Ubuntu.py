@@ -99,7 +99,7 @@ for mymodule in modules:
             subprocess.run(["pip3", "install", mymodule]) 
       
 show_message("(1/3) Step completed. All prerequistes found.")
-raise Exception
+
 #################################################################
 #################################################################
 ## (2/3) Clone modules
