@@ -41,12 +41,18 @@ for program in programs:
     except FileNotFoundError:
         error.append(program)
 
-   
-programs = ['default-jre', 'libboost-all-dev', 'python3-pip','libeigen3-dev'] 
 
+#is the script running on (agro)cluster?
+#tried to make evaluation automatic but not sure it holds on all machines
+isCluster = ('ENV' in os.environ.keys())
+        
+programs = ['default-jre', 'python3-pip','libeigen3-dev'] 
+if not isCluster:
+    programs.append('libboost-all-dev')
+    
 for program in programs:
     output = subprocess.run(["dpkg", "-l", program], capture_output=True)
-    if ('no packages found' in str(output)):
+    if ('no packages found' in str(output)):        
         error.append(program)
         
 if len(error) > 0:
