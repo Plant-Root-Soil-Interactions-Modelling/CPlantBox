@@ -70,13 +70,14 @@ public:
 	double ageSwitch;			  
 	int alphaN = 20;//stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
 	int betaN = 5;//stop protecting in case want to increase number of trials
-    
+    void setSigma(double newSigma){sigma = newSigma;}
 protected:
 
 	std::weak_ptr<Organism> plant;
 
 	double n; ///< Number of trials
 	double sigma; ///< Standard deviation
+	double getSigma(const std::shared_ptr<Organ> o, int nodeIdx);///< adapted to represent pseudostem: the sheath of leaves creating a pseudostem will not bend
 
 	std::weak_ptr<SignedDistanceFunction> geometry; ///< confining geometry todo
 	double randn(int nNode) {if((nNode > 0)&&(plant.lock()->getStochastic())){ return ND(gen);}else{return plant.lock()->randn();}; } ///< normally distributed random number (0,1)

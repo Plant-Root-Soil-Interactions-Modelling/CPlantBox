@@ -22,7 +22,7 @@ std::shared_ptr<Tropism> Tropism::copy(std::shared_ptr<Organism> plant)
 /**
  * Applies angles a and b and goes dx [cm] into the new direction and returns the new position
  *
- * @param pos          root tip position
+ * @param pos          organ tip position
  * @param old          rotation matrix, heading is old(:,1)
  * @param a            angle alpha, describes the angular rotation of the axis old
  * @param b            angle beta, describes the radial rotation of the axis old
@@ -38,10 +38,10 @@ Vector3d Tropism::getPosition(const Vector3d& pos, const Matrix3d& old, double a
 /**
  * Dices N times picking angles alpha and beta, takes the optimal direction according to the objective function
  *
- * @param pos          root tip position
+ * @param pos          organ tip position
  * @param old          rotation matrix, heading is old(:,1)
  * @param dx           distance to look ahead (e.g in case of hydrotropism)
- * @param root         points to the root that called getHeading(...), just in case something else is needed (i.e. iheading for exotropism)
+ * @param o         points to the organ that called getHeading(...), just in case something else is needed (i.e. iheading for exotropism)
  * @param nodeIdx    index of the node on which to apply the tropism
  *
  * \return             angle alpha and beta
@@ -51,6 +51,14 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
     double a = sigma*randn(nodeIdx)*sqrt(dx);
     double b = rand(nodeIdx)*2*M_PI;
     double v;
+	if(o->organType() == Organism::ot_leaf)
+	{
+		bool isPseudoStem =o->getParameter("isPseudostem");
+		bool isSheath = (o->getLength(int(nodeIdx))     - o->getParameter("lb") < -1e-10);
+		std::cout<<"Tropism::getUCHeading "<<isPseudoStem<<" "<<nodeIdx<<" "<<o->getLength(nodeIdx)
+		<<" "<<o->getParameter("lb")<<" "
+		<<(o->getLength(nodeIdx) - o->getParameter("lb"))<<" "<<isSheath<<std::endl;
+	}
 
     double n_=n*sqrt(dx);
     if (n_>0) {
@@ -76,7 +84,6 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
         a = bestA;
         b = bestB;
     }
-
     return Vector2d(a,b);
 }
 
@@ -139,7 +146,24 @@ Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx
     return Vector2d(a,b);
 }
 
-
+/**
+ * Applies angles a and b and goes dx [cm] into the new direction and returns the new position
+ *
+ * @param o         points to the organ that called getHeading(...), just in case something else is needed (i.e. iheading for exotropism)
+ * @param nodeIdx    index of the node on which to apply the tropism
+ *
+ * \return             position
+ */
+double Tropism::getSigma(const std::shared_ptr<Organ> o, int nodeIdx)
+{
+	if(o->organType() == Organism::ot_leaf)
+	{
+		bool isPseudoStem =o->getParameter("isPseudostem");
+		bool isSheath = (o->getLength(nodeIdx)     - o->getParameter("lb") < -1e-10);
+		if(isPseudoStem && isSheath){return 0.;}
+	}
+    return sigma;
+}
 
 /**
  * getHeading() minimizes this function, @see TropismFunction::tropismObjective

@@ -890,7 +890,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 }
 /**
  * Check if the organ has relative coordinates.
- * meaning: organ is not a basal/tap root and first node is at (0,0,0) but 
+ * meaning: organ is not a basal/tap root and first node is at (0,0,0)  
  */
 bool Organ::hasRelCoord() const
 {

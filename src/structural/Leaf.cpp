@@ -48,7 +48,7 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 	ageDependentTropism = getLeafRandomParameter()->f_tf->ageSwitch > 0;
 	// Calculate the rotation of the leaves. The code begins here needs to be rewritten, because another following project will work on the leaves. The code here is just temporally used to get some nice visualizations. When someone rewrites the code, please take "gimbal lock" into consideration.  
 	//Rewritten Begin: 															 
-	double beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->rotBeta
+	beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->rotBeta
 			+ M_PI*plant->rand()*getLeafRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	beta = beta + getLeafRandomParameter()->initBeta*M_PI;
 	if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==2) {
@@ -56,13 +56,18 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 	} else if (getLeafRandomParameter()->initBeta >0 && getLeafRandomParameter()->subType==2 && getLeafRandomParameter()->lnf==5 && getleafphytomerID(2)%4==3) {
 		beta = beta + getLeafRandomParameter()->initBeta*M_PI + M_PI;
 	}
+    //double theta = 0.;
+    //if(!getLeafRandomParameter()->isPseudostem){ //if plant has a pseudostem, theta is applied at the beginning of the leaf sheath
 	double theta = param()->theta;
 	if (parent->organType()!=Organism::ot_seed) { // scale if not a base leaf
 		double scale = getLeafRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
 		theta *= scale;
 	}
+    //}
 	//used when computing actual heading, @see LEaf::getIHeading
+	
 	this->partialIHeading = Vector3d::rotAB(theta,beta);
+	std::cout<<"create leaf "<<beta<<" "<<this->partialIHeading.toString()<<std::endl;
 	// Rewritten ends 
 	if (parent->organType()!=Organism::ot_seed) { // if not base organ
 	
@@ -597,7 +602,7 @@ bool Leaf::nodeLeafVis(double l)
 	if (param()->laterals) {
 		return false;
 	} else {
-		return l >= param()->lb; // true if not in basal zone
+		return (l - param()->lb >= -1e-10); // true if not in basal zone
 	}
 }
 
@@ -728,6 +733,84 @@ std::string Leaf::toString() const
 	std::stringstream newstring;
 	newstring << "; initial heading: " << getiHeading0().toString()  << ", parent node index " << parentNI << ".";
 	return  Organ::toString()+newstring.str();
+}
+
+
+
+
+/**
+ * @return Current absolute heading of the organ at node n, based on initial heading, or direction of the segment going from node n-1 to node n
+ */
+Vector3d Leaf::heading(int n ) const
+{
+	std::cout<<"Leaf::heading "<<getId()<<" "<<n<<" "<<nodes.size()<<std::endl;
+		
+		bool pseudostem = getLeafRandomParameter()->isPseudostem; //do the sheath make a pseudostem?
+		bool isBlade = (getLength(n) - param()->lb > -1e-10); //current node in blade
+		bool previousIsBlade = (getLength(n - 1) - param()->lb > -1e-10); //previous node in blade
+		bool firstBladeNode = (isBlade && (!previousIsBlade));
+		std::cout<<"		 checks "<<pseudostem<<" "<<(getLength(n)- param()->lb)<<" "<<isBlade<<" "<<previousIsBlade<<" "<<firstBladeNode<<" "<<getLength(n)
+		<<" "<<param()->lb <<std::endl;
+		
+	if(n<0){n=nodes.size()-1 ;}
+	if ((nodes.size()>1)&&(n>0)) {
+		
+		std::cout<<"		 "<<n<<std::endl;
+		n = std::min(int(nodes.size()),n);
+		Vector3d h = getNode(n).minus(getNode(n-1));
+		std::cout<<"		 continue "<<h.toString()<<std::endl;
+		h.normalize();
+		if(pseudostem && firstBladeNode)
+		{
+			Matrix3d parentHeading = Matrix3d::ons(h);
+			auto heading = parentHeading.column(0);
+			Vector3d myPartialIHeading = Vector3d::rotAB(param()->theta,beta);
+			std::cout<<"		 start blade "<<myPartialIHeading.toString()<<std::endl;
+			Vector3d new_heading = Matrix3d::ons(heading).times(myPartialIHeading);
+			std::cout<<"		 start blade "<<Matrix3d::ons(new_heading).column(0).toString()<<std::endl;
+			return Matrix3d::ons(new_heading).column(0);
+		}else{		
+			
+			return h;
+		}
+	} else {
+		if(pseudostem)
+		{
+			//this->partialIHeading =  Vector3d::rotAB(param()->theta,beta);
+			this->partialIHeading =  Vector3d::rotAB(0.,beta);
+			auto iHeading0 = getiHeading0();
+			std::cout<<"getiHeading0() FOR PETIOLE "<<iHeading0.toString()<<std::endl;
+			return iHeading0;//getiHeading0();
+		}else{
+			auto iHeading0 = getiHeading0();
+			std::cout<<"getiHeading0() FOR BLADE "<<iHeading0.toString()<<std::endl;
+			return getiHeading0();
+		}
+	}
+}
+
+
+/**
+ * Returns the increment of the next segments
+ *
+ *  @param p       coordinates of previous node
+ *  @param sdx     length of next segment [cm]
+ *  @return        the vector representing the increment
+ */
+Vector3d Leaf::getIncrement(const Vector3d& p, double sdx, int n)
+{
+
+    Vector3d h = heading(n);
+    Matrix3d ons = Matrix3d::ons(h);
+	bool isPseudoStem = getParameter("isPseudostem");
+	bool isSheath = ( getLength(n) - getParameter("lb") < -1e-10);
+	if(isPseudoStem && isSheath){getLeafRandomParameter()->f_tf->setSigma(0.);}
+    Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this(), n+1);
+	if(isPseudoStem && isSheath){getLeafRandomParameter()->f_tf->setSigma(getLeafRandomParameter()->tropismS);}
+	//for leaves: necessary?
+	//Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
+    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+    return sv.times(sdx);
 }
 
 
