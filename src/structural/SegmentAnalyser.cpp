@@ -60,9 +60,9 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
         radii[i] = segO[i].lock()->getParameter("radius");
-        subType[i] = segO[i].lock()->getParameter("type");
+        subType[i] = segO[i].lock()->getParameter("subType");
         id[i] = segO[i].lock()->getParameter("id");
-        organType[i] = Organism::ot_root; // = 2
+        organType[i] = segO[i].lock()->getParameter("organType"); 
     }
     data["radius"] = radii;
     data["subType"] = subType;
