@@ -67,11 +67,14 @@ public:
 
 protected:
 
-   
+	Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1) override; ///< called by createSegments, to determine growth direction
+    Vector3d heading(int n)  const override; ///< current (absolute) heading of the organs at node n
     int getleafphytomerID(int subtype);
     void minusPhytomerId(int subtype);
     void addleafphytomerID(int subtype);
+	double beta;
 
+  
   
 	std::vector<double> getLeafVisX_(double l);
 	bool ageDependentTropism = false;///< do we need to check the leaf's age to see when to update the tropism effect?, @see Leaf::rel2abs

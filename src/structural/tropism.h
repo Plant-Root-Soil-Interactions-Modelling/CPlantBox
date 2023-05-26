@@ -70,7 +70,7 @@ public:
 	double ageSwitch;			  
 	int alphaN = 20;//stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
 	int betaN = 5;//stop protecting in case want to increase number of trials
-    
+    void setSigma(double newSigma){sigma = newSigma;}
 protected:
 
 	std::weak_ptr<Organism> plant;
