@@ -28,13 +28,13 @@
 </organ>
 
 <organ type="stem" name="mainstem" subType="1">
-    <parameter name="lb" value="3" dev="0"/>
+    <parameter name="lb" value="5" dev="0"/>
     <!--Basal zone [cm]-->
-    <parameter name="la" value="1" dev="0"/>
+    <parameter name="la" value="5" dev="0"/>
     <!--Apical zone [cm];-->
-    <parameter name="ln" value="1" dev="0" functiontype="0"/>
+    <parameter name="ln" value="10" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
-    <parameter name="lmax" value="10" dev="0"/>
+    <parameter name="lmax" value="30" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="10" dev="0"/>
     <parameter name="a" value="0.02" dev="0"/>
@@ -70,7 +70,7 @@
     <parameter name="lmax" value="8.5" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="0.5" />
-    <parameter name="a" value="0.02"/>
+    <parameter name="a" value="0.05"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="5"/>
     <parameter name="tropismS" value="0.2"/>
