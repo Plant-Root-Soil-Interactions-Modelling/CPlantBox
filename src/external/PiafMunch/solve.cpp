@@ -102,8 +102,8 @@ void Smooth_Parameter_and_BoundaryConditions_Changes(int s, double t) ; // User-
 void vector_init(double t, double *y, double *y_dot);
 
 // ******************  mere C-fluxes related variables or parameters ********** :
-extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
+extern double *Q_ST, *Q_S_ST, *Q_Mesophyll, *Q_S_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
+extern double *Q_ST_dot, *Q_S_ST_dot, *Q_Mesophyll_dot, *Q_S_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl ;
 extern Fortran_vector JS_ST, C_amont, JS_Sympl, JS_Apo, RespMaint ;
 extern Fortran_vector vol_ST, vol_PhlApo, vol_ParApo ;
@@ -204,6 +204,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	
 	//if delete, lower neq
 	Q_out = Q_Exudationmax + Nt;//for intermediary compartment between ST and outside. useless (not implemented) delete?
+	Q_S_ST = Q_out + Nt;
+	Q_S_Mesophyll = Q_S_ST + Nt;
 	
 	for (int i=1; i<=Nt; i++)  {
 		double volSTi = vol_ST[i];
@@ -226,6 +228,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	
 	
 	Q_out_dot = Q_Exudmax_dot + Nt ;//useless, delete?
+	Q_S_ST_dot = Q_out_dot + Nt;
+	Q_S_Mesophyll_dot = Q_S_ST_dot + Nt;
 	
 	//Add later
 	/*if (Adv_BioPhysics) {

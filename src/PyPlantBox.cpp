@@ -1101,6 +1101,17 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Q_Exudmax",&PhloemFlux::Q_Exudmaxv)
             .def_readwrite("Q_Rmmax",&PhloemFlux::Q_Rmmaxv)
             .def_readwrite("Fl",&PhloemFlux::Flv)
+			
+			
+            .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)
+            .def_readwrite("kM_S_ST",&PhloemFlux::kM_S_ST)
+            .def_readwrite("kHyd_S_ST",&PhloemFlux::kHyd_S_ST)
+            .def_readwrite("k_S_ST",&PhloemFlux::k_S_ST)
+            .def_readwrite("Vmax_S_Mesophyll",&PhloemFlux::Vmax_S_Mesophyll)
+            .def_readwrite("kM_S_Mesophyll",&PhloemFlux::kM_S_Mesophyll)
+            .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
+            .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll)
+			
             //.def_readwrite("KMgr",&PhloemFlux::KMgr)
             .def_readwrite("KMfu",&PhloemFlux::KMfu)
             //.def_readwrite("k_meso",&PhloemFlux::k_meso)

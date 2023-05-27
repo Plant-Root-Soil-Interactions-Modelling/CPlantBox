@@ -10,24 +10,35 @@ pl = pb.MappedPlant()
 mpl = pb.MappedPlant()  
 CPBdir = "../.."
 path = CPBdir + "/modelparameter/structural/plant/"
-name = "pseudoStem"  
+name = "Triticum_aestivum_test_2021"  
 pl.readParameters( path+name + ".xml")
 pl.initialize(verbose=False) 
 mpl.readParameters( path+name + ".xml")
 mpl.initialize(verbose=False) 
-N = 100
+N = 50
+mpl.simulate(5, False)
 for i in range(N):
     #pl.simulate(1)
-    mpl.simulate(1, True)
-    mana = pb.SegmentAnalyser(mpl.mappedSegments())
-    mana.write("pseudoStem_m"+str(i)+".vtp", ["organType","subType"]) 
+    mpl.simulate(1, False)
+    organTypes = np.array(mpl.organTypes)
+    subTypes   = np.array(mpl.subTypes)
+    
+    #mana = pb.SegmentAnalyser(mpl.mappedSegments())
+    #mana.write("pseudoStem_m"+str(i)+".vtp", ["organType","subType"]) 
+    leafes = mpl.getOrgans(pb.leaf)
+    print(organTypes, subTypes)
+    if len(leafes) > 0:
+        vp.plot_plant(mpl,p_name = [ "organType","subType"],
+                            vals =[ organTypes,subTypes], 
+                            filename = "pseudoStem_m"+str(i),
+                            range_ = [0,5000])
 #ana = pb.SegmentAnalyser(pl.mappedSegments())
 #ana = pb.SegmentAnalyser(pl)
 
 #ana.addData("ot", x)
 #ana.write("pseudoStem_"+str(i)+".vtp", ["organType","subType"]) 
 
-pl.simulate(N, True)   
+pl.simulate(N, False)   
 ana = pb.SegmentAnalyser(pl.mappedSegments())
 ana.write("pseudoStem_"+str(i)+".vtp", ["organType","subType"]) 
 leaves = mpl.getOrgans(pb.leaf)   
