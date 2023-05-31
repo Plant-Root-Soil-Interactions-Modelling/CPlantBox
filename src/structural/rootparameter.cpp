@@ -127,7 +127,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     }
 
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
-    double a_ = std::max(a + p->randn()*as, 0.01); // radius
+    double a_ = std::max(a + p->randn()*as, 0.001); // radius
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
 

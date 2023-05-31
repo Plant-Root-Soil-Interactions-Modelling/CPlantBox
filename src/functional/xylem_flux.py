@@ -48,6 +48,51 @@ class XylemFluxPython(XylemFlux):
         self.Q = None  # store linear system
         self.b = None
 
+        self.Vmax = 45.25 * 62 * 1.e-11 * (24.*3600.)  # kg/(m2 day) -> York et. al (2016) (Lynch group)
+        self.Km = 10.67 * 62 * 1.e-6  # kg/m3
+        self.CMin = 4.4 * 62 * 1.e-6  # kg/m3
+        self.Exu = 1.e-2 #data Eva Oburger kg /(m2 day)
+
+    def solute_fluxes(self, c):
+        """ concentrations @param c [kg/m3], returns [g/day]
+        self.Vmax [kg/(m2 day)]
+        self.Km [kg/m3]
+        self.Cmin [kg/m3]
+        """
+        segs = self.rs.segments
+        a = self.rs.radii
+        l = self.rs.segLength()
+        assert(len(segs) == len(c))
+        sf = np.zeros(len(segs),)
+        c = np.maximum(c, self.CMin)  ###############################################
+        for i, s in enumerate(segs):
+            sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.CMin) * self.Vmax / (self.Km + (c[i] - self.CMin)))  # kg/day
+        sf = np.minimum(sf, 0.)
+        return sf * 1.e3  # kg/day -> g/day
+
+    def exu_fun(self, kex, age):
+        kexu_ = (kex[1][1]-kex[1][0])/(kex[0][1]-kex[0][0])*age+kex[1][0]
+        kexu = max(0,kexu_)
+        return kexu  #linear interpolation
+    
+    def exudate_fluxes(self, rs_age = int(1), kex = int(1)):
+        """ returns [g/day]
+        self.Exu [kg/(m2 day)]
+        """
+        if not isinstance(kex,int): 
+            ages = self.get_ages(rs_age)
+            
+        segs = self.rs.segments
+        a = self.rs.radii
+        l = self.rs.segLength()
+        sf = np.zeros(len(segs),)
+        for i, s in enumerate(segs):
+            if not isinstance(kex,int):
+                #print(self.exu_fun(kex, ages[i]))
+                sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * self.exu_fun(kex, ages[i])  # kg/day
+            else: 
+                sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * (self.Exu)  # kg/day
+        return sf * 1.e3  # kg/day -> g/day
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
         """
@@ -86,6 +131,47 @@ class XylemFluxPython(XylemFlux):
             hs[1:] = sxx
             self.aB = Kr * hs
 
+    def solveD2_(self, value):
+        Q, b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, value)
+        return self.dirichletB.solve(np.array(b))
+
+    def solveN2_(self, value):
+        Q, b = self.bc_neumann(self.Q, self.aB, self.neumann_ind, value)
+        return self.neumannB.solve(np.array(b))
+
+    def init_solve_static(self, sim_time:float, sxx, cells:bool, wilting_point, soil_k = []):
+        """ speeds up computation for static root system (not growing, no change in conductivities), 
+        by computing LU factorizations for Neumann and Dirichlet  
+        """
+        # print("switching to static solve (static root system, static conductivities) ")
+        print('are we here????') 
+
+        if len(soil_k) > 0:
+            self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
+        else:
+            self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
+
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        self.neumannB = LA.splu(Q)
+
+        Q, b = self.bc_dirichlet(Q, self.aB, [0], [wilting_point])
+        self.dirichletB = LA.splu(Q)
+
+        self.Q = Q
+        self.solveD_ = self.solveD2_
+        self.solveN_ = self.solveN2_
+
+    def solveD_(self, value):
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, value)
+        x = LA.spsolve(Q, b, use_umfpack = True)
+        return x
+
+    def solveN_(self, value):
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        Q, b = self.bc_neumann(Q, self.aB, self.neumann_ind, value)
+        x = LA.spsolve(Q, b, use_umfpack = True)
+        return x
     def solve_neumann(self, sim_time:float, value, sxx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
@@ -483,7 +569,7 @@ class XylemFluxPython(XylemFlux):
 
     def kr_f(self, age, st, ot = 2 , seg_ind = 0):
         """ root radial conductivity [1 day-1] for backwards compatibility """
-        return self.kr_f_cpp(seg_ind, age, st, ot)  # kr_f_cpp is XylemFlux::kr_f
+        return self.kr_f_cpp(seg_ind, age, st, ot)  # last a 0, kr_f_cpp is XylemFlux::kr_f, what about the zero at the end? 
 
     def kx_f(self, age, st, ot = 2, seg_ind = 0):
         """ root axial conductivity [cm3 day-1]  for backwards compatibility """
@@ -745,4 +831,5 @@ class XylemFluxPython(XylemFlux):
         for c in range(0, len(n0)):
             b[int(n0[c])] += f[c]
         return Q, b
+
 
