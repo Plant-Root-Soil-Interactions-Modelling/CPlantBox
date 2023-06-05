@@ -70,8 +70,11 @@ class XylemFluxPython(XylemFlux):
         sf = np.minimum(sf, 0.)
         return sf * 1.e3  # kg/day -> g/day
 
-    def exu_fun(self, kex, age):
-        kexu_ = (kex[1][1]-kex[1][0])/(kex[0][1]-kex[0][0])*age+kex[1][0]
+    def exu_fun(self, kex_, age):
+        if (age<0):
+            kexu_ = 0
+        else:
+            kexu_ = (kex_[1][1]-kex_[1][0])/(kex_[0][1]-kex_[0][0])*age+kex_[1][0]
         kexu = max(0,kexu_)
         return kexu  #linear interpolation
     
@@ -79,20 +82,23 @@ class XylemFluxPython(XylemFlux):
         """ returns [g/day]
         self.Exu [kg/(m2 day)]
         """
-        if not isinstance(kex,int): 
-            ages = self.get_ages(rs_age)
+        #if not isinstance(kex,int): 
+        #    ages = self.get_ages(rs_age)
             
         segs = self.rs.segments
+        ages =  np.asarray(rs_age - np.array([self.rs.nodeCTs[int(seg.y)] for seg in segs]), int)
+        types = np.asarray(self.rs.subTypes, int)                    
         a = self.rs.radii
         l = self.rs.segLength()
         sf = np.zeros(len(segs),)
         for i, s in enumerate(segs):
             if not isinstance(kex,int):
                 #print(self.exu_fun(kex, ages[i]))
-                sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * self.exu_fun(kex, ages[i])  # kg/day
+                sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * self.exu_fun(kex[types[i]], ages[i])  # kg/day
             else: 
                 sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * (self.Exu)  # kg/day
-        return sf * 1.e3  # kg/day -> g/day                                                                                                        
+        return sf * 1.e3  # kg/day -> g/day
+        
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
         """
