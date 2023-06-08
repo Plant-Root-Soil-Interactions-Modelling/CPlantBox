@@ -1124,9 +1124,9 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			
 			std::vector<int> nodeIds_;// = org->getNodeIds();
 			if(doTroubleshooting){std::cout<<"rmax: "<<rmax<<" "<<Lmax<<std::endl;} 
-			if((e + Linit) - Lmax> 1e-10){
-				std::cout<<"Photosynthesis::rmaxSeg: target length too high "<<e<<" "<<dt<<" "<<Linit;
-				std::cout<<" "<<Lmax<<" "<<org->getId()<<std::endl;
+			if((e + org->getLength(false)) - org->getParameter("k")> 1e-10){
+				std::cout<<"Photosynthesis::rmaxSeg: target length too high "<<e<<" "<<dt<<" "<<org->getLength(false);
+				std::cout<<" "<<org->getParameter("k")<<" "<<org->getId()<<std::endl;
 				assert(false);
 			}
 			//delta_length to delta_vol

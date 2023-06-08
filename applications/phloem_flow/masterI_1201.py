@@ -651,7 +651,8 @@ def runSim(directoryN_,doVTP, verbosebase,
         maxLeafArea = np.array([org.getParameter("k") * org.getParameter("Width_blade") for org in leaves])[leafRank == (nodeD -1)] 
         expandedLeaf = False
         if __name__ == '__main__':
-            print("leaf",nodeD,leafArea,maxLeafArea,np.array([org.getLength(True) * org.getParameter("Width_blade") for org in leaves]),np.array([org.parentLinkingNode for org in leaves]) +1)
+            print("leaf",nodeD,leafArea,maxLeafArea,np.array([org.getLength(True) * org.getParameter("Width_blade") for org in leaves]),
+                  np.array([org.parentLinkingNode for org in leaves]) +1)
         if (max(tempstst) >=  nodeD) and (max(leafRank) >= (nodeD -1 )) and (nodeD > 0):
             tempstst_ = np.array([np.argmax(tempstst == (nodeD-1)),np.argmax(tempstst == nodeD)])
             kids4distbase = kids4distbase[tempstst_]
