@@ -201,6 +201,18 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double initValMeso = 0.9;//initial concentration in mesophyll
     double leafGrowthZone = 2;//cm
 	
+	double C_targ = 0;//(mmol Suc cm-3 )
+	double Vmax_S_ST = 0;//(mmol Suc d-1 cm-3 )
+	double kM_S_ST = 0;//(mmol Suc cm-3)
+	double kHyd_S_ST = 0;//(d-1)
+	double k_S_ST = 0;//(d-1)
+	double C_targMesophyll = 0;//(mmol Suc cm-3 )
+	double Vmax_S_Mesophyll = 0;//(mmol Suc d-1 cm-3 )
+	double kM_S_Mesophyll = 0;//(mmol Suc cm-3)
+	double kHyd_S_Mesophyll = 0;//(d-1)
+	double k_S_Mesophyll = 0;//(d-1)
+    
+    
 	//		boolean choices
 	bool update_viscosity_ = true;
 	bool usePsiXyl = true;//use PsiXyl value of xylem tissue

@@ -75,16 +75,16 @@ string AllNodeVariablesNamesQList[] = {
 	"P_ST_dot (MPa / h)", "P_Sympl_dot (MPa / h)", "Q_Rm_dot (mmol eq. Glu / h)", "Q_ST_dot (mmol / h)", "Q_Mesophyll_dot (mmol / h)", "Input (mmol / h)", "Transpirat (ml / h)", "PsiSoil (MPa)",
 // Tracer-specific add-ins :
 	"TracerQ_RespMaint (MBq)", "TracerQ_RespMaintSyn (MBq / h)", "TracerC_ST (MBq / ml)", "TracerC_Sympl (MBq / ml)", "TracerJS_PhlMb (MBq / h)", "TracerQ_Mesophyll (MBq)", "Q_RespMaintmax (MBq)", "TracerRespMaint (MBq / h)",
-	"TracerInput (MBq / h)", "TracerJS_Sympl (MBq / h)", "TracerJS_ParMb (MBq / h)", "Q_Exudationmax (MBq)", "Q_Growthtotmax (MBq)", "TracerC_PhlApo (MBq / ml)",
+	"TracerInput (MBq / h)", "TracerJS_Sympl (MBq / h)", "TracerJS_ParMb (MBq / h)", "Q_S_Mesophyll (MBq)", "Q_Growthtotmax (MBq)", "TracerC_PhlApo (MBq / ml)",
 	"TracerC_ParApo (MBq / ml)", "TracerJS_Apo (MBq / h)", "TracerC_SymplUpflow (MBq / ml)", "TracerC_ApoUpflow (MBq / ml)"
 } ;
 int NumAllConnVariablesNames = 5 ; // 5 internode connector flux variables :
 string AllConnVariablesNamesQList[] = { "C_Upflow (mmol / ml)", "JS_ST (mmol / h)", "JW_ST (ml / h)", "JW_Xyl (ml / h)", "TracerJS_ST (MBq / h)" } ;
 
-extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
-extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
-extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
+extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_S_ST ;		  // components of vector y as used in diff. system f()...
+extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_S_ST_dot ; //... and its derivatives.  ;
+extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_S_Mesophyll, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
+extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_S_Mesophyll_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl, *vol_Sympl_dot ;
 extern Fortran_vector Psi_Xyl, JW_ST, JS_ST, C_Sympl, C_ST, C_amont, JS_Sympl, JS_Apo, JS_ParMb, JS_PhlMb, Psi_Sympl, C_PhlApo, C_ParApo, P_ST, Absorb, RespMaint ;
 extern Fortran_vector JW_Trsv, JW_Xyl, JW_PhlMb, JW_ParMb, JW_Apo, JW_Sympl, P_Sympl, Psi_ST, P_Xyl, Psi_PhlApo, Psi_ParApo, P_PhlApo, P_ParApo ;
@@ -118,8 +118,8 @@ Fortran_matrix JW_ST_t, JS_ST_t, C_Sympl_t, C_ST_t, JS_Sympl_t, JS_Apo_t, JS_Par
 Fortran_matrix JW_Trsv_t, JW_Xyl_t, JW_PhlMb_t, JW_ParMb_t, JW_Apo_t, JW_Sympl_t, P_Sympl_t, Psi_ST_t, P_Xyl_t, Psi_PhlApo_t, Psi_ParApo_t, P_PhlApo_t, P_ParApo_t ;
 Fortran_matrix PsiSoil_t, Transpirat_t, Input_t, Q_RespMaintSyn_t, P_ST_dot_t, P_Sympl_dot_t, C_SymplUpflow_t, C_ApoUpflow_t, C_amont_t ;
 // tracer-specific add-ins :
-Fortran_matrix Q_RespMaintmax_t, TracerQ_Mesophyll_t, TracerQ_RespMaint_t, Q_Exudationmax_t, Q_Growthtotmax_t ;		  // components of vector y as used in diff. system f()...
-// Fortran_matrix Q_Rmmax_dot_t, TracerQ_Mesophyll_dot_t, TracerQ_Rm_dot_t, Q_Exudmax_dot_t, Q_Gtotmax_dot_t ;		  // components of vector y as used in diff. system f()...
+Fortran_matrix Q_RespMaintmax_t, TracerQ_Mesophyll_t, TracerQ_RespMaint_t, Q_S_Mesophyll_t, Q_Growthtotmax_t ;		  // components of vector y as used in diff. system f()...
+// Fortran_matrix Q_Rmmax_dot_t, TracerQ_Mesophyll_dot_t, TracerQ_Rm_dot_t, Q_S_Mesophyll_dot_t, Q_Gtotmax_dot_t ;		  // components of vector y as used in diff. system f()...
 Fortran_matrix TracerJS_ST_t, TracerC_Sympl_t, TracerC_ST_t, TracerJS_Sympl_t, TracerJS_Apo_t, TracerJS_ParMb_t, TracerJS_PhlMb_t, TracerC_PhlApo_t, TracerC_ParApo_t, TracerC_SymplUpflow_t, TracerC_ApoUpflow_t ;
 Fortran_matrix TracerPhotSynth_t, TracerQ_RespMaintSyn_t, TracerInput_t, TracerRespMaint_t ;
 // Fortran_matrix TracerRatioSympl_t, TracerRatioQ_RespMaint_t ;
@@ -132,7 +132,7 @@ Fortran_matrix* AllNodeMatricesRefsQList[] = {
 	&P_ST_dot_t, &P_Sympl_dot_t, &Q_Rm_dot_t, &Q_ST_dot_t, &Q_Mesophyll_dot_t, &Input_t, &Transpirat_t, &PsiSoil_t,
 	// tracer-specific add-ons :
 	&TracerQ_RespMaint_t, &TracerQ_RespMaintSyn_t, &TracerC_ST_t, &TracerC_Sympl_t, &TracerJS_PhlMb_t, &TracerQ_Mesophyll_t, &Q_RespMaintmax_t, &TracerRespMaint_t,
-	&TracerInput_t, &TracerJS_Sympl_t, &TracerJS_ParMb_t, &Q_Exudationmax_t, &Q_Growthtotmax_t, &TracerC_PhlApo_t,
+	&TracerInput_t, &TracerJS_Sympl_t, &TracerJS_ParMb_t, &Q_S_Mesophyll_t, &Q_Growthtotmax_t, &TracerC_PhlApo_t,
 	&TracerC_ParApo_t, &TracerJS_Apo_t, &TracerC_SymplUpflow_t, &TracerC_ApoUpflow_t
 };
 Fortran_matrix* AllConnMatricesRefsQList[] = {&C_amont_t, &JS_ST_t,  &JW_ST_t, &JW_Xyl_t, &TracerJS_ST_t} ;
