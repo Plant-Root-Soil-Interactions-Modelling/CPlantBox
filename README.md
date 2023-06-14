@@ -1,29 +1,4 @@
 
-# Hi, I am CPlantBox
-[![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
-
-## For simulations in https://doi.org/10.1101/810507 please use branch isp
-
-[![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/xiaoranzhou/cpb-binder/master)
-## I can :
-1. Create multiple plant structure
-2. Coupling with PiafMunch, and make carbon and water flow inside of the plant.
-
-## Try me 1 click
-
-The most convenient way is to use google colab, which is a Linux virtual machine with jupyter notebook interface.
-You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
-[here is the link to use it](http://b.cplantbox.com).
-
-## or build local
-### windows
-CPlantBox is currently not available on windows. 
-Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
-### linux
-Clone the repository by running:
-```bash
-git clone --depth 1 -b stable_v2.1 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
-```
 
  Run CMake which configures the CPlantBox libraries by 
 ```bash
