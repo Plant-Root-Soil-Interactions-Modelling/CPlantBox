@@ -468,6 +468,7 @@ std::vector<Vector2i> RootSystem::getShootSegments() const
         seg.push_back(Vector2i(n1,n2));
     }
     seg.push_back(Vector2i(n2,baseOrgans.at(0)->getNodeId(0))); // connect  basal roots node (seed) to artificial shoot
+	std::cout<<"RootSystem::getShootSegments "<<numberOfCrowns<<" "<<seg.size()<<std::endl;
     return seg;
 }
 

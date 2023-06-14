@@ -920,7 +920,7 @@ PYBIND11_MODULE(plantbox, m) {
                     py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
             .def("sumSegFluxes",&XylemFlux::sumSegFluxes)
             .def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
-            .def_readonly("kr_f_cpp", &XylemFlux::kr_f)
+            .def("kr_f_cpp", &XylemFlux::kr_f_wrapped)
             .def_readonly("kx_f_cpp", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)

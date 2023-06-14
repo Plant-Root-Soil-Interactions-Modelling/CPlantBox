@@ -50,7 +50,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 
         try {
             kx = kx_f(si, age, subType, organType);
-            kr = kr_f(si, age, subType, organType);
+            kr = kr_f_wrapped(si, age, subType, organType);
         } catch(...) {
             std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
@@ -143,7 +143,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         double kr = 0.;
         try {
             kx = kx_f(si, age, subType, organType);
-            kr = kr_f(si, age, subType, organType);
+            kr = kr_f_wrapped(si, age, subType, organType);
         } catch(...) {
             std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
@@ -225,31 +225,45 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     std::fill(fluxes.begin(), fluxes.end(), 0.);
     auto map = rs->cell2seg;
+	//std::cout<<"XylemFlux::splitSoilFluxes "<<type<<" "<<lengths.size()<<" "<<rs->radii.size()<<" "<<rs->segments.size()<<std::endl;
+	bool hayErrores = false;
+	double fluxesTotTot =0;
     for(auto iter = map.begin(); iter != map.end(); ++iter) {
         int cellId =  iter->first;
         auto segs = map.at(cellId);
-        double v = 0.;  // calculate sum over cell
-        for (int i : segs) {
-            if (type==0) { // volume
-                v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
-            } else if (type==1) { // surface
-                v += 2*M_PI*rs->radii[i]*lengths[i];
-            } else if (type==2) { // length
-                v += lengths[i];
-            }
-        }
-        for (int i : segs) { // calculate outer radius
-            double t =0.; // proportionality factor (must sum up to == 1 over cell)
-            if (type==0) { // volume
-                t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
-            } else if (type==1) { // surface
-                t = 2*M_PI*rs->radii[i]*lengths[i]/v;
-            } else if (type==2) { // length
-                t = lengths[i]/v;
-            }
-            fluxes[i] = t*soilFluxes.at(cellId);
-        }
+		//std::cout<<"cellId "<<cellId<<" "<<segs.size()<<std::endl;
+		if (cellId>=0) {                
+			double v = 0.;  // calculate sum over cell
+			for (int i : segs) {
+				//std::cout<<"A.(int i : segs) "<<i<<std::endl;
+				if (type==0) { // volume
+					v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+				} else if (type==1) { // surface
+					v += 2*M_PI*rs->radii[i]*lengths[i];
+				} else if (type==2) { // length
+					v += lengths[i];
+				}
+			}
+			double fluxesTot = 0;
+			for (int i : segs) { // calculate outer radius
+				//std::cout<<"B.(int i : segs) "<<i<<std::endl;
+				double t =0.; // proportionality factor (must sum up to == 1 over cell)
+				if (type==0) { // volume
+					t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
+				} else if (type==1) { // surface
+					t = 2*M_PI*rs->radii[i]*lengths[i]/v;
+				} else if (type==2) { // length
+					t = lengths[i]/v;
+				}
+				if(fluxes[i] !=0){std::cout<<"fluxes "<<i<<" already set "<<std::endl;hayErrores=true;}
+				fluxes[i] = t*soilFluxes.at(cellId);
+				fluxesTot +=  t*soilFluxes.at(cellId);
+				fluxesTotTot += t*soilFluxes.at(cellId);
+			}
+			//std::cout<<"cellId "<<soilFluxes.at(cellId)<<" "<<fluxesTot<<" "<<fluxesTotTot<<std::endl;
+		}
     }
+	if(hayErrores){assert(false);}
     return fluxes;
 }
 
@@ -622,5 +636,18 @@ std::vector<double> XylemFlux::getHs(const std::vector<double>& sx) {
 }
 
 
+
+double XylemFlux::kr_f_wrapped(int si, double age, int subType, int organType)
+{
+	int cellIndex = rs->seg2cell.at(si);
+	if (((cellIndex>=0)&&(organType !=Organism::ot_root))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
+	{ 
+			return 0.;
+	}else
+	{ 
+		//std::cout<<"to XylemFlux::kr_f"<<std::endl;
+		return kr_f(si, age, subType, organType);
+	}
+}
 
 } // namespace

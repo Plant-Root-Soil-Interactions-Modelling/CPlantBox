@@ -40,6 +40,9 @@ class XylemFluxPython(XylemFlux):
 
         self.neumann_ind = [0]  # node indices for Neumann flux
         self.dirichlet_ind = [0]  # node indices for Dirichlet flux
+        
+        # segment index of collar (might be != 0 when use setSoilGrid() or setRectangularGrid 
+        self.collar_seg_ind = 0  
 
         self.last = "none"
         self.Q = None  # store linear system
@@ -92,8 +95,11 @@ class XylemFluxPython(XylemFlux):
 
         for i, s in enumerate(segs):
             if not isinstance(kex,int):
-                #print(self.exu_fun(kex, ages[i]))
-                sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * self.exu_fun(kex[types[i]], ages[i])  # kg/day
+                #print(kex, ages,self.exu_fun(kex, ages[i]))
+                try:
+                    sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * self.exu_fun(kex[types[i]], ages[i])  # kg/day
+                except:
+                    sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * self.exu_fun(kex, ages[i])  # kg/day
             else: 
                 sf[i] = 2 * np.pi * a[i] * l[i] * 1.e-4 * (self.Exu)  # kg/day
         return sf * 1.e3  # kg/day -> g/day
@@ -318,6 +324,8 @@ class XylemFluxPython(XylemFlux):
         kr = self.kr_f(age, st, ot, seg_ind)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot, seg_ind)
+        print("def axial_flux",kr, kx, p_s)
+        
         if a * kr > 1.e-16:
             tau = np.sqrt(2 * a * np.pi * kr / kx)  # cm-2
             AA = np.array([[1, 1], [np.exp(tau * l), np.exp(-tau * l)] ])
@@ -330,14 +338,16 @@ class XylemFluxPython(XylemFlux):
         f = kx * (dpdz0 + v.z)
         if ij:
             f = f * (-1)
-
+        print(f)
         return f
 
     def collar_flux(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the exact transpirational flux of the xylem model solution @param rx
             @see axial_flux        
         """
-        return self.axial_flux(0, sim_time, rx, sxx, k_soil, cells, ij = True)
+        #TODO: replace self.collar_seg_ind by np.where(np.array([ns.x for ns in rs.segments]) == 0)[0][0]?
+        # might still be incorrect when we shoot-born root
+        return self.axial_flux(self.collar_seg_ind, sim_time, rx, sxx, k_soil, cells, ij = True)
 
     def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the axial fluxes 
@@ -613,9 +623,11 @@ class XylemFluxPython(XylemFlux):
         print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))
         # 4 check for unmapped indices
         map = self.rs.seg2cell
+        organTypes = self.rs.organTypes
         for seg_id, cell_id in map.items():
             if cell_id < 0:
-                print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
+                print("Warning: segment ", seg_id,"organType",organTypes[seg_id], "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
+                
         print()
 
     def plot_conductivities(self, monocot = True, plot_now = True, axes_ind = [], lateral_ind = []):
