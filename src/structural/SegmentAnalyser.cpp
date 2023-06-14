@@ -60,9 +60,9 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
         radii[i] = segO[i].lock()->getParameter("radius");
-        subType[i] = segO[i].lock()->getParameter("type");
+        subType[i] = segO[i].lock()->getParameter("subType");
         id[i] = segO[i].lock()->getParameter("id");
-        organType[i] = Organism::ot_root; // = 2
+        organType[i] = segO[i].lock()->getParameter("organType"); 
     }
     data["radius"] = radii;
     data["subType"] = subType;
@@ -189,7 +189,7 @@ void SegmentAnalyser::addAge(double simTime)
  *
  * @param rs    XylemFlux for determination of radial and axial conductivities (kr, and kx)
  */
-void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime)
+void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime, double kr_max, double kx_max)
 {
     // std::cout << "creationTime " << data["creationTime"].size() << ", " << data["subType"].size() << ", " << data["organType"].size() << "\n";
 
@@ -199,11 +199,8 @@ void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime)
         double age = simTime - data["creationTime"].at(i);
         int subType = (int) data["subType"].at(i);
         int organType = (int) data["organType"].at(i);
-        kr.at(i) = rs.kr_f(i, age, subType, organType);
-        kx.at(i) = rs.kx_f(i, age, subType, organType);
-        if (age > simTime - 1.e-6) {
-            kx.at(i) = 0.; // for shoot (for vizualisation only)
-        }
+        kr.at(i) = std::min(rs.kr_f(i, age, subType, organType), kr_max);
+        kx.at(i) = std::min(rs.kx_f(i, age, subType, organType), kx_max);
     }
     this->addData("kr",kr);
     this->addData("kx",kx);
@@ -215,14 +212,15 @@ void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime)
  *
  * use addConductivities before!
  */
-void SegmentAnalyser::addFluxes(XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
+void SegmentAnalyser::addFluxes(const XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
 
-    std::vector<double> radial_flux = rs.segFluxes(simTime, rx, sx, false, false); // volumetric flux
+    std::vector<double> radial_flux = rs.segFluxes(simTime, rx, sx, true, false); // volumetric flux, approx = true, cells = false
     std::vector<double> a = data["radius"];
     for (int i =0; i< radial_flux.size(); i++) {
         radial_flux[i] /= (2.*M_PI*a.at(i));
     }
     this->addData("radial_flux",radial_flux);
+    std::cout << "added radial flux"<< "\n" << std::flush;
 
     //    auto& kr = data["kr"]; // use addConductivities before!
     auto& kx = data["kx"]; // use addConductivities before!

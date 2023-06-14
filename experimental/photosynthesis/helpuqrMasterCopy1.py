@@ -2,7 +2,7 @@
 #directoryN = "/7to14dry/"
 
 import sys; 
-CPBdir = "../../../../cpb3101/CPlantBox"
+CPBdir = "../.."
 sys.path.append(CPBdir+"/src");
 sys.path.append(CPBdir);
 sys.path.append("../../..");sys.path.append(".."); 
@@ -16,7 +16,7 @@ sys.path.append("../modules/") # python wrappers
 
 #from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 #from richards import RichardsWrapper  # Python part
-from phloem_flux import PhloemFluxPython  # Python hybrid solver
+from functional.phloem_flux import PhloemFluxPython  # Python hybrid solver
 #from Leuning_speedup import Leuning #about 0.7 for both
 #from photosynthesis_cython import Leuning
 import plantbox as pb
@@ -135,9 +135,9 @@ def setKrKx_xylem(TairC, RH,r,kr_l): #inC
     kr_r2 =7.9e-5  * hPa2cm * betaXyl
     kr_r3 =6.8e-5  * hPa2cm * betaXyl
     l_kr = 0.8 #cm
-    r.setKr([[kr_r0,kr_r1,kr_r2,kr_r0],[kr_s,kr_s ],[kr_l]], kr_length_=l_kr) 
+    r.setKr([[kr_r0],[kr_s],[kr_l]]) 
     #r.setKr_meso([kr_l]) 
-    r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s ],[kz_l]])
+    r.setKx([[kz_r0],[kz_s],[kz_l]])
     
     
     Rgaz=8.314 #J K-1 mol-1 = cm^3*MPa/K/mol
@@ -317,8 +317,9 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration):
     # plant system 
     pl = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
     #pl2 = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
-    path = CPBdir+"/modelparameter/plant/"
+    path = CPBdir+"/modelparameter/structural/plant/"
     name = "Triticum_aestivum_adapted_2023"#"Triticum_aestivum_adapted_2021"#
+    print("check file", path + name + ".xml")
 
     pl.readParameters(path + name + ".xml")
     #pl2.readParameters(path + name + ".xml")

@@ -85,7 +85,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
             bi = kx * vz;
             psi_s = 0;
         }
-		
+
 		k = fillVectors(k, i, j, bi, cii, cij, psi_s);
     }
 }
@@ -123,14 +123,14 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  * @return Volumetric fluxes for each segment [cm3/day]
  */
 std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-    bool approx, bool cells, const std::vector<double> soil_k)
+    bool approx, bool cells, const std::vector<double> soil_k) const
 {
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     for (int si = 0; si<rs->segments.size(); si++) {
 
-        int i = rs->segments[si].x;
-        int j = rs->segments[si].y;
-        int organType = rs->organTypes[si];
+        int i = rs->segments.at(si).x;
+        int j = rs->segments.at(si).y;
+        int organType = rs->organTypes.at(si);
 
         double psi_s = getPsiOut(cells, si, sx);
 
@@ -151,8 +151,8 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         if (soil_k.size()>0) {
             kr = std::min(kr, soil_k[si]);
         }
-        auto n1 = rs->nodes[i];
-        auto n2 = rs->nodes[j];
+        auto n1 = rs->nodes.at(i);
+        auto n2 = rs->nodes.at(j);
         auto v = n2.minus(n1);
         double l = v.length();
         if (l<1.e-5) {
@@ -161,7 +161,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         }
 
 		double perimeter = rs->getPerimeter(si, l);//perimeter of exchange surface
-        
+
 
         if (perimeter * kr>1.e-16) { // only relevant for exact solution
             double f = -perimeter*kr; // flux is proportional to f // *rho*g
@@ -278,17 +278,17 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
  * @param cij			value of variable c at row i col j [cm2/d]
  * @return k			next index for the row- and column-index vectors
  */
- 
-size_t XylemFlux::fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) 
+
+size_t XylemFlux::fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s)
 {
     aB[i] += ( bi + cii * psi_s +cij * psi_s) ;
 
 	aI[k] = i; aJ[k]= i; aV[k] = cii;
-	
+
 	k += 1;
 
 	aI[k] = i; aJ[k] = j;  aV[k] = cij;
-	
+
 	k += 1;
 
 	int ii = i;
@@ -296,11 +296,11 @@ size_t XylemFlux::fillVectors(size_t k, int i, int j, double bi, double cii, dou
 	aB[i] += ( -bi + cii * psi_s +cij * psi_s) ; // (-bi) Eqn (14) with changed sign
 
 	aI[k] = i; aJ[k]= i; aV[k] = cii;
-	
+
 	k += 1;
 
 	aI[k] = i; aJ[k] = j;  aV[k] = cij;
-	
+
 	k += 1;
 	return k;
 }
@@ -311,13 +311,13 @@ size_t XylemFlux::fillVectors(size_t k, int i, int j, double bi, double cii, dou
  * @param si 			segment index
  * @param sx        [cm] soil matric potential for each cell
  */
- 
-double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_) 
+
+double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_) const
 {
-	int organType = rs->organTypes[si];
+	int organType = rs->organTypes.at(si);
     double psi_s;
 	if (cells) { // soil matric potential given per cell
-		int cellIndex = rs->seg2cell[si];
+		int cellIndex = rs->seg2cell.at(si);
 		if (cellIndex>=0) {
 			if(organType ==Organism::ot_leaf){ //add a runtime error?
 				std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";

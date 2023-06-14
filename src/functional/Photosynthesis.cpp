@@ -59,8 +59,8 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	loop = 0;
 	this->stop = false;
 	this->seg_leaves_idx = plant->getSegmentIds(4);//ids of leaf segments
-	this->TairC = TairC_;
-	this->TleafK = TairC_ + 273.15;
+	this->TairC = TairC_;//std::vector<double>( seg_leaves_idx.size(), TairC_);
+	this->TleafK = std::vector<double>( seg_leaves_idx.size(), TairC_ + 273.15);
 	this->es = es_;
 	this->ea = ea_;
 	//cm = log(-) * (mg cm-3) * (hPa cm3 K−1 mmol−1) * K * (1/[mg mmol-1]) * (cm/hPa)
@@ -242,7 +242,7 @@ size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii
  * @param sx        [cm] soil matric potential for each cell
  */
  
-double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_) 
+double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_) const
 {
 	int organType = plant->organTypes.at(si);
     double psi_s;
@@ -250,9 +250,13 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 		int cellIndex = plant->seg2cell[si];
 		if (cellIndex>=0) {
 			if(organType ==Organism::ot_leaf){ 
-				std::cout<<"Photosynthesis::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
-				std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-				throw std::runtime_error("Photosynthesis::linearSystem: Leaf segment is belowground.");
+				if(verbose_photosynthesis>0)
+				{
+					std::cout<<"Photosynthesis::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
+					std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
+				}
+				psi_s = 0;
+				//throw std::runtime_error("Photosynthesis::linearSystem: Leaf segment is belowground.");
 			}
 			if(sx_.size()>1) {
 				psi_s = sx_.at(cellIndex);
@@ -263,9 +267,13 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 		{
 			switch(organType) {
 				case Organism::ot_root: 
+						if(verbose_photosynthesis>0)
+					{
 						std::cout<<"Photosynthesis::linearSystem: Root segment n#"<<si<<" aboveground. OrganType: ";
 						std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
-						throw std::runtime_error("Photosynthesis::linearSystem: root segment is aboveground.");
+					}
+					psi_s = 0;
+						//throw std::runtime_error("Photosynthesis::linearSystem: root segment is aboveground.");
 					break;
 				case  Organism::ot_stem: 
 					psi_s = psi_air;
@@ -289,12 +297,21 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 
 bool Photosynthesis::canStop()
 {
-    bool canStop = true;
-    for(int tt = 0; tt<maxErr.size();tt++)
+    bool canStop = false;
+    if(loop > maxLoop)
     {
-        if((maxErr.at(tt)>maxErrLim.at(tt))&&(maxErrAbs.at(tt)>maxErrAbsLim.at(tt)))
+        canStop = true;
+    }else{
+        if(loop > minLoop)
         {
-            canStop = false;
+            canStop = true;
+            for(int tt = 0; tt<maxErr.size();tt++)
+            {
+                if((maxErr.at(tt)>maxErrLim.at(tt))&&(maxErrAbs.at(tt)>maxErrAbsLim.at(tt)))
+                {
+                    canStop = false;
+                }
+            }
         }
     }
     return canStop;
@@ -438,8 +455,8 @@ void Photosynthesis::initStruct(double sim_time_){
 		dv.resize(seg_leaves_idx.size(), 0.);
 		//sideSurface.resize(seg_leaves_idx.size(), 0.);
 	}
-	for(int li_ = 0; li_ < this->seg_leaves_idx.size(); li_++){
-		int li = this->seg_leaves_idx.at(li_);
+	for(int i = 0; i < this->seg_leaves_idx.size(); i++){
+		int li = this->seg_leaves_idx.at(i);
 		l = lengths.at(li);		//a = plant->radii[li]; xylem data. issue: need other radius
 		int st = this->plant->subTypes.at(li);
 		kx = 0.;
@@ -452,19 +469,19 @@ void Photosynthesis::initStruct(double sim_time_){
             std::cout  << "\n organ type "<<ot<< " subtype " << st <<std::flush;
         }
 		double perimeter = plant->leafBladeSurface.at(li)/l*2;
-		fv.at(li_) = -perimeter*kr;
-		tauv.at(li_) = std::sqrt(perimeter*kr/kx);
-		dv.at(li_) = std::exp(-tauv.at(li_)*l)-std::exp(tauv.at(li_)*l);
+		fv.at(i) = -perimeter*kr;
+		tauv.at(i) = std::sqrt(perimeter*kr/kx);
+		dv.at(i) = std::exp(-tauv.at(i)*l)-std::exp(tauv.at(i)*l);
 		if((kr<0)||(kx<=0))
 		{
-			std::cout<<"pt, st "<<ot<<" "<<st<<" "<<li<<" "<<li_<<std::endl;
-			std::cout<<"kr etc "<<kx<<" "<<kr<<" "<<perimeter<<" "<<fv.at(li_)<<" "<<tauv.at(li_)<<" "<<dv.at(li_)<<std::endl;
+			std::cout<<"pt, st "<<ot<<" "<<st<<" "<<li<<" "<<i<<std::endl;
+			std::cout<<"kr etc "<<kx<<" "<<kr<<" "<<perimeter<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<std::endl;
 
 			assert((kr>0)&&"kr<=0"); assert((kx>0)&&"kx<=0");
 			assert((perimeter>0)&&"perimeter<=0");
-			assert((fv[li_]>0)&&"fv[li_]<=0");
-			assert((tauv[li_]>0)&&"tauv[li_]<=0");
-			assert((dv[li_]>0)&&"dv[li_]<=0");
+			assert((fv[i]>0)&&"fv[i]<=0");
+			assert((tauv[i]>0)&&"tauv[i]<=0");
+			assert((dv[i]>0)&&"dv[i]<=0");
 		}
 	}
 
@@ -477,60 +494,51 @@ void Photosynthesis::initVcVjRd(){
 	if(Vcmax.size() != seg_leaves_idx.size()){
 		Vcmax.resize(seg_leaves_idx.size(), 0.);
 		deltagco2.resize(seg_leaves_idx.size(), 0.);
+		delta.resize(seg_leaves_idx.size(), 0.);
 		Vc.resize(seg_leaves_idx.size(), 0.);
 		Vj.resize(seg_leaves_idx.size(), 0.);
-		//An.resize(seg_leaves_idx.size(), 0.);
 		fw.resize(seg_leaves_idx.size(), 0.);
-		//gco2.resize(seg_leaves_idx.size(), 0.);
 		Jw.resize(seg_leaves_idx.size(), 0.);
 		Ev.resize(seg_leaves_idx.size(), 0.);
+		Rd_ref.resize(seg_leaves_idx.size(), 0.);
+		Rd.resize(seg_leaves_idx.size(), 0.);
         Vcrefmax = std::vector<double>(seg_leaves_idx.size(), 0.);
         Jrefmax = std::vector<double>(seg_leaves_idx.size(), 0.); 
-		//outputFluxL.resize(seg_leaves_idx.size(), 0.);
+		Ko.resize(seg_leaves_idx.size(), 0.);
+		Kc.resize(seg_leaves_idx.size(), 0.);
+		
+		
+		//C3
+		Jmax.resize(seg_leaves_idx.size(), 0.);
+		J.resize(seg_leaves_idx.size(), 0.);
+		//for C4		
+		Vp.resize(seg_leaves_idx.size(), 0.);
+		kp.resize(seg_leaves_idx.size(), 0.);
+		kp25.resize(seg_leaves_idx.size(), 0.);
 	}
-	double Chl_;
-	for(int li_ = 0; li_ < this->seg_leaves_idx.size(); li_++){
+	for(int i = 0; i < this->seg_leaves_idx.size(); i++){
 		//carboxylation rate
 		//Vc25max
-
-		if(Chl.size() != seg_leaves_idx.size()){
-			Chl_ = Chl.at(0);
-		}else{Chl_ = Chl.at(li_);}
-		//prewprint from qian replaced with actuall article
-		Vcrefmax.at(li_) = (VcmaxrefChl1* Chl_ + VcmaxrefChl2)*1e-6 ;//double mol m-2 s-1
-		//std::cout<<Vcrefmax <<" "<< VcmaxrefChl1<<" "<< Chl_ <<" "<< VcmaxrefChl2<<" "<<std::endl;
-		//Vcmax
-		double expo1 = std::exp(Eav /(R_ph*0.1*Tref)*(1. - Tref/TleafK));
-		double expo2 = std::exp((S* TleafK - Edv)/(R_ph*0.1* TleafK));
-		Vcmax.at(li_) = Vcrefmax.at(li_) * expo1 / (1. + expo2); //Eq 11
-		//for Vc
+		double Chl_ = getChl(i);		
+			//prewprint from qian replaced with actuall article
+		Vcrefmax.at(i) = (VcmaxrefChl1* Chl_ + VcmaxrefChl2)*1e-6 ;//double mol m-2 s-1
+		
 		//mmol mmol-1 * exp(mJ mmol-1/(hPa cm3K−1mmol−1 *(mJ/(hPa/cm3))*K)*(-))=mmol mmol-1 * exp(-)
-		Ko = Ko_ref * std::exp(Eao/(R_ph*0.1*Tref)*(1.-Tref/TleafK)); //Eq 9
-		Kc = Kc_ref * std::exp(Eac/(R_ph*0.1*Tref)*(1.-Tref/TleafK)) ;//Eq 9
-		delta = gamma0* (1.+ gamma1*(TleafK - Tref) + gamma2*std::pow((TleafK - Tref),2.) ) ;//Eq 10
+		Ko.at(i) = Ko_ref * Arrhenius(i, Eao); //Eq 9
+		Kc.at(i) = Kc_ref * Arrhenius(i, Eac);//Eq 9
+		delta.at(i) = gamma0* (1.+ gamma1*(TleafK.at(i)- Tref) + gamma2*std::pow((TleafK.at(i) - Tref),2.) ) ;//Eq 10
+		
+		//compute Rd before deltagco2
+		//std::cout<<"Photosynthesis::initVcVjRd "<<PhotoType<<" "<<C3<<" "<<C4<<" "<<(PhotoType == C3)<<" "<<(PhotoType == C4)<<std::endl;
+		switch(PhotoType)
+		{
+			case C3: {photoC3_init(i);break;}		
+			case C4: {photoC4_init(i);break;}	
+			default:{throw std::runtime_error("Photosynthesis::initVcVjRd: PhotoType not recognised  ");}
+		}
 
-		//electron transport rate
-		//Jrefmax
-		Jrefmax.at(li_) = Vcrefmax.at(li_) * a3 ;//Eq 25
-		//Jmax
-		expo1 = std::exp(Eaj /(R_ph*0.1*Tref)*(1. - Tref/TleafK));
-		expo2 = std::exp((S * TleafK - Edj)/(R_ph *0.1* TleafK));
-		double Jmax = std::min(Jrefmax.at(li_) * expo1 / (1. + expo2), Jrefmax.at(li_)); //Eq 24
-		//J
-		double coefa = theta;
-		double coefb = -(alpha * Qlight + Jmax);
-		double coefc = alpha * Qlight * Jmax;
-		double dis = std::pow(coefb,2.) - (4.*coefa*coefc);
-        if (dis < 0) {
-				throw std::runtime_error("Photosynthesis::initVcVjRd : root for J not found");
-          }
-		J =  ((-coefb- std::sqrt(dis))/(2.*coefa));//rostamza2020, Bonan2019Chap11
-        if (J < 0) {
-				throw std::runtime_error("Photosynthesis::loopCalcs : J < 0");
-          }
 
-		Rd = Rd_ref * std::exp(Eard/(R_ph*Tref*0.1)*(1.-Tref/TleafK));
-		deltagco2.at(li_) = (delta + Kc*Rd*(1. + oi/Ko)/Vcmax.at(li_))/(1-Rd/Vcmax.at(li_));
+		deltagco2.at(i) = std::max(0.,(delta.at(i) + Kc.at(i)*Rd.at(i)*(1. + oi/Ko.at(i))/Vcmax.at(i))/(1-Rd.at(i)/Vcmax.at(i)));
 	}
 }
 
@@ -548,6 +556,93 @@ void Photosynthesis::doAddGravity()
 
 }
 
+double Photosynthesis::thermalBreakdown(int index, double Ed)
+{
+	 //only evaluate denominator as the nominator is ~ 1
+	return 1/(1 + std::exp((S * TleafK.at(index) - Ed)/(R_ph *0.1* TleafK.at(index))));
+}
+
+double Photosynthesis::Arrhenius(int index, double Ea)
+{
+	return std::exp(Ea /(R_ph*0.1*Tref)*(1. - Tref/TleafK.at(index)));
+}
+
+
+
+
+void Photosynthesis::photoC4_init(int i)
+{
+		Rd_ref.at(i) = 0.025 * Vcrefmax.at(i); //Bonan2019Chap11
+		
+		//Vcmax
+		Vcmax.at(i) = Vcrefmax.at(i) * Q10f(i) / (1 + std::exp(s1 * ( TleafK.at(i) - s2) ) ) / (1 + std::exp(s3 * ( s4 - TleafK.at(i)) ) ); //Bonan2019Chap11
+		Rd.at(i) = Rd_ref.at(i) * Q10f(i) / (1 + std::exp(s5 * ( TleafK.at(i) - s6) ) );
+		kp25.at(i) = 0.02 * Vcrefmax.at(i); //from Bonan2019Chap11
+		kp.at(i) = kp25.at(i) * Q10f(i);
+		
+}
+
+void Photosynthesis::photoC3_init(int i)
+{		
+		Rd_ref.at(i) = 0.015 * Vcrefmax.at(i); //Bonan2019Chap11
+		
+		//Vcmax
+		Vcmax.at(i) = Vcrefmax.at(i) * Arrhenius(i, Eav) * thermalBreakdown(i, Edv); //Eq 11
+		Rd.at(i) = Rd_ref.at(i) * Arrhenius(i, Eard);// * thermalBreakdown(i, Edrd);
+		//std::exp(Eard/(R_ph*Tref*0.1)*(1.-Tref/TleafK.at(i)));
+		
+		//electron transport rate
+		//Jrefmax
+		Jrefmax.at(i) = Vcrefmax.at(i) * a3 ;//Eq 25
+		//Jmax
+		Jmax.at(i) = std::min(Jrefmax.at(i) * Arrhenius(i, Eaj) * thermalBreakdown(i, Edv), Jrefmax.at(i)); //Eq 24
+		//J
+		double Qlight_ = getQlight(i);
+		double coefa = theta;
+		double coefb = -(alpha * Qlight_ + Jmax.at(i));
+		double coefc = alpha * Qlight_ * Jmax.at(i);
+		double dis = std::pow(coefb,2.) - (4.*coefa*coefc);
+        if (dis < 0) {
+				throw std::runtime_error("Photosynthesis::initVcVjRd : root for J not found");
+          }
+		J.at(i) =  ((-coefb- std::sqrt(dis))/(2.*coefa));//rostamza2020, Bonan2019Chap11
+        if (J.at(i) < 0) {
+				throw std::runtime_error("Photosynthesis::loopCalcs : J < 0");
+          }
+	
+}
+
+
+void Photosynthesis::photoC3_loop( int i)
+{
+	//carboxylation and electron transport  rate
+	Vc.at(i) = std::max(std::min(std::max(Vcmax.at(i) * (ci.at(i) - delta.at(i)) / (ci.at(i) + Kc.at(i)*(1. + oi/Ko.at(i))),
+						0.),
+						Vcmax.at(i)),0.); //Eq 8
+
+	Vj.at(i) = std::max(J.at(i)/4. * (ci.at(i) - delta.at(i))/ (ci.at(i) + 2. * delta.at(i)), 0.) ;//Eq 22
+
+	//An mol m-2 s-1
+	An.at(i) = std::min(Vc.at(i), Vj.at(i)) - Rd.at(i);//Eq 6
+	
+}
+
+
+void Photosynthesis::photoC4_loop(int i)
+{
+	Vc.at(i) = Vcmax.at(i);
+	double Qlight_ = getQlight(i);
+	
+	Vj.at(i) = alpha * Qlight_;
+	//std::cout<<"Photosynthesis::photoC4_loop "<<Vj.at(i)<<" "<< alpha <<" "<< Qlight_<<std::endl;
+	
+	Vp.at(i) = kp.at(i) * (std::max(ci.at(i) - deltagco2.at(i),0.)* 1e6);//[mol CO2 m-2 s-1] * [mumol mol-1]
+	//An mol m-2 s-1
+	An.at(i) = std::min(std::min(Vc.at(i), Vj.at(i)), Vp.at(i)) - Rd.at(i);//Eq 6
+}
+
+
+
 	/*
 		Computes the output variables => ci, go2, An, Ev
 		@param simtime
@@ -563,12 +658,19 @@ void Photosynthesis::loopCalcs(double simTime){
 	}
 	for(int i = 0; i<seg_leaves_idx.size();i++)
 	{
+		double cs_,g_bl_,g_canopy_,g_air_;
+		if(vcs.size() != seg_leaves_idx.size()){cs_ = cs;}else{cs_ = vcs.at(i);}
+		if(vg_bl.size() != seg_leaves_idx.size()){g_bl_ = g_bl;}else{g_bl_ = vg_bl.at(i);}
+		if(vg_canopy.size() != seg_leaves_idx.size()){g_canopy_ = g_canopy;}else{g_canopy_ = vg_canopy.at(i);}
+		if(vg_air.size() != seg_leaves_idx.size()){g_air_ = g_air;}else{g_air_ = vg_air.at(i);}
+		
+		
 		int idl= seg_leaves_idx.at(i);
 		if((verbose_photosynthesis ==2)){std::cout<<"in loopcalcs "<<i<<" "<<idl<<std::endl;}
 		double l = lengths.at(idl);
-		//double a = plant->radii[idl];
+		
 		double sideArea = plant->leafBladeSurface.at(idl)*2;//
-		//double perimeter = sideArea/l*2;
+		
 		if((verbose_photosynthesis ==2)){std::cout<<"geom "<<l<<" "<<sideArea<<std::endl;}
 		double eps = 0.;
 		double rxi = this->psiXyl.at(plant->segments.at(idl).x);
@@ -592,7 +694,7 @@ void Photosynthesis::loopCalcs(double simTime){
         auto n1 = plant->nodes[plant->segments.at(idl).x].z;
         auto n2 = plant->nodes[plant->segments.at(idl).y].z;
 		//(mg mmol-1)* hPa /((hPa cm3K−1mmol−1) mg cm-3 K) =(-)
-		double HRleaf = std::exp(Mh2o*(this->pg.at(i) + (n1+n2)/2)*0.9806806 /(rho_h2o*R_ph*TleafK)) ;//fractional relative humidity in the intercellular spaces
+		double HRleaf = std::exp(Mh2o*(this->pg.at(i) + (n1+n2)/2)*0.9806806 /(rho_h2o*R_ph*TleafK.at(i))) ;//fractional relative humidity in the intercellular spaces
 		//double ea = es - VPD;
 		double ea_leaf = es * HRleaf;//hPa
 		if((verbose_photosynthesis ==2)){std::cout<<"git to leaf "<<ea_leaf<<" "<<HRleaf<<std::endl;}
@@ -602,25 +704,24 @@ void Photosynthesis::loopCalcs(double simTime){
             
 			fw.at(i) = fwr + (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa)));
             
-			ci.at(i) = std::max((cs*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)),deltagco2.at(i)+cs/100) ;
+			ci.at(i) = std::max((cs_*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)),deltagco2.at(i)) ;
 			if((verbose_photosynthesis ==2)){std::cout<<"in compute gco2 "<<sideArea<<" "<<(sideArea > 1e-16)<<std::endl;}
-			//sideArea = 2. * M_PI * a ;//
-			//carboxylation and electron transport  rate
-			Vc.at(i) = std::max(std::min(std::max(Vcmax.at(i) * (ci.at(i) - delta) / (ci.at(i) + Kc*(1. + oi/Ko)),0.),Vcmax.at(i)),0.); //Eq 8
-
-			Vj.at(i) = std::max(J/4. * (ci.at(i) - delta)/ (ci.at(i) + 2. * delta), 0.) ;//Eq 22
-
-			//An mol m-2 s-1
-			An.at(i) = std::min(Vc.at(i), Vj.at(i)) - Rd;//Eq 6
+			
+			switch(PhotoType)
+			{
+				case C3: {photoC3_loop(i);break;}		
+				case C4: {photoC4_loop(i);break;}	
+				default:{throw std::runtime_error("Photosynthesis::loopCalcs: PhotoType not recognised");}
+			}
 			
 			// mol CO2 m-2 s-1
-			gco2.at(i) = g0 + fw.at(i) * a1 *( An.at(i) + Rd)/(ci.at(i) - deltagco2.at(i));//tuzet2003
+			gco2.at(i) = std::max(g0 + fw.at(i) * a1 *( An.at(i) + Rd.at(i))/(ci.at(i) - deltagco2.at(i)),0.);//tuzet2003
 			// mol H2O m-2 s-1 MPa-1
-			//double k_stomate_1 = (gco2.at(i) * a2) / Patm;
+			
 			//(mol m-2 s-1)*(mmol/mol)*(hPa/hPa) * (mg mmol-1) /(mg cm-3) *(h/d)*(s/h)*(m2 m-2) =  ( cm3)/d*(cm-2)
-				if((gco2.at(i)>0.)&&(gm*fw.at(i)>0.)&&(g_bl>0.)&&(g_canopy>0.)&&(g_air>0.))//
+				if((gco2.at(i)>0.)&&(gm*fw.at(i)>0.)&&(g_bl_>0.)&&(g_canopy_>0.)&&(g_air_>0.))//
             {//
-                gtotOx.at(i) = 1/(1/(gco2.at(i) * a2_stomata) +1/(gm*fw.at(i) )+ 1/(g_bl * a2_bl) + 1/(g_canopy * a2_canopy) + 1/(g_air * a2_air) );
+                gtotOx.at(i) = 1/(1/(gco2.at(i) * a2_stomata) +1/(gm*fw.at(i) )+ 1/(g_bl_ * a2_bl) + 1/(g_canopy_ * a2_canopy) + 1/(g_air_ * a2_air) );
             }else
             {
                 gtotOx.at(i) = 0.;
@@ -645,11 +746,11 @@ void Photosynthesis::loopCalcs(double simTime){
 			bool erroHappened = (!std::isfinite(this->pg.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)||(fw.at(i)>1)||(fw.at(i)<0);
 			if(erroHappened) {
 			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl;
-			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J<<" "<<Vcmax.at(i)<<" "<<Kc<<" "<<Ko<<" ";
-			std::cout<<" "<<delta<<" "<<oi<<" "<<eps<<std::endl;
-			std::cout<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd<<" "<< deltagco2.at(i)<<std::endl;
+			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J.at(i)<<" "<<Vcmax.at(i)<<" "<<Kc.at(i)<<" "<<Ko.at(i)<<" ";
+			std::cout<<" "<<delta.at(i)<<" "<<oi<<" "<<eps<<std::endl;
+			std::cout<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd.at(i)<<" "<< deltagco2.at(i)<<std::endl;
 			std::cout<<"forJW, Jw "<<Jw.at(i)<<" drout_in "<<(this->pg.at(i) - (rxi + rxj)/2)<<" "<<ea_leaf <<" "<< ea<<" "<<Patm<<" "<<Mh2o<<" "<<rho_h2o <<std::endl;
-			std::cout<<"forpg "<<sideArea <<" "<< Jw.at(i)<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
+			std::cout<<"forpg "<<sideArea<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
 			std::cout<<"diff Ev and lat fluw: "<<Ev.at(i)<<std::endl;//<<" "<<outputFluxL.at(i)
 				throw std::runtime_error("Phtotosynthesis: nan or Inf  pg.at(i)");
 			}
@@ -658,11 +759,11 @@ void Photosynthesis::loopCalcs(double simTime){
 		if(doLog ){
 			if((verbose_photosynthesis ==2)){std::cout<<"dolog loop calcs "<<std::endl;}
 			myfile4<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl;
-			myfile4<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J<<" "<<Vcmax.at(i)<<" "<<Kc<<" "<<Ko<<" ";
-			myfile4<<" "<<delta<<" "<<oi<<" "<<eps<<std::endl;
-			myfile4<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd<<" "<< deltagco2.at(i)<<std::endl;
+			myfile4<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J.at(i)<<" "<<Vcmax.at(i)<<" "<<Kc.at(i)<<" "<<Ko.at(i)<<" ";
+			myfile4<<" "<<delta.at(i)<<" "<<oi<<" "<<eps<<std::endl;
+			myfile4<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd.at(i)<<" "<< deltagco2.at(i)<<std::endl;
 			myfile4<<"forJW, Jw "<<Jw.at(i)<<" drout_in "<<(this->pg.at(i) - (rxi + rxj)/2)<<" "<<ea_leaf <<" "<< ea<<" "<<Patm<<" "<<Mh2o<<" "<<rho_h2o <<std::endl;
-			myfile4<<"forpg "<<sideArea <<" "<< Jw.at(i)<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
+			myfile4<<"forpg "<<sideArea <<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
 			myfile4<<"diff Ev and lat fluw: "<<Ev.at(i)<<std::endl;//<<" "<<outputFluxL.at(i)
 		}
 	}
@@ -671,6 +772,24 @@ void Photosynthesis::loopCalcs(double simTime){
 }
 
 
-	/* Computes water-limited growth*/
+
+double Photosynthesis::kr_f(int si, double age, int subType, int organType)
+{
+	//try{
+		//std::cout<<"Photosynthesis::kr_f "<<si<<" "<<subType<<" "<< organType<<" "<<plant->seg2cell.size()<<std::endl;
+		int cellIndex = plant->seg2cell.at(si);
+		if (((cellIndex>=0)&&(organType ==Organism::ot_leaf))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
+		{ 
+				return 0.;
+		}else
+		{ 
+			//std::cout<<"to XylemFlux::kr_f"<<std::endl;
+			return XylemFlux::kr_f(si, age, subType, organType);
+		}
+	//} catch(...) { 
+	//	return XylemFlux::kr_f(si, age, subType, organType);
+	//}
+	
+}
 
 }//end namespace

@@ -24,6 +24,7 @@ namespace CPlantBox {
 class Photosynthesis: public XylemFlux
 {
 public:
+	enum PhotoTypes { C3 = 0, C4 = 1}; ///< add other later (CAM?)
     Photosynthesis(std::shared_ptr<CPlantBox::MappedPlant> plant_, double psiXylInit = -500., double ciInit = 350e-6);
 	virtual ~Photosynthesis() {}
 	
@@ -37,21 +38,54 @@ public:
 				const std::vector<double> soil_k_);///< main function, solves the flux equations
 	
 	void loopCalcs(double simTime); ///<solves photosynthesis/stomatal opening equations 
+	void photoC4_loop(int i);
+	void photoC3_loop(int i);
+	//Compute variables which do not vary during one "solve_photosynthesis " computation
+	void initCalcs(double sim_time_);
+	void initStruct(double sim_time_);
+	void initVcVjRd();
+	void photoC4_init(int i);
+	void photoC3_init(int i);
+	
 	void getAg4Phloem(); ///< Converts An [mol CO2 m-2 s-1] to Ag4Phloem [mmol Suc d-1]
 	void getError(double simTime);///< Computes error % for each segment for each of the variables of interestes.
 	
 	void doAddGravity(); ///< add gravitational wat. pot to total wat. pot. (used in phloem module)
+	
+	double Q10f(int index){		return std::pow(Q10_photo,(TleafK.at(index) - Tref)/10);		}
+	double thermalBreakdown(int index, double Ed);
+	double Arrhenius(int index, double Ea);
+	double getChl(int index)
+	{
+		if(Chl.size() != seg_leaves_idx.size()){return Chl.at(0);
+		}else{return Chl.at(index);}
+	}
+	double getQlight(int index)
+	{
+		if(vQlight.size() != seg_leaves_idx.size()){return Qlight;
+		}else{return vQlight.at(index);}
+	}
+	
+	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const override;
+	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
+	double kr_f(int si, double age, int type, int orgtype);
+		
+		
 	//void r_forPhloem(double lightTimeRatio, int ot);
 	
-	//		intermediary results and outputs
+	//					intermediary results and outputs
+	// 				C3 and C4
     std::vector<double>  tauv, fv,  lengths, deltagco2, dv; 
-	double Ko, Kc, delta, J, Rd;
 	double es,ea;// 
+	std::vector<double> delta;
+	std::vector<double> Rd_ref;
+	std::vector<double> Rd;
 	std::vector<double> psiXyl; //saves the wat. pot. values of xylem for photosynthesis and phloem modules
 	std::vector<double> Ag4Phloem;//gross assimilation rate per segment for phloem module [mmol Suc d-1]
 	std::vector<double> An; //gross assimilation rate assimilation per unit of surface [mol CO2 m-2 s-1]
 	std::vector<double> Vc; //gross assimilation rate per unit of surface [mol CO2 m-2 s-1]
 	std::vector<double> Vcmax; //gross assimilation rate per unit of surface [mol CO2 m-2 s-1]
+    std::vector<double> Vcrefmax;
 	std::vector<double> Vj; //gross assimilation rate per unit of surface [mol CO2 m-2 s-1]
 	std::vector<double> ci;
 	std::vector<double> Jw;
@@ -64,12 +98,22 @@ public:
 	std::vector<double> fw;
 	std::vector<double> psiXyl4Phloem; //sum of psiXyl + gravitational wat. pot.
 	std::vector<double> gco2;
-	bool doLog = false; int verbose_photosynthesis = 0;
 	std::vector<double> gtotOx;
-    std::vector<double> Vcrefmax;std::vector<double> Jrefmax;
-    float gm = 0.01; //mesophyll resistance 
+	// 				C3 only
+	std::vector<double> Jrefmax;
+	std::vector<double> J;
+	std::vector<double> Jmax;
+	// 				C3 MOSTLY (very small effect on C4)
+	std::vector<double> Ko;
+	std::vector<double> Kc;
+	// 				C4 only
+	std::vector<double> Vp; //PEP carboxylase-limited (or CO2-limited) rate [mol CO2 m-2 s-1]
+	std::vector<double> kp; //initial slope of the CO2 response curve for Vp [mol CO2 m-2 s-1]
+	std::vector<double> kp25; //initial slope of the CO2 response curve for Vp [mol CO2 m-2 s-1] at the reference temperature
+	
 	//		to evaluate convergence, @see Photosynthesis::getError
 	int maxLoop = 5000; int minLoop = 1;std::string outputDir="";
+	bool doLog = false; int verbose_photosynthesis = 0;
     int loop;									   
     std::vector<double> maxErrAbs= std::vector<double>(9, 0.);	
 	std::vector<double> maxErr= std::vector<double>(9, 0.);	
@@ -84,24 +128,38 @@ public:
 	std::vector<double> ci_old ;
 	std::vector<double> pg_old ;
 	
-	
 	//			initial guesses
 	double psiXylInit; //initial guess for xylem total wat. pot. [cm]
 	double ciInit; //initial guess for leaf internal [CO2] [mol mol-1]
 	
+	//___________
+	//			default value of plant variable (C3 and C4), to re-set at runtime
+	// 				C3 and C4
+    float gm = 0.01; //mesophyll resistance 
+	int PhotoType = C3;	
 	//			default value of env variable, to re-set at runtime
 	double Patm = 1013.15;//default [hPa]
-	double cs = 350e-6; //example from Dewar2002 [mol mol-1]
-	double TleafK; //[K]
-	double TairC = 20; //[°C]
-	double Qlight = 900e-6;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
+	double  cs  = 350e-6; //example from Dewar2002 [mol mol-1]
+	std::vector<double>  vcs; //example from Dewar2002 [mol mol-1]
+	std::vector<double>  TleafK; //[K]
+	double  TairC; //[°C]
+	double  Qlight;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
+	std::vector<double>  vQlight;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
 	std::vector<double>  Chl = std::vector<double>(1,55.); 
-	double oi = 210e-3;//leaf internal [O2] [mol mol-1]
 	double g_bl = 2.8;//leaf boundary molar conductance [mol CO2 m-2 s-1]
 	double g_canopy = 6.1;//aerodynamic molar conductance [mol CO2 m-2 s-1]
 	double g_air = 11.4;//aerodynamic molar conductance [mol CO2 m-2 s-1]
+	std::vector<double>  vg_bl;//leaf boundary molar conductance [mol CO2 m-2 s-1]
+	std::vector<double>  vg_canopy;//aerodynamic molar conductance [mol CO2 m-2 s-1]
+	std::vector<double>  vg_air;//aerodynamic molar conductance [mol CO2 m-2 s-1]
+	// 				C3 only
+	double oi = 210e-3;//leaf internal [O2] [mol mol-1]
+	//___________
 	
-	//			parameter to re-parametrise , put in phloem files
+	
+	//_______
+	//			parameters to re-parametrise 
+	// 				C3 and C4
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
 	double sh = 3.765e-4;//sensibility to water stress
@@ -109,38 +167,51 @@ public:
 	//influence of N contant, to reparametrise!, 
 	double VcmaxrefChl1 = 1.28/2;//otherwise value too high, original: 1.31
 	double VcmaxrefChl2 = 8.33/2; //otherwise value too high, original: 8,52
-	//for Vc, Vj, Ag, to reparametrise!
-	double a1=4.; //g0+ fw[i] * a1 *( An[i] + Rd)/(ci[i] - deltagco2[i]);//tuzet2003
-	double a3 = 1.7;//Jrefmax = Vcrefmax * a3 ;//Eq 25
 	double alpha = 0.2; //or 0.44 , coefb = -(alpha * Qlight + Jmax);, alpha * Qlight * Jmax;
-	double theta = 0.9;//or 0.67 coefa = theta;
-	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
+	double a1=4.; //g0+ fw[i] * a1 *( An[i] + Rd)/(ci[i] - deltagco2[i]);//tuzet2003
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
-	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) override;
-	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
+	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
 	
-	//Compute variables which do not vary during one "solve_photosynthesis " computation
-	void initCalcs(double sim_time_);
-	void initStruct(double sim_time_);
-	void initVcVjRd();
+	// 				C3 only
+	double a3 = 1.7;//Jrefmax = Vcrefmax * a3 ;//Eq 25
+	double theta = 0.9;//or 0.67 coefa = theta;
 	
-	//			physicall constant (no need to parametrise)
+	// 				C4 only
+	double Q10_photo = 2;
+	//___________
+	
+	
+	//___________
+	//			physicall constant (no need to reparametrise?)
+	// 				C3 and C4
 	double a2_stomata = 1.6; //gco2 * a2 = gh2o
 	double a2_bl = 1.37;//gco2 * a2 = gh2o
 	double a2_canopy = 1;//gco2 * a2 = gh2o
 	double a2_air = 1;//gco2 * a2 = gh2o
-	//(de)activate parameters
-    double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
-    double Eard = 53000;double Eav = 58520;
-    double Edj =  220000;double Edv = 220000;
-	//ref value at T = T_ref
-	double Kc_ref = 302e-6; double Ko_ref = 256e-3; //mmol mmol-1
-	double Rd_ref = 0.32e-6;double Tref = 293.2;//K
-	double S = 700;//enthropy mJ mmol-1 K-1
 	double Mh2o = 18;//molar weight, g mol-1, mg mmol-1
 	double R_ph = 83.143;//perfect gas constant, hPa cm3K−1mmol−1
 	double rho_h2o = 1000;//water density mg cm-3
 	double M_Chla = 893.51;//chlorophyle a molar mass (g / mol)
+	double Tref = 293.2;//K
+	// 				MOSTLY C3 (very small effect on C4)
+	//(de)activate parameters
+    double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
+    double Eard = 53000;double Eav = 58520;
+    double Edj =  220000;double Edv = 220000;double Edrd;// = 53000;
+	//double Rd_refC3 = 0.32e-6; one less param!
+	double S = 700;//enthropy mJ mmol-1 K-1
+	//ref value at T = T_ref
+	double Kc_ref = 302e-6; double Ko_ref = 256e-3; //mmol mmol-1
+	
+	// 				C4 only
+	double s1 = 0.3; //K-1	Bonan2019Chap11: temperature
+	double s2 = 313.15;//K	Bonan2019Chap11
+	double s3 = 0.2; //K-1	Bonan2019Chap11
+	double s4 = 288.15;//K	Bonan2019Chap11
+	double s5 = 1.3; //K-1	Bonan2019Chap11
+	double s6 = 328.15;//K	Bonan2019Chap11
+	//___________
+	
 	
 	//			other parameters and runtime variables
 	std::vector<std::shared_ptr<Organ>> orgsVec;

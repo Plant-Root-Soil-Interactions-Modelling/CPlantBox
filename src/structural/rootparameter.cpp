@@ -7,6 +7,7 @@
 #include <iostream>
 #include <chrono>
 #include <assert.h>
+#include <numeric>
 
 namespace CPlantBox {
 

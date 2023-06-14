@@ -38,8 +38,8 @@ public:
 
     // to visualize results
     void addAge(double simtime);  // "age"
-    void addConductivities(const XylemFlux& xylem, double simtime); // "kr", "kx"
-    void addFluxes(XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime); // "axial_flux", "radial_flux"
+    void addConductivities(const XylemFlux& xylem, double simtime, double kr_max = 1.e6, double kx_max = 1.e6); // "kr", "kx"
+    void addFluxes(const XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime); // "axial_flux", "radial_flux"
     void addCellIds(const MappedSegments& plant); // "cell_id"
 
     // reduce number of segments

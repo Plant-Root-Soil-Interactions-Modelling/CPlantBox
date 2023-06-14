@@ -41,12 +41,18 @@ for program in programs:
     except FileNotFoundError:
         error.append(program)
 
-   
-programs = ['default-jre', 'libboost-all-dev', 'python3-pip','libeigen3-dev'] 
 
+#is the script running on (agro)cluster?
+#tried to make evaluation automatic but not sure it holds on all machines
+isCluster = ('ENV' in os.environ.keys())
+        
+programs = ['default-jre', 'python3-pip','libeigen3-dev'] 
+if not isCluster:
+    programs.append('libboost-all-dev')
+    
 for program in programs:
     output = subprocess.run(["dpkg", "-l", program], capture_output=True)
-    if ('no packages found' in str(output)):
+    if ('no packages found' in str(output)):        
         error.append(program)
         
 if len(error) > 0:
@@ -83,7 +89,7 @@ show_message("(2/3) Step completed. All prerequistes found.")
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '-b', 'stable_v2.1', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    subprocess.run(['git', 'clone', '--depth','1','-b', 'stable_v2.1', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 os.chdir("CPlantBox")
@@ -91,7 +97,7 @@ os.chdir("CPlantBox")
 if os.path.exists("./src/external/pybind11"):
     subprocess.run(['rm', '-rf', 'src/external/pybind11'])#delete folder
 subprocess.run(['git', 'rm', '-r','--cached', 'src/external/pybind11'])#take out git cache for pybind11
-subprocess.run(['git', 'submodule', 'add',  '--force', '-b', 'stable', '../../pybind/pybind11', './src/external/pybind11'])
+subprocess.run(['git', 'submodule', 'add',  '--force', '-b', 'stable', 'https://github.com/pybind/pybind11.git', './src/external/pybind11'])
 subprocess.run(['cmake', '.']) 
 subprocess.run(['make'])  
 os.chdir("..")
