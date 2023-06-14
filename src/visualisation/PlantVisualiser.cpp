@@ -174,6 +174,7 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
   unsigned int cell_space = 0;
 	unsigned int num_organs = 0;
 
+  if(verbose_) std::cout << "Compute space requirement for organ type " << organType << std::endl;
   for(auto organ : organ_list)
   {
     // Check against object, because organType can be -1
@@ -197,7 +198,7 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
 			}
 		}
   }
-  //std::cout << "Going to allocate " << point_space << " points and " << cell_space << " cells" << std::endl;
+  if(verbose_) std::cout << "Going to allocate " << point_space << " points and " << cell_space << " cells" << std::endl;
   if(clearFirst)
   {
     geometry_.clear();
@@ -221,20 +222,23 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
   for(auto organ : organ_list)
   {
     checked_organs++;
-		//std::cout << "Going through organ " << organ->getId() << std::endl;
+		if(verbose_) std::cout << "Going through organ " << organ->getId() << ":";
 
     if((organType >= 1 && organ->organType() != organType) || organ->getNumberOfNodes() <= 1)
     {
+      if(verbose_) std::cout << " not of type " << organType << " or only one node" << std::endl;
       continue;
     }
     if(organ->organType() == 4)
     {
+      if(verbose_) std::cout << " leaf";
 			auto leaf = std::dynamic_pointer_cast<Leaf>(organ);
 			// render petiole
       //std::cout << "Generating geometry_ for leaf " << organ->getId() << " with " << organ->getNumberOfNodes() << " nodes." << std::endl;
       //std::cout << "Stem part for petiole and rest" << std::endl;
 			if(include_midline_in_leaf_)
 			{
+        if(verbose_) std::cout << "+stem";
         GenerateStemGeometry(organ, point_space, cell_space);
 			}
       //std::cout << "Updating buffer positions because the leaf is a two-parter" << std::endl;
@@ -245,13 +249,15 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
 			
 			if(leaf->getLeafRandomParameter()->parametrisationType == 1)
 			{
-				std::cout << "Generating radial leaf geometry_" << std::endl;
+        if(verbose_) std::cout << "+radial";
+				//std::cout << "Generating radial leaf geometry_" << std::endl;
 				GenerateRadialLeafGeometry(leaf, point_space, cell_space);
 				point_space = geometry_.size();
 				cell_space = geometry_indices_.size();
 			}
 			else
 			{
+        if(verbose_) std::cout << "+flat";
 				int petiole_zone = 0;
 				for(int i = 0; i < leaf->getNumberOfNodes(); i++)
 				{
@@ -271,7 +277,7 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
     }
     else
     {
-			//std::cout << "Organ is a stem" << std::endl;
+			if(verbose_) std::cout << " Stem";
       //std::cout << "Generating geometry_ for stem " << organ->getId() << " with " << organ->getNumberOfNodes() << " nodes." << std::endl;
       auto prev_size = geometry_indices_.size();
       GenerateStemGeometry(organ, point_space, cell_space);
@@ -282,7 +288,7 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
       cell_space = geometry_indices_.size();
     }
     //std::cout << "Done generating geometry_ for organ " << organ->getId() << std::endl;
-
+    if(verbose_) std::cout << std::endl;
   }
   assert(geometry_.size() % 3 == 0);
   assert(geometry_indices_.size() % 3 == 0);
@@ -306,13 +312,14 @@ void PlantVisualiser::ComputeGeometry()
 
 void PlantVisualiser::ResetGeometry()
 {
-  if(verbose_) std::cout << "Resetting the vis geometry" << std::endl;
+  if(verbose_) std::cout << "Resetting the vis geometry";
   geometry_.clear();
   geometry_normals_.clear();
   geometry_colors_.clear();
   geometry_indices_.clear();
   geometry_texture_coordinates_.clear();
   geometry_node_ids_.clear();
+  if(verbose_) std::cout << " done" << std::endl;
 }
 
 void PlantVisualiser::MapPropertyToColors(std::vector<double> property, std::pair<double, double> minMax)
@@ -347,6 +354,7 @@ void PlantVisualiser::BuildAttachmentMap()
 
 void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int petiole_zone, unsigned int p_o, unsigned int c_o)
 {
+  //std::cout << "Creating linear leaf geometry for organ " << leaf->getId() << std::endl;
   // std::vector::reserve should be idempotent.
   //std::cout << "Resizing geometry_ buffers for a leaf with n=" << leaf->getNumberOfNodes() << ", pet=" << petiole_zone << std::endl;
 	int first_surface_id = petiole_zone + 1;
@@ -435,7 +443,7 @@ void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned 
 
 void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned int p_o, unsigned int c_o)
 {
-  //std::cout << "Generating Stem for " << stem->getId() << " and reserving buffers" << std::endl;
+  if(verbose_) std::cout << "Generating Stem for " << stem->getId() << " and reserving buffers ...";
 	geometry_.resize(std::max(static_cast<std::size_t>(p_o + (stem->getNumberOfNodes() * geometry_resolution_ * 3)), geometry_.size()),-1.0);
 	geometry_normals_.resize(std::max(static_cast<std::size_t>(p_o + (stem->getNumberOfNodes() * geometry_resolution_ * 3)), geometry_normals_.size()),-1.0);
   //std::cout << "Wanting to resize " << geometry_indices_.size() << "/" << geometry_indices_.capacity() << " indices to " << static_cast<std::size_t>(c_o + (stem->getNumberOfNodes() -1) * geometry_resolution_ * 6) << std::endl;
@@ -508,22 +516,32 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
       geometry_texture_coordinates_[2 * (i * geometry_resolution_ + j) + 1 + point_index_offset*2] = phi / (2.0 * M_PI);
     }
   }
+  if(verbose_) std::cout << "done" << std::endl;
 }
 
 void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o, unsigned int c_o)
 {
+  // Bail out if the leaf is too small
+  if(leaf->getNumberOfNodes() < 2)
+  {
+    //std::cout << "Leaf " << leaf->getId() << " has too few nodes to generate geometry" << std::endl;
+    return;
+  }
+  if(verbose_) std::cout << "Generating radial leaf geometry for leaf " << leaf->getId() << std::endl;
 	// Fetch the phi array
 	double scaling_factor = leaf->getParameter("areaMax") * leaf->getLength(false) / leaf->getParameter("k");
 
 	// resolution
 	int resolution = leaf_resolution_;
 	// Compute the mid vein of the leaf
+  //std::cout << "Constructing the mid vein spline for leaf " << leaf->getId() << std::endl;
 	CatmullRomSplineManager midVein = leaf->getNodes();
+  //std::cout << "Constructed the mid vein spline for leaf " << leaf->getId() << std::endl;
 	// Compute the leaf length
 	auto length = leaf->getLength(false);
 	// save c_o
 	unsigned int start_c_o = c_o;
-  // std::cout << "Accessing leaf random parameter for leaf " << leaf->getId() << std::endl;
+  if(verbose_) std::cout << "Accessing leaf random parameter for leaf " << leaf->getId() << std::endl;
 	// get leaf random parameter
 	auto lrp = leaf->getLeafRandomParameter();
 	auto stem = leaf->getParent();
@@ -547,13 +565,13 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   //Quaternion lastRotation = Quaternion::FromMatrix3d({direction, right, up});
 	auto min_radius = stem->getParameter("radius");
 
-  // std::cout << "Invoking create leaf radial geometry_ for leaf " << leaf->getId() << std::endl;
 
 	// create leaf radial geometry_
 	// greate points for the leaf outer
 	// double check that this was not done in python
 	if(lrp->leafGeometry.size() == 0)
 	{
+    //std::cout << "Invoking create leaf radial geometry_ for leaf " << leaf->getId() << std::endl;
 		lrp->createLeafRadialGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,resolution);
 	}
 	// retrieve the leaf geometry_
@@ -564,7 +582,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   int last_amount = -1;
   int last_non_petiole = -1;
   double r_max = std::numeric_limits<float>::lowest();
-  //std::cout << "Counting how much space we need for the leaf geometry_" << std::endl;
+  if(verbose_) std::cout << "Counting how much space we need for the leaf geometry_" << std::endl;
   for (auto i = 0; i < outer_geometry_points.size(); ++i)
   {
 		MirrorIterator helper(&(outer_geometry_points[i]));
@@ -602,7 +620,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       last_amount = current_amount;
     }
   }
-  //std::cout << "Resizing geometry_ buffers by " << point_buffer << " points and " << index_buffer << " triangle values." << std::endl;
+  if(verbose_) std::cout << "Resizing geometry_ buffers by " << point_buffer << " points and " << index_buffer << " triangle values." << std::endl;
   // increase geometry_ buffers
   this->geometry_.resize(std::max(static_cast<std::size_t>(p_o + point_buffer * 3), this->geometry_.size()),-1.0);
 	this->geometry_indices_.resize(std::max(static_cast<std::size_t>(c_o + index_buffer), this->geometry_indices_.size()),static_cast<unsigned int>(-1));
@@ -610,7 +628,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 	this->geometry_texture_coordinates_.resize(std::max(static_cast<std::size_t>((p_o/3*2) + point_buffer * 2), this->geometry_texture_coordinates_.size()),-1.0);
 	this->geometry_node_ids_.resize(std::max(static_cast<std::size_t>(p_o / 3 + point_buffer), this->geometry_node_ids_.size()),-1);
 	// get the number of points
-  // std::cout << "Iterating through the line intersections and generating the geometry_" << std::endl;
+  if(verbose_) std::cout << "Iterating through the line intersections and generating the geometry_" << std::endl;
   last_amount = -1;
   last_non_petiole = -1;
 	Quaternion last_orientation;
@@ -852,7 +870,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		//last_orientation = local_q;
 		last_position = midpoint;
 	}
-	std::cout << "In the end I ended up adding " << c_o - start_c_o << " where I thought I'd add " << index_buffer << std::endl;
+	if(verbose_) std::cout << "In the end I ended up adding " << c_o - start_c_o << " where I thought I'd add " << index_buffer << std::endl;
 }
 
 std::vector<double> PlantVisualiser::GetGeometry() const

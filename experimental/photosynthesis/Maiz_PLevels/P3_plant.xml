@@ -43,8 +43,8 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="1"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <!--parameter name="la" value="8.3717832" dev="6.685989096"/>
-        <!--Apical zone [cm]-->
+        <!--parameter name="la" value="8.3717832" dev="6.685989096"-->
+        <!--Apical zone [cm] -->
 		<parameter name="ldelay" value="1.743317536" dev="1.331319229"/>
 		<!--Apical delay-->
         <parameter name="lb" value="3.777620392" dev="5.681762572"/>
@@ -80,7 +80,7 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="1"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <!--parameter name="la" value="6.050521625" dev="6.235345942"/>
+        <!--parameter name="la" value="6.050521625" dev="6.235345942"-->
         <!--Apical zone [cm]-->
 		<parameter name="ldelay" value="0.940057234" dev="0.535408753"/>
 		<!--Apical delay-->
@@ -117,7 +117,7 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="1"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <!--parameter name="la" value="7.5197415" dev="6.486524247"/>
+        <!--parameter name="la" value="7.5197415" dev="6.486524247"-->
         <!--Apical zone [cm]-->
 		<parameter name="ldelay" value="0.666278927" dev="0.428995036"/>
 		<!--Apical delay-->
@@ -154,7 +154,7 @@
         <!--Root color, red component [0.-1.]-->
         <parameter name="dx" value="1"/>
         <!--Axial resolution [cm] (maximal segment size)-->
-        <!--parameter name="la" value="1.234875926" dev="1.185985925"/>
+        <!--parameter name="la" value="1.234875926" dev="1.185985925"-->
         <!--Apical zone [cm]-->
 		<parameter name="ldelay" value="0.442531508" dev="0.309001379"/>
 		<!--Apical delay-->
@@ -267,6 +267,7 @@
 		<!--leaf 2d shape define along main axis or radially-->
 		<parameter name="parametrisationType" value="1"/>
 		<!--lead 2d shape-->
-		<parameter name="leafGeometry" phi="-3, -2.1, 0., 2.45, 3.5" x="1., 1., 1., 1., 1."/>
+		<parameter name="leafGeometry" phi="-1.57079633, -1.3962634 , -0.78539816,  0.        ,  0.78539816,
+        1.57079633" x="38.41053981,1. ,1., 0.3, 1., 38.41053981"/>
 </organ>
 </plant>

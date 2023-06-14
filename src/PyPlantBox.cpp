@@ -653,6 +653,7 @@ PYBIND11_MODULE(plantbox, m) {
       .def("nobs",&LeafRandomParameter::nobs)
       .def("leafLength",&LeafRandomParameter::leafLength)
       .def("leafMid",&LeafRandomParameter::leafMid)
+      .def_readwrite("shapeType", &LeafRandomParameter::shapeType)
 			.def_readwrite("geometryN", &LeafRandomParameter::geometryN)
 			.def_readwrite("parametrisationType", &LeafRandomParameter::parametrisationType)
 			.def_readwrite("leafGeometry", &LeafRandomParameter::leafGeometry)
@@ -1157,6 +1158,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("SetComputeMidlineInLeaf", &PlantVisualiser::SetComputeMidlineInLeaf, py::arg("inCompute"))
         .def("HasGeometry", &PlantVisualiser::HasGeometry)
         .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
+        .def("SetVerbose", &PlantVisualiser::SetVerbose, py::arg("verbose"))
     ;
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")

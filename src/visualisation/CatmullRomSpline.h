@@ -66,7 +66,13 @@ class CatmullRomSplineManager
 {
   public:
   CatmullRomSplineManager() = default;
-  CatmullRomSplineManager(std::vector<Vector3d> y) : y(y) {
+  CatmullRomSplineManager(std::vector<Vector3d> y) : y_(y) {
+    // ensure that we have at least 4 points, interpolate if not
+    // we linearly interpolate the first and last point
+    while(y_.size() < 4)
+    {
+      y_.insert(y_.begin() + 1, y_[0] + (y_[1] - y_[0]) * 0.5);
+    }
     computeT();
   }
 
@@ -112,7 +118,7 @@ class CatmullRomSplineManager
     return p / static_cast<double>(sum);
   }
   void setY(std::vector<Vector3d> y) {
-    this->y = y;
+    this->y_ = y;
     computeT();
   }
 
@@ -144,24 +150,24 @@ class CatmullRomSplineManager
   {
     yt.clear();
     yt.push_back(0);
-    for(int i = 1; i < y.size(); i++)
+    for(int i = 1; i < y_.size(); i++)
     {
-      yt.push_back(yt[i-1] + (y[i]-y[i-1]).length());
+      yt.push_back(yt[i-1] + (y_[i]-y_[i-1]).length());
     }
     for(int i = 0; i < yt.size(); i++)
     {
       yt[i] /= yt.back();
     }
     splines.clear();
-    for(int i = 0; i < y.size()-3; i++)
+    for(int i = 0; i < y_.size()-3; i++)
     {
-      splines.push_back(CatmullRomSpline({y[i], y[i+1], y[i+2], y[i+3]}, yt[i], yt[i+3]));
+      splines.push_back(CatmullRomSpline({y_[i], y_[i+1], y_[i+2], y_[i+3]}, yt[i], yt[i+3]));
     }
     this->t0 = splines[0].getT0();
     this->t1 = splines.back().getT1();
   }
 
-  std::vector<Vector3d> y; // control points
+  std::vector<Vector3d> y_; // control points
   std::vector<double> yt; // t values
   std::vector<CatmullRomSpline> splines;
   float t0 = -1.0;

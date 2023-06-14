@@ -21,18 +21,18 @@ def PolydataFromPlantGeometry(vis : pb.PlantVisualiser ) :
   geom.SetName("points")
   points.SetData(geom)
   nodeids = np.array(vis.GetGeometryNodeIds())
-  print(nodeids.shape)
+  #print(nodeids.shape)
   nodeids = vtknp.numpy_to_vtk(nodeids, deep=True)
   nodeids.SetName("nodeids")
   pd.GetPointData().AddArray(nodeids)
   texcoords = np.array(vis.GetGeometryTextureCoordinates())
-  print(texcoords.shape)
+  #print(texcoords.shape)
   texcoords = np.reshape(texcoords, (texcoords.shape[0]//2, 2))
   texcoords = vtknp.numpy_to_vtk(texcoords, deep=True)
   texcoords.SetName("tcoords")
   pd.GetPointData().AddArray(texcoords)
   normals = np.array(vis.GetGeometryNormals())
-  print(normals.shape)
+  #print(normals.shape)
   normals = np.reshape(normals, (normals.shape[0]//3, 3))
   normals = vtknp.numpy_to_vtk(normals, deep=True)
   normals.SetName("normals")
@@ -117,6 +117,55 @@ def CheckForSynavis(path : str = None) :
     return False
   # end try
 # end def CheckForSynavis
+
+def ColoursPolyDataFromPlantGeometry(vis : pb.PlantVisualiser, array: str, LUT : vtk.vtkLookupTable = None) :
+  polydata = PolydataFromPlantGeometry(vis)
+  if polydata is None :
+    return None
+  # end if
+  if LUT is None :
+    LUT = vtk.vtkLookupTable()
+    LUT.SetNumberOfTableValues(256)
+    LUT.Build()
+  # end if
+  # create a colour array
+  colours = vtk.vtkUnsignedCharArray()
+  colours.SetNumberOfComponents(3)
+  colours.SetName("colours")
+  # get the array
+  array = polydata.GetPointData().GetArray(array)
+  if array is None :
+    return None
+  # end if
+  # get the range of the array
+  range = array.GetRange()
+  # get the min and max
+  min = range[0]
+  max = range[1]
+  # apply the lookup table
+  for i in range(polydata.GetNumberOfPoints()) :
+    value = array.GetValue(i)
+    colour = LUT.GetTableValue(value)
+    colours.InsertNextTuple3(colour[0]*255, colour[1]*255, colour[2]*255)
+  # end for
+  polydata.GetPointData().AddArray(colours)
+  return polydata
+
+def WriteColouredPolydataToFile(vis : pb.PlantVisualiser, array : str, filename : str, LUT : vtk.vtkLookupTable = None) :
+  """Write a vtkPolyData object to file"""
+  polydata = ColoursPolyDataFromPlantGeometry(vis, array, LUT)
+  if polydata is None :
+    return
+  LUT.SetTableRange(polydata.GetPointData().GetArray(array).GetRange())
+  mapper = vtk.vtkPolyDataMapper()
+  mapper.SetInputData(polydata)
+  mapper.SetScalarRange(polydata.GetPointData().GetArray(array).GetRange())
+  mapper.SetLookupTable(LUT)
+  # end if
+  writer = vtk.vtkPLYWriter()
+  writer.SetFileName(filename)
+  writer.SetInputData(mapper)
+  writer.Write()
 
 
 
