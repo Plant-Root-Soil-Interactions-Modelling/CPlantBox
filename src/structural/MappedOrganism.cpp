@@ -306,7 +306,7 @@ void MappedSegments::unmapSegments(const std::vector<Vector2i>& segs) {
 			int c = 0;
 			for (int i=0; i<csegs.size(); i++) {
 				if (csegs[i] == segIdx) {
-					csegs.erase(csegs.begin() + c, csegs.begin() + c);
+					csegs.erase(csegs.begin() + c, csegs.begin() + c + 1);
 					break; // inner for
 				}
 				c++;
