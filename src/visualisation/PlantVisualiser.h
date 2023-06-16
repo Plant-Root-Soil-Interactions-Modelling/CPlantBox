@@ -42,6 +42,7 @@ public :
   void SetGeometryResolution(int resolution) { this->geometry_resolution_ = resolution; } // set the resolution of the geometry (number of cells in each direction
   void SetLeafResolution(int resolution) { this->leaf_resolution_ = resolution;}
   void SetComputeMidlineInLeaf(bool inCompute) { this->include_midline_in_leaf_ = inCompute; }
+  void SetRestrictBladeWidthAtStem(bool inRestrict) { this->restrict_blade_width_at_stem_ = inRestrict; }
 
   void setPlant(const std::shared_ptr<MappedPlant>& plant);
 
@@ -150,6 +151,7 @@ protected:
   std::vector<int> geometry_node_ids_; // the node ids for each vertex
   unsigned int geometry_resolution_{8}; // the resolution of the cylindric geometry
   unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry
+  bool restrict_blade_width_at_stem_{true}; // restrict the blade width at the stem
 };
 
 } // namespace CPlantBox

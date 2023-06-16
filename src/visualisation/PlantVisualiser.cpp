@@ -547,6 +547,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 	auto stem = leaf->getParent();
   Vector3d origin = leaf->getOrigin();
   Vector3d origin_neighbor;
+  double origin_width = stem->getParameter("radius");
   if(leaf->parentNI < stem->getNumberOfNodes() - 1)
     origin_neighbor = stem->getNode(leaf->parentNI + 1);
   else 
@@ -715,6 +716,10 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 			//std::cout << base_direction.toString() << std::endl;
 			//Vector3d updated_direction = local_q.Rotate(base_direction);
 			base_direction = (base_direction.length() > min_radius) ? base_direction : min_radius * vectorNormalized(base_direction);
+      if(restrict_blade_width_at_stem_ && p == 0 && base_direction.length() > (origin_width / 2.0))
+      {
+        base_direction = 0.5 * origin_width * vectorNormalized(base_direction);
+      }
 			const Vector3d point = midpoint + base_direction +  up * z_offset;
       //std::cout << "V: " << point.toString() << "; ";
       // set the point

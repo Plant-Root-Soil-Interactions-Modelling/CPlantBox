@@ -1159,6 +1159,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("HasGeometry", &PlantVisualiser::HasGeometry)
         .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
         .def("SetVerbose", &PlantVisualiser::SetVerbose, py::arg("verbose"))
+        .def("SetRestrictBladeWidthAtStem", &PlantVisualiser::SetRestrictBladeWidthAtStem, py::arg("restrict"))
     ;
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
