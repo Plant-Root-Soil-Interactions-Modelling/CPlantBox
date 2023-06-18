@@ -1,6 +1,16 @@
 """root system length over time"""
 import sys; sys.path.append("../.."); sys.path.append("../../src/"); sys.path.append("./"); sys.path.append("./src/")
 
+import os
+import shutil
+# save the current working directory
+path = os.getcwd()
+os.chdir("../../")
+# make
+os.system("make")
+# change back to the working directory
+os.chdir(path)
+
 import plantbox as pb
 import visualisation.vtk_plot as vp
 import visualisation.vis_tools as cpbvis
@@ -9,19 +19,33 @@ import numpy as np
 from tqdm import tqdm
 import vtk
 
+
+
 filename = "../../experimental/photosynthesis/Maiz_PLevels/P3_plant.xml"
+output_folder = "./results/"
+output = output_folder+"vis_grow"
 
-output = "./results/vis_grow"
+# remove all files in ./results/ first
+import os
+filelist = [ f for f in os.listdir(output_folder) if f.endswith(".vtp") and "vis_grow" in f ]
+for f in filelist:
+  os.remove(os.path.join(output_folder, f))
 
-time = 28
-time_resolution = 1
-leaf_res = 30
-mode = 0 # 0 = time, 1 = end
+time = 80
+time_resolution = 2
+leaf_res = 41
+mode = 1 # 0 = time, 1 = end
 # create a plant
 plant = pb.MappedPlant()
 plant.readParameters(filename, verbose = True)
 vis = pb.PlantVisualiser(plant)
-vis.SetComputeMidlineInLeaf(False)
+vis.SetComputeMidlineInLeaf(True)
+vis.SetMidlineLeafDiameterFactor(0.5)
+vis.SetAddVerticalLeafOffset(True)
+vis.SetRestrictBladeWidthAtStem(True)
+vis.SetRestrictBladeWidthAtTip(True)
+vis.SetVerbose(True)
+vis.SetTipWidth(10.0)
 
 for p in plant.getOrganRandomParameter(pb.seed) :
     p.delayDefinition = 0
@@ -37,16 +61,18 @@ if mode == 0 :
     # Simulate
     plant.simulate(1. / time_resolution, False)
     vis.ResetGeometry()
-    vis.ComputeGeometryForOrganType(pb.leaf, False)
-    vis.ComputeGeometryForOrganType(pb.stem, False)
+    vis.ComputeGeometry()
+    #vis.ComputeGeometryForOrganType(pb.leaf, False)
+    #vis.ComputeGeometryForOrganType(pb.stem, False)
     data = cpbvis.PolydataFromPlantGeometry(vis)
     cpbvis.WritePolydataToFile(data, output + str(i) + ".vtp")
   #endfor
 elif mode == 1 :
   plant.simulate(time, False)
   vis.ResetGeometry()
-  vis.ComputeGeometryForOrganType(pb.leaf, False)
-  vis.ComputeGeometryForOrganType(pb.stem, False)
+  vis.ComputeGeometry()
+  #vis.ComputeGeometryForOrganType(pb.leaf, False)
+  #vis.ComputeGeometryForOrganType(pb.stem, False)
   #vis.ComputeGeometry()
   # Write the geometry to file#
   data = cpbvis.PolydataFromPlantGeometry(vis)

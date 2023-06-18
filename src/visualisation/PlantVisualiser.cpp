@@ -168,6 +168,9 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst)
 {
   auto organ_list = plant_->getOrgans(-1, false);
+  std::sort(organ_list.begin(), organ_list.end(), [](const auto& a, const auto& b) {
+    return  a->organType() < b->organType() || (a->organType() == b->organType() && a->getId() < b->getId());
+  });
 		
   // First we check if we have enough memory to support the geometry_
   unsigned int point_space = 0;
@@ -454,9 +457,13 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
   geometry_node_ids_.resize(std::max(static_cast<std::size_t>((p_o/3) + stem->getNumberOfNodes() * geometry_resolution_), geometry_node_ids_.size()),-1);
   Quaternion lastRotation = Quaternion::geodesicRotation({1,0,0},{0,0,1});
 
+  double diameter = stem->getParameter("radius");
+  if(stem->organType() == 4)
+  {
+    diameter *= this->midline_leaf_diameter_factor_;
+  }
   for(auto i = 0; i < stem->getNumberOfNodes(); ++i)
   {
-    double diameter = stem->getParameter("radius");
     const auto& node = stem->getNode(i);
 
 		// if the current i is in the last 10% of the nodes
@@ -642,6 +649,11 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   // computing the first quaternion from: stem is forward, right is angular direction and up is the cross product
 
 
+  const Vector3d first_node = leaf->getNode(0);
+  const Vector3d first_estimated = midVein(0);
+  const auto first_distance = (first_node - first_estimated).length();
+  //std::cout << "First distance is " << first_distance << std::endl;
+
 	for(auto i = 0; i < outer_geometry_points.size(); ++i)
 	{
     const std::vector<double>& current = outer_geometry_points[i];
@@ -657,7 +669,17 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		// get the current point
     double t = static_cast<double>(i) / static_cast<double>(resolution);
 		double l = t * length;
-    auto midpoint = (i == 0) ? leaf->getNode(0) : midVein(t);
+    Vector3d midpoint;
+    if(i == 0)
+      midpoint = leaf->getNode(0);
+    else if(i == outer_geometry_points.size() - 1)
+      midpoint = leaf->getNodes().back();
+    else
+      midpoint = midVein(t);
+    if(i == outer_geometry_points.size() - 1)
+    {
+      std::cout << "Last point: " << midpoint.x << ", " << midpoint.y << ", " << midpoint.z << std::endl;
+    }
     // get the current point
 		// get the best spline for the current point
 		auto select_spline = midVein.selectSpline(t);
@@ -673,6 +695,11 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 
     // local axis
     direction = select_spline.derivative(t);
+    //if(i == outer_geometry_points.size() - 1)
+    //{
+    //  direction = midpoint - last_position;
+    //}
+    up = direction.cross(right).normalized();
     right = up.cross(direction).normalized();
 		right.z = 0.05 * right.z;
 		right.normalize();
@@ -683,11 +710,6 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 
 		float petiole_distance = leaf->getLeafRandomParameter()->lb;
 
-		const Vector3d first_node = leaf->getNode(0);
-		const Vector3d first_estimated = midVein(0);
-		const auto first_distance = (first_node - first_estimated).length();
-		//std::cout << "First distance is " << first_distance << std::endl;
-    
     for(int p = 0; p < helper.size(); ++p)
     {
       //std::cout << p_o << "/" << geometry_.size() << " ";
@@ -696,19 +718,15 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       // get the point
 			// get the wave effect which is a sine function along the length of the leaf
 
-			float z_offset =  0.33 * (helper.isMirrored(p) ? -1.0 : 1.0);
+			float z_offset =  (helper.isMirrored(p) ? -1.0 : 1.0) * (0.05 + 0.25 * random_factor_2);
 			// make two different sine waves for each side
       if(!add_vertical_leaf_offset_)
       {
         z_offset = 0.0;
       }
-			else if(helper.isMirrored(p))
-			{
-			  z_offset *= std::sin((2.0*random_factor_1 + 2.0) * l / M_PI);
-      }
       else
       {
-        z_offset *= std::sin((2.0 * random_factor_2 + 2.0) * l / M_PI + M_PI);
+        z_offset *= std::sin(2.0 * random_factor_1 * l / M_PI + 0.05*M_PI);
       }
 			Vector3d base_direction = leaf_width_scale_factor_ * r * right;
 			// scale with width
@@ -716,9 +734,13 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 			//std::cout << base_direction.toString() << std::endl;
 			//Vector3d updated_direction = local_q.Rotate(base_direction);
 			base_direction = (base_direction.length() > min_radius) ? base_direction : min_radius * vectorNormalized(base_direction);
-      if(restrict_blade_width_at_stem_ && p == 0 && base_direction.length() > (origin_width / 2.0))
+      if(restrict_blade_width_at_stem_ && i == 0)
       {
         base_direction = 0.5 * origin_width * vectorNormalized(base_direction);
+      }
+      if(restrict_blade_width_at_tip_ && i == outer_geometry_points.size() - 1)
+      {
+        base_direction = 0.5 * tip_width_ * vectorNormalized(base_direction);
       }
 			const Vector3d point = midpoint + base_direction +  up * z_offset;
       //std::cout << "V: " << point.toString() << "; ";
@@ -742,6 +764,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 			// increase buffer
 			p_o += 3;
     }
+
     //std::cout << std::endl;
     //std::cout << std::endl << "Generating the triangles for the current line intersection " << i << "(" << current.size() << ")" << std::endl;
     if(i > last_non_petiole && last_non_petiole >= 0)
@@ -752,6 +775,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       {
         // std::cout << " which is equal to the last one" << std::endl;
         // we construct pairwise triangles for the two sections
+        
         for(auto j = 0; j < current_amount - 1; j += 2)
         {
 					// first triangle
@@ -766,6 +790,10 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       }
       else
       {
+        if(i == outer_geometry_points.size() - 1)
+        {
+          std::cout << "we have a different amount of intersections" << std::endl;
+        }
         // set the normal
         geometry_normals_[p_o + 0] = up.x;
         geometry_normals_[p_o + 1] = up.y;
@@ -875,7 +903,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		//last_orientation = local_q;
 		last_position = midpoint;
 	}
-	if(verbose_) std::cout << "In the end I ended up adding " << c_o - start_c_o << " where I thought I'd add " << index_buffer << std::endl;
+	if(verbose_) std::cout << "In the end I ended up adding " << c_o - start_c_o << " indices where I thought I'd add " << index_buffer << std::endl;
 }
 
 std::vector<double> PlantVisualiser::GetGeometry() const

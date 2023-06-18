@@ -43,6 +43,11 @@ public :
   void SetLeafResolution(int resolution) { this->leaf_resolution_ = resolution;}
   void SetComputeMidlineInLeaf(bool inCompute) { this->include_midline_in_leaf_ = inCompute; }
   void SetRestrictBladeWidthAtStem(bool inRestrict) { this->restrict_blade_width_at_stem_ = inRestrict; }
+  void SetRestrictBladeWidthAtTip(bool inRestrict) { this->restrict_blade_width_at_tip_ = inRestrict; }
+  void SetAddVerticalLeafOffset(bool inAdd) { this->add_vertical_leaf_offset_ = inAdd; }
+  void SetVerbose(bool verbose) { this->verbose_ = verbose; }
+  void SetMidlineLeafDiameterFactor(double factor) { this->midline_leaf_diameter_factor_ = factor; }
+  void SetTipWidth(double width) { this->tip_width_ = width; }
 
   void setPlant(const std::shared_ptr<MappedPlant>& plant);
 
@@ -93,8 +98,6 @@ public :
   void MapPropertyToColors(std::vector<double> property, 
                            std::pair<double, double> minMax = {0.0, 1.0});
 
-  void SetVerbose(bool verbose) { this->verbose_ = verbose; }
-  void SetAddVerticalLeafOffset(bool add) { this->add_vertical_leaf_offset_ = add; }
 
 protected:
   std::shared_ptr<MappedPlant> plant_{nullptr};
@@ -102,8 +105,9 @@ protected:
   bool include_midline_in_leaf_{true};
   bool verbose_{false};
   bool add_vertical_leaf_offset_{false};
-
+  double tip_width_ = 0.01;
   double leaf_width_scale_factor_{1.0};
+  double midline_leaf_diameter_factor_{1.0};
 
   /**
    * A private method to build the attachment map for the leaf organs
@@ -152,6 +156,7 @@ protected:
   unsigned int geometry_resolution_{8}; // the resolution of the cylindric geometry
   unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry
   bool restrict_blade_width_at_stem_{true}; // restrict the blade width at the stem
+  bool restrict_blade_width_at_tip_{true}; // restrict the blade width at the tip
 };
 
 } // namespace CPlantBox
