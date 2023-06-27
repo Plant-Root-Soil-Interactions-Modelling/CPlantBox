@@ -8,6 +8,7 @@ import numpy as np
 from scipy.spatial import ConvexHull, Voronoi
 import scipy.linalg as la
 import vtk
+from mercurial.templatefuncs import min_, max_
 
 
 class PerirhizalPython(Perirhizal):
@@ -28,6 +29,57 @@ class PerirhizalPython(Perirhizal):
         width = ms.maxBound.minus(ms.minBound)
         vol = width.x * width.y * width.z / ms.resolution.x / ms.resolution.y / ms.resolution.z
         return np.ones((int(ms.resolution.x * ms.resolution.y * ms.resolution.z),)) * vol
+
+    def get_bounds(self, i:int, j:int, k:int):
+        """ returns the bounding box (minx ,miny ,minz, maxx, maxy, maxz) of soil cell with index i, j, k of a rectangular grid """
+        ms = self.ms  # rename
+        width = ms.maxBound.minus(ms.minBound)
+        cell_width = np.array([width.x / ms.resolution.x, width.y / ms.resolution.y, width.z / ms.resolution.z])
+        min_ = i * cell_width
+        max_ = (i + 1) * cell_width
+        return min_, max_
+
+    def nodes_within(self, min_, max_):
+        """ returns the nodes inside the bounding box given by min_, and max_ """
+        nodes_ = self.ms.nodes
+        nodes = np.array([[n.x, n.y, n.z] for n in nodes_])
+        one = np.ones((nodes.shape[0], 1))
+        n_, ni = [], []
+        for i, n in enumerate(nodes):
+            if n[0] >= min_[0] and n[1] >= min_[1] and n[2] >= min_[2] and n[0] < max_[0] and n[1] < max_[1] and n[2] < max_[2]:
+                n_.append(n)
+                ni.append(i)
+        print("nodes within", min_, max_, ":", len(n_))
+        print(n_)
+        return np.array(n_), np.array(ni)
+
+    def flip_(self, nodes, center, axis):
+        """ flips the nodes around the center according axis """
+        n_ = nodes - np.ones((nodes.shape[0], 1)) @ center
+        n_[:, axis] = -n_[:, axis]
+        n_ = n_ + center
+        return n_
+
+    def mirror_(self, i:int, j:int, k:int):
+        """ adds mirrored nodes to the 6 sides of the cubes"""
+        min_, max_ = self.get_bounds(i, j, k)
+        width_ = max_ - min_
+        width_ = np.expand_dims(width_, axis = 0)
+        center_ = min_ + width_ / 2.
+        n, ni = self.nodes_within(min_, max_)
+        if n.shape[0] > 0:
+            nodes_surr = n
+            fipped_n = [self.flip_(n, center_, i_) for i_ in range(0, 3)]  # flip them ...
+            translate_ = np.ones((n.shape[0], 1)) @ width_
+            print(width_.shape)
+            print(n.shape)
+            print("translate_", translate_.shape)
+            for i_ in range(0, 3):
+                nodes_surr = np.vstack((nodes_surr, fipped_n[i_] + translate_[:, i_]))  # add them
+                nodes_surr = np.vstack((nodes_surr, fipped_n[i_] - translate_[:, i_]))
+            return nodes_surr, ni
+        else:  # no nodes within
+            return np.ones((0,)), np.ones((0,))
 
     def get_density(self, type:str, volumes:list = []):
         """ retrives length, surface or volume density [cm/cm3, cm2/cm3, or cm3/cm3]
@@ -105,6 +157,62 @@ class PerirhizalPython(Perirhizal):
                 t = f(radii[si], lengths[si]) / tt  # proportionality factor (must sum up to == 1 over cell)
                 v = t * volumes[cell_id]  # target volume
                 outer_r[si] = np.sqrt(v / (np.pi * lengths[si]) + radii[si] * radii[si])
+
+        return outer_r
+
+    def get_outer_radii_bounded_voronoi(self):
+        """ retrives the outer radii  [cm] and corresponding perirhizal volumes [cm3] 
+            based on a 3D Voronoi diagram that are bounded by the soil volumes 
+            using the approach of mirrored nodes. 
+        """
+        ms = self.ms  # rename
+
+        min_b = ms.minBound
+        max_b = ms.maxBound
+        nodes_ = ms.nodes
+        nodes = np.array([[n.x, n.y, n.z] for n in nodes_])  # to numpy array
+        width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
+        print("making periodic", width)
+        print("nodes", nodes.shape)
+
+        nodes = self.make_periodic_(nodes, width)
+
+        x = int(ms.resolution.x)
+        y = int(ms.resolution.y)
+        z = int(ms.resolution.z)
+
+        vol = np.zeros((nodes.shape[0]))
+
+        for i in range(0, x):
+            for j in range(0, y):
+                for k in range(0, z):
+                    n, ni = self.mirror_(i, j, k)
+                    nn = ni.shape[0]
+                    # print("n", n)
+                    # print("ni", ni)
+                    if nn > 0:
+                        vor = Voronoi(n)
+
+                        for reg_num in vor.point_region:
+                            indices = vor.regions[reg_num]
+                            i_ = reg_num - 1
+                            if i_ >= 0 and i_ < nn:
+                                if -1 in indices:  # some regions can be opened
+                                    print(i_)
+                                    print(ni)
+                                    vol[ni[i_]] = np.nan
+                                else:
+                                    vol[ni[i_]] = ConvexHull(vor.vertices[indices]).volume
+                            else:
+                                if i_ < 0:
+                                    print("When does that happen, again?")
+
+        outer_r = vol.copy()
+        radii = self.ms.radii
+        lengths = self.ms.segLength()
+        for i, v in enumerate(vol[1:]):  # seg_index = node_index -1
+            if v > 0:
+                outer_r[i] = np.sqrt(v / (np.pi * lengths[i]) + radii[i] * radii[i])
 
         return outer_r
 
@@ -231,7 +339,7 @@ class PerirhizalPython(Perirhizal):
         return nodes_
 
     def to_range_(self, x:list, min_:float, max_:float):
-        """ returns ths list with values within min and max (and drops nans) """
+        """ returns ths list with values within min_ and max_ (and drops nans) """
         y = []
         for x_ in x:
             if (not np.isnan(x_)) and x_ >= min_ and x_ <= max_:
