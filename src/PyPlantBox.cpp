@@ -333,7 +333,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getLength", (double (Organ::*)(bool realized) const) &Organ::getLength, py::arg("realized") = true)
             .def("getLength", (double (Organ::*)(int i) const) &Organ::getLength)
 			.def("getEpsilon",&Organ::getEpsilon)
-
 			.def("getNumberOfNodes",&Organ::getNumberOfNodes)
 			.def("getNumberOfSegments",&Organ::getNumberOfSegments)
             .def("getOrigin",&Organ::getOrigin)
@@ -346,10 +345,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getSegments",&Organ::getSegments)
             .def("dx",&Organ::dx)
             .def("dxMin",&Organ::dxMin)
-
             .def("hasMoved",&Organ::hasMoved)
             .def("getOldNumberOfNodes",&Organ::getOldNumberOfNodes)
-
+            .def("getNodes",&Organ::getNodes)
             .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype, bool all)) &Organ::getOrgans, py::arg("ot")=-1, py::arg("all")=false) //overloads, default
             .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>>& v, bool all)) &Organ::getOrgans)
             .def("getParameter",&Organ::getParameter)

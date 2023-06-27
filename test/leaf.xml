@@ -3,6 +3,8 @@
     <!--leaf geometry resolution-->
     <parameter name="gf" value="1"/>
     <!--Growth function number [1]-->
+    <parameter name="isPseudostem" value="0"/>
+    <!--Do the leaf sheaths make a pseudostem?-->
     <parameter name="lnf" value="0"/>
     <!--Type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)-->
     <parameter name="parametrisationType" value="0"/>

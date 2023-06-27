@@ -109,7 +109,7 @@ public:
 
 	 /* useful */
     int parentNI; ///< local parent node index
-    Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
+    virtual Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
     Vector3d getiHeading0() const ;///< the initial coordinate system of the root, when it was created
 	bool hasRelCoord() const; //check if organ has relative coordinates
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
@@ -117,11 +117,11 @@ public:
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
 protected:
 
-    Vector3d partialIHeading;
+    mutable Vector3d partialIHeading;//variables mutable in case of pseudo stem (see @Leaf::heading)
 	
 	virtual void createLateral(double ageLN, bool silence); ///< creates a new lateral, called by Root::simulate(), overriden by @see RootDelay::createLateral()
 	virtual void storeLinkingNodeLocalId(int numCreatedLN, bool silence){;}; ///<  overriden by @see Stem::storeLinkingNodeLocalId()
-	Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction
+	virtual Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction. overriden by @see Leaf::getIncrement()
     void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
     virtual double getLatInitialGrowth(double dt);
 	virtual double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const;
