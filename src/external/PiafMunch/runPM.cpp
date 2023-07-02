@@ -892,7 +892,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                 if(ot == 3)//only for nodes in the growing phytomeres
                 {
                     nnEnd = org->getNodeIds().size()-1;
-                    if(StemGrowthPerPhytomer)
+                    if((StemGrowthPerPhytomer)&&(org->getNumberOfChildren() > 0))
                     {
                         
                         
