@@ -686,7 +686,7 @@ PYBIND11_MODULE(plantbox, m) {
       .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
       .def_readwrite("tropismAge", &LeafRandomParameter::tropismAge)
       .def_readwrite("tropismAges", &LeafRandomParameter::tropismAges)
-    ;
+       .def_readwrite("Width_blade", &LeafRandomParameter::Width_blade)  ;
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool, double, double>())
