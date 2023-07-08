@@ -1024,7 +1024,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                     }
             switch(org->budStage) 
             {
-                    case -1:{rmax =0; break;}
+                    case -1:{rmax =0; Lmax =org->getLength(false);break;}
                     case 0:{rmax = plant->budGR;//1 mm/d
                             Lmax = maxLBudDormant_; 
                             // if(parentLinkingNode == 1)//2nd bud
@@ -1124,9 +1124,11 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			
 			std::vector<int> nodeIds_;// = org->getNodeIds();
 			if(doTroubleshooting){std::cout<<"rmax: "<<rmax<<" "<<Lmax<<std::endl;} 
-			if((e + org->getLength(false)) - org->getParameter("k")> 1e-10){
-				std::cout<<"Photosynthesis::rmaxSeg: target length too high "<<e<<" "<<dt<<" "<<org->getLength(false);
-				std::cout<<" "<<org->getParameter("k")<<" "<<org->getId()<<std::endl;
+			if((e + org->getLength(false)) - Lmax> 1e-10){
+				std::cout<<"Photosynthesis::rmaxSeg: target length too high: e:"<<e<<" dt:"<<dt<<" dt_:"
+                    <<dt_<<" age_"<<age_<<" Linitf:"<<org->getLength(false)<<" Linitt:"<<org->getLength(true);
+                std::cout<<" LinitTemp:"<<LinitTemp<<" targetlength:"<<targetlength<<" rmax:"<<rmax;
+				std::cout<<" Lmax:"<<Lmax<<" k:"<<org->getParameter("k")<<" id:"<<org->getId()<<" org->budStage:"<<org->budStage<<" org->organType():"<<org->organType()<<" "<<org->getParameter("subType")<<std::endl;
 				assert(false);
 			}
 			//delta_length to delta_vol

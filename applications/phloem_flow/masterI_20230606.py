@@ -210,6 +210,8 @@ def setKrKx_phloem(): #inC
 
 def doConditionDefault(rinput, timeSinceDecap_,i, simtime, memoryCondition, nodeD, inputdata):
     return False
+def successPointsDefault(rinput, timeSinceDecap_,i, simtime, memoryCondition, nodeD, inputdata):
+    return memoryCondition
 
 from pathlib import Path
 def runSim(directoryN_,doVTP, verbosebase,
@@ -223,8 +225,8 @@ def runSim(directoryN_,doVTP, verbosebase,
            doPrint ,doDict, auxin_D = 0.,kss=0.2,kaa=1., #CarbonCostDormant = 1e-5,
            fileparam ="UQ_1Leaf" , doCondition = doConditionDefault,doMemAux = False,
           doDiffLights = False, Klight = 0.05, BerthLim = -1,PRBA = 0,  PRBD=0,
-          simMax_= -1.,PRBLeaf_ =1,PRBr = 0.,
-          leafAsIAASource_ = True, limLenActive_ = 0.9, growthUpToNode = 9):
+          simMax_= -1.,PRBLeaf_ =1,PRBr = 0.,betaMeso =3 ,
+          leafAsIAASource_ = True, limLenActive_ = 0.9, growthUpToNode = 9, successPoints = successPointsDefault):
     outcondition = 0
     useCWGr = True
     dt_lastWrote = time.time() - dt_write * 2
@@ -305,7 +307,7 @@ def runSim(directoryN_,doVTP, verbosebase,
            "testTime", "dtBefore", "dtAfter", "start_time", "dt_write","dtSIM_write",
            "doPrint" ,"doDict", "auxin_D","kss", "kaa" ,
                        "fileparam"  , "doMemAux",
-          "doDiffLights" , "Klight" , "BerthLim" ,"PRBA",  "PRBD"])
+          "doDiffLights" , "Klight" , "BerthLim" ,"PRBA",  "PRBD","GrRatioLats","betaMeso"])
     allInputsData = np.array([directoryN_,doVTP, verbosebase,
            PRate_, thresholdAux, RatiothresholdAux, UseRatiothresholdAux,
            Qmax_, thresholdSuc,useLength,
@@ -316,9 +318,18 @@ def runSim(directoryN_,doVTP, verbosebase,
            testTime, dtBefore, dtAfter, start_time, dt_write,dtSIM_write,
            doPrint ,doDict, auxin_D ,kss,kaa, 
            fileparam  , doMemAux,
-          doDiffLights , Klight , BerthLim ,PRBA,  PRBD])
+          doDiffLights , Klight , BerthLim ,PRBA,  PRBD,GrRatioLats,betaMeso])
     write_file_array("input", allInputs) 
     write_file_array("input", allInputsData) 
+    
+    allInputsdict = {}
+    allInputsDataL = allInputsData.tolist()
+    for key in allInputs.tolist():
+        for value in allInputsDataL:
+            allInputsdict[key] = value
+            allInputsDataL.remove(value)
+            break
+
     doPrint = doPrintbu
     doDict = doDictbu
     weatherInit = weather(0, Qmax_)
@@ -436,7 +447,7 @@ def runSim(directoryN_,doVTP, verbosebase,
     r.withInitVal =True
     r.initValST = 0.#0.15
     r.initValMeso = 0.#0.2
-    r.beta_loading = 3
+    r.beta_loading = betaMeso #3
     r.Vmaxloading = 0.3 #mmol/d, needed mean loading rate:  0.3788921068507634
     r.Mloading = 3.3*1e-3#0.2#
     r.Gr_Y = 1#0.75
@@ -924,6 +935,7 @@ def runSim(directoryN_,doVTP, verbosebase,
 
             sucTested = np.array([org.sucTested for org in orgs])
             write_file_array("sucTested", sucTested)#only take shoot C
+            write_file_array("sucTestedWeighted",sucTested*lengthth_org)
             #Q_GrmaxPerOrg = [np.mean(Q_Grmax[org.getNodeIds()[1:]]) for org in orgs]
             #write_file_array("Q_GrmaxPerOrg", Q_GrmaxPerOrg)
             #Q_GrPerOrg = [np.mean(Q_Gr[org.getNodeIds()[1:]]) for org in orgs]
@@ -958,6 +970,8 @@ def runSim(directoryN_,doVTP, verbosebase,
             write_file_array("Gr_i_s1",Q_Gr_i[stemNodes])
             write_file_array("Rm_i_s1",Q_Rm_i[stemNodes])
             write_file_array("C_ST_s1",C_ST[stemNodes])
+            write_file_float("Qexudi",sum(Q_Exud_i))
+            write_file_float("Qrmi",sum(Q_Rm_i))
             
             if __name__ == '__main__':
                 print("numLNodes",numLNodes,simMax)
@@ -982,7 +996,7 @@ def runSim(directoryN_,doVTP, verbosebase,
             else:
                 timeSinceDecap = -1
             
-            outcondition = doCondition(r,timeSinceDecap, thread,(temp_time - start_time)/(60*60*24), outcondition, nodeD,allInputsData)
+            outcondition = doCondition(r,timeSinceDecap, thread,(temp_time - start_time)/(60*60*24), outcondition, nodeD,allInputsdict)
             ctoohigh = (budStage[0]==2)and (max(C_ST)>3)
             if (((temp_time - start_time)/(60*60*24) > 2) or (outcondition != 0) or ctoohigh): #success or falur
                 simMax = -1
@@ -1359,11 +1373,13 @@ def runSim(directoryN_,doVTP, verbosebase,
         
     delete_file("running")
     outId = -1
+    mySuccessPoints = successPoints(r,timeSinceDecap, thread,(temp_time - start_time)/(60*60*24), outcondition, nodeD,allInputsdict)
+    write_file_float("successPoints", mySuccessPoints)
     if (outcondition >= 0) and (changedSimMax):
         outId = thread
-        print(thread, outId,nodeD,"success", budStage,simMax, lengthth_org)
+        print(thread, outId,nodeD,"success", budStage,simMax, lengthth_org,mySuccessPoints)
     if not changedSimMax:
-        print(thread, outId,nodeD,"fail, not reached changedSimMax", budStage, simMax)
+        print(thread, outId,nodeD,"fail, not reached changedSimMax", budStage, simMax,mySuccessPoints)
     #print("finished", thread, time.time() - start_time)
     #os._exit(os.EX_OK)
     del r

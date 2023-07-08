@@ -10,6 +10,7 @@ start_time_ = time.time()
 from masterI_20230606 import runSim
 from DBrepExp_WTD06062023 import toTry
 from DBrepExp_WTD06062023 import doCondition_
+from DBrepExp_WTD06062023 import successPoints_
 
 
 #def AllAuxCmasterFunc(N):
@@ -34,9 +35,10 @@ params = toTry()
 Qsv=params['Qsv']
 MulimSucv=params['MulimSucv']
 nodeDv=params['nodeDv']
-#GrRatiov= params['GrRatiov']
+GrRatiov= params['GrRatiov']#for bud
 Berthlim= params['Berthlimv']
 Klightv= params['Klightv']
+betaMesov = params['betaMesov']
 maxrun = len(Qsv) #tot to do
 n_jobs = min((maxrun - totrun),#left to do
              maxcore - 1) #can do
@@ -61,7 +63,8 @@ if n_jobs > 1:
                              RatiothresholdAux = 1,useLength =  2,doMemAux =3,limLenActive_ = 0.5,
                              Qmax_ = Qsv[i+totrun], Klight = Klightv[i+totrun],
                              thresholdSuc = MulimSucv[i+totrun], 
-                              GrRatio =10, GrRatioLats =5,CarbonCost=2,
+                              GrRatio =10, GrRatioLats =GrRatiov[i+totrun],
+                             CarbonCost=2,
                              GrRatioLeaf_=10,CarbonCostLeaf_=1/10,GrRatioRoot_=1,CarbonCostRoot_=1/100,
                              maxLBud = np.array([1.]),  maxLBudDormant =np.array([0.05,0.15,0.05]),
                              budGR = 0.1,L_dead_threshold=2000.,
@@ -69,13 +72,14 @@ if n_jobs > 1:
                             BerthLim = Berthlim[i+totrun],
                              UseRatiothresholdAux = True,
                              nodeD = nodeDv[i+totrun], thread = i,
-                             testTime=8, dtBefore = 1/24, dtAfter= 30/(60*24),
+                             testTime=9, dtBefore = 1/24, dtAfter= 30/(60*24),
                             start_time = start_time_,
                              doPrint = True, doDict = False,
                              dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
                             doCondition = doCondition_,
                             fileparam =fileparam_,
-           leafAsIAASource_ = True, growthUpToNode =9)
+                           leafAsIAASource_ = True, growthUpToNode =9, successPoints =successPoints_,
+                            betaMeso = betaMesov[i+totrun])
                         for i in range(n_jobs))
     results = parallelizer(tasks_iterator)
 else:
@@ -84,7 +88,8 @@ else:
                              RatiothresholdAux = 1,useLength =  2,doMemAux =3,limLenActive_ = 0.5,
                              Qmax_ = Qsv[i+totrun], Klight = Klightv[i+totrun],
                              thresholdSuc = MulimSucv[i+totrun], 
-                              GrRatio =10, GrRatioLats =5,CarbonCost=2,
+                              GrRatio =10, GrRatioLats =GrRatiov[i+totrun],
+                               CarbonCost=2,
                              GrRatioLeaf_=10,CarbonCostLeaf_=1/10,GrRatioRoot_=1,CarbonCostRoot_=1/100,
                              maxLBud = np.array([1.]),  maxLBudDormant =np.array([0.05,0.15,0.05]),
                              budGR = 0.1,L_dead_threshold=2000.,
@@ -92,13 +97,14 @@ else:
                             BerthLim = Berthlim[i+totrun],
                              UseRatiothresholdAux = True,
                              nodeD = nodeDv[i+totrun], thread = i,
-                             testTime=8, dtBefore = 1/24, dtAfter= 30/(60*24),
+                             testTime=9, dtBefore = 1/24, dtAfter= 30/(60*24),
                             start_time = start_time_,
                              doPrint = True, doDict = False,
                              dt_write = 0, dtSIM_write = 30/(60*24),auxin_D=0.,
                             doCondition = doCondition_,
                             fileparam =fileparam_,
-           leafAsIAASource_ = True, growthUpToNode =9)
+           leafAsIAASource_ = True, growthUpToNode =9, successPoints =successPoints_,
+                            betaMeso = betaMesov[i+totrun])
 
 def write_file_array(name, data):
     name2 = 'results'+ directoryN+ name+ '.txt'
