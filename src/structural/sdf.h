@@ -48,7 +48,7 @@ public:
      * @param c         python object counter for the script (to avoid duplicate names)
      * \return          object counter
      */
-    virtual int writePVPScript(std::ostream & cout, double opacity = 0.2, int c = 1) const { return c; };
+    virtual int writePVPScript(std::ostream & cout, int c = 1) const { return c; };
     ///< Writes a ParaView Python script explicitly representing the implicit geometry
 
     virtual std::string writePVPScript() const; ///< Writes the ParaView Python script into a string
@@ -92,7 +92,7 @@ public:
 
     virtual std::string toString() const override { return "SDF_PlantBox"; } ///< @see SignedDistanceFunction::toString
 
-    virtual int writePVPScript(std::ostream & cout, double opacity = 0.2, int c=1) const override;  ///< @see SignedDistanceFunction::writePVPScript
+    virtual int writePVPScript(std::ostream & cout, int c=1) const override;  ///< @see SignedDistanceFunction::writePVPScript
 
 private:
     Vector3d dim; // dimensions of the box
@@ -133,7 +133,7 @@ public:
 
     virtual std::string toString() const override { return "SDF_PlantContainer"; } ///< @see SignedDistanceFunction::toString
 
-    virtual int writePVPScript(std::ostream & cout, double opacity = 0.2, int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
+    virtual int writePVPScript(std::ostream & cout, int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
 
 private:
     double r1;
@@ -160,7 +160,7 @@ public:
 
     virtual std::string toString() const override { return "SDF_RotateTranslate"; } ///< @see SignedDistanceFunction::toString
 
-    virtual int writePVPScript(std::ostream & cout, double opacity = 0.2, int c=1)  const override; ///< @see SignedDistanceFunction::writePVPScript
+    virtual int writePVPScript(std::ostream & cout, int c=1)  const override; ///< @see SignedDistanceFunction::writePVPScript
 
 private:
     std::shared_ptr<SignedDistanceFunction> sdf; // base geometry
@@ -188,7 +188,7 @@ public:
 
     virtual std::string toString() const override { return "SDF_Intersection"; } ///< @see SignedDistanceFunction::toString
 
-    virtual int writePVPScript(std::ostream & cout, double opacity = 0.2, int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
+    virtual int writePVPScript(std::ostream & cout,  int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
 
 protected:
     std::vector<std::shared_ptr<SignedDistanceFunction>> sdfs; ///< the set of signed distance functions
@@ -240,7 +240,7 @@ public:
 
     virtual double getDist(const Vector3d& v) const override { return -sdf->getDist(v); } ///< @see SignedDistanceFunction::getDist
 
-    virtual int writePVPScript(std::ostream & cout, double opacity = 0.2, int c=1) const override { return sdf->writePVPScript(cout,c); } ///< same as original geometry
+    virtual int writePVPScript(std::ostream & cout, int c=1) const override { return sdf->writePVPScript(cout,c); } ///< same as original geometry
 
     virtual std::string toString() const override { return "SDF_Complement"; } ///< @see SignedDistanceFunction::toString
 
@@ -261,7 +261,7 @@ public:
 
     virtual double getDist(const Vector3d& v) const override { return n.times(v.minus(o)); } ///< @see SignedDistanceFunction::getDist
 
-    virtual int writePVPScript(std::ostream & cout, double opacity = 0.2, int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
+    virtual int writePVPScript(std::ostream & cout,  int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
 
     virtual std::string toString() const override { return "SDF_HalfPlane"; } ///< @see SignedDistanceFunction::toString
 
