@@ -8,7 +8,6 @@ import numpy as np
 from scipy.spatial import ConvexHull, Voronoi
 import scipy.linalg as la
 import vtk
-from mercurial.templatefuncs import min_, max_
 
 
 class PerirhizalPython(Perirhizal):
@@ -35,48 +34,49 @@ class PerirhizalPython(Perirhizal):
         ms = self.ms  # rename
         width = ms.maxBound.minus(ms.minBound)
         cell_width = np.array([width.x / ms.resolution.x, width.y / ms.resolution.y, width.z / ms.resolution.z])
-        min_ = i * cell_width
-        max_ = (i + 1) * cell_width
+        min_ = np.array([ms.minBound.x + i * cell_width[0], ms.minBound.y + j * cell_width[1], ms.minBound.z + k * cell_width[2]])
+        max_ = min_ + cell_width
         return min_, max_
 
-    def nodes_within(self, min_, max_):
+    def nodes_within(self, nodes, min_, max_):
         """ returns the nodes inside the bounding box given by min_, and max_ """
-        nodes_ = self.ms.nodes
-        nodes = np.array([[n.x, n.y, n.z] for n in nodes_])
         one = np.ones((nodes.shape[0], 1))
         n_, ni = [], []
         for i, n in enumerate(nodes):
             if n[0] >= min_[0] and n[1] >= min_[1] and n[2] >= min_[2] and n[0] < max_[0] and n[1] < max_[1] and n[2] < max_[2]:
                 n_.append(n)
                 ni.append(i)
-        print("nodes within", min_, max_, ":", len(n_))
-        print(n_)
+        # print("nodes within", min_, max_, ":", len(n_))
         return np.array(n_), np.array(ni)
 
     def flip_(self, nodes, center, axis):
         """ flips the nodes around the center according axis """
         n_ = nodes - np.ones((nodes.shape[0], 1)) @ center
         n_[:, axis] = -n_[:, axis]
-        n_ = n_ + center
+        n_ = n_ + np.ones((nodes.shape[0], 1)) @ center
         return n_
 
-    def mirror_(self, i:int, j:int, k:int):
-        """ adds mirrored nodes to the 6 sides of the cubes"""
+    def mirror(self, nodes, i:int, j:int, k:int):
+        """ adds mirrored nodes to the 6 sides of the cube with index i, j, k"""
         min_, max_ = self.get_bounds(i, j, k)
         width_ = max_ - min_
         width_ = np.expand_dims(width_, axis = 0)
         center_ = min_ + width_ / 2.
-        n, ni = self.nodes_within(min_, max_)
+        n, ni = self.nodes_within(nodes, min_, max_)
         if n.shape[0] > 0:
             nodes_surr = n
             fipped_n = [self.flip_(n, center_, i_) for i_ in range(0, 3)]  # flip them ...
+            zeros = np.zeros((n.shape[0], 1))
             translate_ = np.ones((n.shape[0], 1)) @ width_
-            print(width_.shape)
-            print(n.shape)
-            print("translate_", translate_.shape)
-            for i_ in range(0, 3):
-                nodes_surr = np.vstack((nodes_surr, fipped_n[i_] + translate_[:, i_]))  # add them
-                nodes_surr = np.vstack((nodes_surr, fipped_n[i_] - translate_[:, i_]))
+            trans0 = np.hstack((translate_[:, 0, np.newaxis], zeros, zeros))
+            trans1 = np.hstack((zeros, translate_[:, 1, np.newaxis], zeros))
+            trans2 = np.hstack((zeros, zeros, translate_[:, 2, np.newaxis]))
+            nodes_surr = np.vstack((nodes_surr, fipped_n[0] + trans0))  # add them
+            nodes_surr = np.vstack((nodes_surr, fipped_n[0] - trans0))
+            nodes_surr = np.vstack((nodes_surr, fipped_n[1] + trans1))
+            nodes_surr = np.vstack((nodes_surr, fipped_n[1] - trans1))
+            nodes_surr = np.vstack((nodes_surr, fipped_n[2] + trans2))
+            nodes_surr = np.vstack((nodes_surr, fipped_n[2] - trans2))
             return nodes_surr, ni
         else:  # no nodes within
             return np.ones((0,)), np.ones((0,))
@@ -174,40 +174,56 @@ class PerirhizalPython(Perirhizal):
         width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
         print("making periodic", width)
         print("nodes", nodes.shape)
-
         nodes = self.make_periodic_(nodes, width)
 
         x = int(ms.resolution.x)
         y = int(ms.resolution.y)
         z = int(ms.resolution.z)
 
-        vol = np.zeros((nodes.shape[0]))
+        vol = np.empty((nodes.shape[0]))
+        vol[:] = np.nan
 
         for i in range(0, x):
             for j in range(0, y):
                 for k in range(0, z):
-                    n, ni = self.mirror_(i, j, k)
+
+                    # print("\nIteration", i, j, k)
+
+                    n, ni = self.mirror(nodes, i, j, k)
                     nn = ni.shape[0]
+
+                    # print("ni", ni.shape, "vol", vol.shape)
+                    # print("number of mirrored nodes", n.shape)
                     # print("n", n)
-                    # print("ni", ni)
+                    # print("ni", ni.shape)
+                    # print(ni)
+                    # dd
+
                     if nn > 0:
                         vor = Voronoi(n)
 
-                        for reg_num in vor.point_region:
+                        # print("Number of regions", len(vor.point_region))
+                        for idx, reg_num in enumerate(vor.point_region):
                             indices = vor.regions[reg_num]
                             i_ = reg_num - 1
-                            if i_ >= 0 and i_ < nn:
+                            if idx < nn:
                                 if -1 in indices:  # some regions can be opened
-                                    print(i_)
-                                    print(ni)
-                                    vol[ni[i_]] = np.nan
+                                    # print(i_)
+                                    # print(ni)
+                                    vol[ni[idx]] = np.nan
+                                    print("nan encountered")
                                 else:
-                                    vol[ni[i_]] = ConvexHull(vor.vertices[indices]).volume
-                            else:
-                                if i_ < 0:
-                                    print("When does that happen, again?")
+                                    vol[ni[idx]] = ConvexHull(vor.vertices[indices]).volume
+                                    # print(ni[i_])
+                                    # print("index", ni[i_], "vol", vol[ni[i_]])
+                            # else:
+                            #     if i_ < 0:
+                            #         print("When does that happen, again?", idx, nn, indices)
 
-        outer_r = vol.copy()
+        if np.sum(np.isnan(vol)) > 1:
+            print("nan encountered", np.sum(np.isnan(vol)), np.where(np.isnan(vol)))
+
+        outer_r = np.zeros((vol.shape[0] - 1,))
         radii = self.ms.radii
         lengths = self.ms.segLength()
         for i, v in enumerate(vol[1:]):  # seg_index = node_index -1
@@ -259,62 +275,93 @@ class PerirhizalPython(Perirhizal):
         return outer_r
 
     def get_voronoi_mesh(self, domain = None):
-        """
-        Creates a VTK grid containing all nodes, and only cells inside of domain 
-        """
+
+        nodes_ = self.ms.nodes  # make nodes periodic and pass all
+        nodes = np.array([[n.x, n.y, n.z] for n in nodes_])  # to numpy array
         min_b = self.ms.minBound
         max_b = self.ms.maxBound
         width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
-        if not domain:
-            domain = pb.SDF_Cuboid(min_b, max_b)
-
-        nodes_ = self.ms.nodes
-        nodes = np.array([[n.x, n.y, n.z] for n in nodes_])  # to numpy array
-        print(width)
-        print("*")
         nodes = self.make_periodic_(nodes, width)
-        vor = Voronoi(nodes)
+
+        self = get_voronoi_mesh_(nodes, len(nodes))
+
+    def get_node_mesh(self, nodes):
+        grid = vtk.vtkUnstructuredGrid()
+        points_array = vtk.vtkPoints()
+        for n in nodes:
+            points_array.InsertNextPoint(n)
+        grid.SetPoints(points_array)
+        return grid
+
+    def get_voronoi_mesh_(self, vor_nodes, noc, crop_domain = None):
+        """
+        Creates a VTK grid containing all nodes, and only cells inside of domain 
+        """
+        print("\nget_voronoi_mesh_")
+
+        if not crop_domain:  # always crop with min_b, max_b
+            min_b = self.ms.minBound
+            max_b = self.ms.maxBound
+            crop_domain = pb.SDF_Cuboid(min_b, max_b)
+
+        vor = Voronoi(vor_nodes)
 
         grid = vtk.vtkUnstructuredGrid()  # Create a VTK unstructured grid
 
+        print("vor_nodes", vor_nodes.shape)
+        print("vor.vertices", vor.vertices.shape)
+        print("vor.point_region", vor.point_region.shape)
+
         points_array = vtk.vtkPoints()  # Add the Voronoi vertices as points
+
         for v in vor.vertices:
-            if domain.dist(v) <= 0:
-                points_array.InsertNextPoint(v)
-            else:
-                points_array.InsertNextPoint([0, 0, 0])  # simpler for vizualizing in ParaView
+            points_array.InsertNextPoint(v)
+
+            # if crop_domain.dist(v) <= 0:
+            #     # print(v)
+            #     points_array.InsertNextPoint(v)
+            # else:
+            #     points_array.InsertNextPoint([0, 0, 0])  # simpler for vizualizing in ParaView
+
+        # # print("\n additional ")
+        # for n in add_nodes:  # additional nodes ...
+        #     # print(n)
+        #     points_array.InsertNextPoint(n)
+
         grid.SetPoints(points_array)
 
         vol = []
-        for reg_num in vor.point_region:
+        for idx, reg_num in enumerate(vor.point_region):
             indices = vor.regions[reg_num]
             i = reg_num - 1
-            if i >= 0:
+            if idx < noc:
                 if not -1 in indices:  # not an open region
-                    inside = True
-                    for j in indices:
-                        if domain.dist(vor.vertices[j]) >= 0:  # negative values mean inside the domain (sdf)
-                            inside = False
-                            break
-                    if inside:
-                        vol.append(ConvexHull(vor.vertices[indices]).volume)
-                        id_array = vtk.vtkIdList()
-                        for vertex_index in indices:
-                            id_array.InsertNextId(vertex_index)
-                        grid.InsertNextCell(vtk.VTK_CONVEX_POINT_SET, id_array)
+                    # inside = True
+                    # for j in indices:
+                    #     if crop_domain.dist(vor.vertices[j]) >= 0:  # negative values mean inside the domain (sdf)
+                    #         inside = False
+                    #         break
+                    # if inside:
+                    vol.append(ConvexHull(vor.vertices[indices]).volume)
+                    id_array = vtk.vtkIdList()
+                    for vertex_index in indices:
+                        id_array.InsertNextId(vertex_index)
+                    grid.InsertNextCell(vtk.VTK_CONVEX_POINT_SET, id_array)
+                else:
+                    print("unbounded cell", i, ":", indices)
 
         cell_id = vtk.vtkDoubleArray()
         cell_id.SetName("cell_id")
-        cell_id.SetNumberOfValues(len(vol))
-        for j in range(0, len(vol)):
+        cell_id.SetNumberOfValues(noc)
+        for j in range(0, noc):
             cell_id.SetValue(j, j)
         celldata = grid.GetCellData()
         celldata.AddArray(cell_id)
 
         vols = vtk.vtkDoubleArray()
         vols.SetName("volumes")
-        vols.SetNumberOfValues(len(vol))
-        for j in range(0, len(vol)):
+        vols.SetNumberOfValues(noc)
+        for j in range(0, noc):
             vols.SetValue(j, vol[j])
         celldata = grid.GetCellData()
         celldata.AddArray(vols)

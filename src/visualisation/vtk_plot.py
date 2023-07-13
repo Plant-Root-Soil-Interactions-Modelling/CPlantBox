@@ -226,6 +226,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     colors = vtk.vtkNamedColors()  # Set the background color
     ren = vtk.vtkRenderer()  # Set up window with interaction
     ren.SetBackground(colors.GetColor3d("Silver"))
+    # ren.SetBackground(colors.GetColor3d("White"))
 
     # Actors
     if isinstance(actor, list):

@@ -2,6 +2,7 @@
 #include "Seed.h"
 
 #include "Root.h"
+#include "rootparameter.h"
 #include "Stem.h"
 
 namespace CPlantBox {
@@ -63,12 +64,17 @@ void Seed::initialize(bool verbose)
 	 * Create roots
 	 */
 	const double maxT = 90.; // maximal simulation time
-	auto sp = this->param(); // rename
+	auto sp = this->param(); // rename (SeedSpecificParameter)
 
 	// Taproot
+    auto rrp = p->getOrganRandomParameter(Organism::ot_root); // fix tap root angle to 0
+    auto rrp1 = std::static_pointer_cast<RootRandomParameter>(rrp[1]);
+    double theta_bu = rrp1->theta;
+    rrp1->theta = 0;
 	std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, 0); // tap root has root type 1
 	taproot->addNode(getNode(0), getNodeId(0), 0);
 	this->addChild(taproot);
+	rrp1->theta = theta_bu; // in case we copy parameter set for basal or shootborne
 
 	// Basal roots
 	int bt = getParamSubType(Organism::ot_root, "basal");
@@ -139,6 +145,7 @@ void Seed::initialize(bool verbose)
 		} else {
 			numberOfRootCrowns = 0;
 		}
+
 	}
 
 	/*
