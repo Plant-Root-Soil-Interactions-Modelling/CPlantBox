@@ -49,6 +49,7 @@ class HydraulicsDoussan(XylemFluxPython):
         kx_ = np.divide(self.getKx(sim_time), self.rs.segLength())  # / dl
         Kx = sparse.diags(kx_)
         kr = np.array(self.getEffKr(sim_time))
+        kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
         L_ = L[1:, 1:].tocsc()
