@@ -100,10 +100,7 @@ for mymodule in modules:
     if ((mymodule =='vtk') and (sys.version_info.minor == 10)):
         subprocess.run(["pip3", "install", mymodule]) 	#conda install not working for vtk with py3.10 (?)
     else:
-        try:
-            subprocess.run(["conda", "install", mymodule]) 
-        except:
-            subprocess.run(["pip3", "install", mymodule]) 
+        subprocess.run(["pip3", "install", mymodule]) 
       
 show_message("(1/3) Step completed. All prerequistes found.")
 
