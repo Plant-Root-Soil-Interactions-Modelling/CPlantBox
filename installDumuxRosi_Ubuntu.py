@@ -92,15 +92,11 @@ if len(error) > 0:
 import pip
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py', 'astropy', 'pandas', 'pybind11[global]', 'ipython'] 
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py',  'pandas', 'pybind11[global]', 'ipython'] 
 show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
-    #subprocess.run(["pip3", "install", mymodule]) 
-    if ((mymodule =='vtk') and (sys.version_info.minor == 10)):
-        subprocess.run(["pip3", "install", mymodule]) 	#conda install not working for vtk with py3.10 (?)
-    else:
-        subprocess.run(["pip3", "install", mymodule]) 
+    subprocess.run(["pip3", "install", mymodule]) 
       
 show_message("(1/3) Step completed. All prerequistes found.")
 
