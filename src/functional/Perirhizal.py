@@ -171,14 +171,16 @@ class PerirhizalPython(Perirhizal):
         max_b = ms.maxBound
         nodes_ = ms.nodes
         nodes = np.array([[n.x, n.y, n.z] for n in nodes_])  # to numpy array
-        width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
-        print("making periodic", width)
-        print("nodes", nodes.shape)
-        nodes = self.make_periodic_(nodes, width)
 
         x = int(ms.resolution.x)
         y = int(ms.resolution.y)
         z = int(ms.resolution.z)
+
+        width = np.array([max_b.x, max_b.y, max_b.z]) - np.array([min_b.x, min_b.y, min_b.z])
+        print("making periodic", width)
+        print("nodes", nodes.shape)
+        print("resolution", x, y, z)
+        nodes = self.make_periodic_(nodes, width)
 
         vol = np.empty((nodes.shape[0]))
         vol[:] = np.nan

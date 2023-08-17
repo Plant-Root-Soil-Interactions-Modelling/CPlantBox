@@ -410,7 +410,7 @@ class XylemFluxPython(XylemFlux):
         return tiproots, tipstems, tipleaves
 
     def get_suf(self, sim_time, approx = False, organType_ = 2):
-        """ calculates the surface uptake fraction [1] at simulation time @param sim_time [day]
+        """ calculates the standard uptake fraction [1] at simulation time @param sim_time [day]
             (suf is constant for age independent conductivities) 
             for the root system  (organType_=2)
             the shoot (organType_=4)
