@@ -110,6 +110,19 @@ class PerirhizalPython(Perirhizal):
                     d[i] += f(radii[si], l[si])
         return np.divide(d, volumes)  # cm/cm3, cm2/cm3, or cm3/cm3
 
+    def aggregate(self, seg_param):
+        """ sums up params over the grid cells (parrams is given per segment)
+        """
+        ms = self.ms  # rename
+        cell2seg = ms.cell2seg  # rename
+        n = int(ms.resolution.x * ms.resolution.y * ms.resolution.z)
+        d = np.zeros((n,))
+        for i in range(0, n):
+            if i in cell2seg:
+                for si in cell2seg[i]:
+                    d[i] += seg_param[si]
+        return d
+
     def get_outer_radii(self, type:str, volumes:list = []):
         """ retrives the outer radii of the perirhizal zones [cm]
             
