@@ -123,6 +123,20 @@ class PerirhizalPython(Perirhizal):
                     d[i] += seg_param[si]
         return d
 
+    def average(self, seg_param):
+        """ averages params over the grid cells (parrams is given per segment)
+        """
+        ms = self.ms  # rename
+        cell2seg = ms.cell2seg  # rename
+        n = int(ms.resolution.x * ms.resolution.y * ms.resolution.z)
+        d = np.zeros((n,))
+        for i in range(0, n):
+            if i in cell2seg:
+                c = len(cell2seg[i])
+                for si in cell2seg[i]:
+                    d[i] += seg_param[si]/c
+        return d
+
     def get_outer_radii(self, type:str, volumes:list = []):
         """ retrives the outer radii of the perirhizal zones [cm]
             
