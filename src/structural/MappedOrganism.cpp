@@ -486,13 +486,17 @@ int MappedSegments::getSegment2leafId(int si_){
  * @param LB		 		implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
  */
 void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbose, bool LB) {
-	if (verbose) {
-	    std::cout << "MappedRootSystem::initialize \n" << std::flush;
-	}
-	if(LB){
+	if (LB) {
+		if (verbose) {
+		    std::cout << "MappedRootSystem::initialize length based (LB) \n" << std::flush;
+		}
 		RootSystem::initializeLB( basaltype, shootbornetype, verbose);
-	}else{RootSystem::initializeDB( basaltype, shootbornetype, verbose);}
-
+	} else {
+		if (verbose) {
+		    std::cout << "MappedRootSystem::initialize delay based (DB) \n" << std::flush;
+		}
+		RootSystem::initializeDB( basaltype, shootbornetype, verbose);
+	}
 	segments = this->getShootSegments();
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();

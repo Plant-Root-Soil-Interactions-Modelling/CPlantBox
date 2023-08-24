@@ -543,6 +543,13 @@ class XylemFluxPython(XylemFlux):
         """ root axial conductivity [cm3 day-1]  for backwards compatibility """
         return self.kx_f_cpp(seg_ind, age, st, ot)  # kx_f_cpp is XylemFlux::kx_f
 
+    def collar_index(self):
+        """ returns the segment index of the collar segment """
+        segs = self.rs.segments
+        for i, s in enumerate(segs):
+            if s.x == 0:
+                return i
+
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
         print("\nXylemFluxPython.test():")
@@ -555,9 +562,19 @@ class XylemFluxPython(XylemFlux):
         print(len(segments), "segments")
         # 1b check if there are multiple basal roots (TODO)
         print("Segment 0", segments[0])
-        for s in segments[1:]:
+        print("Segment 1", segments[1])
+        print("Segment 2", segments[2])
+        print("....")
+        ci = self.collar_index()
+        print("Collar segment index", ci)        
+        print("Collar segment", segments[ci])
+        first = True
+        for s in segments:
             if s[0] == 0:
-                print("warning multiple segments emerge from node 0")
+                if first:
+                    first = False
+                else:  
+                    print("warning multiple segments emerge from collar node (always node index 0)", ci, s)
         # 2 check for very small segments
         seg_length = self.rs.segLength()
         c = 0

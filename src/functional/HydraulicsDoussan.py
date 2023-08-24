@@ -35,12 +35,6 @@ class HydraulicsDoussan(XylemFluxPython):
             vv_.append(1.)
         return sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (sn, nn))
 
-    def collar_index(self):
-        """ returns the segment index of the collar segment """
-        segs = self.rs.segments
-        for i, s in enumerate(segs):
-            if s.x == 0:
-                return i
 
     def doussan_system_matrix(self, sim_time):
         """ """

@@ -118,7 +118,8 @@ public:
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
- protected:
+
+protected:
 	void initialize_(int basaltype, int shootbornetype, bool verbose = true, bool LB = true);
 
 
