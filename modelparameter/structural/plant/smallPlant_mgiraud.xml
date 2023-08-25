@@ -86,7 +86,7 @@
     <parameter name="successor" number="0" organType="4" subType="1" percentage="1"/>
 </organ>
 
-<organ type="leaf" name="lateral1" subType="">
+<organ type="leaf" name="lateral1" subType="1">
     <parameter name="lb" value="0.25" dev="0"/>
     <!--Basal zone [cm]-->
     <parameter name="la" value="0" dev="0"/>
@@ -96,17 +96,21 @@
     <parameter name="lmax" value="1" dev="0"/>
     <parameter name="r" value="0.3" dev="0"/>
     <parameter name="a" value="0.10000000000000001" dev="0"/>
-    <parameter name="RotBeta" value="1"/>
-    <parameter name="BetaDev" value="0"/>
-    <parameter name="InitBeta" value="0"/>
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="3"/>
     <parameter name="tropismS" value="0"/>
     <parameter name="dx" value="0.25"/>
     <parameter name="dxMin" value="0.2"/>
-    <parameter name="theta" value="0.3" dev="0"/>
-    <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
+    <parameter name="Width_petiole" value="0.35" />
+    <parameter name="Width_blade" value="0.9" />
+    <parameter name="shapeType" value="1" />
+    <parameter name="theta" value="0.2" dev="0"/>
+    <parameter name="rlt" value="1000000000" dev="0"/>
+	<parameter name="areaMax" value="35"/>
+    <parameter name="geometryN" value="100"/>
+    <parameter name="parametrisationType" value="1"/>
+	<parameter name="leafGeometry" phi="-3, -2.1, 0., 2.45, 3.5" x="1., 1., 1., 1., 1."/>
 </organ>
 
 

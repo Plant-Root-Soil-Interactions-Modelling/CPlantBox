@@ -54,7 +54,7 @@ public:
 		throw std::runtime_error("kr_f not implemented"); return 0.; };
     std::function<double(int, double,int,int)> kx_f = [](int si, double age, int type, int orgtype) {
 		throw std::runtime_error("kx_f not implemented"); return 1.; };
-	double kr_f_wrapped(int si, double age, int type, int orgtype);///stops transpiration if organs are not in the correct domain
+	double kr_f_wrapped(int si, double age, int type, int orgtype) const;///stops transpiration if organs are not in the correct domain
 
 	virtual size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ; ///< fill the vectors aI, aJ, aV, aB
 	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const; ///< get the outer water potential [cm]

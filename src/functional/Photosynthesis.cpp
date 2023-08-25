@@ -69,7 +69,12 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
     {
         throw std::runtime_error("Photosynthesis::solve_photosynthesis : (RH_>=1)||(RH_<=0)");
     }
+	//psi_air only use if cells_ = True
+	//if cells_:
 	this->psi_air = std::log(RH_) * rho_h2o * R_ph * (this->TairC + 237.3)/Mh2o * (1/0.9806806)  ; //in cm
+	//else:
+	//	this->psi_air = 0/0;//do not use
+		
 	assert(((plant->kr_length < 0)||(plant->exchangeZoneCoefs.size()==plant->segments.size()))&&"(plant->exchangeZoneCoefs.size()==plant->segments.size()) while kr_length >0");
 	//		creat first guesses arrays + "old" values
 	psiXyl= std::vector<double>( plant->nodes.size(), psiXylInit);//-500
@@ -100,7 +105,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	while(!this->stop){
 		std::fill(maxErrAbs.begin(), maxErrAbs.end(), 0.);//re-initialize absolute error vector
 		std::fill(maxErr.begin(), maxErr.end(), 0.);//re-initialize relative error vector
-		loopCalcs(sim_time_) ;//compute photosynthesis outputs
+		loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs
 		if((verbose_photosynthesis > 1)){std::cout<<"to linearSystem"<<std::endl;}
 		linearSystemSolve(sim_time_, sxx_, cells_, soil_k_); //compute psiXyl
 		if((verbose_photosynthesis > 1)){std::cout<<"to outputFlux"<<std::endl;}
@@ -285,8 +290,21 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 					throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
 			}
 		}
-	}else{
-		psi_s = sx_.at(si); // j-1 = segIdx = s.y-1
+	}else{ //TODO: use better the psi_s as given by the air_ModelsPlant == boundary layer
+		switch(organType) {
+			case Organism::ot_root: 
+				psi_s = sx_.at(si); // j-1 = segIdx = s.y-1
+				//throw std::runtime_error("Photosynthesis::linearSystem: root segment is aboveground.");
+				break;
+			case  Organism::ot_stem: 
+				psi_s = sx_.at(si); // j-1 = segIdx = s.y-1. should be == psi_air
+				break;
+			case Organism::ot_leaf: 
+				psi_s = pg.at(plant->getSegment2leafId(si));//sx_.at(si) is used in loop function
+				break;
+			default:
+				throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
+		}
 	}
 	return psi_s;
 }
@@ -647,7 +665,7 @@ void Photosynthesis::photoC4_loop(int i)
 		Computes the output variables => ci, go2, An, Ev
 		@param simtime
 	*/
-void Photosynthesis::loopCalcs(double simTime){
+void Photosynthesis::loopCalcs(double simTime, std::vector<double> sxx_, bool cells_){
 	std::ofstream myfile4;
 	if(doLog)
 	{
@@ -658,6 +676,14 @@ void Photosynthesis::loopCalcs(double simTime){
 	}
 	for(int i = 0; i<seg_leaves_idx.size();i++)
 	{
+		int idl= seg_leaves_idx.at(i);
+		double ea_;
+		if(cells_){ea_ = ea; //mean air ea
+		}else{
+			double psi_air_ = sxx_.at(idl);
+			ea_ = std::exp(psi_air_/(rho_h2o * R_ph * (this->TairC + 237.3)/Mh2o * (1/0.9806806) ))*this->es  ; //in cm
+			
+		}
 		double cs_,g_bl_,g_canopy_,g_air_;
 		if(vcs.size() != seg_leaves_idx.size()){cs_ = cs;}else{cs_ = vcs.at(i);}
 		if(vg_bl.size() != seg_leaves_idx.size()){g_bl_ = g_bl;}else{g_bl_ = vg_bl.at(i);}
@@ -665,7 +691,6 @@ void Photosynthesis::loopCalcs(double simTime){
 		if(vg_air.size() != seg_leaves_idx.size()){g_air_ = g_air;}else{g_air_ = vg_air.at(i);}
 		
 		
-		int idl= seg_leaves_idx.at(i);
 		if((verbose_photosynthesis ==2)){std::cout<<"in loopcalcs "<<i<<" "<<idl<<std::endl;}
 		double l = lengths.at(idl);
 		
@@ -726,9 +751,9 @@ void Photosynthesis::loopCalcs(double simTime){
             {
                 gtotOx.at(i) = 0.;
             }																							  
-			Jw.at(i) = gtotOx.at(i) *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
+			Jw.at(i) = gtotOx.at(i) *1000* (ea_leaf - ea_)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
 			Ev.at(i) = Jw.at(i)* sideArea; //in cm3 d-1
-            PVD.at(i) =  ea_leaf - ea ;
+            PVD.at(i) =  ea_leaf - ea_ ;
             EAL.at(i) =  ea_leaf;
             hrelL.at(i) =  HRleaf;						 
             //double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
@@ -774,21 +799,17 @@ void Photosynthesis::loopCalcs(double simTime){
 
 
 double Photosynthesis::kr_f(int si, double age, int subType, int organType)
-{
-	//try{
-		//std::cout<<"Photosynthesis::kr_f "<<si<<" "<<subType<<" "<< organType<<" "<<plant->seg2cell.size()<<std::endl;
-		int cellIndex = plant->seg2cell.at(si);
-		if (((cellIndex>=0)&&(organType ==Organism::ot_leaf))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
-		{ 
-				return 0.;
-		}else
-		{ 
-			//std::cout<<"to XylemFlux::kr_f"<<std::endl;
-			return XylemFlux::kr_f(si, age, subType, organType);
-		}
-	//} catch(...) { 
-	//	return XylemFlux::kr_f(si, age, subType, organType);
-	//}
+{//works even if outer wat. pot. defined per segment
+	
+	int cellIndex = plant->seg2cell.at(si);
+	if (((cellIndex>=0)&&(organType ==Organism::ot_leaf))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
+	{ 
+			return 0.;
+	}else
+	{ 
+		//std::cout<<"to XylemFlux::kr_f"<<std::endl;
+		return XylemFlux::kr_f(si, age, subType, organType);
+	}
 	
 }
 

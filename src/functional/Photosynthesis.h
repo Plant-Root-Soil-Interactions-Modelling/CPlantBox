@@ -37,7 +37,7 @@ public:
 	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, 
 				const std::vector<double> soil_k_);///< main function, solves the flux equations
 	
-	void loopCalcs(double simTime); ///<solves photosynthesis/stomatal opening equations 
+	void loopCalcs(double simTime, std::vector<double> sxx_, bool cells_); ///<solves photosynthesis/stomatal opening equations 
 	void photoC4_loop(int i);
 	void photoC3_loop(int i);
 	//Compute variables which do not vary during one "solve_photosynthesis " computation
@@ -88,8 +88,8 @@ public:
     std::vector<double> Vcrefmax;
 	std::vector<double> Vj; //gross assimilation rate per unit of surface [mol CO2 m-2 s-1]
 	std::vector<double> ci;
-	std::vector<double> Jw;
-	std::vector<double> Ev;
+	std::vector<double> Jw;//transpiration [cm3 cm-2 d-1]
+	std::vector<double> Ev; //transpiration [cm3/day]
 	std::vector<double> PVD;
 	std::vector<double> EAL;
 	std::vector<double> hrelL;
