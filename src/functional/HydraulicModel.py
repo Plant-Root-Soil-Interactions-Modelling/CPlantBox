@@ -6,19 +6,63 @@ import scipy.sparse.linalg as LA
 import matplotlib.pyplot as plt
 
 import plantbox as pb
-from functional.xylem_flux import XylemFluxPython
+from functional.xylem_flux import XylemFluxPython as XylemFluxPythonCpp
+
+import rsml.rsml_reader as rsml
 
 
-class HydraulicsDoussan(XylemFluxPython):
-    """  Root hydraulic model (following Doussn et al. )
-    
-    TODO
+class PlantHydraulicModel():  # PlantHydraulicModelCpp
+    """  Root hydraulic models classs 
     
     """
 
-    def __init__(self, rs):
-        """ @param rs is either a pb.MappedRootSystem, pb.MappedSegments, or a string containing a rsml filename"""
-        super().__init__(rs)
+    def __init__(self, method, ms):
+        """ @param rs is  pb.MappedSegments, or a string containing a rsml filename"""
+        if isinstance(rs, str):
+            rs = self.read_rsml(rs)
+            super().__init__(rs)
+        else:
+            super().__init__(rs)
+
+        if method == "Meunier":
+            pass
+        elif method == "Doussan":
+            pass
+        else:
+            raise ValueError("PlantHydraulicModel(): Unknown method: " + method)
+
+    @staticmethod
+    def read_rsml(file_name:str, verbose = True):
+        """ reads an RSML file and converts to MappedSegments with units [cm]
+        @file_name     the file name of the rsml, including file extension (e.g. "test.rsml" ) 
+        @return a CPlantBox MappedSegments object
+        """
+        polylines, props, funcs, _ = rsml.read_rsml(file_name)
+        bn = 0  # count base roots
+        for i, _ in enumerate(polylines):
+            if props["parent-poly"][i] < 0:
+                bn += 1
+        if bn > 1:
+            rsml.artificial_shoot(polylines, props, funcs)
+            if verbose:
+                print("XylemFluxPython.read_rsml: added an artificial shoot")
+        nodes, segs = rsml.get_segments(polylines, props)
+        if verbose:
+            print("XylemFluxPython.read_rsml: read rsml with", len(nodes), "nodes and", len(segs), "segments")
+        nodes2 = [pb.Vector3d(n[0] , n[1] , n[2]) for n in nodes]  # Conversions to PlantBox types
+        segs2 = [pb.Vector2i(int(s[0]), int(s[1])) for s in segs]
+
+        radii, cts, types, tag_names = rsml.get_parameter(polylines, funcs, props)
+        segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
+        segTypes = np.zeros((segs.shape[0], 1))
+        for i, s in enumerate(segs):
+            segRadii[i] = radii[s[1]]  # seg to node index
+            segTypes[i] = types[s[1]]
+        if verbose:
+            print("                           cts [{:g}, {:g}] days".format(np.min(cts), np.max(cts)))
+            print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
+            print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))
+        return pb.MappedSegments(nodes2, cts, segs2, segRadii, segTypes)  # root system grid
 
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs """
@@ -37,7 +81,7 @@ class HydraulicsDoussan(XylemFluxPython):
 
     def doussan_system_matrix(self, sim_time):
         """ 
-            returns all that is needed to solve root hydraulics: 
+            returns all that is needed to solve root hydraulics with Doussan method:             
             sparse System matrix A,
             Kr diag kr values
             K_x,collar        
@@ -87,6 +131,28 @@ class HydraulicsDoussan(XylemFluxPython):
                 matrix2soil[soil2matrix[i]] = i
 
         return B, soil2matrix, matrix2soil
+
+    def collar_index(self):
+        """ returns the segment index of the collar segment, node index of the collar node is 0 """
+        segs = self.rs.segments
+        for i, s in enumerate(segs):
+            if s.x == 0:
+                return i
+
+
+
+
+
+
+
+
+    def get_transpiration(self):
+        
+        
+    # transpiration  # sum of radial fluxes
+    # radial_fluxes
+    # axial_fluxes
+    # xylem_potentials
 
     def axial_flux(self, seg_ind, sim_time, rx):
         """ returns the exact axial flux of segment ij of xylem model solution @param rx

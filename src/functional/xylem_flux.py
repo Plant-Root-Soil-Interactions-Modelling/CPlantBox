@@ -247,7 +247,7 @@ class XylemFluxPython(XylemFlux):
         else:
             ksoil = 1.e9  # much
         # node x and y of stem and leave segments are revers with regards to the nodes x and y of roots.
-        if sum(((not ij) , (ot == 4) or (ot == 3))) == 1:  # check if only one of the condition is true
+        if sum(((not ij) , (ot == 4) or (ot == 3))) == 1:  # check if only one of the raisecondition is true
             j, i = int(s.x), int(s.y)  # node indices
         else:
             i, j = int(s.x), int(s.y)
@@ -556,27 +556,28 @@ class XylemFluxPython(XylemFlux):
         # 1 check if segment index is node index-1
         segments = self.get_segments()
         nodes = self.get_nodes()
+        seg_length = self.rs.segLength()
+
         for i, s_ in enumerate(segments):
             if i != s_[1] - 1:
                 raise "Segment indices are mixed up"
         print(len(segments), "segments")
         # 1b check if there are multiple basal roots (TODO)
-        print("Segment 0", segments[0])
-        print("Segment 1", segments[1])
-        print("Segment 2", segments[2])
+        print("Segment 0", segments[0], seg_length[0])
+        print("Segment 1", segments[1], seg_length[1])
+        print("Segment 2", segments[2], seg_length[2])
         print("....")
         ci = self.collar_index()
-        print("Collar segment index", ci)        
-        print("Collar segment", segments[ci])
+        print("Collar segment index", ci)
+        print("Collar segment", segments[ci], seg_length[ci])
         first = True
         for s in segments:
             if s[0] == 0:
                 if first:
                     first = False
-                else:  
+                else:
                     print("warning multiple segments emerge from collar node (always node index 0)", ci, s)
         # 2 check for very small segments
-        seg_length = self.rs.segLength()
         c = 0
         for i, l in enumerate(seg_length):
             if l < 1e-5:
