@@ -39,6 +39,8 @@ add_library(CPlantBox SHARED
             functional/XylemFlux.cpp
 			functional/Photosynthesis.cpp
 			functional/Perirhizal.cpp
+			functional/PlantHydraulicParameters.cpp
+			functional/PlantHydraulicModel.cpp
 
 			visualisation/Quaternion.h
 			visualisation/CatmullRomSpline.h

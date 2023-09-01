@@ -112,6 +112,8 @@ class PerirhizalPython(Perirhizal):
 
     def aggregate(self, seg_param):
         """ sums up params over the grid cells (parrams is given per segment)
+        
+        TODO move to MappedSegments
         """
         ms = self.ms  # rename
         cell2seg = ms.cell2seg  # rename
@@ -125,6 +127,8 @@ class PerirhizalPython(Perirhizal):
 
     def average(self, seg_param):
         """ averages params over the grid cells (parrams is given per segment)
+        
+        TODO move to MappedSegments
         """
         ms = self.ms  # rename
         cell2seg = ms.cell2seg  # rename
@@ -134,7 +138,7 @@ class PerirhizalPython(Perirhizal):
             if i in cell2seg:
                 c = len(cell2seg[i])
                 for si in cell2seg[i]:
-                    d[i] += seg_param[si]/c
+                    d[i] += seg_param[si] / c
         return d
 
     def get_outer_radii(self, type:str, volumes:list = []):

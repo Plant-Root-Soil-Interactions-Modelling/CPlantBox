@@ -11,9 +11,10 @@ namespace CPlantBox {
  */
 class PlantHydraulicParameters
 {
+
 public:
 
-    PlantHydraulicParameters();
+    PlantHydraulicParameters() { }
 
     virtual ~PlantHydraulicParameters() { }
 
@@ -24,29 +25,23 @@ public:
     void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
     void setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
 
-    std::function<double(int, double, int, int)> kr_f = [](int si, double age, int subType, int organType) { throw std::runtime_error("kr_f not implemented"); return 0.; };
-    std::function<double(int, double, int, int)> kx_f = [](int si, double age, int subType, int organType) { throw std::runtime_error("kx_f not implemented"); return 1.; };
-
+    std::function<double(int, double, int, int)> kr_f = [](int si, double age, int subType, int organType) { throw std::runtime_error("kr_f not set"); return 0.; };
+    std::function<double(int, double, int, int)> kx_f = [](int si, double age, int subType, int organType) { throw std::runtime_error("kx_f not set"); return 1.; };
     std::vector<std::vector<double>> kr, kr_t; //  [1 day-1]
     std::vector<std::vector<double>> kx, kx_t; // [cm3 day-1]
     std::vector<std::vector<std::vector<double>>> krs, krs_t; // [1 day-1]
     std::vector<std::vector<std::vector<double>>> kxs, kxs_t; // [cm3 day-1]
 
-    // for convenience
-	std::vector<double> getEffKr(const std::shared_ptr<CPlantBox::MappedSegments> rs, double simtime) const;
-    std::vector<double> getKr(const std::shared_ptr<CPlantBox::MappedSegments> rs, double simtime) const;
-    std::vector<double> getKx(const std::shared_ptr<CPlantBox::MappedSegments> rs, double simtime) const;
-    std::vector<double> getHs(const std::shared_ptr<CPlantBox::MappedSegments> rs, const std::vector<double>& sx) const;
-
-    void setPsiAir(double psi) { psi_air = psi; }
-
-    double psi_air = -954378; // air water potential [cm] for T = 20°C and RH = 0.5
+    std::vector<double> getEffKr(std::shared_ptr<MappedSegments> rs, double simtime) const;
+    std::vector<double> getKr(std::shared_ptr<MappedSegments> rs, double simtime) const; // [1 day-1]
+    std::vector<double> getKx(std::shared_ptr<MappedSegments> rs, double simtime) const; // [cm3 day-1]
+    std::vector<double> getHs(std::shared_ptr<MappedSegments> rs, const std::vector<double>& sx) const;
 
     // additional parameters
+    double psi_air = -954378; // air water potential [cm] for T = 20°C and RH = 0.5
     std::vector<double> exchangeZoneCoefs; // TODO put those values here
 
     // TODO what would be a good method to store and load this class
-
 
 protected:
 

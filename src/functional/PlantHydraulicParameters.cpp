@@ -29,10 +29,10 @@ void PlantHydraulicParameters::setKxValues(std::vector<double> values) {
 }
 
 /**
- *  Sets the radial conductivity in [1 day-1] in case of organType or subType specific Kr, xor age dependent
+ *  Sets the radial conductivity in [1 day-1] in case of organType or subType specific Kr, or age dependent
  *
- * @param values 		kr per organType and subType xor per age [cm-1]
- * @param age 			ages if kr per age
+ * @param values 		kr per organType and subType or per age [cm-1]
+ * @param age 			ages if kr is per age, empty vector otherwise
  * @param kr_length_ 	exchange zone in root, where kr > 0 [cm from root tip], default = -1.0, i.e., no kr_length
  */
 void PlantHydraulicParameters::setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_) {
@@ -140,18 +140,10 @@ void PlantHydraulicParameters::setKxTables(std::vector<std::vector<std::vector<d
     }
 }
 
-
-
-
-
-
-
-
-
 /**
  * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
  */
-std::vector<double> PlantHydraulicParameters::getEffKr(const std::shared_ptr<CPlantBox::MappedSegments> rs, double simtime) const {
+std::vector<double> PlantHydraulicParameters::getEffKr(std::shared_ptr<MappedSegments> rs, double simtime) const {
     std::vector<double> kr = std::vector<double>(rs->segments.size());
     for (int si = 0; si<rs->segments.size(); si++) {
         int i = rs->segments[si].x;
@@ -176,7 +168,7 @@ std::vector<double> PlantHydraulicParameters::getEffKr(const std::shared_ptr<CPl
 /**
  * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
  */
-std::vector<double> PlantHydraulicParameters::getKr(const std::shared_ptr<CPlantBox::MappedSegments> rs, double simtime) const {
+std::vector<double> PlantHydraulicParameters::getKr(std::shared_ptr<MappedSegments> rs, double simtime) const {
     std::vector<double> kr = std::vector<double>(rs->segments.size());
     for (int si = 0; si<rs->segments.size(); si++) {
         int j = rs->segments[si].y;
@@ -197,7 +189,7 @@ std::vector<double> PlantHydraulicParameters::getKr(const std::shared_ptr<CPlant
 /**
  * Returns radial conductivities per segment for a specific simulation time
  */
-std::vector<double> PlantHydraulicParameters::getKx(const std::shared_ptr<CPlantBox::MappedSegments> rs, double simtime) const {
+std::vector<double> PlantHydraulicParameters::getKx(std::shared_ptr<MappedSegments> rs, double simtime) const {
     std::vector<double> kx = std::vector<double>(rs->segments.size());
     for (int si = 0; si<rs->segments.size(); si++) {
         int j = rs->segments[si].y;
@@ -217,7 +209,7 @@ std::vector<double> PlantHydraulicParameters::getKx(const std::shared_ptr<CPlant
 /**
  * Returns soil matric potential per segment, for a given soil sx connected gy the mapper rs->seg2cell
  */
-std::vector<double> PlantHydraulicParameters::getHs(const std::shared_ptr<CPlantBox::MappedSegments> rs, const std::vector<double>& sx) const {
+std::vector<double> PlantHydraulicParameters::getHs(std::shared_ptr<MappedSegments> rs, const std::vector<double>& sx) const {
     std::vector<double> hs = std::vector<double>(rs->segments.size());
     for (int si = 0; si<rs->segments.size(); si++) {
         int cellIndex = rs->seg2cell[si];
