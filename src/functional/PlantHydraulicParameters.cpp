@@ -187,7 +187,7 @@ std::vector<double> PlantHydraulicParameters::getKr(std::shared_ptr<MappedSegmen
 
 
 /**
- * Returns radial conductivities per segment for a specific simulation time
+ * Returns axial conductivities per segment for a specific simulation time
  */
 std::vector<double> PlantHydraulicParameters::getKx(std::shared_ptr<MappedSegments> rs, double simtime) const {
     std::vector<double> kx = std::vector<double>(rs->segments.size());

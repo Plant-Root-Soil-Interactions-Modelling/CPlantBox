@@ -11,22 +11,22 @@ from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
 import rsml.rsml_reader as rsml
 
 
-class PlantHydraulicModel(PlantHydraulicModelCpp):
+class PlantHydraulicModel(PlantHydraulicModelCPP):
     """  Root hydraulic models classs 
     
     """
 
-    def __init__(self, method, ms, params):
+    def __init__(self, method, rs, params):
         """ 
         @param method is either "Meunier" or "Doussan" 
         @param ms is of type MappedSegments, or a string containing a rsml filename
         @param params hydraulic conductivities described by PlantHydraulicParameters
         """
         if isinstance(rs, str):
-            rs = self.read_rsml(ms)
-            super().__init__(ms, params)
+            rs = self.read_rsml(rs)
+            super().__init__(rs, params)
         else:
-            super().__init__(ms, params)
+            super().__init__(rs, params)
 
         self.method = method
         if not method in ["Doussan"]:  # "Meunier",
@@ -65,6 +65,30 @@ class PlantHydraulicModel(PlantHydraulicModelCpp):
             print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
             print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))
         return pb.MappedSegments(nodes2, cts, segs2, segRadii, segTypes)  # root system grid
+
+    def get_nodes(self):
+        """ converts the list of Vector3d to a 2D numpy array """
+        return np.array(list(map(lambda x: np.array(x), self.rs.nodes)))
+
+    def get_segments(self):
+        """ converts the list of Vector2i to a 2D numpy array """
+        return np.array(list(map(lambda x: np.array(x), self.rs.segments)), dtype = np.int64)
+
+    def get_efffective_kr(self, sim_time):
+        """ effective radial conductivities per segment [cm2 day-1] """
+        return self.params.getEff(self.rs, sim_time)
+
+    def get_kr(self, sim_time):
+        """ radial conductivities per segment [1 day-1] """
+        return self.params.getKr(self.rs, sim_time)
+
+    def get_kx(self, sim_time):
+        """ axial conductivities per segment [cm3 day-1]"""
+        return self.params.getKx(self.rs, sim_time)
+
+    def get_hs(self, sim_time):
+        """ soil matric potential per segment [cm] """
+        return self.params.getHs(self.rs, sim_time)
 
     def get_incidence_matrix(self):
         """ returns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
@@ -130,9 +154,9 @@ class PlantHydraulicModel(PlantHydraulicModelCpp):
         """
         IM = self.get_incidence_matrix()
         IMt = IM.transpose()
-        kx_ = np.divide(self.params.getKx(sim_time), self.rs.segLength())  # / dl
+        kx_ = np.divide(self.params.getKx(self.rs, sim_time), self.rs.segLength())  # / dl
         Kx = sparse.diags(kx_)
-        kr = np.array(self.params.getEffKr(sim_time))
+        kr = np.array(self.params.getEffKr(self.rs, sim_time))
         kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)  #  limit to a small value for inversion
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
@@ -146,16 +170,54 @@ class PlantHydraulicModel(PlantHydraulicModelCpp):
             if s.x == 0:
                 return i
 
-    # def get_transpiration(self):
-    # transpiration  # sum of radial fluxes
-    # radial_fluxes
-    # xylem_potentials
+    def update(self, sim_time):  # rs_age + simtime...
 
-    def collar_flux(self, sim_time, rx):
-        """ returns the exact transpirational flux of the xylem model solution @param rx
-            @see axial_flux        
+        A_d, self.Kr, self.kx0 = self.get_doussan_system(sim_time)
+        self.ci = self.collar_index()
+
+        print("collar_index (segment index)", self.ci)
+        print("kx0:", self.kx0)
+        print()
+
+        A_n = A_d.copy()
+        A_n[self.ci, self.ci] -= self.kx0
+
+        print("invert matrix start")
+        self.A_n_splu = LA.splu(A_n)
+        self.A_d_splu = LA.splu(A_d)
+        print("invert done")
+
+    def solve(self, rsx, t_pot, wilting_point):
+        """ solves the flux equations
+            @param t_pot [cm3 day-1]     potential transpiration rate
+            @param rsx [cm]              soil total potential around root collar, if it is below the wilting_point, 
+                                         dirichlet boundary conditions are assumed. Set sx = 0 to disable this behaviour.
+            @parm wiltingPoint [cm]      the plant wilting point   
+            @return [cm] root xylem total potential
         """
-        return self.axial_flux(self.collar_index(), sim_time, rx)
+        b = self.Kr.dot(rsx)
+        b[self.ci, 0] += self.kx0 * wilting_point
+        # rx = sparse.linalg.spsolve(A_d, b)
+        # rx = np.expand_dims(rx, axis = 1)
+        rx = self.A_d_splu.solve(b)
+        q_dirichlet = -self.Kr.dot(rsx - rx)  # both total potentials
+
+        if np.sum(q_dirichlet) <= t_pot:
+            # rx = Ainv_neumann.dot(Kr.dot(rsx)) + Ainv_neumann[:, collar_index] * t_pot  #   # Hess Eqn (29)
+            b = self.Kr.dot(rsx)
+            b[self.ci, 0] += t_pot
+            # rx = sparse.linalg.spsolve(A_n, b)
+            # rx = np.expand_dims(rx, axis = 1)
+            rx = self.A_n_splu.solve(b)
+
+        return rx
+
+    def radial_fluxes(self, rx, rsx):
+        return -self.Kr.dot(rsx - rx)
+
+    def get_transpiration(self, rx, rsx):
+        """ actual transpiration """
+        return np.sum(radial_fluxes(rx, rsx))
 
     def axial_fluxes(self, sim_time, rx):
         """ returns the axial fluxes 
