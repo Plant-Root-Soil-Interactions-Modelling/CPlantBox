@@ -14,6 +14,8 @@ import rsml.rsml_reader as rsml
 class PlantHydraulicModel(PlantHydraulicModelCPP):
     """  Root hydraulic models classs 
     
+    
+        will incorporate Doussan and Meunier (currently working on Doussan)
     """
 
     def __init__(self, method, rs, params):
@@ -76,19 +78,19 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
 
     def get_efffective_kr(self, sim_time):
         """ effective radial conductivities per segment [cm2 day-1] """
-        return self.params.getEff(self.rs, sim_time)
+        return np.array(self.params.getEff(self.rs, sim_time))
 
     def get_kr(self, sim_time):
         """ radial conductivities per segment [1 day-1] """
-        return self.params.getKr(self.rs, sim_time)
+        return np.array(self.params.getKr(self.rs, sim_time))
 
     def get_kx(self, sim_time):
         """ axial conductivities per segment [cm3 day-1]"""
-        return self.params.getKx(self.rs, sim_time)
+        return np.array(self.params.getKx(self.rs, sim_time))
 
-    def get_hs(self, sim_time):
+    def get_hs(self, sx):
         """ soil matric potential per segment [cm] """
-        return self.params.getHs(self.rs, sim_time)
+        return np.array(self.params.getHs(self.rs, sx))
 
     def get_incidence_matrix(self):
         """ returns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
@@ -171,24 +173,18 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
                 return i
 
     def update(self, sim_time):  # rs_age + simtime...
-
+        """ call before solve() """
         A_d, self.Kr, self.kx0 = self.get_doussan_system(sim_time)
         self.ci = self.collar_index()
-
-        print("collar_index (segment index)", self.ci)
-        print("kx0:", self.kx0)
-        print()
-
         A_n = A_d.copy()
         A_n[self.ci, self.ci] -= self.kx0
-
-        print("invert matrix start")
+        print("update(): invert matrix start (splu)")
         self.A_n_splu = LA.splu(A_n)
         self.A_d_splu = LA.splu(A_d)
-        print("invert done")
+        print("update(): invert done.")
 
     def solve(self, rsx, t_pot, wilting_point):
-        """ solves the flux equations
+        """ solves the hydraulic model
             @param t_pot [cm3 day-1]     potential transpiration rate
             @param rsx [cm]              soil total potential around root collar, if it is below the wilting_point, 
                                          dirichlet boundary conditions are assumed. Set sx = 0 to disable this behaviour.
@@ -197,67 +193,45 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         """
         b = self.Kr.dot(rsx)
         b[self.ci, 0] += self.kx0 * wilting_point
-        # rx = sparse.linalg.spsolve(A_d, b)
-        # rx = np.expand_dims(rx, axis = 1)
+        # rx = np.expand_dims(sparse.linalg.spsolve(A_d, b), axis = 1)
         rx = self.A_d_splu.solve(b)
         q_dirichlet = -self.Kr.dot(rsx - rx)  # both total potentials
-
         if np.sum(q_dirichlet) <= t_pot:
-            # rx = Ainv_neumann.dot(Kr.dot(rsx)) + Ainv_neumann[:, collar_index] * t_pot  #   # Hess Eqn (29)
             b = self.Kr.dot(rsx)
             b[self.ci, 0] += t_pot
-            # rx = sparse.linalg.spsolve(A_n, b)
-            # rx = np.expand_dims(rx, axis = 1)
+            # rx = np.expand_dims(sparse.linalg.spsolve(A_n, b), axis = 1)
             rx = self.A_n_splu.solve(b)
-
         return rx
 
     def radial_fluxes(self, rx, rsx):
+        """ returns the radial fluxes [cm3 day-1]"""
         return -self.Kr.dot(rsx - rx)
 
     def get_transpiration(self, rx, rsx):
-        """ actual transpiration """
-        return np.sum(radial_fluxes(rx, rsx))
-
-    def axial_fluxes(self, sim_time, rx):
-        """ returns the axial fluxes 
-        @see axial_flux  
-        """
-        n = len(self.rs.segments)  # TODO getter
-        return np.array([self.axial_flux(i, sim_time, rx) for i in range(0, n)])
+        """ actual transpiration [cm3 day-1]"""
+        return np.sum(self.radial_fluxes(rx, rsx))
 
     def get_krs(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day]             
         """
         n = len(self.rs.segments)  # TODO getter
-        H_sr = np.ones((n,)) * (-500)
-
-        A, Kr, Kx0 = self.doussan_system_matrix(sim_time)  # A.dot(H_x) = Kr.dot(H_{s,r}) + K_x,collar * e_collar * wilting_point
-        b = Kr.dot(H_sr)
-        # print("b", b.shape)
-        b[self.collar_index()] += Kx0 * (-15000)
-        # print("collar_index", self.collar_index())
-        Hx = LA.spsolve(A, b)
-
-        # print("Hx", np.min(Hx), np.max(Hx))
-
-        seg_ind = self.collar_index()
-        s = self.rs.segments[seg_ind]
-        i, j = s.x, s.y
-        n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
-        v = n2.minus(n1)
-        l = v.length()
-        a = self.rs.radii[seg_ind]  # radius
-        st = int(self.rs.subTypes[seg_ind])  # sub type
-        age = sim_time - self.rs.nodeCTs[int(s.y)]
-        kx = self.kx_f(age, st)
-        dpdz0 = (Hx[seg_ind] - (-15000)) / l
-        print(seg_ind, Hx[seg_ind], s, a, l, kx)
-
-        t_act = -kx * (dpdz0)
-        # t_act = self.collar_flux(sim_time, Hx)
-
-        # print("t_act", t_act, "Hx0", Hx[0])
-        krs = -t_act / ((-500) - Hx[seg_ind])
+        s = self.rs.segments[self.ci]
+        n2 = self.rs.nodes[s.y]
+        rsx = np.ones((n, 1)) * (-500)
+        b = self.Kr.dot(rsx)
+        b[self.ci, 0] += self.kx0 * -15000
+        rx = self.A_d_splu.solve(b)  # total matric potential
+        t_act = self.get_transpiration(rx, rsx)
+        krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))  # from total to matric
         return krs, t_act
 
+    def get_suf(self):
+        """ standard uptake fraction per root segment, 
+        call update(sim_time) before using it """
+        n = len(self.rs.segments)  # TODO getter
+        rsx = np.ones((n, 1)) * (-500)
+        b = self.Kr.dot(rsx)
+        b[self.ci, 0] += self.kx0 * -15000
+        rx = self.A_d_splu.solve(b)
+        q = self.radial_fluxes(rx, rsx)
+        return np.array(q) / np.sum(q)

@@ -18,7 +18,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         (same for Kx)
         
         kr_f(int segment_index, double age, int subType, int organType) 
-        ky_f(int segment_index, double age, int subType, int organType)
+        kx_f(int segment_index, double age, int subType, int organType)
         
         see also PlantHydraulicParameters.h    
         
