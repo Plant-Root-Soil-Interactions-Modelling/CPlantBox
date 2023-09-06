@@ -161,12 +161,13 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         kr = np.array(self.params.getEffKr(self.rs, sim_time))
         kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)  #  limit to a small value for inversion
         Kr = sparse.diags(kr)
-        L = IMt @ Kx @ IM  # Laplacian
+        L = IMt @ Kx @ IM  # Laplacian;  Eqn (4) Leitner et al. (tba)
         L_ = L[1:, 1:].tocsc()
-        return  L_ + Kr, Kr, kx_[self.collar_index()]  # L_{N-1} + Kr
+        A = L_ + Kr  # L_{N-1} + Kr; Eqn (4) Leitner et al. (tba) Eqn (10)
+        return  A, Kr, kx_[self.collar_index()]
 
     def collar_index(self):
-        """ returns the segment index of the collar segment, node index of the collar node is 0 """
+        """ returns the segment index of the collar segment, node index of the collar node is always 0 """
         segs = self.rs.segments
         for i, s in enumerate(segs):
             if s.x == 0:
@@ -182,6 +183,9 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         self.A_n_splu = LA.splu(A_n)
         self.A_d_splu = LA.splu(A_d)
         print("update(): invert done.")
+        """ cache macroscopic parameters """
+        self.krs, _ = self.get_krs(sim_time)
+        self.suf = np.transpose(self.get_suf())
 
     def solve(self, rsx, t_pot, wilting_point):
         """ solves the hydraulic model
@@ -191,29 +195,34 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             @parm wiltingPoint [cm]      the plant wilting point   
             @return [cm] root xylem total potential
         """
+
+        collar = self.get_collar_potential(t_pot, rsx)
+        collar = max(collar, wilting_point)
         b = self.Kr.dot(rsx)
-        b[self.ci, 0] += self.kx0 * wilting_point
-        # rx = np.expand_dims(sparse.linalg.spsolve(A_d, b), axis = 1)
+        b[self.ci, 0] += self.kx0 * collar
         rx = self.A_d_splu.solve(b)
-        q_dirichlet = -self.Kr.dot(rsx - rx)  # both total potentials
-        if np.sum(q_dirichlet) <= t_pot:
-            b = self.Kr.dot(rsx)
-            b[self.ci, 0] += t_pot
-            # rx = np.expand_dims(sparse.linalg.spsolve(A_n, b), axis = 1)
-            rx = self.A_n_splu.solve(b)
+        # b = self.Kr.dot(rsx)
+        # b[self.ci, 0] += self.kx0 * wilting_point
+        # # rx = np.expand_dims(sparse.linalg.spsolve(A_d, b), axis = 1)
+        # rx = self.A_d_splu.solve(b)
+        # q_dirichlet = -self.Kr.dot(rsx - rx)  # both total potentials
+        # if np.sum(q_dirichlet) <= t_pot:
+        #     b = self.Kr.dot(rsx)
+        #     b[self.ci, 0] += t_pot
+        #     # rx = np.expand_dims(sparse.linalg.spsolve(A_n, b), axis = 1)
+        #     rx = self.A_n_splu.solve(b)
         return rx
 
     def radial_fluxes(self, rx, rsx):
         """ returns the radial fluxes [cm3 day-1]"""
-        return -self.Kr.dot(rsx - rx)
+        return -self.Kr.dot(rsx - rx)  #   equals -q_root of Eqn (6) Leitner et al. (tba)
 
     def get_transpiration(self, rx, rsx):
         """ actual transpiration [cm3 day-1]"""
         return np.sum(self.radial_fluxes(rx, rsx))
 
     def get_krs(self, sim_time):
-        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day]             
-        """
+        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
         n = len(self.rs.segments)  # TODO getter
         s = self.rs.segments[self.ci]
         n2 = self.rs.nodes[s.y]
@@ -226,8 +235,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return krs, t_act
 
     def get_suf(self):
-        """ standard uptake fraction per root segment, 
-        call update(sim_time) before using it """
+        """ standard uptake fraction per root segment """
         n = len(self.rs.segments)  # TODO getter
         rsx = np.ones((n, 1)) * (-500)
         b = self.Kr.dot(rsx)
@@ -235,3 +243,13 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         rx = self.A_d_splu.solve(b)
         q = self.radial_fluxes(rx, rsx)
         return np.array(q) / np.sum(q)
+
+    def get_Heff(self, rsx):
+        """ effective total potential [cm] """
+        heff = self.suf.dot(rsx)
+        return heff[0, 0]
+
+    def get_collar_potential(self, t_act, rsx):
+        """ collar potential for an actual transpiration """
+        return (self.krs * self.get_Heff(rsx) - (-t_act)) / self.krs
+

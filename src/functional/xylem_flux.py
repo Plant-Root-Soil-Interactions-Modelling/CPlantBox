@@ -553,7 +553,7 @@ class XylemFluxPython(XylemFlux):
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
         print("\nXylemFluxPython.test():")
-        # 1 check if segment index is node index-1
+        # 1 check if segment index is node index-1 (of the second node)
         segments = self.get_segments()
         nodes = self.get_nodes()
         seg_length = self.rs.segLength()
