@@ -632,7 +632,8 @@ def plot_mesh_yz(s, p_name , min_b, max_b, cell_number, x = -4, render = False):
     return actors, scalar_bar, grid
 
 
-def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str, sol_ind = 0):
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, 
+        filename:str = "", sol_ind = 0, interactiveImage = True, extraArray = []):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -662,6 +663,11 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     if sol_ind > 0:
         d = vtk_data(np.array(s.getSolution(sol_ind)))
         pname_mesh = "solute" + str(sol_ind)
+        d.SetName(pname_mesh)  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(d)
+    if sol_ind < 0:
+        d = vtk_data(extraArray)
+        pname_mesh = "solute" #+ str(sol_ind)
         d.SetName(pname_mesh)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
 

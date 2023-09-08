@@ -41,6 +41,8 @@ class Parameters:
 
 def pressure_head(theta, sp):
     """ returns pressure head at a given volumetric water content according to the van genuchten model """
+    assert theta >= sp.theta_R
+    assert theta <= sp.theta_S
     theta = np.minimum(theta, sp.theta_S)  # saturated water conent is the maximum
     return -pow(pow((sp.theta_S - sp.theta_R) / (theta - sp.theta_R), (1. / sp.m)) - 1., 1. / sp.n) / sp.alpha
 

@@ -960,7 +960,7 @@ PYBIND11_MODULE(plantbox, m) {
                     py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
             .def("sumSegFluxes",&XylemFlux::sumSegFluxes)
             .def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
-            .def_readonly("kr_f_cpp", &XylemFlux::kr_f)
+            .def("kr_f_cpp", &XylemFlux::kr_f_wrapped, py::arg("seg_ind"), py::arg("age"), py::arg("st"), py::arg("ot"))
             .def_readonly("kx_f_cpp", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)
@@ -1053,7 +1053,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("doLog", &Photosynthesis::doLog)
-            .def_readwrite("R_ph", &Photosynthesis::R_ph);
+            .def_readwrite("R_ph", &Photosynthesis::R_ph)
+            .def_readonly("rho_h2o", &Photosynthesis::rho_h2o)
+            .def_readonly("R_ph", &Photosynthesis::R_ph)
+            .def_readonly("Mh2o", &Photosynthesis::Mh2o);
 	
     py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes")
             .value("C3", Photosynthesis::PhotoTypes::C3)

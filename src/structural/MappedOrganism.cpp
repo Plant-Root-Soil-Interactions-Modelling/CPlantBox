@@ -129,15 +129,12 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
 	maxBound = max;
 	resolution = res;
 	cutAtGrid = cut;
-	// std::cout << "setRectangularGrid: cutSegments \n" << std::flush;
 	if (cutAtGrid) {
 		cutSegments(); // re-add (for cutting)
 	}
-	// std::cout << "setRectangularGrid: sort \n" << std::flush;
 	sort(); // todo should not be necessary, or only in case of cutting?
 	seg2cell.clear(); // re-map all segments
 	cell2seg.clear();
-	// std::cout << "setRectangularGrid: map \n" << std::flush;
 	mapSegments(segments);
 }
 
@@ -149,6 +146,7 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
  * @param segs      the (new) segments that need to be mapped
  */
 void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
+	//int countseg = 0;
 	for (auto& ns : segs) {
 		Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
 		int cellIdx = soil_index(mid.x,mid.y,mid.z);
@@ -159,6 +157,8 @@ void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
 		} else {
 			cell2seg[cellIdx] = std::vector<int>({segIdx});
 		}
+		//for(auto& cgdx : cell2seg[cellIdx]) {std::cout<<cgdx<<" ";}std::cout<<std::endl;
+		//countseg ++;
 	}
 }
 
@@ -293,7 +293,7 @@ double MappedSegments::length(const Vector2i& s) const {
 void MappedSegments::unmapSegments(const std::vector<Vector2i>& segs) {
 	for (auto& ns : segs) {
 		int cellIdx = -1;
-		int segIdx = ns.y-1;
+		int segIdx = ns.y-1;		
 		if (seg2cell.count(segIdx)>0) { // remove from seg2cell
 			cellIdx = seg2cell[segIdx];
 			auto it = seg2cell.find(segIdx);
@@ -304,13 +304,16 @@ void MappedSegments::unmapSegments(const std::vector<Vector2i>& segs) {
 		if (cell2seg.count(cellIdx)>0) {
 			auto& csegs= cell2seg[cellIdx];
 			int c = 0;
+		
 			for (int i=0; i<csegs.size(); i++) {
+				std::cout<<csegs[i]<<" ";
 				if (csegs[i] == segIdx) {
-					csegs.erase(csegs.begin() + c, csegs.begin() + c);
+					csegs.erase(csegs.begin() + c, csegs.begin() + c +1);
 					break; // inner for
 				}
 				c++;
 			}
+			
 		} else {
 			throw std::invalid_argument("MappedSegments::removeSegments: warning cell index "+ std::to_string(cellIdx)+ " was not found in the cell2seg mapper");
 		}
@@ -499,9 +502,9 @@ void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbo
 	radii.resize(segments.size());
 	std::fill(radii.begin(), radii.end(), 0.1);
 	subTypes.resize(segments.size());
-	std::fill(subTypes.begin(), subTypes.end(), 0);
+	std::fill(subTypes.begin(), subTypes.end(), 0);//shoot of subtype 0
 	organTypes.resize(segments.size());
-	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //root organ type = 2
+	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //currently, all segments are shoot segments
 	mapSegments(segments);
 }
 
@@ -567,8 +570,12 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 		radii[segIdx] = so->param()->a;
 		subTypes[segIdx] = so->param()->subType;
 		organTypes[segIdx] = so->organType();
+		//std::cout<<"segIdx "<<segIdx<<" subTypes[segIdx] "<<subTypes[segIdx]<<" organTypes[segIdx] "<<std::endl;
 	}
 	// map new segments
+	if (verbose) {
+		std::cout << "map new segments " << newsegs.size() << "  \n"<< std::flush;
+	}
 	this->mapSegments(newsegs);
 
 	// update segments of moved nodes
@@ -595,6 +602,10 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 			rSegs.push_back(s);
 		}
 	}
+	if (verbose) {
+		std::cout << "re-map existing segments " << rSegs.size() << "  \n"<< std::flush;
+	}
+	
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
 }
