@@ -177,13 +177,11 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         """ call before solve() """
         A_d, self.Kr, self.kx0 = self.get_doussan_system(sim_time)
         self.ci = self.collar_index()
-        A_n = A_d.copy()
-        A_n[self.ci, self.ci] -= self.kx0
-        print("update(): invert matrix start (splu)")
-        self.A_n_splu = LA.splu(A_n)
+        # A_n = A_d.copy()
+        # A_n[self.ci, self.ci] -= self.kx0
+        # print("update(): invert matrix start (splu)")
+        # self.A_n_splu = LA.splu(A_n)
         self.A_d_splu = LA.splu(A_d)
-        print("update(): invert done.")
-        """ cache macroscopic parameters """
         self.krs, _ = self.get_krs(sim_time)
         self.suf = np.transpose(self.get_suf())
 

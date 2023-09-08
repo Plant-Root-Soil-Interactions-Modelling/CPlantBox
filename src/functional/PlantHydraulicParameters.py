@@ -42,8 +42,8 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         @param lateral_ind  for monocots a list of two root types for "1st order laterals", "2nd order laterals" [2, 3]
                             for dicots a list of three root types for "1st order laterals", "2nd order laterals", "3rd order laterals" [2, 3, 4]          
         """
-        axes_age = np.linspace(-5, 100, 500)
-        lateral_age = np.linspace(-2, 25, 125)
+        axes_age = naxes_age = np.linspace(0, 50, 500)
+        lateral_age = np.linspace(0, 25, 125)
         lateral_cols = ["r", "g:", "m--", "b--"]
         axes_cols = ["r", "g:", "m--", "b--"]
         if monocot:
@@ -96,16 +96,17 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         ax4.set_ylabel("radial conductance [day$^{-1}$]")
         print(kx_max)
         print(kr_max)
-        ax1.set_ylim([0, kx_max * 1.1])
-        ax2.set_ylim([0, kx_max * 1.1])
-        ax3.set_ylim([0, kr_max * 1.1])
-        ax4.set_ylim([0, kr_max * 1.1])
+        # ax1.set_ylim([0, kx_max * 1.1])
+        # # ax2.set_ylim([0, kx_max * 1.1])
+        # ax3.set_ylim([0, kr_max * 1.1])
+        # ax4.set_ylim([0, kr_max * 1.1])
         print()
         for st in range(0, 5):
             print("SubType {:g} for negative age: kx = {:g}, kr = {:g}".format(st, self.kx_f(0, -1, st, 2), self.kr_f(0, -1, st, 2)))
             print("SubType {:g} for old root age: kx = {:g}, kr = {:g}".format(st, self.kx_f(0, 100, st, 2), self.kr_f(0, 100, st, 2)))
         print()
         if plot_now:
+            plt.tight_layout()
             plt.show()
         return fig
 
@@ -123,7 +124,7 @@ if __name__ == "__main__":
     params.setKrTables([values], [ages])  # values, ages per organType per subType
     kx00 = np.array([[0., 1.e3]])  # artificial shoot
     kx0 = np.array([[0., 0.000864], [5., 0.00173], [12., 0.0295], [15., 0.0295], [20., 0.432], [300., 0.432]])  #  time, value; [cm3 day-1]
-    kx1 = np.array([[0., 0.000864], [5., 0.0000864], [10., 0.0000864], [12., 0.0006048], [20., 0.0006048], [23., 0.00173], [300., 0.00173]])  #  time, value; [cm3 day-1]
+    kx1 = np.array([[0., 0.0000864], [5., 0.0000864], [10., 0.0000864], [12., 0.0006048], [20., 0.0006048], [23., 0.00173], [300., 0.00173]])  #  time, value; [cm3 day-1]
     ages = [kx00[:, 0], kx0[:, 0], kx1[:, 0], kx1[:, 0], kx0[:, 0], kx0[:, 0]]
     values = [kx00[:, 1], kx0[:, 1], kx1[:, 1], kx1[:, 1], kx0[:, 1], kx0[:, 1]]
     params.setKxTables([values], [ages])
