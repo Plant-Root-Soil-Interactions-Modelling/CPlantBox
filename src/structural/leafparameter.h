@@ -111,6 +111,7 @@ public:
 	double Width_petiole = 0.;		///< width of leafe petiole (cm) = lb zone. define later a width growth rate?
 	double Width_petioles = 0.;		///< Standard deviation of leaf petiole width (cm)
 	int gf = 1;				///< Growth function (1=negative exponential, 2=linear)
+	int isPseudostem = 0;				///< do the leaf sheaths make a pseudostem? (0 false, 1 true)
 	std::vector<int> successor = {};			///< Lateral types [1]
 	std::vector<double> successorP = {}; 	///< Probabiltities of lateral type to emerge (sum of values == 1) [1]
 

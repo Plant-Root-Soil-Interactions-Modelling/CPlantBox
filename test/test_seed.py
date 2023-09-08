@@ -69,7 +69,7 @@ class TestRoot(unittest.TestCase):
         for o in organs:
             st_ .append(o.getParameter("subType"))
             ot_ .append(o.getParameter("organType"))
-        norc = int(((365 - srp.firstSB) / srp.delayRC) + 0.5)
+        norc = int(((90 - srp.firstSB) / srp.delayRC) + 0.5)
         self.assertEqual(norc, seed.getNumberOfRootCrowns(), "wrong number of root crowns")
         maxB = min(srp.maxB, int(((365 - srp.firstB) / srp.delayB) + 0.5))
         self.assertEqual(len(st_), norc * srp.nC + 1 + maxB, "wrong number of roots created")

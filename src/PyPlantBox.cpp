@@ -333,7 +333,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getLength", (double (Organ::*)(bool realized) const) &Organ::getLength, py::arg("realized") = true)
             .def("getLength", (double (Organ::*)(int i) const) &Organ::getLength)
 			.def("getEpsilon",&Organ::getEpsilon)
-
 			.def("getNumberOfNodes",&Organ::getNumberOfNodes)
 			.def("getNumberOfSegments",&Organ::getNumberOfSegments)
             .def("getOrigin",&Organ::getOrigin)
@@ -346,10 +345,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getSegments",&Organ::getSegments)
             .def("dx",&Organ::dx)
             .def("dxMin",&Organ::dxMin)
-
             .def("hasMoved",&Organ::hasMoved)
             .def("getOldNumberOfNodes",&Organ::getOldNumberOfNodes)
-
+            .def("getNodes",&Organ::getNodes)
             .def("getOrgans", (std::vector<std::shared_ptr<Organ>> (Organ::*)(int otype, bool all)) &Organ::getOrgans, py::arg("ot")=-1, py::arg("all")=false) //overloads, default
             .def("getOrgans", (void (Organ::*)(int otype, std::vector<std::shared_ptr<Organ>>& v, bool all)) &Organ::getOrgans)
             .def("getParameter",&Organ::getParameter)
@@ -688,7 +686,7 @@ PYBIND11_MODULE(plantbox, m) {
       .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
       .def_readwrite("tropismAge", &LeafRandomParameter::tropismAge)
       .def_readwrite("tropismAges", &LeafRandomParameter::tropismAges)
-    ;
+       .def_readwrite("Width_blade", &LeafRandomParameter::Width_blade)  ;
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool, double, double>())
@@ -1038,9 +1036,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("g_canopy", &Photosynthesis::g_canopy)
             .def_readwrite("g_air", &Photosynthesis::g_air)
             .def_readwrite("theta", &Photosynthesis::theta)
-            .def_readwrite("gamma0", &Photosynthesis::gamma0)
-            .def_readwrite("gamma1", &Photosynthesis::gamma1)
-            .def_readwrite("gamma2", &Photosynthesis::gamma2)
+            //.def_readwrite("gamma0", &Photosynthesis::gamma0)
+            //.def_readwrite("gamma1", &Photosynthesis::gamma1)
+            //.def_readwrite("gamma2", &Photosynthesis::gamma2)
             .def_readwrite("alpha", &Photosynthesis::alpha)
             .def_readwrite("a1", &Photosynthesis::a1)
             .def_readwrite("a2_stomata", &Photosynthesis::a2_stomata)
@@ -1106,9 +1104,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Q_Exudmax",&PhloemFlux::Q_Exudmaxv)
             .def_readwrite("Q_Rmmax",&PhloemFlux::Q_Rmmaxv)
             .def_readwrite("Fl",&PhloemFlux::Flv)
-            //.def_readwrite("KMgr",&PhloemFlux::KMgr)
             .def_readwrite("KMfu",&PhloemFlux::KMfu)
-            //.def_readwrite("k_meso",&PhloemFlux::k_meso)
             .def_readwrite("Csoil",&PhloemFlux::Csoil)
             .def_readwrite("deltaSucOrgNode",&PhloemFlux::deltaSucOrgNode_)
             .def_readwrite("usePsiXyl",&PhloemFlux::usePsiXyl)
@@ -1141,7 +1137,18 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("GrowthZone",&PhloemFlux::GrowthZone)
 			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
-			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm);
+			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
+            
+            .def_readwrite("C_targ",&PhloemFlux::C_targ)
+            .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
+            .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)
+            .def_readwrite("kM_S_ST",&PhloemFlux::kM_S_ST)
+            .def_readwrite("kHyd_S_ST",&PhloemFlux::kHyd_S_ST)
+            .def_readwrite("k_S_ST",&PhloemFlux::k_S_ST)
+            .def_readwrite("Vmax_S_Mesophyll",&PhloemFlux::Vmax_S_Mesophyll)
+            .def_readwrite("kM_S_Mesophyll",&PhloemFlux::kM_S_Mesophyll)
+            .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
+            .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll);
 
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())

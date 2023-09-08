@@ -170,8 +170,8 @@ public:
 	double alpha = 0.2; //or 0.44 , coefb = -(alpha * Qlight + Jmax);, alpha * Qlight * Jmax;
 	double a1=4.; //g0+ fw[i] * a1 *( An[i] + Rd)/(ci[i] - deltagco2[i]);//tuzet2003
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
-	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
-	
+	//double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
+    
 	// 				C3 only
 	double a3 = 1.7;//Jrefmax = Vcrefmax * a3 ;//Eq 25
 	double theta = 0.9;//or 0.67 coefa = theta;
@@ -196,12 +196,13 @@ public:
 	// 				MOSTLY C3 (very small effect on C4)
 	//(de)activate parameters
     double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
-    double Eard = 53000;double Eav = 58520;
+    double Eard = 53000;double Eav = 58520;double Ead = 37830;
     double Edj =  220000;double Edv = 220000;double Edrd;// = 53000;
 	//double Rd_refC3 = 0.32e-6; one less param!
 	double S = 700;//enthropy mJ mmol-1 K-1
 	//ref value at T = T_ref
 	double Kc_ref = 302e-6; double Ko_ref = 256e-3; //mmol mmol-1
+    double delta_ref= 42.75e-6;
 	
 	// 				C4 only
 	double s1 = 0.3; //K-1	Bonan2019Chap11: temperature

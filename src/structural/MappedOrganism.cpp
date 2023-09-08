@@ -691,21 +691,21 @@ void MappedPlant::simulate(double dt, bool verbose)
 	if (verbose) {
 		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
 	}
-	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
-	segments.resize(segments.size()+newsegs.size());
+	auto newsegs = this->getSegments(); // add segments (TODO cutting)
+	segments.resize(newsegs.size());
 	for (auto& ns : newsegs) {
 		segments[ns.y-1] = ns;
 	}
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
 	}
-	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
-	radii.resize(radii.size()+newsegO.size());
-	subTypes.resize(subTypes.size()+newsegO.size());
-	organTypes.resize(organTypes.size()+newsegO.size());
-	segVol.resize(segVol.size()+newsegO.size());
-	bladeLength.resize(bladeLength.size()+newsegO.size());
-	leafBladeSurface.resize(leafBladeSurface.size()+newsegO.size());
+	auto newsegO = this->getSegmentOrigins(); // to add radius and type (TODO cutting)
+	radii.resize(newsegO.size());
+	subTypes.resize(newsegO.size());
+	organTypes.resize(newsegO.size());
+	segVol.resize(newsegO.size());
+	bladeLength.resize(newsegO.size());
+	leafBladeSurface.resize(newsegO.size());
 
 	c = 0;
 	if (verbose) {
