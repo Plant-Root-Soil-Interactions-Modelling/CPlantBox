@@ -388,26 +388,32 @@ std::vector<double> MappedSegments::segOuterRadii(int type, const std::vector<do
 		auto segs = cell2seg.at(cellId);
 		double v = 0.;  // calculate sum of root volumes or surfaces over cell
 		for (int i : segs) {
-			if (type==0) { // volume
-				v += M_PI*(radii[i]*radii[i])*lengths[i];
-			} else if (type==1) { // surface
-				v += 2*M_PI*radii[i]*lengths[i];
-			} else if (type==2) { // length
-				v += lengths[i];
+			if(organTypes[i] == Organism::ot_root)
+			{
+				if (type==0) { // volume
+					v += M_PI*(radii[i]*radii[i])*lengths[i];
+				} else if (type==1) { // surface
+					v += 2*M_PI*radii[i]*lengths[i];
+				} else if (type==2) { // length
+					v += lengths[i];
+				}
 			}
 		}
 		for (int i : segs) { // calculate outer radius
-			double l = lengths[i];
-			double t =0.; // proportionality factor (must sum up to == 1 over cell)
-			if (type==0) { // volume
-				t = M_PI*(radii[i]*radii[i])*l/v;
-			} else if (type==1) { // surface
-				t = 2*M_PI*radii[i]*l/v;
-			} else if (type==2) { // length
-				t = l/v;
+			if(organTypes[i] == Organism::ot_root)
+			{
+				double l = lengths[i];
+				double t =0.; // proportionality factor (must sum up to == 1 over cell)
+				if (type==0) { // volume
+					t = M_PI*(radii[i]*radii[i])*l/v;
+				} else if (type==1) { // surface
+					t = 2*M_PI*radii[i]*l/v;
+				} else if (type==2) { // length
+					t = l/v;
+				}
+				double targetV = t * cellVolume;  // target volume
+				outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
 			}
-			double targetV = t * cellVolume;  // target volume
-			outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
 		}
 	}
 	return outer_radii;
@@ -693,9 +699,11 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	auto newsegs = this->getSegments(); // add segments (TODO cutting)
 	segments.resize(newsegs.size());
+	//std::cout<<"newseg "<<std::endl;
 	for (auto& ns : newsegs) {
+		//std::cout<<ns.x<<" "<<ns.y<<",";
 		segments[ns.y-1] = ns;
-	}
+	}//std::cout<<std::endl;
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
 	}
@@ -751,6 +759,16 @@ void MappedPlant::simulate(double dt, bool verbose)
 		c++;
 	}
 
+	// std::cout<<"cell2seg_0"<<std::endl;
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
+	newsegs = this->getNewSegments();
 	// map new segments
 	this->mapSegments(newsegs);
 
@@ -778,8 +796,40 @@ void MappedPlant::simulate(double dt, bool verbose)
 			rSegs.push_back(s);
 		}
 	}
+	// std::cout<<"cell2seg_A"<<std::endl;
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
+	
 	MappedSegments::unmapSegments(rSegs);
+	
+	// std::cout<<"cell2seg_B"<<std::endl;
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
+	
 	MappedSegments::mapSegments(rSegs);
+	
+	// std::cout<<"cell2seg_C"<<std::endl;
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
+	
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
 	getSegment2leafIds();
 

@@ -205,6 +205,8 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double Vmax_S_ST = 0;//(mmol Suc d-1 cm-3 )
 	double kM_S_ST = 0;//(mmol Suc cm-3)
 	double kHyd_S_ST = 0;//(d-1)
+	double k_mucil = 0;//(d-1)
+	std::vector<double> k_mucil_;
 	double k_S_ST = 0;//(d-1)
 	double C_targMesophyll = 0;//(mmol Suc cm-3 )
 	double Vmax_S_Mesophyll = 0;//(mmol Suc d-1 cm-3 )
@@ -242,7 +244,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	Fortran_vector Q_GrmaxBU ;
 	//bool hayErrores = false;
 	int errorID = -1;
-	int neq_coef = 9;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
+	int neq_coef = 10;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
 	std::vector<double> BackUpMaxGrowth;//to check at runtime if growth is correct
 	
 	//retrieve tissue-specific parameters

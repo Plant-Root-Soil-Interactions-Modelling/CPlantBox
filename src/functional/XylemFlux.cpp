@@ -198,15 +198,31 @@ std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxe
     for (int si = 0; si<rs->segments.size(); si++) {
         int j = rs->segments[si].y;
         int segIdx = j-1;
-        if (rs->seg2cell.count(segIdx)>0) {
-            int cellIdx = rs->seg2cell[segIdx];
-            if (cellIdx>=0) {
-                if (fluxes.count(cellIdx)==0) {
-                    fluxes[cellIdx] = segFluxes[segIdx];
-                } else {
-                    fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
-                }
-            }
+		
+        if (rs->seg2cell.count(segIdx)>0) 
+		{			
+			int cellIdx = rs->seg2cell[segIdx];
+			if (cellIdx>=0) 
+			{				
+				if(rs->organTypes[segIdx] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					if (fluxes.count(cellIdx)==0) {
+						fluxes[cellIdx] = segFluxes[segIdx];
+					} else {
+						fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
+					}
+				}else{
+					if(segFluxes[segIdx] != 0.)
+					{
+						std::stringstream errMsg;
+						errMsg<<"XylemFlux::sumSegFluxes. ot:"<<rs->organTypes[segIdx]<<" segIdx:"<<segIdx
+						<<" cellIdx:"<<cellIdx<<" segFluxes[segIdx] :"
+						<<segFluxes[segIdx]<<"=> shoot segment bellow ground ans exchanges water" <<std::endl;
+						
+						throw std::runtime_error(errMsg.str().c_str());
+					}
+				}
+			}
         }
     }
     return fluxes;
@@ -235,30 +251,38 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
 		if (cellId>=0) {                
 			double v = 0.;  // calculate sum over cell
 			for (int i : segs) {
-				//std::cout<<"A.(int i : segs) "<<i<<std::endl;
-				if (type==0) { // volume
-					v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
-				} else if (type==1) { // surface
-					v += 2*M_PI*rs->radii[i]*lengths[i];
-				} else if (type==2) { // length
-					v += lengths[i];
+				
+				if(rs->organTypes[i] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					//std::cout<<"A.(int i : segs) "<<i<<std::endl;
+					if (type==0) { // volume
+						v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+					} else if (type==1) { // surface
+						v += 2*M_PI*rs->radii[i]*lengths[i];
+					} else if (type==2) { // length
+						v += lengths[i];
+					}
 				}
 			}
 			double fluxesTot = 0;
 			for (int i : segs) { // calculate outer radius
-				//std::cout<<"B.(int i : segs) "<<i<<std::endl;
-				double t =0.; // proportionality factor (must sum up to == 1 over cell)
-				if (type==0) { // volume
-					t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
-				} else if (type==1) { // surface
-					t = 2*M_PI*rs->radii[i]*lengths[i]/v;
-				} else if (type==2) { // length
-					t = lengths[i]/v;
+			
+				if(rs->organTypes[i] == Organism::ot_root)
+				{
+					//std::cout<<"B.(int i : segs) "<<i<<std::endl;
+					double t =0.; // proportionality factor (must sum up to == 1 over cell)
+					if (type==0) { // volume
+						t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
+					} else if (type==1) { // surface
+						t = 2*M_PI*rs->radii[i]*lengths[i]/v;
+					} else if (type==2) { // length
+						t = lengths[i]/v;
+					}
+					if(fluxes[i] !=0){std::cout<<"fluxes "<<i<<" already set "<<std::endl;hayErrores=true;}
+					fluxes[i] = t*soilFluxes.at(cellId);
+					fluxesTot +=  t*soilFluxes.at(cellId);
+					fluxesTotTot += t*soilFluxes.at(cellId);
 				}
-				if(fluxes[i] !=0){std::cout<<"fluxes "<<i<<" already set "<<std::endl;hayErrores=true;}
-				fluxes[i] = t*soilFluxes.at(cellId);
-				fluxesTot +=  t*soilFluxes.at(cellId);
-				fluxesTotTot += t*soilFluxes.at(cellId);
 			}
 			//std::cout<<"cellId "<<soilFluxes.at(cellId)<<" "<<fluxesTot<<" "<<fluxesTotTot<<std::endl;
 		}
