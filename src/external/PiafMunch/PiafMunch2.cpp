@@ -201,7 +201,8 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
-		double CSTi_delta = max(0.,CSTi-Csoil); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
+		int cpp_id = i -1;// o go from Fortran_vector numeration to cpp vector numeration
+		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate

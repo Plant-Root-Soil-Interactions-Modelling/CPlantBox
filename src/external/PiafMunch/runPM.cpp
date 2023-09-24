@@ -364,6 +364,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	vol_Seg=Fortran_vector(Nt, 0.);//for postprocessing	
 	exud_k=Fortran_vector(Nt, 0.);
 	krm2=Fortran_vector(Nt, 0.);
+	Csoil_node.resize(Nt,0.);
 	deltaSucOrgNode_ = waterLimitedGrowth(dt);//water limited growth
 	if(doTroubleshooting){cout<<"initializePM_new "<<Nc<<" "<<Nt<<endl;}
 	int nodeID;
@@ -397,10 +398,13 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	
 	for ( int k=1 ;k <= Nc;k++ ) 
 	{
+			//the PiafMunch Fortran_vector are numbered from 1 (and not from 0)
+			//so we need to account for that...
+			// element 0 contains the vector size i think
 			ot = orgTypes[k-1]; st = subTypes[k-1];
 			a_seg = Radii[k-1];
 			l = Lengthvec[k-1];
-			I_Upflow[k] = segmentsPlant[k-1].x +1;
+			I_Upflow[k] = segmentsPlant[k-1].x +1;// +1 to go from C++ numeration to pseudo-Fortran numeration
 			I_Downflow[k] = segmentsPlant[k-1].y +1;
 			
 			nodeID = I_Downflow[k];
@@ -429,6 +433,13 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 				if (exud_k[nodeID] > 0.)
 				{
 					k_mucil_[nodeID] = k_mucil;
+				}
+				if(Csoil_seg.size() > 0.)
+				{
+					// Csoil_node is a std::vecto not a fotran vector
+					Csoil_node.at(segmentsPlant[k-1].y ) = Csoil_seg.at(k -1);					
+				}else{
+					Csoil_node.at(segmentsPlant[k-1].y ) = CsoilDefault;
 				}
 			}
 			if(doTroubleshooting){std::cout<<"QexudMax "<<Q_Exudmax[nodeID ]<<std::endl;}

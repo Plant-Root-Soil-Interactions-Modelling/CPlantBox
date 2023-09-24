@@ -557,7 +557,7 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
 
 
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, 
-        filename:str = "", sol_ind = 0, interactiveImage = True, extraArray = []):
+        filename:str = "", sol_ind = 0, interactiveImage = True, extraArray = [], extraArrayName = ""):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -594,7 +594,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         soil_grid.GetCellData().AddArray(d)
     if sol_ind < 0:
         d = vtk_data(extraArray)
-        pname_mesh = "solute" #+ str(sol_ind)
+        pname_mesh = extraArrayName
         d.SetName(pname_mesh)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
 

@@ -161,6 +161,10 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	std::vector<double> delta_vol_org_i, delta_vol_org, delta_vol_org_imax, delta_vol_org_max;
 	std::vector<double> delta_vol_node_i, delta_vol_node, delta_vol_node_imax, delta_vol_node_max;
 	
+	// soil data, link with DuMux (mmol Suc cm-3)
+	std::vector<double> Csoil_seg;
+	std::vector<double> Csoil_node;
+	double CsoilDefault =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
 	//all in (mmol Suc d-1)
 	std::vector<double> Agv;//assimilation (mmol Suc d-1)
 	std::vector<double> Q_Grmaxv;//maximal sucrose sink for growth (mmol Suc d-1)
@@ -186,7 +190,6 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	//double KMgr = 0.16; //@see C_fluxes,Michaelis menten coef for growth, not implemented
 	double KMfu = 0.2; //@see C_fluxes,Michaelis menten coef for active sucrose usage
 	//double k_meso = 1e-4;//conductivity if implement ohm analogy for Fl, not implemented
-	double Csoil =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
 	//used if sameVolume_meso_st == false, sameVolume_meso_seg == false
 	double surfMeso =0.01 ;//cross sectinnal area of mesophyll (cm2). 
 	//double Cobj_ST = 1.;// ==> when doing loading or unloading with objective value. not implemented
