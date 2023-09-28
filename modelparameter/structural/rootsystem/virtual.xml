@@ -1,7 +1,5 @@
 <plant>
     <seed name="virtual" subType="0">
-        <parameter name="maxTil" value="0"/>
-        <!--Maximal number of tillers [1]-->
         <parameter name="delayB" value="0"/>
         <!--Time delay between the basal roots [day]-->
         <parameter name="delayRC" value="1000"/>
@@ -24,10 +22,8 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-0"/>
         <!--Z-Coordinate of seed position [cm]-->
-        <parameter name="simtime" value="20"/>
-        <!--Recommended final simulation time  [day]-->
     </seed>
-	<root name="missing 3rd order lats" subType="3">
+	<root name="missing 3rd order lats" subType="1">
         <parameter name="gf" value="2"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="2"/>
