@@ -123,12 +123,13 @@ void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>&
  * @param res	 	resolution, how many cells in each dimension [1]
  * @param cut 		determines if the segments are cut at the rectangular grid faces
  */
-void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut)
+void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut, bool noChanges)
 {
 	minBound = min;
 	maxBound = max;
 	resolution = res;
 	cutAtGrid = cut;
+	constantLoc = noChanges;
 	if (cutAtGrid) {
 		cutSegments(); // re-add (for cutting)
 	}
@@ -790,7 +791,10 @@ void MappedPlant::simulate(double dt, bool verbose)
 				remove = (newCellIdx!=cellIdx);
 			}
 		} else {
-			remove = true;
+			if(!constantLoc)
+			{				
+				remove = true;
+			}
 		}
 		if (remove) {
 			rSegs.push_back(s);

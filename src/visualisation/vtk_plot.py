@@ -378,7 +378,7 @@ def create_lookup_table(tableIdx = 15, numberOfColors = 256):
     return lut
 
 
-def create_scalar_bar(lut, grid = None, p_name = ""):
+def create_scalar_bar(lut, grid = None, p_name = "", myRange = None):
     """ creates a vtkScalarBarActor, for a vtkLookupTable, sets hte active scalar to p_name
     @param lut         vtkLookupTable
     @param grid        the grid the scalar bar will be used on (to automatically determine the scalar range)
@@ -398,7 +398,11 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
                 range = a.GetRange()
         if p_name == "organType":  # fix range for for organType
             range = [ 2, 4]
-        lut.SetTableRange(range)
+        
+        if myRange != None:
+            lut.SetTableRange(myRange)
+        else:
+            lut.SetTableRange(range)
 
     scalarBar = vtk.vtkScalarBarActor()
     scalarBar.SetLookupTable(lut)
@@ -415,7 +419,8 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
-def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, 
+                myRange = None):
     """ plots the root system
     @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
     @param p_name                   parameter name of the data to be visualized
@@ -455,7 +460,7 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
     plantActor.SetMapper(mapper)
 
     lut = create_lookup_table()  # 24
-    scalar_bar = create_scalar_bar(lut, pd, p_name)  # vtkScalarBarActor
+    scalar_bar = create_scalar_bar(lut, pd, p_name, myRange)  # vtkScalarBarActor
     mapper.SetLookupTable(lut)
 
     if render:
@@ -496,7 +501,8 @@ def plot_mesh(grid, p_name, win_title = "", render = True, interactiveImage = Tr
     return [meshActor], scalar_bar
 
 
-def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interactiveImage = True):
+def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interactiveImage = True,
+                    myRange = None):
     """ plots orthogonal nz vertical cuts z[:-1] (xy-planes), with z = linspace(min_z, max_z, nz+1),
     and two additonal sclices at x=0 (yz-plane), y=0 (xz-plane)
     @param grid         some vtk grid (structured or unstructured)
@@ -525,7 +531,7 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
         planes.append(p)
 
     lut = create_lookup_table()
-    scalar_bar = create_scalar_bar(lut, grid, p_name)
+    scalar_bar = create_scalar_bar(lut, grid, p_name, myRange)
 
     actors = []  # create cutter, mappers, and actors
     for p in planes:
@@ -557,7 +563,8 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
 
 
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, 
-        filename:str = "", sol_ind = 0, interactiveImage = True, extraArray = [], extraArrayName = ""):
+        filename:str = "", sol_ind = 0, interactiveImage = True, extraArray = [], extraArrayName = "",
+        oneScalarBar = False):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
@@ -597,9 +604,33 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         pname_mesh = extraArrayName
         d.SetName(pname_mesh)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
-
-    rootActor, rootCBar = plot_roots(pd, pname, "", False)
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+        
+        
+    if oneScalarBar:
+        rangeS = [[], []]
+        p_nameS = [pname,pname_mesh]
+        for gid, grid in enumerate([pd, soil_grid]):   
+            range = [0, 1]
+            a = grid.GetCellData().GetAbstractArray(p_nameS[gid])
+            if a:
+                range = a.GetRange()
+                grid.GetCellData().SetActiveScalars(p_nameS[gid])
+            else:
+                a = grid.GetPointData().GetAbstractArray(p_nameS[gid])
+                grid.GetPointData().SetActiveScalars(p_nameS[gid])
+                if a:
+                    range = a.GetRange()
+            if p_nameS[gid] == "organType":  # fix range for for organType
+                range = [ 2, 4]
+            rangeS[gid] = range
+        sameRange = [min(rangeS[0][0], rangeS[1][0]), max(rangeS[0][1], rangeS[1][1])]
+    else:
+        sameRange = None
+        
+        
+        
+    rootActor, rootCBar = plot_roots(pd, pname, "", False, myRange = sameRange)
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False, myRange = sameRange)
     meshActors.extend([rootActor])
     ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
     if interactiveImage:

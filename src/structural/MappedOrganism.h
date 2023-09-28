@@ -36,7 +36,7 @@ public:
 
     void setSoilGrid(const std::function<int(double,double,double)>& s); ///< sets the soil, resets the mappers, and maps all segments
     void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res, bool cut = true); ///< sets the soil, resets the mappers, cuts and maps all segments
-    void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut = true); ///< sets an underlying rectangular grid, and cuts all segments accordingly
+    void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut = true, bool noChanges = false); ///< sets an underlying rectangular grid, and cuts all segments accordingly
 
     void mapSegments(const std::vector<Vector2i>& segs);
     void cutSegments(); // cut and add segments
@@ -67,6 +67,7 @@ public:
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;
+	bool constantLoc = false;
 
 	virtual double getPerimeter(int si_, double l_){return 2 * M_PI * radii[si_];} ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
 	virtual int getSegment2leafId(int si_);

@@ -152,6 +152,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	TairC = TairK_phloem - 273.15;
 	for (int i = 1 ; i <= Nt ; i++) 
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
+		int cpp_id = i -1;// o go from Fortran_vector numeration to cpp vector numeration
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
 		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);//concentration in meosphyll compartment
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
@@ -167,7 +168,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		{
 			StarchSyn = Vmax_S_ST * max(0.,Q_ST[i]) / (denominator) ; //  (Vmax and kHyd below) or k3 (below),  or all three, should be zero
 		}
-		Q_Mucil_dot[i] = std::max(0.,k_mucil_[i] *   Q_S_ST[i]);//mucilage exudation
+		Q_Mucil_dot[i] = std::max(0.,k_mucil_[cpp_id] *   Q_S_ST[i]);//mucilage exudation
 		//an alternate, target-oriented,  expression of starch variation rate, mutually exclusive of (AmSyn - kHyd * Amid), so that...
         double Starch_dot_alt = k_S_ST * (CSTi - C_targ) * vol_ST[i] ;	
 		Q_S_ST_dot[i] = StarchSyn + Starch_dot_alt - kHyd_S_ST *std::max(0., Q_S_ST[i]) ; // (Vmax and kHyd) or k3 (below),  or all three, should be zero
@@ -201,7 +202,6 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
-		int cpp_id = i -1;// o go from Fortran_vector numeration to cpp vector numeration
 		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		

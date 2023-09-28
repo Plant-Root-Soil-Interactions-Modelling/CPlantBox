@@ -369,6 +369,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
             .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
             .def("getSeed", &Organism::getSeed)
+            .def("getSeedVal", &Organism::getSeedVal)
 
             .def("addOrgan", &Organism::addOrgan)
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)
@@ -859,7 +860,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool)) &MappedSegments::setSoilGrid,
         		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
-        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
         .def("mapSegments",  &MappedSegments::mapSegments)
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
@@ -1151,7 +1152,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Vmax_S_Mesophyll",&PhloemFlux::Vmax_S_Mesophyll)
             .def_readwrite("kM_S_Mesophyll",&PhloemFlux::kM_S_Mesophyll)
             .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
-            .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll);
+            .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll)
+            .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_);
 
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())

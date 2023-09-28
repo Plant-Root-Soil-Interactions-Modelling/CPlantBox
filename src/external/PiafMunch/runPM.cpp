@@ -428,11 +428,12 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			//Exudation
 			exud_k[nodeID] =kr_st_f(st,ot, k-1);
 			Q_Exudmax[nodeID ]=0;
-			if(ot==2){
+			if((ot==2)&&(this->plant->seg2cell[k-1] >=0)){//root segment belowground
 				Q_Exudmax[nodeID ] =   2 * M_PI * a_seg * l*exud_k[nodeID] ;
 				if (exud_k[nodeID] > 0.)
 				{
-					k_mucil_[nodeID] = k_mucil;
+					// k_mucil is a std::vecto not a fotran vector
+					k_mucil_[segmentsPlant[k-1].y ] = k_mucil;
 				}
 				if(Csoil_seg.size() > 0.)
 				{
