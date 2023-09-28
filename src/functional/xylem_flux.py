@@ -72,28 +72,56 @@ class XylemFluxPython(XylemFlux):
         """ returns [g/day]
         self.Exu [kg/(m2 day)]
         """
-        segs = self.rs.segments
-        tipI = np.array(self.rs.getRootTips())-1
+
+        tip = kex[0][1]
+        tip_exu = kex[1][0]
+        base_exu = kex[1][1]
+
+        #get lmax of the different root types
+        lmax = []
+        for p in self.rs.getRootRandomParameter():
+            lmax.append(p.lmax)
+
         polylengths = self.rs.getParameter("length")
+        radii = self.rs.getParameter("radius")
         types = self.rs.getParameter("type")
+        polylines = self.rs.getPolylines()
 
-        a = self.rs.radii
-        l = self.rs.segLength()
-        sf = np.zeros((len(segs)))
-        kex_all = np.zeros((len(segs)))
+        sf = []
+        kex_all = []
 
-        for i, s in enumerate(tipI):
-            if types[i] != 0:
-                l_ = 0
-                s_ = s 
-                while l_<= kex[0][1]:
-                    l_ = l_+l[s_]
-                    kexu = (kex[1][1]-kex[1][0])/(kex[0][1]-kex[0][0])*l_+kex[1][0] #linear decrease
-                    kex_all[s_] = max(0,kexu)
-                    sf[s_] = 2 * np.pi * a[s_] * l[s_] * 1.e-4 * kex_all[s_] * 1.e3 # g/day/root
-                    s_ = s_-1
-                    if l_>polylengths[i]:
-                        break
+        for i in range(0, len(polylines)):
+            a = radii[i]
+            roottype = int(types[i])
+            l_ = 0
+            for k in range(0, len(polylines[i])-1):
+
+                m = polylines[i][-1-k]
+                n = polylines[i][-2-k]
+                p0 = np.array([m.x, m.y, m.z])
+                p1 = np.array([n.x, n.y, n.z])
+                l  = np.linalg.norm(p0 - p1)
+                l_ = l_+l
+                #tip exudation rate 
+                if l_<tip:
+                    kexu = tip_exu
+                    c = 2
+                #base exudation rate 
+                else:
+                    kexu = base_exu
+                    c = 1
+                #if growth has already stopped (99% of total length reached) 
+                if lmax[roottype]*0.99>= polylengths[i] or j>times[2]:
+                    #print('REACHED')
+                    kexu = base_exu
+                    c = 1
+                #if artificial shoot 
+                if roottype == 0:
+                    kexu = 0
+                    c = 0
+
+                kex_all.append(kexu* 1.e-4* 1.e3)
+                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3) # g/day/root
             
         return sf, kex_all #  g/day
     
