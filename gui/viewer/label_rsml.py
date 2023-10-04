@@ -119,7 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('scenario_index', type = int, help = 'scenario index (1-4)')
     parser.add_argument('--shoot', action = 'store_true', help = 'adds an artificial shoot')
     parser.add_argument('--split', action = 'store_true', help = 'splits output for multiple plants into different csv files')
-    parser.add_argument('--z_shift', action = 'store_true', help = 'shifts seed to -3cm (based on the first seed, if multiple plants are present)')
+    parser.add_argument('--z_shift', action = 'store_true', help = 'shifts seed to -3 cm (based on the first seed, if multiple plants are present)')
     args = parser.parse_args()
 
     walk_dir = args.file_path
