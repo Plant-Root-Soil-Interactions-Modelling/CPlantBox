@@ -1,4 +1,4 @@
-import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import os
 import pandas as pd
@@ -7,7 +7,7 @@ import argparse
 
 import viewer_conductivities
 from viewer_data import ViewerDataModel
-import xylem_flux
+import functional.xylem_flux as xylem_flux
 
 """
 creates a csv file per rsml file containing krs values, and suf values per 1 mm layers
