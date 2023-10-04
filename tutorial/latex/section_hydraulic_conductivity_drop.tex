@@ -27,7 +27,7 @@ Then, for every root segment and at every time step, we check whether the matric
 Finally, the flux at the root-soil interface is the maximum of the classical and steady-rate approximation value. This makes sure that hydraulic redistribution (i.e. flow from roots to soil) is still possible. 
 
 Listing X shows the code of file ``coupled_c12_schroeder.py".
-%\lstinputlisting[firstline=1, language=Python, caption=Example 6a]{../../examples/python/example6a_mapping.py}
+%\lstinputlisting[firstline=1, language=Python, caption=Example 6a]{../examples/example6a_mapping.py}
 
 \begin{itemize}
 \item[106-110] Root xylem potentials are computed based on the current soil (at first call) or rhizosphere (from second call onwards) water potentials. 
@@ -40,7 +40,7 @@ Listing X shows the code of file ``coupled_c12_schroeder.py".
 
    
 Listing Y shows the C++ code for the computation of matric potential at the root-soil interface according to Schröder. The fluxes are then computed according to the pressure differences...
-%\lstinputlisting[firstline=1, language=Python, caption=Example 6a]{../../examples/python/example6a_mapping.py}
+%\lstinputlisting[firstline=1, language=Python, caption=Example 6a]{../examples/example6a_mapping.py}
 
 \begin{itemize}
 \item[234] Computation of the matrix flux potential according to the non-stressed equation. 

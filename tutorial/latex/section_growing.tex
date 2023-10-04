@@ -8,7 +8,7 @@ After coupling a static root system to a soil model, it is straight forward to c
 
 In the following we show how the mappings between root system grid and soil grids are updated (see Section \ref{ss:mapping} for the static case). For demonstration we create an animation, where we can see the growth and the dynamic mapping. 
 
-\lstinputlisting[firstline=1, language=Python, caption=Example 7a]{../../examples/python/example7a_mapping.py}
+\lstinputlisting[firstline=1, language=Python, caption=Example 7a]{../examples/example7a_mapping.py}
 
 \begin{itemize}
 \item[8-12] Parameters we might want to modify. 
@@ -27,7 +27,7 @@ In this example soil state does not affect root system growth in any way. We nee
 
 In order to use hydrotropism, we need to define a SoilLookUp that accesses the dynamic soil data. We present two approaches: the first uses nearest neighbour interpolation, which is fast but a coarse approximation. The second uses linear interpolation which is more exact, but slower. 
 
-\lstinputlisting[firstline=1, language=Python, caption=Example 7c]{../../examples/python/example7c_feedback.py}
+\lstinputlisting[firstline=1, language=Python, caption=Example 7c]{../examples/example7c_feedback.py}
 
 We only describe the changes to Section \label{sec:dumux_coupling}:
 

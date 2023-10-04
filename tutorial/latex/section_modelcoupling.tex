@@ -17,7 +17,7 @@ MappedRootSystem is derived from MappedSegments and RootSystem, i.e. it can be u
 
 To demonstrate basic functionality we will map a root system to a soil rectangular soil grid. 
 
-\lstinputlisting[firstline=1, language=Python, caption=Example 6a]{../../examples/python/example6a_mapping.py}
+\lstinputlisting[firstline=1, language=Python, caption=Example 6a]{../examples/example6a_mapping.py}
 
 \begin{itemize}
 
@@ -47,7 +47,7 @@ Since water movement within the roots is often needed, it is implemented directl
 
 The following example is based on benchmark M3.1 \citep{schnepf2019call} with constant conductivities, but not with a given root system, but a simulated one.
 
-\lstinputlisting[firstline=1, language=Python, caption=Example 6b]{../../examples/python/example6b_xylemflux.py}
+\lstinputlisting[firstline=1, language=Python, caption=Example 6b]{../examples/example6b_xylemflux.py}
 \begin{itemize}
 
 \item[11-15] All parameters that will be used later on.
@@ -83,7 +83,7 @@ It is possible to set conductivties per root type (see XylemFlux::setKr, and set
 \subsection{Stomatal modul} \label{ssec:stomatal}
 
 The following example presents the stomatal modul (see file example6e$\_$xylemflux$\_$variable$\_$gs.py). The actual evapotranspiration (ETa) of the plant is determined according to environmental parameters, root and leaf surface, and maximal stomatal conductance (gmax). 
-\lstinputlisting[firstline=1, language=Python, caption=Example 6e]{../../examples/python/example6e_xylemflux_variable_gs.py}
+%\lstinputlisting[firstline=1, language=Python, caption=Example 6e]{../examples/example6e_xylemflux_variable_gs.py}
 \begin{itemize}
 
 \item[11-19] Part of the parameters that will be used later on.
@@ -126,7 +126,7 @@ Putting the sections \ref{ss:mapping} and \ref{ssec:xylem} together, we can easi
 
 The next example mimics benchmark C12 \citep{schnepf2019call}, but with a static simulated root system. The example must be run out of dumux-rosi (located in dumux-rosi/rosi$\_$benchmarking/python$\_$solver/coupled), otherwise the DuMux Python coupling is not available. 
 
-\lstinputlisting[firstline=1, language=Python, caption=Example 6c]{../../examples/python/example6c_coupling.py}
+\lstinputlisting[firstline=1, language=Python, caption=Example 6c]{../examples/example6c_coupling.py}
 
 \begin{itemize}
 

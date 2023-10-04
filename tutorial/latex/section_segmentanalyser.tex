@@ -7,7 +7,7 @@ We start with a small example plotting the root surface densities of a root syst
 
 \subsection{Root surface densities}
 
-\lstinputlisting[language=Python, caption=Example 3a]{../../examples/python/example3a_density.py}
+\lstinputlisting[language=Python, caption=Example 3a]{../examples/example3a_density.py}
 
 \begin{figure}
 \centering
@@ -33,7 +33,7 @@ We start with a small example plotting the root surface densities of a root syst
 
 The following script demonstrates some of the post processing possibilities by setting up a virtual soil core experiment (see Figure \ref{fig:soilcoreGeom}), where we analyse the content of two soil cores located at different positions.
 
-\lstinputlisting[language=Python, caption=Example 3b]{../../examples/python/example3b_sdfanalysis.py}
+\lstinputlisting[language=Python, caption=Example 3b]{../examples/example3b_sdfanalysis.py}
 
 \begin{itemize}
 
@@ -79,7 +79,7 @@ The example shows differences between the central core and shifted core (see Fig
 
 If we want to export our root system as dune grid file (dgf) we need to introduce an artificial shoot. By default the tap root and basal root starts at the seed node (i.e. multiple segments start at the same node), and its difficult to define a boundary condition for such a situation (e.g. in DuMux). Furthermore, if there are shoot borne roots, they emerge out of nothing above the seed node. Therefore, we introduce artificial segments eventually connecting shoot borne roots (if there are any) and connecting the seed node that is normally located at (0,0,-3) to the origin at (0,0,0). The following code snippet shows how to export a root system as dgf file:
 
-\lstinputlisting[language=Python, caption=Example 3c]{../../examples/python/example3c_write.py}
+\lstinputlisting[language=Python, caption=Example 3c]{../examples/example3c_write.py}
 
 \begin{itemize}
  \item[6-11] Defines a root sytem
@@ -91,7 +91,7 @@ If we want to export our root system as dune grid file (dgf) we need to introduc
 
 It is also possible to make use of the SegmentAnalyser class without any other CPlantBox classes (e.g. for writing vtp from measurements). The following example shows how to construct the class with arbitrary nodes and segments (e.g. from measurements). 
 
-\lstinputlisting[language=Python, caption=Example 3d]{../../examples/python/example3d_measurements.py}
+\lstinputlisting[language=Python, caption=Example 3d]{../examples/example3d_measurements.py}
 
 \begin{itemize}
  \item[6-9] Define some segments with data
@@ -109,7 +109,7 @@ In order to create an animation in Paraview we have to consider some details. Th
 
 We modify example1b.py to demonstrate how to create an animation.
 
-\lstinputlisting[language=Python, caption=Example 4c (modified from Example 1b)]{../../examples/python/example3e_animation.py} 
+\lstinputlisting[language=Python, caption=Example 4c (modified from Example 1b)]{../examples/example3e_animation.py} 
 
 \begin{itemize}
 

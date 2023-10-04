@@ -15,7 +15,7 @@ In order to set up a simulation by hand, we have to define all relevant model pa
 
 Note that during the simulation, the parameters for a specific root (RootSpecificParameter) are generated from the RootRandomParameter class which represents the random distributions of certain parameters.
 
-\lstinputlisting[language=Python, caption=Example 2a]{../../examples/python/example2a_initializeparams.py}
+\lstinputlisting[language=Python, caption=Example 2a]{../examples/example2a_initializeparams.py}
 
 \begin{itemize}
 \item[5] Matplotlib is Python's easy way to create figures like in Matlab.\item[6] NumPy is Python's scientific computing package.
@@ -57,7 +57,7 @@ In the following two subsections we show, how tropism parameters and inter later
 
 We show the influence of the parameters $N$ and $\sigma$ in the case of gravitropism. The parameter $N$ [1] denotes the strength of the tropism, and $\sigma$ [cm$^{-1}$] the flexibility of the root, i.e. the expected angular variation per cm root length. 
 
-\lstinputlisting[language=Python, caption=Example 2b]{../../examples/python/example2b_tropism.py}
+\lstinputlisting[language=Python, caption=Example 2b]{../examples/example2b_tropism.py}
 
 \begin{itemize}
 \item[10-13] We choose the parameter values $N$ and $\sigma$ we want to plot. It might be interesting to change the initial insertion $angle$, and the axial resolution $dx$. Note that a change in axial resolution should not qualitatively change the resulting images.
@@ -94,7 +94,7 @@ A single root is divided in basal zone, root branching zone, and root apical zon
 
 Normally, the setting constant branching distances is sufficient, but sometime experimental data indicate that inter lateral distances are smaller, or larger near the base than near the root tip. The reason for this could be soil root interaction (e.g. root response to dense or nutritious layer), or within the genotype. We added a purely descriptive parameter to mimic such experimental observations. The parameter $lnk$, which is zero per default, defines the slope, at the mid of the branching, altering the inter lateral distance linearly along the root axis. In the following script, we demonstrate the usage of $lnk$.
 
-\lstinputlisting[language=Python, caption=Example 2c]{../../examples/python/example2c_lateralspacing.py}
+\lstinputlisting[language=Python, caption=Example 2c]{../examples/example2c_lateralspacing.py}
 
 \begin{itemize}
 \item[10-13] A root system with a single tap root is created. 
@@ -124,7 +124,7 @@ In the following we show, how to analyse model results on a per root basis using
 
 The following script shows how to analyse root system length versus time. 
 
-\lstinputlisting[language=Python, caption=Example 2d]{../../examples/python/example2d_length.py}
+\lstinputlisting[language=Python, caption=Example 2d]{../examples/example2d_length.py}
 
 \begin{itemize}
 \item[9-14] Sets up the simulation.
@@ -147,7 +147,7 @@ The following script shows how to analyse root system length versus time.
 
 Next we show two options how to retrieve root tip and root base positions from a simulation:
 
-\lstinputlisting[language=Python, caption=Example 2e]{../../examples/python/example2e_roottips.py}
+\lstinputlisting[language=Python, caption=Example 2e]{../examples/example2e_roottips.py}
 
 \begin{itemize}
 
@@ -188,7 +188,7 @@ In the next part we vary given parameters in order to make a sensitivity analysi
 
 In this exemplary sensitivity study we will vary the insertion angle of the tap and basal root, and look at the resulting change in mean root tip depth and root tip radial distance. 
 
-\lstinputlisting[language=Python, caption=Example 2f]{../../examples/python/example2f_sensitivity.py}
+\lstinputlisting[language=Python, caption=Example 2f]{../examples/example2f_sensitivity.py}
 
 \begin{itemize}
 
