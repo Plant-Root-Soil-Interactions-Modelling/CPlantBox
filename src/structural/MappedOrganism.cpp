@@ -667,6 +667,7 @@ void MappedPlant::mapSubTypes(){
  */
 void MappedPlant::simulate(double dt, bool verbose)
 {
+	if(verbose){std::cout << "MappedPlant::simulate";}
 	if (soil_index==nullptr) {
 		throw std::invalid_argument("MappedPlant::simulate():soil was not set, use MappedPlant::simulate::setSoilGrid" );
 	}
@@ -760,7 +761,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 		c++;
 	}
 
-	// std::cout<<"cell2seg_0"<<std::endl;
+	if (verbose) {
+		std::cout<<"cell2seg_0"<<std::endl<<std::flush;
+	}
 	// for( auto vecsegs : cell2seg)
 	// {
 		// std::cout<<vecsegs.first<<": ";
@@ -770,37 +773,47 @@ void MappedPlant::simulate(double dt, bool verbose)
 		// }std::cout<<std::endl;
 	// }
 	newsegs = this->getNewSegments();
-	// map new segments
+	if (verbose) {
+		std::cout<<"map new segments"<<std::endl<<std::flush;
+	}
 	this->mapSegments(newsegs);
 
-	// update segments of moved nodes
+	if (verbose) {
+		std::cout<<"update segments of moved nodes"<<std::endl<<std::flush;
+	}
 	std::vector<Vector2i> rSegs;
-	for (int i : uni) {
-		int segIdx = i -1;
-		int cellIdx = seg2cell[segIdx];
-		auto s = segments[segIdx];
-		Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
-		int newCellIdx = soil_index(mid.x,mid.y,mid.z);
-		// 1. check if mid is still in same cell (otherwise, remove, and add again)
-		// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
-		bool remove = false;
-		if (cellIdx==newCellIdx) {
-			if (cutAtGrid) {
-				auto endPoint = nodes[s.y];
-				newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
-				remove = (newCellIdx!=cellIdx);
+	if(!constantLoc)//for 1d-3d coupling need to have segments remain in the same voxel
+	{//also, if soil_index is in parallel, this blocks the program as plant only grows on
+		// one thread
+		for (int i : uni) {
+			int segIdx = i -1;
+			int cellIdx = seg2cell[segIdx];
+			auto s = segments[segIdx];
+			Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
+			int newCellIdx = soil_index(mid.x,mid.y,mid.z);
+			// 1. check if mid is still in same cell (otherwise, remove, and add again)
+			// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
+			bool remove = false;
+			if (cellIdx==newCellIdx) {
+				if (cutAtGrid) {
+					auto endPoint = nodes[s.y];
+					newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
+					remove = (newCellIdx!=cellIdx);
+				}
+			} else {
+				if(!constantLoc)
+				{				
+					remove = true;
+				}
 			}
-		} else {
-			if(!constantLoc)
-			{				
-				remove = true;
+			if (remove) {
+				rSegs.push_back(s);
 			}
-		}
-		if (remove) {
-			rSegs.push_back(s);
 		}
 	}
-	// std::cout<<"cell2seg_A"<<std::endl;
+	if (verbose) {
+		std::cout<<"cell2seg_A"<<std::endl<<std::flush;
+	}
 	// for( auto vecsegs : cell2seg)
 	// {
 		// std::cout<<vecsegs.first<<": ";
@@ -812,7 +825,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 	
 	MappedSegments::unmapSegments(rSegs);
 	
-	// std::cout<<"cell2seg_B"<<std::endl;
+	if (verbose) {
+		std::cout<<"cell2seg_B"<<std::endl<<std::flush;
+	}
 	// for( auto vecsegs : cell2seg)
 	// {
 		// std::cout<<vecsegs.first<<": ";
@@ -824,7 +839,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 	
 	MappedSegments::mapSegments(rSegs);
 	
-	// std::cout<<"cell2seg_C"<<std::endl;
+	if (verbose) {
+		std::cout<<"cell2seg_C"<<std::endl<<std::flush;
+	}
 	// for( auto vecsegs : cell2seg)
 	// {
 		// std::cout<<vecsegs.first<<": ";
@@ -836,7 +853,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
 	getSegment2leafIds();
-
+	if(verbose){std::cout<<"ending MappedPlant::simulate"<<std::endl<<std::flush;}
 }
 
 

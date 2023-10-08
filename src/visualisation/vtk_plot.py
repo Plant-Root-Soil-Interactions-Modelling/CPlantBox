@@ -1,6 +1,7 @@
 import plantbox as pb
 from visualisation.vtk_tools import *
 
+from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank()
 import time
 import numpy as np
 import vtk
@@ -226,7 +227,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     colors = vtk.vtkNamedColors()  # Set the background color
     ren = vtk.vtkRenderer()  # Set up window with interaction
     ren.SetBackground(colors.GetColor3d("Silver"))
-
+    #print("render_window", rank)
     # Actors
     if isinstance(actor, list):
         actors = actor  # plural
@@ -237,6 +238,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
         # a.RotateX(-90)  # x y z -> x z y
         ren.AddActor(a)  # Add the actors to the renderer, set the background and size
 
+    #print("render_window, scalarBar", rank)
     if scalarBar:
         if not isinstance(scalarBar, list):
             scalarBar = [scalarBar]
@@ -257,6 +259,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     axes.SetUserTransform(translate)
     ren.AddActor(axes)
 
+    #print("render_window, AddActor", rank)
     # Camera
     ren.ResetCamera()
     camera = ren.GetActiveCamera()
@@ -269,21 +272,25 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     camera.OrthogonalizeViewUp()
     camera.SetClippingRange(1, 1000)
 
+    #print("render_window, Camera", rank)
     # Render Window
     renWin = vtk.vtkRenderWindow()  # boss
     renWin.SetSize(1200, 1000)
     renWin.SetWindowName(title)
     renWin.AddRenderer(ren)
+    #print("render_window, interactiveImage?", rank, interactiveImage)
 
     if interactiveImage:
         iren = vtk.vtkRenderWindowInteractor()
         iren.SetRenderWindow(renWin)
+        #print("render_window, renderA", rank, interactiveImage)
         renWin.Render()
         iren.CreateRepeatingTimer(50)  # [ms] 0.5 s in case a timer event is interested
         iren.AddObserver('KeyPressEvent', lambda obj, ev:keypress_callback_(obj, ev, bounds), 1.0)
         iren.Initialize()  # This allows the interactor to initalize itself. It has to be called before an event loop.
         for a in ren.GetActors():
             a.Modified()  #
+        #print("render_window, renderB", rank, interactiveImage)
         renWin.Render()
         return iren
     else:  # necessary?
@@ -512,6 +519,7 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
     @param render       render in a new interactive window (default = True)
     @return a tuple of a list of vtkActors and a single corresponding color bar vtkScalarBarActor
     """
+    #print("plot_mesh_cuts render_begin", rank)
     if win_title == "":
         win_title = p_name
 
@@ -553,7 +561,7 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
 #         a.GetProperty().SetLineWidth(2)
         a.SetMapper(m)
         actors.append(a)
-
+    #print("plot_mesh_cuts render", rank)
     if render:
         ren = render_window(actors, win_title, scalar_bar, grid.GetBounds(), interactiveImage)
         if interactiveImage:
@@ -580,10 +588,12 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         ana = rs
     else:
         ana = pb.SegmentAnalyser(rs)
-        ana.addData(pname, rp)
+        if rank == 0:
+            ana.addData(pname, rp)
     if periodic:
         w = np.array(max_b) - np.array(min_b)
         ana.mapPeriodic(w[0], w[1])
+    #print("plot_roots_and_soil begin", rank)
     pd = segs_to_polydata(ana, 1., [pname, "radius"])
 
     pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
@@ -594,6 +604,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     soil_pressure = vtk_data(np.array(s.getSolutionHead()))
     soil_pressure.SetName("pressure head")  # in macroscopic soil
     soil_grid.GetCellData().AddArray(soil_pressure)
+    #print("plot_roots_and_soil get data", rank)
     if sol_ind > 0:
         d = vtk_data(np.array(s.getSolution(sol_ind)))
         pname_mesh = "solute" + str(sol_ind)
@@ -604,8 +615,9 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         pname_mesh = extraArrayName
         d.SetName(pname_mesh)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
-        
-        
+            
+    #print("plot_roots_and_soil scalarbar", rank)
+         
     if oneScalarBar:
         rangeS = [[], []]
         p_nameS = [pname,pname_mesh]
@@ -627,19 +639,26 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     else:
         sameRange = None
         
-        
-        
-    rootActor, rootCBar = plot_roots(pd, pname, "", False, myRange = sameRange)
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False, myRange = sameRange)
-    meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
-    if interactiveImage:
-        ren.Start()
+         
+    #print("plot_roots_and_soil plotplot", rank)
+    if rank == 0:  
+        rootActor, rootCBar = plot_roots(pd, pname, "", False, myRange = sameRange)
+        #print("plot_roots_and_soil rootActor", rank)
+        meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False, myRange = sameRange)
+        #print("plot_roots_and_soil meshActor", rank)
+        meshActors.extend([rootActor])
+        #print("plot_roots_and_soil meshActors.extend", rank)
+        ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
+        #print("plot_roots_and_soil ren", rank, interactiveImage)
+        if interactiveImage:
+            ren.Start()
 
-    if filename:
-        path = "results/"
-        write_vtp(path + filename + ".vtp", pd)
-        write_vtu(path + filename + ".vtu", soil_grid)
+        if filename:
+            path = "results/"
+            #print("plot_roots_and_soil write_vtp", rank, interactiveImage)
+            write_vtp(path + filename + ".vtp", pd)
+            #print("plot_roots_and_soil write_vtu", rank, interactiveImage)
+            write_vtu(path + filename + ".vtu", soil_grid)
 
 
 def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "", interactiveImage = True):
@@ -690,7 +709,8 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
         d = vtk_data(np.array(s.getSolution(i + 1)))
         d.SetName(s_)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
-    write_vtu(filename + ".vtu", soil_grid)
+    if rank == 0:
+        write_vtu(filename + ".vtu", soil_grid)
 
 
 def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True):

@@ -112,6 +112,7 @@ fast_imfp = {}
 def create_mfp_lookup(sp, wilting_point = -15000, n = 15001):
     """ initializes the look up tables for soil parameter to use fast_mfp, and fast_imfp """
     print("initializing look up tables")
+    raise Exception
     global fast_mfp
     global fast_imfp
 
