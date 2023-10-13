@@ -62,7 +62,7 @@ if len(error) > 0:
 import pip
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py',  'pandas', 'pybind11[global]'] 
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py',  'pandas', 'pybind11[global]', 'ipython'] 
 show_message("(2/3) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
@@ -99,4 +99,4 @@ os.chdir("..")
 show_message("(3/3) Step completed. Succesfully configured and built CPlantBox.")
 
 
-show_message("to test installation, run n\ cd CPB/CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
+show_message("to test installation, run n\ cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
