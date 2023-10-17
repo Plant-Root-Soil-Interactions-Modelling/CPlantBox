@@ -21,3 +21,13 @@ add_subdirectory(src)
 
 # build tutorial (TODO)
 # INCLUDE(UseLATEX.cmake)
+
+execute_process(
+	COMMAND
+		${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/external/sundials ${CMAKE_CURRENT_BINARY_DIR}/src/external/sundials
+)
+
+execute_process(
+	COMMAND
+		${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/src/external/suitsparse ${CMAKE_CURRENT_BINARY_DIR}/src/external/suitsparse
+)
