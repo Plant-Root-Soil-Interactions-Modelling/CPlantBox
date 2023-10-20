@@ -1,0 +1,142 @@
+\documentclass[a4paper]{article}
+
+\usepackage[latin1]{inputenc} 
+\usepackage{graphicx}
+\usepackage{natbib} 
+\usepackage{amsmath}
+\usepackage{subcaption}
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage{natbib}
+
+\usepackage[hidelinks]{hyperref}
+
+\newcommand{\bm}[1]{\mbox{\boldmath{$#1$}}}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray}, 
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false, 
+    tabsize=2
+} 
+  
+\lstset{style=mystyle}
+ 
+
+
+\begin{document}
+
+\begin{center}
+%\includegraphics[width=0.2\textwidth]{sw_logo} \\
+\vspace{0.5 cm}
+\huge{\textbf{CPlantBox Tutorial}} \\
+\vspace{0.5 cm}
+\normalsize
+Daniel Leitner, Andrea Schnepf, et al. \\
+\end{center}
+
+\vspace{0.5 cm}
+
+\noindent 
+The following tutorial offers scripts to outline the usage of the CPlantBox \citep{zhou2020cplantbox} and its Python binding which is named \emph{plantbox}. CPlantBox was developed from CRootBox \citep{schnepf2018crootbox} and is largely backward compatible by having the same underlying rootsystem model. For further documentation please refer to the Doxygen class documentation of the CPlantBox code.
+ 
+
+\vspace{0.5 cm}
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction} \label{sec:introduction}
+
+\input{latex/intro_installation.tex}
+% %\input{latex/intro_basic.tex}
+% %\input{section_rootsystem.tex}
+% 
+\section{Topics / Applications} \label{sec:appliations}
+
+Development over time
+
+How to virtually mimic experiments
+
+Postprocessing
+
+Playing with parameters
+
+Sensitivity analysis
+
+Interaction Feedback
+
+RSML
+
+% 
+% \subsection{Post processing} \label{ssec:postprocessing}
+% 
+% %\input{section_segmentanalyser.tex} 
+% 
+% \subsection{Working with tropisms} \label{ssec:tropism}
+% %\input{section_tropism.tex}
+% %\input{section_growing.tex}
+% 
+% 
+% \subsection{How to build plant-soil interaction models} \label{ssec:interaction}
+% %\input{section_interactions.tex}
+
+
+
+\section{Structural Model}
+
+\subsection{General plant organs}
+
+\subsection{Seed}
+
+\subsection{Stem}
+
+\subsection{Leaf}
+
+\subsection{Root}
+
+
+
+\section{Plant functional models}
+
+%\input{section_modelcoupling.tex}
+
+%\input{section_hydraulic_conductivity_drop.tex}
+
+
+
+
+\section{Contributing}
+%\input{section_todos}
+
+\subsection{Todos}
+
+\subsection{Coding style}
+
+
+
+\newpage
+\bibliographystyle{apalike}
+\bibliography{latex/references} 
+
+
+\end{document}
