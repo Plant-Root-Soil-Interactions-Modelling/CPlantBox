@@ -1,45 +1,32 @@
-
-The following script shows how to analyse root system length versus time. 
+The following example shows how to run the simulation in a simulation loop. This is important if we want to couple the model and implement feedbacks, or as in this case, if we want to retrieve information over time. The following script shows how to calculate the organ lengths over time. 
 
 \lstinputlisting[language=Python, caption=Organ development over time]{examples/topics_development.py}
 
 \begin{itemize}
-\item[9-14] Sets up the simulation.
+\item[8-13] Sets up the simulation.
 
-\item[16-18] Defines the simulation time, time step, and the resulting number of simulate(dt) calls. 
+\item[15-17] Defines the simulation time, time step, and the resulting number of simulate(dt) calls. 
 
-\item[21] First we state which scalar type we want to analyse ('volume', 'surface', or 'one' would also make sense). 
+\item[23-36] The simulation loop executes the simulation for a single time step L26. After each simulation step, we retrieve the organ type, the sub type, and the length of each organ (L28-30). It is possible to access all root random parameters and resulting realisations using plant.getParameter. In C++ the class functions are defined in Plant::getParameter, Organ::getParameter. In L31-36 we sum up specific organ lengths by boolean array indexing.
 
-\item[22] Pre-definition of the numpy arrays storing the lengths over time. 
-
-\item[23-30] The simulation loop executes the simulation for a single time step L24. L25 calculates the type of each root (the organ subType), L26 the length (or any other parameter) of the root. L27-L30 calculates the total root length at the current time step for all roots, and for specific root types. The method rs.getParameter collects this data from the RootSystem organs. It is possible to access all root random parameters and resulting realisations using rs.getParameter. In C++ the class functions are defined in Root::getParameter, Organ::getParameter. 
-
-\item[32-38] Creates Figure \ref{fig:length}.
+\item[38-47] Creates Figure \ref{fig:topics_development}.
 
 \end{itemize}
 
 
+Next we show how retrieve root tip and root base positions from a simulation. Each organ is represented by a polyline, which is a list of points connected by segments. We use this polyline to plot the base (first node of the polyline) and the tip (last node of the polyline). 
 
-Next we show two options how to retrieve root tip and root base positions from a simulation:
-
-\lstinputlisting[language=Python, caption=Organ tips and organ bases over time]{examples/topics_development2.py}
+\lstinputlisting[language=Python, caption=Organ tips and bases over time]{examples/topics_development2.py}
 
 \begin{itemize}
 
-\item[14,15] Reset the simulation and simulate for only 7 days (otherwise there are so many root tips).
+\item[8-17] Sets up the simulation and simulation loop as before.
 
-\item[17-18] Outputs the number of nodes and segments to get an idea how big the resulting root system is. 
-Note that number of segments equals the number of nodes minus the number of base roots that will emerge. 
-Base roots are tap roots, basal roots and shootborne roots.
+\item[21-28] L23 performs the simulation for a single time step. First we retrieve all organs as polylines L25, where organ tips are the last nodes of the polylines L27, and organ bases are the first nodes L28. Organs that have not started to emerge have only 1 node, and are not retrieved by getPolylines().
 
-\item[20-26] The first approach retrieves all roots as polylines L21. 
-Root tips are the last nodes of the polylines L26, root bases the first nodes L25. Roots that have not started to grow have only 1 node, and are not retrieved by getPolylines().
+\item[30,31] Convert the lists to numpy array for indexing.
 
-\item[28-31] Second approach: L29 rs.getNodes() returns all nodes of the root system as a list of nodes, i.e. Vector3d objects. Each Vector3d object can be converted into a numpy array automatically, but is necessary to do that for each element of the list. The methods L30, L31 return the indices of the tips and bases. 
-
-\item[33-41] Creates Figure \ref{fig:scatter} using the second approach.
-
-\item[44,45] Verifies that both approaches yield the same result.
+\item[33-41] Creates Figure \ref{fig:topics_development2}. In CPlantBox roots are growing with a negative exponential growth rate, i.e. growth becomes slower towards the root reaching its maximal length. Therefore, the node density becomes higher towards the root tips. 
 
 \end{itemize}
 

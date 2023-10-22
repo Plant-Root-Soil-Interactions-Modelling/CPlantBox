@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 path = "../../modelparameter/structural/plant/"
 name = "hello_world"
 
-rs = pb.Plant()
-rs.readParameters(path + name + ".xml")
-rs.initialize()
+plant = pb.Plant()
+plant.readParameters(path + name + ".xml")
+plant.initialize()
 
 simtime = 60.  # days
 dt = 1.
@@ -23,11 +23,11 @@ roots_ = [[], [], [], []]
 # Simualtion loop
 for i in range(0, N):
 
-    rs.simulate(dt)
+    plant.simulate(dt)
 
-    t = np.array(rs.getParameter("organType"))
-    st = np.array(rs.getParameter("subType"))
-    v = np.array(rs.getParameter("length"))  # surface, volume, ...
+    t = np.array(plant.getParameter("organType"))
+    st = np.array(plant.getParameter("subType"))
+    v = np.array(plant.getParameter("length"))  # surface, volume, ...
     total[i] = np.sum(v)
     roots[i] = np.sum(v[t == 2])  # root
     stems[i] = np.sum(v[t == 3])  # stem
