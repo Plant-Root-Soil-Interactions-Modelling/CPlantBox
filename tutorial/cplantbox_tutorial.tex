@@ -64,78 +64,91 @@ The following tutorial offers scripts to outline the usage of the CPlantBox \cit
 \tableofcontents
 
 \newpage
-
 \section{Introduction} \label{sec:introduction}
 
+\subsection{Installation} \label{ssec:installation}
 \input{latex/intro_installation.tex}
-% %\input{latex/intro_basic.tex}
-% %\input{section_rootsystem.tex}
-% 
-\section{Topics / Applications} \label{sec:appliations}
 
-Development over time
-
-How to virtually mimic experiments
-
-Postprocessing
-
-Playing with parameters
-
-Sensitivity analysis
-
-Interaction Feedback
-
-RSML
-
-% 
-% \subsection{Post processing} \label{ssec:postprocessing}
-% 
-% %\input{section_segmentanalyser.tex} 
-% 
-% \subsection{Working with tropisms} \label{ssec:tropism}
-% %\input{section_tropism.tex}
-% %\input{section_growing.tex}
-% 
-% 
-% \subsection{How to build plant-soil interaction models} \label{ssec:interaction}
-% %\input{section_interactions.tex}
-
-
-
-\section{Structural Model}
-
-\subsection{General plant organs}
-
-\subsection{Seed}
-
-\subsection{Stem}
-
-\subsection{Leaf}
-
-\subsection{Root}
-
-
-
-\section{Plant functional models}
-
-%\input{section_modelcoupling.tex}
-
-%\input{section_hydraulic_conductivity_drop.tex}
-
-
-
-
-\section{Contributing}
-%\input{section_todos}
-
-\subsection{Todos}
-
-\subsection{Coding style}
+\subsection{Basic example} \label{ssec:basic_example}
+\input{latex/intro_basic.tex}
 
 
 
 \newpage
-\bibliographystyle{apalike}
+\section{Topics / Applications} \label{sec:topcis}
+
+This section describes the usage of CPlantBox by small examples wihtout going into details of the underlying model. A more precise description of the structural model is given in following Section \ref{sec:cplantobx}. 
+
+\subsection{Development over time} \label{ssec:development}
+\input{latex/topics_development.tex}
+
+\subsection{How to virtually mimic experiments} \label{ssec:virtual}
+% \input{latex/topics_virtual.tex}
+
+\subsection{Visualisation} \label{ssec:visualisation}
+% \input{latex/topics_visualisation.tex}
+
+\subsection{Postprocessing} \label{ssec:postprocessing}
+% \input{latex/topics_postprocessing.tex}
+
+\subsection{Playing with parameters} \label{ssec:parameters}
+% \input{latex/topics_parameters.tex}
+
+\subsection{Sensitivity analysis} \label{ssec:sa}
+% \input{latex/topics_sa.tex}
+
+\subsection{Interaction Feedback} \label{ssec:interaction}
+% \input{latex/topics_interaction.tex}
+
+\subsection{RSML} \label{ssec:rsml}
+% \input{latex/topics_rsml.tex}
+
+
+
+\newpage
+\section{CPlantbox Structural Model} \label{sec:cplantobx}
+
+In this section we describe the underlying strutural model of CPlantBox. 
+
+\subsection{General plant organs} \label{ssec:organs}
+
+\subsection{Seed} \label{ssec:seed}
+
+\subsection{Stem} \label{ssec:stem}
+
+\subsection{Leaf} \label{ssec:leaf}
+
+\subsection{Root} \label{ssec:root}
+
+
+
+\newpage
+\section{Plant Structural Functional Models} \label{sec:fspm}
+
+\subsection{Plant hydraulics} \label{ssec:hydraulics}
+
+\subsection{Benchmark examples M3.1 and M3.2} \label{ssec:benchmarks}
+
+\subsection{The standard uptake fraction ($SUF$) and root system conductivity ($K_{rs}$)} \label{ssec:suf}
+
+\subsection{Plant structure mapped to a macrogrid} \label{ssec:coupling}
+
+\subsection{Model coupling} \label{ssec:coupling}
+
+
+
+\newpage
+\section{Contributing} \label{sec:contributing}
+
+\subsection{Coding style} \label{ssec:coding_style}
+
+\subsection{Todos} \label{ssec:todos}
+
+
+
+
+\newpage
+\bibliographystyle{apalike} 
 \bibliography{latex/references} 
 
 
