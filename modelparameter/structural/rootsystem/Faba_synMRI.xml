@@ -114,7 +114,7 @@
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="2"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.025" dev="0.0068999999"/>
+        <parameter name="a" value="0.025"/>
         <!--Root radius [cm]-->
         <parameter name="colorB" value="0.2"/>
         <!--Root color, blue component [0.-1.]-->
@@ -130,13 +130,13 @@
         <!--Basal zone [cm]-->
         <parameter name="ldelay" value="1"/>
         <!--Lateral root emergence delay [day]-->
-        <parameter name="lmax" value="4" dev="0.4"/>
+        <parameter name="lmax" value="4"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="5"/>
         <!--Inter-lateral distance [cm]-->
         <parameter name="lnk" value="0"/>
         <!--Slope of inter-lateral distances [1]-->
-        <parameter name="r" value="0.82300001" dev="0.0823"/>
+        <parameter name="r" value="0.823"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
