@@ -1,5 +1,7 @@
 <plant>
     <seed name="virtual" subType="0">
+        <parameter name="maxTil" value="0"/>
+        <!--Maximal number of tillers [1]-->
         <parameter name="delayB" value="0"/>
         <!--Time delay between the basal roots [day]-->
         <parameter name="delayRC" value="1000"/>
@@ -22,13 +24,15 @@
         <!--Y-Coordinate of seed position [cm]-->
         <parameter name="seedPos.z" value="-0"/>
         <!--Z-Coordinate of seed position [cm]-->
+        <parameter name="simtime" value="20"/>
+        <!--Recommended final simulation time  [day]-->
     </seed>
 	<root name="missing 3rd order lats" subType="1">
         <parameter name="gf" value="2"/>
         <!--Growth function number [1]-->
         <parameter name="tropismT" value="2"/>
         <!--Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="a" value="0.025" dev="0.005"/>
+        <parameter name="a" value="0.025"/>
         <!--Root radius [cm]-->
         <parameter name="colorB" value="0.196078"/>
         <!--Root color, blue component [0.-1.]-->
@@ -42,19 +46,19 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0"/>
         <!--Basal zone [cm]-->
-        <parameter name="lmax" value="80" dev="80"/>
+        <parameter name="lmax" value="4"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="1000"/>
         <!--Inter-lateral distance [cm]-->
-        <parameter name="r" value="1.5"/>
+        <parameter name="r" value="0.823"/>
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
-        <parameter name="theta" value="1.5" dev="0.5"/>
+        <parameter name="theta" value="1.423316"/>
         <!--Angle between root and parent root [rad]-->
         <parameter name="tropismN" value="0.5"/>
         <!--Number of trials of root tropism-->
-        <parameter name="tropismS" value="0.2"/>
+        <parameter name="tropismS" value=".2"/>
         <!--Mean value of expected change of root tropism [1/cm]-->
     </root>
 </plant>
