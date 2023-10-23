@@ -42,4 +42,4 @@ Next we show how retrieve root tip and root base positions from a simulation. Ea
 \caption{Plant development over time} 
 \end{figure}
 
-
+Other usefull functions are \texttt{plant.getNodes()} to retrieve all node coordinates, and \texttt{plant.getSegments()} which will give pairs of node indices containing the start node index, and end node index of each plant segment. Furthermore, \texttt{plant.getSegmentOrigin()} gives a corresponding pointer to the Organ, where each segment belongs to. Creation times can be retrieved by \texttt{plant.getNodeCTs()} for each node, or \texttt{plant.getSegmentCTs()} for each segment.

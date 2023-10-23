@@ -1,0 +1,19 @@
+
+
+After coupling a static root system to a soil model, it is straight forward to couple a growing root system. All there is to do is to update the geometry and the mapping between the grids in every time step. All the work is done by MappedRootSystem.
+
+    
+\subsubsection*{Mapping of growing roots and underlying soil} 
+
+In the following we show how the mappings between root system grid and soil grids are updated (see Section \ref{ss:mapping} for the static case). For demonstration we create an animation, where we can see the growth and the dynamic mapping. 
+
+\lstinputlisting[firstline=1, language=Python, caption=Example 7a]{examples/example7a_mapping.py}
+
+\begin{itemize}
+\item[8-12] Parameters we might want to modify. 
+\item[15-18] Initializes the model.
+\item[21-27] Defines a coarse soil grid. If we do not use periodicity we set the domain as confining geometry to the root growth. L27 sets the underlying soil grid.
+\item[29-31] Initializes the simulation with an initial simulation run for rs\_age.
+\item[33-39] Initializes an VTK animation using the class vp.AnimateRoots, which is work in progress. 
+\item[41-59] The simulation loop: L43 performs the simulation, and updates the mappers (no additional steps are needed, everything is updated by pb.MappedRootSystem). L46-52 determines the cell index for each segment for visualization. L54,L L55 makes a SegmentAnalyser object and adds the soil cell indices. L57-L58 updates the animation figure. This is convenient for debugging, and the object vp.AnimateRoots will create an ogg vorbis movie file (which is small and high quality), but for bigger root systems this will be very slow, since a SegmentAnalyser object is created and plotted for each frame (see Section \ref{ssec:animation} for a faster method).
+\end{itemize}
