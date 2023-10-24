@@ -1,2 +1,32 @@
 
 
+\subsubsection*{How to make an animation} \label{ssec:animation}
+
+In order to create an animation in Paraview we have to consider some details. The main idea is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. In this way we have to only export one vtp file. 
+
+We modify example1b.py to demonstrate how to create an animation.
+
+\lstinputlisting[language=Python, caption=Example 4c (modified from Example 1b)]{examples/example3e_animation.py} 
+
+\begin{itemize}
+
+\item[11,12] Its important to use a small resolution in order to obtain a smooth animation. L18 set the axial resolution to 0.1 cm. 
+
+\item[19,29] Instead of saving the root system as polylines, we use the SegmentAnalyser to save the root system as segments.
+
+\item[22,23] It is also possible to make the root system periodic in the visualization in $x$ and $y$ direction to mimic field conditions.
+
+\item[26-28] We save the geometry as Python script for the visualization in ParaView.
+
+\end{itemize}
+
+After running the script we perform the following operations Paraview to create the animation:
+\begin{enumerate}
+ \item Open the .vtp file in ParaView (File$\rightarrow$Open...), and open tutorial/examples/python/results/example\_3e.vtp.
+ \item Optionally, create a tube plot with the help of the script tutorial/pyscript/rsTubePlot.py (Tools$\rightarrow$Python Shell, press 'Run script').
+ \item Run the script tutorial/pyscript/rsAnimate.py (Tools$\rightarrow$Python Shell, press 'Run script'). The script creates the threshold filter and the animation. 
+ \item Optionally, visualize the domain boundaries by running the script tutorial/examples/python/results/example\_4e.py (Tools$\rightarrow$Python Shell, press 'Run script'). Run after the animation script (otherwise it does not work).  
+ \item Use File$\rightarrow$Save Animation... to render and save the animation. Pick quality ($<$100 \%), and the frame rate in order to achieve an appropriate video length, e.g. 300 frames with 50 fps equals 6 seconds. The resulting files might be uncompressed and are very big. The file needs compression, for Linux e.g. ffmpeg -i in.avi -vcodec libx264 -b 4000k -an out.avi, produces high quality and tiny files, and it plays with VLC.
+\end{enumerate}
+
+
