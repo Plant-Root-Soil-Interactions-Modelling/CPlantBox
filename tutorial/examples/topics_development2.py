@@ -22,7 +22,7 @@ for i in range(0, N):
 
     plant.simulate(dt)
 
-    polylines = plant.getPolylines()  # use polyline representation of the organs
+    polylines = plant.getPolylines()  # polyline representation
     for i, r in enumerate(polylines):
         tips.append([r[-1].x, r[-1].y, r[-1].z])  # last index is the tip
         bases.append([r[0].x, r[0].y, r[0].z])  # first index is the base

@@ -27,7 +27,7 @@ for i in range(0, N):
 
     t = np.array(plant.getParameter("organType"))
     st = np.array(plant.getParameter("subType"))
-    v = np.array(plant.getParameter("length"))  # surface, volume, ...
+    v = np.array(plant.getParameter("length"))  # surface, volume.
     total[i] = np.sum(v)
     roots[i] = np.sum(v[t == 2])  # root
     stems[i] = np.sum(v[t == 3])  # stem

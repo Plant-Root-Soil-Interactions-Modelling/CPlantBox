@@ -1,55 +1,41 @@
-
-
 The class SegmentAnalyser offers post-processing methods per root segment. The advantage is that we can do distributions or densities, and that we can analyse the segments within any geometry. 
-
-We start with a small example plotting the root surface densities of a root system versus root depth.
 
 \subsubsection*{Root surface densities}
 
+We start with a small example plotting the root surface densities of a root system versus root depth.
+
 \lstinputlisting[language=Python, caption=Example 3a]{examples/example3a_density.py}
 
-\begin{figure}
-\centering
-\includegraphics[width=0.7\textwidth]{example_3c.png}
-\caption{Root surface densitiy versus depth(Example 3a)} \label{fig:surface_density}
-\end{figure}
-
-
 \begin{itemize}
-
 \item[8-12] Pick a root system.
 \item[14-16] Depth describes the y-axis of the graph, layers the number of vertical soil layers, where the root surface is accumulated, and runs is the number of simulation runs. 
 \item[18-23] Performs the simulations. L23 creates a distribution of a parameter (name) over a vertical range (bot, top). The data are accumulated in each layer, segments are either cut (exact = True) or accumulated by their mid point (exact = False). 
 \item[25] In order to calculate a root surface density from the summed up surface, we need to define a soil volume. The vertical height is the layer length, length and width (here 10 cm), can be determined by planting width, or by a confining geometry. 
 \item[26-28] Calculates the densities mean and the standard error. 
 \item[30-39] Prepares the plot (see Figure \ref{fig:surface_density}).
-
 \end{itemize}
 
+% \begin{figure}
+% \centering
+% \includegraphics[width=0.7\textwidth]{example_3c.png}
+% \caption{Root surface densitiy versus depth(Example 3a)} \label{fig:surface_density}
+% \end{figure}
 
 
-\subsubsection*{Analysis per segment within a geometry}
+\subsubsection*{Analysis of segment within a cropping geometry}
 
 The following script demonstrates some of the post processing possibilities by setting up a virtual soil core experiment (see Figure \ref{fig:soilcoreGeom}), where we analyse the content of two soil cores located at different positions.
 
 \lstinputlisting[language=Python, caption=Example 3b]{examples/example3b_sdfanalysis.py}
 
 \begin{itemize}
-
 \item[11-15] Performs the simulation.
-
 \item[17-22] We define two soil cores, one in the center of the root and one 10 cm translated. In L22 we pick which one we use for the further analysis. Figure \ref{fig:soilcoreGeom} shows the resulting geometry, with a soil core radius of 10 cm.
-
 \item[24-28] Prepares three sub-figures. 
-
 \item[31-41] Creates a root length distribution versus depth at different ages. L33 creates the SegmentAnalyser object, and L34 crops it to a fixed domain or maps it into a periodic domain. In L38 the filter function keeps only the segments, where the parameter (first argument) is in the range between second and third argument. L39 creates the distribution. 
-
 \item[44-54] We repeat the procedure, but we crop to the soil core selected in L22. 
-
 \item[57-89] In the third sub plot we make densities of specific root types like basal roots, first order roots, and second order roots. In L58 we crop the segments to the soil core geometry. In L63 we filter for the selected sub type, and in L64 we create the density distribution.
-
 \item[71-73] Show and save resulting Figure \ref{fig:central} and \ref{fig:shifted} for the two soil cores (chosen in L22).
-
 \end{itemize}
 
 % \begin{figure}
