@@ -55,3 +55,6 @@ tutorial/jupyter/.ipynb_checkpoints/
 
 # images
 *.png
+
+# Python packaging/setup.py directories
+dist/
