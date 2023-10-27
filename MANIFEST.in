@@ -1,0 +1,9 @@
+include README.md LICENSE src/external/pybind11/LICENSE
+graft src
+global-include CMakeLists.txt *.cmake
+
+# excludes
+exclude CMakeCache.txt
+recursive-exclude build/
+recursive-exclude dist/
+
