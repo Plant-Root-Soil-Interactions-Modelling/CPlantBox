@@ -10,7 +10,7 @@ namespace CPlantBox {
 /**
  * Creates a root system
  */
-RootSystem::RootSystem(): Organism()
+RootSystem::RootSystem(unsigned int seednum): Organism(seednum)
 { }
 
 /**

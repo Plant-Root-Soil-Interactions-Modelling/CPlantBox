@@ -736,6 +736,7 @@ tinyxml2:: XMLElement* Organism::getRSMLScene(tinyxml2::XMLDocument& xmlDoc) con
 void Organism::setSeed(unsigned int seed)
 {
     this->gen = std::mt19937(seed);
+    seed_val = seed;
 }
 
 /**

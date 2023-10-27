@@ -148,6 +148,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
             std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
         }
+        double krBU = kr;
         if (soil_k.size()>0) {
             kr = std::min(kr, soil_k[si]);
         }

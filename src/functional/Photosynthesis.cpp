@@ -110,7 +110,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 		linearSystemSolve(sim_time_, sxx_, cells_, soil_k_); //compute psiXyl
 		if((verbose_photosynthesis > 1)){std::cout<<"to outputFlux"<<std::endl;}
 		//usefull only to know whether we reached convergence
-		outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, std::vector<double>());//approx = false
+		outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 		if((verbose_photosynthesis > 1)){std::cout<<"to getError"<<std::endl;}
 		getError(sim_time_);
 		this->stop = canStop();
@@ -138,7 +138,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 
 	 
 																					 
-	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, std::vector<double>());//approx = false
+	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 	loop++ ;
 
 	// for phloem flow
@@ -728,7 +728,7 @@ void Photosynthesis::loopCalcs(double simTime, std::vector<double> sxx_, bool ce
 		{
             double p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
             
-			fw.at(i) = fwr + (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa)));
+			fw.at(i) = fwr +std::max(0., (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa))) - fw_cutoff);
             
 			ci.at(i) = std::max((cs_*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)),deltagco2.at(i)) ;
 			if((verbose_photosynthesis ==2)){std::cout<<"in compute gco2 "<<sideArea<<" "<<(sideArea > 1e-16)<<std::endl;}

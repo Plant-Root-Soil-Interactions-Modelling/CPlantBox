@@ -107,6 +107,8 @@ class MappedRootSystem : public MappedSegments, public RootSystem
 public:
 
     using RootSystem::RootSystem;
+	MappedRootSystem(unsigned int seednum = 0): RootSystem(seednum){}; ///< constructor
+    virtual ~MappedRootSystem() { }; ///< destructor
 
     void initialize(bool verbose = true) override { initializeLB(4, 5, verbose); }; ///< overridden, to map initial shoot segments,
     void initializeLB(int basaltype, int shootbornetype, bool verbose = true) override { bool LB = true; initialize_(basaltype, shootbornetype, verbose, LB); }; ///< overridden, to map initial shoot segments,

@@ -818,7 +818,8 @@ PYBIND11_MODULE(plantbox, m) {
      * RootSystem.h
      */
     py::class_<RootSystem, Organism, std::shared_ptr<RootSystem>>(m, "RootSystem")
-            .def(py::init<>())
+            //.def(py::init<>())
+            .def(py::init<unsigned int>(),  py::arg("seednum")=0)
             .def("getRootRandomParameter", (std::shared_ptr<RootRandomParameter> (RootSystem::*)(int) const) &RootSystem::getRootRandomParameter)
             .def("getRootRandomParameter", (std::vector<std::shared_ptr<RootRandomParameter>> (RootSystem::*)() const) &RootSystem::getRootRandomParameter)
             .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
@@ -884,7 +885,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("resolution", &MappedSegments::resolution)
 		.def_readwrite("organParam", &MappedSegments::plantParam);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-        .def(py::init<>())
+        //.def(py::init<>())
+        .def(py::init<unsigned int>(),  py::arg("seednum")=0)
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
         .def("addSegments", &MappedRootSystem::rootSystem);
 
@@ -1003,6 +1005,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Vj", &Photosynthesis::Vj)
             .def_readwrite("fw", &Photosynthesis::fw)
             .def_readwrite("fwr", &Photosynthesis::fwr)
+            .def_readwrite("fw_cutoff", &Photosynthesis::fw_cutoff)
             .def_readwrite("sh", &Photosynthesis::sh)
             .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)	 
             .def_readwrite("ci", &Photosynthesis::ci)

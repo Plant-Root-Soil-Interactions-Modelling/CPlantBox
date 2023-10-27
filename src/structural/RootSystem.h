@@ -34,7 +34,7 @@ public:
     enum TropismTypes { tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3 };  ///< root tropism types
     enum GrowthFunctionTypes { gft_negexp = 1, gft_linear = 2 }; // root growth function
 
-    RootSystem(); ///< empty root system
+    RootSystem(unsigned int seednum  = 0.); ///< empty root system
     virtual ~RootSystem() { };
 
     std::shared_ptr<Organism> copy() override; ///< deep copies the organism

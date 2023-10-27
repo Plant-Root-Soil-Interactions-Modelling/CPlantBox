@@ -162,6 +162,7 @@ public:
 	// 				C3 and C4
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
+    double fw_cutoff = 0;// to make it easier to get fw
 	double sh = 3.765e-4;//sensibility to water stress
 	double p_lcrit = -15000/2;//min psiXil for stomatal opening [Mpa]
 	//influence of N contant, to reparametrise!, 
