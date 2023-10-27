@@ -124,7 +124,7 @@ target_link_libraries(CPlantBox
 						libklu
 						)
 
-set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+	# set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
 target_include_directories(
                         CPlantBox
                         PUBLIC
@@ -141,13 +141,13 @@ find_package( PythonInterp 3.7 REQUIRED )
 find_package( PythonLibs 3.7 REQUIRED )
 add_subdirectory(external/pybind11)
 
-pybind11_add_module(plantbox SHARED 
-			PyPlantBox.cpp   								
+pybind11_add_module(plantbox MODULE
+			PyPlantBox.cpp
 			)
 target_link_libraries(plantbox PUBLIC 
 			CPlantBox)
-			
-set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
+
+# set_target_properties(plantbox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
 
 
 
