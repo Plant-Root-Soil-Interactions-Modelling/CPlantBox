@@ -7,7 +7,7 @@ import visualisation.vis_tools as cpbvis
 
 import numpy as np
 
-filename = "../../modelparameter/structural/plant/vis_example_plant_maize.xml"
+filename = "../../modelparameter/structural/plant/fspm2023.xml"
 output = "./results/vis_plant"
 
 time = 28
@@ -43,6 +43,7 @@ plant.initialize()
 vis.SetGeometryResolution(8)
 vis.SetLeafResolution(leaf_res)
 
+
 # Simulate
 plant.simulate(time, True)
 
@@ -54,3 +55,7 @@ vis.ComputeGeometryForOrganType(pb.leaf, False)
 data = cpbvis.PolydataFromPlantGeometry(vis)
 cpbvis.WritePolydataToFile(data, output + ".vtp")
 
+#vp.plot_plant(plant, "subType")
+
+vp.write_plant("test",plant) # will write test.vtp (with centerlines), and test_leafs.vtp (as polygones)
+print("fin")
