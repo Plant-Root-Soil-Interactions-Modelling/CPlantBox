@@ -1,3 +1,48 @@
+\subsubsection*{Quick visualizations from Python}
+
+interactive plots...
+
+\begin{lstlisting}[language=Python]
+vp.plot_plant(plant)
+\end{lstlisting}
+
+\subsubsection*{How to export plant geometry for later visualization} \label{ssec:export}
+
+There are various ways to export plant geometry for later visualization, or to use the geometry as mesh for other simulation software.
+
+The Plant class provides outputs in RSML (), VTP (), and for paraview python scripts for the soil container geometry. Each organ is represented as a polyline with additional data given for each organ/polyline.
+
+\begin{lstlisting}[language=Python]
+plant.write("myfile.rsml")
+plant.write("myfile.vtp")
+plant.write("myfile.py")
+\end{lstlisting}
+
+The SegmentAnalyser class provides outputs in VTP (), DGF (), and text files. The Plant organs are represented by their segments.
+\begin{lstlisting}[language=Python]
+ana = pb.SegmentAnalyser(plant)
+ana.write("myfile.vtp")
+ana.write("myfile.dgf")
+\end{lstlisting}
+
+
+The interactive plotting tools are based on VTK and it is easy to write the resulting geometries as VTP in a binary format resulting in smaller file size. The organs are represented as polylines, the
+\begin{lstlisting}[language=Python]
+vp.write_plant(plant)
+\end{lstlisting}
+TODO there are file formats supported, e.g. mesh
+
+
+The class PlantVisualizer can ...
+
+
+
+
+\subsubsection*{Paraview}
+
+how to run the macros... and render the geometry
+
+
 \subsubsection*{How to make an animation} \label{ssec:animation}
 
 In order to create an animation in Paraview we have to consider some details. The main idea is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. In this way we have to only export one vtp file. 

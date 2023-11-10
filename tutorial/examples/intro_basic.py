@@ -9,7 +9,7 @@ plant = pb.Plant()
 
 # Open plant and root parameter from a file
 path = "../../modelparameter/structural/plant/"
-name = "hello_world"
+name = "fspm2023"
 plant.readParameters(path + name + ".xml")
 
 # Initialize
