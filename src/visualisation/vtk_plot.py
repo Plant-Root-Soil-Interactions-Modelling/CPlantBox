@@ -416,6 +416,11 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
+def plot_segments(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+    """ see plot roots """
+    return plot_roots(pd, p_name, render, interactiveImage)
+
+
 def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
     """ plots the root system
     @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
@@ -672,9 +677,9 @@ def write_plant(filename, plant, add_params = []):
 
     pd_leafs = vtk.vtkPolyData()
     pd_leafs.SetPoints(leaf_points)
-    pd_leafs.SetPolys(leaf_polys)    
+    pd_leafs.SetPolys(leaf_polys)
     write_vtp(filename + "_leafs.vtp", pd_leafs)
-    
+
 
 def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True):
     """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil()

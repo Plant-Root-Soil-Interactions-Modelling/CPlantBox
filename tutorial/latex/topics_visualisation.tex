@@ -1,16 +1,45 @@
+
 \subsubsection*{Quick visualizations from Python}
 
-interactive plots...
-
+It is possible to quickly visualize resulting geometry from Python using the module $vtk\_plot$, which offers auxilliary functions using VTK (\href{https://vtk.org/vtk-users-guide/}{VTK User's Guide}). Use 
 \begin{lstlisting}[language=Python]
-vp.plot_plant(plant)
+import visualisation.vtk_plot as vp
 \end{lstlisting}
+to import the module and name it $vp$.
+
+After creation and simulaton of the plant, there are different ways to start an interactive plot
+\begin{lstlisting}[language=Python]
+vp.plot_segments(plant, "subType") # Option 1
+ana = pb.SegmentAnalyser(plant)
+vp.plot_segments(ana, "subType") # Option 2
+vp.plot_plant(plant, "subType") # Option 3
+\end{lstlisting}
+The interactive plot can be to rotated (left mouse button), panned (mid mouse buttorn, joystick like from plot center) or zoomed (right mouse button). Per default 'creationTime', 'age', 'radius', 'subType' or 'organType' can be viusalized. But generally all parameters that will be presented in Section \ref{sec:cplantobx} can be visualized. You can save a screenshot as png file by pressing 'g', or reset view 'r', or change view by pressing 'x', 'y', 'z', and 'v'.
+
+Option 1 and 2 are identical and can be used on Plan or SegmentAnalyser class. It visualizes the centerlines or polylines of all plant organ. A tube geometry is created around each segment. In this way it is possible to map a parameter to a colour at segment level. 
+Option 3 does the plot the same way as 1 and 2, but additonally plots the leafs a polygons. The first argument is the plant or SegmentAnalyser object, the second the parameter that shall be visualized. Common choices are subType, organType, or creatiionTime, but in principle all model parameters that are presented in section \ref{sec:cplantobx} can be visualized. \\
+
+It is possible to add arbitrary parameters using the SegmentAnalyser class: 
+\begin{lstlisting}[language=Python]
+ana.addData(name, data) 
+\end{lstlisting}
+where name is the parameter name, and data given per segment and has the length as there are segments or nodes within the SegmentAnalyser object.
+
+If you use a functional strucural model, SegmentAnalyser offer auxilliary functions to add root hydraulic parameters:
+\begin{lstlisting}[language=Python]
+addAge(simtime) 
+addConductivities(xylem, simtime,kr_max = 1.e6, kx_max = 1.e6)
+addFluxes(xylem, rx, sx, simTime)
+addCellIds(const MappedSegments& plant); // 
+\end{lstlisting}
+Line 1 creates segment age from the segment parameter $creationTime$ for the final simualtion time simtime. Line 2 uses a $XylemFlux$ object to evaluate the age dependent hydraulic conductivities, and optionally offers maximal values (for visualisation). It will create two parameters named $kr$ and $kx$.  Line 3 adds radial and axial fluxes named  $axial\_flux$, $radial\_flux$ based on th xylem potentials $rx$, and soil potentials $sx$ (both either matric potentials, or total potentials). Line 4 uses a $MappedSegments$ object to create cell indices named $cell\_id per$ root segment. 
+
 
 \subsubsection*{How to export plant geometry for later visualization} \label{ssec:export}
 
 There are various ways to export plant geometry for later visualization, or to use the geometry as mesh for other simulation software.
 
-The Plant class provides outputs in RSML (), VTP (), and for paraview python scripts for the soil container geometry. Each organ is represented as a polyline with additional data given for each organ/polyline.
+The Plant class provides outputs in RSML \citep{lobet2015root}, VTP (\href{https://vtk.org/vtk-users-guide/}{VTK User's Guide}), and for paraview python scripts for the soil container geometry. Each organ is represented as a polyline with additional data given for each organ/polyline.
 
 \begin{lstlisting}[language=Python]
 plant.write("myfile.rsml")
@@ -18,7 +47,7 @@ plant.write("myfile.vtp")
 plant.write("myfile.py")
 \end{lstlisting}
 
-The SegmentAnalyser class provides outputs in VTP (), DGF (), and text files. The Plant organs are represented by their segments.
+The SegmentAnalyser class provides outputs in VTP (\href{https://docs.paraview.org/en/latest/ReferenceManual/index.html}{ParaView documentation}), DGF (\href{https://dune-project.org/doxygen/2.4.1/group__DuneGridFormatParser.html}{Dune Grid Format} ), and text files. The Plant organs are represented by their segments.
 \begin{lstlisting}[language=Python]
 ana = pb.SegmentAnalyser(plant)
 ana.write("myfile.vtp")
@@ -45,7 +74,12 @@ how to run the macros... and render the geometry
 
 \subsubsection*{How to make an animation} \label{ssec:animation}
 
-In order to create an animation in Paraview we have to consider some details. The main idea is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. In this way we have to only export one vtp file. 
+In order to create an animation in Paraview we have to consider some details. There are two approaches: One is to make one vtp file per animation frame (whih will need a lot of disc space). The second approach is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. In this way we have to only export one vtp file. The advantage of the first approach is, that we can also visualize plant leafs, if this is not necessary the second approach is recommended. \\
+
+
+
+
+
 
 We modify example1b.py to demonstrate how to create an animation.
 
