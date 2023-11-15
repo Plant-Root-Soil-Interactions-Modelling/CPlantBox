@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
 #include <ctime>
 #include <numeric>
 
@@ -653,6 +654,136 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
 }
 
 /**
+ * Exports the simulation results with the type from the extension in name
+ * (that must be lower case)
+ *
+ * @param name      file name e.g. output.vtp
+ */
+void Organism::write(std::string name) const
+{
+    std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
+    if (ext.compare("sml")==0) {
+        std::cout << "writing RSML... "<< name.c_str() <<"\n";
+        writeRSML(name); // use base class writer
+    } else if (ext.compare("vtp")==0) {
+        std::cout << "writing VTP... "<< name.c_str() <<"\n";
+        std::ofstream fos;
+        fos.open(name.c_str());
+        writeVTP(-1, fos);
+        fos.close();
+    } else if (ext.compare(".py")==0)  {
+        std::cout << "writing Geometry ... "<< name.c_str() <<"\n";
+        std::ofstream fos;
+        fos.open(name.c_str());
+        writeGeometry(fos);
+        fos.close();
+    } else {
+        throw std::invalid_argument("Plant::write(): Unkwown file type");
+    }
+}
+
+/**
+write VTP using tinyXML
+ **/
+void Organism::writeVTP(int otype, std::ostream & os) const // Write .VTP file by using TinyXML2 performance slowed by 0.5 seconds but precision increased
+{
+    tinyxml2::XMLPrinter printer( 0, false, 0 );
+
+    auto organs = this->getOrgans(otype); // update roots (if necessary)
+    auto nodes = getPolylines(otype);
+    auto times = getPolylineCTs(otype);
+
+    os << "<?xml version=\"1.0\"?>";
+    printer.OpenElement("VTKFile"); printer.PushAttribute("type", "PolyData"); printer.PushAttribute("version", "0.1"); printer.PushAttribute("byte_order", "LittleEndian");
+    printer.OpenElement("PolyData");
+    int non = 0; // number of nodes
+    for (const auto& r : organs) {
+        non += r->getNumberOfNodes();
+    }
+    int nol=organs.size(); // number of lines
+    printer.OpenElement("Piece"); printer.PushAttribute("NumberOfLines",  nol); printer.PushAttribute("NumberOfPoints", non);
+
+    // POINTDATA
+    printer.OpenElement("PointData"); printer.PushAttribute("Scalars", "Pointdata");
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "time"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+    for (std::vector<double> r: times) {
+        for (double t : r) {
+            printer.PushText(t); printer.PushText(" ");
+        }
+    }
+    printer.CloseElement();
+    printer.CloseElement();
+
+    // CELLDATA (live on the polylines)
+    printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
+    std::vector<std::string> sTypeNames = { "organType", "id", "creationTime", "age", "subType", "order", "radius"}; //  , "order", "radius", "subtype" ,
+    for (size_t i=0; i<sTypeNames.size(); i++) {
+        std::string sType = sTypeNames[i];
+        const char *schar = sType.c_str();
+        printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+        std::vector<double> scalars = getParameter(sTypeNames[i], otype);
+        for (double s : scalars) {
+            printer.PushText(s); printer.PushText(" ");
+        }
+        printer.CloseElement();
+    }
+    printer.CloseElement();
+
+    // POINTS (=nodes)
+    printer.OpenElement("Points");
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "Coordinates"); printer.PushAttribute("NumberOfComponents", "3"); printer.PushAttribute("format", "ascii" );
+    for (const auto& r : nodes) {
+        for (const auto& n : r) {
+            printer.PushText(n.x); printer.PushText(" "); printer.PushText(n.y); printer.PushText(" "); printer.PushText(n.z); printer.PushText(" ");
+        }
+    }
+    printer.CloseElement();
+    printer.CloseElement();
+
+    // LINES (polylines)
+    printer.OpenElement("Lines");
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Int32");  printer.PushAttribute("Name", "connectivity"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+    int c=0;
+    for (const auto& r : organs) {
+        for (size_t i=0; i<r->getNumberOfNodes(); i++) {
+            printer.PushText(c); printer.PushText(" ");
+            c++;
+        }
+    }
+    printer.CloseElement();
+
+    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Int32");  printer.PushAttribute("Name", "offsets"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
+    c = 0;
+    for (const auto& r : organs) {
+        c += r->getNumberOfNodes();
+        printer.PushText(c); printer.PushText(" ");
+    }
+    printer.CloseElement();
+    printer.CloseElement();
+    printer.CloseElement();
+    printer.CloseElement();
+    printer.CloseElement();
+    os << std::string(printer.CStr());
+}
+
+/**
+ * Writes the current confining geometry (e.g. a plant container) as paraview python script
+ * Just adds the initial lines, before calling the method of the sdf.
+ *
+  * todo move to Organism (including geometry)
+ *
+ * @param os      typically a file out stream
+ */
+void Organism::writeGeometry(std::ostream & os) const
+{
+    os << "from paraview.simple import *\n";
+    os << "paraview.simple._DisableFirstRenderCameraReset()\n";
+    os << "renderView1 = GetActiveViewOrCreate('RenderView')\n\n";
+    geometry->writePVPScript(os);
+}
+
+
+/**
  * Creates a rsml file with filename @param name.
  *
  * @param name      name of the rsml file
@@ -743,7 +874,7 @@ void Organism::setSeed(unsigned int seed)
  */
 std::shared_ptr<Seed> Organism::getSeed()
 {
-	return std::static_pointer_cast<Seed>(baseOrgans.at(0));	
+	return std::static_pointer_cast<Seed>(baseOrgans.at(0));
 }
 
 } // namespace
