@@ -15,7 +15,7 @@ depth = 220
 layers = 50
 runs = 10
 
-box = pb.SDF_PlantContainer(5, 5, 220, True)  # 10*10*220 [cm3]
+box = pb.SDF_PlantContainer(5, 5, depth, True)  # [cm3]
 
 rs_ = []
 for i in range(0, runs):
@@ -28,18 +28,17 @@ for i in range(0, runs):
 soilvolume = (depth / layers) * 10 * 10  # [cm3]
 rs_ = np.array(rs_) / soilvolume  # convert to density [cm2/cm3]
 rs_mean = np.mean(rs_, axis = 0)
-rs_err = np.std(rs_, axis = 0) / np.sqrt(runs)
+rs_err = np.std(rs_, axis = 0)
 
 dx2 = 0.5 * (depth / layers)  # half layer width
 z_ = np.linspace(-dx2, -depth + dx2, layers)  # layer mid points
 plt.plot(rs_mean, z_, "b*")
 plt.plot(rs_mean + rs_err, z_, "b:")
 plt.plot(rs_mean - rs_err, z_, "b:")
-
 plt.xlabel("root surface (cm^2 / cm^3)")
 plt.ylabel("z-coordinate (cm)")
-plt.legend(["mean value (" + str(runs) + " runs)", "error"])
-plt.savefig("results/topics_processing.png")
+plt.legend(["mean value (" + str(runs) + " runs)", "std"])
+plt.savefig("../figures/topics_postprocessing.png")
 plt.show()
 
 print(ana.getMinBounds(), ana.getMaxBounds())

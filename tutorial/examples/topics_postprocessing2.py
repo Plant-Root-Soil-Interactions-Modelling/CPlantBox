@@ -7,14 +7,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Zea_mays_5_Leitner_2014"  # Zea_mays_1_Leitner_2010, Brassica_napus_a_Leitner_2010
+name = "Zea_mays_1_Leitner_2010"
 
 plant = pb.Plant()
 plant.readParameters(path + name + ".xml")
-plant.setGeometry(pb.SDF_PlantContainer(10, 10, 200, True))
+# plant.setGeometry(pb.SDF_PlantContainer(10, 10, 200, True))
 plant.initialize()
 plant.simulate(120)
 plant.write("results/topics_postprocessing2.vtp")
+
+ana = pb.SegmentAnalyser(plant)
+print(ana.getMinBounds(), ana.getMaxBounds())
+ss
 
 r, depth, layers = 5, 100., 100  # Soil core analysis
 soilcolumn = pb.SDF_PlantContainer(r, r, depth, False)  # in the center of the root

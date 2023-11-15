@@ -7,12 +7,12 @@ import numpy as np
 
 plant = pb.Plant()
 path = path = "../../modelparameter/structural/rootsystem/"
-name = "Zea_mays_1_Leitner_2010"
+name = "Moraesetal_2020"
 plant.readParameters(path + name + ".xml")
 
 # Rhizotubes as obstacles
 box = pb.SDF_PlantBox(96, 126, 130)  # box
-rhizotube = pb.SDF_PlantContainer(6.4, 6.4, 96, False)  # a single rhizotube
+rhizotube = pb.SDF_PlantContainer(3., 3., 96, False)  # a single rhizotube
 rhizoX = pb.SDF_RotateTranslate(rhizotube, 90, pb.SDF_Axis.yaxis, pb.Vector3d(96 / 2, 0, 0))
 
 rhizotubes_ = []
@@ -30,7 +30,7 @@ rhizoTube = pb.SDF_Difference(box, rhizotubes)
 # Simulate
 plant.setGeometry(rhizoTube)
 plant.initialize()
-plant.simulate(40)  # days
+plant.simulate(90)  # days
 
 # Export results
 plant.write("results/topics_virtual3.vtp")

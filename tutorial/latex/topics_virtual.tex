@@ -5,7 +5,7 @@ In order to mimic experimental settings we can confine root growth by containers
 We show two examples where the plants root system grows confined by two types of containers 
 (by a cylindrical container or a rectangular rhizotron). 
 
-\lstinputlisting[language=Python, caption=Root growth in a container]{examples/topics_virtual.py}
+\lstinputlisting[language=Python, caption=Root growth in a container (topics\_virtual.py)]{examples/topics_virtual.py}
 
 The geometry is first created by constructing some specialization of the class SignedDistanceFunction, 
 and is passed to the root system by the method setGeometry: 
@@ -17,23 +17,21 @@ and is passed to the root system by the method setGeometry:
  \item[20] Pick one of the two geometries. Note that it is important to call plant.setGeometry() before plant.initialize().
  \item[23,24] Initializes and simualtes for 40 days.
  \item[27] Exports the plant structure geometry (without the soil domain geometry).
- \item[30] Its possible to save the soil domain geometry as Paraview Python script for visualization (and debugging), see Figure \ref{fig:topics_virtual}. Run this script in Paraview by Tools$\rightarrow$Python Shell, Run Script. 
-\item[33] Interactive VTK plot. The geometric boundaries can currently not be visualized in the interactive rendering. This could be achieved in VTK by creating an iso-surface of the implicit geometry given by the SDF. visualised. 
+ \item[31] Its possible to save the soil domain geometry as Paraview Python script for visualization (and debugging), see Figure \ref{fig:topics_virtual}. Run this script in Paraview by Tools$\rightarrow$Python Shell, Run Script. 
+\item[34] Interactive VTK plot. The geometric boundaries can currently not be visualized in the interactive rendering. This could be achieved in VTK by creating an iso-surface of the implicit geometry given by the SDF. visualised. 
 \end{itemize}
 
-% TODO find nice input xml; 
-
-% \begin{figure}
-% \begin{subfigure}[c]{0.5\textwidth}
-% \includegraphics[width=0.99\textwidth]{topics_virtual_a.png}
-% \subcaption{Unconfined growth} \label{fig:basicA}
-% \end{subfigure}
-% \begin{subfigure}[c]{0.5\textwidth}
-% \includegraphics[width=0.99\textwidth]{example_1b.png}
-% \subcaption{Confined to a cylindrical soil container (Example 1b)} \label{fig:topics_virtual_b}
-% \end{subfigure}
-% \caption{Paraview visualizations of results of example 1a and 1b.} 
-% \end{figure}
+\begin{figure}
+\begin{subfigure}[c]{0.5\textwidth}
+\includegraphics[width=0.99\textwidth]{figures/topics_virtual_a.png}
+\subcaption{Confined by a cylinder (colour represent root age)} 
+\end{subfigure}
+\begin{subfigure}[c]{0.5\textwidth}
+\includegraphics[width=0.99\textwidth]{figures/topics_virtual_b.png}
+\subcaption{Confined by a rhizotron (colour represent root type)} 
+\end{subfigure}
+\caption{ParaView visualizations of results.} \label{fig:topics_virtual}
+\end{figure}
 
 Next, we show how to build more complex container geometries using SDF. 
 
@@ -44,7 +42,7 @@ In the following example we create geometries that we might encounter in experim
 First, we show how to rotate a rhizotron (e.g. to see more roots at the wall due to gravitropism). 
 Second, we create a split box experiment, and furthermore, an example where rhizotubes act as obstacles.The following examples demonstrates how to build a complex geometry using rotations, translations and set operations on the SDF.
 
-\lstinputlisting[language=Python, caption=Root growth in more complex containers]{examples/topics_virtual2.py}
+\lstinputlisting[language=Python, caption=Root growth in more complex containers (topics\_virtual2.py)]{examples/topics_virtual2.py}
 
 \begin{itemize}
 \item[14-19] Definition of a rotated rhizotron, see Figure \ref{fig:topics_virtual2_a}: 
@@ -58,41 +56,39 @@ however, set operations are not really performed, only the involved geometries a
 \item[40] We cannot visualize the container geometry in the interactive rendering, but only the resulting root system. 
 \end{itemize}
 
-% TODO describe the creation of the paraview plots in detail...
-
-% \begin{figure}
-% \begin{subfigure}[c]{0.49\textwidth}
-% \includegraphics[width=0.99\textwidth]{topics_virtual2_a.png} 
-% \subcaption{Rotated rhizotron} \label{fig:topics_virtual2_a}
-% \end{subfigure}
-% \begin{subfigure}[c]{0.49\textwidth}
-% \includegraphics[width=0.99\textwidth]{topics_virtual2_b.png} 
-% \subcaption{Split box} \label{fig:topics_virtual2_b}
-% \end{subfigure}
-% \caption{Complex container geometries described by SDF and set operations.}
-% \end{figure}
+\begin{figure}
+\begin{subfigure}[c]{0.49\textwidth}
+\includegraphics[width=0.99\textwidth]{figures/topics_virtual2_a.png} 
+\subcaption{Rotated rhizotron} \label{fig:topics_virtual2_a}
+\end{subfigure}
+\begin{subfigure}[c]{0.49\textwidth}
+\includegraphics[width=0.99\textwidth]{figures/topics_virtual2_b.png} 
+\subcaption{Split box experiment} \label{fig:topics_virtual2_b}
+\end{subfigure}
+\caption{Complex container geometries described by SDF and set operations.}
+\end{figure}
 
 \subsubsection*{Obstacles using SDF}
 
 We can also use set operations to create obstacles. The following example shows a rhizotube camera setup, where transparent tubes are used to analyse root growth. We can mimic this setup by defining tubes that act as an obstacle to the growing roots. The following code is exactly the same as before, but with another geometry: 
 
-\lstinputlisting[language=Python, caption=Experimental setup with rhizotubes]{examples/topics_virtual3.py}
+\lstinputlisting[language=Python, caption=Experimental setup with rhizotubes (topics\_virtual3)]{examples/topics_virtual3.py}
 
 \begin{itemize}
 \item[18-28] Definition of rhizotubes as obstacles, see Figure \ref{fig:topics_virtual3}: L14 is the surrounding box, L15 a single rhizotube, that is rotated around the y-axis in L16. L21-L26 create a list of rhizotubes at different locations that mimics the experimental setup.  L27 and L28 compose the final geometry by to set operation, first a union of all tubes, and then cut them out the surrounding box by taking the difference. 
 \end{itemize}
 
-% \begin{figure}
-% \centering
-% \includegraphics[width=0.7\textwidth]{example_2b.png}
-% \caption{Multiple root systems, colors denote the creation time of the root segments} \label{fig:multiple}
-% \end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{figures/topics_virtual3.png}
+\caption{Rhizotubes act as obstacles to the root system} \label{fig:topics_virtual3}
+\end{figure}
 
 \subsubsection*{Multiple root systems}
 
 Its possible to simulate multiple root systems. In the following we show a small plot scale simulation.
 
-\lstinputlisting[language=Python, caption=Multiple root systems]{examples/topics_virtual4.py}
+\lstinputlisting[language=Python, caption=Multiple root systems (topics\_virtual4.py)]{examples/topics_virtual4.py}
 
 \begin{itemize}
 \item[11,12] Set the number of columns and rows of the plot, and the distance between the root systems.
@@ -101,12 +97,12 @@ Its possible to simulate multiple root systems. In the following we show a small
 \item[30-37] Saves each individual root systems, and additionally, saves all root systems into a single file. 
 Therefore, we create an SegmentAnalyser (see Section \ref{ssec:postprocessing}) object in L30 and merge all organ segments into it L34,  and finally export the single file L37. The resulting geometry is shown in Figure \ref{fig:topics_virtual4}.
 \end{itemize}
-% 
-% \begin{figure}
-% \centering
-% \includegraphics[width=0.7\textwidth]{topics_virtual4.png}
-% \caption{Multiple root systems, colors denote the creation time of the root segments} \label{fig:topics_virtual4}
-% \end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{figures/topics_virtual4.png}
+\caption{ParaView visualization of multiple root systems} \label{fig:topics_virtual4}
+\end{figure}
 
 
 \subsubsection*{Periodic domains}

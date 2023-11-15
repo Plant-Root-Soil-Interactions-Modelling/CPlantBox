@@ -6,10 +6,8 @@ import visualisation.vtk_plot as vp
 
 plant = pb.Plant()
 
-path = "../../modelparameter/structural/plant/"
-name = "fspm2023"
-# path = path = "../../modelparameter/structural/rootsystem/"
-# name = "Zea_mays_4_Leitner_2014"
+path = path = "../../modelparameter/structural/rootsystem/"
+name = "Zea_mays_4_Leitner_2014"
 plant.readParameters(path + name + ".xml")
 
 # 1.Creates a cylindrical container with top radius 5 cm, bot radius 5 cm, height 50 cm, not square but circular
@@ -19,7 +17,7 @@ soilcore = pb.SDF_PlantContainer(5, 5, 40, False)
 rhizotron = pb.SDF_PlantBox(1.4, 27, 27)
 
 # Pick 1, or 2
-plant.setGeometry(soilcore)  # soilcore, or rhizotron
+plant.setGeometry(rhizotron)  # soilcore, or rhizotron
 
 # Initialize & Simulate
 plant.initialize()

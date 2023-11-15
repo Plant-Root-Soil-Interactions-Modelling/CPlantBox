@@ -1,6 +1,6 @@
 The following example shows how to run the simulation in a simulation loop. This is important if we want to couple the model and implement feedbacks, or as in this case, if we want to retrieve information over time. The following script shows how to calculate the organ lengths over time. 
 
-\lstinputlisting[language=Python, caption=P development over time]{examples/topics_development.py}
+\lstinputlisting[language=Python, caption=P development over time (topics\_development.py)]{examples/topics_development.py}
 
 \begin{itemize}
 \item[8-13] Sets up the simulation.
@@ -11,7 +11,7 @@ The following example shows how to run the simulation in a simulation loop. This
 
 Next we show how retrieve root tip and root base positions from a simulation. Each organ is represented by a polyline, which is a list of points connected by segments. We use this polyline to plot the base (first node of the polyline) and the tip (last node of the polyline). 
 
-\lstinputlisting[language=Python, caption=Organ tips and bases over time]{examples/topics_development2.py}
+\lstinputlisting[language=Python, caption=Organ tips and bases over time (topics\_development2.py)]{examples/topics_development2.py}
 
 \begin{itemize}
 
@@ -23,11 +23,11 @@ Next we show how retrieve root tip and root base positions from a simulation. Ea
 
 \begin{figure}
 \begin{subfigure}[c]{0.5\textwidth}
-\includegraphics[width=0.99\textwidth]{examples/results/topics_development.png}
+\includegraphics[width=0.99\textwidth]{figures/topics_development.png}
 \subcaption{Total organ lengths versus time} \label{fig:topics_development}
 \end{subfigure} 
 \begin{subfigure}[c]{0.5\textwidth}
-\includegraphics[width=0.99\textwidth]{examples/results/topics_development2.png}
+\includegraphics[width=0.99\textwidth]{figures/topics_development2.png}
 \subcaption{Top view of the organ tip and bases} \label{fig:topics_development2}
 \end{subfigure}
 \caption{Plant development over time} 

@@ -1,28 +1,21 @@
-"""dgf and vtp, and rsml export example TODO change to plant"""
+""" nodes and segments from measurements """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
+import visualisation.vtk_plot as vp
 
-plant = pb.Plant()
-path = "../../modelparameter/structural/rootsystem/"
-name = "wheat"  # "Brassica_napus_a_Leitner_2010"  # "Brassica_napus_a_Leitner_2010"  # "Anagallis_femina_Leitner_2010"  #
-plant.readParameters(path + name + ".xml")
+# Data from any source, as Python types
+nodes = [ [0, 1, 0], [0.2, 1.8, -1], [0, 1.3, -2], [0, 1, -3] ]
+segs = [ [0, 1], [1, 2], [2, 3] ]
+cts = [0., 0.1, 0.2]
+radii = [ 0.1, 0.2, 0.1 ]
 
-rhizotron = pb.SDF_PlantBox(7, 7, 14)
-plant.setGeometry(rhizotron)  # soilcore, or rhizotron
-plant.initialize()
-plant.simulate(30, True)
+# convert from Python to C++ binding types
+nodes = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
+segs = [pb.Vector2i(s[0], s[1]) for s in segs]
 
-ana = pb.SegmentAnalyser(plant)
-
-# aseg = plant.getShootSegments()  # if there are no shoot borne roots, it is only one segment
-# for s in aseg:
-#     print("Shoot segment", s)
-#     ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
-
-ana.write("results/example_3c.vtp", ["radius", "surface"])
-ana.write("results/example_3c.dgf")
-
-# segment analyser cannot write rsml files becasue rsml is based on polylines, not segments
-# use RootSystem::write to export a RSML
-plant.write("results/example_3c.rsml")
+# create the SegmentAnalyser without underlying RootSystem
+ana = pb.SegmentAnalyser(nodes, segs, cts, radii)
+print("length", ana.getSummed("length"))
+ana.write("results/topics_postprocessing3.vtp", ["creationTime", "radius"])
+vp.plot_roots(ana, "creationTime")

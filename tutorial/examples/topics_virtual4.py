@@ -7,7 +7,7 @@ import visualisation.vtk_plot as vp
 path = path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
 
-simtime = 90  # days
+simtime = 30  # days
 N = 3  # number of columns and rows
 dist = 40  # distance between the root systems [cm]
 
@@ -29,8 +29,8 @@ for plant in all:
 # Export results as single vtp files (as polylines)
 ana = pb.SegmentAnalyser()
 for i, plant in enumerate(all):
-      vtpname = "results/topics_virtual4_" + str(i) + ".vtp"
-      plant.write(vtpname)
+      filename = "results/topics_virtual4_" + str(i)
+      vp.write_plant(filename, plant)
       ana.addSegments(plant)  # collect all
 
 # Write all into single file (as segments)
