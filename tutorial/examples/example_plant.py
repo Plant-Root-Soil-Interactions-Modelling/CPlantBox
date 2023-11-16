@@ -30,11 +30,12 @@ for p in plant.getOrganRandomParameter(pb.leaf):
             print(p)
 
             p.la, p.lb, p.lmax, p.ln, = 3.5, 1., 7.5, 3
-            p.areaMax = 10  # cm2
-            phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-            l = np.array([3, 2.2, 1.7, 2, 3.5])
-            N = 101  # N is rather high for testing
-            p.createLeafRadialGeometry(phi, l, N)
+
+            # p.areaMax = 10  # cm2
+            # phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+            # l = np.array([3, 2.2, 1.7, 2, 3.5])
+            # N = 101  # N is rather high for testing
+            # p.createLeafRadialGeometry(phi, l, N)
 
 #             lrp = p
 #             p.areaMax = 20  # cm2
@@ -53,22 +54,15 @@ for p in plant.getOrganRandomParameter(pb.leaf):
         else:
             p.a = p.a * 3
 
-print("stem")
-for p in plant.getOrganRandomParameter(pb.stem):
-    if (p.subType > 0):
-        print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())
-        p.a = p.a / 2
-        p.a = 0.2
-        p.a_s = 0
+# print("stem")
+# for p in plant.getOrganRandomParameter(pb.stem):
+#     if (p.subType > 0):
+#         print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())
+#         p.a = p.a / 2
+#         p.a = 0.2
+#         p.a_s = 0
 
-print("roots")
-for p in plant.getOrganRandomParameter(pb.root):
-    if (p.subType > 0):
-        print(p.subType, p.a, p.successor)
-        if p.subType == 1:  # taproot
-            p.theta = 0.
-        p.a = 0.05
-        p.a_s = 0
+plant.writeParameters("hello_world.xml")
 
 soil = pb.SDF_PlantContainer(1.e6, 1.e6, 1.e6, False)
 # plant.setGeometry(soil)
@@ -81,7 +75,7 @@ for p in plant.getOrganRandomParameter(pb.root):
 plant.initialize()
 
 # Simulate
-plant.simulate(30, True)
+plant.simulate(40, False)
 
 # Export final result (as vtp)
 plant.write("results/example_plant.vtp")
@@ -90,5 +84,5 @@ ana = pb.SegmentAnalyser(plant)
 ana.write("results/example_plant_segs.vtp")
 
 # Plot, using vtk
-vp.plot_plant(plant, "organType")
+vp.plot_plant(plant, "subType")
 

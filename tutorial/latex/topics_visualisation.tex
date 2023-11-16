@@ -5,7 +5,7 @@ It is possible to quickly visualize resulting geometry from Python using the mod
 \begin{lstlisting}[language=Python]
 import visualisation.vtk_plot as vp
 \end{lstlisting}
-to import the module and name it $vp$.
+to import the module and to name it $vp$.
 
 After creation and simulation of the plant, there are different ways to start an interactive plot:
 \begin{lstlisting}[language=Python]
@@ -18,7 +18,7 @@ The interactive plot can be to rotated (left mouse button), panned (mid mouse bu
 
 Option 1 and 2 are identical and can be used on Plan or SegmentAnalyser class. It visualizes the centerlines or polylines of all plant organ. A tube geometry representing the organs radius is created around each segment. In this way it is possible to map a parameter to a colour at segment level.  Option 3 does the plot the same way as 1 and 2, but additionally plots the leafs a polygons. The first argument is the plant or SegmentAnalyser object, the second the parameter that shall be visualized. \\
 
-It is possible to add arbitrary parameters using the SegmentAnalyser class: of 
+It is possible to add arbitrary parameters using the SegmentAnalyser class: 
 \begin{lstlisting}[language=Python]
 ana.addData(name, data) 
 \end{lstlisting}
@@ -51,7 +51,7 @@ ana.write("myfile.vtp", params)
 ana.write("myfile.dgf")
 ana.write("myfile.txt")
 \end{lstlisting}
-Writing VTPs we can additional add a list of parameter names to export. Per default 'radius', 'subType', 'creationTime', and 'organType' are exported. 
+Writing VTPs we can additional add a list of parameter names which we want to export. Per default 'radius', 'subType', 'creationTime', and 'organType' are exported. 
 
 
 The interactive plotting tools are based on VTK and it is easy to write the resulting geometries as VTP in a binary format resulting in smaller file size. The organs are represented as polylines names 'filename.vtp'. Leafs are stored as polygons in a second file named 'filename\_leafs.vtp':

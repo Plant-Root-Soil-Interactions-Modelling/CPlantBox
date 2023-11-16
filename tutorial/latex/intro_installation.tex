@@ -1,5 +1,4 @@
-This installation guideline is for CPlantBox on Linux systems (e.g. Ubuntu). 
-If on a recent Ubuntu system, the C++ compiler and python that come with the distribution are recent enough. Otherwise, please make sure you have a recent C++ compiler (e.g.   ), fortran compiler (sudo apt-get install gfortran) and python3. \\
+This installation guideline is for CPlantBox on Linux systems (e.g. Ubuntu). If C++ compilers and Python are not recent enough make sure you have a recent C++ compiler (e.g. \lstinline{sudo apt install build-essential}) and python3 (e.g. \lstinline{sudo apt-get install python3.6}). \\
 
 If you wish to be able to follow the examples provided in the Jupyter Notebooks, it is recommended to install the Anaconda Python distribution: 
 \begin{itemize}
@@ -11,10 +10,10 @@ If you wish to be able to follow the examples provided in the Jupyter Notebooks,
 \lstinline{source ~/.bashrc}
 \end{itemize}
 
-CPlantBox can be installed using either the install script installCPlantBox.py for CPLantBox only, or installDumuxRosi\_Ubuntu.py for CPlantBox and dumux-rosi. First make sure Git ist installed, clone the CPlantBox repository, and the run the install script:
+CPlantBox can be installed using either the install script installCPlantBox.py for CPlantBox only, or installDumuxRosi\_Ubuntu.py for CPlantBox and dumux-rosi. First make sure Git ist installed, clone the CPlantBox repository, and run the install script:
 \begin{itemize}
  \item Install Git: \lstinline{sudo apt-get install git}
- \item Go to your base folder and clone repository: \lstinline{git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git}
+ \item Go to your base folder and clone the repository by: \lstinline{git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git}
  \item Run install script: \lstinline{python3 CPlantBox/installDumuxRosi_Ubuntu.py}  
 \end{itemize}
 

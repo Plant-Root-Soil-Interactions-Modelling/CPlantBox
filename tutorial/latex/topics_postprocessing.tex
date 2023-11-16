@@ -1,4 +1,4 @@
-The class SegmentAnalyser offers post-processing methods per organ segment. The advantage is that we can do distributions or densities, and that we can analyse the segments within any geometry by cropping the overall geometry to a region of interest. While the class SegmentAnalyser was designed for analysing roots most functionallity works also for the above plant part. 
+The class SegmentAnalyser offers post-processing methods based on a representation of the plant by segments which connect two nodes with a single line. The segments are derived from the centerlines of the plant organs. We can use this approach to do distributions or calculate densities, and we can analyse the segments within any geometry by cropping the overall geometry to a region of interest. While the class SegmentAnalyser was designed for analysing roots most functionallity works also for the above plant part. 
 
 \subsubsection*{Root surface densities}
 
@@ -12,7 +12,7 @@ We start with a small example plotting the root surface densities of a root syst
 \item[18] Creates a confing geometry.
 \item[20-26] Performs the simulations for $runs$ times. L26 creates a distribution of a parameter (name) over a vertical range (bot, top). The data are accumulated in each layer, segments are either cut (exact = True) or accumulated by their mid point (exact = False). 
 \item[28,29] In order to calculate a root surface density from the summed up surface, we need to define a soil volume. The vertical height is the layer length, length and width (here 10 cm), can be determined by planting width, or by a confining geometry. 
-\item[30-31] Calculates the densities mean and the standard error. 
+\item[30, 31] Calculates the densities mean and the standard error. 
 \item[33-42] Prepares the plot (see Figure \ref{fig:topics_postprocessing}).
 \end{itemize}
 

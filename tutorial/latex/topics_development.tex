@@ -1,6 +1,6 @@
-The following example shows how to run the simulation in a simulation loop. This is important if we want to couple the model and implement feedbacks, or as in this case, if we want to retrieve information over time. The following script shows how to calculate the organ lengths over time. 
+The first example shows how to run the simulation in a simulation loop. This is important if we want to couple the model with ohter models, or implement feedbacks to the root architecture development, or as in this case, to retrieve information over time. The following script shows how to calculate the organ lengths over time. 
 
-\lstinputlisting[language=Python, caption=P development over time (topics\_development.py)]{examples/topics_development.py}
+\lstinputlisting[language=Python, caption=Length over time (topics\_development.py)]{examples/topics_development.py}
 
 \begin{itemize}
 \item[8-13] Sets up the simulation.
@@ -9,7 +9,7 @@ The following example shows how to run the simulation in a simulation loop. This
 \item[38-47] Creates Figure \ref{fig:topics_development}.
 \end{itemize}
 
-Next we show how retrieve root tip and root base positions from a simulation. Each organ is represented by a polyline, which is a list of points connected by segments. We use this polyline to plot the base (first node of the polyline) and the tip (last node of the polyline). 
+Next we show how retrieve root tip and root base positions from a simulation. Each organ is represented by a polyline, which is a list of points connected by segments. We use this polyline to plot the organs base (first node of the polyline) and the organs tip (last node of the polyline). 
 
 \lstinputlisting[language=Python, caption=Organ tips and bases over time (topics\_development2.py)]{examples/topics_development2.py}
 
@@ -33,4 +33,4 @@ Next we show how retrieve root tip and root base positions from a simulation. Ea
 \caption{Plant development over time} 
 \end{figure}
 
-Other usefull functions are \texttt{plant.getNodes()} to retrieve all node coordinates, and \texttt{plant.getSegments()} which will give pairs of node indices containing the start node index, and end node index of each plant segment. Furthermore, \texttt{plant.getSegmentOrigin()} gives a corresponding pointer to the Organ, where each segment belongs to. Creation times can be retrieved by \texttt{plant.getNodeCTs()} for each node, or \texttt{plant.getSegmentCTs()} for each segment.
+Other usefull functions are{plant.getNodes()} to retrieve all node coordinates, and{plant.getSegments()} which will give pairs of node indices containing the start node index, and end node index of each plant segment. Furthermore, {plant.getSegmentOrigin()} gives a corresponding pointer to the Organ, where each segment belongs to. Creation times can be retrieved by {plant.getNodeCTs()} for each node, or {plant.getSegmentCTs()} for each segment.
