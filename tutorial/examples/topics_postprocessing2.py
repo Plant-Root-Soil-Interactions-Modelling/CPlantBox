@@ -76,7 +76,7 @@ axes[2].plot(np.array(rl_[2]) / layerVolume, z_)
 axes[2].legend(["basal roots", "first order roots", "second order roots"])
 
 fig.subplots_adjust()
-plt.savefig("results/topics_postprocessing2.png")
+plt.savefig("../figures/topics_postprocessing2.png")
 plt.show()
 
 vp.plot_roots(ana_vis, "subType")

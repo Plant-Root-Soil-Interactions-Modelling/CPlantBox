@@ -3,25 +3,24 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import matplotlib.pyplot as plt
-import math
+import numpy as np
 
-fig, axes = plt.subplots(4, 4, figsize = (15, 10))
-
-N_ = [0, 1, 2, 4]  # strength [1]
-sigma_ = [0, 0.1, 0.3, 0.6]  # flexibility [1/m]
+N_ = [0, 0.5, 1, 3]  # strength [1]
+sigma_ = [0.1, 0.2, 0.4, 0.6]  # flexibility [1/m]
 dx = 1  # axial resolution
-theta = 70 / 180 * math.pi  # insertion angle [1]
+theta = 70 / 180 * np.pi  # insertion angle [1]
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 srp = pb.SeedRandomParameter(rs)
 srp.firstB, srp.delayB, srp.maxB = 3, 3 , 100
-rs.setRootSystemParameter(srp)
+rs.setOrganRandomParameter(srp)
 
 p0 = pb.RootRandomParameter(rs)
 p0.name, p0.subType, p0.lmax, p0.r, p0.dx, p0.theta = "taproot", 1, 100, 1, dx, theta
 p0.tropismT = 1  # gravitropism
 rs.setOrganRandomParameter(p0)
 
+fig, axes = plt.subplots(4, 4, figsize = (15, 10))
 for i, n in enumerate(N_):
     for j, sigma in enumerate(sigma_):
         a = axes[i][j]
@@ -30,10 +29,8 @@ for i, n in enumerate(N_):
         p0.tropismN = n
         p0.tropismS = sigma
 
-        print("*")
-        rs.initializeLB(1, 1)
-        print("*")
-        rs.simulate(50, False)
+        rs.initializeLB()
+        rs.simulate(50, True)
 
         nodes = rs.getNodes()
         segs = rs.getSegments()
@@ -47,4 +44,5 @@ for i, n in enumerate(N_):
 
 fig.tight_layout()
 fig.canvas.set_window_title("Gravitropism parameters")
+plt.savefig("../figures/topics_tropism.png")
 plt.show()

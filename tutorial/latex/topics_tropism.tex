@@ -1,8 +1,11 @@
-\subsubsection*{Root tropism parameters $N$ and $\sigma$} \label{ssec:tropism}
+The change in root growth direction is described by tropisms. In the following we show how to implement directed growth, and demonstrate how to simply make new user defined tropism rules. 
+
+
+\subsubsection*{Root tropism parameters $N$ and $\sigma$} 
 
 We show the influence of the parameters $N$ and $\sigma$ in the case of gravitropism. The parameter $N$ [1] denotes the strength of the tropism, and $\sigma$ [cm$^{-1}$] the flexibility of the root, i.e. the expected angular variation per cm root length. 
 
-\lstinputlisting[language=Python, caption=Example 2b]{examples/example2b_tropism.py}
+\lstinputlisting[language=Python, caption=Example 2b (topics\_tropism.py)]{examples/topics_tropism.py}
 
 \begin{itemize}
 \item[10-13] We choose the parameter values $N$ and $\sigma$ we want to plot. It might be interesting to change the initial insertion $angle$, and the axial resolution $dx$. Note that a change in axial resolution should not qualitatively change the resulting images.
@@ -32,9 +35,7 @@ The other subplots show different shapes of the root system. We normally derive 
 
 
 
-\subsubsection*{Tropisms} \label{sec:tropism}
-
-The change in root growth direction is described by tropisms. In the following we show how to implement directed growth toward higher water content or nutrient concentration, and demonstrate how to simply make new user defined tropism rules. 
+\subsubsection*{Hydro- and chemotropism} 
 
 
 Root growth direction is influenced by soil conditions such as water content, soil strength, or nutrient concentration. In the following example we model the influence of a nutrient rich layer to root system development
