@@ -2,12 +2,16 @@
  
 In the previous examples we opened the plant parameters from an XML file. In the following example we demonstrate how to construct a plant with a Python script without the need of any parameter file. This is especially important, if we want to modify parameters in our scripts (e.g. like it is needed for a sensitivity analysis, see Section \ref{ssec:sa}). \\
 
-In order to set up a simulation by hand, we have to define all relevant model parameters. This is done by creating a RootRandomParameter, a StemRandomParameter, and a LeafRandomParameter object for each organ order or organ sub-type, and a single SeedRandomParameter for each plant type. In this section we will show how to create parameter sets, modify parameters and write XML plant parameter files. In Section \ref{sec:cplantobx} we present a detailed model description including all organ parameters. \\
+In order to set up a simulation by hand, we have to define all relevant model parameters. This is done by creating a $RootRandomParameter$, a $StemRandomParameter$, and a $LeafRandomParameter$ object for each organ order or organ sub-type, and a single $SeedRandomParameter$ for each plant type. In this section we will show how to create parameter sets, modify parameters and write XML plant parameter files. In Section \ref{sec:cplantobx} we present a detailed model description including all organ parameters. \\
 
-Note that during the simulation, the parameters for a specific organ (i.e. OrganSpecificParamter with the specialisations RootSpecificParameter, StemSpecificParameter, and LeafSpecificParameter) are generated from the OrganRandomParameter class (with the specialisations RootRandomParameter, StemRandomParameter, and LeafRandomParameter ) which represents the random distributions of certain parameters. First, we show how to construct instances of these classes, and show their parameters. \\
+Note that during the simulation, the parameters for a specific organ (i.e. OrganSpecificParamter with the specialisations RootSpecificParameter, StemSpecificParameter, and LeafSpecificParameter) are generated from the OrganRandomParameter class (with the specialisations RootRandomParameter, StemRandomParameter, and LeafRandomParameter) which represents the random distributions of certain parameters. First, we show how to construct instances of these classes, and show their parameters:
+\lstinputlisting[language=Python, caption= How to create random parameter sets (specialisations of OrganRandomParameter) (topics\_parameters.py)]{examples/topics_parameters.py}
+\begin{itemize}
+\item[8-12] ljlkjlkjlkjlkj
+\item[14-20]
+\item[22-25] 
+\end{itemize}
 
-
-\lstinputlisting[language=Python, caption= How to create random parameter sets (specialisations of OrganRandomParameter) (topics\_parameters2.py)]{examples/topics_parameters.py}
 
 
 \lstinputlisting[language=Python, caption= A root system from scratch (topics\_parameters2.py)]{examples/topics_parameters2.py}
