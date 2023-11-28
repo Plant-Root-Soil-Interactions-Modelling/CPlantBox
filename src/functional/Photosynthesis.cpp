@@ -136,8 +136,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	}
 
 
-	 
-																					 
+    loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs. when fw ~ 0, need to do it one last time to be sure that seg_flux_leaf = Ev 
 	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 	loop++ ;
 
@@ -249,6 +248,14 @@ size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii
  
 double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_) const
 {
+	std::ofstream myfile4;
+	if(doLog)
+	{
+		std::string name1 = "loopgetPsiOut";
+		std::string name2 = ".txt";
+		std::string namefile = name1+"_"+std::to_string(loop) + name2;// +"_"+std::to_string(currentSimTime)
+		myfile4.open (namefile);
+	}
 	int organType = plant->organTypes.at(si);
     double psi_s;
 	if (cells) { // soil matric potential given per cell
@@ -285,6 +292,10 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 					break;
 				case Organism::ot_leaf: 
 					psi_s = pg.at(plant->getSegment2leafId(si));
+            if(doLog)
+            {
+            	myfile4 << "photosynthesus::getPsiOut: getSegment2leafId "<<plant->getSegment2leafId(si)<< "\n";
+            }
 					break;
 				default:
 					throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
@@ -301,11 +312,21 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 				break;
 			case Organism::ot_leaf: 
 				psi_s = pg.at(plant->getSegment2leafId(si));//sx_.at(si) is used in loop function
+            if(doLog)
+            {
+            	myfile4 << "photosynthesus::getPsiOut: getSegment2leafId "<<plant->getSegment2leafId(si)<< "\n";
+            }
 				break;
 			default:
 				throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
 		}
 	}
+    if(doLog)
+            {
+            	myfile4 << "photosynthesus::getPsiOut: segIdx "<<si<<" organType "<<organType;
+				myfile4 << ", psi_s " << psi_s <<" "<<  "\n";//<<  std::setprecision (15) 
+            }
+	if(doLog){myfile4.close();}
 	return psi_s;
 }
 
@@ -380,11 +401,11 @@ void Photosynthesis::getError(double simTime)
 		}
 
 		if(doLog){
-			myfile1 <<i<<" "<<", maxErr[5] "<<plant->organTypes[std::max(i-1,0)]<<" "<<maxErr[0];
-			myfile1<<" "<<psiXyl[i]<<" "<<psiXyl_old[i]<<" "<<i<<" "<< (this->psiXyl.size() - 1) ;
+			myfile1 <<i<<", ot "<<plant->organTypes[std::max(i-1,0)]<<", errPsi(0) "<<maxErr[0];
+			myfile1<<", psiXyl "<<psiXyl[i]<<", psiXyl_old "<<psiXyl_old[i]<<" size "<< (this->psiXyl.size() - 1) ;
 			if( i < (this->psiXyl.size() - 1)){
-				myfile1<<" "<<std::abs((this->outputFlux[i]-outputFlux_old[i])/this->outputFlux[i]);
-				myfile1 <<" "<<outputFlux[i] <<" "<<outputFlux_old[i]<<" "<<maxErr[5]<<" "<<maxErr[7];
+				myfile1<<", errRatio flux "<<std::abs((this->outputFlux[i]-outputFlux_old[i])/this->outputFlux[i]);
+				myfile1 <<", outputFlux "<<outputFlux[i] <<", outputFlux_old "<<outputFlux_old[i]<<", errFlux(5) "<<maxErr[5]<<", sum(errFlux(7)) "<<maxErr[7];
 			}
 			myfile1 <<std::endl;
 		}
@@ -415,11 +436,11 @@ void Photosynthesis::getError(double simTime)
 
 		maxErr[6] =0.;
 		if(doLog){
-			myfile1 <<i<<" abs: "<<maxErrAbs[1] <<" "<<maxErrAbs[1] <<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4] <<" "<<maxErrAbs[5] <<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<" an: ";
+			myfile1 <<i<<" abs: "<<maxErrAbs[1] <<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4] <<" "<<maxErrAbs[5] <<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
 			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
             
-			myfile1 <<i<<" "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
+			myfile1 <<i<<" maxErr "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
 			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
 		}
