@@ -118,7 +118,7 @@ os.chdir("DUMUX")
 
 show_message("(2/3) Cloning repositories. This may take a while. Make sure to be connected to the internet...")
 
-dune_version=2.6
+dune_version=2.7
 dumux_version=3.0
 # the core modules
 for module in ['common', 'geometry', 'grid', 'localfunctions', 'istl' ]:
@@ -136,16 +136,13 @@ Deprecated header dune/common/parallel/mpicollectivecommunication.hh which will 
 Use dune/common/parallel/mpicommunication.hh instead!
 '''
 
-shutil.copyfile("dune-common/dune/common/parallel/collectivecommunication.hh", "dune-common/dune/common/parallel/communication.hh")
-shutil.copyfile("dune-common/dune/common/parallel/mpicollectivecommunication.hh", "dune-common/dune/common/parallel/mpicommunication.hh")
+#shutil.copyfile("dune-common/dune/common/parallel/collectivecommunication.hh", "dune-common/dune/common/parallel/communication.hh")
+#shutil.copyfile("dune-common/dune/common/parallel/mpicollectivecommunication.hh", "dune-common/dune/common/parallel/mpicommunication.hh")
 
 # the extensions
 for module in ['foamgrid','grid-glue', 'alugrid', 'spgrid' ]:
     if not os.path.exists("dune-{}".format(module)):
-        if module == 'grid-glue' :
-            git_clone('https://gitlab.dune-project.org/extensions/dune-{}.git'.format(module), "releases/{}".format(2.7)) #no 2.6 release
-        else:
-            git_clone('https://gitlab.dune-project.org/extensions/dune-{}.git'.format(module), "releases/{}".format(dune_version))
+        git_clone('https://gitlab.dune-project.org/extensions/dune-{}.git'.format(module), "releases/{}".format(dune_version))
     else:
         print("-- Skip cloning dune-{} because the folder already exists.".format(module))
     
@@ -177,13 +174,13 @@ else:
 
 # dumux-rosi
 if not os.path.exists("dumux-rosi"):
-    git_clone('https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git', branch = 'master')
+    git_clone('https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git', branch = 'exud_plant_fpit')
 else:
     print("-- Skip cloning dumux-rosi because the folder already exists.")
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '--depth','1', '-b', 'stable_v2.1', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    subprocess.run(['git', 'clone', '--depth','1', '-b', 'exudation_analysis_plant3', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 os.chdir("CPlantBox")
@@ -232,3 +229,4 @@ show_message("(3/3) Step completed. Succesfully configured and built CPlantBox, 
 
 show_message("to test installation, run n\ cd DUMUX/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
  
+
