@@ -5,28 +5,26 @@
 \usepackage{natbib} 
 \usepackage{amsmath}
 \usepackage{subcaption}
-
+\usepackage[hidelinks]{hyperref}
 \usepackage{listings}
 \usepackage{color}
 \usepackage{natbib}
 
-\usepackage[hidelinks]{hyperref}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
 \hypersetup{
     colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,      
-    urlcolor=magenta,
+    linkcolor=darkblue,
+    filecolor=darkblue,      
+    urlcolor=darkblue,
+    citecolor = darkblue,
     pdftitle={Overleaf Example},
     pdfpagemode=FullScreen,
     }
-
-\newcommand{\bm}[1]{\mbox{\boldmath{$#1$}}}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
-
 \lstdefinestyle{mystyle}{
     backgroundcolor=\color{backcolour},   
     commentstyle=\color{codegreen},
@@ -45,9 +43,10 @@
     showtabs=false, 
     tabsize=2
 } 
-  
 \lstset{style=mystyle}
- 
+
+\newcommand{\bm}[1]{\mbox{\boldmath{$#1$}}}
+
 
 
 \begin{document}
@@ -64,7 +63,7 @@ Daniel Leitner, Andrea Schnepf, et al. \\
 \vspace{0.5 cm}
 
 \noindent 
-The following tutorial offers scripts to outline the usage of CPlantBox \citep{zhou2020cplantbox} and its Python binding named \emph{plantbox}. CPlantBox was developed from CRootBox \citep{schnepf2018crootbox} and is largely backward compatible by having the same underlying rootsystem model. For further documentation please refer to the Doxygen class documentation of the CPlantBox code.
+The following tutorial offers scripts to outline the usage of CPlantBox \citep{giraud2023cplantbox, zhou2020cplantbox} and its Python binding named \emph{plantbox}. CPlantBox was developed from CRootBox \citep{schnepf2018crootbox}, which is based on RootBox \citep{leitner2010dynamic}. CPlantBox is largely backward compatible by having the same underlying rootsystem model. For further documentation please refer to the Doxygen class documentation of the CPlantBox code.
  
 
 \vspace{0.5 cm}
@@ -99,9 +98,9 @@ Progress compiling the tutorial
 
 
 \newpage
-\section{Topics / Applications} \label{sec:topcis}
+\section{Topics and Applications} \label{sec:topcis}
 
-This section describes the usage of CPlantBox by small examples wihtout going into details of the underlying model. A more precise description of the structural model is given in following Section \ref{sec:cplantobx}. 
+This section describes the usage of CPlantBox by small examples without going into details of the underlying model. A more precise description of the structural model is given in following Section \ref{sec:cplantobx}. 
 
 \subsection{Development over time} \label{ssec:development}
 \input{latex/topics_development.tex}
@@ -119,7 +118,7 @@ This section describes the usage of CPlantBox by small examples wihtout going in
 \input{latex/topics_parameters.tex}
 
 \subsection{Plant tropism} \label{ssec:tropism}
-%\input{latex/topics_tropism.tex}
+\input{latex/topics_tropism.tex}
 
 \subsection{Sensitivity analysis} \label{ssec:sa}
 %\input{latex/topics_sa.tex}

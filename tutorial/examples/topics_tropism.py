@@ -44,6 +44,5 @@ for i, n in enumerate(N_):
         a.set_ylim([-40., 0.])
 
 fig.tight_layout()
-fig.canvas.set_window_title("Gravitropism parameters")
 plt.savefig("../figures/topics_tropism.png")
 plt.show()

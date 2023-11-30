@@ -31,4 +31,4 @@ pb.SegmentAnalyser(plant).write("results/topics_virtual_seg.vtp")
 plant.write("results/topics_virtual.py")
 
 # Plot, using vtk
-vp.plot_plant(plant, "type")
+vp.plot_plant(plant, "subType")

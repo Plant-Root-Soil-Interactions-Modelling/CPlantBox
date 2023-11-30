@@ -35,6 +35,3 @@ for i, plant in enumerate(all):
 
 # Write all into single file (as segments)
 ana.write("results/topics_virtual4_all.vtp")
-
-# Plot, using vtk
-vp.plot_roots(ana, "radius")  # TODO plot_plants is not working for the SegmentAnalyser

@@ -22,11 +22,11 @@ which is passed to the root system by the method {plant.setGeometry()}:
 \begin{figure}
 \begin{subfigure}[c]{0.5\textwidth}
 \includegraphics[width=0.99\textwidth]{figures/topics_virtual_a.png}
-\subcaption{Confined by a cylinder (colour represent root age)} 
+\subcaption{Confined by a cylinder (colour represents root age)} 
 \end{subfigure}
 \begin{subfigure}[c]{0.5\textwidth}
 \includegraphics[width=0.99\textwidth]{figures/topics_virtual_b.png}
-\subcaption{Confined by a rhizotron (colour represent root type)} 
+\subcaption{Confined by a rhizotron (colour represents root type)} 
 \end{subfigure}
 \caption{ParaView visualizations of results.} \label{fig:topics_virtual}
 \end{figure}
@@ -36,7 +36,7 @@ Next, we show how to build more complex container geometries using SDF.
 
 \subsubsection*{Complex containers using SDF with set operations}
 
-In the following example we create some geometries that we might encounter in actual experiments. First, we show how to rotate a rhizotron (e.g. to see more roots at the wall due to gravitropism). Second, we create a split box experiment, and furthermore, an example where rhizotubes act as obstacles.The following examples demonstrates how to build a complex geometry using rotations, translations and set operations on the SDF.
+In the following example we create some geometries that we might encounter in actual experiments. First, we show how to rotate a rhizotron (e.g. to see more roots at the wall due to gravitropism). Second, we create a split box experiment, and furthermore, an example where rhizotubes act as obstacles. The following examples demonstrates how to build a complex geometry using rotations, translations and set operations on the SDF.
 
 \lstinputlisting[language=Python, caption=Root growth in more complex containers (topics\_virtual2.py)]{examples/topics_virtual2.py}
 
@@ -95,13 +95,13 @@ Its possible to simulate multiple root systems. In the following we show a small
 \item[15-24] Creates the root systems, and puts them into a list \texttt{all}. L20 retrieves the plant seed, and L21 sets a new seed position. 
 \item[26,27] Simulate all root systems.
 \item[30-37] Saves each individual root systems, and additionally, saves all root systems into a single file. 
-Therefore, we create an SegmentAnalyser object (see Section \ref{ssec:postprocessing}) in L30 and merge all organ segments into it (L34). Finally, we export a single VTP file (L37). The resulting geometry is shown in Figure \ref{fig:topics_virtual4}, where ParaView was used for visualisation (see Section \ref{ssec:visualisation}).
+Therefore, we create an SegmentAnalyser object (see Section \ref{ssec:postprocessing}) in L30 and merge all organ segments into it (L34). Finally, we export a single VTP file (L37). The resulting geometry is shown in Figure \ref{fig:topics_virtual4}, where ParaView was used for visualisation (see Section \ref{ssec:visualisation} - ParaView).
 \end{itemize}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.7\textwidth]{figures/topics_virtual4.png}
-\caption{ParaView visualization of multiple root systems} \label{fig:topics_virtual4}
+\caption{ParaView visualization of multiple root systems.} \label{fig:topics_virtual4}
 \end{figure}
 
 
