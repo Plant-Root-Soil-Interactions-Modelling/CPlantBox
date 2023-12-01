@@ -98,5 +98,7 @@ os.chdir("..")
 
 show_message("(3/3) Step completed. Succesfully configured and built CPlantBox.")
 
-
 show_message("to test installation, run n\ cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
+
+show_message("CPlantBox is currently at stable branch, use \n $git switch master \n to obtain the latest branch")
+
