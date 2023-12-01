@@ -38,7 +38,7 @@ plt.plot(rs_mean - rs_err, z_, "b:")
 plt.xlabel("root surface (cm^2 / cm^3)")
 plt.ylabel("z-coordinate (cm)")
 plt.legend(["mean value (" + str(runs) + " runs)", "std"])
-plt.savefig("../figures/topics_postprocessing.png")
+plt.savefig("results/topics_postprocessing.png")
 plt.show()
 
 print(ana.getMinBounds(), ana.getMaxBounds())

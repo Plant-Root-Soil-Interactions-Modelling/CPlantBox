@@ -44,5 +44,5 @@ for i, n in enumerate(N_):
         a.set_ylim([-40., 0.])
 
 fig.tight_layout()
-plt.savefig("../figures/topics_tropism.png")
+plt.savefig("results/topics_tropism.png")
 plt.show()

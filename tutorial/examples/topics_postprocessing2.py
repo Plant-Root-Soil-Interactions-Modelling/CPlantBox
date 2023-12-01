@@ -18,7 +18,6 @@ plant.write("results/topics_postprocessing2.vtp")
 
 ana = pb.SegmentAnalyser(plant)
 print(ana.getMinBounds(), ana.getMaxBounds())
-ss
 
 r, depth, layers = 5, 100., 100  # Soil core analysis
 soilcolumn = pb.SDF_PlantContainer(r, r, depth, False)  # in the center of the root
@@ -76,7 +75,7 @@ axes[2].plot(np.array(rl_[2]) / layerVolume, z_)
 axes[2].legend(["basal roots", "first order roots", "second order roots"])
 
 fig.subplots_adjust()
-plt.savefig("../figures/topics_postprocessing2.png")
+plt.savefig("results/topics_postprocessing2.png")
 plt.show()
 
 vp.plot_roots(ana_vis, "subType")
