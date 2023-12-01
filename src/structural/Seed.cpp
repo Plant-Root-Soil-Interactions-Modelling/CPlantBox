@@ -93,9 +93,7 @@ void Seed::initialize(bool verbose)
 			if (verbose) {
 				std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
 			}
-			auto brtp = p->getOrganRandomParameter(Organism::ot_root, tapType)->copy(plant.lock());
-			brtp->subType = basalType;
-			p->setOrganRandomParameter(brtp);
+			basalType = tapType;
 		}
 		int maxB = (sp->maxB);
 		if (sp->delayB > 0) { // limit if possible
@@ -123,9 +121,7 @@ void Seed::initialize(bool verbose)
 				if (verbose) {
 					std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
 				}
-				auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
-				srtp->subType = shootborneType;
-				p->setOrganRandomParameter(srtp);
+				shootborneType = tapType;
 			}
 			Vector3d sbpos = sp->seedPos;
 			sbpos.z=sbpos.z/2.; // half way up the mesocotyl

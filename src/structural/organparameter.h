@@ -71,8 +71,8 @@ public:
     void writeXML(std::string name) const; ///< writes a organ root parameter set
 
 	int getLateralType(const Vector3d& pos, int ruleId); ///< Choose (dice) lateral type based on stem parameter set
-    virtual void bindParameters(); ///<sets up class introspection
 
+	virtual void bindParameters(); ///<sets up class introspection
     void bindParameter(std::string name, int* i, std::string descr = "", double* dev = nullptr); ///< binds integer to parameter name
     void bindParameter(std::string name, double* d, std::string descr = "", double* dev = nullptr); ///< binds double to parameter name
 

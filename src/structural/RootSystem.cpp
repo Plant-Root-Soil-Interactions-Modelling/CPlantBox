@@ -184,8 +184,8 @@ void RootSystem::writeParameters(std::ostream& os) const
 void RootSystem::initializeLB(int basal, int shootborne, bool verbose)
 {
 	reset(); // just in case
-    getNodeIndex(); // introduce an extra node at nodes[0] 
-	seed = std::make_shared<Seed>(shared_from_this()); // introduce a 2nd node =>  2 nodes to make a seed segment
+    getNodeIndex(); // introduce an extra node at nodes[0]
+    seed = std::make_shared<Seed>(shared_from_this()); // introduce a 2nd node =>  2 nodes to make a seed segment
 	initialize_(basal, shootborne, verbose);
 }
 
@@ -499,132 +499,6 @@ std::string RootSystem::toString() const
                                 << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
     return str.str();
 }
-
-/**
- * Exports the simulation results with the type from the extension in name
- * (that must be lower case)
- *
- * todo move to Organism
- *
- * @param name      file name e.g. output.vtp
- */
-void RootSystem::write(std::string name) const
-{
-    std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
-    if (ext.compare("sml")==0) {
-        std::cout << "writing RSML... "<< name.c_str() <<"\n";
-        writeRSML(name); // use base class writer
-    } else if (ext.compare("vtp")==0) {
-        std::cout << "writing VTP... "<< name.c_str() <<"\n";
-        std::ofstream fos;
-        fos.open(name.c_str());
-        writeVTP(fos);
-        fos.close();
-    } else if (ext.compare(".py")==0)  {
-        std::cout << "writing Geometry ... "<< name.c_str() <<"\n";
-        std::ofstream fos;
-        fos.open(name.c_str());
-        writeGeometry(fos);
-        fos.close();
-    } else {
-        throw std::invalid_argument("RootSystem::write(): Unkwown file type");
-    }
-}
-
-/**
- * Writes current simulation results as VTP (VTK polydata file),
- * where each root is represented by a polyline.
- *
- * Use SegmentAnalyser::writeVTP() for a representation based on segments,
- * e.g. for creating a movie (and run the animate.py script), or mapping values to segments
- *
- * todo use tinyxml2, move to Organism
- *
- * @param os      typically a file out stream
- */
-void RootSystem::writeVTP(std::ostream & os) const
-{
-    this->getRoots(); // update roots (if necessary)
-    const auto& nodes = getPolylines();
-    const auto& times = getPolylineCTs();
-
-    os << "<?xml version=\"1.0\"?>";
-    os << "<VTKFile type=\"PolyData\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
-    os << "<PolyData>\n";
-    int non = 0; // number of nodes
-    for (const auto& r : roots) {
-        non += r->getNumberOfNodes();
-    }
-    int nol=roots.size(); // number of lines
-    os << "<Piece NumberOfLines=\""<< nol << "\" NumberOfPoints=\""<<non<<"\">\n";
-    // POINTDATA
-    os << "<PointData Scalars=\" PointData\">\n" << "<DataArray type=\"Float32\" Name=\"time\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-    for (const auto& r: times) {
-        for (const auto& t : r) {
-            os << t << " ";
-        }
-    }
-    os << "\n</DataArray>\n" << "\n</PointData>\n";
-    // CELLDATA (live on the polylines)
-    os << "<CellData Scalars=\"CellData\">\n";
-    const size_t N = 3; // SCALARS
-    std::string scalarTypeNames[N] = { "radius", "subType", "creationTime" };
-    for (size_t i=0; i<N; i++) {
-        os << "<DataArray type=\"Float32\" Name=\"" << scalarTypeNames[i] <<"\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-        auto scalars = getParameter(scalarTypeNames[i]);
-        for (auto s : scalars) {
-            os << s<< " ";
-        }
-        os << "\n</DataArray>\n";
-    }
-    os << "\n</CellData>\n";
-    // POINTS (=nodes)
-    os << "<Points>\n"<<"<DataArray type=\"Float32\" Name=\"Coordinates\" NumberOfComponents=\"3\" format=\"ascii\" >\n";
-    for (const auto& r : nodes) {
-        for (const auto& n : r) {
-            os << n.x << " "<< n.y <<" "<< n.z<< " ";
-        }
-    }
-    os << "\n</DataArray>\n"<< "</Points>\n";
-    // LINES (polylines)
-    os << "<Lines>\n"<<"<DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-    int c=0;
-    for (const auto& r : roots) {
-        for (size_t i=0; i<r->getNumberOfNodes(); i++) {
-            os << c << " ";
-            c++;
-        }
-    }
-    os << "\n</DataArray>\n"<<"<DataArray type=\"Int32\" Name=\"offsets\" NumberOfComponents=\"1\" format=\"ascii\" >\n";
-    c = 0;
-    for (const auto& r : roots) {
-        c += r->getNumberOfNodes();
-        os << c << " ";
-    }
-    os << "\n</DataArray>\n";
-    os << "\n</Lines>\n";
-
-    os << "</Piece>\n";
-    os << "</PolyData>\n" << "</VTKFile>\n";
-}
-
-/**
- * Writes the current confining geometry (e.g. a plant container) as paraview python script
- * Just adds the initial lines, before calling the method of the sdf.
- *
-  * todo move to Organism (including geometry)
- *
- * @param os      typically a file out stream
- */
-void RootSystem::writeGeometry(std::ostream & os) const
-{
-    os << "from paraview.simple import *\n";
-    os << "paraview.simple._DisableFirstRenderCameraReset()\n";
-    os << "renderView1 = GetActiveViewOrCreate('RenderView')\n\n";
-    geometry->writePVPScript(os);
-}
-
-
 
 /**
  * Create a root system state object from a rootsystem, use RootSystemState::restore to go back to that state.

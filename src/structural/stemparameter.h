@@ -27,11 +27,11 @@ public:
     StemSpecificParameter(): StemSpecificParameter(-1,0.,0.,std::vector<double>(0),0,0.,0.,0.,0.) { } ///< Default constructor
     StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt,
 	bool laterals= false, int nodalGrowth = 0, double delayNGStart = 0.,double delayNGEnd = 0., double delayLat = 0.):
-        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), 
+        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln),
 		laterals(laterals), nodalGrowth(nodalGrowth), delayNGStart(delayNGStart), delayNGEnd(delayNGEnd), delayLat(delayLat) { } ///< Constructor setting all parameters
 
     /*
-     * StemBox parameters per single stem
+     * Stem parameters per single stem
      */
     double lb;              ///< Basal zone [cm]
     double la;              ///< Apical zone [cm]
@@ -71,7 +71,7 @@ public:
     double nob() const { return std::max((lmax-la-lb)/ln +1, 1.); }  ///< returns the mean number of branches [1]
     double nobs() const; ///< returns the standard deviation of number of branches [1]
 
-    
+
     /*
      * Parameters per stem type
      */
@@ -108,7 +108,7 @@ public:
 	double delayNGStarts = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
 	double delayNGEnd = 0.;		///< delay between stem creation and start of nodal growth [day]
 	double delayNGEnds = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
-	
+
     /*
      * Callback functions for the Stem (set up by the class StemSystem)
      */

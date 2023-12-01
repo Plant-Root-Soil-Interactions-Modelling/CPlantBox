@@ -77,6 +77,7 @@ std::shared_ptr<Organism> Organism::copy()
  * Copies the organ random parameters of all sub types of one specific organ type into a vector
  *
  * @param ot    the organ type
+ * @return      all random parameters as a list (list index != subType)
  */
 std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParameter(int ot) const
 {
