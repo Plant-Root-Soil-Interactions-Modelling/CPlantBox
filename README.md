@@ -26,13 +26,13 @@ Some pointers to setup a linux environment on windows are given on the [wiki](ht
 
 If you have  and, you can set up CPlantBox (with or without the dumux-rosi extension) via an install script.\
 This installation method requires ubuntu >= 20.04 and python >= 3.7.\
-For CPlantBox __without__ the dumux-rosi extension, download the python file "installCPlantBox.py".\
+For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
 Run
 ```bash
 python3 installCPlantBox.py
 ```
 It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.\
-For CPlantBox __with__ the dumux-rosi extension, download the python file "installDumuxRosi_Ubuntu.py" (based on the dumux installation file).\
+For CPlantBox <ins>__with__</ins> the dumux-rosi extension, download the python file "installDumuxRosi_Ubuntu.py" (based on the dumux installation file).\
 run
 ```bash
 python3 installDumuxRosi_Ubuntu.py
