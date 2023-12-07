@@ -22,7 +22,7 @@ You can click the link to follow the guide there, just to click some buttons and
 CPlantBox is currently not available on windows. 
 Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 
-### semi-automated CPlantBox (and/or dumux-rosi) installation via python script 
+### semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
 
 If you have  and, you can set up CPlantBox (with or without the dumux-rosi extension) via an install script.\
 This installation method requires ubuntu >= 20.04 and python >= 3.7.\
