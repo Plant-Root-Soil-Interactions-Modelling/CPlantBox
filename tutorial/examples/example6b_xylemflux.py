@@ -8,24 +8,12 @@ from functional.xylem_flux import XylemFluxPython
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-# sets all standard deviation to a percantage, i.e. value*s
-def set_all_sd(rs, s):
-    for p in rs.getRootRandomParameter():
-        p.lmaxs = p.lmaxs * s
-        p.lbs = p.lb * s
-        p.las = p.la * s
-        p.lns = p.ln * s
-        p.rs = p.r * s
-        p.a_s = p.a * s
-
-
 """ Parameters """
 kz = 4.32e-2  # axial conductivity [cm3/day]
 kr = 1.728e-4  # radial conductivity [1/day]
 p_s = -200  # constant soil potential [cm]
 p0 = -500  # dirichlet bc at top [cm]
-simtime = 14  # [day] for task b
+simtime = 14  # [day]
 
 """ root system """
 rs = pb.MappedRootSystem()
@@ -34,7 +22,6 @@ name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")
 rs.initialize()
 rs.simulate(simtime, False)
-set_all_sd(rs, 0)
 
 """ root problem """
 r = XylemFluxPython(rs)  # hydraulic model
