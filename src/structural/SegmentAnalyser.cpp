@@ -221,7 +221,7 @@ void SegmentAnalyser::addFluxes(const XylemFlux& rs, const std::vector<double>& 
         radial_flux[i] /= (2.*M_PI*a.at(i));
     }
     this->addData("radial_flux",radial_flux);
-    std::cout << "added radial flux"<< "\n" << std::flush;
+    // std::cout << "added radial flux"<< "\n" << std::flush;
 
     //    auto& kr = data["kr"]; // use addConductivities before!
     auto& kx = data["kx"]; // use addConductivities before!
