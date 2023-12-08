@@ -21,7 +21,26 @@ You can click the link to follow the guide there, just to click some buttons and
 ### windows
 CPlantBox is currently not available on windows. 
 Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
-### linux
+
+### semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
+
+If you have  and, you can set up CPlantBox (with or without the dumux-rosi extension) via an install script.\
+This installation method requires ubuntu >= 20.04 and python >= 3.7.\
+For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
+Run
+```bash
+python3 installCPlantBox.py
+```
+It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.\
+For CPlantBox <ins>__with__</ins> the dumux-rosi extension, download the python file "installDumuxRosi_Ubuntu.py" (based on the dumux installation file).\
+run
+```bash
+python3 installDumuxRosi_Ubuntu.py
+```
+This will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
+This script might work on other linux OS but has not been tested.
+
+### manual linux installation 
 Clone the repository by running:
 ```bash
 git clone --depth 1 -b stable_v2.1 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
@@ -37,33 +56,13 @@ cd tutorial/examples/python
 python3 example1a.py
 ```
 
-### Ubuntu >= 20.04
-If you have ubuntu >= 20.04, you can download the python file "installDumuxRosi_Ubuntu.py".
-This file is based on the dumux installation file. 
-run
-```bash
-python3 installDumuxRosi_Ubuntu.py
-```
-It will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
-This script might work on other linux OS but has not been tested.
-
-If you want to install CPlantBox without Dumux, download the python file "installCPlantBox.py".
-This installaiton files requires a conda environment with python >= 3.7
-
-run
-```bash
-conda create -n cpb_py39 python=3.9
-conda activate cpb_py39 
-python3 installCPlantBox.py
-```
-It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.
 # Folder sructure
 
 `/modelparameter`		Plant parameter files\
 `/src`			CPlantBox C++ codes\
 `/test`   Python tests for all CPlantBox classes\
-`/tutorial` 		learn to use CPlantBox
-`/experimental`		Specific applications (in sub-folders). contrary to scripts in `/tutorial`, might not be kept up to date\
+`/tutorial` 		learn to use CPlantBox\
+`/experimental`		Specific applications (in sub-folders). contrary to scripts in `/tutorial`, might not be kept up to date
 
 # Code documentation
 
