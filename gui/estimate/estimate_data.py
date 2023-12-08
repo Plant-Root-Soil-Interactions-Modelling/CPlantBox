@@ -277,27 +277,27 @@ class EstimateDataModel:
                 # set branching angle 'theta'
                 ii = [self.rsmls[i].properties["parent-node"]][0]
                 if (int(ii[j]) == -1) or (int(ii[j]) == 1):  # basal root angle
-                    if len(self.rsmls[i].polylines[j])>1: 
+                    if len(self.rsmls[i].polylines[j]) > 1:
                         p = np.asarray(self.rsmls[i].polylines[j][0])
-                        p2 = np.asarray(self.rsmls[i].polylines[j][1]) #take the node after since there is no previous node
+                        p2 = np.asarray(self.rsmls[i].polylines[j][1])  # take the node after since there is no previous node
                         v1 = [0, 0, -1]
                         v2 = p2 - p
-                        if np.linalg.norm(v2)<1:
+                        if np.linalg.norm(v2) < 1:
                             dummy = 2
-                            while np.linalg.norm(v2)<1:
-                                if len(self.rsmls[i].polylines[j])<=dummy:
+                            while np.linalg.norm(v2) < 1:
+                                if len(self.rsmls[i].polylines[j]) <= dummy:
                                     break
                                 p2 = np.asarray(self.rsmls[i].polylines[j][dummy])
                                 v2 = p2 - p
-                                dummy = dummy+1
-                    
+                                dummy = dummy + 1
+
                         v1 = v1 / np.linalg.norm(v1)
                         v2 = v2 / np.linalg.norm(v2)
-                        #theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
-                        angle = np.arccos(np.dot(v1, v2))/math.pi*180
-                        #print('basal vectors', p, p2, angle)
+                        # theta_ = np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0))
+                        angle = np.arccos(np.dot(v1, v2)) / np.pi * 180
+                        # print('basal vectors', p, p2, angle)
                     else:
-                        angle = 0   
+                        angle = 0
                 else:
                     p = coordina[(int(ii[j]))]
                     p0 = coordina[(int(ii[j] - 1))]

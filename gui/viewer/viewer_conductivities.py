@@ -103,6 +103,9 @@ def init_dynamic_scenario1(r):
     r.setKrTables(kr_values, kr_times)  # [cm3/day]
     r.setKxTables(kx_values, kx_times)  # [1/day]
 
+    # r.plot_conductivities()
+    # dd
+
 
 def init_dynamic_scenario2(r):
     """ call to initialize age dependent or independent conductivities, 

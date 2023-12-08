@@ -26,6 +26,16 @@ python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 
 python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/monocot/ 1 --shoot --z_shift
 python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/dicot/ 1 --split --z_shift
+
+python3 label_rsml.py Files_for_Daniel/lupin/ 3 --z_shift
+python3 label_rsml.py Files_for_Daniel/maize/archisimple/ 3 --shoot --z_shift
+python3 label_rsml.py Files_for_Daniel/maize/roottyp/ 3 --z_shift
+
+results for Benjamin Delory from 6.12.2023:
+python3 label_rsml.py Archive-2023-11-30/maize/ 3 --shoot --z_shift
+python3 label_rsml.py Archive-2023-11-30/lupin/ 3 --z_shift
+python3 label_rsml.py Archive-2023-11-30/reference/dicot/lupin 3 --split --z_shift
+python3 label_rsml.py Archive-2023-11-30/reference/monocot/maize 3 --shoot --z_shift
 """
 
 
