@@ -45,8 +45,7 @@ Clone the repository by running:
 ```bash
 git clone --depth 1 -b stable_v2.1 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
 ```
-
- Run CMake which configures the CPlantBox libraries by 
+Run CMake which configures the CPlantBox libraries by 
 ```bash
 cmake . && make
 ```
@@ -56,6 +55,7 @@ cd tutorial/examples/python
 python3 example1a.py
 ```
 
+The dependecies are listed in the requirements.txt file.
 # Folder sructure
 
 `/modelparameter`		Plant parameter files\
