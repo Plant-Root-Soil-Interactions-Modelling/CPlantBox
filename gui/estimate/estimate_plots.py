@@ -55,6 +55,7 @@ def plot_laterals(data, base_method, calibration_method, ax):
     order = 1
     indices = data.pick_order(order)
     c = np.array([len(x) for x in indices])
+    print("plot_laterals(): number of order", order, "roots", c)
 
     while np.sum(c) > 0:
         age_ = []
@@ -62,18 +63,21 @@ def plot_laterals(data, base_method, calibration_method, ax):
         for i, j_ in enumerate(indices):
             for j in j_:
                 age_.append(data.estimates[i][(j, "age")])
-                l_.append(data.rsmls[i].properties["length"][j])  # / float(data.rsmls[i].metadata.resolution)
-        ax.plot(age_, l_, col_[order], label = "{:g} order lateras".format(order))
+                l_.append(data.rsmls[i].properties["length"][j])
+        ax.plot(age_, l_, col_[order], label = "{:g} order lateras".format(order))  # , alpha = i / len(data.times) * 0.8 + 0.2
         order += 1
         indices = data.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
         c = np.array([len(x) for x in indices])
+        print("plot_laterals(): number of order", order, "roots", c)
+
     # plotting fit
-    names_ = ["", "1st order", "2nd order"]  # TODO clustering
-    col_ = ["y", "r", "b"]
-    for i in range(1, 3):
+    names_ = ["", "1st order", "2nd order", "3nd order", "higher order",
+              "higher order", "higher order", "higher order", "higher order", "higher order", "higher order"]
+    col_ = ["y", "r", "b", "g", "c", "m"] * 2
+    for i in range(1, order):
         k = data.parameters[i].lmax
         r = data.parameters[i].r
-        max_time = np.max(data.times)
+        max_time = np.max(age_)
         t_ = np.linspace(0, max_time, 200)
         l_ = negexp_length(t_, r, k)
         ax.plot(t_, l_, col_[i], label = names_[i])
