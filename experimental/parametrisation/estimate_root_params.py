@@ -1,8 +1,9 @@
-import sys;  sys.path.append("../..")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
+import rsml.rsml_reader as rsml
+
 import numpy as np
 from scipy.optimize import minimize
-
-import rsml_reader as rsml
 
 
 class Root:
@@ -38,7 +39,7 @@ class Root:
         self.k = -1.  # maximal root length (of root type)
         self.ldelay = -1.  # in case of delay based growth (use RootSystem::intitializeDB())
 
-    def add_measurement(self, time :float, i :int, poly :np.array, prop :dict, fun :dict, roots :dict):
+    def add_measurement(self, time:float, i:int, poly:np.array, prop:dict, fun:dict, roots:dict):
         """ creates the i-th root from the polylines and adds it to the roots dictionary """
         if self.measurements == 0:
             self.id = i
@@ -51,7 +52,7 @@ class Root:
         assert self.id > -1, "Root.add_measurement: self.id has negative index"
         roots[self.id] = self
 
-    def initialize(self, roots :dict):
+    def initialize(self, roots:dict):
         """ connects the roots creating parent and laterals expects prop['parent-poly'], prop['parent-node'] """
         t0 = self.measurement_times[0]
         parent_id = self.props[t0]('parent-poly')
@@ -81,7 +82,7 @@ class Root:
                  l_.append(self.laterals[t][i])
             self.laterals[t] = l_
 
-    def length(self, i0 :int = 0, iend :int = -1, t :float = -1.):
+    def length(self, i0:int = 0, iend:int = -1, t:float = -1.):
         """ length between two indices @param i0 and @param iend at measurement @param m """
         if t < 0:
             t = self.measurement_times[-1]
@@ -93,7 +94,7 @@ class Root:
                 l += np.linalg.norm(self.nodes[t][i] - self.nodes[t][i + 1])
         return l
 
-    def order(self, i :int = 0):
+    def order(self, i:int = 0):
         """ recursively determines root order """
         assert self.id > -1, "Root.order: uninitialized root"
         if self.parent:
@@ -101,13 +102,13 @@ class Root:
         else:
             return i
 
-    def set_emergence_time(self, et :float):
+    def set_emergence_time(self, et:float):
         """ sets the emergance times, calculates the root ages """
         self.emergence_time = et
         for t in self.measurement_times:
             self.ages[t] = max(t - et, 0.)
 
-    def calc_growth_rate(self, r :float, k :float):
+    def calc_growth_rate(self, r:float, k:float):
         """ sets the maximal root length [cm] and computes the individual root initial growth rate self.r [cm/day], 
         and lateral delay time (based on the apical length).  The caluclation is based on self.emergence_time, i.e. call set_emergence_time first
         Furthermore sets the emergence times of its laterals. """
@@ -163,7 +164,7 @@ class Root:
                 ln_.append(ln)
             if len(l) - 1 == 0:
                 ln_.append(np.nan)
-        else :
+        else:
             ln_.append(np.nan)
         self.ln = np.nanmean(np.array(ln_))
         if np.isnan(self.ln):
@@ -217,12 +218,12 @@ def connect(node, base_polyline):
     return min_i
 
 
-def parse_rsml(rsml_name :list, time :list):
+def parse_rsml(rsml_name:list, time:list):
     """ creates a root dictionary from a rsml file
     @param rsml_name     file name 
     @param time          measurement time  """
     roots = {}
-    poly, prop, fun = rsml.read_rsml(rsml_name)
+    poly, prop, fun, _ = rsml.read_rsml(rsml_name)
     assert len(poly) == len(prop['parent-poly']), "parse_rsml: wrong number of parent-poly tags"
     if not 'parent-node' in prop:  # reconstruct...
         print("parse_rsml: no parent-node tag found, reconstructing...")
@@ -243,7 +244,7 @@ def parse_rsml(rsml_name :list, time :list):
     return roots
 
 
-def parse_rsmls(rsml_names :list, times :list):
+def parse_rsmls(rsml_names:list, times:list):
     """ creates a root dictionary from a rsml file
     @param rsml_names    file names 
     @param times         measurement times  """
@@ -254,7 +255,7 @@ def parse_rsmls(rsml_names :list, times :list):
     return merge_measurements(root_list)
 
 
-def initialize_roots(roots :dict):
+def initialize_roots(roots:dict):
     """ calls initialize for each root, and sorts the laterals by their parent node index, 
     @param roots: root dicitionaray """
     for r in roots.values():
@@ -263,7 +264,7 @@ def initialize_roots(roots :dict):
         r.sort_laterals()
 
 
-def get_order(i :int, roots :dict):
+def get_order(i:int, roots:dict):
     """ obtain a list of order @param i roots from the root dicitionaray @param roots """
     r_ = []
     for r in roots.items():
@@ -273,7 +274,7 @@ def get_order(i :int, roots :dict):
     return r_
 
 
-def get_params(roots :list, time :float):
+def get_params(roots:list, time:float):
     """ takes mean and std of la, lb, ln, a, theta of measurement tiem @param time """
     # calculate la, lb, ln, a, theta
     for r in roots:
@@ -287,7 +288,7 @@ def get_params(roots :list, time :float):
     return np.array([[np.nanmean(p), np.nanstd(p)] for p in params])
 
 
-def merge_measurements(root_list :list):
+def merge_measurements(root_list:list):
     """ merges multiplie measurements of the same plant type, the roots must be initialized """
     roots = {}
     for i, r in enumerate(root_list):
@@ -300,11 +301,11 @@ def merge_measurements(root_list :list):
 #
 # Estimation of parameters
 #
-def get_see_rk(lengths :np.array, ages :np.array, r :float, k :float):
+def get_see_rk(lengths:np.array, ages:np.array, r:float, k:float):
     """ returns the strandard error of the estimate for r and k (under questionable conditions) """
     assert lengths.shape == ages.shape, "the number of measured lengths must equal measured ages"
-    r_ = lambda l, age :-k / age * np.log(1 - l / k)
-    k_ = lambda l, age : l / (1 - np.exp(-r / k * age))  # still dependent on k, but use as approximation for now
+    r_ = lambda l, age:-k / age * np.log(1 - l / k)
+    k_ = lambda l, age: l / (1 - np.exp(-r / k * age))  # still dependent on k, but use as approximation for now
     mr_ = []  # r by measured values l and age for a fixed k
     mk_ = []  # k by measured values l and age for a fixed r
     for i, l in enumerate(lengths):
@@ -320,7 +321,7 @@ def get_see_rk(lengths :np.array, ages :np.array, r :float, k :float):
     return see_r, see_k
 
 
-def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
+def estimate_set_order0_rate(roots:dict, lmax:float, time:float):
     """ estimates """
     basals = get_order(0, roots)
     basal_ids = np.array([r.id for r in basals], dtype = np.int64)
@@ -344,7 +345,7 @@ def estimate_set_order0_rate(roots :dict, lmax :float, time :float):
     return rate, r, rs
 
 
-def estiamte_emergance_order0(lengths :np.array, ages :np.array, r :float, k :float):
+def estiamte_emergance_order0(lengths:np.array, ages:np.array, r:float, k:float):
     """ fits the emergance time of 2nd basal roots """
     f = lambda x: target_length(r, k, lengths, ages - np.ones(ages.shape) * x[0])
     x0 = [np.max(ages)]
@@ -352,7 +353,7 @@ def estiamte_emergance_order0(lengths :np.array, ages :np.array, r :float, k :fl
     return res, f
 
 
-def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
+def estimate_order0_rate(lengths:np.array, r:float, k:float, time:float):
     """ fits basal prodcution rate [day-1] for given initial growth rate and maximal root length
     @param lengths list of root lengths [cm] 
     @param r initial root length [cm] 
@@ -368,7 +369,7 @@ def estimate_order0_rate(lengths :np.array, r :float, k :float, time :float):
     return res, f, ages  # e.g. res.x[0], f(res.x[0])
 
 
-def estimate_order0_rrate(lengths:np.array, k :float, time :float, r0 :float = 1.):
+def estimate_order0_rrate(lengths:np.array, k:float, time:float, r0:float = 1.):
     """ fits basal prodcution rate [day-1] anjnd initial growth rate and maximal root length, 
     @param lengths list of root lengths [cm], 
     @param r initial root length [cm], @param k maximal root length [cm], @param time maximal measurement time"""
@@ -382,7 +383,7 @@ def estimate_order0_rrate(lengths:np.array, k :float, time :float, r0 :float = 1
     return res, f, ages  # e.g. res.x[0], res.x[1], f(res.x)
 
 
-def estimate_r(lengths :np.array, ages :np.array, k :float):
+def estimate_r(lengths:np.array, ages:np.array, k:float):
     """ fits initial growth rate r [cm/day], assumes maximal root lenght k as fixed (e.g. by literature value) """
     assert len(lengths) == len(ages), "estimate_r: number of root lengths must equal number of root ages"
     f = lambda x0: target_length(x0, k, lengths, ages)
@@ -391,7 +392,7 @@ def estimate_r(lengths :np.array, ages :np.array, k :float):
     return res, f  # e.g. res.x[0], f(res.x[0])
 
 
-def estimate_rk(lengths :np.array, ages :np.array):
+def estimate_rk(lengths:np.array, ages:np.array):
     """ fits initial growth rate r, and maximal root lenght k """
     assert lengths.shape == ages.shape, "estimate_rk: number of root lengths must equal number of root ages"
     f = lambda x0: target_length(x0[0], x0[1], lengths, ages)
@@ -400,7 +401,7 @@ def estimate_rk(lengths :np.array, ages :np.array):
     return res, f  # e.g. res.x[0], res.x[1], f(res.x)
 
 
-def target_length(r :float, k :float, lengths :np.array, ages :np.array):
+def target_length(r:float, k:float, lengths:np.array, ages:np.array):
     """ target function for optimization root target length [cm],
     @param r initial root length [cm], @param k maximal root length [cm]
     @param lengths root lengths [cm], @param ages root ages [day] corresponding to root lengths"""
@@ -412,7 +413,7 @@ def target_length(r :float, k :float, lengths :np.array, ages :np.array):
     return np.sqrt(sum / (lengths.shape[0] - 2))  # -(k+1)
 
 
-def target_length2(r :float, lmax :float, lengths :np.array, ages :np.array, time :float):
+def target_length2(r:float, lmax:float, lengths:np.array, ages:np.array, time:float):
     """ target function for optimization root target length [cm] minimizing the distance between curve and point. 
     @param r initial root length [cm], @param k maximal root length [cm]
     @param lengths root lengths [cm], @param ages root ages [day] corresponding to root lengths"""
@@ -426,7 +427,7 @@ def target_length2(r :float, lmax :float, lengths :np.array, ages :np.array, tim
     return  np.sqrt(sum / (lengths.shape[0] - 2))
 
 
-def target_rate(rate :float, lengths :np.array, r :float, lmax :float, time :float):
+def target_rate(rate:float, lengths:np.array, r:float, lmax:float, time:float):
     """ target function for estimating the linear base root production rate [day-1],
     @param rate: linear base root production rate (delay between basal root emergence) [day-1] 
     @param lengths: basal root lengths as numpy array sorted ascending [cm]

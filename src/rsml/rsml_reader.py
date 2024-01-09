@@ -143,6 +143,7 @@ def add_parent_nodes(polylines, props):
         x = np.array([p[0]])
         pi = props["parent-poly"][i]
         if (pi >= 0):
+            # print(pi, len(polylines))
             y = np.array(polylines[pi])
             props["parent-node"][i] = np.argmin(distance.cdist(x, y))
         else:
@@ -328,6 +329,29 @@ def plot_rsml(polylines:list, prop:list):
         plt.plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[i])))
     plt.axis('equal')
     plt.show()
+
+
+def plot_multiple_rsml(polylines:list, prop:list, times):
+    """Plots the polylines in y-z axis with colors given by a root property
+    Args:
+    polylines(list): flat list of polylines, one polyline per root 
+    prop(list): a single property, list of scalar value, on per root 
+    """
+    n = len(polylines)
+    fig, axes = plt.subplots(1, n, figsize = (15, 7))
+    f = matplotlib.colors.Normalize(vmin = min(prop[-1]), vmax = max(prop[-1]))
+    cmap = plt.get_cmap("jet", 256)
+    for j in range(0, n):
+        for i, pl in enumerate(polylines[j]):
+            nodes = np.array(pl)
+            if i == 0:
+                axes[j].plot(nodes[:, 1], nodes[:, 2], "r")  # y,z plot
+            else:
+                axes[j].plot(nodes[:, 1], nodes[:, 2], color = cmap(f(prop[j][i])))  # y,z plot
+        axes[j].set_xlim([-5, 5.])
+        axes[j].set_ylim([-15., 0.])
+        axes[j].set_title("{} days".format(times[j]))
+    fig.tight_layout()
 
 
 def plot_segs(nodes:list, segs:list, fun:list):

@@ -1,17 +1,16 @@
-import sys;  sys.path.append("../..")
 """ determines the (more easy) parameters la, lb, ln, a, theta by order and prints mean and std"""
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
+import rsml.rsml_reader as rsml
+import visualisation.vtk_plot as vp
+import estimate_root_params as es
+import plantbox as pb
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import rsml_reader as rsml
-import estimate_root_params as es
-from xylem_flux import XylemFluxPython
-import vtk_plot as vp
-import plantbox as pb
 
-
-def insert_params(p0, p :np.array, order : int, successors :bool = True):
+def insert_params(p0, p:np.array, order: int, successors:bool = True):
     """ inserts la, lb, ln, a, theta obtained by estimate_root_params into the RootRandomParameter object """
     p0.la, p0.las = p[0, 0], p[0, 1]  # [cm] apical zone
     p0.lb, p0.lbs = p[1, 0], p[1, 1]  # [cm] basal zone

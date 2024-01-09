@@ -8,7 +8,7 @@ RSML Reader, by Daniel Leitner (2019)
 """
 
 
-def parse_rsml_(organ :ET, polylines :list, properties :dict, functions :dict, parent :int) -> (list, dict, dict):
+def parse_rsml_(organ:ET, polylines:list, properties:dict, functions:dict, parent:int) -> (list, dict, dict):
     """ Recursivly parses the rsml file, used by read_rsml """
     for poly in organ.iterfind('geometry'):  # only one
         polyline = []
@@ -59,7 +59,7 @@ def parse_rsml_(organ :ET, polylines :list, properties :dict, functions :dict, p
     return polylines, properties, functions
 
 
-def read_rsml(name :str) -> (list, dict, dict):
+def read_rsml(name:str) -> (list, dict, dict):
     """Parses the RSML file into:
 
     Args:
@@ -82,7 +82,7 @@ def read_rsml(name :str) -> (list, dict, dict):
     return polylines, properties, functions
 
 
-def get_segments(polylines :list, props :dict) -> (list, list):
+def get_segments(polylines:list, props:dict) -> (list, list):
     """ Converts the polylines to a list of nodes and an index list of line segments
         
     Args:
@@ -130,7 +130,7 @@ def get_segments(polylines :list, props :dict) -> (list, list):
 #     return radii[1:], cts[1:], types[1:]
 
 
-def plot_rsml(polylines :list, prop :list):
+def plot_rsml(polylines:list, prop:list):
     """Plots the polylines in y-z axis with colors given by a root property
 
     Args:
@@ -146,7 +146,7 @@ def plot_rsml(polylines :list, prop :list):
     plt.show()
 
 
-def plot_multiple_rsml(polylines :list, prop :list, times):
+def plot_multiple_rsml(polylines:list, prop:list, times):
     """Plots the polylines in y-z axis with colors given by a root property
     TODO
     Args:
@@ -168,10 +168,9 @@ def plot_multiple_rsml(polylines :list, prop :list, times):
         axes[j].set_ylim([-15., 0.])
         axes[j].set_title("{} days".format(times[j]))
     fig.tight_layout()
-    plt.show()
 
 
-def plot_segs(nodes :list, segs :list, fun :list):
+def plot_segs(nodes:list, segs:list, fun:list):
     """Plots the segments in y-z axis (rather slow)
     
     Args:
@@ -191,10 +190,10 @@ if __name__ == '__main__':
 
     polylines, properties, functions = read_rsml("../../grids/RootSystem.rsml")
     print("Properties:")
-    for key, v in properties.items() :
+    for key, v in properties.items():
         print("\t", key, len(properties[key]))
     print("Functions:")
-    for key, v in functions.items() :
+    for key, v in functions.items():
         print("\t", key, len(functions[key]))
     plot_rsml(polylines, properties["type"])
 

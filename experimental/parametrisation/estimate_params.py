@@ -1,5 +1,5 @@
-import sys
-sys.path.append("../..")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
 
 import math
@@ -177,7 +177,7 @@ def fit_number_of_roots(times, numbers, initial_number):
         number_of_roots = inital_number + round(t/delay)
     """
     assert(len(numbers) == len(times))
-    f = lambda x0 : target2(x0, times, numbers, initial_number)
+    f = lambda x0: target2(x0, times, numbers, initial_number)
     x0 = [1.]  # days
     res = minimize(f, x0, method = 'Nelder-Mead', tol = 1e-6)  # linear regression would be enough in this case
     return res.x[0]

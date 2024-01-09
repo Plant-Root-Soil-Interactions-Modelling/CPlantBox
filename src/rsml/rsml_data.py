@@ -60,16 +60,16 @@ class RsmlData:
         if necessary converts 2d -> 3d, 
         """
         polylines, properties, functions, metadata = rsml_reader.read_rsml(fname)
-        if metadata.software == "archisimple":
-            print("DataModel.open_rsml(): special rules for archisimple: switch -y and z")
-            new_polylines = []
-            for pl in polylines:
-                pl_ = []
-                for p in pl:
-                    p_ = [p[0], p[2], -p[1]]
-                    pl_.append(p_)
-                new_polylines.append(pl_)
-            polylines = new_polylines
+        # if metadata.software == "archisimple":
+        #     print("DataModel.open_rsml(): special rules for archisimple: switch -y and z")
+        #     new_polylines = []
+        #     for pl in polylines:
+        #         pl_ = []
+        #         for p in pl:
+        #             p_ = [p[0], p[2], -p[1]]
+        #             pl_.append(p_)
+        #         new_polylines.append(pl_)
+        #     polylines = new_polylines
 
         print("DataModel.open_rsml(): scale to cm", metadata.scale_to_cm)
         self.set_rsml(polylines, properties, functions, metadata)

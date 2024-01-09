@@ -81,6 +81,9 @@ class EstimateDataModel:
                     self.rsmls[k].properties["length"].append(l)
             else:
                 print("EstimateDataModel.create_length: 'length' tag is already available")
+                lengths = self.rsmls[k].properties["length"]  # TODO this is a hack for the RSWMS files
+                for i in range(0, len(lengths)):
+                    lengths[i] = lengths[i] / 10
 
     def initialize_roots_(self):
         """ sets base root indices, tap root indices, and basal root indices.
@@ -569,8 +572,13 @@ class EstimateDataModel:
         for i in range(0, np.max(self.orders) + 1):  # only writes the existing number of root orders
             p = self.parameters[i]
             p.name = "root order {:g}".format(i)
-            p.subType = i
+            p.subType = i + 1
             p.organType = 2
+            p.a, p.a_s = p.a / 10, p.a_s / 10  # RSWMS hack TODO
+            p.theta, p.thetas = p.theta / 180. * np.pi, p.thetas / 180. * np.pi  # from grad to rad
+            if i < 3:
+                p.successor = [[p.subType + 1]]
+                p.successorP = [[1]]
             self.plant.setOrganRandomParameter(p)
         # check if fibrous rootsystem (TODO: should be done with base_method maybe...)
         brc = []
