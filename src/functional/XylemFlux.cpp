@@ -343,7 +343,7 @@ void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
             std::cout << "Kr is constant " << values[0] << " 1 day-1 \n";
         } else {
             kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-            std::cout << "Kr is constant per type, type 0 = " << values[0] << " 1 day-1 \n";
+            std::cout << "Kr is constant per subType, type 0 = " << values[0] << " 1 day-1 \n";
         }
     } else {
         kr_f  = std::bind(&XylemFlux::kr_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
@@ -369,7 +369,7 @@ void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::
                 std::cout << "Kr is constant " << values[0][0] << " 1 day-1 \n";
             } else {
                 kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kr is constant per subtype, subtype 0 = " << values[0][0] << " 1 day-1 \n";
+                std::cout << "Kr is constant per subType, subtype 0 = " << values[0][0] << " 1 day-1 \n";
             }
         } else {
             if (values[0].size()==1) {
