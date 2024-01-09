@@ -73,6 +73,8 @@ In the following paragraph we shortly present how to visualise VTP files using \
 
 After installing and running \href{https://www.paraview.org/}{ParaView}, open a VTP file. The structure is represented by lines. To get a better visualisation it is necessary to create a tube plot around these lines. This can be done by running the ParaView macro rsTubePlot, which is located in CPlantBox/src/visualisation/paraview\_macros/. Start the macro by first adding the macro: Macros$\rightarrow$Add new macro..., and then starting the macro by clicking the rsTubePlot button. In the properties menu, choose the parameter for viusalisation in the Coloring menu.\\
 
+In CPlantBox soil container geometry is given in an implicit way
+
 Additionally, if vp.write\_plant() was used, a VTP for leafs can be openend, where a solid colour can be chosen from the menu. Multiple root systems as in Figure \ref{fig:topics_virtual4} can be visualized by using the SegmentAnalyser class to merge the root system (as in the example) and to visualze the 
 VTP using rsTubePlot. Leafs can be added in a second step by opening the single leaf files (not as a group, but by opening the single files). The leaf polygons can be joined together using the Append Geometry filter.
 
