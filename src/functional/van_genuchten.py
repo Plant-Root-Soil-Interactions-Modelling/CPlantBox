@@ -42,8 +42,12 @@ class Parameters:
 def pressure_head(theta, sp):
     """ returns pressure head at a given volumetric water content according to the van genuchten model """
     try:
-        assert theta > sp.theta_R
-        assert theta <= sp.theta_S
+        if isinstance(theta, (type(list()), type(np.array([])))):
+            assert ( theta > sp.theta_R).all()
+            assert (theta <= sp.theta_S).all()
+        else:
+            assert theta > sp.theta_R
+            assert theta <= sp.theta_S
     except:
         print('theta <= sp.theta_R or theta > sp.theta_S',theta, sp.theta_R, sp.theta_S)
         raise Exception
@@ -71,8 +75,13 @@ def water_diffusivity(TH, theta_i, theta_sur, sp):
 def water_content(h, sp):
     """ returns the volumetric water content [1] at a given matric potential [cm] according to the VanGenuchten model (Eqn 21) """
     try:
-        assert h <= 0
-        assert h > -np.Inf
+        
+        if isinstance(h, (type(list()), type(np.array([])))):
+            assert (h <= 0).all()
+            assert (h > -np.Inf).all()
+        else:
+            assert h <= 0
+            assert h > -np.Inf
     except:
         print('water_content, sp out of range',h)
         raise Exception
