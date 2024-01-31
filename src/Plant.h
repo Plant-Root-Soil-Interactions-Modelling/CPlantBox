@@ -55,7 +55,7 @@ public:
   void reset(); ///< resets the plant class, keeps the organ type parameters
   void initialize(bool verbose = true) override; ///< creates the base roots, call before simulation and after setting the plant and root parameters
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
-  void simulate(); ///< simulates root system growth for the time defined in the root system parameters
+  void simulate(double time); ///< simulates root system growth for the time defined in the root system parameters
 
   /* call back function creation */
   void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
