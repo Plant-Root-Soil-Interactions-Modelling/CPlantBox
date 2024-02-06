@@ -107,14 +107,14 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	
 	//		from plant shape
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
-	void setKr_st(std::vector<std::vector<double>> values, double kr_length_); ///< sets a callback for kr_suc:=kr_suc(ot,type), 
-	void setKx_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setRmax_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setAcross_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setPerimeter_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
-	void setRhoSucrose(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
-	void setKrm1(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setKrm2(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setKr_st(std::vector<std::vector<double>> values, double kr_length_, bool verbose = false); ///< sets a callback for kr_suc:=kr_suc(ot,type), 
+	void setKx_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setRmax_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setAcross_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setPerimeter_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
+	void setRhoSucrose(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
+	void setKrm1(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setKrm2(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	
     std::function<double(int, int, int)> kr_st_f = []( int type, int orgtype, int si) {
 		throw std::runtime_error("kr_st_f not implemented"); 

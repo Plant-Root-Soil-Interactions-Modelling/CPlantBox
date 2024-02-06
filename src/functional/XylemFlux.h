@@ -38,16 +38,16 @@ public:
     std::vector<double> aV;
     std::vector<double> aB;
 
-    void setKr(std::vector<double> values, std::vector<double> age = std::vector<double>(0)); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
-    void setKx(std::vector<double> values, std::vector<double> age = std::vector<double>(0)); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
-    void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
-    void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
-    void setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_ = -1.0); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
-    void setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
-    void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
-    void setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
-    void setKrValues(std::vector<double> values); ///< one value per segment
-    void setKxValues(std::vector<double> values); ///< one value per segment
+    void setKr(std::vector<double> values, std::vector<double> age = std::vector<double>(0), bool verbose = false); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
+    void setKx(std::vector<double> values, std::vector<double> age = std::vector<double>(0), bool verbose = false); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
+    void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose = false);
+    void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose = false);
+    void setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_ = -1.0, bool verbose = false); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
+    void setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose = false); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
+    void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose);
+    void setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose);
+    void setKrValues(std::vector<double> values, bool verbose = false); ///< one value per segment
+    void setKxValues(std::vector<double> values, bool verbose = false); ///< one value per segment
 
 
    std::function<double(int, double, int, int)> kr_f = [](int si, double age, int type, int orgtype){

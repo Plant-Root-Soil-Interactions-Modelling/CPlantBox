@@ -1131,157 +1131,227 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
  * @param kr_length_ 	exchange zone in root, where kr > 0 [cm from root tip], default = -1.0, i.e., no kr_length
  */
 //type/subtype dependent
-void PhloemFlux::setKr_st(std::vector<std::vector<double>> values, double kr_length_) {
+void PhloemFlux::setKr_st(std::vector<std::vector<double>> values, double kr_length_, bool verbose) {
     kr_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			kr_st_f = std::bind(&PhloemFlux::kr_st_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-			std::cout << "Kr_st is constant " << values[0][0] << " 1 day-1 \n";
+            if (verbose)
+            {
+                std::cout << "Kr_st is constant " << values[0][0] << " 1 day-1 \n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			kr_st_f = std::bind(&PhloemFlux::kr_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-			std::cout << "Kr_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kr_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
+            }
 		} else {
-			std::cout << "Exchange zone in roots: kr_st > 0 until "<< kr_length_<<"cm from root tip "<<(kr_length_ > 0)<<" "<<(kr_length_ > 0.)<<std::endl;
+			if (verbose)
+            {
+                std::cout << "Exchange zone in roots: kr_st > 0 until "<< kr_length_<<"cm from root tip "<<(kr_length_ > 0)<<" "<<(kr_length_ > 0.)<<std::endl;
+            }
 			if(kr_length_ > 0.){
-				std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
+				if (verbose)
+            {
+                std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
+                }
 				plant->kr_length = kr_length_; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
 				plant->calcExchangeZoneCoefs();	
 				kr_st_f  = std::bind(&PhloemFlux::kr_st_RootExchangeZonePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			}else{
 				kr_st_f  = std::bind(&PhloemFlux::kr_st_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			}
-			std::cout << "Kr_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " 1 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kr_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " 1 day-1 \n";
+            }
 		}
 	}
     
 }	
 // type/subtype dependent
-void PhloemFlux::setKx_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setKx_st(std::vector<std::vector<double>> values, bool verbose) {
     kx_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			kx_st_f = std::bind(&PhloemFlux::kx_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Kx_st is constant " << values[0][0] << " cm3 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kx_st is constant " << values[0][0] << " cm3 day-1 \n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			kx_st_f = std::bind(&PhloemFlux::kx_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Kx_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kx_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
+            }
 		} else {
 			kx_st_f  = std::bind(&PhloemFlux::kx_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Kx_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm3 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kx_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm3 day-1 \n";
+            }
 		}
 	}
 }	
 
 
 //type/subtype dependent
-void PhloemFlux::setAcross_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setAcross_st(std::vector<std::vector<double>> values, bool verbose) {
     Across_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			Across_st_f = std::bind(&PhloemFlux::Across_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Across_st is constant " << values[0][0] << " cm2\n";
+			if (verbose)
+            {
+                std::cout << "Across_st is constant " << values[0][0] << " cm2\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			Across_st_f = std::bind(&PhloemFlux::Across_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Across_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 \n";
+			if (verbose)
+            {
+                std::cout << "Across_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 \n";
+            }
 		} else {
 			Across_st_f  = std::bind(&PhloemFlux::Across_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Across_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm2 \n";
+			if (verbose)
+            {
+                std::cout << "Across_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm2 \n";
+            }
 		}
 	}
 }	
 
 
 //type/subtype dependent ==> to compute Rhat Fhat
-void PhloemFlux::setPerimeter_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setPerimeter_st(std::vector<std::vector<double>> values, bool verbose) {
     Perimeter_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			Perimeter_st_f = std::bind(&PhloemFlux::Perimeter_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Perimeter_st is constant " << values[0][0] << " cm\n";
+			if (verbose)
+            {
+                std::cout << "Perimeter_st is constant " << values[0][0] << " cm\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			Perimeter_st_f = std::bind(&PhloemFlux::Perimeter_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Perimeter_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm\n";
+			if (verbose)
+            {
+                std::cout << "Perimeter_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm\n";
+            }
 		} else {
 			Perimeter_st_f  = std::bind(&PhloemFlux::Perimeter_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Perimeter_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm\n";
+			if (verbose)
+            {
+                std::cout << "Perimeter_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm\n";
+            }
 		}
 	}
 }	
 
 // type/subtype dependent
-void PhloemFlux::setRmax_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setRmax_st(std::vector<std::vector<double>> values, bool verbose) {
     Rmax_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			Rmax_st_f = std::bind(&PhloemFlux::Rmax_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Rmax_st is constant " << values[0][0] << " cm day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Rmax_st is constant " << values[0][0] << " cm day-1 \n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			Rmax_st_f = std::bind(&PhloemFlux::Rmax_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Rmax_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Rmax_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm day-1 \n";
+            }
 		} else {
 			Rmax_st_f  = std::bind(&PhloemFlux::Rmax_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Rmax_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Rmax_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm day-1 \n";
+            }
 		}
 	}
 }	
 
 
 //either age or type/subtype dependent
-void PhloemFlux::setRhoSucrose(std::vector<std::vector<double>> values) {
+void PhloemFlux::setRhoSucrose(std::vector<std::vector<double>> values, bool verbose) {
     rhoSucrose = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			rhoSucrose_f = std::bind(&PhloemFlux::rhoSucrose_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "rhoSucrose is constant " << values[0][0] << " mmol cm-3\n";
+			if (verbose)
+            {
+                std::cout << "rhoSucrose is constant " << values[0][0] << " mmol cm-3\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			rhoSucrose_f = std::bind(&PhloemFlux::rhoSucrose_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "rhoSucrose is constant per organ type, organ type 2 (root) = " << values[0][0] << " mmol cm-3\n";
+			if (verbose)
+            {
+                std::cout << "rhoSucrose is constant per organ type, organ type 2 (root) = " << values[0][0] << " mmol cm-3\n";}
 		} else {
 			rhoSucrose_f  = std::bind(&PhloemFlux::rhoSucrose_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "rhoSucrose is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " mmol cm-3\n";
+			if (verbose)
+            {
+                std::cout << "rhoSucrose is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " mmol cm-3\n";}
 		}
 	}
 }	
 
 
 //either age or type/subtype dependent
-void PhloemFlux::setKrm1(std::vector<std::vector<double>> values) {
+void PhloemFlux::setKrm1(std::vector<std::vector<double>> values, bool verbose) {
     krm1v = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			krm1_f = std::bind(&PhloemFlux::krm1_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant " << values[0][0] << " -\n";
+			if (verbose)
+            {
+                std::cout << "krm1 is constant " << values[0][0] << " -\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			krm1_f = std::bind(&PhloemFlux::krm1_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
+			if (verbose)
+            {
+                std::cout << "krm1 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
+            }
 		} else {
 			krm1_f  = std::bind(&PhloemFlux::krm1_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+			if (verbose)
+            {
+                std::cout << "krm1 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+            }
 		}
 	}
 }	
 
 //either age or type/subtype dependent
-void PhloemFlux::setKrm2(std::vector<std::vector<double>> values) {
+void PhloemFlux::setKrm2(std::vector<std::vector<double>> values, bool verbose) {
     krm2v = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			krm2_f = std::bind(&PhloemFlux::krm2_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm2 is constant " << values[0][0] << " -\n";
+			if (verbose)
+            {
+                std::cout << "krm2 is constant " << values[0][0] << " -\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
@@ -1289,7 +1359,10 @@ void PhloemFlux::setKrm2(std::vector<std::vector<double>> values) {
 			std::cout << "krm2 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
 		} else {
 			krm2_f  = std::bind(&PhloemFlux::krm2_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm2 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+			if (verbose)
+            {
+                std::cout << "krm2 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+            }
 		}
 	}
 }	
