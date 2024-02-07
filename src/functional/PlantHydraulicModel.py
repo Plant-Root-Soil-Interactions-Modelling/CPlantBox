@@ -174,7 +174,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
                 return i
 
     def update(self, sim_time):  # rs_age + simtime...
-        """ call before solve() """
+        """ call before solve(), get_collar_potential(), and get_Heff() """
         A_d, self.Kr, self.kx0 = self.get_doussan_system(sim_time)
         self.ci = self.collar_index()
         # A_n = A_d.copy()
@@ -243,11 +243,11 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return np.array(q) / np.sum(q)
 
     def get_Heff(self, rsx):
-        """ effective total potential [cm] """
+        """ effective total potential [cm] (call update() before)"""
         heff = self.suf.dot(rsx)
         return heff[0, 0]
 
     def get_collar_potential(self, t_act, rsx):
-        """ collar potential for an actual transpiration """
+        """ collar potential for an actual transpiration (call update() before) """
         return (self.krs * self.get_Heff(rsx) - (-t_act)) / self.krs
 

@@ -244,7 +244,7 @@ class PerirhizalPython(Perirhizal):
                                     # print(i_)
                                     # print(ni)
                                     vol[ni[idx]] = np.nan
-                                    print("nan encountered")
+                                    print("PerirhizalPython.get_outer_radii_bounded_voronoi(): nan encountered")
                                 else:
                                     vol[ni[idx]] = ConvexHull(vor.vertices[indices]).volume
                                     # print(ni[i_])
@@ -254,7 +254,7 @@ class PerirhizalPython(Perirhizal):
                             #         print("When does that happen, again?", idx, nn, indices)
 
         if np.sum(np.isnan(vol)) > 1:
-            print("nan encountered", np.sum(np.isnan(vol)), np.where(np.isnan(vol)))
+            print("PerirhizalPython.get_outer_radii_bounded_voronoi(): nan encountered", np.sum(np.isnan(vol)), np.where(np.isnan(vol)))
 
         outer_r = np.zeros((vol.shape[0] - 1,))
         radii = self.ms.radii
