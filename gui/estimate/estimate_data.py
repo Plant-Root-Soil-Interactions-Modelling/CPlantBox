@@ -64,6 +64,37 @@ class EstimateDataModel:
         self.create_length()  # add a length tag to properties
         self.initialize_roots_()  # find base roots
 
+    def open_files(self, folder_name, file_names):
+        """ see RsmlData.open_rsml() in src/python_modules/rsml_data.py                
+        """
+        self.rsmls = []  # delete old data
+        self.folder_name = folder_name
+        for filename in file_names:
+            file_path = os.path.join(folder_name, filename)
+            print('\nFile %s (full path: %s)\n' % (filename, file_path))
+            self.file_names.append(filename)
+            file_data = RsmlData()
+            file_data.open_rsml(file_path)
+            if not "order" in file_data.properties:  # check if orders were created, if not create tag
+                file_data.properties["order"] = rsml_reader.get_root_orders(file_data.properties)
+            self.rsmls.append(file_data)
+            try:
+                if file_data.tagnames[1]:
+                    self.times.append(file_data.max_ct)  #  check for creation_time tag
+                    # self.times.append(11.)  # TESTING
+                else:
+                    s = filename.split(".")
+                    str = ''.join([n for n in s[0][-3:] if n.isdigit()])
+                    self.times.append(int(str))
+            except:
+                print("filename", filename)
+                self.times.append(0)
+        self.estimates = [None] * len(self.times)
+        self.parameters = [pb.RootRandomParameter(self.plant) for _ in range(0, 10)]
+        self.pparameters = [pb.SeedRandomParameter(self.plant)][0]
+        self.create_length()  # add a length tag to properties
+        self.initialize_roots_()  # find base roots
+
     def exists(self):
         """ true if a rsml folder was set """
         return len(self.rsmls) > 0
@@ -459,14 +490,14 @@ class EstimateDataModel:
                             il = self.rsmls[i].properties["parent-node"][k]  #
                             bl = ep.polyline_length(0, il, self.rsmls[i].polylines[j])  # latearal base length
                             bl = min(bl, p.lmax * 0.99)
-                            if apical_method == 0:
+                            if apical_method == 0:  # delay based
 
                                 bl = min(bl, p.lmax * 0.99)
                                 age = ep.negexp_age(bl, r, p.lmax)
                                 delay = self.estimates[i][(j, "delay")]
                                 root_age = max(measurement_time - (parent_ct + age + delay), 0.)
 
-                            else:
+                            else:  # apical length based
 
                                 ln2 = np.sum(self.estimates[i][(j, "ln")]) / 2
                                 if np.isnan(ln2):
@@ -517,7 +548,7 @@ class EstimateDataModel:
                 r = ep.negexp_rate(l, p.lmax, t)  # if age = t small, r becomes large...
                 self.estimates[i][(j, "r")] = r  # individual growth rate
                 r_.append(r)
-        print("r ", np.mean(r_), np.std(r_), "for target type", target_type)
+        # print("r ", np.mean(r_), np.std(r_), "for target type", target_type)
 
     def add_delay_(self, indices, target_type):
         """ adds the apical delay based on measured la, r, and lmax """

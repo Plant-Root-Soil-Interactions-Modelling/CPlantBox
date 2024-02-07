@@ -55,7 +55,7 @@ def plot_baseroots(data, base_method, ax):
     ax.legend()
 
 
-def plot_laterals(data, base_method, calibration_method, ax):
+def plot_laterals(data, base_method, calibration_method, ax, orders_ = [1, 2, 3]):
     """
     """
     names_ = ["", "1st order", "2nd order", "3nd order", "higher order",
@@ -63,12 +63,11 @@ def plot_laterals(data, base_method, calibration_method, ax):
     col_ = ["y*", "r*", "b*", "g*", "c*", "m*"] * 2
     ax.clear()
 
-    order = 1
-    indices = data.pick_order(order)
-    c = np.array([len(x) for x in indices])
-    print("plot_laterals(): number of order", order, "roots", c)
+    for order in orders_:
 
-    while np.sum(c) > 0:
+        indices = data.pick_order(order)
+        c = np.array([len(x) for x in indices])
+        print("plot_laterals(): number of order", order, "roots", c)
         age_ = []
         l_ = []
         for i, j_ in enumerate(indices):
@@ -76,16 +75,10 @@ def plot_laterals(data, base_method, calibration_method, ax):
                 age_.append(data.estimates[i][(j, "age")])
                 l_.append(data.rsmls[i].properties["length"][j])
         ax.plot(age_, l_, col_[order], label = names_[order])  # , alpha = i / len(data.times) * 0.8 + 0.2
-        order += 1
-        indices = data.pick_order(order)  # update index set (TODO it must be always per order, but different target_types are possible for clustering and aggregation)
-        c = np.array([len(x) for x in indices])
-        print("plot_laterals(): number of order", order, "roots", c)
-        if order > 2:
-            break  # TODO figure hack for book chapter
 
     # plotting fit
     col_ = ["y", "r", "b", "g", "c", "m"] * 2
-    for i in range(1, 3):  # TODO figure hack for book chapter
+    for i in orders_:
         k = data.parameters[i].lmax
         r = data.parameters[i].r
         print("plot_laterals", k, r)
