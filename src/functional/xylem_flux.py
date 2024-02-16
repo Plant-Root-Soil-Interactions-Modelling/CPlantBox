@@ -43,6 +43,7 @@ class XylemFluxPython(XylemFlux):
 
         self.neumann_ind = [0]  # node indices for Neumann flux
         self.dirichlet_ind = [0]  # node indices for Dirichlet flux
+        self.collar_index_ = self.collar_index()  # segment index of the collar segement
 
         self.last = "none"
         self.Q = None  # store linear system
@@ -297,7 +298,7 @@ class XylemFluxPython(XylemFlux):
         """ returns the exact transpirational flux of the xylem model solution @param rx
             @see axial_flux        
         """
-        return self.axial_flux(0, sim_time, rx, sxx, k_soil, cells, ij = True)
+        return self.axial_flux(self.collar_index_, sim_time, rx, sxx, k_soil, cells, ij = True)
 
     def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
         """ returns the axial fluxes 
@@ -566,14 +567,15 @@ class XylemFluxPython(XylemFlux):
         print("Segment 2", segments[2])
         print("....")
         ci = self.collar_index()
-        print("Collar segment index", ci)        
+        self.collar_index_ = ci
+        print("Collar segment index", ci)
         print("Collar segment", segments[ci])
         first = True
         for s in segments:
             if s[0] == 0:
                 if first:
                     first = False
-                else:  
+                else:
                     print("warning multiple segments emerge from collar node (always node index 0)", ci, s)
         # 2 check for very small segments
         seg_length = self.rs.segLength()
