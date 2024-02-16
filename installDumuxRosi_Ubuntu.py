@@ -197,10 +197,6 @@ else:
     print("-- The file cmake.opts already exists. The existing file will be used to configure dumux.")
 
     
-#https://gitlab.dune-project.org/staging/dune-python/-/issues/43
-# remove check for NOT DUNE_PYTHON_pip_FOUND: check throws an error message and dumux works well without it
-for i, line in enumerate(fileinput.input('dune-pybindxi/cmake/modules/DunePybindxiInstallPythonPackage.cmake', inplace=1)):
-    sys.stdout.write(line.replace('NOT DUNE_PYTHON_pip_FOUND', 'FALSE'))  
 
 subprocess.check_output(["./dune-common/bin/dunecontrol", "--opts=cmake.opts", "all"])
 
