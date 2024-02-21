@@ -5,6 +5,7 @@
 #include "Organism.h"
 #include "MappedOrganism.h"
 #include "XylemFlux.h"
+#include "PlantHydraulicParameters.h"
 #include <algorithm>
 #include <iomanip>
 #include <istream>
@@ -208,6 +209,28 @@ void SegmentAnalyser::addConductivities(const XylemFlux& rs, double simTime, dou
 }
 
 /**
+ * Evaluates kr and kx using PlantHydraulicParameters
+ * and adds kr and kx per segment to the user data for vizualisation ("kr", "kx"),
+ *
+ * @param rs    XylemFlux for determination of radial and axial conductivities (kr, and kx)
+ */
+void SegmentAnalyser::addHydraulicConductivities(const PlantHydraulicParameters& rs, double simTime, double kr_max, double kx_max)
+{
+    std::vector<double> kr(segments.size());
+    std::vector<double> kx(segments.size());
+    for (size_t i=0; i<kr.size(); i++) {
+        double age = simTime - data["creationTime"].at(i);
+        int subType = (int) data["subType"].at(i);
+        int organType = (int) data["organType"].at(i);
+        kr.at(i) = std::min(rs.kr_f(i, age, subType, organType), kr_max);
+        kx.at(i) = std::min(rs.kx_f(i, age, subType, organType), kx_max);
+    }
+    this->addData("kr",kr);
+    this->addData("kx",kx);
+}
+
+
+/**
  * Adds radial and axial fluxes to the user data for vizualisation,
  * ("radial_flux" [cm3/cm2 / day], and "axial_flux" [cm3/day])
  *
@@ -221,7 +244,7 @@ void SegmentAnalyser::addFluxes(const XylemFlux& rs, const std::vector<double>& 
         radial_flux[i] /= (2.*M_PI*a.at(i));
     }
     this->addData("radial_flux",radial_flux);
-    // std::cout << "added radial flux"<< "\n" << std::flush;
+    std::cout << "added radial flux"<< "\n" << std::flush;
 
     //    auto& kr = data["kr"]; // use addConductivities before!
     auto& kx = data["kx"]; // use addConductivities before!

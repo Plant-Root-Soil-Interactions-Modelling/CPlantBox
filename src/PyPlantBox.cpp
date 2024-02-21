@@ -35,6 +35,9 @@ namespace py = pybind11;
 #include "Photosynthesis.h"
 #include "PiafMunch/runPM.h"
 
+#include "PlantHydraulicParameters.h"
+#include "PlantHydraulicModel.h"
+
 // visualisation
 #include "Quaternion.h"
 #include "CatmullRomSpline.h"
@@ -216,12 +219,12 @@ PYBIND11_MODULE(plantbox, m) {
       .def_buffer([](Quaternion &q) -> py::buffer_info { /* enables numpy conversion with np.array(quaternion_instance, copy = False) */
         // this only really works if the variables are stored in a contiguous block of memory
         return py::buffer_info(
-            &q.w,   
-            sizeof(double),    
+            &q.w,
+            sizeof(double),
             py::format_descriptor<double>::format(),
-            1,                
-            { 4 },          
-            { sizeof(double) }   
+            1,
+            { 4 },
+            { sizeof(double) }
         );
       })
     ;
@@ -302,7 +305,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("successorWhere", &OrganRandomParameter::successorWhere)
             .def_readwrite("successorNo", &OrganRandomParameter::successorNo)
             .def_readwrite("successorP", &OrganRandomParameter::successorP)
-
             .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
             .def_readwrite("ldelays", &OrganRandomParameter::ldelays);
     /**
@@ -521,6 +523,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
            .def("addAge", &SegmentAnalyser::addAge)
            .def("addConductivities", &SegmentAnalyser::addConductivities, py::arg("rs"), py::arg("simTime"), py::arg("kr_max") = 1.e6, py::arg("kx_max") = 1.e6)
+           .def("addHydraulicConductivities", &SegmentAnalyser::addHydraulicConductivities, py::arg("rs"), py::arg("simTime"), py::arg("kr_max") = 1.e6, py::arg("kx_max") = 1.e6)
            .def("addFluxes", &SegmentAnalyser::addFluxes)
            .def("addCellIds", &SegmentAnalyser::addCellIds)
            .def("crop", &SegmentAnalyser::crop)
@@ -978,7 +981,7 @@ PYBIND11_MODULE(plantbox, m) {
    py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit")=-500.0 ,  py::arg("ciInit")= 350e-6)
 			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("ea_"),py::arg("es_") ,
-			py::arg("sim_time_")=1.0 ,	
+			py::arg("sim_time_")=1.0 ,
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
 					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
 					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
@@ -1003,7 +1006,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("fw", &Photosynthesis::fw)
             .def_readwrite("fwr", &Photosynthesis::fwr)
             .def_readwrite("sh", &Photosynthesis::sh)
-            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)	 
+            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
             .def_readwrite("ci", &Photosynthesis::ci)
             .def_readwrite("deltagco2", &Photosynthesis::deltagco2)
             .def_readwrite("delta", &Photosynthesis::delta)
@@ -1015,7 +1018,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("gm",&Photosynthesis::gm)
             .def_readwrite("PVD",&Photosynthesis::PVD)
             .def_readwrite("EAL",&Photosynthesis::EAL)
-            .def_readwrite("hrelL",&Photosynthesis::hrelL)			  
+            .def_readwrite("hrelL",&Photosynthesis::hrelL)
             .def_readwrite("pg",&Photosynthesis::pg)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
             .def_readwrite("Jw", &Photosynthesis::Jw)
@@ -1047,14 +1050,14 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a2_air", &Photosynthesis::a2_air)
             .def_readwrite("a3", &Photosynthesis::a3)
             .def_readwrite("Rd_ref", &Photosynthesis::Rd_ref)
-            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref) 
+            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref)
             .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("doLog", &Photosynthesis::doLog)
             .def_readwrite("R_ph", &Photosynthesis::R_ph);
-	
+
     py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes")
             .value("C3", Photosynthesis::PhotoTypes::C3)
             .value("C4", Photosynthesis::PhotoTypes::C4)
@@ -1193,14 +1196,50 @@ PYBIND11_MODULE(plantbox, m) {
             .export_values();
 
 
+    /*
+     * PlantHydraulicParameters.h
+     */
+    py::class_<PlantHydraulicParameters, std::shared_ptr<PlantHydraulicParameters>>(m, "PlantHydraulicParameters")
+            .def(py::init<>())
+            .def("setKrValues", &PlantHydraulicParameters::setKrValues)
+            .def("setKxValues", &PlantHydraulicParameters::setKxValues)
+            .def("setKr", &PlantHydraulicParameters::setKr, py::arg("values"), py::arg("age"), py::arg("kr_length_"))
+            .def("setKx", &PlantHydraulicParameters::setKx)
+            .def("setKrTables", &PlantHydraulicParameters::setKrTables)
+            .def("setKxTables", &PlantHydraulicParameters::setKxTables)
+            .def("getEffKr", &PlantHydraulicParameters::getEffKr)
+            .def("getKr", &PlantHydraulicParameters::getKr)
+            .def("getKx", &PlantHydraulicParameters::getKx)
+            .def("getHs", &PlantHydraulicParameters::getHs)
+            .def_readonly("kr_f", &PlantHydraulicParameters::kr_f)
+            .def_readonly("kx_f", &PlantHydraulicParameters::kx_f)
+            .def_readwrite("kr", &PlantHydraulicParameters::kr)
+            .def_readwrite("kr_t", &PlantHydraulicParameters::kr_t)
+            .def_readwrite("kx", &PlantHydraulicParameters::kx)
+            .def_readwrite("kx_t", &PlantHydraulicParameters::kx_t)
+            .def_readwrite("krs", &PlantHydraulicParameters::krs)
+            .def_readwrite("krs_t", &PlantHydraulicParameters::krs_t)
+            .def_readwrite("kxs", &PlantHydraulicParameters::kxs)
+            .def_readwrite("kxs_t", &PlantHydraulicParameters::kxs_t)
+            .def_readwrite("exchangeZoneCoefs", &PlantHydraulicParameters::exchangeZoneCoefs)
+            .def_readwrite("psi_air", &PlantHydraulicParameters::psi_air);
 
-    //   /*
-    //    * sdf_rs.h todo revise
-    //    */
-    //   py::class_<SDF_RootSystem, SignedDistanceFunction>(m, "SDF_RootSystem")
-    //       .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, double>())
-    //       .def(py::init<Root&, double>())
-    //       .def(py::init<Organism&, double>());
+        /*
+         * PlantHydraulicModel.h
+         */
+        py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
+            .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
+            .def("linearSystem", &PlantHydraulicModel::linearSystem)
+            .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
+            .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
+            .def_readwrite("rs", &PlantHydraulicModel::rs)
+            .def_readwrite("params", &PlantHydraulicModel::params)
+            .def_readwrite("aI", &PlantHydraulicModel::aI)
+            .def_readwrite("aJ", &PlantHydraulicModel::aJ)
+            .def_readwrite("aV", &PlantHydraulicModel::aV)
+            .def_readwrite("aB", &PlantHydraulicModel::aB);
+
+
 }
 
 }
