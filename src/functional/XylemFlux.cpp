@@ -550,7 +550,7 @@ void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::
  * TODO: make deprecated (i would leave it in for now, used in pyhton_modules/root_conductivities.py)
  */
 //both age and type/subtype dependent
-void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose) {
+void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose, bool ageBased) {
     krs= { values };
     krs_t = { age };
     kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
@@ -584,7 +584,7 @@ void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector
  *	@param values 			kr values for age (its linearly interpolated between these values) for each organ type and each sub-type
  *	@param age 				ages for the given values for each organ type and for each sub type
  */
-void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose) {
+void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose,  bool ageBased) {
     krs = values;
     krs_t = age;
     if (age[0].size()==1) {
@@ -595,7 +595,14 @@ void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values
         }
     }
     else{
-        kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		if (ageBased)
+		{
+			kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		} else {
+			rs->kr_length = 100000.; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
+			rs->calcExchangeZoneCoefs();	//computes coefficient used by XylemFlux::kr_RootExchangeZonePerType
+			kr_f  = std::bind(&XylemFlux::kr_tablePerType_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		}
         if(verbose)
         {
             std::cout << "Kr is age dependent per organ type and sub type\n";

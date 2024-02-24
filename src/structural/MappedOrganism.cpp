@@ -868,6 +868,7 @@ void MappedPlant::simulate(double dt, bool verbose)
  **/
 void MappedPlant::calcExchangeZoneCoefs() { //
 	exchangeZoneCoefs.resize(segments.size(), -1.0);
+	distanceTip.resize(segments.size(), -1.0);
 	auto orgs = getOrgans(-1);
 	for(auto org: orgs)
 	{
@@ -875,15 +876,18 @@ void MappedPlant::calcExchangeZoneCoefs() { //
 		{
 			int globalIdx_x = org->getNodeId(localIdx -1 );
 			int globalIdx_y = org->getNodeId(localIdx);
-			if(org->organType() != Organism::ot_root){exchangeZoneCoefs.at(globalIdx_y-1) = 1;
+			if(org->organType() != Organism::ot_root){
+				exchangeZoneCoefs.at(globalIdx_y-1) = 1;
+				distanceTip.at(globalIdx_y-1) = -1;
 			}else{
 				auto n1 = nodes.at(globalIdx_x);
 				auto n2 = nodes.at(globalIdx_y);
 				auto v = n2.minus(n1);
 				double l = v.length();
-				double distance2RootTip_y = org->getLength(true) - org->getLength(localIdx);
-				double length_in_exchangeZone = std::min(l,std::max(kr_length - std::max(distance2RootTip_y,0.),0.));
+				double distance2Tip_y = org->getLength(true) - org->getLength(localIdx);
+				double length_in_exchangeZone = std::min(l,std::max(kr_length - std::max(distance2Tip_y,0.),0.));
 				exchangeZoneCoefs.at(globalIdx_y-1) = length_in_exchangeZone/l;
+				distanceTip.at(globalIdx_y-1) = distance2Tip_y + l/2; //distance of the segment center to the tip
 			}
 		}
 	}
