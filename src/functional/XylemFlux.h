@@ -40,11 +40,11 @@ public:
 
     void setKr(std::vector<double> values, std::vector<double> age = std::vector<double>(0), bool verbose = false); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
     void setKx(std::vector<double> values, std::vector<double> age = std::vector<double>(0), bool verbose = false); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
-    void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose = false);
+    void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose = false, bool ageBased = true);
     void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose = false);
     void setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_ = -1.0, bool verbose = false); ///< sets a callback for kr:=kr(age,type),  [1 day-1]
     void setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose = false); ///< sets a callback for kx:=kx(age,type),  [cm3 day-1]
-    void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose);
+    void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose, bool ageBased = true);
     void setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose);
     void setKrValues(std::vector<double> values, bool verbose = false); ///< one value per segment
     void setKxValues(std::vector<double> values, bool verbose = false); ///< one value per segment
@@ -119,6 +119,19 @@ protected:
 		return kr.at(organType - 2).at(type);
 	} //subtype, type and depend on distance to tip for roots
 
+	double kr_tablePerType_distance(int si,double age, int type, int organType)//when use carbon- and water-limited growth, canNOT use "kr_tablePerType" instead of this function
+	{
+		 
+		if (organType == Organism::ot_root){
+			//double coef = rs->exchangeZoneCoefs.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
+			double distFromTip = rs->distanceTip.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate 
+			
+			double kr_ = Function::interp1(distFromTip, krs_t.at(organType-2).at(type), krs.at(organType-2).at(type));
+			return kr_;//coef * kr.at(organType - 2).at(type);
+		}
+		return krs.at(organType - 2).at(type).at(0);
+	} //subtype, type and depend on distance to tip for roots
+	
     double kx_const(int si,double age, int type, int organType) { return kx.at(0).at(0); } //k constant
     double kx_perOrgType(int si,double age, int type, int organType) { return kx.at(organType - 2)[0]; } //per organ type (goes from 2 (root) to 4 (leaf))
     double kx_perType(int si,double age, int type, int organType) { return kx.at(organType - 2).at(type); } //per subtype and organ type (goes from 2 (root) to 4 (leaf))
