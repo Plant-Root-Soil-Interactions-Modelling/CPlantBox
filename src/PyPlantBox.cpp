@@ -924,6 +924,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
+			.def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
+			.def_readwrite("distanceTip", &MappedPlant::distanceTip)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
 
 	/**
@@ -941,14 +943,17 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>>())
-            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
+            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKr), 
+					py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
             .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&XylemFlux::setKrTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables), py::arg("values"), 
+						py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
             .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
             .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),
                                                                         py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
             .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool> (&XylemFlux::setKrTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&XylemFlux::setKrTables), 
+					py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
             .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)

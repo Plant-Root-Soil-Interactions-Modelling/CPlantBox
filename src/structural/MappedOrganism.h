@@ -78,6 +78,7 @@ public:
 	//% of segment length in the root exchange zone, see MappedPlant::simulate.
 	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)
 	std::vector<double> exchangeZoneCoefs;
+	std::vector<double> distanceTip;
 	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
 	std::vector<double> segVol; //segment volume <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
