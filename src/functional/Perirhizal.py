@@ -134,7 +134,7 @@ class PerirhizalPython(Perirhizal):
             if i in cell2seg:
                 c = len(cell2seg[i])
                 for si in cell2seg[i]:
-                    d[i] += seg_param[si]/c
+                    d[i] += seg_param[si] / c
         return d
 
     def get_outer_radii(self, type:str, volumes:list = []):
@@ -414,11 +414,15 @@ class PerirhizalPython(Perirhizal):
             #     print("n[1] > width[0] / 2", n)
         return nodes_
 
-    def to_range_(self, x:list, min_:float, max_:float):
-        """ returns ths list with values within min_ and max_ (and drops nans) """
-        y = []
-        for x_ in x:
+    def to_range_(self, x:list, other:list = [], min_:float = -np.inf, max_:float = np.inf):
+        """ returns ths list with x values within min_ and max_ (and drops nans) 
+            drops the same entries from @param other list
+        """
+        y, z = [], []
+        for i, x_ in enumerate(x):
             if (not np.isnan(x_)) and x_ >= min_ and x_ <= max_:
                 y.append(x_)
-        return y
+                if other:
+                    z.append(other[i])
+        return y, z
 
