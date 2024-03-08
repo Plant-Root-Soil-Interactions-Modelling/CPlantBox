@@ -27,7 +27,7 @@ public:
 
     Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d partialIHeading_, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
-    Root(std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
+    Root(std::shared_ptr<Organism> plant_, int subType, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
     virtual ~Root() { }; ///< no need to do anything, children are deleted in ~Organ()
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
@@ -49,10 +49,43 @@ public:
 
     double insertionAngle=0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
 
+};
+
+/**
+ * StaticRoot
+ *
+ * Describes a single root, by a vector of nodes representing the root.
+ * The root is static (i.e. does not change over time), all laterals and corresponding emergence times are predefined
+ *
+ */
+class StaticRoot :public Root {
+
+    StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
+        Vector3d partialIHeading_, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch TODO
+
+    virtual ~StaticRoot() { }; ///< no need to do anything, children are deleted in ~Organ()
+
+    // void setParent(std::shared_ptr<Organ> p)
+    // void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
+    void setGeometry(); // TODO
+    void addLaterals(std::vector<int> lateralIndices, std::vector<int> lateralTypes, std::vector<double> lateralDelays); // TODO
+
+    void simulate(double dt, bool silence = false) override; ///< no root elongation TODO call Organsim::simulate
+
+    std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree TODO
+
+    int organType() const override { return Organism::ot_root; }; ///< returns the organs type
+
 protected:
 
+    std::vector<int> lateralIndices;
+    std::vector<int> lateralTypes;
+    std::vector<double> lateralDelays;
 
 };
+
+
+
 
 } // end namespace CPlantBox
 

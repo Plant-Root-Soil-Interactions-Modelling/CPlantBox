@@ -25,10 +25,7 @@ class RootSpecificParameter :public OrganSpecificParameter
 public:
 
     RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
-    RootSpecificParameter(int type, double lb, double la,
-
-    const std::vector<double>& ln, double r, double a,
-    double theta, double rlt, bool laterals = false):
+    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, bool laterals = false):
         OrganSpecificParameter(type, a),  lb(lb), la(la), r(r),
         theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
 
@@ -72,7 +69,7 @@ public:
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
     void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
-    
+
     // DEPRICATED
     void read(std::istream & cin); ///< reads a single root parameter set
     void write(std::ostream & cout) const; ///< writes a single root parameter set
@@ -105,7 +102,7 @@ public:
     int gf = 1;             ///< Growth function (1=negative exponential, 2=linear)
     // new
     double lnk = 0.;        ///< Slope of inter-lateral distances [1]
-    
+
     /*
      * Callback functions for the Root (set up by the class RootSystem)
      */

@@ -23,27 +23,26 @@ namespace CPlantBox {
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-     :Organ(id, param, alive, active, age, length, 
-	 partialIHeading_,pni, moved,  oldNON )
-      {
+        :Organ(id, param, alive, active, age, length, partialIHeading_,pni, moved,  oldNON )
+{
     insertionAngle = this->param()->theta;
-      }
+}
 
 
 /**
  * Constructor: Should be only called during simulation by Root::createLateral().
  * For base roots the initial node and node creation time must be set from outside
  *
- * @param rs 			points to RootSystem
- * @param type 		    type of root that is created
+ * @param plant_      	points to RootSystem
+ * @param subType 		subType of root that is created
  * @param heading		heading of parent root at emergence
  * @param delay 		to give apical zone of parent time to develop
  * @param parent		parent root
  * @param pbl			parent base length
  * @param pni			parent node index
  */
-Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Organ(rs, parent, Organism::ot_root, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
+Root::Root(std::shared_ptr<Organism> plant_, int subType,  double delay, std::shared_ptr<Organ> parent, int pni)
+:Organ(plant_, parent, Organism::ot_root, subType, delay,  pni) // <- OrganRandomParameter::realize() is called here
 {
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
@@ -53,25 +52,25 @@ Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_pt
         theta*=scale;
     }
     insertionAngle = theta;
-	this->partialIHeading = Vector3d::rotAB(theta,beta);
-			
-	if(!(parent->organType()==Organism::ot_seed))
-	{
-			double creationTime= parent->getNodeCT(pni)+delay;//default
-		if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
-		{
-			addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-			
-		}else{
-			if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
-			//if lateral of stem, initial creation time: 
-			//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-			// @see stem::leafGrow
-			creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-		}
-			addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
-		}
-	}
+    this->partialIHeading = Vector3d::rotAB(theta,beta);
+
+    if(!(parent->organType()==Organism::ot_seed))
+    {
+        double creationTime= parent->getNodeCT(pni)+delay;//default
+        if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
+        {
+            addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+
+        }else{
+            if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
+                //if lateral of stem, initial creation time:
+                //time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
+                // @see stem::leafGrow
+                creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
+            }
+            addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
+        }
+    }
 }
 
 /**
@@ -178,11 +177,11 @@ void Root::simulate(double dt, bool verbose)
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
-							
+
                                 if (i==created_linking_node) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
-		
+
                                 if(length < s)//because with former check we have (length<=s)
                                 {
                                     if (length+dl<=s) { // finish within inter-lateral distance i
@@ -198,11 +197,11 @@ void Root::simulate(double dt, bool verbose)
                                         //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
                                         //									} // this could happen, if the tip ends in this section
                                     }
-		 
+
                                 }
                             }
                         }
-	  
+
                         if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
                             createLateral(dt_, verbose);
                         }
@@ -279,7 +278,7 @@ double Root::getParameter(std::string name) const
 {
     // specific parameters
     if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
-	if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
+    if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
     if (name=="lb") { return param()->lb; } // basal zone [cm]
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
@@ -290,13 +289,13 @@ double Root::getParameter(std::string name) const
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
     if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
     // further
-    if (name=="lnMean") { // mean lateral distance [cm]	
+    if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
-		if(v.size()>0){
-			return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
-		}else{
-			return 0;
-		}
+        if(v.size()>0){
+            return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
+        } else {
+            return 0;
+        }
     }
     if (name=="lnDev") { // standard deviation of lateral distance [cm]
         auto& v =param()->ln;

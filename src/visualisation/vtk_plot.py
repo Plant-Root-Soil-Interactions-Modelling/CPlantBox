@@ -599,7 +599,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         soil_grid.GetCellData().AddArray(d)
 
     rootActor, rootCBar = plot_roots(pd, pname, "", False)
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 21, "", False)
     meshActors.extend([rootActor])
     ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
     if interactiveImage:

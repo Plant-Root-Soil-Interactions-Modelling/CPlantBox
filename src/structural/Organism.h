@@ -36,6 +36,7 @@ class Seed;
  */
 class Organism : public std::enable_shared_from_this<Organism> {
 public:
+
 	//0: distance based, 1: delay-based carried by the parent for all lateral, 2: delay-based carried by each lateral type
 	enum DelayDefinition { dd_distance = 0, dd_time_lat = 1, dd_time_self = 2}; ///< definition of the growth delay
     enum OrganTypes { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 }; ///< coarse organ classification
@@ -49,7 +50,8 @@ public:
     virtual ~Organism() { }; ///< destructor
 
     virtual std::shared_ptr<Organism> copy(); ///< deep copies the organism
-	/* organs */
+
+    /* organs */
 	std::shared_ptr<Seed> getSeed(); ///< the plant seed
 
     /* organ parameter management */
@@ -119,15 +121,17 @@ public:
 
     /* random number generator */
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
+    unsigned int getSeedVal(){return seed_val;}
 
-    virtual double rand() {if(stochastic){return UD(gen); } else {return 0.5; } }  ///< uniformly distributed random number [0, 1[
-    virtual double randn() {if(stochastic){return ND(gen); } else {return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
-	unsigned int  getSeedVal(){return seed_val;}
+    virtual double rand() { if(stochastic) {return UD(gen); } else {return 0.5; } }  ///< uniformly distributed random number [0, 1[
+    virtual double randn() { if(stochastic) {return ND(gen); } else {return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
+
 	void setStochastic(bool stochastic_){stochastic = stochastic_;}
 	bool getStochastic(){return stochastic;}
-	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
-	virtual bool	hasRelCoord(){return false;} ///< overriden by @Plant::hasRelCoord()
 
+//	virtual bool hasRelCoord() {return false;} ///< overriden by @Plant::hasRelCoord()
+
+    std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
 
 protected:
 
