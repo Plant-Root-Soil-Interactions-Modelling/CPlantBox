@@ -1,0 +1,2396 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rsml xmlns:pol="http://www.plantontology.org/xml-dtd/po.dtd">
+ <metadata>
+  <version>1</version>
+  <unit>cm</unit>
+  <resolution>1</resolution>
+  <software>digitool</software>
+  <user>fichtl</user>
+  <T0>2023-05-26</T0>
+  <captured>2023-08-11</captured>
+  <rootage>77</rootage>
+ </metadata>
+ <scene>
+  <plant id="B23" label="101-14">
+   <root id="0" label="stem">
+    <geometry>
+     <polyline>
+      <point x="0" y="0" z="0"/>
+      <point x="2.15" y="0.539999999999999" z="20.78"/>
+     </polyline>
+    </geometry>
+    <properties/>
+    <functions>
+     <function domain="polyline" name="diameter">
+      <sample value="2.00"/>
+      <sample value="2.00"/>
+     </function>
+    </functions>
+    <root id="1" label="primary">
+     <geometry>
+      <polyline>
+       <point x="0.34" y="0.139999999999999" z="20.85"/>
+       <point x="-2.61" y="-1.02" z="23.58"/>
+       <point x="-4.96" y="-3.15" z="24.81"/>
+       <point x="-5.25" y="-3.78" z="24.93"/>
+       <point x="-6.19" y="-4.33" z="25.75"/>
+       <point x="-6.71" y="-4.91" z="26.23"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.4"/>
+       <sample value="0.4"/>
+       <sample value="0.4"/>
+       <sample value="0.4"/>
+       <sample value="0.4"/>
+       <sample value="0.4"/>
+      </function>
+     </functions>
+     <root id="1_3_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-4.97" y="-3.24" z="24.81"/>
+        <point x="-5.24" y="-2.04" z="26.48"/>
+        <point x="-5.3" y="-1.39" z="27.61"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="1_4_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-5.33" y="-3.66" z="24.93"/>
+        <point x="-4.91" y="-5.44" z="25.24"/>
+        <point x="-4.19" y="-7.42" z="26.78"/>
+        <point x="-3.18" y="-9.92" z="27.42"/>
+        <point x="-2.64" y="-10.92" z="27.77"/>
+        <point x="-2.25" y="-11.4" z="28.16"/>
+        <point x="-2.34" y="-12.24" z="28.24"/>
+        <point x="-2.24" y="-13.03" z="28.26"/>
+        <point x="-1.6" y="-14.84" z="28.82"/>
+        <point x="-1.18" y="-15.99" z="28.85"/>
+        <point x="-0.12" y="-17.64" z="29.3"/>
+        <point x="0.31" y="-18.85" z="29.66"/>
+        <point x="1.07" y="-20.74" z="29.74"/>
+        <point x="2.25" y="-23.72" z="28.55"/>
+        <point x="3.62" y="-26.07" z="27.27"/>
+        <point x="5.72" y="-29.25" z="26.22"/>
+        <point x="7.16" y="-31.9" z="26.98"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+       </function>
+      </functions>
+      <root id="1_4_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-3.19" y="-10.07" z="27.53"/>
+         <point x="-4.84" y="-10.37" z="29.7"/>
+         <point x="-6.15" y="-8.77" z="31.59"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-2.43" y="-10.95" z="27.71"/>
+         <point x="-3.45" y="-10.85" z="28.74"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-2.28" y="-11.35" z="28.14"/>
+         <point x="-0.87" y="-11.27" z="29.66"/>
+         <point x="0.54" y="-11.79" z="31.58"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_7" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-2.48" y="-12.26" z="28.29"/>
+         <point x="-3.05" y="-12.61" z="29.54"/>
+         <point x="-2.47" y="-13.52" z="30.96"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_8" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-2.16" y="-12.98" z="28.1"/>
+         <point x="-0.23" y="-13.72" z="28.24"/>
+         <point x="-0.04" y="-14.07" z="30.81"/>
+         <point x="-0.13" y="-15.18" z="33.37"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_9" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-1.4" y="-14.83" z="28.79"/>
+         <point x="-2.06" y="-15.8" z="29.66"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_10" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-1.13" y="-16.1" z="28.82"/>
+         <point x="-2.24" y="-17.1" z="29.93"/>
+         <point x="-2.34" y="-19.53" z="31.93"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_11" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="0.02" y="-17.49" z="29.38"/>
+         <point x="3.09" y="-16.65" z="28.18"/>
+         <point x="5.48" y="-16.44" z="28.03"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_12" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="0.34" y="-18.84" z="29.65"/>
+         <point x="-0.34" y="-20.05" z="31.15"/>
+         <point x="-0.0499999999999999" y="-19.47" z="34.87"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_4_1_13" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="0.98" y="-20.89" z="29.7"/>
+         <point x="0.04" y="-22.14" z="29.23"/>
+         <point x="-0.1" y="-23.86" z="28.22"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="1_5_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-6.11" y="-4.2" z="25.76"/>
+        <point x="-7.05" y="-3.44" z="28.1"/>
+        <point x="-9.41" y="-4.96" z="31.39"/>
+        <point x="-11.94" y="-5.71" z="33.49"/>
+        <point x="-14" y="-6.48" z="35.64"/>
+        <point x="-15.38" y="-7.04" z="37.61"/>
+        <point x="-17.98" y="-6.44" z="41.97"/>
+        <point x="-19.83" y="-4.87" z="47.36"/>
+        <point x="-21.21" y="-3.55" z="51.38"/>
+        <point x="-22.76" y="-2.7" z="52.99"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+       </function>
+      </functions>
+      <root id="1_5_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-11.76" y="-5.75" z="33.45"/>
+         <point x="-11.81" y="-5.33" z="34.74"/>
+         <point x="-12.63" y="-5.43" z="37.03"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_5_1_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-15.47" y="-6.91" z="37.62"/>
+         <point x="-15.43" y="-5.51" z="38"/>
+         <point x="-15.54" y="-4.14" z="39.83"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="1_6_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-6.66" y="-5.05" z="26.21"/>
+        <point x="-6.89" y="-7.12" z="27.8"/>
+        <point x="-7.29" y="-7.57" z="29.01"/>
+        <point x="-8.41" y="-7.59" z="29.72"/>
+        <point x="-8.13" y="-8.1" z="32.08"/>
+        <point x="-8.32" y="-6.37" z="36.83"/>
+        <point x="-9.84" y="-5.21" z="40.99"/>
+        <point x="-10.77" y="-3.02" z="44.95"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+       </function>
+      </functions>
+      <root id="1_6_1_2" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-6.92" y="-7.07" z="27.82"/>
+         <point x="-5.97" y="-7.59" z="27.17"/>
+         <point x="-4.65" y="-8.6" z="28.18"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_6_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-7.46" y="-7.66" z="28.99"/>
+         <point x="-6.5" y="-8.28" z="29.73"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_6_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-8.27" y="-7.68" z="29.84"/>
+         <point x="-6.56" y="-7.67" z="33.18"/>
+         <point x="-5.37" y="-7.33" z="37.64"/>
+         <point x="-4.35" y="-7.21" z="41.71"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="1_6_2" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-6.75" y="-5.09" z="26.09"/>
+        <point x="-8.81" y="-5.87" z="29.42"/>
+        <point x="-9.19" y="-5.87" z="31.96"/>
+        <point x="-9.71" y="-5.75" z="32.75"/>
+        <point x="-9.2" y="-5.43" z="35.06"/>
+        <point x="-9.64" y="-6.25" z="36.06"/>
+        <point x="-8.16" y="-7.9" z="39.09"/>
+        <point x="-5.93" y="-9.66" z="41.72"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+       </function>
+      </functions>
+      <root id="1_6_2_2" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-8.7" y="-5.9" z="29.52"/>
+         <point x="-8.36" y="-6.35" z="30.27"/>
+         <point x="-8.26" y="-6.73" z="32.29"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_6_2_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-9.23" y="-6.03" z="31.96"/>
+         <point x="-10.9" y="-5.7" z="32.36"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_6_2_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-9.44" y="-5.66" z="32.82"/>
+         <point x="-9.97" y="-6.47" z="33.68"/>
+         <point x="-9.7" y="-6.38" z="34.71"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="1_6_2_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-9.21" y="-5.61" z="34.96"/>
+         <point x="-9.38" y="-4.65" z="35.19"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+    </root>
+    <root id="2" label="primary">
+     <geometry>
+      <polyline>
+       <point x="0.67" y="-0.360000000000001" z="21.58"/>
+       <point x="-1.22" y="-0.76" z="23.63"/>
+       <point x="-0.91" y="-2.84" z="24.11"/>
+       <point x="-1.81" y="-3.08" z="24.44"/>
+       <point x="-3.62" y="-3.08" z="25.37"/>
+       <point x="-4.47" y="-3.04" z="25.83"/>
+       <point x="-5.31" y="-3.06" z="26.81"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.36"/>
+       <sample value="0.36"/>
+       <sample value="0.36"/>
+       <sample value="0.36"/>
+       <sample value="0.36"/>
+       <sample value="0.36"/>
+       <sample value="0.36"/>
+      </function>
+     </functions>
+     <root id="2_4_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-1.73" y="-3.14" z="24.41"/>
+        <point x="-2.3" y="-4.22" z="24.35"/>
+        <point x="-4.36" y="-5.79" z="26.23"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="2_5_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-3.55" y="-2.96" z="25.43"/>
+        <point x="-3.83" y="-0.790000000000001" z="26.7"/>
+        <point x="-5.24" y="2.47" z="28.29"/>
+        <point x="-6.21" y="4.7" z="30.31"/>
+        <point x="-7.13" y="6.7" z="31.97"/>
+        <point x="-10.7" y="11.69" z="31.83"/>
+        <point x="-14.06" y="16.86" z="31.04"/>
+        <point x="-15.03" y="19.91" z="31.9"/>
+        <point x="-15.58" y="23" z="32.55"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+       </function>
+      </functions>
+      <root id="2_5_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-6.13" y="4.73" z="30.28"/>
+         <point x="-5.22" y="4.36" z="31.55"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_5_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-7" y="6.77" z="32.21"/>
+         <point x="-8.1" y="6.96" z="30.98"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_5_1_7" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-14.03" y="16.85" z="30.81"/>
+         <point x="-14.29" y="16.42" z="32.55"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="2_6_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-4.37" y="-3.15" z="26.01"/>
+        <point x="-3.16" y="-6.21" z="28.47"/>
+        <point x="-1.49" y="-11.11" z="31.82"/>
+        <point x="-0.61" y="-16.35" z="34.02"/>
+        <point x="-0.54" y="-19.57" z="34.81"/>
+        <point x="-2.84" y="-24.42" z="35.81"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+      <root id="2_6_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-0.66" y="-16.45" z="34.04"/>
+         <point x="-2.27" y="-16.98" z="34.8"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="2_7_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-5.41" y="-3.19" z="26.65"/>
+        <point x="-7.94" y="-5.44" z="27.78"/>
+        <point x="-11.06" y="-7.02" z="28.49"/>
+        <point x="-11.81" y="-7.91" z="28.6"/>
+        <point x="-12.77" y="-8.86" z="28.6"/>
+        <point x="-13.9" y="-9.89" z="28.81"/>
+        <point x="-14.92" y="-10.35" z="29.11"/>
+        <point x="-15.8" y="-11.18" z="29.6"/>
+        <point x="-17.43" y="-12.05" z="29.4"/>
+        <point x="-18.34" y="-13.24" z="29.5"/>
+        <point x="-20.94" y="-15.29" z="29.59"/>
+        <point x="-22.76" y="-16.12" z="29.33"/>
+        <point x="-23.79" y="-16.72" z="28.97"/>
+        <point x="-24.22" y="-17.18" z="29.02"/>
+        <point x="-26" y="-18.21" z="28.53"/>
+        <point x="-28.59" y="-19.85" z="27.79"/>
+        <point x="-31" y="-21.72" z="26.71"/>
+        <point x="-32.68" y="-22.86" z="26.28"/>
+        <point x="-35.01" y="-25.44" z="25.36"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+       </function>
+      </functions>
+      <root id="2_7_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-11.11" y="-6.98" z="28.4"/>
+         <point x="-10.6" y="-8.5" z="27.97"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-11.8" y="-7.87" z="28.63"/>
+         <point x="-11.57" y="-9.34" z="28.08"/>
+         <point x="-11.89" y="-11.59" z="28.42"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-12.76" y="-8.93" z="28.54"/>
+         <point x="-12.91" y="-8.8" z="30.09"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-13.93" y="-9.89" z="28.82"/>
+         <point x="-13.91" y="-11.2" z="28.45"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_7" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-14.88" y="-10.53" z="29.16"/>
+         <point x="-14.56" y="-11" z="31.04"/>
+         <point x="-14.27" y="-10.91" z="32.93"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_8" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-15.8" y="-11.12" z="29.67"/>
+         <point x="-15.85" y="-10.46" z="31.19"/>
+         <point x="-15.34" y="-10.62" z="33.42"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_9" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-17.35" y="-12.07" z="29.57"/>
+         <point x="-18.61" y="-11.99" z="30.32"/>
+         <point x="-19.17" y="-11.79" z="31.97"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_10" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-18.37" y="-13.28" z="29.53"/>
+         <point x="-17.86" y="-14.56" z="29.94"/>
+         <point x="-17.61" y="-16.04" z="31.6"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_11" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-20.96" y="-15.15" z="29.58"/>
+         <point x="-20.48" y="-16.23" z="30.49"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_12" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-22.6" y="-16.13" z="29.43"/>
+         <point x="-22.78" y="-15.17" z="30.42"/>
+         <point x="-22.26" y="-14.46" z="32.05"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_13" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-23.82" y="-16.79" z="28.91"/>
+         <point x="-24.69" y="-15.87" z="28.6"/>
+         <point x="-25.02" y="-14.58" z="28.66"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_14" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-24.29" y="-17.24" z="29"/>
+         <point x="-23.54" y="-18.29" z="29.7"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_1_17" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-30.97" y="-21.71" z="26.68"/>
+         <point x="-29.51" y="-23.18" z="26.61"/>
+         <point x="-28.54" y="-25.05" z="26.69"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="2_7_2" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-5.33" y="-3.39" z="26.85"/>
+        <point x="-7.6" y="-3.21" z="31.84"/>
+        <point x="-9.16" y="-2.64" z="34.52"/>
+        <point x="-11.45" y="-0.91" z="38.52"/>
+        <point x="-12.5" y="-0.370000000000001" z="42.61"/>
+        <point x="-13.28" y="-0.31" z="44.55"/>
+        <point x="-16.12" y="0.35" z="49.57"/>
+        <point x="-18.3" y="2.04" z="52.46"/>
+        <point x="-19.84" y="2.78" z="54.8"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+       </function>
+      </functions>
+      <root id="2_7_2_2" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-7.71" y="-3.01" z="31.8"/>
+         <point x="-7.65" y="-3.88" z="32.99"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_2_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-8.92" y="-2.62" z="34.37"/>
+         <point x="-7.41" y="-2.1" z="35.21"/>
+         <point x="-5.85" y="-1.85" z="35.61"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_2_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-12.53" y="-0.460000000000001" z="42.56"/>
+         <point x="-12.97" y="0.59" z="42.84"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="2_7_2_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-13.18" y="-0.380000000000001" z="44.52"/>
+         <point x="-13.92" y="-2.17" z="44.23"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="2_7_3" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-5.38" y="-3.6" z="26.61"/>
+        <point x="-6.89" y="-5.56" z="28.53"/>
+        <point x="-8.82" y="-8.4" z="31.84"/>
+        <point x="-10.41" y="-7.51" z="34.31"/>
+        <point x="-9.68" y="-5.66" z="36.74"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="2_7_4" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-5.34" y="-3.24" z="26.79"/>
+        <point x="-5.53" y="-1.97" z="29.23"/>
+        <point x="-4.84" y="-1.78" z="34.77"/>
+        <point x="-5.75" y="-2.1" z="39.39"/>
+        <point x="-6.88" y="0.41" z="41.81"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+    </root>
+    <root id="3" label="primary">
+     <geometry>
+      <polyline>
+       <point x="-0.29" y="0.539999999999999" z="21.51"/>
+       <point x="-2.03" y="-0.32" z="23.42"/>
+       <point x="-4.33" y="-1.48" z="24.24"/>
+       <point x="-6.23" y="-1.21" z="24.95"/>
+       <point x="-6.57" y="0.199999999999999" z="26.23"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.35"/>
+       <sample value="0.35"/>
+       <sample value="0.35"/>
+       <sample value="0.35"/>
+       <sample value="0.35"/>
+      </function>
+     </functions>
+     <root id="3_3_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-4.36" y="-1.57" z="24.3"/>
+        <point x="-4.23" y="-5.3" z="25.12"/>
+        <point x="-5.7" y="-5.78" z="31.26"/>
+        <point x="-5.88" y="-6.58" z="38.52"/>
+        <point x="-8.71" y="-7.98" z="42.6"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="3_5_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-6.61" y="0.129999999999999" z="26.32"/>
+        <point x="-10.42" y="0.26" z="26.3"/>
+        <point x="-17.46" y="-0.120000000000001" z="25.46"/>
+        <point x="-20.67" y="-0.110000000000001" z="25.16"/>
+        <point x="-23.89" y="-0.450000000000001" z="24.67"/>
+        <point x="-28.85" y="-0.360000000000001" z="23.61"/>
+        <point x="-31.64" y="-0.77" z="22.97"/>
+        <point x="-35.24" y="-1.82" z="22.48"/>
+        <point x="-37.46" y="-2.87" z="22.51"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+       </function>
+      </functions>
+      <root id="3_5_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-17.61" y="-0.140000000000001" z="25.44"/>
+         <point x="-20.89" y="1.31" z="24.96"/>
+         <point x="-24.53" y="2.56" z="24.45"/>
+         <point x="-29.15" y="2.4" z="24.49"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="3_5_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-23.96" y="-0.49" z="24.61"/>
+         <point x="-23.66" y="-0.860000000000001" z="26.47"/>
+         <point x="-24.04" y="-1.35" z="28.88"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="3_5_1_7" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-31.72" y="-0.780000000000001" z="22.88"/>
+         <point x="-32.94" y="0.969999999999999" z="23.32"/>
+         <point x="-33.89" y="2.53" z="23.37"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="3_5_2" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-6.72" y="0.0199999999999996" z="26.39"/>
+        <point x="-3.43" y="1.2" z="27.69"/>
+        <point x="-0.33" y="2.49" z="33.54"/>
+        <point x="2.35" y="2.96" z="40.16"/>
+        <point x="2.74" y="4.71" z="45.46"/>
+        <point x="3.66" y="5.58" z="51.42"/>
+        <point x="4.51" y="7.03" z="56.82"/>
+        <point x="4.58" y="9.08" z="59.01"/>
+        <point x="5.35" y="11.5" z="60.78"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+        <sample value="0.14"/>
+       </function>
+      </functions>
+      <root id="3_5_2_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="2.28" y="3.23" z="39.8"/>
+         <point x="5.15" y="3.54" z="41.03"/>
+         <point x="6.08" y="4.59" z="44.15"/>
+         <point x="7.11" y="6.17" z="47.11"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="3_5_2_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="3.56" y="5.54" z="51.21"/>
+         <point x="2.64" y="5.48" z="52.91"/>
+         <point x="2.92" y="5.49" z="54.84"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+    </root>
+    <root id="4" label="primary">
+     <geometry>
+      <polyline>
+       <point x="-0.16" y="0.859999999999999" z="21.91"/>
+       <point x="-2.43" y="0.959999999999999" z="22.99"/>
+       <point x="-3.44" y="0.529999999999999" z="22.49"/>
+       <point x="-5.29" y="0.00999999999999979" z="23.27"/>
+       <point x="-5.69" y="-0.18" z="24.27"/>
+       <point x="-6.51" y="0.0499999999999989" z="26.21"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.3"/>
+       <sample value="0.3"/>
+       <sample value="0.3"/>
+       <sample value="0.3"/>
+       <sample value="0.3"/>
+       <sample value="0.3"/>
+      </function>
+     </functions>
+     <root id="4_2_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-2.42" y="1.07" z="22.98"/>
+        <point x="-2.24" y="3.64" z="24.55"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="4_3_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-3.46" y="0.57" z="22.61"/>
+        <point x="-4.75" y="2.33" z="23.37"/>
+        <point x="-6.14" y="2.62" z="25.99"/>
+        <point x="-6.36" y="2.74" z="28.47"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="4_4_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-5.31" y="-0.0199999999999996" z="23.24"/>
+        <point x="-10.4" y="2.79" z="22.9"/>
+        <point x="-15.05" y="4.7" z="22.15"/>
+        <point x="-16.92" y="5.83" z="21.89"/>
+        <point x="-18.29" y="6.45" z="21.5"/>
+        <point x="-20.3" y="7.04" z="20.85"/>
+        <point x="-22.34" y="8.75" z="20.35"/>
+        <point x="-24.46" y="9.63" z="19.58"/>
+        <point x="-25.76" y="10.48" z="19.05"/>
+        <point x="-28.39" y="13.27" z="18.49"/>
+        <point x="-31.74" y="17.98" z="19.48"/>
+        <point x="-34.9" y="20.07" z="20.49"/>
+        <point x="-37.69" y="22.33" z="21.07"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+       </function>
+      </functions>
+      <root id="4_4_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-15.22" y="4.59" z="22.19"/>
+         <point x="-15.88" y="3.73" z="24.57"/>
+         <point x="-15.14" y="3.61" z="27.64"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_4_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-17.05" y="5.85" z="21.81"/>
+         <point x="-21.94" y="5.66" z="22.76"/>
+         <point x="-30.16" y="5.16" z="22.13"/>
+         <point x="-35.44" y="6.79" z="21.34"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_4_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-18.47" y="6.37" z="21.4"/>
+         <point x="-16.91" y="7.61" z="23.39"/>
+         <point x="-16.44" y="7.21" z="26.65"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_4_1_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-20.22" y="7.09" z="20.97"/>
+         <point x="-22.9" y="7.62" z="20.6"/>
+         <point x="-27.39" y="9.88" z="19.49"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_4_1_7" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-22.42" y="8.77" z="20.27"/>
+         <point x="-21.91" y="10.64" z="19.81"/>
+         <point x="-21.01" y="11.95" z="20.67"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_4_1_8" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-24.46" y="9.68" z="19.56"/>
+         <point x="-24.66" y="11.78" z="18.85"/>
+         <point x="-24.94" y="13.7" z="19.46"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_4_1_9" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-25.86" y="10.54" z="19.02"/>
+         <point x="-26.11" y="12.63" z="18.81"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="4_5_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-5.67" y="-0.25" z="24.26"/>
+        <point x="-7.54" y="-1.85" z="25.44"/>
+        <point x="-9.95" y="-5.78" z="28.91"/>
+        <point x="-8.85" y="-7.57" z="31.98"/>
+        <point x="-7.36" y="-7.54" z="35.39"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="4_6_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-6.4" y="-0.0600000000000005" z="25.98"/>
+        <point x="-5.92" y="-4.54" z="27.3"/>
+        <point x="-3.86" y="-10.3" z="31.53"/>
+        <point x="-3.77" y="-11.85" z="32.31"/>
+        <point x="-3.49" y="-13.5" z="32.84"/>
+        <point x="-3.26" y="-15.59" z="33.63"/>
+        <point x="-4.79" y="-19.22" z="34.96"/>
+        <point x="-5.29" y="-24.02" z="36.36"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+       </function>
+      </functions>
+      <root id="4_6_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-3.81" y="-10.27" z="31.44"/>
+         <point x="-2.03" y="-13.86" z="31.67"/>
+         <point x="-0.58" y="-18.97" z="32.94"/>
+         <point x="-1.67" y="-23.75" z="34.37"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_6_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-3.69" y="-11.8" z="32.26"/>
+         <point x="-4.83" y="-11.45" z="34.1"/>
+         <point x="-3.93" y="-9.78" z="36.3"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="4_6_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-3.52" y="-13.37" z="32.92"/>
+         <point x="-5.38" y="-15.15" z="34.06"/>
+         <point x="-7.98" y="-16.69" z="35.54"/>
+         <point x="-9.73" y="-15.82" z="36.62"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="4_6_2" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="-6.57" y="-0.290000000000001" z="26.22"/>
+        <point x="-5.62" y="0.57" z="29.17"/>
+        <point x="-5.23" y="0.27" z="31.26"/>
+        <point x="-4.5" y="-0.98" z="34.24"/>
+        <point x="-2.18" y="-1.89" z="37.65"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+      <root id="4_6_2_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="-5.23" y="0.27" z="31.15"/>
+         <point x="-5.61" y="0.65" z="32.18"/>
+         <point x="-5.29" y="0.41" z="34.95"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+    </root>
+    <root id="5" label="primary">
+     <geometry>
+      <polyline>
+       <point x="2.38" y="-0.280000000000001" z="21.19"/>
+       <point x="6.55" y="-0.110000000000001" z="23.82"/>
+       <point x="8.85" y="0.35" z="25.49"/>
+       <point x="11.04" y="0.32" z="27.36"/>
+       <point x="11.69" y="0.48" z="28.97"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.39"/>
+       <sample value="0.39"/>
+       <sample value="0.39"/>
+       <sample value="0.39"/>
+       <sample value="0.39"/>
+      </function>
+     </functions>
+     <root id="5_3_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="8.79" y="0.24" z="25.48"/>
+        <point x="9.41" y="0.93" z="28.86"/>
+        <point x="10.13" y="2.08" z="34.11"/>
+        <point x="10.14" y="1.19" z="36.67"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="5_4_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="11.03" y="0.27" z="27.45"/>
+        <point x="12.81" y="-0.32" z="27.64"/>
+        <point x="13.66" y="-1.8" z="30.7"/>
+        <point x="14.62" y="-3.44" z="38.32"/>
+        <point x="15.66" y="-5.15" z="42.27"/>
+        <point x="15.99" y="-6.28" z="47.83"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+        <sample value="0.19"/>
+       </function>
+      </functions>
+      <root id="5_4_1_2" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="12.91" y="-0.5" z="27.82"/>
+         <point x="16.01" y="-1.76" z="27.9"/>
+         <point x="22.18" y="-3.58" z="26.96"/>
+         <point x="29.96" y="-3.79" z="24.76"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="5_5_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="11.72" y="0.34" z="28.77"/>
+        <point x="13.13" y="-1.49" z="31.91"/>
+        <point x="15.11" y="-0.960000000000001" z="36.35"/>
+        <point x="17.54" y="0.33" z="43.12"/>
+        <point x="18.58" y="0.619999999999999" z="45.22"/>
+        <point x="21.4" y="1.99" z="49.42"/>
+        <point x="24.47" y="3.85" z="52.84"/>
+        <point x="27.05" y="5.2" z="54.76"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+       </function>
+      </functions>
+      <root id="5_5_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="14.97" y="-1.05" z="36.48"/>
+         <point x="15.78" y="1.99" z="37.86"/>
+         <point x="15.11" y="0.76" z="42.32"/>
+         <point x="14.74" y="0.0800000000000001" z="46.17"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="5_5_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="17.6" y="0.51" z="43.2"/>
+         <point x="20.25" y="0.27" z="44.23"/>
+         <point x="22.68" y="0.75" z="45.48"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="5_5_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="18.57" y="0.65" z="45.48"/>
+         <point x="18.19" y="2.67" z="47.8"/>
+         <point x="19.2" y="2.78" z="50.41"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="5_5_1_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="21.4" y="1.96" z="49.52"/>
+         <point x="23.24" y="0.83" z="51.53"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="5_5_2" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="11.78" y="0.44" z="28.41"/>
+        <point x="12.35" y="1.45" z="31.54"/>
+        <point x="13.14" y="1.58" z="33.76"/>
+        <point x="14.65" y="2.01" z="36.83"/>
+        <point x="16.08" y="1.88" z="39.83"/>
+        <point x="16.98" y="1.67" z="43.16"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+       </function>
+      </functions>
+      <root id="5_5_2_2" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="12.19" y="1.44" z="31.81"/>
+         <point x="12.54" y="2.77" z="33.55"/>
+         <point x="13.94" y="3.23" z="37.22"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="5_5_2_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="13.33" y="1.96" z="33.55"/>
+         <point x="14.3" y="0.709999999999999" z="34.23"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+    </root>
+    <root id="6" label="primary">
+     <geometry>
+      <polyline>
+       <point x="2.71" y="-1.38" z="21.3"/>
+       <point x="3.56" y="-2.02" z="22.31"/>
+       <point x="5.92" y="-0.91" z="23.77"/>
+       <point x="8.7" y="-1.57" z="25.66"/>
+       <point x="10.1" y="-1.2" z="27.03"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.28"/>
+       <sample value="0.28"/>
+       <sample value="0.28"/>
+       <sample value="0.28"/>
+       <sample value="0.28"/>
+      </function>
+     </functions>
+     <root id="6_5_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="10.16" y="-1.2" z="27.03"/>
+        <point x="13.82" y="0.0700000000000003" z="29.81"/>
+        <point x="20.41" y="-0.610000000000001" z="38.09"/>
+        <point x="23.48" y="0.93" z="40.92"/>
+        <point x="27.25" y="6.44" z="42.45"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+        <sample value="0.13"/>
+       </function>
+      </functions>
+      <root id="6_5_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="20.57" y="-0.58" z="37.95"/>
+         <point x="19.44" y="0.82" z="38.31"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="6_5_2" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="10.59" y="-1.28" z="27.28"/>
+        <point x="12.21" y="-3.27" z="28.38"/>
+        <point x="13.1" y="-5" z="31.62"/>
+        <point x="14.07" y="-7.39" z="34.62"/>
+        <point x="15.15" y="-9.78" z="36.36"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="6_5_3" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="10.67" y="-1.05" z="27.32"/>
+        <point x="11.59" y="-0.550000000000001" z="29.65"/>
+        <point x="11.2" y="-1.64" z="32.42"/>
+        <point x="11.33" y="-2.44" z="34.86"/>
+        <point x="10.62" y="-3.2" z="39.89"/>
+        <point x="12.26" y="-5.59" z="45.02"/>
+        <point x="13.39" y="-6.97" z="49.65"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+        <sample value="0.09"/>
+       </function>
+      </functions>
+      <root id="6_5_3_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="11.33" y="-1.6" z="32.29"/>
+         <point x="10.71" y="-2.5" z="32.44"/>
+         <point x="10.51" y="-3.82" z="34.1"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="6_5_3_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="11.36" y="-2.61" z="35.06"/>
+         <point x="13.24" y="-1.59" z="37"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+    </root>
+    <root id="7" label="primary">
+     <geometry>
+      <polyline>
+       <point x="3.26" y="-1.37" z="21.31"/>
+       <point x="5.8" y="-0.700000000000001" z="25.55"/>
+       <point x="6.92" y="-2.27" z="26.53"/>
+       <point x="7.72" y="-3.01" z="27.28"/>
+       <point x="8.6" y="-4.61" z="28.57"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.44"/>
+       <sample value="0.44"/>
+       <sample value="0.44"/>
+       <sample value="0.44"/>
+       <sample value="0.44"/>
+      </function>
+     </functions>
+     <root id="7_3_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="6.96" y="-2.37" z="26.7"/>
+        <point x="4.33" y="-4.45" z="27.41"/>
+        <point x="2.77" y="-7.17" z="28.28"/>
+        <point x="3.13" y="-10.26" z="28.84"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+        <sample value="0.1"/>
+       </function>
+      </functions>
+     </root>
+     <root id="7_4_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="7.72" y="-2.9" z="27.29"/>
+        <point x="7.97" y="-6.38" z="27.95"/>
+        <point x="7.8" y="-9.69" z="27.88"/>
+        <point x="7.34" y="-11.87" z="26.81"/>
+        <point x="6.87" y="-12.47" z="26.64"/>
+        <point x="6.52" y="-12.61" z="26.47"/>
+        <point x="6.08" y="-13.19" z="26"/>
+        <point x="5.84" y="-15.04" z="25.75"/>
+        <point x="5.27" y="-15.69" z="26.37"/>
+        <point x="4.11" y="-17.1" z="27.52"/>
+        <point x="3.09" y="-19.45" z="28.75"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+        <sample value="0.11"/>
+       </function>
+      </functions>
+      <root id="7_4_1_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="7.23" y="-11.98" z="26.77"/>
+         <point x="9.18" y="-13.95" z="26.9"/>
+         <point x="11.98" y="-15.53" z="27.77"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_4_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="6.93" y="-12.5" z="26.55"/>
+         <point x="7.98" y="-13.59" z="26.59"/>
+         <point x="8.53" y="-15.11" z="27.51"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_4_1_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="6.53" y="-12.65" z="26.43"/>
+         <point x="6.08" y="-14.13" z="27.38"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_4_1_7" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="6.13" y="-13.11" z="26.01"/>
+         <point x="5" y="-13.35" z="27.1"/>
+         <point x="3.9" y="-14.81" z="27.91"/>
+         <point x="2.66" y="-16.34" z="28.73"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_4_1_8" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="5.67" y="-15.24" z="25.72"/>
+         <point x="6.41" y="-15.87" z="25.93"/>
+         <point x="7.14" y="-17.43" z="26.39"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_4_1_9" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="5.28" y="-15.76" z="26.39"/>
+         <point x="5.9" y="-16.58" z="26.71"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="7_5_1" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="8.65" y="-4.4" z="28.5"/>
+        <point x="10.06" y="-5.15" z="30.74"/>
+        <point x="10.85" y="-5.76" z="34.57"/>
+        <point x="11.15" y="-6.57" z="38.83"/>
+        <point x="11.43" y="-7.33" z="41.78"/>
+        <point x="10.23" y="-8.21" z="46.66"/>
+        <point x="9.99" y="-9.54" z="52.42"/>
+        <point x="10.35" y="-10.95" z="54.93"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+        <sample value="0.15"/>
+       </function>
+      </functions>
+      <root id="7_5_1_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="10.91" y="-5.65" z="34.51"/>
+         <point x="9.26" y="-4.57" z="35.2"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_5_1_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="11.44" y="-7.32" z="41.7"/>
+         <point x="11.47" y="-5.31" z="43.64"/>
+         <point x="12.7" y="-2.81" z="48.7"/>
+         <point x="13.29" y="-1.89" z="50.58"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="7_5_2" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="8.55" y="-4.55" z="28.42"/>
+        <point x="8.32" y="-4.51" z="29.67"/>
+        <point x="7.93" y="-5.83" z="34.82"/>
+        <point x="7.03" y="-5.17" z="41.09"/>
+        <point x="7.44" y="-5.15" z="47.36"/>
+        <point x="7.05" y="-6.2" z="52.41"/>
+        <point x="6.11" y="-5.62" z="55.05"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.12"/>
+        <sample value="0.12"/>
+        <sample value="0.12"/>
+        <sample value="0.12"/>
+        <sample value="0.12"/>
+        <sample value="0.12"/>
+        <sample value="0.12"/>
+       </function>
+      </functions>
+      <root id="7_5_2_2" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="8.28" y="-4.44" z="29.68"/>
+         <point x="6.15" y="-4.12" z="31.27"/>
+         <point x="3.2" y="-0.16" z="33.31"/>
+         <point x="1.23" y="0.75" z="35.35"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_5_2_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="7.74" y="-5.54" z="35.02"/>
+         <point x="8.33" y="-4.73" z="36.05"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_5_2_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="7.26" y="-5.04" z="40.97"/>
+         <point x="8.79" y="-4.66" z="40.73"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+     <root id="7_5_3" label="secondary">
+      <geometry>
+       <polyline>
+        <point x="8.65" y="-4.75" z="28.66"/>
+        <point x="10.53" y="-9.35" z="28.75"/>
+        <point x="12.81" y="-12.59" z="28.73"/>
+        <point x="14.26" y="-14.93" z="29.18"/>
+        <point x="15.94" y="-18.19" z="28.93"/>
+        <point x="18.61" y="-21.5" z="32.12"/>
+        <point x="17.67" y="-24.41" z="33.99"/>
+        <point x="13.55" y="-28.4" z="36.64"/>
+        <point x="9.85" y="-32" z="39.16"/>
+        <point x="7.68" y="-34.51" z="40.39"/>
+       </polyline>
+      </geometry>
+      <properties/>
+      <functions>
+       <function domain="polyline" name="diameter">
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+        <sample value="0.16"/>
+       </function>
+      </functions>
+      <root id="7_5_3_3" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="12.77" y="-12.63" z="28.83"/>
+         <point x="12.12" y="-14.55" z="28.44"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_5_3_4" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="14.32" y="-15.21" z="29.25"/>
+         <point x="16.48" y="-15.85" z="29.18"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_5_3_5" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="15.97" y="-18.15" z="29.02"/>
+         <point x="16.06" y="-19.23" z="30.24"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+      <root id="7_5_3_6" label="tertiary">
+       <geometry>
+        <polyline>
+         <point x="18.52" y="-21.7" z="32.1"/>
+         <point x="20.16" y="-21.69" z="32.99"/>
+        </polyline>
+       </geometry>
+       <properties/>
+       <functions>
+        <function domain="polyline" name="diameter">
+         <sample value="0.05"/>
+         <sample value="0.05"/>
+        </function>
+       </functions>
+      </root>
+     </root>
+    </root>
+    <root id="8" label="primary">
+     <geometry>
+      <polyline>
+       <point x="1.26" y="-1.81" z="21.96"/>
+       <point x="-1.02" y="-1.09" z="28.45"/>
+       <point x="1.43" y="3.78" z="40.38"/>
+       <point x="3.08" y="6.4" z="47.76"/>
+       <point x="6.49" y="8.15" z="58.54"/>
+      </polyline>
+     </geometry>
+     <properties/>
+     <functions>
+      <function domain="polyline" name="diameter">
+       <sample value="0.14"/>
+       <sample value="0.14"/>
+       <sample value="0.14"/>
+       <sample value="0.14"/>
+       <sample value="0.14"/>
+      </function>
+     </functions>
+    </root>
+   </root>
+  </plant>
+ </scene>
+</rsml>
