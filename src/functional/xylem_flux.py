@@ -298,6 +298,7 @@ class XylemFluxPython(XylemFlux):
         """ returns the exact transpirational flux of the xylem model solution @param rx
             @see axial_flux        
         """
+        self.collar_index_ = self.collar_index()
         return self.axial_flux(self.collar_index_, sim_time, rx, sxx, k_soil, cells, ij = True)
 
     def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
