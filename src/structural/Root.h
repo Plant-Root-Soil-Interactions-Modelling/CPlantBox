@@ -47,7 +47,7 @@ public:
     std::shared_ptr<RootRandomParameter> getRootRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const RootSpecificParameter> param() const; ///< root parameter
 
-    double insertionAngle=0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
+    double insertionAngle = 0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
 
 };
 
@@ -60,25 +60,17 @@ public:
  */
 class StaticRoot :public Root {
 
-    StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        Vector3d partialIHeading_, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch TODO
+public:
+
+    StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, double length, int pni);
 
     virtual ~StaticRoot() { }; ///< no need to do anything, children are deleted in ~Organ()
 
-    // void setParent(std::shared_ptr<Organ> p)
-    // void addChild(std::shared_ptr<Organ> c); ///< adds an subsequent organ
-    void setGeometry(); // TODO
-    void addLaterals(std::vector<int> lateralIndices, std::vector<int> lateralTypes, std::vector<double> lateralDelays); // TODO
+    void simulate(double dt, bool silence = false) override { Organ::simulate(dt, silence); }
 
-    void simulate(double dt, bool silence = false) override; ///< no root elongation TODO call Organsim::simulate
+    void initializeLaterals();
 
-    std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree TODO
-
-    int organType() const override { return Organism::ot_root; }; ///< returns the organs type
-
-protected:
-
-    std::vector<int> lateralIndices;
+    std::vector<int> lateralNodeIndices;
     std::vector<int> lateralTypes;
     std::vector<double> lateralDelays;
 

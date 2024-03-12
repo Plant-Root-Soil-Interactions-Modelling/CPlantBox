@@ -100,7 +100,7 @@ void Plant::initializeLB(bool verbose )
 {
     reset(); // just in case
     auto seed = std::make_shared<Seed>(shared_from_this());
-    baseOrgans.push_back(seed);
+    this->addOrgan(seed);
 	seed->initialize(verbose);
     initialize_(verbose);
 
@@ -127,7 +127,7 @@ void Plant::initializeDB(bool verbose)
     };
 
     auto seed = std::make_shared<SeedDB>(shared_from_this());
-    baseOrgans.push_back(seed);
+    this->addOrgan(seed);
 	seed->initialize(verbose);
     initialize_(verbose);
 }

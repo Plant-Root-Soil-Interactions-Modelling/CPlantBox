@@ -321,4 +321,23 @@ std::string Root::toString() const
     return  Organ::toString()+newstring.str();
 }
 
+/**
+ * Static root
+ */
+
+StaticRoot::StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, double length, int pni)
+        :Root(id, param, false, false, 0., length, Vector3d(0.,0.,-1.), pni, false,  0 )
+{ }
+
+void StaticRoot::initializeLaterals() {
+    assert(lateralNodeIndices.size()==lateralTypes.size() && lateralNodeIndices.size()==lateralDelays.size() && "Root::Root parent must be set");
+
+    for (int i=0; i<lateralNodeIndices.size(); i++) {
+        int lni = lateralNodeIndices.at(i); // rename
+        std::shared_ptr<Organ> lateral = std::make_shared<Root>(plant.lock(), lateralTypes.at(i) , lateralDelays.at(i), shared_from_this(), 0);
+        lateral->addNode(getNode(lni), getNodeId(lni), lateralDelays.at(i));
+        this->addChild(lateral);
+    }
+}
+
 } // end namespace CPlantBox

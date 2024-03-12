@@ -771,6 +771,13 @@ PYBIND11_MODULE(plantbox, m) {
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
+    py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
+            .def("initializeLaterals", &StaticRoot::initializeLaterals)
+            .def_readwrite("lateralNodeIndices", &StaticRoot::lateralNodeIndices)
+            .def_readwrite("lateralTypes", &StaticRoot::lateralTypes)
+            .def_readwrite("lateralDelays", &StaticRoot::lateralDelays);
+
     /**
      * Seed.h
      */

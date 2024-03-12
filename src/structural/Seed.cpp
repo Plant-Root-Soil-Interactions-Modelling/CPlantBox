@@ -63,7 +63,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create roots
 	 */
-	const double maxT = 90.; // maximal simulation time
+	const double maxT = 365.; // maximal simulation time
 	auto sp = this->param(); // rename (SeedSpecificParameter)
 
 	// Taproot

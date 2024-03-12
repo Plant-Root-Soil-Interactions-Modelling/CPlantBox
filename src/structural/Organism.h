@@ -131,7 +131,7 @@ public:
 
 //	virtual bool hasRelCoord() {return false;} ///< overriden by @Plant::hasRelCoord()
 
-    std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
+    std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the organism
 
 protected:
 
