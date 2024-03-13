@@ -596,6 +596,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a", &RootSpecificParameter::a)
             .def_readwrite("theta", &RootSpecificParameter::theta)
             .def_readwrite("rlt", &RootSpecificParameter::rlt)
+            .def_readwrite("laterals", &RootSpecificParameter::laterals)
             .def("getK",&RootSpecificParameter::getK)
             .def("nob", &RootSpecificParameter::nob);
     /*
@@ -774,9 +775,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
             .def("initializeLaterals", &StaticRoot::initializeLaterals)
-            .def_readwrite("lateralNodeIndices", &StaticRoot::lateralNodeIndices)
-            .def_readwrite("lateralTypes", &StaticRoot::lateralTypes)
-            .def_readwrite("lateralDelays", &StaticRoot::lateralDelays);
+            .def("addLateral", &StaticRoot::addLateral);
 
     /**
      * Seed.h

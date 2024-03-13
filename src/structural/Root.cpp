@@ -326,16 +326,16 @@ std::string Root::toString() const
  */
 
 StaticRoot::StaticRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, double length, int pni)
-        :Root(id, param, false, false, 0., length, Vector3d(0.,0.,-1.), pni, false,  0 )
+        :Root(id, param, true, false, 0., length, Vector3d(0.,0.,-1.), pni, false,  0 )
 { }
 
 void StaticRoot::initializeLaterals() {
     assert(lateralNodeIndices.size()==lateralTypes.size() && lateralNodeIndices.size()==lateralDelays.size() && "Root::Root parent must be set");
-
+    // std::cout << lateralNodeIndices.size() << "\n";
     for (int i=0; i<lateralNodeIndices.size(); i++) {
         int lni = lateralNodeIndices.at(i); // rename
-        std::shared_ptr<Organ> lateral = std::make_shared<Root>(plant.lock(), lateralTypes.at(i) , lateralDelays.at(i), shared_from_this(), 0);
-        lateral->addNode(getNode(lni), getNodeId(lni), lateralDelays.at(i));
+        std::shared_ptr<Organ> lateral = std::make_shared<Root>(plant.lock(), lateralTypes.at(i) , lateralDelays.at(i), shared_from_this(), lni);
+        // lateral->addNode(getNode(lni), getNodeId(lni), lateralDelays.at(i));
         this->addChild(lateral);
     }
 }

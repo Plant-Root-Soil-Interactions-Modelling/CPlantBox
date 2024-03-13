@@ -134,7 +134,7 @@ std::shared_ptr<OrganRandomParameter> Organ::getOrganRandomParameter() const
  */
 void Organ::simulate(double dt, bool verbose)
 {
-	// store information of this time step
+    // store information of this time step
 	oldNumberOfNodes = nodes.size();
 	moved = false;
 

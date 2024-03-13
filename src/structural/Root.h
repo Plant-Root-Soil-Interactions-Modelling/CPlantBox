@@ -70,6 +70,14 @@ public:
 
     void initializeLaterals();
 
+    void addLateral(int pni, int lateralType, double lateralDelay) {
+        lateralNodeIndices.push_back(pni);
+        lateralTypes.push_back(lateralType);
+        lateralDelays.push_back(lateralDelay);
+    }
+
+protected:
+
     std::vector<int> lateralNodeIndices;
     std::vector<int> lateralTypes;
     std::vector<double> lateralDelays;
