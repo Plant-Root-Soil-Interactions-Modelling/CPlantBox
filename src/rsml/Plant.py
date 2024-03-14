@@ -194,16 +194,16 @@ if __name__ == '__main__':
     p2.tropismS = 0.2
     p2.tropismN = 0  # 0.05
 
-    plant.initialize_static("B-23.rsml", [0, 1])  # 0 is shoot, 1 are static roots
+    plant.initialize_static("B-23.rsml", [0, 1, 2, 3])  # 0 is shoot, 1 are static roots
 
-    print()
-    laterals, tip_laterals = plant.analyse_laterals([0, 1], [2, 3])
+    # print()
+    # laterals, tip_laterals = plant.analyse_laterals([0, 1], [2, 3])
+    #
+    # plant.set_identical_laterals([0, 1], [2, 3], 2)
+    # plant.initialize_static_laterals()
 
-    plant.set_identical_laterals([0, 1], [2, 3], 2)
-    plant.initialize_static_laterals()
+    # plant.simulate(20., True)
 
-    plant.simulate(20., True)
-
-    vp.plot_roots(plant, "subType")  #####################?????????????????????ßß
+    vp.plot_roots(plant, "subType")
 
     print("fin")

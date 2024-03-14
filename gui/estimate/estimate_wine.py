@@ -29,6 +29,7 @@ pick path and files
 
 file_path = "RSML_Fichtl_11:23"
 file_names = ["B-08.rsml", "D-25.rsml"]  # , "E-39.rsml", D-25.rsml # repetitions of same genotype
+
 """
 RSMLs:
 Type 1: the initially planted roots
