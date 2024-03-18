@@ -102,8 +102,8 @@ void Smooth_Parameter_and_BoundaryConditions_Changes(int s, double t) ; // User-
 void vector_init(double t, double *y, double *y_dot);
 
 // ******************  mere C-fluxes related variables or parameters ********** :
-extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
+extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_S_ST, *Q_Mucil ;		  // components of vector y as used in diff. system f()...
+extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_S_ST_dot, *Q_Mucil_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl ;
 extern Fortran_vector JS_ST, C_amont, JS_Sympl, JS_Apo, RespMaint ;
 extern Fortran_vector vol_ST, vol_PhlApo, vol_ParApo ;
@@ -121,8 +121,8 @@ extern Fortran_vector C_Sympl, C_ParApo		; // Concentration of sugar in lateral 
 extern Fortran_vector Delta_JS_ST ; // sera la composante purement phloemienne de Q_TC_dot[ ]							(mmol / h)
 
 // tracer-specific add-ins :
-extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
-extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
+extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_S_Mesophyll, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
+extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_S_Mesophyll_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern Fortran_vector TracerJS_ST, TracerC_Sympl, TracerC_ST, TracerJS_Sympl, TracerJS_Apo, TracerJS_ParMb, TracerJS_PhlMb, TracerC_PhlApo, TracerC_ParApo ;
 extern Fortran_vector TracerQ_RespMaintSyn, TracerInput, TracerRespMaint, TracerC_SymplUpflow, TracerC_ApoUpflow ;
 extern Fortran_vector TracerRatioSympl, TracerRatioQ_RespMaint ;
@@ -200,10 +200,11 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	
 	Q_RespMaintmax = Q_Growthtot + Nt ; 
 	Q_Growthtotmax = Q_RespMaintmax + Nt ; 
-	Q_Exudationmax = Q_Growthtotmax + Nt ; 
+	Q_S_Mesophyll = Q_Growthtotmax + Nt ; 
 	
 	//if delete, lower neq
-	Q_out = Q_Exudationmax + Nt;//for intermediary compartment between ST and outside. useless (not implemented) delete?
+	Q_S_ST = Q_S_Mesophyll + Nt;
+	Q_Mucil = Q_S_ST + Nt ;
 	
 	for (int i=1; i<=Nt; i++)  {
 		double volSTi = vol_ST[i];
@@ -211,6 +212,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		
 		if (QSTi < 0.){ QSTi = 0. ; Q_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		if (Q_Mesophyll[i] < 0.){ Q_Mesophyll[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+		if (Q_S_ST[i] < 0.){ Q_S_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+		if (Q_S_Mesophyll[i] < 0.){ Q_S_Mesophyll[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		C_ST[i] = QSTi / volSTi ; // Concentration of sugar in sieve tubes		(mmol / ml)
 	
 	}
@@ -222,10 +225,11 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	
 	Q_Rmmax_dot = Q_Gtot_dot + Nt ; 
 	Q_Gtotmax_dot = Q_Rmmax_dot + Nt ; 
-	Q_Exudmax_dot = Q_Gtotmax_dot + Nt ; 
+	Q_S_Mesophyll_dot = Q_Gtotmax_dot + Nt ; 
 	
 	
-	Q_out_dot = Q_Exudmax_dot + Nt ;//useless, delete?
+	Q_S_ST_dot = Q_S_Mesophyll_dot + Nt ;
+	Q_Mucil_dot = Q_S_ST_dot + Nt ;
 	
 	//Add later
 	/*if (Adv_BioPhysics) {

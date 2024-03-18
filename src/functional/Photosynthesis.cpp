@@ -100,12 +100,12 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	while(!this->stop){
 		std::fill(maxErrAbs.begin(), maxErrAbs.end(), 0.);//re-initialize absolute error vector
 		std::fill(maxErr.begin(), maxErr.end(), 0.);//re-initialize relative error vector
-		loopCalcs(sim_time_) ;//compute photosynthesis outputs
+		loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs
 		if((verbose_photosynthesis > 1)){std::cout<<"to linearSystem"<<std::endl;}
 		linearSystemSolve(sim_time_, sxx_, cells_, soil_k_); //compute psiXyl
 		if((verbose_photosynthesis > 1)){std::cout<<"to outputFlux"<<std::endl;}
 		//usefull only to know whether we reached convergence
-		outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, std::vector<double>());//approx = false
+		outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 		if((verbose_photosynthesis > 1)){std::cout<<"to getError"<<std::endl;}
 		getError(sim_time_);
 		this->stop = canStop();
@@ -132,8 +132,8 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 
 
 	 
-																					 
-	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, std::vector<double>());//approx = false
+	loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs. when fw ~ 0, need to do it one last time to be sure that seg_flux_leaf = Ev 
+	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 	loop++ ;
 
 	// for phloem flow
@@ -285,9 +285,22 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 					throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
 			}
 		}
-	}else{
-		psi_s = sx_.at(si); // j-1 = segIdx = s.y-1
-	}
+	}else{ //TODO: use better the psi_s as given by the air_ModelsPlant == boundary layer
+		switch(organType) {
+			case Organism::ot_root: 
+				psi_s = sx_.at(si); // j-1 = segIdx = s.y-1
+				//throw std::runtime_error("Photosynthesis::linearSystem: root segment is aboveground.");
+				break;
+			case  Organism::ot_stem: 
+				psi_s = sx_.at(si); // j-1 = segIdx = s.y-1. should be == psi_air
+				break;
+			case Organism::ot_leaf: 
+				psi_s = pg.at(plant->getSegment2leafId(si));//sx_.at(si) is used in loop function
+				break;
+			default:
+				throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
+		}
+	}		
 	return psi_s;
 }
 
@@ -526,7 +539,7 @@ void Photosynthesis::initVcVjRd(){
 		//mmol mmol-1 * exp(mJ mmol-1/(hPa cm3K−1mmol−1 *(mJ/(hPa/cm3))*K)*(-))=mmol mmol-1 * exp(-)
 		Ko.at(i) = Ko_ref * Arrhenius(i, Eao); //Eq 9
 		Kc.at(i) = Kc_ref * Arrhenius(i, Eac);//Eq 9
-		delta.at(i) = gamma0* (1.+ gamma1*(TleafK.at(i)- Tref) + gamma2*std::pow((TleafK.at(i) - Tref),2.) ) ;//Eq 10
+		delta.at(i) = delta_ref * Arrhenius(i, Ead);//gamma0* (1.+ gamma1*(TleafK.at(i)- Tref) + gamma2*std::pow((TleafK.at(i) - Tref),2.) ) ;//Eq 10
 		
 		//compute Rd before deltagco2
 		//std::cout<<"Photosynthesis::initVcVjRd "<<PhotoType<<" "<<C3<<" "<<C4<<" "<<(PhotoType == C3)<<" "<<(PhotoType == C4)<<std::endl;
@@ -647,7 +660,7 @@ void Photosynthesis::photoC4_loop(int i)
 		Computes the output variables => ci, go2, An, Ev
 		@param simtime
 	*/
-void Photosynthesis::loopCalcs(double simTime){
+void Photosynthesis::loopCalcs(double simTime, std::vector<double> sxx_, bool cells_){
 	std::ofstream myfile4;
 	if(doLog)
 	{
@@ -658,6 +671,14 @@ void Photosynthesis::loopCalcs(double simTime){
 	}
 	for(int i = 0; i<seg_leaves_idx.size();i++)
 	{
+		int idl= seg_leaves_idx.at(i);
+		double ea_;
+		if(cells_){ea_ = ea; //mean air ea
+		}else{
+			double psi_air_ = sxx_.at(idl);
+			ea_ = std::exp(psi_air_/(rho_h2o * R_ph * (this->TairC + 237.3)/Mh2o * (1/0.9806806) ))*this->es  ; //in cm
+			
+		}
 		double cs_,g_bl_,g_canopy_,g_air_;
 		if(vcs.size() != seg_leaves_idx.size()){cs_ = cs;}else{cs_ = vcs.at(i);}
 		if(vg_bl.size() != seg_leaves_idx.size()){g_bl_ = g_bl;}else{g_bl_ = vg_bl.at(i);}
@@ -665,7 +686,6 @@ void Photosynthesis::loopCalcs(double simTime){
 		if(vg_air.size() != seg_leaves_idx.size()){g_air_ = g_air;}else{g_air_ = vg_air.at(i);}
 		
 		
-		int idl= seg_leaves_idx.at(i);
 		if((verbose_photosynthesis ==2)){std::cout<<"in loopcalcs "<<i<<" "<<idl<<std::endl;}
 		double l = lengths.at(idl);
 		
@@ -702,7 +722,7 @@ void Photosynthesis::loopCalcs(double simTime){
 		{
             double p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
             
-			fw.at(i) = fwr + (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa)));
+			fw.at(i) = fwr +std::max(0., (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa))) - fw_cutoff);
             
 			ci.at(i) = std::max((cs_*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)),deltagco2.at(i)) ;
 			if((verbose_photosynthesis ==2)){std::cout<<"in compute gco2 "<<sideArea<<" "<<(sideArea > 1e-16)<<std::endl;}
@@ -726,9 +746,9 @@ void Photosynthesis::loopCalcs(double simTime){
             {
                 gtotOx.at(i) = 0.;
             }																							  
-			Jw.at(i) = gtotOx.at(i) *1000* (ea_leaf - ea)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
+			Jw.at(i) = gtotOx.at(i) *1000* (ea_leaf - ea_)/Patm * Mh2o/rho_h2o * 24.*3600*1e-4 ;//in cm3 cm-2 d-1
 			Ev.at(i) = Jw.at(i)* sideArea; //in cm3 d-1
-            PVD.at(i) =  ea_leaf - ea ;
+            PVD.at(i) =  ea_leaf - ea_ ;
             EAL.at(i) =  ea_leaf;
             hrelL.at(i) =  HRleaf;						 
             //double f = -2*a*M_PI*kr; // flux is proportional to f // *rho*g
@@ -743,15 +763,17 @@ void Photosynthesis::loopCalcs(double simTime){
 				std::cout<<"sizes "<<An.size()<<" "<< gco2.size()<<" "<<ci.size()<<" "<<ci_old.size() <<std::endl;
 
 			}
-			bool erroHappened = (!std::isfinite(this->pg.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)||(fw.at(i)>1)||(fw.at(i)<0);
+			bool erroHappened = (!std::isfinite(this->pg.at(i)))||(!std::isfinite(ci.at(i)))||(ci.at(i)<0)||(fw.at(i)-1>1e-10)||(fw.at(i)<0);
 			if(erroHappened) {
-			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl;
-			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J.at(i)<<" "<<Vcmax.at(i)<<" "<<Kc.at(i)<<" "<<Ko.at(i)<<" ";
-			std::cout<<" "<<delta.at(i)<<" "<<oi<<" "<<eps<<std::endl;
-			std::cout<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd.at(i)<<" "<< deltagco2.at(i)<<std::endl;
+			std::cout<<"shape leaf "<<idl<<" "<<sideArea<<" "<<ci_old.at(i)<<" "<<ci.at(i)<<std::endl<<std::flush;
+			std::cout<<"an calc "<<An.at(i)<<" "<<Vc.at(i)<<" "<< Vj.at(i)<<" "<<J.at(i)<<" "<<Vcmax.at(i)<<" "<<Kc.at(i)<<" "<<Ko.at(i)<<" "<<std::flush;
+			std::cout<<" "<<delta.at(i)<<" "<<oi<<" "<<eps<<std::endl<<std::flush;
+			std::cout<<"forgco2 "<<gco2.at(i) <<" "<< g0<<" "<< ( fw.at(i) -1)<<" "<<  fw.at(i) <<" "<<  a1 <<" "<< An.at(i)<<" "<< Rd.at(i)<<" "<< deltagco2.at(i)<<std::endl<<std::flush;
 			std::cout<<"forJW, Jw "<<Jw.at(i)<<" drout_in "<<(this->pg.at(i) - (rxi + rxj)/2)<<" "<<ea_leaf <<" "<< ea<<" "<<Patm<<" "<<Mh2o<<" "<<rho_h2o <<std::endl;
-			std::cout<<"forpg "<<sideArea<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl;
-			std::cout<<"diff Ev and lat fluw: "<<Ev.at(i)<<std::endl;//<<" "<<outputFluxL.at(i)
+			std::cout<<"forpg "<<sideArea<<" "<<fv.at(i)<<" "<<tauv.at(i)<<" "<<dv.at(i)<<" "<<l<<" "<<rxi <<" "<< rxj<<" "<<this->pg.at(i)<<" numleaf: "<<i <<std::endl<<std::flush;
+			std::cout<<"diff Ev and lat fluw: "<<Ev.at(i)<<std::endl<<std::flush;//<<" "<<outputFluxL.at(i)
+			std::cout<<"cause of the error: "<<(!std::isfinite(this->pg.at(i)))<<" "<< (!std::isfinite(ci.at(i)))<<" "<<(ci.at(i)<0)<<" "<< (fw.at(i)>1)<<" "<< (fw.at(i)<0)<<std::endl<<std::flush;
+                
 				throw std::runtime_error("Phtotosynthesis: nan or Inf  pg.at(i)");
 			}
 

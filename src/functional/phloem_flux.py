@@ -18,7 +18,10 @@ class PhloemFluxPython(PhloemFlux):
     def __init__(self, plant_, psiXylInit, ciInit):
         """ @param rs is either a pb.MappedRootSystem, pb.MappedSegments, or a string containing a rsml filename"""
         super().__init__( plant_, psiXylInit, ciInit)
-
+        
+    def getPsiAir(self,RH, TairC):#constants are within photosynthesys.h
+        return np.log(RH) * self.rho_h2o * self.R_ph * (TairC + 237.3)/self.Mh2o * (1/0.9806806)  ; #in cm
+     
     def get_nodes(self):
         """ converts the list of Vector3d to a 2D numpy array """
         return np.array(list(map(lambda x: np.array(x), self.rs.nodes)))

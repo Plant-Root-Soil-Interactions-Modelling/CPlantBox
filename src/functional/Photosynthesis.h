@@ -37,7 +37,7 @@ public:
 	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, 
 				const std::vector<double> soil_k_);///< main function, solves the flux equations
 	
-	void loopCalcs(double simTime); ///<solves photosynthesis/stomatal opening equations 
+	void loopCalcs(double simTime, std::vector<double> sxx_, bool cells_); ///<solves photosynthesis/stomatal opening equations 
 	void photoC4_loop(int i);
 	void photoC3_loop(int i);
 	//Compute variables which do not vary during one "solve_photosynthesis " computation
@@ -88,8 +88,8 @@ public:
     std::vector<double> Vcrefmax;
 	std::vector<double> Vj; //gross assimilation rate per unit of surface [mol CO2 m-2 s-1]
 	std::vector<double> ci;
-	std::vector<double> Jw;
-	std::vector<double> Ev;
+	std::vector<double> Jw;//transpiration [cm3 cm-2 d-1]
+	std::vector<double> Ev; //transpiration [cm3/day]
 	std::vector<double> PVD;
 	std::vector<double> EAL;
 	std::vector<double> hrelL;
@@ -162,6 +162,7 @@ public:
 	// 				C3 and C4
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
+	double fw_cutoff = 0;// to make it easier to get fw
 	double sh = 3.765e-4;//sensibility to water stress
 	double p_lcrit = -15000/2;//min psiXil for stomatal opening [Mpa]
 	//influence of N contant, to reparametrise!, 
@@ -170,7 +171,7 @@ public:
 	double alpha = 0.2; //or 0.44 , coefb = -(alpha * Qlight + Jmax);, alpha * Qlight * Jmax;
 	double a1=4.; //g0+ fw[i] * a1 *( An[i] + Rd)/(ci[i] - deltagco2[i]);//tuzet2003
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
-	double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
+	//double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
 	
 	// 				C3 only
 	double a3 = 1.7;//Jrefmax = Vcrefmax * a3 ;//Eq 25
@@ -196,12 +197,13 @@ public:
 	// 				MOSTLY C3 (very small effect on C4)
 	//(de)activate parameters
     double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
-    double Eard = 53000;double Eav = 58520;
+    double Eard = 53000;double Eav = 58520;double Ead = 37830;
     double Edj =  220000;double Edv = 220000;double Edrd;// = 53000;
 	//double Rd_refC3 = 0.32e-6; one less param!
 	double S = 700;//enthropy mJ mmol-1 K-1
 	//ref value at T = T_ref
 	double Kc_ref = 302e-6; double Ko_ref = 256e-3; //mmol mmol-1
+    double delta_ref= 42.75e-6;
 	
 	// 				C4 only
 	double s1 = 0.3; //K-1	Bonan2019Chap11: temperature
