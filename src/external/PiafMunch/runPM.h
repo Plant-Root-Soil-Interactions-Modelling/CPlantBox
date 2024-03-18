@@ -107,14 +107,14 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	
 	//		from plant shape
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
-	void setKr_st(std::vector<std::vector<double>> values, double kr_length_); ///< sets a callback for kr_suc:=kr_suc(ot,type), 
-	void setKx_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setRmax_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setAcross_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setPerimeter_st(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
-	void setRhoSucrose(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
-	void setKrm1(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
-	void setKrm2(std::vector<std::vector<double>> values); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setKr_st(std::vector<std::vector<double>> values, double kr_length_, bool verbose = false); ///< sets a callback for kr_suc:=kr_suc(ot,type), 
+	void setKx_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setRmax_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setAcross_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setPerimeter_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
+	void setRhoSucrose(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
+	void setKrm1(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setKrm2(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	
     std::function<double(int, int, int)> kr_st_f = []( int type, int orgtype, int si) {
 		throw std::runtime_error("kr_st_f not implemented"); 
@@ -161,6 +161,10 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	std::vector<double> delta_vol_org_i, delta_vol_org, delta_vol_org_imax, delta_vol_org_max;
 	std::vector<double> delta_vol_node_i, delta_vol_node, delta_vol_node_imax, delta_vol_node_max;
 	
+	// soil data, link with DuMux (mmol Suc cm-3)
+	std::vector<double> Csoil_seg;
+	std::vector<double> Csoil_node;
+	double CsoilDefault =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
 	//all in (mmol Suc d-1)
 	std::vector<double> Agv;//assimilation (mmol Suc d-1)
 	std::vector<double> Q_Grmaxv;//maximal sucrose sink for growth (mmol Suc d-1)
@@ -186,7 +190,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	//double KMgr = 0.16; //@see C_fluxes,Michaelis menten coef for growth, not implemented
 	double KMfu = 0.2; //@see C_fluxes,Michaelis menten coef for active sucrose usage
 	//double k_meso = 1e-4;//conductivity if implement ohm analogy for Fl, not implemented
-	double Csoil =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
+																									  
 	//used if sameVolume_meso_st == false, sameVolume_meso_seg == false
 	double surfMeso =0.01 ;//cross sectinnal area of mesophyll (cm2). 
 	//double Cobj_ST = 1.;// ==> when doing loading or unloading with objective value. not implemented
@@ -201,6 +205,20 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double initValMeso = 0.9;//initial concentration in mesophyll
     double leafGrowthZone = 2;//cm
 	
+	double C_targ = 0;//(mmol Suc cm-3 )
+	double Vmax_S_ST = 0;//(mmol Suc d-1 cm-3 )
+	double kM_S_ST = 0;//(mmol Suc cm-3)
+	double kHyd_S_ST = 0;//(d-1)
+	double k_mucil = 0;//(d-1)
+	std::vector<double> k_mucil_;
+	double k_S_ST = 0;//(d-1)
+	double C_targMesophyll = 0;//(mmol Suc cm-3 )
+	double Vmax_S_Mesophyll = 0;//(mmol Suc d-1 cm-3 )
+	double kM_S_Mesophyll = 0;//(mmol Suc cm-3)
+	double kHyd_S_Mesophyll = 0;//(d-1)
+	double k_S_Mesophyll = 0;//(d-1)
+    
+    
 	//		boolean choices
 	bool update_viscosity_ = true;
 	bool usePsiXyl = true;//use PsiXyl value of xylem tissue
@@ -230,7 +248,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	Fortran_vector Q_GrmaxBU ;
 	//bool hayErrores = false;
 	int errorID = -1;
-	int neq_coef = 9;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
+	int neq_coef = 10;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
 	std::vector<double> BackUpMaxGrowth;//to check at runtime if growth is correct
 	
 	//retrieve tissue-specific parameters

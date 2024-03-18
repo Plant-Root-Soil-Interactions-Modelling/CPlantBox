@@ -689,7 +689,7 @@ PYBIND11_MODULE(plantbox, m) {
       .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
       .def_readwrite("tropismAge", &LeafRandomParameter::tropismAge)
       .def_readwrite("tropismAges", &LeafRandomParameter::tropismAges)
-    ;
+       .def_readwrite("Width_blade", &LeafRandomParameter::Width_blade)  ;
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool, double, double>())
@@ -862,7 +862,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
         .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool)) &MappedSegments::setSoilGrid,
         		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
-        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
         .def("mapSegments",  &MappedSegments::mapSegments)
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
@@ -924,6 +924,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
+			.def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
+			.def_readwrite("distanceTip", &MappedPlant::distanceTip)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
 
 	/**
@@ -941,15 +943,18 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>>())
-            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<double>(0))
-            .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0))
-            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&XylemFlux::setKrTables))
-            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&XylemFlux::setKxTables))
-            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),
-                                                                        py::arg("kr_length_") = -1.0)
-            .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0))
-            .def("setKrTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKrTables))
-            .def("setKxTables",py::overload_cast<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&XylemFlux::setKxTables))
+            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKr), 
+					py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
+            .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables), py::arg("values"), 
+						py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
+            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),
+                                                                        py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
+            .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&XylemFlux::setKrTables), 
+					py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
+            .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
             .def("setKrValues", &XylemFlux::setKrValues)
             .def("setKxValues", &XylemFlux::setKxValues)
             .def("getEffKr", &XylemFlux::getEffKr)
@@ -963,7 +968,7 @@ PYBIND11_MODULE(plantbox, m) {
                     py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
             .def("sumSegFluxes",&XylemFlux::sumSegFluxes)
             .def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
-            .def_readonly("kr_f_cpp", &XylemFlux::kr_f)
+            .def("kr_f_cpp", &XylemFlux::kr_f_wrapped, py::arg("seg_ind"), py::arg("age"), py::arg("st"), py::arg("ot"))
             .def_readonly("kx_f_cpp", &XylemFlux::kx_f)
             .def_readwrite("aI", &XylemFlux::aI)
             .def_readwrite("aJ", &XylemFlux::aJ)
@@ -1005,6 +1010,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Vj", &Photosynthesis::Vj)
             .def_readwrite("fw", &Photosynthesis::fw)
             .def_readwrite("fwr", &Photosynthesis::fwr)
+            .def_readwrite("fw_cutoff", &Photosynthesis::fw_cutoff)
             .def_readwrite("sh", &Photosynthesis::sh)
             .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
             .def_readwrite("ci", &Photosynthesis::ci)
@@ -1039,9 +1045,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("g_canopy", &Photosynthesis::g_canopy)
             .def_readwrite("g_air", &Photosynthesis::g_air)
             .def_readwrite("theta", &Photosynthesis::theta)
-            .def_readwrite("gamma0", &Photosynthesis::gamma0)
-            .def_readwrite("gamma1", &Photosynthesis::gamma1)
-            .def_readwrite("gamma2", &Photosynthesis::gamma2)
             .def_readwrite("alpha", &Photosynthesis::alpha)
             .def_readwrite("a1", &Photosynthesis::a1)
             .def_readwrite("a2_stomata", &Photosynthesis::a2_stomata)
@@ -1056,7 +1059,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("doLog", &Photosynthesis::doLog)
-            .def_readwrite("R_ph", &Photosynthesis::R_ph);
+            .def_readwrite("R_ph", &Photosynthesis::R_ph)
+            .def_readonly("rho_h2o", &Photosynthesis::rho_h2o)
+            .def_readonly("R_ph", &Photosynthesis::R_ph)
+            .def_readonly("Mh2o", &Photosynthesis::Mh2o);
 
     py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes")
             .value("C3", Photosynthesis::PhotoTypes::C3)
@@ -1070,7 +1076,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),
 			py::arg("psiXylInit"),  py::arg("ciInit") )
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
-            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0)
+            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0, py::arg("verbose") = false)
 
             .def("setKx_st",&PhloemFlux::setKx_st)
             .def("setRmax_st",&PhloemFlux::setRmax_st)
@@ -1106,8 +1112,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Fl",&PhloemFlux::Flv)
             //.def_readwrite("KMgr",&PhloemFlux::KMgr)
             .def_readwrite("KMfu",&PhloemFlux::KMfu)
-            //.def_readwrite("k_meso",&PhloemFlux::k_meso)
-            .def_readwrite("Csoil",&PhloemFlux::Csoil)
+            .def_readwrite("CsoilDefault",&PhloemFlux::CsoilDefault)
+            .def_readwrite("Csoil_seg",&PhloemFlux::Csoil_seg)
+            .def_readwrite("Csoil_node",&PhloemFlux::Csoil_node)
             .def_readwrite("deltaSucOrgNode",&PhloemFlux::deltaSucOrgNode_)
             .def_readwrite("usePsiXyl",&PhloemFlux::usePsiXyl)
             .def_readwrite("expression",&PhloemFlux::expression)
@@ -1139,7 +1146,20 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("GrowthZone",&PhloemFlux::GrowthZone)
 			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
-			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm);
+			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
+            
+            .def_readwrite("C_targ",&PhloemFlux::C_targ)
+            .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
+            .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)
+            .def_readwrite("kM_S_ST",&PhloemFlux::kM_S_ST)
+            .def_readwrite("kHyd_S_ST",&PhloemFlux::kHyd_S_ST)
+            .def_readwrite("k_mucil",&PhloemFlux::k_mucil)
+            .def_readwrite("k_S_ST",&PhloemFlux::k_S_ST)
+            .def_readwrite("Vmax_S_Mesophyll",&PhloemFlux::Vmax_S_Mesophyll)
+            .def_readwrite("kM_S_Mesophyll",&PhloemFlux::kM_S_Mesophyll)
+            .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
+            .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll)
+            .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_);
 
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())

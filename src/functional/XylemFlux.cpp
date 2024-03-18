@@ -50,7 +50,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 
         try {
             kx = kx_f(si, age, subType, organType);
-            kr = kr_f(si, age, subType, organType);
+            kr = kr_f_wrapped(si, age, subType, organType);
         } catch(...) {
             std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
@@ -143,7 +143,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         double kr = 0.;
         try {
             kx = kx_f(si, age, subType, organType);
-            kr = kr_f(si, age, subType, organType);
+            kr = kr_f_wrapped(si, age, subType, organType);
         } catch(...) {
             std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
@@ -198,15 +198,31 @@ std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxe
     for (int si = 0; si<rs->segments.size(); si++) {
         int j = rs->segments[si].y;
         int segIdx = j-1;
-        if (rs->seg2cell.count(segIdx)>0) {
-            int cellIdx = rs->seg2cell[segIdx];
-            if (cellIdx>=0) {
-                if (fluxes.count(cellIdx)==0) {
-                    fluxes[cellIdx] = segFluxes[segIdx];
-                } else {
-                    fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
-                }
-            }
+		
+        if (rs->seg2cell.count(segIdx)>0) 
+		{			
+			int cellIdx = rs->seg2cell[segIdx];
+			if (cellIdx>=0) 
+			{				
+				if(rs->organTypes[segIdx] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					if (fluxes.count(cellIdx)==0) {
+						fluxes[cellIdx] = segFluxes[segIdx];
+					} else {
+						fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
+					}
+				}else{
+					if(segFluxes[segIdx] != 0.)
+					{
+						std::stringstream errMsg;
+						errMsg<<"XylemFlux::sumSegFluxes. ot:"<<rs->organTypes[segIdx]<<" segIdx:"<<segIdx
+						<<" cellIdx:"<<cellIdx<<" segFluxes[segIdx] :"
+						<<segFluxes[segIdx]<<"=> shoot segment bellow ground ans exchanges water" <<std::endl;
+						
+						throw std::runtime_error(errMsg.str().c_str());
+					}
+				}
+			}
         }
     }
     return fluxes;
@@ -225,30 +241,45 @@ std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFl
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     std::fill(fluxes.begin(), fluxes.end(), 0.);
     auto map = rs->cell2seg;
+	double fluxesTotTot =0;
     for(auto iter = map.begin(); iter != map.end(); ++iter) {
         int cellId =  iter->first;
         auto segs = map.at(cellId);
-        double v = 0.;  // calculate sum over cell
-        for (int i : segs) {
-            if (type==0) { // volume
-                v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
-            } else if (type==1) { // surface
-                v += 2*M_PI*rs->radii[i]*lengths[i];
-            } else if (type==2) { // length
-                v += lengths[i];
-            }
-        }
-        for (int i : segs) { // calculate outer radius
-            double t =0.; // proportionality factor (must sum up to == 1 over cell)
-            if (type==0) { // volume
-                t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
-            } else if (type==1) { // surface
-                t = 2*M_PI*rs->radii[i]*lengths[i]/v;
-            } else if (type==2) { // length
-                t = lengths[i]/v;
-            }
-            fluxes[i] = t*soilFluxes.at(cellId);
-        }
+		if (cellId>=0) {                
+			double v = 0.;  // calculate sum over cell
+			for (int i : segs) {
+				
+				if(rs->organTypes[i] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					if (type==0) { // volume
+						v += M_PI*(rs->radii[i]*rs->radii[i])*lengths[i];
+					} else if (type==1) { // surface
+						v += 2*M_PI*rs->radii[i]*lengths[i];
+					} else if (type==2) { // length
+						v += lengths[i];
+					}
+				}
+			}
+			double fluxesTot = 0;
+			for (int i : segs) { // calculate outer radius
+			
+				if(rs->organTypes[i] == Organism::ot_root)
+				{
+					double t =0.; // proportionality factor (must sum up to == 1 over cell)
+					if (type==0) { // volume
+						t = M_PI*(rs->radii[i]*rs->radii[i])*lengths[i]/v;
+					} else if (type==1) { // surface
+						t = 2*M_PI*rs->radii[i]*lengths[i]/v;
+					} else if (type==2) { // length
+						t = lengths[i]/v;
+					}
+					if(fluxes[i] !=0){std::cout<<"fluxes "<<i<<" already set "<<std::endl;assert(false);}
+					fluxes[i] = t*soilFluxes.at(cellId);
+					fluxesTot +=  t*soilFluxes.at(cellId);
+					fluxesTotTot += t*soilFluxes.at(cellId);
+				}
+			}
+		}
     }
     return fluxes;
 }
@@ -329,25 +360,35 @@ double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_) 
 }
 
 
+
 /**
  *  Sets the radial conductivity in [1 day-1]
  * TODO: make deprecated: in the examples, replace setKr[Kr] by setKr[[Kr]]
  */
 //either age or type/subtype dependent
-void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
+void XylemFlux::setKr(std::vector<double> values, std::vector<double> age, bool verbose) {
     kr =  { values }; //because kr is std::vector<std::vector<double>>
     kr_t = { age };
     if (age.size()==0) {
         if (values.size()==1) {
             kr_f = std::bind(&XylemFlux::kr_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-            std::cout << "Kr is constant " << values[0] << " 1 day-1 \n";
+            if(verbose)
+			{
+				std::cout << "Kr is constant " << values[0] << " 1 day-1 \n";
+            }
         } else {
             kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-            std::cout << "Kr is constant per subType, type 0 = " << values[0] << " 1 day-1 \n";
+            if(verbose)
+			{
+				std::cout << "Kr is constant per type, type 0 = " << values[0] << " 1 day-1 \n";
+            }
         }
     } else {
         kr_f  = std::bind(&XylemFlux::kr_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kr is age dependent\n";
+        if(verbose)
+        {
+            std::cout << "Kr is age dependent\n";
+        }
     }
 }
 
@@ -359,37 +400,55 @@ void XylemFlux::setKr(std::vector<double> values, std::vector<double> age) {
  * @param kr_length_ 	exchange zone in root, where kr > 0 [cm from root tip], default = -1.0, i.e., no kr_length
  */
 //either age or type/subtype dependent
-void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_) {
+void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_, bool verbose) {
     kr = values;
     kr_t = age;
     if (age.size()==0) {
         if (values.size()==1) {
             if (values[0].size()==1) {
                 kr_f = std::bind(&XylemFlux::kr_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kr is constant " << values[0][0] << " 1 day-1 \n";
+                if(verbose)
+				{
+					std::cout << "Kr is constant " << values[0][0] << " 1 day-1 \n";
+                }
             } else {
                 kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kr is constant per subType, subtype 0 = " << values[0][0] << " 1 day-1 \n";
+                if(verbose)
+				{
+					std::cout << "Kr is constant per subtype, subtype 0 = " << values[0][0] << " 1 day-1 \n";
+                }
             }
         } else {
             if (values[0].size()==1) {
                 kr_f = std::bind(&XylemFlux::kr_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kr is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
+                if(verbose)
+				{
+					std::cout << "Kr is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
+                }
             } else {
 				if(kr_length_ > 0.){
-					std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
+					if(verbose)
+					{
+						std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
+                    }
 					rs->kr_length = kr_length_; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
 					rs->calcExchangeZoneCoefs();	//computes coefficient used by XylemFlux::kr_RootExchangeZonePerType
 					kr_f  = std::bind(&XylemFlux::kr_RootExchangeZonePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 				}else{
 					kr_f  = std::bind(&XylemFlux::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 				}
-                std::cout << "Kr is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " 1 day-1 \n";
+                if(verbose)
+				{
+					std::cout << "Kr is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " 1 day-1 \n";
+                }
             }
         }
     } else {
         kr_f  = std::bind(&XylemFlux::kr_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kr is equal for all organs and age dependent\n";
+        if(verbose)
+        {
+            std::cout << "Kr is equal for all organs and age dependent\n";
+        }
     }
 }
 
@@ -398,48 +457,81 @@ void XylemFlux::setKr(std::vector<std::vector<double>> values, std::vector<std::
  * TODO: make deprecated: in the examples, replace setKx[Kx] by setKx[[Kx]]
  */
 //either age or type/subtype dependent
-void XylemFlux::setKx(std::vector<double> values, std::vector<double> age) {
+void XylemFlux::setKx(std::vector<double> values, std::vector<double> age, bool verbose) {
     kx = { values }; // because kx is std::vector<std::vector<double>>
     kx_t = { age };
     if (age.size()==0) {
         if (values.size()==1) {
             kx_f = std::bind(&XylemFlux::kx_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-            std::cout << "Kx is constant " << values[0] << " cm3 day-1 \n";
+            if(verbose)
+			{
+				std::cout << "Kx is constant " << values[0] << " cm3 day-1 \n";
+            }
         } else {
             kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-            std::cout << "Kx is constant per subtype, subtype 0 = " << values[0] << " cm3 day-1 \n";
+            if(verbose)
+			{
+				std::cout << "Kx is constant per subtype, subtype 0 = " << values[0] << " cm3 day-1 \n";
+            }
         }
     } else {
         kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kx is age dependent\n";
+        if(verbose)
+        {
+            std::cout << "Kx is age dependent\n";
+        }
     }
 }
 
 //either age or type/subtype dependent
-void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
+void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose) 
+{
     kx = values;
     kx_t = age;
-    if (age.size()==0) {
-        if (values.size()==1) {
-            if (values[0].size()==1) {
+    if (age.size()==0) 
+    {
+        if (values.size()==1) 
+        {
+            if (values[0].size()==1) 
+            {
                 kx_f = std::bind(&XylemFlux::kx_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant " << values[0][0] << " cm3 day-1 \n";
-            } else {
+                if(verbose)
+                {
+                    std::cout << "Kx is constant " << values[0][0] << " cm3 day-1 \n";
+                }
+            } else 
+            {
                 kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per subtype, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
+                if(verbose)
+                {
+                    std::cout << "Kx is constant per subtype, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
+                }
             }
-        } else {
-            if (values[0].size()==1) {
+        } else 
+        {
+            if (values[0].size()==1) 
+            {
                 kx_f = std::bind(&XylemFlux::kx_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
-            } else {
+                if(verbose)
+                {
+                    std::cout << "Kx is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
+                }
+            } else 
+            {
                 kx_f  = std::bind(&XylemFlux::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
+                if(verbose)
+                {
+                    std::cout << "Kx is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
+                }
             }
         }
-    } else {
+    } else 
+    {
         kx_f  = std::bind(&XylemFlux::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kx is equal for all organs and age dependent\n";
+        if(verbose)
+        {
+            std::cout << "Kx is equal for all organs and age dependent\n";
+        }
     }
 }
 
@@ -451,11 +543,14 @@ void XylemFlux::setKx(std::vector<std::vector<double>> values, std::vector<std::
  * TODO: make deprecated (i would leave it in for now, used in pyhton_modules/root_conductivities.py)
  */
 //both age and type/subtype dependent
-void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
+void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose, bool ageBased) {
     krs= { values };
     krs_t = { age };
     kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    std::cout << "Kr is age dependent per root type\n";
+    if(verbose)
+	{
+		std::cout << "Kr is age dependent per root type\n";
+    }
 }
 
 /**
@@ -466,11 +561,14 @@ void XylemFlux::setKrTables(std::vector<std::vector<double>> values, std::vector
  * TODO: make deprecated (i would leave it in for now, used in pyhton_modules/root_conductivities.py)
  */
 //both age and type/subtype dependent
-void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
+void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, bool verbose) {
     kxs = {values};
     kxs_t = {age};
     kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    std::cout << "Kx is age dependent per root type\n";
+    if(verbose)
+	{
+		std::cout << "Kx is age dependent per root type\n";
+    }
 }
 
 /**
@@ -479,16 +577,29 @@ void XylemFlux::setKxTables(std::vector<std::vector<double>> values, std::vector
  *	@param values 			kr values for age (its linearly interpolated between these values) for each organ type and each sub-type
  *	@param age 				ages for the given values for each organ type and for each sub type
  */
-void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
+void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose,  bool ageBased) {
     krs = values;
     krs_t = age;
     if (age[0].size()==1) {
         kr_f = std::bind(&XylemFlux::kr_tablePerOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kr is age dependent per organ type\n";
+        if(verbose)
+        {
+            std::cout << "Kr is age dependent per organ type\n";
+        }
     }
     else{
-        kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kr is age dependent per organ type and sub type\n";
+		if (ageBased)
+		{
+			kr_f = std::bind(&XylemFlux::kr_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		} else {
+			rs->kr_length = 100000.; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
+			rs->calcExchangeZoneCoefs();	//computes coefficient used by XylemFlux::kr_RootExchangeZonePerType
+			kr_f  = std::bind(&XylemFlux::kr_tablePerType_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		}
+        if(verbose)
+        {
+            std::cout << "Kr is age dependent per organ type and sub type\n";
+        }
     }
 }
 
@@ -498,41 +609,53 @@ void XylemFlux::setKrTables(std::vector<std::vector<std::vector<double>>> values
  *	@param values 			kx values for age (its linearly interpolated between these values) for each organ type and each sub type
  *	@param age 				ages for the given values for each organ type and for each sub-type
  */
-void XylemFlux::setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
+void XylemFlux::setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age, bool verbose) {
     kxs= values;
     kxs_t = age;
     if (age[0].size()==1) {
         kx_f = std::bind(&XylemFlux::kx_tablePerOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kx is age dependent per organ type\n";
+        if(verbose)
+        {
+            std::cout << "Kx is age dependent per organ type\n";
+        }
     }
     else {
         kx_f = std::bind(&XylemFlux::kx_tablePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kx is age dependent per organ type and sub type\n";
+        if(verbose)
+        {
+            std::cout << "Kx is age dependent per organ type and sub type\n";
+        }
     }
 }
 
 /**
  * Sets the radial conductivity conductivity [1 day-1] per segment (e.g. constant value per segment)
  */
-void XylemFlux::setKrValues(std::vector<double> values) {
+void XylemFlux::setKrValues(std::vector<double> values, bool verbose) {
     assert(values.size() == rs->segments.size() && "XylemFlux::setKrValues: values size must equal number of segments");
     kr.clear();
     kr_t.clear();
     kr.push_back(values);
     kr_f = std::bind(&XylemFlux::kr_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    std::cout << "Kr is given per segment\n";
+    if(verbose)
+    {
+		std::cout << "Kr is given per segment\n";
+    }
 }
 
 /**
  * Sets the axial conductivity [cm3 day-1] per segment (e.g. constant value per segment)
  */
-void XylemFlux::setKxValues(std::vector<double> values) {
+void XylemFlux::setKxValues(std::vector<double> values, bool verbose) {
     assert(values.size() == rs->segments.size() && "XylemFlux::setKxValues: values size must equal number of segments");
     kx.clear();
     kx_t.clear();
     kx.push_back(values);
     kx_f = std::bind(&XylemFlux::kx_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    std::cout << "Kx is given per segment\n";
+    if(verbose)
+	{
+		std::cout << "Kx is given per segment\n";
+    }
 }
 
 /**
@@ -622,5 +745,18 @@ std::vector<double> XylemFlux::getHs(const std::vector<double>& sx) {
 }
 
 
-
+/**
+ * Returns kr of roots belowground or leaves aboveground, overwise returns 0
+ */
+double XylemFlux::kr_f_wrapped(int si, double age, int subType, int organType) const
+{
+	int cellIndex = rs->seg2cell.at(si);
+	if (((cellIndex>=0)&&(organType !=Organism::ot_root))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
+	{ 
+			return 0.;
+	}else
+	{ 
+		return kr_f(si, age, subType, organType);
+	}
+}
 } // namespace
