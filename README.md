@@ -1,4 +1,3 @@
-<img src="CPB_white_long.png" alt="drawing" width="400"/>
 
 # Hi, I am CPlantBox
 [![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
