@@ -31,7 +31,6 @@ def split_(values, v):  # calculates L2 on standard deviation
 
 
 def split(values):
-    print(np.min(values))
     test_values = np.linspace(np.min(values), np.max(values), 100)
     l2std = [split_(values, v) for v in test_values[1:-1]]
     split_value = test_values[np.argmin(l2std)]
@@ -77,7 +76,7 @@ pick path and files
 """
 file_path = "Grapevine Estimator/finerootloss"
 file_names = ["C-1E.rsml", "C-1W.rsml", "C-2E.rsml", "C-2W.rsml"]  # , "E-39.rsml", D-25.rsml # repetitions of same genotype
-rootsystem_age = [123, 125, 123, 125]
+rootsystem_age = [123, 125, 123, 125]  # days
 
 """
 RSMLs:
@@ -115,23 +114,26 @@ print("Mean of roots < median", np.mean(shorter), np.std(shorter), "n =", len(sh
 longer = all_type2_lengths[all_type2_lengths >= all_median]
 print("Mean of roots >= median", np.mean(longer), np.std(longer), "n =", len(longer))
 
+print("\nlets decrease mean and sd by clustering\n")
+
 values = all_type2_lengths
-split_value = split(values)
-print("split_index", split_value)
-shorter = values[values < split_value]
+split_value2 = split(values)
+print("split_index", split_value2)
+shorter = values[values < split_value2]
 print("Mean of roots < median", np.mean(shorter), np.std(shorter), "n =", len(shorter))
-longer = values[values >= split_value]
+longer = values[values >= split_value2]
 print("Mean of roots >= median", np.mean(longer), np.std(longer), "n =", len(longer))
-ss
+
+# print()  # do it per measurement
 # for i in range(0, len(indices_type2)):
-#     values = indices_type2[i]
-#     print(values)
-#     split_index = split(np.array(values))
-#     print(split_index)
-#     print("min...")
-#     shorter = values[values < split_index]
+#     print("Measurement", i)
+#     ind_ = np.array(indices_type2[i])
+#     lengths_ = root_lengths[i][ind_]
+#     split_value = split(np.array(lengths_))
+#     print("split_value", split_value)
+#     shorter = lengths_[lengths_ < split_value]
 #     print("Mean of roots < median", np.mean(shorter), np.std(shorter), "n =", len(shorter))
-#     longer = values[values >= split_index]
+#     longer = lengths_[lengths_ >= split_value]
 #     print("Mean of roots >= median", np.mean(longer), np.std(longer), "n =", len(longer))
 
 # plt.hist(all_type2_lengths, 20)
@@ -164,17 +166,18 @@ for i, j_ in enumerate(indices_type2):
         data.estimates[i][(j, "age")] = rootsystem_age[i]
 
 # fit elongation rate for type 2
-print("Type 2")
+
+print("\nType 2: r")
 data.parameters[2].lmax = 100  # cm
-indices_larger = split_indices_ge(indices_type2, root_lengths, split_index)
+indices_larger = split_indices_ge(indices_type2, root_lengths, split_value2)
 
 # data.fit_root_length_(indices_type2, base_method = 1 , target_type = 2)  # base_method = 1 fits r, base_method = 2 fits r, and lmax; note that "age" must be known for order=2 (target_type)
 indices_larger = indices_type2
-print(len(indices_larger))
-print(indices_larger[0])
-print(indices_larger[1])
-print(indices_larger[2])
-print(indices_larger[3])
+# print(len(indices_larger))
+# print(indices_larger[0])
+# print(indices_larger[1])
+# print(indices_larger[2])
+# print(indices_larger[3])
 
 data.fit_root_length_(indices_larger, base_method = 1 , target_type = 2)  # base_method = 1 fits r, base_method = 2 fits r, and lmax; note that "age" must be known for order=2 (target_type)
 
@@ -183,7 +186,7 @@ fig, ax = plt.subplots(1, 1, figsize = (9, 8))
 ep.plot_laterals(data, 0, 0, ax, orders_ = [2])
 plt.show()
 
-# # # fit elongation rate for type 3
+# # fit elongation rate for type 3
 # print("\nType 3")
 # data.parameters[3].lmax = 100  # cm
 # data.compute_age(indices_type2, 2, apical_method = 1)  # sets age for the next iteration (order++), apical_method == 0, delay based; apical_method == 1, apical length based
