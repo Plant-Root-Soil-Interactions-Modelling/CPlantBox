@@ -524,17 +524,17 @@ class XylemFluxPython(XylemFlux):
         or air water potential (organType_ = 4)
         at simulation time @param sim_time [day] for 
         the potential @param p_s [cm] given per cell """
-        organType = self.get_organ_types()
-        segs = np.array(self.rs.segments)[organType == organType_]
+        organType = self.get_organ_types()        
+        segs = self.get_segments()[organType == organType_]
         nodes = self.rs.nodes
         seg2cell = self.rs.seg2cell
         suf = self.get_suf(sim_time, organType_ = organType_)
         eswp = 0.
         for i, s in enumerate(segs):
             if cells:
-                eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
+                eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s[0]].z + nodes[s[1]].z))  # matric potential to total potential
             else:
-                eswp += suf[i] * (p_s[i] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
+                eswp += suf[i] * (p_s[i] + 0.5 * (nodes[s[0]].z + nodes[s[1]].z))  # matric potential to total potential
         return eswp
 
     def kr_f(self, age, st, ot = 2 , seg_ind = 0):
