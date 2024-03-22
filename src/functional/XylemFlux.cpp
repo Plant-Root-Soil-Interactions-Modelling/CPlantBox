@@ -50,7 +50,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 
         try {
             kx = kx_f(si, age, subType, organType);
-            kr = kr_f_wrapped(si, age, subType, organType);
+            kr = kr_f_wrapped(si, age, subType, organType, cells);
         } catch(...) {
             std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
@@ -143,7 +143,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         double kr = 0.;
         try {
             kx = kx_f(si, age, subType, organType);
-            kr = kr_f_wrapped(si, age, subType, organType);
+            kr = kr_f_wrapped(si, age, subType, organType, cells);
         } catch(...) {
             std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
@@ -748,10 +748,10 @@ std::vector<double> XylemFlux::getHs(const std::vector<double>& sx) {
 /**
  * Returns kr of roots belowground or leaves aboveground, overwise returns 0
  */
-double XylemFlux::kr_f_wrapped(int si, double age, int subType, int organType) const
+double XylemFlux::kr_f_wrapped(int si, double age, int subType, int organType, bool cells) const
 {
 	int cellIndex = rs->seg2cell.at(si);
-	if (((cellIndex>=0)&&(organType !=Organism::ot_root))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
+	if (cells&&(((cellIndex>=0)&&(organType !=Organism::ot_root))||((cellIndex < 0)&&(organType ==Organism::ot_root))))
 	{ 
 			return 0.;
 	}else
