@@ -276,7 +276,7 @@ class XylemFluxPython(XylemFlux):
                 numleaf = indices.index(seg_ind)
                 if self.pg[0] != 0:
                     p_s = self.pg[numleaf]
-        kr = self.kr_f(age, st, ot, seg_ind)  # c++ conductivity call back functions
+        kr = self.kr_f(age, st, ot, seg_ind, cells)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot, seg_ind)
         if a * kr > 1.e-16:
@@ -476,11 +476,14 @@ class XylemFluxPython(XylemFlux):
         nodes = self.rs.nodes
         p_s = np.zeros((len(segs),))
         organType = self.get_organ_types()
+        subType = self.get_subtypes()
+        print('organType',organType)
         for i, s in enumerate(segs):
             if (organType[i] == 2):
                 p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
             else:
                 p_s[i] = self.airPressure - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+                
         if plant:
             rx = self.solve_neumann(sim_time, 0., p_s, cells = False)
             fluxes = self.segFluxes(sim_time, rx, p_s, approx = False, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
@@ -524,7 +527,8 @@ class XylemFluxPython(XylemFlux):
         or air water potential (organType_ = 4)
         at simulation time @param sim_time [day] for 
         the potential @param p_s [cm] given per cell """
-        organType = self.get_organ_types()        
+        organType = self.get_organ_types()
+
         segs = self.get_segments()[organType == organType_]
         nodes = self.rs.nodes
         seg2cell = self.rs.seg2cell
@@ -537,9 +541,9 @@ class XylemFluxPython(XylemFlux):
                 eswp += suf[i] * (p_s[i] + 0.5 * (nodes[s[0]].z + nodes[s[1]].z))  # matric potential to total potential
         return eswp
 
-    def kr_f(self, age, st, ot = 2 , seg_ind = 0):
+    def kr_f(self, age, st, ot = 2 , seg_ind = 0, cells = False):
         """ root radial conductivity [1 day-1] for backwards compatibility """
-        return self.kr_f_cpp(seg_ind, age, st, ot)  # kr_f_cpp is XylemFlux::kr_f
+        return self.kr_f_cpp(seg_ind, age, st, ot, cells)  # kr_f_cpp is XylemFlux::kr_f
 
     def kx_f(self, age, st, ot = 2, seg_ind = 0):
         """ root axial conductivity [cm3 day-1]  for backwards compatibility """

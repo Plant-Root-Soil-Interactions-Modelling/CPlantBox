@@ -122,13 +122,15 @@ void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>&
  * @param max		maximum of the soil domain [cm]
  * @param res	 	resolution, how many cells in each dimension [1]
  * @param cut 		determines if the segments are cut at the rectangular grid faces
+ * @param noChanges	determines if the segments remain in the soil voxel they are created in
  */
-void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut)
+void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut, bool noChanges)
 {
 	minBound = min;
 	maxBound = max;
 	resolution = res;
 	cutAtGrid = cut;
+	constantLoc = noChanges;
 	// std::cout << "setRectangularGrid: cutSegments \n" << std::flush;
 	if (cutAtGrid) {
 		cutSegments(); // re-add (for cutting)
@@ -385,26 +387,32 @@ std::vector<double> MappedSegments::segOuterRadii(int type, const std::vector<do
 		auto segs = cell2seg.at(cellId);
 		double v = 0.;  // calculate sum of root volumes or surfaces over cell
 		for (int i : segs) {
-			if (type==0) { // volume
-				v += M_PI*(radii[i]*radii[i])*lengths[i];
-			} else if (type==1) { // surface
-				v += 2*M_PI*radii[i]*lengths[i];
-			} else if (type==2) { // length
-				v += lengths[i];
+			if(organTypes[i] == Organism::ot_root)
+			{
+				if (type==0) { // volume
+					v += M_PI*(radii[i]*radii[i])*lengths[i];
+				} else if (type==1) { // surface
+					v += 2*M_PI*radii[i]*lengths[i];
+				} else if (type==2) { // length
+					v += lengths[i];
+				}
 			}
 		}
 		for (int i : segs) { // calculate outer radius
-			double l = lengths[i];
-			double t =0.; // proportionality factor (must sum up to == 1 over cell)
-			if (type==0) { // volume
-				t = M_PI*(radii[i]*radii[i])*l/v;
-			} else if (type==1) { // surface
-				t = 2*M_PI*radii[i]*l/v;
-			} else if (type==2) { // length
-				t = l/v;
+			if(organTypes[i] == Organism::ot_root)
+			{
+				double l = lengths[i];
+				double t =0.; // proportionality factor (must sum up to == 1 over cell)
+				if (type==0) { // volume
+					t = M_PI*(radii[i]*radii[i])*l/v;
+				} else if (type==1) { // surface
+					t = 2*M_PI*radii[i]*l/v;
+				} else if (type==2) { // length
+					t = l/v;
+				}
+				double targetV = t * cellVolume;  // target volume
+				outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
 			}
-			double targetV = t * cellVolume;  // target volume
-			outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
 		}
 	}
 	return outer_radii;
@@ -612,7 +620,10 @@ void MappedRootSystem::simulate(double dt, bool verbose)
  */
 void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
 	reset(); // just in case
-	std::cout << "MappedPlant::initialize \n" << std::flush;
+    if(verbose)
+    {
+        std::cout << "MappedPlant::initialize \n" << std::flush;
+    }
 	this->stochastic = stochastic;
 	if(LB){	Plant::initializeLB(verbose);
 	}else{Plant::initializeDB(verbose);}
@@ -745,30 +756,38 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 
 	// map new segments
+	newsegs = this->getNewSegments();
 	this->mapSegments(newsegs);
 
 	// update segments of moved nodes
 	std::vector<Vector2i> rSegs;
-	for (int i : uni) {
-		int segIdx = i -1;
-		int cellIdx = seg2cell[segIdx];
-		auto s = segments[segIdx];
-		Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
-		int newCellIdx = soil_index(mid.x,mid.y,mid.z);
-		// 1. check if mid is still in same cell (otherwise, remove, and add again)
-		// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
-		bool remove = false;
-		if (cellIdx==newCellIdx) {
-			if (cutAtGrid) {
-				auto endPoint = nodes[s.y];
-				newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
-				remove = (newCellIdx!=cellIdx);
+	if(!constantLoc)//for 1d-3d coupling need to have segments remain in the same voxel
+	{//also, if soil_index is in parallel, this blocks the program as plant only grows on
+		// one thread
+		for (int i : uni) {
+			int segIdx = i -1;
+			int cellIdx = seg2cell[segIdx];
+			auto s = segments[segIdx];
+			Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
+			int newCellIdx = soil_index(mid.x,mid.y,mid.z);
+			// 1. check if mid is still in same cell (otherwise, remove, and add again)
+			// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
+			bool remove = false;
+			if (cellIdx==newCellIdx) {
+				if (cutAtGrid) {
+					auto endPoint = nodes[s.y];
+					newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
+					remove = (newCellIdx!=cellIdx);
+				}
+			} else {
+				if(!constantLoc)
+				{				
+					remove = true;
+				}
 			}
-		} else {
-			remove = true;
-		}
-		if (remove) {
-			rSegs.push_back(s);
+			if (remove) {
+				rSegs.push_back(s);
+			}
 		}
 	}
 	MappedSegments::unmapSegments(rSegs);
@@ -787,6 +806,7 @@ void MappedPlant::simulate(double dt, bool verbose)
  **/
 void MappedPlant::calcExchangeZoneCoefs() { //
 	exchangeZoneCoefs.resize(segments.size(), -1.0);
+	distanceTip.resize(segments.size(), -1.0);
 	auto orgs = getOrgans(-1);
 	for(auto org: orgs)
 	{
@@ -794,15 +814,18 @@ void MappedPlant::calcExchangeZoneCoefs() { //
 		{
 			int globalIdx_x = org->getNodeId(localIdx -1 );
 			int globalIdx_y = org->getNodeId(localIdx);
-			if(org->organType() != Organism::ot_root){exchangeZoneCoefs.at(globalIdx_y-1) = 1;
+			if(org->organType() != Organism::ot_root){
+				exchangeZoneCoefs.at(globalIdx_y-1) = 1;
+				distanceTip.at(globalIdx_y-1) = -1;
 			}else{
 				auto n1 = nodes.at(globalIdx_x);
 				auto n2 = nodes.at(globalIdx_y);
 				auto v = n2.minus(n1);
 				double l = v.length();
-				double distance2RootTip_y = org->getLength(true) - org->getLength(localIdx);
-				double length_in_exchangeZone = std::min(l,std::max(kr_length - std::max(distance2RootTip_y,0.),0.));
+				double distance2Tip_y = org->getLength(true) - org->getLength(localIdx);
+				double length_in_exchangeZone = std::min(l,std::max(kr_length - std::max(distance2Tip_y,0.),0.));
 				exchangeZoneCoefs.at(globalIdx_y-1) = length_in_exchangeZone/l;
+				distanceTip.at(globalIdx_y-1) = distance2Tip_y + l/2; //distance of the segment center to the tip
 			}
 		}
 	}
