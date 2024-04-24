@@ -83,7 +83,7 @@ class PlantPython(Plant):
                 rlt = 1.e6  # root life time
                 ln_ = []
                 laterals = False
-                param = RootSpecificParameter(5, lb, length, ln_, r, a, theta, rlt, laterals)
+                param = RootSpecificParameter(0, lb, length, ln_, r, a, theta, rlt, laterals)  ############## which subType
                 # print(param)
 
                 id = self.getOrganIndex()  # next index
@@ -133,7 +133,12 @@ class PlantPython(Plant):
         self.initCallbacks()
 
     def set_identical_laterals(self, initial_sub_types, lateral_subtypes, emerge_type):
-        """ places laterals as in the original rsml, all start growing at once """
+        """ places laterals as in the original rsml, all start growing at once 
+        
+        initial_sub_types             subTypes of the initial static root system 
+        lateral_subtypes              subTypes of the laterals wihtin the RSML
+        emerge_type                   subType of the model lateral (todo: could be probabilistic)        
+        """
         lni, lt, ld = [], [], []
         types = self.data.properties[self.data.tagnames[2]]
         for i, root in enumerate(self.data.polylines):
@@ -180,29 +185,33 @@ if __name__ == '__main__':
 
     plant = PlantPython()
 
-    path = "../../modelparameter/structural/rootsystem/"
-    name = "Glycine_max_Moraes2020"
-    plant.readParameters(path + name + ".xml")
+    # path = "../../modelparameter/structural/rootsystem/"
+    # name = "Glycine_max_Moraes2020"
+    # plant.readParameters(path + name + ".xml")
+    plant.readParameters("wine.xml")
     # plant.setOrganRandomParameter(SeedRandomParameter(plant))
 
     p2 = plant.getOrganRandomParameter(2, 2)
+    p2.successor = [[3]]
+    p2.successorP = [[1]]
     print(p2)
-    p2.theta = 0
-    p2.thetas = 0
-    p2.ln = p2.ln * 4
-    p2.tropismT = 1  #  1 gravi, 2 exo
-    p2.tropismS = 0.2
-    p2.tropismN = 0  # 0.05
+    # p2.theta = 0
+    # p2.thetas = 0
+    # p2.ln = p2.ln * 4
+    # p2.tropismT = 1  #  1 gravi, 2 exo
+    # p2.tropismS = 0.2
+    # p2.tropismN = 0  # 0.05
 
     plant.initialize_static("B-23.rsml", [0, 1])  # 0 is shoot, 1 are static roots
 
     print()
-    laterals, tip_laterals = plant.analyse_laterals([0, 1], [2, 3])
+    laterals, tip_laterals = plant.analyse_laterals([0, 1], [2, 3])  # for debugging
+    print()
 
     plant.set_identical_laterals([0, 1], [2, 3], 2)
     plant.initialize_static_laterals()
 
-    plant.simulate(20., True)
+    plant.simulate(125., True)
 
     vp.plot_roots(plant, "subType")
 

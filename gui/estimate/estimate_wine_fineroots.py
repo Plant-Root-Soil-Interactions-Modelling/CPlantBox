@@ -1,7 +1,9 @@
 """
-specialized scipt for the wine fine root rsml data to obtain fine root parametrs and subType=2 inter-node distances 
+Specialized scipt for the wine fine root rsml data to obtain fine root parametrs and subType=2 inter-node distances 
 """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
+import plantbox as pb
 
 import visualisation.vtk_plot as vp
 from estimate_data import EstimateDataModel
@@ -22,6 +24,10 @@ plt.rc('legend', fontsize = SMALL_SIZE)  # legend fontsize
 plt.rc('figure', titlesize = BIGGER_SIZE)  # fontsize of the figure title
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
+
+names_ = ["", "1st order", "2nd order", "3nd order", "higher order",
+          "higher order", "higher order", "higher order", "higher order", "higher order", "higher order"]
+col_ = ["y*", "r*", "b*", "g*", "c*", "m*"] * 2
 
 
 def split_(values, v):  # calculates L2 on standard deviation
@@ -48,7 +54,6 @@ def split_indices_ge(indices, root_lengths, v):
 
 def plot_laterals(data, ax, indices, order):
     # plotting data
-    indices = data.pick_order(order)
     c = np.array([len(x) for x in indices])
     print("plot_laterals(): number of order", order, "roots", c)
     age_ = []
@@ -59,14 +64,13 @@ def plot_laterals(data, ax, indices, order):
             l_.append(data.rsmls[i].properties["length"][j])
     ax.plot(age_, l_, col_[order], label = names_[order])  # , alpha = i / len(data.times) * 0.8 + 0.2
     # plotting fit
-    for i in orders_:
-        k = data.parameters[order].lmax
-        r = data.parameters[order].r
-        print("plot_laterals", k, r)
-        max_time = np.max(age_)
-        t_ = np.linspace(0, max_time, 200)
-        l_ = negexp_length(t_, r, k)
-        ax.plot(t_, l_)
+    k = data.parameters[order].lmax
+    r = data.parameters[order].r
+    print("plot_laterals", k, r)
+    max_time = np.max(age_)
+    t_ = np.linspace(0, max_time, 200)
+    l_ = ep.negexp_length(t_, r, k)
+    ax.plot(t_, l_, "k")
     ax.set_xlabel("Estimated root age [day]")
     ax.set_ylabel("Measured root length [cm]")
     ax.legend()
@@ -93,9 +97,10 @@ data.open_files(file_path, file_names)  # open rmsl
 data.times = rootsystem_age  # initialize
 for i in range(0, len(data.times)):
     data.estimates[i] = {}
+print("***********\n\n\n\n")
 
 """ 
-    splite order 2 roots into long and short
+    split order 2 roots into long and short
 """
 root_lengths = [np.array(data.rsmls[i].properties["length"]) for i in range(0, len(file_names))]
 indices_type2 = data.pick_order(2)
@@ -123,6 +128,7 @@ shorter = values[values < split_value2]
 print("Mean of roots < median", np.mean(shorter), np.std(shorter), "n =", len(shorter))
 longer = values[values >= split_value2]
 print("Mean of roots >= median", np.mean(longer), np.std(longer), "n =", len(longer))
+print()
 
 # print()  # do it per measurement
 # for i in range(0, len(indices_type2)):
@@ -143,10 +149,13 @@ print("Mean of roots >= median", np.mean(longer), np.std(longer), "n =", len(lon
 """
     find obvious parameters
 """
-for i in range(2, 4):
+for i in range(1, 4):
     indices = data.pick_order(i)
     data.estimate_zones_(indices)  #  creates lb, ln, la, radius a, inseriton angle theta; e.g. writes single values into self.estimates[i][(j, "la")], where j is the root index
     data.aggregate_parameters_(indices, target_type = i)  # aggregates the individual root parameters (mean, sd) into data.parameters (list of RootRandomParameters) at index target_type
+
+# for i in range(1, 4):
+#     print("Radius", data.parameters[i].a, data.parameters[2].a_s)
 
 # print("\n")
 # print(data.parameters[2])  # lb, ln, la, radius a, inseriton angle theta is set # TODO theta should be regarding z axis (for type 2), should work if we detach it
@@ -165,10 +174,22 @@ for i, j_ in enumerate(indices_type2):
     for j in j_:
         data.estimates[i][(j, "age")] = rootsystem_age[i]
 
-# fit elongation rate for type 2
+indices_type2 = data.pick_order(2)
+all_type2_lengths = []  # flatten all type2 lengths
+for i in range(0, len(file_names)):
+    all_type2_lengths.extend(root_lengths[i][indices_type2[i]])
+all_type2_lengths = np.array(all_type2_lengths)
 
+indices_type3 = data.pick_order(3)
+all_type3_lengths = []  # flatten all type3 lengths
+for i in range(0, len(file_names)):
+    all_type3_lengths.extend(root_lengths[i][indices_type3[i]])
+all_type3_lengths = np.array(all_type3_lengths)
+
+# fit elongation rate for type 2
 print("\nType 2: r")
-data.parameters[2].lmax = 100  # cm
+data.parameters[2].lmax = 100  # cmwriteParameters
+data.parameters[2].lmax = np.max(all_type2_lengths)  # cm
 indices_larger = split_indices_ge(indices_type2, root_lengths, split_value2)
 
 # data.fit_root_length_(indices_type2, base_method = 1 , target_type = 2)  # base_method = 1 fits r, base_method = 2 fits r, and lmax; note that "age" must be known for order=2 (target_type)
@@ -180,25 +201,38 @@ indices_larger = indices_type2
 # print(indices_larger[3])
 
 data.fit_root_length_(indices_larger, base_method = 1 , target_type = 2)  # base_method = 1 fits r, base_method = 2 fits r, and lmax; note that "age" must be known for order=2 (target_type)
-
 data.add_r_(indices_type2, 2)
-fig, ax = plt.subplots(1, 1, figsize = (9, 8))
-ep.plot_laterals(data, 0, 0, ax, orders_ = [2])
-plt.show()
 
-# # fit elongation rate for type 3
-# print("\nType 3")
-# data.parameters[3].lmax = 100  # cm
-# data.compute_age(indices_type2, 2, apical_method = 1)  # sets age for the next iteration (order++), apical_method == 0, delay based; apical_method == 1, apical length based
-#
-# indices_type3 = data.pick_order(3)
-# # for i in range(0, len(indices_type3[1])):
-# #     print(data.estimates[1][(indices_type3[1][i], "age")])
-#
-# data.fit_root_length_(indices_type3, base_method = 1 , target_type = 3)  # base_method = 1 fits r, base_method = 2 fits r, and lmax;
-# # data.fit_root_length_(indices_type3, base_method = 2 , target_type = 3)
-#
 # fig, ax = plt.subplots(1, 1, figsize = (9, 8))
-# ep.plot_laterals(data, 0, 0, ax, orders_ = [3])
+# plot_laterals(data, ax, indices = data.pick_order(2), order = 2)
 # plt.show()
 
+# fit elongation rate for type 3
+print("\nType 3 r")
+data.parameters[3].lmax = 100  # cm
+data.parameters[3].lmax = np.max(all_type3_lengths)  # cm
+data.compute_age(indices_type2, 2, apical_method = 1)  # sets age for the next iteration (order++), apical_method == 0, delay based; apical_method == 1, apical length based
+
+indices_type3 = data.pick_order(3)
+# for i in range(0, len(indices_type3[1])):
+#     print(data.estimates[1][(indices_type3[1][i], "age")])
+
+data.fit_root_length_(indices_type3, base_method = 1 , target_type = 3)  # base_method = 1 fits r, base_method = 2 fits r, and lmax;
+# data.fit_root_length_(indices_type3, base_method = 2 , target_type = 3)
+
+# fig, ax = plt.subplots(1, 1, figsize = (9, 8))
+# plot_laterals(data, ax, indices = data.pick_order(3), order = 3)
+# plt.show()
+
+""" write set """
+plant = pb.Plant()
+
+for i in range(0, 4):
+    data.parameters[i].subType = i
+    param = data.parameters[i].copy(plant)
+    # print(param.subType)
+    # print(param.lmax)
+    # print(param.r)
+    plant.setOrganRandomParameter(param)
+
+plant.writeParameters("wine.xml")

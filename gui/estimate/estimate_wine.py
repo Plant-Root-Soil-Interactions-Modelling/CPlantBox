@@ -72,8 +72,10 @@ for i in range(2, 4):
     data.estimate_zones_(indices)  #  creates lb, ln, la, radius a, inseriton angle theta; e.g. writes single values into self.estimates[i][(j, "la")], where j is the root index
     data.aggregate_parameters_(indices, target_type = i)  # aggregates the individual root parameters (mean, sd) into data.parameters (list of RootRandomParameters) at index target_type
 
-print("\n")
-print(data.parameters[2])  # lb, ln, la, radius a, inseriton angle theta is set # TODO theta should be regarding z axis (for type 2), should work if we detach it
+print()
+print("****************************************")
+print(data.parameters[1])  # lb, ln, la, radius a, inseriton angle theta is set
+print("****************************************")
 
 """ 
     find elongation rates for Type 3
