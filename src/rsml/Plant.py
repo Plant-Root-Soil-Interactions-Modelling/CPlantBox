@@ -197,10 +197,9 @@ if __name__ == '__main__':
     print(p2)
     # p2.theta = 0
     # p2.thetas = 0
-    # p2.ln = p2.ln * 4
-    # p2.tropismT = 1  #  1 gravi, 2 exo
-    # p2.tropismS = 0.2
-    # p2.tropismN = 0  # 0.05
+    p2.tropismT = 1  #  1 gravi, 2 exo
+    p2.tropismS = 0.2
+    p2.tropismN = 0.5  # 0.05
 
     plant.initialize_static("B-23.rsml", [0, 1])  # 0 is shoot, 1 are static roots
 
