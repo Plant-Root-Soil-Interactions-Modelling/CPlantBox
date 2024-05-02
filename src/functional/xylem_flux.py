@@ -424,7 +424,7 @@ class XylemFluxPython(XylemFlux):
                 p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
             else:
                 p_s[i] = self.airPressure - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
-        if(4 in organType):  # we have a whole plant
+        if(pb.leaf in organType):  # we have a whole plant
             rx = self.solve_neumann(sim_time, 0, p_s, cells = False)
             # transpiration == sum(leaf radial flux) == sum(root radial flux)
         else:
@@ -432,8 +432,8 @@ class XylemFluxPython(XylemFlux):
             rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment) 
         
         fluxes = self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
-        if(4 in organType):
-            transpiration = - sum(np.array(fluxes)[organType == 4])
+        if(pb.leaf in organType):
+            transpiration = - sum(np.array(fluxes)[organType == pb.leaf])
             
         if transpiration != 0:
             suf = np.array(fluxes)/ transpiration 
