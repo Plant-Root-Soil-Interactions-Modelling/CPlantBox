@@ -411,11 +411,9 @@ class XylemFluxPython(XylemFlux):
         tipleaves = tipleaves - np.ones(tipleaves.shape, dtype = np.int64)  # segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
 
-    def get_suf(self, sim_time, approx = False, organType_ = 2):
+    def get_suf(self, sim_time, approx = False):
         """ calculates the standard uptake fraction [1] at simulation time @param sim_time [day]
             (suf is constant for age independent conductivities) 
-            for the root system  (organType_=2)
-            the shoot (organType_=4)
         """
         segs = self.rs.segments
         nodes = self.rs.nodes
@@ -428,20 +426,21 @@ class XylemFluxPython(XylemFlux):
                 p_s[i] = self.airPressure - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
         if(4 in organType):  # we have a whole plant
             rx = self.solve_neumann(sim_time, 0, p_s, cells = False)
-            # transpiration == leaf radial flux. adapt sign to get positive SUF
+            # transpiration == sum(leaf radial flux) == sum(root radial flux)
         else:
             transpiration = -1.e5
-            rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
-        # print("rx", np.min(rx), np.max(rx), np.mean(rx))
+            rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment) 
+        
         fluxes = self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
-
         if(4 in organType):
-            transpiration = sum(np.array(fluxes)[organType == 4]) * (-1 * (organType_ == 2) + 1 * (organType_ == 4))
-        # print("fluxes ", np.min(fluxes) / -1.e5, np.max(fluxes) / -1.e5, np.mean(fluxes) / -1.e5)
+            transpiration = - sum(np.array(fluxes)[organType == 4])
+            
         if transpiration != 0:
-            return np.array(fluxes)[organType == organType_] / transpiration  # [1]
+            suf = np.array(fluxes)/ transpiration 
+            suf[organType == pb.leaf] = np.nan # put nan for leaf segments as they loose water, to have sum(suf) ~ 1
+            return  suf# [1]
         else:
-            return np.full(len(np.array(fluxes)[organType == organType_]), 0.)
+            return np.full(len(np.array(fluxes)), 0.)
 
     def get_mean_suf_depth(self, sim_time):
         """  mean depth [cm] of water uptake based suf """
