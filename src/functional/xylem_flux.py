@@ -411,9 +411,11 @@ class XylemFluxPython(XylemFlux):
         tipleaves = tipleaves - np.ones(tipleaves.shape, dtype = np.int64)  # segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
 
-    def get_suf(self, sim_time, approx = False):
+    def get_suf(self, sim_time, approx = False, organType_ = None):
         """ calculates the standard uptake fraction [1] at simulation time @param sim_time [day]
             (suf is constant for age independent conductivities) 
+            for the root system  (organType_=2 or organType_=None)
+            the shoot (organType_=4, @see get_krs(plant = True)) 
         """
         segs = self.rs.segments
         nodes = self.rs.nodes
@@ -431,20 +433,30 @@ class XylemFluxPython(XylemFlux):
             transpiration = -1.e5
             rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment) 
         
-        fluxes = self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
+        fluxes = np.array(self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False) ) # cm3/day, simTime,  rx,  sx,  approx, cells
+
         if(pb.leaf in organType):
-            transpiration = - sum(np.array(fluxes)[organType == pb.leaf])
+            if organType_ == pb.leaf: # we want the suf for the leaves, only usefull when computing get_krs() for plants
+                transpiration = sum(np.array(fluxes)[organType == pb.leaf])
+            else: # we want the suf for the roots
+                transpiration = -sum(np.array(fluxes)[organType == pb.leaf])
+                
+        if not (organType_ is None):# we want the suf for only specific orgran types
+            fluxes = fluxes[organType == organType_]
+        else:
+            fluxes[organType == pb.leaf] = np.nan           
             
         if transpiration != 0:
-            suf = np.array(fluxes)/ transpiration 
-            suf[organType == pb.leaf] = np.nan # put nan for leaf segments as they loose water, to have sum(suf) ~ 1
-            return  suf# [1]
+            return fluxes / transpiration  # [1]
+                                                          
+                            
         else:
-            return np.full(len(np.array(fluxes)), 0.)
+            return np.full(len(np.array(fluxes)[organType == organType_]), 0.)
 
     def get_mean_suf_depth(self, sim_time):
         """  mean depth [cm] of water uptake based suf """
         suf = self.get_suf(sim_time)
+        suf[np.isnan(suf)] = 0 # to get the mean in spite of the nan           
         segs = self.rs.segments
         nodes = self.rs.nodes
         z_ = 0
@@ -476,7 +488,6 @@ class XylemFluxPython(XylemFlux):
         p_s = np.zeros((len(segs),))
         organType = self.get_organ_types()
         subType = self.get_subtypes()
-        print('organType',organType)
         for i, s in enumerate(segs):
             if (organType[i] == 2):
                 p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
@@ -521,17 +532,21 @@ class XylemFluxPython(XylemFlux):
             # Hcollar =  rx[self.dirichlet_ind[0] + 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) # matric -> total potential
             return krs , jc
 
-    def get_eswp(self, sim_time, p_s, cells = True, organType_ = 2):
-        """ calculates the equivalent soil water potential [cm] (organType_ = 2)
-        or air water potential (organType_ = 4)
+    def get_eswp(self, sim_time, p_s, cells = True, organType_ = None):
+        """ calculates the equivalent soil water potential [cm] (organType_ = 2 or organType_ = None)
+        or air water potential (organType_ = 4) (@see get_krs(plant = True))
         at simulation time @param sim_time [day] for 
         the potential @param p_s [cm] given per cell """
         organType = self.get_organ_types()
 
-        segs = self.get_segments()[organType == organType_]
+        segs = self.get_segments()
         nodes = self.rs.nodes
         seg2cell = self.rs.seg2cell
         suf = self.get_suf(sim_time, organType_ = organType_)
+        if not (organType_ is None):
+            segs = segs[organType == organType_] # only happens/useful when using get_krs() for plants
+        else:
+            suf[np.isnan(suf)] = 0 # to get the mean in spite of the nan
         eswp = 0.
         for i, s in enumerate(segs):
             if cells:
