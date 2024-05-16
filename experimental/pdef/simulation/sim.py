@@ -1,5 +1,5 @@
 import sys;
-CPBdir = "../.."
+CPBdir = "../../.."
 sys.path.append(CPBdir + "/src");
 sys.path.append(CPBdir);
 sys.path.append("../../..");
