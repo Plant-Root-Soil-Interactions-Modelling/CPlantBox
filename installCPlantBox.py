@@ -26,7 +26,7 @@ show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n o
 #################################################################
 #################################################################
 
-programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran']#,'python3'] 
+programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran', 'pip']#,'python3'] 
 show_message("(1/3) Checking ubuntu prerequistes: " + " ".join(programs) + "...")
 
 # check some prerequistes
@@ -95,7 +95,7 @@ os.chdir("..")
 
 show_message("(3/3) Step completed. Succesfully configured and built CPlantBox.")
 
-show_message("to test installation, run n\ cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
+show_message("to test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
 show_message("CPlantBox is currently at stable branch, use \n $git switch master \n to obtain the latest version, use cmake . & make to recompile")
 
