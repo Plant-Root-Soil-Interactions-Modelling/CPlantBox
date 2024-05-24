@@ -853,7 +853,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 			// std::cout<<vs<<" ";
 		// }std::cout<<std::endl;
 	// }
-	
+	calcIsRootTip();
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
 	getSegment2leafIds();
 	if(verbose){std::cout<<"ending MappedPlant::simulate"<<std::endl<<std::flush;}
@@ -901,6 +901,18 @@ void MappedPlant::calcExchangeZoneCoefs() { //
 	}
 }
 
+    
+void MappedPlant::calcIsRootTip() { //
+	isRootTip.resize(segments.size(), false);
+	auto orgs = getOrgans(-1);
+	for(auto org: orgs)
+	{
+        if(org->organType() == Organism::ot_root)
+        {
+            isRootTip.at(org->getNodeId( org->getNumberOfNodes()-1)-1) = true;
+        }
+    }
+}
 
 /**
  *Gives an overview of the mappedplant object (for debugging)

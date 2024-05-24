@@ -33,39 +33,71 @@ def plot_leaf(leaf):
     render_window([actor], "plot_plant", [], [-10, 10, -10, 10, -10, 10]).Start()
 
 
-def plot_plant(plant, p_name, render = True, interactiveImage = True):
+def plot_plant(plant, p_name, vals=[], render = True, interactiveImage = True, filename = "plot_plant", range_ = None):
     """
         @param interactiveImage         make image interactive or static (should be static for google Colab)
         plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons
     """
     # plant as tube plot
-    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data
-    tube_plot_actor, color_bar = plot_roots(pd, p_name, "", render = False)
+    if not isinstance(p_name, list):
+        p_name = [p_name]
+    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime"]+ p_name,  vals)  # poly data
+    tube_plot_actor, color_bar, lut = plot_roots(pd, p_name[-1], "", render = False)
 
     # leafes as polygons
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
 
     leafes = plant.getOrgans(pb.leaf)
+    globalIdx_y = []
     for l in leafes:
-        create_leaf_(l, leaf_points, leaf_polys)
-
+        globalIdx_y =globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
+    globalIdx_y = np.array(globalIdx_y)
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
+    numnodes = plant.getNumberOfNodes()
+    if (len(vals)>0) and (len(leafes)>0):    
+        if (not isinstance(vals, list)) and (not isinstance(vals[0], type(np.array([])))):
+            vals = [vals]
+        for i in range(len(vals)):
+            vals_ = vals[-1-i]
+            p_name_ = p_name[-1-i]
+            #print(p_name_, vals_)
+            if len(vals_) == numnodes:
+                param = vals_[globalIdx_y] #select data for leaf
+            else :
+                if len(vals_) == (numnodes-1):
+                    #print(vals_,globalIdx_y, type(globalIdx_y))
+                    param = vals_[globalIdx_y -1]
+            data = vtk_data(param)
+            data.SetName(p_name_)
+            polyData.GetCellData().AddArray(data)
+    else:
+        colors = vtk.vtkNamedColors()
 
-    colors = vtk.vtkNamedColors()
 
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
+    
+    mapper.ScalarVisibilityOn();
+    mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
+    #mapper.SetArrayName(p_name)
+    mapper.SelectColorArray(p_name[-1])
+    mapper.UseLookupTableScalarRangeOn()
+    mapper.SetLookupTable(lut)
     actor = vtk.vtkActor()
     actor.SetMapper(mapper);
-    actor.GetProperty().SetColor(colors.GetColor3d("Green"))
+    
+    if not ((len(vals)>0) and (len(leafes)>0)):
+        actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
-        ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(), interactiveImage)
-        if interactiveImage:
-            ren.Start()
+        write_vtp(filename+"_leaf.vtp", polyData)
+        write_vtp(filename+".vtp", pd)
+        #ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(), interactiveImage)
+        #if interactiveImage:
+        #    ren.Start()
 
     return [tube_plot_actor, actor], color_bar
 
@@ -73,7 +105,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 def create_leaf_(leaf, leaf_points, leaf_polys):
     """ used by plot plant """
     offs = leaf_points.GetNumberOfPoints()
-
+    globalIdx_y = [] #index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
 
         ln1 = leaf.getLeafVis(i)
@@ -82,37 +114,38 @@ def create_leaf_(leaf, leaf_points, leaf_polys):
         if len(ln1) > 0 or len(ln2) > 0:
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)
-
-#             if len(ln1) > 0 and len(ln2) == 0:
-#                 print(" 2 -> 0")
-#             if len(ln1) == 0 and len(ln2) > 0:
-#                 print(" 0 -> 2")
-
+            glIdx = leaf.getNodeId(i +1)
             if len(ln1) == 2 and len(ln2) == 2:  # normal case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
             elif len(ln1) == 6 and len(ln2) == 6:  # convex case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[1], ln1[2], ln2[2], ln2[1], leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[3], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[4], ln1[5], ln2[5], ln2[4], leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx,glIdx,glIdx]
             elif len(ln1) == 2 and len(ln2) == 6:  # normal to convex case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[3], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
                 if x2[1] <= x1[0]:
                     offs = add_quad_(ln1[0], ln1[0], ln2[1], ln2[2], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[1], ln1[1], ln2[4], ln2[5], leaf_points, leaf_polys, offs)
+                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
             elif len(ln1) == 6 and len(ln2) == 2:  # convex to normal case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
                 if x1[1] <= x2[0]:
                     offs = add_quad_(ln1[1], ln1[2], ln2[0], ln2[0], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[4], ln1[5], ln2[1], ln2[1], leaf_points, leaf_polys, offs)
-
+                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
+    return globalIdx_y 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
     """ used by create_leaf_ """
@@ -145,7 +178,7 @@ def solver_to_polydata(solver, min_, max_, res_):
     return pd
 
 
-def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "organType" "creationTime"]):
+def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type", "organType" "creationTime"], vals = []):
     """ Creates vtkPolydata from a RootSystem or Plant using vtkLines to represent the root segments
     @param rs             a RootSystem, Plant, or SegmentAnalyser
     @param zoom_factor    a radial zoom factor, since root are sometimes too thin for vizualisation
@@ -157,6 +190,18 @@ def segs_to_polydata(rs, zoom_factor = 1., param_names = ["age", "radius", "type
     else:
         ana = rs
     nodes = np_convert(ana.nodes)
+    
+    
+    if len(vals) > 0:
+        if isinstance(vals[0], list) or isinstance(vals[0], type(np.array([]))):#len(vals[0]) > 0:
+            for i in range(len(vals)) :
+                if len(vals[-1-i]) == len(nodes) :
+                    ana.addData(param_names[-1-i], vals[-1-i])
+        else:
+            if len(vals) == len(nodes) :
+                ana.addData(param_names[-1], vals)
+    
+    
     segs = np_convert(ana.segments)
     points = vtk_points(nodes)
     cells = vtk_cells(segs)
@@ -474,7 +519,7 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
         ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
-    return plantActor, scalar_bar
+    return plantActor, scalar_bar, lut
 
 
 def plot_mesh(grid, p_name, win_title = "", render = True, interactiveImage = True):
@@ -569,9 +614,8 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
 
     return actors, scalar_bar
 
-
-def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, 
-        filename:str = "", sol_ind = 0, interactiveImage = True, extraArray = [], extraArrayName = "",
+def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", 
+        sol_ind = 0, interactiveImage = True, extraArray = [], extraArrayName = "",
         oneScalarBar = False):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
@@ -584,27 +628,31 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     @param cell_number   domain resolution
     @param filename      file name (without extension)
     """
-    if isinstance(rs, pb.SegmentAnalyser):
-        ana = rs
-    else:
-        ana = pb.SegmentAnalyser(rs)
-        if rank == 0:
-            ana.addData(pname, rp)
-    if periodic:
-        w = np.array(max_b) - np.array(min_b)
-        ana.mapPeriodic(w[0], w[1])
-    #print("plot_roots_and_soil begin", rank)
-    pd = segs_to_polydata(ana, 1., [pname, "radius"])
+    if rank == 0:
+        if isinstance(rs, pb.SegmentAnalyser):
+            ana = rs
+        else:
+            ana = pb.SegmentAnalyser(rs)
+            if rank == 0:
+                ana.addData(pname, rp)
+        if periodic:
+            w = np.array(max_b) - np.array(min_b)
+            ana.mapPeriodic(w[0], w[1])
+        pd = segs_to_polydata(ana, 1., [pname, "radius"])
 
-    pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
+        pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
     soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
-    soil_water_content = vtk_data(np.array(s.getWaterContent()))
+    soil_water_content = vtk_data(list(np.array(s.getWaterContent()).reshape(-1,1)))
+    
+
     soil_water_content.SetName("water content")
+    
+    
     soil_grid.GetCellData().AddArray(soil_water_content)
+    path = s.results_dir#"results/"
     soil_pressure = vtk_data(np.array(s.getSolutionHead()))
     soil_pressure.SetName("pressure head")  # in macroscopic soil
     soil_grid.GetCellData().AddArray(soil_pressure)
-    #print("plot_roots_and_soil get data", rank)
     if sol_ind > 0:
         d = vtk_data(np.array(s.getSolution(sol_ind)))
         pname_mesh = "solute" + str(sol_ind)
@@ -615,50 +663,40 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         pname_mesh = extraArrayName
         d.SetName(pname_mesh)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
-            
-    #print("plot_roots_and_soil scalarbar", rank)
-         
-    if oneScalarBar:
-        rangeS = [[], []]
-        p_nameS = [pname,pname_mesh]
-        for gid, grid in enumerate([pd, soil_grid]):   
-            range = [0, 1]
-            a = grid.GetCellData().GetAbstractArray(p_nameS[gid])
-            if a:
-                range = a.GetRange()
-                grid.GetCellData().SetActiveScalars(p_nameS[gid])
-            else:
-                a = grid.GetPointData().GetAbstractArray(p_nameS[gid])
-                grid.GetPointData().SetActiveScalars(p_nameS[gid])
+    
+    if rank == 0:      
+        if oneScalarBar:
+            rangeS = [[], []]
+            p_nameS = [pname,pname_mesh]
+            for gid, grid in enumerate([pd, soil_grid]):   
+                barRange = [0, 1]
+                a = grid.GetCellData().GetAbstractArray(p_nameS[gid])
                 if a:
-                    range = a.GetRange()
-            if p_nameS[gid] == "organType":  # fix range for for organType
-                range = [ 2, 4]
-            rangeS[gid] = range
-        sameRange = [min(rangeS[0][0], rangeS[1][0]), max(rangeS[0][1], rangeS[1][1])]
-    else:
-        sameRange = None
-        
-         
-    #print("plot_roots_and_soil plotplot", rank)
-    if rank == 0:  
-        rootActor, rootCBar = plot_roots(pd, pname, "", False, myRange = sameRange)
-        #print("plot_roots_and_soil rootActor", rank)
+                    barRange = a.GetRange()
+                    grid.GetCellData().SetActiveScalars(p_nameS[gid])
+                else:
+                    a = grid.GetPointData().GetAbstractArray(p_nameS[gid])
+                    grid.GetPointData().SetActiveScalars(p_nameS[gid])
+                    if a:
+                        barRange = a.GetRange()
+                if p_nameS[gid] == "organType":  # fix barRange for for organType
+                    barRange = [ 2, 4]
+                rangeS[gid] = barRange
+            sameRange = [min(rangeS[0][0], rangeS[1][0]), max(rangeS[0][1], rangeS[1][1])]
+        else:
+            sameRange = None
+            
+        rootActor, rootCBar, lut_ = plot_roots(pd, pname, "", False, myRange = sameRange)
         meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False, myRange = sameRange)
-        #print("plot_roots_and_soil meshActor", rank)
         meshActors.extend([rootActor])
-        #print("plot_roots_and_soil meshActors.extend", rank)
-        ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
-        #print("plot_roots_and_soil ren", rank, interactiveImage)
-        if interactiveImage:
-            ren.Start()
+        #ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
+        #if interactiveImage:
+        #    ren.Start()
 
         if filename:
-            path = "results/"
-            #print("plot_roots_and_soil write_vtp", rank, interactiveImage)
+            path = s.results_dir#"results/"
             write_vtp(path + filename + ".vtp", pd)
-            #print("plot_roots_and_soil write_vtu", rank, interactiveImage)
-            write_vtu(path + filename + ".vtu", soil_grid)
+            write_vtu(path + filename + ".vti", soil_grid)
 
 
 def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "", interactiveImage = True):

@@ -108,7 +108,11 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	//		from plant shape
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
 	void setKr_st(std::vector<std::vector<double>> values, double kr_length_, bool verbose = false); ///< sets a callback for kr_suc:=kr_suc(ot,type), 
-	void setKx_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+    
+    void setKr_stRootTip(std::vector<std::vector<double>>);
+    void setKr_mucilRootTip(std::vector<double>);
+	
+    void setKx_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	void setRmax_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	void setAcross_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	void setPerimeter_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
@@ -116,6 +120,10 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	void setKrm1(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	void setKrm2(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	
+    std::function<double(int, int, int)> kr_mucil_f = []( int type, int orgtype, int si) {
+		throw std::runtime_error("kr_mucil_f not implemented"); 
+		return 0.; };
+        
     std::function<double(int, int, int)> kr_st_f = []( int type, int orgtype, int si) {
 		throw std::runtime_error("kr_st_f not implemented"); 
 		return 0.; };
@@ -181,6 +189,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     std::vector<int> GrowthZone;
     std::vector<int> GrowthZoneLat;
 	std::vector<std::map<int,double>> deltaSucOrgNode_;//maximal sucrose need for growth per node, (mmol Suc d-1)
+	std::vector<double> deltaSucOrgNodeNoFpsi;//maximal sucrose need for growth per node, without water limitation (mmol Suc d-1)
 	double psi_osmo_proto = -4000*1.0197;
     double psiMin = 2000*1.0197;//limit wat. pot. in xylem for water-limited growth, [cm]
     std::vector<double> psi_p_symplasm;
@@ -194,7 +203,8 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double surfMeso =0.01 ;//cross sectinnal area of mesophyll (cm2). 
 	//double Cobj_ST = 1.;// ==> when doing loading or unloading with objective value. not implemented
 	double Vmaxloading = 0.019872;//mmol cm-1 d-1 for leaf blade 1cm wide
-	double CSTimin = 0.4;//minimum CST value below which there is no sink of sucrose
+	double CSTimin = 0.4;//minimum CST value below which there is no sink of sucrose, for Rm and Gr
+	double CSTimin_exud = 0.4;//minimum CST value below which there is no sink of sucrose, for Exud
 	double beta_loading = 1;//@see C_fluxes, feedback effect of C_ST on Q_FL
 	double Mloading = 0.2;//@see C_fluxes,Michaelis menten coef for Fl
 	double Gr_Y = 0.75;//growth efficiency
@@ -219,6 +229,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     
     
 	//		boolean choices
+    bool Gr4Exud = true; // exud and mucil release only where growth occures
 	bool update_viscosity_ = true;
 	bool usePsiXyl = true;//use PsiXyl value of xylem tissue
 	bool sameVolume_meso_seg = true; //use same volume for mesophyll and leaf blade compartment?
@@ -262,6 +273,23 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 		}
 		return kr_st.at(organType - 2).at(type);  
 	} //subtype, type and depend on distance to tip for roots
+    
+	double kr_st_rootTip(int type, int organType, int si)
+	{
+		if (plant->isRootTip.at(si)){
+			return kr_st.at(organType - 2).at(type);//coef * kr.at(organType - 2).at(type);
+		}
+		return 0;
+	} //subtype, type and depend on distance to tip for roots
+    
+	double kr_mucil_rootTip(int type, int organType, int si)
+	{
+		if (plant->isRootTip.at(si)){
+			return krs_mucil.at(type);//coef * kr.at(organType - 2).at(type);
+		}
+		return 0;
+	} //subtype, type and depend on distance to tip for roots
+    
 	
 	double kx_st_const( int type, int organType) { return kx_st.at(0).at(0); }  //constant
     double kx_st_perOrgType( int type, int organType) { return kx_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
@@ -290,7 +318,8 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	double krm2_const( int type, int organType) { return krm2v.at(0).at(0); }  //constant
     double krm2_perOrgType( int type, int organType) { return krm2v.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
     double krm2_perType( int type, int organType) {return krm2v.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
-	
+    
+	std::vector<double> krs_mucil;
     std::vector<std::vector<double>> kr_st;//  [mmol hPa-1 day-1]
 	 std::vector<std::vector<double>> kx_st; //  [cm3 hPa-1 day-1]
     std::vector<std::vector<double>> Across_st; // [cm2]

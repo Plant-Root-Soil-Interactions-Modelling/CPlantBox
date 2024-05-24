@@ -462,7 +462,7 @@ void Photosynthesis::getAg4Phloem()
 		int idl_yNode = seg_leaves_idx.at(idl_seg) + 1;
 		int si = seg_leaves_idx.at(idl_seg) ;
 		//from mol CO2 m-2 s-1
-		//to mmol Suc cm-2 d-1
+		//to mmol Suc (==C12) cm-2 d-1
 		double temp = (this->An.at(idl_seg) )/12 * 24*60*60 *1000/10000;//+ this->Rd
 		double sideSurface = plant->leafBladeSurface.at(si)*2;//transpiration on both side; 2 * M_PI * a * l ;
 		//to mmol Suc d-1

@@ -154,6 +154,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		int cpp_id = i -1;// o go from Fortran_vector numeration to cpp vector numeration
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
+		double CSTi_exud = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
 		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);//concentration in meosphyll compartment
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
@@ -201,8 +202,9 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
+		CSTi_exud = max(0., CSTi-CSTimin_exud); //if CSTi < CSTimin, no sucrose usage
 		
-		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
+		double CSTi_delta = max(0.,CSTi_exud-max(0.,Csoil_node[cpp_id]-CSTimin_exud)); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate

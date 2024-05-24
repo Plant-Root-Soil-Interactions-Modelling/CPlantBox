@@ -883,7 +883,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-		.def_readwrite("organParam", &MappedSegments::plantParam);
+		.def_readwrite("organParam", &MappedSegments::plantParam)
+        .def_readwrite("isRootTip",&MappedSegments::isRootTip);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         //.def(py::init<>())
         .def(py::init<unsigned int>(),  py::arg("seednum")=0)
@@ -922,6 +923,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("plant", &MappedPlant::plant)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
+			.def_readwrite("isRootTip",&MappedPlant::isRootTip)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
@@ -1081,6 +1083,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
             .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0, py::arg("verbose") = false)
 
+            .def("setKr_stRootTip",&PhloemFlux::setKr_stRootTip)
+            .def("setKr_mucilRootTip",&PhloemFlux::setKr_mucilRootTip)
             .def("setKx_st",&PhloemFlux::setKx_st)
             .def("setRmax_st",&PhloemFlux::setRmax_st)
             .def("setAcross_st",&PhloemFlux::setAcross_st)
@@ -1089,6 +1093,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setKrm2",&PhloemFlux::setKrm2)
 			.def("startPM",&PhloemFlux::startPM)
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
+            .def_readwrite("Gr4Exud", &PhloemFlux::Gr4Exud)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
 
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
@@ -1098,6 +1103,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("vol_ST",&PhloemFlux::vol_STv)
             .def_readwrite("vol_Meso",&PhloemFlux::vol_Mesov)
             .def_readwrite("CSTimin",&PhloemFlux::CSTimin)
+            .def_readwrite("CSTimin_exud",&PhloemFlux::CSTimin_exud)
             .def_readwrite("C_ST",&PhloemFlux::C_STv)
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
             .def_readwrite("r_ST",&PhloemFlux::r_STv)

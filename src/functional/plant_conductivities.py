@@ -66,7 +66,7 @@ def init_conductivities(r, TairC:float = 20):
                     [kr_r0,kr_r0,kr_r0*ratio_decrease,kr_r0*ratio_decrease]],
                     [[kr_s],[kr_s] ],[[kr_l]]],
             [[[0,0.8,1,10000],[0,0.8,1,10000],[0,0.8,1,10000],[0,0.8,1,10000]],
-            [[0],[0]],[[0]]],verbose = True, ageBased = False) 
+            [[0],[0]],[[0]]],verbose = False, ageBased = False) 
             
     r.setKx([[kz_r0,kz_r1,kz_r2,kz_r0],[kz_s,kz_s ],[kz_l]])
     

@@ -367,7 +367,7 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 	return 0 ;
 }
 
-
+//cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, MODIFIED_GS, PREC_NONE, 2, Var_integrale, Var_derivee); 
 int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_vector &T, void(*aux)(double, double*), Fortran_vector& atol, Fortran_vector& rtol,
 	int solver, int GSType, int prectype, int nbVar_dot, Fortran_vector** Var_primitive, Fortran_vector** Var_dot,
 	bool verbose, bool STALD, void(*rootfind)(double, double*, double*), int nrootfns, int mu, int ml, int maxl) {
