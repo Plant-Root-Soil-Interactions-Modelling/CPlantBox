@@ -18,7 +18,7 @@ def sinusoidal(t):
 
 
 def sinusoidal2(t, dt):
-    """ sinusoidal functgion from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
+    """ sinusoidal function from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
     return np.maximum(0., np.pi * (np.cos(2 * np.pi * (t - 0.5)) + np.cos(2 * np.pi * ((t + dt) - 0.5))) / 2)
 
 
@@ -53,6 +53,7 @@ class XylemFluxPython(XylemFlux):
         self.Km = 10.67 * 62 * 1.e-6  # kg/m3
         self.CMin = 4.4 * 62 * 1.e-6  # kg/m3
         self.Exu = 1.e-2  # data Eva Oburger kg /(m2 day)
+        self.plant = rs
 
     def solute_fluxes(self, c):
         """ concentrations @param c [kg/m3], returns [g/day]
