@@ -76,10 +76,9 @@ class PhloemFluxPython(PhloemFlux):
                 if self.pg[0] != 0:
                     p_s = self.pg[numleaf]
                     
-        kr = self.kr_f(age, st, ot,seg_ind)  # c++ conductivity call back functions
+        kr = self.kr_f(age, st, ot, seg_ind, cells)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot,seg_ind)
-        print("def axial_flux",kr, kx, p_s)
         
         if a * kr > 1.e-16:
             tau = np.sqrt(2 * a * np.pi * kr / kx)  # cm-2
@@ -270,9 +269,9 @@ class PhloemFluxPython(PhloemFlux):
                 print("Warning: shoot segment ", seg_id, "organ type",organTypes[seg_id],"IS mapped, this may cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
                 
 
-    def kr_f(self, age, st, ot = 2 , seg_ind = 0):
+    def kr_f(self, age, st, ot = 2 , seg_ind = 0, cells = False):
         """ root radial conductivity [1 day-1] for backwards compatibility """
-        return self.kr_f_cpp(seg_ind, age, st, ot)  # kr_f_cpp is XylemFlux::kr_f_wrapped
+        return self.kr_f_cpp(seg_ind, age, st, ot, cells)  # kr_f_cpp is XylemFlux::kr_f
 
     def kx_f(self, age, st, ot = 2, seg_ind = 0):
         """ root axial conductivity [cm3 day-1]  for backwards compatibility """
