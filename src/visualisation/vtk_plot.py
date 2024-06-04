@@ -41,8 +41,9 @@ def plot_plant(plant, p_name, vals=[], render = True, interactiveImage = True, f
     # plant as tube plot
     if not isinstance(p_name, list):
         p_name = [p_name]
-    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime"]+ p_name,  vals)  # poly data
-    tube_plot_actor, color_bar, lut = plot_roots(pd, p_name[-1], "", render = False)
+    p_name_ = ["radius", "organType", "creationTime"]+ p_name
+    pd = segs_to_polydata(plant, 1.,p_name_,  vals)  # poly data
+    tube_plot_actor, color_bar, lut = plot_roots(pd, p_name_[-1], "", render = False)
 
     # leafes as polygons
     leaf_points = vtk.vtkPoints()
@@ -62,8 +63,8 @@ def plot_plant(plant, p_name, vals=[], render = True, interactiveImage = True, f
             vals = [vals]
         for i in range(len(vals)):
             vals_ = vals[-1-i]
-            p_name_ = p_name[-1-i]
-            #print(p_name_, vals_)
+            p_name_leaf = p_name[-1-i]
+            #print(p_name_leaf, vals_)
             if len(vals_) == numnodes:
                 param = vals_[globalIdx_y] #select data for leaf
             else :
@@ -71,7 +72,7 @@ def plot_plant(plant, p_name, vals=[], render = True, interactiveImage = True, f
                     #print(vals_,globalIdx_y, type(globalIdx_y))
                     param = vals_[globalIdx_y -1]
             data = vtk_data(param)
-            data.SetName(p_name_)
+            data.SetName(p_name_leaf)
             polyData.GetCellData().AddArray(data)
     else:
         colors = vtk.vtkNamedColors()
@@ -82,8 +83,8 @@ def plot_plant(plant, p_name, vals=[], render = True, interactiveImage = True, f
     
     mapper.ScalarVisibilityOn();
     mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
-    #mapper.SetArrayName(p_name)
-    mapper.SelectColorArray(p_name[-1])
+    #mapper.SetArrayName(p_name_)
+    mapper.SelectColorArray(p_name_[-1])
     mapper.UseLookupTableScalarRangeOn()
     mapper.SetLookupTable(lut)
     actor = vtk.vtkActor()

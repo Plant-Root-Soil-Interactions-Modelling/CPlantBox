@@ -747,9 +747,16 @@ void Photosynthesis::loopCalcs(double simTime, std::vector<double> sxx_, bool ce
 		if((verbose_photosynthesis ==2)){std::cout<<"git to leaf "<<ea_leaf<<" "<<HRleaf<<std::endl;}
 		if(std::abs(fv.at(i)) > 1e-16)//i.e., perimeter * kr > 1e-16 like for @see Xylem::solveLinear
 		{
-            double p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
+            double p_lhPa = ((rxi + rxj)/2)*0.9806806;// cm => hPa +(n1+n2)/2
+            //double p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
+            double fw_cutoff_= 0;
+                
+            if( p_lhPa <= -14900.)
+            {
+                fw_cutoff_ =  fw_cutoff;// to make it easier to get fw
+            } 
             
-			fw.at(i) = fwr +std::max(0., (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa))) - fw_cutoff);
+			fw.at(i) = fwr +std::max(0., (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa))) - fw_cutoff_);
             
 			ci.at(i) = std::max((cs_*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)),deltagco2.at(i)) ;
 			if((verbose_photosynthesis ==2)){std::cout<<"in compute gco2 "<<sideArea<<" "<<(sideArea > 1e-16)<<std::endl;}

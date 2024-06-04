@@ -174,7 +174,7 @@ else:
 
 # dumux-rosi
 if not os.path.exists("dumux-rosi"):
-    git_clone('https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git', branch = 'exud_plant_fpit')
+    git_clone('https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git', branch = 'exud_plant_dune27_newAds0509')
 else:
     print("-- Skip cloning dumux-rosi because the folder already exists.")
 

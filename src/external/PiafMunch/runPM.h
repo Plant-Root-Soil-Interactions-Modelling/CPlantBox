@@ -172,6 +172,9 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	// soil data, link with DuMux (mmol Suc cm-3)
 	std::vector<double> Csoil_seg;
 	std::vector<double> Csoil_node;
+	std::vector<double> CSTi_delta;
+	std::vector<double> CSTi_exud;
+	std::vector<double> Crsi_exud;
 	double CsoilDefault =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
 	//all in (mmol Suc d-1)
 	std::vector<double> Agv;//assimilation (mmol Suc d-1)

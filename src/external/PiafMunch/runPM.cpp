@@ -354,7 +354,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	double a_seg, l;double mu =0.;
 	int ot, st;
 	Ag =Fortran_vector(Nt, 0.);
-	a_STv.resize(Nc , 0.)  ;//for postprocessing
+	a_STv = std::vector<double>(Nt, 0.);//.resize(Nc , 0.)  ;//for postprocessing
 	len_leaf =Fortran_vector(Nt, 0.);
 	vol_ParApo =Fortran_vector(Nt, 0.);
 	Q_Grmax =Fortran_vector(Nt, 0.);
@@ -364,14 +364,17 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	vol_Seg=Fortran_vector(Nt, 0.);//for postprocessing	
 	exud_k=Fortran_vector(Nt, 0.);
 	krm2=Fortran_vector(Nt, 0.);
-	Csoil_node.resize(Nt,0.);
+	Csoil_node=std::vector<double>(Nt, 0.);// resize(Nt,0.); //
+	CSTi_exud=std::vector<double>(Nt, 0.);
+	Crsi_exud=std::vector<double>(Nt, 0.);
+    CSTi_delta=std::vector<double>(Nt, 0.);
 	deltaSucOrgNode_ = waterLimitedGrowth(dt);//water limited growth
 	if(doTroubleshooting){cout<<"initializePM_new "<<Nc<<" "<<Nt<<endl;}
 	int nodeID;
 	double StructSucrose;//double deltaStructSucrose;
 	double cmH2O_to_hPa = 0.980638	;//cm to hPa
 	double krm1;
-	k_mucil_.resize(Nt , 0.);
+	k_mucil_ = std::vector<double>(Nt, 0.);//.resize(Nt , 0.);
 	if(psiXyl4Phloem.size() == Nt){Psi_Xyl = Fortran_vector(psiXyl4Phloem,cmH2O_to_hPa); //computed by xylem object
 	}else{Psi_Xyl = Fortran_vector(Nt, 0.);}
 	
