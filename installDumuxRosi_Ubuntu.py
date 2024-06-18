@@ -75,7 +75,7 @@ for program in programs:
 #tried to make evaluation automatic but not sure it holds on all machines
 isCluster = ('ENV' in os.environ.keys())
         
-programs = ['default-jre', 'python3-pip','libeigen3-dev'] 
+programs = ['default-jre','libeigen3-dev'] # , 'python3-pip'
 if not isCluster:
     programs.append('libboost-all-dev')
     
