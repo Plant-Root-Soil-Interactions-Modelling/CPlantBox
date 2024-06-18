@@ -86,7 +86,7 @@ for program in programs:
         
 if len(error) > 0:
     print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
-    raise Exception('import modules')
+    # raise Exception('import modules')
 
 
 import pip
