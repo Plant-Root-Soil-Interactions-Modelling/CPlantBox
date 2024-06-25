@@ -82,12 +82,6 @@ def soil_root_interface_table(rx, sx, inner_kr_, rho_, f):
         
     rx             xylem matric potential [cm]
     sx             bulk soil matric potential [cm]
-65
-66
-67
-68
-69
-70
     inner_kr       root radius times hydraulic conductivity [cm/day] 
     rho            geometry factor [1]
     f              function to look up the potentials
@@ -340,6 +334,6 @@ np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter = ';')
 plt.show()
 
 """ VTK visualisation """
-print(rx.shape)
-vp.plot_roots_and_soil(r.rs, "pressure head", rx, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
+# print(rx.shape)
+# vp.plot_roots_and_soil(r.rs, "pressure head", rx, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
 
