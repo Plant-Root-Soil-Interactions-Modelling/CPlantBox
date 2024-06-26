@@ -120,7 +120,7 @@ N = round(sim_time / dt)
 t = 0.
 wilting_point = -15000  # cm
 skip = 1  # for output and results, skip iteration
-max_iter = 10  # maximum for fix point iteration
+max_iter = 1000  # maximum for fix point iteration
 
 # SLOW
 soil_vg = vg.Parameters(loam)
@@ -165,7 +165,7 @@ r.test()  # sanity checks
 """ Numerical solution """
 start_time = timeit.default_timer()
 
-psi_x_, psi_s_, sink_ , x_, y_, psi_s2_ = [], [], [], [], [], []  # for post processing
+psi_x_, psi_s_, sink_ , t_, y_, psi_s2_ = [], [], [], [], [], []  # for post processing
 soil_c_, c_ = [], []
 vol_ = [[], [], [], [], [], []]
 surf_ = [[], [], [], [], [], []]
@@ -284,7 +284,7 @@ for i in range(0, N):
     sink = np.zeros(sx.shape)
     for k, v in soil_fluxes.items():
         sink[k] += v
-    x_.append(rs_age + t)  # day
+    t_.append(rs_age + t)  # day
     y_.append(np.sum(sink))  # cm3/day
 
     if i % skip == 0:
@@ -323,14 +323,14 @@ print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s"
 
 """ transpiration over time """
 fig, ax1 = plt.subplots()
-ax1.plot(x_, -trans * sinusoidal2(t, dt), 'k')  # potential
-ax1.plot(x_, -np.array(y_), 'g')  # actual
+ax1.plot(t_, [trans * sinusoidal2(t, dt) for t in t_], 'k')  # potential
+ax1.plot(t_, -np.array(y_), 'g')  # actual
 ax2 = ax1.twinx()
-ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative
+ax2.plot(t_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[cm^3 d^{-1}]$")
 ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
-np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter = ';')
+np.savetxt(name, np.vstack((t_, -np.array(y_))), delimiter = ';')
 plt.show()
 
 """ VTK visualisation """
