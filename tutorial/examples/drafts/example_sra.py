@@ -6,6 +6,7 @@ sys.path.append("../../../../dumux-rosi/python/modules/")  # python wrappers
 import plantbox as pb
 
 from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+from functional.perirhizal import PerirhizalPython  # Steady rate helper
 from functional.root_conductivities import *  # hard coded conductivities
 import functional.van_genuchten as vg
 from functional.xylem_flux import sinusoidal2
@@ -18,83 +19,6 @@ from richards import RichardsWrapper  # Python part
 import numpy as np
 import matplotlib.pyplot as plt
 import timeit
-from scipy.interpolate import RegularGridInterpolator
-from scipy.optimize import fsolve
-from scipy.optimize import ridder
-from scipy.optimize import brenth
-from scipy.optimize import minimize_scalar
-
-
-def open_sra_lookup(filename):
-    """ opens the look-up table from a file, to quickly find soil root interface potential """
-    sra_table = np.load(filename + ".npy")
-    x = np.load(filename + "_.npy", allow_pickle = True)
-    rx_ = x[0]
-    sx_ = x[1]
-    inner_ = x[2]
-    outer_ = x[3]
-    return RegularGridInterpolator((rx_, sx_, inner_, outer_), sra_table)  # method = "nearest" fill_value = None , bounds_error=False
-
-
-def soil_root_interface(rx, sx, inner_kr, rho, sp):
-    """
-    finds potential at the soil root interface
-    
-    rx             xylem matric potential [cm]
-    sx             bulk soil matric potential [cm]
-    inner_kr       root radius times hydraulic conductivity [cm/day] 
-    rho            geometry factor [1]
-    sp             soil van Genuchten parameters (type vg.Parameters)
-    """
-    k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)
-    # rho = outer_r / inner_r  # Eqn [5]
-    rho2 = rho * rho  # rho squared
-    # b = 2 * (rho2 - 1) / (1 + 2 * rho2 * (np.log(rho) - 0.5))  # Eqn [4]
-    b = 2 * (rho2 - 1) / (1 - 0.53 * 0.53 * rho2 + 2 * rho2 * (np.log(rho) + np.log(0.53)))  # Eqn [7]
-    fun = lambda x, rx, sx, inner_kr, b: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
-    """ currently best """
-    rsx = [fsolve(fun, (rx[i] + sx[i]) / 2, args = (rx[i], sx[i], inner_kr[i], b[i])) for i in range(0, len(rx))]
-    """ """
-    # rsx = rx
-    # for i in range(0, len(rx)):
-    #     print(rx[i], sx[i], fun(rx[i], rx[i], sx[i], inner_kr[i], b[i]), fun((9 * sx[i] + rx[i]), rx[i], sx[i], inner_kr[i], b[i]))
-    #     x0 = ridder(fun, rx[i], (9 * sx[i] + rx[i]) / 10, args = (rx[i], sx[i], inner_kr[i], b[i]))
-    #     print(x0)
-    #     rsx[i] = x0
-    # rsx = rx
-
-    # for i in range(0, len(rx)):
-    #     # print(rx[i], sx[i], fun(rx[i], rx[i], sx[i], inner_kr[i], b[i]), fun((9 * sx[i] + rx[i]), rx[i], sx[i], inner_kr[i], b[i]))
-    #     a_ = rx[i]
-    #     b_ = (99 * sx[i] + rx[i]) / 100
-    #     # x0 = minimize_scalar(fun, bracket = None, bounds = (min(a_, b_), max(a_, b_)), args = (rx[i], sx[i], inner_kr[i], b[i]))
-    #     # rsx[i] = x0.x
-    #     x0 = brenth(fun, min(a_, b_), max(a_, b_), args = (rx[i], sx[i], inner_kr[i], b[i]))
-    #     rsx[i] = x0
-
-    # print("e.g. ind=100 ", rx[100], sx[100], rsx[100])
-    return rsx
-
-
-def soil_root_interface_table(rx, sx, inner_kr_, rho_, f):
-    """
-    finds potential at the soil root interface
-        
-    rx             xylem matric potential [cm]
-    sx             bulk soil matric potential [cm]
-    inner_kr       root radius times hydraulic conductivity [cm/day] 
-    rho            geometry factor [1]
-    f              function to look up the potentials
-    """
-    try:
-        rsx = f((rx, sx, inner_kr_ , rho_))
-    except:
-        print("rx", np.min(rx), np.max(rx))  # 0, -16000
-        print("sx", np.min(sx), np.max(sx))  # 0, -16000
-        print("inner_kr", np.min(inner_kr_), np.max(inner_kr_))  # 1.e-7 - 1.e-4
-        print("rho", np.min(rho_), np.max(rho_))  # 1. - 200.
-    return rsx
-
 
 """ Parameters """
 min_b = [-4., -4., -25.]
@@ -120,16 +44,13 @@ N = round(sim_time / dt)
 t = 0.
 wilting_point = -15000  # cm
 skip = 1  # for output and results, skip iteration
-max_iter = 1000  # maximum for fix point iteration
+max_iter = 10  # maximum for fix point iteration
 
 # SLOW
 soil_vg = vg.Parameters(loam)
-vg.create_mfp_lookup(soil_vg, wilting_point = -15000, n = 1501)
-root_interface = soil_root_interface  # function defined above
-
-# # FAST
-# soil_vg = open_sra_lookup("table_laom")
-# root_interface = soil_root_interface_table  # function defined above
+vg.create_mfp_lookup(soil_vg, wilting_point = -15000, n = 15001)
+peri = PerirhizalPython()
+root_interface = peri.soil_root_interface_potentials
 
 """ Initialize macroscopic soil model """
 s = RichardsWrapper(RichardsSP())
@@ -143,7 +64,7 @@ s.initializeProblem()
 s.setCriticalPressure(wilting_point)
 
 """ Initialize xylem model """
-rs = pb.MappedRootSystem()
+rs = pb.MappedPlant()  # pb.MappedPlant()
 rs.readParameters(path + name + ".xml")
 if not periodic:
     sdf = pb.SDF_PlantBox(0.99 * (max_b[0] - min_b[0]), 0.99 * (max_b[1] - min_b[1]), max_b[2] - min_b[2])
@@ -158,24 +79,25 @@ init_conductivities(r, age_dependent)
 """ Coupling (map indices) """
 picker = lambda x, y, z: s.pick([x, y, z])
 rs.setSoilGrid(picker)  # maps segments
-rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), True)
+rs.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), False)  # DISABLE cutting....
 r.test()  # sanity checks
-# cci = picker(nodes[0, 0], nodes[0, 1], nodes[0, 2])  # collar cell index
 
 """ Numerical solution """
 start_time = timeit.default_timer()
 
 psi_x_, psi_s_, sink_ , t_, y_, psi_s2_ = [], [], [], [], [], []  # for post processing
-soil_c_, c_ = [], []
 vol_ = [[], [], [], [], [], []]
 surf_ = [[], [], [], [], [], []]
 krs_ = []
 depth_ = []
 
-# rs = r.rs
-# nodes = rs.nodes
 segs = rs.segments
-# ns = len(segs)
+nodes = rs.nodes
+print("Number of nodes", len(nodes))
+print("Number of segments", len(segs))
+print(nodes[0], nodes[1], nodes[2], nodes[3], nodes[4])
+print("***")
+
 mapping = rs.getSegmentMapper()  # because seg2cell is a dict
 
 for i in range(0, len(segs)):
@@ -201,14 +123,15 @@ for i in range(0, N):
     t = i * dt  # current simulation time
 
     """ growth (and update everything)"""
-    # rs.simulate(dt, False)
+    # print("\n*****\n")
+    # rs.simulate(dt, True)
+    # r.test()
 
     # cell2seg = rs.cell2seg  # for debugging
     mapping = rs.getSegmentMapper()
     sx = s.getSolutionHead_()  # richards.py
     hsb = np.array([sx[j] for j in mapping])  # soil bulk matric potential per segment
     rsx = hsb.copy()  # initial values for fix point iteration
-
     cell_centers = s.getCellCenters_()
     cell_centers_z = np.array([cell_centers[j][2] for j in mapping])
     seg_centers_z = rs.getSegmentZ()
@@ -245,13 +168,12 @@ for i in range(0, N):
         rx_ = rx[1:] - seg_centers_z  # from total potential to matric potential
         rx_ = np.maximum(rx_, np.ones(rx_.shape) * -15000.)  ############################################ (too keep within table)
         rsx = root_interface(rx_ , hsb_, inner_kr_, rho_, soil_vg)
-        rsx = rsx + seg_centers_z  # from matric potential to total potential
+        rsx = rsx[:, 0] + seg_centers_z  # from matric potential to total potential
         wall_interpolation = timeit.default_timer() - wall_interpolation
 
         """ xylem matric potential """
         wall_xylem = timeit.default_timer()
         # print("Segment size from Python ", len(r.rs.segments), ns)
-
         rx = r.solve(rs_age + t, trans_f(rs_age + t, dt), 0., rsx, False, wilting_point, soil_k = [])  # xylem_flux.py, cells = False
         err_ = np.linalg.norm(rx - rx_old)
         wall_xylem = timeit.default_timer() - wall_xylem
@@ -291,11 +213,10 @@ for i in range(0, N):
 
         # if i % (24 * skip) == 0:
         print("time {:g}".format(rs_age + t), "{:g}/{:g} fix point iterations {:g}, {:g}".format(i, N, c, err_),
-              "\nwall times: fix point {:g}:{:g}; soil vs iter {:g}:{:g}".format(wall_interpolation / (wall_interpolation + wall_xylem), wall_xylem / (wall_interpolation + wall_xylem),
+              "wall times: fix point {:g}:{:g}; soil vs iter {:g}:{:g}".format(wall_interpolation / (wall_interpolation + wall_xylem), wall_xylem / (wall_interpolation + wall_xylem),
                                                                                  wall_fixpoint / wall_iteration, wall_soil / wall_iteration),
-              "number of segments", rs.getNumberOfSegments(), "root collar", rx[0])
-
-        print("wall_interpolation", wall_interpolation)
+              "\nnumber of segments", rs.getNumberOfSegments(), "root collar", rx[0])
+        # print("wall_interpolation", wall_interpolation)
 
         sink_.append(sink)  # cm3/day (per soil cell)
         psi_s2_.append(sx.copy())  # cm (per soil cell)
@@ -321,6 +242,8 @@ for i in range(0, N):
 
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
+""" save final results """
+
 """ transpiration over time """
 fig, ax1 = plt.subplots()
 ax1.plot(t_, [trans * sinusoidal2(t, dt) for t in t_], 'k')  # potential
@@ -332,6 +255,8 @@ ax1.set_ylabel("Transpiration $[cm^3 d^{-1}]$")
 ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
 np.savetxt(name, np.vstack((t_, -np.array(y_))), delimiter = ';')
 plt.show()
+
+np.savez("example_sra", time = t_, actual = y_, cumulative = np.cumsum(-np.array(y_) * dt), krs = krs_)
 
 """ VTK visualisation """
 # print(rx.shape)

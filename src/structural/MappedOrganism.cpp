@@ -152,6 +152,7 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
  */
 void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
 	for (auto& ns : segs) {
+	    //std::cout<< "mapSegments():"<< ns.x <<", " << ns.y << "\n" << std::flush;
 		Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
 		int cellIdx = soil_index(mid.x,mid.y,mid.z);
 		int segIdx = ns.y-1; // this is unique in a tree like structured
@@ -437,7 +438,14 @@ std::vector<double> MappedSegments::segLength() const {
 std::vector<int> MappedSegments::getSegmentMapper() const {
     std::vector<int> mapper = std::vector<int>(segments.size());
     for (int i=0; i<mapper.size(); i++) {
-        mapper[i] = seg2cell.at(i);
+
+        try {
+            mapper[i] = seg2cell.at(i);
+        } catch(...) {
+            std::cout << "MappedSegments::getSegmentMapper(): Index "<< i << " not mapped\n" << std::flush;
+            throw;
+        }
+
     }
     return mapper;
 }
@@ -535,10 +543,12 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 
 	auto uni = this->getUpdatedNodeIndices(); // move nodes
 	auto unodes = this->getUpdatedNodes();
+    auto uncts = this->getUpdatedNodeCTs();
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
 	int c = 0;
 	for (int i : uni) {
 		nodes.at(i) = unodes[c];
+		nodeCTs.at(i) = uncts[c];
 		c++;
 	}
 	if (verbose) {
@@ -557,21 +567,23 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	if (verbose) {
 		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
 	}
-	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
-	segments.resize(segments.size()+newsegs.size());
+	auto newsegs = this->getSegments(); // add segments (TODO cutting) ########################## this->getNewSegments(); stopped working (Monas Hack...)
+	segments.resize(newsegs.size()); // segments.size()+
 	for (auto& ns : newsegs) {
-		segments[ns.y-1] = ns;
+//	    std::cout << "MappedOrganism " << ns.x << ", " << ns.y << "\n" << std::flush;
+//        std::cout << "index " << ns.y-1 << segments[ns.y-1].x << ", " << segments[ns.y-1].y << "\n" << std::flush;
+	    segments[ns.y-1] = ns;
 	}
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
 	}
-	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
-	radii.resize(radii.size()+newsegO.size());
-	subTypes.resize(subTypes.size()+newsegO.size());
-	organTypes.resize(organTypes.size()+newsegO.size());
+	auto newsegO = this->getSegmentOrigins(); // to add radius and type (TODO cutting) ############ getNewSegmentOrigins  (Monas Hack...)
+    radii.resize(newsegO.size());
+    subTypes.resize(newsegO.size());
+    organTypes.resize(newsegO.size());
 	c = 0;
 	if (verbose) {
-		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
+		std::cout << "number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
 	}
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
@@ -583,32 +595,32 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	// map new segments
 	this->mapSegments(newsegs);
 
-	// update segments of moved nodes
-	std::vector<Vector2i> rSegs;
-	for (int i : uni) {
-		int segIdx = i -1;
-		int cellIdx = seg2cell[segIdx];
-		auto s = segments[segIdx];
-		Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
-		int newCellIdx = soil_index(mid.x,mid.y,mid.z);
-		// 1. check if mid is still in same cell (otherwise, remove, and add again)
-		// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
-		bool remove = false;
-		if (cellIdx==newCellIdx) {
-			if (cutAtGrid) {
-				auto endPoint = nodes[s.y];
-				newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
-				remove = (newCellIdx!=cellIdx);
-			}
-		} else {
-			remove = true;
-		}
-		if (remove) {
-			rSegs.push_back(s);
-		}
-	}
-	MappedSegments::unmapSegments(rSegs);
-	MappedSegments::mapSegments(rSegs);
+//	// update segments of moved nodes
+//	std::vector<Vector2i> rSegs;
+//	for (int i : uni) {
+//		int segIdx = i -1;
+//		int cellIdx = seg2cell[segIdx];
+//		auto s = segments[segIdx];
+//		Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
+//		int newCellIdx = soil_index(mid.x,mid.y,mid.z);
+//		// 1. check if mid is still in same cell (otherwise, remove, and add again)
+//		// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
+//		bool remove = false;
+//		if (cellIdx==newCellIdx) {
+//			if (cutAtGrid) {
+//				auto endPoint = nodes[s.y];
+//				newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
+//				remove = (newCellIdx!=cellIdx);
+//			}
+//		} else {
+//			remove = true;
+//		}
+//		if (remove) {
+//			rSegs.push_back(s);
+//		}
+//	}
+//	MappedSegments::unmapSegments(rSegs);
+//	MappedSegments::mapSegments(rSegs);
 }
 
 
@@ -781,7 +793,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 				}
 			} else {
 				if(!constantLoc)
-				{				
+				{
 					remove = true;
 				}
 			}
