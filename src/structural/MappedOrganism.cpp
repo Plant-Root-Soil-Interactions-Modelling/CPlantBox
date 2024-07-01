@@ -572,7 +572,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	for (auto& ns : newsegs) {
 //	    std::cout << "MappedOrganism " << ns.x << ", " << ns.y << "\n" << std::flush;
 //        std::cout << "index " << ns.y-1 << segments[ns.y-1].x << ", " << segments[ns.y-1].y << "\n" << std::flush;
-	    segments[ns.y-1] = ns;
+	    segments.at(ns.y-1) = ns;
 	}
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
@@ -588,9 +588,12 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		c++;
-		radii[segIdx] = so->param()->a;
-		subTypes[segIdx] = so->param()->subType;
-		organTypes[segIdx] = so->organType();
+//		radii[segIdx] = so->param()->a;
+//		subTypes[segIdx] = so->param()->subType;
+//		organTypes[segIdx] = so->organType();
+		radii.at(segIdx) = so->param()->a;
+		subTypes.at(segIdx) = so->param()->subType;
+		organTypes.at(segIdx) = so->organType();
 	}
 	// map new segments
 	this->mapSegments(newsegs);

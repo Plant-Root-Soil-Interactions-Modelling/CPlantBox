@@ -176,6 +176,10 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
     def update(self, sim_time):  # rs_age + simtime...
         """ call before solve(), get_collar_potential(), and get_Heff() """
         A_d, self.Kr, self.kx0 = self.get_doussan_system(sim_time)
+        # print("update")
+        # print(A_d.shape)
+        # print(self.Kr.shape)
+        # dd
         self.ci = self.collar_index()
         # A_n = A_d.copy()
         # A_n[self.ci, self.ci] -= self.kx0
@@ -197,7 +201,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         collar = self.get_collar_potential(t_pot, rsx)
         collar = max(collar, wilting_point)
         b = self.Kr.dot(rsx)
-        b[self.ci, 0] += self.kx0 * collar
+        b[self.ci] += self.kx0 * collar
         rx = self.A_d_splu.solve(b)
         # b = self.Kr.dot(rsx)
         # b[self.ci, 0] += self.kx0 * wilting_point
@@ -245,9 +249,74 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
     def get_Heff(self, rsx):
         """ effective total potential [cm] (call update() before)"""
         heff = self.suf.dot(rsx)
-        return heff[0, 0]
+        # print("heff", heff.shape, self.suf.shape, rsx.shape, heff)
+        return heff[0]
 
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
         return (self.krs * self.get_Heff(rsx) - (-t_act)) / self.krs
+
+    def get_ages(self, final_age = -1.):
+        """ converts the list of nodeCT to a numpy array of segment ages
+        @param final_age [day]         current root system age, (default = 0 means detect maximum from nodeCT)
+        """
+        cts = np.array(self.rs.nodeCTs)
+        if final_age == -1.:
+            final_age = np.max(cts)
+        node_ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
+        segs = self.get_segments()
+        ages = np.zeros(segs.shape[0])
+        for i, s in enumerate(segs):
+            ages[i] = node_ages[s[1]]  # segment age based on second node (as in XylemFlux::linearSystem)
+        return ages
+
+    def test(self):
+        """ perfoms some sanity checks, and prints to the console """
+        print("\nXylemFluxPython.test():")
+        # 1 check if segment index is node index-1
+        segments = self.get_segments()
+        nodes = self.get_nodes()
+        types = self.rs.subTypes
+        for i, s_ in enumerate(segments):
+            if i != s_[1] - 1:
+                raise "Error: Segment indices are mixed up!"
+        print(len(nodes), "nodes:")
+        for i in range(0, min(5, len(nodes))):
+            print("Node", i, nodes[i])
+        print(len(segments), "segments:")
+        # 1b check if there are multiple basal roots (TODO)
+        for i in range(0, min(5, len(segments))):
+            print("Segment", i, segments[i], "subType", types[i])
+        ci = self.collar_index()
+        self.collar_index_ = ci
+        print("Collar segment index", ci)
+        print("Collar segment", segments[ci])
+        first = True
+        for s in segments:
+            if s[0] == 0:
+                if first:
+                    first = False
+                else:
+                    print("Warning: multiple segments emerge from collar node (always node index 0)", ci, s)
+        # 2 check for very small segments
+        seg_length = self.rs.segLength()
+        c = 0
+        for i, l in enumerate(seg_length):
+            if l < 1e-5:
+                print(i, l)
+                c += 1
+        print(c, "segments with length < 1.e-5 cm")
+        # 3 check for type range, index should start at 0
+        if np.min(types) > 0:
+            print("Warning: types start with index", np.min(types), "> 0 !")
+        print("{:g} different root types from {:g} to {:g}".format(np.max(types) - np.min(types) + 1, np.min(types), np.max(types)))
+        # 4 Print segment age range
+        ages = self.get_ages()
+        print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))
+        # 4 check for unmapped indices
+        map = self.rs.seg2cell
+        for seg_id, cell_id in map.items():
+            if cell_id < 0:
+                print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
+        print()
 

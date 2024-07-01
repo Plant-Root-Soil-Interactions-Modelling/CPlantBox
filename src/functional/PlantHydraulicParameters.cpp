@@ -102,6 +102,38 @@ void PlantHydraulicParameters::setKx(std::vector<std::vector<double>> values, st
     }
 }
 
+
+/**
+ * Sets the radial conductivity in [1 day-1]
+ *  @param values           kr values for age (its linearly interpolated between these values) for each root type
+ *  @param age              ages for the given values for each root type
+ *
+ * TODO: make deprecated (i would leave it in for now, used in pyhton_modules/root_conductivities.py)
+ */
+//both age and type/subtype dependent
+void PlantHydraulicParameters::setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
+    krs= { values };
+    krs_t = { age };
+    kr_f = std::bind(&PlantHydraulicParameters::kr_tablePerSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+}
+
+/**
+ *  Sets the axial conductivity in [cm3 day-1]
+ *  @param values           kx values for age (its linearly interpolated between these values) for each root type
+ *  @param age              ages for the given values for each root type
+ *
+ * TODO: make deprecated (i would leave it in for now, used in pyhton_modules/root_conductivities.py)
+ */
+//both age and type/subtype dependent
+void PlantHydraulicParameters::setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
+    kxs = { values };
+    kxs_t = { age };
+    kx_f = std::bind(&PlantHydraulicParameters::kx_tablePerSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+}
+
+
+
+
 /**
  *  Sets the radial conductivity in [1 day-1] age, organ type and sub-type dependent
  *

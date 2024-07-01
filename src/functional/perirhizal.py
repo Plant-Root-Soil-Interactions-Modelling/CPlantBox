@@ -30,18 +30,21 @@ class PerirhizalPython(Perirhizal):
         self.lookup_table = None  # optional 4d look up table to find soil root interface potentials
         self.sp = None  # corresponding van gencuchten soil parameter
 
-    def seg_outer_radii(self, type:int, vols = None):
+    def seg_outer_radii(self, type:str, vols = None):
         """
         calculates the outer perirhizal radii assuming homogeneously distributed roots within soil volumes,
         calls Perirhizal.cpp
         
-        type             assigns the radii proportional to segment volume (0) segment surface (1), or segment length (2)
+        type             assigns the radii proportional to segment "volume" (0) segment "surface" (1), or segment "length" (2)
         vols             (optional) cell volumes in case of not equidistant grids         
         """
+        dict_ = {"length": 2, "surface":1, "volume":0 }
+        type_ = dict_[type]
+
         if vols:
-            super().segOuterRadii(type, vols)
+            return super().segOuterRadii(type_, vols)
         else:
-            super().segOuterRadii(type)
+            return super().segOuterRadii(type_)
 
     def soil_root_interface_potentials(self, rx, sx, inner_kr, rho, sp):
         """
@@ -56,9 +59,10 @@ class PerirhizalPython(Perirhizal):
         """
         assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
         if self.lookup_table:
-            rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr_, rho)
+            rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
         else:
             rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], sp) for i in range(0, len(rx))])
+            rsx = rsx[:, 0]
         return rsx
 
     @staticmethod

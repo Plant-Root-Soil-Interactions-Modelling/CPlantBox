@@ -22,8 +22,13 @@ public:
     void setKxValues(std::vector<double> values); ///< one value per segment
     void setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_ = -1.0);
     void setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
+
+    void setKrTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
+    void setKxTables(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age);
     void setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
     void setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age);
+
+
 
     std::function<double(int, double, int, int)> kr_f = [](int si, double age, int subType, int organType) { throw std::runtime_error("kr_f not set"); return 0.; };
     std::function<double(int, double, int, int)> kx_f = [](int si, double age, int subType, int organType) { throw std::runtime_error("kx_f not set"); return 1.; };

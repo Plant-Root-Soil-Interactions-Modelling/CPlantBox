@@ -943,16 +943,16 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>>())
-            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKr), 
+            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKr),
 					py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
             .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables), py::arg("values"), 
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables), py::arg("values"),
 						py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
             .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
             .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),
                                                                         py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
             .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&XylemFlux::setKrTables), 
+            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&XylemFlux::setKrTables),
 					py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
             .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
             .def("setKrValues", &XylemFlux::setKrValues)
@@ -1147,7 +1147,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
 			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
-            
+
             .def_readwrite("C_targ",&PhloemFlux::C_targ)
             .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
             .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)
@@ -1221,28 +1221,24 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<PlantHydraulicParameters, std::shared_ptr<PlantHydraulicParameters>>(m, "PlantHydraulicParameters")
             .def(py::init<>())
+            .def("setKr", &PlantHydraulicParameters::setKr)
+            .def("setKx", &PlantHydraulicParameters::setKx)
             .def("setKrValues", &PlantHydraulicParameters::setKrValues)
             .def("setKxValues", &PlantHydraulicParameters::setKxValues)
-            .def("setKr", &PlantHydraulicParameters::setKr, py::arg("values"), py::arg("age"), py::arg("kr_length_"))
-            .def("setKx", &PlantHydraulicParameters::setKx)
-            .def("setKrTables", &PlantHydraulicParameters::setKrTables)
-            .def("setKxTables", &PlantHydraulicParameters::setKxTables)
+
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&PlantHydraulicParameters::setKrTables), py::arg("values"), py::arg("age"))
+            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>> (&PlantHydraulicParameters::setKxTables), py::arg("values"), py::arg("age"))
+            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>> (&PlantHydraulicParameters::setKrTables),py::arg("values"), py::arg("age"))
+            .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> (&PlantHydraulicParameters::setKxTables), py::arg("values"), py::arg("age"))
+
             .def("getEffKr", &PlantHydraulicParameters::getEffKr)
             .def("getKr", &PlantHydraulicParameters::getKr)
             .def("getKx", &PlantHydraulicParameters::getKx)
-            .def("getHs", &PlantHydraulicParameters::getHs)
-            .def_readonly("kr_f", &PlantHydraulicParameters::kr_f)
-            .def_readonly("kx_f", &PlantHydraulicParameters::kx_f)
-            .def_readwrite("kr", &PlantHydraulicParameters::kr)
-            .def_readwrite("kr_t", &PlantHydraulicParameters::kr_t)
-            .def_readwrite("kx", &PlantHydraulicParameters::kx)
-            .def_readwrite("kx_t", &PlantHydraulicParameters::kx_t)
-            .def_readwrite("krs", &PlantHydraulicParameters::krs)
-            .def_readwrite("krs_t", &PlantHydraulicParameters::krs_t)
-            .def_readwrite("kxs", &PlantHydraulicParameters::kxs)
-            .def_readwrite("kxs_t", &PlantHydraulicParameters::kxs_t)
-            .def_readwrite("exchangeZoneCoefs", &PlantHydraulicParameters::exchangeZoneCoefs)
+            .def("getHs", &PlantHydraulicParameters::getHs) // -> better move to mapped segments
+
+            .def_readonly("kx_f_cpp", &PlantHydraulicParameters::kx_f)
             .def_readwrite("psi_air", &PlantHydraulicParameters::psi_air);
+
 
         /*
          * PlantHydraulicModel.h

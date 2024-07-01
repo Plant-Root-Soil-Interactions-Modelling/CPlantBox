@@ -432,32 +432,31 @@ class XylemFluxPython(XylemFlux):
             # transpiration == sum(leaf radial flux) == sum(root radial flux)
         else:
             transpiration = -1.e5
-            rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment) 
-        
-        fluxes = np.array(self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False) ) # cm3/day, simTime,  rx,  sx,  approx, cells
+            rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment)
+
+        fluxes = np.array(self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False))  # cm3/day, simTime,  rx,  sx,  approx, cells
 
         if(pb.leaf in organType):
-            if organType_ == pb.leaf: # we want the suf for the leaves, only usefull when computing get_krs() for plants
+            if organType_ == pb.leaf:  # we want the suf for the leaves, only usefull when computing get_krs() for plants
                 transpiration = sum(np.array(fluxes)[organType == pb.leaf])
-            else: # we want the suf for the roots
+            else:  # we want the suf for the roots
                 transpiration = -sum(np.array(fluxes)[organType == pb.leaf])
-                
-        if not (organType_ is None):# we want the suf for only specific orgran types
+
+        if not (organType_ is None):  # we want the suf for only specific orgran types
             fluxes = fluxes[organType == organType_]
         else:
-            fluxes[organType == pb.leaf] = np.nan           
-            
+            fluxes[organType == pb.leaf] = np.nan
+
         if transpiration != 0:
             return fluxes / transpiration  # [1]
-                                                          
-                            
+
         else:
             return np.full(len(np.array(fluxes)[organType == organType_]), 0.)
 
     def get_mean_suf_depth(self, sim_time):
         """  mean depth [cm] of water uptake based suf """
         suf = self.get_suf(sim_time)
-        suf[np.isnan(suf)] = 0 # to get the mean in spite of the nan           
+        suf[np.isnan(suf)] = 0  # to get the mean in spite of the nan
         segs = self.rs.segments
         nodes = self.rs.nodes
         z_ = 0
@@ -494,7 +493,7 @@ class XylemFluxPython(XylemFlux):
                 p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
             else:
                 p_s[i] = self.airPressure - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
-                
+
         if plant:
             rx = self.solve_neumann(sim_time, 0., p_s, cells = False)
             fluxes = self.segFluxes(sim_time, rx, p_s, approx = False, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
@@ -545,9 +544,9 @@ class XylemFluxPython(XylemFlux):
         seg2cell = self.rs.seg2cell
         suf = self.get_suf(sim_time, organType_ = organType_)
         if not (organType_ is None):
-            segs = segs[organType == organType_] # only happens/useful when using get_krs() for plants
+            segs = segs[organType == organType_]  # only happens/useful when using get_krs() for plants
         else:
-            suf[np.isnan(suf)] = 0 # to get the mean in spite of the nan
+            suf[np.isnan(suf)] = 0  # to get the mean in spite of the nan
         eswp = 0.
         for i, s in enumerate(segs):
             if cells:
@@ -577,15 +576,17 @@ class XylemFluxPython(XylemFlux):
         # 1 check if segment index is node index-1
         segments = self.get_segments()
         nodes = self.get_nodes()
+        types = self.rs.subTypes
         for i, s_ in enumerate(segments):
             if i != s_[1] - 1:
-                raise "Segment indices are mixed up"
-        print(len(segments), "segments")
+                raise "Error: Segment indices are mixed up!"
+        print(len(nodes), "nodes:")
+        for i in range(0, min(5, len(nodes))):
+            print("Node", i, nodes[i])
+        print(len(segments), "segments:")
         # 1b check if there are multiple basal roots (TODO)
-        print("Segment 0", segments[0])
-        print("Segment 1", segments[1])
-        print("Segment 2", segments[2])
-        print("....")
+        for i in range(0, min(5, len(segments))):
+            print("Segment", i, segments[i], "subType", types[i])
         ci = self.collar_index()
         self.collar_index_ = ci
         print("Collar segment index", ci)
@@ -596,7 +597,7 @@ class XylemFluxPython(XylemFlux):
                 if first:
                     first = False
                 else:
-                    print("warning multiple segments emerge from collar node (always node index 0)", ci, s)
+                    print("Warning: multiple segments emerge from collar node (always node index 0)", ci, s)
         # 2 check for very small segments
         seg_length = self.rs.segLength()
         c = 0
@@ -606,7 +607,6 @@ class XylemFluxPython(XylemFlux):
                 c += 1
         print(c, "segments with length < 1.e-5 cm")
         # 3 check for type range, index should start at 0
-        types = self.rs.subTypes
         if np.min(types) > 0:
             print("Warning: types start with index", np.min(types), "> 0 !")
         print("{:g} different root types from {:g} to {:g}".format(np.max(types) - np.min(types) + 1, np.min(types), np.max(types)))
