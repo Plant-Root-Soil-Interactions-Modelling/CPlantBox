@@ -102,11 +102,11 @@ depth_ = []
 # initialize loop
 collar_ind = r.collar_index()
 mapping = rs.getSegmentMapper()  # because seg2cell is a dict
-sx = s.getSolutionHead_()  # richards.py
-hsb = np.array([sx[j] for j in mapping])  # soil bulk matric potential per segment
-rsx = hsb.copy()  # initial values for fix point iteration
-rx = r.solve(rs_age, trans_f(0, dt), 0., rsx, False, wilting_point, soil_k = [])
-rx_old = rx.copy()
+psi_s_cell = s.getSolutionHead_()  # richards.py
+psi_s = np.array([psi_s_cell[j] for j in mapping])  # soil bulk matric potential per segment
+psi_rs = psi_s.copy()  # initial values for fix point iteration
+psi_x = r.solve(rs_age, trans_f(0, dt), 0., psi_rs, False, wilting_point, soil_k = [])
+psi_x_old = psi_x.copy()
 
 N = int(np.ceil(sim_time / dt))  # number of iterations
 print("Starting simulation loop", N, "iterations")
@@ -129,14 +129,14 @@ for i in range(0, N):
 
     mapping = rs.getSegmentMapper()
 
-    sx = s.getSolutionHead_()  # richards.py
-    hsb = np.array([sx[j] for j in mapping])  # soil bulk matric potential per segment
-    rsx = hsb.copy()  # initial values for fix point iteration
-    hsb_ = hsb
+    psi_s_cell = s.getSolutionHead_()  # richards.py
+    psi_s = np.array([psi_s_cell[j] for j in mapping])  # soil bulk matric potential per segment
+    psi_rs = psi_s.copy()  # initial values for fix point iteration
+    hsb_ = psi_s
     hsb_ = np.maximum(hsb_, np.ones(hsb_.shape) * -15000.)  ############################################ (too keep within table)
     hsb_ = np.minimum(hsb_, np.zeros(hsb_.shape))  ############################################ (too keep within table)
 
-    rsx = np.hstack((rsx, hsb[rsx.shape[0]:]))
+    psi_rs = np.hstack((psi_rs, psi_s[psi_rs.shape[0]:]))
 
     # cell_centers = s.getCellCenters_()
     # cell_centers_z = np.array([cell_centers[j][2] for j in mapping])
@@ -153,36 +153,36 @@ for i in range(0, N):
     err_ = 1.e6  # cm
     c = 0
 
-    # r.init_solve_static(rs_age + t, rsx, False, wilting_point, soil_k = [])  # LU factorisation for speed up
-    rx = r.solve(rs_age + t, trans_f(t, dt), 0., rsx, False, wilting_point, soil_k = [])
-    rx_old = rx.copy()
+    # r.init_solve_static(rs_age + t, psi_rs, False, wilting_point, soil_k = [])  # LU factorisation for speed up
+    psi_x = r.solve(rs_age + t, trans_f(t, dt), 0., psi_rs, False, wilting_point, soil_k = [])
+    psi_x_old = psi_x.copy()
 
     while err_ > 1 and c < max_iter:
 
         """ interpolation """
         wall_interpolation = timeit.default_timer()
-        rx_ = rx[1:] - seg_centers_z  # from total potential to matric potential
+        rx_ = psi_x[1:] - seg_centers_z  # from total potential to matric potential
         rx_ = np.maximum(rx_, np.ones(rx_.shape) * -15000.)  ############################################ (too keep within table)
-        rsx = peri.soil_root_interface_potentials(rx_ , hsb_, inner_kr_, rho_, soil_vg)
-        rsx = rsx + seg_centers_z  # from matric potential to total potential
+        psi_rs = peri.soil_root_interface_potentials(rx_ , hsb_, inner_kr_, rho_, soil_vg)
+        psi_rs = psi_rs + seg_centers_z  # from matric potential to total potential
         wall_interpolation = timeit.default_timer() - wall_interpolation
 
         """ xylem matric potential """
         wall_xylem = timeit.default_timer()
         # print("Segment size from Python ", len(r.rs.segments), ns)
-        rx = r.solve(rs_age + t, trans_f(rs_age + t, dt), 0., rsx, False, wilting_point, soil_k = [])  # xylem_flux.py, cells = False
-        err_ = np.linalg.norm(rx - rx_old)
+        psi_x = r.solve(rs_age + t, trans_f(rs_age + t, dt), 0., psi_rs, False, wilting_point, soil_k = [])  # xylem_flux.py, cells = False
+        err_ = np.linalg.norm(psi_x - psi_x_old)
         wall_xylem = timeit.default_timer() - wall_xylem
 
-        rx_old = rx.copy()
+        psi_x_old = psi_x.copy()
         c += 1
 
     wall_fixpoint = timeit.default_timer() - wall_fixpoint
 
     """ macroscopic soil """
     wall_soil = timeit.default_timer()
-    fluxes = r.segFluxes(rs_age + t, rx, rsx, approx = False, cells = False)
-    collar_flux = r.collar_flux(rs_age + t, rx.copy(), rsx.copy(), k_soil = [], cells = False)  # validity checks
+    fluxes = r.segFluxes(rs_age + t, psi_x, psi_rs, approx = False, cells = False)
+    collar_flux = r.collar_flux(rs_age + t, psi_x.copy(), psi_rs.copy(), k_soil = [], cells = False)  # validity checks
     err = np.linalg.norm(np.sum(fluxes) - collar_flux)
     if err > 1.e-6:
         print("error: summed root surface fluxes and root collar flux differ" , err, r.neumann_ind, collar_flux, np.sum(fluxes))
@@ -199,7 +199,7 @@ for i in range(0, N):
     wall_iteration = timeit.default_timer() - wall_iteration
 
     """ remember results ... """
-    sink = np.zeros(sx.shape)
+    sink = np.zeros(psi_s_cell.shape)
     for k, v in soil_fluxes.items():
         sink[k] += v
     t_.append(rs_age + t)  # day
@@ -211,30 +211,30 @@ for i in range(0, N):
         print("time {:g}".format(rs_age + t), "{:g}/{:g} fix point iterations {:g}, {:g}".format(i, N, c, err_),
               "wall times: fix point {:g}:{:g}; soil vs iter {:g}:{:g}".format(wall_interpolation / (wall_interpolation + wall_xylem), wall_xylem / (wall_interpolation + wall_xylem),
                                                                                  wall_fixpoint / wall_iteration, wall_soil / wall_iteration),
-              "\nnumber of segments", rs.getNumberOfSegments(), "root collar", rx[0])
+              "\nnumber of segments", rs.getNumberOfSegments(), "root collar", psi_x[0])
         # print("wall_interpolation", wall_interpolation)
 
-        sink_.append(sink)  # cm3/day (per soil cell)
-        psi_s2_.append(sx.copy())  # cm (per soil cell)
-        ana = pb.SegmentAnalyser(r.rs.mappedSegments())  # VOLUME and SURFACE
-        for j in range(0, 6):  # root types
-            anac = pb.SegmentAnalyser(ana)
-            anac.filter("subType", j)
-            vol_[j].append(anac.getSummed("volume"))
-            surf_[j].append(anac.getSummed("surface"))
+        # sink_.append(sink)  # cm3/day (per soil cell)
+        # psi_s2_.append(psi_s_cell.copy())  # cm (per soil cell)
+        # ana = pb.SegmentAnalyser(r.rs.mappedSegments())  # VOLUME and SURFACE
+        # for j in range(0, 6):  # root types
+        #     anac = pb.SegmentAnalyser(ana)
+        #     anac.filter("subType", j)
+        #     vol_[j].append(anac.getSummed("volume"))
+        #     surf_[j].append(anac.getSummed("surface"))
+                # depth_.append(ana.getMinBounds().z)
         krs, _ = r.get_krs(rs_age + t, [collar_ind])
         krs_.append(krs)  # KRS
-        depth_.append(ana.getMinBounds().z)
 
         """ direct vtp output """
-        # psi_x_.append(rx.copy())  # cm (per root node)
-        # psi_s_.append(rsx.copy())  # cm (per root segment)
-        # ana.addData("rx", rx[1:])
-        # ana.addData("rsx", rsx)
+        # psi_x_.append(psi_x.copy())  # cm (per root node)
+        # psi_s_.append(psi_rs.copy())  # cm (per root segment)
+        # ana.addData("psi_x", psi_x[1:])
+        # ana.addData("psi_rs", psi_rs)
         # ana.addAge(rs_age + t)  # "age"
         # ana.addConductivities(r, rs_age + t)  # "kr", "kx"
-        # ana.addFluxes(r, rx, rsx, rs_age + t)  # "axial_flux", "radial_flux"
-        # ana.write("results/rs{0:05d}.vtp".format(int(i / skip)), ["radius", "subType", "creationTime", "organType", "rx", "rsx", "age", "kr", "kx", "axial_flux", "radial_flux"])
+        # ana.addFluxes(r, psi_x, psi_rs, rs_age + t)  # "axial_flux", "radial_flux"
+        # ana.write("results/rs{0:05d}.vtp".format(int(i / skip)), ["radius", "subType", "creationTime", "organType", "psi_x", "psi_rs", "age", "kr", "kx", "axial_flux", "radial_flux"])
 
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
@@ -255,5 +255,5 @@ plt.show()
 np.savez("example_sra", time = t_, actual = y_, cumulative = np.cumsum(-np.array(y_) * dt), krs = krs_)
 
 """ VTK visualisation """
-vp.plot_roots_and_soil(r.rs, "pressure head", rx, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
+vp.plot_roots_and_soil(r.rs, "pressure head", psi_x, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
 
