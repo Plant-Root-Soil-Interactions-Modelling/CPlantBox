@@ -286,7 +286,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getParameter",&OrganRandomParameter::getParameter)
             .def("__str__",&OrganRandomParameter::toString, py::arg("verbose") = true) // default
             .def("writeXML",(void (OrganRandomParameter::*)(std::string name) const) &OrganRandomParameter::writeXML) // overloads
-            .def("readXML", (void (OrganRandomParameter::*)(std::string name, bool verbose)) &OrganRandomParameter::readXML, py::arg("name"), py::arg("verbose") = true) // overloads
+            .def("readXML", (void (OrganRandomParameter::*)(std::string name, bool verbose)) &OrganRandomParameter::readXML, py::arg("name"), py::arg("verbose") = false) // overloads
             .def("bindParameters",&OrganRandomParameter::bindParameters)
             .def("bindIntParameter", (void (OrganRandomParameter::*)(std::string, int*, std::string, double*)) &OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
             .def("bindDoubleParameter", (void (OrganRandomParameter::*)(std::string, double*, std::string, double*))  &OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
@@ -404,7 +404,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNewSegmentOrigins", &Organism::getNewSegmentOrigins, py::arg("ot") = -1)  // default
 
             .def("initializeReader", &Organism::initializeReader)
-            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true, py::arg("verbose") = true)  // default
+            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true, py::arg("verbose") = false)  // default
             .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("comments") = true)  // default
             .def("writeRSML", &Organism::writeRSML)
             .def("getRSMLSkip", &Organism::getRSMLSkip)
@@ -961,11 +961,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getKr", &XylemFlux::getKr)
             .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
-                    py::arg("soil_k") = std::vector<double>())
+                    py::arg("soil_k") = std::vector<double>(), py::arg("verbose")=false)
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
                     py::arg("soil_k") = std::vector<double>())
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
-                    py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
+                    py::arg("cells") = false, py::arg("soil_k") = std::vector<double>(), py::arg("verbose")=false)
             .def("sumSegFluxes",&XylemFlux::sumSegFluxes)
             .def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
             .def("kr_f_cpp", &XylemFlux::kr_f_wrapped, py::arg("seg_ind"), py::arg("age"), py::arg("st"), py::arg("ot"), py::arg("cells")=false)
@@ -1078,12 +1078,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
             .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0, py::arg("verbose") = false)
 
-            .def("setKx_st",&PhloemFlux::setKx_st)
-            .def("setRmax_st",&PhloemFlux::setRmax_st)
-            .def("setAcross_st",&PhloemFlux::setAcross_st)
-            .def("setRhoSucrose",&PhloemFlux::setRhoSucrose)
-            .def("setKrm1",&PhloemFlux::setKrm1)
-            .def("setKrm2",&PhloemFlux::setKrm2)
+            .def("setKx_st",&PhloemFlux::setKx_st, py::arg("values"), py::arg("verbose") = false)
+            .def("setRmax_st",&PhloemFlux::setRmax_st, py::arg("values"), py::arg("verbose") = false)
+            .def("setAcross_st",&PhloemFlux::setAcross_st, py::arg("values"), py::arg("verbose") = false)
+            .def("setRhoSucrose",&PhloemFlux::setRhoSucrose, py::arg("values"), py::arg("verbose") = false)
+            .def("setKrm1",&PhloemFlux::setKrm1, py::arg("values"), py::arg("verbose") = false)
+            .def("setKrm2",&PhloemFlux::setKrm2, py::arg("values"), py::arg("verbose") = false)
 			.def("startPM",&PhloemFlux::startPM)
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)

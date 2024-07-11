@@ -242,7 +242,7 @@ size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii
  * @param sx        [cm] soil matric potential for each cell
  */
  
-double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_) const
+double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose) const
 {
 	int organType = plant->organTypes.at(si);
     double psi_s;

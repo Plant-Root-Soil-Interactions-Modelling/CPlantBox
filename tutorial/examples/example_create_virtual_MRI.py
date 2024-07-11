@@ -10,11 +10,30 @@ import matplotlib.pyplot as plt
 from pyevtk.hl import gridToVTK
 import scipy
 from scipy import ndimage
-import pygorpho as pg
-import skimage
+import subprocess
+try:
+    import pygorpho as pg
+except:
+    print("pygorpho library missing. installing pygorpho")    
+    subprocess.run(["pip3", "install", "pygorpho"])
+    import pygorpho as pg
+try:
+    import skimage 
+except:
+    print("skimage library missing. installing scikit-image")    
+    subprocess.run(["pip3", "install", "scikit-image"])
+    import skimage
 from skimage.morphology import ball
+try:
+    import nibabel as nib 
+except:
+    print("nibabel library missing. installing nibabel")    
+    subprocess.run(["pip3", "install", "nibabel"])
+    import nibabel as nib
+    
+
 import math
-import nibabel as nib
+
 import os
 
 def isConsecutive(A):
