@@ -18,33 +18,35 @@ The most convenient way is to use google colab, which is a Linux virtual machine
 You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
 [here is the link to use it](http://b.cplantbox.com).
 
-## or build local
-### windows
-CPlantBox is currently not available on windows. 
-Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
-
-### semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
-
+# build local
+## semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
+### Linux
 If you have  and, you can set up CPlantBox (with or without the dumux-rosi extension) via an install script.\
 This installation method requires ubuntu >= 20.04 and python >= 3.7.\
 For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
 Run
 ```bash
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox.py
 python3 installCPlantBox.py
 ```
 It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.\
 For CPlantBox <ins>__with__</ins> the dumux-rosi extension, download the python file "installDumuxRosi_Ubuntu.py" (based on the dumux installation file).\
 run
 ```bash
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installDumuxRosi_Ubuntu.py
 python3 installDumuxRosi_Ubuntu.py
 ```
 This will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
 This script might work on other linux OS but has not been tested.
 
-### manual linux installation 
+### windows
+CPlantBox is currently not available on windows. 
+Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
+
+## manual linux installation 
 Clone the repository by running:
 ```bash
-git clone --depth 1 -b stable_v2.1 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
 ```
 Run CMake which configures the CPlantBox libraries by 
 ```bash
@@ -57,6 +59,9 @@ python3 example1a.py
 ```
 
 The dependecies are listed in the requirements.txt file.
+## Installation on the JSC agrocluster
+Refer to the wiki:\
+https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/CPlantBox-on-the-J%C3%BClich-Supercomputer-cluster
 # Folder sructure
 
 `/modelparameter`		Plant parameter files\
