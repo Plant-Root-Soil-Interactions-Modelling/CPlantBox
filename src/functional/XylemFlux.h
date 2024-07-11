@@ -23,12 +23,13 @@ public:
     virtual ~XylemFlux() { }
 
     void linearSystem(double simTime, const std::vector<double>& sx, bool cells = true,
-        const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
+        const std::vector<double> soil_k = std::vector<double>(), bool verbose = false); ///< builds linear system (simTime is needed for age dependent conductivities)
 
     std::map<int,double> soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
     		bool approx = false, const std::vector<double> soil_k = std::vector<double>()); // [cm3/day]
     std::vector<double> segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-    		bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>()) const; // for each segment in [cm3/day]
+    		bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>(),
+			bool verbose = false) const; // for each segment in [cm3/day]
     std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
 
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
@@ -56,7 +57,7 @@ public:
 	double kr_f_wrapped(int si, double age, int type, int orgtype, bool cells) const;///stops transpiration if organs are not in the correct domain
 
 	virtual size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) ; ///< fill the vectors aI, aJ, aV, aB
-	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const; ///< get the outer water potential [cm]
+	virtual double getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose) const; ///< get the outer water potential [cm]
     std::vector<double> getEffKr(double simtime);
     std::vector<double> getKr(double simtime);
     std::vector<double> getKx(double simtime);

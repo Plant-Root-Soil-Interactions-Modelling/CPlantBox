@@ -22,7 +22,8 @@ XylemFlux::XylemFlux(std::shared_ptr<CPlantBox::MappedSegments> rs): rs(rs){}
  * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
  *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  */
-void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k)
+void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k,
+								bool verbose)
 {
     int Ns = rs->segments.size(); // number of segments
     aI.resize(4*Ns);
@@ -41,7 +42,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
         int i = rs->segments[si].x;
         int j = rs->segments[si].y;
 
-        double psi_s = getPsiOut(cells, si, sx);
+        double psi_s = getPsiOut(cells, si, sx, verbose);
         double age = simTime - rs->nodeCTs[j];
         int organType = rs->organTypes[si];
         int subType = rs->subTypes[si];
@@ -123,7 +124,7 @@ std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<dou
  * @return Volumetric fluxes for each segment [cm3/day]
  */
 std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-    bool approx, bool cells, const std::vector<double> soil_k) const
+    bool approx, bool cells, const std::vector<double> soil_k, bool verbose) const
 {
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     for (int si = 0; si<rs->segments.size(); si++) {
@@ -132,7 +133,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
         int j = rs->segments.at(si).y;
         int organType = rs->organTypes.at(si);
 
-        double psi_s = getPsiOut(cells, si, sx);
+        double psi_s = getPsiOut(cells, si, sx, verbose);
 
 
         // si is correct, with ordered and unordered segments
@@ -329,14 +330,14 @@ size_t XylemFlux::fillVectors(size_t k, int i, int j, double bi, double cii, dou
  * @param sx        [cm] soil matric potential for each cell
  */
 
-double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_) const
+double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose) const
 {
 	int organType = rs->organTypes.at(si);
     double psi_s;
 	if (cells) { // soil matric potential given per cell
 		int cellIndex = rs->seg2cell.at(si);
 		if (cellIndex>=0) {
-			if(organType ==Organism::ot_leaf){ //add a runtime error?
+			if((organType ==Organism::ot_leaf) && verbose){ //add a runtime error?
 				std::cout<<"XylemFlux::linearSystem: Leaf segment n#"<<si<<" below ground. OrganType: ";
 				std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
 			}
@@ -346,7 +347,7 @@ double XylemFlux::getPsiOut(bool cells, int si, const std::vector<double>& sx_) 
 				psi_s = sx_.at(0);
 			}
 		} else {
-			if(organType == Organism::ot_root) //add a runtime error?
+			if((organType == Organism::ot_root) && verbose) //add a runtime error?
 			{
 				std::cout<<"XylemFlux::linearSystem: Root segment n#"<<si<<" aboveground. OrganType: ";
 				std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;

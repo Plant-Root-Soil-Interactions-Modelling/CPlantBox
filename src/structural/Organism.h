@@ -99,7 +99,7 @@ public:
     /* io */
     virtual std::string toString() const; ///< quick info for debugging
     virtual void initializeReader() { } ///< initializes parameter reader
-    virtual void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = true); ///< reads all organ type parameters from a xml file
+    virtual void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = false); ///< reads all organ type parameters from a xml file
     virtual void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
     virtual void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
     virtual void writeVTP(int otype, std::ostream & os) const;

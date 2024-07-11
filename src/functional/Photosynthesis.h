@@ -66,7 +66,7 @@ public:
 		}else{return vQlight.at(index);}
 	}
 	
-	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const override;
+	double getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose = false) const override;
 	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
 	double kr_f(int si, double age, int type, int orgtype);
 		

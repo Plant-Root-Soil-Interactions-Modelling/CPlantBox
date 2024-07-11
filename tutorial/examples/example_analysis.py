@@ -8,7 +8,7 @@ import visualisation.vtk_plot as vp
 import numpy as np
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Moraes2018_dry_2008"  # of xml cplantbox parameter file
+name = "Moraesetal_2018"  # of xml cplantbox parameter file
 
 simtime = 154
 
