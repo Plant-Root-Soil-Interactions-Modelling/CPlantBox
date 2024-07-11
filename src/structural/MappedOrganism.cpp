@@ -567,20 +567,21 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	if (verbose) {
 		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
 	}
-	auto newsegs = this->getSegments(); // add segments (TODO cutting) ########################## this->getNewSegments(); stopped working (Monas Hack...)
-	segments.resize(newsegs.size()); // segments.size()+
+
+	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
+	segments.resize(segments.size()+newsegs.size());
 	for (auto& ns : newsegs) {
-//	    std::cout << "MappedOrganism " << ns.x << ", " << ns.y << "\n" << std::flush;
-//        std::cout << "index " << ns.y-1 << segments[ns.y-1].x << ", " << segments[ns.y-1].y << "\n" << std::flush;
-	    segments.at(ns.y-1) = ns;
+		segments[ns.y-1] = ns;
 	}
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
 	}
-	auto newsegO = this->getSegmentOrigins(); // to add radius and type (TODO cutting) ############ getNewSegmentOrigins  (Monas Hack...)
-    radii.resize(newsegO.size());
-    subTypes.resize(newsegO.size());
-    organTypes.resize(newsegO.size());
+	auto newsegO = this->getNewSegmentOrigins(); // to add radius and type (TODO cutting)
+	radii.resize(radii.size()+newsegO.size());
+	subTypes.resize(subTypes.size()+newsegO.size());
+	organTypes.resize(organTypes.size()+newsegO.size());
+	
+	
 	c = 0;
 	if (verbose) {
 		std::cout << "number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
