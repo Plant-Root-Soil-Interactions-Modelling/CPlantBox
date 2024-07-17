@@ -130,9 +130,14 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
     // 4 SHOULD mean leaf, so we do not check for successful cast
 		unsigned int point_space = 0, cell_space = 0;
 		
-		GenerateStemGeometry(organ, point_space, cell_space);
-		point_space += organ->getNumberOfNodes() * 3 * geometry_resolution_;
-		cell_space += (organ->getNumberOfNodes() - 1) * 2 * geometry_resolution_;
+    if(this->include_midline_in_leaf_)
+    {
+      GenerateStemGeometry(organ, point_space, cell_space);
+      point_space += organ->getNumberOfNodes() * 3 * geometry_resolution_;
+      point_space = geometry_.size();
+      cell_space += (organ->getNumberOfNodes() - 1) * 6 * geometry_resolution_;
+      cell_space = geometry_indices_.size();
+    }
 		auto leaf = std::dynamic_pointer_cast<Leaf>(organ);
 		if(leaf->getLeafRandomParameter()->parametrisationType == 1)
 		{
@@ -852,7 +857,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		//last_orientation = local_q;
 		last_position = midpoint;
 	}
-	std::cout << "In the end I ended up adding " << c_o - start_c_o << " where I thought I'd add " << index_buffer << std::endl;
+	//std::cout << "In the end I ended up adding " << c_o - start_c_o << " where I thought I'd add " << index_buffer << std::endl;
 }
 
 std::vector<double> PlantVisualiser::GetGeometry() const
