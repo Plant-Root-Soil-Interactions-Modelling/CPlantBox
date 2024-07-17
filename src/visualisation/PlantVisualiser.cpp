@@ -160,7 +160,9 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 			{
 				GenerateLeafGeometry(leaf, petiole_zone, point_space, cell_space);
 				point_space += (organ->getNumberOfNodes() - petiole_zone) * 6 * 3;
+        point_space = geometry_.size();
 				cell_space += (organ->getNumberOfNodes() - petiole_zone) * 6;
+        cell_space = geometry_indices_.size();
 			}
 		}
   }
