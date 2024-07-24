@@ -1178,6 +1178,10 @@ PYBIND11_MODULE(plantbox, m) {
         .def("SetComputeMidlineInLeaf", &PlantVisualiser::SetComputeMidlineInLeaf, py::arg("inCompute"))
         .def("HasGeometry", &PlantVisualiser::HasGeometry)
         .def("ResetGeometry", &PlantVisualiser::ResetGeometry)
+        .def("SetVerbose", &PlantVisualiser::SetVerbose, py::arg("verbose"))
+        .def("SetAddVerticalLeafOffset", &PlantVisualiser::SetAddVerticalLeafOffset, py::arg("addVerticalLeafOffset"))
+        .def("SetLeafWidthScaleFactor", &PlantVisualiser::SetLeafWidthScaleFactor, py::arg("leafWidthScaleFactor"))
+        .def("LeafWidthScaleFactor", &PlantVisualiser::LeafWidthScaleFactor)
     ;
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")
