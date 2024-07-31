@@ -33,6 +33,14 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         """ sinusoidal function from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
         return np.maximum(0., np.pi * (np.cos(2 * np.pi * (t - 0.5)) + np.cos(2 * np.pi * ((t + dt) - 0.5))) / 2)
 
+    def kr_f(self, age, st, ot = 2 , seg_ind = 0, cells = False):
+        """ root radial conductivity [1 day-1] for backwards compatibility """
+        return self.kr_f_cpp(seg_ind, age, st, ot)  # kr_f_cpp is XylemFlux::kr_f
+
+    def kx_f(self, age, st, ot = 2, seg_ind = 0):
+        """ root axial conductivity [cm3 day-1]  for backwards compatibility """
+        return self.kx_f_cpp(seg_ind, age, st, ot)  # kx_f_cpp is XylemFlux::kx_f
+
     def plot_conductivities(self, monocot = True, plot_now = True, axes_ind = [], lateral_ind = []):
         """ plots conductivity  
         @param monocot      indicates if monocot (True) or dicot (False)

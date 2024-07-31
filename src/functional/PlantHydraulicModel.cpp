@@ -18,10 +18,8 @@ PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegmen
  *                  		to calculate the age from the creation times (age = sim_time - segment creation time).
  * @param sx [cm]			soil matric potential in the cells or around the segments, given per cell or per segment
  * @param cells 			sx per cell (true), or segments (false)
- * @param soil_k [day-1]    optionally, soil conductivities can be prescribed per segment,
- *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  */
-void PlantHydraulicModel::linearSystem(double simTime, const std::vector<double>& sx, bool cells, const std::vector<double> soil_k)
+void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells)
 {
     int Ns = rs->segments.size(); // number of segments
     aI.resize(4*Ns);
@@ -53,9 +51,6 @@ void PlantHydraulicModel::linearSystem(double simTime, const std::vector<double>
         } catch(...) {
             std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
-        }
-        if (soil_k.size()>0) {
-            kr = std::min(kr, soil_k[si]);
         }
 
         auto n1 = rs->nodes[i];
@@ -98,13 +93,11 @@ void PlantHydraulicModel::linearSystem(double simTime, const std::vector<double>
  * @param sx        [cm] soil matric potential for each segment
  * @param approx    approximate or exact (default = false, i.e. exact)
  * @param cells     sx per cell (true), or segments (false)
- * @param soil_k    [day-1] optionally, soil conductivities can be prescribed per segment,
- *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  *
  * @return Volumetric fluxes for each segment [cm3/day]
  */
-std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
-    bool approx, bool cells, const std::vector<double> soil_k) const
+std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const std::vector<double> rx, const std::vector<double> sx,
+    bool approx, bool cells) const
 {
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     for (int si = 0; si<rs->segments.size(); si++) {
@@ -129,9 +122,7 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
             std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
         }
-        if (soil_k.size()>0) {
-            kr = std::min(kr, soil_k[si]);
-        }
+
         auto n1 = rs->nodes.at(i);
         auto n2 = rs->nodes.at(j);
         auto v = n2.minus(n1);
@@ -173,7 +164,7 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
  * @param segFluxes 	segment fluxes given per segment index [cm3/day]
  * @return hash map with cell indices as keys and fluxes as values [cm3/day]
  */
-std::map<int,double> PlantHydraulicModel::sumSegFluxes(const std::vector<double>& segFluxes)
+std::map<int,double> PlantHydraulicModel::sumSegFluxes(const std::vector<double> segFluxes)
 {
     std::map<int,double> fluxes;
     for (int si = 0; si<rs->segments.size(); si++) {

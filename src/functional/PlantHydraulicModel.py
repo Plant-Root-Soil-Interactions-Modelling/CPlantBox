@@ -1,5 +1,6 @@
 import timeit
 
+import types
 import numpy as np
 from scipy import sparse
 import scipy.sparse.linalg as LA
@@ -12,17 +13,18 @@ import rsml.rsml_reader as rsml
 
 
 class PlantHydraulicModel(PlantHydraulicModelCPP):
-    """  Root hydraulic models classs 
+    """  Plant hydraulic model super class 
     
-    
-        will incorporate Doussan and Meunier (currently working on Doussan)
+        Currently implentations are located in the specialisations below:
+            HydraulicModel_Meunier: Meunier hybrid solver (Meunier et al. 2017)    
+            HydraulicModel_Doussan: Doussan solver (Doussan et al. 2006)    
     """
 
-    def __init__(self, method, rs, params):
+    def __init__(self, rs, params, cached = "True"):
         """ 
-        @param method is either "Meunier" or "Doussan" 
-        @param ms is of type MappedSegments, or a string containing a rsml filename
+        @param rs is of type MappedSegments (or specializations), or a string containing a rsml filename
         @param params hydraulic conductivities described by PlantHydraulicParameters
+        @param if cached == "True" sparse factorization is cached for faster solving using solve_again() 
         """
         if isinstance(rs, str):
             rs = self.read_rsml(rs)
@@ -30,9 +32,68 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         else:
             super().__init__(rs, params)
 
-        self.method = method
-        if not method in ["Doussan"]:  # "Meunier",
-            raise ValueError("PlantHydraulicModel(): Unknown method: " + method)
+        self.last = "none"  # after first solve() call "neumann" or "dirichlet"
+        self.neumann_ind = [0]  # node indices for Neumann flux
+        self.dirichlet_ind = [0]  # node indices for Dirichlet flux
+        self.collar_index_ = self.collar_index()  # segment index of the collar segement
+        self.wilting_point = -15000  # [cm]
+
+    def solve_dirichlet(self, sim_time:float, collar_pot:list, sxx, cells:bool):
+        """ solves the flux equations, with a neumann boundary condtion, see solve()
+            
+            @param sim_time [day]           needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param collar_pot [cm3 day-1]   collar potential
+            @param sxx [cm]                 soil matric potentials given per segment or per soil cell            
+            @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False)  
+            
+            @return [cm] root xylem pressure per root system node         
+        """
+        raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
+
+    def solve_neumann(self, sim_time:float, trans:list, sxx, cells:bool):
+        """ solves the flux equations, with a neumann boundary condtion, see solve()
+            
+            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param trans [cm3 day-1]    tranpirational flux is negative
+            @param sxx [cm]             soil matric potentials given per segment or per soil cell
+            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)  
+            
+            @return [cm] root xylem pressure per root system node         
+        """
+        raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
+
+    def solve(self, sim_time:float, trans:list, sxx, cells:bool):
+        """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
+
+            @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param trans [cm3 day-1]     transpiration rate
+            @param sxx [cm]              soil matric potentials given per segment or per soil cell
+            @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
+            
+            @return [cm] root xylem pressure per root system node
+        """
+        raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
+
+    def solve_again(self, sim_time:float, trans:list, sxx, cells:bool):
+        """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
+            Depending of the method solve_again() is much faster using chached factorization of the last solve() command
+
+            @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param trans [cm3 day-1]     transpiration rate
+            @param sxx [cm]              soil matric potentials given per segment or per soil cell
+            @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
+            
+            @return [cm] root xylem pressure per root system node
+        """
+        self.solve(sim_time, trans, sxx, cells)
+
+    def radial_fluxes(self, sim_time:float, rx, rsx):
+        """ returns the radial fluxes per segment [cm3 day-1]"""
+        raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
+
+    def axial_fluxes(self, sim_time:float, rx, rsx):
+        """ returns the axial fluxes per segment [cm3 day-1]"""
+        raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
 
     @staticmethod
     def read_rsml(file_name:str, verbose = True):
@@ -65,20 +126,57 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         if verbose:
             print("                           cts [{:g}, {:g}] days".format(np.min(cts), np.max(cts)))
             print("                           raddii [{:g}, {:g}] cm".format(np.min(radii), np.max(radii)))
-            print("                           subTypes [{:g}, {:g}] ".format(np.min(types), np.max(types)))
+            print("                           subTypes Doussan[{:g}, {:g}] ".format(np.min(types), np.max(types)))
         return pb.MappedSegments(nodes2, cts, segs2, segRadii, segTypes)  # root system grid
 
+    def collar_index(self):
+        """ returns the segment index of the collar segment, node index of the collar node is always 0 """
+        segs = self.rs.segments
+        for i, s in enumerate(segs):
+            if s.x == 0:
+                return i
+
+    @staticmethod
+    def sinusoidal(t):
+        """ sinusoidal function (used for transpiration, integral over one day is 1)"""
+        return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.
+
+    @staticmethod
+    def sinusoidal2(t, dt):
+        """ sinusoidal function from 6:00 - 18:00, 0 otherwise (used for transpiration, integral over one day is 1)"""
+        return np.maximum(0., np.pi * (np.cos(2 * np.pi * (t - 0.5)) + np.cos(2 * np.pi * ((t + dt) - 0.5))) / 2)
+
     def get_nodes(self):
-        """ converts the list of Vector3d to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.rs.nodes)))
+        """ converts the list of Vector3d to a 2D numpy array (from MappedOrganism) """
+        nodes = self.rs.nodes
+        return np.array(list(map(lambda x: np.array(x), nodes)))
 
     def get_segments(self):
         """ converts the list of Vector2i to a 2D numpy array """
-        return np.array(list(map(lambda x: np.array(x), self.rs.segments)), dtype = np.int64)
+        segments = self.rs.segments
+        return np.array(list(map(lambda x: np.array(x), segments)), dtype = np.int64)
+
+    def get_organ_types(self):
+        """ segment organ types as numpy array """
+        return np.array(self.rs.organTypes)
+
+    def get_ages(self, final_age = -1.):
+        """ ages per segment
+        @param final_age [day]         current root system age, (default = 0 means detect maximum from nodeCT)
+        """
+        cts = np.array(self.rs.nodeCTs)
+        if final_age == -1.:
+            final_age = np.max(cts)
+        node_ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
+        segs = self.get_segments()
+        ages = np.zeros(segs.shape[0])
+        for i, s in enumerate(segs):
+            ages[i] = node_ages[s[1]]  # segment age based on second node (as in XylemFlux::linearSystem)
+        return ages
 
     def get_efffective_kr(self, sim_time):
-        """ effective radial conductivities per segment [cm2 day-1] """
-        return np.array(self.params.getEff(self.rs, sim_time))
+        """ effective radial conductivities per segment (radial conductivities multiplied by segment surface) [cm2 day-1] """
+        return np.array(self.params.getEff(self.rs, sim_time))  #
 
     def get_kr(self, sim_time):
         """ radial conductivities per segment [1 day-1] """
@@ -92,152 +190,33 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         """ soil matric potential per segment [cm] """
         return np.array(self.params.getHs(self.rs, sx))
 
-    def get_incidence_matrix(self):
-        """ returns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 
-            
-            TODO move to MappedSegments 
-        """
-        segs = self.rs.segments
-        sn = len(segs)
-        nn = len(self.rs.nodes)  # TODO write getter
-        ii_, jj_, vv_ = [], [], []
-        for i, s in enumerate(segs):  # build incidence matrix from edges
-            ii_.append(i)
-            ii_.append(i)
-            jj_.append(segs[i].x)
-            jj_.append(segs[i].y)
-            vv_.append(-1.)
-            vv_.append(1.)
-        return sparse.coo_matrix((np.array(vv_), (np.array(ii_), np.array(jj_))), shape = (sn, nn))
-
-    def get_soil_matrix(self):
-        """ maps nodes to soil matrix indices using the matrix B = (soil_matrix_indices) x (number_of_nodes-1), (needed for upscaling)
-               
-            returns: 
-            the matrix B
-            a dictionary soil2matrix which maps soil_cell_index to soil_matrix_index
-            a list matrix2soil which maps soil_matrix_index to soil_cell_index
-            
-            TODO move to mapped segments?
-        """
-        soil2matrix = {}
-        seg2cell = self.rs.seg2cell
-        segs = self.rs.segments
-        ns = len(segs)
-        smi = 0  # soil matrix index
-        ii_, jj_ = [], []
-
-        for i, s in enumerate(segs):
-            soil_cell_index = seg2cell[i]
-            if not soil_cell_index in soil2matrix:
-                soil2matrix[soil_cell_index] = smi
-                smi += 1
-            node_index = s.y
-            ii_.append(soil2matrix[soil_cell_index])
-            jj_.append(node_index - 1)
-
-        B = sparse.coo_matrix((np.ones((len(ii_),)), (np.array(ii_), np.array(jj_))), shape = (smi, ns))
-
-        cell_max = max(seg2cell.values()) + 1
-        matrix2soil = np.zeros((smi,), dtype = np.int64)
-        for i in range(0, cell_max):
-            if i in soil2matrix:
-                matrix2soil[soil2matrix[i]] = i
-
-        return B, soil2matrix, matrix2soil
-
-    def get_doussan_system(self, sim_time):
-        """ 
-            returns all that is needed to solve root hydraulics with Doussan method TODO ref paper...             
-            sparse System matrix A,
-            Kr diag kr values
-            K_x,collar        
-            A.dot(H_x) = Kr.dot(H_{s,r}) + K_x,collar * e_collar * wilting_point
-        """
-        IM = self.get_incidence_matrix()
-        IMt = IM.transpose()
-        kx_ = np.divide(self.params.getKx(self.rs, sim_time), self.rs.segLength())  # / dl
-        Kx = sparse.diags(kx_)
-        kr = np.array(self.params.getEffKr(self.rs, sim_time))
-        kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)  #  limit to a small value for inversion
-        Kr = sparse.diags(kr)
-        L = IMt @ Kx @ IM  # Laplacian;  Eqn (4) Leitner et al. (tba)
-        L_ = L[1:, 1:].tocsc()
-        A = L_ + Kr  # L_{N-1} + Kr; Eqn (4) Leitner et al. (tba) Eqn (10)
-        return  A, Kr, kx_[self.collar_index()]
-
-    def collar_index(self):
-        """ returns the segment index of the collar segment, node index of the collar node is always 0 """
-        segs = self.rs.segments
-        for i, s in enumerate(segs):
-            if s.x == 0:
-                return i
-
-    def update(self, sim_time):  # rs_age + simtime...
-        """ call before solve(), get_collar_potential(), and get_Heff() """
-        A_d, self.Kr, self.kx0 = self.get_doussan_system(sim_time)
-        # print("update")
-        # print(A_d.shape)
-        # print(self.Kr.shape)
-        # dd
-        self.ci = self.collar_index()
-        # A_n = A_d.copy()
-        # A_n[self.ci, self.ci] -= self.kx0
-        # print("update(): invert matrix start (splu)")
-        # self.A_n_splu = LA.splu(A_n)
-        self.A_d_splu = LA.splu(A_d)
-        self.krs, _ = self.get_krs(sim_time)
-        self.suf = np.transpose(self.get_suf())
-
-    def solve(self, rsx, t_pot, wilting_point):
-        """ solves the hydraulic model
-            @param t_pot [cm3 day-1]     potential transpiration rate
-            @param rsx [cm]              soil total potential around root collar, if it is below the wilting_point, 
-                                         dirichlet boundary conditions are assumed. Set sx = 0 to disable this behaviour.
-            @parm wiltingPoint [cm]      the plant wilting point   
-            @return [cm] root xylem total potential
-        """
-
-        collar = self.get_collar_potential(t_pot, rsx)
-        collar = max(collar, wilting_point)
-        b = self.Kr.dot(rsx)
-        b[self.ci] += self.kx0 * collar
-        rx = self.A_d_splu.solve(b)
-        # b = self.Kr.dot(rsx)
-        # b[self.ci, 0] += self.kx0 * wilting_point
-        # # rx = np.expand_dims(sparse.linalg.spsolve(A_d, b), axis = 1)
-        # rx = self.A_d_splu.solve(b)
-        # q_dirichlet = -self.Kr.dot(rsx - rx)  # both total potentials
-        # if np.sum(q_dirichlet) <= t_pot:
-        #     b = self.Kr.dot(rsx)
-        #     b[self.ci, 0] += t_pot
-        #     # rx = np.expand_dims(sparse.linalg.spsolve(A_n, b), axis = 1)
-        #     rx = self.A_n_splu.solve(b)
-        return rx
-
-    def radial_fluxes(self, rx, rsx):
-        """ returns the radial fluxes [cm3 day-1]"""
-        return -self.Kr.dot(rsx - rx)  #   equals -q_root of Eqn (6) Leitner et al. (tba)
-
-    def get_transpiration(self, rx, rsx):
+    def get_transpiration(self, sim_time, rx, rsx):
         """ actual transpiration [cm3 day-1]"""
-        return np.sum(self.radial_fluxes(rx, rsx))
+        return np.sum(self.radial_fluxes(sim_time, rx, rsx))
 
     def get_krs(self, sim_time):
-        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
-        n = len(self.rs.segments)  # TODO getter
-        s = self.rs.segments[self.ci]
+        """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] 
+        
+        TODO should be one code for Doussan, Meunier, or others...
+        """
+        n = len(self.rs.getNumberOfMappedSegments())
+        ci = self.collar_index()
+        s = self.rs.segments[ci]
         n2 = self.rs.nodes[s.y]
         rsx = np.ones((n, 1)) * (-500)
         b = self.Kr.dot(rsx)
-        b[self.ci, 0] += self.kx0 * -15000
+        b[ci, 0] += self.kx0 * -15000
         rx = self.A_d_splu.solve(b)  # total matric potential
         t_act = self.get_transpiration(rx, rsx)
-        krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))  # from total to matric
+        krs = -t_act / ((-500) - (rx[ci, 0] - n2.z))  # from total to matric
         return krs, t_act
 
     def get_suf(self):
-        """ standard uptake fraction per root segment """
+        """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1  
+        
+        
+        TODO should be one code for Doussan, Meunier, or others...        
+        """
         n = len(self.rs.segments)  # TODO getter
         rsx = np.ones((n, 1)) * (-500)
         b = self.Kr.dot(rsx)
@@ -247,32 +226,17 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return np.array(q) / np.sum(q)
 
     def get_Heff(self, rsx):
-        """ effective total potential [cm] (call update() before)"""
+        """ effective total potential [cm] 
+        
+        TODO should be one code for Doussan, Meunier, or others... 
+        """
         heff = self.suf.dot(rsx)
         # print("heff", heff.shape, self.suf.shape, rsx.shape, heff)
         return heff[0]
 
-    def get_collar_potential(self, t_act, rsx):
-        """ collar potential for an actual transpiration (call update() before) """
-        return (self.krs * self.get_Heff(rsx) - (-t_act)) / self.krs
-
-    def get_ages(self, final_age = -1.):
-        """ converts the list of nodeCT to a numpy array of segment ages
-        @param final_age [day]         current root system age, (default = 0 means detect maximum from nodeCT)
-        """
-        cts = np.array(self.rs.nodeCTs)
-        if final_age == -1.:
-            final_age = np.max(cts)
-        node_ages = final_age * np.ones(cts.shape) - cts  # from creation time to age
-        segs = self.get_segments()
-        ages = np.zeros(segs.shape[0])
-        for i, s in enumerate(segs):
-            ages[i] = node_ages[s[1]]  # segment age based on second node (as in XylemFlux::linearSystem)
-        return ages
-
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
-        print("\nXylemFluxPython.test():")
+        print("PlantHydraulicModel.test():")
         # 1 check if segment index is node index-1
         segments = self.get_segments()
         nodes = self.get_nodes()
@@ -319,4 +283,360 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             if cell_id < 0:
                 print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
         print()
+
+
+class HydraulicModel_Meunier(PlantHydraulicModel):
+    """
+    Meunier hybrid solver (Meunier et al. 2017) 
+    
+    For perfomance reasons building the matrix is implented in C++ (PlantHydraulicModelCPP)
+    """
+
+    def __init__(self, rs, params, cached = "True"):
+        """ 
+            @param rs is of type MappedSegments (or specializations), or a string containing a rsml filename
+            @param params hydraulic conductivities described by PlantHydraulicParameters
+            @param if cached == "True" sparse factorization is cached for faster solving using solve_again() 
+        """
+        super().__init__(rs, params, cached)
+
+    def solve_dirichlet(self, sim_time:float, collar_pot:list, sxx, cells:bool):
+        """ solves the flux equations, with a neumann boundary condtion, see solve()
+            
+            @param sim_time [day]           needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param collar_pot [cm3 day-1]   collar potential
+            @param sxx [cm]                 soil matric potentials given per segment or per soil cell            
+            @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False)  
+            
+            @return [cm] root xylem pressure per root system node         
+        """
+        if isinstance(collar_pot, (float, int)):
+            n = len(self.dirichlet_ind)
+            collar_pot = [collar_pot] * n
+
+        self.linearSystemMeunier(sim_time, sxx, cells)
+
+        self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
+        self.Q = sparse.csc_matrix(self.Q)
+        self.Q, self.b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, collar_pot)
+
+        x = LA.spsolve(self.Q, self.b, use_umfpack = True)
+        return x
+
+    def solve_neumann(self, sim_time:float, trans:list, sxx, cells:bool):
+        """ solves the flux equations, with a neumann boundary condtion, see solve()
+            
+            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param trans [cm3 day-1]    tranpirational flux is negative
+            @param sxx [cm]             soil matric potentials given per segment or per soil cell
+            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)  
+            
+            @return [cm] root xylem pressure per root system node         
+        """
+
+        if isinstance(trans, (float, int)):
+            n = len(self.neumann_ind)
+            trans = [trans / n] * n
+
+        self.linearSystemMeunier(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
+
+        self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
+        self.Q = sparse.csc_matrix(self.Q)
+        self.Q, self.b = self.bc_neumann(self.Q, self.aB, self.neumann_ind, trans)  # cm3 day-1
+
+        x = LA.spsolve(self.Q, self.b, use_umfpack = True)  # direct
+        return x
+
+    def solve(self, sim_time:float, trans:list, sxx, cells:bool):
+        """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
+
+            @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param trans [cm3 day-1]     transpiration rate
+            @param sxx [cm]              soil matric potentials given per segment or per soil cell
+            @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
+            
+            @return [cm] root xylem pressure per root system node
+        """
+        eps = 1
+
+        x = self.solve_neumann(sim_time, trans, sxx, cells, soil_k)  # try neumann, if below wilting point, switch to Dirichlet
+        self.last = "neumann"
+
+        if x[0] <= wilting_point:
+
+            Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
+            Q = sparse.csc_matrix(Q)
+            Q, b = self.bc_dirichlet(Q, self.aB, [0], [float(wilting_point)])
+            x = LA.spsolve(Q, b, use_umfpack = True)
+            self.last = "dirichlet"
+
+        return x
+
+    def solve_again(self, sim_time:float, trans:list, sxx, cells:bool):
+        """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
+            Depending of the method solve_again() is much faster using chached factorization of the last solve() command
+
+            @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
+            @param trans [cm3 day-1]     transpiration rate
+            @param sxx [cm]              soil matric potentials given per segment or per soil cell
+            @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
+            
+            @return [cm] root xylem pressure per root system node
+        """
+        pass
+
+    def radial_fluxes(self, sim_time, rx, sxx, cells = True):
+        """ returns the exact radial fluxes per segment (calls base class)
+            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
+            @param rx [cm]              root xylem matric potentials per root system node
+            @param sxx [cm]             soil matric potentials given per segment or per soil cell
+            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
+            @return [cm3 day-1] radial volumetric flow rate            
+        """
+        return np.array(self.getRadialFluxes(sim_time, rx, sxx, False, cells))  # approx = False
+
+    def axial_fluxes(self, sim_time, rx, sxx, cells = True):
+        """ returns the axial fluxes 
+        @see axial_flux  
+        """
+        n = len(self.rs.segments)
+        return np.array([self.axial_flux(i, sim_time, rx, sxx, cells, True) for i in range(0, n)])
+
+    def axial_flux(self, seg_ind, sim_time, rx, sxx, cells = True, ij = True):
+        """ returns the exact axial flux of segment ij of xylem model solution @param rx
+            @param seg_ind              segment index 
+            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
+            @param rx [cm]              root xylem matric potentials per root system node
+            @param sxx [cm]             soil matric potentials given per segment or per soil cell
+            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
+            @param ij                   True: calculate axial flux in node i, False: in node j; note that they are not equal due to radial fluxes 
+            @return [cm3 day-1] axial volumetric flow rate             
+        """
+        s = self.rs.segments[seg_ind]
+        nodes = self.rs.nodes
+        numleaf = 0
+        organTypes = self.get_organ_types()
+        ot = int(organTypes[seg_ind])  # for conductivities kr, kx
+        # node x and y of stem and leave segments are revers with regards to the nodes x and y of roots.
+        if sum(((not ij) , (ot == 4) or (ot == 3))) == 1:  # check if only one of the condition is true
+            j, i = int(s.x), int(s.y)  # node indices
+        else:
+            i, j = int(s.x), int(s.y)
+        n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
+        v = n2.minus(n1)
+        l = v.length()  # length of segment
+        v.normalize()  # normalized v.z is needed for qz
+        if cells:
+            cell_ind = self.rs.seg2cell[seg_ind]
+            if cell_ind >= 0:  # y node belowground
+                if len(sxx) > 1:
+                    p_s = sxx[cell_ind]  # soil pressure at collar segment
+                else:
+                    p_s = sxx[0]
+            else:
+                p_s = self.airPressure
+        else:
+            p_s = sxx[seg_ind]
+        a = self.rs.radii[seg_ind]  # radius
+        st = int(self.rs.subTypes[seg_ind])  # conductivities kr, kx
+        age = sim_time - self.rs.nodeCTs[int(s.y)]
+        if ot == 4:  # to know which x-th leaf segment it is, to fetch the right gs value
+                indices = [i for i, x in enumerate(organTypes) if x == 4]
+                numleaf = indices.index(seg_ind)
+                if self.pg[0] != 0:
+                    p_s = self.pg[numleaf]
+        kr = self.params.kr_f(age, st, ot, seg_ind)  # c++ conductivity call back functions
+        kx = self.params.kx_f(age, st, ot, seg_ind)
+        if a * kr > 1.e-16:
+            tau = np.sqrt(2 * a * np.pi * kr / kx)  # cm-2
+            AA = np.array([[1, 1], [np.exp(tau * l), np.exp(-tau * l)] ])
+            bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
+            d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
+            dpdz0 = d[0] * tau - d[1] * tau  # insert z = 0, z = l into exact solution
+        else:  # solution for kr = 0, or a = 0
+            dpdz0 = (rx[j] - rx[i]) / l
+
+        f = kx * (dpdz0 + v.z)
+        if ij:
+            f = f * (-1)
+        return f
+
+    @staticmethod
+    def zero_rows(M, rows):
+        """ Sets the given rows of the sparse matrix M to zero (I do not know the best way to do it)
+        @param M         sparse matrix
+        @param rows      list of row indices
+        """
+        diag = sparse.eye(M.shape[0]).tolil()
+        for r in rows:
+            diag[r, r] = 0
+        return diag.dot(M)
+
+    @staticmethod
+    def bc_dirichlet(Q, b, n0, d):
+        """ prescribes a Dirichlet boundary conditions for the system Qx=b
+        @param Q          system matrix
+        @param b          rhs vector
+        @param n0         list of node indices, where the Dirichlet bc is applied
+        @param d [cm]     list of Dirichlet values   
+        @return Q, b, the updated matrix, and rhs vector 
+        """
+        assert len(n0) == len(d), "XylemFlux.bc_dirichlet: number of nodes n0 and Dirichlet values d must be equal"
+        Q = HydraulicModel_Meunier.zero_rows(Q, n0)
+        for c in range(0, len(n0)):
+            i = n0[c]
+            Q[i, i] = 1
+            b[i] = d[c]
+        return Q, b
+
+    @staticmethod
+    def bc_neumann(Q, b, n0, f):
+        """ prescribes a Neumann boundary condition for the root system Qx=b
+        @param Q                      system matrix
+        @param b                      rhs vector
+        @param n0                     list of node indices, where the Neumann boundary condition is applied
+        @param f [cm3 day-1]          list of Neumann values   
+        @return Q, b, the updated matrix, and rhs vector                 
+        """
+        for c in range(0, len(n0)):
+            b[int(n0[c])] += f[c]
+        return Q, b
+
+# class HydraulicModel_Doussan(PlantHydraulicModel):
+#
+#     def __init__(self, method, rs, params):
+#         pass
+#
+#     def get_doussan_system(self, sim_time):
+#         """
+#             returns all that is needed to solve root hydraulics with Doussan method TODO ref paper...
+#             sparse System matrix A,
+#             Kr diag kr values
+#             K_x,collar
+#             A.dot(H_x) = Kr.dot(H_{s,r}) + K_x,collar * e_collar * wilting_point
+#         """
+#         IM = self.get_incidence_matrix()
+#         IMt = IM.transpose()
+#         kx_ = np.divide(self.params.getKx(self.rs, sim_time), self.rs.segLength())  # / dl
+#         Kx = sparse.diags(kx_)
+#         kr = np.array(self.params.getEffKr(self.rs, sim_time))
+#         kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)  #  limit to a small value for inversion
+#         Kr = sparse.diags(kr)
+#         L = IMt @ Kx @ IM  # Laplacian;  Eqn (4) Leitner et al. (tba)
+#         L_ = L[1:, 1:].tocsc()
+#         A = L_ + Kr  # L_{N-1} + Kr; Eqn (4) Leitner et al. (tba) Eqn (10)
+#         return  A, Kr, kx_[self.collar_index()]
+#
+#     def update(self, sim_time):  # rs_age + simtime...
+#         """ call before solve(), get_collar_potential(), and get_Heff() """
+#         A_d, self.Kr, self.kx0 = self.get_doussan_system(sim_time)
+#         # print("update")
+#         # print(A_d.shape)
+#         # print(self.Kr.shape)
+#         # dd
+#         self.ci = self.collar_index()
+#         # A_n = A_d.copy()
+#         # A_n[self.ci, self.ci] -= self.kx0
+#         # print("update(): invert matrix start (splu)")
+#         # self.A_n_splu = LA.splu(A_n)
+#         self.A_d_splu = LA.splu(A_d)
+#         self.krs, _ = self.get_krs(sim_time)
+#         self.suf = np.transpose(self.get_suf())
+#
+#     def solve(self, rsx, t_pot, wilting_point):
+#         """ solves the hydraulic model
+#             @param t_pot [cm3 day-1]     potential transpiration rate
+#             @param rsx [cm]              soil total potential around root collar, if it is below the wilting_point,
+#                                          dirichlet boundary conditions are assumed. Set sx = 0 to disable this behaviour.
+#             @parm wiltingPoint [cm]      the plant wilting point
+#             @return [cm] root xylem total potential
+#         """
+#
+#         collar = self.get_collar_potential(t_pot, rsx)
+#         collar = max(collar, wilting_point)
+#         b = self.Kr.dot(rsx)
+#         b[self.ci] += self.kx0 * collar
+#         rx = self.A_d_splu.solve(b)
+#         # b = self.Kr.dot(rsx)
+#         # b[self.ci, 0] += self.kx0 * wilting_point
+#         # # rx = np.expand_dims(sparse.linalg.spsolve(A_d, b), axis = 1)
+#         # rx = self.A_d_splu.solve(b)
+#         # q_dirichlet = -self.Kr.dot(rsx - rx)  # both total potentials
+#         # if np.sum(q_dirichlet) <= t_pot:
+#         #     b = self.Kr.dot(rsx)
+#         #     b[self.ci, 0] += t_pot
+#         #     # rx = np.expand_dims(sparse.linalg.spsolve(A_n, b), axis = 1)
+#         #     rx = self.A_n_splu.solve(b)
+#         return rx
+#
+#     def radial_fluxes(self, rx, rsx):
+#         """ returns the radial fluxes [cm3 day-1]"""
+#         return -self.Kr.dot(rsx - rx)  #   equals -q_root of Eqn (6) Leitner et al. (tba)
+#
+#     def get_collar_potential(self, t_act, rsx):
+#         """ collar potential for an actual transpiration (call update() before) """
+#         return (self.krs * self.get_Heff(rsx) - (-t_act)) / self.krs
+#
+#     def doussan_system_matrix(self, sim_time):
+#         """ """
+#         IM = self.get_incidence_matrix()
+#         IMt = IM.transpose()
+#         kx_ = np.divide(self.getKx(sim_time), self.rs.segLength())  # / dl
+#         Kx = sparse.diags(kx_)
+#         kr = np.array(self.getEffKr(sim_time))
+#         kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)
+#         Kr = sparse.diags(kr)
+#         L = IMt @ Kx @ IM  # Laplacian
+#         L_ = L[1:, 1:].tocsc()
+#         return  L_ + Kr, Kr, kx_[self.collar_index()]  # L_{N-1} + Kr, se Hess paper
+#
+#     def axial_flux(self, seg_ind, sim_time, rx):
+#         """ returns the exact axial flux of segment ij of xylem model solution @param rx
+#             @param seg_ind              segment index
+#             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
+#             @param rx [cm]              root xylem matric potentials per root system node
+#             @return [cm3 day-1] axial volumetric flow rate
+#         """
+#         s = self.rs.segments[seg_ind]
+#         i, j = s.x, s.y
+#         n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
+#         v = n2.minus(n1)
+#         l = v.length()
+#         a = self.rs.radii[seg_ind]  # radius
+#         st = int(self.rs.subTypes[seg_ind])  # sub type
+#         age = sim_time - self.rs.nodeCTs[int(s.y)]
+#         kr = self.kr_f(age, st)  # c++ conductivity call back functions
+#         kx = self.kx_f(age, st)  # c++ conductivity call back functi
+#         dpdz0 = (rx[j] - rx[i]) / l
+#         f = -kx * (dpdz0)
+#         return f
+#
+#     def collar_flux(self, sim_time, rx):
+#         """ returns the exact transpirational flux of the xylem model solution @param rx
+#             @see axial_flux
+#         """
+#         return self.axial_flux(0, sim_time, rx)
+#
+#     def axial_fluxes(self, sim_time, rx):
+#         """ returns the axial fluxes
+#         @see axial_flux
+#         """
+#         n = len(self.rs.segments)  # TODO getter
+#         return np.array([self.axial_flux(i, sim_time, rxs) for i in range(0, n)])
+#
+#     def get_krs(self, sim_time, seg_ind = [0]):
+#         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day]
+#         if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments
+#         """
+#         segs = self.rs.segments
+#         nodes = self.rs.nodes
+#         p_s = np.zeros((len(segs),))
+#         for i, s in enumerate(segs):
+#             p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+#         rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
+#         jc = 0
+#         for i in seg_ind:
+#             jc -= self.axial_flux(i, sim_time, rx)
+#         krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[self.dirichlet_ind[0]])
+#         return krs , jc
 

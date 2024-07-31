@@ -433,6 +433,27 @@ std::vector<double> MappedSegments::segLength() const {
 }
 
 /**
+ * Returns soil matric potential per segment, for a given soil sx connected gy the mapper rs->seg2cell
+ */
+std::vector<double> MappedSegments::getHs(const std::vector<double>& sx) {
+    double psi_air = -954378;
+    std::vector<double> hs = std::vector<double>(this->segments.size());
+    for (int si = 0; si<this->segments.size(); si++) {
+        int cellIndex = this->seg2cell[si];
+        if (cellIndex>=0) {
+            if(sx.size()>1) {
+                hs[si] = sx.at(cellIndex);
+            } else {
+                hs[si] = sx.at(0);
+            }
+        } else {
+            hs[si] = psi_air;
+        }
+    }
+    return hs;
+}
+
+/**
  * Returns seg2cell as vector
  */
 std::vector<int> MappedSegments::getSegmentMapper() const {
@@ -580,8 +601,8 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	radii.resize(radii.size()+newsegO.size());
 	subTypes.resize(subTypes.size()+newsegO.size());
 	organTypes.resize(organTypes.size()+newsegO.size());
-	
-	
+
+
 	c = 0;
 	if (verbose) {
 		std::cout << "number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;

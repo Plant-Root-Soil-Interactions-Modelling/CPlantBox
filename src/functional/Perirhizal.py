@@ -280,7 +280,7 @@ class PerirhizalPython(Perirhizal):
         if not volumes:
             n = ms.resolution.x * ms.resolution.y * ms.resolution.z
             volumes = np.ones(int(n)) * (width.x * width.y * width.z) / n
-            print("PerirhizalPython.get_outer_radii_(): each soil volume has", (width.x * width.y * width.z) / n, "cm3")
+            # print("PerirhizalPython.get_outer_radii_(): each soil volume has", (width.x * width.y * width.z) / n, "cm3")
 
         for cell_id, seg_ids in cell2seg.items():
             tt = np.sum(np.array([f(radii[i], lengths[i]) for i in seg_ids]))
@@ -550,16 +550,15 @@ if __name__ == "__main__":
     sand = [0.045, 0.43, 0.15, 3, 1000]
     loam = [0.08, 0.43, 0.04, 1.6, 50]
     clay = [0.1, 0.4, 0.01, 1.1, 10]
+
     hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
     hydrus_clay = [0.068, 0.38, 0.008, 1.09, 4.8]
     hydrus_sand = [0.045, 0.43, 0.145, 2.68, 712.8]
     hydrus_sandyloam = [0.065, 0.41, 0.075, 1.89, 106.1]
 
-    # e.g. for loam
-    filename = "table_loam"
-    sp = vg.Parameters(loam)
+    filename = "hydrus_loam"
+    sp = vg.Parameters(hydrus_loam)
     vg.create_mfp_lookup(sp)
     peri = PerirhizalPython()
     peri.create_lookup(filename, sp)  # takes some hours
-
     peri.open_lookup(filename)

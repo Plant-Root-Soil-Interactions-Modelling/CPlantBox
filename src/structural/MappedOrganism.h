@@ -30,6 +30,7 @@ public:
         std::vector<double> radii, std::vector<int> subTypes); ///< for kr and kx age and type dependent
     MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
 
+    virtual ~MappedSegments() { }
 
     void setRadius(double a); ///< sets a constant radius for all segments
     void setSubTypes(int t); ///< sets a constant sub type for all segments
@@ -45,6 +46,7 @@ public:
 
     std::vector<double> segOuterRadii(int type = 0, const std::vector<double>& vols = std::vector<double>(0)) const; ///< outer cylinder radii to match cell volume
     std::vector<double> segLength() const; ///< calculates segment lengths [cm]
+    std::vector<double> getHs(const std::vector<double>& sx);
 
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
@@ -94,7 +96,6 @@ protected:
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
     void unmapSegments(const std::vector<Vector2i>& segs); ///< remove segments from the mappers
-
 
 };
 
