@@ -502,6 +502,48 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             b[int(n0[c])] += f[c]
         return Q, b
 
+"""
+    def solveD2_(self, value):
+        Q, b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, value)
+        return self.dirichletB.solve(np.array(b))
+
+    def solveN2_(self, value):
+        Q, b = self.bc_neumann(self.Q, self.aB, self.neumann_ind, value)
+        return self.neumannB.solve(np.array(b))
+
+    def init_solve_static(self, sim_time:float, sxx, cells:bool, wilting_point, soil_k = []):
+        # speeds up computation for static root system (not growing, no change in conductivities), 
+        # by computing LU factorizations for Neumann and Dirichlet  
+        # print("switching to static solve (static root system, static conductivities) ")
+
+        if len(soil_k) > 0:
+            self.linearSystem(sim_time, sxx, cells, soil_k)  # C++ (see XylemFlux.cpp)
+        else:
+            self.linearSystem(sim_time, sxx, cells)  # C++ (see XylemFlux.cpp)
+
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        self.neumannB = LA.splu(Q)
+
+        Q, b = self.bc_dirichlet(Q, self.aB, [0], [wilting_point])
+        self.dirichletB = LA.splu(Q)
+
+        self.Q = Q
+        self.solveD_ = self.solveD2_
+        self.solveN_ = self.solveN2_
+
+    def solveD_(self, value):
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, value)
+        x = LA.spsolve(Q, b, use_umfpack = True)
+        return x
+
+    def solveN_(self, value):
+        Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
+        Q, b = self.bc_neumann(Q, self.aB, self.neumann_ind, value)
+        x = LA.spsolve(Q, b, use_umfpack = True)
+        return x
+"""
+
 # class HydraulicModel_Doussan(PlantHydraulicModel):
 #
 #     def __init__(self, method, rs, params):
