@@ -952,7 +952,7 @@ PYBIND11_MODULE(plantbox, m) {
                 py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
             .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&XylemFlux::setKx),
                 py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
-            .def(" setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables),
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables),
                 py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
             .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&XylemFlux::setKxTables),
                 py::arg("values"), py::arg("age"), py::arg("verbose")=false)
@@ -996,7 +996,7 @@ PYBIND11_MODULE(plantbox, m) {
                 py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
             .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKx),
                 py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
-            .def(" setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
                 py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
             .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKxTables),
                 py::arg("values"), py::arg("age"), py::arg("verbose")=false)
