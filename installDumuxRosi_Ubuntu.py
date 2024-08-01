@@ -148,6 +148,6 @@ subprocess.run(["./dune-common/bin/dunecontrol", "--opts=dumux-rosi/cmake.opts",
 print("(3/3) Step completed. Succesfully configured and built CPlantBox, dune and dumux.")
 
 
-print("to test installation, run n\ cd dumux/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
+print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
 
  
