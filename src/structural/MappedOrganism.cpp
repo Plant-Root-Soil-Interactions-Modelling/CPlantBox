@@ -67,6 +67,7 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
 	setSubTypes(0);
+    assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
 	assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organTypes");

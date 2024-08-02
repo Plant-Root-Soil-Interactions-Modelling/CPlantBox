@@ -18,7 +18,7 @@ class PlantHydraulicModel
 {
 public:
 
-    PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegments> rs, std::shared_ptr<CPlantBox::PlantHydraulicParameters> params);
+    PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegments> ms, std::shared_ptr<CPlantBox::PlantHydraulicParameters> params);
 
     virtual ~PlantHydraulicModel() { }
 
@@ -27,7 +27,7 @@ public:
     std::vector<double> getRadialFluxes(double simTime, const std::vector<double> rx, const std::vector<double> sx, bool approx = false, bool cells = false) const; // for each segment in [cm3/day]
     std::map<int,double> sumSegFluxes(const std::vector<double> segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
 
-    std::shared_ptr<CPlantBox::MappedSegments> rs;
+    std::shared_ptr<CPlantBox::MappedSegments> ms;
     std::shared_ptr<CPlantBox::PlantHydraulicParameters> params;
 
     std::vector<int> aI; // to assemble the sparse matrix on the Python side

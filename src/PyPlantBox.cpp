@@ -988,6 +988,7 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<PlantHydraulicParameters, std::shared_ptr<PlantHydraulicParameters>>(m, "PlantHydraulicParameters")
             .def(py::init<>())
+            .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKr),
                     py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=true)
             .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKx),
@@ -1008,6 +1009,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getEffKr", &PlantHydraulicParameters::getEffKr)
             .def("getKr", &PlantHydraulicParameters::getKr)
             .def("getKx", &PlantHydraulicParameters::getKx)
+            .def_readwrite("ms", &PlantHydraulicParameters::ms)
             .def_readonly("kr_f_cpp", &PlantHydraulicParameters::kr_f)
             .def_readonly("kx_f_cpp", &PlantHydraulicParameters::kx_f)
             .def_readwrite("psi_air", &PlantHydraulicParameters::psi_air);
@@ -1017,11 +1019,10 @@ PYBIND11_MODULE(plantbox, m) {
          */
         py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
             .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
-
             .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true)
             .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
             .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
-            .def_readwrite("rs", &PlantHydraulicModel::rs)
+            .def_readwrite("ms", &PlantHydraulicModel::ms)
             .def_readwrite("params", &PlantHydraulicModel::params)
             .def_readwrite("aI", &PlantHydraulicModel::aI)
             .def_readwrite("aJ", &PlantHydraulicModel::aJ)

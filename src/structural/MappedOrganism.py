@@ -2,6 +2,8 @@
 Wrapper for MappedPlant, MappedSegments, or MappedOrganism 
 to add functionality that is easier implemented in Python 
 """
+import numpy as np
+from scipy import sparse
 
 
 class MappedPlantPython():

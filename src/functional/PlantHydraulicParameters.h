@@ -20,6 +20,7 @@ class PlantHydraulicParameters
 public:
 
     PlantHydraulicParameters() { }
+    PlantHydraulicParameters(std::shared_ptr<CPlantBox::MappedSegments> rs) : ms(rs) { }
 
     virtual ~PlantHydraulicParameters() { }
 
@@ -47,11 +48,11 @@ public:
     std::vector<std::vector<std::vector<double>>> krs, krs_t;
     std::vector<std::vector<std::vector<double>>> kxs, kxs_t;
 
-    std::shared_ptr<CPlantBox::MappedSegments> rs; // TODO needs to be set for kr_RootExchangeZonePerType, and kr_tablePerType_distance
-
     std::vector<double> getEffKr(double simtime);
     std::vector<double> getKr(double simtime);
     std::vector<double> getKx(double simtime);
+
+    std::shared_ptr<CPlantBox::MappedSegments> ms; // TODO needs to be set for kr_RootExchangeZonePerType, and kr_tablePerType_distance
 
     double psi_air = -954378; // air water potential [cm] for T = 20°C and RH = 0.5
 
@@ -90,7 +91,7 @@ protected:
 
     double kr_RootExchangeZonePerType(int si,double age, int type, int organType) { //when use carbon- and water-limited growth, canNOT use "kr_tablePerType" instead of this function
         if (organType == Organism::ot_root){
-            double coef = rs->exchangeZoneCoefs.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
+            double coef = ms->exchangeZoneCoefs.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
             return coef * kr.at(organType - 2).at(type);
         }
         return kr.at(organType - 2).at(type);
@@ -99,7 +100,7 @@ protected:
     double kr_tablePerType_distance(int si,double age, int type, int organType) { //when use carbon- and water-limited growth, canNOT use "kr_tablePerType" instead of this function
         if (organType == Organism::ot_root){
             //double coef = rs->exchangeZoneCoefs.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
-            double distFromTip = rs->distanceTip.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
+            double distFromTip = ms->distanceTip.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
             double kr_ = Function::interp1(distFromTip, krs_t.at(organType-2).at(type), krs.at(organType-2).at(type));
             return kr_;//coef * kr.at(organType - 2).at(type);
         }
