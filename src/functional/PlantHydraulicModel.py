@@ -30,7 +30,10 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             
         all function use matric potential 
         
-        Prelimary tests in 
+        if the linear system does not change for several solve calls, 
+        it is possible to use cached factorizations, by stating cached = True in the constructor
+        
+        Preliminary tests in 
         dumux-rosi/python/roots/xylem_m31_new.py, xylem_m32_new.py
     """
 
@@ -101,6 +104,11 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
     def axial_fluxes(self, sim_time:float, rx, rsx, cells = False):
         """ returns the axial fluxes per segment [cm3 day-1]"""
         raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
+
+    def soil_fluxes(self, sim_time:float, rx, rsx):
+        """ sums the radial fluxes over the soil cells, returns a dictionary with sources and sinks (with cell id as key) """
+        fluxes = self.radial_fluxes(sim_time, rx, rsx, True)
+        return self.sumSegFluxes(fluxes)
 
     @staticmethod
     def read_rsml(file_name:str, verbose = True):
@@ -218,8 +226,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return krs , jc
 
     def get_suf(self):
-        """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1      
-        """
+        """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones((n, 1)) * (-500)
         rsx = self.rs.total2matric(rsx)
@@ -228,9 +235,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return np.array(q) / np.sum(q)
 
     def get_heff(self, rsx):
-        """ effective total potential [cm] 
-        TODO should be one code for Doussan, Meunier, or others... 
-        """
+        """ effective total potential [cm] """
         suf = self.get_suf()
         heff = suf.dot(rsx)
         return heff[0]
@@ -318,7 +323,8 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             collar_pot = [collar_pot] * n
 
         if self.usecached_:
-            b = self.bc_dirichletB(self.aB, self.dirichlet_ind, t_act)
+            self.linearSystemMeunier(sim_time, rsx, cells)  # building rhs b could be improved
+            b = self.bc_dirichletB(self.aB, self.dirichlet_ind, collar_pot)
             return self.dirichletB.solve(np.array(b))
         else:
             self.linearSystemMeunier(sim_time, rsx, cells)
@@ -337,12 +343,12 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)  
             @return [cm] root xylem pressure per root system node         
         """
-
         if isinstance(t_act, (float, int)):
             n = len(self.neumann_ind)
             t_act = [t_act / n] * n
 
         if self.usecached_:
+            self.linearSystemMeunier(sim_time, rsx, cells)  # building rhs b could be improved
             b = self.bc_neumann(self.aB, self.neumann_ind, t_act)
             return self.neumannB.solve(np.array(b))
         else:
@@ -361,10 +367,10 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @return [cm] root xylem pressure per root system node
         """
         if self.cached:  # store sparse LU factorization
-            self.linearSystemMeunier(sim_time, rsx, cells)  # C++ (see XylemFlux.cpp)
+            self.linearSystemMeunier(sim_time, rsx, cells)  # self.aV, self.aB, self.aI, self.aJ
             Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
             self.neumannB = LA.splu(Q)  # for Neumann Q
-            Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))
+            Q, b = self.bc_dirichlet(Q, self.aB.copy(), self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))
             self.dirichletB = LA.splu(Q)  # for Dirichlet Q
             x = self.solve_again(sim_time, t_act, rsx, cells)
         else:
@@ -388,14 +394,14 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm] root xylem pressure per root system node
         """
+        if not self.cached:
+            return self.solve(sim_time, t_act, rsx, cells)
         self.usecached_ = True  # makes solve_neumann() and solve_dirichlet() to use the precomputed LU factorizuation
-
         x = self.solve_neumann(sim_time, t_act, rsx, cells)  # try neumann, if below wilting point, switch to Dirichlet
         self.last = "neumann"
         if x[0] <= self.wilting_point:
             x = self.solve_dirichlet(sim_time, t_act, rsx, cells)
             self.last = "dirichlet"
-
         self.usecached_ = False  # only, during solve_again() call
         return x
 
@@ -504,7 +510,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         return Q, b
 
     @staticmethod
-    def bc_dirichletB(Q, b, n0, d):
+    def bc_dirichletB(b, n0, d):
         """ prescribes a Dirichlet boundary conditions for the system Qx=b, only rhs b (for the cached version, where Q is not needed)
         @param b          rhs vector
         @param n0         list of node indices, where the Dirichlet bc is applied
@@ -515,7 +521,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         for c in range(0, len(n0)):
             i = n0[c]
             b[i] = d[c]
-        return Q, b
+        return b
 
     @staticmethod
     def bc_neumann(b, n0, f):
@@ -589,8 +595,6 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm] root xylem pressure per root system node
         """
-        if cells:
-            rsx = self.get_hs(rsx)  # matric potential per root segment
         self.update(sim_time)
         return self.solve_again(sim_time, t_act, rsx, cells)
 
@@ -603,14 +607,16 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm] root xylem pressure per root system node
         """
+        if not self.cached:
+            self.update(sim_time)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
-        rsx = self.matric2total(rsx)
+        rsx = self.ms.matric2total(rsx)
         collar = self.get_collar_potential(t_act, rsx)
         collar = max(collar, self.wilting_point)
         b = self.Kr.dot(rsx)
         b[self.ci] += self.kx0 * collar
-        rx = self.total2matric(self.A_d_splu.solve(b))
+        rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar, rx)
 
     def radial_fluxes(self, sim_time, rx, rsx, cells = False):

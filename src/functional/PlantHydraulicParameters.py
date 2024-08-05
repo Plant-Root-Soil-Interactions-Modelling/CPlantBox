@@ -73,7 +73,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
 
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize = (16, 10))
         for j, st in enumerate(axes_ind):
-            kx_ = [ self.kx_f(0, axes_age[i], st, 2) for i in range(0, len(axes_age)) ]
+            kx_ = [ self.kx_f(0, axes_age[i], int(st), 2) for i in range(0, len(axes_age)) ]
             ax1.plot(axes_age, kx_, axes_cols[j])
         kx_max = np.max(kx_)
         ax1.legend(axes_str)

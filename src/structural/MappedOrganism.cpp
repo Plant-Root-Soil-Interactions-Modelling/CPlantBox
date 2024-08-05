@@ -480,7 +480,6 @@ std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
  */
 std::vector<double> MappedSegments::total2matric(std::vector<double> sx) const{
     std::vector<double> b = this->getSegmentZ();
-    std::cout << b.size() << ", " << sx.size() << "\n" << std::flush;
     assert(sx.size() == b.size());
     std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::minus<double>( ));
     return sx;
