@@ -27,6 +27,11 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             solve_again (optionally)
             radial fluxes
             axial fluxes
+            
+        all function use matric potential 
+        
+        Prelimary tests in 
+        dumux-rosi/python/roots/xylem_m31_new.py, xylem_m32_new.py
     """
 
     def __init__(self, ms, params, cached = True):
@@ -213,25 +218,21 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return krs , jc
 
     def get_suf(self):
-        """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1  
-        
-        
-        TODO should be one code for Doussan, Meunier, or others...        
+        """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1      
         """
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones((n, 1)) * (-500)
-        b = self.Kr.dot(rsx)
-        b[self.ci, 0] += self.kx0 * -15000
-        rx = self.A_d_splu.solve(b)
+        rsx = self.rs.total2matric(rsx)
+        rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
         q = self.radial_fluxes(rx, rsx)
         return np.array(q) / np.sum(q)
 
-    def get_Heff(self, rsx):
+    def get_heff(self, rsx):
         """ effective total potential [cm] 
         TODO should be one code for Doussan, Meunier, or others... 
         """
-        heff = self.suf.dot(rsx)
-        # print("heff", heff.shape, self.suf.shape, rsx.shape, heff)
+        suf = self.get_suf()
+        heff = suf.dot(rsx)
         return heff[0]
 
     def test(self):
@@ -553,11 +554,13 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         """
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
+        rsx = self.ms.matric2total(rsx)
         if not self.usecached_:
             self.update(sim_time)
         b = self.Kr.dot(rsx)
         b[self.ci] += self.kx0 * collar_pot
-        return np.append(collar_pot, self.A_d_splu.solve(b))  # total matric potential !! TODO
+        rx = self.ms.total2matric(self.A_d_splu.solve(b))
+        return np.append(collar_pot, rx)
 
     def solve_neumann(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
@@ -569,12 +572,14 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         """
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
+        rsx = self.ms.matric2total(rsx)
         if not self.usecached_:
             self.update(sim_time)
         collar_pot = self.get_collar_potential(t_act, rsx)
         b = self.Kr.dot(rsx)
         b[self.ci] += self.kx0 * collar_pot
-        return np.append(collar_pot, self.A_d_splu.solve(b))  # total matric potential !! TODO
+        rx = self.ms.total2matric(self.A_d_splu.solve(b))
+        return np.append(collar_pot, rx)
 
     def solve(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
@@ -587,7 +592,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
         self.update(sim_time)
-        return self.solve_again(sim_time, t_act, rsx, cells)  # total matric potential !! TODO
+        return self.solve_again(sim_time, t_act, rsx, cells)
 
     def solve_again(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
@@ -600,11 +605,13 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         """
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
+        rsx = self.matric2total(rsx)
         collar = self.get_collar_potential(t_act, rsx)
         collar = max(collar, self.wilting_point)
         b = self.Kr.dot(rsx)
         b[self.ci] += self.kx0 * collar
-        return np.append(collar, self.A_d_splu.solve(b))  # total matric potential !!! TODO
+        rx = self.total2matric(self.A_d_splu.solve(b))
+        return np.append(collar, rx)
 
     def radial_fluxes(self, sim_time, rx, rsx, cells = False):
         """ returns the radial fluxes [cm3 day-1]"""
@@ -634,8 +641,8 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         a = self.ms.radii[seg_ind]  # radius
         st = int(self.ms.subTypes[seg_ind])  # sub type
         age = sim_time - self.ms.nodeCTs[int(s.y)]
-        kr = self.kr_f(age, st)  # c++ conductivity call back functions
-        kx = self.kx_f(age, st)  # c++ conductivity call back functi
+        kr = self.params.kr_f(age, st)  # c++ conductivity call back functions
+        kx = self.params.kx_f(age, st)  # c++ conductivity call back functi
         dpdz0 = (rx[j] - rx[i]) / l
         f = -kx * (dpdz0)
         return f
@@ -686,5 +693,10 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
-        return (self.krs * self.get_Heff(rsx) - (-t_act)) / self.krs
+        return (self.krs * self.get_heff_(rsx) - (-t_act)) / self.krs
+
+    def get_heff_(self, rsx):
+        """ effective total potential [cm] using cached suf """
+        heff = self.suf.dot(rsx)
+        return heff[0]
 

@@ -46,11 +46,14 @@ public:
 
     std::vector<double> segOuterRadii(int type = 0, const std::vector<double>& vols = std::vector<double>(0)) const; ///< outer cylinder radii to match cell volume
     std::vector<double> segLength() const; ///< calculates segment lengths [cm]
-    std::vector<double> getHs(const std::vector<double>& sx);
+    std::vector<double> getHs(const std::vector<double> sx) const; // return the potential per segment that is given per soil cell
+    std::vector<double> getSegmentZ() const; // z-coordinate of segment mid
+    std::vector<double> matric2total(const std::vector<double> sx) const;
+    std::vector<double> total2matric(const std::vector<double> sx) const;
 
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
-    std::vector<double> getSegmentZ() const; // z-coordinate of segment mid
+
 
     std::map<int, int> seg2cell; // root segment to soil cell mapper
     std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
