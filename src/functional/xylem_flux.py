@@ -52,6 +52,7 @@ class XylemFluxPython(XylemFlux):
         self.Km = 10.67 * 62 * 1.e-6  # kg/m3
         self.CMin = 4.4 * 62 * 1.e-6  # kg/m3
         self.Exu = 1.e-2 #data Eva Oburger kg /(m2 day)
+        self.plant = rs
 
     def solute_fluxes(self, c):
         """ concentrations @param c [kg/m3], returns [g/day]
@@ -64,7 +65,7 @@ class XylemFluxPython(XylemFlux):
         l = self.rs.segLength()
         assert(len(segs) == len(c))
         sf = np.zeros(len(segs),)
-        c = np.maximum(c, self.CMin)  ###############################################
+        c = np.maximum(c, self.CMin) 
         for i, s in enumerate(segs):
             sf[i] = -2 * np.pi * a[i] * l[i] * 1.e-4 * ((c[i] - self.CMin) * self.Vmax / (self.Km + (c[i] - self.CMin)))  # kg/day
         sf = np.minimum(sf, 0.)
