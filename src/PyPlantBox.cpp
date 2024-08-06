@@ -371,6 +371,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getOrganRandomParameter", (std::vector<std::shared_ptr<OrganRandomParameter>> (Organism::*)(int) const) &Organism::getOrganRandomParameter) //overloads
             .def("setOrganRandomParameter", &Organism::setOrganRandomParameter)
             .def("getSeed", &Organism::getSeed)
+            .def("getSeedVal", &Organism::getSeedVal)
 
             .def("addOrgan", &Organism::addOrgan)
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)
@@ -820,7 +821,8 @@ PYBIND11_MODULE(plantbox, m) {
      * RootSystem.h
      */
     py::class_<RootSystem, Organism, std::shared_ptr<RootSystem>>(m, "RootSystem")
-            .def(py::init<>())
+            //.def(py::init<>())
+            .def(py::init<unsigned int>(),  py::arg("seednum")=0)
             .def("getRootRandomParameter", (std::shared_ptr<RootRandomParameter> (RootSystem::*)(int) const) &RootSystem::getRootRandomParameter)
             .def("getRootRandomParameter", (std::vector<std::shared_ptr<RootRandomParameter>> (RootSystem::*)() const) &RootSystem::getRootRandomParameter)
             .def("setRootSystemParameter", &RootSystem::setRootSystemParameter)
@@ -887,9 +889,11 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-		.def_readwrite("organParam", &MappedSegments::plantParam);
+		.def_readwrite("organParam", &MappedSegments::plantParam)
+        .def_readwrite("isRootTip",&MappedSegments::isRootTip);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-        .def(py::init<>())
+        //.def(py::init<>())
+        .def(py::init<unsigned int>(),  py::arg("seednum")=0)
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
         .def("addSegments", &MappedRootSystem::rootSystem);
 
@@ -925,6 +929,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("plant", &MappedPlant::plant)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
+			.def_readwrite("isRootTip",&MappedPlant::isRootTip)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
@@ -1114,7 +1119,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readonly("rho_h2o", &Photosynthesis::rho_h2o)
             .def_readonly("R_ph", &Photosynthesis::R_ph)
             .def_readonly("Mh2o", &Photosynthesis::Mh2o);
-
+  
     py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes")
             .value("C3", Photosynthesis::PhotoTypes::C3)
             .value("C4", Photosynthesis::PhotoTypes::C4)
@@ -1128,15 +1133,17 @@ PYBIND11_MODULE(plantbox, m) {
 			py::arg("psiXylInit"),  py::arg("ciInit") )
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
             .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0, py::arg("verbose") = false)
-
-            .def("setKx_st",&PhloemFlux::setKx_st, py::arg("values"), py::arg("verbose") = false)
-            .def("setRmax_st",&PhloemFlux::setRmax_st, py::arg("values"), py::arg("verbose") = false)
-            .def("setAcross_st",&PhloemFlux::setAcross_st, py::arg("values"), py::arg("verbose") = false)
-            .def("setRhoSucrose",&PhloemFlux::setRhoSucrose, py::arg("values"), py::arg("verbose") = false)
-            .def("setKrm1",&PhloemFlux::setKrm1, py::arg("values"), py::arg("verbose") = false)
-            .def("setKrm2",&PhloemFlux::setKrm2, py::arg("values"), py::arg("verbose") = false)
+            .def("setKr_stRootTip",&PhloemFlux::setKr_stRootTip)
+            .def("setKr_mucilRootTip",&PhloemFlux::setKr_mucilRootTip)
+            .def("setKx_st",&PhloemFlux::setKx_st)
+            .def("setRmax_st",&PhloemFlux::setRmax_st)
+            .def("setAcross_st",&PhloemFlux::setAcross_st)
+            .def("setRhoSucrose",&PhloemFlux::setRhoSucrose)
+            .def("setKrm1",&PhloemFlux::setKrm1)
+            .def("setKrm2",&PhloemFlux::setKrm2)
 			.def("startPM",&PhloemFlux::startPM)
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
+            .def_readwrite("Gr4Exud", &PhloemFlux::Gr4Exud)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
 
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
@@ -1146,6 +1153,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("vol_ST",&PhloemFlux::vol_STv)
             .def_readwrite("vol_Meso",&PhloemFlux::vol_Mesov)
             .def_readwrite("CSTimin",&PhloemFlux::CSTimin)
+            .def_readwrite("CSTimin_exud",&PhloemFlux::CSTimin_exud)
             .def_readwrite("C_ST",&PhloemFlux::C_STv)
             .def_readwrite("r_ST_ref",&PhloemFlux::r_ST_refv)
             .def_readwrite("r_ST",&PhloemFlux::r_STv)
@@ -1161,11 +1169,13 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("Q_Exudmax",&PhloemFlux::Q_Exudmaxv)
             .def_readwrite("Q_Rmmax",&PhloemFlux::Q_Rmmaxv)
             .def_readwrite("Fl",&PhloemFlux::Flv)
-            //.def_readwrite("KMgr",&PhloemFlux::KMgr)
             .def_readwrite("KMfu",&PhloemFlux::KMfu)
             .def_readwrite("CsoilDefault",&PhloemFlux::CsoilDefault)
             .def_readwrite("Csoil_seg",&PhloemFlux::Csoil_seg)
             .def_readwrite("Csoil_node",&PhloemFlux::Csoil_node)
+            .def_readwrite("CSTi_exud",&PhloemFlux::CSTi_exud)
+            .def_readwrite("CSTi_delta",&PhloemFlux::CSTi_delta)
+            .def_readwrite("Crsi_exud",&PhloemFlux::Crsi_exud)
             .def_readwrite("deltaSucOrgNode",&PhloemFlux::deltaSucOrgNode_)
             .def_readwrite("usePsiXyl",&PhloemFlux::usePsiXyl)
             .def_readwrite("expression",&PhloemFlux::expression)
@@ -1198,7 +1208,6 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
 			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
-
             .def_readwrite("C_targ",&PhloemFlux::C_targ)
             .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
             .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)

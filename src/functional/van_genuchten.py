@@ -46,8 +46,15 @@ def pressure_head(theta, sp):
             assert ( theta > sp.theta_R).all()
             assert (theta <= sp.theta_S).all()
         else:
-            assert theta > sp.theta_R
-            assert theta <= sp.theta_S
+
+            #assert theta > sp.theta_R
+            #assert theta <= sp.theta_S
+            if theta <= sp.theta_R:
+                print('pressure_head, theta <= sp.theta_R', theta , sp.theta_R, 'set theta to sp.theta_R + 1e-14' )
+                theta = sp.theta_R + 1e-14
+            if theta > sp.theta_S:
+                print('pressure_head, theta > sp.theta_S', theta , sp.theta_S, 'set theta to sp.theta_R' )
+                theta = sp.theta_S 
     except:
         print('theta <= sp.theta_R or theta > sp.theta_S',theta, sp.theta_R, sp.theta_S)
         raise Exception
@@ -80,8 +87,14 @@ def water_content(h, sp):
             assert (h <= 0).all()
             assert (h > -np.Inf).all()
         else:
-            assert h <= 0
-            assert h > -np.Inf
+            #assert h <= 0
+            #assert h > -np.Inf
+            if h > 0:
+                print('water_content, h > 0', h , 'set h to -1e-14' )
+                h = -1e-14
+            if h <= -np.Inf:
+                print('pressure_head, h <= -np.Inf', h , np.Inf, 'set h to np.iinfo(int).min' ,np.iinfo(int).min)
+                h = np.iinfo(int).min
     except:
         print('water_content, sp out of range',h)
         raise Exception

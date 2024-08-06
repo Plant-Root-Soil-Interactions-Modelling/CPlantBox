@@ -838,4 +838,3 @@ class XylemFluxPython(XylemFlux):
         for c in range(0, len(n0)):
             b[int(n0[c])] += f[c]
         return Q, b
-

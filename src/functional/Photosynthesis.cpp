@@ -69,7 +69,12 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
     {
         throw std::runtime_error("Photosynthesis::solve_photosynthesis : (RH_>=1)||(RH_<=0)");
     }
+	//psi_air only use if cells_ = True
+	//if cells_:
 	this->psi_air = std::log(RH_) * rho_h2o * R_ph * (this->TairC + 237.3)/Mh2o * (1/0.9806806)  ; //in cm
+	//else:
+	//	this->psi_air = 0/0;//do not use
+		
 	assert(((plant->kr_length < 0)||(plant->exchangeZoneCoefs.size()==plant->segments.size()))&&"(plant->exchangeZoneCoefs.size()==plant->segments.size()) while kr_length >0");
 	//		creat first guesses arrays + "old" values
 	psiXyl= std::vector<double>( plant->nodes.size(), psiXylInit);//-500
@@ -133,6 +138,7 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 
 	 
 	loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs. when fw ~ 0, need to do it one last time to be sure that seg_flux_leaf = Ev 
+
 	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 	loop++ ;
 
@@ -244,6 +250,14 @@ size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii
  
 double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose) const
 {
+	std::ofstream myfile4;
+	if(doLog)
+	{
+		std::string name1 = "loopgetPsiOut";
+		std::string name2 = ".txt";
+		std::string namefile = name1+"_"+std::to_string(loop) + name2;// +"_"+std::to_string(currentSimTime)
+		myfile4.open (namefile);
+	}
 	int organType = plant->organTypes.at(si);
     double psi_s;
 	if (cells) { // soil matric potential given per cell
@@ -280,6 +294,10 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 					break;
 				case Organism::ot_leaf: 
 					psi_s = pg.at(plant->getSegment2leafId(si));
+            if(doLog)
+            {
+            	myfile4 << "photosynthesus::getPsiOut: getSegment2leafId "<<plant->getSegment2leafId(si)<< "\n";
+            }
 					break;
 				default:
 					throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
@@ -296,11 +314,24 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 				break;
 			case Organism::ot_leaf: 
 				psi_s = pg.at(plant->getSegment2leafId(si));//sx_.at(si) is used in loop function
+
+            if(doLog)
+            {
+            	myfile4 << "photosynthesus::getPsiOut: getSegment2leafId "<<plant->getSegment2leafId(si)<< "\n";
+            }
+
 				break;
 			default:
 				throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
 		}
-	}		
+	}
+    if(doLog)
+            {
+            	myfile4 << "photosynthesus::getPsiOut: segIdx "<<si<<" organType "<<organType;
+				myfile4 << ", psi_s " << psi_s <<" "<<  "\n";//<<  std::setprecision (15) 
+            }
+	if(doLog){myfile4.close();}
+
 	return psi_s;
 }
 
@@ -375,11 +406,11 @@ void Photosynthesis::getError(double simTime)
 		}
 
 		if(doLog){
-			myfile1 <<i<<" "<<", maxErr[5] "<<plant->organTypes[std::max(i-1,0)]<<" "<<maxErr[0];
-			myfile1<<" "<<psiXyl[i]<<" "<<psiXyl_old[i]<<" "<<i<<" "<< (this->psiXyl.size() - 1) ;
+			myfile1 <<i<<", ot "<<plant->organTypes[std::max(i-1,0)]<<", errPsi(0) "<<maxErr[0];
+			myfile1<<", psiXyl "<<psiXyl[i]<<", psiXyl_old "<<psiXyl_old[i]<<" size "<< (this->psiXyl.size() - 1) ;
 			if( i < (this->psiXyl.size() - 1)){
-				myfile1<<" "<<std::abs((this->outputFlux[i]-outputFlux_old[i])/this->outputFlux[i]);
-				myfile1 <<" "<<outputFlux[i] <<" "<<outputFlux_old[i]<<" "<<maxErr[5]<<" "<<maxErr[7];
+				myfile1<<", errRatio flux "<<std::abs((this->outputFlux[i]-outputFlux_old[i])/this->outputFlux[i]);
+				myfile1 <<", outputFlux "<<outputFlux[i] <<", outputFlux_old "<<outputFlux_old[i]<<", errFlux(5) "<<maxErr[5]<<", sum(errFlux(7)) "<<maxErr[7];
 			}
 			myfile1 <<std::endl;
 		}
@@ -410,11 +441,11 @@ void Photosynthesis::getError(double simTime)
 
 		maxErr[6] =0.;
 		if(doLog){
-			myfile1 <<i<<" abs: "<<maxErrAbs[1] <<" "<<maxErrAbs[1] <<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4] <<" "<<maxErrAbs[5] <<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<" an: ";
+			myfile1 <<i<<" abs: "<<maxErrAbs[1] <<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4] <<" "<<maxErrAbs[5] <<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
 			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
             
-			myfile1 <<i<<" "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
+			myfile1 <<i<<" maxErr "<<maxErr[1] <<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4] <<" "<<maxErr[5] <<" "<<maxErr[6]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
 			myfile1 <<" ci: "<<this->ci[i]<<" ci_old:"<<ci_old[i]<<" "<<pg[i]<<" "<<pg_old[i]<<std::endl;
 		}
@@ -436,7 +467,7 @@ void Photosynthesis::getAg4Phloem()
 		int idl_yNode = seg_leaves_idx.at(idl_seg) + 1;
 		int si = seg_leaves_idx.at(idl_seg) ;
 		//from mol CO2 m-2 s-1
-		//to mmol Suc cm-2 d-1
+		//to mmol Suc (==C12) cm-2 d-1
 		double temp = (this->An.at(idl_seg) )/12 * 24*60*60 *1000/10000;//+ this->Rd
 		double sideSurface = plant->leafBladeSurface.at(si)*2;//transpiration on both side; 2 * M_PI * a * l ;
 		//to mmol Suc d-1
@@ -620,6 +651,7 @@ void Photosynthesis::photoC3_init(int i)
           }
 		J.at(i) =  ((-coefb- std::sqrt(dis))/(2.*coefa));//rostamza2020, Bonan2019Chap11
         if (J.at(i) < 0) {
+                std::cout <<" J:"<<J.at(i)<<" coefb:"<<coefb<<" sqrtdis:"<< std::sqrt(dis)<<" coefa:"<<coefa<<" alpha:"<<alpha<<" Q:"<<Qlight_<<" Jmax:"<<Jmax.at(i)<<" Jrefmax:"<<Jrefmax.at(i)<<" Arr:"<<Arrhenius(i, Eaj)<<" thrBr:"<<thermalBreakdown(i, Edv)<<std::flush<<std::endl;
 				throw std::runtime_error("Photosynthesis::loopCalcs : J < 0");
           }
 	
@@ -720,9 +752,16 @@ void Photosynthesis::loopCalcs(double simTime, std::vector<double> sxx_, bool ce
 		if((verbose_photosynthesis ==2)){std::cout<<"git to leaf "<<ea_leaf<<" "<<HRleaf<<std::endl;}
 		if(std::abs(fv.at(i)) > 1e-16)//i.e., perimeter * kr > 1e-16 like for @see Xylem::solveLinear
 		{
-            double p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
+            double p_lhPa = ((rxi + rxj)/2)*0.9806806;// cm => hPa +(n1+n2)/2
+            //double p_lhPa = this->pg.at(i)*0.9806806;// cm => hPa +(n1+n2)/2
+            double fw_cutoff_= 0;
+                
+            if( p_lhPa <= -14900.)
+            {
+                fw_cutoff_ =  fw_cutoff;// to make it easier to get fw
+            } 
             
-			fw.at(i) = fwr +std::max(0., (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa))) - fw_cutoff);
+			fw.at(i) = fwr +std::max(0., (1.- fwr)*(1+std::exp(sh*p_lcrit))/(1+std::exp(sh*(p_lcrit-p_lhPa))) - fw_cutoff_);
             
 			ci.at(i) = std::max((cs_*a1*fw.at(i) +deltagco2.at(i))/(1+a1* fw.at(i)),deltagco2.at(i)) ;
 			if((verbose_photosynthesis ==2)){std::cout<<"in compute gco2 "<<sideArea<<" "<<(sideArea > 1e-16)<<std::endl;}
@@ -796,21 +835,17 @@ void Photosynthesis::loopCalcs(double simTime, std::vector<double> sxx_, bool ce
 
 
 double Photosynthesis::kr_f(int si, double age, int subType, int organType)
-{
-	//try{
-		//std::cout<<"Photosynthesis::kr_f "<<si<<" "<<subType<<" "<< organType<<" "<<plant->seg2cell.size()<<std::endl;
-		int cellIndex = plant->seg2cell.at(si);
-		if (((cellIndex>=0)&&(organType ==Organism::ot_leaf))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
-		{ 
-				return 0.;
-		}else
-		{ 
-			//std::cout<<"to XylemFlux::kr_f"<<std::endl;
-			return XylemFlux::kr_f(si, age, subType, organType);
-		}
-	//} catch(...) { 
-	//	return XylemFlux::kr_f(si, age, subType, organType);
-	//}
+{//works even if outer wat. pot. defined per segment
+	
+	int cellIndex = plant->seg2cell.at(si);
+	if (((cellIndex>=0)&&(organType ==Organism::ot_leaf))||((cellIndex < 0)&&(organType ==Organism::ot_root)))
+	{ 
+			return 0.;
+	}else
+	{ 
+		//std::cout<<"to XylemFlux::kr_f"<<std::endl;
+		return XylemFlux::kr_f(si, age, subType, organType);
+	}
 	
 }
 

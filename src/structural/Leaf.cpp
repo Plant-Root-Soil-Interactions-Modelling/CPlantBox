@@ -46,8 +46,8 @@ Leaf::Leaf(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 	assert(parent!=nullptr && "Leaf::Leaf parent must be set");
 	addleafphytomerID(param()->subType);
 	ageDependentTropism = getLeafRandomParameter()->f_tf->ageSwitch > 0;
-	// Calculate the rotation of the leaves. The code begins here needs to be rewritten, because another following project will work on the leaves. The code here is just temporally used to get some nice visualizations. When someone rewrites the code, please take "gimbal lock" into consideration.
-	//Rewritten Begin:
+// Calculate the rotation of the leaves. The code begins here needs to be rewritten, because another following project will work on the leaves. The code here is just temporally used to get some nice visualizations. When someone rewrites the code, please take "gimbal lock" into consideration.  
+	//Rewritten Begin: 								
 	beta = getleafphytomerID(param()->subType)*M_PI*getLeafRandomParameter()->rotBeta
 			+ M_PI*plant->rand()*getLeafRandomParameter()->betaDev ;  //+ ; //2 * M_PI*plant->rand(); // initial rotation
 	beta = beta + getLeafRandomParameter()->initBeta*M_PI;
@@ -738,27 +738,24 @@ std::string Leaf::toString() const
  */
 Vector3d Leaf::heading(int n ) const
 {
-
 	bool pseudostem = getLeafRandomParameter()->isPseudostem; //do the sheath make a pseudostem?
 	bool isBlade = (getLength(n) - param()->lb > -1e-10); //current node in blade
 	bool previousIsBlade = (getLength(n - 1) - param()->lb > -1e-10); //previous node in blade
 	bool firstBladeNode = (isBlade && (!previousIsBlade));//is the first node of the blade zone?
-
-	if(n<0){n=nodes.size()-1 ;}
+if(n<0){n=nodes.size()-1 ;}
 	if ((nodes.size()>1)&&(n>0)) {
-
+		
 		n = std::min(int(nodes.size()),n);
 		Vector3d h = getNode(n).minus(getNode(n-1));
 		h.normalize();
 		if(pseudostem && firstBladeNode)
-		{//add bending at the start of the blade
+     {//add bending at the start of the blade 
 			Matrix3d parentHeading = Matrix3d::ons(h);
 			auto heading = parentHeading.column(0);
 			Vector3d myPartialIHeading = Vector3d::rotAB(param()->theta,beta);
 			Vector3d new_heading = Matrix3d::ons(heading).times(myPartialIHeading);
 			return Matrix3d::ons(new_heading).column(0);
-		}else{
-
+    }else{		
 			return h;
 		}
 	} else {

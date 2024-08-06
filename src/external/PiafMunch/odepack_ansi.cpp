@@ -148,7 +148,7 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 			}
 		}
 	}
-	if (ntnz > NNZ0) { // on a du stocker des valeurs dans les tampons KLU_A.[0 .. n_KLU_ptrs_1 ][ ]
+	if (ntnz > NNZ0) { // on a dû stocker des valeurs dans les tampons KLU_A.[0 .. n_KLU_ptrs_1 ][ ]
 //		cout << "ntnz > NNZ : reallocation matrice J ; utilisation et destruction des tampons :" << endl;
 		npnz = ntnz / N ; // (provisoirement) nombre de lignes  pleines de longueur N, pouvant contenir tous les ntnz 'zeros'
 		assert(npnz * N <= ntnz) ;
@@ -157,8 +157,8 @@ static int Jac_(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void *user_dat
 		SUNSparseMatrix_Reallocate(J, npnz) ;	// nouveau NNZ officiel = SM_NNZ_S(J) = npnz de Sparse_matrix ; conserve les valeurs d'index < NNZ
 		rowvals = SUNSparseMatrix_IndexValues(J);
 		data = SUNSparseMatrix_Data(J);
-		colptrs = SUNSparseMatrix_IndexPointers(J); // n'a pas du changer...
-		for (i = 0; i < n_KLU_ptrs_1; i++) { // recopie les lignes KLU_A.[ ] completes a coup sur (s'il y en a, i.e. si n_KLU_ptrs_1 >= 1)
+		colptrs = SUNSparseMatrix_IndexPointers(J); // n'a pas dû changer...
+		for (i = 0; i < n_KLU_ptrs_1; i++) { // recopie les lignes KLU_A.[ ] completes a coup sûr (s'il y en a, i.e. si n_KLU_ptrs_1 >= 1)
 			for (j = 0; j < N; j++) {
 				rowvals[NNZ] = KLU_Ai[i][j]; data[NNZ] = KLU_Ax[i][j];
 				NNZ++;
@@ -201,7 +201,7 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
   if (itol == 3) {_LogMessage("Erreur itol = CV_WF : cas non encore traite par cvode") ; return -1;}
   if (itol == 4) {_LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traite par cvode") ; return -1 ;}
   int neq = y.size();							 // taille du probleme = nb d'equations = nb de variables y[i]
-  int nbt = T.size() ;							 // nombre de temps ou l'on veut la solution, y compris t0 = T[1]
+  int nbt = T.size() ;							 // nombre de temps où l'on veut la solution, y compris t0 = T[1]
   int i, j, flag, flagr ;
   double t, tout, t_sav, dt ;
   N_Vector abstol(InPlace_NVector(atol)) ;
@@ -282,7 +282,7 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 	  }
   }
   flag = CVodeSetMaxConvFails(cvode_mem, 100) ; // pour prevenir l'erreur de non-convergence (error code = -4), sauf si la convergence n'est effectivement jamais atteinte !
-  for (i = 2 ; i <= nbt ; i++) {						// pour chaque instant ou l'on souhaite la solution
+  for (i = 2 ; i <= nbt ; i++) {						// pour chaque instant où l'on souhaite la solution
 	tout=T[i];
 	if (verbose) {
 			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n#" << i-1 << " (tf = " << tout << ")" << endl ;
@@ -367,7 +367,7 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 	return 0 ;
 }
 
-//cvode_spils(fout, Y0, SegmentTimes, auxout, atol_, rtol, SPFGMR, MODIFIED_GS, PREC_NONE, 2, Var_integrale, Var_derivee); 
+
 int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_vector &T, void(*aux)(double, double*), Fortran_vector& atol, Fortran_vector& rtol,
 	int solver, int GSType, int prectype, int nbVar_dot, Fortran_vector** Var_primitive, Fortran_vector** Var_dot,
 	bool verbose, bool STALD, void(*rootfind)(double, double*, double*), int nrootfns, int mu, int ml, int maxl) {
@@ -381,7 +381,7 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 	if (itol == 3) { _LogMessage("Erreur itol = CV_WF : cas non encore traite par cvode"); return -1; }
 	if (itol == 4) { _LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traite par cvode"); return -1; }
 	int neq = y.size();							 // taille du probleme = nb d'equations = nb de variables y[i]
-	int nbt = T.size();							 // nombre de temps ou l'on veut la solution, y compris t0 = T[1]
+	int nbt = T.size();							 // nombre de temps où l'on veut la solution, y compris t0 = T[1]
 	int i, j, flag, flagr;
 	double t, tout, t_sav, dt;
 	N_Vector yy(InPlace_NVector(y));              // "habille" le Fortran_vector y en N_Vector sans occuper de memoire suppl.
@@ -465,7 +465,7 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 		if (check_flag(&flag, "CVBandPrecInit", 1)) { _LogMessage("erreur CVBandPrecInit"); return -1; }
 	}
   flag = CVodeSetMaxConvFails(cvode_mem, 100) ; // pour prevenir l'erreur de non-convergence (error code = -4), sauf si la convergence n'est effectivement jamais atteinte !
-  for (i = 2 ; i <= nbt ; i++) {						// pour chaque instant ou l'on souhaite la solution
+  for (i = 2 ; i <= nbt ; i++) {						// pour chaque instant où l'on souhaite la solution
 	tout=T[i];
 	if (verbose) {
 			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n#" << i-1 << " (tf = " << tout << ")" << endl ;
@@ -600,7 +600,7 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 	if (itol == 3) { _LogMessage("Erreur itol = CV_WF : cas non encore traite par cvode"); return -1; }
 	if (itol == 4) { _LogMessage("Erreur itol = 4 (atol et rtol tous deux vecteurs): non traite par cvode"); return -1; }
 	//int neq = y.size();							 // taille du probleme = nb d'equations = nb de variables y[i]
-	int nbt = T.size();							 // nombre de temps ou l'on veut la solution, y compris t0 = T[1]
+	int nbt = T.size();							 // nombre de temps où l'on veut la solution, y compris t0 = T[1]
 	int i, j, flag, flagr;
 	double t, tout, t_sav, dt;
 	N_Vector abstol(InPlace_NVector(atol));
@@ -635,7 +635,7 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 		flag = ERKStepRootInit(arkode_mem, nrootfns, gg);
 		if (check_flag(&flag, "ERKStepRootInit", 1)) { _LogMessage("erreur ERKStepRootInit"); return -1; }
 	}
-	for (i = 2; i <= nbt; i++) {						// pour chaque instant ou l'on souhaite la solution
+	for (i = 2; i <= nbt; i++) {						// pour chaque instant où l'on souhaite la solution
 		tout = T[i];
 		if (verbose) {
 			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  starting step n#" << i - 1 << " (tf = " << tout << ")" << endl;
@@ -709,5 +709,4 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 	strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; Update_Output();
 	return 0;
 }
-
 

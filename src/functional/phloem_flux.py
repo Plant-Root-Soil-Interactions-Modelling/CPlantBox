@@ -6,22 +6,95 @@ import numpy as np
 
 import plantbox as pb
 from plantbox import PhloemFlux
+from functional.xylem_flux import XylemFluxPython
 #import rsml_reader as rsml
 
 
 
 class PhloemFluxPython(PhloemFlux):
     """  wrapper for photosynthesis
-       
+       somehow, double inheritance is not working? so i m copying the 
+       necessary XylemFluxPython functions
     """
 
     def __init__(self, plant_, psiXylInit, ciInit):
         """ @param rs is either a pb.MappedRootSystem, pb.MappedSegments, or a string containing a rsml filename"""
         super().__init__( plant_, psiXylInit, ciInit)
-        
+    
     def getPsiAir(self,RH, TairC):#constants are within photosynthesys.h
         return np.log(RH) * self.rho_h2o * self.R_ph * (TairC + 237.3)/self.Mh2o * (1/0.9806806)  ; #in cm
-     
+        
+    def axial_flux(self, seg_ind, sim_time, rx, sxx, k_soil = [], cells = True, ij = True):
+        """ returns the exact axial flux of segment ij of xylem model solution @param rx
+            @param seg_ind              segment index 
+            @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
+            @param rx [cm]              root xylem matric potentials per root system node
+            @param sxx [cm]             soil matric potentials given per segment or per soil cell
+            @param k_soil [day-1]       optionally, soil conductivities can be prescribed per segment, 
+                                        conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil) 
+            @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
+            @param ij                   True: calculate axial flux in node i, False: in node j; note that they are not equal due to radial fluxes 
+            @return [cm3 day-1] axial volumetric flow rate             
+        """
+        s = self.rs.segments[seg_ind]
+        nodes = self.rs.nodes
+        numleaf = 0
+        organTypes = self.get_organ_types()
+        ot = int(organTypes[seg_ind])  # for conductivities kr, kx
+        assert ot == 2 #this function only works for root (and stem?) segments
+        if len(k_soil) > 0:
+            ksoil = k_soil[seg_ind]
+        else:
+            ksoil = 1.e9  # much
+        # node x and y of stem and leave segments are revers with regards to the nodes x and y of roots.
+        if sum(((not ij) , (ot == 4) or (ot == 3))) == 1:  # check if only one of the condition is true
+            j, i = int(s.x), int(s.y)  # node indices
+        else:
+            i, j = int(s.x), int(s.y)
+        n1, n2 = self.rs.nodes[i], self.rs.nodes[j]  # nodes
+        v = n2.minus(n1)
+        l = v.length()  # length of segment
+        v.normalize()  # normalized v.z is needed for qz
+        if cells:
+            cell_ind = self.rs.seg2cell[seg_ind]
+            if cell_ind >= 0:  # y node belowground
+                if len(sxx) > 1:
+                    p_s = sxx[cell_ind]  # soil pressure at collar segment
+                else:
+                    p_s = sxx[0]
+            else:
+                p_s = self.airPressure
+        else:
+            p_s = sxx[seg_ind]
+
+        a = self.rs.radii[seg_ind]  # radius
+        st = int(self.rs.subTypes[seg_ind])  # conductivities kr, kx
+        age = sim_time - self.rs.nodeCTs[int(s.y)]
+        if ot == 4:  # to know which x-th leaf segment it is, to fetch the right gs value
+                indices = [i for i, x in enumerate(organTypes) if x == 4]
+                numleaf = indices.index(seg_ind)
+                if self.pg[0] != 0:
+                    p_s = self.pg[numleaf]
+                    
+        kr = self.kr_f(age, st, ot, seg_ind, cells)  # c++ conductivity call back functions
+        kr = min(kr, ksoil)
+        kx = self.kx_f(age, st, ot,seg_ind)
+        
+        if a * kr > 1.e-16:
+            tau = np.sqrt(2 * a * np.pi * kr / kx)  # cm-2
+            AA = np.array([[1, 1], [np.exp(tau * l), np.exp(-tau * l)] ])
+            bb = np.array([rx[i] - p_s, rx[j] - p_s])  # solve for solution
+            d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
+            dpdz0 = d[0] * tau - d[1] * tau  # insert z = 0, z = l into exact solution
+        else:  # solution for kr = 0, or a = 0
+            dpdz0 = (rx[j] - rx[i]) / l
+
+        f = kx * (dpdz0 + v.z)
+        if ij:
+            f = f * (-1)
+        print(f)
+        return f
+        
     def get_nodes(self):
         """ converts the list of Vector3d to a 2D numpy array """
         return np.array(list(map(lambda x: np.array(x), self.rs.nodes)))
@@ -159,10 +232,46 @@ class PhloemFluxPython(PhloemFlux):
         for i, s in enumerate(segs):
             eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
         return eswp
+        
+    def test(self):
+        """ perfoms some sanity checks, and prints to the console """
+        print("\nPhloemFluxPython.test():")
+        # 1 check if segment index is node index-1
+        segments = self.get_segments()
+        nodes = self.get_nodes()
+        for i, s_ in enumerate(segments):
+            if i != s_[1] - 1:
+                raise "Segment indices are mixed up"
+        print(len(segments), "segments")
+        # 2 check for very small segments
+        seg_length = self.rs.segLength()
+        c = 0
+        for i, l in enumerate(seg_length):
+            if l < 1e-5:
+                print(i, l)
+                c += 1
+        print(c, "segments with length < 1.e-5 cm")
+        # 3 check for type range, index should start at 0
+        types = self.rs.subTypes
+        if np.min(types) > 0:
+            print("Warning: types start with index", np.min(types), "> 0 !")
+        print("{:g} different root types from {:g} to {:g}".format(np.max(types) - np.min(types) + 1, np.min(types), np.max(types)))
+        # 4 Print segment age range
+        ages = self.get_ages()
+        print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))
+        # 4 check for unmapped indices
+        map = self.rs.seg2cell
+        organTypes = self.rs.organTypes
+        for seg_id, cell_id in map.items():
+            if (cell_id < 0) and organTypes[seg_id] == 2:
+                print("Warning: root segment ", seg_id,"is NOT mapped, this may cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
+            if (cell_id >= 0) and organTypes[seg_id] != 2:
+                print("Warning: shoot segment ", seg_id, "organ type",organTypes[seg_id],"IS mapped, this may cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
+                
 
-    def kr_f(self, age, st, ot = 2 , numleaf = 2, seg_ind = 0):
+    def kr_f(self, age, st, ot = 2 , seg_ind = 0, cells = False):
         """ root radial conductivity [1 day-1] for backwards compatibility """
-        return self.kr_f_cpp(seg_ind, age, st, ot, numleaf)  # kr_f_cpp is XylemFlux::kr_f
+        return self.kr_f_cpp(seg_ind, age, st, ot, cells)  # kr_f_cpp is XylemFlux::kr_f
 
     def kx_f(self, age, st, ot = 2, seg_ind = 0):
         """ root axial conductivity [cm3 day-1]  for backwards compatibility """

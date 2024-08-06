@@ -133,14 +133,13 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
 	cutAtGrid = cut;
 	constantLoc = noChanges;
 	// std::cout << "setRectangularGrid: cutSegments \n" << std::flush;
+
 	if (cutAtGrid) {
 		cutSegments(); // re-add (for cutting)
 	}
-	// std::cout << "setRectangularGrid: sort \n" << std::flush;
 	sort(); // todo should not be necessary, or only in case of cutting?
 	seg2cell.clear(); // re-map all segments
 	cell2seg.clear();
-	// std::cout << "setRectangularGrid: map \n" << std::flush;
 	mapSegments(segments);
 }
 
@@ -152,6 +151,7 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
  * @param segs      the (new) segments that need to be mapped
  */
 void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
+	//int countseg = 0;
 	for (auto& ns : segs) {
 	    //std::cout<< "mapSegments():"<< ns.x <<", " << ns.y << "\n" << std::flush;
 		Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
@@ -163,6 +163,8 @@ void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
 		} else {
 			cell2seg[cellIdx] = std::vector<int>({segIdx});
 		}
+		//for(auto& cgdx : cell2seg[cellIdx]) {std::cout<<cgdx<<" ";}std::cout<<std::endl;
+		//countseg ++;
 	}
 }
 
@@ -297,7 +299,7 @@ double MappedSegments::length(const Vector2i& s) const {
 void MappedSegments::unmapSegments(const std::vector<Vector2i>& segs) {
 	for (auto& ns : segs) {
 		int cellIdx = -1;
-		int segIdx = ns.y-1;
+		int segIdx = ns.y-1;		
 		if (seg2cell.count(segIdx)>0) { // remove from seg2cell
 			cellIdx = seg2cell[segIdx];
 			auto it = seg2cell.find(segIdx);
@@ -308,13 +310,16 @@ void MappedSegments::unmapSegments(const std::vector<Vector2i>& segs) {
 		if (cell2seg.count(cellIdx)>0) {
 			auto& csegs= cell2seg[cellIdx];
 			int c = 0;
+		
 			for (int i=0; i<csegs.size(); i++) {
+				std::cout<<csegs[i]<<" ";
 				if (csegs[i] == segIdx) {
-					csegs.erase(csegs.begin() + c, csegs.begin() + c + 1);
+          csegs.erase(csegs.begin() + c, csegs.begin() + c +1);
 					break; // inner for
 				}
 				c++;
 			}
+			
 		} else {
 			throw std::invalid_argument("MappedSegments::removeSegments: warning cell index "+ std::to_string(cellIdx)+ " was not found in the cell2seg mapper");
 		}
@@ -564,9 +569,9 @@ void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbo
 	radii.resize(segments.size());
 	std::fill(radii.begin(), radii.end(), 0.1);
 	subTypes.resize(segments.size());
-	std::fill(subTypes.begin(), subTypes.end(), 0);
+	std::fill(subTypes.begin(), subTypes.end(), 0);//shoot of subtype 0
 	organTypes.resize(segments.size());
-	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //root organ type = 2
+	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root); //currently, all segments are shoot segments
 	mapSegments(segments);
 }
 
@@ -634,14 +639,15 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		c++;
-//		radii[segIdx] = so->param()->a;
-//		subTypes[segIdx] = so->param()->subType;
-//		organTypes[segIdx] = so->organType();
-		radii.at(segIdx) = so->param()->a;
-		subTypes.at(segIdx) = so->param()->subType;
-		organTypes.at(segIdx) = so->organType();
+    radii[segIdx] = so->param()->a;
+		subTypes[segIdx] = so->param()->subType;
+		organTypes[segIdx] = so->organType();
+		//std::cout<<"segIdx "<<segIdx<<" subTypes[segIdx] "<<subTypes[segIdx]<<" organTypes[segIdx] "<<std::endl;
 	}
 	// map new segments
+	if (verbose) {
+		std::cout << "map new segments " << newsegs.size() << "  \n"<< std::flush;
+	}
 	this->mapSegments(newsegs);
 
 //	// update segments of moved nodes
@@ -725,6 +731,7 @@ void MappedPlant::mapSubTypes(){
  */
 void MappedPlant::simulate(double dt, bool verbose)
 {
+	if(verbose){std::cout << "MappedPlant::simulate";}
 	if (soil_index==nullptr) {
 		throw std::invalid_argument("MappedPlant::simulate():soil was not set, use MappedPlant::simulate::setSoilGrid" );
 	}
@@ -759,8 +766,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 	auto newsegs = this->getSegments(); // add segments (TODO cutting)
 	segments.resize(newsegs.size());
 	for (auto& ns : newsegs) {
+		//std::cout<<ns.x<<" "<<ns.y<<",";
 		segments[ns.y-1] = ns;
-	}
+	}//std::cout<<std::endl;
 	if (verbose) {
 		std::cout << "segments added "<< newsegs.size() << "\n" << std::flush;
 	}
@@ -815,12 +823,26 @@ void MappedPlant::simulate(double dt, bool verbose)
 		}
 		c++;
 	}
-
-	// map new segments
+if (verbose) {
+		std::cout<<"cell2seg_0"<<std::endl<<std::flush;
+	}
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
 	newsegs = this->getNewSegments();
+	if (verbose) {
+		std::cout<<"map new segments"<<std::endl<<std::flush;
+	}
 	this->mapSegments(newsegs);
 
-	// update segments of moved nodes
+	if (verbose) {
+		std::cout<<"update segments of moved nodes"<<std::endl<<std::flush;
+	}
 	std::vector<Vector2i> rSegs;
 	if(!constantLoc)//for 1d-3d coupling need to have segments remain in the same voxel
 	{//also, if soil_index is in parallel, this blocks the program as plant only grows on
@@ -842,7 +864,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 				}
 			} else {
 				if(!constantLoc)
-				{
+        {				
 					remove = true;
 				}
 			}
@@ -851,11 +873,49 @@ void MappedPlant::simulate(double dt, bool verbose)
 			}
 		}
 	}
+	if (verbose) {
+		std::cout<<"cell2seg_A"<<std::endl<<std::flush;
+	}
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
+	
 	MappedSegments::unmapSegments(rSegs);
+	
+	if (verbose) {
+		std::cout<<"cell2seg_B"<<std::endl<<std::flush;
+	}
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
+	
 	MappedSegments::mapSegments(rSegs);
+	
+	if (verbose) {
+		std::cout<<"cell2seg_C"<<std::endl<<std::flush;
+	}
+	// for( auto vecsegs : cell2seg)
+	// {
+		// std::cout<<vecsegs.first<<": ";
+		// for( int vs : vecsegs.second)
+		// {
+			// std::cout<<vs<<" ";
+		// }std::cout<<std::endl;
+	// }
+	calcIsRootTip();
 	if(kr_length > 0.){calcExchangeZoneCoefs();}
 	getSegment2leafIds();
-
+	if(verbose){std::cout<<"ending MappedPlant::simulate"<<std::endl<<std::flush;}
 }
 
 
@@ -900,6 +960,18 @@ void MappedPlant::calcExchangeZoneCoefs() { //
 	}
 }
 
+    
+void MappedPlant::calcIsRootTip() { //
+	isRootTip.resize(segments.size(), false);
+	auto orgs = getOrgans(-1);
+	for(auto org: orgs)
+	{
+        if(org->organType() == Organism::ot_root)
+        {
+            isRootTip.at(org->getNodeId( org->getNumberOfNodes()-1)-1) = true;
+        }
+    }
+}
 
 /**
  *Gives an overview of the mappedplant object (for debugging)

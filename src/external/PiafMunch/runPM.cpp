@@ -271,16 +271,16 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
     // ********************* OUTPUT *********************************
     std::cout<<"MEMORY LIBERATIONS"<<std::endl;
     // MEMORY LIBERATIONS:
-    delete [] y_dot;
 	//for python:
     std::cout<<"fortran to python vector"<<std::endl;
 	this->Q_outv = Y0.toCppVector();//att: now has several outputs
 	
 	this->Q_out_dotv = std::vector<double>(Y0.size(),0);
-	for(int j = 1 ; j <= Y0.size() ; j ++) 
+	for(int j = 0 ; j < Y0.size() ; j ++) 
 	{
-		this->Q_out_dotv[j-1] = y_dot[j] ; 
+		this->Q_out_dotv[j] = y_dot[j] ; 
 	}
+    delete [] y_dot;
 	this->C_STv = C_ST.toCppVector();
 	this->vol_STv = vol_ST.toCppVector();
 	this->Q_Grmaxv = Q_Grmax.toCppVector();
@@ -354,7 +354,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	double a_seg, l;double mu =0.;
 	int ot, st;
 	Ag =Fortran_vector(Nt, 0.);
-	a_STv.resize(Nc , 0.)  ;//for postprocessing
+	a_STv = std::vector<double>(Nt, 0.);//.resize(Nc , 0.)  ;//for postprocessing
 	len_leaf =Fortran_vector(Nt, 0.);
 	vol_ParApo =Fortran_vector(Nt, 0.);
 	Q_Grmax =Fortran_vector(Nt, 0.);
@@ -364,14 +364,17 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	vol_Seg=Fortran_vector(Nt, 0.);//for postprocessing	
 	exud_k=Fortran_vector(Nt, 0.);
 	krm2=Fortran_vector(Nt, 0.);
-	Csoil_node.resize(Nt,0.);
+	Csoil_node=std::vector<double>(Nt, 0.);// resize(Nt,0.); //
+	CSTi_exud=std::vector<double>(Nt, 0.);
+	Crsi_exud=std::vector<double>(Nt, 0.);
+    CSTi_delta=std::vector<double>(Nt, 0.);
 	deltaSucOrgNode_ = waterLimitedGrowth(dt);//water limited growth
 	if(doTroubleshooting){cout<<"initializePM_new "<<Nc<<" "<<Nt<<endl;}
 	int nodeID;
 	double StructSucrose;//double deltaStructSucrose;
 	double cmH2O_to_hPa = 0.980638	;//cm to hPa
 	double krm1;
-	k_mucil_.resize(Nt , 0.);
+	k_mucil_ = std::vector<double>(Nt, 0.);//.resize(Nt , 0.);
 	if(psiXyl4Phloem.size() == Nt){Psi_Xyl = Fortran_vector(psiXyl4Phloem,cmH2O_to_hPa); //computed by xylem object
 	}else{Psi_Xyl = Fortran_vector(Nt, 0.);}
 	
@@ -425,27 +428,6 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 		//Fl
 			Ag[nodeID] = Ag4Phloem[segmentsPlant[k-1].y] ;//can be negative at night
 		//Fu
-			//Exudation
-			exud_k[nodeID] =kr_st_f(st,ot, k-1);
-			Q_Exudmax[nodeID ]=0;
-			if((ot==2)&&(this->plant->seg2cell[k-1] >=0)){//root segment belowground
-				Q_Exudmax[nodeID ] =   2 * M_PI * a_seg * l*exud_k[nodeID] ;
-				if (exud_k[nodeID] > 0.)
-				{
-					// k_mucil is a std::vecto not a fotran vector
-					k_mucil_[segmentsPlant[k-1].y ] = k_mucil;
-				}
-				if(Csoil_seg.size() > 0.)
-				{
-					// Csoil_node is a std::vecto not a fotran vector
-					Csoil_node.at(segmentsPlant[k-1].y ) = Csoil_seg.at(k -1);					
-				}else{
-					Csoil_node.at(segmentsPlant[k-1].y ) = CsoilDefault;
-				}
-			}
-			if(doTroubleshooting){std::cout<<"QexudMax "<<Q_Exudmax[nodeID ]<<std::endl;}
-			
-			
 			//Rm, maintenance respiration 
 			krm1 =  krm1_f(st,ot);
 			krm2[nodeID] =  krm2_f(st,ot);
@@ -482,6 +464,27 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 				std::cout<<"forGrmax"<<nodeID<<" "<< deltaSucOrgNode_.at(k).at(-1)<<" "<<Q_Grmax[nodeID]<<std::endl;
 			}
 		
+			//Exudation
+			exud_k[nodeID] =kr_st_f(st,ot, k-1);
+			Q_Exudmax[nodeID ]=0;
+			if((ot==2)&&(this->plant->seg2cell[k-1] >=0)){//root segment belowground
+				
+				if ((!Gr4Exud)||(deltaSucOrgNodeNoFpsi.at(segmentsPlant[k-1].y )>0))//Q_Grmax[nodeID]>0 ))//either exud not only where growth occures or Q_Grmax > 0.
+				{
+					// k_mucil is a std::vecto not a fotran vector
+                    Q_Exudmax[nodeID ] =   2 * M_PI * a_seg * l*exud_k[nodeID] ;
+					k_mucil_[segmentsPlant[k-1].y ] =kr_mucil_f(st,ot, k-1);//= k_mucil;
+				}
+				if(Csoil_seg.size() > 0.)
+				{
+					// Csoil_node is a std::vecto not a fotran vector
+					Csoil_node.at(segmentsPlant[k-1].y ) = Csoil_seg.at(k -1);					
+				}else{
+					Csoil_node.at(segmentsPlant[k-1].y ) = CsoilDefault;
+				}
+			}
+			if(doTroubleshooting){std::cout<<"QexudMax "<<Q_Exudmax[nodeID ]<<std::endl;}
+			
 		//Test
 			if(exud_k[nodeID]<0.){
 				std::cout<<"exud_k[nodeID]: loop n#"<<k<<", node "<<nodeID<<" "<<exud_k[nodeID]<<" "<<(exud_k[nodeID]<0.);
@@ -771,6 +774,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 	//double Flen;//reduction factors
 	BackUpMaxGrowth = std::vector<double>(orgs.size(),0.); //for checking in @PhloemFlux::computeOrgGrowth
 	Q_GrmaxUnbornv_i = std::vector<double>(Nr,0.); 
+    deltaSucOrgNodeNoFpsi = std::vector<double>(Nr,0.); //for post processing 
 	Fpsi = std::vector<double>(Nr,0.); //for post processing
 	Flen = std::vector<double>(Nr,0.); //for post processing
 	GrowthZone = std::vector<int>(Nr,0); //for post processing
@@ -911,7 +915,6 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                     if((StemGrowthPerPhytomer)&&(org->getNumberOfChildren() > 0))
                     {
                         
-						
                         auto stemParams = std::static_pointer_cast<CPlantBox::Stem>(org)->param();
                         int PhytoIdx = 0; bool foundPhytoIdx = false;
                        if(doTroubleshooting){
@@ -1041,6 +1044,7 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
                     }
 				}else{Fpsi.at(nodeId) = 1.;psi_p_symplasm.at(nodeId) = 1.;}
 				double deltavolSeg = deltavol * Flen.at(nodeId) * Fpsi.at(nodeId);
+                deltaSucOrgNodeNoFpsi.at(nodeId) += deltavol * Flen.at(nodeId) ; // if we get > 0, then we can do exudation
 				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){
 					//could be error of pressision (if l = Lmax)
 					// or that, because of nodal growth and dxMin, org->getEpsilon() <0
@@ -1171,8 +1175,27 @@ void PhloemFlux::setKr_st(std::vector<std::vector<double>> values, double kr_len
             }
 		}
 	}
-    
 }	
+
+
+/**
+ *  Sets the radial conductivity in [1 day-1] age, organ type and sub-type dependent
+ *
+ *	@param values 			kr values for age (its linearly interpolated between these values) for each organ type and each sub-type
+ *	@param age 				ages for the given values for each organ type and for each sub type
+ */
+void PhloemFlux::setKr_stRootTip(std::vector<std::vector<double>> values) {
+    kr_st = values;
+    plant->calcIsRootTip();	
+    kr_st_f  = std::bind(&PhloemFlux::kr_st_rootTip, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+}
+
+void PhloemFlux::setKr_mucilRootTip(std::vector<double> values) {
+    krs_mucil = values;
+    plant->calcIsRootTip();	
+    kr_mucil_f  = std::bind(&PhloemFlux::kr_mucil_rootTip, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+}
+
 // type/subtype dependent
 void PhloemFlux::setKx_st(std::vector<std::vector<double>> values, bool verbose) {
     kx_st = values;

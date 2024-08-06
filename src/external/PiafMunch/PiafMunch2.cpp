@@ -154,6 +154,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		int cpp_id = i -1;// o go from Fortran_vector numeration to cpp vector numeration
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
+		//double CSTi_exud = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
 		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);//concentration in meosphyll compartment
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
@@ -201,11 +202,13 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		
 		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
+		CSTi_exud.at(cpp_id) = max(0., max(0.,CSTi)-CSTimin_exud); //if CSTi < CSTimin, no sucrose usage
+		Crsi_exud.at(cpp_id) = max(0.,Csoil_node[cpp_id]-CSTimin_exud); //if CSTi < CSTimin, no sucrose usage
 		
-		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
+		CSTi_delta.at(cpp_id) = max(0.,CSTi_exud.at(cpp_id)-Crsi_exud.at(cpp_id)); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
-		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate
+		Q_Exudmax_ = CSTi_delta.at(cpp_id)*Q_Exudmax[i];//max exudation rate
 		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
 		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i] - st_2_starch;//variation of sucrose content in node
 		
@@ -228,14 +231,14 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Rmmax_dot[i] = Q_Rmmax_ ;
 		//Growthmax:
 		Q_Gtotmax_dot[i] = Q_Grmax[i];
-				 
-								   
 		
 		if(doTroubleshooting){
 			std::cout<<"C_fluxes "<<i<<" "<<vol_ST[i]<<" "<<vol_ParApo[i]<<" "<<vol_Seg[i]<<" CSTimin "<<CSTimin<<std::endl;
 			std::cout<<"max(0.,C_ST[i]) "<<max(0.,C_ST[i])<<std::endl;
 			std::cout<<" C_ST[i] "<<C_ST[i]<<" Q_ST[i] "<<Q_ST[i]<<" "<<Q_Fl[i]<<" "<<CSTi<<" "<<Cmeso<<" "<<len_leaf[i]<<" max(0., CSTi-CSTimin) "<< max(0., CSTi-CSTimin)<<std::endl;
-			std::cout<<Q_Rmmax_<<" "<<Q_Rmmax[i]<<" "<< krm2[i]<<" "<<CSTi_delta<<std::endl;
+
+			std::cout<<Q_Rmmax_<<" "<<Q_Rmmax[i]<<" "<< krm2[i]<<" "<<CSTi_delta.at(cpp_id)<<std::endl;
+
 			std::cout<<Q_Exudmax_<<" Fu_lim "<<Fu_lim<<" Q_ST_dot "<<Q_ST_dot[i]<<" "<<Q_Mesophyll_dot[i]<<" "<<Input[i]<<" "<<Q_Rm_dot[i]<<std::endl;
 			std::cout<<"Qgri "<<Q_Gtot_dot[i] <<" Q_Exudmax_ "<<Q_Exud_dot[i]<<" Q_Rmmax_ "<<Q_Rmmax_dot[i]<<" Qgrmaxi "<<Q_Gtotmax_dot[i]<<std::endl;
 			std::cout<<"Qmeso "<<Q_Mesophyll[i]<<" "<<Ag[i]<<std::endl;

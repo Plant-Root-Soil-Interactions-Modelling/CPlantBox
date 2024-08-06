@@ -72,7 +72,8 @@ public:
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;
-	bool constantLoc = false;// the roots remain in the soil voxel they appear in
+  bool constantLoc = false;// the roots remain in the soil voxel they appear in
+
 
 	virtual double getPerimeter(int si_, double l_){return 2 * M_PI * radii[si_];} ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
 	virtual int getSegment2leafId(int si_);
@@ -82,14 +83,16 @@ public:
 	double kr_length = -1.0; //define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
 	//% of segment length in the root exchange zone, see MappedPlant::simulate.
 	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)
+    std::vector<bool> isRootTip;
 	std::vector<double> exchangeZoneCoefs;
-	std::vector<double> distanceTip;// save the distance between root segment and root tip (for location-dependent kr)
+  std::vector<double> distanceTip;// save the distance between root segment and root tip (for location-dependent kr)
 	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
 	std::vector<double> segVol; //segment volume <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	Vector3d getMinBounds();
 		// calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
 	virtual void calcExchangeZoneCoefs(){throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object");};
+	virtual void calcIsRootTip(){throw std::runtime_error("calcIsRootTip used on MappedSegment instead of MappedPlant object");};
 
 protected:
 
@@ -112,6 +115,8 @@ class MappedRootSystem : public MappedSegments, public RootSystem
 public:
 
     using RootSystem::RootSystem;
+	MappedRootSystem(unsigned int seednum = 0): RootSystem(seednum){}; ///< constructor
+    virtual ~MappedRootSystem() { }; ///< destructor
 
     void initialize(bool verbose = true) override { initializeLB(4, 5, verbose); }; ///< overridden, to map initial shoot segments,
     void initializeLB(int basaltype, int shootbornetype, bool verbose = true) override { bool LB = true; initialize_(basaltype, shootbornetype, verbose, LB); }; ///< overridden, to map initial shoot segments,
@@ -159,6 +164,7 @@ public:
 	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
 	//for photosynthesis and phloem module:
 	void calcExchangeZoneCoefs() override;
+    void calcIsRootTip() override;
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
 	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module
 	double getPerimeter(int si_, double l_) override; ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter

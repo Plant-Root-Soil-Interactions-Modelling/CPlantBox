@@ -172,7 +172,6 @@ public:
 	double a1=4.; //g0+ fw[i] * a1 *( An[i] + Rd)/(ci[i] - deltagco2[i]);//tuzet2003
 	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
 	//double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
-	
 	// 				C3 only
 	double a3 = 1.7;//Jrefmax = Vcrefmax * a3 ;//Eq 25
 	double theta = 0.9;//or 0.67 coefa = theta;
