@@ -760,22 +760,6 @@ std::vector<double> XylemFlux::getHs(const std::vector<double>& sx) {
     return hs;
 }
 
-
-/**
- * Returns kr of roots belowground or leaves aboveground, overwise returns 0
- */
-double XylemFlux::kr_f_wrapped(int si, double age, int subType, int organType, bool cells) const
-{
-	int cellIndex = rs->seg2cell.at(si);
-	if (cells&&(((cellIndex>=0)&&(organType !=Organism::ot_root))||((cellIndex < 0)&&(organType ==Organism::ot_root))))
-	{
-			return 0.;
-	}else
-	{
-		return kr_f(si, age, subType, organType);
-	}
-}
-
 /**
  * Returns kr of roots belowground or leaves aboveground, overwise returns 0
  */
