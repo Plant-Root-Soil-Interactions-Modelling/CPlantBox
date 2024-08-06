@@ -1,0 +1,135 @@
+In this section, we present how to create any type of topology from the organ types defined above, using the example example1f$\_$branchingDescription.py.
+In the text bellow, the define as linking node all plant nodes which can carry one or more latterals. The number and position of the linking nodes are defined by lmax, la, lb and ln.
+
+%\lstinputlisting[language=Python, caption=Produces one VTP filel per animation frame (topics\_visualisation)]{examples/topics_visualisation.py} 
+We start by loading the necessary libraries:
+\begin{lstlisting}[language=Python]
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+path =  "../../modelparameter/structural/plant/"
+sys.path.append( path)
+import plantbox as pb
+import visualisation.vtk_plot as vp
+from example1f import template_text
+\end{lstlisting}
+
+Here, we also load the incomplete parameter string "template$\_$text" from the file "example1f.py". This string is shaped like a normal rsml parameter file (see section \ref{ssec:rsml}), except for the definition of the laterals of the stem and basal root, wich are missing. In this example, adapt an rsml file using python string which are then written in example1f.rsml, but the rsml files can be adapted directly.
+We create a dictionnary of strings, which defines the branching of the stem and basal roots:
+\begin{lstlisting}[language=Python]
+successors= {
+        "root":"""<parameter name="successor" ruleId="0" organType="2" subType="2" probability="1"/>""",
+        "stem":"""<parameter name="successor" ruleId="0" organType="3" subType="2" probability="1"/>"""
+        }
+\end{lstlisting}
+As can be seen in the code, the name of the branching parameter is "successor". 
+The other arguments of interests are:
+\begin{itemize}
+ \item ruleId, (numbered per organ subtype) an integer giving the index of the branching rule (in case rules are defined over several lines) [int]
+ \item organType: one or several organ type(s) of the successor. [int]
+ \item subType: one or several subtype(s) of the successor. [int]. In some older parameter file, this argument is still writen as "type"
+\end{itemize}
+In the example above, we define one rule for the root and one rule for the shoot. An organ of type 2 (root) and subtype 2 will grow out of the root, while an organ of type 3 (stem) and subtype 2 will grow out of the stem.
+
+
+We then fill out the parameter string with the dictionnary, write the resulting string in a rsml parameter file.
+\begin{lstlisting}[language=Python]
+filledText = template_text.format(**successors)
+f = open(path+"example1f.rsml", "w")
+f.write(filledText)
+f.close()
+\end{lstlisting}
+
+We can then simulate and look at the resulting plant
+\begin{lstlisting}[language=Python]
+p = pb.Plant(2)
+p.readParameters(path+"example1f.rsml")  
+p.initialize(False)
+time = 100
+p.simulate(time, True)
+ana = pb.SegmentAnalyser()  # see example 3b
+
+vp.plot_plant(p, "organType")
+\end{lstlisting}
+
+We obtain as output  Fig.\ref{fig:example1f_a}.
+
+\begin{figure}
+\includegraphics[width=0.99\textwidth]{figures/example1fa.png}
+\caption{Visualizations of results of example 1fA} 
+\end{figure}
+
+We can also define more complex branching patterns:
+\begin{lstlisting}[language=Python]
+successors= {
+        "root":
+"""<parameter name="successor" ruleId="0" numLat="4" where="-1,-3,-5,-7" organType="2" subtype="2" probability="1"/>
+    <parameter name="successor" ruleId="1" numLat="1" organType="4" subtype="1" probability="1"/>
+    <parameter name="successor" ruleId="2" numLat="6" organType="3" subtype="2" probability="1"/>""",
+        "stem":"""<parameter name="successor" ruleId="0" where="4,6,8" organType="2" subtype="1" probability="1"/>
+        <parameter name="successor" ruleId="1" numLat="4" where="-3" organType="4" subtype="1" probability="1"/>"""
+        }
+\end{lstlisting}
+The following arguments become of interest:
+\begin{itemize}
+ \item numLat, the number of lateral to create at each branching point [int]
+ \item where, linking node index at which the rule applyed [int]
+\end{itemize}
+As seen above, the integers given for the "where" argument can be either positive or negative. A positive list of integers means that the rule will only be applied on those points. A negative list means that the rule will be applied everywhere except on those points.
+
+As before, we overwrite the parameter file and look at the results
+\begin{lstlisting}[language=Python]
+filledText = template_text.format(**successors)
+f = open(path+"example1f.rsml", "w")
+f.write(filledText)
+f.close()
+p = pb.Plant(2)
+p.readParameters(path+"example1f.rsml")  
+p.initialize(False)
+time = 100
+p.simulate(time, True)
+ana = pb.SegmentAnalyser()  # see example 3b
+
+vp.plot_plant(p, "organType")
+\end{lstlisting}
+
+
+We obtain as output  Fig.\ref{fig:example1f_b}. We can observe that shoot organs are growing out of the roots and vice versa. Also, because of the 'where' arguments, we do not have roots growing out of the upper linking nodes of the stem.
+
+\begin{figure}
+\includegraphics[width=0.99\textwidth]{figures/example1fb.png}
+\caption{Visualizations of results of example 1fB} 
+\end{figure}
+
+We can also setup a probabilistic branching pattern
+\begin{lstlisting}[language=Python]
+successors= {
+        "root":"""<parameter name="successor" ruleId="0" where="3, 5" organType="2" subtype="2" probability="1"/>""",
+        "stem":"""<parameter name="successor" ruleId="0" where="-3" numLat="4" organType="3,4,2" subtype="2,1,3" probability="0.2,0.3,0.3"/>
+        <parameter name="successor" ruleId="1" where="3" numLat="1" organType="3" subtype="2" probability="1"/>"""
+        }
+\end{lstlisting}
+We then use the "probability" parameter (see 1st "stem" successor).
+The sum of probabilities for one successor rule must be < or = 1. As can be seen for the 1st stem successor, we can define a list of organ types, suptypes and growth probabilities. In the example above, according to ruleId 0 for the stem, up to 4 laterals will be created at each linking node (numLat ="4"). 20$\%$ of those laterals will be of type 3, subtype 2, 30$\%$ of type 4, subtype 1, 30$\%$ of type 2, subtype 3. 20$\%$ of the time, no lateral will grow.
+
+As before, we fill the parameter file and look at the results
+\begin{lstlisting}[language=Python]
+filledText = template_text.format(**successors)
+f = open(path+"example1f.rsml", "w")
+f.write(filledText)
+f.close()
+p = pb.Plant(2)
+p.readParameters(path+"example1f.rsml")  
+p.initialize(False)
+time = 100
+p.simulate(time, True)
+ana = pb.SegmentAnalyser()  # see example 3b
+
+vp.plot_plant(p, "organType")
+\end{lstlisting}
+
+
+We obtain as output Fig.\ref{fig:example1f_c}.
+
+\begin{figure}\label{fig:example1f_c}
+\includegraphics[width=0.99\textwidth]{figures/example1fc.png}
+\caption{Visualizations of results of example 1fB} 
+\end{figure}

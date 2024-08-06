@@ -136,7 +136,9 @@ void Photosynthesis::solve_photosynthesis(double ea_, double es_, double sim_tim
 	}
 
 
-    loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs. when fw ~ 0, need to do it one last time to be sure that seg_flux_leaf = Ev 
+	 
+	loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs. when fw ~ 0, need to do it one last time to be sure that seg_flux_leaf = Ev 
+
 	outputFlux = segFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 	loop++ ;
 
@@ -246,7 +248,7 @@ size_t Photosynthesis::fillVectors(size_t k, int i, int j, double bi, double cii
  * @param sx        [cm] soil matric potential for each cell
  */
  
-double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_) const
+double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose) const
 {
 	std::ofstream myfile4;
 	if(doLog)
@@ -312,10 +314,12 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 				break;
 			case Organism::ot_leaf: 
 				psi_s = pg.at(plant->getSegment2leafId(si));//sx_.at(si) is used in loop function
+
             if(doLog)
             {
             	myfile4 << "photosynthesus::getPsiOut: getSegment2leafId "<<plant->getSegment2leafId(si)<< "\n";
             }
+
 				break;
 			default:
 				throw std::runtime_error("Photosynthesis::getPsiOut: organType not recognized.");
@@ -327,6 +331,7 @@ double Photosynthesis::getPsiOut(bool cells, int si, const std::vector<double>& 
 				myfile4 << ", psi_s " << psi_s <<" "<<  "\n";//<<  std::setprecision (15) 
             }
 	if(doLog){myfile4.close();}
+
 	return psi_s;
 }
 

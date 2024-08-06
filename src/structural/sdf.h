@@ -188,7 +188,7 @@ public:
 
     virtual std::string toString() const override { return "SDF_Intersection"; } ///< @see SignedDistanceFunction::toString
 
-    virtual int writePVPScript(std::ostream & cout, int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
+    virtual int writePVPScript(std::ostream & cout,  int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
 
 protected:
     std::vector<std::shared_ptr<SignedDistanceFunction>> sdfs; ///< the set of signed distance functions
@@ -261,7 +261,7 @@ public:
 
     virtual double getDist(const Vector3d& v) const override { return n.times(v.minus(o)); } ///< @see SignedDistanceFunction::getDist
 
-    virtual int writePVPScript(std::ostream & cout, int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
+    virtual int writePVPScript(std::ostream & cout,  int c=1) const override; ///< @see SignedDistanceFunction::writePVPScript
 
     virtual std::string toString() const override { return "SDF_HalfPlane"; } ///< @see SignedDistanceFunction::toString
 

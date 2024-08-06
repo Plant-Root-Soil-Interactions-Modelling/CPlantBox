@@ -74,7 +74,7 @@ void Plant::reset()
  * Sets up the plant according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.
  *
- * If not used for test file: Call this method before simulation and after setting geometry, 
+ * If not used for test file: Call this method before simulation and after setting geometry,
  * plant and root parameters
  * @param verbose       print information
  */
@@ -92,20 +92,18 @@ void Plant::initialize_(bool verbose)
  *
  * LB, Length based: Delay for lateral root is calculated from the apical length (classical RootBox approach)
  *
- * Call this method before simulation and after setting geometry, 
+ * Call this method before simulation and after setting geometry,
  * plant and root parameters
  * @param verbose       print information
  */
 void Plant::initializeLB(bool verbose )
 {
     reset(); // just in case
-
-    // create seed
     auto seed = std::make_shared<Seed>(shared_from_this());
     baseOrgans.push_back(seed);
 	seed->initialize(verbose);
     initialize_(verbose);
-	
+
 }
 /**
  * Sets up the plant according to the plant parameters,
@@ -113,7 +111,7 @@ void Plant::initializeLB(bool verbose )
  *
  * DB, Delay based: Delay for lateral root is predefined, apical length therefore not constant
  *
- * Call this method before simulation and after setting geometry, 
+ * Call this method before simulation and after setting geometry,
  * plant and root parameters
  * @param verbose       print information
  */
@@ -221,14 +219,14 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
 }
 
 /**
- * Simulates plant growth 
+ * Simulates plant growth
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
-	void Plant::simulate(double dt, bool verbose)	
-{	
+	void Plant::simulate(double dt, bool verbose)
+{
 	abs2rel();
-    Organism::simulate(dt, verbose);	
+    Organism::simulate(dt, verbose);
 	rel2abs();
 }
 
@@ -244,34 +242,34 @@ void Plant::simulate()
 /**
  * go from absolute to relative coordinates for aboveground organs
  */
-void Plant::abs2rel()	
-{	
+void Plant::abs2rel()
+{
 	auto s = getSeed();
 	for (int i = 0; i< s->getNumberOfChildren();i++) {
 		auto child = s->getChild(i);
 		//if(child->organType() >2){ //if aboveground-organ
 			child->abs2rel(); //apply to all organs
 		//}
-		
+
     }
-	
+
 }
 
 
 /**
  * go from relative to absolute coordinates for aboveground organs
  */
-void Plant::rel2abs()	
-{	
+void Plant::rel2abs()
+{
 	auto s = getSeed();
 	for (int i = 0; i< s->getNumberOfChildren();i++) {
 		auto child = s->getChild(i);
 		//if(child->organType() >2){ //if aboveground-organ
 			child->rel2abs();//apply to all organs
 		//}
-		
+
     }
-	
+
 }
 
 
@@ -324,119 +322,6 @@ std::shared_ptr<GrowthFunction>Plant::createGrowthFunction(int gft) {
 std::string Plant::toString() const
 {
     return "Plant " + Organism::toString();
-}
-
-/**
- * Exports the simulation results with the type from the extension in name
- * (that must be lower case)
- *
- * todo move to Organism
- *
- * @param name      file name e.g. output.vtp
- */
-void Plant::write(std::string name) const
-{
-    std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
-    if (ext.compare("sml")==0) {
-        std::cout << "writing RSML... "<< name.c_str() <<"\n";
-        writeRSML(name); // use base class writer
-    } else if (ext.compare("vtp")==0) {
-        std::cout << "writing VTP... "<< name.c_str() <<"\n";
-        std::ofstream fos;
-        fos.open(name.c_str());
-        writeVTP(-1, fos);
-        fos.close();
-//    } else if (ext.compare(".py")==0)  {
-//        std::cout << "writing Geometry ... "<< name.c_str() <<"\n";
-//        writeGeometry(fos);
-    } else {
-        throw std::invalid_argument("RootSystem::write(): Unkwown file type");
-    }
-}
-
-/**
-write VTP using tinyXML
-todo move to Organism
- **/
-void Plant::writeVTP(int otype, std::ostream & os) const // Write .VTP file by using TinyXML2 performance slowed by 0.5 seconds but precision increased
-{
-    tinyxml2::XMLPrinter printer( 0, false, 0 );
-
-    auto organs = this->getOrgans(otype); // update roots (if necessary)
-    auto nodes = getPolylines(otype);
-    auto times = getPolylineCTs(otype);
-
-    os << "<?xml version=\"1.0\"?>";
-    printer.OpenElement("VTKFile"); printer.PushAttribute("type", "PolyData"); printer.PushAttribute("version", "0.1"); printer.PushAttribute("byte_order", "LittleEndian");
-    printer.OpenElement("PolyData");
-    int non = 0; // number of nodes
-    for (const auto& r : organs) {
-        non += r->getNumberOfNodes();
-    }
-    int nol=organs.size(); // number of lines
-    printer.OpenElement("Piece"); printer.PushAttribute("NumberOfLines",  nol); printer.PushAttribute("NumberOfPoints", non);
-
-    // POINTDATA
-    printer.OpenElement("PointData"); printer.PushAttribute("Scalars", "Pointdata");
-    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "time"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-    for (std::vector<double> r: times) {
-        for (double t : r) {
-            printer.PushText(t); printer.PushText(" ");
-        }
-    }
-    printer.CloseElement();
-    printer.CloseElement();
-
-    // CELLDATA (live on the polylines)
-    printer.OpenElement("CellData"); printer.PushAttribute("Scalars", "CellData" );
-    std::vector<std::string> sTypeNames = { "organType", "id", "creationTime", "age", "subType", "order", "radius"}; //  , "order", "radius", "subtype" ,
-    for (size_t i=0; i<sTypeNames.size(); i++) {
-        std::string sType = sTypeNames[i];
-        const char *schar = sType.c_str();
-        printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", schar); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-        std::vector<double> scalars = getParameter(sTypeNames[i], otype);
-        for (double s : scalars) {
-            printer.PushText(s); printer.PushText(" ");
-        }
-        printer.CloseElement();
-    }
-    printer.CloseElement();
-
-    // POINTS (=nodes)
-    printer.OpenElement("Points");
-    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "Coordinates"); printer.PushAttribute("NumberOfComponents", "3"); printer.PushAttribute("format", "ascii" );
-    for (const auto& r : nodes) {
-        for (const auto& n : r) {
-            printer.PushText(n.x); printer.PushText(" "); printer.PushText(n.y); printer.PushText(" "); printer.PushText(n.z); printer.PushText(" ");
-        }
-    }
-    printer.CloseElement();
-    printer.CloseElement();
-
-    // LINES (polylines)
-    printer.OpenElement("Lines");
-    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "connectivity"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-    int c=0;
-    for (const auto& r : organs) {
-        for (size_t i=0; i<r->getNumberOfNodes(); i++) {
-            printer.PushText(c); printer.PushText(" ");
-            c++;
-        }
-    }
-    printer.CloseElement();
-
-    printer.OpenElement("DataArray"); printer.PushAttribute("type", "Float32");  printer.PushAttribute("Name", "offsets"); printer.PushAttribute("NumberOfComponents", "1"); printer.PushAttribute("format", "ascii" );
-    c = 0;
-    for (const auto& r : organs) {
-        c += r->getNumberOfNodes();
-        printer.PushText(c); printer.PushText(" ");
-    }
-    printer.CloseElement();
-    printer.CloseElement();
-    printer.CloseElement();
-    printer.CloseElement();
-    printer.CloseElement();
-    os << std::string(printer.CStr());
 }
 
 } // namespace CPlantBox

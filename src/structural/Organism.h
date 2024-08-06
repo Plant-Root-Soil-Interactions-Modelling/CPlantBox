@@ -3,6 +3,7 @@
 #define ORGANISM_H_
 
 #include "mymath.h"
+#include "sdf.h"
 
 #include "tinyxml2.h"
 
@@ -58,6 +59,7 @@ public:
     int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str
 
     /* initialization and simulation */
+    void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
     void addOrgan(std::shared_ptr<Organ> o) { baseOrgans.push_back(o); } ///< adds an organ, takes ownership
     virtual void initialize(bool verbose = true); ///< overwrite for initialization jobs
     virtual void simulate(double dt, bool verbose = false); ///< calls the base organs simulate methods
@@ -97,8 +99,11 @@ public:
     /* io */
     virtual std::string toString() const; ///< quick info for debugging
     virtual void initializeReader() { } ///< initializes parameter reader
-    virtual void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = true); ///< reads all organ type parameters from a xml file
+    virtual void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = false); ///< reads all organ type parameters from a xml file
     virtual void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
+    virtual void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
+    virtual void writeVTP(int otype, std::ostream & os) const;
+    virtual void writeGeometry(std::ostream & os) const;
     virtual void writeRSML(std::string name) const; ///< writes a RSML file
     int getRSMLSkip() const { return rsmlSkip; } ///< skips points in the RSML output (default = 0)
     void setRSMLSkip(int skip) { assert(rsmlSkip>=0 && "rsmlSkip must be >= 0" ); rsmlSkip = skip;  } ///< skips points in the RSML output (default = 0)
@@ -129,9 +134,10 @@ protected:
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
     virtual tinyxml2:: XMLElement* getRSMLScene(tinyxml2::XMLDocument& doc) const;
 
-
     static const int numberOfOrganTypes = 5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
+
+    std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
 
     double simtime = 0;
 	double dt = 0;

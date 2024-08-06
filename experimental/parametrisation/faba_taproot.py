@@ -1,7 +1,7 @@
-import sys
-sys.path.append("../..")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
-import rsml_reader as rsml
+import rsml.rsml_reader as rsml
 import estimate_params as es
 
 import math
@@ -20,7 +20,7 @@ functions = [ [ [] for t in times] for i in range(0, len(names)) ]
 for i in range(0, len(names)):
     print(names[i])
     j = len(times) - 1
-    p, properties[i][j], functions[i][j] = rsml.read_rsml("RSML/" + names[i])  # read file to final time step
+    p, properties[i][j], functions[i][j], _ = rsml.read_rsml("RSML/" + names[i])  # read file to final time step
     print(properties[i][j].keys())
     print(functions[i][j].keys())
     p = [[np.array([p[i][j][k] / 10 for k in range(0, 3)]) for j in range(0, len(p[i])) ] for i in range(0, len(p)) ]  # mm -> cm
@@ -47,7 +47,7 @@ for i in range(0, len(names)):
 print()
 l = np.array([[base_properties[i][j]["length"][0] for i in range(0, len(names))] for j in range(0, len(times)) ])
 
-r0, f0 = es.fit_taproot_r(l[0:1, :], [times[0]], fixed_k)
+r0, f0 = es.fit_taproot_r(l[0:1,:], [times[0]], fixed_k)
 k0 = fixed_k
 print("k fixed, first ", r0, "cm/day", k0, "cm; error", f0)
 

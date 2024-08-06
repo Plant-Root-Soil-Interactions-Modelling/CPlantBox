@@ -67,6 +67,7 @@ MappedSegments::MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i
 	organTypes.resize(segments.size());
 	std::fill(organTypes.begin(), organTypes.end(), Organism::ot_root);
 	setSubTypes(0);
+    assert((nodes.size()==nodeCTs.size()) && "MappedSegments::MappedSegments: Unequal vector sizes nodes and nodeCTs");
 	assert((segments.size()==radii.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and radii");
 	assert((segments.size()==subTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and subTypes");
 	assert((segments.size()==organTypes.size()) && "MappedSegments::MappedSegments: Unequal vector sizes segments and organTypes");
@@ -122,6 +123,7 @@ void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>&
  * @param max		maximum of the soil domain [cm]
  * @param res	 	resolution, how many cells in each dimension [1]
  * @param cut 		determines if the segments are cut at the rectangular grid faces
+ * @param noChanges	determines if the segments remain in the soil voxel they are created in
  */
 void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut, bool noChanges)
 {
@@ -130,6 +132,8 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
 	resolution = res;
 	cutAtGrid = cut;
 	constantLoc = noChanges;
+	// std::cout << "setRectangularGrid: cutSegments \n" << std::flush;
+
 	if (cutAtGrid) {
 		cutSegments(); // re-add (for cutting)
 	}
@@ -149,6 +153,7 @@ void MappedSegments::setRectangularGrid(Vector3d min, Vector3d max, Vector3d res
 void MappedSegments::mapSegments(const std::vector<Vector2i>& segs) {
 	//int countseg = 0;
 	for (auto& ns : segs) {
+	    //std::cout<< "mapSegments():"<< ns.x <<", " << ns.y << "\n" << std::flush;
 		Vector3d mid = (nodes[ns.x].plus(nodes[ns.y])).times(0.5);
 		int cellIdx = soil_index(mid.x,mid.y,mid.z);
 		int segIdx = ns.y-1; // this is unique in a tree like structured
@@ -309,7 +314,7 @@ void MappedSegments::unmapSegments(const std::vector<Vector2i>& segs) {
 			for (int i=0; i<csegs.size(); i++) {
 				std::cout<<csegs[i]<<" ";
 				if (csegs[i] == segIdx) {
-					csegs.erase(csegs.begin() + c, csegs.begin() + c +1);
+          csegs.erase(csegs.begin() + c, csegs.begin() + c +1);
 					break; // inner for
 				}
 				c++;
@@ -434,14 +439,24 @@ std::vector<double> MappedSegments::segLength() const {
 }
 
 /**
- * Returns seg2cell as vector
+ * Returns soil matric potential per segment, for a given soil sx connected gy the mapper rs->seg2cell
  */
-std::vector<int> MappedSegments::getSegmentMapper() const {
-    std::vector<int> mapper = std::vector<int>(segments.size());
-    for (int i=0; i<mapper.size(); i++) {
-        mapper[i] = seg2cell.at(i);
+std::vector<double> MappedSegments::getHs(const std::vector<double> sx) const {
+    double psi_air = -954378;
+    std::vector<double> hs = std::vector<double>(this->segments.size());
+    for (int si = 0; si<this->segments.size(); si++) {
+        int cellIndex = this->seg2cell.at(si);
+        if (cellIndex>=0) {
+            if(sx.size()>1) {
+                hs[si] = sx.at(cellIndex);
+            } else {
+                hs[si] = sx.at(0);
+            }
+        } else {
+            hs[si] = psi_air;
+        }
     }
-    return mapper;
+    return hs;
 }
 
 /**
@@ -454,6 +469,47 @@ std::vector<double> MappedSegments::getSegmentZ() const {
     }
     return z;
 }
+
+/**
+ * Calculates the total potential from the matric potential
+ */
+std::vector<double> MappedSegments::matric2total(std::vector<double> sx) const {
+    std::vector<double> b = this->getSegmentZ();
+    assert(sx.size() == b.size());
+    std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::plus<double>( ));
+    return sx;
+}
+
+/**
+ * Calculates the matric potential from the tortal potential
+ */
+std::vector<double> MappedSegments::total2matric(std::vector<double> sx) const{
+    std::vector<double> b = this->getSegmentZ();
+    assert(sx.size() == b.size());
+    std::transform(sx.begin( ), sx.end( ), b.begin( ), sx.begin( ),std::minus<double>( ));
+    return sx;
+}
+
+
+
+/**
+ * Returns seg2cell as vector
+ */
+std::vector<int> MappedSegments::getSegmentMapper() const {
+    std::vector<int> mapper = std::vector<int>(segments.size());
+    for (int i=0; i<mapper.size(); i++) {
+
+        try {
+            mapper[i] = seg2cell.at(i);
+        } catch(...) {
+            std::cout << "MappedSegments::getSegmentMapper(): Index "<< i << " not mapped\n" << std::flush;
+            throw;
+        }
+
+    }
+    return mapper;
+}
+
 
 
 
@@ -496,13 +552,17 @@ int MappedSegments::getSegment2leafId(int si_){
  * @param LB		 		implement length-based waiting time before growth (true) of laterals or delay-based (false)? (default = true)
  */
 void MappedRootSystem::initialize_(int basaltype, int shootbornetype, bool verbose, bool LB) {
-	if (verbose) {
-	    std::cout << "MappedRootSystem::initialize \n" << std::flush;
-	}
-	if(LB){
+	if (LB) {
+		if (verbose) {
+		    std::cout << "MappedRootSystem::initialize length based (LB) \n" << std::flush;
+		}
 		RootSystem::initializeLB( basaltype, shootbornetype, verbose);
-	}else{RootSystem::initializeDB( basaltype, shootbornetype, verbose);}
-
+	} else {
+		if (verbose) {
+		    std::cout << "MappedRootSystem::initialize delay based (DB) \n" << std::flush;
+		}
+		RootSystem::initializeDB( basaltype, shootbornetype, verbose);
+	}
 	segments = this->getShootSegments();
 	nodes = this->getNodes();
 	nodeCTs = this->getNodeCTs();
@@ -533,10 +593,12 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 
 	auto uni = this->getUpdatedNodeIndices(); // move nodes
 	auto unodes = this->getUpdatedNodes();
+    auto uncts = this->getUpdatedNodeCTs();
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
 	int c = 0;
 	for (int i : uni) {
 		nodes.at(i) = unodes[c];
+		nodeCTs.at(i) = uncts[c];
 		c++;
 	}
 	if (verbose) {
@@ -555,6 +617,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	if (verbose) {
 		std::cout << "new nodes added " << newnodes.size() << "\n" << std::flush;
 	}
+
 	auto newsegs = this->getNewSegments(); // add segments (TODO cutting)
 	segments.resize(segments.size()+newsegs.size());
 	for (auto& ns : newsegs) {
@@ -567,14 +630,16 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	radii.resize(radii.size()+newsegO.size());
 	subTypes.resize(subTypes.size()+newsegO.size());
 	organTypes.resize(organTypes.size()+newsegO.size());
+
+
 	c = 0;
 	if (verbose) {
-		std::cout << "Number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
+		std::cout << "number of segments " << radii.size() << ", including " << newsegO.size() << " new \n"<< std::flush;
 	}
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 		c++;
-		radii[segIdx] = so->param()->a;
+    radii[segIdx] = so->param()->a;
 		subTypes[segIdx] = so->param()->subType;
 		organTypes[segIdx] = so->organType();
 		//std::cout<<"segIdx "<<segIdx<<" subTypes[segIdx] "<<subTypes[segIdx]<<" organTypes[segIdx] "<<std::endl;
@@ -585,36 +650,32 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	}
 	this->mapSegments(newsegs);
 
-	// update segments of moved nodes
-	std::vector<Vector2i> rSegs;
-	for (int i : uni) {
-		int segIdx = i -1;
-		int cellIdx = seg2cell[segIdx];
-		auto s = segments[segIdx];
-		Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
-		int newCellIdx = soil_index(mid.x,mid.y,mid.z);
-		// 1. check if mid is still in same cell (otherwise, remove, and add again)
-		// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
-		bool remove = false;
-		if (cellIdx==newCellIdx) {
-			if (cutAtGrid) {
-				auto endPoint = nodes[s.y];
-				newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
-				remove = (newCellIdx!=cellIdx);
-			}
-		} else {
-			remove = true;
-		}
-		if (remove) {
-			rSegs.push_back(s);
-		}
-	}
-	if (verbose) {
-		std::cout << "re-map existing segments " << rSegs.size() << "  \n"<< std::flush;
-	}
-	
-	MappedSegments::unmapSegments(rSegs);
-	MappedSegments::mapSegments(rSegs);
+//	// update segments of moved nodes
+//	std::vector<Vector2i> rSegs;
+//	for (int i : uni) {
+//		int segIdx = i -1;
+//		int cellIdx = seg2cell[segIdx];
+//		auto s = segments[segIdx];
+//		Vector3d mid = (nodes[s.x].plus(nodes[s.y])).times(0.5);
+//		int newCellIdx = soil_index(mid.x,mid.y,mid.z);
+//		// 1. check if mid is still in same cell (otherwise, remove, and add again)
+//		// 2. if cut is on, check if end point is in same cell than mid point (otherwise remove and add again)
+//		bool remove = false;
+//		if (cellIdx==newCellIdx) {
+//			if (cutAtGrid) {
+//				auto endPoint = nodes[s.y];
+//				newCellIdx = soil_index(endPoint.x,endPoint.y,endPoint.z);
+//				remove = (newCellIdx!=cellIdx);
+//			}
+//		} else {
+//			remove = true;
+//		}
+//		if (remove) {
+//			rSegs.push_back(s);
+//		}
+//	}
+//	MappedSegments::unmapSegments(rSegs);
+//	MappedSegments::mapSegments(rSegs);
 }
 
 
@@ -704,7 +765,6 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	auto newsegs = this->getSegments(); // add segments (TODO cutting)
 	segments.resize(newsegs.size());
-	//std::cout<<"newseg "<<std::endl;
 	for (auto& ns : newsegs) {
 		//std::cout<<ns.x<<" "<<ns.y<<",";
 		segments[ns.y-1] = ns;
@@ -763,8 +823,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 		}
 		c++;
 	}
-
-	if (verbose) {
+if (verbose) {
 		std::cout<<"cell2seg_0"<<std::endl<<std::flush;
 	}
 	// for( auto vecsegs : cell2seg)
@@ -805,7 +864,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 				}
 			} else {
 				if(!constantLoc)
-				{				
+        {				
 					remove = true;
 				}
 			}

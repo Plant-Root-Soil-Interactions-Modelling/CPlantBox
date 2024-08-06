@@ -46,6 +46,7 @@ def pressure_head(theta, sp):
             assert ( theta > sp.theta_R).all()
             assert (theta <= sp.theta_S).all()
         else:
+
             #assert theta > sp.theta_R
             #assert theta <= sp.theta_S
             if theta <= sp.theta_R:

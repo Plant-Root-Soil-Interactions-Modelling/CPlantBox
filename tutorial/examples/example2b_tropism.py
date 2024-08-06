@@ -30,7 +30,9 @@ for i, n in enumerate(N_):
         p0.tropismN = n
         p0.tropismS = sigma
 
+        print("*")
         rs.initializeLB(1, 1)
+        print("*")
         rs.simulate(50, False)
 
         nodes = rs.getNodes()
@@ -44,5 +46,5 @@ for i, n in enumerate(N_):
         a.set_ylim([-40., 0.])
 
 fig.tight_layout()
-fig.canvas.set_window_title("Gravitropism parameters")
+fig.canvas.manager.set_window_title("Gravitropism parameters")
 plt.show()

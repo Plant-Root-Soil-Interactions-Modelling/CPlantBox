@@ -428,7 +428,6 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 		//Fl
 			Ag[nodeID] = Ag4Phloem[segmentsPlant[k-1].y] ;//can be negative at night
 		//Fu
-			
 			//Rm, maintenance respiration 
 			krm1 =  krm1_f(st,ot);
 			krm2[nodeID] =  krm2_f(st,ot);

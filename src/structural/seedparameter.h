@@ -47,7 +47,8 @@ public:
     double delaySB;     ///< Time delay between the shoot borne roots [day]
     double delayRC;     ///< Delay between the root crowns [day]
     double nz;          ///< Distance between the root crowns along the shoot [cm]
-    //Tillers 
+
+    //Tillers
     int maxTil;         ///< maximal number of tillers
 	double firstTi;     ///< First emergence of a shoot borne root [day]
     double delayTi;     ///< Time delay between the shoot borne roots [day]

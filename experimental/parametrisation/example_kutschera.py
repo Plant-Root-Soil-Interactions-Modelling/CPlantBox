@@ -1,7 +1,8 @@
-"""small example"""
-import sys; sys.path.append("../..")
+""" plots simulation of parameter set kutschera.xml and maps it to 2D """
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
+
 import plantbox as pb
-import vtk_plot as vp
+import visualisation.vtk_plot as vp
 
 
 # sets all standard deviation to a percantage, i.e. value*s

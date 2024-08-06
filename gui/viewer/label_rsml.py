@@ -1,4 +1,4 @@
-import sys; sys.path.append("../../src/python_modules/"); sys.path.append("../../")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import os
 import pandas as pd
@@ -7,7 +7,7 @@ import argparse
 
 import viewer_conductivities
 from viewer_data import ViewerDataModel
-import xylem_flux
+import functional.xylem_flux as xylem_flux
 
 """
 creates a csv file per rsml file containing krs values, and suf values per 1 mm layers
@@ -26,6 +26,16 @@ python3 label_rsml.py ~/Downloads/second+round/dicot/lupin 1
 
 python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/monocot/ 1 --shoot --z_shift
 python3 label_rsml.py /home/daniel/workspace/DUMUX/CPlantBox/gui/estimate/img/dicot/ 1 --split --z_shift
+
+python3 label_rsml.py Files_for_Daniel/lupin/ 3 --z_shift
+python3 label_rsml.py Files_for_Daniel/maize/archisimple/ 3 --shoot --z_shift
+python3 label_rsml.py Files_for_Daniel/maize/roottyp/ 3 --z_shift
+
+results for Benjamin Delory from 6.12.2023:
+python3 label_rsml.py Archive-2023-11-30/maize/ 3 --shoot --z_shift
+python3 label_rsml.py Archive-2023-11-30/lupin/ 3 --z_shift
+python3 label_rsml.py Archive-2023-11-30/reference/dicot/lupin 3 --split --z_shift
+python3 label_rsml.py Archive-2023-11-30/reference/monocot/maize 3 --shoot --z_shift
 """
 
 
@@ -119,7 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('scenario_index', type = int, help = 'scenario index (1-4)')
     parser.add_argument('--shoot', action = 'store_true', help = 'adds an artificial shoot')
     parser.add_argument('--split', action = 'store_true', help = 'splits output for multiple plants into different csv files')
-    parser.add_argument('--z_shift', action = 'store_true', help = 'shifts seed to -3cm (based on the first seed, if multiple plants are present)')
+    parser.add_argument('--z_shift', action = 'store_true', help = 'shifts seed to -3 cm (based on the first seed, if multiple plants are present)')
     args = parser.parse_args()
 
     walk_dir = args.file_path

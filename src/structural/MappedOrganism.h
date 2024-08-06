@@ -30,6 +30,7 @@ public:
         std::vector<double> radii, std::vector<int> subTypes); ///< for kr and kx age and type dependent
     MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
 
+    virtual ~MappedSegments() { }
 
     void setRadius(double a); ///< sets a constant radius for all segments
     void setSubTypes(int t); ///< sets a constant sub type for all segments
@@ -45,10 +46,14 @@ public:
 
     std::vector<double> segOuterRadii(int type = 0, const std::vector<double>& vols = std::vector<double>(0)) const; ///< outer cylinder radii to match cell volume
     std::vector<double> segLength() const; ///< calculates segment lengths [cm]
+    std::vector<double> getHs(const std::vector<double> sx) const; // return the potential per segment that is given per soil cell
+    std::vector<double> getSegmentZ() const; // z-coordinate of segment mid
+    std::vector<double> matric2total(const std::vector<double> sx) const;
+    std::vector<double> total2matric(const std::vector<double> sx) const;
 
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
-    std::vector<double> getSegmentZ() const; // z-coordinate of segment mid
+
 
     std::map<int, int> seg2cell; // root segment to soil cell mapper
     std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
@@ -67,7 +72,8 @@ public:
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;
-	bool constantLoc = false;
+  bool constantLoc = false;// the roots remain in the soil voxel they appear in
+
 
 	virtual double getPerimeter(int si_, double l_){return 2 * M_PI * radii[si_];} ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
 	virtual int getSegment2leafId(int si_);
@@ -79,7 +85,7 @@ public:
 	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)
     std::vector<bool> isRootTip;
 	std::vector<double> exchangeZoneCoefs;
-	std::vector<double> distanceTip;
+  std::vector<double> distanceTip;// save the distance between root segment and root tip (for location-dependent kr)
 	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
 	std::vector<double> segVol; //segment volume <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
@@ -96,7 +102,6 @@ protected:
 
     int soil_index_(double x, double y, double z); // default mapper to a equidistant rectangular grid
     void unmapSegments(const std::vector<Vector2i>& segs); ///< remove segments from the mappers
-
 
 };
 
@@ -124,7 +129,8 @@ public:
 
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
- protected:
+
+protected:
 	void initialize_(int basaltype, int shootbornetype, bool verbose = true, bool LB = true);
 
 

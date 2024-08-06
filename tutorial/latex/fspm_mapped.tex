@@ -1,0 +1,46 @@
+
+
+To demonstrate basic functionality we will map a root system to a soil rectangular soil grid. 
+
+\lstinputlisting[firstline=1, language=Python, caption=Example 6a]{examples/example6a_mapping.py}
+
+\begin{itemize}
+
+\item[8-12] Creation of a small root system. Instead of the class RootSystem, MappedRootSystem is used (L8). MappedRootSystem is a specialisation of the 'normal' RootSystem class and can be used in the exactly same way. 
+
+\item[16-19] We choose a small soil domain, where some roots are not inside. Calling MappedRootSystem::setRectangularGrid first cuts segments at the cell faces, and then maps the resulting segments to a soil index (creates the maps MappedRootSystem::seg2cell, and MappedRootSystem::cell2seg). The value True indicates that cutting is performed, False just maps the segment mid points without cutting. 
+
+\item[22-28] Next we create an array $x$ containing the soil indices for each segment, that will be later used for vizualisation. We use the hash map (a Python dictionary) MappedRootSystem::seg2cell to obtain the linear index of the cell, where the segment's mid point is located.
+
+\item[31-37] To demonstrate how to retrieve all segments that lie within a given cell, we output the segments at the cell located around the position [0,0,-7]. In L31 we retrieve the cell index for that position. L34 and L35 print out the segment indices. Note that the map will have no entry for a given cell, if no segments are located in the cell. 
+
+\item[43-48] To visualize the soil cell indices, we first create a SegmentAnalyser class. The class MappedRootSystem is derived from a RootSystem and MappedSegments. If we create a SegmentAnalyser class directly from $rs$ (L40) MappedRootSystem will be considered as RootSystem, and the resulting class will contain the original segments before cutting at the cell boundaries. The function MappedRootSystem::mappedSegments (L41) will return a reference to $rs$ but with the type MappedSegments. In this way the SegmentAnalyser class will be created including the cut segments. Next, in L42 we add the indices as data to the SegmentAnalyser class. L43, L44 produces the VTK plot, but rendering is started at a later point, since we also want to visualize the underlying soil grid.
+
+\item[51-53]  L47 creates the mesh for vizualisation, L48 creates the VTK plot, and L49 starts the rendering window, rendering both, root system and underlying soil. Press 'y', 'x', and 'z' to obtain axis aligned views of the root system and soil grid.
+
+\end{itemize}
+
+More, generally, when coupling to an external solver like DuMux \citep{koch2020dumux}, we need to set the soil$\_$index function, that returns the cell index for a certain position. Additionally, periodic soil domains are already implemented. Both coupling to DuMux and periodicity will be demonstrated in Section \ref{sec:dumux_coupling}.
+
+Coupling to an unstructured grid is as simple as to a structured one. But automatic cutting of segments at the cell faces is currently not implemented. That means that axial resolution should be small in order to keep the introduced error small.
+
+
+
+
+After coupling a static root system to a soil model, it is straight forward to couple a growing root system. All there is to do is to update the geometry and the mapping between the grids in every time step. All the work is done by MappedRootSystem.
+
+    
+\subsubsection*{Mapping of growing roots and underlying soil} 
+
+In the following we show how the mappings between root system grid and soil grids are updated (see Section \ref{ss:mapping} for the static case). For demonstration we create an animation, where we can see the growth and the dynamic mapping. 
+
+\lstinputlisting[firstline=1, language=Python, caption=Example 7a]{examples/example7a_mapping.py}
+
+\begin{itemize}
+\item[8-12] Parameters we might want to modify. 
+\item[15-18] Initializes the model.
+\item[21-27] Defines a coarse soil grid. If we do not use periodicity we set the domain as confining geometry to the root growth. L27 sets the underlying soil grid.
+\item[29-31] Initializes the simulation with an initial simulation run for rs\_age.
+\item[33-39] Initializes an VTK animation using the class vp.AnimateRoots, which is work in progress. 
+\item[41-59] The simulation loop: L43 performs the simulation, and updates the mappers (no additional steps are needed, everything is updated by pb.MappedRootSystem). L46-52 determines the cell index for each segment for visualization. L54,L L55 makes a SegmentAnalyser object and adds the soil cell indices. L57-L58 updates the animation figure. This is convenient for debugging, and the object vp.AnimateRoots will create an ogg vorbis movie file (which is small and high quality), but for bigger root systems this will be very slow, since a SegmentAnalyser object is created and plotted for each frame (see Section \ref{ssec:animation} for a faster method).
+\end{itemize}

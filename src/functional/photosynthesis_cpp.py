@@ -19,6 +19,7 @@ class PhotosynthesisPython(Photosynthesis, XylemFluxPython):
 
     def __init__(self, plant_, psiXylInit, ciInit):
         """ @param rs is either a pb.MappedRootSystem, pb.MappedSegments, or a string containing a rsml filename"""
-        super().__init__( plant_, psiXylInit, ciInit)
+        Photosynthesis.__init__(self, plant_, psiXylInit, ciInit)
+        XylemFluxPython.__init__(self,plant_)
 
     

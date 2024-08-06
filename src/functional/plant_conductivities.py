@@ -57,7 +57,7 @@ def init_conductivities(r, TairC:float = 20):
     kr_r1 =7.9e-5  * hPa2cm * betaXyl
     kr_r2 =7.9e-5  * hPa2cm * betaXyl
     kr_r3 =6.8e-5  * hPa2cm * betaXyl
-    
+
     ratio_decrease = 1.5/100
     
     r.setKrTables([[[kr_r0,kr_r0,kr_r0*ratio_decrease,kr_r0*ratio_decrease],

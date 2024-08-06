@@ -1,7 +1,7 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "external/pybind11/include/pybind11/pybind11.h"
 #include "external/pybind11/include/pybind11/stl.h"
-#include <pybind11/functional.h>
+#include "external/pybind11/include/pybind11/functional.h"
 namespace py = pybind11;
 
 /**
@@ -34,6 +34,9 @@ namespace py = pybind11;
 #include "ExudationModel.h"
 #include "Photosynthesis.h"
 #include "PiafMunch/runPM.h"
+
+#include "PlantHydraulicParameters.h"
+#include "PlantHydraulicModel.h"
 
 // visualisation
 #include "Quaternion.h"
@@ -216,12 +219,12 @@ PYBIND11_MODULE(plantbox, m) {
       .def_buffer([](Quaternion &q) -> py::buffer_info { /* enables numpy conversion with np.array(quaternion_instance, copy = False) */
         // this only really works if the variables are stored in a contiguous block of memory
         return py::buffer_info(
-            &q.w,   
-            sizeof(double),    
+            &q.w,
+            sizeof(double),
             py::format_descriptor<double>::format(),
-            1,                
-            { 4 },          
-            { sizeof(double) }   
+            1,
+            { 4 },
+            { sizeof(double) }
         );
       })
     ;
@@ -283,7 +286,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getParameter",&OrganRandomParameter::getParameter)
             .def("__str__",&OrganRandomParameter::toString, py::arg("verbose") = true) // default
             .def("writeXML",(void (OrganRandomParameter::*)(std::string name) const) &OrganRandomParameter::writeXML) // overloads
-            .def("readXML", (void (OrganRandomParameter::*)(std::string name, bool verbose)) &OrganRandomParameter::readXML, py::arg("name"), py::arg("verbose") = true) // overloads
+            .def("readXML", (void (OrganRandomParameter::*)(std::string name, bool verbose)) &OrganRandomParameter::readXML, py::arg("name"), py::arg("verbose") = false) // overloads
             .def("bindParameters",&OrganRandomParameter::bindParameters)
             .def("bindIntParameter", (void (OrganRandomParameter::*)(std::string, int*, std::string, double*)) &OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
             .def("bindDoubleParameter", (void (OrganRandomParameter::*)(std::string, double*, std::string, double*))  &OrganRandomParameter::bindParameter, py::arg("name"), py::arg("i"), py::arg("descr") = "", py::arg("dev") = (double*) nullptr) // overloads, defaults
@@ -302,7 +305,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("successorWhere", &OrganRandomParameter::successorWhere)
             .def_readwrite("successorNo", &OrganRandomParameter::successorNo)
             .def_readwrite("successorP", &OrganRandomParameter::successorP)
-
             .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
             .def_readwrite("ldelays", &OrganRandomParameter::ldelays);
     /**
@@ -403,7 +405,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNewSegmentOrigins", &Organism::getNewSegmentOrigins, py::arg("ot") = -1)  // default
 
             .def("initializeReader", &Organism::initializeReader)
-            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true, py::arg("verbose") = true)  // default
+            .def("readParameters", &Organism::readParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("fromFile") = true, py::arg("verbose") = false)  // default
             .def("writeParameters", &Organism::writeParameters, py::arg("name"), py::arg("basetag") = "plant", py::arg("comments") = true)  // default
             .def("writeRSML", &Organism::writeRSML)
             .def("getRSMLSkip", &Organism::getRSMLSkip)
@@ -522,6 +524,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("addSegment", &SegmentAnalyser::addSegment, py::arg("seg"), py::arg("ct"), py::arg("radius"), py::arg("insert") = false)
            .def("addAge", &SegmentAnalyser::addAge)
            .def("addConductivities", &SegmentAnalyser::addConductivities, py::arg("rs"), py::arg("simTime"), py::arg("kr_max") = 1.e6, py::arg("kx_max") = 1.e6)
+           .def("addHydraulicConductivities", &SegmentAnalyser::addHydraulicConductivities, py::arg("rs"), py::arg("simTime"), py::arg("kr_max") = 1.e6, py::arg("kx_max") = 1.e6)
            .def("addFluxes", &SegmentAnalyser::addFluxes)
            .def("addCellIds", &SegmentAnalyser::addCellIds)
            .def("crop", &SegmentAnalyser::crop)
@@ -868,9 +871,12 @@ PYBIND11_MODULE(plantbox, m) {
         .def("sort",&MappedSegments::sort)
         .def("segOuterRadii",&MappedSegments::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
 		.def("segLength",&MappedSegments::segLength)
-        .def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
-        .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
+		.def("getHs",&MappedSegments::getHs)
         .def("getSegmentZ",&MappedSegments::getSegmentZ)
+        .def("matric2total",&MappedSegments::matric2total)
+        .def("total2matric",&MappedSegments::total2matric)
+		.def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
+        .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
         .def_readwrite("nodes", &MappedSegments::nodes)
         .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
         .def_readwrite("segments", &MappedSegments::segments)
@@ -945,16 +951,19 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<XylemFlux, std::shared_ptr<XylemFlux>>(m, "XylemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>>())
-            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKr), 
+            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKr),
 					py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
-            .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables), py::arg("values"), 
-						py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
-            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
-            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&XylemFlux::setKr), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),
-                                                                        py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
-            .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&XylemFlux::setKx), py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&XylemFlux::setKrTables), 
+            .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&XylemFlux::setKx),
+                py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=false)
+            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&XylemFlux::setKr),
+                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
+            .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&XylemFlux::setKx),
+                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&XylemFlux::setKrTables),
+                py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
+            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&XylemFlux::setKxTables),
+                py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&XylemFlux::setKrTables),
 					py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
             .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>, bool> (&XylemFlux::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
             .def("setKrValues", &XylemFlux::setKrValues)
@@ -963,11 +972,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getKr", &XylemFlux::getKr)
             .def("getKx", &XylemFlux::getKx)
             .def("linearSystem",&XylemFlux::linearSystem, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true,
-                    py::arg("soil_k") = std::vector<double>())
+                    py::arg("soil_k") = std::vector<double>(), py::arg("verbose")=false)
             .def("soilFluxes",&XylemFlux::soilFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
                     py::arg("soil_k") = std::vector<double>())
             .def("segFluxes",&XylemFlux::segFluxes, py::arg("simTime"), py::arg("rx"), py::arg("sx"), py::arg("approx") = false,
-                    py::arg("cells") = false, py::arg("soil_k") = std::vector<double>())
+                    py::arg("cells") = false, py::arg("soil_k") = std::vector<double>(), py::arg("verbose")=false)
             .def("sumSegFluxes",&XylemFlux::sumSegFluxes)
             .def("splitSoilFluxes",&XylemFlux::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)
             .def("kr_f_cpp", &XylemFlux::kr_f_wrapped, py::arg("seg_ind"), py::arg("age"), py::arg("st"), py::arg("ot"), py::arg("cells")=false)
@@ -981,6 +990,51 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rs", &XylemFlux::rs)
             .def_readwrite("psi_air", &XylemFlux::psi_air);
 
+    /*
+     * PlantHydraulicParameters.h
+     */
+    py::class_<PlantHydraulicParameters, std::shared_ptr<PlantHydraulicParameters>>(m, "PlantHydraulicParameters")
+            .def(py::init<>())
+            .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
+            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKr),
+                    py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=true)
+            .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKx),
+                py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=true)
+            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&PlantHydraulicParameters::setKr),
+                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
+            .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKx),
+                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
+                py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
+            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKxTables),
+                py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
+                    py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
+            .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>, bool> (&PlantHydraulicParameters::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setKrValues", &PlantHydraulicParameters::setKrValues)
+            .def("setKxValues", &PlantHydraulicParameters::setKxValues)
+            .def("getEffKr", &PlantHydraulicParameters::getEffKr)
+            .def("getKr", &PlantHydraulicParameters::getKr)
+            .def("getKx", &PlantHydraulicParameters::getKx)
+            .def_readwrite("ms", &PlantHydraulicParameters::ms)
+            .def_readonly("kr_f_cpp", &PlantHydraulicParameters::kr_f)
+            .def_readonly("kx_f_cpp", &PlantHydraulicParameters::kx_f)
+            .def_readwrite("psi_air", &PlantHydraulicParameters::psi_air);
+
+        /*
+         * PlantHydraulicModel.h
+         */
+        py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
+            .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
+            .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true)
+            .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
+            .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
+            .def_readwrite("ms", &PlantHydraulicModel::ms)
+            .def_readwrite("params", &PlantHydraulicModel::params)
+            .def_readwrite("aI", &PlantHydraulicModel::aI)
+            .def_readwrite("aJ", &PlantHydraulicModel::aJ)
+            .def_readwrite("aV", &PlantHydraulicModel::aV)
+            .def_readwrite("aB", &PlantHydraulicModel::aB);
 
 	/*
      * Photosynthesis.h
@@ -988,7 +1042,7 @@ PYBIND11_MODULE(plantbox, m) {
    py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit")=-500.0 ,  py::arg("ciInit")= 350e-6)
 			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("ea_"),py::arg("es_") ,
-			py::arg("sim_time_")=1.0 ,	
+			py::arg("sim_time_")=1.0,
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
 					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
 					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
@@ -1014,7 +1068,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("fwr", &Photosynthesis::fwr)
             .def_readwrite("fw_cutoff", &Photosynthesis::fw_cutoff)
             .def_readwrite("sh", &Photosynthesis::sh)
-            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)	 
+            .def_readwrite("p_lcrit", &Photosynthesis::p_lcrit)
             .def_readwrite("ci", &Photosynthesis::ci)
             .def_readwrite("deltagco2", &Photosynthesis::deltagco2)
             .def_readwrite("delta", &Photosynthesis::delta)
@@ -1026,7 +1080,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("gm",&Photosynthesis::gm)
             .def_readwrite("PVD",&Photosynthesis::PVD)
             .def_readwrite("EAL",&Photosynthesis::EAL)
-            .def_readwrite("hrelL",&Photosynthesis::hrelL)			  
+            .def_readwrite("hrelL",&Photosynthesis::hrelL)
             .def_readwrite("pg",&Photosynthesis::pg)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
             .def_readwrite("Jw", &Photosynthesis::Jw)
@@ -1055,7 +1109,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a2_air", &Photosynthesis::a2_air)
             .def_readwrite("a3", &Photosynthesis::a3)
             .def_readwrite("Rd_ref", &Photosynthesis::Rd_ref)
-            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref) 
+            .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref)
             .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
@@ -1065,7 +1119,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readonly("rho_h2o", &Photosynthesis::rho_h2o)
             .def_readonly("R_ph", &Photosynthesis::R_ph)
             .def_readonly("Mh2o", &Photosynthesis::Mh2o);
-	
+  
     py::enum_<Photosynthesis::PhotoTypes>(m, "PhotoTypes")
             .value("C3", Photosynthesis::PhotoTypes::C3)
             .value("C4", Photosynthesis::PhotoTypes::C4)
@@ -1079,7 +1133,6 @@ PYBIND11_MODULE(plantbox, m) {
 			py::arg("psiXylInit"),  py::arg("ciInit") )
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
             .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0, py::arg("verbose") = false)
-
             .def("setKr_stRootTip",&PhloemFlux::setKr_stRootTip)
             .def("setKr_mucilRootTip",&PhloemFlux::setKr_mucilRootTip)
             .def("setKx_st",&PhloemFlux::setKx_st)
@@ -1155,7 +1208,6 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
 			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
-            
             .def_readwrite("C_targ",&PhloemFlux::C_targ)
             .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
             .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)
@@ -1225,13 +1277,6 @@ PYBIND11_MODULE(plantbox, m) {
 
 
 
-    //   /*
-    //    * sdf_rs.h todo revise
-    //    */
-    //   py::class_<SDF_RootSystem, SignedDistanceFunction>(m, "SDF_RootSystem")
-    //       .def(py::init<std::vector<Vector3d>, std::vector<Vector2i>, std::vector<double>, double>())
-    //       .def(py::init<Root&, double>())
-    //       .def(py::init<Organism&, double>());
 }
 
 }

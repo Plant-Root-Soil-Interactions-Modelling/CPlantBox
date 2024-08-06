@@ -4,7 +4,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 
 # Open plant and root parameter from a file
 path = "../../modelparameter/structural/rootsystem/"
@@ -20,7 +20,7 @@ soilcore = pb.SDF_PlantContainer(5, 5, 40, False)
 rhizotron = pb.SDF_PlantBox(1.4, 27, 27)
 
 # Pick 1, or 2
-rs.setGeometry(soilcore)  # soilcore, or rhizotron
+rs.setGeometry(rhizotron)  # soilcore, or rhizotron
 
 # Initialize
 rs.initialize()
@@ -32,7 +32,7 @@ rs.simulate(60)  # days
 rs.write("results/example_1b.vtp")
 
 # Export container geometry as Paraview Python script
-rs.write("results/example_1b.py")
+# rs.write("results/example_1b.py")
 
 # Plot, using vtk
 vp.plot_roots(rs, "type")

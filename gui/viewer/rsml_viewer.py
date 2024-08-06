@@ -205,7 +205,6 @@ class App:
         self.canvas.draw()
 
     def update_development(self, event):
-        """ updates root system development plot """
         viewer_plots.plot_rootsystem_development(self.data.analyser, self.ax2, self.combo2.current())
         self.canvas2.draw()
 

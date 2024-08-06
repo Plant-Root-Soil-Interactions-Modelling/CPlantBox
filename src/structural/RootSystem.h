@@ -52,7 +52,6 @@ public:
     void writeParameters(std::ostream & os) const; ///< DEPRICATED writes root parameters
 
     /* Simulation */
-    void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; } ///< optionally, sets a confining geometry (call before RootSystem::initialize())
     void setSoil(std::shared_ptr<SoilLookUp> soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before RootSystem::initialize())
     void reset(); ///< resets the root class, keeps the root type parameters
     virtual void initialize(bool verbose = true) override { initializeLB(4,5, verbose); };
@@ -91,11 +90,6 @@ public:
     void push(); ///< push current state to a stack
     void pop(); ///< retrieve previous state from stack
 
-    /* Output */
-    void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
-    void writeVTP(std::ostream & os) const; ///< writes current simulation results as VTP (VTK polydata file)
-    void writeGeometry(std::ostream & os) const; ///< writes the current confining geometry (e.g. a plant container) as paraview Python script
-
     std::string toString() const override; ///< infos about current root system state (for debugging)
 
 protected:
@@ -109,7 +103,6 @@ private:
     std::shared_ptr<Seed> seed = nullptr;
     SeedSpecificParameter seedParam;
 
-    std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>(); ///< Confining geometry (unconfined by default)
     std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
     mutable std::vector<std::shared_ptr<Root>> roots = std::vector<std::shared_ptr<Root>>(); // buffer for getRoots()

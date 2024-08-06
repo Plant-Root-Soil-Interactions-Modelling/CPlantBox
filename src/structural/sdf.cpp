@@ -38,7 +38,7 @@ int SDF_PlantBox::writePVPScript(std::ostream & cout, int c) const
     cout << name <<" = Box()\n\n" <<
         name << ".XLength = " << 2.*dim.x << "\n" << name << ".YLength = " << 2.*dim.y << "\n" << name << ".ZLength = "<< 2.*dim.z << "\n" <<
         name << ".Center = [0.,0., "<< -dim.z << "]\n\n";
-    cout << name << "Display = Show(" << name << ",renderView1)\n" << name << "Display.Opacity = 0.2\n" <<
+    cout << name << "Display = Show(" << name << ",renderView1)\n" << name << "Display.Opacity = 0.1\n" <<
         name<< "Display.DiffuseColor = [0., 0., 1.0]\n" << "renderView1.ResetCamera()\n";
     // created 1 object and corresponding Display
     c++;
@@ -208,7 +208,7 @@ int SDF_RotateTranslate::writePVPScript(std::ostream & cout, int c) const
         cout << "0,0,"<< angle; break;
     }
     cout << "]\n\n";
-    cout << name << "Display = Show(" << name << ",renderView1)\n" << name << "Display.Opacity = 0.2\n" <<
+    cout << name << "Display = Show(" << name << ",renderView1)\n" << name << "Display.Opacity = 0.1\n" <<
         name<< "Display.DiffuseColor = [0., 0., 1.0]\n" << "renderView1.ResetCamera()\n";
     c++;
     return c;
@@ -266,7 +266,7 @@ int SDF_Intersection::writePVPScript(std::ostream & cout, int c) const
 
     cout << name << "Display = Show(" << name <<", renderView1)\n";
     //cout << "ColorBy("<< name <<"Display, None)\n";
-    cout << name << "Display.Opacity = 0.2\n" << name << "Display.DiffuseColor = [0., 0., 1.0]\n" << "renderView1.ResetCamera()\n";
+    cout << name << "Display.Opacity = 0.1\n" << name << "Display.DiffuseColor = [0., 0., 1.0]\n" << "renderView1.ResetCamera()\n";
 
     c++;
     return c;
@@ -350,7 +350,7 @@ int SDF_HalfPlane::writePVPScript(std::ostream & cout, int c) const
         name << ".Point2 = [" << p2.x << ", " << p2.y << ", " << p2.z << "]\n\n";
 
     cout << name << "Display = Show(" << name << ",renderView1)\n" <<
-        name << "Display.Opacity = 0.2\n";
+        name << "Display.Opacity = 0.1\n";
     //name<< "Display.DiffuseColor = [0., 0., 1.0]\n" << "renderView1.ResetCamera()\n";
 
     // created 1 object and corresponding Display

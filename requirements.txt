@@ -1,0 +1,17 @@
+ipython==8.18.1
+matplotlib==3.8.2
+matplotlib-inline==0.1.6
+mpi4py==3.1.5
+numpy==1.26.2
+pandas==2.1.4
+pybind11==2.11.1
+pybind11-global==2.11.1
+scipy==1.11.4
+vtk==9.3.0
+
+# other requirements:
+# default-jre
+# libboost-all-dev
+# python3-pip
+# libeigen3-dev
+

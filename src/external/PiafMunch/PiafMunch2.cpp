@@ -236,7 +236,9 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 			std::cout<<"C_fluxes "<<i<<" "<<vol_ST[i]<<" "<<vol_ParApo[i]<<" "<<vol_Seg[i]<<" CSTimin "<<CSTimin<<std::endl;
 			std::cout<<"max(0.,C_ST[i]) "<<max(0.,C_ST[i])<<std::endl;
 			std::cout<<" C_ST[i] "<<C_ST[i]<<" Q_ST[i] "<<Q_ST[i]<<" "<<Q_Fl[i]<<" "<<CSTi<<" "<<Cmeso<<" "<<len_leaf[i]<<" max(0., CSTi-CSTimin) "<< max(0., CSTi-CSTimin)<<std::endl;
+
 			std::cout<<Q_Rmmax_<<" "<<Q_Rmmax[i]<<" "<< krm2[i]<<" "<<CSTi_delta.at(cpp_id)<<std::endl;
+
 			std::cout<<Q_Exudmax_<<" Fu_lim "<<Fu_lim<<" Q_ST_dot "<<Q_ST_dot[i]<<" "<<Q_Mesophyll_dot[i]<<" "<<Input[i]<<" "<<Q_Rm_dot[i]<<std::endl;
 			std::cout<<"Qgri "<<Q_Gtot_dot[i] <<" Q_Exudmax_ "<<Q_Exud_dot[i]<<" Q_Rmmax_ "<<Q_Rmmax_dot[i]<<" Qgrmaxi "<<Q_Gtotmax_dot[i]<<std::endl;
 			std::cout<<"Qmeso "<<Q_Mesophyll[i]<<" "<<Ag[i]<<std::endl;

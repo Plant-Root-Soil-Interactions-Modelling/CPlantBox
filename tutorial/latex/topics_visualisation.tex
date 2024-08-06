@@ -1,0 +1,121 @@
+
+\subsubsection*{Quick visualizations from Python}
+
+It is possible to quickly visualize resulting geometry from Python using the module $vtk\_plot$, which offers auxiliary functions using VTK (\href{https://vtk.org/vtk-users-guide/}{VTK User's Guide}). Use 
+\begin{lstlisting}[language=Python]
+import visualisation.vtk_plot as vp
+\end{lstlisting}
+to import the module and to name it $vp$. \\
+
+After creation and simulation of the plant, there are different ways to start an interactive plot:
+\begin{lstlisting}[language=Python]
+vp.plot_segments(plant, "subType") # Option 1
+
+ana = pb.SegmentAnalyser(plant)
+vp.plot_segments(ana, "subType") # Option 2
+
+vp.plot_plant(plant, "subType") # Option 3
+\end{lstlisting}
+The interactive plot can be to rotated (left mouse button), panned (mid mouse button, joystick like from plot center) or zoomed (right mouse button). Per default $creationTime$, $radius$, $subType$ or $organType$ can be viusalized. But generally all model parameters that will be presented in Section \ref{sec:cplantobx} can be visualized. You can save a screenshot as png file by pressing 'g', or reset view 'r', or change view by pressing 'x', 'y', 'z', and 'v'.
+
+Option 1 and 2 are identical and can be used on Plant or SegmentAnalyser class. It visualizes the centerlines or polylines of all plant organs. A tube geometry representing the organs radius is created around each segment. In this way it is possible to map a parameter to a colour at segment level.  Option 3 does the plot the same way as 1 and 2, but additionally plots the leafs a polygons. The first argument is the plant or SegmentAnalyser object, the second the parameter that shall be visualized. \\
+
+It is possible to add arbitrary parameters using the SegmentAnalyser class: 
+\begin{lstlisting}[language=Python]
+ana.addData(name, data) 
+\end{lstlisting}
+will add the parameter $name$, with $data$ given per segment or nodes. The data array must have the right length, i.e. the number of segments or nodes within the SegmentAnalyser object. \\
+
+Using a functional structural model the class $SegmentAnalyser$ offers auxiliary functions to add additional model parameters:
+\begin{lstlisting}[language=Python]
+ana.addAge(simtime) 
+ana.addConductivities(xylem, simtime, kr_max = 1.e6, kx_max = 1.e6)
+ana.addFluxes(xylem, rx, sx, simTime)
+ana.addCellIds(plant) 
+\end{lstlisting}
+Line 1 creates the segment age from the segment parameter $creationTime$ for the final simulation time $simtime$. Line 2 uses a a $XylemFlux$ object (named $xylem$) to evaluate the age dependent hydraulic conductivities, and optionally offers maximal values (for visualisation). It will create two parameters named $kr$ and $kx$ for the radial and axial conductivities.  Line 3 adds radial and axial volumetric water fluxes named  $axial\_flux$, $radial\_flux$ based on the xylem potentials $rx$, and soil potentials $sx$ (both either matric potentials, or total potentials). Line 4 uses a $MappedSegments$ object (named $plant$) to create cell indices named $cell\_id$ per root segment. After adding the parameters, they can be visualized by creating an interactive plot, or exported to a file format. 
+
+
+\subsubsection*{How to export plant geometry to various file formats}
+
+There are various ways to export plant geometry for later analysis, visualization, or to use the geometry as mesh for other simulation software. The Plant class provides outputs in RSML \citep{lobet2015root}, VTP (\href{https://vtk.org/vtk-users-guide/}{VTK User's Guide}), and for ParaView python scripts describing the soil container geometry. For RSML and VTP each plant organ is represented as a polyline:
+\begin{lstlisting}[language=Python]
+plant.write("myfile.rsml")
+plant.write("myfile.vtp")
+plant.write("myfile.py")
+\end{lstlisting}
+
+The SegmentAnalyser class provides outputs in VTP (\href{https://docs.paraview.org/en/latest/ReferenceManual/index.html}{ParaView documentation}), DGF (\href{https://dune-project.org/doxygen/2.4.1/group__DuneGridFormatParser.html}{Dune Grid Format} ), and text files. The plant organs are represented by their segments.
+\begin{lstlisting}[language=Python]
+ana = pb.SegmentAnalyser(plant)
+ana.write("myfile.vtp", add_params)
+ana.write("myfile.dgf")
+ana.write("myfile.txt")
+\end{lstlisting}
+Writing VTPs we can additional add a list of parameter names (named $add_params$) which we want to export. Per default 'radius', 'subType', 'creationTime', and 'organType' are exported. 
+
+
+The interactive plotting tools are based on VTK and it is easy to write the resulting geometries as VTP in a binary format resulting in smaller file size. The organs are represented as polylines names 'filename.vtp'. Leafs are stored as polygons in a second file named 'filename\_leafs.vtp':
+\begin{lstlisting}[language=Python]
+vp.write_plant(filename, plant, add_params)
+\end{lstlisting}
+
+% TODO there are file formats supported, e.g. mesh, dgf in vtk_tools, and we can write vtu for the macroscopic soil grid.
+% vt.write_msh(plant,pd)
+% vt.write_dgf(name, pd)
+
+% TODO  The class PlantVisualizer can ...
+
+In the following paragraph we shortly present how to visualise VTP files using \href{https://www.paraview.org/}{ParaView}.
+
+
+\subsubsection*{Paraview}
+
+After installing and running \href{https://www.paraview.org/}{ParaView}, open a VTP file. The structure is represented by lines. To get a better visualisation it is necessary to create a tube plot around these lines. This can be done by running the ParaView macro rsTubePlot, which is located in CPlantBox/src/visualisation/paraview\_macros/. Start the macro by first adding the macro: Macros$\rightarrow$Add new macro..., and then starting the macro by clicking the rsTubePlot button. In the properties menu, choose the parameter for viusalisation in the Coloring menu.\\
+
+In CPlantBox soil container geometry is given in an implicit way
+
+Additionally, if vp.write\_plant() was used, a VTP for leafs can be openend, where a solid colour can be chosen from the menu. Multiple root systems as in Figure \ref{fig:topics_virtual4} can be visualized by using the SegmentAnalyser class to merge the root system (as in the example) and to visualze the 
+VTP using rsTubePlot. Leafs can be added in a second step by opening the single leaf files (not as a group, but by opening the single files). The leaf polygons can be joined together using the Append Geometry filter.
+
+\subsubsection*{How to make an animation} 
+
+In order to create an animation in Paraview we have to consider some details. There are two approaches: One is to make one vtp file per animation frame (whih will need a lot of disc space). The second approach is to export the result file as segments using the class SegmentAnalyser. A specific frame is then obtained by thresholding within Paraview using the segments creation times. In this way we have to only export one VTP file. The advantage of the first approach is, that we can also visualize plant leafs, if the visualization of leafs is not necessary the second approach is recommended. \\
+
+The first approach uses a single VTP file per animation frame: 
+\lstinputlisting[language=Python, caption=Produces one VTP filel per animation frame (topics\_visualisation)]{examples/topics_visualisation.py} 
+\begin{itemize}
+\item[12-18] The parameters from the animation. 
+\item[21-24] Decrease the spatial axial resolution of all organs to obtain a smooth represenation of plant growth.
+\item[27-31] For each animation frame two files are written, one containing the organ centerlines, one containing the leaf geometries. 
+\end{itemize}
+
+After running the script we perform the following operations Paraview to create the animation:
+\begin{enumerate}
+ \item The VTP files can be opened as a group in ParaView, first open the files containing the plant organ centerlines
+ \item Create a tube plot with the help of the script tutorial src/visualisation/paraview\_macros/rsTubePlot.py (add the macro, then run it).
+ \item Next open the file for the leaf geometry and pick a leaf colour.
+ \item Use File$\rightarrow$Save Animation... to render and save the animation. Pick quality ($<$100 \%), and the frame rate in order to achieve an appropriate video length, e.g. 300 frames with 50 fps equals 6 seconds. 
+ \item The resulting file might be uncompressed and very large. If the file needs compression, for Linux us e.g. ffmpeg -i in.avi -vcodec libx264 -b 4000k -an out.avi, which produces high quality and tiny files, and it plays with VLC.
+\end{enumerate}
+
+
+
+In the second approach we create an animation with a single file and thresholding:
+\lstinputlisting[language=Python, caption=Produces a single file for later animation (topics\_visualisation2)]{examples/topics_visualisation2.py} 
+\begin{itemize}
+\item[13,14] Its important to use a small spatial resolution in order to obtain a smooth animation. L14 sets the axial resolution of roots to 0.1 cm. 
+\item[21,22] Instead of saving the root system as polylines, we use the SegmentAnalyser to save the root system as segments.
+\item[24,25] It is also possible to make the root system periodic in the visualization in $x$ and $y$ direction to mimic field conditions.
+\item[28-30] We save the geometry as Python script for the visualization in ParaView.
+\end{itemize}
+
+After running the above script we perform the following operations Paraview to create the animation based on thresholding:
+\begin{enumerate}
+ \item Open the .vtp file in ParaView (File$\rightarrow$Open...), and open animation.vtp or animation\_periodic.vtp.
+ \item Optionally, create a tube plot with the help of the script tutorial src/visualisation/paraview\_macros/rsTubePlot.py (add the macro, then run it).
+ \item Run the script tutorial src/visualisation/paraview\_macros/rsAnimate.py (add it as a macro, and run it). The script creates the threshold filter and the animation. 
+ \item Optionally, visualize the domain boundaries by running the script animation\_periodic.py. This step must be performed after the animation script rsAnimate.  
+ \item Use File$\rightarrow$Save Animation... as before.
+\end{enumerate}
+

@@ -2,6 +2,7 @@
 #include "Seed.h"
 
 #include "Root.h"
+#include "rootparameter.h"
 #include "Stem.h"
 
 namespace CPlantBox {
@@ -63,12 +64,22 @@ void Seed::initialize(bool verbose)
 	 * Create roots
 	 */
 	const double maxT = 90.; // maximal simulation time
-	auto sp = this->param(); // rename
+	auto sp = this->param(); // rename (SeedSpecificParameter)
 
 	// Taproot
-	std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, 0); // tap root has root type 1
-	taproot->addNode(getNode(0), getNodeId(0), 0);
-	this->addChild(taproot);
+    try {
+        auto rrp = p->getOrganRandomParameter(Organism::ot_root, tapType); // fix tap root angle to 0
+        auto rrp1 = std::static_pointer_cast<RootRandomParameter>(rrp);
+        double theta_bu = rrp1->theta;
+        rrp1->theta = 0;
+        std::shared_ptr<Organ> taproot = createRoot(plant.lock(), tapType, 0); // tap root has root type 1
+        taproot->addNode(getNode(0), getNodeId(0), 0);
+        this->addChild(taproot);
+        rrp1->theta = theta_bu; // in case we copy parameter set for basal or shootborne
+    } catch (...) {
+        std::cout << "Seed::initialize: Parameter set for tap root of subType " << tapType << " not found \n" << std::flush;
+        throw;
+    }
 
 	// Basal roots
 	int bt = getParamSubType(Organism::ot_root, "basal");
@@ -82,9 +93,7 @@ void Seed::initialize(bool verbose)
 			if (verbose) {
 				std::cout << "Seed::initialize: Basal root type #" << basalType << " was not defined, using tap root parameters instead\n" << std::flush;
 			}
-			auto brtp = p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
-			brtp->subType = basalType;
-			p->setOrganRandomParameter(brtp);
+			basalType = tapType;
 		}
 		int maxB = (sp->maxB);
 		if (sp->delayB > 0) { // limit if possible
@@ -112,9 +121,7 @@ void Seed::initialize(bool verbose)
 				if (verbose) {
 					std::cout << "Seed::initialize:Shootborne root type #" << shootborneType << " was not defined, using tap root parameters instead\n";
 				}
-				auto srtp =  p->getOrganRandomParameter(Organism::ot_root, 1)->copy(plant.lock());
-				srtp->subType = shootborneType;
-				p->setOrganRandomParameter(srtp);
+				shootborneType = tapType;
 			}
 			Vector3d sbpos = sp->seedPos;
 			sbpos.z=sbpos.z/2.; // half way up the mesocotyl
@@ -144,14 +151,12 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create Stem
 	 */
-	std::shared_ptr<Organ> mainstem;
 	if (plantBox) { // i.e. if a stem is defined
-		// Stem
+	    std::shared_ptr<Organ> mainstem;
 		mainstem = createStem(plant.lock(), mainStemType,0.); // main stem has subtype 1
 		mainstem->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 		children.push_back(mainstem);
-		// Optional tillers
-		if (sp->maxTil>0) {
+		if (sp->maxTil>0) { // Optional tillers
 			try {
 				p->getOrganRandomParameter(Organism::ot_stem, tillerType);
 			} catch (...) {

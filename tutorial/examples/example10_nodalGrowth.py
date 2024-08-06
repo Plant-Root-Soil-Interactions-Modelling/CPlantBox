@@ -39,12 +39,12 @@ name = "4testrel"
 
 pl.readParameters(path + name + ".xml")
 dt = 1
-steps = 35
+steps = 10
 pl.initialize(verbose = True)
 
 for step in range(steps):
     print("\n\n\nstep n°", step)
-    pl.simulate(dt, True)
+    pl.simulate(dt, False)
     ana = pb.SegmentAnalyser(pl)
     ana.write("results/example_10_%s.vtp" % (step))
 

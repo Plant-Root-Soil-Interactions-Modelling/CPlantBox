@@ -1,0 +1,199 @@
+\documentclass[a4paper]{article}
+
+\usepackage[latin1]{inputenc} 
+\usepackage{graphicx}
+\usepackage{natbib} 
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{natbib}
+
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=darkblue,
+    filecolor=darkblue,      
+    urlcolor=darkblue,
+    citecolor = darkblue,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray}, 
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false, 
+    tabsize=2
+} 
+\lstset{style=mystyle}
+
+\newcommand{\bm}[1]{\mbox{\boldmath{$#1$}}}
+
+
+
+\begin{document}
+
+\begin{center}
+%\includegraphics[width=0.2\textwidth]{sw_logo} \\
+\vspace{0.5 cm}
+\huge{\textbf{CPlantBox Tutorial}} \\
+\vspace{0.5 cm}
+\normalsize
+Daniel Leitner, Andrea Schnepf, et al. \\
+\end{center}
+
+\vspace{0.5 cm}
+
+\noindent 
+The following tutorial offers scripts to outline the usage of CPlantBox \citep{giraud2023cplantbox, zhou2020cplantbox} and its Python binding named \emph{plantbox}. CPlantBox was developed from CRootBox \citep{schnepf2018crootbox}, which is based on RootBox \citep{leitner2010dynamic}. CPlantBox is largely backward compatible by having the same underlying rootsystem model. For further documentation please refer to the Doxygen class documentation of the CPlantBox code.
+ 
+
+\vspace{0.5 cm}
+
+\tableofcontents
+
+\newpage 
+
+Progress compiling the tutorial
+
+\begin{itemize}
+ \item Section 1 finished
+ \item Section 2.1-2.4 mostly finished, 2.5-2.9 in progress
+ \item Section 3 no started
+ \item Section 4 no started
+ \item Section 5 no started 
+\end{itemize}
+
+
+
+
+\newpage
+\section{Introduction} \label{sec:introduction}
+
+\subsection{Installation} \label{ssec:intro_installation}
+\input{latex/intro_installation.tex}
+
+\subsection{Basic example} \label{ssec:intro_basic}
+\input{latex/intro_basic.tex}
+
+
+
+
+\newpage
+\section{Topics and Applications} \label{sec:topcis}
+
+This section describes the usage of CPlantBox by small examples without going into details of the underlying model. A more precise description of the structural model is given in following Section \ref{sec:cplantobx}. 
+
+\subsection{Development over time} \label{ssec:development}
+\input{latex/topics_development.tex}
+
+\subsection{How to virtually mimic experiments} \label{ssec:virtual}
+\input{latex/topics_virtual.tex}
+
+\subsection{Postprocessing} \label{ssec:postprocessing}
+\input{latex/topics_postprocessing.tex}
+
+\subsection{Visualisation} \label{ssec:visualisation}
+\input{latex/topics_visualisation.tex}
+
+\subsection{Playing with parameters} \label{ssec:parameters}
+\input{latex/topics_parameters.tex}
+
+\subsection{Plant tropism} \label{ssec:tropism}
+\input{latex/topics_tropism.tex}
+
+\subsection{Sensitivity analysis} \label{ssec:sa}
+%\input{latex/topics_sa.tex}
+
+\subsection{Interaction Feedback} \label{ssec:interaction}
+%\input{latex/topics_interaction.tex}
+
+\subsection{RSML} \label{ssec:rsml}
+%\input{latex/topics_rsml.tex}
+
+
+
+
+\newpage
+\section{CPlantbox Structural Model} \label{sec:cplantobx}
+
+In this section we describe the underlying strutural model of CPlantBox including all model parameters.
+
+\subsection{General plant organs} \label{ssec:organs}
+\input{latex/structural_organs.tex}
+
+\subsection{Seed} \label{ssec:seed}
+\input{latex/structural_seed.tex}
+
+\subsection{Stem} \label{ssec:stem}
+\input{latex/structural_stem.tex}
+
+\subsection{Leaf} \label{ssec:leaf}
+\input{latex/structural_leaf.tex}
+
+\subsection{Root} \label{ssec:root}
+\input{latex/structural_root.tex}
+
+\subsection{Topology} \label{ssec:topology}
+\input{latex/structural_topology.tex}	 
+
+
+
+\newpage
+\section{Plant Structural Functional Models} \label{sec:fspm}
+
+\subsection{Plant hydraulics} \label{ssec:hydraulics}
+% \input{latex/fspm_hydraulics.tex}
+
+\subsection{Benchmark examples M3.1 and M3.2} \label{ssec:benchmarks3x}
+% \input{latex/fspm_benchmarks3x.tex}
+
+\subsection{The standard uptake fraction (SUF) and root system conductivity (Krs)} \label{ssec:suf}
+% \input{latex/fspm_suf.tex}
+
+\subsection{Plant structure mapped to a macrogrid} \label{ssec:mapped}
+% \input{latex/fspm_mapped.tex}
+
+\subsection{Model coupling} \label{ssec:coupling}
+% \input{latex/fspm_coupling.tex}
+
+\subsection{Stomatal model} \label{ssec:stomatal}
+% \input{latex/fspm_stomatal.tex}
+
+
+\newpage
+\section{Contributing} \label{sec:contributing}
+
+\subsection{Coding style} \label{ssec:coding_style}
+\input{latex/contributing_codingstyle.tex}
+
+\subsection{Todos} \label{ssec:todos}
+\input{latex/contributing_todos.tex}
+
+
+
+
+\newpage
+\bibliographystyle{apalike} 
+\bibliography{latex/references} 
+
+
+\end{document}

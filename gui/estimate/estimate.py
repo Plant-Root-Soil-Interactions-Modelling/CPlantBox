@@ -5,11 +5,23 @@ from estimate_data import EstimateDataModel
 import estimate_plots
 
 import tkinter
+from tkinter import simpledialog
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.backend_bases import key_press_handler  # Implement the default Matplotlib key bindings
 import matplotlib.pyplot as plt
 import numpy as np
+
+SMALL_SIZE = 16
+MEDIUM_SIZE = 16
+BIGGER_SIZE = 16
+plt.rc('font', size = SMALL_SIZE)  # controls default text sizes
+plt.rc('axes', titlesize = SMALL_SIZE)  # fontsize of the axes title
+plt.rc('axes', labelsize = MEDIUM_SIZE)  # fontsize of the x and y labels
+plt.rc('xtick', labelsize = SMALL_SIZE)  # fontsize of the tick labels
+plt.rc('ytick', labelsize = SMALL_SIZE)  # fontsize of the tick labels
+plt.rc('legend', fontsize = SMALL_SIZE)  # legend fontsize
+plt.rc('figure', titlesize = BIGGER_SIZE)  # fontsize of the figure title
 
 
 class App:
@@ -27,7 +39,14 @@ class App:
         menu_file.add_separator()
         menu_file.add_command(label = "Exit", command = self.file_quit)
         menu.add_cascade(label = "File", menu = menu_file)
+        menu_edit = tkinter.Menu(menu, tearoff = 0)
+        menu_edit.add_command(label = "Shift time...", command = self.edit_shift_time)
+        menu.add_cascade(label = "Edit", menu = menu_edit)
         menu_view = tkinter.Menu(menu, tearoff = 0)
+        menu_view.add_command(label = "Estimated root age...", command = self.view_vtk_plot_age)
+        menu_view.add_separator()
+        menu_view.add_command(label = "About...", command = self.view_about)
+        menu.add_cascade(label = "View", menu = menu_view)
         self.root.config(menu = menu)
         # top frame
         self.tab_base_top_frame = ttk.Frame(self.root)
@@ -63,7 +82,6 @@ class App:
         self.label3.pack(padx = 10, expand = 1, side = tkinter.LEFT)
         self.entry3 = ttk.Entry(self.tab_base_top_frame, textvariable = self.lmax2, width = 7)
         self.entry3.pack(pady = 10, expand = 1, side = tkinter.LEFT)
-
         # Tabs
         tabControl = ttk.Notebook(self.root)
         tab_info = ttk.Frame(tabControl)
@@ -205,9 +223,9 @@ class App:
 
     def parameters_rstr_(self, index):
         p = self.data.parameters[index]
-        rstr = "\n[{:g}, {:g}]\n[{:g}, {:g}]\n\n".format(p.r, p.rs, p.lmax, p.lmaxs)
-        rstr += "[{:g}, {:g}]\n[{:g}, {:g}]\n[{:g}, {:g}]\n\n".format(p.lb, p.lbs, p.la, p.las, p.ln, p.lns)
-        rstr += "[{:g}, {:g}]\n[{:g}, {:g}]\n".format(p.a, p.a_s, p.theta, p.thetas)
+        rstr = "{:g} +-{:g}\n{:g} +-{:g}\n\n".format(p.r, p.rs, p.lmax, p.lmaxs)
+        rstr += "{:g} +-{:g}\n{:g} +-{:g}\n{:g} +-{:g}\n\n".format(p.lb, p.lbs, p.la, p.las, p.ln, p.lns)
+        rstr += "{:g} +-{:g}\n{:g} +-{:g}\n".format(p.a, p.a_s, p.theta, p.thetas)
         rstr += "\n"
         # int tropismT = 1;        ///< Root tropism parameter (Type)
         # double tropismN = 1.;   ///< Root tropism parameter (number of trials)
@@ -218,7 +236,7 @@ class App:
 
     def pparameters_pstr_(self):
         srp = self.data.pparameters
-        pstr = "\n\n[{:g}, {:g}]\n[{:g}, {:g}]\n[{:g}, {:g}]\n\n".format(srp.delayB, srp.delayBs, srp.firstB, srp.firstBs, srp.maxB, srp.maxBs)
+        pstr = "\n\n{:g} +-{:g}\n{:g} +-{:g}\n{:g} +-{:g}\n\n".format(srp.delayB, srp.delayBs, srp.firstB, srp.firstBs, srp.maxB, srp.maxBs)
         pstr += "\n"
         return pstr
 
@@ -241,9 +259,8 @@ class App:
 
     def update_all(self, event = None):
         """ updates the view """
-        # if self.data.exists():
         if self.data:
-            self.parse_gui()
+            self.parse_gui()  # fills self.data.parameters[:].lmax values
             self.update_info()
             self.data.create_params(self.combo0.current(), self.combo1.current(), self.combo2.current())  # does the fitting for the current settings
             self.update_parameters_tap()
@@ -264,12 +281,15 @@ class App:
 
     def file_save(self):
         """ menu item: save cplantbox parameters """
-        fname = tkinter.filedialog.asksaveasfilename(defaultextension = ".xml")
-        print(fname)
-        print(type(fname))
-        if isinstance(fname, str):
-            if fname:
-                self.data.write_parameters(fname)
+        if self.data:
+            fname = tkinter.filedialog.asksaveasfilename(defaultextension = ".xml")
+            print(fname)
+            print(type(fname))
+            if isinstance(fname, str):
+                if fname:
+                    self.data.write_parameters(fname)
+        else:
+            tkinter.messagebox.showwarning("Warning", "Open a rsml folder first")
 
     def file_quit(self):
         """ menu item: quits application """
@@ -278,7 +298,26 @@ class App:
 
     def view_about(self):
         """ menu item: view about dialog """
-        tkinter.messagebox.showinfo("About", "RSML Viewer \nby Daniel Leitner, 2021 \n\nPart of CPlantBox")
+        tkinter.messagebox.showinfo("About", "Estimate (parametrisation tool) \nby Daniel Leitner, 2023 \n\nPart of CPlantBox")
+
+    def edit_shift_time(self):
+        """ shifts the measurement time """
+        if self.data:
+            shift_str = simpledialog.askfloat("Input", "Shift measurement time for [day]", parent = self.root)
+            shift = float(shift_str)
+            for i in range(0, len(self.data.times)):
+                self.data.times[i] += shift
+            self.update_all()
+        else:
+            tkinter.messagebox.showwarning("Warning", "Open a rsml folder first")
+
+    def view_vtk_plot_age(self):
+        """ vtk plot with estimated root ages """
+        if self.data:
+            # shift_str = simpledialog.askfloat("Input", "Shift measurement time for [day]", parent = self.root)
+            vp.plot_roots(self.data.analyser, name)
+        else:
+            tkinter.messagebox.showwarning("Warning", "Open a rsml folder first")
 
 
 if __name__ == '__main__':

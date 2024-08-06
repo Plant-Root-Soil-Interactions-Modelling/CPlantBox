@@ -1,0 +1,48 @@
+This installation guideline is for CPlantBox on Linux systems (e.g. Ubuntu). If C++ compilers and Python are not recent enough make sure you have a recent C++ compiler (e.g. \lstinline{sudo apt install build-essential}) and python3 (e.g. \lstinline{sudo apt-get install python3.6}). \\
+
+If you wish to be able to follow the examples provided in the Jupyter Notebooks, it is recommended to install the Anaconda Python distribution: 
+\begin{itemize}
+\item Install curl if not yet available: \lstinline{sudo apt-get install curl}
+\item Download and install Anaconda (adapt the version accordingly):\\
+\lstinline{cd /tmp}\\
+\lstinline{curl https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh --output anaconda.sh} \\
+\lstinline{bash anaconda.sh} \\
+\lstinline{source ~/.bashrc}
+\end{itemize}
+
+CPlantBox can be installed using either the install script installCPlantBox.py for CPlantBox only, or installDumuxRosi\_Ubuntu.py for CPlantBox and dumux-rosi. First make sure Git ist installed, clone the CPlantBox repository, and run the install script:
+\begin{itemize}
+ \item Install Git: \lstinline{sudo apt-get install git}
+ \item Go to your base folder and clone the repository by: \lstinline{git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git}
+ \item Run install script: \lstinline{python3 CPlantBox/installDumuxRosi_Ubuntu.py}  
+\end{itemize}
+
+% - Install git: \\
+% \\
+% - Install cmake:\\
+% \lstinline{sudo apt-get install cmake}\\
+% - Install libboost:\\
+% \lstinline{sudo apt-get install libboost-all-dev}\\
+% - Install pip:\\
+% \lstinline{sudo apt-get install python3-pip}\\
+% - Install the python package numpy:\\
+% \lstinline{pip3 install numpy}\\
+% - Install the python package scipy:\\
+% \lstinline{pip3 install scipy}\\
+% - Install the python package matplotlib:\\
+% \lstinline{pip3 install matplotlib}\footnote{Known bug in ubuntu 18.04: needs sudo apt-get install libfreetype6-dev libxft-dev installed before.}\\
+% - Install the python package VTK:\\
+% \lstinline {pip3 install vtk}\\
+% - Install the java runtime environment:\\
+% \lstinline{sudo apt-get install default-jre}\\
+% - Install Paraview\\
+% \lstinline{sudo apt-get install paraview}\\
+% To build CPlantBox and its python shared library, move again into the CPlantBox folder and type into the console:\\
+% \lstinline {cd CPlantBox}\\
+% \lstinline{cmake .}\footnote{It may be necessary on your installation to check the CPlantBox/src/CMakeLists.txt file regarding required python version and out-commenting line 34.}\\
+% \lstinline{make}\\
+% (If building CPlantBox on the IBG-3 cluster, two lines in the file \lstinline{CPlantBox/CMakeLists.txt} need to be outcommented before:\\ 
+% \lstinline{set(CMAKE_C_COMPILER "/usr/bin/gcc")}\\
+% \lstinline{set(CMAKE_CXX_COMPILER "/usr/bin/g++")})\\
+% 
+After successfully compiling CPlantBox the Python library \emph{plantbox} should be available on your system. 

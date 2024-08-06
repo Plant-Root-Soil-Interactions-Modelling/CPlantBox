@@ -113,7 +113,7 @@ def plot_suf(data, ax3, j):
             d = ana.distribution("SUF", 0., float(-n), int(n), False)
             ax3.plot(d, z_, "-*", label = "type {:g}".format(i))
             print("SUF", i, np.min(d), np.max(d), np.mean(d), np.sum(d))
-    ax3.set_title("Root system krs {:g}".format(krs))
+    ax3.set_title("Root system krs {:g} cm$^2$/day".format(krs))
     ax3.set_ylabel("Depth (cm)")
     ax3.set_xlabel("Root system surface uptake fraction (SUF) per 1 cm layer (1)")
     ax3.legend()
@@ -145,7 +145,7 @@ def plot_krs(data, ax, j):
         krs_.append(krs)
     ax.plot(t_, krs_)
     ax.set_xlabel("Time (days)")
-    ax.set_ylabel("Root system conductivity Krs")
+    ax.set_ylabel("Root system conductivity Krs [cm$^2$/day]")
 
     # for Debugging
     kr, kx = data.xylem_flux.get_conductivities(-1.)  # (default) -1. means: current time is maximum of node creation times

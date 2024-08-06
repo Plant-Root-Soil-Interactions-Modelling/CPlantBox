@@ -273,7 +273,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     colors = vtk.vtkNamedColors()  # Set the background color
     ren = vtk.vtkRenderer()  # Set up window with interaction
     ren.SetBackground(colors.GetColor3d("Silver"))
-    #print("render_window", rank)
+
     # Actors
     if isinstance(actor, list):
         actors = actor  # plural
@@ -470,6 +470,11 @@ def create_scalar_bar(lut, grid = None, p_name = "", myRange = None):
     scalarBar.SetUnconstrainedFontSize(True)
 
     return scalarBar
+
+
+def plot_segments(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+    """ see plot roots """
+    return plot_roots(pd, p_name, render, interactiveImage)
 
 
 def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, 
@@ -750,6 +755,25 @@ def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
         soil_grid.GetCellData().AddArray(d)
     if rank == 0:
         write_vtu(filename + ".vtu", soil_grid)
+
+
+def write_plant(filename, plant, add_params = []):
+    """ write the plants organ ceneterlines and leafs into two seperate vtp files"""
+    params = ["radius", "subType", "organType", "age"]
+    params.extend(add_params)
+    pd = segs_to_polydata(plant, 1., params)
+    write_vtp(filename + ".vtp", pd)
+
+    leaf_points = vtk.vtkPoints()
+    leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
+    leafes = plant.getOrgans(pb.leaf)
+    for l in leafes:
+        create_leaf_(l, leaf_points, leaf_polys)
+
+    pd_leafs = vtk.vtkPolyData()
+    pd_leafs.SetPoints(leaf_points)
+    pd_leafs.SetPolys(leaf_polys)
+    write_vtp(filename + "_leafs.vtp", pd_leafs)
 
 
 def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True):

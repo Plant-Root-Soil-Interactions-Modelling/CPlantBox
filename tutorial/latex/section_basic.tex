@@ -5,7 +5,7 @@
 The first example shows how to use CPlantBox: open a parameter file (L12), do the simulation (L18), 
 save the results (L21), and make an interactive plot showing the results (L24). 
 
-\lstinputlisting[language=Python, caption=Example 1a]{../../examples/python/example1a_small.py} 
+\lstinputlisting[language=Python, caption=Example 1a]{../examples/example1a_small.py} 
 
 \noindent 
 Lets revise the above code in more detail: 
@@ -39,7 +39,7 @@ In CPlantBox the domain geometry is represented in a mesh free way using signed 
 A SDF returns the distance of a point to its closest boundary, with negative sign if it lies inside of the domain, 
 and a positive if the point is outside.
 
-\lstinputlisting[language=Python, caption=Example 1b]{../../examples/python/example1b_container.py}
+\lstinputlisting[language=Python, caption=Example 1b]{../examples/example1b_container.py}
 
 The geometry is first created by constructing some specialization of the class SignedDistanceFunction, 
 and is passed to the root system by the method setGeometry: 
@@ -77,7 +77,7 @@ Second, we create a split box experiment, and furthermore, an example where rhiz
 
 The following examples demonstrates how to build a complex geometry using rotations, translations and set operations on the SDF.
 
-\lstinputlisting[language=Python, caption=Example 1c]{../../examples/python/example1c_complexcontainer.py}
+\lstinputlisting[language=Python, caption=Example 1c]{../examples/example1c_complexcontainer.py}
 
 \begin{itemize}
 
@@ -122,7 +122,7 @@ however, set operations are not really performed, only the involved geometries a
 
 Its possible to simulate multiple root systems. In the following we show a small plot scale simulation.
 
-\lstinputlisting[language=Python, caption=Example 1d]{../../examples/python/example1d_multiple.py}
+\lstinputlisting[language=Python, caption=Example 1d]{../examples/example1d_multiple.py}
 
 \begin{itemize}
 

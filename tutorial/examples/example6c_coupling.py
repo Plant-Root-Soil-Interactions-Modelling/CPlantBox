@@ -98,7 +98,7 @@ for i in range(0, N):
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")
 
 """ VTK visualisation """
-vp.plot_roots_and_soil(r.rs, "pressure head", rx, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
+vp.plot_roots_and_soil(r.rs.mappedSegments(), "pressure head", rx, s, periodic, np.array(min_b), np.array(max_b), cell_number, name)
 
 """ transpiration over time """
 fig, ax1 = plt.subplots()

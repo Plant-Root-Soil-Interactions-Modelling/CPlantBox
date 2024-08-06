@@ -10,8 +10,10 @@ namespace CPlantBox {
 
 /**
  * Wraps a MappedSegments (or specialisations MappedPlant, MappedRootsystem)
- * and adds functions to retrieve information on the perirhizal zones of single segments.
- * See also Perirhizal.py
+ * and adds functions to help modelling the perirhizal zone.
+ *
+ * Currently rather useless, main part is in Python (in Perirhizal.py),
+ * but perfomance critical methods could be implemented in C++
  */
 class Perirhizal
 {

@@ -49,7 +49,6 @@ public:
   void openXML(std::string name) { readParameters(name); } // old name
 
   /* Simulation */
-  void setGeometry(std::shared_ptr<SignedDistanceFunction> geom) { geometry = geom; }  ///< optionally, sets a confining geometry (call before Plant::initialize())
   void setSoil(std::shared_ptr<SoilLookUp> soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before Plant::initialize())
   void reset(); ///< resets the plant class, keeps the organ type parameters
   void initializeLB(bool verbose = true);
@@ -66,16 +65,14 @@ public:
   std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma, double Tage = 0.); ///< Creates the tropisms, overwrite or change this method to add more tropisms
   virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
 
-  void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
   std::string toString() const override;
-  void writeVTP(int otype, std::ostream & os) const;
 
   std::vector<int> leafphytomerID = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
   void abs2rel();
   void rel2abs();
+
 protected:
   void initialize_(bool verbose = true);
-  std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
   std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
 };

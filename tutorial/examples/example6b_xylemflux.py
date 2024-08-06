@@ -9,11 +9,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """ Parameters """
-kz = 4.32e-2  # axial conductivity [cm^3/day]
+kz = 4.32e-2  # axial conductivity [cm3/day]
 kr = 1.728e-4  # radial conductivity [1/day]
-p_s = -200  # static soil pressure [cm]
-p0 = -500  # dircichlet bc at top
-simtime = 14  # [day] for task b
+p_s = -200  # constant soil potential [cm]
+p0 = -500  # dirichlet bc at top [cm]
+simtime = 14  # [day]
 
 """ root system """
 rs = pb.MappedRootSystem()
@@ -24,34 +24,35 @@ rs.initialize()
 rs.simulate(simtime, False)
 
 """ root problem """
-r = XylemFluxPython(rs)
-r.setKr([kr * 0, kr, kr , kr, kr, kr])
-r.setKx([kz, kz, kz, kz, kz, kz])
-nodes = r.get_nodes()
-soil_index = lambda x, y, z: 0
+r = XylemFluxPython(rs)  # hydraulic model
+r.setKx([kz, kz, kz, kz, kz, kz])  # axial conductivities per root order
+r.setKr([kr * 0, kr, kr , kr, kr, kr])  # radial conductivities per root order
+soil_index = lambda x, y, z: 0  # maps ever coordinate to soil cell with index 0
 r.rs.setSoilGrid(soil_index)
 
 """ Numerical solution """
-rx = r.solve_dirichlet(simtime, p0, p_s, [p_s], True)
-# trans = -1.185
-# rx = r.solve_neumann(simtime, trans, [p_s], True)
+soil = [p_s]  # soil with a single soil cell
+rx = r.solve_dirichlet(simtime, p0, p_s, soil, True)
 fluxes = r.segFluxes(simtime, rx, -200 * np.ones(rx.shape), False)  # cm3/day
 print("Transpiration", r.collar_flux(simtime, rx, [p_s]), "cm3/day")
 
+""" Macroscopic root system parameter """
+suf = r.get_suf(simtime)
+krs, _ = r.get_krs(simtime)
+print("Krs: ", krs, "cm2/day")
+
 """ plot results """
+nodes = r.get_nodes()
 plt.plot(rx, nodes[:, 2] , "r*")
-plt.xlabel("Xylem pressure (cm)")
+plt.xlabel("Xylem potentials (cm)")
 plt.ylabel("Depth (m)")
-plt.title("Xylem matric potential (cm)")
 plt.show()
 
 """ Additional vtk plot """
-print("rx", rx.shape)
-print("fluxes", len(fluxes))
-print("segments", len(rs.getSegments()))
 ana = pb.SegmentAnalyser(r.rs.mappedSegments())
-print(len(ana.nodes))
-print(len(ana.segments))
-ana.addData("rx", rx)
-ana.addData("fluxes", np.maximum(fluxes, -1.e-3))  # cut off for vizualisation
-vp.plot_roots(ana, "rx", "Xylem matric potential (cm)")  # "fluxes", subType
+ana.addData("rx", rx)  # xylem potentials [cm]
+ana.addData("SUF", suf)  # standard uptake fraction [1]
+ana.addAge(simtime)  # age [day]
+ana.addConductivities(r, simtime)  # kr [1/day], kx [cm3/day]
+ana.addFluxes(r, rx, p_s * np.ones(rx.shape), simtime)  # "axial_flux" [cm3/day], "radial_flux" [ (cm3/cm2) / day]
+vp.plot_roots(ana, "subType")  # "rx", "SUF", "age", kr, "axial_flux", "radial_flux"

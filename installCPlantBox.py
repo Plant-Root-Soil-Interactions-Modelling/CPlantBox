@@ -26,7 +26,7 @@ show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n o
 #################################################################
 #################################################################
 
-programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran']#,'python3'] 
+programs = ['wget', 'git', 'gcc', 'g++', 'cmake', 'pkg-config','clang', 'gfortran', 'pip']#,'python3'] 
 show_message("(1/3) Checking ubuntu prerequistes: " + " ".join(programs) + "...")
 
 # check some prerequistes
@@ -62,18 +62,11 @@ if len(error) > 0:
 import pip
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py', 'astropy', 'pandas', 'pybind11[global]'] 
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py',  'pandas', 'pybind11[global]', 'ipython'] 
 show_message("(2/3) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
-    #subprocess.run(["pip3", "install", mymodule]) 
-    if ((mymodule =='vtk') and (sys.version_info.minor == 10)):
-        subprocess.run(["pip3", "install", mymodule]) 	#conda install not working for vtk with py3.10 (?)
-    else:
-        try:
-            subprocess.run(["conda", "install", mymodule]) 
-        except:
-            subprocess.run(["pip3", "install", mymodule]) 
+    subprocess.run(["pip3", "install", mymodule]) 
       
 show_message("(2/3) Step completed. All prerequistes found.")
 
@@ -89,15 +82,12 @@ show_message("(2/3) Step completed. All prerequistes found.")
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '--depth','1','-b', 'stable_v2.1', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    subprocess.run(['git', 'clone', '--depth','1','-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 os.chdir("CPlantBox")
 
-if os.path.exists("./src/external/pybind11"):
-    subprocess.run(['rm', '-rf', 'src/external/pybind11'])#delete folder
-subprocess.run(['git', 'rm', '-r','--cached', 'src/external/pybind11'])#take out git cache for pybind11
-subprocess.run(['git', 'submodule', 'add',  '--force', '-b', 'stable', 'https://github.com/pybind/pybind11.git', './src/external/pybind11'])
+subprocess.run(['git', 'submodule', 'update',  '--recursive', '--init'])
 subprocess.run(['cmake', '.']) 
 subprocess.run(['make'])  
 os.chdir("..")
@@ -105,5 +95,7 @@ os.chdir("..")
 
 show_message("(3/3) Step completed. Succesfully configured and built CPlantBox.")
 
+show_message("to test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
 
-show_message("to test installation, run n\ cd CPB/CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
+show_message("CPlantBox is currently at stable branch, use \n $git switch master \n to obtain the latest version, use cmake . & make to recompile")
+
