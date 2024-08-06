@@ -313,27 +313,23 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
     def solve_dirichlet(self, sim_time:float, collar_pot:list, rsx, cells:bool):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]           needed for age dependent conductivities (age = sim_time - segment creation time)
-            @param collar_pot [cm3 day-1]   collar potential
+            @param collar_pot [cm]          collar potential
             @param rsx [cm]                 soil matric potentials given per segment or per soil cell            
             @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False)  
             @return [cm] root xylem pressure per root system node         
         """
-        if isinstance(collar_pot, (float, int)):
-            n = len(self.dirichlet_ind)
-            collar_pot = [collar_pot] * n
+        self.linearSystemMeunier(sim_time, rsx, cells)
+        Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
 
-        if self.usecached_:
-            self.linearSystemMeunier(sim_time, rsx, cells)  # building rhs b could be improved
-            b = self.bc_dirichletB(self.aB, self.dirichlet_ind, collar_pot)
+        if isinstance(collar_pot, (float, int)):
+            collar_pot = [collar_pot] * len(self.dirichlet_ind)
+
+        Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, collar_pot)
+
+        if self.usecached_:  # TODO only self.aB is needed;  building rhs b could be improved
             return self.dirichletB.solve(np.array(b))
         else:
-            self.linearSystemMeunier(sim_time, rsx, cells)
-            self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-            self.Q = sparse.csc_matrix(self.Q)
-            self.Q, self.b = self.bc_dirichlet(self.Q, self.aB, self.dirichlet_ind, collar_pot)
-            x = LA.spsolve(self.Q, self.b, use_umfpack = True)
-
-        return x
+            return LA.spsolve(Q, b, use_umfpack = True)
 
     def solve_neumann(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
@@ -343,20 +339,18 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)  
             @return [cm] root xylem pressure per root system node         
         """
+        self.linearSystemMeunier(sim_time, rsx, cells)  # C++ (see XylemFlux.cpp)
+        Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
+
         if isinstance(t_act, (float, int)):
-            n = len(self.neumann_ind)
-            t_act = [t_act / n] * n
+            t_act = [t_act / len(self.neumann_ind)] * len(self.neumann_ind)
+
+        b = self.bc_neumann(self.aB, self.neumann_ind, t_act)
 
         if self.usecached_:
-            self.linearSystemMeunier(sim_time, rsx, cells)  # building rhs b could be improved
-            b = self.bc_neumann(self.aB, self.neumann_ind, t_act)
             return self.neumannB.solve(np.array(b))
         else:
-            self.linearSystemMeunier(sim_time, rsx, cells)  # C++ (see XylemFlux.cpp)
-            self.Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-            self.Q = sparse.csc_matrix(self.Q)
-            self.b = self.bc_neumann(self.aB, self.neumann_ind, t_act)
-            return LA.spsolve(self.Q, self.b, use_umfpack = True)
+            return LA.spsolve(Q, b, use_umfpack = True)
 
     def solve(self, sim_time:float, t_act:list, rsx, cells:bool):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
@@ -370,15 +364,14 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             self.linearSystemMeunier(sim_time, rsx, cells)  # self.aV, self.aB, self.aI, self.aJ
             Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
             self.neumannB = LA.splu(Q)  # for Neumann Q
-            Q, b = self.bc_dirichlet(Q, self.aB.copy(), self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))
+            Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))
             self.dirichletB = LA.splu(Q)  # for Dirichlet Q
             x = self.solve_again(sim_time, t_act, rsx, cells)
         else:
             x = self.solve_neumann(sim_time, t_act, rsx, cells)  # try neumann, if below wilting point, switch to Dirichlet
             self.last = "neumann"
             if x[0] <= self.wilting_point:
-                Q = sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
-                Q = sparse.csc_matrix(Q)
+                Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
                 Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))
                 x = LA.spsolve(Q, b, use_umfpack = True)
                 self.last = "dirichlet"
@@ -399,10 +392,13 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         self.usecached_ = True  # makes solve_neumann() and solve_dirichlet() to use the precomputed LU factorizuation
         x = self.solve_neumann(sim_time, t_act, rsx, cells)  # try neumann, if below wilting point, switch to Dirichlet
         self.last = "neumann"
-        if x[0] <= self.wilting_point:
-            x = self.solve_dirichlet(sim_time, t_act, rsx, cells)
-            self.last = "dirichlet"
         self.usecached_ = False  # only, during solve_again() call
+        if x[0] <= self.wilting_point:
+            Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
+            Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))  # TODO improve
+            x = self.dirichletB.solve(np.array(b))
+            self.last = "dirichlet"
+
         return x
 
     def radial_fluxes(self, sim_time, rx, rsx, cells = False):
@@ -508,20 +504,6 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             Q[i, i] = 1
             b[i] = d[c]
         return Q, b
-
-    @staticmethod
-    def bc_dirichletB(b, n0, d):
-        """ prescribes a Dirichlet boundary conditions for the system Qx=b, only rhs b (for the cached version, where Q is not needed)
-        @param b          rhs vector
-        @param n0         list of node indices, where the Dirichlet bc is applied
-        @param d [cm]     list of Dirichlet values   
-        @return b         rhs vector 
-        """
-        assert len(n0) == len(d), "XylemFlux.bc_dirichlet: number of nodes n0 and Dirichlet values d must be equal"
-        for c in range(0, len(n0)):
-            i = n0[c]
-            b[i] = d[c]
-        return b
 
     @staticmethod
     def bc_neumann(b, n0, f):
