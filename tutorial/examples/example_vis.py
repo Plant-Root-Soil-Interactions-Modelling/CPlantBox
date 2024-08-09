@@ -24,7 +24,7 @@ vis = pb.PlantVisualiser(plant)
 # Initialize
 plant.initialize()
 vis.SetGeometryResolution(8)
-vis.SetLeafResolution(30)
+vis.SetLeafResolution(20)
 vis.SetComputeMidlineInLeaf(False)
 
 # Simulate
@@ -33,9 +33,16 @@ plant.simulate(28, False)
 for o in plant.getOrgans() :
   if o.organType() == pb.leaf :
     print("Plant Organ: ", o.getId())
+  if o.getId() == 2871 :
+    centers = [np.array([v.x,v.y,v.z]) for v in o.getNodes()]
+    print(centers)
+
 
 vis.ResetGeometry()
 vis.ComputeGeometryForOrgan(2871)
+
+uv = vis.GetGeometryTextureCoordinates()
+print(uv)
 
 # Write the geometry to file#
 data = cpbvis.PolydataFromPlantGeometry(vis)

@@ -123,6 +123,12 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
     errMsg << "MappedPlant::ComputeGeometryForOrgan: organ not found: " << organId;
     throw std::runtime_error(errMsg.str().c_str());
   }
+  else
+  {
+    std::cout << "Computing geometry for organ: " << organId << " of type " << (*organ_it)->organType() << std::endl;
+  }
+  std::cout << "Organ has " << (*organ_it)->getNumberOfNodes() << " nodes." << std::endl;
+  std::cout << "Leaf resolution is " << leaf_resolution_ << std::endl;
   auto organ = *organ_it;
   
   if(organ->organType() == 4)
@@ -520,6 +526,7 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
 void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o, unsigned int c_o)
 {
 	// Fetch the phi array
+  if(verbose_) std::cout << "Generating radial leaf geometry" << std::endl;
 	double scaling_factor = leaf->getParameter("areaMax") * leaf->getLength(false) / leaf->getParameter("k");
 
 	// resolution
@@ -680,7 +687,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
     {
       //std::cout << p_o << "/" << geometry_.size() << " ";
 
-      auto r = helper[p];
+      auto r = std::max(helper[p], this->leaf_minimum_width_);
       // get the point
 			// get the wave effect which is a sine function along the length of the leaf
 

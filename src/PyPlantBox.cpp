@@ -1182,6 +1182,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("SetAddVerticalLeafOffset", &PlantVisualiser::SetAddVerticalLeafOffset, py::arg("addVerticalLeafOffset"))
         .def("SetLeafWidthScaleFactor", &PlantVisualiser::SetLeafWidthScaleFactor, py::arg("leafWidthScaleFactor"))
         .def("LeafWidthScaleFactor", &PlantVisualiser::LeafWidthScaleFactor)
+        .def("SetLeafMinimumWidth", &PlantVisualiser::SetMinimumLeafWidth, py::arg("width"))
     ;
 
     py::enum_<Plant::TropismTypes>(m, "TropismType")

@@ -38,6 +38,7 @@ public :
 
   double LeafWidthScaleFactor() const { return this->leaf_width_scale_factor_; }
   void SetLeafWidthScaleFactor(double factor) { this->leaf_width_scale_factor_ = factor; }
+  void SetMinimumLeafWidth(double width) {this->leaf_minimum_width_ = std::max(0.0, width);};
 
   void SetGeometryResolution(int resolution) { this->geometry_resolution_ = resolution; } // set the resolution of the geometry (number of cells in each direction
   void SetLeafResolution(int resolution) { this->leaf_resolution_ = resolution;}
@@ -103,6 +104,7 @@ protected:
   bool add_vertical_leaf_offset_{false};
 
   double leaf_width_scale_factor_{1.0};
+  double leaf_minimum_width_{0.0};
 
   /**
    * A private method to build the attachment map for the leaf organs
