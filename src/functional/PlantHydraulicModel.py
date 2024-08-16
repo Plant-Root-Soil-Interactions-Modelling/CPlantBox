@@ -213,6 +213,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day]
         if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments
         """
+        raise  # TODO replace axial flux by get_transpiration
         segs = self.ms.segments
         nodes = self.ms.nodes
         p_s = np.zeros((len(segs),))
