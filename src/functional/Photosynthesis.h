@@ -65,6 +65,7 @@ public:
 		if(vQlight.size() != seg_leaves_idx.size()){return Qlight;
 		}else{return vQlight.at(index);}
 	}
+  const std::vector<int>& get_nodes_index() const {return seg_leaves_idx;}
 	
 	double getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose = false) const override;
 	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
