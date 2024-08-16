@@ -37,7 +37,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         dumux-rosi/python/roots/xylem_m31_new.py, xylem_m32_new.py
     """
 
-    def __init__(self, ms, params, cached = True):
+    def __init__(self, ms, params, cached = False):
         """ 
         @param ms is of type MappedSegments (or specializations), or a string containing a rsml filename
         @param params hydraulic conductivities described by PlantHydraulicParameters

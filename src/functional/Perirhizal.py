@@ -76,8 +76,7 @@ class PerirhizalPython(Perirhizal):
         fun = lambda x: (inner_kr * rx + b * sx * k_soilfun(sx, x)) / (b * k_soilfun(sx, x) + inner_kr) - x
         rsx = fsolve(fun, (rx + sx) / 2)
         return rsx
-    
-    
+
     def create_lookup_mpi(self, filename, sp):
         """      
         Precomputes all soil root interface potentials for a specific soil type 
@@ -92,7 +91,7 @@ class PerirhizalPython(Perirhizal):
         comm = MPI.COMM_WORLD
         size = comm.Get_size()
         rank = comm.Get_rank()
-        
+
         rxn = 150
         rx_ = -np.logspace(np.log10(1.), np.log10(16000), rxn)
         rx_ = rx_ + np.ones((rxn,))
@@ -105,7 +104,7 @@ class PerirhizalPython(Perirhizal):
         akr_ = np.logspace(np.log10(1.e-7), np.log10(1.e-4), akrn)
         rhon = 30
         rho_ = np.logspace(np.log10(1.), np.log10(200.), rhon)
-        
+
         if rank == 0:
             print(filename, "calculating", rxn * sxn * rhon * akrn, "supporting points on", size, "thread(s)")
 
@@ -119,9 +118,9 @@ class PerirhizalPython(Perirhizal):
         else:
             start = rank * count + remainder
             stop = start + count
-                
+
         interface_local = np.zeros(stop - start)
-        
+
         # Loop over the range assigned to this rank
         for index_, index in enumerate(range(start, stop)):
             # Convert flat index to multi-dimensional indices
@@ -129,35 +128,35 @@ class PerirhizalPython(Perirhizal):
             j = (index // (akrn * rhon)) % sxn
             k = (index // rhon) % akrn
             l = index % rhon
-            
-            if rank == 0: # to follow progress
-                print('at index', index_ +1 ,"/", stop -start, "on thread",rank)              
+
+            if rank == 0 and index_ % 100 == 0:  # to follow progress
+                print('at index', index_ + 1 , "/", stop - start, "on thread", rank)
 
             rx = rx_[i]
             sx = sx_[j]
             akr = akr_[k]
             rho = rho_[l]
-            
-            interface_local[index_] = PerirhizalPython.soil_root_interface_(rx, sx, akr, rho, sp)        
-        
+
+            interface_local[index_] = PerirhizalPython.soil_root_interface_(rx, sx, akr, rho, sp)
+
         # data2share needs to use floats for Allgatherv with MPI.DOUBLE to work.
         data2share = np.array(interface_local, dtype = np.float64)
-        
-        # other data needed by comm.Allgatherv
-        all_sizes = np.full(size,count)
-        all_sizes[:remainder] += 1        
 
-        offsets = np.zeros(len(all_sizes), dtype=np.int64)
-        offsets[1:]=np.cumsum(all_sizes)[:-1]
-        all_sizes =tuple(all_sizes)
-        offsets =tuple( offsets)     
-        
+        # other data needed by comm.Allgatherv
+        all_sizes = np.full(size, count)
+        all_sizes[:remainder] += 1
+
+        offsets = np.zeros(len(all_sizes), dtype = np.int64)
+        offsets[1:] = np.cumsum(all_sizes)[:-1]
+        all_sizes = tuple(all_sizes)
+        offsets = tuple(offsets)
+
         # share the vectors
         interface = np.zeros(work_size)
-        comm.Allgatherv( [data2share, MPI.DOUBLE],[interface,all_sizes,offsets,MPI.DOUBLE])
-        
+        comm.Allgatherv([data2share, MPI.DOUBLE], [interface, all_sizes, offsets, MPI.DOUBLE])
+
         if rank == 0:
-            interface = interface.reshape( rxn, sxn, akrn, rhon) # reset shape
+            interface = interface.reshape(rxn, sxn, akrn, rhon)  # reset shape
             np.savez(filename, interface = interface, rx_ = rx_, sx_ = sx_, akr_ = akr_, rho_ = rho_, soil = list(sp))
             self.lookup_table = RegularGridInterpolator((rx_, sx_, akr_, rho_), interface)
             self.sp = sp
@@ -220,7 +219,7 @@ class PerirhizalPython(Perirhizal):
         except:
             print("Look up failed: ")
             print("rx", np.min(rx), np.max(rx))  # 0, -16000
-            print("sx", np.min(sx), np.max(loamsx))  # 0, -16000
+            print("sx", np.min(sx), np.max(sx))  # 0, -16000
             print("inner_kr", np.min(inner_kr_), np.max(inner_kr_))  # 1.e-7 - 1.e-4
             print("rho", np.min(rho_), np.max(rho_))  # 1. - 200.
         return rsx
