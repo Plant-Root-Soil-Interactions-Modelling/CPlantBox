@@ -1077,6 +1077,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("EAL",&Photosynthesis::EAL)
             .def_readwrite("hrelL",&Photosynthesis::hrelL)
             .def_readwrite("pg",&Photosynthesis::pg)
+            .def_readwrite("vQlight", &Photosynthesis::vQlight)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
             .def_readwrite("Jw", &Photosynthesis::Jw)
             .def_readwrite("Ev", &Photosynthesis::Ev)
