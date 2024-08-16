@@ -95,6 +95,7 @@ public :
 
   void SetVerbose(bool verbose) { this->verbose_ = verbose; }
   void SetAddVerticalLeafOffset(bool add) { this->add_vertical_leaf_offset_ = add; }
+  void SetRightPenalty(double penalty) { this->right_penalty_ = penalty; }
 
 protected:
   std::shared_ptr<MappedPlant> plant_{nullptr};
@@ -102,6 +103,7 @@ protected:
   bool include_midline_in_leaf_{true};
   bool verbose_{false};
   bool add_vertical_leaf_offset_{false};
+  double right_penalty_{0.1};
 
   double leaf_width_scale_factor_{1.0};
   double leaf_minimum_width_{0.0};

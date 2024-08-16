@@ -1,10 +1,11 @@
 """root system length over time"""
-import sys; sys.path.append("../.."); sys.path.append("../../src/"); sys.path.append("./"); sys.path.append("./src/")
+#sys.path.append("../.."); sys.path.append("../../src/"); 
+import sys; sys.path.append("./"); sys.path.append("./src/")
 
 import os
 import sys
 # call cmake --build on ../../
-os.system("cmake --build ../../ --config Release -j 4")
+os.system("cmake --build . --config Release -j 4")
 
 import plantbox as pb
 import visualisation.vtk_plot as vp
@@ -22,30 +23,42 @@ vis = pb.PlantVisualiser(plant)
 
 
 # Initialize
-plant.initialize()
+plant.setSeed(2)
+plant.initialize(False, True)
 vis.SetGeometryResolution(8)
-vis.SetLeafResolution(20)
+vis.SetLeafResolution(200)
 vis.SetComputeMidlineInLeaf(False)
+vis.SetVerbose(False)
+vis.SetLeafMinimumWidth(1.0)
+vis.SetRightPenalty(0.5)
 
 # Simulate
-plant.simulate(28, False)
+plant.simulate(50, False)
+
+leaf_id = -1
+leaf_lenght = -1
+leaf_ptr = None
 
 for o in plant.getOrgans() :
-  if o.organType() == pb.leaf :
-    print("Plant Organ: ", o.getId())
-  if o.getId() == 2871 :
-    centers = [np.array([v.x,v.y,v.z]) for v in o.getNodes()]
-    print(centers)
+  if o.getLength(False) > leaf_lenght and o.organType() == pb.leaf :
+    leaf_id = o.getId()
+    leaf_lenght = o.getLength(True)
+    leaf_ptr = o
 
 
 vis.ResetGeometry()
-vis.ComputeGeometryForOrgan(2871)
+vis.ComputeGeometryForOrgan(leaf_id)
 
 uv = vis.GetGeometryTextureCoordinates()
-print(uv)
+points = vis.GetGeometry()
+points = np.array(points)
+points = points.reshape(-1, 3)
+print("Shape of points:")
+print(points.shape)
 
 # Write the geometry to file#
 data = cpbvis.PolydataFromPlantGeometry(vis)
+cpbvis.WritePolydataToFile(data, "/mnt/f/Work/CPlantBox/dumux/CPlantBox/tutorial/examples/leaf.vtk")
 
 # view the vtk geometry
 import vtk
@@ -55,6 +68,45 @@ window.AddRenderer(renderer)
 interactor = vtk.vtkRenderWindowInteractor()
 interactor.SetRenderWindow(window)
 
+nodes = np.array([[v.x,v.y,v.z] for v in leaf_ptr.getNodes()])
+spline = pb.CatmullRomSplineManager()
+spline.setY(leaf_ptr.getNodes())
+
+# function to add a sphere at a position
+def add_sphere(renderer, position, color, radius=0.1):
+  position = np.array([position.x, position.y, position.z]) if isinstance(position, pb.Vector3d) else position
+  sphere = vtk.vtkSphereSource()
+  sphere.SetCenter(position)
+  sphere.SetRadius(radius)
+  sphere.SetPhiResolution(100)
+  sphere.SetThetaResolution(100)
+  mapper = vtk.vtkPolyDataMapper()
+  mapper.SetInputConnection(sphere.GetOutputPort())
+  actor = vtk.vtkActor()
+  actor.SetMapper(mapper)
+  actor.GetProperty().SetColor(color)
+  renderer.AddActor(actor)
+
+# make a sphere for each node
+#for n in nodes:
+#   add_sphere(renderer, n, [1.0, 0.0, 0.0], 0.2)
+
+for t in np.linspace(0, 1, 100):
+  n = spline(t)
+  add_sphere(renderer, n, [0.0, 1.0, 0.0], 0.1)
+
+add_sphere(renderer, spline.help_lower(), [0.5, 0.5, 0.0], 0.1)
+add_sphere(renderer, spline.help_upper(), [0.0, 0.5, 0.5], 0.4)
+num = spline.size()
+add_sphere(renderer, spline.getControlPoint(num-1), [1.0, 0.0, 0.0], 0.2)
+add_sphere(renderer, spline.getControlPoint(num-2), [1.0, 0.0, 0.0], 0.2)
+add_sphere(renderer, spline.getControlPoint(num-3), [1.0, 0.0, 0.0], 0.2)
+
+print("T Values of last spline: ", spline.getTValues(spline.splineSize() - 1))
+
+Ts = np.array(spline.getT())
+print("Ts: ", Ts)
+
 # Add the data to the renderer
 mapper = vtk.vtkPolyDataMapper()
 mapper.SetInputData(data)
@@ -62,6 +114,25 @@ actor = vtk.vtkActor()
 actor.SetMapper(mapper)
 actor.GetProperty().SetColor(0.0, 1.0, 1.0)
 renderer.AddActor(actor)
+# show the wireframe
+actor.GetProperty().SetRepresentationToWireframe()
+
+# include uniform lighting
+light = vtk.vtkLight()
+light.SetFocalPoint(0, 0, 0)
+light.SetPosition(0, 0, 1)
+renderer.AddLight(light)
+# include uniform lighting
+light = vtk.vtkLight()
+light.SetFocalPoint(0, 0, 0)
+light.SetPosition(1, 0, 0)
+renderer.AddLight(light)
+# include uniform lighting
+light = vtk.vtkLight()
+light.SetFocalPoint(0, 0, 0)
+light.SetPosition(0, 1, 0)
+renderer.AddLight(light)
+
 
 # Render
 interactor.Initialize()

@@ -526,13 +526,14 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
 void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o, unsigned int c_o)
 {
 	// Fetch the phi array
-  if(verbose_) std::cout << "Generating radial leaf geometry" << std::endl;
+  if(verbose_) std::cout << "Generating radiaaal leaf geometry" << std::endl;
 	double scaling_factor = leaf->getParameter("areaMax") * leaf->getLength(false) / leaf->getParameter("k");
 
 	// resolution
 	int resolution = leaf_resolution_;
 	// Compute the mid vein of the leaf
 	CatmullRomSplineManager midVein = leaf->getNodes();
+  midVein.setAlpha(0.0, midVein.splineSize() - 1);
 	// Compute the leaf length
 	auto length = leaf->getLength(false);
 	// save c_o
@@ -548,7 +549,26 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   else 
     origin_neighbor = stem->getNode(leaf->parentNI - 1);
   Vector3d direction = (origin_neighbor - origin).normalized();
-
+  if(verbose_)
+  {
+    bool has_petiole = false;
+    for (int i = 0; i < leaf->getNumberOfNodes(); ++i)
+    {
+      if(!leaf->nodeLeafVis(leaf->getLength(i)))
+      {
+        has_petiole = true;
+        break;
+      }
+    }
+    if(has_petiole)
+    {
+      std::cout << "Leaf has a petiole" << std::endl;
+    }
+    else
+    {
+      std::cout << "Leaf has no petiole" << std::endl;
+    }
+  }
 
   // calculate the first right vector based on the angle between x axis and the tip of the leaf
   const Vector3d last_node = leaf->getNode(leaf->getNumberOfNodes() - 1);
@@ -568,6 +588,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 	// double check that this was not done in python
 	if(lrp->leafGeometry.size() == 0)
 	{
+    if(verbose_) std::cout << "Needing to build leaf geometry nodes" << std::endl;
 		lrp->createLeafRadialGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,resolution);
 	}
 	// retrieve the leaf geometry_
@@ -616,7 +637,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       last_amount = current_amount;
     }
   }
-  //std::cout << "Resizing geometry_ buffers by " << point_buffer << " points and " << index_buffer << " triangle values." << std::endl;
+  if(verbose_) std::cout << "Resizing geometry_ buffers by " << point_buffer << " points and " << index_buffer << " triangle values." << std::endl;
   // increase geometry_ buffers
   this->geometry_.resize(std::max(static_cast<std::size_t>(p_o + point_buffer * 3), this->geometry_.size()),-1.0);
 	this->geometry_indices_.resize(std::max(static_cast<std::size_t>(c_o + index_buffer), this->geometry_indices_.size()),static_cast<unsigned int>(-1));
@@ -644,19 +665,24 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		auto current_amount = helper.size();
     if(current_amount < 2)
     {
+      if(verbose_ && i > 0)
+      {
+        std::cout << "Skipping petiole at " << i << "/" << outer_geometry_points.size()
+        << " because it has size " << current_amount << std::endl;
+      }
       last_non_petiole = -1;
       continue;
     }
 		// compute the size of the current array, which is double its size unless one point is near zero which is only counted once
 		int current_size = current_amount;
 		// get the current point
-    double t = static_cast<double>(i) / static_cast<double>(resolution);
+    double t = static_cast<double>(i) / static_cast<double>(outer_geometry_points.size());
 		double l = t * length;
     auto midpoint = (i == 0) ? leaf->getNode(0) : midVein(t);
+    midpoint = (i == outer_geometry_points.size() - 1) ? leaf->getNode(leaf->getNumberOfNodes() - 1) : midpoint;
     // get the current point
 		// get the best spline for the current point
 		auto select_spline = midVein.selectSpline(t);
-		//auto lowest_possible_spline = std::find(midVein.getSplines().begin(), midVein.getSplines().end(), [l](auto spline) {return spline.getT0() < l; });
 		
 	  // input points, normaly, ids, texture coordinates
     // iterate through the points
@@ -667,9 +693,9 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
     // find out whether right or up is more similar to {0,0,1}
 
     // local axis
-    direction = select_spline.derivative(t);
+    direction = midVein.derivative(t);
     right = up.cross(direction).normalized();
-		right.z = 0.05 * right.z;
+		right.z = right_penalty_ * right.z;
 		right.normalize();
     up = direction.cross(right).normalized();
 
@@ -685,9 +711,11 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
     
     for(int p = 0; p < helper.size(); ++p)
     {
-      //std::cout << p_o << "/" << geometry_.size() << " ";
+      //if(verbose_)
+      //  std::cout << p_o << "/" << geometry_.size() << " ";
 
-      auto r = std::max(helper[p], this->leaf_minimum_width_);
+      auto r = helper[p];
+      r = (helper.isMirrored(p)) ? std::max(r, this->leaf_minimum_width_) : std::min(r, -this->leaf_minimum_width_);
       // get the point
 			// get the wave effect which is a sine function along the length of the leaf
 
