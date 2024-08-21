@@ -9,20 +9,53 @@ from scikit_posthocs import posthoc_tukey
 import seaborn as sns
 from scipy.stats import linregress
 import os
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+import scikit_posthocs as sp
+from statannotations.Annotator import Annotator
+import pingouin as pg
+from scipy.stats import shapiro, levene
+from statsmodels.stats.anova import anova_lm
+from statsmodels.formula.api import ols
+import scikit_posthocs as sp
+from statannotations.Annotator import Annotator
 
 dir = os.path.dirname(os.path.abspath(__file__))
 
-'''FIGURE 3'''
+'''SUP. FIGURE 2'''
 # 'load data'
 idx = ['P0','P1','P2','P3']
+P_lvl = [1.8,3.3,4.6,7.7]
 a_axial = pd.read_csv(dir + '/a_axial.csv')
 r_crown = pd.read_csv(dir + '/r_crown.csv')
 r_leaves = pd.read_csv(dir + '/r_leaves.csv')
 rootshoot = pd.read_csv(dir + '/root_shoot_ratio.csv')
+response_data = pd.read_excel(dir + '/response_data.xlsx')
+krs_df = pd.read_csv(dir + '/KRS_results.csv')
+krs_sd_df = pd.read_csv(dir + '/KRS_results_sd.csv')
 
 '''PANEL A'''
+# Conduct Shapiro-Wilk test for normality
+stat, p = shapiro(a_axial['value'])
+print(f'Shapiro-Wilk test statistic: {stat}, p-value: {p}')
+shapiro_results = {}
+for group, values in a_axial.groupby('variable')['value']:
+    stat, p = shapiro(values)
+    shapiro_results[group] = (stat, p)
+    print(f'Group: {group}, Shapiro-Wilk test statistic: {stat}, p-value: {p}')
+
+# Levene test for homogeneity of variances
+grouped_values = [values for name, values in a_axial.groupby('variable')['value']]
+levene_stat, levene_p = levene(*grouped_values)
+print(f'Levene test statistic: {levene_stat}, p-value: {levene_p}')
+
+model = ols('value ~ C(variable)', data=a_axial).fit()
+anova_results = anova_lm(model)
+print(anova_results)
+
+#Plot
 plt.subplots(figsize=(6,4))
 tukey_df = posthoc_tukey(a_axial, val_col="value", group_col="variable")
+print(tukey_df)
 remove = np.tril(np.ones(tukey_df.shape), k=0).astype("bool")
 tukey_df[remove] = np.nan
 molten_df = tukey_df.melt(ignore_index=False).reset_index().dropna()
@@ -39,6 +72,26 @@ plt.tight_layout()
 plt.show()
 
 '''PANEL B'''
+# Conduct Shapiro-Wilk test for normality
+stat, p = shapiro(r_crown['value'])
+print(f'Shapiro-Wilk test statistic: {stat}, p-value: {p}')
+shapiro_results = {}
+for group, values in r_crown.groupby('variable')['value']:
+    stat, p = shapiro(values)
+    shapiro_results[group] = (stat, p)
+    print(f'Group: {group}, Shapiro-Wilk test statistic: {stat}, p-value: {p}')
+
+
+# Levene test for homogeneity of variances
+grouped_values = [values for name, values in r_crown.groupby('variable')['value']]
+levene_stat, levene_p = levene(*grouped_values)
+print(f'Levene test statistic: {levene_stat}, p-value: {levene_p}')
+
+model = ols('value ~ C(variable)', data=r_crown).fit()
+anova_results = anova_lm(model)
+print(anova_results)
+
+#Plot
 plt.subplots(figsize=(6,4))
 tukey_df = posthoc_tukey(r_crown, val_col="value", group_col="variable")
 remove = np.tril(np.ones(tukey_df.shape), k=0).astype("bool")
@@ -57,6 +110,23 @@ plt.tight_layout()
 plt.show()
 
 '''PANEL C'''
+# Conduct Shapiro-Wilk test for normality
+shapiro_results = {}
+for group, values in r_leaves.groupby('variable')['value']:
+    stat, p = shapiro(values)
+    shapiro_results[group] = (stat, p)
+    print(f'Group: {group}, Shapiro-Wilk test statistic: {stat}, p-value: {p}')
+
+# Levene test for homogeneity of variances
+grouped_values = [values for name, values in r_leaves.groupby('variable')['value']]
+levene_stat, levene_p = levene(*grouped_values)
+print(f'Levene test statistic: {levene_stat}, p-value: {levene_p}')
+
+model = ols('value ~ C(variable)', data=r_leaves).fit()
+anova_results = anova_lm(model)
+print(anova_results)
+
+#Plot
 plt.subplots(figsize=(6,4))
 tukey_df = posthoc_tukey(r_leaves, val_col="value", group_col="variable")
 remove = np.tril(np.ones(tukey_df.shape), k=0).astype("bool")
@@ -75,7 +145,7 @@ plt.tight_layout()
 plt.show()
 
 '''PANEL D'''
-rootshoot['root_shoot'] = rootshoot.root_dm / rootshoot.shoot_dm
+rootshoot['root_shoot'] = rootshoot.root_dm / (rootshoot.shoot_dm+rootshoot.root_dm)
 grouped = rootshoot.groupby('level')
 def standard_error(x):
     return np.std(x, ddof=1) / np.sqrt(x.count())
@@ -96,21 +166,22 @@ for x, level in zip(x_values, ['P0', 'P1', 'P2', 'P3']):
     plt.text(x, result['root_shoot_mean'].loc[result['level'] == level].values[0] + 0.1, level, ha='center')
 plt.plot(x_values, y_fit, linestyle='--', color='red', label='Linear Regression Line')
 plt.text(
-    2.5, 1.3, f"R²: {r_value**2:.2f}", 
+    0.5, 0.6, f"R²: {r_value**2:.2f}", 
     bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
 ax.set_xlabel('Pcal mg 100g$^{-1}$')
 ax.set_ylabel('[-]')
 plt.xlim(1.5, 8)
-plt.ylim(0.6, 2)
+plt.ylim(0.3, 0.7)
 plt.legend()
 plt.tight_layout()
 plt.show()
 
 
-'''FIGURE 5'''
+'''FIGURE 3'''
 '''PLOT PANEL A'''
-data = pd.read_excel('C:/Users/mobil/Desktop/Experiment_Rhizotrons/response_curves/response_data.xlsx')
-adjusted_data = data[(data['Pcal'] >= 1.8) & (data['Pcal'] <= 7.3)]
+#data = pd.read_excel('C:/Users/mobil/Desktop/Experiment_Rhizotrons/response_curves/response_data.xlsx')
+data = response_data
+adjusted_data = data[(data['Pcal'] >= 1.8) & (data['Pcal'] <= 7.7)]
 X = adjusted_data[['Pcal']]
 y = adjusted_data['a_axial']
 X_with_const = sm.add_constant(X)
@@ -118,7 +189,7 @@ model = sm.OLS(y, X_with_const).fit()
 print(model.summary())
 p_value = model.pvalues[1]
 print(f"P-value for 'Pcal': {p_value}")
-pcal_values = np.linspace(1.8, 7.3, 500)
+pcal_values = np.linspace(1.8, 7.7, 500)
 X_plot = sm.add_constant(pcal_values)  # Remember to add constant for prediction
 predictions = model.predict(X_plot)
 r_squared = model.rsquared
@@ -129,7 +200,7 @@ plt.plot(pcal_values, predictions, color='black', linewidth=2)
 plt.text(x=0.5, y=0.1, s=f'R² = {r_squared:.4f}\nP-value = {p_value:.4g}', fontsize=12, transform=plt.gca().transAxes)
 plt.xlabel('P$_{Cal}$ (g 100g$^{-1}$)')
 plt.ylabel('axial root radii (cm)')
-plt.xlim(1.6, 7.5)
+plt.xlim(1.6, 8)
 plt.ylim(0.02, 0.12)
 plt.show()
 
@@ -152,7 +223,7 @@ plt.plot(X_plot, y_pred_plot, color='black', linewidth=2)  # Plotting the line
 plt.xlabel('P$_{Cal}$/DM')
 plt.ylabel('crown root elongation (cm d^-1)')
 plt.xlim(0, 0.0011)
-plt.ylim(0, 7.8)
+plt.ylim(0, 8)
 plt.ticklabel_format(axis= 'both',style = 'scientific',scilimits=(-2,5))
 plt.show()
 
@@ -172,6 +243,49 @@ plt.scatter(new_model_data['Pcal'], new_model_data['r_leaf'], color='grey')
 plt.plot(Pcal_observed_range, r_leaf_pred, color='black')
 plt.xlabel('P$_{Cal}$ (g 100g$^{-1}$)')
 plt.ylabel('leaf elongation rate (cm d^-1)$')
-plt.xlim(1.6, 7.5)
+plt.xlim(1.6, 8)
 plt.ylim(2.5, 15.5)
+plt.show()
+
+
+'''Supplementary Figure 4'''
+df = pd.DataFrame(rootshoot)
+df['shoot_dm + root_dm'] = df['shoot_dm'] + df['root_dm']
+level_mapping = {"P0": 1.8, "P1": 3.3, "P2": 4.6, "P3": 7.7}
+df['level'] = df['level'].map(level_mapping)
+df_grouped = df.groupby('level').agg(['mean', 'std'])
+
+plt.figure(figsize=(6,4))
+plt.plot(df_grouped.index, df_grouped['shoot_dm']['mean'], marker='o',label = 'Biomass shoot')
+plt.fill_between(df_grouped.index, df_grouped['shoot_dm']['mean'] - df_grouped['shoot_dm']['std'], 
+                 df_grouped['shoot_dm']['mean'] + df_grouped['shoot_dm']['std'], alpha=0.2)
+plt.plot(df_grouped.index, df_grouped['root_dm']['mean'], marker='o',  label = 'Biomass root')
+plt.fill_between(df_grouped.index, df_grouped['root_dm']['mean'] - df_grouped['root_dm']['std'], 
+                 df_grouped['root_dm']['mean'] + df_grouped['root_dm']['std'], alpha=0.2)
+plt.plot(df_grouped.index, df_grouped['shoot_dm + root_dm']['mean'], marker='o',  label = 'Biomass plant')
+plt.fill_between(df_grouped.index, df_grouped['shoot_dm + root_dm']['mean'] - df_grouped['shoot_dm + root_dm']['std'], 
+                 df_grouped['shoot_dm + root_dm']['mean'] + df_grouped['shoot_dm + root_dm']['std'], alpha=0.2)
+plt.xlabel('P$_{soil}$')
+plt.ylabel('Dry biomass [g]')
+plt.ylim(1,11)
+plt.xlim(1.6, 8)
+plt.legend()
+plt.show()
+
+'''Supplementary Figure 5'''
+
+rows_to_plot = [6, 13, 20, 27]
+line_styles = ['-', '--', '-.', ':']
+point_markers = ['o', 's', 'D', '^']
+legend_labels = ['7 DAS', '14 DAS', '21 DAS', '28 DAS']
+plt.figure(figsize=(10, 7))
+for i, row in enumerate(rows_to_plot):
+    values = krs_df.loc[row, ['krs_P0', 'krs_P1', 'krs_P2', 'krs_P3']].values
+    std_devs = krs_sd_df.loc[row, ['krs_P0', 'krs_P1', 'krs_P2', 'krs_P3']].values
+    plt.errorbar(P_lvl, values, yerr=std_devs, fmt=line_styles[i] + point_markers[i], capsize=5, color='black', label=legend_labels[i])
+plt.xlabel('P$_{soil}$')
+plt.ylabel('K$_{rs}$ (cm² d$^{-1}$)')
+plt.ylim(0, 0.025)  
+plt.grid()  
+plt.legend()
 plt.show()
