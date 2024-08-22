@@ -209,30 +209,27 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         """ actual transpiration [cm3 day-1], calculated as the sum of all radial fluxes"""
         return np.sum(self.radial_fluxes(sim_time, rx, rsx, cells))
 
-    def get_krs(self, sim_time, seg_ind = [0]):
+    def get_krs(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day]
         if there is no single collar segment at index 0, pass indices using @param seg_ind, see find_base_segments
         """
-        raise  # TODO replace axial flux by get_transpiration
+        n = self.ms.getNumberOfMappedSegments()
+        rsx = np.ones((n, 1)) * (-500)
+        rsx = self.ms.total2matric(rsx)
+        rx = self.solve_dirichlet(sim_time, -15000, rsx, cells = False)
+        t_act = -self.get_transpiration(sim_time, rx, rsx, cells = False)
+        nodes = self.ms.nodes  # bit heavy
         segs = self.ms.segments
-        nodes = self.ms.nodes
-        p_s = np.zeros((len(segs),))
-        for i, s in enumerate(segs):
-            p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
-        rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
-        jc = 0
-        for i in seg_ind:
-            jc -= self.axial_flux(i, sim_time, rx)
-        krs = jc / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[self.dirichlet_ind[0]])
-        return krs , jc
+        krs = t_act / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[0])
+        return krs , t_act
 
-    def get_suf(self):
+    def get_suf(self, sim_time):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones((n, 1)) * (-500)
-        rsx = self.rs.total2matric(rsx)
-        rx = self.solve_dirichlet(sim_time, -15000, 0., p_s, cells = False)
-        q = self.radial_fluxes(rx, rsx)
+        rsx = self.ms.total2matric(rsx)
+        rx = self.solve_dirichlet(sim_time, -15000, rsx, cells = False)
+        q = self.radial_fluxes(sim_time, rx, rsx)
         return np.array(q) / np.sum(q)
 
     def get_heff(self, rsx):
@@ -655,7 +652,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
         self.krs, _ = self.get_krs(sim_time)
-        self.suf = np.transpose(self.get_suf())
+        self.suf = np.transpose(self.get_suf_())
 
     def get_krs(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
@@ -670,7 +667,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))  # from total to matric
         return krs, t_act
 
-    def get_suf(self):
+    def get_suf_(self):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones((n, 1)) * (-500)
