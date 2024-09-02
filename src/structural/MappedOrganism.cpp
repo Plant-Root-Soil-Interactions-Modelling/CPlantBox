@@ -434,7 +434,7 @@ std::vector<double> MappedSegments::segLength() const {
 }
 
 /**
- * Returns soil matric potential per segment, for a given soil sx connected gy the mapper rs->seg2cell
+ * Returns soil matric potential per segment, for a given soil sx connected gy the mapper rs->seg2cell [TODO make more general perSegment(value_perCell)...]
  */
 std::vector<double> MappedSegments::getHs(const std::vector<double> sx) const {
     double psi_air = -954378;

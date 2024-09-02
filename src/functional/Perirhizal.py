@@ -36,7 +36,22 @@ class PerirhizalPython(Perirhizal):
         self.lookup_table = None  # optional 4d look up table to find soil root interface potentials
         self.sp = None  # corresponding van gencuchten soil parameter
 
-    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho, sp):
+    def set_soil(self, sp):
+        """ sets VG parameters, and no look up table (slow) """
+        vg.create_mfp_lookup(sp)
+        self.sp = sp
+        self.lookup_table = None
+
+    def open_lookup(self, filename):
+        """  opens a look-up table from a file to quickly find soil root interface potentials  """
+        npzfile = np.load(filename + ".npz")
+        interface = npzfile["interface"]
+        rx_, sx_, akr_, rho_ = npzfile["rx_"], npzfile["sx_"], npzfile["akr_"], npzfile["rho_"]
+        soil = npzfile["soil"]
+        self.lookup_table = RegularGridInterpolator((rx_, sx_, akr_, rho_), interface)  # method = "nearest" fill_value = None , bounds_error=False
+        self.sp = vg.Parameters(soil)
+
+    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho):
         """
         finds matric potentials at the soil root interface for as all segments
         uses a look up tables if present (see create_lookup, and open_lookup) 
@@ -45,14 +60,12 @@ class PerirhizalPython(Perirhizal):
         sx             bulk soil matric potential [cm]
         inner_kr       root radius times hydraulic conductivity [cm/day] 
         rho            geometry factor [1] (outer_radius / inner_radius)
-        sp             soil van Genuchten parameters (type vg.Parameters), call 
-                       vg.create_mfp_lookup(sp) before 
         """
         assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
         if self.lookup_table:
             rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
         else:
-            rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], sp) for i in range(0, len(rx))])
+            rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], self.sp) for i in range(0, len(rx))])
             rsx = rsx[:, 0]
         return rsx
 
@@ -65,8 +78,7 @@ class PerirhizalPython(Perirhizal):
         sx             bulk soil matric potential [cm]
         inner_kr       root radius times hydraulic conductivity [cm/day] 
         rho            geometry factor [1] (outer_radius / inner_radius)
-        sp             soil van Genuchten parameters (type vg.Parameters), call 
-                       vg.create_mfp_lookup(sp) before 
+        sp             soil van Genuchten parameters (type vg.Parameters)
         """
         k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)
         # rho = outer_r / inner_r  # Eqn [5]
@@ -192,17 +204,6 @@ class PerirhizalPython(Perirhizal):
         np.savez(filename, interface = interface, rx_ = rx_, sx_ = sx_, akr_ = akr_, rho_ = rho_, soil = list(sp))
         self.lookup_table = RegularGridInterpolator((rx_, sx_, akr_, rho_), interface)
         self.sp = sp
-
-    def open_lookup(self, filename):
-        """ 
-        Opens a look-up table from a file to quickly find soil root interface potentials 
-        """
-        npzfile = np.load(filename + ".npz")
-        interface = npzfile["interface"]
-        rx_, sx_, akr_, rho_ = npzfile["rx_"], npzfile["sx_"], npzfile["akr_"], npzfile["rho_"]
-        soil = npzfile["soil"]
-        self.lookup_table = RegularGridInterpolator((rx_, sx_, akr_, rho_), interface)  # method = "nearest" fill_value = None , bounds_error=False
-        self.sp = vg.Parameters(soil)
 
     def soil_root_interface_potentials_table(self, rx, sx, inner_kr_, rho_):
         """
@@ -627,6 +628,79 @@ class PerirhizalPython(Perirhizal):
         n_[:, axis] = -n_[:, axis]
         n_ = n_ + np.ones((nodes.shape[0], 1)) @ center
         return n_
+
+
+class PerirhizalHetereogeneous(PerirhizalPython):
+    """ 
+    Same as PerirhizalPython but for hetereogeneous soil layers 
+    """
+
+    def __init__(self, ms = None):
+        """  ms      reference to MappedSegments """
+        super().__init__(ms)
+        self.lookup_table = None  # optional array of 4d look up table to find soil root interface potentials
+        self.sp = None  # corresponding array of van gencuchten soil parameter
+        self.layerID_to_tableNumber = None  # number of table or VG set for each layer
+
+    def set_soil(self, sp):
+        raise "PerirhizalHetereogeneous: use set_soils "
+
+    def open_lookup(self, filename):
+        raise "PerirhizalHetereogeneous: use open_lookup_tables "
+
+    def open_lookup_tables(self, filenames, layerID_to_tableNumber):
+        """ filenames           list of filenames of table
+            layerID_to_tableNumber    number of table or VG set for each layer
+        """
+        pass
+
+    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho, sp):
+        """
+        finds matric potentials at the soil root interface for as all segments
+        uses a look up tables if present (see create_lookup, and open_lookup) 
+        
+        rx             xylem matric potential [cm]
+        sx             bulk soil matric potential [cm]
+        inner_kr       root radius times hydraulic conductivity [cm/day] 
+        rho            geometry factor [1] (outer_radius / inner_radius)
+        sp             soil van Genuchten parameters (type vg.Parameters), call 
+                       vg.create_mfp_lookup(sp) before 
+        """
+        assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
+
+        mapper = np.array(self.getSegmentMapper())
+        n = len(sp)
+
+        for i in range(len(self.sp)):
+            pass
+        self.layerID_to_tableNumber[mapper] = tableNumber
+
+        # if self.lookup_table:
+        #     rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
+        # else:
+        #     rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], sp) for i in range(0, len(rx))])
+        #     rsx = rsx[:, 0]
+        # return rsx
+
+    def soil_root_interface_potentials_table(self, rx, sx, inner_kr_, rho_):
+        """
+        finds potential at the soil root interface using a lookup table
+            
+        rx             xylem matric potential [cm]
+        sx             bulk soil matric potential [cm]
+        inner_kr       root radius times hydraulic conductivity [cm/day] 
+        rho            geometry factor [1]
+        f              function to look up the potentials
+        """
+        try:
+            rsx = self.lookup_table((rx, sx, inner_kr_ , rho_))
+        except:
+            print("Look up failed: ")
+            print("rx", np.min(rx), np.max(rx))  # 0, -16000
+            print("sx", np.min(sx), np.max(sx))  # 0, -16000
+            print("inner_kr", np.min(inner_kr_), np.max(inner_kr_))  # 1.e-7 - 1.e-4
+            print("rho", np.min(rho_), np.max(rho_))  # 1. - 200.
+        return rsx
 
 
 if __name__ == "__main__":
