@@ -19,9 +19,9 @@ RootSystem::RootSystem(): Organism()
 std::shared_ptr<Organism> RootSystem::copy()
 {
     roots.clear(); // clear buffer
-    auto nrs = std::make_shared<RootSystem>(*this); // copy constructor
+    std::shared_ptr<RootSystem> nrs = std::make_shared<RootSystem>(*this); // copy constructor
     nrs->seed = std::static_pointer_cast<Seed>(seed->copy(nrs));
-    baseOrgans = nrs->seed->copyBaseOrgans();
+    nrs->baseOrgans = seed->copyBaseOrgans(nrs);
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : nrs->organParam[ot]) {
             otp.second = otp.second->copy(nrs);
@@ -226,7 +226,7 @@ void RootSystem::initialize_(int basal, int shootborne, bool verbose)
     seed->shootborneType = shootborne;
     seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
-    baseOrgans = seed->copyBaseOrgans();
+    baseOrgans = seed->copyBaseOrgans(shared_from_this());
     numberOfCrowns = seed->getNumberOfRootCrowns(); // a bit redundant...
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();
@@ -306,10 +306,9 @@ void RootSystem::simulate(double dt, double maxinc_, std::shared_ptr<Proportiona
     double maxinc = dt*maxinc_; // [cm]
     double ol = this->getSummed("length");
     int i = 0;
+
     // test run (on copy)
-    std::cout << "before copy" << std::flush;
     std::shared_ptr<RootSystem> rs = std::static_pointer_cast<RootSystem>(this->copy());
-    std::cout << "after copy\n" << std::flush;
 
     se->setScale(1.);
     rs->simulate(dt, verbose);
@@ -318,7 +317,6 @@ void RootSystem::simulate(double dt, double maxinc_, std::shared_ptr<Proportiona
     if (verbose) {
         std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
     }
-    std::cout << "alive\n" << std::flush;
 
     if ((inc_>maxinc) && (std::abs(inc_-maxinc)>accuracy)) { // if necessary, perform a binary search
 
@@ -326,8 +324,6 @@ void RootSystem::simulate(double dt, double maxinc_, std::shared_ptr<Proportiona
         double sr = 1.; // right
 
         while ( ((std::abs(inc_-maxinc)) > accuracy) && (i<maxiter) )  { // binary search
-
-            std::cout << "alive(" << std::flush;
 
             double m = (sl+sr)/2.; // mid
 
@@ -347,9 +343,6 @@ void RootSystem::simulate(double dt, double maxinc_, std::shared_ptr<Proportiona
                 sl = m;
             }
             i++;
-
-            std::cout << "..)alive\n" << std::flush;
-
         }
     }
     this->simulate(dt, verbose);

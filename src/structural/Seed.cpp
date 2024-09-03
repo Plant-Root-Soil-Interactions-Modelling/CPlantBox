@@ -180,14 +180,14 @@ void Seed::initialize(bool verbose)
 }
 
 /**
- * Creates a shallow copy of the seeds child organs.
+ * Creates a deep copy of the seeds child organs.
  * Use: the rootsystem manages base root itself, and just uses Seed class for initialization
  */
-std::vector<std::shared_ptr<Organ>> Seed::copyBaseOrgans()
+std::vector<std::shared_ptr<Organ>> Seed::copyBaseOrgans(std::shared_ptr<Organism> plant)
 {
 	std::vector<std::shared_ptr<Organ>> organs;
 	for (auto& o : children) {
-		organs.push_back(o->copy(plant.lock()));
+		organs.push_back(o->copy(plant));
 	}
 	return organs;
 }
