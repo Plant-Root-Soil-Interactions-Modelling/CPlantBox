@@ -450,6 +450,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<ProportionalElongation, SoilLookUp, std::shared_ptr<ProportionalElongation>>(m, "ProportionalElongation")
             .def(py::init<>())
             .def("setScale", &ProportionalElongation::setScale)
+            .def("getScale", &ProportionalElongation::getScale)
             .def("setBaseLookUp", &ProportionalElongation::setBaseLookUp)
             .def("__str__",&ProportionalElongation::toString);
     py::class_<Grid1D, SoilLookUp, std::shared_ptr<Grid1D>>(m, "Grid1D")

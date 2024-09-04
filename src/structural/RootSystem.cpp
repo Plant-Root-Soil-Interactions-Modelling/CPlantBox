@@ -18,10 +18,12 @@ RootSystem::RootSystem(): Organism()
  */
 std::shared_ptr<Organism> RootSystem::copy()
 {
-    roots.clear(); // clear buffer
+    roots.clear(); // clear buffer (we don't want to copy the buffer)
     std::shared_ptr<RootSystem> nrs = std::make_shared<RootSystem>(*this); // copy constructor
     nrs->seed = std::static_pointer_cast<Seed>(seed->copy(nrs));
-    nrs->baseOrgans = seed->copyBaseOrgans(nrs);
+    for (int i=0; i<baseOrgans.size(); i++) {
+        nrs->baseOrgans[i] = baseOrgans[i]->copy(nrs);
+    }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : nrs->organParam[ot]) {
             otp.second = otp.second->copy(nrs);
@@ -304,15 +306,14 @@ void RootSystem::simulate(double dt, double maxinc_, std::shared_ptr<Proportiona
     const double accuracy = 1.e-3;
     const int maxiter = 20;
     double maxinc = dt*maxinc_; // [cm]
-    double ol = this->getSummed("length");
+    double ol = this->getSummed("lengthTh");
     int i = 0;
 
-    // test run (on copy)
+    // test run with scale == 1 (on copy)
     std::shared_ptr<RootSystem> rs = std::static_pointer_cast<RootSystem>(this->copy());
-
     se->setScale(1.);
     rs->simulate(dt, verbose);
-    double l = rs->getSummed("length");
+    double l = rs->getSummed("lengthTh");
     double inc_ = l - ol;
     if (verbose) {
         std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
@@ -331,11 +332,11 @@ void RootSystem::simulate(double dt, double maxinc_, std::shared_ptr<Proportiona
             std::shared_ptr<RootSystem> rs = std::static_pointer_cast<RootSystem>(this->copy()); // reset to old
             se->setScale(m);
             rs->simulate(dt, verbose);
-            l = rs->getSummed("length");
+            l = rs->getSummed("lengthTh");
             inc_ = l - ol;
 
             if (verbose) {
-                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << " > " << accuracy << "\n";
+                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
             }
             if (inc_>maxinc) { // concatenate
                 sr = m;

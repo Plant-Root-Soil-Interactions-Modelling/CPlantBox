@@ -8,7 +8,7 @@ import plantbox as pb
 import numpy as np
 
 # Parameter
-simtime = 100.  # days
+simtime = 50  # days
 dt = 1
 N = round(simtime / dt)  # steps
 maxinc = 20;  # maximal length increment (cm/day), TODO base this value on some fancy model
@@ -50,41 +50,41 @@ for i in range(0, N):
     l = rs.getSummed("length")
     inc = l - ol
     ol = l
-
     print("elongated for", inc, " cm")
 
 rs.write("results/example_carbon.vtp")
 
-# DEPRICATED draft  was added to the c++ code
-# accuracy = 0.1 # cm
+# # DEPRICATED draft  was added to the c++ code
+# accuracy = 0.1  # cm
 # maxiter = 10
+#
 #
 # #
 # def elongate(rs, inc, dt, se):
 #
-#     ol = np.sum(v2a(rs.getScalar(rb.ScalarType.length)))
+#     ol = rs.getSummed("length")
 #     i = 0
 #
-#     rs_ = rb.RootSystem(rs) # copy
+#     rs_ = rb.RootSystem(rs)  # copy ################# SHALLOW?!
 #     se.setScale(1.)
 #     rs_.simulate(dt, True)
-#     inc_ = np.sum(v2a(rs_.getScalar(rb.ScalarType.length))) - ol
+#     inc_ = rs_.getSummed("length") - ol
 #
-#     if inc_>inc and abs(inc_-inc)>accuracy: # check if we have to perform a binary search
+#     if inc_ > inc and abs(inc_ - inc) > accuracy:  # check if we have to perform a binary search
 #
-#         sl = 0. # left
-#         sr = 1. # right
+#         sl = 0.  # left
+#         sr = 1.  # right
 #
-#         while abs(inc_-inc)>accuracy and i<maxiter: # binary search
+#         while abs(inc_ - inc) > accuracy and i < maxiter:  # binary search
 #
-#             m = (sl+sr)/2. # mid
-#             rs_ = rb.RootSystem(rs) # copy
+#             m = (sl + sr) / 2.  # mid
+#             rs_ = rb.RootSystem(rs)    # copy ################# SHALLOW?!
 #             se.setScale(m)
 #             rs_.simulate(dt, True)
-#             inc_ = np.sum(v2a(rs_.getScalar(rb.ScalarType.length))) - ol
+#             inc_ = rs_.getSummed("length") - ol
 #             print("\tsl, mid, sr ", sl, m, sr, inc_)
 #
-#             if inc_>inc: # concatenate
+#             if inc_ > inc:  # concatenate
 #                 sr = m
 #             else:
 #                 sl = m

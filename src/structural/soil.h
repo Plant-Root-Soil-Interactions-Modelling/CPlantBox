@@ -211,6 +211,7 @@ public:
     std::shared_ptr<SoilLookUp> copy() override { return std::make_shared<ProportionalElongation>(*this); } // todo? now its a shallow copy
 
     void setScale(double s) { scale = s; }
+    double getScale() { return scale; }
 
     void setBaseLookUp(std::shared_ptr<SoilLookUp> baseLookUp) { this->baseLookUp=baseLookUp; } ///< proportionally scales a base soil look up
 
