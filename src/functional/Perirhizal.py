@@ -78,7 +78,7 @@ class PerirhizalPython(Perirhizal):
         sx             bulk soil matric potential [cm]
         inner_kr       root radius times hydraulic conductivity [cm/day] 
         rho            geometry factor [1] (outer_radius / inner_radius)
-        sp             soil van Genuchten parameters (type vg.Parameters)
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)
         """
         k_soilfun = lambda hsoil, hint: (vg.fast_mfp[sp](hsoil) - vg.fast_mfp[sp](hint)) / (hsoil - hint)
         # rho = outer_r / inner_r  # Eqn [5]
@@ -218,11 +218,17 @@ class PerirhizalPython(Perirhizal):
         try:
             rsx = self.lookup_table((rx, sx, inner_kr_ , rho_))
         except:
-            print("Look up failed: ")
-            print("rx", np.min(rx), np.max(rx))  # 0, -16000
-            print("sx", np.min(sx), np.max(sx))  # 0, -16000
-            print("inner_kr", np.min(inner_kr_), np.max(inner_kr_))  # 1.e-7 - 1.e-4
-            print("rho", np.min(rho_), np.max(rho_))  # 1. - 200.
+            print("PerirhizalPython.soil_root_interface_potentials_table(): table look up failed, value exceeds table")
+            #
+            if np.max(rx) > 0: print("xylem matric potential positive", np.max(rx), "at", np.argmax(rx))
+            if np.min(rx) < 16000: print("xylem matric potential under -16000 cm", np.min(rx), "at", np.argmin(rx))
+            if np.max(sx) > 0: print("soil matric potential positive", np.max(sx), "at", np.argmax(sx))
+            if np.min(sx) < 16000: print("soil matric potential under -16000 cm", np.min(sx), "at", np.argmin(sx))
+            if np.min(inner_kr_) < 1.e-7: print("radius times radial conductivity below 1.e-7", np.min(inner_kr_), "at", np.argmin(inner_kr_))
+            if np.min(inner_kr_) > 1.e-4: print("radius times radial conductivity above 1.e-4", np.max(inner_kr_), "at", np.argmax(inner_kr_))
+            if np.min(rho_) < 1: print("geometry factor below 1", np.min(rho_), "at", np.argmin(rho_))
+            if np.min(rho_) > 200: print("geometry factor above 200", np.max(rho_), "at", np.argmax(rho_))
+
         return rsx
 
     def get_cell_bounds(self, i:int, j:int, k:int):
@@ -628,79 +634,6 @@ class PerirhizalPython(Perirhizal):
         n_[:, axis] = -n_[:, axis]
         n_ = n_ + np.ones((nodes.shape[0], 1)) @ center
         return n_
-
-
-class PerirhizalHetereogeneous(PerirhizalPython):
-    """ 
-    Same as PerirhizalPython but for hetereogeneous soil layers 
-    """
-
-    def __init__(self, ms = None):
-        """  ms      reference to MappedSegments """
-        super().__init__(ms)
-        self.lookup_table = None  # optional array of 4d look up table to find soil root interface potentials
-        self.sp = None  # corresponding array of van gencuchten soil parameter
-        self.layerID_to_tableNumber = None  # number of table or VG set for each layer
-
-    def set_soil(self, sp):
-        raise "PerirhizalHetereogeneous: use set_soils "
-
-    def open_lookup(self, filename):
-        raise "PerirhizalHetereogeneous: use open_lookup_tables "
-
-    def open_lookup_tables(self, filenames, layerID_to_tableNumber):
-        """ filenames           list of filenames of table
-            layerID_to_tableNumber    number of table or VG set for each layer
-        """
-        pass
-
-    def soil_root_interface_potentials(self, rx, sx, inner_kr, rho, sp):
-        """
-        finds matric potentials at the soil root interface for as all segments
-        uses a look up tables if present (see create_lookup, and open_lookup) 
-        
-        rx             xylem matric potential [cm]
-        sx             bulk soil matric potential [cm]
-        inner_kr       root radius times hydraulic conductivity [cm/day] 
-        rho            geometry factor [1] (outer_radius / inner_radius)
-        sp             soil van Genuchten parameters (type vg.Parameters), call 
-                       vg.create_mfp_lookup(sp) before 
-        """
-        assert len(rx) == len(sx) == len(inner_kr) == len(rho), "rx, sx, inner_kr, and rho must have the same length"
-
-        mapper = np.array(self.getSegmentMapper())
-        n = len(sp)
-
-        for i in range(len(self.sp)):
-            pass
-        self.layerID_to_tableNumber[mapper] = tableNumber
-
-        # if self.lookup_table:
-        #     rsx = self.soil_root_interface_potentials_table(rx, sx, inner_kr, rho)
-        # else:
-        #     rsx = np.array([PerirhizalPython.soil_root_interface_(rx[i], sx[i], inner_kr[i], rho[i], sp) for i in range(0, len(rx))])
-        #     rsx = rsx[:, 0]
-        # return rsx
-
-    def soil_root_interface_potentials_table(self, rx, sx, inner_kr_, rho_):
-        """
-        finds potential at the soil root interface using a lookup table
-            
-        rx             xylem matric potential [cm]
-        sx             bulk soil matric potential [cm]
-        inner_kr       root radius times hydraulic conductivity [cm/day] 
-        rho            geometry factor [1]
-        f              function to look up the potentials
-        """
-        try:
-            rsx = self.lookup_table((rx, sx, inner_kr_ , rho_))
-        except:
-            print("Look up failed: ")
-            print("rx", np.min(rx), np.max(rx))  # 0, -16000
-            print("sx", np.min(sx), np.max(sx))  # 0, -16000
-            print("inner_kr", np.min(inner_kr_), np.max(inner_kr_))  # 1.e-7 - 1.e-4
-            print("rho", np.min(rho_), np.max(rho_))  # 1. - 200.
-        return rsx
 
 
 if __name__ == "__main__":
