@@ -35,7 +35,7 @@ public:
 
     int getNumberOfRootCrowns() const { return numberOfRootCrowns; } // for rootsystem initialisation
     std::vector<std::shared_ptr<Organ>> baseOrgans() { return children; } // created by initialize
-    std::vector<std::shared_ptr<Organ>> copyBaseOrgans(); ///< shallow copy of the childs
+    std::vector<std::shared_ptr<Organ>> copyBaseOrgans(std::shared_ptr<Organism> plant);
 
     virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay); ///< overwrite if you want to change class types
     virtual std::shared_ptr<Organ> createStem(std::shared_ptr<Organism> plant, int type, double delay); ///< overwrite if you want to change class types

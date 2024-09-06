@@ -18,10 +18,12 @@ RootSystem::RootSystem(): Organism()
  */
 std::shared_ptr<Organism> RootSystem::copy()
 {
-    roots.clear(); // clear buffer
-    auto nrs = std::make_shared<RootSystem>(*this); // copy constructor
+    roots.clear(); // clear buffer (we don't want to copy the buffer)
+    std::shared_ptr<RootSystem> nrs = std::make_shared<RootSystem>(*this); // copy constructor
     nrs->seed = std::static_pointer_cast<Seed>(seed->copy(nrs));
-    baseOrgans = nrs->seed->copyBaseOrgans();
+    for (int i=0; i<baseOrgans.size(); i++) {
+        nrs->baseOrgans[i] = baseOrgans[i]->copy(nrs);
+    }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : nrs->organParam[ot]) {
             otp.second = otp.second->copy(nrs);
@@ -226,7 +228,7 @@ void RootSystem::initialize_(int basal, int shootborne, bool verbose)
     seed->shootborneType = shootborne;
     seed->initialize(verbose);
     seedParam = SeedSpecificParameter(*seed->param()); // copy the specific parameters
-    baseOrgans = seed->copyBaseOrgans();
+    baseOrgans = seed->copyBaseOrgans(shared_from_this());
     numberOfCrowns = seed->getNumberOfRootCrowns(); // a bit redundant...
     oldNumberOfNodes = baseOrgans.size();
     initCallbacks();
@@ -299,26 +301,25 @@ void RootSystem::simulate()
  * @param se        The class ProportionalElongation is used to scale overall root growth
  * @param verbose   indicates if status is written to the console (cout) (default = false)
  */
-void RootSystem::simulate(double dt, double maxinc_, ProportionalElongation* se, bool verbose)
+void RootSystem::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElongation> se, bool verbose)
 {
     const double accuracy = 1.e-3;
     const int maxiter = 20;
     double maxinc = dt*maxinc_; // [cm]
-    double ol = getSummed("length");
+    double ol = this->getSummed("lengthTh");
     int i = 0;
 
-    push();
+    // test run with scale == 1 (on copy)
+    std::shared_ptr<RootSystem> rs = std::static_pointer_cast<RootSystem>(this->copy());
     se->setScale(1.);
-    simulate(dt, verbose);
-    double l = getSummed("length");
+    rs->simulate(dt, verbose);
+    double l = rs->getSummed("lengthTh");
     double inc_ = l - ol;
     if (verbose) {
-        std::cout << "expected increase is " << inc_ << " maximum is " << maxinc
-            << "\n";
+        std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
     }
-    pop();
 
-    if ((inc_>maxinc) && (std::abs(inc_-maxinc)>accuracy)) { // check if we have to perform a binary search
+    if ((inc_>maxinc) && (std::abs(inc_-maxinc)>accuracy)) { // if necessary, perform a binary search
 
         double sl = 0.; // left
         double sr = 1.; // right
@@ -326,14 +327,16 @@ void RootSystem::simulate(double dt, double maxinc_, ProportionalElongation* se,
         while ( ((std::abs(inc_-maxinc)) > accuracy) && (i<maxiter) )  { // binary search
 
             double m = (sl+sr)/2.; // mid
-            push();
+
+            // test run (on copy) with scale m
+            std::shared_ptr<RootSystem> rs = std::static_pointer_cast<RootSystem>(this->copy()); // reset to old
             se->setScale(m);
-            simulate(dt, verbose);
-            l = getSummed("length");
+            rs->simulate(dt, verbose);
+            l = rs->getSummed("lengthTh");
             inc_ = l - ol;
-            pop();
+
             if (verbose) {
-                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << " > " << accuracy << "\n";
+                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
             }
             if (inc_>maxinc) { // concatenate
                 sr = m;
@@ -341,7 +344,6 @@ void RootSystem::simulate(double dt, double maxinc_, ProportionalElongation* se,
                 sl = m;
             }
             i++;
-
         }
     }
     this->simulate(dt, verbose);
@@ -472,24 +474,6 @@ std::vector<Vector2i> RootSystem::getShootSegments() const
 }
 
 /**
- * Pushes current root system state to the stack
- */
-void RootSystem::push()
-{
-    stateStack.push_back(RootSystemState(*this));
-}
-
-/**
- * Retrieves previous root system state from the stack
- */
-void RootSystem::pop()
-{
-    RootSystemState& rss = stateStack.back();
-    rss.restore(*this);
-    stateStack.pop_back();
-}
-
-/**
  * @return quick info about the root system for debugging
  */
 std::string RootSystem::toString() const
@@ -500,88 +484,5 @@ std::string RootSystem::toString() const
     return str.str();
 }
 
-/**
- * Create a root system state object from a rootsystem, use RootSystemState::restore to go back to that state.
- *
- * @param rs        the root system to be stored
- */
-RootSystemState::RootSystemState(const RootSystem& rs) : simtime(rs.simtime), dt(rs.dt), organId(rs.organId), nodeId(rs.nodeId),
-    oldNumberOfOrgans(rs.oldNumberOfOrgans), numberOfCrowns(rs.numberOfCrowns), gen(rs.gen), UD(rs.UD), ND(rs.ND)
-{
-    baseRoots = std::vector<RootState>(rs.baseOrgans.size()); // store base roots
-    for (size_t i=0; i<baseRoots.size(); i++) {
-        baseRoots[i] = RootState(*(std::static_pointer_cast<Root>(rs.baseOrgans[i])));
-    }
-}
-
-/**
- * Restore evolved rootsystem back to its previous state
- *
- * @param rs    the root system to be restored
- */
-void RootSystemState::restore(RootSystem& rs)
-{
-    rs.roots.clear(); // clear buffer
-    rs.simtime = simtime; // copy back everything
-    rs.dt = dt;
-    rs.organId = organId;
-    rs.nodeId = nodeId;
-    rs.oldNumberOfNodes = oldNumberOfNodes;
-    rs.oldNumberOfOrgans = oldNumberOfOrgans;
-    rs.numberOfCrowns = numberOfCrowns;
-
-    rs.gen = gen;
-    rs.UD = UD;
-    rs.ND = ND;
-    for (size_t i=0; i<baseRoots.size(); i++) { // restore base roots
-        baseRoots[i].restore(*(std::static_pointer_cast<Root>(rs.baseOrgans[i])));
-    }
-}
-
-/**
- * Create a root state object from a root, use RootState::restore to go back to that state.
- *
- * @param r        the root to be stored
- */
-RootState::RootState(const Root& r): alive(r.alive), active(r.active), age(r.age), length(r.getLength(true)),
-    epsilonDx(r.epsilonDx), moved(r.moved), oldNumberOfNodes(r.oldNumberOfNodes), firstCall(r.firstCall)
-{
-    lNode = r.nodes.back();
-    lNodeId = r.nodeIds.back();
-    lneTime = r.nodeCTs.back();
-    non = r.nodes.size();
-    laterals = std::vector<RootState>(r.children.size());
-    for (size_t i=0; i<laterals.size(); i++) {
-        laterals[i] = RootState(*(std::static_pointer_cast<Root>(r.children[i])));
-    }
-}
-
-/**
- * Restore evolved root back to its previous state
- *
- * @param r    the root to be restored
- */
-void RootState::restore(Root& r)
-{
-    r.alive = alive; // copy things that changed
-    r.active = active;
-    r.age = age;
-    r.length = length;
-    r.epsilonDx = epsilonDx;
-    r.moved = moved;
-    r.oldNumberOfNodes = oldNumberOfNodes;
-    r.firstCall = firstCall; //
-
-    r.nodes.resize(non); // shrink vectors
-    r.nodeIds.resize(non);
-    r.nodeCTs.resize(non);
-    r.nodes.back() = lNode; // restore last value
-    r.nodeIds.back() = lNodeId;
-    r.nodeCTs.back() = lneTime;
-    r.children.resize(laterals.size()); // shrink and restore laterals
-    for (size_t i=0; i<laterals.size(); i++) {
-        laterals[i].restore(*(std::static_pointer_cast<Root>(r.children[i])));
-    }
-}
 
 } // end namespace CPlantBox

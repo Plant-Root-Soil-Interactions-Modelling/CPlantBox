@@ -23,7 +23,7 @@ namespace CPlantBox {
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-     :Organ(id, param, alive, active, age, length, 
+     :Organ(id, param, alive, active, age, length,
 	 partialIHeading_,pni, moved,  oldNON )
       {
     insertionAngle = this->param()->theta;
@@ -54,17 +54,17 @@ Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_pt
     }
     insertionAngle = theta;
 	this->partialIHeading = Vector3d::rotAB(theta,beta);
-			
+
 	if(!(parent->organType()==Organism::ot_seed))
 	{
 			double creationTime= parent->getNodeCT(pni)+delay;//default
 		if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
 		{
 			addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-			
+
 		}else{
 			if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
-			//if lateral of stem, initial creation time: 
+			//if lateral of stem, initial creation time:
 			//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
 			// @see stem::leafGrow
 			creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
@@ -135,6 +135,7 @@ void Root::simulate(double dt, bool verbose)
                 l->simulate(dt,verbose);
             }
 
+
             if (active) {
 
                 // length increment
@@ -172,17 +173,18 @@ void Root::simulate(double dt, bool verbose)
                             //							} // this could happen, if the tip ends in this section
                         }
                     }
+
                     /* branching zone */
                     if ((dl>0)&&(length>=p.lb)) {
                         double s = p.lb; // summed length
                         for (size_t i=0; ((i<p.ln.size()) && (dl > 0)); i++) {
                             s+=p.ln.at(i);
                             if (length<=s) {//need "<=" instead of "<" => in some cases ln.at(i) == 0 when adapting ln to dxMin (@see rootrandomparameter::realize())
-							
+
                                 if (i==created_linking_node) { // new lateral
                                     createLateral(dt_, verbose);
                                 }
-		
+
                                 if(length < s)//because with former check we have (length<=s)
                                 {
                                     if (length+dl<=s) { // finish within inter-lateral distance i
@@ -198,21 +200,23 @@ void Root::simulate(double dt, bool verbose)
                                         //										throw std::runtime_error( "Root::simulate: p.ln.at(i) - length < dxMin");
                                         //									} // this could happen, if the tip ends in this section
                                     }
-		 
+
                                 }
                             }
                         }
-	  
+
                         if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
                             createLateral(dt_, verbose);
                         }
                     }
+
                     /* apical zone */
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);
                         length+=dl; // - this->epsilonDx;
                     }
                 } else { // no laterals
+
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);
                         length+=dl; //- this->epsilonDx;
@@ -290,7 +294,7 @@ double Root::getParameter(std::string name) const
     if (name=="k") { return param()->getK(); }; // maximal root length [cm]
     if (name=="lmax") { return param()->getK(); }; // maximal root length [cm]
     // further
-    if (name=="lnMean") { // mean lateral distance [cm]	
+    if (name=="lnMean") { // mean lateral distance [cm]
         auto& v =param()->ln;
 		if(v.size()>0){
 			return std::accumulate(v.begin(), v.end(), 0.0) / v.size();

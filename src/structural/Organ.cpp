@@ -282,7 +282,7 @@ void Organ::getOrgans(int ot, std::vector<std::shared_ptr<Organ>>& v, bool all)
 	bool forCarbon_limitedGrowth = (all && (this->getAge()>0));//when ask for "all" organs which have age > 0 even if nodes.size() == 1
 	bool notSeed = ( this->organType() != Organism::ot_seed);
 
-	if ((this->nodes.size()>1 || forCarbon_limitedGrowth) &&notSeed) {//&& notBulb
+	if ((this->nodes.size()>1 || forCarbon_limitedGrowth) && notSeed) {//&& notBulb
 		if ((ot<0) || (ot==this->organType())) {
 			v.push_back(shared_from_this());
 		}
@@ -630,7 +630,7 @@ double Organ::calcCreationTime(double length, double dt)
  *
  *  @param l        total length of the segments that are created [cm]
  *  @param dt       time step [day]
- *  @param PhytoIdx index of phytomere node to elongate (optional) [1]	  
+ *  @param PhytoIdx index of phytomere node to elongate (optional) [1]
  *  @param verbose  turns console output on or off
  */
 void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
@@ -708,9 +708,9 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 		{ // last segment
             sdx = l-n*dx();
             if (sdx<dxMin()*(1-1e-10)) { //plant.lock()->getMinDx()) { // quit if l is too small
-                if (verbose&& (sdx != 0)) {
-                    std::cout <<"Organ::createSegments(): "<<organType()<<" length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
-                }
+//                if (verbose && (sdx != 0)) {
+//                    std::cout <<"Organ::createSegments(): "<<organType()<<" length increment below dxMin threshold ("<< sdx <<" < "<< dxMin() << ") and kept in memory\n";
+//                }
 				if( PhytoIdx >= 0){
 					this->epsilonDx += sdx;
 				}else{this->epsilonDx = sdx;}
@@ -736,73 +736,73 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 
 
 /**
- * Creates a new lateral 
- *  @param dt       time step [day]	  
+ * Creates a new lateral
+ *  @param dt       time step [day]
  *  @param verbose  turns console output on or off
  */
 void Organ::createLateral(double dt, bool verbose)
-{ 
+{
 	auto rp = getOrganRandomParameter(); // rename
-	
+
 	for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
 		//found id
 		bool applyHere = getApplyHere(i);
-		
+
 		if(applyHere)
 		{
 			int numlats = 1;//how many laterals? default = 1
 			if(rp->successorNo.size()>i){numlats =  rp->successorNo.at(i);}
 			for(int nn = 0; nn < numlats; nn++)
 			{
-				
+
 				const Vector3d& pos = Vector3d();
 				int p_id = rp->getLateralType(pos, i);//if probabilistic branching
-						
+
 				if(p_id >=0)
 				{
 					int ot;
-				
+
 					if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
 						ot = rp->successorOT.at(i).at(p_id);
 					}else{ot = getParameter("organType");}//default
-					
+
 					int st = rp->successorST.at(i).at(p_id);
-				
+
 					double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
 					double growth_dt = getLatInitialGrowth(dt);
-					
-				
+
+
 					switch(ot){
 						case Organism::ot_root:{
 							auto lateral = std::make_shared<Root>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
 							children.push_back(lateral);
-							lateral->simulate(growth_dt,verbose); 
+							lateral->simulate(growth_dt,verbose);
 							break;}
 						case Organism::ot_stem:{
 							auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(),  nodes.size() - 1);
 							children.push_back(lateral);
-							lateral->simulate(growth_dt,verbose); 
+							lateral->simulate(growth_dt,verbose);
 							break;}
 						case Organism::ot_leaf:{
 							auto lateral = std::make_shared<Leaf>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
 							children.push_back(lateral);
-							lateral->simulate(growth_dt,verbose);//age-ageLN,verbose); 
+							lateral->simulate(growth_dt,verbose);//age-ageLN,verbose);
 							break;}
 					}
-				}				
+				}
 			}
 		}
-		
+
 	}
 	created_linking_node ++;
 	storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
-		
+
 }
 
 
 /**
  * See if should apply successor rule at a specific linking node, @see Organ::createLateral
- *  @param i       rule id  
+ *  @param i       rule id
  *  @return whether to apply the rule
  */
 bool Organ::getApplyHere(int i) const
@@ -818,7 +818,7 @@ bool Organ::getApplyHere(int i) const
 				applyHere = !(std::find (rp->successorWhere.at(i).begin(), rp->successorWhere.at(i).end(), -double(created_linking_node))
 				!= rp->successorWhere.at(i).end());
 			}
-			
+
 		}else{applyHere = true;} //default
 	return applyHere;
 }
@@ -826,7 +826,7 @@ bool Organ::getApplyHere(int i) const
 
 /**
  *  @see Organ::createLateral
- *  @param dt       time step recieved by parent organ [day]	
+ *  @param dt       time step recieved by parent organ [day]
  *  @return growth period to send to lateral after creation
  */
 double Organ::getLatInitialGrowth(double dt)
@@ -839,9 +839,9 @@ double Organ::getLatInitialGrowth(double dt)
 
 /**
  *  @see Organ::createLateral
- *  @param ot_lat       organType of lateral to create	
- *  @param st_lat       subType of lateral to create	
- *  @param dt       time step recieved by parent organ [day]	
+ *  @param ot_lat       organType of lateral to create
+ *  @param st_lat       subType of lateral to create
+ *  @param dt       time step recieved by parent organ [day]
  *  @return emergence delay to send to lateral after creation
  */
 double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
@@ -851,7 +851,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
 
 	assert(delayDefinition >= 0);
-	
+
 	switch(delayDefinition){
 		case Organism::dd_distance:
 		{
@@ -871,7 +871,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 		}
 		case Organism::dd_time_self:
 		{
-			
+
 			//get delay per lateral
 			auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
 			growthDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
@@ -890,7 +890,7 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 }
 /**
  * Check if the organ has relative coordinates.
- * meaning: organ is not a basal/tap root and first node is at (0,0,0) but 
+ * meaning: organ is not a basal/tap root and first node is at (0,0,0) but
  */
 bool Organ::hasRelCoord() const
 {
@@ -902,5 +902,5 @@ bool Organ::hasRelCoord() const
 	}
 	bool isBasalRoot = ((organType() == Organism::ot_root)&&basalOrgan);
 	return (nullNode0&&(!isBasalRoot)&&(!isSeed));
-}										   
+}
 }
