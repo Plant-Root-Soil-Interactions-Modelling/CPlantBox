@@ -5,8 +5,8 @@
 [![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
 
 ## I can :
-1. Create multiple plant structure
-2. Simulate the carbon (coupling with PiafMunch) and water flow inside of the plant.
+1. Create multiple plant structures
+2. Simulate the carbon transport (coupling with PiafMunch) and water flow inside of the plant
 3. Simulate the solute transport and water flow in the soil (coupling with DuMux)
 
 
