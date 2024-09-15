@@ -4,24 +4,19 @@
 # Hi, I am CPlantBox
 [![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
 
-## For simulations in https://doi.org/10.1101/810507 please use branch isp
-
-[![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/xiaoranzhou/cpb-binder/master)
 ## I can :
 1. Create multiple plant structure
-2. Coupling with PiafMunch, and make carbon and water flow inside of the plant.
+2. Simulate the carbon (coupling with PiafMunch) and water flow inside of the plant.
+3. Simulate the solute transport and water flow in the soil (coupling with DuMux)
 
 
 ## Try me 1 click
-
-The most convenient way is to use google colab, which is a Linux virtual machine with jupyter notebook interface.
-You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
-[here is the link to use it](http://cplantbox.com).
+You can discover CPlantBox with 
+[this web-based application](http://cplantbox.com) designed for conduct and visualize plant growth simulations. It is part of Xiaoran Zhou's PhD thesis. the source code is avialable at <a href="https://github.com/xiaoranzhou/cpb">github-xiaoranzhou
 
 # build local
 ## semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
 ### Linux
-If you have  and, you can set up CPlantBox (with or without the dumux-rosi extension) via an install script.\
 This installation method requires ubuntu >= 20.04 and python >= 3.7.\
 For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
 Run
@@ -81,8 +76,6 @@ Collaboration diagrams give an overview of the code in folder /docs.
 
 # Examples
 Simulation videos availabe in Youtube Channel https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q
-
-[![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
 
 
 
