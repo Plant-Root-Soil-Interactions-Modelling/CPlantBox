@@ -16,7 +16,7 @@
 
 The most convenient way is to use google colab, which is a Linux virtual machine with jupyter notebook interface.
 You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
-[here is the link to use it](http://b.cplantbox.com).
+[here is the link to use it](http://cplantbox.com).
 
 # build local
 ## semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
