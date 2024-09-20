@@ -211,8 +211,9 @@ public:
     std::shared_ptr<SoilLookUp> copy() override { return std::make_shared<ProportionalElongation>(*this); } // todo? now its a shallow copy
 
     void setScale(double s) { scale = s; }
+    double getScale() { return scale; }
 
-    void setBaseLookUp(SoilLookUp* baseLookUp) { this->baseLookUp=baseLookUp; } ///< proportionally scales a base soil look up
+    void setBaseLookUp(std::shared_ptr<SoilLookUp> baseLookUp) { this->baseLookUp=baseLookUp; } ///< proportionally scales a base soil look up
 
     double getValue(const Vector3d& pos, const std::shared_ptr<Organ> o = nullptr) const override {
         if (baseLookUp==nullptr) {
@@ -228,7 +229,7 @@ public:
 protected:
 
     double scale = 1.;
-    SoilLookUp* baseLookUp = nullptr;
+    std::shared_ptr<SoilLookUp> baseLookUp;
 
 };
 

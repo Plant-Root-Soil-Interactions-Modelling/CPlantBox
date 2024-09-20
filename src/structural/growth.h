@@ -14,9 +14,9 @@ class GrowthFunction
 {
 public:
 	virtual ~GrowthFunction() {};
-	
+
 	std::map<int, double> CW_Gr;
-	
+
 	/**
 	 * Returns root length at root age t
 	 *
@@ -75,12 +75,11 @@ public:
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override { return k*(1-exp(-(r/k)*t)); } ///< @copydoc GrowthFunction::getLegngth
 
 	double getAge(double l, double r, double k, std::shared_ptr<const Organ> o) const override { ///< @copydoc GrowthFunction::getAge
-
 		double age = - k/r*log(1-l/k);
 		if (std::isfinite(age)) { // the age can not be computed when root length approaches max length
-			return age;
+		    return age;
 		} else {
-			return 1.e9; // very old
+		    return 1.e9; // very old
 		}
 	} ///< @see GrowthFunction
 
@@ -95,7 +94,6 @@ public:
 class CWLimitedGrowth : public ExponentialGrowth
 {
 public:
-
 
 	double getLength(double t, double r, double k, std::shared_ptr<Organ> o) const override {
 		double length_;

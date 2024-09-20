@@ -450,6 +450,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<ProportionalElongation, SoilLookUp, std::shared_ptr<ProportionalElongation>>(m, "ProportionalElongation")
             .def(py::init<>())
             .def("setScale", &ProportionalElongation::setScale)
+            .def("getScale", &ProportionalElongation::getScale)
             .def("setBaseLookUp", &ProportionalElongation::setBaseLookUp)
             .def("__str__",&ProportionalElongation::toString);
     py::class_<Grid1D, SoilLookUp, std::shared_ptr<Grid1D>>(m, "Grid1D")
@@ -835,7 +836,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("setTropism", &RootSystem::setTropism)
             .def("simulate",(void (RootSystem::*)(double,bool)) &RootSystem::simulate, py::arg("dt"), py::arg("verbose") = false)
             .def("simulate",(void (RootSystem::*)()) &RootSystem::simulate)
-            .def("simulate",(void (RootSystem::*)(double, double, ProportionalElongation*, bool)) &RootSystem::simulate)
+            .def("simulate",(void (RootSystem::*)(double, double, std::shared_ptr<ProportionalElongation>, bool)) &RootSystem::simulate)
             .def("getRoots", &RootSystem::getRoots)
             .def("initCallbacks", &RootSystem::initCallbacks)
             .def("createTropismFunction", &RootSystem::createTropismFunction)
@@ -845,8 +846,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getShootSegments", &RootSystem::getShootSegments)
             .def("getRootTips", &RootSystem::getRootTips)
             .def("getRootBases", &RootSystem::getRootBases)
-            .def("push",&RootSystem::push)
-            .def("pop",&RootSystem::pop)
             .def("write", &RootSystem::write);
     /*
      * MappedOrganism.h
