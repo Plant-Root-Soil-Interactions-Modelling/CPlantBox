@@ -63,7 +63,7 @@ public:
     void setTropism(std::shared_ptr<Tropism> tf, int rt = -1); ///< sets a tropism function for a single root type or all root types (defaut)
     void simulate(double dt, bool verbose = false) override; ///< simulates root system growth for time span dt
     void simulate(); ///< simulates root system growth for the time defined in the root system parameters
-    void simulate(double dt, double maxinc, ProportionalElongation* se, bool silence = false);
+    void simulate(double dt, double maxinc, ProportionalElongation* se, bool verbose = false);
     ///< simulates the root system with a maximal overall elongation
 
     /* sequential */
