@@ -6,7 +6,7 @@ import plantbox as pb
 import matplotlib.pyplot as plt
 import numpy as np
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 p0 = pb.RootRandomParameter(rs)  # with default values,
 p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 

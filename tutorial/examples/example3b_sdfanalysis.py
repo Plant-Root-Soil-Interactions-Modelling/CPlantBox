@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"  # Zea_mays_1_Leitner_2010, Brassica_napus_a_Leitner_2010
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 rs.readParameters(path + name + ".xml")
 rs.initialize()
 rs.simulate(120)
