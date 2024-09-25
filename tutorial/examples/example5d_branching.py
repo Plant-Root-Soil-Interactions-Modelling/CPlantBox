@@ -7,6 +7,7 @@ import visualisation.vtk_plot as vp
 import numpy as np
 
 rs = pb.RootSystem()
+# rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
@@ -27,6 +28,9 @@ soilprop = pb.SoilLookUpSDF(left, maxS, minS, slope)
 
 # Manually set scaling function and tropism parameters
 sigma = [0.4, 1., 1., 1., 1. ] * 2
+# for p in rs.getOrganRandomParameter(pb.root):
+#     p.dx = 0.25
+#     p.tropismS = sigma[p.subType - 1]
 for p in rs.getRootRandomParameter():
     p.dx = 0.25  # adjust resolution
     p.tropismS = sigma[p.subType - 1]
@@ -36,6 +40,11 @@ p = rs.getRootRandomParameter(2)
 p.ln = p.ln / 5
 p = rs.getRootRandomParameter(3)
 p.f_sbp = soilprop
+
+# p = rs.getOrganRandomParameter(pb.root, 2)
+# p.ln = p.ln / 5
+# p = rs.getOrganRandomParameter(pb.root,3)
+# p.f_sbp = soilprop
 
 # simulation
 rs.initialize()
