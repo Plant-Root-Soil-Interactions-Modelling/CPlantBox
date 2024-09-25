@@ -414,12 +414,15 @@ std::vector<std::shared_ptr<Root>> RootSystem::getRoots() const
 /**
  * @copydoc Organism::getNodes
  *
- * adds an artificial shoot node
+ * also set position of the artificial node
  */
 std::vector<Vector3d> RootSystem::getNodes() const
 {
     auto v = Organism::getNodes();
-    v.at(0) = Vector3d(0.,0.,0.); // the artifical node is created by initialize()
+    // node 0 is the artifical node created by initialize() to link seed and shoot-born roots
+    // node 1 is the seed
+    v.at(0) = v.at(1); 
+    v.at(0).z = v.at(1).z + 1; // 1cm above the seed by default
     return v;
 }
 
