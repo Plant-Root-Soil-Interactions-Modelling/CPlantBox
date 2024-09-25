@@ -4,13 +4,13 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
 # Modify axial resolution
-for p in rs.getRootRandomParameter():
+for p in rs.getOrganRandomParameter(pb.root):
     p.dx = 0.1  # adjust resolution
 
 # Simulate
