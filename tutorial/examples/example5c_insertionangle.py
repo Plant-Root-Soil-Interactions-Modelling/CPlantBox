@@ -6,7 +6,8 @@ import visualisation.vtk_plot as vp
 
 import numpy as np
 
-rs = pb.RootSystem()
+# rs = pb.RootSystem()
+rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
@@ -27,11 +28,17 @@ soilprop = pb.SoilLookUpSDF(leftC, maxS, minS, slope)
 
 # Manually set scaling function and tropism parameters
 sigma = [0.4, 1., 1., 1., 1. ] * 2
-for p in rs.getRootRandomParameter():
-    if p.subType > 2:
-        p.dx = 0.25  # adjust resolution
-        p.f_sa = soilprop  # Scale insertion angle
-        p.lmax = 2 * p.lmax  # make second order laterals longer
+for organ_type in [pb.root, pb.stem, pb.leaf]:
+    for p in rs.getOrganRandomParameter(organ_type):
+        if p.subType > 2:
+            p.dx = 0.25  # adjust resolution
+            p.f_sa = soilprop  # Scale insertion angle
+            p.lmax = 2 * p.lmax  # make second order laterals longer
+# for p in rs.getRootRandomParameter():
+    # if p.subType > 2:
+        # p.dx = 0.25  # adjust resolution
+        # p.f_sa = soilprop  # Scale insertion angle
+        # p.lmax = 2 * p.lmax  # make second order laterals longer
 
 # simulation
 rs.initialize()
