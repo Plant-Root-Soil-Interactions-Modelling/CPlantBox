@@ -15,7 +15,7 @@ theta = 70 / 180 * math.pi  # insertion angle [1]
 rs = pb.Plant()
 srp = pb.SeedRandomParameter(rs)
 srp.firstB, srp.delayB, srp.maxB = 3, 3 , 100
-rs.setOrganRandomParameter(srp) ## this is causing problems
+rs.setOrganRandomParameter(srp)
 
 p0 = pb.RootRandomParameter(rs)
 p0.name, p0.subType, p0.lmax, p0.r, p0.dx, p0.theta = "taproot", 1, 100, 1, dx, theta

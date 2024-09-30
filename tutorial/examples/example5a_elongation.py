@@ -6,8 +6,8 @@ import visualisation.vtk_plot as vp
 
 import numpy as np
 
-rs = pb.RootSystem()
-# rs = pb.Plant()
+# rs = pb.RootSystem()
+rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
@@ -27,17 +27,18 @@ leftC = pb.SDF_Complement(left)
 soilprop = pb.SoilLookUpSDF(leftC, maxS, minS, slope)
 
 # Manually set scaling function and tropism parameters
-sigma = [0.4, 1., 1., 1., 1. ] * 2
-for p in rs.getRootRandomParameter():
-    p.dx = 0.25  # adjust resolutionx
-    p.tropismS = sigma[p.subType - 1]
-    p.f_se = soilprop  # 1. Scale elongation
+# sigma = [0.4, 1., 1., 1., 1. ] * 2
+# for p in rs.getRootRandomParameter():
+#     p.dx = 0.25  # adjust resolutionx
+#     p.tropismS = sigma[p.subType - 1]
+#     p.f_se = soilprop  # 1. Scale elongation
 
-# for organ_type in [pb.root, pb.stem, pb.stem]:
-#     for p in rs.getOrganRandomParameter(organ_type):
-#         p.dx = 0.25  # adjust resolutionx
-#         p.tropismS = sigma[p.subType - 1]
-#         p.f_se = soilprop  # 1. Scale elongation
+for organ_type in [pb.root, pb.stem, pb.stem]:
+    sigma = [0.4, 1., 1., 1., 1. ] * 2
+    for p in rs.getOrganRandomParameter(organ_type):
+        p.dx = 0.25  # adjust resolutionx
+        p.tropismS = sigma[p.subType - 1]
+        p.f_se = soilprop  # 1. Scale elongation
 
 # simulation
 rs.initialize()

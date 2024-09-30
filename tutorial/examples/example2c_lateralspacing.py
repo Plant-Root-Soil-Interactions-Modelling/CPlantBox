@@ -7,10 +7,10 @@ import numpy as np
 
 fig, axes = plt.subplots(2, 3, figsize = (15, 7))
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 srp = pb.SeedRandomParameter(rs)
 srp.firstB, srp.delayB, srp.maxB = 1., 1., 0
-rs.setRootSystemParameter(srp)
+rs.setOrganRandomParameter(srp)
 
 dx0, dx1 = 100, 1  # very large resolution for taproot
 theta = 70 / 180 * np.pi
@@ -38,7 +38,7 @@ for i, ln in enumerate(ln_):
         p0.ln = ln
         p0.lnk = ln * lnk  # set up linearly altered spaces
 
-        rs.initializeLB(1, 1)
+        rs.initializeLB()
         rs.simulate(100, False)
 
         a = axes[i][j]

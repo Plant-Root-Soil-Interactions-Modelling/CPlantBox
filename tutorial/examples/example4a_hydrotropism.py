@@ -4,14 +4,14 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
 # Manually set tropism to hydrotropism for the first ten root types
 sigma = [0.4, 1., 1., 1., 1. ] * 2
-for p in rs.getRootRandomParameter():
+for p in rs.getOrganRandomParameter(pb.root):
         p.dx = 0.25  # adjust resolution
         p.tropismT = pb.TropismType.hydro
         p.tropismN = 2  # strength of tropism
