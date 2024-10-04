@@ -16,7 +16,8 @@ rs.simulate(30, True)
 
 ana = pb.SegmentAnalyser(rs)
 
-aseg = rs.getSegments(pb.stem)  # if there are no shoot borne roots, it is only one segment
+# aseg = rs.getShootSegments()  # if there are no shoot borne roots, it is only one segment
+aseg = rs.getSegments(-1)
 for s in aseg:
     print("Shoot segment", s)
     ana.addSegment(s, 0., 0.1, True)  # ct, radius, insert first
