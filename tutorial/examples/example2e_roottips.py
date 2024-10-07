@@ -25,11 +25,6 @@ for i, r in enumerate(polylines):
     bases[i,:] = [r[0].x, r[0].y, r[0].z]  # first index is the base
     tips[i,:] = [r[-1].x, r[-1].y, r[-1].z]  # last index is the tip
 
-# Or, use node indices to find tip or base nodes
-# nodes = np.array((list(map(np.array, rs.getNodes()))))
-# tipI = rs.getRootTips()
-# baseI = rs.getRootBases()
-
 
 # Plot results (1st approach)
 plt.title("Top view")
@@ -40,7 +35,3 @@ plt.scatter(tips[:,0], tips[:,1], c = "r", label = "root tips")
 plt.legend()
 plt.savefig("results/example_2e.png")
 plt.show()
-
- # check if the two approaches yield the same result
-# uneq = np.sum(nodes[baseI,:] != bases) + np.sum(nodes[tipI,:] != tips)
-# print("Unequal tips and basals:", uneq)
