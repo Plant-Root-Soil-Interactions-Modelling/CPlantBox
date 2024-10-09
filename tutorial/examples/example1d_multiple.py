@@ -17,10 +17,8 @@ for i in range(0, N):
     for j in range(0, N):
         rs = pb.Plant()
         rs.readParameters(path + name + ".xml")
-        pb.SeedRandomParameter(rs).seedPos = pb.Vector3d(dist * i, dist * j, -3.)  # cm
-        # rs = pb.RootSystem()
-        # rs.readParameters(path + name + ".xml")
-        # rs.getRootSystemParameter().seedPos = pb.Vector3d(dist * i, dist * j, -3.)  # cm
+        seed = rs.getOrganRandomParameter(pb.seed)[0]
+        seed.seedPos = pb.Vector3d(dist * i, dist * j, -3.)  # cm
         rs.initialize(False)  # verbose = False
         allRS.append(rs)
 
