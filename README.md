@@ -38,7 +38,7 @@ wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CP
 python3 installDumuxRosi_Ubuntu.py
 ```
 This will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
-CPlantBox is setup within the virtual environment 'cpbev'.
+CPlantBox is setup within the virtual environment 'cpbenv'.
 This script might work on other linux OS but has not been tested.
 
 ### windows
