@@ -50,7 +50,7 @@ open('installDumuxRosi.log', 'w').close()
 
 
 show_message("do not forget to run \nsudo apt update \nsudo apt upgrade")
-show_message("We recommend you to setup CPlantBox in a virtual environment by running\n[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate")
+show_message("We recommend you to setup CPlantBox in a virtual environment by running\n\npython3 -m venv cpbenv\nsource cpbenv/bin/activate")
 
 
 #################################################################
