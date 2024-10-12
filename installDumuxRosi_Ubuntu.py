@@ -49,7 +49,9 @@ def git_clone(url, branch=None):
 open('installDumuxRosi.log', 'w').close()
 
 
-show_message("do not forget to run \n sudo apt update \n sudo apt upgrade \n\n only works for ubuntu >= 20.04")
+show_message("do not forget to run \nsudo apt update \nsudo apt upgrade")
+show_message("We recommend you to setup CPlantBox in a virtual environment by running\n[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate")
+
 
 #################################################################
 #################################################################
@@ -75,7 +77,8 @@ for program in programs:
 #tried to make evaluation automatic but not sure it holds on all machines
 isCluster = ('ENV' in os.environ.keys())
         
-programs = ['default-jre','libeigen3-dev'] # , 'python3-pip'
+programs = ['default-jre','libeigen3-dev' , 'python3-pip','openmpi-bin','libopenmpi-dev'] #
+# sudo apt install openmpi-bin libopenmpi-dev
 if not isCluster:
     programs.append('libboost-all-dev')
     
@@ -89,14 +92,28 @@ if len(error) > 0:
     # raise Exception('import modules')
 
 
-import pip
+
 
 # check some prerequistes
-modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'mpi4py',  'pandas', 'pybind11[global]', 'ipython'] 
+modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'pandas', 'pybind11[global]', 'ipython'] # 'mpi4py', 
 show_message("(1/3) (b) Checking python prerequistes: " + " ".join(modules) + "...")
 
 for mymodule in modules:
-    subprocess.run(["pip3", "install", mymodule]) 
+    try:
+        subprocess.run(["pip3", "install", mymodule], check=True, text=True, capture_output=True)#,"-y" 
+    except subprocess.CalledProcessError as e:
+        # Check for the "externally-managed-environment" error
+        if "externally-managed-environment" in e.stderr:
+            print(f"\n\n\n\n\033[31mError\033[0m: {mymodule} cannot be installed in an externally managed environment.")
+            print("run:")
+            print("\033[35m[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate\033[0m")
+            print("\n\n\n\n")
+        else:
+            print(f"An error occurred: {e.stderr}")
+        raise Exception
+            
+# pip3 install --upgrade pip setuptools wheel # necessary?
+subprocess.run(["pip3","install","--no-cache-dir","mpi4py","--verbose"]) # mpi4py can take a lot of time to install
       
 show_message("(1/3) Step completed. All prerequistes found.")
 
@@ -149,5 +166,3 @@ print("(3/3) Step completed. Succesfully configured and built CPlantBox, dune an
 
 
 print("to test installation, run \n cd dumux/dumux-rosi/python/coupled \n python3 example7b_coupling.py")
-
- 
