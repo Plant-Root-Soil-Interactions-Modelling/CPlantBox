@@ -21,6 +21,9 @@ This installation method requires ubuntu >= 20.04 and python >= 3.7.\
 For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
 Run
 ```bash
+sudo apt-get update
+sudo apt-get upgrade
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox.py
 python3 installCPlantBox.py
 ```
@@ -28,10 +31,14 @@ It will create a "CPB" folder and install inside the dependencies necessary to r
 For CPlantBox <ins>__with__</ins> the dumux-rosi extension, download the python file "installDumuxRosi_Ubuntu.py" (based on the dumux installation file).\
 run
 ```bash
+sudo apt-get update
+sudo apt-get upgrade
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installDumuxRosi_Ubuntu.py
 python3 installDumuxRosi_Ubuntu.py
 ```
 This will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
+CPlantBox is setup within the virtual environment 'cpbev'.
 This script might work on other linux OS but has not been tested.
 
 ### windows
