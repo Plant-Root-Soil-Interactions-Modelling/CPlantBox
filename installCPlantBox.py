@@ -77,7 +77,7 @@ for program in programs:
 #tried to make evaluation automatic but not sure it holds on all machines
 isCluster = ('ENV' in os.environ.keys())
         
-programs = ['default-jre','libeigen3-dev' , 'python3-pip','openmpi-bin','libopenmpi-dev'] #
+programs = ['default-jre','libeigen3-dev' , 'python3-pip','openmpi-bin','libopenmpi-dev','python3-tk','libqt5x11extras5','libx11-dev'] #
 # sudo apt install openmpi-bin libopenmpi-dev
 if not isCluster:
     programs.append('libboost-all-dev')
