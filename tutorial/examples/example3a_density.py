@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 path = "../../modelparameter/structural/rootsystem/"
 name = "Brassica_napus_a_Leitner_2010"  # "Crypsis_aculeata_Clausnitzer_1994"
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 rs.readParameters(path + name + ".xml")
 
 depth = 220

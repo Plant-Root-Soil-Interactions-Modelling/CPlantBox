@@ -38,9 +38,10 @@ class My_Age_Tropism(pb.Tropism):
         else:
             return self.gravi.tropismObjective(pos, old, a, b, dx, root)
 
-
 # set up the root system
-rs = pb.RootSystem()
+
+
+rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Zea_mays_1_Leitner_2010"
 rs.readParameters(path + name + ".xml")
@@ -50,7 +51,7 @@ rs.initialize()
 mytropism1 = My_Info_Tropism(rs)
 mytropism1.setTropismParameter(2., 0.2)
 mytropism2 = My_Age_Tropism(rs, 1.5, 0.5, 5)  # after 5 days switch from plagio- to gravitropism
-rs.setTropism(mytropism2, 1)  # 1 for base roots, -1 for all root types
+rs.setTropism(mytropism2, pb.root, 1)  # 1 for base roots, -1 for all root types
 
 # Simulate
 simtime = 100  # e.g. 30 or 60 days

@@ -6,7 +6,7 @@ import plantbox as pb
 import matplotlib.pyplot as plt
 import numpy as np
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 p0 = pb.RootRandomParameter(rs)  # with default values,
 p1 = pb.RootRandomParameter(rs)  # all standard deviations are 0
 
@@ -46,7 +46,7 @@ srp.seedPos = pb.Vector3d(0., 0., -3.)  # [cm] seed position
 srp.maxB = 0  # [-] number of basal roots (neglecting basal roots and shoot borne)
 srp.firstB = 10.  # [day] first emergence of a basal root
 srp.delayB = 3.  # [day] delay between the emergence of basal roots
-rs.setRootSystemParameter(srp)
+rs.setOrganRandomParameter(srp)
 
 rs.initialize()
 

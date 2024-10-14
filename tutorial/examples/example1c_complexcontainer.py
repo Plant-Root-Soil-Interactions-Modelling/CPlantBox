@@ -6,7 +6,7 @@ import visualisation.vtk_plot as vp
 
 import numpy as np
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 
 # Open plant and root parameter from a file
 path = path = "../../modelparameter/structural/rootsystem/"

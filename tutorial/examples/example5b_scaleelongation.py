@@ -6,7 +6,7 @@ import visualisation.vtk_plot as vp
 
 import numpy as np
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
@@ -19,8 +19,9 @@ scale_elongation.data = scales  # set proportionality factors
 print("-3 cm ", scale_elongation.getValue(pb.Vector3d(0, 0, -3)))
 print("-25 cm", scale_elongation.getValue(pb.Vector3d(0, 0, -25)))
 
-for p in rs.getRootRandomParameter():
-    p.f_se = scale_elongation  # set scale elongation function
+for organ_type in [pb.root, pb.stem, pb.leaf]:
+    for p in rs.getOrganRandomParameter(organ_type):
+        p.f_se = scale_elongation
 
 rs.initialize()
 

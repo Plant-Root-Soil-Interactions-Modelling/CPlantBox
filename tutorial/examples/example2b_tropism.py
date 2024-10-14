@@ -12,10 +12,10 @@ sigma_ = [0, 0.1, 0.3, 0.6]  # flexibility [1/m]
 dx = 1  # axial resolution
 theta = 70 / 180 * math.pi  # insertion angle [1]
 
-rs = pb.RootSystem()
+rs = pb.Plant()
 srp = pb.SeedRandomParameter(rs)
 srp.firstB, srp.delayB, srp.maxB = 3, 3 , 100
-rs.setRootSystemParameter(srp)
+rs.setOrganRandomParameter(srp)
 
 p0 = pb.RootRandomParameter(rs)
 p0.name, p0.subType, p0.lmax, p0.r, p0.dx, p0.theta = "taproot", 1, 100, 1, dx, theta
@@ -30,9 +30,7 @@ for i, n in enumerate(N_):
         p0.tropismN = n
         p0.tropismS = sigma
 
-        print("*")
-        rs.initializeLB(1, 1)
-        print("*")
+        rs.initializeLB()
         rs.simulate(50, False)
 
         nodes = rs.getNodes()

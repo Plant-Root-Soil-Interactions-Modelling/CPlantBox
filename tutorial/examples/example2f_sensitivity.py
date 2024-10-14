@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 # sets all standard deviation to a percantage, i.e. value*s
 def set_all_sd(rs, s):
-    for p in rs.getRootRandomParameter():
+    for p in rs.getOrganRandomParameter(pb.root):
         p.lmaxs = p.lmaxs * s
         p.lbs = p.lb * s
         p.las = p.la * s
@@ -30,14 +30,14 @@ theta0_ = np.linspace(0, np.pi / 2, N)
 
 # One simulation
 def simulate(i):
-    rs = pb.RootSystem()
+    rs = pb.Plant()
     rs.readParameters(path + name + ".xml")
     set_all_sd(rs, 0.)  # set all sd to zero
-    p1 = rs.getRootRandomParameter(1)  # tap and basal root type
+    p1 = rs.getOrganRandomParameter(pb.root, 1)  # tap and basal root type
     # 1. vary parameter
     p1.theta = theta0_[i]
     # 2. simulate
-    rs.initializeLB(1, 1, False)
+    rs.initializeLB(False)
     rs.simulate(simtime, False)
     # 3. calculate target
     depth = 0.  # mean depth
