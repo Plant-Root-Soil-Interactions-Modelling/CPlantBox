@@ -647,7 +647,9 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
     tinyxml2:: XMLElement* xmlParams = xmlDoc.NewElement(basetag.c_str()); // RSML
     for (int ot = 0; ot < numberOfOrganTypes; ot++) {
         for (auto& otp : organParam[ot]) {
-            xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
+            if ((ot!=ot_seed) && (otp.second->subType > 0)) { // subType 0 is unused, and used as a prototype for reading the xml tags
+                xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
+            }
         }
     }
     xmlDoc.InsertEndChild(xmlParams);
