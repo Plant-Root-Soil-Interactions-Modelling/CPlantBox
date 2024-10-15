@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 path = "../../modelparameter/structural/rootsystem/"
 name = "Brassica_napus_a_Leitner_2010"
 
-plant = pb.RootSystem()
+plant = pb.Plant()
 plant.readParameters(path + name + ".xml")
 plant.initialize()
 
