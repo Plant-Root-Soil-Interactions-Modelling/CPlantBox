@@ -13,12 +13,12 @@ simtime = 120
 
 
 twoPlants = []
-plant1.readParameters(root_path +"/"+ filename +".xml",verbose = True)
+plant1.readParameters(root_path +"/"+ filename +".xml")
 seed1 = plant1.getOrganRandomParameter(pb.seed)[0]
 seed1.seedPos = pb.Vector3d(-20, 0, -3.)
 plant1.initialize()
 twoPlants.append(plant1)
-plant2.readParameters(plant_path +"/"+ filename +".xml",verbose = True)
+plant2.readParameters(plant_path +"/"+ filename +".xml")
 seed2 = plant2.getOrganRandomParameter(pb.seed)[0]
 seed2.seedPos = pb.Vector3d(20, 0, -3.)
 plant2.initialize()
