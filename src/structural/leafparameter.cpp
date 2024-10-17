@@ -319,9 +319,11 @@ void LeafRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose)
 		if (key.compare("leafGeometry")==0)  {
 			if((p->Attribute("phi"))&&(p->Attribute("x")))
 			{
-				leafGeometryPhi = string2vector(p->Attribute("phi"),0.0);
+				std::vector<double> leafGeometryPhi_ = string2vector(p->Attribute("phi"),0.0);
+				leafGeometryPhi.insert(leafGeometryPhi.end(), leafGeometryPhi_.begin(), leafGeometryPhi_.end()); //in case leaf geometry data is on several lines
 													  
-				leafGeometryX = string2vector(p->Attribute("x"),0.0);
+				std::vector<double> leafGeometryX_ = string2vector(p->Attribute("x"),0.0);
+				leafGeometryX.insert(leafGeometryX.end(), leafGeometryX_.begin(), leafGeometryX_.end());
 			}else{
 				throw std::invalid_argument ("LeafRandomParameter::readXML: 'x' or 'phi' tag not found in leafGeometry parameter description");
 			}
@@ -355,7 +357,7 @@ tinyxml2::XMLElement* LeafRandomParameter::writeXML(tinyxml2::XMLDocument& doc, 
 		p->SetAttribute("x", leafGeometryX[i]);
 		element->InsertEndChild(p);
 		if (comments) {
-			std::string str = description.at("leafGeometry");
+			std::string str = description.at("leafGeometryPhi");
 			tinyxml2::XMLComment* c = doc.NewComment(str.c_str());
 			element->InsertEndChild(c);
 		}
