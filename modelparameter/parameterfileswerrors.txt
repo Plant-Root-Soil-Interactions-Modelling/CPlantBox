@@ -1,9 +1,9 @@
-example1f.xml
+example1f.xml *
 sympodial_dichasium.xml
 tree31.xml
 tree3.xml
 monopodial_final.xml
-Lactuca_s.xml * (hier wird aber ein korrektes XML erzeugt)
+Lactuca_s.xml * 
 Triticum_aestivum_adapted_2021.xml *
 Triticum_aestivum_test_2021.xml *
 example1e.xml *
