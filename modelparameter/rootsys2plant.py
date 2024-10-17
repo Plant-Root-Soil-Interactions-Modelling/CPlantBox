@@ -6,7 +6,10 @@ import plantbox as pb
 
 plant_path = "structural/plant"
 root_path = "structural/rootsystem"
-
+# filename = "example1f.xml" THIS IS JUST TO TEST WHERE ERRORS COME FROM
+# p = pb.Plant()
+# p.readParameters(os.path.join(plant_path, filename))
+# p.writeParameters(filename)
 
 plant_directory = os.fsencode(plant_path)
 root_directory = os.fsencode(root_path)
@@ -21,6 +24,7 @@ for plant_file in os.listdir(plant_directory):
             p.readParameters(os.path.join(plant_path, filename))
             p.writeParameters(filename)
         except:
+            print("error occured for " + filename + "\n")
             fileswerrors.append(filename)
 
 
@@ -34,4 +38,5 @@ for root_file in os.listdir(root_directory):
          p.writeParameters(filename)
 
 
-print(*fileswerrors, sep="\n")
+with open("parameterfileswerrors.txt",'w') as f:
+    f.write('\n'.join(fileswerrors))

@@ -1,0 +1,23 @@
+example1f.xml
+sympodial_dichasium.xml
+tree31.xml
+tree3.xml
+monopodial_final.xml
+Lactuca_s.xml * (hier wird aber ein korrektes XML erzeugt)
+Triticum_aestivum_adapted_2021.xml *
+Triticum_aestivum_test_2021.xml *
+example1e.xml *
+Triticum_aestivum_adapted_2023.xml *
+tree21.xml
+pseudoStem.xml *
+monopodial.xml
+sympodial_monochasium.xml
+testLatDef.xml
+fspm2023.xml *
+tree11.xml
+
+
+Files ohne Sternchen haben diesen Error, 
+RuntimeError: OrganRandomParameter::readSuccessor: probability of emergence for rule 0 is > 1: 2.000000
+Files mit Sternchen haben einen Index Error immer bei Organ type 4
+IndexError: map::at
