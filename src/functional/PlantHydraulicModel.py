@@ -28,7 +28,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             radial fluxes
             axial fluxes
             
-        all function use matric potential 
+        all function use matric potentials as units for input and output 
         
         if the linear system does not change for several solve calls, 
         it is possible to use cached factorizations, by stating cached = True in the constructor
@@ -63,7 +63,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             @param collar_pot [cm3 day-1]   collar potential
             @param rsx [cm]                 soil matric potentials given per segment or per soil cell            
             @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False)              
-            @return [cm] root xylem pressure per root system node         
+            @return [cm] root matric potential per root system node         
         """
         raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
 
@@ -73,7 +73,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             @param t_act [cm3 day-1]    tranpirational flux is negative
             @param rsx [cm]             soil matric potentials given per segment or per soil cell
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)              
-            @return [cm] root xylem pressure per root system node         
+            @return [cm] root matric potential per root system node          
         """
         raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
 
@@ -83,7 +83,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
-            @return [cm] root xylem pressure per root system node
+            @return [cm] root matric potential per root system node  
         """
         raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
 
@@ -94,7 +94,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
-            @return [cm] root xylem pressure per root system node
+            @return [cm] root matric potential per root system node  
         """
         self.solve(sim_time, t_act, rsx, cells)
 
@@ -315,7 +315,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @param collar_pot [cm]          collar potential
             @param rsx [cm]                 soil matric potentials given per segment or per soil cell            
             @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False)  
-            @return [cm] root xylem pressure per root system node         
+            @return [cm] root matric potential per root system node         
         """
         self.last = "dirichlet"
         self.linearSystemMeunier(sim_time, rsx, cells)
@@ -337,7 +337,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @param t_act [cm3 day-1]    tranpirational flux is negative
             @param rsx [cm]             soil matric potentials given per segment or per soil cell
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)  
-            @return [cm] root xylem pressure per root system node         
+            @return [cm] root matric potential per root system node         
         """
         self.last = "neumann"
         self.linearSystemMeunier(sim_time, rsx, cells)  # C++ (see XylemFlux.cpp)
@@ -359,7 +359,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
-            @return [cm] root xylem pressure per root system node
+            @return [cm] root matric potential per root system node  
         """
         if self.cached:  # store sparse LU factorization
             self.linearSystemMeunier(sim_time, rsx, cells)  # self.aV, self.aB, self.aI, self.aJ
@@ -386,7 +386,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
-            @return [cm] root xylem pressure per root system node
+            @return [cm] root matric potential per root system node  
         """
         if not self.cached:
             return self.solve(sim_time, t_act, rsx, cells)
@@ -539,7 +539,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @param collar_pot [cm3 day-1]   collar potential
             @param rsx [cm]                 soil matric potentials given per segment or per soil cell            
             @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False)              
-            @return [cm] root xylem pressure per root system node         
+            @return [cm] root matric potential per root system node         
         """
         self.last = "dirichlet"
         if cells:
@@ -548,8 +548,18 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         if not self.usecached_:
             self.update(sim_time)
         b = self.Kr.dot(rsx)
+        # print("b", np.min(b), np.max(b))
         b[self.ci] += self.kx0 * collar_pot
-        rx = self.ms.total2matric(self.A_d_splu.solve(b))
+        rx = self.A_d_splu.solve(b)
+        print(rx)
+        rx = self.ms.total2matric(rx)
+
+        print("axial collar segment", self.kx0 * (rx[0] - 0.5050505050505051 - collar_pot))
+
+        # kr = np.array(self.params.getEffKr(sim_time))
+        # print(kr[0], kr[1])
+        # print("radial collar node", kr[0] * (rsx[0] - collar_pot))
+
         return np.append(collar_pot, rx)
 
     def solve_neumann(self, sim_time:float, t_act:list, rsx, cells:bool):
@@ -558,12 +568,12 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @param t_act [cm3 day-1]    tranpirational flux is negative
             @param rsx [cm]             soil matric potentials given per segment or per soil cell
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)              
-            @return [cm] root xylem pressure per root system node         
+            @return [cm] root matric potential per root system node      
         """
         self.last = "neumann"
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
-        rsx = self.ms.matric2total(rsx)
+        rsx = self.ms.matric2total(rsx)  # <--- ??? USES segment mid points...
         if not self.usecached_:
             self.update(sim_time)
         collar_pot = self.get_collar_potential(t_act, rsx)
@@ -578,7 +588,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
-            @return [cm] root xylem pressure per root system node
+            @return [cm] root matric potential per root system node  
         """
         self.update(sim_time)
         if cells:
@@ -598,7 +608,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
-            @return [cm] root xylem pressure per root system node
+            @return [cm] root matric potential per root system node  
         """
         if not self.cached:
             raise "HydraulicModel_Doussan.solve_again() makes only sense if cached = True"
@@ -613,10 +623,15 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar, rx)
 
+    # def get_transpiration(self, sim_time, rx, rsx, cells = False):
+    #     """ actual transpiration [cm3 day-1], calculated as the sum of all radial fluxes"""
+    #     return np.sum(self.radial_fluxes(sim_time, rx, rsx, cells))
+
     def radial_fluxes(self, sim_time, rx, rsx, cells = False):
         """ returns the radial fluxes [cm3 day-1]"""
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
+
         return -self.Kr.dot(rsx - rx[1:])  #   equals -q_root of Eqn (6) Leitner et al. (tba)
 
     def axial_fluxes(self, sim_time, rx, rsx = None, cells = None):
@@ -662,32 +677,38 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def update(self, sim_time):
         """ call before solve(), get_collar_potential(), and get_Heff() """
+        print("update")
         self.ci = self.collar_index()  # segment index of the collar segment
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
         self.krs, _ = self.get_krs(sim_time)
+        print("update, krs", self.krs)
         self.suf = np.transpose(self.get_suf_())
+        print("update, sum suf", np.sum(self.suf))
 
     def get_krs(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
         n = self.ms.getNumberOfMappedSegments()
         s = self.ms.segments[self.ci]
         n2 = self.ms.nodes[s.y]
-        rsx = np.ones((n, 1)) * (-500)
+        rsx = np.ones((n, 1)) * (-500)  # total matric potential
         b = self.Kr.dot(rsx)
         b[self.ci, 0] += self.kx0 * -15000
         rx = self.A_d_splu.solve(b)  # total matric potential
         t_act = np.sum(-self.Kr.dot(rsx - rx))
-        krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))  # from total to matric
+        # print("get_krs() n2z", n2.z)
+        # print("get_krs() rx[0]", rx[self.ci, 0])
+        # krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))
+        krs = -t_act / ((-500) - rx[self.ci, 0])
         return krs, t_act
 
     def get_suf_(self):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
-        rsx = np.ones((n, 1)) * (-500)
+        rsx = np.ones((n, 1)) * (-500)  # total matric potential
         b = self.Kr.dot(rsx)
         b[self.ci, 0] += self.kx0 * -15000
-        rx = self.A_d_splu.solve(b)
+        rx = self.A_d_splu.solve(b)  # total matric potential
         q = -self.Kr.dot(rsx - rx)
         return np.array(q) / np.sum(q)
 
@@ -697,6 +718,6 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_heff_(self, rsx):
         """ effective total potential [cm] using cached suf """
-        heff = self.suf.dot(rsx)
+        heff = self.suf.dot(self.ms.matric2total(rsx))
         return heff[0]
 

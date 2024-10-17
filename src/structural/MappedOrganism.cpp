@@ -460,7 +460,7 @@ std::vector<double> MappedSegments::getHs(const std::vector<double> sx) const {
 std::vector<double> MappedSegments::getSegmentZ() const {
     std::vector<double> z = std::vector<double>(segments.size());
     for (int i=0; i<z.size(); i++) {
-        z[i] = 0.5*(nodes[segments[i].x].z + nodes[segments[i].y].z);
+        z[i] = nodes[segments[i].y].z; // 0.5*(nodes[segments[i].x].z + nodes[segments[i].y].z);
     }
     return z;
 }
