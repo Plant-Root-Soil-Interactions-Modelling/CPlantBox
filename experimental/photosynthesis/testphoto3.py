@@ -110,12 +110,12 @@ def initPlant(simDuration, condition):
     pl = pb.MappedPlant(seednum=2)  # pb.MappedRootSystem() #pb.MappedPlant()
     # pl2 = pb.MappedPlant(seednum = 2) #pb.MappedRootSystem() #pb.MappedPlant()
     path = CPBdir + "/modelparameter/structural/plant/"
-    name = "P0_plant_new"  # "Triticum_aestivum_adapted_2021"#
+    name =  "Triticum_aestivum_adapted_2023"# "P0_plant_new"  #
 
-    pl.readParameters( name + ".xml")
+    pl.readParameters( path+name + ".xml")
 
     # raise Exception
-    sdf = pb.SDF_PlantBox(np.Inf, np.Inf, depth)
+    sdf = pb.SDF_PlantBox(np.inf, np.inf, depth)
 
     pl.setGeometry(sdf)  # creates soil space to stop roots from growing out of the soil
 
@@ -328,6 +328,7 @@ for i in range(len(variables)):
                 np.mean(np.array(r.An)[idsC3])*1e6,np.mean(np.array(r.Vj)[idsC3])*1e6,
                 np.mean(np.array(r.Vp)[idsC3])*1e6,np.mean(np.array(r.Vc)[idsC3])*1e6,
                 np.mean(np.array(r.Rd)[idsC3])*1e6,np.mean(np.array(r.Rd_ref)[idsC3])*1e6))
+        print('fw ',np.mean(np.array(r.fw)[idsC3]))
         #print(max(rC4.deltagco2),max(rC4.ci),max(rC4.gco2)) 
         #print(var,np.mean(rC4.Vc),np.mean(rC4.Vj),np.mean(rC4.Vp),np.mean(rC4.Rd),np.mean(rC4.Rd_ref))                       
         An.append(np.mean(np.array(r.An)[idsC3]) * 1e6)

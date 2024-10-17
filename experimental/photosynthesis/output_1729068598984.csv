@@ -1,0 +1,8 @@
+# field_size: 50
+# plant_relative_scaling: 10.0
+# spacing: 25
+# simtime: 4
+# dt: 0.008333333333333333
+# headstart: 8
+Systime, Timestamp, plant [#], light [Q], Flux [cm3/day], An [umol/m2/s], Vc [umol/m2/s], Vj [umol/m2/s], gco2 [umol/m2/s], cics [-], fw [-]
+1729068602.9873128,2019.06.01-06:00:00,0,0.0,0,0,0,0,0,0,0
