@@ -221,9 +221,9 @@ class PerirhizalPython(Perirhizal):
             print("PerirhizalPython.soil_root_interface_potentials_table(): table look up failed, value exceeds table")
             #
             if np.max(rx) > 0: print("xylem matric potential positive", np.max(rx), "at", np.argmax(rx))
-            if np.min(rx) < 16000: print("xylem matric potential under -16000 cm", np.min(rx), "at", np.argmin(rx))
+            if np.min(rx) < -16000: print("xylem matric potential under -16000 cm", np.min(rx), "at", np.argmin(rx))
             if np.max(sx) > 0: print("soil matric potential positive", np.max(sx), "at", np.argmax(sx))
-            if np.min(sx) < 16000: print("soil matric potential under -16000 cm", np.min(sx), "at", np.argmin(sx))
+            if np.min(sx) < -16000: print("soil matric potential under -16000 cm", np.min(sx), "at", np.argmin(sx))
             if np.min(inner_kr_) < 1.e-7: print("radius times radial conductivity below 1.e-7", np.min(inner_kr_), "at", np.argmin(inner_kr_))
             if np.min(inner_kr_) > 1.e-4: print("radius times radial conductivity above 1.e-4", np.max(inner_kr_), "at", np.argmax(inner_kr_))
             if np.min(rho_) < 1: print("geometry factor below 1", np.min(rho_), "at", np.argmin(rho_))
