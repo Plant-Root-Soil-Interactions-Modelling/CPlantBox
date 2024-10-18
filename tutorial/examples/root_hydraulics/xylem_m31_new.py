@@ -24,31 +24,32 @@ Benchmark M3.1 Single root: steady state vertical root solved with the NEW Plant
 """ Parameters """
 g = 9.8065 * 100.*24.*3600.*24.*3600.  # gravitational acceleration [cm day-2]
 rho = 1.  # density of water, [g/cm^3]
+
 L = 50  # length of single straight root [cm]
-a = 0.2  # radius [cm] <--------------------------------------------------------- ???
+a = 0.2  # radius [cm]
 kz0 = 4.32e-2  # [cm^3/day]
 kz = kz0 / (rho * g)  # axial conductivity [cm^5 s / g]
 kr0 = 1.728e-4  # [1/day]
 kr = kr0 / (rho * g)  # radial conductivity per root type [cm^2 s / g]
-p_s = -200  # static soil pressure [cm]
-p0 = -1000  # dircichlet bc at top
+
+p_s = -200  # soil matric potential [cm]
+p0 = -1000  # dircichlet bc at top [cm]
+t_pre = -2.  # predescribed transpiration [cm3 / day]
 
 """ Analytical solution """
 c = 2 * a * np.pi * kr / kz
 p_r = lambda z: p_s + d[0] * np.exp(np.sqrt(c) * z) + d[1] * np.exp(-np.sqrt(c) * z)  #
-
-AA = np.array([[1, 1], [np.sqrt(c) * np.exp(-np.sqrt(c) * L), -np.sqrt(c) * np.exp(np.sqrt(c) * L)] ])  # # Boundary conditions dirichlet top, neumann bot
+AA = np.array([[1, 1], [np.sqrt(c) * np.exp(-np.sqrt(c) * L), -np.sqrt(c) * np.exp(np.sqrt(c) * L)] ])  # Boundary conditions dirichlet top, neumann bot
 bb = np.array([p0 - p_s, -1])  # -rho * g
 d = np.linalg.solve(AA, bb)  # compute constants d_1 and d_2 from bc
-
 za_ = np.linspace(0, -L, 100)  # Evaluate function
 pr = list(map(p_r, za_))
-
 plt.plot(pr, za_)
 
 """ Numeric solution """
-N = 100  # resolutionlinearSystem
+N = 100  # number of nodes
 z_ = np.linspace(0., -L, N)
+print("dx", z_[1] - z_[0])
 
 nodes, segs, radii = [], [], []
 for z in z_:
@@ -67,14 +68,24 @@ params.setKx([kz0])
 
 r = HydraulicModel_Doussan(rs, params, cached = False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
 
-kx = params.getKx(0.)
-print(kx)
-rx = r.solve_dirichlet(0., p0, [p_s], cells = True)
-print("rx", rx.shape)
+rx = r.solve_dirichlet(0., -1000, [p_s], cells = True)
+trans = r.get_transpiration(0., rx, [p_s], cells = True)
+
+print("Transpiration (Dirichlet)", trans, "cm3/day;", "rx[1]", rx[1], "cm", rx[0])
+
+plt.plot(rx, z_, "r*")
+
+rx = r.solve_neumann(0., -2.405273831076328 , [p_s], cells = True)  # or solve ... t_pre
+# rx = r.solve_dirichlet(0., -855.7929193939086, [p_s], cells = True)
 
 trans = r.get_transpiration(0., rx, [p_s], cells = True)
-print("Transpiration", trans, "cm3/day")
-plt.plot(rx, z_, "r*")
+print("Transpiration (Neumann)", trans, "cm3/day;", "rx[1]", rx[1], "cm", rx[0])
+plt.plot(rx, z_, "g*")
+
+plt.xlabel("Xylem pressure (cm)")
+plt.ylabel("Depth (m)")
+plt.legend(["analytic solution", "numeric solution", "predescribed flux -2 cm$^3$ day$^{-1}$"])
+plt.show()
 
 # #
 # # check net fluxes
@@ -91,14 +102,3 @@ plt.plot(rx, z_, "r*")
 # # ana.addData("net", axial_i - axial_j - radial_fluxes)
 # pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "rx", "axial", "radial", "net"])
 # vp.plot_roots(pd, "radial")  # axial, radial, rx
-
-rx = r.solve_neumann(0., -2., [p_s], cells = True)  # or solve ...
-
-trans = r.get_transpiration(0., rx, [p_s], cells = True)
-print("Transpiration", trans, "cm3/day")
-plt.plot(rx, z_, "g*")
-
-plt.xlabel("Xylem pressure (cm)")
-plt.ylabel("Depth (m)")
-plt.legend(["analytic solution", "numeric solution", "predescribed flux -2 cm$^3$ day$^{-1}$"])
-plt.show()
