@@ -11,9 +11,9 @@ path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 rs.readParameters(path + name + ".xml")
 
-# stem = pb.StemRandomParameter(rs)
-# stem.subType = 1
-# rs.setOrganRandomParameter(stem)
+stem = pb.StemRandomParameter(rs)
+stem.subType = 1
+rs.setOrganRandomParameter(stem)
 
 # Initialize
 rs.initialize()
