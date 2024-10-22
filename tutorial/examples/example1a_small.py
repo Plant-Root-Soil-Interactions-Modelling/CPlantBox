@@ -18,12 +18,6 @@ rs.readParameters(path + name + ".xml")
 # Initialize
 rs.initialize()
 
-for p in rs.getOrganRandomParameter(pb.root):
-    print(p.subType)
-    print(p.name)
-
-rs.writeParameters("test.xml")
-
 # Simulate
 rs.simulate(30, True)
 
