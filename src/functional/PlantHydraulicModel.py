@@ -283,8 +283,11 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         ages = self.get_ages()
         print("ages from {:g} to {:g}".format(np.min(ages), np.max(ages)))
         # 4 check for unmapped indices
+        print("segments", len(segments), len(self.ms.segments))
         map = self.ms.seg2cell
         for seg_id, cell_id in map.items():
+            # if seg_id < 5:
+            #     print("seg_id", seg_id, "cell_id", cell_id)
             if cell_id < 0:
                 print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!", nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
         print()
