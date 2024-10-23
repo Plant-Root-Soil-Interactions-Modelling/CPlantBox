@@ -225,9 +225,11 @@ class PerirhizalPython(Perirhizal):
             if np.max(sx) > 0: print("soil matric potential positive", np.max(sx), "at", np.argmax(sx))
             if np.min(sx) < -16000: print("soil matric potential under -16000 cm", np.min(sx), "at", np.argmin(sx))
             if np.min(inner_kr_) < 1.e-7: print("radius times radial conductivity below 1.e-7", np.min(inner_kr_), "at", np.argmin(inner_kr_))
-            if np.min(inner_kr_) > 1.e-4: print("radius times radial conductivity above 1.e-4", np.max(inner_kr_), "at", np.argmax(inner_kr_))
+            if np.max(inner_kr_) > 1.e-4: print("radius times radial conductivity above 1.e-4", np.max(inner_kr_), "at", np.argmax(inner_kr_))
             if np.min(rho_) < 1: print("geometry factor below 1", np.min(rho_), "at", np.argmin(rho_))
-            if np.min(rho_) > 200: print("geometry factor above 200", np.max(rho_), "at", np.argmax(rho_))
+            if np.max(rho_) > 200: print("geometry factor above 200", np.max(rho_), "at", np.argmax(rho_))
+            print("???")
+            print("rx", np.min(rx), np.max(rx), "sx", np.min(sx), np.max(sx), "inner_kr", np.min(inner_kr_), np.max(inner_kr_), "rho", np.min(rho_), np.max(rho_))
 
         return rsx
 

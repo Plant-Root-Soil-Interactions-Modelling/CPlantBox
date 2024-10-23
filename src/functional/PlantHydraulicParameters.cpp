@@ -331,7 +331,7 @@ std::vector<double> PlantHydraulicParameters::getEffKr(double simtime) {
 }
 
 /**
- * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
+ * Returns radial conductivities per segment (TODO numleaf is ingored)
  */
 std::vector<double> PlantHydraulicParameters::getKr(double simtime) {
     std::vector<double> kr = std::vector<double>(ms->segments.size());
@@ -352,7 +352,7 @@ std::vector<double> PlantHydraulicParameters::getKr(double simtime) {
 
 
 /**
- * Returns radial conductivities per segment for a specific simulation time
+ * Returns axiual conductivities per segment for a specific simulation time
  */
 std::vector<double> PlantHydraulicParameters::getKx(double simtime) {
     std::vector<double> kx = std::vector<double>(ms->segments.size());
