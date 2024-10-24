@@ -554,10 +554,9 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         # print("b", np.min(b), np.max(b))
         b[self.ci] += self.kx0 * collar_pot
         rx = self.A_d_splu.solve(b)
-        print(rx)
+        # print(rx)
         rx = self.ms.total2matric(rx)
-
-        print("axial collar segment", self.kx0 * (rx[0] - 0.5050505050505051 - collar_pot))
+        # print("axial collar segment", self.kx0 * (rx[0] - 0.5050505050505051 - collar_pot))
 
         # kr = np.array(self.params.getEffKr(sim_time))
         # print(kr[0], kr[1])
@@ -580,6 +579,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         if not self.usecached_:
             self.update(sim_time)
         collar_pot = self.get_collar_potential(t_act, rsx)
+        print(collar_pot)
         b = self.Kr.dot(rsx)
         b[self.ci] += self.kx0 * collar_pot
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
@@ -662,7 +662,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         kr = self.params.kr_f(age, st)  # c++ conductivity call back functions
         kx = self.params.kx_f(age, st)  # c++ conductivity call back functi
         dpdz0 = (rx[j] - rx[i]) / l
-        f = -kx * (dpdz0)
+        f = -kx * (dpdz0 - 1)
         return f
 
     def doussan_system_matrix(self, sim_time):
@@ -680,14 +680,14 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def update(self, sim_time):
         """ call before solve(), get_collar_potential(), and get_Heff() """
-        print("update")
+        # print("update")
         self.ci = self.collar_index()  # segment index of the collar segment
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
         self.krs, _ = self.get_krs(sim_time)
-        print("update, krs", self.krs)
+        # print("update, krs", self.krs)
         self.suf = np.transpose(self.get_suf_())
-        print("update, sum suf", np.sum(self.suf))
+        # print("update, sum suf", np.sum(self.suf))
 
     def get_krs(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
@@ -721,6 +721,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_heff_(self, rsx):
         """ effective total potential [cm] using cached suf """
+        print("*heff*", np.m)
         heff = self.suf.dot(self.ms.matric2total(rsx))
         return heff[0]
 
