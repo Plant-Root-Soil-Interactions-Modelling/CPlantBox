@@ -3,6 +3,8 @@
 
 #include "mymath.h"
 #include "Quaternion.h"
+#include <optional>
+#include <vector>
 
 namespace CPlantBox {
 
@@ -49,6 +51,23 @@ class CatmullRomSpline
     return Quaternion::FromForward(v);
   }
 
+  int closestId(double t) const {
+    double t_ = (t-t0)/(t1-t0);
+    if(t_ < 0.5)
+    {
+      return id1;
+    }
+    else
+    {
+      return id2;
+    }
+  }
+
+  void IdPair(int id1, int id2) {
+    this->id1 = id1;
+    this->id2 = id2;
+  }
+
   void setAlpha(double alpha) {
     this->alpha = alpha;
   }
@@ -58,6 +77,8 @@ class CatmullRomSpline
   double t0, t1;
   // the control points of the spline
   Vector3d y0, y1, y2, y3;
+  // the original IDs of the control points
+  int id1, id2;
   // spline parameter
   double alpha = 0.9;
 };
@@ -71,10 +92,10 @@ class CatmullRomSplineManager
 {
   public:
   CatmullRomSplineManager() = default;
-  CatmullRomSplineManager(std::vector<Vector3d> y) : y(y) {
+  CatmullRomSplineManager(std::vector<Vector3d> y, std::optional<std::vector<int>> ids = std::nullopt) : y(y), indices(ids) {
     computeT();
   }
-  CatmullRomSplineManager(std::initializer_list<Vector3d> y) : y(y) {
+  CatmullRomSplineManager(std::initializer_list<Vector3d> y) : y(y), indices(std::nullopt) {
     computeT();
   }
 
@@ -193,15 +214,27 @@ class CatmullRomSplineManager
       {
         auto helper = help_lower();
         splines.push_back(CatmullRomSpline({helper, y[0], y[1], y[2]}, 0.0, yt[1]));
+        if(indices)
+        {
+          splines.back().IdPair(indices.value()[0], indices.value()[1]);
+        }
       }
       else if(i == y.size()-1)
       {
         auto helper = help_upper();
         splines.push_back(CatmullRomSpline({y[i-1], y[i], y[i+1], helper}, yt[i], 1.0));
+        if(indices)
+        {
+          splines.back().IdPair(indices.value()[i], indices.value()[i+1]);
+        }
       }
       else
       {
         splines.push_back(CatmullRomSpline({y[i-1], y[i], y[i+1], y[i+2]}, yt[i], yt[i+1]));
+        if(indices)
+        {
+          splines.back().IdPair(indices.value()[i], indices.value()[i+1]);
+        }
       }
     }
     this->t0 = splines[0].getT0();
@@ -210,6 +243,7 @@ class CatmullRomSplineManager
 
   std::vector<Vector3d> y; // control points
   std::vector<double> yt; // t values
+  std::optional<std::vector<int>> indices;
   std::vector<CatmullRomSpline> splines;
   float t0 = -1.0;
   float t1 = -1.0;
