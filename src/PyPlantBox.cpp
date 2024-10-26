@@ -1186,6 +1186,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("LeafWidthScaleFactor", &PlantVisualiser::LeafWidthScaleFactor)
         .def("SetLeafMinimumWidth", &PlantVisualiser::SetMinimumLeafWidth, py::arg("width"))
         .def("SetRightPenalty", &PlantVisualiser::SetRightPenalty, py::arg("penalty"))
+        .def("SetShapeFunction", &PlantVisualiser::SetShapeFunction, py::arg("shapeFunction"))
+        .def("ClearShapeFunction", &PlantVisualiser::ClearShapeFunction)
     ;
 
     py::class_<CatmullRomSplineManager, std::shared_ptr<CatmullRomSplineManager>>(m, "CatmullRomSplineManager")
