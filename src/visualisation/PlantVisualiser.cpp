@@ -94,6 +94,19 @@ namespace CPlantBox {
     return vec2Buf(buffer, offset, args...);
   }
 
+  void ClampVectorBetweenLengths(Vector3d& v, double min, double max) {
+    double l = v.length();
+    if(l < min)
+    {
+      v.normalize();
+      v = v.times(min);
+    }
+    else if(l > max)
+    {
+      v.normalize();
+      v = v.times(max);
+    }
+  }
 
 PlantVisualiser::PlantVisualiser() :
     geometry_resolution_(10), leaf_resolution_(10), include_midline_in_leaf_(false) {}
@@ -123,12 +136,12 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
     errMsg << "MappedPlant::ComputeGeometryForOrgan: organ not found: " << organId;
     throw std::runtime_error(errMsg.str().c_str());
   }
-  else
+  if(verbose_)
   {
     std::cout << "Computing geometry for organ: " << organId << " of type " << (*organ_it)->organType() << std::endl;
+    std::cout << "Organ has " << (*organ_it)->getNumberOfNodes() << " nodes." << std::endl;
+    std::cout << "Leaf resolution is " << leaf_resolution_ << std::endl;
   }
-  std::cout << "Organ has " << (*organ_it)->getNumberOfNodes() << " nodes." << std::endl;
-  std::cout << "Leaf resolution is " << leaf_resolution_ << std::endl;
   auto organ = *organ_it;
   
   if(organ->organType() == 4)
@@ -164,11 +177,17 @@ void PlantVisualiser::ComputeGeometryForOrgan(int organId)
 			}
 			if(petiole_zone + 1 < leaf->getNumberOfNodes())
 			{
-				GenerateLeafGeometry(leaf, petiole_zone, point_space, cell_space);
-				point_space += (organ->getNumberOfNodes() - petiole_zone) * 6 * 3;
-        point_space = geometry_.size();
-				cell_space += (organ->getNumberOfNodes() - petiole_zone) * 6;
-        cell_space = geometry_indices_.size();
+				//GenerateLeafGeometry(leaf, petiole_zone, point_space, cell_space);
+        auto lrp = leaf->getLeafRandomParameter();
+        lrp->createLeafGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,leaf_resolution_);
+
+				GenerateRadialLeafGeometry(leaf, point_space, cell_space);
+				//point_space += (organ->getNumberOfNodes() - petiole_zone) * 6 * 3;
+        //point_space = geometry_.size();
+				//cell_space += (organ->getNumberOfNodes() - petiole_zone) * 6;
+        //cell_space = geometry_indices_.size();
+			point_space += leaf->getNumberOfNodes() * 6 * 3;
+			cell_space += leaf->getNumberOfNodes() * 6;
 			}
 		}
   }
@@ -258,7 +277,8 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
 			
 			if(leaf->getLeafRandomParameter()->parametrisationType == 1)
 			{
-				std::cout << "Generating radial leaf geometry_" << std::endl;
+        if(verbose_)
+				  std::cout << "Generating radial leaf geometry_" << std::endl;
 				GenerateRadialLeafGeometry(leaf, point_space, cell_space);
 				point_space = geometry_.size();
 				cell_space = geometry_indices_.size();
@@ -276,7 +296,10 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
 				}
 				if(petiole_zone + 1 < leaf->getNumberOfNodes())
 				{
-					GenerateLeafGeometry(leaf, petiole_zone, point_space, cell_space);
+	        auto lrp = leaf->getLeafRandomParameter();
+          lrp->createLeafGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,leaf_resolution_);
+
+					GenerateRadialLeafGeometry(leaf, point_space, cell_space);
 					point_space = geometry_.size();
 					cell_space = geometry_indices_.size();
 				}
@@ -362,6 +385,10 @@ void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned 
 {
   // std::vector::reserve should be idempotent.
   //std::cout << "Resizing geometry_ buffers for a leaf with n=" << leaf->getNumberOfNodes() << ", pet=" << petiole_zone << std::endl;
+  if(verbose_)
+  {
+    std::cout << "Generating NORMAL geometry for leaf " << leaf->getId() << " with " << leaf->getNumberOfNodes() << " nodes and petiole zone " << petiole_zone << std::endl;
+  }
 	int first_surface_id = petiole_zone + 1;
 	int total_points = leaf->getNumberOfNodes() - first_surface_id;
 	geometry_.resize(std::max(static_cast<std::size_t>(p_o + total_points * 4 * 3), geometry_.size()), -1.0);
@@ -371,7 +398,7 @@ void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned 
 	geometry_texture_coordinates_.resize(std::max(static_cast<std::size_t>((p_o/3*2) + total_points * 4 * 2), geometry_texture_coordinates_.size()), -1.0);
 	geometry_node_ids_.resize(std::max(static_cast<std::size_t>(p_o/3 + total_points * 4), geometry_node_ids_.size()), -1);
 
-  //std::cout << "Orientation generation" << std::endl;
+  if(verbose_) std::cout << "Orientation generation" << std::endl;
   unsigned int points_index = p_o;
   unsigned int cell_index = c_o;
   Quaternion rot = Quaternion::geodesicRotation({1,0,0},{0,0,1}).normalized();
@@ -382,7 +409,7 @@ void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned 
   for(int i = first_surface_id; i < leaf->getNumberOfNodes(); ++i)
   {
     // we presume that the nodes follow the center line of the plant
-    //std::cout << " going through node id " << i << " on this leaf." << std::endl;
+    if(verbose_) std::cout << " going through node id " << i << " on this leaf." << std::endl;
     // and that the leaf is oriented along the x axis
     auto position = leaf->getNode(i);
     auto id = leaf->getNodeId(i);
@@ -400,25 +427,25 @@ void PlantVisualiser::GenerateLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned 
     currentLength += (position - lastPosition).length() / totalLenght;
     //rot *= Quaternion::geodesicRotation(rot.Forward(), dist);
     rot = Quaternion::FromForwardAndUp(rot.Forward(), rot.Up());
-		//std::cout << "[Leaf] Rotating " << rot.toString() << " to get " << dist.toString() << std::endl;
+		if(verbose_) std::cout << "[Leaf] Rotating " << rot.toString() << " to get " << dist.toString() << std::endl;
     // TODO: Check with mona on what the Vector3d coordinates of
     // this function are, and if we need to change them
     auto vis = leaf->getLeafVis(i);
     // We don't normally split normals, but in this case we have a flat surface
     // and we want to have a smooth shading
     //std::cout << "Inserting some geometry_" << std::endl;
-    //std::cout << "Vis has length " << vis.size() << std::endl;
+    if(verbose_) std::cout << "Vis has length " << vis.size() << std::endl;
     geometry_texture_coordinates_.insert(geometry_texture_coordinates_.begin() + (points_index/3*2),
                                             {currentLength, 0.0, currentLength, 1.0});
     //std::cout << "geometry_node_ids_[" << points_index << "] = " << id << std::endl;
     //std::cout << "Vector Data: Size=" << geometry_node_ids_.size() << ", capacity=" << geometry_node_ids_.capacity() << std::endl;
-    geometry_node_ids_[points_index] = id;
-    geometry_node_ids_[points_index + 1] = id;
+    //geometry_node_ids_[points_index] = id;
+    //geometry_node_ids_[points_index + 1] = id;
     // TODO: it not obvious that points_index can be changed by the insert here
-    vec2Buf(geometry_, points_index, vis[0], vis[1]);
-    points_index = vec2Buf(geometry_normals_, points_index, rot.Up(), rot.Up());
     geometry_node_ids_[points_index/3] = id;
     geometry_node_ids_[(points_index/3) + 1] = id;
+    vec2Buf(geometry_, points_index, vis[0], vis[1]);
+    points_index = vec2Buf(geometry_normals_, points_index, rot.Up(), rot.Up());
     vec2Buf(geometry_, points_index, vis[0], vis[1]);
     points_index = vec2Buf(geometry_normals_, points_index ,-rot.Up(), -rot.Up());
     // The triangles are defined clockwise for the front face and counter clockwise for the back face
@@ -526,13 +553,13 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
 void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o, unsigned int c_o)
 {
 	// Fetch the phi array
-  if(verbose_) std::cout << "Generating radiaaal leaf geometry" << std::endl;
+  if(verbose_) std::cout << "Generating radial leaf geometry" << std::endl;
 	double scaling_factor = leaf->getParameter("areaMax") * leaf->getLength(false) / leaf->getParameter("k");
 
 	// resolution
 	int resolution = leaf_resolution_;
 	// Compute the mid vein of the leaf
-	CatmullRomSplineManager midVein = leaf->getNodes();
+	CatmullRomSplineManager midVein(leaf->getNodes(), leaf->getNodeIds());
   midVein.setAlpha(0.0, midVein.splineSize() - 1);
 	// Compute the leaf length
 	auto length = leaf->getLength(false);
@@ -679,6 +706,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
     double t = static_cast<double>(i) / static_cast<double>(outer_geometry_points.size());
 		double l = t * length;
     auto midpoint = (i == 0) ? leaf->getNode(0) : midVein(t);
+    auto current_nodeid = midVein.selectSpline(t).closestId(t);
     midpoint = (i == outer_geometry_points.size() - 1) ? leaf->getNode(leaf->getNumberOfNodes() - 1) : midpoint;
     // get the current point
 		// get the best spline for the current point
@@ -715,7 +743,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       //  std::cout << p_o << "/" << geometry_.size() << " ";
 
       auto r = helper[p];
-      r = (helper.isMirrored(p)) ? std::max(r, this->leaf_minimum_width_) : std::min(r, -this->leaf_minimum_width_);
+      //r = (helper.isMirrored(p)) ? std::max(r, this->leaf_minimum_width_) : std::min(r, -this->leaf_minimum_width_);
       // get the point
 			// get the wave effect which is a sine function along the length of the leaf
 
@@ -733,7 +761,12 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       {
         z_offset *= std::sin((2.0 * random_factor_2 + 2.0) * l / M_PI + M_PI);
       }
-			Vector3d base_direction = leaf_width_scale_factor_ * r * right;
+			Vector3d base_direction = leaf_width_scale_factor_ * r * right * scaling_factor;
+      if (this->shape_function_.has_value())
+      {
+        base_direction = shape_function_.value()(t) * right * leaf_width_scale_factor_ * r;
+      }
+      ClampVectorBetweenLengths(base_direction, min_radius, 1000.f);
 			// scale with width
 			
 			//std::cout << base_direction.toString() << std::endl;
@@ -757,7 +790,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       geometry_texture_coordinates_[(p_o/3*2) + 1] = helper.texcoord(p);
 			// set the node id
       //std::cout << "i" << " ";
-			geometry_node_ids_[p_o/3] = 1;
+			geometry_node_ids_[p_o/3] = current_nodeid;
 			// increase buffer
 			p_o += 3;
     }

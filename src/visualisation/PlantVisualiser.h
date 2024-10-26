@@ -11,6 +11,8 @@
 #include <map>
 #include <memory>
 #include <assert.h>
+#include <optional>
+#include <iostream>
 
 
 
@@ -96,6 +98,11 @@ public :
   void SetVerbose(bool verbose) { this->verbose_ = verbose; }
   void SetAddVerticalLeafOffset(bool add) { this->add_vertical_leaf_offset_ = add; }
   void SetRightPenalty(double penalty) { this->right_penalty_ = penalty; }
+  void SetShapeFunction(std::function<double(double)> shape_function) { 
+    if(verbose_) std::cout << "Setting shape function" << std::endl;
+    this->shape_function_ = shape_function;
+  }
+  void ClearShapeFunction() { this->shape_function_ = std::nullopt; }
 
 protected:
   std::shared_ptr<MappedPlant> plant_{nullptr};
@@ -154,6 +161,8 @@ protected:
   std::vector<int> geometry_node_ids_; // the node ids for each vertex
   unsigned int geometry_resolution_{8}; // the resolution of the cylindric geometry
   unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry
+  // optional alternative shape defining function that takes [0,1] and produces [0,1]
+  std::optional<std::function<double(double)>> shape_function_{std::nullopt};
 };
 
 } // namespace CPlantBox
