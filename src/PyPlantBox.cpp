@@ -990,7 +990,7 @@ PYBIND11_MODULE(plantbox, m) {
 					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
 					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
 					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
-      .def("get_nodes_index",&Photosynthesis::get_nodes_index)
+      //.def("get_nodes_index",&Photosynthesis::get_nodes_index)
             .def_readwrite("PhotoType", &Photosynthesis::PhotoType)
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
