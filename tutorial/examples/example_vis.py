@@ -26,11 +26,13 @@ vis = pb.PlantVisualiser(plant)
 plant.setSeed(2)
 plant.initialize(False, True)
 vis.SetGeometryResolution(8)
-vis.SetLeafResolution(200)
+vis.SetLeafResolution(30)
 vis.SetComputeMidlineInLeaf(False)
-vis.SetVerbose(False)
-vis.SetLeafMinimumWidth(1.0)
+vis.SetVerbose(True)
+vis.SetLeafMinimumWidth(0.001)
 vis.SetRightPenalty(0.5)
+vis.SetShapeFunction(lambda t : 2*((1 - t**2)**0.5))
+vis.SetLeafWidthScaleFactor(1.0)
 
 # Simulate
 plant.simulate(50, False)
@@ -67,6 +69,8 @@ window = vtk.vtkRenderWindow()
 window.AddRenderer(renderer)
 interactor = vtk.vtkRenderWindowInteractor()
 interactor.SetRenderWindow(window)
+# make window large
+window.SetSize(800, 800)
 
 nodes = np.array([[v.x,v.y,v.z] for v in leaf_ptr.getNodes()])
 spline = pb.CatmullRomSplineManager()
@@ -95,8 +99,8 @@ for t in np.linspace(0, 1, 100):
   n = spline(t)
   add_sphere(renderer, n, [0.0, 1.0, 0.0], 0.1)
 
-add_sphere(renderer, spline.help_lower(), [0.5, 0.5, 0.0], 0.1)
-add_sphere(renderer, spline.help_upper(), [0.0, 0.5, 0.5], 0.4)
+add_sphere(renderer, spline.help_lower(), [0.5, 0.5, 0.0], 0.4)
+add_sphere(renderer, spline.help_upper(), [0.0, 0.5, 0.5], 0.1)
 num = spline.size()
 add_sphere(renderer, spline.getControlPoint(num-1), [1.0, 0.0, 0.0], 0.2)
 add_sphere(renderer, spline.getControlPoint(num-2), [1.0, 0.0, 0.0], 0.2)
@@ -113,9 +117,12 @@ mapper.SetInputData(data)
 actor = vtk.vtkActor()
 actor.SetMapper(mapper)
 actor.GetProperty().SetColor(0.0, 1.0, 1.0)
+# make actor emissive
+actor.GetProperty().SetAmbient(1)
 renderer.AddActor(actor)
 # show the wireframe
 actor.GetProperty().SetRepresentationToWireframe()
+actor.GetProperty().SetLineWidth(2)
 
 # include uniform lighting
 light = vtk.vtkLight()
