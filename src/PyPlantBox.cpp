@@ -1188,6 +1188,9 @@ PYBIND11_MODULE(plantbox, m) {
         .def("SetRightPenalty", &PlantVisualiser::SetRightPenalty, py::arg("penalty"))
         .def("SetShapeFunction", &PlantVisualiser::SetShapeFunction, py::arg("shapeFunction"))
         .def("ClearShapeFunction", &PlantVisualiser::ClearShapeFunction)
+        .def("SetUseStemInfluence", &PlantVisualiser::SetUseStemInfluence, py::arg("useStemInfluence"), py::arg("influenceRadius"))
+        .def("SetNotUseStemInfluence", &PlantVisualiser::SetNotUseStemInfluence)
+        .def("SetUseStemRadiusAsMin", &PlantVisualiser::SetUseStemRadiusAsMin, py::arg("useStemRadiusAsMinimum"))
     ;
 
     py::class_<CatmullRomSplineManager, std::shared_ptr<CatmullRomSplineManager>>(m, "CatmullRomSplineManager")

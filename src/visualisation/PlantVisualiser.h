@@ -104,6 +104,15 @@ public :
   }
   void ClearShapeFunction() { this->shape_function_ = std::nullopt; }
 
+  void SetUseStemInfluence(bool use, double radius) { 
+    this->use_stem_influence_ = use;
+    this->stem_influence_radius_ = radius;
+  }
+
+  void SetUseStemRadiusAsMin(bool use) { this->use_stem_radius_as_min_ = use; }
+
+  void SetNotUseStemInfluence() { this->use_stem_influence_ = false; }
+
 protected:
   std::shared_ptr<MappedPlant> plant_{nullptr};
 
@@ -114,6 +123,9 @@ protected:
 
   double leaf_width_scale_factor_{1.0};
   double leaf_minimum_width_{0.0};
+  double stem_influence_radius_{0.0};
+  bool use_stem_influence_{false};
+  bool use_stem_radius_as_min_{false};
 
   /**
    * A private method to build the attachment map for the leaf organs
@@ -162,7 +174,8 @@ protected:
   unsigned int geometry_resolution_{8}; // the resolution of the cylindric geometry
   unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry
   // optional alternative shape defining function that takes [0,1] and produces [0,1]
-  std::optional<std::function<double(double)>> shape_function_{std::nullopt};
+  
+  std::optional<std::function<double(double)>> shape_function_ = std::nullopt;
 };
 
 } // namespace CPlantBox

@@ -96,7 +96,11 @@ namespace CPlantBox {
 
   void ClampVectorBetweenLengths(Vector3d& v, double min, double max) {
     double l = v.length();
-    if(l < min)
+    if(l < 1e5)
+    {
+        return;
+    }
+    else if(l < min)
     {
       v.normalize();
       v = v.times(min);
@@ -606,7 +610,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   right = up.cross(direction).normalized();
 
   //Quaternion lastRotation = Quaternion::FromMatrix3d({direction, right, up});
-	auto min_radius = stem->getParameter("radius");
+	auto min_radius = (use_stem_radius_as_min_) ? stem->getParameter("radius") : this->leaf_minimum_width_;
 
   // std::cout << "Invoking create leaf radial geometry_ for leaf " << leaf->getId() << std::endl;
 
@@ -703,7 +707,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		// compute the size of the current array, which is double its size unless one point is near zero which is only counted once
 		int current_size = current_amount;
 		// get the current point
-    double t = static_cast<double>(i) / static_cast<double>(outer_geometry_points.size());
+    double t = static_cast<double>(i) / static_cast<double>(outer_geometry_points.size()-1);
 		double l = t * length;
     auto midpoint = (i == 0) ? leaf->getNode(0) : midVein(t);
     auto current_nodeid = midVein.selectSpline(t).closestId(t);
@@ -743,7 +747,9 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       //  std::cout << p_o << "/" << geometry_.size() << " ";
 
       auto r = helper[p];
-      //r = (helper.isMirrored(p)) ? std::max(r, this->leaf_minimum_width_) : std::min(r, -this->leaf_minimum_width_);
+      auto sav = r;
+      //auto correction = leaf_minimum_width_ / leaf_width_scale_factor_;
+      //r = (helper.isMirrored(p)) ? std::min(r, -correction) : std::max(r, correction);
       // get the point
 			// get the wave effect which is a sine function along the length of the leaf
 
@@ -766,13 +772,28 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       {
         base_direction = shape_function_.value()(t) * right * leaf_width_scale_factor_ * r;
       }
-      ClampVectorBetweenLengths(base_direction, min_radius, 1000.f);
-			// scale with width
+			if(leaf_minimum_width_ > 0.0 && (p == 0 || p == helper.size() - 1) && base_direction.length() < 1e-6)
+      {
+        base_direction = right * leaf_minimum_width_ * ((p == 0) ? 1.0 : -1.0);
+      }
 			
 			//std::cout << base_direction.toString() << std::endl;
 			//Vector3d updated_direction = local_q.Rotate(base_direction);
-			base_direction = (base_direction.length() > min_radius) ? base_direction : min_radius * vectorNormalized(base_direction);
+			//base_direction = (base_direction.length() > min_radius) ? base_direction : min_radius * vectorNormalized(base_direction);
 			const Vector3d point = midpoint + base_direction +  up * z_offset;
+      //ClampVectorBetweenLengths(base_direction, min_radius, 1000.f);
+      if(verbose_ && i == outer_geometry_points.size() - 1)
+      {
+        std::cout << "Base direction: " << base_direction.toString() << std::endl;
+        std::cout << "Right: " << right.toString() << std::endl;
+        std::cout << "Up: " << up.toString() << std::endl;
+        std::cout << "r: " << r << "/" << sav << ", leaf_width_scale_factor_: " << leaf_width_scale_factor_ << ", scaling_factor: " << scaling_factor << std::endl;
+        if(this->shape_function_.has_value())
+        {
+          std::cout << "Shape function: " << this->shape_function_.value()(t) << std::endl;
+        }
+        std::cout << "Resulting point: " << point.toString() << std::endl;
+      }
       //std::cout << "V: " << point.toString() << "; ";
       // set the point
       //std::cout << "p" << " ";
