@@ -751,7 +751,11 @@ std::vector<double> XylemFlux::getHs(const std::vector<double>& sx) {
  */
 double XylemFlux::kr_f_wrapped(int si, double age, int subType, int organType, bool cells) const
 {
-	int cellIndex = rs->seg2cell.at(si);
+	
+	int cellIndex = 0;
+	if (cells){
+		cellIndex= rs->seg2cell.at(si);
+	}
 	if (cells&&(((cellIndex>=0)&&(organType !=Organism::ot_root))||((cellIndex < 0)&&(organType ==Organism::ot_root))))
 	{
 			return 0.;
