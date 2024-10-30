@@ -1,7 +1,7 @@
 ipython==8.18.1
 matplotlib==3.8.2
 matplotlib-inline==0.1.6
-mpi4py==3.1.5
+# mpi4py==3.1.5
 numpy==1.26.2
 pandas==2.1.4
 pybind11==2.11.1
