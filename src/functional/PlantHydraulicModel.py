@@ -570,7 +570,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         if not self.usecached_:
             self.update(sim_time)
         collar_pot = self.get_collar_potential(t_act, rsx)
-        print("solve_neumann(), collar potential", collar_pot, "cm", self.ci)
+        # print("solve_neumann(), collar potential", collar_pot, "cm", self.ci)
         rsx_ = self.ms.matric2total(rsx)
         b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar_pot
@@ -700,7 +700,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         # print("get_krs() n2z", n2.z)
         # print("get_krs() rx[0]", rx[self.ci, 0])
         # krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))
-        krs = -t_act / ((-500) - rx[self.ci, 0])
+        krs = -t_act / ((-500) - (-15000))
         return krs, t_act
 
     def get_suf_(self):

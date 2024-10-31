@@ -10,6 +10,15 @@ import visualisation.vtk_plot as vp
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""
+    test are based on the Benchmark example M31 (single root, static soil, comparison to analytic solution)
+    
+    * tests finished: neumann, dirichlet (for single root)
+    * todo: root system: M32 compare to Meunier(?)
+    * todo: suf, krs, cached solution (including timings?)
+    
+"""
+
 
 class TestPlantHydraulicModel(unittest.TestCase):
 
@@ -97,19 +106,19 @@ class TestPlantHydraulicModel(unittest.TestCase):
 
         solver = HydraulicModel_Meunier(self.rs, self. params, cached = False)
         rx = solver.solve_dirichlet(t, self.collar_potential, [self.soil_matricpotential], cells = True)
-        self.assertAlmostEqual(rx[0], self.collar_potential)
         error = np.linalg.norm(rx - self.rx_a) / np.sqrt(N)
         print("test_dirichlet(), Meunier, rmse ", error)
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
         print("test_dirichlet(), Meunier, transpiration", trans, "cm3/day")
+        self.assertAlmostEqual(rx[0], self.collar_potential)
 
         solver = HydraulicModel_Doussan(self.rs, self.params, cached = False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
         rx = solver.solve_dirichlet(t, self.collar_potential, [self.soil_matricpotential], cells = True)
-        self.assertAlmostEqual(rx[0], self.collar_potential)
         error = np.linalg.norm(rx - self.rx_a) / np.sqrt(N)
         print("test_dirichlet(), Doussan, rmse ", error)
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
         print("test_dirichlet(), Doussan, transpiration", trans, "cm3/day")
+        self.assertAlmostEqual(rx[0], self.collar_potential)
 
         print("")
         return None
@@ -127,12 +136,14 @@ class TestPlantHydraulicModel(unittest.TestCase):
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
         print("test_neumann(), Meunier, transpiration", trans, "cm3/day")
         print("test_neumann(), Meunier, collar potential", rx[0], "cm3/day")
+        self.assertAlmostEqual(trans_, trans)
 
         solver = HydraulicModel_Doussan(self.rs, self.params, cached = False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
         rx = solver.solve_neumann(t, trans_, [self.soil_matricpotential], cells = True)
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
         print("test_neumann(), Doussan, transpiration", trans, "cm3/day")
         print("test_neumann(), Doussan, collar potential", rx[0], "cm3/day")
+        self.assertAlmostEqual(trans_, trans)
 
         print("")
         return None
@@ -147,19 +158,21 @@ class TestPlantHydraulicModel(unittest.TestCase):
         collar_pot = -1000
         rx = solver.solve_dirichlet(t, collar_pot, [self.soil_matricpotential], cells = True)
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
-        print("test_consistancy(), Meunier, transpiration", trans, "cm3/day", collar_pot, "cm collar potential", rx[1])
+        print("test_consistancy(), Meunier, transpiration", trans, "cm3/day", collar_pot, "cm collar potential")
         rx = solver.solve_neumann(t, trans, [self.soil_matricpotential], cells = True)
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
-        print("test_consistancy(), Meunier, transpiration", trans, "cm3/day", rx[0], "cm collar potential", rx[1])
+        print("test_consistancy(), Meunier, transpiration", trans, "cm3/day", rx[0], "cm collar potential")
+        self.assertAlmostEqual(rx[0], collar_pot)
 
         solver = HydraulicModel_Doussan(self.rs, self.params, cached = False)  # or HydraulicModel_Doussan, HydraulicModel_Meunier
         collar_pot = -1000
         rx = solver.solve_dirichlet(t, collar_pot, [self.soil_matricpotential], cells = True)
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
-        print("test_consistancy(), Doussan, transpiration", trans, "cm3/day", collar_pot, "cm collar potential", rx[1])
+        print("test_consistancy(), Doussan, transpiration", trans, "cm3/day", collar_pot, "cm collar potential")
         rx = solver.solve_neumann(t, trans, [self.soil_matricpotential], cells = True)
         trans = solver.get_transpiration(t, rx, [self.soil_matricpotential], cells = True)
-        print("test_consistancy(), Doussan, transpiration", trans, "cm3/day", rx[0], "cm collar potential", rx[1])
+        print("test_consistancy(), Doussan, transpiration", trans, "cm3/day", rx[0], "cm collar potential")
+        self.assertAlmostEqual(rx[0], collar_pot)
 
         print("")
         return None
