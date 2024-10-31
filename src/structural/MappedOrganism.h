@@ -87,9 +87,9 @@ public:
 	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
 	std::vector<double> segVol; //segment volume <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
+
 	Vector3d getMinBounds();
-		// calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
-	virtual void calcExchangeZoneCoefs(){throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object");};
+	virtual void calcExchangeZoneCoefs(){ throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object"); }; // calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
 
 protected:
 

@@ -392,11 +392,12 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @return [cm] root matric potential per root system node  
         """
         if not self.cached:
+            print("HydraulicModel_Meunier.solve_again() warning: call without cached==True")
             return self.solve(sim_time, t_act, rsx, cells)
         self.usecached_ = True  # makes solve_neumann() and solve_dirichlet() to use the precomputed LU factorizuation
         x = self.solve_neumann(sim_time, t_act, rsx, cells)  # try neumann, if below wilting point, switch to Dirichlet
         self.last = "neumann"
-        self.usecached_ = False  # only, during solve_again() call
+        self.usecached_ = False  # only True, during solve_again() call
         if x[0] <= self.wilting_point:
             Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
             Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))  # TODO improve

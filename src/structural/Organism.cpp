@@ -650,6 +650,9 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
             if ((ot!=ot_seed) && (otp.second->subType > 0)) { // subType 0 is unused, and used as a prototype for reading the xml tags
                 xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
             }
+            if (ot==ot_seed) {
+                xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
+            }
         }
     }
     xmlDoc.InsertEndChild(xmlParams);
