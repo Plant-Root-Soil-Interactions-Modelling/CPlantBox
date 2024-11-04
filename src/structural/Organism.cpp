@@ -23,9 +23,9 @@ int Organism::instances = 0; // number of instances
 Organism::Organism(unsigned int seednum)
 {
     instances++;
-	if(seednum >0){
-		seed_val = seednum;
-	}else{ seed_val = std::chrono::system_clock::now().time_since_epoch().count()+instances;}
+    if(seednum >0){
+        seed_val = seednum;
+    }else{ seed_val = std::chrono::system_clock::now().time_since_epoch().count()+instances;}
     gen = std::mt19937(seed_val);
 };
 
@@ -80,13 +80,13 @@ std::shared_ptr<Organism> Organism::copy()
  * @return      all random parameters as a list (list index != subType)
  */
 std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParameter(int ot) const
-{
+    {
     auto  otps = std::vector<std::shared_ptr<OrganRandomParameter>>(0);
     for (auto& otp : organParam[ot]) {
         otps.push_back(otp.second);
     }
     return otps;
-}
+    }
 
 /**
  * Returns an organ random parameter of a specific organ type and sub type
@@ -98,11 +98,11 @@ std::vector<std::shared_ptr<OrganRandomParameter>> Organism::getOrganRandomParam
 std::shared_ptr<OrganRandomParameter> Organism::getOrganRandomParameter(int ot, int subType) const
 {
     try {
-            //            std::cout << "reading organ type " << ot << " sub type " << subType <<": ";
-             //           for (auto& p : organParam.at(ot)) {
-              //              std::cout << p.first;
-              //          }
-              //          std::cout << "\n" << std::flush;
+        //            std::cout << "reading organ type " << ot << " sub type " << subType <<": ";
+        //           for (auto& p : organParam.at(ot)) {
+        //              std::cout << p.first;
+        //          }
+        //          std::cout << "\n" << std::flush;
         return organParam.at(ot).at(subType);
     } catch(...) { // const std::out_of_range& oor
         throw std::invalid_argument("Organism::getOrganTypeParameter: OrganRandomParameter for "+ Organism::organTypeName(ot) + ", of sub type " +
@@ -132,13 +132,13 @@ void Organism::setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p)
 
 int Organism::getParameterSubType(int organtype, std::string str) const
 {
-	auto orp = this->getOrganRandomParameter(organtype);
-	for (auto& o :orp) {
-		if (o->name == str) {
-			return o->subType;
-		}
-	}
-	return -1;
+    auto orp = this->getOrganRandomParameter(organtype);
+    for (auto& o :orp) {
+        if (o->name == str) {
+            return o->subType;
+        }
+    }
+    return -1;
 }
 
 /**
@@ -161,7 +161,7 @@ void Organism::simulate(double dt, bool verbose)
     if (verbose) {
         std::cout << "Organism::simulate: from "<< simtime << " to " << simtime+dt << " days" << std::endl;
     }
-	this->dt = dt;
+    this->dt = dt;
     oldNumberOfNodes = getNumberOfNodes();
     oldNumberOfOrgans = getNumberOfOrgans();
     for (const auto& r : baseOrgans) {
@@ -174,19 +174,19 @@ void Organism::simulate(double dt, bool verbose)
  * Creates a sequential list of organs. Considers only organs with more than 1 node.
  *
  * @param ot        the expected organ type, where -1 denotes all organ types (default).
-* @param all       get also the organs with only one node? default: false.  Sometimes true for carbon-limited growth
+ * @param all       get also the organs with only one node? default: false.  Sometimes true for carbon-limited growth
  * @return Sequential list of organs. For all == false, if there is less than one node,
  * or another organ type is expected, an empty vector is returned.
  */
 std::vector<std::shared_ptr<Organ>> Organism::getOrgans(int ot, bool all) const
-{
+    {
     auto organs = std::vector<std::shared_ptr<Organ>>(0);
     organs.reserve(getNumberOfOrgans()); // just for speed up
     for (const auto& o : this->baseOrgans) {
         o->getOrgans(ot, organs, all);
     }
     return organs;
-}
+    }
 
 /**
  * Returns a single scalar parameter for each organ as sequential list,
@@ -247,7 +247,7 @@ int Organism::getNumberOfSegments(int ot) const
  * @return          for each organ a vector of nodes
  */
 std::vector<std::vector<Vector3d>> Organism::getPolylines(int ot) const
-{
+    {
     auto organs = getOrgans(ot);
     std::vector<std::vector<Vector3d>> nodes = std::vector<std::vector<Vector3d>>(organs.size());
     for (size_t j=0; j<organs.size(); j++) {
@@ -258,7 +258,7 @@ std::vector<std::vector<Vector3d>> Organism::getPolylines(int ot) const
         nodes[j] = n;
     }
     return nodes;
-}
+    }
 
 /**
  * The corresponding node creation times to the organ polyline representation (@see Organism::getPolylines)
@@ -267,7 +267,7 @@ std::vector<std::vector<Vector3d>> Organism::getPolylines(int ot) const
  * @return          for each organ a vector of nodes
  */
 std::vector<std::vector<double>> Organism::getPolylineCTs(int ot) const
-{
+    {
     auto organs = getOrgans(ot);
     std::vector<std::vector<double>> nodes = std::vector<std::vector<double>>(organs.size());
     for (size_t j=0; j<organs.size(); j++) {
@@ -278,7 +278,7 @@ std::vector<std::vector<double>> Organism::getPolylineCTs(int ot) const
         nodes[j] = nct;
     }
     return nodes;
-}
+    }
 
 /**
  * All nodes of emerged organs are ordered by their node index,
@@ -289,13 +289,13 @@ std::vector<std::vector<double>> Organism::getPolylineCTs(int ot) const
 std::vector<Vector3d> Organism::getNodes() const
 {
     auto organs = getOrgans();
-	std::vector<Vector3d> nv = std::vector<Vector3d>(getNumberOfNodes()); // reserve big enough vector
-	for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
-		nv.at(o->getNodeId(0)) = o->getNode(0);
+    std::vector<Vector3d> nv = std::vector<Vector3d>(getNumberOfNodes()); // reserve big enough vector
+    for (const auto& o : baseOrgans) { // copy initial nodes (even if organs have not developed)
+        nv.at(o->getNodeId(0)) = o->getNode(0);
     }
-	for (const auto& o : organs) { // copy all organ nodes
-		for (size_t i = 1; i<o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
-			nv.at(o->getNodeId(i)) = o->getNode(i);
+    for (const auto& o : organs) { // copy all organ nodes
+        for (size_t i = 1; i<o->getNumberOfNodes(); i++) { // since all base nodes are stored twice as base and along root
+            nv.at(o->getNodeId(i)) = o->getNode(i);
         }
     }
     return nv;
@@ -387,7 +387,7 @@ std::vector<int> Organism::getSegmentIds(int ot) const
  * @return          creation times of each segment
  */
 std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
-{
+    {
     auto organs = getOrgans(ot);
     auto segs = std::vector<std::shared_ptr<Organ>>(0);
     segs.reserve(this->getNumberOfSegments(ot)); // for speed up
@@ -398,7 +398,7 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
         }
     }
     return segs;
-}
+    }
 
 /**
  * @return the indices of the nodes that were moved during the last time step,
@@ -412,12 +412,12 @@ std::vector<int> Organism::getUpdatedNodeIndices() const
     std::vector<int> ni = std::vector<int>(0);
     for (const auto& o : organs) {
         if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
-			if((o->organType() >2)){//is stem or leaf
-				int onon =  o->getOldNumberOfNodes();//because of tropism and internodal growth, all nodes can move
-				for(int i = 1; i < onon; i++){
-					ni.push_back(o->getNodeId(i));
-				}
-			}else{ni.push_back(o->getNodeId(o->getOldNumberOfNodes()-1));}
+            if((o->organType() >2)){//is stem or leaf
+                int onon =  o->getOldNumberOfNodes();//because of tropism and internodal growth, all nodes can move
+                for(int i = 1; i < onon; i++){
+                    ni.push_back(o->getNodeId(i));
+                }
+            }else{ni.push_back(o->getNodeId(o->getOldNumberOfNodes()-1));}
         }
     }
     return ni;
@@ -434,12 +434,12 @@ std::vector<Vector3d> Organism::getUpdatedNodes() const
     std::vector<Vector3d> nv = std::vector<Vector3d>(0);
     for (const auto& o : organs) {
         if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
-			if((o->organType() > 2)){
-				int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
-				for(int i = 1; i < onon; i++){
-					nv.push_back(o->getNode(i));
-				}
-			}else{nv.push_back(o->getNode(o->getOldNumberOfNodes()-1));}
+            if((o->organType() > 2)){
+                int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
+                for(int i = 1; i < onon; i++){
+                    nv.push_back(o->getNode(i));
+                }
+            }else{nv.push_back(o->getNode(o->getOldNumberOfNodes()-1));}
         }
     }
     return nv;
@@ -455,12 +455,12 @@ std::vector<double> Organism::getUpdatedNodeCTs() const
     std::vector<double> nv = std::vector<double>(0);
     for (const auto& o : organs) {
         if (o->hasMoved()&&(o->getOldNumberOfNodes()>1)) {
-			if((o->organType() > 2)){
-				int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
-				for(int i = 1; i < onon; i++){
-					nv.push_back(o->getNodeCT(i));
-				}
-			}else{nv.push_back(o->getNodeCT(o->getOldNumberOfNodes()-1));}
+            if((o->organType() > 2)){
+                int onon =  o->getOldNumberOfNodes();//in case of internodal growth, not just last node needs to be updated
+                for(int i = 1; i < onon; i++){
+                    nv.push_back(o->getNodeCT(i));
+                }
+            }else{nv.push_back(o->getNodeCT(o->getOldNumberOfNodes()-1));}
         }
     }
     return nv;
@@ -535,7 +535,7 @@ std::vector<Vector2i> Organism::getNewSegments(int ot) const
  * @return          a vector of pointers to organs
  */
 std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
-{
+    {
     auto organs = this->getOrgans(ot);
     std::vector<std::shared_ptr<Organ>> so;
     for (auto& o :organs) {
@@ -545,7 +545,7 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
         }
     }
     return so;
-}
+    }
 
 /**
  * @return Quick info about the object for debugging
@@ -554,7 +554,7 @@ std::string Organism::toString() const
 {
     std::stringstream str;
     str << "Organism with "<< baseOrgans.size() <<" base organs, " << getNumberOfNodes()
-                                                		    << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
+                                                		        << " nodes, and a total of " << getNumberOfOrgans() << " organs, after " << getSimTime() << " days";
     return str.str();
 }
 
@@ -572,9 +572,9 @@ std::string Organism::toString() const
  */
 void Organism::readParameters(std::string name, std::string basetag, bool fromFile, bool verbose)
 {
-	tinyxml2::XMLDocument doc;
-	if(fromFile){doc.LoadFile(name.c_str()); //open xml file and read data
-	}else{doc.Parse((const char*)name.c_str());} //get data directly from string
+    tinyxml2::XMLDocument doc;
+    if(fromFile){doc.LoadFile(name.c_str()); //open xml file and read data
+    }else{doc.Parse((const char*)name.c_str());} //get data directly from string
     if(doc.ErrorID() == 0) {
         tinyxml2::XMLElement* base = doc.FirstChildElement(basetag.c_str());
         if(base != nullptr){
@@ -610,18 +610,18 @@ void Organism::readParameters(std::string name, std::string basetag, bool fromFi
                     otp->organType = ot; // in depricated case, readXML will a give wrong value
                     setOrganRandomParameter(otp);
                 } else { // skip prototype
-				if(verbose){
-                    std::cout << "Organism::readParameters: warning, skipping " << tagname <<
-                        ", no random parameter class defined, use initializeReader()\n" << std::flush;
-				}
+                    if(verbose){
+                        std::cout << "Organism::readParameters: warning, skipping " << tagname <<
+                            ", no random parameter class defined, use initializeReader()\n" << std::flush;
+                    }
                 }
                 p = p->NextSiblingElement();
             } // while
         } else {
             if (basetag.compare("plant") == 0) { // try old spelling
-			if(verbose){
-                std::cout << "Organism::readParameters: plant tag was not found in xml file, retrying with Plant " << std::endl;
-			}
+                if(verbose){
+                    std::cout << "Organism::readParameters: plant tag was not found in xml file, retrying with Plant " << std::endl;
+                }
                 readParameters(name, "Plant", fromFile, verbose); // rerun
                 return;
             }
@@ -650,6 +650,9 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
             if ((ot!=ot_seed) && (otp.second->subType > 0)) { // subType 0 is unused, and used as a prototype for reading the xml tags
                 xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
             }
+            if (ot==ot_seed) {
+                xmlParams->InsertEndChild(otp.second->writeXML(xmlDoc, comments));
+            }
         }
     }
     xmlDoc.InsertEndChild(xmlParams);
@@ -664,7 +667,7 @@ void Organism::writeParameters(std::string name, std::string basetag, bool comme
  */
 void Organism::write(std::string name) const
 {
-    std::string ext = name.substr(name.size()-3,name.size()); // pick the right writer
+    std::string ext = name.substr(name.size()-3,name.size()); // pick the right write}r
     if (ext.compare("sml")==0) {
         std::cout << "writing RSML... "<< name.c_str() <<"\n";
         writeRSML(name); // use base class writer
@@ -773,7 +776,7 @@ void Organism::writeVTP(int otype, std::ostream & os) const // Write .VTP file b
  * Writes the current confining geometry (e.g. a plant container) as paraview python script
  * Just adds the initial lines, before calling the method of the sdf.
  *
-  * todo move to Organism (including geometry)
+ * todo move to Organism (including geometry)
  *
  * @param os      typically a file out stream
  */
@@ -843,16 +846,16 @@ tinyxml2:: XMLElement* Organism::getRSMLScene(tinyxml2::XMLDocument& xmlDoc) con
     tinyxml2:: XMLElement* scene = xmlDoc.NewElement("scene");
     tinyxml2:: XMLElement* plant = xmlDoc.NewElement("plant");
 
-//	auto p = plant.lock();
-//	auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
-//	bool plantBox = stemP.size()>0;
-//	if (verbose) {
-//		if (plantBox) {
-//			std::cout << "Seed::initialize: Plant \n";
-//		} else {
-//			std::cout << "Seed::initialize: RootSystem \n";
-//		}
-//	}
+    //	auto p = plant.lock();
+    //	auto stemP = p->getOrganRandomParameter(Organism::ot_stem);
+    //	bool plantBox = stemP.size()>0;
+    //	if (verbose) {
+    //		if (plantBox) {
+    //			std::cout << "Seed::initialize: Plant \n";
+    //		} else {
+    //			std::cout << "Seed::initialize: RootSystem \n";
+    //		}
+    //	}
 
     scene->InsertEndChild(plant);
     for (auto& o: baseOrgans) {
@@ -877,7 +880,7 @@ void Organism::setSeed(unsigned int seed)
  */
 std::shared_ptr<Seed> Organism::getSeed()
 {
-	return std::static_pointer_cast<Seed>(baseOrgans.at(0));
+    return std::static_pointer_cast<Seed>(baseOrgans.at(0));
 }
 
 } // namespace
