@@ -13,6 +13,7 @@ ipyevents
 itkwidgets 
 pyevtk
 pillow
+pyvista
 # other requirements:
 # default-jre
 # libboost-all-dev
