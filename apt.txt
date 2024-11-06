@@ -4,3 +4,8 @@ libsm6
 libxext6
 libxrender1
 libgl1-mesa-glx
+xvfb
+mesa-utils 
+libglu1-mesa-dev 
+freeglut3-dev 
+mesa-common-dev 
