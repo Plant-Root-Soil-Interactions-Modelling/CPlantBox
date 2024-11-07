@@ -82,7 +82,7 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="0.40000001" dev="0.1"/>
         <!--Basal zone [cm]-->
-        <parameter name="lmax" value="7.6999998" dev="10"/>
+        <parameter name="lmax" value="7.6999998" dev="0.7"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.5" dev="0.1"/>
         <!--Inter-lateral distance [cm]-->
