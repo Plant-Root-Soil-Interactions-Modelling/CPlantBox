@@ -8,6 +8,7 @@ pybind11
 pybind11-global 
 scipy 
 vtk 
+xvfbwrapper
 mayavi
 ipyevents
 itkwidgets 
