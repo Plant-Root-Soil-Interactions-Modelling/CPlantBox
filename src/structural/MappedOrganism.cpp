@@ -781,7 +781,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 		radii.at(segIdx) = so->param()->a;
 		organTypes.at(segIdx) = so->organType();
-		subTypes.at(segIdx) = st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
+		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
 
 		if(organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{

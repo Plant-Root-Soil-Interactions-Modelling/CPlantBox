@@ -236,7 +236,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
     def get_heff(self, rsx):
         """ effective total potential [cm] """
         suf = self.get_suf()
-        heff = suf.dot(rsx)
+        heff = suf.dot(self.ms.matric2total(rsx))
         return heff[0]
 
     def test(self):
@@ -392,11 +392,12 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
             @return [cm] root matric potential per root system node  
         """
         if not self.cached:
+            print("HydraulicModel_Meunier.solve_again() warning: call without cached==True")
             return self.solve(sim_time, t_act, rsx, cells)
         self.usecached_ = True  # makes solve_neumann() and solve_dirichlet() to use the precomputed LU factorizuation
         x = self.solve_neumann(sim_time, t_act, rsx, cells)  # try neumann, if below wilting point, switch to Dirichlet
         self.last = "neumann"
-        self.usecached_ = False  # only, during solve_again() call
+        self.usecached_ = False  # only True, during solve_again() call
         if x[0] <= self.wilting_point:
             Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
             Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))  # TODO improve
@@ -547,22 +548,13 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         self.last = "dirichlet"
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
-        rsx = self.ms.matric2total(rsx)
         if not self.usecached_:
             self.update(sim_time)
-        b = self.Kr.dot(rsx)
-        # print("b", np.min(b), np.max(b))
+        rsx_ = self.ms.matric2total(rsx)
+        b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar_pot
-        rx = self.A_d_splu.solve(b)
-        print(rx)
-        rx = self.ms.total2matric(rx)
-
-        print("axial collar segment", self.kx0 * (rx[0] - 0.5050505050505051 - collar_pot))
-
-        # kr = np.array(self.params.getEffKr(sim_time))
-        # print(kr[0], kr[1])
-        # print("radial collar node", kr[0] * (rsx[0] - collar_pot))
-
+        rx_ = self.A_d_splu.solve(b)
+        rx = self.ms.total2matric(rx_)
         return np.append(collar_pot, rx)
 
     def solve_neumann(self, sim_time:float, t_act:list, rsx, cells:bool):
@@ -576,11 +568,12 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         self.last = "neumann"
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
-        rsx = self.ms.matric2total(rsx)  # <--- ??? USES segment mid points...
         if not self.usecached_:
             self.update(sim_time)
         collar_pot = self.get_collar_potential(t_act, rsx)
-        b = self.Kr.dot(rsx)
+        # print("solve_neumann(), collar potential", collar_pot, "cm", self.ci)
+        rsx_ = self.ms.matric2total(rsx)
+        b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar_pot
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar_pot, rx)
@@ -596,10 +589,10 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         self.update(sim_time)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
-        rsx = self.ms.matric2total(rsx)
         collar = self.get_collar_potential(t_act, rsx)
         collar = max(collar, self.wilting_point)
-        b = self.Kr.dot(rsx)
+        rsx_ = self.ms.matric2total(rsx)
+        b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar, rx)
@@ -618,10 +611,10 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             # self.update(sim_time)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
-        rsx = self.ms.matric2total(rsx)
         collar = self.get_collar_potential(t_act, rsx)
         collar = max(collar, self.wilting_point)
-        b = self.Kr.dot(rsx)
+        rsx_ = self.ms.matric2total(rsx)
+        b = self.Kr.dot(rsx_)
         b[self.ci] += self.kx0 * collar
         rx = self.ms.total2matric(self.A_d_splu.solve(b))
         return np.append(collar, rx)
@@ -662,17 +655,18 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         kr = self.params.kr_f(age, st)  # c++ conductivity call back functions
         kx = self.params.kx_f(age, st)  # c++ conductivity call back functi
         dpdz0 = (rx[j] - rx[i]) / l
-        f = -kx * (dpdz0)
+        f = -kx * (dpdz0 - 1)
         return f
 
     def doussan_system_matrix(self, sim_time):
         """ """
+        # print("doussan_system_matrix")
         IM = MappedPlantPython(self.ms).get_incidence_matrix()
         IMt = IM.transpose()
         kx_ = np.divide(self.params.getKx(sim_time), self.ms.segLength())  # / dl
         Kx = sparse.diags(kx_)
         kr = np.array(self.params.getEffKr(sim_time))
-        kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)
+        # kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
         L_ = L[1:, 1:].tocsc()
@@ -680,33 +674,39 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def update(self, sim_time):
         """ call before solve(), get_collar_potential(), and get_Heff() """
-        print("update")
+        # print("update")
         self.ci = self.collar_index()  # segment index of the collar segment
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
-        self.krs, _ = self.get_krs(sim_time)
-        print("update, krs", self.krs)
+        self.krs, _ = self.get_krs_(sim_time)
+        # print("update, krs", self.krs)
         self.suf = np.transpose(self.get_suf_())
-        print("update, sum suf", np.sum(self.suf))
+        # print("update, sum suf", np.sum(self.suf))
 
-    def get_krs(self, sim_time):
+    def get_collar_potential(self, t_act, rsx):
+        """ collar potential for an actual transpiration (call update() before) """
+        return (self.krs * self.get_heff_(rsx) - (-t_act)) / self.krs
+
+    def get_krs_(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
+        # print("krs", sim_time)
         n = self.ms.getNumberOfMappedSegments()
         s = self.ms.segments[self.ci]
         n2 = self.ms.nodes[s.y]
-        rsx = np.ones((n, 1)) * (-500)  # total matric potential
-        b = self.Kr.dot(rsx)
+        rsx_ = np.ones((n, 1)) * (-500)  # total matric potential
+        b = self.Kr.dot(rsx_)
         b[self.ci, 0] += self.kx0 * -15000
         rx = self.A_d_splu.solve(b)  # total matric potential
-        t_act = np.sum(-self.Kr.dot(rsx - rx))
+        t_act = np.sum(-self.Kr.dot(rsx_ - rx))
         # print("get_krs() n2z", n2.z)
         # print("get_krs() rx[0]", rx[self.ci, 0])
         # krs = -t_act / ((-500) - (rx[self.ci, 0] - n2.z))
-        krs = -t_act / ((-500) - rx[self.ci, 0])
+        krs = -t_act / ((-500) - (-15000))
         return krs, t_act
 
     def get_suf_(self):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
+        # print("suf")
         n = self.ms.getNumberOfMappedSegments()
         rsx = np.ones((n, 1)) * (-500)  # total matric potential
         b = self.Kr.dot(rsx)
@@ -715,12 +715,9 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         q = -self.Kr.dot(rsx - rx)
         return np.array(q) / np.sum(q)
 
-    def get_collar_potential(self, t_act, rsx):
-        """ collar potential for an actual transpiration (call update() before) """
-        return (self.krs * self.get_heff_(rsx) - (-t_act)) / self.krs
-
     def get_heff_(self, rsx):
         """ effective total potential [cm] using cached suf """
         heff = self.suf.dot(self.ms.matric2total(rsx))
+        # print("get_heff_()", heff[0], heff.shape)
         return heff[0]
 
