@@ -95,7 +95,7 @@ show_message("(1/2) (b) Checking python prerequistes: " + " ".join(modules) + ".
 
 for mymodule in modules:
     try:
-        subprocess.run(["pip3", "install", mymodule], check = True, text = True, capture_output = True)  # ,"-y"
+        subprocess.run(["python3", "-m", "pip", "install", mymodule], check = True, text = True, capture_output = True)  # ,"-y"
     except subprocess.CalledProcessError as e:
         # Check for the "externally-managed-environment" error
         if "externally-managed-environment" in e.stderr:
@@ -108,7 +108,7 @@ for mymodule in modules:
         raise Exception
 
 # pip3 install --upgrade pip setuptools wheel # necessary?
-subprocess.run(["pip3", "install", "--no-cache-dir", "mpi4py", "--verbose"])  # mpi4py can take a lot of time to install
+subprocess.run(["python3", "-m", "pip", "install", "--no-cache-dir", "mpi4py", "--verbose"])  # mpi4py can take a lot of time to install
 
 show_message("(1/2) Step completed. All prerequistes found.")
 
