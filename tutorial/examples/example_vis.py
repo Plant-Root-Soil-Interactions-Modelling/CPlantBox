@@ -3,7 +3,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/"); sys.path.ap
 
 import plantbox as pb
 import visualisation.vtk_plot as vp
-import visualisation.vis_tools as cpbvis
+import visualisation.vis_tools as vis
 
 import numpy as np
 
@@ -51,10 +51,10 @@ plant.simulate(time, True)
 # vis.ComputeGeometryForOrganType(pb.leaf, False)
 
 # Write the geometry to file#
-# data = cpbvis.PolydataFromPlantGeometry(vis)
+data = vis.PolydataFromPlantGeometry(vis)
 # cpbvis.WritePolydataToFile(data, output + ".vtp")
 
 # vp.plot_plant(plant, "subType")
 
-vp.write_plant("test", plant)  # will write test.vtp (with centerlines), and test_leafs.vtp (as polygones)
+#vp.write_plant("test", plant)  # will write test.vtp (with centerlines), and test_leafs.vtp (as polygones)
 print("fin")
