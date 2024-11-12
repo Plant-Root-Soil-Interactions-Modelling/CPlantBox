@@ -772,7 +772,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       {
         base_direction = shape_function_.value()(t) * right * leaf_width_scale_factor_ * r;
       }
-			if(leaf_minimum_width_ > 0.0 && (p == 0 || p == helper.size() - 1) && base_direction.length() < 1e-6)
+			if(leaf_minimum_width_ > 0.0 && (p == 0 || p == helper.size() - 1) && base_direction.length() < leaf_minimum_width_)
       {
         base_direction = right * leaf_minimum_width_ * ((p == 0) ? 1.0 : -1.0);
       }
@@ -807,8 +807,10 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       geometry_normals_[p_o + 2] = up.z;
       // set the texture coordinates
       //std::cout << "t" << " ";
-      geometry_texture_coordinates_[(p_o/3*2)] = l;
+      geometry_texture_coordinates_[(p_o/3*2)] = t;
       geometry_texture_coordinates_[(p_o/3*2) + 1] = helper.texcoord(p);
+      if(p == 0) geometry_texture_coordinates_[(p_o/3*2) + 1] = 0.0;
+      if(p == helper.size() - 1) geometry_texture_coordinates_[(p_o/3*2) + 1] = 1.0;
 			// set the node id
       //std::cout << "i" << " ";
 			geometry_node_ids_[p_o/3] = current_nodeid;

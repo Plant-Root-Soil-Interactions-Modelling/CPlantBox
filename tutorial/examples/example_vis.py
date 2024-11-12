@@ -29,13 +29,14 @@ vis.SetGeometryResolution(8)
 vis.SetLeafResolution(30)
 vis.SetComputeMidlineInLeaf(False)
 vis.SetVerbose(True)
-vis.SetLeafMinimumWidth(1)
+vis.SetLeafMinimumWidth(0.1)
 vis.SetRightPenalty(0.9)
 #vis.SetShapeFunction(lambda t : 1*((1 - t**0.8)**0.5))
 shape = lambda t : max(0.0,1.0*((1 - t**0.6)**0.3) -  0.1/(t + 0.1))
+shape = lambda t : 1.0*((1 - t**0.6)**0.3)
 vis.SetShapeFunction(shape)
 print("Shape at boundaries: ", shape(0), shape(1))
-vis.SetLeafWidthScaleFactor(20.0)
+vis.SetLeafWidthScaleFactor(1.0)
 vis.SetNotUseStemInfluence()
 vis.SetUseStemRadiusAsMin(True)
 
@@ -125,9 +126,18 @@ actor.GetProperty().SetColor(0.0, 1.0, 1.0)
 # make actor emissive
 actor.GetProperty().SetAmbient(1)
 renderer.AddActor(actor)
-# show the wireframe
-actor.GetProperty().SetRepresentationToWireframe()
-actor.GetProperty().SetLineWidth(2)
+# show the texture coordinates of mapper
+mapper.ScalarVisibilityOff()
+mapper.SetScalarModeToUsePointData()
+mapper.SetColorModeToMapScalars()
+mapper.SetScalarModeToUsePointFieldData()
+# use the x coordinate of the texture coordinates as scalar
+mapper.SelectColorArray("Texture Coordinates")
+mapper.SetScalarModeToUsePointData()
+mapper.SetScalarRange(0, 1)
+mapper.Update()
+
+
 
 # include uniform lighting
 light = vtk.vtkLight()
@@ -150,5 +160,8 @@ renderer.AddLight(light)
 interactor.Initialize()
 window.Render()
 interactor.Start()
+
+# Save the geometry to file
+cpbvis.WritePolydataToFile(data, "leaf.vtk")
 
 
