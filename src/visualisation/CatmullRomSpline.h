@@ -46,10 +46,10 @@ class CatmullRomSpline
   }
 
   private:
-  // start and end time of the spline
-  double t0, t1;
   // the control points of the spline
   Vector3d y0, y1, y2, y3;
+  // start and end time of the spline
+  double t0, t1;
   // the stages of the apline
   Vector3d a0, a1, a2, a3;
   Vector3d b0, b1, b2;
