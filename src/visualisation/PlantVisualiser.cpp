@@ -71,8 +71,8 @@ namespace CPlantBox {
 		}
 	private:
 		MirrorIterator(const std::vector<double>* v, bool end, int i) : v(v), r(end), i(i) { }
-		bool r = false;
 		const std::vector<double>* v;
+		bool r = false;
 		int i = 0;
 	};
 
@@ -96,11 +96,11 @@ namespace CPlantBox {
 
 
 PlantVisualiser::PlantVisualiser() :
-    geometry_resolution_(10), leaf_resolution_(10), include_midline_in_leaf_(false) {}
+    include_midline_in_leaf_(false), geometry_resolution_(10), leaf_resolution_(10) {}
 
 PlantVisualiser::PlantVisualiser(const PlantVisualiser& pv) = default;
 PlantVisualiser::PlantVisualiser(std::shared_ptr<MappedPlant> plant) :
-    geometry_resolution_(10), leaf_resolution_(10), include_midline_in_leaf_(false), plant_(plant) 
+    plant_(plant), include_midline_in_leaf_(false), geometry_resolution_(10), leaf_resolution_(10) 
     {
       BuildAttachmentMap();
     }
@@ -172,7 +172,7 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
   // First we check if we have enough memory to support the geometry_
   unsigned int point_space = 0;
   unsigned int cell_space = 0;
-	unsigned int num_organs = 0;
+	//unsigned int num_organs = 0;
 
   for(auto organ : organ_list)
   {
@@ -273,7 +273,7 @@ void PlantVisualiser::ComputeGeometryForOrganType(int organType, bool clearFirst
     {
 			//std::cout << "Organ is a stem" << std::endl;
       //std::cout << "Generating geometry_ for stem " << organ->getId() << " with " << organ->getNumberOfNodes() << " nodes." << std::endl;
-      auto prev_size = geometry_indices_.size();
+      //auto prev_size = geometry_indices_.size();
       GenerateStemGeometry(organ, point_space, cell_space);
       //std::cout << "Organ " << organ->getId() << " pushed the size from " << prev_size << " to " << geometry_indices_.size() << std::endl;
       //point_space += organ->getNumberOfNodes() * 3 * geometry_resolution_;
@@ -513,7 +513,7 @@ void PlantVisualiser::GenerateStemGeometry(std::shared_ptr<Organ> stem, unsigned
 void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, unsigned int p_o, unsigned int c_o)
 {
 	// Fetch the phi array
-	double scaling_factor = leaf->getParameter("areaMax") * leaf->getLength(false) / leaf->getParameter("k");
+	//double scaling_factor = leaf->getParameter("areaMax") * leaf->getLength(false) / leaf->getParameter("k");
 
 	// resolution
 	int resolution = leaf_resolution_;
@@ -615,7 +615,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
   last_non_petiole = -1;
 	Quaternion last_orientation;
 	Vector3d last_position;
-	int last_index{-1};
+	//int last_index{-1};
   // create two random factors between 0 and 1
   float random_factor_1 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
   float random_factor_2 = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -634,7 +634,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       continue;
     }
 		// compute the size of the current array, which is double its size unless one point is near zero which is only counted once
-		int current_size = current_amount;
+		//int current_size = current_amount;
 		// get the current point
     double t = static_cast<double>(i) / static_cast<double>(resolution);
 		double l = t * length;
@@ -662,11 +662,11 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
     // iterate through the points
     //std::cout << "Iterating through the points of the current line intersection " << i << std::endl;
 
-		float petiole_distance = leaf->getLeafRandomParameter()->lb;
+		//float petiole_distance = leaf->getLeafRandomParameter()->lb;
 
-		const Vector3d first_node = leaf->getNode(0);
-		const Vector3d first_estimated = midVein(0);
-		const auto first_distance = (first_node - first_estimated).length();
+		//const Vector3d first_node = leaf->getNode(0);
+		//const Vector3d first_estimated = midVein(0);
+		//const auto first_distance = (first_node - first_estimated).length();
 		//std::cout << "First distance is " << first_distance << std::endl;
     
     for(int p = 0; p < helper.size(); ++p)

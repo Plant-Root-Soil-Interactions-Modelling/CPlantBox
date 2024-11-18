@@ -47,8 +47,8 @@
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="0.5"/>
     <parameter name="tropismS" value="0.261799"/>
-    <parameter name="dx" value="3"/>
-    <parameter name="dxMin" value="1"/>
+    <parameter name="dx" value="0.5"/>
+    <parameter name="dxMin" value="0.25"/>
     <parameter name="theta" value="0.4" dev="0.0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
@@ -71,8 +71,8 @@
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.5"/>
     <parameter name="theta" value="0.79" />
-    <parameter name="dx" value="3"/>
-    <parameter name="dxMin" value="1"/>
+    <parameter name="dx" value="0.5"/>
+    <parameter name="dxMin" value="0.25"/>
 	<parameter name="ldelay" value="5" dev="0" />
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
@@ -88,8 +88,8 @@
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="1"/>
     <parameter name="tropismS" value="0.40000000000000002"/>
-    <parameter name="dx" value="3"/>
-    <parameter name="dxMin" value="1"/>
+    <parameter name="dx" value="0.5"/>
+    <parameter name="dxMin" value="0.25"/>
     <parameter name="theta" value="0.95993099999999998" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
