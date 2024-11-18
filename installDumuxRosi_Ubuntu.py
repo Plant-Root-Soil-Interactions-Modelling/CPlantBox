@@ -117,13 +117,13 @@ subprocess.run(["python3","dumux/bin/installexternal.py","ug","spgrid","foamgrid
 
 # dumux-rosi
 if not os.path.exists("dumux-rosi"):
-    subprocess.run(['git', 'clone', '--depth','1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git'])
+    subprocess.run(['git', 'clone', '--depth','1', '-b', 'fpit_clean', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git'])
 else:
     print("-- Skip cloning dumux-rosi because the folder already exists.")
 
 # CPlantBox
 if not os.path.exists("CPlantBox"):
-    subprocess.run(['git', 'clone', '--depth','1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+    subprocess.run(['git', 'clone', '--depth','1', '-b', 'exudation_analysis_plant4', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
 else:
     print("-- Skip cloning CPlantBox because the folder already exists.")
 
