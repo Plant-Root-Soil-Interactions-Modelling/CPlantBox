@@ -15,9 +15,17 @@ namespace CPlantBox {
     std::string MycorrhizalRootRandomParameter::toString(bool verbose) const {
 
         if (verbose) {
-            return OrganRandomParameter::toString(true);
+            return RootRandomParameter::toString(true);
         } else {
-            return OrganRandomParameter::toString(false);
+            return RootRandomParameter::toString(false);
         }
+    }
+
+    MycorrhizalRootRandomParameter::MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant) :RootRandomParameter(plant) {
+        name = "undefined";
+        organType = Organism::ot_root;// SOLLTE NICHT WAS ANDERES SEIN?
+        subType = -1;
+        f_tf = std::make_shared<Tropism>(plant);
+        bindParameters();
     }
 }

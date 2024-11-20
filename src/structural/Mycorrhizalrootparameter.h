@@ -11,29 +11,29 @@ namespace CPlantBox {
 
     class MycorrhizalRootSpecificParameter : public RootSpecificParameter{
         public:
-        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.,0.,0.,0.,0.) {};
+        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.,0.,0.) {};
 
         MycorrhizalRootSpecificParameter(int type, double lb, 
         double la, const std::vector<double>& ln, double r, double a,
-        double theta, double rlt, bool laterals = false, double p,
-        double minAge = 0, double maxAge = 32, double vi = 0.13): 
+        double theta, double rlt, bool laterals = false, double vi = 0.13): 
         RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), vi(vi) {};
 
         /*
          * AMF Infection Parameters
          */
-        double vi;  ///< rate of internal infection front [cm / day] **** bleibt oben
+        double vi;  ///< rate of internal infection front [cm / day]
     };
 
     class MycorrhizalRootRandomParameter :public RootRandomParameter {
         public:
 
         MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant); // plant oder mycplant???
+        
         virtual ~MycorrhizalRootRandomParameter() {};
 
         // copy
         // realize
-        // to String for  debugging
+        std::string toString(bool verbose = true) const override;
         // readXML
 
 
