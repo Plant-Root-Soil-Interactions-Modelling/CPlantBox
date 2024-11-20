@@ -11,4 +11,13 @@ namespace CPlantBox {
         bindParameter("vi", &vi, "rate of internal infection front [cm / day]");
         bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
     }
+
+    std::string MycorrhizalRootRandomParameter::toString(bool verbose) const {
+
+        if (verbose) {
+            return OrganRandomParameter::toString(true);
+        } else {
+            return OrganRandomParameter::toString(false);
+        }
+    }
 }

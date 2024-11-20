@@ -17,16 +17,12 @@ namespace CPlantBox {
         double la, const std::vector<double>& ln, double r, double a,
         double theta, double rlt, bool laterals = false, double p,
         double minAge = 0, double maxAge = 32, double vi = 0.13): 
-        RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), p(p),minAge(minAge),
-        maxAge(maxAge), vi(vi) {};
+        RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), vi(vi) {};
 
         /*
          * AMF Infection Parameters
          */
-        double p;        ///< Probability of primary infection for dispersed inoculum [1/(cm day)]
-        double minAge;      ///< Minimal Infectious age of a root segment [day]
-        double maxAge;     ///< Maximal Infection age of a root segment [day]
-        double vi;       ///< rate of internal infection front [cm / day]
+        double vi;  ///< rate of internal infection front [cm / day] **** bleibt oben
     };
 
     class MycorrhizalRootRandomParameter :public RootRandomParameter {
@@ -34,6 +30,12 @@ namespace CPlantBox {
 
         MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant); // plant oder mycplant???
         virtual ~MycorrhizalRootRandomParameter() {};
+
+        // copy
+        // realize
+        // to String for  debugging
+        // readXML
+
 
         void bindParameters() override;
         /*
@@ -44,6 +46,8 @@ namespace CPlantBox {
         double maxAge = 32;     ///< Maximal Infection age of a root segment [day]
         double vi = 0.13;       ///< rate of internal infection front [cm / day]
         double maxInfection = 1;    ///< Percentage of maximal infection 
+
+        // was ist snap?
 
     };
 }
