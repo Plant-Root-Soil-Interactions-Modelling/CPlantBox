@@ -28,4 +28,17 @@ namespace CPlantBox {
         f_tf = std::make_shared<Tropism>(plant);
         bindParameters();
     }
+
+    std::shared_ptr<OrganRandomParameter> MycorrhizalRootRandomParameter::copy(std::shared_ptr<Organism> p) {
+        // std::cout << "MycorrhizalRootRandomParameter::copy\n" << std:.flush;
+        auto r = std::make_shared<MycorrhizalRootRandomParameter>(*this);
+        r->plant = p;
+        r->bindParameters();
+        // r->f_tf = f_tf->copy(p); // copy call back function classes
+        // r->f_gf = f_gf->copy();
+        // r->f_se = f_se; // for carbon limited grow we want the same reference
+        // r->f_sa = f_sa->copy();
+        // r->f_sbp = f_sbp->copy();
+        return r;
+    }
 }
