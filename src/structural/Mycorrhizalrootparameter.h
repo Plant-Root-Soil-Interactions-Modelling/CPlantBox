@@ -7,8 +7,6 @@
 
 namespace CPlantBox {
 
-    class Organsim;
-
     class MycorrhizalRootSpecificParameter : public RootSpecificParameter{
         public:
         MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.,0.,0.) {};
@@ -52,6 +50,5 @@ namespace CPlantBox {
 
     };
 }
-
 
 #endif
