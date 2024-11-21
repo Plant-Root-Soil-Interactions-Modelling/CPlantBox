@@ -1,8 +1,6 @@
 #ifndef MYCORRHIZAL_PLANT_H_
 #define MYCORRHIZAL_PLANT_H_
 
-#include <iostream>
-
 #include "Plant.h"
 #include "MycorrhizalRoot.h"
 

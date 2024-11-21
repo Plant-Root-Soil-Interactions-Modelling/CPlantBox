@@ -2,8 +2,6 @@
 #include "MycorrhizalPlant.h"
 
 
-#include <iostream>
-
 namespace CPlantBox {
     MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
 
