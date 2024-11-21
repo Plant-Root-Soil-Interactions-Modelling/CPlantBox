@@ -22,11 +22,12 @@ namespace CPlantBox {
     }
 
     MycorrhizalRootRandomParameter::MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant) :RootRandomParameter(plant) {
-        name = "undefined";
-        organType = Organism::ot_root;// SOLLTE NICHT WAS ANDERES SEIN?
-        subType = -1;
-        f_tf = std::make_shared<Tropism>(plant);
-        bindParameters();
+        // Standard Konstruktor sollte von RootRandomParameter sollte eigentlich reichen oder? Oder einfach name und bind parameter? Oder neuer Organtype
+        // name = "undefined";
+        // organType = Organism::ot_root; // SOLLTE NICHT WAS ANDERES SEIN?
+        // subType = -1;
+        // f_tf = std::make_shared<Tropism>(plant);
+        // bindParameters();
     }
 
     std::shared_ptr<OrganRandomParameter> MycorrhizalRootRandomParameter::copy(std::shared_ptr<Organism> p) {
@@ -40,5 +41,8 @@ namespace CPlantBox {
         // r->f_sa = f_sa->copy();
         // r->f_sbp = f_sbp->copy();
         return r;
+    }
+    void MycorrhizalRootRandomParameter::readXML(tinyxml2::XMLElement* element, bool verbose) {
+        RootRandomParameter::readXML(element,verbose);
     }
 }

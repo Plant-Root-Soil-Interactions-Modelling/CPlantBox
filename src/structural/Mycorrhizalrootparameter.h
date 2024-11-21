@@ -34,7 +34,8 @@ namespace CPlantBox {
         std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
         // realize
         std::string toString(bool verbose = true) const override;
-        // readXML
+        
+        void readXML(tinyxml2::XMLElement* element, bool verbose) override;
 
 
         void bindParameters() override;
