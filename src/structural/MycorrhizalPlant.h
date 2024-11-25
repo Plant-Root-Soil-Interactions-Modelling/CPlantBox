@@ -6,6 +6,7 @@
 
 namespace CPlantBox {
     class MycorrhizalPlant :public Plant {
+        public:
         MycorrhizalPlant(unsigned int seednum = 0.);
         virtual ~MycorrhizalPlant() {};
 

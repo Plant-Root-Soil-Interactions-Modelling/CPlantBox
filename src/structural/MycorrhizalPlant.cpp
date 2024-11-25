@@ -2,10 +2,13 @@
 #include "MycorrhizalPlant.h"
 
 
-namespace CPlantBox {
-    MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
 
-    void Plant::initializeReader()
+namespace CPlantBox {
+    MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum = 0.): Plant(seednum) {
+        //std::cout << "hi! i'm an infected plant";
+    }
+
+    void MycorrhizalPlant::initializeReader()
 {
     auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
     rrp->subType = 0;
