@@ -858,6 +858,27 @@ void MappedPlant::simulate(double dt, bool verbose)
 
 }
 
+/**
+ *
+ */
+double MappedPlant::getRadius(int si) {
+	int ot = organTypes.at(si);
+	if (ot == Organism::ot_root) {
+		int st = subTypes.at(si);
+		double l = distanceTip.at(si);
+		auto rrp = std::static_pointer_cast<RootRandomParameter>(this->getOrganRandomParameter(ot, st));
+		double zl = rrp->hairsZoneLength;
+		if (l<zl) { // add effective root length
+			double el = rrp->hairsEffLength;
+			return this->radii.at(si)+el;
+		} else {
+			return this->radii.at(si);
+		}
+	} else {
+		return this->radii.at(si);
+	}
+}
+
 
 
 /**
@@ -999,7 +1020,9 @@ double MappedPlant::getPerimeter(int si_, double l_)
 	//int leafId = getSegment2leafId(si_);
 	return leafBladeSurface.at(si_) / l_ *2;
 
-    }else{return 2 * M_PI * radii[si_];}
+    } else {
+    	return 2 * M_PI * radii[si_];
+    }
 }
 
 int MappedPlant::getSegment2leafId(int si_) {

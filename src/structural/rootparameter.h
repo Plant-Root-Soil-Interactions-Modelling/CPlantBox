@@ -24,23 +24,25 @@ class RootSpecificParameter :public OrganSpecificParameter
 
 public:
 
-    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
-    RootSpecificParameter(int type, double lb, double la,
-
-    const std::vector<double>& ln, double r, double a,
-    double theta, double rlt, bool laterals = false):
-        OrganSpecificParameter(type, a),  lb(lb), la(la), r(r),
-        theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
+    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0., 0., 0.) { } ///< Default constructor
+    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a,
+    		double theta, double rlt, double hairsZoneLength, double hairsEffLength, bool laterals = false):
+        OrganSpecificParameter(type, a),  lb(lb), la(la), ln(ln), r(r), theta(theta), rlt(rlt),
+        hairsZoneLength(hairsZoneLength), hairsEffLength(hairsEffLength), laterals(laterals) { }; ///< Constructor setting all parameters
 
     /*
      * RootBox parameters per single root
      */
     double lb;              ///< Basal zone [cm]
     double la;              ///< Apical zone [cm]
+    std::vector<double> ln; ///< Inter-lateral distances [cm]
     double r;               ///< Initial growth rate [cm day-1]
     double theta;           ///< Angle between root and parent root [rad]
     double rlt;             ///< Root life time [day]
-    std::vector<double> ln; ///< Inter-lateral distances [cm]
+
+    double hairsZoneLength; // root hair zone length [cm]
+    double hairsEffLength;// root hair effective length [cm]
+
 
     bool laterals = false;
     int nob() const { return ln.size()+ laterals; } ///< return the maximal number of lateral branching nodes [1]
@@ -103,9 +105,16 @@ public:
     double rlt = 1e9;       ///< Root life time (days)
     double rlts = 0.;       ///< Standard deviation root life time (days)
     int gf = 1;             ///< Growth function (1=negative exponential, 2=linear)
+
     // new
     double lnk = 0.;        ///< Slope of inter-lateral distances [1]
-    
+
+    // root hair
+    double hairsZoneLength = 0.;
+    double hairsZoneLengths = 0.;
+	double hairsEffLength = 0.;
+	double hairsEffLengths = 0.;
+
     /*
      * Callback functions for the Root (set up by the class RootSystem)
      */

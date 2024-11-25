@@ -656,7 +656,7 @@ if __name__ == "__main__":
     # peri.create_lookup(filename, sp)  # takes some hours
     # peri.open_lookup(filename)
     
-    peri.set_soil(vg.Parameters(hydrus_loam))
+    peri.set_soil(vg.Parameters(loam))
     a = 0.1 # cm
     kr = 1.73e-4  # [1/day]
     rx = -15000 # cm

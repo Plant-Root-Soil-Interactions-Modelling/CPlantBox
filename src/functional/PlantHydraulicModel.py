@@ -665,7 +665,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         IMt = IM.transpose()
         kx_ = np.divide(self.params.getKx(sim_time), self.ms.segLength())  # / dl
         Kx = sparse.diags(kx_)
-        kr = np.array(self.params.getEffKr(sim_time))
+        kr = np.array(self.params.getEffKr(sim_time)) 
         # kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian

@@ -586,10 +586,14 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("f_tf", &RootRandomParameter::f_tf)
             .def_readwrite("f_se", &RootRandomParameter::f_se)
             .def_readwrite("f_sa", &RootRandomParameter::f_sa)
-            .def_readwrite("f_sbp", &RootRandomParameter::f_sbp);
+            .def_readwrite("f_sbp", &RootRandomParameter::f_sbp)
+			.def_readwrite("hairsZoneLength", &RootRandomParameter::hairsZoneLength)
+			.def_readwrite("hairsZoneLengths", &RootRandomParameter::hairsZoneLengths)
+			.def_readwrite("hairsEffLength", &RootRandomParameter::hairsEffLength)
+			.def_readwrite("hairsEffLengths", &RootRandomParameter::hairsEffLengths);
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, double>())
             .def_readwrite("lb", &RootSpecificParameter::lb)
             .def_readwrite("la", &RootSpecificParameter::la)
             .def_readwrite("ln", &RootSpecificParameter::ln)
@@ -597,7 +601,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a", &RootSpecificParameter::a)
             .def_readwrite("theta", &RootSpecificParameter::theta)
             .def_readwrite("rlt", &RootSpecificParameter::rlt)
-            .def("getK",&RootSpecificParameter::getK)
+			.def_readwrite("hairsZoneLength",&RootSpecificParameter::hairsZoneLength)
+			.def_readwrite("hairsEffLength", &RootSpecificParameter::hairsEffLength)
+			.def("getK",&RootSpecificParameter::getK)
             .def("nob", &RootSpecificParameter::nob);
     /*
      * seedparameter.h

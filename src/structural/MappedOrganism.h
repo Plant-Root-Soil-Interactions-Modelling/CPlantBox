@@ -68,6 +68,8 @@ public:
     std::vector<int> subTypes; ///< types [1]
     std::vector<int> organTypes; ///< types of the organ[1]
 
+    virtual double getRadius(int si) { return this->radii.at(si); };
+
     Vector3d minBound;
     Vector3d maxBound;
     Vector3d resolution; // cells
@@ -152,11 +154,8 @@ public:
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 
-	std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
+    virtual double getRadius(int si);
 
-    virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
-	virtual double randn() override {if(stochastic){return std::min(std::max(ND(gen),-1.),1.);} else {return 0.5; } }  ///< normally distributed random number (0,1)
-	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
 	//for photosynthesis and phloem module:
 	void calcExchangeZoneCoefs() override;
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
@@ -166,9 +165,18 @@ public:
 	int getSegment2leafId(int si_) override; ///< fill segment2Leaf vector
 	std::vector<int> segment2leafIds;///< to go from vector of size segment to vectoer of size leaf_segment
 
+	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
+	virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
+	virtual double randn() override {if(stochastic){return std::min(std::max(ND(gen),-1.),1.);} else {return 0.5; } }  ///< normally distributed random number (0,1)
+
+	std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
+
  protected:
+
 	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);
 	void getSegment2leafIds(); ///< fill segment2Leaf vector
+
+
 };
 
 }
