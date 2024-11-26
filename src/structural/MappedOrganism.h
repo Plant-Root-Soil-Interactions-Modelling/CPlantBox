@@ -54,6 +54,13 @@ public:
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
 
+    virtual double getEffectiveRadius(int si) { return this->radii.at(si); };
+    virtual double getPerimeter(int si_, double l_){return 2 * M_PI * radii[si_];} ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
+    virtual int getSegment2leafId(int si_);
+
+    Vector3d getMinBounds();
+    virtual void calcExchangeZoneCoefs(){ throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object"); }; // calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
+
 
     std::map<int, int> seg2cell; // root segment to soil cell mapper
     std::map<int, std::vector<int>> cell2seg; // soil cell to root segment mapper
@@ -68,16 +75,11 @@ public:
     std::vector<int> subTypes; ///< types [1]
     std::vector<int> organTypes; ///< types of the organ[1]
 
-    virtual double getRadius(int si) { return this->radii.at(si); };
-
     Vector3d minBound;
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;
 	bool constantLoc = false;// the roots remain in the soil voxel they appear in
-
-	virtual double getPerimeter(int si_, double l_){return 2 * M_PI * radii[si_];} ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
-	virtual int getSegment2leafId(int si_);
 
     const double eps = 1.e-5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
@@ -89,9 +91,6 @@ public:
 	std::vector<double> leafBladeSurface; //leaf blade area per segment to define water radial flux. assume no radial flux in petiole
 	std::vector<double> segVol; //segment volume <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
 	std::vector<double> bladeLength;//blade length <= needed for MappedPlant as leaf does not have cylinder shape necessarally only do segLeaf to have shorter vector?
-
-	Vector3d getMinBounds();
-	virtual void calcExchangeZoneCoefs(){ throw std::runtime_error("calcExchangeZoneCoefs used on MappedSegment instead of MappedPlant object"); }; // calcExchangeZoneCoefs() only usefull for carbon-limited growth i.e., with a MappedPlant
 
 protected:
 
@@ -122,8 +121,6 @@ public:
     void simulate(double dt, bool verbose = false) override; ///< build nodes and segments sequentially
 
     /* segments are shoot and root segments */
-
-
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<RootSystem> rootSystem() { return std::make_shared<RootSystem>(*this); }; // up-cast for Python binding
 
@@ -154,18 +151,21 @@ public:
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 
-    virtual double getRadius(int si);
+
 
 	//for photosynthesis and phloem module:
 	void calcExchangeZoneCoefs() override;
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
 	std::vector<int> getNodeIds(int ot = -1) const;	//needed in phloem module
+
+	double getEffectiveRadius(int si) override;
 	double getPerimeter(int si_, double l_) override; ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
 
 	int getSegment2leafId(int si_) override; ///< fill segment2Leaf vector
 	std::vector<int> segment2leafIds;///< to go from vector of size segment to vectoer of size leaf_segment
 
 	bool stochastic = true;//< whether or not to implement stochasticity, usefull for test files @see test_relative_coordinates.py
+
 	virtual double rand() override {if(stochastic){return UD(gen);} else {return 0.5; } }  ///< uniformly distributed random number (0,1)
 	virtual double randn() override {if(stochastic){return std::min(std::max(ND(gen),-1.),1.);} else {return 0.5; } }  ///< normally distributed random number (0,1)
 
@@ -175,7 +175,6 @@ public:
 
 	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);
 	void getSegment2leafIds(); ///< fill segment2Leaf vector
-
 
 };
 

@@ -24,11 +24,10 @@ class RootSpecificParameter :public OrganSpecificParameter
 
 public:
 
-    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0., 0., 0.) { } ///< Default constructor
+    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
     RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a,
-    		double theta, double rlt, double hairsZoneLength, double hairsEffLength, bool laterals = false):
-        OrganSpecificParameter(type, a),  lb(lb), la(la), ln(ln), r(r), theta(theta), rlt(rlt),
-        hairsZoneLength(hairsZoneLength), hairsEffLength(hairsEffLength), laterals(laterals) { }; ///< Constructor setting all parameters
+    		double theta, double rlt, bool laterals = false):
+        OrganSpecificParameter(type, a),  lb(lb), la(la), ln(ln), r(r), theta(theta), rlt(rlt), laterals(laterals) { }; ///< Constructor setting all parameters
 
     /*
      * RootBox parameters per single root
@@ -39,10 +38,6 @@ public:
     double r;               ///< Initial growth rate [cm day-1]
     double theta;           ///< Angle between root and parent root [rad]
     double rlt;             ///< Root life time [day]
-
-    double hairsZoneLength; // root hair zone length [cm]
-    double hairsEffLength;// root hair effective length [cm]
-
 
     bool laterals = false;
     int nob() const { return ln.size()+ laterals; } ///< return the maximal number of lateral branching nodes [1]
@@ -74,7 +69,7 @@ public:
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
     void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
-    
+
     // DEPRICATED
     void read(std::istream & cin); ///< reads a single root parameter set
     void write(std::ostream & cout) const; ///< writes a single root parameter set
@@ -110,10 +105,9 @@ public:
     double lnk = 0.;        ///< Slope of inter-lateral distances [1]
 
     // root hair
-    double hairsZoneLength = 0.;
-    double hairsZoneLengths = 0.;
-	double hairsEffLength = 0.;
-	double hairsEffLengths = 0.;
+    double hairsElongation = 0.; // zone behind the tip without root hairs [cm]
+    double hairsZone = 0.; // root hair zone [cm]
+	double hairsLength = 0.; // root hair length [cm]
 
     /*
      * Callback functions for the Root (set up by the class RootSystem)

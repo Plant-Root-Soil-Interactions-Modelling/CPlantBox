@@ -853,33 +853,12 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
-	if(kr_length > 0.){calcExchangeZoneCoefs();}
+	if (kr_length > 0.) {
+	    calcExchangeZoneCoefs();
+	}
 	getSegment2leafIds();
 
 }
-
-/**
- *
- */
-double MappedPlant::getRadius(int si) {
-	int ot = organTypes.at(si);
-	if (ot == Organism::ot_root) {
-		int st = subTypes.at(si);
-		double l = distanceTip.at(si);
-		auto rrp = std::static_pointer_cast<RootRandomParameter>(this->getOrganRandomParameter(ot, st));
-		double zl = rrp->hairsZoneLength;
-		if (l<zl) { // add effective root length
-			double el = rrp->hairsEffLength;
-			return this->radii.at(si)+el;
-		} else {
-			return this->radii.at(si);
-		}
-	} else {
-		return this->radii.at(si);
-	}
-}
-
-
 
 /**
  * computes coeficients for kr
@@ -912,13 +891,13 @@ void MappedPlant::calcExchangeZoneCoefs() { //
 		}
 	}
 	const int notFound = std::count(exchangeZoneCoefs.cbegin(), exchangeZoneCoefs.cend(), -1.0);
-	if(notFound != 0)
-	{
+	if (notFound != 0) {
 		std::stringstream errMsg;
 		errMsg <<"MappedPlant::calcExchangeZoneCoefs(): "<<notFound<<" elements not initalized";
 		throw std::runtime_error(errMsg.str().c_str());
 		std::cout<<"notFound "<<notFound<<std::endl;
 	}
+	// std::cout << "distanceTip " << distanceTip.size()  << "\n" << std::flush;
 }
 
 
@@ -1007,6 +986,29 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
 }
 
 /**
+ *  returns the plant radius plus root hair length
+ */
+double MappedPlant::getEffectiveRadius(int si) {
+    int ot = organTypes.at(si);
+    if (ot == Organism::ot_root) {
+        int st = subTypes.at(si);
+        double l = distanceTip.at(si);
+        auto rrp = std::static_pointer_cast<RootRandomParameter>(this->getOrganRandomParameter(ot, st));
+        double zl = rrp->hairsZone;
+        double el = rrp->hairsElongation;
+        if (l<(zl+el) && l>el) { // add effective root length
+            double hl = rrp->hairsLength;
+            std::cout << "*" << std::flush;
+            return this->radii.at(si)+hl;
+        } else {
+            return this->radii.at(si);
+        }
+    } else {
+        return this->radii.at(si);
+    }
+}
+
+/**
  * index of segment of organ type ot
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
  * @return          Id of each segment
@@ -1021,7 +1023,7 @@ double MappedPlant::getPerimeter(int si_, double l_)
 	return leafBladeSurface.at(si_) / l_ *2;
 
     } else {
-    	return 2 * M_PI * radii[si_];
+    	return 2 * M_PI * this->getEffectiveRadius(si_);
     }
 }
 

@@ -316,7 +316,7 @@ std::vector<double> PlantHydraulicParameters::getEffKr(double simtime) {
         Vector3d n1 = ms->nodes[i];
         Vector3d n2 = ms->nodes[j];
         double l = (n2.minus(n1)).length();
-        double a = ms->getRadius(si); ////// hair_zone_length, hair_eff_length
+        double a = ms->getEffectiveRadius(si); ////// hair_zone_length, hair_eff_length
         int organType = ms->organTypes[si];
         double age = simtime - ms->nodeCTs[j];
         int subType = ms->subTypes[si];

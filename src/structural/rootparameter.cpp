@@ -132,10 +132,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
 
-    double hairsZoneLength_ = std::max(hairsZoneLength + p->randn()*hairsZoneLengths, 0.);
-    double hairsEffLength_ = std::max(hairsEffLength + p->randn()*hairsEffLengths, 0.); // root life time
-
-    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hairsZoneLength_, hairsEffLength_, hasLaterals);
+    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hasLaterals);
 }
 
 /**
@@ -286,8 +283,9 @@ void RootRandomParameter::bindParameters()
     bindParameter("lnk", &lnk, "Slope of inter-lateral distances [1]");
     bindParameter("ldelay", &ldelay, "Lateral root emergence delay [day]", &ldelays);
     // HAIR
-    bindParameter("hairsZoneLength", &hairsZoneLength, "Length of the root hair zone [cm]", &hairsZoneLengths);
-    bindParameter("hairsEffLength", &hairsEffLength, "Effecgtive root hair length [cm]", &hairsEffLengths);
+    bindParameter("hairsElongation", &hairsElongation, "Zone behind the tip without root hairs  [cm]");
+    bindParameter("hairsZone", &hairsZone, "Length of the root hair zone [cm]");
+    bindParameter("hairsLength", &hairsLength, "Root hair length [cm]");
 }
 
 } // end namespace CPlantBox
