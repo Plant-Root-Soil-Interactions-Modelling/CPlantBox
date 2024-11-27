@@ -54,6 +54,7 @@ public:
     int getNumberOfMappedSegments() const { return segments.size(); };  // for the python binding, != getNumberOfSegments (because of shoot roots or cutting)
     std::vector<int> getSegmentMapper() const;  // seg2cell mapper as vector
 
+    virtual std::vector<double> getEffectiveRadii();
     virtual double getEffectiveRadius(int si) { return this->radii.at(si); };
     virtual double getPerimeter(int si_, double l_){return 2 * M_PI * radii[si_];} ///< Perimeter of the segment [cm] overloaded by @see MappedPlant::getPerimeter
     virtual int getSegment2leafId(int si_);

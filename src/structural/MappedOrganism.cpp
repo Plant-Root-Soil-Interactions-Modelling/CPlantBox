@@ -532,8 +532,16 @@ Vector3d MappedSegments::getMinBounds() {
 int MappedSegments::getSegment2leafId(int si_){
 		throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of");
 		return -1;
-	}
+}
 
+std::vector<double> MappedSegments::getEffectiveRadii() {
+	int n = radii.size();
+	std::vector<double> radii_(n);
+	for (int i = 0; i<n; i++) {
+		radii_.at(i) = this->getEffectiveRadius(i);
+	}
+	return radii_;
+}
 
 
 
@@ -985,6 +993,7 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
 	return nodeId;
 }
 
+
 /**
  *  returns the plant radius plus root hair length
  */
@@ -998,7 +1007,6 @@ double MappedPlant::getEffectiveRadius(int si) {
         double el = rrp->hairsElongation;
         if (l<(zl+el) && l>el) { // add effective root length
             double hl = rrp->hairsLength;
-            std::cout << "*" << std::flush;
             return this->radii.at(si)+hl;
         } else {
             return this->radii.at(si);

@@ -458,7 +458,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
                 p_s = self.airPressure
         else:
             p_s = rsx[seg_ind]
-        a = self.ms.radii[seg_ind]  # radius
+        a = self.ms.getEffectiveRadius(seg_ind)  # radius
         st = int(self.ms.subTypes[seg_ind])  # conductivities kr, kx
         age = sim_time - self.ms.nodeCTs[int(s.y)]
         if ot == 4:  # to know which x-th leaf segment it is, to fetch the right gs value
@@ -649,7 +649,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         n1, n2 = self.ms.nodes[i], self.ms.nodes[j]  # nodes
         v = n2.minus(n1)
         l = v.length()
-        a = self.ms.radii[seg_ind]  # radius
+        a = self.ms.getEffectiveRadius(seg_ind)  # radius
         st = int(self.ms.subTypes[seg_ind])  # sub type
         age = sim_time - self.ms.nodeCTs[int(s.y)]
         kr = self.params.kr_f(age, st)  # c++ conductivity call back functions

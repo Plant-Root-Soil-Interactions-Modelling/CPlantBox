@@ -298,7 +298,7 @@ class PerirhizalPython(Perirhizal):
         ms = self.ms  # rename
         cell2seg = ms.cell2seg
         l = ms.segLength()
-        radii = ms.radii
+        radii = ms.getEffectiveRadii();
         n = int(ms.resolution.x * ms.resolution.y * ms.resolution.z)
         d = np.zeros((n,))
         for i in range(0, n):
@@ -366,7 +366,7 @@ class PerirhizalPython(Perirhizal):
             raise
         ms = self.ms  # renamethat
         cell2seg = ms.cell2seg
-        radii = ms.radii
+        radii = ms.getEffectiveRadii();
         lengths = ms.segLength()
         width = ms.maxBound.minus(ms.minBound)
         outer_r = np.zeros((len(radii),))
@@ -450,7 +450,7 @@ class PerirhizalPython(Perirhizal):
             print("nan encountered", np.sum(np.isnan(vol)), np.where(np.isnan(vol)))
 
         outer_r = np.zeros((vol.shape[0] - 1,))
-        radii = self.ms.radii
+        radii = self.ms.getEffectiveRadii();
         lengths = self.ms.segLength()
         for i, v in enumerate(vol[1:]):  # seg_index = node_index -1
             if v > 0:
@@ -492,7 +492,7 @@ class PerirhizalPython(Perirhizal):
                         vol[i] = np.nan
 
         outer_r = vol.copy()
-        radii = self.ms.radii
+        radii = self.ms.getEffectiveRadii();
         lengths = self.ms.segLength()
         for i, v in enumerate(vol[1:]):  # seg_index = node_index -1
             if v > 0:
