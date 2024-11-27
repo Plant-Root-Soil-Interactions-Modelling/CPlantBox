@@ -1,12 +1,11 @@
 #include "Plant.h"
 #include "MycorrhizalPlant.h"
+#include "Mycorrhizalrootparameter.h"
 
 
 
 namespace CPlantBox {
-    MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum = 0.): Plant(seednum) {
-        //std::cout << "hi! i'm an infected plant";
-    }
+    MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
 
     void MycorrhizalPlant::initializeReader()
 {

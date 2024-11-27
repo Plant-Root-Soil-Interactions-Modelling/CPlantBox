@@ -24,4 +24,14 @@ namespace CPlantBox {
         return r;
     }
 
+    std::string MycorrhizalRootRandomParameter::toString(bool verbose) const {
+
+    if (verbose) {
+        return OrganRandomParameter::toString(true);
+    } else {
+        return OrganRandomParameter::toString(false);
+    }
+
+}
+
 }

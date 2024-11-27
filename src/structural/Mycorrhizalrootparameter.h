@@ -7,31 +7,43 @@
 
 namespace CPlantBox {
 
-    class MycorrhizalRootSpecificParameter : public RootSpecificParameter{
+    // class MycorrhizalRootSpecificParameter :public RootSpecificParameter{
+    //     public:
+    //     MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.,0.,0.) {};
+
+    //     MycorrhizalRootSpecificParameter(int type, double lb, 
+    //     double la, const std::vector<double>& ln, double r, double a,
+    //     double theta, double rlt, bool laterals = false, double vi = 0.13): 
+    //     RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), vi(vi) {};
+
+    //     /*
+    //      * AMF Infection Parameters
+    //      */
+    //     double vi;  ///< rate of internal infection front [cm / day]
+
+    // };
+
+    class MycorrhizalRootSpecificParameter :public RootSpecificParameter{
         public:
-        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.,0.,0.) {};
+        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { }
 
         MycorrhizalRootSpecificParameter(int type, double lb, 
         double la, const std::vector<double>& ln, double r, double a,
-        double theta, double rlt, bool laterals = false, double vi = 0.13): 
-        RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), vi(vi) {};
+        double theta, double rlt, bool laterals = false): 
+        RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals) {};
 
-        /*
-         * AMF Infection Parameters
-         */
-        double vi;  ///< rate of internal infection front [cm / day]
     };
 
     class MycorrhizalRootRandomParameter :public RootRandomParameter {
         public:
 
-        MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant); // plant oder mycplant???
+        MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant);
         
         virtual ~MycorrhizalRootRandomParameter() {};
 
         std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
         // realize
-        //std::string toString(bool verbose = true) const override;
+        std::string toString(bool verbose = true) const override;
         
         //void readXML(tinyxml2::XMLElement* element, bool verbose) override;
 
@@ -45,8 +57,8 @@ namespace CPlantBox {
         double maxAge = 32;     ///< Maximal Infection age of a root segment [day]
         double vi = 0.13;       ///< rate of internal infection front [cm / day]
         double maxInfection = 1;    ///< Percentage of maximal infection 
-
-        // was ist snap?
+        // double nEntryP = 0; //< verbindung zu externen hyphen 
+        // evtl Erweiterung fuer Hyphaen
 
     };
 }
