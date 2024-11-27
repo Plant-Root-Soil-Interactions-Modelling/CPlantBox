@@ -13,7 +13,8 @@ namespace CPlantBox {
         //copy
         void initializeReader() override; ///< initializes XML reader
         //readParameters neuer basetag?
-        //initialize LB / DB
+        //void initializeLB(bool verbose = true);
+        //void initializeDB(bool verbose = true);
         //simulate ?
         //toString    
     };
