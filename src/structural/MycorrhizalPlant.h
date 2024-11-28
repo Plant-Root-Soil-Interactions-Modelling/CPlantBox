@@ -12,6 +12,7 @@ namespace CPlantBox {
 
         //copy
         void initializeReader() override; ///< initializes XML reader
+        void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
         //readParameters neuer basetag?
         //void initializeLB(bool verbose = true);
         //void initializeDB(bool verbose = true);
