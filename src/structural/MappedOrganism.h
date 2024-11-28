@@ -152,8 +152,6 @@ public:
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 
-
-
 	//for photosynthesis and phloem module:
 	void calcExchangeZoneCoefs() override;
 	std::vector<int> getSegmentIds(int ot = -1) const;//needed in phloem module
@@ -173,6 +171,8 @@ public:
 	std::map<std::tuple<int, int>, int > st2newst; // replace subtypes with other int nummer, so that the N subtypes of one organ type go from 0 to N-1
 
  protected:
+
+	bool rootHairs = true; // todo: determine from paraemeters, and set within constructor
 
 	void initialize_(bool verbose = true, bool stochastic = true, bool LB = true);
 	void getSegment2leafIds(); ///< fill segment2Leaf vector

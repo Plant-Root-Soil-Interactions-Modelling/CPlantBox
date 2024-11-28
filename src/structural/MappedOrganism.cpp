@@ -791,13 +791,13 @@ void MappedPlant::simulate(double dt, bool verbose)
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
 
-		if(organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
+		if (organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{
 			int index;
 			auto nodeIds = so->getNodeIds();
 			auto it = find(nodeIds.begin(), nodeIds.end(), newsegs[c].y);
 			if (it != nodeIds.end()){ index = it - nodeIds.begin() -1;
-			}else {
+			} else {
 				throw std::runtime_error("MappedPlant::simulate: global segment index not found in organ");
 			}
 			int localSegId = index;
@@ -807,14 +807,13 @@ void MappedPlant::simulate(double dt, bool verbose)
 			leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(localSegId,realized, withPetiole);
 			withPetiole = true;
 			segVol.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafVolAtSeg(localSegId, realized, withPetiole);//* thickness;
-			if(segVol.at(segIdx) < 0)
-			{
+			if(segVol.at(segIdx) < 0) {
 				std::stringstream errMsg;
 				errMsg <<"MappedPlant::simulate: computation of leaf volume failed "<<segVol.at(segIdx)<<"\n";
 				throw std::runtime_error(errMsg.str().c_str());
 			}
 
-		}else{ //stems and roots are cylinder
+		} else { //stems and roots are cylinder
 			auto s = segments.at(segIdx);
 			double length_seg = (nodes.at(s.x).minus(nodes.at(s.y))).length();
 			segVol.at(segIdx) = radii.at(segIdx) * radii.at(segIdx) * M_PI * length_seg;
@@ -849,8 +848,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 					remove = (newCellIdx!=cellIdx);
 				}
 			} else {
-				if(!constantLoc)
-				{
+				if (!constantLoc) {
 					remove = true;
 				}
 			}
@@ -861,7 +859,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
-	if (kr_length > 0.) {
+	if (kr_length > 0. || rootHairs) {
 	    calcExchangeZoneCoefs();
 	}
 	getSegment2leafIds();
