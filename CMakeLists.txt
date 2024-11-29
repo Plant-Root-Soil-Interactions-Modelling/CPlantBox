@@ -17,7 +17,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/functional)
 
 # add subdirectories
 add_subdirectory(src)
-#add_subdirectory(tutorial)
+add_subdirectory(tutorial)
 
 # build tutorial (TODO)
 # INCLUDE(UseLATEX.cmake)
