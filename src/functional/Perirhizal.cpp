@@ -19,41 +19,48 @@ std::vector<double> Perirhizal::segOuterRadii(int type, const std::vector<double
     std::fill(outer_radii.begin(), outer_radii.end(), 0.);
     for(auto iter = ms->cell2seg.begin(); iter != ms->cell2seg.end(); ++iter) {
         int cellId =  iter->first;
-        if (vols.size()==0) {
-            cellVolume = width.x*width.y*width.z/ms->resolution.x/ms->resolution.y/ms->resolution.z;
-        } else {
-            cellVolume = vols.at(cellId);
-        }
         auto segs = ms->cell2seg.at(cellId);
-        double v = 0.;  // calculate sum of root volumes or surfaces over cell
-        for (int i : segs) {
-			if(organTypes[i] == Organism::ot_root)
-			{
-				if (type==0) { // volume
-					v += M_PI*(radii[i]*radii[i])*lengths[i];
-				} else if (type==1) { // surface
-					v += 2*M_PI*radii[i]*lengths[i];
-				} else if (type==2) { // length
-					v += lengths[i];
-				}
-			}
-		}
-        for (int i : segs) { // calculate outer radius
-			if(organTypes[i] == Organism::ot_root)
-			{
-				double l = lengths[i];
-				double t =0.; // proportionality factor (must sum up to == 1 over cell)
-				if (type==0) { // volume
-					t = M_PI*(radii[i]*radii[i])*l/v;
-				} else if (type==1) { // surface
-					t = 2*M_PI*radii[i]*l/v;
-				} else if (type==2) { // length
-					t = l/v;
-				}
-				double targetV = t * cellVolume;  // target volume
-				outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
-			}
-		}
+        if (cellId >= 0){
+            if (vols.size()==0) {
+                cellVolume = width.x*width.y*width.z/ms->resolution.x/ms->resolution.y/ms->resolution.z;
+            } else {
+                cellVolume = vols.at(cellId);
+            }
+            double v = 0.;  // calculate sum of root volumes or surfaces over cell
+            for (int i : segs) {
+                if(organTypes[i] == Organism::ot_root)
+                {
+                    if (type==0) { // volume
+                        v += M_PI*(radii[i]*radii[i])*lengths[i];
+                    } else if (type==1) { // surface
+                        v += 2*M_PI*radii[i]*lengths[i];
+                    } else if (type==2) { // length
+                        v += lengths[i];
+                    }
+                }
+            }
+            for (int i : segs) { // calculate outer radius
+                if(organTypes[i] == Organism::ot_root)
+                {
+                    double l = lengths[i];
+                    double t =0.; // proportionality factor (must sum up to == 1 over cell)
+                    if (type==0) { // volume
+                        t = M_PI*(radii[i]*radii[i])*l/v;
+                    } else if (type==1) { // surface
+                        t = 2*M_PI*radii[i]*l/v;
+                    } else if (type==2) { // length
+                        t = l/v;
+                    }
+                    double targetV = t * cellVolume;  // target volume
+                    outer_radii[i] = std::sqrt(targetV/(M_PI*l)+radii[i]*radii[i]);
+                }
+            }
+            
+        }else{
+            for (int i : segs) {
+                outer_radii[i] = 1; // random value
+            }
+        }
     }
     return outer_radii;
 }
@@ -71,7 +78,7 @@ void Perirhizal::redistribute_excess() {
     // Redistribution loop
     int n_iter = 0;
     std::vector<double> canAdd(val_new.size(), 0.0);
-    while (extraElement > 1e-20 && n_iter < 5) {
+    while (extraElement > 1e-20 && n_iter < 10) {
         n_iter++;
         for (size_t i = 0; i < val_new.size(); ++i) {
             canAdd[i] = std::max((maxVal - val_new[i]) * volumes[i], 0.0);
@@ -83,7 +90,8 @@ void Perirhizal::redistribute_excess() {
         }
 
         if (divideEqually) {
-            double addable_amount = extraElement / canAdd.size();
+            double canAddAbove0 = std::count_if(canAdd.begin(), canAdd.end(), [](double val) { return val > 0; });
+            double addable_amount = extraElement / canAddAbove0;
             for (size_t i = 0; i < canAdd.size(); ++i) {
                 double to_add = std::min(addable_amount, canAdd[i]);
                 val_new[i] += to_add / volumes[i];
@@ -111,23 +119,46 @@ void Perirhizal::redistribute_deficit() {
         }
     }
 
+            if(verbose)
+            {
+                std::cout<<"Perirhizal::redistribute_deficit_init "<<std::endl;
+                for (size_t i = 0; i < val_new.size(); ++i) {
+                    std::cout<<val_new[i] << " ";
+                } std::cout<<std::endl;
+                std::cout << "missingElement "<<missingElement <<std::endl;
+            }
+    
     // Redistribution loop
     int n_iter = 0;
     std::vector<double> canTake(val_new.size(), 0.0);
-    while (missingElement > 1e-20 && n_iter < 5) {
+    while (missingElement > 1e-20 && n_iter < 10) {
         n_iter++;
         
         for (size_t i = 0; i < val_new.size(); ++i) {
             canTake[i] = std::max((val_new[i] - minVal) * volumes[i], 0.0);
         }
 
+            if(verbose)
+            {
+                std::cout<<"Perirhizal::redistribute_deficit_iter "<<n_iter <<std::endl;
+                for (size_t i = 0; i < val_new.size(); ++i) {
+                    std::cout<<val_new[i] << " ";
+                } std::cout<<std::endl;
+                
+                std::cout << "missingElement "<<missingElement <<std::endl<<"canTake ";
+                for (size_t i = 0; i < canTake.size(); ++i) {
+                    std::cout<<canTake[i] << " ";
+                } std::cout<<std::endl;
+            }
+        
         double totalCanTake = std::accumulate(canTake.begin(), canTake.end(), 0.0);
         if (totalCanTake < missingElement) {
             throw std::runtime_error("Not enough capacity to redistribute deficit elements.");
         }
 
         if (divideEqually) {
-            double removable_amount = missingElement / canTake.size();
+            double canTakeAbove0 = std::count_if(canTake.begin(), canTake.end(), [](double val) { return val > 0; });
+            double removable_amount = missingElement / canTakeAbove0;
             for (size_t i = 0; i < canTake.size(); ++i) {
                 double to_remove = std::min(removable_amount, canTake[i]);
                 val_new[i] -= to_remove / volumes[i];
@@ -143,6 +174,18 @@ void Perirhizal::redistribute_deficit() {
         }
     }
 
+            if(verbose)
+            {
+                std::cout<<"Perirhizal::redistribute_deficit_done "<<n_iter <<std::endl;
+                for (size_t i = 0; i < val_new.size(); ++i) {
+                    std::cout<<val_new[i] << " ";
+                } std::cout<<std::endl;
+                
+                std::cout << "missingElement "<<missingElement <<std::endl<<"canTake ";
+                for (size_t i = 0; i < canTake.size(); ++i) {
+                    std::cout<<canTake[i] << " ";
+                } std::cout<<std::endl;
+            }
 }
 
 void Perirhizal::handle_excess() {
@@ -163,7 +206,21 @@ void Perirhizal::handle_deficit() {
         if (minVal - min_val_new < 1e-20) {
             std::transform(val_new.begin(), val_new.end(), val_new.begin(),
                    [*this](double v) { return std::max(v, this->minVal); });
+            if(verbose)
+            {
+                std::cout<<"Perirhizal::handle_deficit_smalldiff "<<std::endl;
+                for (size_t i = 0; i < val_new.size(); ++i) {
+                    std::cout<<val_new[i] << " ";
+                } std::cout<<std::endl;
+            }
         } else {
+            if(verbose)
+            {
+                std::cout<<"Perirhizal::handle_deficit_bigdiff "<<std::endl;
+                for (size_t i = 0; i < val_new.size(); ++i) {
+                    std::cout<<val_new[i] << " ";
+                } std::cout<<std::endl;
+            }
             redistribute_deficit();
         }
     }
@@ -182,10 +239,11 @@ void Perirhizal::handle_deficit() {
 std::vector<double> Perirhizal::adapt_values(std::vector<double> val_new_, 
                                              double minVal_, double maxVal_, 
                                              const std::vector<double>& volumes_, 
-                                             bool divideEqually_) {
+                                             bool divideEqually_, bool verbose_ = false) {
     val_new = val_new_; volumes = volumes_;
     minVal = minVal_; maxVal = maxVal_;
     divideEqually = divideEqually_;
+    verbose = verbose_;
     
     // backup to check mass balance
     double val_newBU = std::inner_product(val_new.begin(), val_new.end(), volumes.begin(), 0.0);
@@ -203,7 +261,10 @@ std::vector<double> Perirhizal::adapt_values(std::vector<double> val_new_,
     if(std::abs(diff) > 1e-16)
     {
         std::cout<<"Perirhizal::adapt_values() "<<diff<<" "<<val_newBU<<" "<< val_newTemp<<std::endl;
-        throw std::runtime_error("Perirhizal::adapt_values() std::abs(diff) > 1e-20" );
+        for (size_t i = 0; i < val_new.size(); ++i) {
+                std::cout<<val_new[i]<<", ";// concentration to content
+            }std::cout<<std::endl;
+        throw std::runtime_error("Perirhizal::adapt_values() std::abs(diff) > 1e-16" );
     }
     if (maxVal > 0.){assert(*std::max_element(val_new.begin(), val_new.end()) <= maxVal);}
     assert(*std::min_element(val_new.begin(), val_new.end()) >= minVal);
