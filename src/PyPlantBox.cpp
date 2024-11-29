@@ -890,7 +890,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
 		.def_readwrite("organParam", &MappedSegments::plantParam)
-        .def_readwrite("isRootTip",&MappedSegments::isRootTip);
+        .def_readwrite("isRootTip",&MappedSegments::isRootTip)
+        .def_readwrite("constantLoc",&MappedSegments::constantLoc);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         //.def(py::init<>())
         .def(py::init<unsigned int>(),  py::arg("seednum")=0)
@@ -943,7 +944,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def(py::init<>())
            .def(py::init<std::shared_ptr<MappedSegments>>())
            .def("segOuterRadii",&Perirhizal::segOuterRadii,  py::arg("type"), py::arg("vols") = std::vector<double>(0))
-           .def("adapt_values",&Perirhizal::adapt_values,  py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_")=-1., py::arg("volumes_"), py::arg("divideEqually_"))
+           .def("adapt_values",&Perirhizal::adapt_values,  py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_")=-1., py::arg("volumes_"), py::arg("divideEqually_"),  py::arg("verbose_"))
            .def("distributeValSolute_",&Perirhizal::distributeValSolute_,  py::arg("seg_values_content"), py::arg("volumes"), py::arg("source"), 
                    py::arg("dt"))
            .def("distributeValWater_",&Perirhizal::distributeValWater_,  py::arg("seg_values_perVol"), py::arg("volumes"), py::arg("source"), 

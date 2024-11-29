@@ -30,7 +30,7 @@ public:
     std::vector<double> adapt_values(std::vector<double> val_new_, 
                      double minVal_, double maxVal_, 
                      const std::vector<double>& volumes_, 
-                     bool divideEqually_);///<  Update val_new_ to remain between bounds while maintaining as much as possible the gradient
+                     bool divideEqually_, bool verbose_);///<  Update val_new_ to remain between bounds while maintaining as much as possible the gradient
                      
     std::vector<double> distributeValSolute_(
         std::vector<double> seg_values_content, 
@@ -68,6 +68,7 @@ protected:
     double maxVal;
     std::vector<double> volumes;
     bool divideEqually;    
+    bool verbose;
 };
 
 }
