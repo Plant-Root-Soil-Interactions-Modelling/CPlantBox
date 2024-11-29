@@ -16,16 +16,19 @@ namespace py = pybind11;
 #include "tropism.h"
 
 #include "rootparameter.h"
+#include "Mycorrhizalrootparameter.h"
 #include "seedparameter.h"
 #include "leafparameter.h"
 #include "stemparameter.h"
 #include "Root.h"
+#include "MycorrhizalRoot.h"
 #include "Seed.h"
 #include "Leaf.h"
 #include "Stem.h"
 
 #include "RootSystem.h"
 #include "Plant.h"
+#include "MycorrhizalPlant.h"
 #include "MappedOrganism.h"
 
 // functional
@@ -599,6 +602,16 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &RootSpecificParameter::rlt)
             .def("getK",&RootSpecificParameter::getK)
             .def("nob", &RootSpecificParameter::nob);
+     py::class_<MycorrhizalRootRandomParameter, RootRandomParameter, OrganRandomParameter, std::shared_ptr<MycorrhizalRootRandomParameter>>(m, "MycorrhizalRootRandomParameter")
+            .def(py::init<std::shared_ptr<Organism>>())
+            .def("p", &MycorrhizalRootRandomParameter::p)
+            .def("minAge", &MycorrhizalRootRandomParameter::minAge)
+            .def("maxAge", &MycorrhizalRootRandomParameter::maxAge)
+            .def("vi", &MycorrhizalRootRandomParameter::vi)
+            .def("maxInfection", &MycorrhizalRootRandomParameter::maxInfection);
+     py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
+            .def(py::init<>())
+            .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, bool>());
     /*
      * seedparameter.h
      */
