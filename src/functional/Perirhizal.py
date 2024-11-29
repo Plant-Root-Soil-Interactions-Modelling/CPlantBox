@@ -650,8 +650,22 @@ if __name__ == "__main__":
     hydrus_sandyloam = [0.065, 0.41, 0.075, 1.89, 106.1]
 
     filename = "hydrus_loam"
-    sp = vg.Parameters(hydrus_loam)
-    vg.create_mfp_lookup(sp)
+    # sp = vg.Parameters(hydrus_loam)
+    # vg.create_mfp_lookup(sp)
     peri = PerirhizalPython()
-    peri.create_lookup(filename, sp)  # takes some hours
-    peri.open_lookup(filename)
+    # peri.create_lookup(filename, sp)  # takes some hours
+    # peri.open_lookup(filename)
+    
+    peri.set_soil(vg.Parameters(hydrus_loam))
+    a = 0.1 # cm
+    kr = 1.73e-4  # [1/day]
+    rx = -15000 # cm
+    sx = 0. # cm
+    rho = 1 / a
+    inner_kr = a*kr 
+    rsx = peri.soil_root_interface_potentials([rx], [sx], [inner_kr], [rho])
+    print("root soil interface", rsx, "cm")
+    print("results into a flux of", kr*2*a*np.pi*(rsx-rx), "cm3/day")
+    
+    
+    
