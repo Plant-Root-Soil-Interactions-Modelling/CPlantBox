@@ -14,7 +14,7 @@ int testmyc() {
     auto mycplant = std::make_shared<CPlantBox::MycorrhizalPlant>();
     mycplant -> readParameters("fspm2023.xml");
     mycplant ->initialize();
-    std::cout<< mycplant ->toString();
 
+    auto mycroot = std::make_shared<CPlantBox::MycorrhizalRoot>();
     return 0;
 }
