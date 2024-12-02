@@ -604,15 +604,15 @@ PYBIND11_MODULE(plantbox, m) {
             .def("nob", &RootSpecificParameter::nob);
      py::class_<MycorrhizalRootRandomParameter, RootRandomParameter, OrganRandomParameter, std::shared_ptr<MycorrhizalRootRandomParameter>>(m, "MycorrhizalRootRandomParameter")
             .def(py::init<std::shared_ptr<Organism>>())
-            .def("p", &MycorrhizalRootRandomParameter::p)
-            .def("minAge", &MycorrhizalRootRandomParameter::minAge)
-            .def("maxAge", &MycorrhizalRootRandomParameter::maxAge)
-            .def("vi", &MycorrhizalRootRandomParameter::vi)
-            .def("maxInfection", &MycorrhizalRootRandomParameter::maxInfection);
-     py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
+            .def_readwrite("p", &MycorrhizalRootRandomParameter::p)
+            .def_readwrite("minAge", &MycorrhizalRootRandomParameter::minAge)
+            .def_readwrite("maxAge", &MycorrhizalRootRandomParameter::maxAge)
+            .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
+            .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection);
+     py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
             .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, bool>());
-    /*
+     /*
      * seedparameter.h
      */
     py::class_<SeedRandomParameter, OrganRandomParameter, std::shared_ptr<SeedRandomParameter>>(m, "SeedRandomParameter")
