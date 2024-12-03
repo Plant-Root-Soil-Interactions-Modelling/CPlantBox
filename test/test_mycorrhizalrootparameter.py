@@ -81,7 +81,7 @@ class TestMycParameter(unittest.TestCase):
         mrrp.name = "lateral"
         mrrp.subType = 2
         mrrp.writeXML("root.xml")
-        otp2 = pb.RootRandomParameter(self.plant)
+        otp2 = pb.MycorrhizalRootRandomParameter(self.plant)
         otp2.readXML("root.xml")
         self.assertEqual(otp2.ldelay, mrrp.ldelay, "xml: value unexpected")
         self.assertEqual(otp2.ldelays, mrrp.ldelays, "xml: value unexpected")
@@ -90,6 +90,9 @@ class TestMycParameter(unittest.TestCase):
         self.assertEqual(otp2.subType, mrrp.subType, "xml: value unexpected")
         self.assertEqual(otp2.nob(), mrrp.nob(), "xml: value unexpected")  # value
         self.assertEqual(otp2.lns, mrrp.lns, "xml: value unexpected")  # dev
+        self.assertEqual(otp2.p, mrrp.p,"xml: value unexpected")
+        self.assertEqual(otp2.vi, mrrp.vi,"xml: value unexpected")
+        self.assertEqual(otp2.maxAge, mrrp.maxAge,"xml: value unexpected")
         for i in range(0, 3):
             self.assertEqual(otp2.successor[0][i], mrrp.successor[0][i], "xml: value unexpected")
         for i in range(0, 3):
@@ -97,7 +100,7 @@ class TestMycParameter(unittest.TestCase):
 
     def test_realize(self):
         """ calls realize """
-        self.root_example()
+        self.mycroot_example()
         p = self.mrrp.realize()
         self.assertEqual(p.__class__.__name__, "RootSpecificParameter", "realize: unexpected class type")
         self.assertEqual(p.subType, 1, "realize: unexpected sub type")

@@ -17,11 +17,13 @@ namespace py = pybind11;
 
 #include "rootparameter.h"
 #include "Mycorrhizalrootparameter.h"
+#include "Mycorrhizalrootparameter.cpp"
 #include "seedparameter.h"
 #include "leafparameter.h"
 #include "stemparameter.h"
 #include "Root.h"
 #include "MycorrhizalRoot.h"
+#include "MycorrhizalRoot.cpp"
 #include "Seed.h"
 #include "Leaf.h"
 #include "Stem.h"
@@ -785,6 +787,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
+    py::class_<MycorrhizalRoot, Root, Organ, std::shared_ptr<MycorrhizalRoot>>(m,"MycorrhizalRoot")
+            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>());
     /**
      * Seed.h
      */

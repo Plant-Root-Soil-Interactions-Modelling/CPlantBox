@@ -17,6 +17,8 @@ namespace CPlantBox {
         bindParameters();
     }
 
+
+
     std::shared_ptr<OrganRandomParameter> MycorrhizalRootRandomParameter::copy(std::shared_ptr<Organism> p) {
         auto r = std::make_shared<MycorrhizalRootRandomParameter>(*this);
         r->plant = p;
@@ -24,14 +26,14 @@ namespace CPlantBox {
         return r;
     }
 
-    std::string MycorrhizalRootRandomParameter::toString(bool verbose) const {
+    // std::string MycorrhizalRootRandomParameter::toString(bool verbose) const {
 
-    if (verbose) {
-        return OrganRandomParameter::toString(true);
-    } else {
-        return OrganRandomParameter::toString(false);
-    }
+    // if (verbose) {
+    //     return OrganRandomParameter::toString(true);
+    // } else {
+    //     return OrganRandomParameter::toString(false);
+    // }
 
-}
+// }
 
 }
