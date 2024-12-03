@@ -23,7 +23,7 @@ namespace CPlantBox {
         // simualte
         //double getParameter(std::string name) const override;
         //toString
-        //std::shared_ptr<MycorrhizalRootRandomParameter> getMycorrhizalRootRandomParameter() const;
+        std::shared_ptr<MycorrhizalRootRandomParameter> getMycorrhizalRootRandomParameter() const;
         //std::shared_ptr<const MycorrhizalRootSpecificParameter> param() const;
         //Mycparam
 
