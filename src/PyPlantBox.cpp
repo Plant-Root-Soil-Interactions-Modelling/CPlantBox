@@ -31,6 +31,7 @@ namespace py = pybind11;
 #include "RootSystem.h"
 #include "Plant.h"
 #include "MycorrhizalPlant.h"
+#include "MycorrhizalPlant.cpp"
 #include "MappedOrganism.h"
 
 // functional
@@ -948,6 +949,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("distanceTip", &MappedPlant::distanceTip)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
 
+        py::class_<MycorrhizalPlant, Plant, std::shared_ptr<MycorrhizalPlant>>(m,"MycorrhizalPlant")
+                        .def(py::init<unsigned int>(), py::arg("seednum")=0);
 	/**
 	 * Perirhizal.h
 	 */
