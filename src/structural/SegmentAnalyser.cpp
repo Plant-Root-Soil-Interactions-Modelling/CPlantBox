@@ -6,6 +6,8 @@
 #include "MappedOrganism.h"
 #include "XylemFlux.h"
 #include "PlantHydraulicParameters.h"
+#include "PlantHydraulicModel.h"
+
 #include <algorithm>
 #include <iomanip>
 #include <istream>
@@ -236,9 +238,9 @@ void SegmentAnalyser::addHydraulicConductivities(const PlantHydraulicParameters&
  *
  * use addConductivities before!
  */
-void SegmentAnalyser::addFluxes(const XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
+void SegmentAnalyser::addFluxes(const PlantHydraulicModel& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
 
-    std::vector<double> radial_flux = rs.segFluxes(simTime, rx, sx, true, false); // volumetric flux, approx = true, cells = false
+    std::vector<double> radial_flux = rs.getRadialFluxes(simTime, rx, sx, true, false); // volumetric flux, approx = true, cells = false
     std::vector<double> a = data["radius"];
     for (int i =0; i< radial_flux.size(); i++) {
         radial_flux[i] /= (2.*M_PI*a.at(i));
