@@ -305,7 +305,7 @@ def launchUQR(directoryN,simInit,simStartSim, condition,csChoise,spellDuration, 
 
 
     #raise Exception
-    sdf = pb.SDF_PlantBox(np.Inf, np.Inf, depth )
+    sdf = pb.SDF_PlantBox(np.inf, np.inf, depth )
 
     pl.setGeometry(sdf) # creates soil space to stop roots from growing out of the soil
     #pl2.setGeometry(sdf) # creates soil space to stop roots from growing out of the soil

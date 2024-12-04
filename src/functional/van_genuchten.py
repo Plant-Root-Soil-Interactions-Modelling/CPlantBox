@@ -85,15 +85,15 @@ def water_content(h, sp):
         
         if isinstance(h, (type(list()), type(np.array([])))):
             assert (h <= 0).all()
-            assert (h > -np.Inf).all()
+            assert (h > -np.inf).all()
         else:
             #assert h <= 0
-            #assert h > -np.Inf
+            #assert h > -np.inf
             if h > 0:
                 print('water_content, h > 0', h , 'set h to -1e-14' )
                 h = -1e-14
-            if h <= -np.Inf:
-                print('pressure_head, h <= -np.Inf', h , np.Inf, 'set h to np.iinfo(int).min' ,np.iinfo(int).min)
+            if h <= -np.inf:
+                print('pressure_head, h <= -np.inf', h , np.inf, 'set h to np.iinfo(int).min' ,np.iinfo(int).min)
                 h = np.iinfo(int).min
     except:
         print('water_content, sp out of range',h)

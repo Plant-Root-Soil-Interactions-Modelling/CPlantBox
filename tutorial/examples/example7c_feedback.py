@@ -82,7 +82,7 @@ rs.readParameters(path + name + ".xml")
 if not periodic:
     sdf = pb.SDF_PlantBox(0.99 * (max_b[0] - min_b[0]), 0.99 * (max_b[1] - min_b[1]), max_b[2] - min_b[2])
 else:
-    sdf = pb.SDF_PlantBox(np.Inf, np.Inf, max_b[2] - min_b[2])
+    sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2])
 rs.setGeometry(sdf)
 r = XylemFluxPython(rs)
 init_conductivities(r, age_dependent)
