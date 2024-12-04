@@ -17,13 +17,11 @@ namespace py = pybind11;
 
 #include "rootparameter.h"
 #include "Mycorrhizalrootparameter.h"
-#include "Mycorrhizalrootparameter.cpp"
 #include "seedparameter.h"
 #include "leafparameter.h"
 #include "stemparameter.h"
 #include "Root.h"
 #include "MycorrhizalRoot.h"
-#include "MycorrhizalRoot.cpp"
 #include "Seed.h"
 #include "Leaf.h"
 #include "Stem.h"
@@ -31,7 +29,6 @@ namespace py = pybind11;
 #include "RootSystem.h"
 #include "Plant.h"
 #include "MycorrhizalPlant.h"
-#include "MycorrhizalPlant.cpp"
 #include "MappedOrganism.h"
 
 // functional
