@@ -83,7 +83,7 @@ class TestPlantHydraulicModel(unittest.TestCase):
         return None
 
     def test_equilibrium(self):
-        """ for constant total potential and zero uptake fluxes should vanish. 
+        """ For constant total potential and zero uptake, all fluxes should vanish. 
             Depending on the method there might be some numerical noise
         """
         self.setup_analytic()
