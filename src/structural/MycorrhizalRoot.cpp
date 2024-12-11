@@ -17,15 +17,16 @@ namespace CPlantBox {
  * @param iheading  the initial heading of this root
  * @param pbl       base length of the parent root, where this root emerges
  * @param pni       local node index, where this root emerges
-
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
-MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-    Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-     :Root(id, param, alive, active, age, length,
-	 partialIHeading_,pni, moved,  oldNON )
-      {}
+
+// MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
+//     Vector3d partialIHeading_, bool infected, int pni, bool moved, int oldNON)
+//      :Root(id, param, alive, active, age, length,partialIHeading_,pni, moved,  oldNON)
+//       {
+
+//       }
 /**
  * Constructor: Should be only called during simulation by Root::createLateral().
  * For base roots the initial node and node creation time must be set from outside
@@ -37,10 +38,10 @@ MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificPara
  * @param parent		parent root
  * @param pbl			parent base length
  * @param pni			parent node index
- */
-MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Root(rs,type,delay, parent,pni) // <- OrganRandomParameter::realize() is called here
-{}
+//  */
+// MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type, bool infected, double delay, std::shared_ptr<Organ> parent, int pni)
+// :Root(rs,type,delay, parent,pni) infected(infected)// <- OrganRandomParameter::realize() is called here
+// {}
 
 // std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs) {
 //     auto r = std::make_shared<MycorrhizalRoot>(*this);
