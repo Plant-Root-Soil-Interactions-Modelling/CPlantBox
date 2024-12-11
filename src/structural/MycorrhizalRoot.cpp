@@ -53,7 +53,7 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
 //     }
 //     return r;
 // }
-    //simulate
+
     // organType ?
     // simualte
     // double MycorrhizalRoot::getParameter(std::string name) const {
