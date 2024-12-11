@@ -18,7 +18,7 @@ namespace CPlantBox {
 
         virtual ~MycorrhizalRoot() { };
 
-        std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;
+        // std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;
         // organType ?
         // simulate
         //double getParameter(std::string name) const override;

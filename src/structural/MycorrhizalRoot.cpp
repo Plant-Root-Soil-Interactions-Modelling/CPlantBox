@@ -17,6 +17,7 @@ namespace CPlantBox {
  * @param iheading  the initial heading of this root
  * @param pbl       base length of the parent root, where this root emerges
  * @param pni       local node index, where this root emerges
+
  * @param moved     indicates if nodes were moved in the previous time step (default = false)
  * @param oldNON    the number of nodes of the previous time step (default = 0)
  */
@@ -41,17 +42,17 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
 :Root(rs,type,delay, parent,pni) // <- OrganRandomParameter::realize() is called here
 {}
 
-std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs) {
-    auto r = std::make_shared<MycorrhizalRoot>(*this);
-    r->parent = std::weak_ptr<Organ>();
-    r->plant = rs;
-    r->param_ = std::make_shared<MycorrhizalRootSpecificParameter>(*param());
-    for (size_t i=0; i< children.size(); i++) {
-    r->children[i] = children[i]->copy(rs); // copy laterals
-    r->children[i]->setParent(r);
-    }
-    return r;
-}
+// std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs) {
+//     auto r = std::make_shared<MycorrhizalRoot>(*this);
+//     r->parent = std::weak_ptr<Organ>();
+//     r->plant = rs;
+//     r->param_ = std::make_shared<MycorrhizalRootSpecificParameter>(*param());
+//     for (size_t i=0; i< children.size(); i++) {
+//     r->children[i] = children[i]->copy(rs); // copy laterals
+//     r->children[i]->setParent(r);
+//     }
+//     return r;
+// }
     //simulate
     // organType ?
     // simualte

@@ -7,6 +7,7 @@
 
 namespace CPlantBox {
 
+
     class MycorrhizalRootSpecificParameter :public RootSpecificParameter{
         public:
         MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { }
@@ -27,7 +28,7 @@ namespace CPlantBox {
 
         std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
         // realize
-        // std::string toString(bool verbose = true) const override;
+        std::string toString(bool verbose = true) const override;
         
         //void readXML(tinyxml2::XMLElement* element, bool verbose) override;
 
