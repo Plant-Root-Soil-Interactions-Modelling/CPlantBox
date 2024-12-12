@@ -148,12 +148,12 @@ double MycorrhizalRoot::getParameter(std::string name) const {
     // if (name == "infected") {return this->infected;}
     return Root::getParameter(name);
 }
-MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-    Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-     :Root(id, param, alive, active, age, length,
-	 partialIHeading_,pni, moved,  oldNON )
-      { }
-MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Root(rs, type, delay, parent,pni) // <- OrganRandomParameter::realize() is called here
-{}
+// MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
+//     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
+//      :Root(id, param, alive, active, age, length,
+// 	 partialIHeading_,pni, moved,  oldNON )
+//       { }
+// MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
+// :Root(rs, type, delay, parent,pni) // <- OrganRandomParameter::realize() is called here
+// {}
 }
