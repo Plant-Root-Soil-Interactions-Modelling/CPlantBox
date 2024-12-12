@@ -29,10 +29,10 @@ namespace CPlantBox {
         // std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;
         // organType ?
         // void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
-        // double getParameter(std::string name) const override;
+        double getParameter(std::string name) const override;
         // // toString
-        // std::shared_ptr<MycorrhizalRootRandomParameter> getRootRandomParameter() const;
-        // std::shared_ptr<const MycorrhizalRootSpecificParameter> param() const;
+        std::shared_ptr<MycorrhizalRootRandomParameter> getRootRandomParameter() const;
+        std::shared_ptr<const MycorrhizalRootSpecificParameter> param() const;
 
 
     };

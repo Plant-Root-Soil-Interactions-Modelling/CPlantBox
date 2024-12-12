@@ -134,20 +134,20 @@ namespace CPlantBox {
 //     // std::cout << "end" << getId() << "\n" << std::flush;
 // }
     
-// std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
-// {
-//     return std::static_pointer_cast<const MycorrhizalRootSpecificParameter>(param_);
-// }
+std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
+{
+    return std::static_pointer_cast<const MycorrhizalRootSpecificParameter>(param_);
+}
 
-// std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomParameter() const
-// {
-//     return std::static_pointer_cast<MycorrhizalRootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
-// }
+std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomParameter() const
+{
+    return std::static_pointer_cast<MycorrhizalRootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
+}
 
-// double MycorrhizalRoot::getParameter(std::string name) const {
-//     if (name == "infected") {return this->infected;}
-//     return Root::getParameter(name);
-// }
+double MycorrhizalRoot::getParameter(std::string name) const {
+    // if (name == "infected") {return this->infected;}
+    return Root::getParameter(name);
+}
 MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
      :Root(id, param, alive, active, age, length,
