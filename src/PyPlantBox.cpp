@@ -786,9 +786,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
     py::class_<MycorrhizalRoot, Root, Organ, std::shared_ptr<MycorrhizalRoot>>(m,"MycorrhizalRoot")
-            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, bool, int>())
-            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, bool, int>())
-            .def_readwrite("infected", &MycorrhizalRoot::infected);
+        //     .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, bool, int>())
+        //     .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, bool, int>())
+        //     .def_readwrite("infected", &MycorrhizalRoot::infected);
+            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>());
+
     /**
      * Seed.h
      */
