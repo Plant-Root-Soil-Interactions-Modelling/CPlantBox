@@ -3,13 +3,7 @@
 #include "Organ.h"
 
 namespace CPlantBox {
-    // simulate
-/**
- * Simulates the development of the organ in a time span of @param dt days.
- *
- * @param dt        time step [day]
- * @param verbose   turns console output on or off
- */
+
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
     // std::cout << "\nstart" << getId() <<  std::flush;
@@ -139,23 +133,17 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     } // if alive
     // std::cout << "end" << getId() << "\n" << std::flush;
 }
-    //toString
-/**
- * @return Parameters of the specific root
- */
+    
 std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
 {
     return std::static_pointer_cast<const MycorrhizalRootSpecificParameter>(param_);
 }
 
-
-/**
- * @return The RootTypeParameter from the plant
- */
 std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomParameter() const
 {
     return std::static_pointer_cast<MycorrhizalRootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
+
 double MycorrhizalRoot::getParameter(std::string name) const {
     if (name == "infected") {return this->infected;}
     return Root::getParameter(name);
