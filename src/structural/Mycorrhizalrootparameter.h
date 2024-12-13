@@ -14,8 +14,10 @@ namespace CPlantBox {
 
         MycorrhizalRootSpecificParameter(int type, double lb, 
         double la, const std::vector<double>& ln, double r, double a,
-        double theta, double rlt, bool laterals = false): 
-        RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals) {};
+        double theta, double rlt, int infected = false, bool laterals = false): 
+        RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), infected(infected) {};
+
+        int infected;  ///< Status of infection with AMF
 
     };
 
@@ -43,7 +45,7 @@ namespace CPlantBox {
         double vi = 0.13;       ///< rate of internal infection front [cm / day]
         double maxInfection = 1;    ///< Percentage of maximal infection 
         // double nEntryP = 0; //< verbindung zu externen hyphen 
-        // evtl Erweiterung fuer Hyphaen
+        int infected = 0;  ///< status of AMF infection
 
     };
 }
