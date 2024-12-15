@@ -370,6 +370,43 @@ void PlantVisualiser::MapPropertyToColors(std::vector<double> property, std::pai
   }
 }
 
+int PlantVisualiser::GetNumOrgans() const
+{ return plant_->getOrgans(-1, false).size(); }
+
+std::string PlantVisualiser::SelfCheck() const
+{
+  std::string result = "{";
+
+  // check for NaNs in the geometry_
+  result += "\"vertex_nan\":";
+  bool has_nan = false;
+  for(auto v : geometry_)
+  {
+    if(std::isnan(v))
+    {
+      has_nan = true;
+      break;
+    }
+  }
+  result += has_nan ? "true" : "false";
+
+  // check for NaNs in the geometry_normals_
+  result += ",\"normal_nan\":";
+  has_nan = false;
+  for(auto v : geometry_normals_)
+  {
+    if(std::isnan(v))
+    {
+      has_nan = true;
+      break;
+    }
+  }
+  result += has_nan ? "true" : "false";
+
+  result += "}";
+  return result;
+}
+
 void PlantVisualiser::BuildAttachmentMap()
 {
   //std::cout << "Building attachment map" << std::endl;

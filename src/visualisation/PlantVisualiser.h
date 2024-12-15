@@ -113,6 +113,10 @@ public :
 
   void SetNotUseStemInfluence() { this->use_stem_influence_ = false; }
 
+  int GetNumOrgans() const;
+
+  std::string SelfCheck() const;
+
 protected:
   std::shared_ptr<MappedPlant> plant_{nullptr};
 

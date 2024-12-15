@@ -10,10 +10,11 @@ os.system("cmake --build . --config Release -j 4")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 import visualisation.vis_tools as cpbvis
+import time
 
 import numpy as np
 
-filename = "../../modelparameter/structural/plant/fspm2023.xml"
+filename = "/mnt/f/Work/CPlantBox/dumux/CPlantBox/modelparameter/structural/plant/Triticum_aestivum_adapted_2021.xml"
 output = "./results/vis_plant"
 
 # create a plant
@@ -23,7 +24,7 @@ vis = pb.PlantVisualiser(plant)
 
 
 # Initialize
-plant.setSeed(2)
+plant.setSeed(int(time.time()))
 plant.initialize(False, True)
 vis.SetGeometryResolution(8)
 vis.SetLeafResolution(30)
@@ -33,19 +34,28 @@ vis.SetLeafMinimumWidth(0.1)
 vis.SetRightPenalty(0.9)
 #vis.SetShapeFunction(lambda t : 1*((1 - t**0.8)**0.5))
 shape = lambda t : max(0.0,1.0*((1 - t**0.6)**0.3) -  0.1/(t + 0.1))
-shape = lambda t : 1.0*((1 - t**0.6)**0.3)
+#shape = lambda t : 1.0*((1 - t**0.6)**0.3)
 vis.SetShapeFunction(shape)
 print("Shape at boundaries: ", shape(0), shape(1))
-vis.SetLeafWidthScaleFactor(1.0)
+vis.SetLeafWidthScaleFactor(5.0)
 vis.SetNotUseStemInfluence()
 vis.SetUseStemRadiusAsMin(True)
 
 # Simulate
-plant.simulate(50, False)
+plant.simulate(16, False)
 
 leaf_id = -1
 leaf_lenght = -1
 leaf_ptr = None
+
+geomset = [4,3,2]
+colours = {
+  4 : [1.0, 0.0, 0.0],
+  3 : [0.0, 1.0, 0.0],
+  2 : [0.0, 0.0, 1.0]
+}
+
+cpbvis.WavefrontFromPlantGeometry(vis, plant, "leaf.obj", resolution="type", colour= colours, fixedset= geomset)
 
 for o in plant.getOrgans() :
   if o.getLength(False) > leaf_lenght and o.organType() == pb.leaf :
@@ -55,7 +65,8 @@ for o in plant.getOrgans() :
 
 
 vis.ResetGeometry()
-vis.ComputeGeometryForOrgan(leaf_id)
+#vis.ComputeGeometryForOrgan(leaf_id)
+vis.ComputeGeometry()
 
 uv = vis.GetGeometryTextureCoordinates()
 points = vis.GetGeometry()
@@ -66,7 +77,7 @@ print(points.shape)
 
 # Write the geometry to file#
 data = cpbvis.PolydataFromPlantGeometry(vis)
-cpbvis.WritePolydataToFile(data, "/mnt/f/Work/CPlantBox/dumux/CPlantBox/tutorial/examples/leaf.vtk")
+cpbvis.WritePolydataToFile(data, "/mnt/f/Work/CPlantBox/dumux/CPlantBox/tutorial/examples/leaf.vtp")
 
 # view the vtk geometry
 import vtk
@@ -162,6 +173,6 @@ window.Render()
 interactor.Start()
 
 # Save the geometry to file
-cpbvis.WritePolydataToFile(data, "leaf.vtk")
+cpbvis.WritePolydataToFile(data, "leaf2.vtp")
 
 
