@@ -13,13 +13,16 @@ namespace CPlantBox {
         public:
 
         MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
-        Vector3d partialIHeading_, int pni, bool infected = false, bool moved= false, int oldNON = 0): 
-        Root(id,param, alive,active,age,length,partialIHeading_,pni, moved,oldNON), infected(infected) {};
+        Vector3d partialIHeading_, int pni, bool moved= false, int oldNON = 0);
+        // int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
+        // Vector3d partialIHeading_, int pni, bool infected = false, bool moved= false, int oldNON = 0): 
+        // Root(id,param, alive,active,age,length,partialIHeading_,pni, moved,oldNON), infected(infected) {};
 
-        MycorrhizalRoot(std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, bool infected, int pni):
-        Root(rs,type, delay, parent,pni), infected(infected) {};
+        MycorrhizalRoot (std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, int pni);
+        // (std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, bool infected, int pni):
+        // Root(rs,type, delay, parent,pni), infected(infected) {};
 
-        bool infected = false;
+        // bool infected = false;
 
         virtual ~MycorrhizalRoot() { };
 

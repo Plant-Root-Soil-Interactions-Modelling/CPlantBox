@@ -608,9 +608,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("minAge", &MycorrhizalRootRandomParameter::minAge)
             .def_readwrite("maxAge", &MycorrhizalRootRandomParameter::maxAge)
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
-            .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection);
+            .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
+            .def_readwrite("infected", &MycorrhizalRootRandomParameter::infected);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
+            .def_readwrite("infected", &MycorrhizalRootSpecificParameter::infected)
             .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, bool>());
      /*
      * seedparameter.h
@@ -786,11 +788,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
     py::class_<MycorrhizalRoot, Root, Organ, std::shared_ptr<MycorrhizalRoot>>(m,"MycorrhizalRoot")
-            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, bool, int>())
-            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, bool, int>())
-            .def_readwrite("infected", &MycorrhizalRoot::infected);
-        //     .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
-        //     .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>());
+            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>());
 
     /**
      * Seed.h

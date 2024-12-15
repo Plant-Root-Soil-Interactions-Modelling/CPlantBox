@@ -4,6 +4,14 @@
 
 namespace CPlantBox {
 
+MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
+    Vector3d partialIHeading_, int pni, bool moved, int oldNON)
+     :Root(id, param, alive, active, age, length,
+	 partialIHeading_,pni, moved,  oldNON ) {}
+
+MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
+:Root(rs,type, delay,parent, pni) {}
+
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
     // std::cout << "\nstart" << getId() <<  std::flush;
@@ -42,6 +50,12 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
 
             if (active) {
+
+                double pInfection = getRootRandomParameter()->p;
+                int infection = getRootRandomParameter() -> infected;
+                if(rand()/RAND_MAX < pInfection && infection == 0) { // TODO do this properly
+                    infection = 1;
+                }
 
                 // length increment
                 double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
