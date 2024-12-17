@@ -16,7 +16,11 @@ namespace CPlantBox {
         //readParameters neuer basetag?
         //void initializeLB(bool verbose = true);
         //void initializeDB(bool verbose = true);
-        //simulate ?
+        // simulate
+        // für visualisierung was rausholen
+        // plant.getSegmentCTs()  als vorlage für infektion auch zum fehler suchen !!! in den segmentanalyzer dazu tun
+        // getSegmentsInfection()
+        // getNodeInfection()
         //toString    
     };
 }
