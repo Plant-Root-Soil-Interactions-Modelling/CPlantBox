@@ -53,8 +53,8 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
                 double pInfection = getRootRandomParameter()->p;
                 int infection = getRootRandomParameter() -> infected;
-                if(rand()/RAND_MAX < pInfection && infection == 0) { // TODO do this properly
-                    infection = 1;
+                if(rand()/RAND_MAX < pInfection && infection == 0) {
+                    p.infected = 1; // FIXME
                 }
 
                 // length increment
@@ -159,7 +159,7 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
 }
 
 double MycorrhizalRoot::getParameter(std::string name) const {
-    // if (name == "infected") {return this->infected;}
+    if (name == "infected") {return param() -> infected;}
     return Root::getParameter(name);
 }
 

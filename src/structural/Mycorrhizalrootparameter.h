@@ -19,6 +19,7 @@ namespace CPlantBox {
 
         int infected;  ///< Status of infection with AMF
 
+
     };
 
     class MycorrhizalRootRandomParameter :public RootRandomParameter {
