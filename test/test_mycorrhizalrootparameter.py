@@ -40,6 +40,7 @@ class TestMycParameter(unittest.TestCase):
         self.assertEqual(otp2.minAge, mrrp.minAge,"copy: value unexpected")
         self.assertEqual(otp2.maxAge, mrrp.maxAge,"copy: value unexpected")
         self.assertEqual(otp2.vi, mrrp.vi,"copy: value unexpected")
+        self.assertEqual(otp2.infected, mrrp.infected,"copy: value unexpected")
 
     def test_parameter(self):
         """ tests getParameter() """

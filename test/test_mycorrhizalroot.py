@@ -43,12 +43,12 @@ class TestMycorrhizalRoot(unittest.TestCase):
 
         param0 = p0.realize()  # set up root by hand (without a root system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-        parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0,False, False, 0)  # takes ownership of param0
+        parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0,False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
 
         self.parentroot = parentroot  # store parent (not owned by child Organ)
-        self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType,  0, self.parentroot ,False, 0)
+        self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType,  0, self.parentroot, 0)
         self.mycroot.setOrganism(self.plant)
 
     def mycroot_length_test(self, dt, l, subDt):
@@ -81,11 +81,11 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.mycroot_example_rrp()
         # 1. constructor from scratch
         param = self.p0.realize()
-        root = pb.MycorrhizalRoot(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, False, False, 0)
+        root = pb.MycorrhizalRoot(1, param, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, False, 0)
         root.setOrganism(self.plant)
         root.addNode(pb.Vector3d(0, 0, -3), 0)  # parent must have at least one nodes
         # 2. used in simulation (must have parent, since there is no nullptr in Pyhton)
-        root2 = pb.MycorrhizalRoot(self.plant, self.p1.subType, 0, root, False, 0)
+        root2 = pb.MycorrhizalRoot(self.plant, self.p1.subType, 0, root, 0)
         root.addChild(root2)
         # 3. deep copy (with a factory function)
         plant2 = pb.Organism()
@@ -144,6 +144,20 @@ class TestMycorrhizalRoot(unittest.TestCase):
                 self.mycroot = root
             for i in range(0, len(times[1:])):
                 self.assertAlmostEqual(numeric_total[i], analytic_total[i], 10, "numeric and analytic total lengths do not agree in time step " + str(i + 1))
+
+    def test_infection(self):
+        """ tests spontaneous infection on sequential organ list """
+        self.mycroot_example_rrp()
+        simtime = 30.
+        self.mycroot.simulate(simtime, False)
+        organs = self.mycroot.getOrgans()
+        infected = []
+        for o in organs:
+            if o.getParameter("type") == [1.]:
+                infected.append(o.getParameter("infected")) #
+        infRoots = sum(infected)
+        numRoots = len(infected)
+        self.assertAlmostEqual(0.15,infRoots/numRoots,"not the right amount of root segments infected")
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
@@ -210,12 +224,12 @@ class TestMycorrhizalRoot(unittest.TestCase):
             print("ln value does not fit with dx and dxMin")
 
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-        parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, False, 0)  # takes ownership of param0
+        parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0, 0, False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.addNode(pb.Vector3d(0, 0, -1), 0)  # there is no nullptr in Python
 
         self.parentroot = parentroot  # store parent (not owned by child Organ)
-        self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0,False, 0)
+        self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType, pb.Vector3d(0, 0, -1), 0, self.parentroot , 0, 0)
         self.mycroot.setOrganism(self.plant)
         self.p0 = p0
 
@@ -290,13 +304,13 @@ class TestMycorrhizalRoot(unittest.TestCase):
         param0 = p0.realize()  # set up root by hand (without a root system)
         param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
         self.ons =pb.Vector3d(0., 0., 1.)
-        parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., self.partialiheading, 0,False, False, 0)  # takes ownership of param0
+        parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., self.partialiheading, 0,False, 0)  # takes ownership of param0
         parentroot.setOrganism(self.plant)
         parentroot.setParent(self.seed)
         parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
         self.parentroot = parentroot  # store parent (not owned by child Organ)
         self.seed.addChild(self.parentroot)
-        self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType, 0, self.parentroot ,False, 0)
+        self.mycroot = pb.MycorrhizalRoot(self.plant, p0.subType, 0, self.parentroot , 0)
         self.parentroot.addChild(self.mycroot)
         self.mycroot.setOrganism(self.plant)
 
