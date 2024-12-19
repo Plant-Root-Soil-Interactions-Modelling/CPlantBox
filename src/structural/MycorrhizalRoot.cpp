@@ -31,11 +31,13 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
     // TODO separate primary infection? from secondary? - yes have to
     
-    for (auto & node : nodes)
+    int n = getNumberOfNodes();
+
+    for (size_t i = 1 ; i < n; i++)
     {
-        if (rand()< getRootRandomParameter()->p)
+        if (rand()< getRootRandomParameter()->p && infected.at(i-1)== 0)
         {
-            // infected.at(INSERTPOSITIONHERE) = 1;
+            infected.at(i-1) = 1;
         }
         
     }
