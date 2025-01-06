@@ -31,6 +31,8 @@ namespace CPlantBox {
         std::shared_ptr<MycorrhizalRootRandomParameter> getRootRandomParameter() const;
         std::shared_ptr<const MycorrhizalRootSpecificParameter> param() const;
 
+        int getNodeInfection(int i) const {return infected.at(i);}
+
 
     };
 
