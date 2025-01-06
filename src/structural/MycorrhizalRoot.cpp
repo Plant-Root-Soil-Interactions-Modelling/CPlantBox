@@ -1,6 +1,7 @@
 #include "MycorrhizalRoot.h"
 #include "Root.h"
 #include "Organ.h"
+#include "Organism.h"
 
 namespace CPlantBox {
 
@@ -31,16 +32,39 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
     // TODO separate primary infection? from secondary? - yes have to
     
+
+    // Primary Infection
     int n = getNumberOfNodes();
 
     for (size_t i = 1 ; i < n; i++)
     {
-        if (rand()< getRootRandomParameter()->p && infected.at(i-1)== 0)
+        if (plant.lock()->rand() < (getRootRandomParameter()->p) && infected.at(i-1)== 0)
         {
             infected.at(i-1) = 1;
         }
         
     }
+
+    // Secondary Infection
+    // int l_inf = dt*getRootRandomParameter()->vi;
+
+    // for (size_t i = 1; i < n; i++)
+    // {
+    //     if (infected.at(i-1) == 1)
+    //     {
+    //         if (i + l_inf < n)
+    //         {
+    //             infected.at(i + l_inf) = 1;
+    //         }
+    //         else
+    //         {
+    //             infected.at(n-1) = 1;
+    //         }
+            
+    //     }
+        
+    // }
+
     
     // über alle knoten iterieren (-1)
     // "spontane" infektion mit wahrscheinlihckeit p

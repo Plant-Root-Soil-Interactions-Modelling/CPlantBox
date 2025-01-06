@@ -789,7 +789,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("param", &Root::param);
     py::class_<MycorrhizalRoot, Root, Organ, std::shared_ptr<MycorrhizalRoot>>(m,"MycorrhizalRoot")
             .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
-            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>());
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>())
+            .def("getNodeInfection", &MycorrhizalRoot::getNodeInfection);
 
     /**
      * Seed.h
@@ -950,7 +951,9 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("getNodeIds",&MappedPlant::getNodeIds);
 
         py::class_<MycorrhizalPlant, Plant, std::shared_ptr<MycorrhizalPlant>>(m,"MycorrhizalPlant")
-                        .def(py::init<unsigned int>(), py::arg("seednum")=0);
+                        .def(py::init<unsigned int>(), py::arg("seednum")=0)
+                        .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections)
+                        .def("getSegmentInfections",&MycorrhizalPlant::getSegmentInfections);
 	/**
 	 * Perirhizal.h
 	 */
