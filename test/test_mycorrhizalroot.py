@@ -145,19 +145,18 @@ class TestMycorrhizalRoot(unittest.TestCase):
             for i in range(0, len(times[1:])):
                 self.assertAlmostEqual(numeric_total[i], analytic_total[i], 10, "numeric and analytic total lengths do not agree in time step " + str(i + 1))
 
-    def test_infection(self):
+    def test_primary_infection(self):
         """ tests spontaneous infection on sequential organ list """
+        # THIS TEST IS CURRENTLY NOT PASSING BUT NOT SURE WHETHER IT IS A PROBLEM OR NOT
         self.mycroot_example_rrp()
-        simtime = 30.
+        simtime = 120.
         self.mycroot.simulate(simtime, False)
-        organs = self.mycroot.getOrgans()
-        infected = []
-        for o in organs:
-            if o.getParameter("type") == [1.]:
-                infected.append(o.getParameter("infected")) #
+        infected = [0]*(self.mycroot.getNumberOfNodes())
+        for i in range(1, self.mycroot.getNumberOfNodes()-1):
+            infected[i] = self.mycroot.getNodeInfection(i)
         infRoots = sum(infected)
         numRoots = len(infected)
-        self.assertAlmostEqual(0.15,infRoots/numRoots,"not the right amount of root segments infected")
+        self.assertAlmostEqual(0.15*numRoots,infRoots,4,"not the right amount of root segments infected")
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """

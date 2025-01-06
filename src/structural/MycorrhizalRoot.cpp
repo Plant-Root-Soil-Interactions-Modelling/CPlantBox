@@ -24,14 +24,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
     Root::simulate(dt,verbose);
     // branching points updaten
-    // TODO how to update branching points?
-    // indices entlang polyline
-    // TODO find out what is meant by this
-
-    // TODO how to iterate over all nodes? just get Number of Nodes? (minus the first one)
-
-    // TODO separate primary infection? from secondary? - yes have to
-    
+    // TODO how to update branching points? was habe ich damit gemeint....
 
     // Primary Infection
     int n = getNumberOfNodes();
@@ -46,30 +39,27 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     }
 
     // Secondary Infection
-    // int l_inf = dt*getRootRandomParameter()->vi;
-
-    // for (size_t i = 1; i < n; i++)
-    // {
-    //     if (infected.at(i-1) == 1)
-    //     {
-    //         if (i + l_inf < n)
-    //         {
-    //             infected.at(i + l_inf) = 1;
-    //         }
-    //         else
-    //         {
-    //             infected.at(n-1) = 1;
-    //         }
-            
-    //     }
-        
-    // }
-
-    
-    // über alle knoten iterieren (-1)
-    // "spontane" infektion mit wahrscheinlihckeit p
-    // 
-    // TODO "länge" der infektion
+    int max_length_infection = dt*getRootRandomParameter()->vi;
+    auto segments = getSegments();
+    for (size_t i = 0; i < segments.size() ; i++)
+    {
+        // if (getNode(segments[i].y))
+        // if (infected.at(i) == 1)
+        // {
+        //     int j = i;
+        //     while (j < n && j < i + max_length_infection)
+        //     {
+        //         if (infected.at(j) == 0)
+        //         {
+        //             infected.at(j) = 1;
+        //         }
+        //         j++;
+        //     }
+        // }
+    }
+    // IDEE: durch segmente durchiterieren und dann bei einem infizierten knoten die nachbarn anschauen
+    // wenn beide infiziert sind dann nix
+    // wenn nur einer infiziert ist dann ausrechnen schauen wie weit die infektion wandert oder ob sie durch eine andere infizierte branch gestoppt wird
 
     // TODO how to check if neighbors are infected
     // immer von der urpsrünglichen infektion "länge" der infektion
