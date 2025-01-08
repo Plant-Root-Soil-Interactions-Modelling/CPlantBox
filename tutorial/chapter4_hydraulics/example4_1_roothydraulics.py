@@ -24,14 +24,14 @@ path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 plant.readParameters(path + name + ".xml")
 plant.initialize()
-plant.simulate(initial_age, False)  # |\label{l41:rootsystem_end}|
+plant.simulate(initial_age)  # |\label{l41:rootsystem_end}|
 
 """ root hydraulic properties """
 params = PlantHydraulicParameters()  # |\label{l41:hydraulicparams}|
 params.set_radial_conductivity(kr)
 params.set_axial_conductivity(kx)
 hm = HydraulicModel_Doussan(plant, params)  # |\label{l41:model}|
-hm = HydraulicModel_Meunier(plant, params)
+# hm = HydraulicModel_Meunier(plant, params)
 
 """ Numerical solution """  # |\label{l41:numerical}|
 ns = plant.getNumberOfMappedSegments()
@@ -39,7 +39,7 @@ hsr = plant.total2matric(Hs * np.ones((ns,)))  # |\label{l41:hsr}|
 hx = hm.solve_dirichlet(initial_age, h0, hsr, cells = False)  # |\label{l41:dirichlet}|
 print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], hm.get_transpiration(initial_age, hx, hsr)))
 hx = hm.solve_neumann(initial_age, t_pot, hsr, cells = False)  # |\label{l41:neumann}|
-print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], hm.get_transpiration(initial_age, hx, hsr)))
+print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], hm.get_transpiration(initial_age, hx, hsr)))  # |\label{l41:numerical_end}|
 
 """ Additional vtk plot """
 ana = pb.SegmentAnalyser(hm.ms.mappedSegments())  # |\label{l41:sa}|
