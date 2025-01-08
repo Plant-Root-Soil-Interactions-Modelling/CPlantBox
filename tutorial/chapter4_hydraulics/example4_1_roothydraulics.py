@@ -46,7 +46,7 @@ ana = pb.SegmentAnalyser(hm.ms.mappedSegments())  # |\label{l41:sa}|
 ana.addData("hx", hx)  # xylem potentials [cm]
 ana.addData("SUF", hm.get_suf(initial_age))  # standard uptake fraction [1]
 ana.addAge(initial_age)  # age [day] |\label{l41:age}|
-ana.addHydraulicConductivities(params, initial_age)  # kr [1/day], kx [cm3/day] |\label{l41:conductivities}
+ana.addHydraulicConductivities(params, initial_age)  # kr [1/day], kx [cm3/day] |\label{l41:conductivities}|
 ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" [cm3/day], "radial_flux" [ (cm3/cm2) / day] |\label{l41:fluxes}|
 vp.plot_roots(ana, "radial_flux")
 
