@@ -104,7 +104,7 @@ def hydraulic_conductivity(h, sp):
 
 def matric_flux_potential(h, sp):
     """ returns the matric flux potential [cm2/day] for a matric potential [cm]"""
-    hmin = -2.e4
+    hmin = -15000
     K = lambda h: hydraulic_conductivity(h, sp)  # integrand
     MFP, _ = integrate.quad(K, hmin, h)
     return MFP
@@ -112,7 +112,7 @@ def matric_flux_potential(h, sp):
 
 def matric_potential_mfp(mfp, sp):
     """ returns the matric potential [cm] from the matric flux potential [cm2/day]"""
-    hmin = -2.e4
+    hmin = -15000 # needed to make hmin larger or else brent did not find a solution
     mfp_ = lambda psi: matric_flux_potential(psi, sp) - mfp
     h = optimize.brentq(mfp_, hmin, 0)
     return h
