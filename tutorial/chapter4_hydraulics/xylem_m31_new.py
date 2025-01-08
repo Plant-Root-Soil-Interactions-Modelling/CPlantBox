@@ -4,7 +4,7 @@ Sinle root benchmark M3.1 (a single polyline with 100 segments)
 
 TODO Check both approaches, write unit test
 """
-import sys; sys.path.append("../../..");  sys.path.append("../../../src")
+import sys; sys.path.append("../..");  sys.path.append("../../src")
 
 import plantbox as pb
 

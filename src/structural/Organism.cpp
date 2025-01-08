@@ -25,7 +25,9 @@ Organism::Organism(unsigned int seednum)
     instances++;
     if(seednum >0){
         seed_val = seednum;
-    }else{ seed_val = std::chrono::system_clock::now().time_since_epoch().count()+instances;}
+    } else {
+        seed_val = std::chrono::system_clock::now().time_since_epoch().count()+instances;
+    }
     gen = std::mt19937(seed_val);
 };
 

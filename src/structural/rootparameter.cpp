@@ -282,6 +282,10 @@ void RootRandomParameter::bindParameters()
     // NEW
     bindParameter("lnk", &lnk, "Slope of inter-lateral distances [1]");
     bindParameter("ldelay", &ldelay, "Lateral root emergence delay [day]", &ldelays);
+    // HAIR
+    bindParameter("hairsElongation", &hairsElongation, "Zone behind the tip without root hairs  [cm]");
+    bindParameter("hairsZone", &hairsZone, "Length of the root hair zone [cm]");
+    bindParameter("hairsLength", &hairsLength, "Root hair length [cm]");
 }
 
 } // end namespace CPlantBox

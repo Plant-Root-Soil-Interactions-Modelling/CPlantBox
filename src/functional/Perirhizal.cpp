@@ -11,7 +11,7 @@ namespace CPlantBox {
 std::vector<double> Perirhizal::segOuterRadii(int type, const std::vector<double>& vols) const {
     double cellVolume;
     auto& ms = this->ms;
-    auto& radii = ms->radii; // rename
+    auto radii = ms->getEffectiveRadii(); // rename
     auto lengths =  ms->segLength();
     auto width = ms->maxBound.minus(ms->minBound);
     std::vector<double> outer_radii = std::vector<double>(ms->segments.size());

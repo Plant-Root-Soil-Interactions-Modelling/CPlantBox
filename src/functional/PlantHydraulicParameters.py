@@ -22,7 +22,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         
         see also PlantHydraulicParameters.h    
         
-        @author Daniel Leitner, 2023        
+        @author Daniel Leitner, 2024     
     """
 
     @staticmethod
