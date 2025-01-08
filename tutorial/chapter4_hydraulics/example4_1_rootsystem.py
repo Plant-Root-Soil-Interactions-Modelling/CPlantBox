@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 initial_age = 14  # root system age [day]
 kx = 4.32e-2  # axial conductivity [cm3/day]
 kr = 1.728e-4  # radial conductivity [1/day]
-p_s = -300  # soil total potential [cm]
+Hs = -300  # soil total potential [cm]
 p0 = -1000  # dirichlet bc at top [cm]
 t_pot = -1  # potential plant transpiration [cm3/day]
 
@@ -34,12 +34,12 @@ r = HydraulicModel_Doussan(plant, params)  # hydraulic model
 
 """ Numerical solution """
 ns = plant.getNumberOfMappedSegments()
-hsr = plant.total2matric(p_s * np.ones((ns,)))
+hsr = plant.total2matric(Hs * np.ones((ns,)))
 
 hx = r.solve_dirichlet(initial_age, p0, hsr, cells = False)
 print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], r.get_transpiration(initial_age, hx, hsr)))
-hx = r.solve_neumann(initial_age, t_pot, hsr, cells = False)
-print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], r.get_transpiration(initial_age, hx, hsr)))
+# hx = r.solve_neumann(initial_age, t_pot, hsr, cells = False)
+# print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], r.get_transpiration(initial_age, hx, hsr)))
 
 fluxes = r.radial_fluxes(initial_age, hx, hsr, False)  # cm3/day
 
