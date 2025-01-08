@@ -1,4 +1,4 @@
-import sys; sys.path.append("../../..");  sys.path.append("../../../src")
+import sys; sys.path.append("../..");  sys.path.append("../../src")
 
 import plantbox as pb
 from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
