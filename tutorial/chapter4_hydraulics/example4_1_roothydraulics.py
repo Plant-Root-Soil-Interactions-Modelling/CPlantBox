@@ -15,7 +15,7 @@ initial_age = 14  # root system age [day]
 kx = 4.32e-2  # axial conductivity [cm3/day]
 kr = 1.728e-4  # radial conductivity [1/day]
 Hs = -300  # soil total potential [cm]
-h0 = -1000  # dirichlet bc at top [cm] |\label{l41:h0}
+h0 = -1000  # dirichlet bc at top [cm] |\label{l41:h0}|
 t_pot = -1  # potential plant transpiration [cm3/day] |\label{l41:t_pot}|
 
 """ root system """  # |\label{l41:rootsystem}|
