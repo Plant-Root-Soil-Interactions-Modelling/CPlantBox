@@ -18,6 +18,7 @@ namespace CPlantBox {
         MycorrhizalRoot (std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, int pni);
 
         std::vector<int> infected;
+        std::vector<double> infectionTime;
 
         virtual ~MycorrhizalRoot() { };
 

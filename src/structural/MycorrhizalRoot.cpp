@@ -16,6 +16,7 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
     Organ::addNode(n, id,  t,  index, shift);
     infected.push_back(0);
+    infectionTime.push_back(NAN);
 }
 
 
@@ -24,43 +25,101 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
     Root::simulate(dt,verbose);
     // branching points updaten
-    // TODO how to update branching points? was habe ich damit gemeint....
+    // TODO how to update branching points?
+    // indices entlang polyline
+    // TODO find out what is meant by this
+
+    // TODO how to iterate over all nodes? just get Number of Nodes? (minus the first one)
+
+    // TODO separate primary infection? from secondary? - yes have to
+    
 
     // Primary Infection
     int n = getNumberOfNodes();
-
-    for (size_t i = 1 ; i < n; i++)
+    int m = getNumberOfSegments();
+    auto seg = getSegments();	
+    // "spontane" infektion mit wahrscheinlihckeit p
+    // über alle knoten iterieren (-1)
+    for (size_t i = 0; i < m; i++)
     {
-        if (plant.lock()->rand() < (getRootRandomParameter()->p) && infected.at(i-1)== 0)
+        auto seglength = getLength(seg[i].y) - getLength(seg[i].x);
+        if (plant.lock()->rand() < (getRootRandomParameter()->p)*dt*seglength && infected.at(seg[i].y) == 0)
         {
-            infected.at(i-1) = 1;
+            infected.at(seg[i].y) = 1;
+            infectionTime.at(seg[i].y) = age;
         }
-        
     }
+    
+    // for (size_t i = 1 ; i < n; i++)
+    // {
+    //     if (plant.lock()->rand() < (getRootRandomParameter()->p)*dt && infected.at(i-1)== 0)
+    //     {
+    //         infected.at(i-1) = 1;
+    //     }
+        
+    // }
 
     // Secondary Infection
+    //"länge" der infektion
+    int l_inf = dt*getRootRandomParameter()->vi;
+    // auto polylines = plant.getPolylines(2);
+ 
+   // Secondary Infection
     int max_length_infection = dt*getRootRandomParameter()->vi;
     auto segments = getSegments();
+
+    // length always measured from start so max distance "infection" can travel is
+    // length of first node - max_length_infection
     for (size_t i = 0; i < segments.size() ; i++)
     {
-        // if (getNode(segments[i].y))
-        // if (infected.at(i) == 1)
-        // {
-        //     int j = i;
-        //     while (j < n && j < i + max_length_infection)
-        //     {
-        //         if (infected.at(j) == 0)
-        //         {
-        //             infected.at(j) = 1;
-        //         }
-        //         j++;
-        //     }
-        // }
-    }
+        if (getNodeInfection(segments[i].y) == 1)
+        {
+            int length = getLength(segments[i].y);
+            int min_length = length - max_length_infection;
+            int max_length = length + max_length_infection;
+            if (getNodeInfection(segments[i].x) == 0)
+            {
+                if (getLength(segments[i].x) < max_length && getLength(segments[i].x) > min_length)
+                {
+                    infected.at(segments[i].x) = 2;
+                } 
+            }
+            
+        }
+    }   
+    double infection_length = dt*getRootRandomParameter()->vi;
+
+    auto segs = getSegments();
+        std::vector<int> segId = std::vector<int>(segments.size());
+        for (int i=0; i<segs.size(); i++) {
+            segId[i] = segs[i].y-1;
+        }
+
+        for (int i = 0; i < segs.size(); i++)
+        {
+            if (infected.at(segs[i].y) == 1)
+            {
+                int length_origin = getLength(segs[i].y);
+                int newlength = getLength(segs[i].x);
+                while (newlength  > length_origin +  infection_length) 
+                    // TODO darf nur =0
+                    infected.at(segs[i].x) = 2;
+                    int j;
+                    for (int k=0; k<segs.size(); k++) {
+                        if (segs[i].x == segId[k] + 1) {
+                            j = k;
+                        }
+                    }
+                    newlength = getLength(segs[j].x);
+                }
+            }
+        
+    
     // IDEE: durch segmente durchiterieren und dann bei einem infizierten knoten die nachbarn anschauen
     // wenn beide infiziert sind dann nix
     // wenn nur einer infiziert ist dann ausrechnen schauen wie weit die infektion wandert oder ob sie durch eine andere infizierte branch gestoppt wird
 
+    
     // TODO how to check if neighbors are infected
     // immer von der urpsrünglichen infektion "länge" der infektion
     // schauen ob beide nachbarn infiziert sind dann nix
