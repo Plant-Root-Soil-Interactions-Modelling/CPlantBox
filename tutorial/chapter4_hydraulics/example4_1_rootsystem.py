@@ -3,7 +3,6 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import visualisation.vtk_plot as vp
-
 from functional.PlantHydraulicParameters import PlantHydraulicParameters
 from functional.PlantHydraulicModel import HydraulicModel_Doussan
 from functional.PlantHydraulicModel import HydraulicModel_Meunier
@@ -12,50 +11,47 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """ Parameters """
+initial_age = 14  # root system age [day]
 kx = 4.32e-2  # axial conductivity [cm3/day]
 kr = 1.728e-4  # radial conductivity [1/day]
-p_s = -200  # constant soil potential [cm]
-p0 = -500  # dirichlet bc at top [cm]
-initial_age = 14  # root system age [day]
+p_s = -300  # soil total potential [cm]
+p0 = -1000  # dirichlet bc at top [cm]
+t_pot = -1  # potential plant transpiration [cm3/day]
 
 """ root system """
-rs = pb.MappedPlant()
+plant = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
-rs.readParameters(path + name + ".xml")
-rs.initialize()
-rs.simulate(initial_age, False)
+plant.readParameters(path + name + ".xml")
+plant.initialize()
+plant.simulate(initial_age, False)
 
-""" root problem """
+""" root hydraulic properties """
 params = PlantHydraulicParameters()
-params.setKx([kx, kx, kx, kx, kx, kx])  # axial conductivities per root order
-params.setKr([kr * 0, kr, kr , kr, kr, kr])  # radial conductivities per root order
-
-r = HydraulicModel_Doussan(rs, params)  # hydraulic model
+params.set_radial_conductivity(kr)
+params.set_axial_conductivity(kx)
+r = HydraulicModel_Doussan(plant, params)  # hydraulic model
 
 """ Numerical solution """
-soil = [p_s]  # soil with a single soil cell
-rx = r.solve_dirichlet(initial_age, p0, p_s, soil, True)
-fluxes = r.segFluxes(initial_age, rx, -200 * np.ones(rx.shape), False)  # cm3/day
-print("Transpiration", r.collar_flux(simtime, rx, [p_s]), "cm3/day")
+ns = plant.getNumberOfMappedSegments()
+hsr = plant.total2matric(p_s * np.ones((ns,)))
 
-""" Macroscopic root system parameter """
-suf = r.get_suf(simtime)
-krs, _ = r.get_krs(simtime)
-print("Krs: ", krs, "cm2/day")
+hx = r.solve_dirichlet(initial_age, p0, hsr, cells = False)
+print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], r.get_transpiration(initial_age, hx, hsr)))
+hx = r.solve_neumann(initial_age, t_pot, hsr, cells = False)
+print("Root collar potential {:g} [cm], transpiration {:g} [cm3/day]".format(hx[0], r.get_transpiration(initial_age, hx, hsr)))
 
-""" plot results """
-nodes = r.get_nodes()
-plt.plot(rx, nodes[:, 2] , "r*")
-plt.xlabel("Xylem potentials (cm)")
-plt.ylabel("Depth (m)")
-plt.show()
+fluxes = r.radial_fluxes(initial_age, hx, hsr, False)  # cm3/day
 
 """ Additional vtk plot """
-ana = pb.SegmentAnalyser(r.rs.mappedSegments())
-ana.addData("rx", rx)  # xylem potentials [cm]
-ana.addData("SUF", suf)  # standard uptake fraction [1]
-ana.addAge(simtime)  # age [day]
-ana.addConductivities(r, simtime)  # kr [1/day], kx [cm3/day]
-ana.addFluxes(r, rx, p_s * np.ones(rx.shape), simtime)  # "axial_flux" [cm3/day], "radial_flux" [ (cm3/cm2) / day]
-vp.plot_roots(ana, "subType")  # "rx", "SUF", "age", kr, "axial_flux", "radial_flux"
+ana = pb.SegmentAnalyser(r.ms.mappedSegments())
+ana.addData("hx", hx)  # xylem potentials [cm]
+ana.addData("SUF", r.get_suf(initial_age))  # standard uptake fraction [1]
+ana.addAge(initial_age)  # age [day]
+ana.addHydraulicConductivities(params, initial_age)  # kr [1/day], kx [cm3/day]
+ana.addFluxes(r, hx, hsr, initial_age)  # "axial_flux" [cm3/day], "radial_flux" [ (cm3/cm2) / day]
+vp.plot_roots(ana, "radial_flux")
+
+""" output for paraview """
+ana.write("example4_1_root_hydraulics.vtp",
+          types = ["radius", "subType", "age", "hx", "SUF", "kr", "kx", "axial_flux", "radial_flux"])

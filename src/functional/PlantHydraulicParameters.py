@@ -35,6 +35,20 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         """ sinusoidal function from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
         return np.maximum(0., np.pi * (np.cos(2 * np.pi * (t - 0.5)) + np.cos(2 * np.pi * ((t + dt) - 0.5))) / 2)
 
+    def set_radial_conductivity(self, kr, subType = -1):
+        """ sets a constant radial conductivity [cm/day] for roots for a subType (-1 for all subTypes) """
+        if subType == -1:
+            self.setKr([[kr]])
+        else:
+            raise "not implemented yet"
+
+    def set_axial_conductivity(self, kx, subType = -1):
+        """ sets a constant axial conductivity [cm3/day] for roots for a subType (-1 for all subTypes) """
+        if subType == -1:
+            self.setKx([[kx]])
+        else:
+            raise "not implemented yet"
+
     def kr_f(self, age, st, ot = 2 , seg_ind = 0, cells = False):
         """ root radial conductivity [1 day-1] for backwards compatibility """
         return self.kr_f_cpp(seg_ind, age, st, ot)  # kr_f_cpp is XylemFlux::kr_f
