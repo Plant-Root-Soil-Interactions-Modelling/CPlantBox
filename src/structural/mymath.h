@@ -285,18 +285,17 @@ public:
 	}
 
 	/**
-	 * linearly interpolates a single value @param x
-	 * not in the binding, use scipy instead
+	 * linearly interpolates a single value @param x, extrapolates with a constant value
+	 * not in the Python binding, use scipy instead
 	 */
 	static double interp1(double x, std::vector<double> x_,std::vector<double> y_) {
-		if (x > x_.back()) { // check bounds
+	    if (x > x_.back()) { // check bounds
 			return y_.back();
 		}
 		if (x < x_[0]) {
 			return y_[0];
 		}
-
-		double lookUpIndex = std::distance(x_.begin(), std::lower_bound(x_.begin(), x_.end(), x));     // if we are within bounds find the index of the lower bound
+		double lookUpIndex = std::distance(x_.begin(), std::lower_bound(x_.begin(), x_.end(), x)); // if we are within bounds find the index of the lower bound
 		if (lookUpIndex == 0) {
 			return y_[0];
 		}

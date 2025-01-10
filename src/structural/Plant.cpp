@@ -97,7 +97,7 @@ void Plant::initialize_(bool verbose)
  * plant and root parameters
  * @param verbose       print information
  */
-void Plant::initializeLB(bool verbose )
+void Plant::initializeLB(bool verbose)
 {
     reset(); // just in case
     auto seed = std::make_shared<Seed>(shared_from_this());

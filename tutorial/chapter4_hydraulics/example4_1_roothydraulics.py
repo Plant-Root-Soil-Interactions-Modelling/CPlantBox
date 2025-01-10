@@ -28,8 +28,8 @@ plant.simulate(initial_age)  # |\label{l41:rootsystem_end}|
 
 """ root hydraulic properties """
 params = PlantHydraulicParameters()  # |\label{l41:hydraulicparams}|
-params.set_radial_conductivity(kr)
-params.set_axial_conductivity(kx)
+params.set_kr_const(kr)
+params.set_kx_const(kx)
 hm = HydraulicModel_Doussan(plant, params)  # |\label{l41:model}|
 # hm = HydraulicModel_Meunier(plant, params)
 

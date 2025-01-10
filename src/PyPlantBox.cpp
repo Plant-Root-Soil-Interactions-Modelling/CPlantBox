@@ -89,12 +89,6 @@ public:
 
 };
 
-// todo
-// SignedDistanceFunction
-// OrganRandomParameter
-// Organ
-// Seed
-
 /**
  * plantbox
  */
@@ -990,38 +984,38 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kx", &XylemFlux::kx)
             .def_readwrite("rs", &XylemFlux::rs)
             .def_readwrite("psi_air", &XylemFlux::psi_air);
-
     /*
      * PlantHydraulicParameters.h
      */
     py::class_<PlantHydraulicParameters, std::shared_ptr<PlantHydraulicParameters>>(m, "PlantHydraulicParameters")
             .def(py::init<>())
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
-            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKr),
-                    py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=true)
-            .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKx),
-                py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=true)
-            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&PlantHydraulicParameters::setKr),
-                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
-            .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKx),
-                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
-                py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
-            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKxTables),
-                py::arg("values"), py::arg("age"), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
-                    py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
-            .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>, bool> (&PlantHydraulicParameters::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setMode", &PlantHydraulicParameters::setMode)
+            .def("setKrConst", &PlantHydraulicParameters::setKrConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root, py::arg("kr_length") = -1.)
+            .def("setKxConst", &PlantHydraulicParameters::setKxConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
+            .def("setKrAge", &PlantHydraulicParameters::setKrAge, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
+            .def("setKxAge", &PlantHydraulicParameters::setKxAge, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
+            .def("setKrDistance", &PlantHydraulicParameters::setKrDistance, py::arg("distance"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
+            .def("setKxDistance", &PlantHydraulicParameters::setKxDistance, py::arg("distance"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
             .def("setKrValues", &PlantHydraulicParameters::setKrValues)
             .def("setKxValues", &PlantHydraulicParameters::setKxValues)
-            .def("getEffKr", &PlantHydraulicParameters::getEffKr)
             .def("getKr", &PlantHydraulicParameters::getKr)
+            .def("getEffKr", &PlantHydraulicParameters::getEffKr)
             .def("getKx", &PlantHydraulicParameters::getKx)
+            .def_readonly("kr_f", &PlantHydraulicParameters::kr_f)
+            .def_readonly("kx_f", &PlantHydraulicParameters::kx_f)
+            //.def_readonly("kr_f_wrapped", &PlantHydraulicParameters::kr_f_wrapped)
+            .def_readonly("krMode", &PlantHydraulicParameters::krMode)
+            .def_readonly("kxMode", &PlantHydraulicParameters::kxMode)
+            .def_readonly("maxSubTypes", &PlantHydraulicParameters::maxSubTypes)
+            .def_readwrite("krValues", &PlantHydraulicParameters::krValues)
+            .def_readwrite("kxValues", &PlantHydraulicParameters::kxValues)
+            .def_readwrite("kr_ages", &PlantHydraulicParameters::kr_ages)
+            .def_readwrite("kr_values", &PlantHydraulicParameters::kr_values)
+            .def_readwrite("kx_ages", &PlantHydraulicParameters::kx_ages)
+            .def_readwrite("kx_values", &PlantHydraulicParameters::kx_values)
             .def_readwrite("ms", &PlantHydraulicParameters::ms)
-            .def_readonly("kr_f_cpp", &PlantHydraulicParameters::kr_f)
-            .def_readonly("kx_f_cpp", &PlantHydraulicParameters::kx_f)
             .def_readwrite("psi_air", &PlantHydraulicParameters::psi_air);
-
         /*
          * PlantHydraulicModel.h
          */
