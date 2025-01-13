@@ -35,7 +35,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     
 
     // Primary Infection
-    int n = getNumberOfNodes();
     int m = getNumberOfSegments();
     auto seg = getSegments();	
     // "spontane" infektion mit wahrscheinlihckeit p
@@ -46,51 +45,52 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         if (plant.lock()->rand() < (getRootRandomParameter()->p)*dt*seglength && infected.at(seg[i].y) == 0)
         {
             infected.at(seg[i].y) = 1;
-            infectionTime.at(seg[i].y) = age;
+            infectionTime.at(seg[i].y) = age + dt;// TODO check if + dt necessary or not
         }
     }
     
-    // for (size_t i = 1 ; i < n; i++)
-    // {
-    //     if (plant.lock()->rand() < (getRootRandomParameter()->p)*dt && infected.at(i-1)== 0)
-    //     {
-    //         infected.at(i-1) = 1;
-    //     }
-        
-    // }
-
     // Secondary Infection
-    //"länge" der infektion
-    int l_inf = dt*getRootRandomParameter()->vi;
-    // auto polylines = plant.getPolylines(2);
- 
-   // Secondary Infection
-    int max_length_infection = dt*getRootRandomParameter()->vi;
-    auto segments = getSegments();
-
-    // length always measured from start so max distance "infection" can travel is
-    // length of first node - max_length_infection
-    for (size_t i = 0; i < segments.size() ; i++)
+    auto max_length_infection = dt*getRootRandomParameter()->vi;
+    for (size_t i = 0; i < m; i++)
     {
-        if (getNodeInfection(segments[i].y) == 1)
-        {
-            int length = getLength(segments[i].y);
-            int min_length = length - max_length_infection;
-            int max_length = length + max_length_infection;
-            if (getNodeInfection(segments[i].x) == 0)
+        if (infected.at(seg[i].y) == 1)
+        { // if length at x is more than length at y + max_length_infection
+            auto seg_length = getLength(seg[i].y) - getLength(seg[i].x);
+            if (infected.at(seg[i].x) == 0 && dt*seg_length < max_length_infection)
             {
-                if (getLength(segments[i].x) < max_length && getLength(segments[i].x) > min_length)
-                {
-                    infected.at(segments[i].x) = 2;
-                } 
+                infected.at(seg[i].x) = 2;
             }
             
         }
-    }   
+    }
+    
+    
+ 
+   
+
+    // // length always measured from start so max distance "infection" can travel is
+    // // length of first node - max_length_infection
+    // for (size_t i = 0; i < segments.size() ; i++)
+    // {
+    //     if (getNodeInfection(segments[i].y) == 1)
+    //     {
+    //         int length = getLength(segments[i].y);
+    //         int min_length = length - max_length_infection;
+    //         int max_length = length + max_length_infection;
+    //         if (getNodeInfection(segments[i].x) == 0)
+    //         {
+    //             if (getLength(segments[i].x) < max_length && getLength(segments[i].x) > min_length)
+    //             {
+    //                 infected.at(segments[i].x) = 2;
+    //             } 
+    //         }
+            
+    //     }
+    // }   
     double infection_length = dt*getRootRandomParameter()->vi;
 
     auto segs = getSegments();
-        std::vector<int> segId = std::vector<int>(segments.size());
+        std::vector<int> segId = std::vector<int>(segs.size());
         for (int i=0; i<segs.size(); i++) {
             segId[i] = segs[i].y-1;
         }
