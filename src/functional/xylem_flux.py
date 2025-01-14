@@ -73,7 +73,7 @@ class XylemFluxPython(XylemFlux):
         return sf * 1.e3  # kg/day -> g/day
 
     def exudate_fluxes(self, dt, kex, stopgr = False):
-        """ returns [g/day]
+        """ returns [mol/day]
         self.Exu [kg/(m2 day)]
         """
         
@@ -126,10 +126,10 @@ class XylemFluxPython(XylemFlux):
                     kexu = 0
                     c = 0
 
-                kex_all.append(kexu* 1.e-4* 1.e3/24/3600) #mol/s
-                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC /(24*3600) * dt) # mol/s/segment
+                kex_all.append(kexu* 1.e-4* 1.e3) #mol/day
+                sf.append(2 * np.pi * a * l * 1.e-4 * kexu * 1.e3 / g_per_molC * dt) # mol/day/segment
             
-        return sf, kex_all #  mol / segment, mol / s 
+        return sf, kex_all #  mol / segment, mol / d
 
     def get_incidence_matrix(self):
         """ retruns the incidence matrix (number of segments, number of nodes) of the root system in self.rs 

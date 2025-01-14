@@ -9,7 +9,7 @@ import numpy as np
 """ root system """
 rs = pb.MappedRootSystem()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
+name = 'Zea_mays_1_Leitner_2010' #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")
 rs.initialize()
 rs.simulate(10., False)

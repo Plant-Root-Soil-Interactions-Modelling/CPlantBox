@@ -1,0 +1,15 @@
+Origin,Day,Soil,Location,mean exu rate,SE exu rate
+Trap experiment field,63,L,tip,441,250765452245,141,12328956236
+Trap experiment field,63,L,seg,213,095566366116,25,2968976701474
+Trap experiment field,63,S,tip,298,921876697853,75,1353252277574
+Trap experiment field,63,S,seg,141,938496261409,25,8920184228751
+Trap experiment lab,22,L,tip,489,932490635643,71,8734351101993
+Trap experiment lab,22,L,seg,194,270899319959,34,3469812669894
+Simulation,63,L,tip,90,0
+Simulation,63,L,seg,45,0
+Simulation,63,S,tip,60,0
+Simulation,63,S,seg,30,0
+Simulation,22,L,tip,150,0
+Simulation,22,L,seg,75,0
+Simulation,22,S,tip,200,0
+Simulation,22,S,seg,100,0
