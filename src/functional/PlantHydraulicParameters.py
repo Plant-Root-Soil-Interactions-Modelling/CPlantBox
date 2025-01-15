@@ -16,14 +16,25 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         - kx_f(int segment_index, double age, int subType, int organType)        
         see also PlantHydraulicParameters.h    
         
-        Values are set in dependence on subType and organType
-        
-        constant:                 setKrConst, setKxConst
-        age dependent:            setKrAge, setKxAge 
-        distance dependent:       setKrDistance, setKxDistance 
+        Values are set in dependence on subType and organType, are given
+        constant:                 setKrConst, setKxConst,
+        age dependent:            setKrAge, setKxAge, 
+        distance dependent:       setKrDistance, setKxDistance, or  
         per segment:              setKrValues
         
-        can write and read parameters in json files 
+        Python setter are more flexible: 
+            default: subType = -1 means all subTypes, 
+            or single type (int), e.g. subType = 1 
+            or multiple types (list), e.g. subType = [2,3]
+        
+        set_kr_const, set_kx_const -> setKrConst, setKxConst
+        set_kr_age, set_kx_age -> setKrAge, setKxAge
+        set_kr_distance, set_kx_distance -> setKrDistance, setKxDistance
+        
+        it is not possible to use different methods (const, age, or distance) for different subTypes or organTypes
+        it is possible to use different methods for kr and kx 
+        
+        can write and read parameter json files 
         
         @author Daniel Leitner, 2025     
     """
@@ -38,24 +49,52 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         """ sinusoidal function from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
         return np.maximum(0., np.pi * (np.cos(2 * np.pi * (t - 0.5)) + np.cos(2 * np.pi * ((t + dt) - 0.5))) / 2)
 
-    def set_kr_const(self, kr, subType = -1):
-        """ sets a constant radial conductivity [1 day-1] for roots for a subType (-1 for all subTypes) and organType root """
+    def set_flexible_(self, f, params, subType, organType):
+        """ calls cpp functions @param f with parameters @param params,  
+        enabling multiple subTypes and multiple organTypes """
         if subType == -1:
             subTypes = range(0, 10)
         else:
-            subTypes = [subType]
-        for st in subTypes:
-            self.setKrConst(kr, st)
+            if isinstance(subType, int):
+                subTypes = [subType]
+            else:
+                subTypes = subType
+        if organType == -1:
+            organTypes = range(0, 10)
+        else:
+            if isinstance(organType, int):
+                organTypes = [organType]
+            else:
+                organTypes = organType
+        for ot in organTypes:
+            for st in subTypes:
+                #print(f, st, ot)
+                f(*params, st, ot)                
 
-    def set_kx_const(self, kx, subType = -1):
+    def set_kr_const(self, kr, subType = -1, organType = int(pb.OrganTypes.root)):
+        """ sets a constant radial conductivity [1 day-1] for roots for a subTypes (default: all 0-9) and organTypes (default: roots)"""
+        self.set_flexible_(self.setKrConst, (kr,), subType, organType)
+
+    def set_kx_const(self, kx, subType = -1, organType = int(pb.OrganTypes.root)):
         """ sets a constant axial conductivity [cm3/day] for roots for a subType (-1 for all subTypes) """
-        if subType == -1:
-            subTypes = range(0, 10)
-        else:
-            subTypes = [subType]
-        for st in subTypes:
-            self.setKxConst(kx, st)
+        self.set_flexible_(self.setKxConst, (kx,), subType, organType)
+        
+    def set_kr_age(self, age, values, subType = -1, organType = int(pb.OrganTypes.root)):
+        """ sets an age dependent radial conductivity [1 day-1] for roots for a subTypes (default: all 0-9) and organTypes (default: roots)"""
+        self.set_flexible_(self.setKrAge, (age,values,), subType, organType)
 
+    def set_kx_age(self, age, values, subType = -1, organType = int(pb.OrganTypes.root)):
+        """ sets an age dependent axial conductivity [cm3/day] for roots for a subType (-1 for all subTypes) """
+        self.set_flexible_(self.setKxAge, (age,values), subType, organType)
+        
+    def set_kr_distance(self, age, values, subType = -1, organType = int(pb.OrganTypes.root)):
+        """ sets a distance dependent radial conductivity [1 day-1] for roots for a subTypes (default: all 0-9) and organTypes (default: roots)"""
+        self.set_flexible_(self.setKrDistance, (age,values,), subType, organType)
+
+    def set_kx_distance(self, age, values, subType = -1, organType = int(pb.OrganTypes.root)):
+        """ sets a distant dependent axial conductivity [cm3/day] for roots for a subType (-1 for all subTypes) """
+        self.set_flexible_(self.setKxDistance, (age,values), subType, organType)
+        
     def write_parameters(self, filename):
         """ writes the parameters into a json file """
         if self.krMode == "perSegment" or self.kxMode == "perSegment":
