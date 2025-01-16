@@ -50,6 +50,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         else:
             super().__init__(ms, params)
 
+        self.ot_root = int(pb.OrganTypes.root)
         self.cached = cached
         self.last = "none"  # after first solve() call "neumann" or "dirichlet"
         self.neumann_ind = [0]  # node indices for Neumann flux
@@ -466,8 +467,8 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
                 numleaf = indices.index(seg_ind)
                 if self.pg[0] != 0:
                     p_s = self.pg[numleaf]
-        kr = self.params.kr_f(age, st, ot, seg_ind)  # c++ conductivity call back functions
-        kx = self.params.kx_f(age, st, ot, seg_ind)
+        kr = self.params.kr_f(seg_ind, age, st, ot)  # c++ conductivity call back functions
+        kx = self.params.kx_f(seg_ind, age, st, ot)
         if a * kr > 1.e-16:
             tau = np.sqrt(2 * a * np.pi * kr / kx)  # cm-2
             AA = np.array([[1, 1], [np.exp(tau * l), np.exp(-tau * l)] ])
@@ -652,11 +653,13 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         a = self.ms.getEffectiveRadius(seg_ind)  # radius
         st = int(self.ms.subTypes[seg_ind])  # sub type
         age = sim_time - self.ms.nodeCTs[int(s.y)]
-        kr = self.params.kr_f(age, st)  # c++ conductivity call back functions
-        kx = self.params.kx_f(age, st)  # c++ conductivity call back functi
+        kr = self.params.kr_f(0, age, st, self.ot_root)  # c++ conductivity call back functions
+        kx = self.params.kx_f(0, age, st, self.ot_root)  # c++ conductivity call back functi
         dpdz0 = (rx[j] - rx[i]) / l
         f = -kx * (dpdz0 - 1)
         return f
+
+# int si, double age, int type, int orgtype
 
     def doussan_system_matrix(self, sim_time):
         """ """
@@ -665,7 +668,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
         IMt = IM.transpose()
         kx_ = np.divide(self.params.getKx(sim_time), self.ms.segLength())  # / dl
         Kx = sparse.diags(kx_)
-        kr = np.array(self.params.getEffKr(sim_time)) 
+        kr = np.array(self.params.getEffKr(sim_time))
         # kr = np.maximum(np.ones(kr.shape) * 1.e-12, kr)
         Kr = sparse.diags(kr)
         L = IMt @ Kx @ IM  # Laplacian
