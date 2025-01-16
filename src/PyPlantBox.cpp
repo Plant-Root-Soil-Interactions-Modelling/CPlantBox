@@ -872,7 +872,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def("total2matric",&MappedSegments::total2matric)
 		.def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
         .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
-        .def("getEffectvieRadius",&MappedSegments::getEffectiveRadius)
+        .def("getEffectiveRadius",&MappedSegments::getEffectiveRadius)
         .def("getEffectiveRadii",&MappedSegments::getEffectiveRadii)
 		.def("calcExchangeZoneCoefs",&MappedSegments::calcExchangeZoneCoefs)
         .def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
