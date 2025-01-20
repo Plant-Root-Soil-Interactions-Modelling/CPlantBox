@@ -16,7 +16,7 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
     Organ::addNode(n, id,  t,  index, shift);
     infected.push_back(0);
-    infectionTime.push_back(NAN);
+    infectionTime.push_back(-1);
 }
 
 
@@ -29,90 +29,109 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     // indices entlang polyline
     // TODO find out what is meant by this
 
-    // TODO how to iterate over all nodes? just get Number of Nodes? (minus the first one)
 
-    // TODO separate primary infection? from secondary? - yes have to
-    
+    if (this->nodes.size()>1) {
+		//Primary Infection
+		for (size_t i=1; i<nodes.size(); i++) {
+			
+            // double cursegLength = nodes.at(i).length() - nodes.at(i-1).length();
+            if (plant.lock()->rand() < (getRootRandomParameter()->p)*dt && infected.at(i-1) == 0)
+            {
+                infected.at(i-1) = 1;
+                infectionTime.at(i-1) = age + dt;
+                
+		    }
+	    }
 
-    // Primary Infection
-    int m = getNumberOfSegments();
-    auto seg = getSegments();	
-    // "spontane" infektion mit wahrscheinlihckeit p
-    // über alle knoten iterieren (-1)
-    for (size_t i = 0; i < m; i++)
-    {
-        auto seglength = getLength(seg[i].y) - getLength(seg[i].x);
-        if (plant.lock()->rand() < (getRootRandomParameter()->p)*dt*seglength && infected.at(seg[i].y) == 0)
+        //Secondary Infection
+        auto max_length_infection = dt*getRootRandomParameter()->vi;
+        for (size_t i = 1; i < nodes.size(); i++)
         {
-            infected.at(seg[i].y) = 1;
-            infectionTime.at(seg[i].y) = age + dt;// TODO check if + dt necessary or not
+            if (infected.at(i-1) == 1)
+            {
+                auto max_length_basal = nodes.at(i).length() - max_length_infection;
+                auto currentbasalnode = i-1;
+                while (nodes.at(currentbasalnode).length()> max_length_basal && infected.at(currentbasalnode) == 0)
+                {
+                    infected.at(currentbasalnode) = 2;
+                    infectionTime.at(currentbasalnode) = age + dt; // FIXME make it the proper time and not just the time step
+                    currentbasalnode--;
+                }
+
+                auto max_length_apical = nodes.at(i).length() + max_length_infection;
+                auto currentapicalnode = i-1;
+                while (nodes.at(currentapicalnode).length() < max_length_apical && infected.at(currentapicalnode) == 0)
+                {
+                    infected.at(currentapicalnode) = 2;
+                    infectionTime.at(currentapicalnode) = age + dt; // FIXME make it the proper time and not just the time step
+                    currentapicalnode++;
+                }
+            }
+            
         }
+        
+
     }
     
     // Secondary Infection
-    auto max_length_infection = dt*getRootRandomParameter()->vi;
-    for (size_t i = 0; i < m; i++)
-    {
-        if (infected.at(seg[i].y) == 1)
-        { // if length at x is more than length at y + max_length_infection
-            auto seg_length = getLength(seg[i].y) - getLength(seg[i].x);
-            if (infected.at(seg[i].x) == 0 && dt*seg_length < max_length_infection)
-            {
-                infected.at(seg[i].x) = 2;
-            }
-            
-        }
-    }
+    // auto max_length_infection = dt*getRootRandomParameter()->vi;
+    // std::vector<int> segId = std::vector<int>(seg.size());
+    //     for (int i=0; i<seg.size(); i++) {
+    //         segId[i] = seg[i].y-1;
+    //     }
     
-    
- 
-   
-
-    // // length always measured from start so max distance "infection" can travel is
-    // // length of first node - max_length_infection
-    // for (size_t i = 0; i < segments.size() ; i++)
+    // for (size_t i = 0; i < m; i++)
     // {
-    //     if (getNodeInfection(segments[i].y) == 1)
-    //     {
-    //         int length = getLength(segments[i].y);
-    //         int min_length = length - max_length_infection;
-    //         int max_length = length + max_length_infection;
-    //         if (getNodeInfection(segments[i].x) == 0)
+    //     if (infected.at(seg[i].y) == 1)
+    //     { 
+    //         auto max_length_basal = getLength(seg[i].y) - max_length_infection;
+    //         auto currentbasalnode = seg[i].x;
+    //         while (getLength(currentbasalnode)> max_length_basal && infected.at(currentbasalnode) == 0)
     //         {
-    //             if (getLength(segments[i].x) < max_length && getLength(segments[i].x) > min_length)
+    //             infected.at(currentbasalnode) = 2;
+    //             infectionTime.at(currentbasalnode) = age + dt;
+    //             int newnode;
+    //             for (int k=0; k<segId.size(); k++) {
+    //                 if (segId[k] == currentbasalnode-1) {
+    //                     newnode = k;
+    //                 }
+    //             }
+    //             currentbasalnode = seg[newnode].x;
+    //         }
+
+    //         auto max_length_apical = getLength(seg[i].y) + max_length_infection;
+    //         auto currentapicalnode = seg[i].y;
+    //         bool found = false;
+    //         int j = 0;
+    //         while (found == false)
+    //         {
+    //             if (seg[j].x == currentapicalnode)
     //             {
-    //                 infected.at(segments[i].x) = 2;
-    //             } 
+    //                 found = true;
+    //                 currentapicalnode = seg[j].y;
+    //             }
+    //             else
+    //             {
+    //                 j++;
+    //             }
+                
+    //         }
+            
+    //         while (getLength(currentapicalnode) < max_length_apical && infected.at(currentapicalnode) == 0)
+    //         {
+    //             infected.at(currentapicalnode) = 2;
+    //             infectionTime.at(currentapicalnode) = age + dt;
+    //             int newnode;
+    //             for (int k=0; k<seg.size(); k++) {
+    //                 if (seg[k].x == currentapicalnode) {
+    //                     newnode = k;
+    //                 }
+    //             }
+    //             currentapicalnode = seg[newnode].y;
     //         }
             
     //     }
-    // }   
-    double infection_length = dt*getRootRandomParameter()->vi;
-
-    auto segs = getSegments();
-        std::vector<int> segId = std::vector<int>(segs.size());
-        for (int i=0; i<segs.size(); i++) {
-            segId[i] = segs[i].y-1;
-        }
-
-        for (int i = 0; i < segs.size(); i++)
-        {
-            if (infected.at(segs[i].y) == 1)
-            {
-                int length_origin = getLength(segs[i].y);
-                int newlength = getLength(segs[i].x);
-                while (newlength  > length_origin +  infection_length) 
-                    // TODO darf nur =0
-                    infected.at(segs[i].x) = 2;
-                    int j;
-                    for (int k=0; k<segs.size(); k++) {
-                        if (segs[i].x == segId[k] + 1) {
-                            j = k;
-                        }
-                    }
-                    newlength = getLength(segs[j].x);
-                }
-            }
+    // }
         
     
     // IDEE: durch segmente durchiterieren und dann bei einem infizierten knoten die nachbarn anschauen
@@ -120,7 +139,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     // wenn nur einer infiziert ist dann ausrechnen schauen wie weit die infektion wandert oder ob sie durch eine andere infizierte branch gestoppt wird
 
     
-    // TODO how to check if neighbors are infected
     // immer von der urpsrünglichen infektion "länge" der infektion
     // schauen ob beide nachbarn infiziert sind dann nix
     // falls nur einer 
@@ -144,7 +162,7 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
 }
 
 double MycorrhizalRoot::getParameter(std::string name) const {
-    if (name == "infected") {return param() -> infected;}
+    // if (name == "infected") {return param() -> infected;}
     return Root::getParameter(name);
 }
 
