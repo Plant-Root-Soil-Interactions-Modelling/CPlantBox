@@ -30,8 +30,8 @@ namespace CPlantBox {
     lrp->subType = 0;
     setOrganRandomParameter(lrp);
 }
-std::vector<int> MycorrhizalPlant::getNodeInfections() const {
-    auto organs = getOrgans(2);
+std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
+    auto organs = getOrgans(ot);
     std::vector<int> infs = std::vector<int>(getNumberOfNodes()-1);
     for (const auto & o : organs)
     {
@@ -48,7 +48,7 @@ std::vector<int> MycorrhizalPlant::getNodeInfections() const {
 }
 
 std::vector<int> MycorrhizalPlant::getSegmentInfections(int ot) const {
-    auto nodeInfection = getNodeInfections();
+    auto nodeInfection = getNodeInfections(ot);
     auto segments = getSegments(ot);
     std::vector<int> Infections = std::vector<int>(segments.size());
     for (int i = 0; i < Infections.size(); i++)

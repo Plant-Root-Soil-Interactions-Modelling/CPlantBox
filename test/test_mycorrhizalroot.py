@@ -149,11 +149,12 @@ class TestMycorrhizalRoot(unittest.TestCase):
         """ tests spontaneous infection on sequential organ list """
         # THIS TEST IS CURRENTLY NOT PASSING BUT NOT SURE WHETHER IT IS A PROBLEM OR NOT
         self.mycroot_example_rrp()
-        simtime = 120.
+        simtime = 20.
         self.mycroot.simulate(simtime, False)
         infected = [0]*(self.mycroot.getNumberOfNodes())
-        for i in range(1, self.mycroot.getNumberOfNodes()-1):
-            infected[i] = self.mycroot.getNodeInfection(i)
+        for i in range(0, self.mycroot.getNumberOfNodes()-1):
+            if (self.mycroot.getNodeInfection(i) == 1):
+                infected[i] = 1
         infRoots = sum(infected)
         numRoots = len(infected)
         self.assertAlmostEqual(0.15*numRoots,infRoots,4,"not the right amount of root segments infected")

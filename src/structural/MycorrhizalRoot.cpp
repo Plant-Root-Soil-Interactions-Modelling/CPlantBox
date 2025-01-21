@@ -34,8 +34,8 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 		//Primary Infection
 		for (size_t i=1; i<nodes.size(); i++) {
 			
-            // double cursegLength = nodes.at(i).length() - nodes.at(i-1).length();
-            if (plant.lock()->rand() < (getRootRandomParameter()->p)*dt && infected.at(i-1) == 0)
+            double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
+            if ((plant.lock()->rand() < (getRootRandomParameter()->p*dt*cursegLength)) && (infected.at(i-1) == 0))
             {
                 infected.at(i-1) = 1;
                 infectionTime.at(i-1) = age + dt;
@@ -49,23 +49,35 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         {
             if (infected.at(i-1) == 1)
             {
-                auto max_length_basal = nodes.at(i).length() - max_length_infection;
-                auto currentbasalnode = i-1;
-                while (nodes.at(currentbasalnode).length()> max_length_basal && infected.at(currentbasalnode) == 0)
+                auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
+                auto currentbasalnode = i-2;
+                double cursegLength = nodes.at(i-1).minus(nodes.at(i-2)).length();
+                if (currentbasalnode > 1)
                 {
+                    while (currentbasalnode > 1 && nodes.at(currentbasalnode).length()> max_length_basal && infected.at(currentbasalnode) == 0)
+                    {
                     infected.at(currentbasalnode) = 2;
-                    infectionTime.at(currentbasalnode) = age + dt; // FIXME make it the proper time and not just the time step
+                    infectionTime.at(currentbasalnode) = age + cursegLength/getRootRandomParameter()->vi; 
                     currentbasalnode--;
+                    }
                 }
+                
+                
 
                 auto max_length_apical = nodes.at(i).length() + max_length_infection;
-                auto currentapicalnode = i-1;
-                while (nodes.at(currentapicalnode).length() < max_length_apical && infected.at(currentapicalnode) == 0)
+                auto currentapicalnode = i;
+                cursegLength = nodes.at(i).minus(nodes.at(i-1)).length();
+                if (currentapicalnode < nodes.size()-1)
                 {
+                    while (currentapicalnode < nodes.size()-1 && nodes.at(currentapicalnode).length() < max_length_apical && infected.at(currentapicalnode) == 0)
+                    {
                     infected.at(currentapicalnode) = 2;
-                    infectionTime.at(currentapicalnode) = age + dt; // FIXME make it the proper time and not just the time step
+                    infectionTime.at(currentapicalnode) = age + cursegLength/getRootRandomParameter()->vi; 
                     currentapicalnode++;
+                    }
                 }
+                
+                
             }
             
         }

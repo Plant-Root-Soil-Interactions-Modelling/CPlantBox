@@ -13,16 +13,11 @@ namespace CPlantBox {
         //copy
         void initializeReader() override; ///< initializes XML reader
         void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
-        //readParameters neuer basetag?
-        virtual std::vector<int> getNodeInfections() const;
+        virtual std::vector<int> getNodeInfections(int ot) const;
         virtual std::vector<int> getSegmentInfections(int ot) const;
 
-        //void initializeLB(bool verbose = true);
-        //void initializeDB(bool verbose = true);
-        // simulate
         // für visualisierung was rausholen
         // plant.getSegmentCTs()  als vorlage für infektion auch zum fehler suchen !!! in den segmentanalyzer dazu tun
-        // getSegmentsInfection()
         //toString    
     };
 }
