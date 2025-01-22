@@ -24,11 +24,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
     Root::simulate(dt,verbose);
-    // branching points updaten
-    // TODO how to update branching points?
-    // indices entlang polyline
-    // TODO find out what is meant by this
-
+ 
 
     if (this->nodes.size()>1) {
 		//Primary Infection
@@ -44,6 +40,8 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 	    }
 
         //Secondary Infection
+        // l:children in organs haben alle parentnodeIndex speichern bzw liste mit 0 1
+
         auto max_length_infection = dt*getRootRandomParameter()->vi;
         for (size_t i = 1; i < nodes.size(); i++)
         {
@@ -51,115 +49,28 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
             {
                 auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
                 auto currentbasalnode = i-2;
-                double cursegLength = nodes.at(i-1).minus(nodes.at(i-2)).length();
-                if (currentbasalnode > 1)
+                
+                while (currentbasalnode > 1 && currentbasalnode< nodes.size() && nodes.at(currentbasalnode).length()> max_length_basal && infected.at(currentbasalnode) == 0)
                 {
-                    while (currentbasalnode > 1 && nodes.at(currentbasalnode).length()> max_length_basal && infected.at(currentbasalnode) == 0)
-                    {
                     infected.at(currentbasalnode) = 2;
-                    infectionTime.at(currentbasalnode) = age + cursegLength/getRootRandomParameter()->vi; 
+                    infectionTime.at(currentbasalnode) = age + nodes.at(i-1).minus(nodes.at(currentbasalnode)).length()/getRootRandomParameter()->vi; 
                     currentbasalnode--;
-                    }
                 }
-                
+
                 
 
-                auto max_length_apical = nodes.at(i).length() + max_length_infection;
+                auto max_length_apical = nodes.at(i-1).length() + max_length_infection;
                 auto currentapicalnode = i;
-                cursegLength = nodes.at(i).minus(nodes.at(i-1)).length();
-                if (currentapicalnode < nodes.size()-1)
+                
+                while (currentapicalnode < nodes.size()-1 && nodes.at(currentapicalnode).length() < max_length_apical && infected.at(currentapicalnode) == 0)
                 {
-                    while (currentapicalnode < nodes.size()-1 && nodes.at(currentapicalnode).length() < max_length_apical && infected.at(currentapicalnode) == 0)
-                    {
                     infected.at(currentapicalnode) = 2;
-                    infectionTime.at(currentapicalnode) = age + cursegLength/getRootRandomParameter()->vi; 
+                    infectionTime.at(currentapicalnode) = age + nodes.at(currentapicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; 
                     currentapicalnode++;
-                    }
                 }
-                
-                
             }
-            
         }
-        
-
     }
-    
-    // Secondary Infection
-    // auto max_length_infection = dt*getRootRandomParameter()->vi;
-    // std::vector<int> segId = std::vector<int>(seg.size());
-    //     for (int i=0; i<seg.size(); i++) {
-    //         segId[i] = seg[i].y-1;
-    //     }
-    
-    // for (size_t i = 0; i < m; i++)
-    // {
-    //     if (infected.at(seg[i].y) == 1)
-    //     { 
-    //         auto max_length_basal = getLength(seg[i].y) - max_length_infection;
-    //         auto currentbasalnode = seg[i].x;
-    //         while (getLength(currentbasalnode)> max_length_basal && infected.at(currentbasalnode) == 0)
-    //         {
-    //             infected.at(currentbasalnode) = 2;
-    //             infectionTime.at(currentbasalnode) = age + dt;
-    //             int newnode;
-    //             for (int k=0; k<segId.size(); k++) {
-    //                 if (segId[k] == currentbasalnode-1) {
-    //                     newnode = k;
-    //                 }
-    //             }
-    //             currentbasalnode = seg[newnode].x;
-    //         }
-
-    //         auto max_length_apical = getLength(seg[i].y) + max_length_infection;
-    //         auto currentapicalnode = seg[i].y;
-    //         bool found = false;
-    //         int j = 0;
-    //         while (found == false)
-    //         {
-    //             if (seg[j].x == currentapicalnode)
-    //             {
-    //                 found = true;
-    //                 currentapicalnode = seg[j].y;
-    //             }
-    //             else
-    //             {
-    //                 j++;
-    //             }
-                
-    //         }
-            
-    //         while (getLength(currentapicalnode) < max_length_apical && infected.at(currentapicalnode) == 0)
-    //         {
-    //             infected.at(currentapicalnode) = 2;
-    //             infectionTime.at(currentapicalnode) = age + dt;
-    //             int newnode;
-    //             for (int k=0; k<seg.size(); k++) {
-    //                 if (seg[k].x == currentapicalnode) {
-    //                     newnode = k;
-    //                 }
-    //             }
-    //             currentapicalnode = seg[newnode].y;
-    //         }
-            
-    //     }
-    // }
-        
-    
-    // IDEE: durch segmente durchiterieren und dann bei einem infizierten knoten die nachbarn anschauen
-    // wenn beide infiziert sind dann nix
-    // wenn nur einer infiziert ist dann ausrechnen schauen wie weit die infektion wandert oder ob sie durch eine andere infizierte branch gestoppt wird
-
-    
-    // immer von der urpsrünglichen infektion "länge" der infektion
-    // schauen ob beide nachbarn infiziert sind dann nix
-    // falls nur einer 
-    // ausrechnen wie viele infiziert werden
-    // dann diese anzahl als infiziert setzen
-
-    // in beide richtungen wachsen lassen bei branching points mit gleicher geschwindigkeit (erstmal annehmen)
-
-    // bleibt in der eigenen polyline, ruft dann laterals als children auf
 
 }
     
