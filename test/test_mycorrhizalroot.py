@@ -149,15 +149,34 @@ class TestMycorrhizalRoot(unittest.TestCase):
         """ tests spontaneous infection on sequential organ list """
         # THIS TEST IS CURRENTLY NOT PASSING BUT NOT SURE WHETHER IT IS A PROBLEM OR NOT
         self.mycroot_example_rrp()
-        simtime = 20.
+        simtime = 1.
         self.mycroot.simulate(simtime, False)
         infected = [0]*(self.mycroot.getNumberOfNodes())
-        for i in range(0, self.mycroot.getNumberOfNodes()-1):
-            if (self.mycroot.getNodeInfection(i) == 1):
-                infected[i] = 1
+        for i in range(1, self.mycroot.getNumberOfNodes()-1):
+            if (self.mycroot.getNodeInfection(i) == 1 and self.mycroot.getNodeInfection(i-1) == 0):
+                infected[i] = (self.mycroot.getNode(i).minus(self.mycroot.getNode(i-1))).length();
         infRoots = sum(infected)
-        numRoots = len(infected)
-        self.assertAlmostEqual(0.15*numRoots,infRoots,4,"not the right amount of root segments infected")
+        numRoots = self.mycroot.getParameter("length")
+        self.assertAlmostEqual(simtime*0.15*numRoots,infRoots,4,"not the right amount of root segments infected")
+        
+
+    def test_secondary_infection(self):
+        """ test whether secondary infecions are positioned correctly """
+        self.mycroot_example_rrp()
+        simtime = 3.
+        self.mycroot.simulate(simtime, False)
+        wrong_pos=[]
+        infected =[]
+        for i in range(0, self.mycroot.getNumberOfNodes()-1):
+            infected.append(self.mycroot.getNodeInfection(i))
+        self.assertEqual(2 in infected, True, "secondary infection not created")
+        for i in range(0, len(infected)):
+            if infected[i] == 2:
+                if i > 0 and infected[i-1] == 0:
+                    wrong_pos.append(i)
+                if i < len(infected)-1 and infected[i+1] == 0:
+                    wrong_pos.append(i)
+        self.assertEqual(len(wrong_pos),0,"secondary infection not positioned correctly")
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """

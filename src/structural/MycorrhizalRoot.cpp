@@ -70,6 +70,22 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 }
             }
         }
+        // std::vector<int> childnode;
+        // for (auto l:children)
+        // {
+        //     for (size_t i = 0; i < nodes.size()-1; i++)
+        //     {
+        //         if (getNodeId(i) == getNodeId(l->parentNI) && infected.at(i) == 2)
+        //         {
+        //             l->getNode(l->parentNI); // TODO write method to make first node infected
+        //         }
+                
+                
+        //     }
+            
+            
+        // }
+        
     }
 
 }
