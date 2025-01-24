@@ -344,11 +344,6 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 
 		replaceByDefaultValue = true;lookfor = std::vector<std::string>{"organType","organtype"};
 		if((successorST.at(ruleId).at(0) == 2)&&(this->organType == Organism::ot_stem)){
-			if(verbose)
-			{
-				std::cout<<"OrganRandomParameter::readSuccessor: gave a stem a successor of subtype 2 and did not specify type.";
-				std::cout<<" For backward compatibility, this will be considered as a leaf successor"<<std::endl;
-			}
 			//for backward compatibility =>
 			//if (no organtype given) + (parent is stem) + (subtype == 2) == we want a leaf
 			defaultVal = Organism::ot_leaf;
