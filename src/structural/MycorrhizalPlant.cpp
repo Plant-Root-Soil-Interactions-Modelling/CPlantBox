@@ -32,7 +32,17 @@ namespace CPlantBox {
 }
 std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     auto organs = getOrgans(ot);
-    std::vector<int> infs = std::vector<int>(getNumberOfNodes()-1);
+    std::cout<< organs.size() << std::endl; // TODO  problem ist dass die organe nicht aufgerufen werden -> Mona fragen
+
+    int globalNumberofNodes = 0;
+    for (const auto & o : organs)
+    { std::cout <<"Marco" << std::endl;
+        if ( o->organType() == 2) {
+            auto mr = std::dynamic_pointer_cast<MycorrhizalRoot>(o);
+            globalNumberofNodes += (mr->getNodeIds()).size();
+        }
+    }
+    std::vector<int> infs = std::vector<int>(globalNumberofNodes);
     for (const auto & o : organs)
     {
         auto mr = std::dynamic_pointer_cast<MycorrhizalRoot>(o);

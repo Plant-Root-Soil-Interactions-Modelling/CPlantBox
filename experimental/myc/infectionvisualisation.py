@@ -13,10 +13,14 @@ mycp.initialize()
 
 mycp.simulate(30, True)
 
-print(mycp.getNodeInfections(2))
 
-ana = pb.SegmentAnalyser(mycp)
-ana.addData("Infection",mycp.getNodeInfections(2))
+
+
+infs = mycp.getNodeInfections(pb.root)
+print(infs)
+
+# ana = pb.SegmentAnalyser(mycp)
+# ana.addData("Infection",mycp.getNodeInfections(2))
 # ana.addData("rx", rx_b)  # node data are converted to segment data
 # ana.addData("radial", radial_fluxes)
 # ana.addData("axial", axial_fluxes)
