@@ -70,21 +70,21 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 }
             }
         }
-        // std::vector<int> childnode;
-        // for (auto l:children)
-        // {
-        //     for (size_t i = 0; i < nodes.size()-1; i++)
-        //     {
-        //         if (getNodeId(i) == getNodeId(l->parentNI) && infected.at(i) == 2)
-        //         {
-        //             l->getNode(l->parentNI); // TODO write method to make first node infected
-        //         }
+        
+        for (auto l:children)
+        {
+            for (size_t i = 0; i < nodes.size()-1; i++)
+            {
+                if (getNodeId(i) == getNodeId(l->parentNI) && infected.at(i) == 2)
+                {
+                     std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,age + dt);
+                }
                 
                 
-        //     }
+            }
             
             
-        // }
+        }
         
     }
 
@@ -104,5 +104,12 @@ double MycorrhizalRoot::getParameter(std::string name) const {
     // if (name == "infected") {return param() -> infected;}
     return Root::getParameter(name);
 }
+
+void MycorrhizalRoot::setInfection(int i, int infection, double t)
+{
+    infected.at(i) = infection;
+    infectionTime.at(i) = t;
+}
+
 
 }
