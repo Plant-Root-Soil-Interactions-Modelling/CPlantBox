@@ -46,7 +46,7 @@ SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::
  *
  * @param plant     the the organism that is analysed
  */
-SegmentAnalyser::SegmentAnalyser(const Organism& plant)
+SegmentAnalyser::SegmentAnalyser(const Organism& plant) 
 {
     //std::cout << "construct from Organism\n";
     nodes = plant.getNodes();
@@ -97,6 +97,7 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     data["radius"] = plant.radii;
     data["subType"] = subTypesd;
     data["organType"] = organTypesd;
+    segO = plant.segO;
 }
 
 /**
@@ -722,11 +723,13 @@ void SegmentAnalyser::map2D() {
 /**
  * @return The origin's of the segments, i.e. the organ's where the segments are part of (unique, no special ordering)
  */
-std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
+std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans(int ot) const
 {
     std::set<std::shared_ptr<Organ>> rootset;  // praise the stl
     for (auto o : segO) {
-        rootset.insert(o.lock());
+		if ((ot<0) || (ot == o.lock()->organType())) {
+			rootset.insert(o.lock());
+		}
     }
     return std::vector<std::shared_ptr<Organ>>(rootset.begin(), rootset.end());
 }
