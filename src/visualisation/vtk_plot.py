@@ -40,8 +40,10 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     # plant as tube plot
     if isinstance(plant, pb.MappedSegments):
         ana = pb.SegmentAnalyser(plant.mappedSegments())  # for MappedPlant and MappedRootSystem
+        setLeafColor = False
     elif isinstance(plant, pb.Organism):
         ana = pb.SegmentAnalyser(plant)  # for Organism like Plant or RootSystem
+        setLeafColor = True
     else:
         ana = plant
         
@@ -62,15 +64,11 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
 
-    numnodes = len(np_convert(ana.nodes))
     
     if (len(globalIdx_y)>0):    
-        param = np.array(ana.getParameter(p_name)) # defined per segment
-        if len(param) == numnodes:
-            paramLeaf = param[globalIdx_y] #select data for leaf
-        else :
-            if len(param) == (numnodes-1):
-                paramLeaf = param[globalIdx_y - 1]
+        segs_idx = np.array([seg.y -1 for seg in ana.segments])
+        param = np.array(ana.getParameter(p_name))[segs_idx] # defined per segment
+        paramLeaf = param[globalIdx_y - 1]
         data = vtk_data(paramLeaf)
         data.SetName(p_name)
         polyData.GetCellData().AddArray(data)

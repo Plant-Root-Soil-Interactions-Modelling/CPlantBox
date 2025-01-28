@@ -1,7 +1,7 @@
 """increase axial resolution (e.g. for animation)"""
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
-import visualisation.vtk_plot as vp
+import visualisation.vtk_plot as vp # |\label{3f:importvtk}|
 import numpy as np
 
 
@@ -39,4 +39,5 @@ plant.simulate(simtime)  # |\label{l41:rootsystem_end}|
 ana = pb.SegmentAnalyser(plant.mappedSegments())
 ana.mapPeriodic(5, 5)           # |\label{3f:mapPeriodic}|
 vp.plot_plant(ana, "creationTime")
+
 
