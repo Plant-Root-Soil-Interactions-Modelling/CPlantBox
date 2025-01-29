@@ -633,6 +633,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	radii.resize(radii.size()+newsegO.size());
 	subTypes.resize(subTypes.size()+newsegO.size());
 	organTypes.resize(organTypes.size()+newsegO.size());
+	this->segO.resize(this->segO.size()+newsegO.size());
 
 
 	c = 0;
@@ -648,6 +649,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 		radii.at(segIdx) = so->param()->a;
 		subTypes.at(segIdx) = so->param()->subType;
 		organTypes.at(segIdx) = so->organType();
+		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
 	}
 	// map new segments
 	this->mapSegments(newsegs);
@@ -775,10 +777,11 @@ void MappedPlant::simulate(double dt, bool verbose)
 	auto newsegO = this->getSegmentOrigins(); // to add radius and type (TODO cutting)
 	radii.resize(newsegO.size());
 	subTypes.resize(newsegO.size());
-	organTypes.resize(newsegO.size());
+	organTypes.resize(newsegO.size());  
 	segVol.resize(newsegO.size());
 	bladeLength.resize(newsegO.size());
 	leafBladeSurface.resize(newsegO.size());
+	this->segO.resize(newsegO.size());
 
 	c = 0;
 	if (verbose) {
@@ -790,6 +793,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 		radii.at(segIdx) = so->param()->a;
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
+		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
 
 		if (organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{

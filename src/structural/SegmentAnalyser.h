@@ -68,7 +68,7 @@ public:
     // rather specialized things we want to know
     void mapPeriodic(double xx, double yy); /// maps into a periodic domain, splits up intersecting segments
     void map2D(); ///< maps the 3d coordinates to the x-z plan (sqrt(x2+y2), 0., z)
-    std::vector<std::shared_ptr<Organ>> getOrgans() const; ///< segment origins
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot = -1) const; ///< segment origins
     int getNumberOfOrgans() const; ///< number of different organs
     SegmentAnalyser foto(const Vector3d& pos, const Matrix3d& ons, double height) const; ///< takes a picture TODO unfinished, untested
     SegmentAnalyser cut(const SDF_HalfPlane& plane) const; ///< returns the segments intersecting with a plane (e.g. for trenches)
@@ -89,7 +89,7 @@ public:
     std::vector<Vector3d> nodes; ///< nodes
     std::vector<Vector2i> segments; ///< connectivity of the nodes
     std::vector<std::weak_ptr<Organ>> segO; ///< to look up things
-    std::map<std::string, std::vector<double>> data; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.
+    std::map<std::string, std::vector<double>> data; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.	
 
 protected:
 

@@ -538,7 +538,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("distribution2", (std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*)(double, double, double, double, int, int) const) &SegmentAnalyser::distribution2) //overloads
            .def("mapPeriodic", &SegmentAnalyser::mapPeriodic)
            .def("map2D", &SegmentAnalyser::map2D)
-           .def("getOrgans", &SegmentAnalyser::getOrgans)
+           .def("getOrgans", &SegmentAnalyser::getOrgans, py::arg("ot") = -1)
            .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
            .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
            .def("addData", &SegmentAnalyser::addData)
@@ -889,7 +889,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-		.def_readwrite("organParam", &MappedSegments::plantParam);
+		.def_readwrite("organParam", &MappedSegments::plantParam)
+	    .def_readwrite("segO", &MappedSegments::segO);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)

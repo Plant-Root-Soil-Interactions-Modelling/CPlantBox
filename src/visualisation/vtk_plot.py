@@ -38,28 +38,58 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
         plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons
     """
     # plant as tube plot
-    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data
-    tube_plot_actor, color_bar = plot_roots(pd, p_name, "", render = False)
+    if isinstance(plant, pb.MappedSegments):
+        ana = pb.SegmentAnalyser(plant.mappedSegments())  # for MappedPlant and MappedRootSystem
+        setLeafColor = False
+    elif isinstance(plant, pb.Organism):
+        ana = pb.SegmentAnalyser(plant)  # for Organism like Plant or RootSystem
+        setLeafColor = True
+    else:
+        ana = plant
+        
+    pd = segs_to_polydata(ana, 1., ["radius", "organType", "creationTime", p_name])  # poly data
+    tube_plot_actor, color_bar, lut = plot_roots(pd, p_name, "", render = False, returnLut = True)
 
-    # leafes as polygons
+    # leaves as polygons
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
-
-    leafes = plant.getOrgans(pb.leaf)
-    for l in leafes:
-        create_leaf_(l, leaf_points, leaf_polys)
-
+    
+    globalIdx_y = []
+    leaves = plant.getOrgans(ot = pb.leaf)
+    for l in leaves:
+        globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
+    globalIdx_y = np.array(globalIdx_y)
+        
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
 
-    colors = vtk.vtkNamedColors()
+    
+    if (len(globalIdx_y)>0):    
+        segs_idx = np.array([seg.y -1 for seg in ana.segments])
+        param = np.array(ana.getParameter(p_name))[segs_idx] # defined per segment
+        paramLeaf = param[globalIdx_y - 1]
+        data = vtk_data(paramLeaf)
+        data.SetName(p_name)
+        polyData.GetCellData().AddArray(data)
+    #else:
+    #    colors = vtk.vtkNamedColors()
 
+    
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
+    mapper.ScalarVisibilityOn();
+    mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
+    # mapper.SetArrayName(p_name)
+    mapper.SelectColorArray(p_name)
+    mapper.UseLookupTableScalarRangeOn()
+
     actor = vtk.vtkActor()
     actor.SetMapper(mapper);
-    actor.GetProperty().SetColor(colors.GetColor3d("Green"))
+    
+    #lut = create_lookup_table()  # 24
+    mapper.SetLookupTable(lut)
+    #actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
         ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(), interactiveImage)
@@ -72,7 +102,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 def create_leaf_(leaf, leaf_points, leaf_polys):
     """ used by plot plant """
     offs = leaf_points.GetNumberOfPoints()
-
+    globalIdx_y = [] #index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
 
         ln1 = leaf.getLeafVis(i)
@@ -81,36 +111,38 @@ def create_leaf_(leaf, leaf_points, leaf_polys):
         if len(ln1) > 0 or len(ln2) > 0:
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)
-
-#             if len(ln1) > 0 and len(ln2) == 0:
-#                 print(" 2 -> 0")
-#             if len(ln1) == 0 and len(ln2) > 0:
-#                 print(" 0 -> 2")
-
+            glIdx = leaf.getNodeId(i +1)
             if len(ln1) == 2 and len(ln2) == 2:  # normal case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
             elif len(ln1) == 6 and len(ln2) == 6:  # convex case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[1], ln1[2], ln2[2], ln2[1], leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[3], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[4], ln1[5], ln2[5], ln2[4], leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx,glIdx,glIdx]
             elif len(ln1) == 2 and len(ln2) == 6:  # normal to convex case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[3], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
                 if x2[1] <= x1[0]:
                     offs = add_quad_(ln1[0], ln1[0], ln2[1], ln2[2], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[1], ln1[1], ln2[4], ln2[5], leaf_points, leaf_polys, offs)
+                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
             elif len(ln1) == 6 and len(ln2) == 2:  # convex to normal case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx,glIdx]
                 if x1[1] <= x2[0]:
                     offs = add_quad_(ln1[1], ln1[2], ln2[0], ln2[0], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[4], ln1[5], ln2[1], ln2[1], leaf_points, leaf_polys, offs)
+                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
+    return globalIdx_y 
 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
@@ -421,7 +453,7 @@ def plot_segments(pd, p_name:str, win_title:str = "", render:bool = True, intera
     return plot_roots(pd, p_name, render, interactiveImage)
 
 
-def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, returnLut:bool = False):
     """ plots the root system
     @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
     @param p_name                   parameter name of the data to be visualized
@@ -468,6 +500,10 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
         ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
+            
+    if returnLut:
+        return plantActor, scalar_bar, lut
+        
     return plantActor, scalar_bar
 
 

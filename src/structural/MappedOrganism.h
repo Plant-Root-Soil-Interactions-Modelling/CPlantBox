@@ -75,6 +75,7 @@ public:
     std::vector<double> radii; ///< radii [cm]
     std::vector<int> subTypes; ///< types [1]
     std::vector<int> organTypes; ///< types of the organ[1]
+    std::vector<std::weak_ptr<Organ>> segO; ///< for SegmentAnalyser
 
     Vector3d minBound;
     Vector3d maxBound;
