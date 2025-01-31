@@ -1,0 +1,11 @@
+data from the TERENO database https://ddp.tereno.net/ddp/
+
+
+"time": HH:MM:SS
+"PAR":	photosynthetically active radiation [mol photons m-2 s-1]
+"co2": CO2 partial pressure [mol mol-1]
+"RH": relative air humidity [-]	
+"Tair": air temperature [°C]	
+"Pair": athmospheric pressure [Pa]	
+"ps": soil water potential [cm]?	
+"nm": ?

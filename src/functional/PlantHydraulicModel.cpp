@@ -18,8 +18,11 @@ PlantHydraulicModel::PlantHydraulicModel(std::shared_ptr<CPlantBox::MappedSegmen
  *                  		to calculate the age from the creation times (age = sim_time - segment creation time).
  * @param sx [cm]			soil matric potential in the cells or around the segments, given per cell or per segment
  * @param cells 			sx per cell (true), or segments (false)
+ * @param soil_k    [day-1] optionally, soil conductivities can be prescribed per segment,
+ *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  */
-void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells)
+void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells,
+			const std::vector<double> soil_k)
 {
     int Ns = ms->segments.size(); // number of segments
     aI.resize(4*Ns);
@@ -43,7 +46,7 @@ void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<
         int organType = ms->organTypes[si];
         int subType = ms->subTypes[si];
         double kx = 0.;
-        double  kr = 0.;
+        double kr = 0.;
 
         try {
             kx = params->kx_f(si, age, subType, organType);
@@ -51,6 +54,9 @@ void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<
         } catch(...) {
             std::cout << "\n XylemFlux::linearSystem: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
+        }
+        if (soil_k.size()>0) {
+            kr = std::min(kr, soil_k[si]);
         }
 
         auto n1 = ms->nodes[i];
@@ -93,11 +99,13 @@ void PlantHydraulicModel::linearSystemMeunier(double simTime, const std::vector<
  * @param sx        [cm] soil matric potential for each segment
  * @param approx    approximate or exact (default = false, i.e. exact)
  * @param cells     sx per cell (true), or segments (false)
+ * @param soil_k    [day-1] optionally, soil conductivities can be prescribed per segment,
+ *                          conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)
  *
  * @return Volumetric fluxes for each segment [cm3/day]
  */
 std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const std::vector<double> rx, const std::vector<double> sx,
-    bool approx, bool cells) const
+    bool approx, bool cells, const std::vector<double> soil_k) const
 {
     std::vector<double> fluxes = std::vector<double>(ms->segments.size());
     for (int si = 0; si<ms->segments.size(); si++) {
@@ -121,6 +129,9 @@ std::vector<double> PlantHydraulicModel::getRadialFluxes(double simTime, const s
         } catch(...) {
             std::cout << "\n XylemFlux::segFluxes: conductivities failed" << std::flush;
             std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
+        }
+        if (soil_k.size()>0) {
+            kr = std::min(kr, soil_k[si]);
         }
 
         auto n1 = ms->nodes.at(i);

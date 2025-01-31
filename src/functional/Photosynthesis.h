@@ -3,7 +3,7 @@
 #define PHOTOSYNTHESIS_H_
 
 #include "MappedOrganism.h"
-#include "XylemFlux.h"
+#include "PlantHydraulicModel.h"
 #include <map>
 #include <iostream>
 #include <fstream>
@@ -21,19 +21,20 @@ namespace CPlantBox {
  *
  * Wraps a MappedSegments class (i.e. MappedPlant)
  */
-class Photosynthesis: public XylemFlux
+class Photosynthesis: public PlantHydraulicModel
 {
 public:
 	enum PhotoTypes { C3 = 0, C4 = 1}; ///< add other later (CAM?)
-    Photosynthesis(std::shared_ptr<CPlantBox::MappedPlant> plant_, double psiXylInit = -500., double ciInit = 350e-6);
+    Photosynthesis(std::shared_ptr<CPlantBox::MappedPlant> plant_, std::shared_ptr<CPlantBox::PlantHydraulicParameters> params, double psiXylInit = -500., double ciInit = 350e-6);
 	virtual ~Photosynthesis() {}
 	
     std::shared_ptr<CPlantBox::MappedPlant> plant;
 	std::vector<std::map<int,double>> waterLimitedGrowth(double t);
-	void solve_photosynthesis(double ea_,double es_, double sim_time_ =1., std::vector<double> sxx_= std::vector<double>(1,-200.0) , 
+	void solve_photosynthesis(double sim_time_ , std::vector<double> sxx_, 
+				double ea_,double es_, std::vector<double> TleafK_, 
 				bool cells_ = true, std::vector<double> soil_k_ = std::vector<double>(),
 				bool doLog_ = false, int verbose_ = 0, 
-				double TairC_=25, std::string outputDir_=""); ///< main function, makes looping until convergence
+				std::string outputDir_=""); ///< main function, makes looping until convergence
 	void linearSystemSolve(double simTime_, const std::vector<double>& sxx_, bool cells_, 
 				const std::vector<double> soil_k_);///< main function, solves the flux equations
 	
@@ -52,21 +53,18 @@ public:
 	
 	void doAddGravity(); ///< add gravitational wat. pot to total wat. pot. (used in phloem module)
 	
-	double Q10f(int index){		return std::pow(Q10_photo,(TleafK.at(index) - Tref)/10);		}
+	double Q10f(int index){		return std::pow(Q10_photo,(getMeanOrSegData(TleafK, index) - Tref)/10);		}
 	double thermalBreakdown(int index, double Ed);
 	double Arrhenius(int index, double Ea);
-	double getChl(int index)
+	
+	double getMeanOrSegData(std::vector<double> data, int index)
 	{
-		if(Chl.size() != seg_leaves_idx.size()){return Chl.at(0);
-		}else{return Chl.at(index);}
-	}
-	double getQlight(int index)
-	{
-		if(vQlight.size() != seg_leaves_idx.size()){return Qlight;
-		}else{return vQlight.at(index);}
+		if(data.size() != seg_leaves_idx.size()){return data.at(0);
+		}else{return data.at(index);}
 	}
 	
-	double getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose = false) const override;
+	
+	double getPsiOut(bool cells, int si, const std::vector<double>& sx_) const override;
 	size_t fillVectors(size_t k, int i, int j, double bi, double cii, double cij, double psi_s) override ; ///< fill the vectors aI, aJ, aV, aB
 	double kr_f(int si, double age, int type, int orgtype);
 		
@@ -133,57 +131,45 @@ public:
 	double ciInit; //initial guess for leaf internal [CO2] [mol mol-1]
 	
 	//___________
-	//			default value of plant variable (C3 and C4), to re-set at runtime
-	// 				C3 and C4
-    float gm = 0.01; //mesophyll resistance 
-	int PhotoType = C3;	
-	//			default value of env variable, to re-set at runtime
+	//			env variable, potentially re-set at each time step
 	double Patm = 1013.15;//default [hPa]
-	double  cs  = 350e-6; //example from Dewar2002 [mol mol-1]
-	std::vector<double>  vcs; //example from Dewar2002 [mol mol-1]
+	std::vector<double>  cs = std::vector<double>(1, 350e-6); //example from Dewar2002 [mol mol-1]
 	std::vector<double>  TleafK; //[K]
-	double  TairC; //[°C]
-	double  Qlight;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
-	std::vector<double>  vQlight;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
-	std::vector<double>  Chl = std::vector<double>(1,55.); 
-	double g_bl = 2.8;//leaf boundary molar conductance [mol CO2 m-2 s-1]
-	double g_canopy = 6.1;//aerodynamic molar conductance [mol CO2 m-2 s-1]
-	double g_air = 11.4;//aerodynamic molar conductance [mol CO2 m-2 s-1]
-	std::vector<double>  vg_bl;//leaf boundary molar conductance [mol CO2 m-2 s-1]
-	std::vector<double>  vg_canopy;//aerodynamic molar conductance [mol CO2 m-2 s-1]
-	std::vector<double>  vg_air;//aerodynamic molar conductance [mol CO2 m-2 s-1]
-	// 				C3 only
-	double oi = 210e-3;//leaf internal [O2] [mol mol-1]
+	std::vector<double>  Qlight;//mean absorbed photon irradiance per leaf segment [mol photons m-2 s-1]  
+	std::vector<double>  g_bl = std::vector<double>(1,2.8);//leaf boundary molar conductance [mol CO2 m-2 s-1]
+	std::vector<double>  g_canopy = std::vector<double>(1,6.1);//aerodynamic molar conductance [mol CO2 m-2 s-1]
+	std::vector<double>  g_air = std::vector<double>(1,11.4);//aerodynamic molar conductance [mol CO2 m-2 s-1]
 	//___________
 	
 	
 	//_______
-	//			parameters to re-parametrise 
+	//			plant parameters to re-parametrise 
 	// 				C3 and C4
+	int PhotoType = C3;	
+    float gm = 0.03; //mesophyll resistance 
 	//water stress factor, parametrised from data of Corso2020
     double fwr = 9.308e-2; //residual opening when water stress parametrised with data from corso2020 [-]
 	double fw_cutoff = 0;// to make it easier to get fw
 	double sh = 3.765e-4;//sensibility to water stress
 	double p_lcrit = -15000/2;//min psiXil for stomatal opening [Mpa]
 	//influence of N contant, to reparametrise!, 
+	std::vector<double>  Chl = std::vector<double>(1,55.); // mug/cm^-2
 	double VcmaxrefChl1 = 1.28/2;//otherwise value too high, original: 1.31
 	double VcmaxrefChl2 = 8.33/2; //otherwise value too high, original: 8,52
 	double alpha = 0.2; //or 0.44 , coefb = -(alpha * Qlight + Jmax);, alpha * Qlight * Jmax;
 	double a1=4.; //g0+ fw[i] * a1 *( An[i] + Rd)/(ci[i] - deltagco2[i]);//tuzet2003
-	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]
-	//double gamma0 = 28e-6; double gamma1 = 0.0509; double gamma2 = 0.001;
-	
+	double g0 = 0.3e-3;//residual stomatal opening to CO2, Tuzet 2003 [mol CO2 m-2 s-1]	
 	// 				C3 only
 	double a3 = 1.7;//Jrefmax = Vcrefmax * a3 ;//Eq 25
 	double theta = 0.9;//or 0.67 coefa = theta;
-	
+	double oi = 210e-3;//leaf internal [O2] [mol mol-1]	
 	// 				C4 only
 	double Q10_photo = 2;
 	//___________
 	
 	
 	//___________
-	//			physicall constant (no need to reparametrise?)
+	//			physical constant (no need to reparametrise?)
 	// 				C3 and C4
 	double a2_stomata = 1.6; //gco2 * a2 = gh2o
 	double a2_bl = 1.37;//gco2 * a2 = gh2o
@@ -199,12 +185,10 @@ public:
     double Eac = 59430; double Eaj = 37000; double Eao = 36000;//mJ mmol-1
     double Eard = 53000;double Eav = 58520;double Ead = 37830;
     double Edj =  220000;double Edv = 220000;double Edrd;// = 53000;
-	//double Rd_refC3 = 0.32e-6; one less param!
 	double S = 700;//enthropy mJ mmol-1 K-1
 	//ref value at T = T_ref
 	double Kc_ref = 302e-6; double Ko_ref = 256e-3; //mmol mmol-1
-    double delta_ref= 42.75e-6;
-	
+    double delta_ref= 42.75e-6;	
 	// 				C4 only
 	double s1 = 0.3; //K-1	Bonan2019Chap11: temperature
 	double s2 = 313.15;//K	Bonan2019Chap11

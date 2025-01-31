@@ -22,9 +22,10 @@ public:
 
     virtual ~PlantHydraulicModel() { }
 
-    void linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells = true); ///< builds linear system (simTime is needed for age dependent conductivities)
+    void linearSystemMeunier(double simTime, const std::vector<double> sx, bool cells = true,
+		const std::vector<double> soil_k = std::vector<double>()); ///< builds linear system (simTime is needed for age dependent conductivities)
 
-    std::vector<double> getRadialFluxes(double simTime, const std::vector<double> rx, const std::vector<double> sx, bool approx = false, bool cells = false) const; // for each segment in [cm3/day]
+    std::vector<double> getRadialFluxes(double simTime, const std::vector<double> rx, const std::vector<double> sx, bool approx = false, bool cells = false, const std::vector<double> soil_k = std::vector<double>()) const; // for each segment in [cm3/day]
     std::map<int,double> sumSegFluxes(const std::vector<double> segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
 
     std::shared_ptr<CPlantBox::MappedSegments> ms;

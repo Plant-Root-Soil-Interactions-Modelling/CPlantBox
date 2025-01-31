@@ -1022,7 +1022,7 @@ PYBIND11_MODULE(plantbox, m) {
          */
         py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
             .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
-            .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true)
+            .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true, py::arg("soil_k") = std::vector<double>())
             .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
             .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
             .def_readwrite("ms", &PlantHydraulicModel::ms)
@@ -1035,13 +1035,12 @@ PYBIND11_MODULE(plantbox, m) {
 	/*
      * Photosynthesis.h
      */
-   py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit")=-500.0 ,  py::arg("ciInit")= 350e-6)
-			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("ea_"),py::arg("es_") ,
-			py::arg("sim_time_")=1.0,
-					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
-					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
-					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
+   py::class_<Photosynthesis, PlantHydraulicModel, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>,double, double>(),  py::arg("plant"),py::arg("params"),  py::arg("psiXylInit")=-500.0 ,  py::arg("ciInit")= 350e-6)
+			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis,py::arg("sim_time"),
+					py::arg("sxx")  , py::arg("ea"),py::arg("es"),py::arg("TleafK")  ,
+					py::arg("cells") = true,py::arg("soil_k") = std::vector<double>(),
+					py::arg("doLog")=false, py::arg("verbose")=true,    py::arg("outputDir")="")
             .def_readwrite("PhotoType", &Photosynthesis::PhotoType)
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
@@ -1078,7 +1077,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("EAL",&Photosynthesis::EAL)
             .def_readwrite("hrelL",&Photosynthesis::hrelL)
             .def_readwrite("pg",&Photosynthesis::pg)
-            .def_readwrite("vQlight", &Photosynthesis::vQlight)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
             .def_readwrite("Jw", &Photosynthesis::Jw)
             .def_readwrite("Ev", &Photosynthesis::Ev)
@@ -1089,9 +1087,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("loop", &Photosynthesis::loop)
             .def_readwrite("Patm", &Photosynthesis::Patm)
             .def_readwrite("cs", &Photosynthesis::cs)
-            .def_readwrite("vcs", &Photosynthesis::vcs)
             .def_readwrite("TleafK", &Photosynthesis::TleafK)
-            .def_readwrite("TairC", &Photosynthesis::TairC)
             .def_readwrite("Chl", &Photosynthesis::Chl)
             .def_readwrite("g0", &Photosynthesis::g0)
             .def_readwrite("g_bl", &Photosynthesis::g_bl)
@@ -1107,12 +1103,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a3", &Photosynthesis::a3)
             .def_readwrite("Rd_ref", &Photosynthesis::Rd_ref)
             .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref)
+            .def_readwrite("Q10_photo", &Photosynthesis::Q10_photo)
             .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("doLog", &Photosynthesis::doLog)
-            .def_readwrite("R_ph", &Photosynthesis::R_ph)
             .def_readonly("rho_h2o", &Photosynthesis::rho_h2o)
             .def_readonly("R_ph", &Photosynthesis::R_ph)
             .def_readonly("Mh2o", &Photosynthesis::Mh2o);
@@ -1126,11 +1122,10 @@ PYBIND11_MODULE(plantbox, m) {
      * runPM.h
      */
     py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(),  py::arg("plant"),py::arg("params"),
 			py::arg("psiXylInit"),  py::arg("ciInit") )
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
-            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0, py::arg("verbose") = false)
-
+            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length") = -1.0, py::arg("verbose") = false)
             .def("setKx_st",&PhloemFlux::setKx_st, py::arg("values"), py::arg("verbose") = false)
             .def("setRmax_st",&PhloemFlux::setRmax_st, py::arg("values"), py::arg("verbose") = false)
             .def("setAcross_st",&PhloemFlux::setAcross_st, py::arg("values"), py::arg("verbose") = false)
@@ -1140,7 +1135,6 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("startPM",&PhloemFlux::startPM)
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
-
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)
             .def_readwrite("Q_out_dot",&PhloemFlux::Q_out_dotv)
@@ -1200,7 +1194,6 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
 			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
-
             .def_readwrite("C_targ",&PhloemFlux::C_targ)
             .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
             .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)
