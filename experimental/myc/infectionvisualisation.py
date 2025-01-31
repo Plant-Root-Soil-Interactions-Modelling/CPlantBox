@@ -13,11 +13,12 @@ mycp.initialize()
 
 mycp.simulate(30, True)
 
+for o in mycp.getOrgans():
+    print(o)
 
 
-
-infs = mycp.getNodeInfections(pb.root)
-print(infs)
+# infs = mycp.getNodeInfections(pb.root)
+# print(infs)
 
 # ana = pb.SegmentAnalyser(mycp)
 # ana.addData("Infection",mycp.getNodeInfections(2))

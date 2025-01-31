@@ -1,4 +1,6 @@
 #include "Plant.h"
+#include "Organ.h"
+#include "Organism.h"
 #include "MycorrhizalPlant.h"
 #include "Mycorrhizalrootparameter.h"
 
@@ -32,7 +34,7 @@ namespace CPlantBox {
 }
 std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     auto organs = getOrgans(ot);
-    std::cout<< organs.size() << std::endl; // TODO  problem ist dass die organe nicht aufgerufen werden -> Mona fragen
+    std::cout<< organs.size() << std::endl;
 
     int globalNumberofNodes = 0;
     for (const auto & o : organs)
