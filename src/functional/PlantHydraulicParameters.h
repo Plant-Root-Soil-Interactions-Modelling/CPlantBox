@@ -43,10 +43,10 @@ public:
 
     void setKrConst(double v, int subType, int organType = Organism::ot_root, double kr_length = -1);
     void setKxConst(double v, int subType, int organType = Organism::ot_root);
-    void setKrAge(std::vector<double> age, std::vector<double> values, int subType, int organType = Organism::ot_root);
-    void setKxAge(std::vector<double> age, std::vector<double> values, int subType, int organType = Organism::ot_root);
-    void setKrDistance(std::vector<double> distance, std::vector<double> values, int subType, int organType = Organism::ot_root);
-    void setKxDistance(std::vector<double> distance, std::vector<double> values, int subType, int organType = Organism::ot_root);
+    void setKrAgeDependent(std::vector<double> age, std::vector<double> values, int subType, int organType = Organism::ot_root);
+    void setKxAgeDependent(std::vector<double> age, std::vector<double> values, int subType, int organType = Organism::ot_root);
+    void setKrDistanceDependent(std::vector<double> distance, std::vector<double> values, int subType, int organType = Organism::ot_root);
+    void setKxDistanceDependent(std::vector<double> distance, std::vector<double> values, int subType, int organType = Organism::ot_root);
     void setKrValues(std::vector<double> values); ///< one value per segment
     void setKxValues(std::vector<double> values); ///< one value per segment
 

@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import interpolate
 
+from functional.PlantHydraulicParameters import PlantHydraulicParameters
+
 """
 Helper to define age depent tabular values for root conductivities for XylemFluxPython (values are hard coded)
 
@@ -20,8 +22,7 @@ def init_conductivities(r, age_dependent:bool = False):
     """ call to initialize age dependent or independent conductivities, 
     initializes functions kr(age, type) and kx(age, type) """
 
-    # values for age indepenent case
-    kx_const_ = 4.32e-2  # [cm3/day]
+    kx_const_ = 4.32e-2  # [cm3/day] # values for age indepenent case
     kr_const_ = 1.73e-4  # [1/day]
 
     # tabular values for age and type depenent case [age, value] for type 0 (kr0), and type 1 (kr1)
@@ -31,19 +32,32 @@ def init_conductivities(r, age_dependent:bool = False):
     kx0 = np.array([[0, 6.74e-02], [2, 7.48e-02], [4, 8.30e-02], [6, 9.21e-02], [8, 1.02e-01], [10, 1.13e-01], [12, 1.26e-01], [14, 1.40e-01], [16, 1.55e-01], [18, 1.72e-01], [20, 1.91e-01], [22, 2.12e-01], [24, 2.35e-01], [26, 2.61e-01], [28, 2.90e-01], [30, 3.21e-01], [32, 3.57e-01]])
     kx1 = np.array([[0, 4.07e-04], [1, 5.00e-04], [2, 6.15e-04], [3, 7.56e-04], [4, 9.30e-04], [5, 1.14e-03], [6, 1.41e-03], [7, 1.73e-03], [8, 2.12e-03], [9, 2.61e-03], [10, 3.21e-03], [11, 3.95e-03], [12, 4.86e-03], [13, 5.97e-03], [14, 7.34e-03], [15, 9.03e-03], [16, 1.11e-02], [17, 1.36e-02]])
 
-    if age_dependent:
-        r.setKrTables([kr0[:, 1], kr0[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1]],
-                      [kr0[:, 0], kr0[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0]])  # [cm^3/day]
-        r.setKxTables([kx0[:, 1], kx0[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1]],
-                      [kx0[:, 0], kx0[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0]])  # [1/day]
+    if isinstance(r, PlantHydraulicParameters):
+        if age_dependent:
+            r.set_kr_age(kr0[:, 0], kr0[:, 1], subType = [0, 1])
+            r.set_kr_age(kr1[:, 0], kr1[:, 1], subType = [2, 3, 4, 5])
+            r.set_kx_age(kx0[:, 0], kx0[:, 1], subType = [0, 1])
+            r.set_kx_age(kx1[:, 0], kx1[:, 1], subType = [2, 3, 4, 5])
+        else:  # we set it as table to be able to make the rootsystem grow in a predefined way
+            kr = np.array([[-1e4, 1.e-9], [-1.e-9, 1.e-9], [0., kr_const_], [1e4, kr_const_]])
+            kx = np.array([[0, kx_const_], [1e4, kx_const_]])
+            r.set_kr_age(kr[:, 0], kr[:, 1])
+            r.set_kx_age(kx[:, 0], kx[:, 1])
+    else:
 
-    else:  # we set it as table to be able to make the rootsystem grow in a predefined way
-        kr = np.array([[-1e4, 1.e-9], [-1.e-9, 1.e-9], [0., kr_const_], [1e4, kr_const_]])
-        kx = np.array([[0, kx_const_], [1e4, kx_const_]])
-        r.setKrTables([kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1]],
-                      [kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0]])  # [cm^3/day]
-        r.setKxTables([kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1]],
-                      [kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0]])  # [1/day]
+        if age_dependent:
+            r.setKrTables([kr0[:, 1], kr0[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1], kr1[:, 1]],
+                          [kr0[:, 0], kr0[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0], kr1[:, 0]])  # [cm^3/day]
+            r.setKxTables([kx0[:, 1], kx0[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1], kx1[:, 1]],
+                          [kx0[:, 0], kx0[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0], kx1[:, 0]])  # [1/day]
+
+        else:  # we set it as table to be able to make the rootsystem grow in a predefined way
+            kr = np.array([[-1e4, 1.e-9], [-1.e-9, 1.e-9], [0., kr_const_], [1e4, kr_const_]])
+            kx = np.array([[0, kx_const_], [1e4, kx_const_]])
+            r.setKrTables([kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1], kr[:, 1]],
+                          [kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0], kr[:, 0]])  # [cm^3/day]
+            r.setKxTables([kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1], kx[:, 1]],
+                          [kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0], kx[:, 0]])  # [1/day]
 
 
 def init_conductivities_growth(r, age_dependent:bool = False, dt = 1):

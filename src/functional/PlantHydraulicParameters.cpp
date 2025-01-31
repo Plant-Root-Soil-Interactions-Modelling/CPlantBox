@@ -76,22 +76,22 @@ void PlantHydraulicParameters::setMode(std::string krMode, std::string kxMode) {
     if (kxMode == "const") {
         kx_f  = std::bind(&PlantHydraulicParameters::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
-    if (krMode == "perSegment") {
+    if (krMode == "per segment") {
         kr_f = std::bind(&PlantHydraulicParameters::kr_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
-    if (kxMode == "perSegment") {
+    if (kxMode == "per segment") {
         kx_f = std::bind(&PlantHydraulicParameters::kx_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
-    if (krMode == "age") {
+    if (krMode == "age dependent") {
         kr_f = std::bind(&PlantHydraulicParameters::kr_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
-    if (kxMode == "age") {
+    if (kxMode == "age dependent") {
         kx_f = std::bind(&PlantHydraulicParameters::kx_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
-    if (krMode == "distance") {
+    if (krMode == "distance dependent") {
         kr_f = std::bind(&PlantHydraulicParameters::kr_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
-    if (kxMode == "distance") {
+    if (kxMode == "distance dependent") {
         kx_f = std::bind(&PlantHydraulicParameters::kx_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
     }
 }
@@ -165,11 +165,11 @@ void PlantHydraulicParameters::setKxConst(double v, int subType, int organType) 
  * @param subType       organ sub type
  * @param organType     organ type (default is root)
  */
-void PlantHydraulicParameters::setKrAge(std::vector<double> age, std::vector<double> values, int subType, int organType) {
+void PlantHydraulicParameters::setKrAgeDependent(std::vector<double> age, std::vector<double> values, int subType, int organType) {
     kr_ages.at(organType).at(subType) = age;
     kr_values.at(organType).at(subType) = values;
     kr_f = std::bind(&PlantHydraulicParameters::kr_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    krMode = "age";
+    krMode = "age dependent";
 }
 
 /**
@@ -182,11 +182,11 @@ void PlantHydraulicParameters::setKrAge(std::vector<double> age, std::vector<dou
  * @param subType       organ sub type
  * @param organType     organ type (default is root)
  */
-void PlantHydraulicParameters::setKxAge(std::vector<double> age, std::vector<double> values, int subType, int organType) {
+void PlantHydraulicParameters::setKxAgeDependent(std::vector<double> age, std::vector<double> values, int subType, int organType) {
     kx_ages.at(organType).at(subType) = age;
     kx_values.at(organType).at(subType) = values;
     kx_f = std::bind(&PlantHydraulicParameters::kx_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    kxMode = "age";
+    kxMode = "age dependent";
 }
 
 /**
@@ -200,11 +200,11 @@ void PlantHydraulicParameters::setKxAge(std::vector<double> age, std::vector<dou
  * @param subType       organ sub type
  * @param organType     organ type (default is root)
  */
-void PlantHydraulicParameters::setKrDistance(std::vector<double> distance, std::vector<double> values, int subType, int organType) {
+void PlantHydraulicParameters::setKrDistanceDependent(std::vector<double> distance, std::vector<double> values, int subType, int organType) {
     kr_ages.at(organType).at(subType) = distance;
     kr_values.at(organType).at(subType) = values;
     kr_f = std::bind(&PlantHydraulicParameters::kr_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    krMode = "distance";
+    krMode = "distance dependent";
 }
 
 /**
@@ -230,11 +230,11 @@ double PlantHydraulicParameters::kr_distance(int si, double age, int subType, in
  * @param subType       organ sub type
  * @param organType     organ type (default is root)
  */
-void PlantHydraulicParameters::setKxDistance(std::vector<double> distance, std::vector<double> values, int subType, int organType) {
+void PlantHydraulicParameters::setKxDistanceDependent(std::vector<double> distance, std::vector<double> values, int subType, int organType) {
     kx_ages.at(organType).at(subType) = distance;
     kx_values.at(organType).at(subType) = values;
     kx_f = std::bind(&PlantHydraulicParameters::kx_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    kxMode = "distance";
+    kxMode = "distance dependent";
 }
 
 /**
@@ -256,7 +256,7 @@ double PlantHydraulicParameters::kx_distance(int si, double age, int subType, in
 void PlantHydraulicParameters::setKrValues(std::vector<double> values) {
     krValues = values;
     kr_f = std::bind(&PlantHydraulicParameters::kr_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    krMode = "perSegment";
+    krMode = "per segment";
 }
 
 /**
@@ -265,7 +265,7 @@ void PlantHydraulicParameters::setKrValues(std::vector<double> values) {
 void PlantHydraulicParameters::setKxValues(std::vector<double> values) {
     kxValues = values;
     kx_f = std::bind(&PlantHydraulicParameters::kx_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    kxMode = "perSegment";
+    kxMode = "per segment";
 }
 
 /**
