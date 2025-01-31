@@ -22,15 +22,15 @@ plant = pb.MappedPlant()
 plant.readParameters(filename)
 vis = pb.PlantVisualiser(plant)
 
-
 # Initialize
-plant.setSeed(int(time.time()))
+#plant.setSeed(int(time.time()))
+plant.setSeed(1)
 plant.initialize(False, True)
 vis.SetGeometryResolution(8)
-vis.SetLeafResolution(30)
+vis.SetLeafResolution(60)
 vis.SetComputeMidlineInLeaf(False)
-vis.SetVerbose(True)
-vis.SetLeafMinimumWidth(0.1)
+vis.SetVerbose(False)
+#vis.SetLeafMinimumWidth(0.1)
 vis.SetRightPenalty(0.9)
 #vis.SetShapeFunction(lambda t : 1*((1 - t**0.8)**0.5))
 shape = lambda t : max(0.0,1.0*((1 - t**0.6)**0.3) -  0.1/(t + 0.1))
@@ -39,7 +39,8 @@ vis.SetShapeFunction(shape)
 print("Shape at boundaries: ", shape(0), shape(1))
 vis.SetLeafWidthScaleFactor(5.0)
 vis.SetNotUseStemInfluence()
-vis.SetUseStemRadiusAsMin(True)
+#vis.SetUseStemInfluence(True, 0.3)
+#vis.SetUseStemRadiusAsMin(True)
 
 # Simulate
 plant.simulate(16, False)
@@ -65,8 +66,9 @@ for o in plant.getOrgans() :
 
 
 vis.ResetGeometry()
-#vis.ComputeGeometryForOrgan(leaf_id)
-vis.ComputeGeometry()
+vis.SetVerbose(True)
+vis.ComputeGeometryForOrgan(leaf_id)
+#vis.ComputeGeometry()
 
 uv = vis.GetGeometryTextureCoordinates()
 points = vis.GetGeometry()

@@ -68,7 +68,7 @@ def WritePolydataToFile(pd : vtk.vtkPolyData, filename : str) :
   writer.Write()
 # end def WritePolydataToFile
 
-def WavefrontFromPlantGeometry(vis : pb.PlantVisualiser, plant : pb.Plant, filename: str, resolution = "organ", colour = None, fixedset = None) :
+def WavefrontFromPlantGeometry(vis : pb.PlantVisualiser, plant : pb.Plant, filename: str, resolution = "organ", colour = None, fixedset = None, add_material_text = "") :
   """Create a wavefront object by generating a wavefront file from plant organs"""
   # Create a wavefront file
   wf = open(filename, "w")
@@ -79,7 +79,7 @@ def WavefrontFromPlantGeometry(vis : pb.PlantVisualiser, plant : pb.Plant, filen
     mtl = open(filename[:-4] + ".mtl", "w")
     wf.write("mtllib " + filename[:-4] + ".mtl\n")
     for c in colour :
-      mtl.write("newmtl type_" + str(c) + "\n")
+      mtl.write("newmtl type_" + str(c) + add_material_text + "\n")
       mtl.write("Kd " + str(colour[c][0]) + " " + str(colour[c][1]) + " " + str(colour[c][2]) + "\n")
     # end for
     mtl.close()
@@ -92,7 +92,7 @@ def WavefrontFromPlantGeometry(vis : pb.PlantVisualiser, plant : pb.Plant, filen
   elif resolution == "type" :
     geomset = [4,3,2]
   # end if
-  if isinstance(fixedset, list) :
+  if fixedset is not None :
     geomset = fixedset
   # end if
   vertexcounter = 0 # for running index across sections
@@ -113,9 +113,9 @@ def WavefrontFromPlantGeometry(vis : pb.PlantVisualiser, plant : pb.Plant, filen
     # write the vertices
     vertices = np.reshape(vis.GetGeometry(), (-1, 3))
     # make new group
-    wf.write("\tg type_" + str(on) + "\n")
+    wf.write("\tg type_" + str(on) + add_material_text + "\n")
     # make a material entry such that all sections have their own material
-    wf.write("\tusemtl type_" + str(on) + "\n")
+    wf.write("\tusemtl type_" + str(on) + add_material_text + "\n")
     # comment metadata
     otype = ""
     if on == pb.stem :
@@ -136,8 +136,8 @@ def WavefrontFromPlantGeometry(vis : pb.PlantVisualiser, plant : pb.Plant, filen
         #wf.write(" " + str(colour[on][0]) + " " + str(colour[on][1]) + " " + str(colour[on][2]))
       wf.write("\n")
     # end for
-    for v in vertices :
-      wf.write("\t\tvc " + str(colour[on][0]) + " " + str(colour[on][1]) + " " + str(colour[on][2]) + "\n")
+    #for v in vertices :
+    #  wf.write("\t\tvc " + str(colour[on][0]) + " " + str(colour[on][1]) + " " + str(colour[on][2]) + "\n")
     # write the texture coordinates
     texcoords = np.reshape(vis.GetGeometryTextureCoordinates(), (-1, 2))
     for t in texcoords :

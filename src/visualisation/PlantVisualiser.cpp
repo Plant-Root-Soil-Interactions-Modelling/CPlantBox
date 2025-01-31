@@ -660,7 +660,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		lrp->createLeafRadialGeometry(lrp->leafGeometryPhi,lrp->leafGeometryX,resolution);
 	}
 	// retrieve the leaf geometry_
-	const auto& outer_geometry_points = lrp->leafGeometry;
+	auto& outer_geometry_points = lrp->leafGeometry;
   // set buffer sizes
   int point_buffer = 0;
   int index_buffer = 0;
@@ -728,7 +728,19 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 
 	for(auto i = 0; i < outer_geometry_points.size(); ++i)
 	{
-    const std::vector<double>& current = outer_geometry_points[i];
+    std::vector<double>& current = outer_geometry_points[i];
+
+    // if we have a shape function, the current leaf geometry array should be
+    // at maximum 1
+    if (this->shape_function_.has_value())
+    {
+      auto max = *std::max_element(current.begin(), current.end());
+      for (auto& c : current)
+      {
+        c = c /  max;
+      }
+    }
+
 		MirrorIterator helper(&current);
 		auto current_amount = helper.size();
     if(current_amount < 2)
@@ -767,6 +779,7 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
 		right.z = right_penalty_ * right.z;
 		right.normalize();
     up = direction.cross(right).normalized();
+    direction.normalize();
 
     // iterate through the points
     //std::cout << "Iterating through the points of the current line intersection " << i << std::endl;
@@ -813,6 +826,11 @@ void PlantVisualiser::GenerateRadialLeafGeometry(std::shared_ptr<Leaf> leaf, uns
       {
         base_direction = right * leaf_minimum_width_ * ((p == 0) ? 1.0 : -1.0);
       }
+      else if (use_stem_influence_ && t < stem_influence_radius_)
+      {
+        base_direction = right * stem->getParameter("radius") * leaf_width_scale_factor_ * r;
+      }
+
 			
 			//std::cout << base_direction.toString() << std::endl;
 			//Vector3d updated_direction = local_q.Rotate(base_direction);

@@ -1191,6 +1191,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def("SetUseStemInfluence", &PlantVisualiser::SetUseStemInfluence, py::arg("useStemInfluence"), py::arg("influenceRadius"))
         .def("SetNotUseStemInfluence", &PlantVisualiser::SetNotUseStemInfluence)
         .def("SetUseStemRadiusAsMin", &PlantVisualiser::SetUseStemRadiusAsMin, py::arg("useStemRadiusAsMinimum"))
+        .def("GetNumOrgans", &PlantVisualiser::GetNumOrgans)
+        .def("SelfCheck", &PlantVisualiser::SelfCheck)
     ;
 
     py::class_<CatmullRomSplineManager, std::shared_ptr<CatmullRomSplineManager>>(m, "CatmullRomSplineManager")
