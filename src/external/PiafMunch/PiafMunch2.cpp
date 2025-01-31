@@ -149,7 +149,6 @@ Fortran_vector  radius_ST ; // vol_Sympl is considered a variable, driven by its
 
 void PhloemFlux::C_fluxes(double t, int Nt)  
 {
-	TairC = TairK_phloem - 273.15;
 	for (int i = 1 ; i <= Nt ; i++) 
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		int cpp_id = i -1;// o go from Fortran_vector numeration to cpp vector numeration
@@ -203,7 +202,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		
 		double CSTi_delta = max(0.,CSTi-Csoil_node[cpp_id]); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
-		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
+		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairK_phloem - 273.15 - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta*Q_Exudmax[i];//max exudation rate
 		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			

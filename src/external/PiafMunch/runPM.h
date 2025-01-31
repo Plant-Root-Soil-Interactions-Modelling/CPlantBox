@@ -97,8 +97,9 @@ void aux(double t, double * y) ;
 class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_from_this<PhloemFlux>
 {
 	public:
-	PhloemFlux(std::shared_ptr<CPlantBox::MappedPlant> plant_, double psiXylInit = -500., double ciInit = 350e-6): 
-		CPlantBox::Photosynthesis(plant_, psiXylInit, ciInit){};
+	PhloemFlux(std::shared_ptr<CPlantBox::MappedPlant> plant_,std::shared_ptr<CPlantBox::PlantHydraulicParameters> params,
+	double psiXylInit = -500., double ciInit = 350e-6): 
+		CPlantBox::Photosynthesis(plant_, params, psiXylInit, ciInit){};
     std::weak_ptr<PhloemFlux> Phloem() { return shared_from_this(); }; // up-cast for Python binding
 	virtual ~PhloemFlux() { }
 	int startPM(double StartTime ,double EndTime, int OutputStep,double TairK, bool verbose = true , 
