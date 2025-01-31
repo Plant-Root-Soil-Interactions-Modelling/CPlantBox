@@ -32,32 +32,32 @@ namespace CPlantBox {
     lrp->subType = 0;
     setOrganRandomParameter(lrp);
 }
-std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
-    auto organs = getOrgans(ot);
-    std::cout<< organs.size() << std::endl;
+// std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
+//     auto organs = getOrgans(ot);
+//     std::cout<< organs.size() << std::endl;
 
-    int globalNumberofNodes = 0;
-    for (const auto & o : organs)
-    { std::cout <<"Marco" << std::endl;
-        if ( o->organType() == 2) {
-            auto mr = std::dynamic_pointer_cast<MycorrhizalRoot>(o);
-            globalNumberofNodes += (mr->getNodeIds()).size();
-        }
-    }
-    std::vector<int> infs = std::vector<int>(globalNumberofNodes);
-    for (const auto & o : organs)
-    {
-        auto mr = std::dynamic_pointer_cast<MycorrhizalRoot>(o);
-        if (mr) {
-            for (size_t i = 1; i < mr->getNumberOfNodes(); i++)
-            {
-                infs.at(mr->getNodeId(i)) = mr->getNodeInfection(i);
-            }
-        }
+//     int globalNumberofNodes = 0;
+//     for (const auto & o : organs)
+//     { std::cout <<"Marco" << std::endl;
+//         if ( o->organType() == 2) {
+//             auto mr = std::dynamic_pointer_cast<MycorrhizalRoot>(o);
+//             globalNumberofNodes += (mr->getNodeIds()).size();
+//         }
+//     }
+//     std::vector<int> infs = std::vector<int>(globalNumberofNodes);
+//     for (const auto & o : organs)
+//     {
+//         auto mr = std::dynamic_pointer_cast<MycorrhizalRoot>(o);
+//         if (mr) {
+//             for (size_t i = 1; i < mr->getNumberOfNodes(); i++)
+//             {
+//                 infs.at(mr->getNodeId(i)) = mr->getNodeInfection(i);
+//             }
+//         }
         
-    }
-    return infs;
-}
+//     }
+//     return infs;
+// }
 
 std::vector<int> MycorrhizalPlant::getSegmentInfections(int ot) const {
     auto nodeInfection = getNodeInfections(ot);

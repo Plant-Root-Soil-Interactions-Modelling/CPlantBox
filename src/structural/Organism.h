@@ -80,6 +80,7 @@ public:
     std::vector<std::vector<double>> getPolylineCTs(int ot=-1) const; ///< node creation times per organ
     virtual std::vector<Vector3d> getNodes() const; ///< nodes of the organ
     virtual std::vector<double> getNodeCTs() const; ///< node creation times, corresponding to Organism::getNodes
+    virtual std::vector<int> getInfectedNodes(int ot) const; ///< infected nodes, corresponding to Organism::getNodes
     virtual std::vector<Vector2i> getSegments(int ot=-1) const; ///< line segment containing two node indices, corresponding to Organism::getNodes
     virtual std::vector<double> getSegmentCTs(int ot=-1) const; ///< line creation times, corresponding to Organism::getSegments
 	virtual std::vector<int> getSegmentIds(int ot=-1) const; ///< line segment indices, corresponding to Organism::getSegments
