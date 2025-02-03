@@ -40,47 +40,42 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 	    }
 
         //Secondary Infection
-        // l:children in organs haben alle parentnodeIndex speichern bzw liste mit 0 1
-
         auto max_length_infection = dt*getRootRandomParameter()->vi;
         for (size_t i = 1; i < nodes.size(); i++)
         {
             if (infected.at(i-1) == 1)
             {
                 auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
-                auto currentbasalnode = i-2;
+                auto basalnode = i-2;
                 
-                while (currentbasalnode > 1 && currentbasalnode< nodes.size() && nodes.at(currentbasalnode).length()> max_length_basal && infected.at(currentbasalnode) == 0)
+                while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
-                    infected.at(currentbasalnode) = 2;
-                    infectionTime.at(currentbasalnode) = age + nodes.at(i-1).minus(nodes.at(currentbasalnode)).length()/getRootRandomParameter()->vi; 
-                    currentbasalnode--;
+                    infected.at(basalnode) = 2;
+                    infectionTime.at(basalnode) = age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+                    basalnode--;
                 }
 
-                
-
                 auto max_length_apical = nodes.at(i-1).length() + max_length_infection;
-                auto currentapicalnode = i;
+                auto apicalnode = i;
                 
-                while (currentapicalnode < nodes.size()-1 && nodes.at(currentapicalnode).length() < max_length_apical && infected.at(currentapicalnode) == 0)
+                while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
                 {
-                    infected.at(currentapicalnode) = 2;
-                    infectionTime.at(currentapicalnode) = age + nodes.at(currentapicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; 
-                    currentapicalnode++;
+                    infected.at(apicalnode) = 2;
+                    infectionTime.at(apicalnode) = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; 
+                    apicalnode++;
                 }
             }
         }
         
         for (auto l:children)
         {
-            for (size_t i = 0; i < nodes.size()-1; i++)
+            for (size_t i = 1; i < nodes.size(); i++)
             {
-                if (getNodeId(i) == getNodeId(l->parentNI) && infected.at(i) == 2)
+                if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
                 {
-                     std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,age + dt);
+                     double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
+                     std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
                 }
-                
-                
             }
             
             
