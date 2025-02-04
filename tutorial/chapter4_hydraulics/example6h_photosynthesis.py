@@ -1,17 +1,17 @@
 """ Example of the photosynthesis module, using real data from the Selhausen lysimeter setup """
-import sys; sys.path.append("../.."); sys.path.append("../../src/") # |\label{6h:imports}
+import sys; sys.path.append("../.."); sys.path.append("../../src/") # |\label{6h:imports}|
 import plantbox as pb
 import visualisation.vtk_plot as vp
 from functional.PlantHydraulicParameters import PlantHydraulicParameters  
-from functional.Photosynthesis import PhotosynthesisPython  # |\label{6h:importsPhotosynthesis}
+from functional.Photosynthesis import PhotosynthesisPython  # |\label{6h:importsPhotosynthesis}|
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import pandas as pd
-import numpy as np # |\label{6h:importsEnd}
+import numpy as np # |\label{6h:importsEnd}|
 
 """ Parameters and variables """
-plant_age = 14  # plant age [day]       # |\label{6h:Parameters}
+plant_age = 14  # plant age [day]       # |\label{6h:Parameters}|
 kx = 4.32e-2  # axial conductivity [cm3/day]
 kr = 1.728e-4  # radial conductivity [1/day]
 gmax = 0.004  #  cm3/day radial conductivity of leaves = stomatal conductivity [1/day]
@@ -21,23 +21,23 @@ depth = 60 # soil depth [cm]
 sim_init = '00:00:00'
 sim_end = '23:50:00'
 path = "../../modelparameter/functional/climate/"
-weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")      # |\label{6h:Tereno}
+weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")      # |\label{6h:Tereno}|
 line_init = weatherData.index[weatherData['time'] == sim_init].tolist()[0]
-line_end = weatherData.index[weatherData['time'] == sim_end].tolist()[0]       # |\label{6h:ParametersEnd}
+line_end = weatherData.index[weatherData['time'] == sim_end].tolist()[0]       # |\label{6h:ParametersEnd}|
 
 
 """ soil """
-min_ = np.array([-5, -5, -60])  # |\label{6h:Soil}
+min_ = np.array([-5, -5, -60])  # |\label{6h:Soil}|
 max_ = np.array([9, 4, 0])
 # res_ = np.array([5, 5, 5])
 soilSpace = pb.SDF_PlantContainer(max_[0] - min_[0], max_[1] - min_[1], max_[2] - min_[2], True) #to avoid root growing aboveground
 soil_index = lambda x,y,z : max(int(np.floor(-z)),-1) # abovegroud nodes get index -1
-p_s = np.linspace(Hs, Hs - depth, depth) # water potential per soil layer  # |\label{6h:SoilEnd}
+p_s = np.linspace(Hs, Hs - depth, depth) # water potential per soil layer  # |\label{6h:SoilEnd}|
 
 
 
 """ plant """
-plant = pb.MappedPlant() # |\label{6h:plant}
+plant = pb.MappedPlant() # |\label{6h:plant}|
 path = "../../modelparameter/structural/plant/"
 name = "Triticum_aestivum_test_2021" 
 plant.readParameters(path + name + ".xml")
@@ -47,7 +47,7 @@ plant.setSoilGrid(soil_index)
 
 verbose = False
 plant.initialize(verbose)
-plant.simulate(plant_age,verbose) # |\label{6h:plantEnd}
+plant.simulate(plant_age,verbose) # |\label{6h:plantEnd}|
 
 """ plant hydraulic properties """
 params = PlantHydraulicParameters()  # |\label{6h:hydraulicparams}|
