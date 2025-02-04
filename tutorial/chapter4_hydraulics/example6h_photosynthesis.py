@@ -63,7 +63,7 @@ hm.pCO2 = weatherData['co2'][0]
 # hm.write_photosynthesis_parameters(filename=path+"photosynthesis_parametersNew")   # |\label{6h:write}|
 
 results = {'transpiration':[],'An':[],'Vc':[],'Vj':[] }
-for i in range(line_init, line_end):
+for i in range(line_init, line_end): # |\label{6h:loop}|
     
     dt = (pd.to_timedelta(weatherData['time'][i]) - pd.to_timedelta(weatherData['time'][max(0,i-1)])).total_seconds()/(60*60*24)
     plant_age += dt
