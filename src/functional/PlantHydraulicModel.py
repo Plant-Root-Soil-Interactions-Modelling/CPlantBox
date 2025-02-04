@@ -88,7 +88,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         """
         raise "PlantHydraulicModel(): use implementations of this abstract super class, e.g. HydraulicModel_Meunier(), or HydraulicModel_Meunier()"
 
-    def solve_again(self, sim_time:float, t_act:list, rsx, cells:bool):
+    def solve_again(self, sim_time:float, t_act:list, rsx, cells:bool, soil_k = []):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
             Depending of the method solve_again() is much faster using chached factorization of the last solve() command
             @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
@@ -97,7 +97,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
             @return [cm] root matric potential per root system node  
         """
-        self.solve(sim_time, t_act, rsx, cells)
+        self.solve(sim_time, t_act, rsx, cells, soil_k)
 
     def radial_fluxes(self, sim_time:float, rx, rsx, cells = False):
         """ returns the radial fluxes per segment [cm3 day-1]"""
@@ -313,16 +313,18 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         super().__init__(ms, params, cached)
         self.usecached_ = False
 
-    def solve_dirichlet(self, sim_time:float, collar_pot:list, rsx, cells:bool):
+    def solve_dirichlet(self, sim_time:float, collar_pot:list, rsx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]           needed for age dependent conductivities (age = sim_time - segment creation time)
             @param collar_pot [cm]          collar potential
             @param rsx [cm]                 soil matric potentials given per segment or per soil cell            
-            @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False)  
+            @param cells                    indicates if the matric potentials are given per cell (True) or by segments (False) 
+            @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
+                                      conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)   
             @return [cm] root matric potential per root system node         
         """
         self.last = "dirichlet"
-        self.linearSystemMeunier(sim_time, rsx, cells)
+        self.linearSystemMeunier(sim_time, rsx, cells, soil_k)
         Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
 
         if isinstance(collar_pot, (float, int)):
@@ -335,16 +337,18 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         else:
             return LA.spsolve(Q, b, use_umfpack = True)
 
-    def solve_neumann(self, sim_time:float, t_act:list, rsx, cells:bool):
+    def solve_neumann(self, sim_time:float, t_act:list, rsx, cells:bool, soil_k = []):
         """ solves the flux equations, with a neumann boundary condtion, see solve()
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)
             @param t_act [cm3 day-1]    tranpirational flux is negative
             @param rsx [cm]             soil matric potentials given per segment or per soil cell
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)  
+            @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
+                                      conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root matric potential per root system node         
         """
         self.last = "neumann"
-        self.linearSystemMeunier(sim_time, rsx, cells)  # C++ (see XylemFlux.cpp)
+        self.linearSystemMeunier(sim_time, rsx, cells, soil_k)  # C++ (see XylemFlux.cpp)
         Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
 
         if isinstance(t_act, (float, int)):
@@ -357,23 +361,25 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
         else:
             return LA.spsolve(Q, b, use_umfpack = True)
 
-    def solve(self, sim_time:float, t_act:list, rsx, cells:bool):
+    def solve(self, sim_time:float, t_act:list, rsx, cells:bool, soil_k = []):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
             @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
+            @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
+                                      conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root matric potential per root system node  
         """
         if self.cached:  # store sparse LU factorization
-            self.linearSystemMeunier(sim_time, rsx, cells)  # self.aV, self.aB, self.aI, self.aJ
+            self.linearSystemMeunier(sim_time, rsx, cells, soil_k)  # self.aV, self.aB, self.aI, self.aJ
             Q = sparse.csc_matrix(sparse.coo_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ)))))
             self.neumannB = LA.splu(Q)  # for Neumann Q
             Q, b = self.bc_dirichlet(Q, self.aB, self.dirichlet_ind, [self.wilting_point] * len(self.dirichlet_ind))
             self.dirichletB = LA.splu(Q)  # for Dirichlet Q
             x = self.solve_again(sim_time, t_act, rsx, cells)
         else:
-            x = self.solve_neumann(sim_time, t_act, rsx, cells)  # try neumann, if below wilting point, switch to Dirichlet
+            x = self.solve_neumann(sim_time, t_act, rsx, cells, soil_k)  # try neumann, if below wilting point, switch to Dirichlet
             self.last = "neumann"
             if x[0] <= self.wilting_point:
                 Q = sparse.csc_matrix((np.array(self.aV), (np.array(self.aI), np.array(self.aJ))))
@@ -383,20 +389,22 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
 
         return x
 
-    def solve_again(self, sim_time:float, t_act:list, rsx, cells:bool):
+    def solve_again(self, sim_time:float, t_act:list, rsx, cells:bool, soil_k = []):
         """ Solves the hydraulic model using Neumann boundary conditions and switching to Dirichlet in case wilting point is reached
             Depending of the method solve_again() is much faster using chached factorization of the last solve() command
             @param sim_time [day]        needed for age dependent conductivities (age = sim_time - segment creation time)
             @param t_act [cm3 day-1]     transpiration rate
             @param rsx [cm]              soil matric potentials given per segment or per soil cell
             @param cells                 indicates if the matric potentials are given per cell (True) or by segments (False)
+            @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
+                                      conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm] root matric potential per root system node  
         """
         if not self.cached:
             print("HydraulicModel_Meunier.solve_again() warning: call without cached==True")
             return self.solve(sim_time, t_act, rsx, cells)
         self.usecached_ = True  # makes solve_neumann() and solve_dirichlet() to use the precomputed LU factorizuation
-        x = self.solve_neumann(sim_time, t_act, rsx, cells)  # try neumann, if below wilting point, switch to Dirichlet
+        x = self.solve_neumann(sim_time, t_act, rsx, cells, soil_k)  # try neumann, if below wilting point, switch to Dirichlet
         self.last = "neumann"
         self.usecached_ = False  # only True, during solve_again() call
         if x[0] <= self.wilting_point:
@@ -407,15 +415,17 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
 
         return x
 
-    def radial_fluxes(self, sim_time, rx, rsx, cells = False):
+    def radial_fluxes(self, sim_time, rx, rsx, cells = False, soil_k = []):
         """ returns the exact radial fluxes per segment (calls base class)
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
             @param rx [cm]              root xylem matric potentials per root system node
             @param rsx [cm]             soil matric potentials given per segment or per soil cell
             @param cells                indicates if the matric potentials are given per cell (True) or by segments (False)
+            @param soil_k [day-1]     optionally, soil conductivities can be prescribed per segment, 
+                                      conductivity at the root surface will be limited by the value, i.e. kr = min(kr_root, k_soil)  
             @return [cm3 day-1] radial volumetric flow rate            
         """
-        return np.array(self.getRadialFluxes(sim_time, rx, rsx, False, cells))  # approx = False
+        return np.array(self.getRadialFluxes(sim_time, rx, rsx, False, cells, soil_k))  # approx = False
 
     def axial_fluxes(self, sim_time, rx, rsx, cells = False):
         """ returns the axial fluxes 

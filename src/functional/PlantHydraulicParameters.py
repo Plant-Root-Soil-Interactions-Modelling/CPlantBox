@@ -60,12 +60,12 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             else:
                 subTypes = subType
         if organType == -1:
-            organTypes = range(0, 10)
+            organTypes = [pb.OrganTypes.root,pb.OrganTypes.stem,pb.OrganTypes.leaf] 
         else:
-            if isinstance(organType, int):
+            if isinstance(organType, (int,pb.OrganTypes)):
                 organTypes = [organType]
             else:
-                organTypes = organType
+                organTypes = organType                
         for ot in organTypes:
             for st in subTypes:
                 # print(f, st, ot)
