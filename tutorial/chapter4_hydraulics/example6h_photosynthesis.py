@@ -89,7 +89,7 @@ for i in range(line_init, line_end): # |\label{6h:loop}|
 
 timePlot = weatherData[line_init:line_end]['time']
 
-fig, axs = plt.subplots(2, 2)
+fig, axs = plt.subplots(2, 2) # |\label{6h:plot}|
 axs[0, 0].plot(timePlot, results['An'])
 axs[0, 0].set(xlabel = '', ylabel = 'total net actual\nassimilation rate[mmol CO2 d-1]')
 axs[0, 0].xaxis.set_major_locator(MaxNLocator(5))
