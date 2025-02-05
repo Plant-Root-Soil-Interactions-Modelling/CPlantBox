@@ -147,7 +147,6 @@ class TestMycorrhizalRoot(unittest.TestCase):
 
     def test_primary_infection(self):
         """ tests spontaneous infection on sequential organ list """
-        # THIS TEST IS CURRENTLY NOT PASSING BUT NOT SURE WHETHER IT IS A PROBLEM OR NOT
         self.mycroot_example_rrp()
         simtime = 1.
         self.mycroot.simulate(simtime, False)
@@ -163,7 +162,7 @@ class TestMycorrhizalRoot(unittest.TestCase):
     def test_secondary_infection(self):
         """ test whether secondary infecions are positioned correctly """
         self.mycroot_example_rrp()
-        simtime = 3. ## only works if simtime is larger than 3
+        simtime = 3. 
         self.mycroot.simulate(simtime, False)
         wrong_pos=[]
         infected =[]

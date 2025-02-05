@@ -1,5 +1,7 @@
 #include "MycorrhizalRoot.h"
 #include "Root.h"
+#include "Stem.h"
+#include "Leaf.h"
 #include "Organ.h"
 #include "Organism.h"
 
@@ -8,12 +10,13 @@ namespace CPlantBox {
 MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
      :Root(id, param, alive, active, age, length,
-	 partialIHeading_,pni, moved,  oldNON ) {}
+	 partialIHeading_,pni, moved,  oldNON ) {std::cout << "MycorrhizalRoot Constructor 1 called" << std::endl;}
 
 MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Root(rs,type, delay,parent, pni) {}
+:Root(rs,type, delay,parent, pni) {std::cout << "MycorrhizalRoot Constructur 2 called" << std::endl;}
 
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
+    std::cout << "MycorrhizalRoot::addNode called" << std::endl;
     Organ::addNode(n, id,  t,  index, shift);
     infected.push_back(0);
     infectionTime.push_back(-1);
@@ -22,89 +25,153 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
-{
+{   
+    std::cout << "MycorrhizalRoot::simulate called" << std::endl;
     Root::simulate(dt,verbose);
  
 
-    if (this->nodes.size()>1) {
-		//Primary Infection
-		for (size_t i=1; i<nodes.size(); i++) {
+    // if (this->nodes.size()>1) {
+	// 	//Primary Infection
+	// 	for (size_t i=1; i<nodes.size(); i++) {
 			
-            double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-            if ((plant.lock()->rand() < (getRootRandomParameter()->p*dt*cursegLength)) && (infected.at(i-1) == 0))
-            {
-                infected.at(i-1) = 1;
-                infectionTime.at(i-1) = age + dt;
+    //         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
+    //         if ((plant.lock()->rand() < (getRootRandomParameter()->p*dt*cursegLength)) && (infected.at(i-1) == 0))
+    //         {
+    //             infected.at(i-1) = 1;
+    //             infectionTime.at(i-1) = age + dt;
                 
-		    }
-	    }
+	// 	    }
+	//     }
 
-        //Secondary Infection
-        auto max_length_infection = dt*getRootRandomParameter()->vi;
-        for (size_t i = 1; i < nodes.size(); i++)
-        {
-            if (infected.at(i-1) == 1)
-            {
-                auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
-                auto basalnode = i-2;
+    //     //Secondary Infection
+    //     auto max_length_infection = dt*getRootRandomParameter()->vi;
+    //     for (size_t i = 1; i < nodes.size(); i++)
+    //     {
+    //         if (infected.at(i-1) == 1)
+    //         {
+    //             auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
+    //             auto basalnode = i-2;
                 
-                while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
-                {
-                    infected.at(basalnode) = 2;
-                    infectionTime.at(basalnode) = age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
-                    basalnode--;
-                }
+    //             while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
+    //             {
+    //                 infected.at(basalnode) = 2;
+    //                 infectionTime.at(basalnode) = age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+    //                 basalnode--;
+    //             }
 
-                auto max_length_apical = nodes.at(i-1).length() + max_length_infection;
-                auto apicalnode = i;
+    //             auto max_length_apical = nodes.at(i-1).length() + max_length_infection;
+    //             auto apicalnode = i;
                 
-                while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
-                {
-                    infected.at(apicalnode) = 2;
-                    infectionTime.at(apicalnode) = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; 
-                    apicalnode++;
-                }
-            }
-        }
+    //             while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
+    //             {
+    //                 infected.at(apicalnode) = 2;
+    //                 infectionTime.at(apicalnode) = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; 
+    //                 apicalnode++;
+    //             }
+    //         }
+    //     }
         
-        for (auto l:children)
-        {
-            for (size_t i = 1; i < nodes.size(); i++)
-            {
-                if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
-                {
-                     double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
-                     std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
-                }
-            }
+    //     for (auto l:children)
+    //     {
+    //         for (size_t i = 1; i < nodes.size(); i++)
+    //         {
+    //             if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
+    //             {
+    //                  double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
+    //                  std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
+    //             }
+    //         }
             
             
-        }
+    //     }
         
-    }
+    // }
 
 }
     
 std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
 {
+    std::cout << "MycorrhizalRoot::param called" << std::endl;
     return std::static_pointer_cast<const MycorrhizalRootSpecificParameter>(param_);
 }
 
 std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomParameter() const
-{
+{   
+    std::cout << "MycorrhizalRoot::getRootRandomParameter called" << std::endl;
     return std::static_pointer_cast<MycorrhizalRootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 
 double MycorrhizalRoot::getParameter(std::string name) const {
+    std::cout << "MycorrhizalRoot::getParameter called" << std::endl;
     // if (name == "infected") {return param() -> infected;}
     return Root::getParameter(name);
 }
 
 void MycorrhizalRoot::setInfection(int i, int infection, double t)
-{
+{   
+    std::cout << "MycorrhizalRoot::setInfection called" << std::endl;
     infected.at(i) = infection;
     infectionTime.at(i) = t;
 }
 
+void MycorrhizalRoot::createLateral(double dt, bool verbose)
+{
+    std::cout << "MycorrhizalRoot::createLateral called" << std::endl;
+	auto rp = getOrganRandomParameter(); // rename
+
+	for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
+		//found id
+		bool applyHere = getApplyHere(i);
+
+		if(applyHere)
+		{
+			int numlats = 1;//how many laterals? default = 1
+			if(rp->successorNo.size()>i){numlats =  rp->successorNo.at(i);}
+			for(int nn = 0; nn < numlats; nn++)
+			{
+
+				const Vector3d& pos = Vector3d();
+				int p_id = rp->getLateralType(pos, i);//if probabilistic branching
+
+				if(p_id >=0)
+				{
+					int ot;
+
+					if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
+						ot = rp->successorOT.at(i).at(p_id);
+					}else{ot = getParameter("organType");}//default
+
+					int st = rp->successorST.at(i).at(p_id);
+
+					double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
+					double growth_dt = getLatInitialGrowth(dt);
+
+
+					switch(ot){
+						case Organism::ot_root:{
+							auto lateral = std::make_shared<MycorrhizalRoot>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
+							children.push_back(lateral);
+							lateral->simulate(growth_dt,verbose);
+							break;}
+						case Organism::ot_stem:{
+							auto lateral = std::make_shared<Stem>(plant.lock(), st, delay, shared_from_this(),  nodes.size() - 1);
+							children.push_back(lateral);
+							lateral->simulate(growth_dt,verbose);
+							break;}
+						case Organism::ot_leaf:{
+							auto lateral = std::make_shared<Leaf>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
+							children.push_back(lateral);
+							lateral->simulate(growth_dt,verbose);//age-ageLN,verbose);
+							break;}
+					}
+				}
+			}
+		}
+
+	}
+	created_linking_node ++;
+	storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
+
+}
 
 }

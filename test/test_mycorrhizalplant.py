@@ -24,10 +24,10 @@ class TestPlant(unittest.TestCase):
         leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
 #         for p_ in seeds:
 #             print(p_)
-#         for p_ in roots[1:]:
-#             print(p_)
-#         for p_ in stems[1:]:
-#             print(p_)
+        # for p_ in roots[1:]:
+        #     print(p_)
+        # for p_ in stems[1:]:
+        #     print(p_)
 #         for p_ in leafs[1:]:
 #             print(p_)
 
@@ -50,11 +50,11 @@ class TestPlant(unittest.TestCase):
     def test_convert(self):
         """tests the functions needed by the convert function of CPlantBox_PiafMunch.py"""
         p = pb.MycorrhizalPlant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = True)
         p.initialize(False)
         p.simulate(76)
         nodes = np.array([np.array(a) / 100 for a in p.getNodes()])  # convert to numpy array, and from cm to m
-        #print(nodes.shape)
+        # print(nodes.shape)
         rseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.root)])  # root system segments
         #print(rseg.shape)
         sseg = np.array([np.array(s) for s in p.getSegments(pb.OrganTypes.stem)])  # stem system segments

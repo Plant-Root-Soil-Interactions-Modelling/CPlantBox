@@ -6,16 +6,17 @@ import visualisation.vtk_plot as vp
 
 mycp = pb.MycorrhizalPlant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-mycp.readParameters(path + name + ".xml")
+name = "Heliantus_Pagès_2013"
+mycp.readParameters(path + name + ".xml",fromFile = True, verbose = True)
 
-mycp.initialize()
-
+mycp.initialize(False)
+print(mycp.getOrganRandomParameter(2))
 mycp.simulate(30, True)
+# params = mycp.getOrganRandomParameter(2)
+# print(params[1])
 
-for o in mycp.getOrgans():
-    print(o)
-
+# CTs = mycp.getNodeCTs()
+# print(CTs)
 
 # infs = mycp.getNodeInfections(pb.root)
 # print(infs)
