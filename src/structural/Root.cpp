@@ -101,6 +101,7 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
+    std::cout << "Root::simulate called" << std::endl;
     // std::cout << "\nstart" << getId() <<  std::flush;
     firstCall = true;
     moved = false;
