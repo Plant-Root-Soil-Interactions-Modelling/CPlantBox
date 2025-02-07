@@ -30,62 +30,62 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     Root::simulate(dt,verbose);
  
 
-    // if (this->nodes.size()>1) {
-	// 	//Primary Infection
-	// 	for (size_t i=1; i<nodes.size(); i++) {
+    if (this->nodes.size()>1) {
+		//Primary Infection
+		for (size_t i=1; i<nodes.size(); i++) {
 			
-    //         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-    //         if ((plant.lock()->rand() < (getRootRandomParameter()->p*dt*cursegLength)) && (infected.at(i-1) == 0))
-    //         {
-    //             infected.at(i-1) = 1;
-    //             infectionTime.at(i-1) = age + dt;
-                
-	// 	    }
-	//     }
+            double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
+            if ((plant.lock()->rand() < (getRootRandomParameter()->p*dt*cursegLength)) && (infected.at(i-1) == 0))
+            {
+                setInfection(i-1,1,age + dt);
+		    }
+	    }
 
-    //     //Secondary Infection
-    //     auto max_length_infection = dt*getRootRandomParameter()->vi;
-    //     for (size_t i = 1; i < nodes.size(); i++)
-    //     {
-    //         if (infected.at(i-1) == 1)
-    //         {
-    //             auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
-    //             auto basalnode = i-2;
+        // Secondary Infection
+        // TODO check the timing issue ie if computationally something gets infected sooner at runtime but actually sooner in real time!!
+        auto max_length_infection = dt*getRootRandomParameter()->vi;
+        for (size_t i = 1; i < nodes.size(); i++)
+        {
+            if (infected.at(i-1) == 1)
+            {
+                auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
+                auto basalnode = i-2;
+                double infectionage;
                 
-    //             while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
-    //             {
-    //                 infected.at(basalnode) = 2;
-    //                 infectionTime.at(basalnode) = age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
-    //                 basalnode--;
-    //             }
+                while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
+                {
+                    infectionage =age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+                    setInfection(basalnode,2,infectionage); 
+                    basalnode--;
+                }
 
-    //             auto max_length_apical = nodes.at(i-1).length() + max_length_infection;
-    //             auto apicalnode = i;
+                auto max_length_apical = nodes.at(i-1).length() + max_length_infection;
+                auto apicalnode = i;
                 
-    //             while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
-    //             {
-    //                 infected.at(apicalnode) = 2;
-    //                 infectionTime.at(apicalnode) = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; 
-    //                 apicalnode++;
-    //             }
-    //         }
-    //     }
+                while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
+                {
+                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
+                    setInfection(apicalnode,2,infectionage);
+                    apicalnode++;
+                }
+            }
+        }
         
-    //     for (auto l:children)
-    //     {
-    //         for (size_t i = 1; i < nodes.size(); i++)
-    //         {
-    //             if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
-    //             {
-    //                  double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
-    //                  std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
-    //             }
-    //         }
+        for (auto l:children)
+        {
+            for (size_t i = 1; i < nodes.size(); i++)
+            {
+                if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
+                {
+                     double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; //TODO check that this is correct
+                     std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
+                }
+            }
             
             
-    //     }
+        }
         
-    // }
+    }
 
 }
     
