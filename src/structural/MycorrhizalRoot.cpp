@@ -35,7 +35,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 		for (size_t i=1; i<nodes.size(); i++) {
 			
             double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-            if ((plant.lock()->rand() < (getRootRandomParameter()->p*dt*cursegLength)) && (infected.at(i-1) == 0))
+            if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
             {
                 setInfection(i-1,1,age + dt);
 		    }
@@ -71,19 +71,19 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
             }
         }
         
-        for (auto l:children)
-        {
-            for (size_t i = 1; i < nodes.size(); i++)
-            {
-                if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
-                {
-                     double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; //TODO check that this is correct
-                     std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
-                }
-            }
+        // for (auto l:children)
+        // {
+        //     for (size_t i = 1; i < nodes.size(); i++)
+        //     {
+        //         if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
+        //         {
+        //              double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; //TODO check that this is correct
+        //              std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
+        //         }
+        //     }
             
             
-        }
+        // }
         
     }
 

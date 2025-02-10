@@ -15,8 +15,8 @@ mycp.simulate(30, True)
 # params = mycp.getOrganRandomParameter(2)
 # print(params[1])
 
-# CTs = mycp.getNodeCTs()
-# print(CTs)
+CTs = mycp.getNodeCTs()
+print(CTs)
 
 # infs = mycp.getNodeInfections(pb.root)
 # print(infs)

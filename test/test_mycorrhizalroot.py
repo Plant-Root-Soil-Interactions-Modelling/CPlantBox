@@ -148,11 +148,11 @@ class TestMycorrhizalRoot(unittest.TestCase):
     def test_primary_infection(self):
         """ tests spontaneous infection on sequential organ list """
         self.mycroot_example_rrp()
-        simtime = 1.
+        simtime = 5.
         self.mycroot.simulate(simtime, False)
         infected = [0]*(self.mycroot.getNumberOfNodes())
         for i in range(1, self.mycroot.getNumberOfNodes()-1):
-            if (self.mycroot.getNodeInfection(i) == 1 and self.mycroot.getNodeInfection(i-1) == 0):
+            if (self.mycroot.getNodeInfection(i) == 1):
                 infected[i] = (self.mycroot.getNode(i).minus(self.mycroot.getNode(i-1))).length();
         infRoots = sum(infected)
         numRoots = self.mycroot.getParameter("length")
@@ -162,7 +162,7 @@ class TestMycorrhizalRoot(unittest.TestCase):
     def test_secondary_infection(self):
         """ test whether secondary infecions are positioned correctly """
         self.mycroot_example_rrp()
-        simtime = 3. 
+        simtime = 10. 
         self.mycroot.simulate(simtime, False)
         wrong_pos=[]
         infected =[]
