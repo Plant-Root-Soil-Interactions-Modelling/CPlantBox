@@ -17,6 +17,9 @@ namespace CPlantBox {
     mycrrp -> subType = 0;
     setOrganRandomParameter(mycrrp);
     //new Parameters end here
+    // auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
+    // rrp -> subType = 0;
+    // setOrganRandomParameter(rrp);
     auto srp = std::make_shared<SeedRandomParameter>(shared_from_this());
     srp->subType = 0;
     setOrganRandomParameter(srp);

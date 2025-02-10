@@ -23,6 +23,18 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 }
 
 
+std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
+{
+    auto r = std::make_shared<MycorrhizalRoot>(*this); // shallow copy
+    r->parent = std::weak_ptr<Organ>();
+    r->plant = rs;
+    r->param_ = std::make_shared<MycorrhizalRootSpecificParameter>(*param()); // copy parameters
+    for (size_t i=0; i< children.size(); i++) {
+        r->children[i] = children[i]->copy(rs); // copy laterals
+        r->children[i]->setParent(r);
+    }
+    return r;
+}
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {   
@@ -35,7 +47,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 		for (size_t i=1; i<nodes.size(); i++) {
 			
             double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-            if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
+            if ((plant.lock()->rand() < 1 - pow(1-getMycorrhizalRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
             {
                 setInfection(i-1,1,age + dt);
 		    }
@@ -43,7 +55,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
         // Secondary Infection
         // TODO check the timing issue ie if computationally something gets infected sooner at runtime but actually sooner in real time!!
-        auto max_length_infection = dt*getRootRandomParameter()->vi;
+        auto max_length_infection = dt*getMycorrhizalRootRandomParameter()->vi;
         for (size_t i = 1; i < nodes.size(); i++)
         {
             if (infected.at(i-1) == 1)
@@ -54,7 +66,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 
                 while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
-                    infectionage =age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+                    infectionage =age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getMycorrhizalRootRandomParameter()->vi; 
                     setInfection(basalnode,2,infectionage); 
                     basalnode--;
                 }
@@ -64,7 +76,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 
                 while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
                 {
-                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
+                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getMycorrhizalRootRandomParameter()->vi;
                     setInfection(apicalnode,2,infectionage);
                     apicalnode++;
                 }
@@ -81,8 +93,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         //              std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
         //         }
         //     }
-            
-            
         // }
         
     }
@@ -95,9 +105,9 @@ std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param()
     return std::static_pointer_cast<const MycorrhizalRootSpecificParameter>(param_);
 }
 
-std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomParameter() const
+std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getMycorrhizalRootRandomParameter() const
 {   
-    std::cout << "MycorrhizalRoot::getRootRandomParameter called" << std::endl;
+    std::cout << "MycorrhizalRoot::getMycorrhizalRootRandomParameter called" << std::endl;
     return std::static_pointer_cast<MycorrhizalRootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 
