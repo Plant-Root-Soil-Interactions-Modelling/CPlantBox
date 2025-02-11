@@ -25,6 +25,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 
 std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 {
+    std::cout<< "MycorrhizalRoot::copy called" << std::endl;
     auto r = std::make_shared<MycorrhizalRoot>(*this); // shallow copy
     r->parent = std::weak_ptr<Organ>();
     r->plant = rs;
@@ -38,7 +39,7 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {   
-    std::cout << "MycorrhizalRoot::simulate called" << std::endl;
+    std::cout << "MycorrhizalRoot::simulate called in MycorrhizalRoot" << std::endl;
     Root::simulate(dt,verbose);
  
 

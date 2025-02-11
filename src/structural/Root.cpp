@@ -27,6 +27,7 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
 	 partialIHeading_,pni, moved,  oldNON )
       {
     insertionAngle = this->param()->theta;
+    std::cout << "Root::Root called" << std::endl;
       }
 
 
@@ -45,6 +46,7 @@ Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool ali
 Root::Root(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
 :Organ(rs, parent, Organism::ot_root, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
 {
+    std::cout << "Root::Root called" << std::endl;
     assert(parent!=nullptr && "Root::Root parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     double theta = param()->theta;
@@ -101,7 +103,7 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
-    std::cout << "Root::simulate called" << std::endl;
+    std::cout << "Root::simulate called in Root" << std::endl;
     // std::cout << "\nstart" << getId() <<  std::flush;
     firstCall = true;
     moved = false;
@@ -259,6 +261,7 @@ double Root::calcAge(double length) const
  */
 std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const
 {
+    std::cout << "Root::getRootRandomParameter called" << std::endl;
     return std::static_pointer_cast<RootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 

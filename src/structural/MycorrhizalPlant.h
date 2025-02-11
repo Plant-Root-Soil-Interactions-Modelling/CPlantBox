@@ -14,6 +14,9 @@ namespace CPlantBox {
         void initializeReader() override; ///< initializes XML reader
         void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {std::cout<< "MycorrhizalPlant::readParameter called"<<std::endl; this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
         
+        std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay);
+
+
         // virtual std::vector<int> getNodeInfections(int ot) const;
         // virtual std::vector<int> getSegmentInfections(int ot) const;
 

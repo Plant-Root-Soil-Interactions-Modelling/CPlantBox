@@ -24,6 +24,7 @@ Plant::Plant(unsigned int seednum): Organism(seednum)
  */
 std::shared_ptr<Organism> Plant::copy()
 {
+    std::cout << "Plant::copy called" << std::endl;
     auto no = std::make_shared<Plant>(*this); // copy constructor
     for (int i=0; i<baseOrgans.size(); i++) {
         no->baseOrgans[i] = baseOrgans[i]->copy(no);
@@ -43,6 +44,7 @@ std::shared_ptr<Organism> Plant::copy()
  */
 void Plant::initializeReader()
 {
+    std::cout << "Plant::initializeReader called" << std::endl;
     auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
     rrp->subType = 0;
     setOrganRandomParameter(rrp);
@@ -65,6 +67,7 @@ void Plant::initializeReader()
  */
 void Plant::reset()
 {
+    std::cout << "Plant::reset called" << std::endl;
     baseOrgans.clear();
     simtime = 0;
     organId = -1;
@@ -82,7 +85,7 @@ void Plant::reset()
 void Plant::initialize_(bool verbose)
 {
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
-
+    std::cout << "Plant::initialize_ called" << std::endl;
     // further initializations
 	initCallbacks();
 }
@@ -100,6 +103,7 @@ void Plant::initialize_(bool verbose)
 void Plant::initializeLB(bool verbose )
 {
     reset(); // just in case
+    std::cout << "Plant::initializeLB called" << std::endl;
     auto seed = std::make_shared<Seed>(shared_from_this());
     baseOrgans.push_back(seed);
 	seed->initialize(verbose);
@@ -119,7 +123,7 @@ void Plant::initializeLB(bool verbose )
 void Plant::initializeDB(bool verbose)
 {
 	reset(); // just in case
-
+    std::cout << "Plant::initializeDB called" << std::endl;
     class SeedDB :public Seed { // make the seed use the RootDelay class
     	using Seed::Seed;
     	std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type,  double delay) override {
@@ -140,6 +144,7 @@ void Plant::initializeDB(bool verbose)
  */
 void Plant::initCallbacks()
 {
+    std::cout << "Plant::initCallbacks called" << std::endl;
     // Create tropisms and growth functions per random root parameter
     for (auto& p_otp :organParam[Organism::ot_root]) {
 		auto rp = std::static_pointer_cast<RootRandomParameter>(p_otp.second);
@@ -226,6 +231,7 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  */
 	void Plant::simulate(double dt, bool verbose)
 {
+    std::cout << "Plant::simulate called" << std::endl;
 	abs2rel();
     Organism::simulate(dt, verbose);
 	rel2abs();
