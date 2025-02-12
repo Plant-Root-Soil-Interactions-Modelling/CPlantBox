@@ -34,6 +34,22 @@ namespace CPlantBox {
     setOrganRandomParameter(lrp);
 }
 
+void MycorrhizalPlant::initializeLB(bool verbose)
+{
+    std::cout << "MycorrhizalPlant::initializeLB called" << std::endl;
+    Plant::reset(); // just in case
+    class MycorrhizalSeed :public Seed{
+        using Seed::Seed;
+        std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
+            return std::make_shared<MycorrhizalRoot>(plant, type, delay, shared_from_this(), 0);
+        };
+    };
+    auto seed = std::make_shared<MycorrhizalSeed>(shared_from_this());
+    baseOrgans.push_back(seed);
+    seed->initialize(verbose);
+    Plant::initialize_(verbose);
+}
+
 std::shared_ptr<Organ> MycorrhizalPlant::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
     class MycorrhizalSeed : public Seed{
         using Seed::Seed;
