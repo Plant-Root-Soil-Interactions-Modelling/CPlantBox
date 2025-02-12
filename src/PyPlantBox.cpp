@@ -953,7 +953,8 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("getNodeIds",&MappedPlant::getNodeIds);
 
         py::class_<MycorrhizalPlant, Plant, std::shared_ptr<MycorrhizalPlant>>(m,"MycorrhizalPlant")
-                        .def(py::init<unsigned int>(), py::arg("seednum")=0);
+                        .def(py::init<unsigned int>(), py::arg("seednum")=0)
+                        .def("createRoot", &MycorrhizalPlant::createRoot);
                         // .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections)
                         // .def("getSegmentInfections",&MycorrhizalPlant::getSegmentInfections);
 	/**

@@ -41,6 +41,7 @@ std::shared_ptr<Organ> MycorrhizalPlant::createRoot(std::shared_ptr<Organism> pl
             return std::make_shared<MycorrhizalRoot>(plant, type, delay, shared_from_this(), 0);
         };
     };
+    std::cout << "MycorrhizalPlant::createRoot called" << std::endl;
     auto root = std::make_shared<MycorrhizalSeed>(shared_from_this());
     return root;
 }

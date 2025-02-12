@@ -16,7 +16,7 @@ class TestPlant(unittest.TestCase):
     def test_CPlantBox(self):
         """tests the functions needed by CPlantBox defined in CPlantBox_PiafMunch.py"""
         p = pb.MycorrhizalPlant()
-        p.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = False)
+        p.readParameters(path + "Heliantus_Pagès_2013.xml",fromFile = True, verbose = True)
 
         seeds = p.getOrganRandomParameter(pb.OrganTypes.seed)
         roots = p.getOrganRandomParameter(pb.OrganTypes.root)
@@ -24,8 +24,8 @@ class TestPlant(unittest.TestCase):
         leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
 #         for p_ in seeds:
 #             print(p_)
-        # for p_ in roots[1:]:
-        #     print(p_)
+        for p_ in roots[1:]:
+            print(p_)
         # for p_ in stems[1:]:
         #     print(p_)
 #         for p_ in leafs[1:]:
