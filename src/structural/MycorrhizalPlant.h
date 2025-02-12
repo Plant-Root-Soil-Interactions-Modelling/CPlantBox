@@ -16,7 +16,6 @@ namespace CPlantBox {
         
         virtual std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay);
 
-
         // virtual std::vector<int> getNodeInfections(int ot) const;
         // virtual std::vector<int> getSegmentInfections(int ot) const;
 
