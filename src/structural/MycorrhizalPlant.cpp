@@ -37,7 +37,7 @@ namespace CPlantBox {
 void MycorrhizalPlant::initializeLB(bool verbose)
 {
     std::cout << "MycorrhizalPlant::initializeLB called" << std::endl;
-    Plant::reset(); // just in case
+    reset(); // just in case
     class MycorrhizalSeed :public Seed{
         using Seed::Seed;
         std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
@@ -47,7 +47,7 @@ void MycorrhizalPlant::initializeLB(bool verbose)
     auto seed = std::make_shared<MycorrhizalSeed>(shared_from_this());
     baseOrgans.push_back(seed);
     seed->initialize(verbose);
-    Plant::initialize_(verbose);
+    initialize_(verbose);
 }
 
 std::shared_ptr<Organ> MycorrhizalPlant::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
