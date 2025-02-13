@@ -9,7 +9,7 @@ path = "../../modelparameter/structural/rootsystem/"
 name = "Heliantus_Pagès_2013"
 mycp.readParameters(path + name + ".xml",fromFile = True, verbose = True)
 
-mycp.initialize()
+mycp.initialize(True)
 # print(mycp.getOrganRandomParameter(2))
 mycp.simulate(30, True)
 params = mycp.getOrganRandomParameter(2)

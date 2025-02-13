@@ -88,10 +88,9 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         // {
         //     for (size_t i = 1; i < nodes.size(); i++)
         //     {
-        //         if (getNodeId(i-1) == getNodeId(l->parentNI) && infected.at(i-1) == 2)
-        //         {
-        //              double infectionage = age + nodes.at(i).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi; //TODO check that this is correct
-        //              std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionage);
+        //         if (getNodeId(i-1) == getNodeId(l->getNode(0)) && infected.at(i-1) == 2)
+        //         { 
+        //             std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionTime.at(i-1));
         //         }
         //     }
         // }

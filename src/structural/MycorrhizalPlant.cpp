@@ -50,17 +50,17 @@ void MycorrhizalPlant::initializeLB(bool verbose)
     initialize_(verbose);
 }
 
-std::shared_ptr<Organ> MycorrhizalPlant::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
-    class MycorrhizalSeed : public Seed{
-        using Seed::Seed;
-        std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
-            return std::make_shared<MycorrhizalRoot>(plant, type, delay, shared_from_this(), 0);
-        };
-    };
-    std::cout << "MycorrhizalPlant::createRoot called" << std::endl;
-    auto root = std::make_shared<MycorrhizalSeed>(shared_from_this());
-    return root;
-}
+// std::shared_ptr<Organ> MycorrhizalPlant::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
+//     class MycorrhizalSeed : public Seed{
+//         using Seed::Seed;
+//         std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
+//             return std::make_shared<MycorrhizalRoot>(plant, type, delay, shared_from_this(), 0);
+//         };
+//     };
+//     std::cout << "MycorrhizalPlant::createRoot called" << std::endl;
+//     auto root = std::make_shared<MycorrhizalSeed>(shared_from_this());
+//     return root;
+// }
 // std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
 //     auto organs = this -> getOrgans(ot);
 //     std::vector<int> infs = std::vector<int>(getNumberOfNodes());
