@@ -24,8 +24,8 @@ class TestPlant(unittest.TestCase):
         leafs = p.getOrganRandomParameter(pb.OrganTypes.leaf)
 #         for p_ in seeds:
 #             print(p_)
-        for p_ in roots[1:]:
-            print(p_)
+        # for p_ in roots[1:]:
+        #     print(p_)
         # for p_ in stems[1:]:
         #     print(p_)
 #         for p_ in leafs[1:]:

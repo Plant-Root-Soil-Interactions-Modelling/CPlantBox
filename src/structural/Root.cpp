@@ -261,7 +261,7 @@ double Root::calcAge(double length) const
  */
 std::shared_ptr<RootRandomParameter> Root::getRootRandomParameter() const
 {
-    std::cout << "Root::getRootRandomParameter called" << std::endl;
+    // std::cout << "Root::getRootRandomParameter called" << std::endl;
     return std::static_pointer_cast<RootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 

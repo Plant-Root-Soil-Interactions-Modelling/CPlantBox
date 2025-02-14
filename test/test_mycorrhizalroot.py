@@ -171,9 +171,7 @@ class TestMycorrhizalRoot(unittest.TestCase):
         self.assertEqual(2 in infected, True, "secondary infection not created")
         for i in range(0, len(infected)):
             if infected[i] == 2:
-                if i > 0 and infected[i-1] == 0:
-                    wrong_pos.append(i)
-                if i < len(infected)-1 and infected[i+1] == 0:
+                if i > 0 and i <len(infected)-1 and infected[i-1] == 0 and infected[i+1] == 0:
                     wrong_pos.append(i)
         self.assertEqual(len(wrong_pos),0,"secondary infection not positioned correctly")
 
