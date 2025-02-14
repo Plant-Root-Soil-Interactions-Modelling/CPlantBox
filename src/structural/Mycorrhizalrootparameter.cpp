@@ -5,7 +5,7 @@
 namespace CPlantBox {
     void MycorrhizalRootRandomParameter::bindParameters(){
         std::cout << "MycorrhizalRootRandomParameter::bindParameters called" << std::endl;
-        // RootRandomParameter::bindParameters();
+        RootRandomParameter::bindParameters();
         bindParameter("p", &p, "Probability of primary infection for dispersed inoculum [1/(cm day)]");
         bindParameter("minAge", &minAge, "Minimal infectious age of a root segment [day]");
         bindParameter("maxAge", &maxAge, "Maximal infection age of a root segment [day]");

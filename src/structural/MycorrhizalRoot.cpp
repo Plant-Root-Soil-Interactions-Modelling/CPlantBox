@@ -48,7 +48,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 		for (size_t i=1; i<nodes.size(); i++) {
 			
             double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-            if ((plant.lock()->rand() < 1 - pow(1-getMycorrhizalRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
+            if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
             {
                 setInfection(i-1,1,age + dt);
 		    }
@@ -56,7 +56,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
         // Secondary Infection
         // TODO check the timing issue ie if computationally something gets infected sooner at runtime but actually sooner in real time!!
-        auto max_length_infection = dt*getMycorrhizalRootRandomParameter()->vi;
+        auto max_length_infection = dt*getRootRandomParameter()->vi;
         for (size_t i = 1; i < nodes.size(); i++)
         {
             if (infected.at(i-1) == 1)
@@ -67,7 +67,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 
                 while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
-                    infectionage =age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getMycorrhizalRootRandomParameter()->vi; 
+                    infectionage =age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
                     setInfection(basalnode,2,infectionage); 
                     basalnode--;
                 }
@@ -77,20 +77,22 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 
                 while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
                 {
-                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getMycorrhizalRootRandomParameter()->vi;
+                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
                     setInfection(apicalnode,2,infectionage);
                     apicalnode++;
                 }
             }
         }
         
-        // for (auto l:children)
+        // for (auto l : children) // TODO broken
         // {
-        //     for (size_t i = 1; i < nodes.size(); i++)
+        //     if (infected.at(l->parentNI) == 2)
         //     {
-        //         if (getNodeId(i-1) == getNodeId(l->getNode(0)) && infected.at(i-1) == 2)
-        //         { 
-        //             std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> setInfection(0,3,infectionTime.at(i-1));
+        //         auto mycorrhizalChild = std::dynamic_pointer_cast<MycorrhizalRoot>(l);
+        //         if (mycorrhizalChild)
+        //         {
+        //             mycorrhizalChild->setInfection(0, 3, infectionTime.at(l->parentNI));
+        //             // std::cout << infectionTime.at(l->parentNI) << std::endl;
         //         }
         //     }
         // }
@@ -101,18 +103,18 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     
 std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
 {
-    std::cout << "MycorrhizalRoot::param called" << std::endl;
+    // std::cout << "MycorrhizalRoot::param called" << std::endl;
     return std::static_pointer_cast<const MycorrhizalRootSpecificParameter>(param_);
 }
 
-std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getMycorrhizalRootRandomParameter() const
+std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomParameter() const
 {   
-    std::cout << "MycorrhizalRoot::getMycorrhizalRootRandomParameter called" << std::endl;
+    // std::cout << "MycorrhizalRoot::getRootRandomParameter called" << std::endl;
     return std::static_pointer_cast<MycorrhizalRootRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_root, param_->subType));
 }
 
 double MycorrhizalRoot::getParameter(std::string name) const {
-    std::cout << "MycorrhizalRoot::getParameter called" << std::endl;
+    // std::cout << "MycorrhizalRoot::getParameter called" << std::endl;
     // if (name == "infected") {return param() -> infected;}
     return Root::getParameter(name);
 }

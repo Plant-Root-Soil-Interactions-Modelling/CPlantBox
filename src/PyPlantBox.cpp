@@ -791,7 +791,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>())
             .def("getNodeInfection", &MycorrhizalRoot::getNodeInfection)
-            .def("getMycorrhizalRootRandomParameter", &MycorrhizalRoot::getMycorrhizalRootRandomParameter)
+            .def("getRootRandomParameter", &MycorrhizalRoot::getRootRandomParameter)
             .def("setInfection", &MycorrhizalRoot::setInfection, py::arg("i"), py::arg("infection"), py::arg("t"));
 
     /**

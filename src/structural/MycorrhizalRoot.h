@@ -23,7 +23,6 @@ namespace CPlantBox {
         virtual ~MycorrhizalRoot() { };
 
         std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;
-        int organType() const override { return Organism::ot_root; };
 
         void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
         
@@ -32,10 +31,10 @@ namespace CPlantBox {
         void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
         void createLateral(double ageLN, bool silence) override;
         // toString
-        std::shared_ptr<MycorrhizalRootRandomParameter> getMycorrhizalRootRandomParameter() const;
+        std::shared_ptr<MycorrhizalRootRandomParameter> getRootRandomParameter() const;
         std::shared_ptr<const MycorrhizalRootSpecificParameter> param() const;
 
-        int getNodeInfection(int i) const {std::cout<< "MycorrhizalRoot::getNodeInfection called"<<std::endl; return infected.at(i);}
+        int getNodeInfection(int i) const {return infected.at(i);}
         void setInfection(int i, int inf, double t);
 
 
