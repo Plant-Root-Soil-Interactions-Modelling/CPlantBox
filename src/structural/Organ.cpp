@@ -180,7 +180,6 @@ void Organ::addChild(std::shared_ptr<Organ> c)
  */
 void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 {
-	std::cout << "Organ::addNode called" << std::endl;
 	nodes.push_back(n); // node
 	nodeIds.push_back(id); //unique id
 	nodeCTs.push_back(t); // exact creation time

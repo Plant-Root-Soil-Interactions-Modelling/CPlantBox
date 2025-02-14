@@ -10,13 +10,13 @@ namespace CPlantBox {
 MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
      :Root(id, param, alive, active, age, length,
-	 partialIHeading_,pni, moved,  oldNON ) {std::cout << "MycorrhizalRoot Constructor 1 called" << std::endl;}
+	 partialIHeading_,pni, moved,  oldNON ) {}
 
 MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Root(rs,type, delay,parent, pni) {std::cout << "MycorrhizalRoot Constructur 2 called" << std::endl;}
+:Root(rs,type, delay,parent, pni) {}
 
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
-    std::cout << "MycorrhizalRoot::addNode called" << std::endl;
+    // std::cout << "MycorrhizalRoot::addNode called" << std::endl;
     Organ::addNode(n, id,  t,  index, shift);
     infected.push_back(0);
     infectionTime.push_back(-1);
@@ -25,7 +25,7 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 
 std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 {
-    std::cout<< "MycorrhizalRoot::copy called" << std::endl;
+    // std::cout<< "MycorrhizalRoot::copy called" << std::endl;
     auto r = std::make_shared<MycorrhizalRoot>(*this); // shallow copy
     r->parent = std::weak_ptr<Organ>();
     r->plant = rs;
@@ -39,7 +39,7 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {   
-    std::cout << "MycorrhizalRoot::simulate called in MycorrhizalRoot" << std::endl;
+    // std::cout << "MycorrhizalRoot::simulate" << std::endl;
     Root::simulate(dt,verbose);
  
 
@@ -121,14 +121,14 @@ double MycorrhizalRoot::getParameter(std::string name) const {
 
 void MycorrhizalRoot::setInfection(int i, int infection, double t)
 {   
-    std::cout << "MycorrhizalRoot::setInfection called" << std::endl;
+    // std::cout << "MycorrhizalRoot::setInfection called" << std::endl;
     infected.at(i) = infection;
     infectionTime.at(i) = t;
 }
 
 void MycorrhizalRoot::createLateral(double dt, bool verbose)
 {
-    std::cout << "MycorrhizalRoot::createLateral called" << std::endl;
+    // std::cout << "MycorrhizalRoot::createLateral called" << std::endl;
 	auto rp = getOrganRandomParameter(); // rename
 
 	for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
@@ -184,6 +184,13 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 	created_linking_node ++;
 	storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
 
+}
+
+std::string MycorrhizalRoot::toString() const
+{
+    std::stringstream newstring;
+    newstring << "; infected Nodes " << infected.size() << ".";
+    return  Root::toString()+newstring.str();
 }
 
 }

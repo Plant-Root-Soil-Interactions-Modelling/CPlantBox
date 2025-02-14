@@ -11,7 +11,6 @@ namespace CPlantBox {
 
     void MycorrhizalPlant::initializeReader()
 {
-    // std::cout << "MycorrhizalPlant::initializeReader called" << std::endl;
     //new Parameters start here
     auto mycrrp = std::make_shared<MycorrhizalRootRandomParameter>(shared_from_this());
     mycrrp -> subType = 0;
@@ -34,31 +33,49 @@ namespace CPlantBox {
     setOrganRandomParameter(lrp);
 }
 
-std::shared_ptr<Organ> MycorrhizalPlant::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
-    class MycorrhizalSeed : public Seed{
+void MycorrhizalPlant::initializeLB(bool verbose)
+{
+    std::cout << "MycorrhizalPlant::initializeLB called" << std::endl;
+    reset(); // just in case
+    class MycorrhizalSeed :public Seed{
         using Seed::Seed;
         std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
             return std::make_shared<MycorrhizalRoot>(plant, type, delay, shared_from_this(), 0);
         };
     };
-    std::cout << "MycorrhizalPlant::createRoot called" << std::endl;
-    auto root = std::make_shared<MycorrhizalSeed>(shared_from_this());
-    return root;
+    auto seed = std::make_shared<MycorrhizalSeed>(shared_from_this());
+    baseOrgans.push_back(seed);
+    seed->initialize(verbose);
+    initialize_(verbose);
 }
 
+// std::shared_ptr<Organ> MycorrhizalPlant::createRoot(std::shared_ptr<Organism> plant, int type, double delay) {
+//     class MycorrhizalSeed : public Seed{
+//         using Seed::Seed;
+//         std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay) override {
+//             return std::make_shared<MycorrhizalRoot>(plant, type, delay, shared_from_this(), 0);
+//         };
+//     };
+//     std::cout << "MycorrhizalPlant::createRoot called" << std::endl;
+//     auto root = std::make_shared<MycorrhizalSeed>(shared_from_this());
+//     return root;
+// }
 std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<int> infs = std::vector<int>(getNumberOfNodes());
-    for (const auto& o : organs)
+    for (const auto& o : baseOrgans)
     {
-        std::cout << o -> toString() << std::endl;
-        infs.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(0);
-        
+        std::cout << o->getNodeId(0) << std::endl;
+        if(o->organType() == Organism::ot_root)
+        {
+            
+            infs.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(0);
+        }        
     }
     
     for (const auto & o : organs)
     {
-        for (size_t i = 1; i < o ->getNumberOfNodes(); i++)
+        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++)
         {
             infs.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(i);
         }
