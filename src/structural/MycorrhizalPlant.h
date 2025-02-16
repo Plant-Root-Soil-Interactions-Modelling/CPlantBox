@@ -18,7 +18,8 @@ namespace CPlantBox {
         void initialize(bool verbose = true) override {std::cout<< "MycorrhizalPlant::initialize called" <<std::endl; initializeLB(verbose);};
         void initializeLB(bool verbose = true);
 
-        virtual std::vector<int> getNodeInfections(int ot) const;
+        virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
+        virtual std::vector<double> getNodeIT(int ot) const; // returns Infection Time
         // virtual std::vector<int> getSegmentInfections(int ot) const;
 
         // für visualisierung was rausholen

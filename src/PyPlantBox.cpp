@@ -954,7 +954,7 @@ PYBIND11_MODULE(plantbox, m) {
 
         py::class_<MycorrhizalPlant, Plant, std::shared_ptr<MycorrhizalPlant>>(m,"MycorrhizalPlant")
                         .def(py::init<unsigned int>(), py::arg("seednum")=0)
-                        // .def("createRoot", &MycorrhizalPlant::createRoot)
+                        .def("getNodeIT", &MycorrhizalPlant::getNodeIT)
                         .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections);
 	/**
 	 * Perirhizal.h

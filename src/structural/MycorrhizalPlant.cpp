@@ -65,7 +65,6 @@ std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     std::vector<int> infs = std::vector<int>(getNumberOfNodes());
     for (const auto& o : baseOrgans)
     {
-        std::cout << o->getNodeId(0) << std::endl;
         if(o->organType() == Organism::ot_root)
         {
             
@@ -84,4 +83,26 @@ std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     return infs;
 }
 
+std::vector<double> MycorrhizalPlant::getNodeIT(int ot) const {
+    auto organs = this -> getOrgans(ot);
+    std::vector<double> infTime = std::vector<double>(getNumberOfNodes());
+    for (const auto& o : baseOrgans)
+    {
+        if(o->organType() == Organism::ot_root)
+        {
+            
+            infTime.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(0);
+        }        
+    }
+    
+    for (const auto & o : organs)
+    {
+        for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++)
+        {
+            infTime.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(i);
+        }
+        
+    }
+    return infTime;
+}
 }

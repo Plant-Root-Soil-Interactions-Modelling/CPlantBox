@@ -59,6 +59,11 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         auto max_length_infection = dt*getRootRandomParameter()->vi;
         for (size_t i = 1; i < nodes.size(); i++)
         {
+            // if (infected.at(i-1) == 3)
+            // {
+            //     std::cout << "Huzzah! Infection at node has been detected!" << std::endl;
+            // }
+            
             if (infected.at(i-1) == 1)
             {
                 auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
@@ -84,15 +89,15 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
             }
         }
         
-        // for (auto l : children) // TODO broken
+        // for (auto l : children) // TODO broken???
         // {
         //     if (infected.at(l->parentNI) == 2)
         //     {
-        //         auto mycorrhizalChild = std::dynamic_pointer_cast<MycorrhizalRoot>(l);
-        //         if (mycorrhizalChild)
+        //         auto mnodes = std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodes();
+        //         if (mnodes.size() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(0) == 0)
         //         {
-        //             mycorrhizalChild->setInfection(0, 3, infectionTime.at(l->parentNI));
-        //             // std::cout << infectionTime.at(l->parentNI) << std::endl;
+        //             std::cout << "Here an infection is supposed to be happening" << std::endl;
+        //             std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
         //         }
         //     }
         // }
