@@ -44,7 +44,11 @@ namespace CPlantBox {
         double minAge = 0;      ///< Minimal Infectious age of a root segment [day]
         double maxAge = 32;     ///< Maximal Infection age of a root segment [day]
         double vi = 0.13;       ///< rate of internal infection front [cm / day]
-        double maxInfection = 1;    ///< Percentage of maximal infection 
+        double maxInfection = 1;    ///< Percentage of maximal infection
+        double posX = 0;    ///< x Position of the localized infection front
+        double posY = 0;      ///< y Position of the localized infection front
+        double posZ = 0;       ///< z Position of the localized infection front
+        double radius = 0;     ///< Radius of the localized infection front
         // double nEntryP = 0; //< verbindung zu externen hyphen 
         int infected = 0;  ///< status of AMF infection
 

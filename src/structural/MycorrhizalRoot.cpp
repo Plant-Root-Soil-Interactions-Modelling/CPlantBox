@@ -46,7 +46,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     if (this->nodes.size()>1) {
 		//Primary Infection
 		for (size_t i=1; i<nodes.size(); i++) {
-			
             double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
             if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
             {
@@ -56,27 +55,27 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
         // Secondary Infection
         auto max_length_infection = dt*getRootRandomParameter()->vi;
-        for (size_t i = 1; i < nodes.size(); i++)
+        for (size_t i = 0; i < nodes.size()-1; i++)
         {   
-            if (infected.at(i-1) == 1)
+            if (infected.at(i) == 1)
             {
-                auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
-                auto basalnode = i-2;
+                auto max_length_basal = nodes.at(i).length() - max_length_infection;
+                auto basalnode = i-1;
                 double infectionage;
                 
-                while (basalnode > 1 && basalnode< nodes.size() && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
+                while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
-                    infectionage =age + nodes.at(i-1).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+                    infectionage =age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
                     setInfection(basalnode,2,infectionage); 
                     basalnode--;
                 }
 
-                auto max_length_apical = nodes.at(i-1).length() + max_length_infection;
-                auto apicalnode = i;
+                auto max_length_apical = nodes.at(i).length() + max_length_infection;
+                auto apicalnode = i+1;
                 
                 while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
                 {
-                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i-1)).length()/getRootRandomParameter()->vi;
+                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i)).length()/getRootRandomParameter()->vi;
                     setInfection(apicalnode,2,infectionage);
                     apicalnode++;
                 }

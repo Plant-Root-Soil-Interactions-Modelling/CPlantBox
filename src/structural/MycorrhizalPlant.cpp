@@ -7,7 +7,7 @@
 
 
 namespace CPlantBox {
-    MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) { std::cout << "MycorrhizalPlant::MycorrhizalPlant called" << std::endl; }
+    MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
 
     void MycorrhizalPlant::initializeReader()
 {
@@ -16,9 +16,6 @@ namespace CPlantBox {
     mycrrp -> subType = 0;
     setOrganRandomParameter(mycrrp);
     //new Parameters end here
-    // auto rrp = std::make_shared<RootRandomParameter>(shared_from_this());
-    // rrp -> subType = 0;
-    // setOrganRandomParameter(rrp);
     auto srp = std::make_shared<SeedRandomParameter>(shared_from_this());
     srp->subType = 0;
     setOrganRandomParameter(srp);
@@ -35,7 +32,6 @@ namespace CPlantBox {
 
 void MycorrhizalPlant::initializeLB(bool verbose)
 {
-    std::cout << "MycorrhizalPlant::initializeLB called" << std::endl;
     reset(); // just in case
     class MycorrhizalSeed :public Seed{
         using Seed::Seed;

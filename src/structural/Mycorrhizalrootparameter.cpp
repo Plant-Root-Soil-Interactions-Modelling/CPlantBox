@@ -12,6 +12,10 @@ namespace CPlantBox {
         bindParameter("vi", &vi, "Rate of internal infection front [cm / day]");
         bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
         bindParameter("infection", &infected, "Status of AMF Infection");
+        bindParameter("posX", &posX, "x Position of the localized infection front");
+        bindParameter("posY", &posY, "y Position of the localized infection front");
+        bindParameter("posZ", &posZ, "z Position of the localized infection front");
+        bindParameter("radius", &radius, "Radius of the localized infection front");
     }
 
 
