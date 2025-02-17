@@ -82,7 +82,6 @@ void Plant::reset()
 void Plant::initialize_(bool verbose)
 {
     oldNumberOfNodes = getNumberOfNodes(); // todo check what this does
-    std::cout << "Plant::initialize_ called" << std::endl;
     // further initializations
 	initCallbacks();
 }

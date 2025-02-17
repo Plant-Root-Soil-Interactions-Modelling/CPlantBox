@@ -222,7 +222,6 @@ std::string Seed::toString() const
  */
 std::shared_ptr<Organ> Seed::createRoot(std::shared_ptr<Organism> plant, int type, double delay)
 {
-	std::cout << "Seed::createRoot called" << std::endl;
 	return std::make_shared<Root>(plant, type,delay, shared_from_this(), 0);
 }
 

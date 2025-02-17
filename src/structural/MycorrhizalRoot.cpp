@@ -48,22 +48,20 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         if (getRootRandomParameter()->radius > 0) // check if localized infection should be applied
         {
             Vector3d startPos = Vector3d(getRootRandomParameter()->posX, getRootRandomParameter()->posY, getRootRandomParameter()->posZ); // save the start position
+            double radius = getRootRandomParameter()->radius;
             double infectionage;
             for (size_t i = 0; i < nodes.size()-1; i++)
             {
-                if (startPos.minus(nodes.at(i)).length() < getRootRandomParameter()->radius && infected.at(i) == 0) // if within radius from start position then 100% gets infected
+                if (startPos.minus(nodes.at(i)).length() < radius && infected.at(i) == 0) // if within radius from start position then 100% gets infected
                 {
                     setInfection(i,1,age + dt); // TODO this time stamp is not right yet
                 }
-                else if (plant.lock()->rand() < startPos.minus(nodes.at(i)).length()/getRootRandomParameter()->radius) // TODO if not within radius probability decreases need to see how excactly
+                else if (plant.lock()->rand() < startPos.minus(nodes.at(i)).length()/radius) // TODO if not within radius probability decreases need to see how excactly
                 {
-                    infectionage= startPos.minus(nodes.at(i)).length()-getRootRandomParameter()->radius;// TODO infection age not right right now
+                    infectionage= startPos.minus(nodes.at(i)).length()-radius;// TODO infection age not right right now
                     setInfection(i,1,age + infectionage);
                 }
-                
-                
             }
-            
         } else { //if this is not a loclized infection use equalprobability everywhere
             for (size_t i=1; i<nodes.size(); i++) {
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
