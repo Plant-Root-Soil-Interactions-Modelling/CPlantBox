@@ -55,15 +55,9 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 	    }
 
         // Secondary Infection
-        // TODO check the timing issue ie if computationally something gets infected sooner at runtime but actually sooner in real time!!
         auto max_length_infection = dt*getRootRandomParameter()->vi;
         for (size_t i = 1; i < nodes.size(); i++)
-        {
-            // if (infected.at(i-1) == 3)
-            // {
-            //     std::cout << "Huzzah! Infection at node has been detected!" << std::endl;
-            // }
-            
+        {   
             if (infected.at(i-1) == 1)
             {
                 auto max_length_basal = nodes.at(i-1).length() - max_length_infection;
@@ -89,18 +83,17 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
             }
         }
         
-        // for (auto l : children) // TODO broken???
-        // {
-        //     if (infected.at(l->parentNI) == 2)
-        //     {
-        //         auto mnodes = std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodes();
-        //         if (mnodes.size() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(0) == 0)
-        //         {
-        //             std::cout << "Here an infection is supposed to be happening" << std::endl;
-        //             std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
-        //         }
-        //     }
-        // }
+            for (auto l : children)
+            {
+                if (infected.at(l->parentNI) == 2)
+                {
+                    auto mnodes = std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodes();
+                    if (mnodes.size() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(0) == 0)
+                    {
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
+                    }
+                }
+            }
         
     }
 
@@ -193,6 +186,7 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 
 std::string MycorrhizalRoot::toString() const
 {
+    // TODO this does not actually return the number of infected nodes fix this and add additional stuff
     std::stringstream newstring;
     newstring << "; infected Nodes " << infected.size() << ".";
     return  Root::toString()+newstring.str();
