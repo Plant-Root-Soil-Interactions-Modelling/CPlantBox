@@ -45,13 +45,35 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 
     if (this->nodes.size()>1) {
 		//Primary Infection
-		for (size_t i=1; i<nodes.size(); i++) {
-            double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-            if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
+        if (getRootRandomParameter()->radius > 0) // check if localized infection should be applied
+        {
+            Vector3d startPos = Vector3d(getRootRandomParameter()->posX, getRootRandomParameter()->posY, getRootRandomParameter()->posZ); // save the start position
+            double infectionage;
+            for (size_t i = 0; i < nodes.size()-1; i++)
             {
-                setInfection(i-1,1,age + dt);
-		    }
-	    }
+                if (startPos.minus(nodes.at(i)).length() < getRootRandomParameter()->radius && infected.at(i) == 0) // if within radius from start position then 100% gets infected
+                {
+                    setInfection(i,1,age + dt); // TODO this time stamp is not right yet
+                }
+                else if (plant.lock()->rand() < startPos.minus(nodes.at(i)).length()/getRootRandomParameter()->radius) // TODO if not within radius probability decreases need to see how excactly
+                {
+                    infectionage= startPos.minus(nodes.at(i)).length()-getRootRandomParameter()->radius;// TODO infection age not right right now
+                    setInfection(i,1,age + infectionage);
+                }
+                
+                
+            }
+            
+        } else { //if this is not a loclized infection use equalprobability everywhere
+            for (size_t i=1; i<nodes.size(); i++) {
+                double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
+                if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
+                {
+                    setInfection(i-1,1,age + dt); // TODO age + dt does not make a whole lot of sense
+                }
+            }
+        }
+        
 
         // Secondary Infection
         auto max_length_infection = dt*getRootRandomParameter()->vi;
@@ -65,7 +87,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 
                 while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
-                    infectionage =age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+                    infectionage = age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
                     setInfection(basalnode,2,infectionage); 
                     basalnode--;
                 }
