@@ -15,7 +15,7 @@ namespace CPlantBox {
         bindParameter("posX", &posX, "x Position of the localized infection front");
         bindParameter("posY", &posY, "y Position of the localized infection front");
         bindParameter("posZ", &posZ, "z Position of the localized infection front");
-        bindParameter("radius", &radius, "Radius of the localized infection front");
+        bindParameter("infradius", &infradius, "Radius of the localized infection front");
     }
 
 

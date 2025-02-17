@@ -16,7 +16,6 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
 :Root(rs,type, delay,parent, pni) {}
 
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
-    // std::cout << "MycorrhizalRoot::addNode called" << std::endl;
     Organ::addNode(n, id,  t,  index, shift);
     infected.push_back(0);
     infectionTime.push_back(-1);
@@ -25,7 +24,6 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
 
 std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 {
-    // std::cout<< "MycorrhizalRoot::copy called" << std::endl;
     auto r = std::make_shared<MycorrhizalRoot>(*this); // shallow copy
     r->parent = std::weak_ptr<Organ>();
     r->plant = rs;
@@ -39,26 +37,23 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {   
-    // std::cout << "MycorrhizalRoot::simulate" << std::endl;
     Root::simulate(dt,verbose);
- 
-
     if (this->nodes.size()>1) {
 		//Primary Infection
-        if (getRootRandomParameter()->radius > 0) // check if localized infection should be applied
+        if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
         {
             Vector3d startPos = Vector3d(getRootRandomParameter()->posX, getRootRandomParameter()->posY, getRootRandomParameter()->posZ); // save the start position
-            double radius = getRootRandomParameter()->radius;
+            double infrad = getRootRandomParameter()->infradius;
             double infectionage;
             for (size_t i = 0; i < nodes.size()-1; i++)
             {
-                if (startPos.minus(nodes.at(i)).length() < radius && infected.at(i) == 0) // if within radius from start position then 100% gets infected
+                if (startPos.minus(nodes.at(i)).length() < infrad && infected.at(i) == 0) // if within radius from start position then 100% gets infected
                 {
                     setInfection(i,1,age + dt); // TODO this time stamp is not right yet
                 }
-                else if (plant.lock()->rand() < startPos.minus(nodes.at(i)).length()/radius) // TODO if not within radius probability decreases need to see how excactly
+                else if (plant.lock()->rand() < startPos.minus(nodes.at(i)).length()/infrad) // TODO if not within radius probability decreases need to see how excactly
                 {
-                    infectionage= startPos.minus(nodes.at(i)).length()-radius;// TODO infection age not right right now
+                    infectionage= startPos.minus(nodes.at(i)).length()-infrad;// TODO infection age not right right now
                     setInfection(i,1,age + infectionage);
                 }
             }
@@ -71,8 +66,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 }
             }
         }
-        
-
         // Secondary Infection
         auto max_length_infection = dt*getRootRandomParameter()->vi;
         for (size_t i = 0; i < nodes.size()-1; i++)
@@ -101,7 +94,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 }
             }
         }
-        
             for (auto l : children)
             {
                 if (infected.at(l->parentNI) == 2)
@@ -113,7 +105,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                     }
                 }
             }
-        
     }
 
 }

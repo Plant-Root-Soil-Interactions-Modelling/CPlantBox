@@ -48,7 +48,7 @@ namespace CPlantBox {
         double posX = 0;    ///< x Position of the localized infection front
         double posY = 0;      ///< y Position of the localized infection front
         double posZ = 0;       ///< z Position of the localized infection front
-        double radius = 0;     ///< Radius of the localized infection front
+        double infradius = 0;     ///< Radius of the localized infection front
         // double nEntryP = 0; //< verbindung zu externen hyphen 
         int infected = 0;  ///< status of AMF infection
 
