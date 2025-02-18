@@ -613,7 +613,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("posX", &MycorrhizalRootRandomParameter::posX)
             .def_readwrite("posY", &MycorrhizalRootRandomParameter::posY)
             .def_readwrite("posZ", &MycorrhizalRootRandomParameter::posZ)
-            .def_readwrite("radius", &MycorrhizalRootRandomParameter::radius);
+            .def_readwrite("infradius", &MycorrhizalRootRandomParameter::infradius);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
             .def_readwrite("infected", &MycorrhizalRootSpecificParameter::infected)

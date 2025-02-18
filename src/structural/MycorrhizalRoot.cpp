@@ -38,26 +38,25 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {   
     Root::simulate(dt,verbose);
+    // TODO check that infection age definition makes sense and is correct. Both for Primary and Secondary Infection
     if (this->nodes.size()>1) {
 		//Primary Infection
         if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
         {
             Vector3d startPos = Vector3d(getRootRandomParameter()->posX, getRootRandomParameter()->posY, getRootRandomParameter()->posZ); // save the start position
-            double infrad = getRootRandomParameter()->infradius;
-            double infectionage;
+            double infrad = getRootRandomParameter()->infradius; // easier access to the radius
             for (size_t i = 0; i < nodes.size()-1; i++)
             {
                 if (startPos.minus(nodes.at(i)).length() < infrad && infected.at(i) == 0) // if within radius from start position then 100% gets infected
                 {
                     setInfection(i,1,age + dt); // TODO this time stamp is not right yet
                 }
-                else if (plant.lock()->rand() < startPos.minus(nodes.at(i)).length()/infrad) // TODO if not within radius probability decreases need to see how excactly
+                else if (plant.lock()->rand() < 0.1) // TODO if not within radius probability decreases need to see how excactly
                 {
-                    infectionage= startPos.minus(nodes.at(i)).length()-infrad;// TODO infection age not right right now
-                    setInfection(i,1,age + infectionage);
+                    setInfection(i,1,age + dt);
                 }
             }
-        } else { //if this is not a loclized infection use equalprobability everywhere
+        } else { //if this is not a loclized infection use equal probability everywhere
             for (size_t i=1; i<nodes.size(); i++) {
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
                 if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
