@@ -61,13 +61,31 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
                 if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
                 {
-                    setInfection(i-1,1,age+dt); // TODO age + dt does not make a whole lot of sense
+                    setInfection(i-1,1,age+dt); // TODO age + dt does not make a whole lot of sense  --  sample time from unfiorm distribution
                 }
             }
         }
         // Secondary Infection
         auto max_length_infection = dt*getRootRandomParameter()->vi;
-        for (size_t i = 0; i < nodes.size()-1; i++)
+        
+        if (infected.at(0)==3)
+        {
+            auto newdt = dt - infectionTime.at(0) + age;
+            auto newmaxlength = newdt*getRootRandomParameter()->vi + nodes.at(0).length();
+            int apicalnode = 1;
+            double infectionage;
+            while(apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < newmaxlength && infected.at(apicalnode) == 0)
+            {
+                infectionage = age + nodes.at(apicalnode).minus(nodes.at(0)).length()/getRootRandomParameter()->vi;
+                if (infectionage > nodeCTs.at(apicalnode) && infectionage < age + dt)
+                {
+                    setInfection(apicalnode,2,infectionage);
+                }
+                apicalnode++; 
+            }
+        }
+        
+        for (size_t i = 1; i < nodes.size()-1; i++)
         {   
             if (infected.at(i) == 1)
             {
@@ -78,7 +96,10 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
                     infectionage = age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
-                    setInfection(basalnode,2,infectionage); 
+                    if (infectionage > nodeCTs.at(basalnode) && infectionage < age + dt){
+                        std::cout<< nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi - dt << std::endl;
+                        setInfection(basalnode,2,infectionage);
+                    }
                     basalnode--;
                 }
 
@@ -88,7 +109,10 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
                 {
                     infectionage = age + nodes.at(apicalnode).minus(nodes.at(i)).length()/getRootRandomParameter()->vi;
-                    setInfection(apicalnode,2,infectionage);
+                    if (infectionage > nodeCTs.at(apicalnode) && infectionage < age + dt)
+                    {
+                        setInfection(apicalnode,2,infectionage);
+                    }
                     apicalnode++;
                 }
             }
