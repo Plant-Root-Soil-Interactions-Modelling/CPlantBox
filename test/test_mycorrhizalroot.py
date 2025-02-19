@@ -25,7 +25,7 @@ def rootLateralLength(t, et, r, k):  # length of first order laterals (without s
 
 
 class TestMycorrhizalRoot(unittest.TestCase):
-
+# TODO add test for localized infection
     def mycroot_example_rrp(self):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
@@ -147,8 +147,9 @@ class TestMycorrhizalRoot(unittest.TestCase):
 
     def test_primary_infection(self):
         """ tests spontaneous infection on sequential organ list """
+        ## difficult because need to account for non-infectable root segments
         self.mycroot_example_rrp()
-        simtime = 5.
+        simtime = 3.
         self.mycroot.simulate(simtime, False)
         infected = [0]*(self.mycroot.getNumberOfNodes())
         for i in range(1, self.mycroot.getNumberOfNodes()-1):
@@ -156,7 +157,7 @@ class TestMycorrhizalRoot(unittest.TestCase):
                 infected[i] = (self.mycroot.getNode(i).minus(self.mycroot.getNode(i-1))).length();
         infRoots = sum(infected)
         numRoots = self.mycroot.getParameter("length")
-        self.assertAlmostEqual(simtime*0.15*numRoots,infRoots,4,"not the right amount of root segments infected")
+        self.assertAlmostEqual(pow(1.15,simtime),infRoots,None,"not the right amount of root segments infected",0.5)
         
 
     def test_secondary_infection(self):

@@ -41,9 +41,14 @@ class TestMycParameter(unittest.TestCase):
         self.assertEqual(otp2.maxAge, mrrp.maxAge,"copy: value unexpected")
         self.assertEqual(otp2.vi, mrrp.vi,"copy: value unexpected")
         self.assertEqual(otp2.infected, mrrp.infected,"copy: value unexpected")
+        self.assertEqual(otp2.posX, mrrp.posX,"copy: value unexpected")
+        self.assertEqual(otp2.posY, mrrp.posY,"copy: value unexpected")
+        self.assertEqual(otp2.posZ, mrrp.posZ,"copy: value unexpected")
+        self.assertEqual(otp2.radius, mrrp.radius,"copy: value unexpected")
 
     def test_parameter(self):
         """ tests getParameter() """
+        # TODO add more tests for mycorrhizalparameters
         self.plant = pb.Organism()
         mrrp = pb.MycorrhizalRootRandomParameter(self.plant)
         mrrp.lns = 0.123
@@ -77,6 +82,7 @@ class TestMycParameter(unittest.TestCase):
 
     def test_xml(self):
         """ write the organ as xml, and rereads it """
+        # TODO add more tests for mycorrhizalparameters
         self.mycroot_example()
         mrrp = self.mrrp  # rename
         mrrp.name = "lateral"

@@ -49,9 +49,9 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
             {
                 if (startPos.minus(nodes.at(i)).length() < infrad && infected.at(i) == 0) // if within radius from start position then 100% gets infected
                 {
-                    setInfection(i,1,age + dt); // TODO this time stamp is not right yet
+                    setInfection(i,1,age + dt); // TODO this time stamp is not right yet creation time?
                 }
-                else if (plant.lock()->rand() < 0.1) // TODO if not within radius probability decreases need to see how excactly
+                else if (plant.lock()->rand() < 0.01) // TODO if not within radius probability decreases need to see how excactly
                 {
                     setInfection(i,1,age + dt);
                 }
@@ -61,7 +61,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
                 if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
                 {
-                    setInfection(i-1,1,age + dt); // TODO age + dt does not make a whole lot of sense
+                    setInfection(i-1,1,age+dt); // TODO age + dt does not make a whole lot of sense
                 }
             }
         }
@@ -95,7 +95,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         }
             for (auto l : children)
             {
-                if (infected.at(l->parentNI) == 2)
+                if (infected.at(l->parentNI) != 0)
                 {
                     auto mnodes = std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodes();
                     if (mnodes.size() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(0) == 0)
