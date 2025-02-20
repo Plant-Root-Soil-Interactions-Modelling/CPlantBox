@@ -29,7 +29,8 @@ loam = [0.08, 0.43, 0.04, 1.6, 50]
 clay = [0.1, 0.4, 0.01, 1.1, 10]
 soil=loam   # Select soil type for simulation
 # simulation time, days 
-simtime=1; 
+sim_time=1; 
+dt = 360 / (24 * 3600)  # time step [day]
 
 # Solve the Richards equation using the Python wrapper of dumux-rosi 
 s = RichardsWrapper(RichardsSPnum())  
@@ -43,13 +44,35 @@ s.setVGParameters([soil])
 s.initializeProblem()
 s.setCriticalPressure(-15000)
 s.ddt = 1.e-5  # initial dumux time step [days]
-s.solve(simtime)
+
+top_ind = s.pick([0., 0., -0.5])
+bot_ind = s.pick([0., 0., -199.5])
+top_new, bot_new, soil_times = [], [], []
+
+N = int(np.ceil(sim_time / dt))
+for i in range(0, N):
+    t = i * dt  # current simulation time
+    soil_times.append(t)
+    s.solve(dt)
+    velocities = s.getVelocities_()
+    top_new.append(velocities[top_ind])
+    bot_new.append(velocities[bot_ind])    
+
+top_new = np.array(top_new)
+bot_new = np.array(bot_new)    
+soil_times = np.array(soil_times)
 
 # Extract and plot numerical solution 
 points = s.getDofCoordinates() 
 theta = s.getWaterContent()
+plt.figure(0)
 plt.plot(theta,points[:, 2],linewidth=2) 
 plt.xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)')
 plt.ylabel('depth (cm)')
 plt.title('Infiltration front in loam after 1 day')
+plt.show()
+
+plt.figure(1)
+plt.plot(soil_times, top_new[:, 2])
+plt.plot(soil_times, bot_new[:, 2])
 plt.show()
