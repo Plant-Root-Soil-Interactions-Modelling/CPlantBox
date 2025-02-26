@@ -183,6 +183,7 @@ void Organ::addNode(Vector3d n, int id, double t, size_t index, bool shift)
 	nodes.push_back(n); // node
 	nodeIds.push_back(id); //unique id
 	nodeCTs.push_back(t); // exact creation time
+	std::cout<< "!! " << nodes.size() <<std::endl;
 }
 
 /**

@@ -15,12 +15,11 @@ mycp.initialize(True)
 
 simtime = 30
 
-# p1 = mycp.getOrganRandomParameter(pb.root)
-# p1.infradius = 1
+
 
 mycp.simulate(simtime, True)
 ana = pb.SegmentAnalyser(mycp)
 ana.addData("infection",mycp.getNodeInfections(2))
 ana.addData("infectionTime", mycp.getNodeIT(2))
 pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
-vp.plot_roots(pd, "infectionTime") 
+vp.plot_roots(pd, "infection") 

@@ -20,7 +20,6 @@ namespace CPlantBox {
 
         virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
         virtual std::vector<double> getNodeIT(int ot) const; // returns Infection Time
-        // virtual std::vector<int> getSegmentInfections(int ot) const;
 
         // für visualisierung was rausholen
         // plant.getSegmentCTs()  als vorlage für infektion auch zum fehler suchen !!! in den segmentanalyzer dazu tun

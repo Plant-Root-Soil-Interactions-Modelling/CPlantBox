@@ -13,14 +13,43 @@ MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificPara
 	 partialIHeading_,pni, moved,  oldNON ) {}
 
 MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Root(rs,type, delay,parent, pni) {}
+:Root(rs,type, delay,parent, pni) {
+    // assert(parent!=nullptr && "Root::Root parent must be set");
+    // double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
+    // double theta = param()->theta;
+    // if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
+    //     double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
+    //     theta*=scale;
+    // }
+    // insertionAngle = theta;
+	// this->partialIHeading = Vector3d::rotAB(theta,beta);
+
+	// if(!(parent->organType()==Organism::ot_seed))
+	// {
+	// 		double creationTime= parent->getNodeCT(pni)+delay;//default
+	// 	if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
+	// 	{
+	// 		addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+
+	// 	}else{
+	// 		if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
+	// 		//if lateral of stem, initial creation time:
+	// 		//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
+	// 		// @see stem::leafGrow
+	// 		creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
+	// 	}
+	// 		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
+	// 	}
+	// }
+}
 
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
     Organ::addNode(n, id,  t,  index, shift);
     infected.push_back(0);
     infectionTime.push_back(-1);
+    std::cout<< "infected size " << infected.size() << std::endl;
+    std::cout<< "nodes size " << nodes.size() << std::endl;
 }
-
 
 std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 {
@@ -41,19 +70,24 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     // TODO check that infection age definition makes sense and is correct. Both for Primary and Secondary Infection
     if (this->nodes.size()>1) {
 		//Primary Infection
+
+        double infTime;
         if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
         {
             Vector3d startPos = Vector3d(getRootRandomParameter()->posX, getRootRandomParameter()->posY, getRootRandomParameter()->posZ); // save the start position
             double infrad = getRootRandomParameter()->infradius; // easier access to the radius
+            
             for (size_t i = 0; i < nodes.size()-1; i++)
             {
                 if (startPos.minus(nodes.at(i)).length() < infrad && infected.at(i) == 0) // if within radius from start position then 100% gets infected
                 {
-                    setInfection(i,1,age + dt); // TODO this time stamp is not right yet creation time?
+                    infTime = plant.lock() ->rand()*dt; // TODO computationally expensive to do this way, better immediatly after?
+                    setInfection(i,1,age + infTime);
                 }
                 else if (plant.lock()->rand() < 0.01) // TODO if not within radius probability decreases need to see how excactly
                 {
-                    setInfection(i,1,age + dt);
+                    infTime = plant.lock() ->rand()*dt;
+                    setInfection(i,1,age + infTime);
                 }
             }
         } else { //if this is not a loclized infection use equal probability everywhere
@@ -61,44 +95,32 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
                 if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
                 {
-                    setInfection(i-1,1,age+dt); // TODO age + dt does not make a whole lot of sense  --  sample time from unfiorm distribution
+                    infTime = plant.lock() ->rand()*dt;
+                    setInfection(i-1,1,age+infTime); 
                 }
             }
         }
         // Secondary Infection
         auto max_length_infection = dt*getRootRandomParameter()->vi;
         
-        if (infected.at(0)==3)
-        {
-            auto newdt = dt - infectionTime.at(0) + age;
-            auto newmaxlength = newdt*getRootRandomParameter()->vi + nodes.at(0).length();
-            int apicalnode = 1;
-            double infectionage;
-            while(apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < newmaxlength && infected.at(apicalnode) == 0)
-            {
-                infectionage = age + nodes.at(apicalnode).minus(nodes.at(0)).length()/getRootRandomParameter()->vi;
-                if (infectionage > nodeCTs.at(apicalnode) && infectionage < age + dt)
-                {
-                    setInfection(apicalnode,2,infectionage);
-                }
-                apicalnode++; 
-            }
-        }
-        
-        for (size_t i = 1; i < nodes.size()-1; i++)
+        for (size_t i = 0; i < nodes.size()-1; i++)
         {   
-            if (infected.at(i) == 1)
+            if (infected.at(i) == 1 || infected.at(i)== 3)
             {
+                if (infected.at(i)==3)
+                {
+                    std::cout<< "i" << std::endl;
+                }
+                
                 auto max_length_basal = nodes.at(i).length() - max_length_infection;
                 auto basalnode = i-1;
-                double infectionage;
+                double infTime;
                 
-                while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
+                while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0) // TODO wenn 0te node erreich 3er bei der parent node setzen
                 {
-                    infectionage = age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
-                    if (infectionage > nodeCTs.at(basalnode) && infectionage < age + dt){
-                        std::cout<< nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi - dt << std::endl;
-                        setInfection(basalnode,2,infectionage);
+                    infTime = age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+                    if (infTime > nodeCTs.at(basalnode) && infTime < age + dt){
+                        setInfection(basalnode,2,infTime);
                     }
                     basalnode--;
                 }
@@ -108,10 +130,10 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 
                 while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
                 {
-                    infectionage = age + nodes.at(apicalnode).minus(nodes.at(i)).length()/getRootRandomParameter()->vi;
-                    if (infectionage > nodeCTs.at(apicalnode) && infectionage < age + dt)
+                    infTime = age + nodes.at(apicalnode).minus(nodes.at(i)).length()/getRootRandomParameter()->vi;
+                    if (infTime > nodeCTs.at(apicalnode) && infTime < age + dt)
                     {
-                        setInfection(apicalnode,2,infectionage);
+                        setInfection(apicalnode,2,infTime);
                     }
                     apicalnode++;
                 }
@@ -121,10 +143,16 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
             {
                 if (infected.at(l->parentNI) != 0)
                 {
-                    auto mnodes = std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodes();
-                    if (mnodes.size() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(0) == 0)
+                    auto mnodes = l -> getNodes();
+                    // std::cout << "Number of nodes: "<< mnodes.size() << std::endl;
+                    // std::cout << "Number of infectable" << std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> infected.size()<< std::endl;
+                    if (mnodes.size() > 1) //&& std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0)
                     {
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
+                        if(std::dynamic_pointer_cast<MycorrhizalRoot>(l)){
+                            std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
+                        }
+                        else std::cout<< "dynamic_cast failed!" <<std::endl;
+                        
                     }
                 }
             }
@@ -152,14 +180,13 @@ double MycorrhizalRoot::getParameter(std::string name) const {
 
 void MycorrhizalRoot::setInfection(int i, int infection, double t)
 {   
-    // std::cout << "MycorrhizalRoot::setInfection called" << std::endl;
+    // std::cout << i << " " << infection << " " << t << std::endl;
     infected.at(i) = infection;
     infectionTime.at(i) = t;
 }
 
 void MycorrhizalRoot::createLateral(double dt, bool verbose)
 {
-    // std::cout << "MycorrhizalRoot::createLateral called" << std::endl;
 	auto rp = getOrganRandomParameter(); // rename
 
 	for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
@@ -192,7 +219,9 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 
 					switch(ot){
 						case Organism::ot_root:{
+                            std::cout << "Marco!" << std::endl;
 							auto lateral = std::make_shared<MycorrhizalRoot>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
+                            std::cout<< "Polo!"<< std::endl;
 							children.push_back(lateral);
 							lateral->simulate(growth_dt,verbose);
 							break;}
@@ -214,15 +243,27 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 	}
 	created_linking_node ++;
 	storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
-
 }
 
 std::string MycorrhizalRoot::toString() const
 {
     // TODO this does not actually return the number of infected nodes fix this and add additional stuff
     std::stringstream newstring;
-    newstring << "; infected Nodes " << infected.size() << ".";
+    newstring << "; infected Nodes " << getNumberofInfectedNodes() << ".";
     return  Root::toString()+newstring.str();
+}
+
+int MycorrhizalRoot::getNumberofInfectedNodes() const
+{
+    int numberInfectedNodes =0;
+    for (size_t i = 0; i < getNumberOfNodes()-1; i++)
+    {
+        if (infected.at(i)!=0)
+        {
+            numberInfectedNodes++;
+        }
+    }
+    return numberInfectedNodes;
 }
 
 }
