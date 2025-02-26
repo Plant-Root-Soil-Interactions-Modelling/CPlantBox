@@ -831,3 +831,150 @@ class AnimateRoots:
             self.actors.extend(meshActor)
             self.bounds = grid.GetBounds()
 
+def sdf_to_vtk_mesh(sdf, initial_resolution=100, expansion_factor=1.5, resolution=100):
+    """ Converts an SDF to a VTK Mesh using Marching Cubes with auto-detected bounds.
+    @param sdf: SDF function from PlantBox (hopefully, supports all SDF types: Box, Cylinder, Union, etc.)
+    @param initial_resolution: Initial grid resolution for adaptive scanning.
+    @üaram resolution: Resolution of resulting mesh
+    @param expansion_factor: Factor to expand detected surface bounds to ensure full capture.
+    @return: VTK PolyData of the shape."""
+    # **Step 1: Initial Sampling to Estimate Bounds**
+    grid_range = 100  # Initial search range in each direction
+    scan_res = initial_resolution  # Lower resolution for fast scanning
+
+    sdf_values, points = [], []
+
+    for x in np.linspace(-grid_range, grid_range, scan_res):
+        for y in np.linspace(-grid_range, grid_range, scan_res):
+            for z in np.linspace(-grid_range, grid_range, scan_res):
+                point = pb.Vector3d(x, y, z)
+                sdf_val = sdf.getDist(point)
+
+                sdf_values.append(sdf_val)
+                points.append((x, y, z))
+
+    # Find surface region (SDF values near zero)
+    surface_points = np.array([p for p, v in zip(points, sdf_values) if abs(v) < 2.0])
+
+    if surface_points.size == 0:
+        raise ValueError("No valid surface detected. Check SDF function!")
+
+    # **Step 2: Compute Adaptive Bounds**
+    xmin, ymin, zmin = surface_points.min(axis=0) * expansion_factor
+    xmax, ymax, zmax = surface_points.max(axis=0) * expansion_factor
+
+    # **Step 3: Generate VTK Mesh Using Marching Cubes**
+    image_data = vtk.vtkImageData()
+    image_data.SetDimensions(resolution, resolution, resolution)
+    image_data.SetSpacing(
+        (xmax - xmin) / (resolution - 1),
+        (ymax - ymin) / (resolution - 1),
+        (zmax - zmin) / (resolution - 1)
+    )
+    image_data.SetOrigin(xmin, ymin, zmin)
+
+    # Store SDF values
+    scalars = vtk.vtkDoubleArray()
+    scalars.SetNumberOfComponents(1)
+    scalars.SetName("SDF Values")
+
+    for z in np.linspace(zmin, zmax, resolution):
+        for y in np.linspace(ymin, ymax, resolution):
+            for x in np.linspace(xmin, xmax, resolution):
+                sdf_val = sdf.getDist(pb.Vector3d(x, y, z))
+                scalars.InsertNextValue(sdf_val)
+
+    image_data.GetPointData().SetScalars(scalars)
+
+    mc = vtk.vtkMarchingCubes()
+    mc.SetInputData(image_data)
+    mc.SetValue(0, 0.0)
+    mc.ComputeNormalsOn()
+    mc.Update()
+
+    return mc.GetOutput()
+
+
+def plot_container(sdf, p_name="Container", win_title="", render=True, interactiveImage=True):
+    """ Visualizes an SDF-based container using VTK, with automatic bounding box detection.
+    @param sdf: SDF function from PlantBox.
+    @param p_name: Label for visualization.
+    @param win_title: Title of the render window.
+    @param render: Whether to display the interactive window.
+    @return: Tuple (vtkActor, vtkScalarBarActor, detected_bounds).
+    """
+
+    # Convert SDF to VTK Mesh with auto-detected bounds
+    mesh = sdf_to_vtk_mesh(sdf)
+
+    # VTK Pipeline
+    mapper = vtk.vtkDataSetMapper()
+    mapper.SetInputData(mesh)
+    mapper.Update()
+
+    meshActor = vtk.vtkActor()
+    meshActor.SetMapper(mapper)
+
+    # Appearance settings
+    meshActor.GetProperty().SetColor(0.0, 0.0, 1.0)  # Blue container
+    meshActor.GetProperty().SetOpacity(0.2)  # Semi-transparent
+    meshActor.GetProperty().SetRepresentationToSurface()
+
+    # Extract bounds dynamically
+    detected_bounds = meshActor.GetBounds()
+
+    # Create lookup table and scalar bar
+    lut = create_lookup_table()
+    scalar_bar = create_scalar_bar(lut, mesh, p_name)
+    mapper.SetLookupTable(lut)
+
+    # Render container
+    if render:
+        ren = render_window(meshActor, win_title, scalar_bar, detected_bounds, interactiveImage)
+        if interactiveImage:
+            ren.Start()
+
+    return [meshActor], scalar_bar, detected_bounds
+
+
+def plot_roots_and_container(root_system, sdf, title="Root System & Container", render=True, interactive=True):
+    """ Combines root system and container visualization into a single plot.
+    @param root_system: Root system object (e.g., 'rs' from CPlantBox).
+    @param sdf: Container geometry (e.g., splitBox, rhizoTube).
+    @param title: Window title.
+    @param render: Whether to open an interactive VTK window.
+    @param interactive: Whether the visualization should be interactive.
+    @return: If render=False, returns (actors, colorbars, bounds).
+    """
+
+    # Generate root system actor
+    root_actor, root_cbar = plot_roots(root_system, "type", render=False)
+
+    # Generate container mesh with marching cubes
+    mesh_actor, mesh_cbar, mesh_bounds = plot_container(sdf, p_name="Container", render=False)
+
+    # Combine actors for rendering
+    all_actors = [mesh_actor[0], root_actor]
+
+    # Render in a single window
+    if render:
+        render_window(all_actors, title, root_cbar, mesh_bounds, interactive).Start()
+    else:
+        return all_actors, [root_cbar, mesh_cbar], mesh_bounds
+
+
+def write_container(sdf, filename="container.vtp", resolution=100):
+    """ Saves an SDF-based container as a VTP file, with automatic bounding box detection.
+    @param sdf: SDF function from PlantBox.
+    @param filename: Output file name (default: "container.vtp").
+    @param resolution: Resolution for mesh generation (default: 100).
+    """
+
+    # Convert SDF to VTK Mesh with specified resolution
+    mesh = sdf_to_vtk_mesh(sdf, resolution=resolution)
+
+    # Write VTK mesh to VTP file
+    writer = vtk.vtkXMLPolyDataWriter()
+    writer.SetFileName(filename)
+    writer.SetInputData(mesh)
+    writer.Write()
