@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Plant name="Heliantus_Pagès_2013.xml_new" filetype="parameters">
+<organ type="seed" name="true" subType="0">
+    <parameter name="seedPos.x" value="0"/>
+    <parameter name="seedPos.y" value="0"/>
+    <parameter name="seedPos.z" value="-3"/>
+    <parameter name="plantingdepth" value="3"/>
+    <parameter name="firstB" value="1000000000" dev="0"/>
+    <parameter name="delayB" value="1000000000" dev="0"/>
+    <parameter name="maxB" value="0" dev="0"/>
+    <parameter name="maxTi" value="0" dev="0"/>
+    <parameter name="nC" value="0"/>
+    <parameter name="nz" value="0"/>
+    <parameter name="firstSB" value="0" dev="0"/>
+    <parameter name="delaySB" value="0" dev="0"/>
+    <parameter name="delayRC" value="0" dev="0"/>
+    <parameter name="simulationTime" value="60" dev="0"/>
+</organ>
+
+
+</Plant>
