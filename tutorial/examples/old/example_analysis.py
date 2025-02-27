@@ -13,7 +13,7 @@ name = "Moraesetal_2018"  # of xml cplantbox parameter file
 simtime = 154
 
 print("\n1. Initialize")
-rs = pb.MappedRootSystem()
+rs = pb.MappedPlant()
 rs.readParameters(path + name + ".xml")
 
 # Create and set geometry

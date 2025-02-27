@@ -15,7 +15,7 @@ kr = 1.728e-4  # radial conductivity [1/day]
 simtime = 14  # [day] for task b
 
 """ root system """
-rs = pb.MappedRootSystem()
+rs = pb.MappedPlant()
 p_s = np.linspace(-200, -400, 2001)  # 2 meter down, from -200 to -400, resolution in mm
 soil_index = lambda x, y, z : int(-10*z) # maps to p_s (hydrostatic equilibirum)
 rs.setSoilGrid(soil_index)
