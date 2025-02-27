@@ -13,6 +13,37 @@ VTK Plot, by Daniel Leitner (refurbished 06/2020)
 to make interactive vtk plot of root systems and soil grids
 """
 
+# TODO: finish
+def plot_soil(soilModel,  min_b, max_b, 
+                        cell_number, filename:str = "", 
+                        pSoils = [], pnameSoils=[]):
+    """ Plots soil slices and roots, additionally saves both grids as files
+    @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
+    @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
+    @param s             soil, of type RichardsSP, or RichardsNCSP
+    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is creaeted)
+    @param periodic      if yes the root system will be mapped into the domain
+    @param min_b         minimum of domain boundaries
+    @param max_b         maximum of domain boundaries
+    @param cell_number   domain resolution
+    @param filename      file name (without extension)
+    """
+     
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+
+    
+    
+    for pid, pSoil in enumerate(pSoils):
+        d = vtk_data(pSoil)
+        pname_mesh = pnameSoils[pid]
+        d.SetName(pname_mesh)  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(d)    
+
+    if filename:
+        write_vtu(filename + ".vti", soil_grid)
+            
+            
+            
 
 def plot_leaf(leaf):
     """
