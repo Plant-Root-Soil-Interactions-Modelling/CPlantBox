@@ -14,7 +14,7 @@ dt = 0.1  # [days] Time step must be very small
 periodic = False
 
 """ root system """
-rs = pb.MappedRootSystem()
+rs = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")
