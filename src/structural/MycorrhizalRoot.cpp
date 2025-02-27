@@ -14,41 +14,31 @@ MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificPara
 
 MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
 :Root(rs,type, delay,parent, pni) {
-    // assert(parent!=nullptr && "Root::Root parent must be set");
-    // double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
-    // double theta = param()->theta;
-    // if (parent->organType()!=Organism::ot_seed) { // scale if not a baseRoot
-    //     double scale = getRootRandomParameter()->f_sa->getValue(parent->getNode(pni), parent);
-    //     theta*=scale;
-    // }
-    // insertionAngle = theta;
-	// this->partialIHeading = Vector3d::rotAB(theta,beta);
+	if(!(parent->organType()==Organism::ot_seed))
+	{
+		if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
+		{
+            infected.push_back(0);
+            infectionTime.push_back(-1);
 
-	// if(!(parent->organType()==Organism::ot_seed))
-	// {
-	// 		double creationTime= parent->getNodeCT(pni)+delay;//default
-	// 	if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
-	// 	{
-	// 		addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-
-	// 	}else{
-	// 		if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
-	// 		//if lateral of stem, initial creation time:
-	// 		//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-	// 		// @see stem::leafGrow
-	// 		creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-	// 	}
-	// 		addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
-	// 	}
-	// }
+		}else{
+			if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
+		}
+            infected.push_back(0);
+            infectionTime.push_back(-1);
+		}
+	}
+    
+    // std::cout<< "infected size " << infected.size() << std::endl;
+    // std::cout<< "nodes size " << nodes.size() << std::endl;
 }
 
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
     Organ::addNode(n, id,  t,  index, shift);
     infected.push_back(0);
     infectionTime.push_back(-1);
-    std::cout<< "infected size " << infected.size() << std::endl;
-    std::cout<< "nodes size " << nodes.size() << std::endl;
+    // std::cout<< "infected size " << infected.size() << std::endl;
+    // std::cout<< "nodes size " << nodes.size() << std::endl;
 }
 
 std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
@@ -70,7 +60,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     // TODO check that infection age definition makes sense and is correct. Both for Primary and Secondary Infection
     if (this->nodes.size()>1) {
 		//Primary Infection
-
+        if (infected.size()!= nodes.size()) {std::cout<<"danger infection size not like node size!!!"<<std::endl;}
         double infTime;
         if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
         {
@@ -139,23 +129,20 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 }
             }
         }
-            for (auto l : children)
+        for (auto l : children)
+        {
+            std::cout << "third infection" << std::endl;
+            if (infected.at(l->parentNI) != 0)
             {
-                if (infected.at(l->parentNI) != 0)
+                if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0)
                 {
-                    auto mnodes = l -> getNodes();
-                    // std::cout << "Number of nodes: "<< mnodes.size() << std::endl;
-                    // std::cout << "Number of infectable" << std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> infected.size()<< std::endl;
-                    if (mnodes.size() > 1) //&& std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0)
-                    {
-                        if(std::dynamic_pointer_cast<MycorrhizalRoot>(l)){
-                            std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
-                        }
-                        else std::cout<< "dynamic_cast failed!" <<std::endl;
-                        
+                    if(std::dynamic_pointer_cast<MycorrhizalRoot>(l)){
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
                     }
+                    else std::cout<< "dynamic_cast failed!" <<std::endl;                
                 }
             }
+    }
     }
 
 }
@@ -219,9 +206,9 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 
 					switch(ot){
 						case Organism::ot_root:{
-                            std::cout << "Marco!" << std::endl;
+                            // std::cout << "Marco!" << std::endl;
 							auto lateral = std::make_shared<MycorrhizalRoot>(plant.lock(), st,  delay, shared_from_this(),  nodes.size() - 1);
-                            std::cout<< "Polo!"<< std::endl;
+                            // std::cout<< "Polo!"<< std::endl;
 							children.push_back(lateral);
 							lateral->simulate(growth_dt,verbose);
 							break;}
