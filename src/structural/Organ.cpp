@@ -481,7 +481,7 @@ void Organ::rel2abs()
 {
 	if(hasRelCoord())
 	{
-		nodes[0] = getOrigin(); //recompute postiion of the first node
+		nodes[0] = getOrigin(); //recompute position of the first node
 
 		for(size_t i=1; i<nodes.size(); i++)
 		{
@@ -894,7 +894,9 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
  */
 bool Organ::hasRelCoord() const
 {
-	bool nullNode0 = (nodes.at(0) == Vector3d(0.,0.,0.));
+	bool nullNode0 = (nodes.at(0) == Vector3d(0.,0.,0.)); // rel coordinate for node 0?
+	bool relCoordNode1 = nullNode0;
+	bool relCoordNode2 = nullNode0;
 	bool isSeed = organType() == Organism::ot_seed;
 	bool basalOrgan = true;
 	if (getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent
