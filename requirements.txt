@@ -1,17 +1,43 @@
-ipython==8.18.1
-matplotlib==3.8.2
-matplotlib-inline==0.1.6
-mpi4py==3.1.5
-numpy==1.26.2
-pandas==2.1.4
-pybind11==2.11.1
-pybind11-global==2.11.1
-scipy==1.11.4
-vtk==9.3.0
-
+ipython 
+matplotlib 
+matplotlib-inline 
+# mpi4py==3.1.5
+numpy 
+pandas 
+pybind11 
+pybind11-global 
+scipy 
+vtk 
+xvfbwrapper
+mayavi
+ipyevents
+itkwidgets 
+pyevtk
+pillow
+pyvista
 # other requirements:
 # default-jre
 # libboost-all-dev
 # python3-pip
 # libeigen3-dev
+configobj
+PyQt5
+PyQt5-Qt5
+PyQt5-sip
+QtPy
+qtconsole
+jupyter 
+jupyter-client 
+jupyter-console 
+jupyter-core 
+jupyter-server 
+jupyterlab 
+jupyterlab-pygments 
+jupyterlab-server 
+jupyterlab-widgets 
+ipykernel 
+ipython 
+ipython-genutils 
+ipywidgets 
+isort
 

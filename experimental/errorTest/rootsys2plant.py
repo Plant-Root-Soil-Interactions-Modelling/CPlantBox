@@ -6,11 +6,38 @@ import plantbox as pb
 
 plant_path = "../../modelparameter/structural/plant"
 root_path = "../../modelparameter/structural/rootsystem"
-filename = "fspm2023.xml" #THIS IS JUST TO TEST WHERE ERRORS COME FROM
-p = pb.Plant()
-p.readParameters(os.path.join(plant_path, filename))
-p.initialize()
-p.writeParameters(filename)
+errorPlant = []
+errorRoot = []
+errorPlantbis=[]
+print("testing files in plant folder")
+for filename in os.listdir(plant_path):
+    if 'xml' in filename:
+        print('\t',filename)
+        try:
+            p = pb.MappedPlant()
+            p.readParameters(os.path.join(plant_path, filename))
+            p.initialize()
+            p.simulate(10)
+        except Exception as e:
+            errorPlant.append(filename)
+            errorPlantbis.append(e)
+            #raise Exception
+        
+print("testing files in rot folder")
+for filename in os.listdir(root_path):
+    if 'xml' in filename:
+        print('\t',filename)
+        try:
+            p = pb.MappedPlant()
+            p.readParameters(os.path.join(root_path, filename))
+            p.initialize()
+            p.simulate(10)
+        except:
+            errorRoot.append(filename)
+        
+print("error with plant parameter files:",errorPlant)
+print(errorPlantbis)
+print("error with root parameter files:",errorRoot)
 
 # plant_directory = os.fsencode(plant_path)
 # root_directory = os.fsencode(root_path)
