@@ -55,10 +55,11 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 }
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
-{   
+{   std::cout << "\nstart " << getId() <<  std::flush;
     Root::simulate(dt,verbose);
     // TODO check that infection age definition makes sense and is correct. Both for Primary and Secondary Infection
     if (this->nodes.size()>1) {
+        std::cout << "\nstart Infection " << getId() <<  std::flush;
 		//Primary Infection
         if (infected.size()!= nodes.size()) {std::cout<<"danger infection size not like node size!!!"<<std::endl;}
         double infTime;
@@ -131,7 +132,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         }
         for (auto l : children)
         {
-            std::cout << "third infection" << std::endl;
+            // std::cout << "third infection" << std::endl;
             if (infected.at(l->parentNI) != 0)
             {
                 if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0)
@@ -144,7 +145,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
             }
     }
     }
-
+    std::cout << "\nend " << getId() <<  std::flush;
 }
     
 std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
