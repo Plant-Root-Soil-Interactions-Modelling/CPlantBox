@@ -895,8 +895,6 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 bool Organ::hasRelCoord() const
 {
 	bool nullNode0 = (nodes.at(0) == Vector3d(0.,0.,0.)); // rel coordinate for node 0?
-	bool relCoordNode1 = nullNode0;
-	bool relCoordNode2 = nullNode0;
 	bool isSeed = organType() == Organism::ot_seed;
 	bool basalOrgan = true;
 	if (getParent()) { // in case of class RootSystem base roots (tap, basal, shootborne) or Organism organs created manually have no parent

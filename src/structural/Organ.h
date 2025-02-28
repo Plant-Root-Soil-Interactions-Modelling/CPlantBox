@@ -152,7 +152,6 @@ protected:
     bool moved = false; ///< nodes moved during last time step
     int oldNumberOfNodes = 0; ///< number of nodes at the end of previous time step
     bool firstCall = true;
-	bool hasRelCoord_ = false;
 };
 
 } // namespace CPlantBox
