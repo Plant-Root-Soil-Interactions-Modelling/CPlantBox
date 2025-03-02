@@ -25,6 +25,7 @@ namespace CPlantBox {
         std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;
 
         void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
+        void simulateInfection(double dt, bool silence = false);
         
         double getParameter(std::string name) const override;
 

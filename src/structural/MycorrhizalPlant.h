@@ -17,6 +17,8 @@ namespace CPlantBox {
         // std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay);
         void initialize(bool verbose = true) override {initializeLB(verbose);};
         void initializeLB(bool verbose = true);
+        void simulate(double dt, bool verbose) override;
+
 
         virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
         virtual std::vector<double> getNodeIT(int ot) const; // returns Infection Time

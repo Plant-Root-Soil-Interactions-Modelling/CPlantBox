@@ -2,6 +2,7 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "MycorrhizalPlant.h"
+#include "MycorrhizalRoot.h"
 #include "Mycorrhizalrootparameter.h"
 
 
@@ -90,5 +91,24 @@ std::vector<double> MycorrhizalPlant::getNodeIT(int ot) const {
         
     }
     return infTime;
+}
+/**
+ * Simulates plant growth
+ * @param dt		duration of the simulation
+ * @param verbose	whether to print information
+ */
+void MycorrhizalPlant::simulate(double dt, bool verbose)
+{
+    auto organs = getOrgans();
+	abs2rel();
+    Organism::simulate(dt, verbose);
+    for (const auto & o : organs)
+    {
+        if (o->organType() == Organism::ot_root)
+        {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(o) -> simulateInfection(dt,verbose);
+        }
+    }
+	rel2abs();
 }
 }

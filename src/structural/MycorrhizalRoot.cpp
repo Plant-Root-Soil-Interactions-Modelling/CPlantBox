@@ -54,12 +54,9 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
     return r;
 }
 
-void MycorrhizalRoot::simulate(double dt, bool verbose)
-{   std::cout << "\nstart " << getId() <<  std::flush;
-    Root::simulate(dt,verbose);
-    // TODO check that infection age definition makes sense and is correct. Both for Primary and Secondary Infection
+void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
     if (this->nodes.size()>1) {
-        std::cout << "\nstart Infection " << getId() <<  std::flush;
+        // std::cout << "\nstart Infection " << getId() <<  std::flush;
 		//Primary Infection
         if (infected.size()!= nodes.size()) {std::cout<<"danger infection size not like node size!!!"<<std::endl;}
         double infTime;
@@ -98,10 +95,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
         {   
             if (infected.at(i) == 1 || infected.at(i)== 3)
             {
-                if (infected.at(i)==3)
-                {
-                    std::cout<< "i" << std::endl;
-                }
                 
                 auto max_length_basal = nodes.at(i).length() - max_length_infection;
                 auto basalnode = i-1;
@@ -109,9 +102,14 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                 
                 while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0) // TODO wenn 0te node erreich 3er bei der parent node setzen
                 {
+                    
                     infTime = age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
                     if (infTime > nodeCTs.at(basalnode) && infTime < age + dt){
                         setInfection(basalnode,2,infTime);
+                    }
+                    if(basalnode==0) {
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->setInfection(parentNI,3,infTime);
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->simulateInfection(dt,verbose);
                     }
                     basalnode--;
                 }
@@ -143,9 +141,18 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
                     else std::cout<< "dynamic_cast failed!" <<std::endl;                
                 }
             }
+            std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
+        }
     }
-    }
-    std::cout << "\nend " << getId() <<  std::flush;
+}
+
+void MycorrhizalRoot::simulate(double dt, bool verbose)
+{   
+    // std::cout << "\nstart " << getId() <<  std::flush;
+    Root::simulate(dt,verbose);
+    // TODO check that infection age definition makes sense and is correct. Both for Primary and Secondary Infection
+    simulateInfection(dt,verbose);
+    // std::cout << "\nend " << getId() <<  std::flush;
 }
     
 std::shared_ptr<const MycorrhizalRootSpecificParameter> MycorrhizalRoot::param() const
