@@ -161,13 +161,17 @@ double RootRandomParameter::snap(double x)
  */
 double RootRandomParameter::nobs() const
 {
-    double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
-    if (la>0) {
-        nobs -= (las/la - lns/ln)*la/ln;
-    }
-    if (lb>0) {
-        nobs -= (lbs/lb - lns/ln)*lb/ln;
-    }
+	double nobs = 0;
+	if(ln >0)
+	{
+		nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+	}
     return std::max(nobs,0.);
 }
 

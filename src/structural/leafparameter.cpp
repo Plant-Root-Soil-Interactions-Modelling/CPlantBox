@@ -80,14 +80,15 @@ std::shared_ptr<OrganRandomParameter> LeafRandomParameter::copy(std::shared_ptr<
  */
 std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
 {
-	bool hasLaterals = (successorST.size()>0);
 	auto p = plant.lock();
 	//define the parameters outside fo the if functions:
 	double lb_;
 	double la_;
 	std::vector<double> ln_; // stores the inter-distances
 	double res;
-	int nob_real = 0; //number of branching nodes
+    double nob_sd = p->randn()*nobs();
+    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
+    bool hasLaterals = (successorST.size()>0) ;
 	if((shapeType == shape_2D)&&(leafGeometryPhi.size()==0))//because default value of shapeType is shape_2D
 	{
 		std::cout<<"shapeType set to shape_2D but no 2D shape data given, set shapeType to cylinder"<<std::endl;
@@ -111,7 +112,6 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
     } else {
 	lb_ = std::max(lb + p->randn()*lbs,double(0)); // length of basal zone
 	la_ = std::max(la + p->randn()*las,double(0)); // length of apical zone
-	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branchint points 
 	res = lb_ - floor(lb_/dx)* dx;	
 	if (res < dxMin) {
 		if (res <= dxMin/2){
@@ -262,12 +262,16 @@ std::shared_ptr<OrganSpecificParameter> LeafRandomParameter::realize()
  */
 double LeafRandomParameter::nobs() const
 {
-	double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
-	if (la>0) {
-		nobs -= (las/la - lns/ln)*la/ln;
-	}
-	if (lb>0) {
-		nobs -= (lbs/lb - lns/ln)*lb/ln;
+	double nobs = 0;
+	if(ln >0)
+	{
+		nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
 	}
 	return std::max(nobs,0.);
 }
