@@ -72,11 +72,11 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
                     infTime = plant.lock() ->rand()*dt; // TODO computationally expensive to do this way, better immediatly after?
                     setInfection(i,1,age + infTime);
                 }
-                else if (plant.lock()->rand() < 0.01) // TODO if not within radius probability decreases need to see how excactly
-                {
-                    infTime = plant.lock() ->rand()*dt;
-                    setInfection(i,1,age + infTime);
-                }
+                // else if (plant.lock()->rand() < 0.01)
+                // {
+                //     infTime = plant.lock() ->rand()*dt;
+                //     setInfection(i,1,age + infTime);
+                // }
             }
         } else { //if this is not a loclized infection use equal probability everywhere
             for (size_t i=1; i<nodes.size(); i++) {
@@ -100,7 +100,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
                 auto basalnode = i-1;
                 double infTime;
                 
-                while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0) // TODO wenn 0te node erreich 3er bei der parent node setzen
+                while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
                     
                     infTime = age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
