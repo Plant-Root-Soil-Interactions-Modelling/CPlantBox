@@ -686,7 +686,8 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     
     
     soil_grid.GetCellData().AddArray(soil_water_content)
-    path = s.results_dir#"results/"
+    
+    
     soil_pressure = vtk_data(np.array(s.getSolutionHead()))
     soil_pressure.SetName("pressure head")  # in macroscopic soil
     soil_grid.GetCellData().AddArray(soil_pressure)
@@ -731,7 +732,10 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         #    ren.Start()
 
         if filename:
-            path = s.results_dir#"results/"
+            try:
+                path = s.results_dir#"results/"
+            except:
+                path = "results/"
             write_vtp(path + filename + ".vtp", pd)
             write_vtu(path + filename + ".vti", soil_grid)
 
