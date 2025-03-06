@@ -67,12 +67,17 @@ points = s.getDofCoordinates()
 theta = s.getWaterContent()
 plt.figure(0)
 plt.plot(theta,points[:, 2],linewidth=2) 
-plt.xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)')
-plt.ylabel('depth (cm)')
-plt.title('Infiltration front in loam after 1 day')
+plt.xlabel(r'$\theta$ (cm$^3$ cm$^{-3}$)', fontsize=18)
+plt.ylabel('depth (cm)', fontsize=18)
+plt.xticks(fontsize=14); plt.yticks(fontsize=14)
+#plt.title('Infiltration front in loam after 1 day')
 plt.show()   # |\label{l61:plot_profile_e}|
 
 plt.figure(1)    #|\label{l61:plot_fluxes_a}|
-plt.plot(soil_times, top_new[:, 2])
-plt.plot(soil_times, bot_new[:, 2])
+plt.plot(soil_times, top_new[:, 2],label="surface flux")
+plt.plot(soil_times, bot_new[:, 2], label="bottom flux")
+plt.xlabel('time (days)', fontsize=18)
+plt.ylabel('Vertical water flux (cm/day)', fontsize=18)
+plt.xticks(fontsize=14); plt.yticks(fontsize=14)
+plt.legend(fontsize=14)
 plt.show()  # |\label{l61:plot_fluxes_e}|
