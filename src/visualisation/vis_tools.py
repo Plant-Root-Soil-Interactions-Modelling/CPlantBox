@@ -66,10 +66,15 @@ def PolydataFromPlantGeometry(vis : pb.PlantVisualiser ) :
 def WritePolydataToFile(pd : vtk.vtkPolyData, filename : str) :
   """Write a vtkPolyData object to file"""
   writer = vtk.vtkXMLPolyDataWriter()
-  writer.SetFileName(filename)
+  writer.SetFileName(filename+ ".vtp")
   writer.SetInputData(pd)
   writer.Write()
-# end def WritePolydataToFile
+  # Write to OBJ file
+  writer = vtk.vtkOBJWriter()
+  writer.SetFileName(filename + ".obj")
+  writer.SetInputData(pd)
+  writer.Write()
+  # end def WritePolydataToFile
 
 def WriteSimulationDataToFile(plant: pb.Plant, filename_prefix : str, times : list = range(30), vis: pb.PlantVisualiser = None, Organs : list = [1,2,3,4]) :
   """This function simulates the plant and writes each time step to a file"""
