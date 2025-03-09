@@ -82,8 +82,9 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     double la_;
     std::vector<double> ln_; // stores the inter-distances
 	double res;
-	int nob_real = 0;
-	bool hasLaterals = (successorST.size()>0);
+    double nob_sd = p->randn()*nobs();
+    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
+	bool hasLaterals = (successorST.size()>0) ;
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;
@@ -100,8 +101,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 
     } else {
     lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
-	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branching points			  
+	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone		  
 	res = lb_ - floor(lb_/dx)* dx;	
 	if((res < dxMin) && (res != 0)){
 		if(res <= dxMin/2){ lb_ -= res;
@@ -266,13 +266,17 @@ default:
  */
 double StemRandomParameter::nobs() const
 {
-    double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
-    if (la>0) {
-        nobs -= (las/la - lns/ln)*la/ln;
-    }
-    if (lb>0) {
-        nobs -= (lbs/lb - lns/ln)*lb/ln;
-    }
+	double nobs = 0;
+	if(ln >0)
+	{
+		double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+	}
     return std::max(nobs,0.);
 }
 
