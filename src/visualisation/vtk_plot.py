@@ -704,6 +704,7 @@ def write_plant(filename, plant, add_params = []):
     params.extend(add_params)
     pd = segs_to_polydata(plant, 1., params)
     write_vtp(filename + ".vtp", pd)
+    write_obj(filename + ".obj", pd)
 
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
@@ -715,6 +716,7 @@ def write_plant(filename, plant, add_params = []):
     pd_leafs.SetPoints(leaf_points)
     pd_leafs.SetPolys(leaf_polys)
     write_vtp(filename + "_leafs.vtp", pd_leafs)
+    write_obj(filename + "_leafs.obj", pd_leafs)
 
 
 def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True):

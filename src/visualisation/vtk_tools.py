@@ -324,6 +324,16 @@ def write_vtp(name, pd):
     writer.Write()
 
 
+def write_obj(name, pd):
+    """ Writes a VTP file including cell data from vtkPolyData 
+    @param name          file name including the file extension ("name.vtp")   
+    @param pd            grid represented as vtkPolyData object
+    """
+    writer = vtk.vtkOBJWriter()
+    writer.SetFileName(name )
+    writer.SetInputData(pd)
+    writer.Write()
+    
 def write_vtu(name, pd):
     """ Writes a VTU file
     @param name          file name including the file extension ("name.vtp")   
