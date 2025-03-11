@@ -46,36 +46,34 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
         setLeafColor = True
     else:
         ana = plant
-        
+
     pd = segs_to_polydata(ana, 1., ["radius", "organType", "creationTime", p_name])  # poly data
     tube_plot_actor, color_bar, lut = plot_roots(pd, p_name, "", render = False, returnLut = True)
 
     # leaves as polygons
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
-    
+
     globalIdx_y = []
     leaves = plant.getOrgans(ot = pb.leaf)
     for l in leaves:
         globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
     globalIdx_y = np.array(globalIdx_y)
-        
+
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
 
-    
-    if (len(globalIdx_y)>0):    
-        segs_idx = np.array([seg.y -1 for seg in ana.segments])
-        param = np.array(ana.getParameter(p_name))[segs_idx] # defined per segment
+    if (len(globalIdx_y) > 0):
+        segs_idx = np.array([seg.y - 1 for seg in ana.segments])
+        param = np.array(ana.getParameter(p_name))[segs_idx]  # defined per segment
         paramLeaf = param[globalIdx_y - 1]
         data = vtk_data(paramLeaf)
         data.SetName(p_name)
         polyData.GetCellData().AddArray(data)
-    #else:
+    # else:
     #    colors = vtk.vtkNamedColors()
 
-    
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
     mapper.ScalarVisibilityOn();
@@ -86,10 +84,10 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 
     actor = vtk.vtkActor()
     actor.SetMapper(mapper);
-    
-    #lut = create_lookup_table()  # 24
+
+    # lut = create_lookup_table()  # 24
     mapper.SetLookupTable(lut)
-    #actor.GetProperty().SetColor(colors.GetColor3d("Green"))
+    # actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
         ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(), interactiveImage)
@@ -102,7 +100,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 def create_leaf_(leaf, leaf_points, leaf_polys):
     """ used by plot plant """
     offs = leaf_points.GetNumberOfPoints()
-    globalIdx_y = [] #index of y node
+    globalIdx_y = []  # index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
 
         ln1 = leaf.getLeafVis(i)
@@ -111,38 +109,38 @@ def create_leaf_(leaf, leaf_points, leaf_polys):
         if len(ln1) > 0 or len(ln2) > 0:
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)
-            glIdx = leaf.getNodeId(i +1)
+            glIdx = leaf.getNodeId(i + 1)
             if len(ln1) == 2 and len(ln2) == 2:  # normal case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[1], n2, leaf_points, leaf_polys, offs)
-                globalIdx_y = globalIdx_y + [glIdx,glIdx]
+                globalIdx_y = globalIdx_y + [glIdx, glIdx]
             elif len(ln1) == 6 and len(ln2) == 6:  # convex case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[1], ln1[2], ln2[2], ln2[1], leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[3], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[4], ln1[5], ln2[5], ln2[4], leaf_points, leaf_polys, offs)
-                globalIdx_y = globalIdx_y + [glIdx,glIdx,glIdx,glIdx]
+                globalIdx_y = globalIdx_y + [glIdx, glIdx, glIdx, glIdx]
             elif len(ln1) == 2 and len(ln2) == 6:  # normal to convex case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[3], n2, leaf_points, leaf_polys, offs)
-                globalIdx_y = globalIdx_y + [glIdx,glIdx]
+                globalIdx_y = globalIdx_y + [glIdx, glIdx]
                 if x2[1] <= x1[0]:
                     offs = add_quad_(ln1[0], ln1[0], ln2[1], ln2[2], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[1], ln1[1], ln2[4], ln2[5], leaf_points, leaf_polys, offs)
-                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
+                    globalIdx_y = globalIdx_y + [glIdx, glIdx]
             elif len(ln1) == 6 and len(ln2) == 2:  # convex to normal case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[1], n2, leaf_points, leaf_polys, offs)
-                globalIdx_y = globalIdx_y + [glIdx,glIdx]
+                globalIdx_y = globalIdx_y + [glIdx, glIdx]
                 if x1[1] <= x2[0]:
                     offs = add_quad_(ln1[1], ln1[2], ln2[0], ln2[0], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[4], ln1[5], ln2[1], ln2[1], leaf_points, leaf_polys, offs)
-                    globalIdx_y = globalIdx_y + [glIdx,glIdx]
-    return globalIdx_y 
+                    globalIdx_y = globalIdx_y + [glIdx, glIdx]
+    return globalIdx_y
 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
@@ -448,9 +446,9 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     return scalarBar
 
 
-def plot_segments(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+def plot_segments(pd, p_name:str, win_title:str = " ", render:bool = True, interactiveImage:bool = True):
     """ see plot roots """
-    return plot_roots(pd, p_name, render, interactiveImage)
+    return plot_roots(pd, p_name, win_title, render, interactiveImage)
 
 
 def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, returnLut:bool = False):
@@ -500,10 +498,10 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
         ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
-            
+
     if returnLut:
         return plantActor, scalar_bar, lut
-        
+
     return plantActor, scalar_bar
 
 
@@ -831,7 +829,8 @@ class AnimateRoots:
             self.actors.extend(meshActor)
             self.bounds = grid.GetBounds()
 
-def sdf_to_vtk_mesh(sdf, initial_resolution=100, expansion_factor=1.5, resolution=100):
+
+def sdf_to_vtk_mesh(sdf, initial_resolution = 100, expansion_factor = 1.5, resolution = 100):
     """ Converts an SDF to a VTK Mesh using Marching Cubes with auto-detected bounds.
     @param sdf: SDF function from PlantBox (hopefully, supports all SDF types: Box, Cylinder, Union, etc.)
     @param initial_resolution: Initial grid resolution for adaptive scanning.
@@ -860,8 +859,8 @@ def sdf_to_vtk_mesh(sdf, initial_resolution=100, expansion_factor=1.5, resolutio
         raise ValueError("No valid surface detected. Check SDF function!")
 
     # **Step 2: Compute Adaptive Bounds**
-    xmin, ymin, zmin = surface_points.min(axis=0) * expansion_factor
-    xmax, ymax, zmax = surface_points.max(axis=0) * expansion_factor
+    xmin, ymin, zmin = surface_points.min(axis = 0) * expansion_factor
+    xmax, ymax, zmax = surface_points.max(axis = 0) * expansion_factor
 
     # **Step 3: Generate VTK Mesh Using Marching Cubes**
     image_data = vtk.vtkImageData()
@@ -895,7 +894,7 @@ def sdf_to_vtk_mesh(sdf, initial_resolution=100, expansion_factor=1.5, resolutio
     return mc.GetOutput()
 
 
-def plot_container(sdf, p_name="Container", win_title="", render=True, interactiveImage=True):
+def plot_container(sdf, p_name = "Container", win_title = "", render = True, interactiveImage = True):
     """ Visualizes an SDF-based container using VTK, with automatic bounding box detection.
     @param sdf: SDF function from PlantBox.
     @param p_name: Label for visualization.
@@ -937,7 +936,7 @@ def plot_container(sdf, p_name="Container", win_title="", render=True, interacti
     return [meshActor], scalar_bar, detected_bounds
 
 
-def plot_roots_and_container(root_system, sdf, title="Root System & Container", render=True, interactive=True):
+def plot_roots_and_container(root_system, sdf, title = "Root System & Container", render = True, interactive = True):
     """ Combines root system and container visualization into a single plot.
     @param root_system: Root system object (e.g., 'rs' from CPlantBox).
     @param sdf: Container geometry (e.g., splitBox, rhizoTube).
@@ -948,10 +947,10 @@ def plot_roots_and_container(root_system, sdf, title="Root System & Container", 
     """
 
     # Generate root system actor
-    root_actor, root_cbar = plot_roots(root_system, "type", render=False)
+    root_actor, root_cbar = plot_roots(root_system, "type", render = False)
 
     # Generate container mesh with marching cubes
-    mesh_actor, mesh_cbar, mesh_bounds = plot_container(sdf, p_name="Container", render=False)
+    mesh_actor, mesh_cbar, mesh_bounds = plot_container(sdf, p_name = "Container", render = False)
 
     # Combine actors for rendering
     all_actors = [mesh_actor[0], root_actor]
@@ -963,7 +962,7 @@ def plot_roots_and_container(root_system, sdf, title="Root System & Container", 
         return all_actors, [root_cbar, mesh_cbar], mesh_bounds
 
 
-def write_container(sdf, filename="container.vtp", resolution=100):
+def write_container(sdf, filename = "container.vtp", resolution = 100):
     """ Saves an SDF-based container as a VTP file, with automatic bounding box detection.
     @param sdf: SDF function from PlantBox.
     @param filename: Output file name (default: "container.vtp").
@@ -971,7 +970,7 @@ def write_container(sdf, filename="container.vtp", resolution=100):
     """
 
     # Convert SDF to VTK Mesh with specified resolution
-    mesh = sdf_to_vtk_mesh(sdf, resolution=resolution)
+    mesh = sdf_to_vtk_mesh(sdf, resolution = resolution)
 
     # Write VTK mesh to VTP file
     writer = vtk.vtkXMLPolyDataWriter()
