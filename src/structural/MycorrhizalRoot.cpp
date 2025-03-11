@@ -60,6 +60,8 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
 		//Primary Infection
         if (infected.size()!= nodes.size()) {std::cout<<"danger infection size not like node size!!!"<<std::endl;}
         double infTime;
+        // get the soil from plant here or set it to some parameter
+        // i.e. set a grid?? and then proceed as in the original code but with a if getDist <0 then localized infection
         if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
         {
             Vector3d startPos = Vector3d(getRootRandomParameter()->posX, getRootRandomParameter()->posY, getRootRandomParameter()->posZ); // save the start position
@@ -69,7 +71,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
             {
                 if (startPos.minus(nodes.at(i)).length() < infrad && infected.at(i) == 0) // if within radius from start position then 100% gets infected
                 {
-                    infTime = plant.lock() ->rand()*dt; // TODO computationally expensive to do this way, better immediatly after?
+                    infTime = plant.lock() ->rand()*dt;
                     setInfection(i,1,age + infTime);
                 }
                 // else if (plant.lock()->rand() < 0.01)
@@ -89,7 +91,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
             }
         }
         // Secondary Infection
-        auto max_length_infection = dt*getRootRandomParameter()->vi;
+        auto max_length_infection = (age+dt)*getRootRandomParameter()->vi;
         
         for (size_t i = 0; i < nodes.size()-1; i++)
         {   
@@ -103,13 +105,13 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
                 while (basalnode > 1 && basalnode< nodes.size()-1 && nodes.at(basalnode).length()> max_length_basal && infected.at(basalnode) == 0)
                 {
                     
-                    infTime = age + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
-                    if (infTime > nodeCTs.at(basalnode) && infTime < age + dt){
+                    infTime = infectionTime.at(i) + nodes.at(i).minus(nodes.at(basalnode)).length()/getRootRandomParameter()->vi; 
+                    if (infTime > nodeCTs.at(basalnode)){ // TODO make sure that new infected segments are not infected again!! also in apical direction
                         setInfection(basalnode,2,infTime);
-                    }
-                    if(basalnode==0) {
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->setInfection(parentNI,3,infTime);
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->simulateInfection(dt,verbose);
+                        if(basalnode==0) {
+                            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->setInfection(parentNI,3,infTime);
+                            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->simulateInfection(dt,verbose);
+                        }
                     }
                     basalnode--;
                 }
@@ -119,8 +121,8 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
                 
                 while (apicalnode < nodes.size()-1 && nodes.at(apicalnode).length() < max_length_apical && infected.at(apicalnode) == 0)
                 {
-                    infTime = age + nodes.at(apicalnode).minus(nodes.at(i)).length()/getRootRandomParameter()->vi;
-                    if (infTime > nodeCTs.at(apicalnode) && infTime < age + dt)
+                    infTime = infectionTime.at(i) + nodes.at(apicalnode).minus(nodes.at(i)).length()/getRootRandomParameter()->vi;
+                    if (infTime > nodeCTs.at(apicalnode))
                     {
                         setInfection(apicalnode,2,infTime);
                     }
@@ -150,7 +152,6 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
 {   
     // std::cout << "\nstart " << getId() <<  std::flush;
     Root::simulate(dt,verbose);
-    // TODO check that infection age definition makes sense and is correct. Both for Primary and Secondary Infection
     simulateInfection(dt,verbose);
     // std::cout << "\nend " << getId() <<  std::flush;
 }

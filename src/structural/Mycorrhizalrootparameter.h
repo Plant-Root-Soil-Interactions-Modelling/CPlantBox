@@ -45,12 +45,13 @@ namespace CPlantBox {
         double maxAge = 32;     ///< Maximal Infection age of a root segment [day]
         double vi = 0.13;       ///< rate of internal infection front [cm / day]
         double maxInfection = 1;    ///< Percentage of maximal infection
-        double posX = 0;    ///< x Position of the localized infection front
-        double posY = 0;      ///< y Position of the localized infection front
-        double posZ = -3;       ///< z Position of the localized infection front
-        double infradius = 1;     ///< Radius of the localized infection front
+        double posX = 0;    ///< x Position of the localized inoculum
+        double posY = 0;      ///< y Position of the localized inoculum
+        double posZ = -3;       ///< z Position of the localized inoculum
+        double infradius = 1;     ///< Radius of the localized inoculum
         // double nEntryP = 0; //< verbindung zu externen hyphen 
         int infected = 0;  ///< status of AMF infection
+        // add parameter for localized infection here? like f_tf that can be modified from python binding
 
     };
 }
