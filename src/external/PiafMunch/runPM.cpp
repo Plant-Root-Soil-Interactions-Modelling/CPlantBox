@@ -781,6 +781,8 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 	GrowthZoneLat = std::vector<int>(Nr,0); //for post processing
     psi_p_symplasm = std::vector<double>(Nr,0.); //for post processing		  
 	int orgID2 = 0;
+    
+    bool no_gf_warning = true;
 	for(auto org: orgs)
 	{
 		double dt = t;
@@ -799,26 +801,28 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 			int f_gf_ind = org->getParameter("gf");//-1;//what is the growth dynamic?
 			//auto orp = org->getOrganism->getOrganRandomParameter(ot).at(stold)
 			//if(orp!= NULL) {orp->f_gf->CW_Gr = cWGrRoot;}	
-			if(f_gf_ind != 3)//(f_gf_ind != 3)
+			if((f_gf_ind != 3) && no_gf_warning)//(f_gf_ind != 3)
 			{
-				std::cout<<"org id "<<org->getId()<<" ot "<<ot<<" st "<<st<<" Linit "<<Linit<<" numNodes ";
-				std::cout<<org->getNumberOfNodes()<<" "<<rmax<<" f_gf_ind "<<f_gf_ind<<std::endl;
-				assert((f_gf_ind == 3)&&"PhloemFlux::waterLimitedGrowth: organ does not use carbon-limited growth");
+                std::cout<<"PhloemFlux::waterLimitedGrowth: organ does not use carbon-limited growth"<<std::endl;
+                no_gf_warning = false;
+				//std::cout<<"org id "<<org->getId()<<" ot "<<ot<<" st "<<st<<" Linit "<<Linit<<" numNodes ";
+				//std::cout<<org->getNumberOfNodes()<<" "<<rmax<<" f_gf_ind "<<f_gf_ind<<std::endl;
+				//assert((f_gf_ind == 3)&&"PhloemFlux::waterLimitedGrowth: organ does not use carbon-limited growth");
 			}
 			f_gf_ind = 1; // take negative exponential growth dynamic [f_gf_ind == 1] to compute max growth 
 			auto f_gf =  plant->createGrowthFunction(f_gf_ind);
 			double age_ = f_gf->getAge(Linit, rmax, org->getParameter("k"), org->shared_from_this());
 			
 			
-			if((!((org->getOrganRandomParameter()->f_gf->CW_Gr.empty()) || 
-					(org->getOrganRandomParameter()->f_gf->CW_Gr.count(org->getId()) ==0) ||
-					(org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<0.)))&&
-					org->isActive()&&useCWGr)
-			{
-				std::cout<<org->getId()<<" "<<org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<<std::endl;
-				std::cout<<org->calcLength(1)<<" "<< ot <<" "<<org->getAge()<<std::endl;
-				throw std::runtime_error("PhloemFlux::waterLimitedGrowth: sucrose for growth has not been used at last time step");
-			}
+			//if((!((org->getOrganRandomParameter()->f_gf->CW_Gr.empty()) || 
+			//		(org->getOrganRandomParameter()->f_gf->CW_Gr.count(org->getId()) ==0) ||
+			//		(org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<0.)))&&
+			//		org->isActive()&&useCWGr)
+			//{
+			//	std::cout<<org->getId()<<" "<<org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<<std::endl;
+			//	std::cout<<org->calcLength(1)<<" "<< ot <<" "<<org->getAge()<<std::endl;
+			//	throw std::runtime_error("PhloemFlux::waterLimitedGrowth: sucrose for growth has not been used at last time step");
+			//}
 			
 			
 			if(doTroubleshooting){
