@@ -3,6 +3,7 @@
 
 #include "Plant.h"
 #include "MycorrhizalRoot.h"
+#include "soil.h"
 
 namespace CPlantBox {
     class MycorrhizalPlant :public Plant {
@@ -23,7 +24,8 @@ namespace CPlantBox {
         virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
         virtual std::vector<double> getNodeIT(int ot) const; // returns Infection Time
 
-          
+        // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
+        void initCallbacks();
     };
 }
 

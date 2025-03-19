@@ -31,6 +31,7 @@ namespace CPlantBox {
         auto r = std::make_shared<MycorrhizalRootRandomParameter>(*this);
         r->plant = p;
         r->bindParameters();
+        r->f_inf = f_inf; // why no ->copy() here?
         return r;
     }
 

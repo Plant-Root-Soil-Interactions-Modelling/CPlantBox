@@ -111,4 +111,12 @@ void MycorrhizalPlant::simulate(double dt, bool verbose)
     }
 	rel2abs();
 }
+
+void MycorrhizalPlant::initCallbacks() {
+    Plant::initCallbacks();
+    for (auto& p_otp :organParam[Organism::ot_root]) {
+		auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
+        // rp->f_inf  = 0;
+    }
+}
 }

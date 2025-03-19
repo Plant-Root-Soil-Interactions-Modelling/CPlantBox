@@ -3,6 +3,7 @@
 
 #include "rootparameter.h"
 #include "organparameter.h"
+#include "soil.h"
 
 
 namespace CPlantBox {
@@ -52,6 +53,8 @@ namespace CPlantBox {
         // double nEntryP = 0; //< verbindung zu externen hyphen 
         int infected = 0;  ///< status of AMF infection
         // add parameter for localized infection here? like f_tf that can be modified from python binding
+
+        std::shared_ptr<SoilLookUpSDF> f_inf = std::make_shared<SoilLookUpSDF>();
 
     };
 }
