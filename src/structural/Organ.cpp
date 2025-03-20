@@ -485,17 +485,34 @@ void Organ::rel2abs()
 
 		for(size_t i=1; i<nodes.size(); i++)
 		{
-			double sdx = nodes[i].length();
-			Vector3d newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
-			nodes[i] = nodes[i-1].plus(newdx); //replace relative by absolute position
+			//double sdx = nodes[i].length();
+			//Vector3d newdx = getIncrement(nodes[i-1], sdx, i-1); //add tropism
+			//nodes[i] = nodes[i-1].plus(newdx); //replace relative by absolute position
+			//nodes[i] = nodes[i-1].plus(nodes[i]);
+			auto nodesiinit = nodes[i];
+			Vector3d h = heading(i-1);
+			Matrix3d ons = Matrix3d::ons(h);
+			//auto nodes_i = ons.times(nodes[i]);
+			auto nodes_i = nodes[i];
+			nodes[i] = nodes[i-1].plus(nodes_i);
+			if ((organType()==4) && (i==1) && (getId()==67))
+			{
+				std::cout<<"Organ::rel2abs ot:"<<organType()<<" id:"<<getId()<<" nodes.at(i-1):"<<nodes.at(i-1).toString()
+				<<", nodesiinit:"<<nodesiinit.toString()<<" nodes_i:"<<nodes_i.toString()<<", h:"<<h.toString()<<", getiHeading0():"<<getiHeading0().toString()
+				<<",  getParent()->heading(parentNI):"<< getParent()->heading(parentNI).toString()
+				<<", this->partialIHeading:"<<this->partialIHeading.toString()
+				<<", ons:"<<ons.toString()
+				<<" nodes.at(i):"<<nodes[i].toString()<<std::endl<<std::flush;
+			}
 		}
 		moved = true; //update position of existing nodes in MappedSegments
-	}
-	//if carry children, update their pos
-
+		
 	for(size_t i=0; i<children.size(); i++){
 		(children[i])->rel2abs();//even if parent does not have relCoordinate, the laterals might
 	}
+	}
+	//if carry children, update their pos
+
 }
 
 /**
@@ -504,22 +521,38 @@ void Organ::rel2abs()
 void Organ::abs2rel()
 {
 	bool isShoot = ((organType()==Organism::ot_stem)||(organType()==Organism::ot_leaf));
-	if(isShoot||(getParent()->hasRelCoord()))//convert to relative coordinate if is shoot organ or carried by shoot organs
+	bool notBaseOrgan = !(getParent()->organType()==Organism::ot_seed);
+
+	if(isShoot||notBaseOrgan)//convert to relative coordinate if is shoot organ or carried by shoot organs
 	{
-		for (int j = nodes.size(); j>1; j--) {
-			double sdx = (nodes.at(j-1).minus(nodes.at(j-2))).length();
-			nodes.at(j-1) = Vector3d(sdx,0.,0.);
-			//nodes.at(j-1) = nodes.at(j-1).minus(nodes.at(j-2));
-		}
-		nodes[0] = Vector3d(0.,0.,0.);
-		moved = true; //update position of existing nodes in MappedSegments
-	}
+		
 	for(size_t i=0; i<children.size(); i++){
 		//if((children[i])->organType()!=Organism::ot_root){
 			(children[i])->abs2rel();
 		//}
 	}//if carry children, update their pos
-
+		for (int j = nodes.size(); j>1; j--) {
+			//double sdx = (nodes.at(j-1).minus(nodes.at(j-2))).length();
+			//nodes.at(j-1) = Vector3d(sdx,0.,0.);
+			auto nodesjinit = nodes.at(j-1);
+			auto nodes_j_1 = nodes.at(j-1).minus(nodes.at(j-2));
+			Vector3d h = heading(j-2);
+			Matrix3d onsinv = Matrix3d::ons(h).inverse();
+			//nodes.at(j-1) = onsinv.times(nodes_j_1);//nodes.at(j-1));
+			nodes.at(j-1) =nodes_j_1;
+			if ((organType()==4) && (j==2)&& (getId()==67))
+			{
+				std::cout<<"Organ::abs2rel ot:"<<organType()<<" id:"<<getId()<<" nodes.at(j-2):"<<nodes.at(j-2).toString()
+				<<", nodesjinit:"<<nodesjinit.toString()<<", nodes_j_1:"<<nodes_j_1.toString()<<", h:"<<h.toString()<<", getiHeading0():"<<getiHeading0().toString()
+				<<",  getParent()->heading(parentNI):"<< getParent()->heading(parentNI).toString()
+				<<", this->partialIHeading:"<<this->partialIHeading.toString()
+				<<", onsinv:"<<onsinv.toString()
+				<<" nodes.at(j-1):"<<nodes.at(j-1).toString()<<std::endl<<std::flush;
+			}
+		}
+		nodes[0] = Vector3d(0.,0.,0.);
+		moved = true; //update position of existing nodes in MappedSegments
+	}
 }
 
 /**
@@ -563,7 +596,14 @@ Vector3d Organ::heading(int n ) const
 	if(n<0){n=nodes.size()-1 ;}
 	if ((nodes.size()>1)&&(n>0)) {
 		n = std::min(int(nodes.size()),n);
-		Vector3d h = getNode(n).minus(getNode(n-1));
+		Vector3d h ;
+		if(hasRelCoord())
+		{
+			h = getNode(n);
+		}else{
+			//Vector3d n1 = nodes.at(nn-1);
+			h =  getNode(n).minus(getNode(n-1));
+		}
 		h.normalize();
 		return h;
 	} else {
@@ -597,10 +637,15 @@ Vector3d Organ::getIncrement(const Vector3d& p, double sdx, int n)
 
     Vector3d h = heading(n);
     Matrix3d ons = Matrix3d::ons(h);
-    Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this(), n+1);
+    Vector2d ab = getOrganRandomParameter()->f_tf->getHeading(p, ons, dx(), shared_from_this());//, n+1);
 	//for leaves: necessary?
 	//Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
-    Vector3d sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+    Vector3d sv;// = ons.times(Vector3d::rotAB(ab.x,ab.y));
+	if(false){//hasRelCoord()){
+		sv = Vector3d::rotAB(ab.x,ab.y);
+	}else{
+		sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
+	}
     return sv.times(sdx);
 }
 
@@ -675,11 +720,11 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
                 double sdx = olddx + shiftl; // length of new segment
                 // Vector3d newdxv = getIncrement(n2, sdx);
 
+				h.normalize();
 				if(hasRelCoord())
 				{
-					nodes.at(nn-1) =  Vector3d(sdx,0.,0.);//h.times(sdx);
+					nodes.at(nn-1) =  h.times(sdx);//Vector3d(sdx,0.,0.);//h.times(sdx);
 				}else{
-					h.normalize();
 					nodes.at(nn-1) = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
 				}
                 double et = this->calcCreationTime(getLength(true)+shiftl, dt);
@@ -720,12 +765,15 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         }
         sl += sdx;
 		Vector3d newnode;
+		Vector3d newdx = getIncrement(nodes.back(), sdx);
 		if(hasRelCoord())
 		{
-			newnode = Vector3d(sdx, 0., 0.);
+			newnode = newdx;//Vector3d(sdx, 0., 0.);
 		}else{
-			Vector3d newdx = getIncrement(nodes.back(), sdx);
 			newnode = Vector3d(nodes.back().plus(newdx));
+		}
+		if (std::isnan(newnode.x)||std::isnan(newnode.y)||std::isnan(newnode.z)) {
+			assert(false &&"newnode is nan");
 		}
         double et = this->calcCreationTime(getLength(true)+shiftl+sl, dt);//here length or get length? it s the same because epsilonDx was set back to 0 at beginning of simulate no?
         // in case of impeded growth the node emergence time is not exact anymore,

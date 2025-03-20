@@ -10,11 +10,11 @@ import visualisation.vtk_plot as vp
 
 import numpy as np
 
-plant = pb.Plant()
+plant = pb.MappedPlant(0)
 
 # Open plant and root parameter from a file
 path = "../../modelparameter/structural/plant/"
-name = "0"  # CPlantBox_test_leaf_tree00
+name = "Triticum_aestivum_test_2021_4POF"  # CPlantBox_test_leaf_tree00
 
 # LEAFS smallPlant_mgiraud "manyleaves"
 # NO LEAFS "CPlantBox_test_leaf_tree22"  # "chicon_entire"  # "Anagallis_femina_leaf_shape"  # "Anagallis_femina_Leitner_2010"
@@ -23,78 +23,23 @@ name = "0"  # CPlantBox_test_leaf_tree00
 
 plant.readParameters(path + name + ".xml")
 
-# print radii
-print("\nleafs")
 for p in plant.getOrganRandomParameter(pb.leaf):
-    p.a = 0.05
-    p.a_s = 0
-    if (p.subType > 0):
-        print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())
-
-        if (p.subType == 2):
-            p.tropismT = 1
-            p.tropismN = 5
-            p.tropismS = 0.01  # 0.3
-
-        if (p.subType == 3):
-            # print(p)
-
-            p.la, p.lb, p.lmax, p.ln, = 3.5, 1., 7.5, 3
-            p.areaMax = 10  # cm2
-            phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-            l = np.array([3, 2.2, 1.7, 2, 3.5])
-            N = 101  # N is rather high for testing
-            p.createLeafRadialGeometry(phi, l, N)
-
-#             lrp = p
-#             p.areaMax = 20  # cm2
-#             lrp.la, lrp.lb, lrp.lmax, lrp.ln, lrp.r, lrp.dx = 5, 1, 11, 5, 1, 0.1
-#             phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
-#             l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
-#             assert(l.shape == phi.shape)
-#             N = 500  # N is rather high for testing
-#             lrp.createLeafRadialGeometry(phi, l, N)
-#             p = lrp
-
-            p.tropismT = 1
-            p.tropismN = 5
-            p.tropismS = 0.1  # 0.3
-
-        else:
-            p.a = p.a * 3
-
-print("\nstem")
-for p in plant.getOrganRandomParameter(pb.stem):
-    print(p.subType, "radius", p.a, "lmax", p.lmax, p.ln, p.lb, p.successor, p.nob())
-    if (p.subType == 1):
-        p.a = p.a / 2
-        p.a = 0.2
-        p.a_s = 0
-        p.lmax = 30
-        p.la = 3
-        p.ln = 1
-
-print("roots")
-for p in plant.getOrganRandomParameter(pb.root):
-    if (p.subType > 0):
-        print(p.subType, p.a, p.successor)
-        if p.subType == 1:  # taproot
-            p.theta = 0.
-        p.a = 0.05
-        p.a_s = 0
-
-# soil = pb.SDF_PlantContainer(1.e6, 1.e6, 1.e6, False)
-# plant.setGeometry(soil)
-
-# increase resolution
-for p in plant.getOrganRandomParameter(pb.root):
-    p.dx = 0.2
-
-# Initialize
+    p.lb = 2 # length of leaf stem
+    p.la,  p.lmax = 49.12433414, 49.12433414
+    p.areaMax = 71.95670914  # cm2, area reached when length = lmax
+    NLeaf = 100  
+    phi = np.array([-90,-80, -45, 0., 45, 90]) / 180. * np.pi
+    l = np.array([49.12433414,1 ,1, 0.3, 1, 49.12433414]) #distance from leaf center
+    #p.tropismT = 1 # 6: Anti-gravitropism to gravitropism
+    #p.tropismN = 5
+    #p.tropismS = 0.05
+    
+    p.createLeafRadialGeometry(phi, l, NLeaf)
+# print ra
 plant.initialize()
 
-dt = 0.1
-N = 400
+dt = 1
+N = int(np.ceil(25/dt))
 min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])
 
@@ -109,10 +54,31 @@ anim.file = "results/example_plant"
 anim.avi_name = "results/example_"
 anim.plant = True
 anim.start()
-
+nodesOLd = np.array([])
+nodesOLd2 = np.array([])
 for i in range(0, N):
 
     plant.simulate(dt, False)
+    if len(plant.getOrgans(4))>0:
+        print('leaf0 id',plant.getOrgans(4)[0].getId())
+    if False:
+        print(plant.getSimTime(),'len(plant.getOrgans(4))',len(plant.getOrgans(4)))
+        if len(plant.getOrgans(4))>0:
+            leafs = plant.getOrgans(4)[0]
+            nodesNew= np.array([[leafs.getNode(ii).x,leafs.getNode(ii).y,leafs.getNode(ii).z] for ii in range(leafs.getNumberOfNodes())])
+            segLength =np.diff( np.array([leafs.getLength(ii) for ii in range(leafs.getNumberOfNodes())]))
+            if(len(nodesOLd)>0):
+                print('leaf1', nodesNew,nodesOLd - nodesNew[:len(nodesOLd)])
+                print('segLength',segLength)
+            nodesOLd = nodesNew
+        for ii, leaf in enumerate(plant.getOrgans(4)):
+            print(ii, leaf.getId(),np.array([[leaf.getNode(ii).x,leaf.getNode(ii).y,leaf.getNode(ii).z] for ii in range(leaf.getNumberOfNodes())]))
+        if False:#len(plant.getOrgans(4))>1:
+            leafs = plant.getOrgans(4)[1]
+            nodesNew2= np.array([[leafs.getNode(ii).x,leafs.getNode(ii).y,leafs.getNode(ii).z] for ii in range(leafs.getNumberOfNodes())])
+            if(len(nodesOLd2)>0):
+                print('leaf2', nodesOLd2 - nodesNew2[:len(nodesOLd2)])
+            nodesOLd2 = nodesNew2
     anim.root_name = "organType"
     anim.update()
 
