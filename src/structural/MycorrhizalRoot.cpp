@@ -69,9 +69,12 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
                     double p = getRootRandomParameter()->f_inf->getValue(nodes.at(i-1), shared_from_this());
                     double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
 
-                    if (infected.at(i-1) == 0 && plant.lock()->rand() < 1 - pow(1-p,dt*cursegLength))
+                    if (infected.at(i-1) == 0 && plant.lock()->rand() < prob(dt,cursegLength,p))
                     {
                         infTime = plant.lock()->rand()*dt;
+                        if(infTime > age + dt) {
+                            std::cout<< "inftime larger than supposed to be" << std::endl;
+                        }
                         setInfection(i-1,1,age+infTime); 
                     }
                 }
@@ -80,7 +83,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
 
             for (size_t i=1; i<nodes.size(); i++) {
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-                if ((plant.lock()->rand() < 1 - pow(1-getRootRandomParameter()->p,dt*cursegLength) && (infected.at(i-1) == 0)))
+                if ((plant.lock()->rand() <  prob(dt,cursegLength,getRootRandomParameter()->p) && (infected.at(i-1) == 0)))
                 {
                     infTime = plant.lock() ->rand()*dt;
                     setInfection(i-1,1,age+infTime); 
@@ -101,7 +104,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
                 int oldNode = i;
                 double infTime;
                 bool basal_length;
-                while (basalnode > 0 && basalnode< nodes.size()-1)
+                while (basalnode > 0 && basalnode < nodes.size()-1)
                 {
                     basal_length = abs(nodes.at(i).minus(nodes.at(basalnode)).length()) < max_length_infection;
                     infTime = infectionTime.at(oldNode) + nodes.at(basalnode).minus(nodes.at(oldNode)).length()/getRootRandomParameter()->vi; 
@@ -109,7 +112,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
                     {
                         setInfection(basalnode,2,infTime);
                     }
-                    if(basalnode==0) {
+                    if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())){
                         std::cout << "basalnode is 0" << std::endl;
                         std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->setInfection(parentNI,3,infTime);
                         std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->simulateInfection(dt,verbose);
@@ -266,6 +269,10 @@ int MycorrhizalRoot::getNumberofInfectedNodes() const
         }
     }
     return numberInfectedNodes;
+}
+double MycorrhizalRoot::prob(double  t, double segLength, double p)
+{
+    return 1 - pow(1-p,t*segLength);
 }
 
 }

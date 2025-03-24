@@ -42,6 +42,10 @@ namespace CPlantBox {
         double getNodeInfectionTime(int i) const {return infectionTime.at(i);}
         void setInfection(int i, int inf, double t);
 
+        protected:
+
+        double prob(double  t, double segLength, double p);
+
 
     };
 
