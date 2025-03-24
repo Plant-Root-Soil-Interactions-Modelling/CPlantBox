@@ -102,10 +102,10 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence){
                 int basalnode = i-1;
                 while (basalnode >= 0 && basalnode < nodes.size()-1 && abs(nodes.at(i).minus(nodes.at(basalnode)).length()) < maxLength)
                 {   
-                    infTime = infectionTime.at(oldNode) + nodes.at(basalnode).minus(nodes.at(oldNode)).length()/getRootRandomParameter()->vi; 
-                    if (infTime > nodeCTs.at(basalnode) && infected.at(basalnode) == 0)
+                    infTime = infectionTime.at(oldNode) + abs(nodes.at(basalnode).minus(nodes.at(oldNode)).length())/getRootRandomParameter()->vi; 
+                    if (infected.at(basalnode) == 0)
                     {
-                        setInfection(basalnode,2,infTime);
+                        setInfection(basalnode,2,std::max(infTime,nodeCTs.at(basalnode)));
                     }
                     if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())){
                         // std::cout << "basalnode is 0" << std::endl;
@@ -121,10 +121,10 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence){
 
             while (apicalnode < nodes.size()-1 && abs(nodes.at(i).minus(nodes.at(apicalnode)).length()) < maxLength)
             {
-                infTime = infectionTime.at(oldNode) + nodes.at(oldNode).minus(nodes.at(apicalnode)).length()/getRootRandomParameter()->vi;
-                if (infTime > nodeCTs.at(apicalnode) && infected.at(apicalnode) == 0)
+                infTime = infectionTime.at(oldNode) + abs(nodes.at(oldNode).minus(nodes.at(apicalnode)).length())/getRootRandomParameter()->vi;
+                if (infected.at(apicalnode) == 0)
                 {
-                    setInfection(apicalnode,2,infTime);
+                    setInfection(apicalnode,2,std::max(infTime,nodeCTs.at(apicalnode)));
                 }
                 oldNode = apicalnode;
                 apicalnode++;
@@ -147,9 +147,10 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
         {
             if (infected.at(l->parentNI) != 0)
             {
-                if (l->getNumberOfNodes() > 1 )//&& std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0)
+                if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0)
                 {
                     if(std::dynamic_pointer_cast<MycorrhizalRoot>(l)){
+                        // std::cout<< "dynamic_cast successful!" <<std::endl;
                         std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
                     }
                     else std::cout<< "dynamic_cast failed!" <<std::endl;                
