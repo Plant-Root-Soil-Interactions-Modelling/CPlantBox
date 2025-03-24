@@ -96,35 +96,33 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence){
     {   
         if (infected.at(i) == 1 || infected.at(i)== 3)
         {
-            int basalnode = i-1;
             int oldNode = i;
             double infTime;
-            while (basalnode >= 0 && basalnode < nodes.size()-1)
-            {   
-                bool basal_length = abs(nodes.at(i).minus(nodes.at(basalnode)).length()) < maxLength;
-                infTime = infectionTime.at(oldNode) + nodes.at(basalnode).minus(nodes.at(oldNode)).length()/getRootRandomParameter()->vi; 
-                if (infTime > nodeCTs.at(basalnode) && infected.at(basalnode) == 0 && basal_length)
-                {
-                    setInfection(basalnode,2,infTime);
+            if (i>=1) {  // secondary infection in basal direction can only occur if there is another node in basal direction in this root
+                int basalnode = i-1;
+                while (basalnode >= 0 && basalnode < nodes.size()-1 && abs(nodes.at(i).minus(nodes.at(basalnode)).length()) < maxLength)
+                {   
+                    infTime = infectionTime.at(oldNode) + nodes.at(basalnode).minus(nodes.at(oldNode)).length()/getRootRandomParameter()->vi; 
+                    if (infTime > nodeCTs.at(basalnode) && infected.at(basalnode) == 0)
+                    {
+                        setInfection(basalnode,2,infTime);
+                    }
+                    if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())){
+                        // std::cout << "basalnode is 0" << std::endl;
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->setInfection(parentNI,3,infTime);
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->secondaryInfection(maxLength - abs(nodes.at(i).minus(nodes.at(basalnode)).length()),silence);
+                    }
+                    oldNode = basalnode; 
+                    basalnode--;
                 }
-                if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())){
-                    // std::cout << "basalnode is 0" << std::endl;
-                    std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->setInfection(parentNI,3,infTime);
-                    std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->secondaryInfection(maxLength - abs(nodes.at(i).minus(nodes.at(basalnode)).length()),silence);
-                }
-                oldNode = basalnode; 
-                basalnode--;
             }
-
             auto apicalnode = i+1;
-            bool apical_length;
             oldNode = i;
 
-            while (apicalnode < nodes.size()-1)
+            while (apicalnode < nodes.size()-1 && abs(nodes.at(i).minus(nodes.at(apicalnode)).length()) < maxLength)
             {
-                apical_length = abs(nodes.at(i).minus(nodes.at(apicalnode)).length()) < maxLength;
                 infTime = infectionTime.at(oldNode) + nodes.at(oldNode).minus(nodes.at(apicalnode)).length()/getRootRandomParameter()->vi;
-                if (infTime > nodeCTs.at(apicalnode) && infected.at(apicalnode) == 0 && apical_length)
+                if (infTime > nodeCTs.at(apicalnode) && infected.at(apicalnode) == 0)
                 {
                     setInfection(apicalnode,2,infTime);
                 }
