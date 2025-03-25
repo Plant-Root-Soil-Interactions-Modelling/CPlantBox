@@ -66,32 +66,26 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
                 double p = getRootRandomParameter()->f_inf->getValue(nodes.at(i-1), shared_from_this());
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
 
-                if (infected.at(i-1) == 0 && plant.lock()->rand() < prob(dt,cursegLength,p))
+                if (infected.at(i-1) == 0 && plant.lock()->rand() < prob(age,cursegLength,p))
                 {
-                    infTime = plant.lock()->rand()*dt;
-                    if(infTime > age + dt) {
-                        std::cout<< "inftime larger than supposed to be" << std::endl;
-                    }
-                    setInfection(i-1,1,age+infTime); 
+                    infTime = plant.lock()->rand()*(age-nodeCTs.at(i-1)) + nodeCTs.at(i-1);
+                    setInfection(i-1,1,infTime); 
                 }
             }
         }
     } else { //if this is not a loclized infection use equal probability everywhere
         for (size_t i=1; i<nodes.size(); i++) {
             double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
-            if ((plant.lock()->rand() <  prob(dt,cursegLength,getRootRandomParameter()->p) && (infected.at(i-1) == 0)))
+            if ((plant.lock()->rand() <  prob(age,cursegLength,getRootRandomParameter()->p) && (infected.at(i-1) == 0)))
             {
-                infTime = plant.lock() ->rand()*dt;
-                if(infTime > age + dt) {
-                    std::cout<< "inftime larger than supposed to be" << std::endl;
-                }
-            setInfection(i-1,1,age+infTime); 
+                infTime = plant.lock()->rand()*(age-nodeCTs.at(i-1)) + nodeCTs.at(i-1);
+                setInfection(i-1,1,infTime); 
             }
         }
     }    
 }
 
-void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence){
+void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence, double dt){
     for (size_t i = 0; i < nodes.size()-1; i++)
     {   
         if (infected.at(i) == 1 || infected.at(i)== 3)
@@ -103,14 +97,14 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence){
                 while (basalnode >= 0 && basalnode < nodes.size()-1 && abs(nodes.at(i).minus(nodes.at(basalnode)).length()) < maxLength)
                 {   
                     infTime = infectionTime.at(oldNode) + abs(nodes.at(basalnode).minus(nodes.at(oldNode)).length())/getRootRandomParameter()->vi; 
-                    if (infected.at(basalnode) == 0)
+                    if (infected.at(basalnode) == 0 && infTime < age)
                     {
                         setInfection(basalnode,2,std::max(infTime,nodeCTs.at(basalnode)));
-                    }
-                    if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())){
-                        // std::cout << "basalnode is 0" << std::endl;
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->setInfection(parentNI,3,infTime);
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()) ->secondaryInfection(maxLength - abs(nodes.at(i).minus(nodes.at(basalnode)).length()),silence);
+                        if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())){
+                            // std::cout << "basalnode is 0" << std::endl;
+                            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->setInfection(parentNI,3,infTime);
+                            std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateInfection(dt,silence);
+                        }
                     }
                     oldNode = basalnode; 
                     basalnode--;
@@ -122,7 +116,7 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence){
             while (apicalnode < nodes.size()-1 && abs(nodes.at(i).minus(nodes.at(apicalnode)).length()) < maxLength)
             {
                 infTime = infectionTime.at(oldNode) + abs(nodes.at(oldNode).minus(nodes.at(apicalnode)).length())/getRootRandomParameter()->vi;
-                if (infected.at(apicalnode) == 0)
+                if (infected.at(apicalnode) == 0 && infTime < age)
                 {
                     setInfection(apicalnode,2,std::max(infTime,nodeCTs.at(apicalnode)));
                 }
@@ -140,8 +134,8 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose){
         primaryInfection(dt,verbose);
 
         // Secondary Infection
-        auto max_length_infection = (age+dt)*getRootRandomParameter()->vi;
-        secondaryInfection(max_length_infection,verbose);
+        auto max_length_infection = age*getRootRandomParameter()->vi;
+        secondaryInfection(max_length_infection,verbose,dt);
     
         for (auto l : children)
         {

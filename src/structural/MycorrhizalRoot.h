@@ -46,7 +46,7 @@ namespace CPlantBox {
 
         double prob(double  t, double segLength, double p);
         void primaryInfection(double dt, bool silence);
-        void secondaryInfection(double maxlength, bool silence);
+        void secondaryInfection(double maxlength, bool silence, double dt);
 
 
     };
