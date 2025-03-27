@@ -57,4 +57,4 @@ else:
     ana.addData("infectionTime", mycp.getNodeIT(2))
     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
     vp.plot_roots(pd, "infection") 
-    ana.write("nonanimation_local.vtp",["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
+    ana.write(filename +".vtp",["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
