@@ -4,6 +4,8 @@
 #include "MycorrhizalPlant.h"
 #include "MycorrhizalRoot.h"
 #include "Mycorrhizalrootparameter.h"
+#include "sdf.h"
+#include "soil.h"
 
 
 
@@ -116,7 +118,7 @@ void MycorrhizalPlant::initCallbacks() {
     Plant::initCallbacks();
     for (auto& p_otp :organParam[Organism::ot_root]) {
 		auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
-        // rp->f_inf  = 0;
+        // rp->f_inf  = f_inf;
     }
 }
 }
