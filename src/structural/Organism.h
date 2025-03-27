@@ -23,7 +23,6 @@ class Seed;
 /**
  * Organism
  *
- * Base class of Plant or RootSystem
  *
  * Manages the OrganRandomParameters
  * Offers an interface for the simulation loop (initialize, simulate, ...)

@@ -39,6 +39,16 @@ class Parameters:
         return (i for i in [self.theta_R, self.theta_S, self.alpha, self.n, self.Ksat])
 
 
+def plot_retention_curve(param, label_ = ""):
+    """ plots the retention curve """
+    y_ = np.logspace(1., 4., 100)
+    x_ = water_content(-y_, param)
+    plt.plot(x_, y_, label = label_)
+    plt.xlabel("water content [1]")
+    plt.ylabel("- matric potential [cm]")
+    plt.yscale('log')
+
+
 def pressure_head(theta, sp):
     """ returns pressure head at a given volumetric water content according to the van genuchten model """
     try:
@@ -112,7 +122,7 @@ def matric_flux_potential(h, sp):
 
 def matric_potential_mfp(mfp, sp):
     """ returns the matric potential [cm] from the matric flux potential [cm2/day]"""
-    hmin = -15000 # needed to make hmin larger or else brent did not find a solution
+    hmin = -15000  # needed to make hmin larger or else brent did not find a solution
     mfp_ = lambda psi: matric_flux_potential(psi, sp) - mfp
     h = optimize.brentq(mfp_, hmin, 0)
     return h
