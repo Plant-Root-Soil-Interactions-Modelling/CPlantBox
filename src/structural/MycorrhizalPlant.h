@@ -14,18 +14,21 @@ namespace CPlantBox {
         //copy
         void initializeReader() override; ///< initializes XML reader
         void readParameters(std::string name, std::string basetag = "plant", bool fromFile = true, bool verbose = true) override {this -> initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose);};
-        
+
         // std::shared_ptr<Organ> createRoot(std::shared_ptr<Organism> plant, int type, double delay);
         void initialize(bool verbose = true) override {initializeLB(verbose);};
         void initializeLB(bool verbose = true);
-        void simulate(double dt, bool verbose) override;
 
+        void simulate(double dt, bool verbose) override;
+        void simulatePrimaryInfection(double dt, bool verbose);
+        void simulateSecondaryInfection(double dt, bool verbose);
+        void simulateHyphalGrowth(double dt);
 
         virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
         virtual std::vector<double> getNodeIT(int ot) const; // returns Infection Time
 
         // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
-        void initCallbacks();
+        void initCallbacks() override;
     };
 }
 

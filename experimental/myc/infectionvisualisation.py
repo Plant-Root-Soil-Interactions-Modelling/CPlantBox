@@ -9,7 +9,17 @@ name = "Anagallis_femina_Leitner_2010"
 # name = "Heliantus_Pagès_2013"
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
+hyphae_parameter = pb.HyphaeRandomParameter(mycp)
+hyphae_parameter.subType = 1
+hyphae_parameter.a = 0.01
+hyphae_parameter.v = 1
+mycp.setOrganRandomParameter(hyphae_parameter)
+print(hyphae_parameter)
+
 root = mycp.getOrganRandomParameter(pb.root)
+for rp in root:
+    rp.hyphalEmergenceDensity = 1;
+
 infbox = pb.SDF_PlantBox(3, 3, 3)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
@@ -50,10 +60,21 @@ if animation:
 
 else:
     mycp.simulate(simtime, True)
+    print("sim time", mycp.getSimTime())
+
+    mycp.hyphalGrowth(simtime)
+    hyphae = mycp.getOrgans(5)
+    print("number of hyphae", len(hyphae))
+    print("type", type(hyphae))
+    for h in hyphae:
+        print(h.getParameter("length"))
+    dd
+
     ana = pb.SegmentAnalyser(mycp)
     ana.addData("infection", mycp.getNodeInfections(2))
     ana.addData("infectionTime", mycp.getNodeIT(2))
     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
-    vp.plot_roots(pd, "infectionTime")
+    vp.plot_roots(ana, "organType")
+    # vp.plot_plant(mycp, "organType")
     ana.write(filename + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
 

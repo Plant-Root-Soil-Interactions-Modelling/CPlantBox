@@ -500,7 +500,7 @@ void OrganRandomParameter::writeXML(std::string name) const
  */
 void OrganRandomParameter::bindParameters()
 {
-    bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4)");
+    bindParameter("organType", &organType, "Organ type (unspecified organ = 0, seed = 1, root = 2, stem = 3, leaf = 4, hyphae = 5)");
     bindParameter("subType", &subType, "Unique identifier of this sub type");
     bindParameter("a", &a, "radius [cm]", &as);
     bindParameter("dx", &dx, "Axial resolution [cm] (maximal segment size)");

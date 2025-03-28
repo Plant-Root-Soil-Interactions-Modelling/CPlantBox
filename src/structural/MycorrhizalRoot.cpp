@@ -139,31 +139,48 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence, double 
     }
 }
 
-void MycorrhizalRoot::hyphalGrowth(double dt) {
+void MycorrhizalRoot::simulateSecondaryInfection(double dt) {
+
+}
+
+void MycorrhizalRoot::simulatePrimaryInfection(double dt) {
+
+}
+
+void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
 
     auto rrp = getRootRandomParameter(); // param()
     double hed = rrp->hyphalEmergenceDensity;
 
-    double cumLength = 0; // cumulative infected length
+    double cumLength = 0.; // cumulative infected length
     double numberOfHyphae= 0;
 
     for (size_t i = 1; i < nodes.size(); i++) {
 
-        if (infected.at(i) >0) {
+        if (infected.at(i) > 0) {
 
-            double dx = (nodes.at(i).minus(nodes.at(i-1))).length();
+            auto v = nodes.at(i).minus(nodes.at(i-1));
+            double dx = v.length();
+            // std::cout << dx << std::flush <<", ";
             cumLength += dx;
             numberOfHyphae += emergedHyphae.at(i);
 
             int new_noh = int(hed * cumLength - numberOfHyphae);
-            for  (size_t j = 0; i < new_noh; j++) {
-                createHyphae(i, dt);
+            for  (size_t j = 0; j < new_noh; j++) {
+                createHyphae(i);
                 numberOfHyphae += 1;
             }
-
         }
     }
+
+//    if ((nodes.size()>1) && (cumLength>0)) {
+//        std::cout << "MycorrhizalRoot::hyphalGrowth() " << nodes.size()<< ", " << hed << ", noh " << numberOfHyphae
+//            << ", cum length "<< cumLength << ", actual density " << numberOfHyphae/cumLength <<"\n" <<std::flush;
+//    }
+
 }
+
+
 
 void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
 
@@ -195,12 +212,9 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
                 std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
             }
         }
-
-        // Hyphal production and initial growth
-        hyphalGrowth(dt);
-
     }
 }
+
 
 void MycorrhizalRoot::simulate(double dt, bool verbose)
 {
@@ -295,14 +309,16 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
     storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
 }
 
-void MycorrhizalRoot::createHyphae(int pni, double dt)
+void MycorrhizalRoot::createHyphae(int pni)
 {
+    double dt_ = plant.lock()->getSimTime() - infectionTime.at(pni); // time the hyphae should have grown
     double delay = getRootRandomParameter()->hyphalDelay; // todo specific (with std)
     int subType = 1;
-    auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni);
+    auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
     emergedHyphae.at(pni) += 1;
-    hyphae->simulate(dt);
+    std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
+    hyphae->simulate(dt_);
 }
 
 std::string MycorrhizalRoot::toString() const

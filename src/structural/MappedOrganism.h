@@ -78,7 +78,7 @@ public:
 	virtual int getSegment2leafId(int si_);
 
     const double eps = 1.e-5;
-    std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
+    std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, Organism::numberOfOrganTypes> plantParam;
 	double kr_length = -1.0; //define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
 	//% of segment length in the root exchange zone, see MappedPlant::simulate.
 	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)

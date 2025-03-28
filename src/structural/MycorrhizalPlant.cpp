@@ -4,15 +4,16 @@
 #include "MycorrhizalPlant.h"
 #include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
+#include "hyphaeparameter.h"
 #include "sdf.h"
 #include "soil.h"
 
 
 
 namespace CPlantBox {
-    MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
+MycorrhizalPlant::MycorrhizalPlant(unsigned int seednum): Plant(seednum) {}
 
-    void MycorrhizalPlant::initializeReader()
+void MycorrhizalPlant::initializeReader()
 {
     //new Parameters start here
     auto mycrrp = std::make_shared<MycorrhizalRootRandomParameter>(shared_from_this());
@@ -102,23 +103,53 @@ std::vector<double> MycorrhizalPlant::getNodeIT(int ot) const {
 void MycorrhizalPlant::simulate(double dt, bool verbose)
 {
     auto organs = getOrgans();
-	abs2rel();
+    abs2rel();
     Organism::simulate(dt, verbose);
-    for (const auto & o : organs)
-    {
-        if (o->organType() == Organism::ot_root)
-        {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(o) -> simulateInfection(dt,verbose);
-        }
-    }
-	rel2abs();
+    rel2abs();
 }
 
-void MycorrhizalPlant::initCallbacks() {
-    Plant::initCallbacks();
-    for (auto& p_otp :organParam[Organism::ot_root]) {
-		auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
-        // rp->f_inf  = f_inf;
+void MycorrhizalPlant::simulatePrimaryInfection(double dt, bool verbose) {
+    for (const auto& r : baseOrgans) {
+        std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulatePrimaryInfection(dt);
     }
 }
+void MycorrhizalPlant::simulateSecondaryInfection(double dt, bool verbose) {
+    for (const auto& r : baseOrgans) {
+        std::dynamic_pointer_cast<MycorrhizalRoot>(r)->simulateSecondaryInfection(dt);
+    }
+}
+
+void MycorrhizalPlant::simulateHyphalGrowth(double dt)
+{
+    oldNumberOfOrgans = getNumberOfOrgans();
+    auto organs = getOrgans(); // TODO  getOrgans(Organism::ot_root) empty list????
+    for (const auto & o : organs) {
+        if (o->organType() == Organism::ot_root) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(o) -> simulateHyphalGrowth();
+        }
+    }
+};
+
+void MycorrhizalPlant::initCallbacks() {
+
+    std::cout << "MycorrhizalPlant::initCallbacks()\n";
+
+    Plant::initCallbacks();
+
+    for (auto& p_otp :organParam[Organism::ot_root]) {
+        auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
+        // rp->f_inf  = f_inf;
+    }
+
+    // Create tropisms and growth functions per random hyphae parameter
+    for (auto& p_otp :organParam[Organism::ot_hyphae]) {
+        auto rp = std::static_pointer_cast<HyphaeRandomParameter>(p_otp.second);
+        auto tropism = this->createTropismFunction(rp->tropismT, rp->tropismN, rp->tropismS);
+        tropism->setGeometry(geometry);
+        rp->f_tf = tropism; // set new one
+        // growth function is set to LinearGrowth in constructor of HyphaeRandomParameter
+    }
+
+}
+
 }

@@ -32,6 +32,7 @@ HyphaeRandomParameter::HyphaeRandomParameter(std::shared_ptr<Organism> plant) :O
     subType = -1;
     f_tf = std::make_shared<Tropism>(plant);
     bindParameters();
+    f_gf = std::make_shared<LinearGrowth>();
 }
 
 /**
@@ -105,7 +106,10 @@ void HyphaeRandomParameter::bindParameters()
     bindParameter("v", &v, "Tip elongation rate [cm/day]", &vs);
     bindParameter("b", &b, "Branching rate [1/day]", &bs);
     bindParameter("hlt", &hlt, "Hyphal lifetime  [day]", &hlts);
-    bindParameter("theta", &theta, "Hyphal lifetime  [day]", &thetas);
+    bindParameter("theta", &theta, "Branching angle [rad]", &thetas);
+    bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
+    bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
+    bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");
 }
 
 } // end namespace CPlantBox

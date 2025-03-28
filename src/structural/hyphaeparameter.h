@@ -59,14 +59,18 @@ public:
 
     void bindParameters() override; ///<sets up class introspection
 
-    double v;              ///< tip elongation rate [cm/day]
-    double vs;             ///< standard deviation of tip elongation rate [cm/day]
-    double b;              ///< branching rate [1/day]
-    double bs;             ///< standard deviation of branching rate [1/day]
-    double hlt;            ///< hyphal lifetime  [day]
-    double hlts;           ///< standard deviation of  hyphal lifetime  [day]
-    double theta;          ///< branching angle [rad]
-    double thetas;         ///< standard deviation of branching angle  [rad]
+    double v=1.;              ///< tip elongation rate [cm/day]
+    double vs=0.;             ///< standard deviation of tip elongation rate [cm/day]
+    double b=0.1;              ///< branching rate [1/day]
+    double bs=0.;             ///< standard deviation of branching rate [1/day]
+    double hlt=1.e6;            ///< hyphal lifetime  [day]
+    double hlts=0.;           ///< standard deviation of  hyphal lifetime  [day]
+    double theta=60./180.*M_PI;          ///< branching angle [rad]
+    double thetas=0.;         ///< standard deviation of branching angle  [rad]
+
+    int tropismT = 2;       ///< Root tropism parameter (Type)
+    double tropismN = 1.;   ///< Root tropism parameter (number of trials)
+    double tropismS = 0.3;  ///< Root tropism parameter (mean value of expected changeg [1/cm]
 
     std::shared_ptr<SoilLookUp> v_scale = std::make_shared<SoilLookUp>(); ///< elongation rate scale
     std::shared_ptr<SoilLookUp> b_scale = std::make_shared<SoilLookUp>(); ///< scale branching rate

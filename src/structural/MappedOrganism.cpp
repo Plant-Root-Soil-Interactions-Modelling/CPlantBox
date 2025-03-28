@@ -693,7 +693,7 @@ void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
 	nodeCTs = this->getNodeCTs();
 	mapSegments(segments);
 	mapSubTypes();
-	plantParam = this->organParam;
+	plantParam = this->organParam; // todo, remove???
 }
 
 /**

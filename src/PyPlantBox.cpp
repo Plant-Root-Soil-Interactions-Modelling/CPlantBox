@@ -612,7 +612,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
             .def_readwrite("infradius", &MycorrhizalRootRandomParameter::infradius)
-            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf);
+            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf)
+            .def_readwrite("hyphalEmergenceDensity", &MycorrhizalRootRandomParameter::hyphalEmergenceDensity);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
             .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, bool>());
@@ -625,14 +626,14 @@ PYBIND11_MODULE(plantbox, m) {
              .def_readwrite("vs", &HyphaeRandomParameter::vs)
              .def_readwrite("b", &HyphaeRandomParameter::b)
              .def_readwrite("hlt", &HyphaeRandomParameter::hlt)
-             .def_readwrite("b", &HyphaeRandomParameter::theta); // TODO add bs, etc.
+             .def_readwrite("theta", &HyphaeRandomParameter::theta); // TODO add bs, etc.
      py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
              .def(py::init<>())
              .def(py::init<int , double, double,  double, double, double>())
              .def_readwrite("v", &HyphaeSpecificParameter::v)
              .def_readwrite("b", &HyphaeSpecificParameter::b)
              .def_readwrite("hlt", &HyphaeSpecificParameter::hlt)
-             .def_readwrite("b", &HyphaeSpecificParameter::theta);
+             .def_readwrite("theta", &HyphaeSpecificParameter::theta);
 
 
      /*
@@ -982,6 +983,9 @@ PYBIND11_MODULE(plantbox, m) {
 
         py::class_<MycorrhizalPlant, Plant, std::shared_ptr<MycorrhizalPlant>>(m,"MycorrhizalPlant")
                         .def(py::init<unsigned int>(), py::arg("seednum")=0)
+                        .def("simulateHyphalGrowth", &MycorrhizalPlant::simulateHyphalGrowth)
+                        .def("simulatePrimaryInfection", &MycorrhizalPlant::simulatePrimaryInfection)
+                        .def("simulateSecondaryInfection", &MycorrhizalPlant::simulateSecondaryInfection)
                         .def("getNodeIT", &MycorrhizalPlant::getNodeIT)
                         .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections);
 	/**

@@ -129,12 +129,13 @@ public:
 	virtual bool hasRelCoord(){ return false; } ///< overriden by @Plant::hasRelCoord()
 
 
+	static const int numberOfOrganTypes = 6;
+
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
     virtual tinyxml2:: XMLElement* getRSMLScene(tinyxml2::XMLDocument& doc) const;
 
-    static const int numberOfOrganTypes = 5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
 
     std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)

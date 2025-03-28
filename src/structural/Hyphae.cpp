@@ -41,8 +41,9 @@ Hyphae::Hyphae(int id, std::shared_ptr<const OrganSpecificParameter> param, bool
  * @param pni			parent node index
  */
 Hyphae::Hyphae(std::shared_ptr<Organism> rs, int type,  double delay, std::shared_ptr<Organ> parent, int pni)
-:Organ(rs, parent, Organism::ot_root, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
+:Organ(rs, parent, Organism::ot_hyphae, type, delay,  pni) // <- OrganRandomParameter::realize() is called here
 {
+    // std::cout << "create Hyphae\n" << std::flush;
     assert(parent!=nullptr && "Hyphae::Hyphae parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
     double theta = M_PI/2.;
@@ -79,13 +80,13 @@ std::shared_ptr<Organ> Hyphae::copy(std::shared_ptr<Organism> rs)
 void Hyphae::simulate(double dt, bool verbose)
 {
 
-    firstCall = true;
-    moved = false;
+//    firstCall = true;
+//    moved = false;
     oldNumberOfNodes = nodes.size();
 
     const HyphaeSpecificParameter& p = *param(); // rename
 
-    if (alive) { // dead roots won't grow
+    if (alive) { // dead hypaes won't grow
 
         // increase age
         if (age+dt>p.hlt) { // root life time
@@ -111,27 +112,21 @@ void Hyphae::simulate(double dt, bool verbose)
 
                 if (active) {
 
-                    // length increment
-                    double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
-                    double dt_; // time step
-                    if (age<dt) { // the root emerged in this time step, adjust time step
-                        dt_= age;
-                    } else {
-                        dt_=dt;
-                    }
-                    double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
-                    double e = targetlength-length; // unimpeded elongation in time step dt
-                    double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+//                    // length increment
+//                    double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
 
-                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
-                    length = getLength();
-                    this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
-
+                    double targetlength = p.v*(age+dt);
+                    double dl = targetlength-length; // unimpeded elongation in time step dt
+//                    double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+//                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+                    createSegments(dl,dt,verbose);
+                    std::cout << "*";
+                    length+=dl;
 
                     //                    /* basal zone */
                     //                    if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
                     //                        if (length+dl<=p.lb) {
-                    //                            createSegments(dl,dt_,verbose);
+                    //
                     //                            length+=dl; // - this->epsilonDx;
                     //                            dl=0;
                     //                        } else {
@@ -145,11 +140,11 @@ void Hyphae::simulate(double dt, bool verbose)
                     //                        }
                     //                    }
 
-                    /* apical zone */
-                    if (dl>0) {
-                        createSegments(dl,dt_,verbose);
-                        length+=dl; // - this->epsilonDx;
-                    }
+//                    /* apical zone */
+//                    if (dl>0) {
+//                        createSegments(dl,dt_,verbose);
+//                        length+=dl; // - this->epsilonDx;
+//                    }
 
                 }
 
@@ -186,11 +181,12 @@ void Hyphae::simulate(double dt, bool verbose)
 // * @param length   length of the root [cm]
 // * @return local age [day]
 // */
-//double Hyphae::calcAge(double length) const
-//{
-//    assert(length >= 0 && "Hyphae::calcAge() negative hyphae length");
-//    return getHyphaeRandomParameter()->f_gf->getAge(length,param()->r,param()->getK(), shared_from_this());
-//}
+
+double Hyphae::calcAge(double length) const
+{
+    assert(length >= 0 && "Hyphae::calcAge() negative hyphae length");
+    return getHyphaeRandomParameter()->f_gf->getAge(length,param()->v, 0., shared_from_this());
+}
 
 /**
  * @return The RootTypeParameter from the plant

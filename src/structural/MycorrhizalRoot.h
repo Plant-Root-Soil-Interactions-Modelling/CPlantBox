@@ -26,13 +26,18 @@ public:
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;
 
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
+    void simulatePrimaryInfection(double dt);
+    void simulateSecondaryInfection(double dt);
+    void simulateHyphalGrowth();
+
+
     void simulateInfection(double dt, bool silence = false);
 
     double getParameter(std::string name) const override;
 
     void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
     void createLateral(double ageLN, bool silence) override;
-    void createHyphae(int pni, double age);
+
 
     std::string toString() const override;
 
@@ -45,11 +50,12 @@ public:
     void setInfection(int i, int inf, double t);
 
 protected:
+    void createHyphae(int pni);
 
     double prob(double  t, double segLength, double p);
     void primaryInfection(double dt, bool silence);
     void secondaryInfection(double maxlength, bool silence, double dt);
-    void hyphalGrowth(double dt);
+
 
 
 };

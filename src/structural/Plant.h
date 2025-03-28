@@ -61,7 +61,7 @@ public:
   void simulate(double dt, bool verbose = false) override;
 
   /* call back function creation */
-  void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
+  virtual void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
   std::shared_ptr<Tropism> createTropismFunction(int tt, double N, double sigma, double Tage = 0.); ///< Creates the tropisms, overwrite or change this method to add more tropisms
   virtual std::shared_ptr<GrowthFunction> createGrowthFunction(int gft); ///< Creates the growth function per root type, overwrite or change this method to add more tropisms
 
