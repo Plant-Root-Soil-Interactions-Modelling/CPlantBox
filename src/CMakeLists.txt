@@ -25,6 +25,7 @@ add_library(CPlantBox SHARED
             structural/Organ.cpp
             structural/Root.cpp
 			structural/MycorrhizalRoot.cpp
+			structural/Hyphae.cpp
             structural/RootDelay.cpp            
             structural/Seed.cpp
 			structural/Stem.cpp

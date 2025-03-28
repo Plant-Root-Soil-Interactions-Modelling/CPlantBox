@@ -25,23 +25,13 @@ class HyphaeSpecificParameter :public OrganSpecificParameter
 public:
 
     HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
-    HyphaeSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, bool laterals = false):
+    HyphaeSpecificParameter(int type, v, b, hlt, theta):
             OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
 
-
-    /*
-     * RootBox parameters per single root
-     */
-    double lb;              ///< Basal zone [cm]
-    double la;              ///< Apical zone [cm]
-    double r;               ///< Initial growth rate [cm day-1]
+    double v;              ///< Basal zone [cm]
+    double b;              ///< Apical zone [cm]
+    double hlt;               ///< Initial growth rate [cm day-1]
     double theta;           ///< Angle between root and parent root [rad]
-    double rlt;             ///< Root life time [day]
-    std::vector<double> ln; ///< Inter-lateral distances [cm]
-
-    bool laterals = false;
-    int nob() const { return ln.size()+ laterals; } ///< return the maximal number of lateral branching nodes [1]
-    double getK() const; ///< Returns the exact maximal root length of this realization [cm]
 
     std::string toString() const override; ///< for debugging
 
@@ -73,35 +63,7 @@ public:
     void bindParameters() override; ///<sets up class introspection
 
 
-    double lb = 0.;         ///< Basal zone [cm]
-    double lbs = 0.;        ///< Standard deviation basal zone [cm]
-    double la = 10.;        ///< Apical zone [cm];
-    double las = 0.;        ///< Standard deviation apical zone [cm];
-    double ln = 1;          ///< Inter-lateral distance [cm]
-    double lns = 0.;        ///< Standard deviation inter-lateral distance [cm]
-    double lmax = 0.;       ///< Maximal root length [cm]
-    double lmaxs = 0.;      ///< Standard deviation of maximal root length [cm]
-    double r = 1;           ///< Initial growth rate [cm day-1]
-    double rs = 0.;         ///< Standard deviation initial growth rate [cm day-1]
-    double colorR = 0.6;    ///< Root color (red)
-    double colorG = 0.2;    ///< Root color (green)
-    double colorB = 0.2;    ///< Root color (blue)
-    int tropismT = 1;       ///< Root tropism parameter (Type)
-    double tropismN = 1.;   ///< Root tropism parameter (number of trials)
-    double tropismS = 0.2;  ///< Root tropism parameter (mean value of expected changeg) [1/cm]
-    double theta = 1.22;    ///< Angle between root and parent root (rad)
-    double thetas= 0.;      ///< Standard deviation angle between root and parent root (rad)
-    double rlt = 1e9;       ///< Root life time (days)
-    double rlts = 0.;       ///< Standard deviation root life time (days)
-    int gf = 1;             ///< Growth function (1=negative exponential, 2=linear)
-    // new
-    double lnk = 0.;        ///< Slope of inter-lateral distances [1]
 
-    /*
-     * Callback functions for the Root (set up by the class RootSystem)
-     */
-    std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
-    std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth
 
 protected:
 
