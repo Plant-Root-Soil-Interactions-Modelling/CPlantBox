@@ -27,7 +27,7 @@ public:
     HyphaeSpecificParameter(int subType, double a, double v, double b, double hlt, double theta):
             OrganSpecificParameter(subType, a),  v(v), b(b), hlt(hlt), theta(theta) { }; ///< Constructor setting all parameters
 
-    int order = 0; //
+    int order = 0; // internal counter (? todo)
 
     double v;              ///< tip elongation rate [cm/day]
     double b;              ///< branching rate [1/day]
