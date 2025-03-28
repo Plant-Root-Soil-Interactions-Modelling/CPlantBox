@@ -611,7 +611,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("maxAge", &MycorrhizalRootRandomParameter::maxAge)
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
-            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf);
+            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf)
+            .def_readwrite("nEntryP", &MycorrhizalRootRandomParameter::nEntryP);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
             .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, bool>());

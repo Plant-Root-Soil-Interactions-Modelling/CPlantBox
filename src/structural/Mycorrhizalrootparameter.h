@@ -41,7 +41,7 @@ namespace CPlantBox {
         double vi = 0.13;       ///< speed of internal infection [cm / day]
         double maxInfection = 1;    ///< Percentage of maximal infection
         double infradius = 1;     ///< Radius of the localized inoculum
-        // double nEntryP = 0; //< verbindung zu externen hyphen
+        double nEntryP = 0; //< verbindung zu externen hyphen
 
         std::shared_ptr<SoilLookUpSDF> f_inf = std::make_shared<SoilLookUpSDF>();
 
