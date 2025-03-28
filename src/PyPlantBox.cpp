@@ -16,7 +16,7 @@ namespace py = pybind11;
 #include "tropism.h"
 
 #include "rootparameter.h"
-#include "Mycorrhizalrootparameter.h" // name?
+#include "mycorrhizalrootparameter.h" // name?
 #include "seedparameter.h"
 #include "leafparameter.h"
 #include "stemparameter.h"
@@ -611,8 +611,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("maxAge", &MycorrhizalRootRandomParameter::maxAge)
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
-            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf)
-            .def_readwrite("nEntryP", &MycorrhizalRootRandomParameter::nEntryP);
+            .def_readwrite("infradius", &MycorrhizalRootRandomParameter::infradius)
+            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
             .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, bool>());

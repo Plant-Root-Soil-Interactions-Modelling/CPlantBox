@@ -16,6 +16,8 @@ namespace CPlantBox {
         MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, int infected = false, bool laterals = false):
             RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals) {};
 
+        // double hyphalDelay = 0.;
+
     };
 
     class MycorrhizalRootRandomParameter :public RootRandomParameter {
@@ -28,9 +30,6 @@ namespace CPlantBox {
         std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
         std::string toString(bool verbose = true) const override;
 
-        //void readXML(tinyxml2::XMLElement* element, bool verbose) override;
-
-
         void bindParameters() override;
         /*
             Internal AMF Infection Parameters
@@ -41,7 +40,9 @@ namespace CPlantBox {
         double vi = 0.13;       ///< speed of internal infection [cm / day]
         double maxInfection = 1;    ///< Percentage of maximal infection
         double infradius = 1;     ///< Radius of the localized inoculum
-        double nEntryP = 0; //< verbindung zu externen hyphen
+        double hyphalDelay = 0.;
+
+        double hyphalEmergenceDensity = 0; //< [1 / cm]
 
         std::shared_ptr<SoilLookUpSDF> f_inf = std::make_shared<SoilLookUpSDF>();
 

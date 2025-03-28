@@ -45,26 +45,10 @@ Hyphae::Hyphae(std::shared_ptr<Organism> rs, int type,  double delay, std::share
 {
     assert(parent!=nullptr && "Hyphae::Hyphae parent must be set");
     double beta = 2*M_PI*plant.lock()->rand(); // initial rotation
-    double theta = param()->theta;
+    double theta = M_PI/2.;
     this->partialIHeading = Vector3d::rotAB(theta,beta);
-
-    if(!(parent->organType()==Organism::ot_seed))
-    {
-        double creationTime= parent->getNodeCT(pni)+delay;//default
-        if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
-        {
-            addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
-
-        }else{
-            if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
-                //if lateral of stem, initial creation time:
-                //time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-                // @see stem::leafGrow
-                creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-            }
-            addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
-        }
-    }
+    double creationTime= parent->getNodeCT(pni)+delay;//default
+    addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
 }
 
 /**
@@ -94,7 +78,7 @@ std::shared_ptr<Organ> Hyphae::copy(std::shared_ptr<Organism> rs)
  */
 void Hyphae::simulate(double dt, bool verbose)
 {
-    // std::cout << "\nstart" << getId() <<  std::flush;
+
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();

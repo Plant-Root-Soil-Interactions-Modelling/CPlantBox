@@ -18,10 +18,11 @@ include_directories(${PROJECT_SOURCE_DIR}/src/external/sundials/include/) # for 
 add_library(CPlantBox SHARED
             structural/organparameter.cpp
             structural/rootparameter.cpp
-			structural/Mycorrhizalrootparameter.cpp
+			structural/mycorrhizalrootparameter.cpp
 			structural/seedparameter.cpp
 			structural/leafparameter.cpp
 			structural/stemparameter.cpp
+			structural/hyphaeparameter.cpp
             structural/Organ.cpp
             structural/Root.cpp
 			structural/MycorrhizalRoot.cpp

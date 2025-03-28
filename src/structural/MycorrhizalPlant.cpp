@@ -3,7 +3,7 @@
 #include "Organism.h"
 #include "MycorrhizalPlant.h"
 #include "MycorrhizalRoot.h"
-#include "Mycorrhizalrootparameter.h"
+#include "mycorrhizalrootparameter.h"
 #include "sdf.h"
 #include "soil.h"
 
@@ -56,18 +56,18 @@ std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     {
         if(o->organType() == Organism::ot_root)
         {
-            
+
             infs.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(0);
-        }        
+        }
     }
-    
+
     for (const auto & o : organs)
     {
         for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++)
         {
             infs.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfection(i);
         }
-        
+
     }
     return infs;
 }
@@ -79,18 +79,18 @@ std::vector<double> MycorrhizalPlant::getNodeIT(int ot) const {
     {
         if(o->organType() == Organism::ot_root)
         {
-            
+
             infTime.at(o->getNodeId(0)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(0);
-        }        
+        }
     }
-    
+
     for (const auto & o : organs)
     {
         for (size_t i = 1; i < o ->getNumberOfNodes()-1; i++)
         {
             infTime.at(o->getNodeId(i)) = std::dynamic_pointer_cast<MycorrhizalRoot> (o) -> getNodeInfectionTime(i);
         }
-        
+
     }
     return infTime;
 }

@@ -1,4 +1,4 @@
-#include "Mycorrhizalrootparameter.h"
+#include "mycorrhizalrootparameter.h"
 
 #include "Organism.h"
 
@@ -13,7 +13,8 @@ void MycorrhizalRootRandomParameter::bindParameters(){
     bindParameter("vi", &vi, "Rate of internal infection [cm / day]");
     bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
     bindParameter("infradius", &infradius, "Radius of the localized infection front");
-    bindParameter("nEntryP", &nEntryP, "Number of entry points for external hyphae");
+
+    // TODO
 }
 
 

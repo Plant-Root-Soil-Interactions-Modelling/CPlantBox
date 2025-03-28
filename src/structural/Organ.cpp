@@ -872,7 +872,6 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
 		}
 		case Organism::dd_time_self:
 		{
-
 			//get delay per lateral
 			auto latRp = plant.lock()->getOrganRandomParameter(ot_lat, st_lat); // random parameter of lateral to create
 			growthDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
