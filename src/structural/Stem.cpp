@@ -299,6 +299,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
 		{
 			double meanLn = getParameter("lnMean"); // mean inter-lateral distance
 			double effectiveLa = std::max(getParameter("la")-meanLn/2, 0.); // effective apical distance, observed apical distance is in [la-ln/2, la+ln/2]
+			if(param()->lb+effectiveLa == param()->getK()){effectiveLa /=2;}// otherwise the growth delay == parent root life time.
 			if(verbose)
 			{
 				std::cout<<"case Organism::dd_distance "<<organType()<<" "<<getParameter("subType")<<" "<<getLength(true)

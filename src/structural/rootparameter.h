@@ -63,7 +63,7 @@ public:
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 
-    double nob() const { return std::max((lmax-la-lb)/ln+1, 0.); }  ///< returns the mean maximal number of branching nodes [1]
+    double nob() const { if(ln>0){ return std::max((lmax-la-lb)/ln+1, 0.);}else{return 0.;} }  ///< returns the mean maximal number of branching nodes [1]
     double nobs() const; ///< returns the standard deviation of number of branching nodes [1]
 
     std::string toString(bool verbose = true) const override; ///< info for debugging

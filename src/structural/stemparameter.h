@@ -68,7 +68,7 @@ public:
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific stem from the stem parameter set
 
-    double nob() const { return std::max((lmax-la-lb)/ln +1, 1.); }  ///< returns the mean number of branches [1]
+    double nob() const { if(ln>0){ return std::max((lmax-la-lb)/ln+1, 1.);}else{return 1.;} }  ///< returns the mean maximal number of branching nodes [1]
     double nobs() const; ///< returns the standard deviation of number of branches [1]
 
 
