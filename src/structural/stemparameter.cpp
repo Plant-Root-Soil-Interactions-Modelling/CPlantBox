@@ -82,14 +82,14 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
     double la_;
     std::vector<double> ln_; // stores the inter-distances
 	double res;
-	int nob_real = 0;
-	bool hasLaterals = (successorST.size()>0);
+	double nob_sd = p->randn()*nobs();
+    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
+	bool hasLaterals = (successorST.size()>0) && (nob()>0)&& (nob_real>0);//able to have at least one lateral
 	if (dx <= dxMin){
 		std::cout<<"dx <= dxMin, dxMin set to dx/2"<<std::endl;
 		this->dxMin = dx/2;
 	}
 	if (!hasLaterals) { // no laterals
-
     	lb_ = 0;
         la_ = std::max(lmax + p->randn()*lmaxs, 0.); // la, and lb is ignored
 		res = la_-floor(la_ / dx)*dx;
@@ -100,8 +100,7 @@ std::shared_ptr<OrganSpecificParameter> StemRandomParameter::realize()
 
     } else {
     lb_ = std::max(lb + p->randn()*lbs, 0.); // length of basal zone
-	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone
-	nob_real = std::max(round(nob() + p->randn()*nobs()), 1.); // real maximal number of branching points			  
+	la_ = std::max(la + p->randn()*las, 0.); // length of apical zone		  
 	res = lb_ - floor(lb_/dx)* dx;	
 	if((res < dxMin) && (res != 0)){
 		if(res <= dxMin/2){ lb_ -= res;

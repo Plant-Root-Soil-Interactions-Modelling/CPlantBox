@@ -30,6 +30,9 @@
         <parameter name="colorR" value="0.60000002"/>
         <parameter name="dx" value="0.5"/>
         <parameter name="dxMin" value="1e-06"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
         <parameter name="la" value="10"/>
         <parameter name="lb" value="2"/>
         <parameter name="ldelay" value="-1"/>
@@ -52,6 +55,9 @@
         <parameter name="colorR" value="0.60000002"/>
         <parameter name="dx" value="0.1"/>
         <parameter name="dxMin" value="1e-06"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
         <parameter name="la" value="25"/>
         <parameter name="lb" value="0"/>
         <parameter name="ldelay" value="-1"/>
@@ -63,5 +69,30 @@
         <parameter name="theta" value="1.22"/>
         <parameter name="tropismN" value="1"/>
         <parameter name="tropismS" value="0.2"/>
+    </root>
+    <root name="taproot" subType="4">
+        <parameter name="gf" value="1"/>
+        <parameter name="tropismT" value="1"/>
+        <parameter name="a" value="0.1"/>
+        <parameter name="colorB" value="0.2"/>
+        <parameter name="colorG" value="0.2"/>
+        <parameter name="colorR" value="0.60000002"/>
+        <parameter name="dx" value="0.5"/>
+        <parameter name="dxMin" value="1e-06"/>
+        <parameter name="hairsElongation" value="0"/>
+        <parameter name="hairsLength" value="0"/>
+        <parameter name="hairsZone" value="0"/>
+        <parameter name="la" value="10"/>
+        <parameter name="lb" value="2"/>
+        <parameter name="ldelay" value="-1"/>
+        <parameter name="lmax" value="101"/>
+        <parameter name="ln" value="4.6842103"/>
+        <parameter name="lnk" value="0"/>
+        <parameter name="r" value="1"/>
+        <parameter name="rlt" value="1e+09"/>
+        <parameter name="theta" value="1.22"/>
+        <parameter name="tropismN" value="1"/>
+        <parameter name="tropismS" value="0.2"/>
+        <parameter name="successor" ruleId="0" subType="2" percentage="1"/>
     </root>
 </plant>

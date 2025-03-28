@@ -15,6 +15,12 @@
     <!--Axial resolution [cm] (maximal segment size)-->
     <parameter name="dxMin" value="1e-06"/>
     <!--Axial resolution [cm] (minimal segment size)-->
+    <parameter name="hairsElongation" value="0"/>
+    <!--Zone behind the tip without root hairs  [cm]-->
+    <parameter name="hairsLength" value="0"/>
+    <!--Root hair length [cm]-->
+    <parameter name="hairsZone" value="0"/>
+    <!--Length of the root hair zone [cm]-->
     <parameter name="la" value="1.5"/>
     <!--Apical zone [cm]-->
     <parameter name="lb" value="5.5"/>

@@ -831,7 +831,7 @@ Vector3d Leaf::getIncrement(const Vector3d& p, double sdx, int n)
 	//for leaves: necessary?
 	//Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
 	Vector3d sv;
-	if(false){//hasRelCoord()){
+	if(hasRelCoord()){
 		sv = Vector3d::rotAB(ab.x,ab.y);
 	}else{
 		sv = ons.times(Vector3d::rotAB(ab.x,ab.y));

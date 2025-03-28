@@ -182,7 +182,7 @@
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
 	<parameter name="areaMax" value="35"/>
-	<parameter name="isPseudostem" value="0"/>
+	<parameter name="isPseudostem" value="1"/>
     <parameter name="geometryN" value="100"/>
     <parameter name="parametrisationType" value="1"/>
 	<parameter name="leafGeometry" phi="-3, -2.1, 0., 2.45, 3.5" x="1., 1., 1., 1., 1."/>
@@ -209,7 +209,7 @@
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="3"/>
 	<parameter name="areaMax" value="35"/>
-	<parameter name="isPseudostem" value="0"/>
+	<parameter name="isPseudostem" value="1"/>
     <parameter name="geometryN" value="100"/>
     <parameter name="parametrisationType" value="1"/>
 	<parameter name="leafGeometry" phi="-3, -2.1, 0., 2.45, 3.5" x="1., 1., 1., 1., 1."/>

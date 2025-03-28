@@ -492,8 +492,8 @@ void Organ::rel2abs()
 			auto nodesiinit = nodes[i];
 			Vector3d h = heading(i-1);
 			Matrix3d ons = Matrix3d::ons(h);
-			//auto nodes_i = ons.times(nodes[i]);
-			auto nodes_i = nodes[i];
+			auto nodes_i = ons.times(nodes[i]);
+			//auto nodes_i = nodes[i];
 			nodes[i] = nodes[i-1].plus(nodes_i);
 			if ((organType()==4) && (i==1) && (getId()==67))
 			{
@@ -538,8 +538,8 @@ void Organ::abs2rel()
 			auto nodes_j_1 = nodes.at(j-1).minus(nodes.at(j-2));
 			Vector3d h = heading(j-2);
 			Matrix3d onsinv = Matrix3d::ons(h).inverse();
-			//nodes.at(j-1) = onsinv.times(nodes_j_1);//nodes.at(j-1));
-			nodes.at(j-1) =nodes_j_1;
+			nodes.at(j-1) = onsinv.times(nodes_j_1);//nodes.at(j-1));
+			//nodes.at(j-1) =nodes_j_1;
 			if ((organType()==4) && (j==2)&& (getId()==67))
 			{
 				std::cout<<"Organ::abs2rel ot:"<<organType()<<" id:"<<getId()<<" nodes.at(j-2):"<<nodes.at(j-2).toString()
@@ -641,7 +641,7 @@ Vector3d Organ::getIncrement(const Vector3d& p, double sdx, int n)
 	//for leaves: necessary?
 	//Vector2d ab = getLeafRandomParameter()->f_tf->getHeading(p, ons, dx(),shared_from_this());
     Vector3d sv;// = ons.times(Vector3d::rotAB(ab.x,ab.y));
-	if(false){//hasRelCoord()){
+	if(hasRelCoord()){
 		sv = Vector3d::rotAB(ab.x,ab.y);
 	}else{
 		sv = ons.times(Vector3d::rotAB(ab.x,ab.y));
@@ -724,6 +724,7 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
 				if(hasRelCoord())
 				{
 					nodes.at(nn-1) =  h.times(sdx);//Vector3d(sdx,0.,0.);//h.times(sdx);
+					
 				}else{
 					nodes.at(nn-1) = Vector3d(n2.plus(h.times(sdx))); // n2.plus(newdxv)
 				}
@@ -765,12 +766,12 @@ void Organ::createSegments(double l, double dt, bool verbose, int PhytoIdx)
         }
         sl += sdx;
 		Vector3d newnode;
-		Vector3d newdx = getIncrement(nodes.back(), sdx);
+		Vector3d newdx = getIncrement(nodes.at(nn+i-1), sdx,nn+i-1);
 		if(hasRelCoord())
 		{
 			newnode = newdx;//Vector3d(sdx, 0., 0.);
 		}else{
-			newnode = Vector3d(nodes.back().plus(newdx));
+			newnode = Vector3d(nodes.at(nn+i-1).plus(newdx));
 		}
 		if (std::isnan(newnode.x)||std::isnan(newnode.y)||std::isnan(newnode.z)) {
 			assert(false &&"newnode is nan");

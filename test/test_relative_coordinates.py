@@ -124,7 +124,7 @@ class TestRelCoord(unittest.TestCase):
             # print(rootTipsZ[i]-seedPosz, leafTipsZ[i]-seedPosz, seedPosz)
             self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(leafTipsZ[i] - seedPosz), 10, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
 
-def test_coord_1step(self):
+    def test_coord_1step(self):
         pl = pb.MappedPlant()
         path = "../modelparameter/structural/plant/"
         name = "test_relcoord"
@@ -239,4 +239,3 @@ def test_coord_1step(self):
             self.assertAlmostEqual(rootTipsZ[i] - seedPosz, -(leafTipsZ[i] - seedPosz), 10, "coord Z for tip of 3rd lat root and leaf n°" + str(i) + " not symetric")
 if __name__ == '__main__':
     unittest.main()
-

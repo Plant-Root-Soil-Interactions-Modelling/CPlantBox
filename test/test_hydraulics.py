@@ -61,8 +61,8 @@ class TestPlantHydraulicModel(unittest.TestCase):
         soil_index = lambda x, y, z: 0
         self.rs.setSoilGrid(soil_index)
         self.params = PlantHydraulicParameters(self.rs)
-        self.params.setKr([self.kr0])
-        self.params.setKx([self.kx0])
+        self.params.setKrConst(self.kr0,0)
+        self.params.setKxConst(self.kx0,0)
 
     def equilibrium_(self, solver):
         t = 0.

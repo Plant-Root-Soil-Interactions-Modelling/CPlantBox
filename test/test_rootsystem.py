@@ -3,6 +3,7 @@ import unittest
 
 import plantbox as pb
 from rsml.rsml_reader import *
+import re
 
 
 def rootAge(l, r, k):  # root age at a certain length
@@ -39,11 +40,20 @@ class TestRootSystem(unittest.TestCase):
         p0.lb = 2
         p0.successor = [[2]]
         p0.successorP = [[1.]]
+        
+        p4 = pb.RootRandomParameter(self.rs)
+        p4.name, p4.subType, p4.la, p4.lmax, p4.ln, p4.r, p4.dx = "taproot", 1, 10, 101, 89. / 19., 1, 0.5
+        p4.lb = 2
+        p4.successor = [[2]]
+        p4.successorP = [[1.]]
+        p4.subType = 4
+        
         p1 = pb.RootRandomParameter(self.rs)
         p1.name, p1.subType, p1.la, p1.ln, p1.r, p1.dx = "lateral", 2, 25, 0, 2, 0.1
-        self.p0, self.p1, self.srp = p0, p1, srp  # Python will garbage collect them away, if not stored
+        self.p0, self.p1, self.p4, self.srp = p0, p1, p4, srp  # Python will garbage collect them away, if not stored
         self.rs.setOrganRandomParameter(p0)  # the organism manages the type parameters
         self.rs.setOrganRandomParameter(p1)
+        self.rs.setOrganRandomParameter(p4)
 
     def rs_length_test(self, dt, l, subDt):
         """ simulates a root system and checks basal lengths against its analytic lengths @param l at times @param t"""
@@ -109,7 +119,7 @@ class TestRootSystem(unittest.TestCase):
         for j, t in enumerate(times):
             i = 0  # basal root counter
             while t - etB[i] > 0:
-                bl[j] += rootLength(t - etB[i], self.p0.r, self.p0.lmax)
+                bl[j] += rootLength(t - etB[i], self.p4.r, self.p4.lmax)
                 i += 1
         self.rs_length_test(dt, bl, 1)
         self.rs_length_test(dt, bl, 100)
@@ -256,9 +266,11 @@ class TestRootSystem(unittest.TestCase):
         name = "test_rootsystem"
         self.rs.write(name + ".vtp")
         with open(name + ".vtp", "r+") as file:
-            for i in range(0, 18):
-                check_str = file.readline()
-        floats = [int(item) for item in check_str.split()]
+            for check_str in file:
+                if "creationTime" in check_str:
+                    break
+        floats = [item for item in re.split(r'[ >]+', check_str) if item.isdigit() ]
+        floats = [int(item) for item in floats ]
         self.assertEqual(floats, [0, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49, 52, 55, 58], "creation times are unexpected")
 
     def test_stack(self):
