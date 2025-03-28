@@ -4,6 +4,7 @@
 #include "Leaf.h"
 #include "Organ.h"
 #include "Organism.h"
+#include "Hyphae.h"
 
 namespace CPlantBox {
 
@@ -130,6 +131,78 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence, double 
                 oldNode = apicalnode;
                 apicalnode++;
             }
+            const MycorrhizalRootSpecificParameter& p = *param(); // rename
+            if (alive) { // dead roots wont grow
+
+        // // probabilistic branching model
+        // if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
+        //     double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
+        //     if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
+        //         double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
+        //         if (plant.lock()->rand()>p) { // not rand()<p
+        //             age -= dt; // the root does not emerge in this time step
+        //         }
+        //     }
+        // }
+
+        if (age>0) { // unborn  roots have no children
+
+            // children first (lateral roots grow even if base root is inactive)
+            for (auto l:children) {
+                l->simulate(dt,verbose);
+            }
+
+
+            if (active) {
+
+                // // length increment
+                // double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+                // double dt_; // time step
+                // if (age<dt) { // the root emerged in this time step, adjust time step
+                //     dt_= age;
+                // } else {
+                //     dt_=dt;
+                // }
+
+                // double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
+
+                // double e = targetlength-length; // unimpeded elongation in time step dt
+                // double scale = getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+                // double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+                length = getLength();
+                // this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
+
+                // create geometry
+                if (length / getRootRandomParameter()->nEntryP > getRootRandomParameter()->d_e) { // root has children
+                    double maxEntries = length / getRootRandomParameter()->d_e;
+                    for (size_t i = 0; i < maxEntries; i++)
+                    {
+                        if (i == created_linking_node) {
+                            createHyphae(dt,silence);
+                        }
+                    }
+                
+                        if ((p.ln.size()==created_linking_node)&& (getLength(true)-s>-1e-9)){
+                            createLateral(dt_, verbose);
+                        }
+                    }
+
+                    /* apical zone */
+                    if (dl>0) {
+                        createSegments(dl,dt_,verbose);
+                        length+=dl; // - this->epsilonDx;
+                    }
+                } else { // no laterals
+
+                    if (dl>0) {
+                        createSegments(dl,dt_,verbose);
+                        length+=dl; //- this->epsilonDx;
+                    }
+                } // if lateralgetLengths
+            } // if active
+            active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+        }
+    }
         }
     }
 
@@ -254,6 +327,57 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
 	}
 	created_linking_node ++;
 	storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
+}
+
+void MycorrhizalRoot::createHyphae(double dt, bool silence)
+{
+    auto rp = getOrganRandomParameter(); // rename
+
+	for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
+		//found id
+		bool applyHere = getApplyHere(i);
+
+		if(applyHere)
+		{
+			int numlats = 1;//how many laterals? default = 1
+            int nEntryP = getRootRandomParameter()->nEntryP;
+			// if(rp->successorNo.size()>i){numlats =  rp->successorNo.at(i);}
+			for(int nn = 0; nn < numlats; nn++)
+			{
+
+				const Vector3d& pos = Vector3d();
+				// int p_id = rp->getLateralType(pos, i);//if probabilistic branching
+
+				// if(p_id >=0)
+				// {
+					int ot = getParameter("organType");
+
+					// if((rp->successorOT.size()>i)&&(rp->successorOT.at(i).size()>p_id)){
+					// 	ot = rp->successorOT.at(i).at(p_id);
+					// }else{ot = getParameter("organType");}//default
+
+					// int st = rp->successorST.at(i).at(p_id);
+                    int type = 0;
+
+					// double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
+                    double delay = getRootRandomParameter()->hyphal_delay; // TODO make this parameter
+					double growth_dt = getHyphalInitialGrowth(dt); // TODO add this function
+
+					if (ot == Organism::ot_root) {
+                        auto hyphae = std::make_shared<Hyphae>(plant.lock(), type,  delay, shared_from_this(),  nodes.size() - 1);
+                        children.push_back(hyphae);
+                        hyphae->simulate(growth_dt, silence);
+                        nEntryP++;
+                        getRootRandomParameter()->nEntryP = nEntryP;
+                        break;
+                    }
+				// }
+			}
+		}
+
+	}
+	created_linking_node ++;
+	storeLinkingNodeLocalId(created_linking_node,silence);//needed (currently) only for stems when doing nodal growth
 }
 
 std::string MycorrhizalRoot::toString() const

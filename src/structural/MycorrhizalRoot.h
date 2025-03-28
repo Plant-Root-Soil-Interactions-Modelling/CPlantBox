@@ -31,6 +31,7 @@ namespace CPlantBox {
 
         void addNode(Vector3d n, int id, double t, size_t index, bool shift) override;
         void createLateral(double ageLN, bool silence) override;
+        void createHyphae(double age, bool silence);
         
         std::string toString() const override;
 
