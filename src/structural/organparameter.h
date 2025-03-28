@@ -83,7 +83,7 @@ public:
     double as = 0.; 		///< Standard deviation root radius [cm]
     double dx = 0.25; 		///< Maximal segment size [cm]
 	double dxMin = 1e-6; 	///< threshold value, smaller segments will be skipped (otherwise stem tip direction can become NaN)
-	double ldelay = -1.;     ///< Lateral emergence delay [day], used by RootDelay, @see RootDelay, RootSystem::initializeDB or if Organism->delayDefinition != Organism::dd_distance
+	double ldelay = -1.;    ///< Lateral emergence delay [day], used by RootDelay, @see RootDelay, RootSystem::initializeDB or if Organism->delayDefinition != Organism::dd_distance
     double ldelays = 0.;    ///< Standard deviation of lateral emergence delay [day]
 
     std::weak_ptr<Organism> plant;
@@ -92,7 +92,7 @@ public:
 	std::vector<std::vector<int> > successorST = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
 	std::vector<std::vector<double>> successorP = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Probabilities of lateral type to emerge (sum of values == 1) [1]
     std::vector<int>  successorNo = std::vector<int>(0);			///< Lateral types [1]
-	//need to use double to distiguish between -0 and 0
+	//need to use double to distinguish between -0 and 0
 	//default: vector empty == rule implemented everywhere
     std::vector<std::vector<double> > successorWhere = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Where should rule be implemented [1] or not [-1]
     std::vector<std::vector<int> > successorOT = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]

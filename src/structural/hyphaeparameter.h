@@ -8,8 +8,8 @@
 #include "organparameter.h"
 
 /**
- * This file describes the classes RootSpecificParameter and RootRandomParameter.
- * RootSpecificParameter are drawn from the RootRandomParameter class
+ * This file describes the classes HyphaeSpecificParameter and HyphaeRandomParameter.
+ * HyphaeSpecificParameter are drawn from the HyphaeRandomParameter class
  */
 
 namespace CPlantBox {
@@ -21,20 +21,20 @@ class Organism;
  */
 class HyphaeSpecificParameter :public OrganSpecificParameter
 {
-
 public:
 
-    HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
-    HyphaeSpecificParameter(int type, v, b, hlt, theta):
-            OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
+    HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., 0., 0., 0.) { } ///< Default constructor
+    HyphaeSpecificParameter(int subType, double a, double v, double b, double hlt, double theta):
+            OrganSpecificParameter(subType, a),  v(v), b(b), hlt(hlt), theta(theta) { }; ///< Constructor setting all parameters
 
-    double v;              ///< Basal zone [cm]
-    double b;              ///< Apical zone [cm]
-    double hlt;               ///< Initial growth rate [cm day-1]
-    double theta;           ///< Angle between root and parent root [rad]
+    int order = 0; //
+
+    double v;              ///< tip elongation rate [cm/day]
+    double b;              ///< branching rate [1/day]
+    double hlt;            ///< hyphal lifetime  [day]
+    double theta;          ///< branching angle [rad]
 
     std::string toString() const override; ///< for debugging
-
 };
 
 
@@ -53,21 +53,23 @@ public:
 
     std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
 
-    double nob() const { return std::max((lmax-la-lb)/ln+1, 0.); }  ///< returns the mean maximal number of branching nodes [1]
-    double nobs() const; ///< returns the standard deviation of number of branching nodes [1]
-
     std::string toString(bool verbose = true) const override; ///< info for debugging
 
     void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
 
     void bindParameters() override; ///<sets up class introspection
 
+    double v;              ///< tip elongation rate [cm/day]
+    double vs;             ///< standard deviation of tip elongation rate [cm/day]
+    double b;              ///< branching rate [1/day]
+    double bs;             ///< standard deviation of branching rate [1/day]
+    double hlt;            ///< hyphal lifetime  [day]
+    double hlts;           ///< standard deviation of  hyphal lifetime  [day]
+    double theta;          ///< branching angle [rad]
+    double thetas;         ///< standard deviation of branching angle  [rad]
 
-
-
-protected:
-
-    double snap(double x);
+    std::shared_ptr<SoilLookUp> v_scale = std::make_shared<SoilLookUp>(); ///< elongation rate scale
+    std::shared_ptr<SoilLookUp> b_scale = std::make_shared<SoilLookUp>(); ///< scale branching rate
 
 };
 

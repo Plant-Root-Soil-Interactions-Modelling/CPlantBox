@@ -18,21 +18,23 @@ public:
 
     Hyphae(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
         Vector3d partialIHeading_, int pni, bool moved= false, int oldNON = 0); // ///< creates everything from scratch
+
     Hyphae(std::shared_ptr<Organism> rs, int type, double delay, std::shared_ptr<Organ> parent, int pni); ///< used within simulation
+
     virtual ~Hyphae() { }; ///< no need to do anything, children are deleted in ~Organ()
 
     std::shared_ptr<Organ> copy(std::shared_ptr<Organism> rs) override;  ///< deep copies the root tree
 
-    int organType() const override { return Organism::ot_root; }; ///< returns the organs type
+    int organType() const override { return Organism::ot_hyphae; }; ///< returns the organs type
 
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
-    double getParameter(std::string name) const override; ///< returns an organ pa:vector<CPlantBox::Vector3d>::size_type)’
+    double getParameter(std::string name) const override;
     std::string toString() const override;
 
-    /* From analytical equations */
-    double calcLength(double age); ///< analytical length of the root
-    double calcAge(double length) const; ///< analytical age of the root
+//    /* From analytical equations */
+//    double calcLength(double age); ///< analytical length of the root
+//    double calcAge(double length) const; ///< analytical age of the root
 
     /* Abbreviations */
     std::shared_ptr<HyphaeRandomParameter> getHyphaeRandomParameter() const;  ///< root type parameter of this root
