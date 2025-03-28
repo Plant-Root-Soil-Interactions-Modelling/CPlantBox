@@ -16,12 +16,14 @@ namespace py = pybind11;
 #include "tropism.h"
 
 #include "rootparameter.h"
-#include "Mycorrhizalrootparameter.h"
+#include "Mycorrhizalrootparameter.h" // name?
 #include "seedparameter.h"
 #include "leafparameter.h"
 #include "stemparameter.h"
+#include "hyphaeparameter.h"
 #include "Root.h"
 #include "MycorrhizalRoot.h"
+#include "Hyphae.h"
 #include "Seed.h"
 #include "Leaf.h"
 #include "Stem.h"
@@ -609,13 +611,26 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("maxAge", &MycorrhizalRootRandomParameter::maxAge)
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
-            .def_readwrite("infected", &MycorrhizalRootRandomParameter::infected)
-            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf)
-            .def_readwrite("infradius", &MycorrhizalRootRandomParameter::infradius);
+            .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
-            .def_readwrite("infected", &MycorrhizalRootSpecificParameter::infected)
             .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, bool>());
+     /*
+      * hyphaeparameter.h
+      */
+     py::class_<HyphaeRandomParameter, OrganRandomParameter, std::shared_ptr<HyphaeRandomParameter>>(m, "HyphaeRandomParameter")
+             .def(py::init<std::shared_ptr<Organism>>())
+             .def("getLateralType",&HyphaeRandomParameter::getLateralType)
+             .def_readwrite("lmax", &HyphaeRandomParameter::lmax)
+             .def_readwrite("lmaxs", &HyphaeRandomParameter::lmaxs);
+     py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
+             .def(py::init<>())
+             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
+             .def_readwrite("lb", &HyphaeSpecificParameter::lb)
+             .def_readwrite("la", &HyphaeSpecificParameter::la)
+             .def_readwrite("ln", &HyphaeSpecificParameter::ln);
+
+
      /*
      * seedparameter.h
      */
@@ -795,7 +810,14 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNodeInfection", &MycorrhizalRoot::getNodeInfection)
             .def("getRootRandomParameter", &MycorrhizalRoot::getRootRandomParameter)
             .def("setInfection", &MycorrhizalRoot::setInfection, py::arg("i"), py::arg("infection"), py::arg("t"));
-
+    /**
+     * Hyphae.h
+     */
+    py::class_<Hyphae, Organ, std::shared_ptr<Hyphae>>(m, "Hyphae")
+            .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
+            .def("getHyphaeRandomParameter", &Hyphae::getHyphaeRandomParameter)
+            .def("param", &Hyphae::param);
     /**
      * Seed.h
      */

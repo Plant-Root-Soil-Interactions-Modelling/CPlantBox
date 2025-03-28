@@ -1,6 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#ifndef ROOTPARAMETER_H_
-#define ROOTPARAMETER_H_
+#ifndef HYPHAEPARAMETER_H_
+#define HYPHAEPARAMETER_H_
 
 #include "mymath.h"
 #include "soil.h"
@@ -19,15 +19,15 @@ class Organism;
 /**
  * Parameters of a specific root, its created by RootRandomParameter:realize()
  */
-class RootSpecificParameter :public OrganSpecificParameter
+class HyphaeSpecificParameter :public OrganSpecificParameter
 {
 
 public:
 
-    RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
-
-    RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, bool laterals = false):
+    HyphaeSpecificParameter(): HyphaeSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
+    HyphaeSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, bool laterals = false):
             OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
+
 
     /*
      * RootBox parameters per single root
@@ -51,13 +51,13 @@ public:
 /**
  * Contains a parameter set describing a root type
  */
-class RootRandomParameter :public OrganRandomParameter
+class HyphaeRandomParameter :public OrganRandomParameter
 {
 
 public:
 
-    RootRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
-    virtual ~RootRandomParameter() { };
+    HyphaeRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
+    virtual ~HyphaeRandomParameter() { };
 
     std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
 
@@ -70,15 +70,9 @@ public:
 
     void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
 
-    // DEPRICATED
-    void read(std::istream & cin); ///< reads a single root parameter set
-    void write(std::ostream & cout) const; ///< writes a single root parameter set
-
     void bindParameters() override; ///<sets up class introspection
 
-    /*
-     * RootBox parameters per root type
-     */
+
     double lb = 0.;         ///< Basal zone [cm]
     double lbs = 0.;        ///< Standard deviation basal zone [cm]
     double la = 10.;        ///< Apical zone [cm];
@@ -107,7 +101,6 @@ public:
      * Callback functions for the Root (set up by the class RootSystem)
      */
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
-    std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
     std::shared_ptr<SoilLookUp> f_sbp = std::make_shared<SoilLookUp>(); ///< scale branching probability functiongrowth
 
 protected:

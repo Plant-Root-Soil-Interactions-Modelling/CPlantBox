@@ -11,7 +11,6 @@ namespace CPlantBox {
         bindParameter("maxAge", &maxAge, "Maximal infection age of a root segment [day]");
         bindParameter("vi", &vi, "Rate of internal infection [cm / day]");
         bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
-        bindParameter("infection", &infected, "Status of AMF Infection");
         bindParameter("infradius", &infradius, "Radius of the localized infection front");
     }
 
