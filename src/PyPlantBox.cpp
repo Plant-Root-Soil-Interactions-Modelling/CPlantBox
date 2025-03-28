@@ -621,15 +621,18 @@ PYBIND11_MODULE(plantbox, m) {
       */
      py::class_<HyphaeRandomParameter, OrganRandomParameter, std::shared_ptr<HyphaeRandomParameter>>(m, "HyphaeRandomParameter")
              .def(py::init<std::shared_ptr<Organism>>())
-             .def("getLateralType",&HyphaeRandomParameter::getLateralType)
-             .def_readwrite("lmax", &HyphaeRandomParameter::lmax)
-             .def_readwrite("lmaxs", &HyphaeRandomParameter::lmaxs);
+             .def_readwrite("v", &HyphaeRandomParameter::v)
+             .def_readwrite("vs", &HyphaeRandomParameter::vs)
+             .def_readwrite("b", &HyphaeRandomParameter::b)
+             .def_readwrite("hlt", &HyphaeRandomParameter::hlt)
+             .def_readwrite("b", &HyphaeRandomParameter::theta); // TODO add bs, etc.
      py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
              .def(py::init<>())
-             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
-             .def_readwrite("lb", &HyphaeSpecificParameter::lb)
-             .def_readwrite("la", &HyphaeSpecificParameter::la)
-             .def_readwrite("ln", &HyphaeSpecificParameter::ln);
+             .def(py::init<int , double, double,  double, double, double>())
+             .def_readwrite("v", &HyphaeSpecificParameter::v)
+             .def_readwrite("b", &HyphaeSpecificParameter::b)
+             .def_readwrite("hlt", &HyphaeSpecificParameter::hlt)
+             .def_readwrite("b", &HyphaeSpecificParameter::theta);
 
 
      /*
