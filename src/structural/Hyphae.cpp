@@ -120,7 +120,7 @@ void Hyphae::simulate(double dt, bool verbose)
 //                    double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
 //                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                     createSegments(dl,dt,verbose);
-                    std::cout << "*";
+                    // std::cout << "*";
                     length+=dl;
 
                     //                    /* basal zone */
@@ -193,7 +193,6 @@ double Hyphae::calcAge(double length) const
  */
 std::shared_ptr<HyphaeRandomParameter> Hyphae::getHyphaeRandomParameter() const
 {
-    // std::cout << "Root::getRootRandomParameter called" << std::endl;
     return std::static_pointer_cast<HyphaeRandomParameter>(plant.lock()->getOrganRandomParameter(Organism::ot_hyphae, param_->subType));
 }
 

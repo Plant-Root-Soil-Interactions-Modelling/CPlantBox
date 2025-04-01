@@ -238,7 +238,34 @@ std::shared_ptr<MycorrhizalRootRandomParameter> MycorrhizalRoot::getRootRandomPa
 
 double MycorrhizalRoot::getParameter(std::string name) const {
     // std::cout << "MycorrhizalRoot::getParameter called" << std::endl;
-    // if (name == "infected") {return param() -> infected;}
+    if (name == "primaryInfection") 
+    {
+        double primaryInfectedLength = 0;
+        for (size_t i = 1; i < nodes.size(); i++)
+        {
+            if (infected.at(i)==1)
+            {
+                primaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();
+            }
+            
+        }
+        return primaryInfectedLength;
+    }
+    if (name == "secondaryInfection")
+    {
+        double secondaryInfectedLength = 0;
+        for (size_t i = 1; i < nodes.size(); i++)
+        {
+            if (infected.at(i)>1)
+            {
+                secondaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();
+            }
+            
+        }
+        return secondaryInfectedLength;
+    }
+    
+    
     return Root::getParameter(name);
 }
 
