@@ -14,7 +14,7 @@ hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
 hyphae_parameter.v = 1
 mycp.setOrganRandomParameter(hyphae_parameter)
-print(hyphae_parameter)
+# print(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
@@ -30,8 +30,7 @@ for i in range(0, len(root)):
     if root[i].infradius != 0:
         dispersed = False
     root[i].dx = 0.1
-    root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.5)
-    # print(root[i].f_inf.getValue(pb.Vector3d(0., 0., -11.)))
+    root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
 
 mycp.initialize(True)
 
@@ -60,21 +59,21 @@ if animation:
 
 else:
     mycp.simulate(simtime, True)
-    print("sim time", mycp.getSimTime())
+    # print("sim time", mycp.getSimTime())
 
-    mycp.hyphalGrowth(simtime)
-    hyphae = mycp.getOrgans(5)
-    print("number of hyphae", len(hyphae))
-    print("type", type(hyphae))
-    for h in hyphae:
-        print(h.getParameter("length"))
-    dd
+    mycp.simulateHyphalGrowth(simtime)
+    # hyphae = mycp.getOrgans(5)
+    # print("number of hyphae", len(hyphae))
+    # print("type", type(hyphae))
+    # for h in hyphae:
+    #     print(h.getParameter("length"))
+    
 
     ana = pb.SegmentAnalyser(mycp)
     ana.addData("infection", mycp.getNodeInfections(2))
     ana.addData("infectionTime", mycp.getNodeIT(2))
     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
-    vp.plot_roots(ana, "organType")
+    vp.plot_roots(ana, "infection")
     # vp.plot_plant(mycp, "organType")
     ana.write(filename + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
 
