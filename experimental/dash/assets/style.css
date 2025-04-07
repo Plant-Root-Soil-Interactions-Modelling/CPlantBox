@@ -40,8 +40,8 @@
 /* Tabs */
 .custom-tabs {
     
-  padding: 10px;
-    border-radius: 5px;
+  padding: 1px;
+  border-radius: 1px;
 }
 
 .tab-content {
@@ -58,13 +58,13 @@
 /* --- Fix the size of tabs --- */
 .tab, .tab--selected {
     font-size: 12px;   /* Adjust font size */
-    flex: 1;  /* Equal width for all tabs */
-    max-width: 150px;  /* Set a fixed max width */
-    text-align: left;  /* Center text inside the tab */
-    white-space: nowrap;  /* Prevent text from wrapping */
-    overflow: hidden;  /* Hide overflowing text */
+    /*flex: 0;  /* Equal width for all tabs */
+    /*max-width: 150px;  /* Set a fixed max width */
+    /*text-align: left;  /* Center text inside the tab */
+    /*white-space: nowrap;  /* Prevent text from wrapping */
+    /*overflow: hidden;  /* Hide overflowing text */
     /*text-overflow: ellipsis;  /* Show '...' for long text */
-    padding: 10px;
+    padding: 1px;
     border-radius: 8px 8px 0 0;
     border: 1px solid transparent;
     transition: background 0.3s ease-in-out;
@@ -95,4 +95,32 @@
     border-radius: 5px;
     white-space: pre-wrap;
 }
+
+
+
+
+/* LOGO */
+.logo-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    display: flex;
+     /*flex-direction: column; /* 👈 Stack vertically */
+    gap: 10px;
+    align-items: center;
+    z-index: 999;  /* Make sure it's always on top */
+}
+
+/* Logo image styles */
+.logo {
+    height: auto;
+    width: 120px;
+    opacity: 1.;
+    transition: opacity 0.3s;
+}
+
+.logo:hover {
+    opacity: 1.0;
+}
+
 
