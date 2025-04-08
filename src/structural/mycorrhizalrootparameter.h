@@ -34,7 +34,7 @@ namespace CPlantBox {
         /*
             Internal AMF Infection Parameters
         */
-        double p = 0.15;        ///< Probability of primary infection for dispersed inoculum [1/(cm day)]
+        double p = 0.15;        ///< Rate of primary infection for dispersed inoculum [1/(cm day)]
         double minAge = 0;      ///< Minimal Infectious age of a root segment [day]
         double maxAge = 32;     ///< Maximal Infection age of a root segment [day]
         double vi = 0.13;       ///< speed of internal infection [cm / day]

@@ -125,7 +125,6 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence, double 
                 }
             }
 
-
             auto apicalnode = i+1;
             oldNode = i;
             infectionLength = 0;
@@ -250,7 +249,6 @@ double MycorrhizalRoot::getParameter(std::string name) const {
             {
                 primaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();
             }
-            
         }
         return primaryInfectedLength;
     }
@@ -370,7 +368,7 @@ int MycorrhizalRoot::getNumberofInfectedNodes() const
     }
     return numberInfectedNodes;
 }
-double MycorrhizalRoot::prob(double  t, double segLength, double p)
+double MycorrhizalRoot::prob(double t, double segLength, double p)
 {
     return 1 - pow(1-p,t*segLength);
 }
