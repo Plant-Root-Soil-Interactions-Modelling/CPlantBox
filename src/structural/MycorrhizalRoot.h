@@ -53,8 +53,8 @@ protected:
     void createHyphae(int pni);
 
     double prob(double  t, double segLength, double p);
-    void primaryInfection(double dt);
-    void secondaryInfection(double maxlength, double dt);
+    void primaryInfection(double dt, bool silence);
+    void secondaryInfection(double maxlength, bool silence, double dt);
 
 
 

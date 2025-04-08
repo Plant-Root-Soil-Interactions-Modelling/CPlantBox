@@ -814,6 +814,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int,bool, int>())
             .def("getNodeInfection", &MycorrhizalRoot::getNodeInfection)
             .def("getRootRandomParameter", &MycorrhizalRoot::getRootRandomParameter)
+            .def("getNodeInfectionTime", &MycorrhizalRoot::getNodeInfectionTime)
             .def("setInfection", &MycorrhizalRoot::setInfection, py::arg("i"), py::arg("infection"), py::arg("t"));
     /**
      * Hyphae.h

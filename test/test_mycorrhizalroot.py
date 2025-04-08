@@ -148,30 +148,40 @@ class TestMycorrhizalRoot(unittest.TestCase):
 
     def test_primary_infection(self):
         """ tests spontaneous infection on sequential organ list """
-        ## difficult because need to account for non-infectable root segments
         self.mycroot_example_rrp()
-        simtime = 3.
+        simtime = 10.
         self.mycroot.simulate(simtime, False)
         infRoots = self.mycroot.getParameter("primaryInfection")
         numRoots = self.mycroot.getParameter("length")
-        self.assertAlmostEqual(numRoots*0.15*simtime,infRoots,None,"not the right amount of root segments infected",0.5)
+        self.assertAlmostEqual(0.15,infRoots/(simtime*numRoots),None,"not the right amount of root segments infected",0.05)
         
 
     def test_secondary_infection(self):
-        """ test whether secondary infecions are positioned correctly """
+        """ test if secondary infecions are positioned correctly """
         self.mycroot_example_rrp()
-        simtime = 10. 
+        simtime = 20. 
         self.mycroot.simulate(simtime, False)
         wrong_pos=[]
         infected =[]
+        toolateInfected =[]
+        toolateTime= []
         for i in range(0, self.mycroot.getNumberOfNodes()-1):
             infected.append(self.mycroot.getNodeInfection(i))
+            if self.mycroot.getNodeInfection(i) == 1 and self.mycroot.getNodeInfection(i+1) == 0 and self.mycroot.getNodeInfection(i-1) == 0 :
+                toolateInfected.append(i)
+                toolateTime.append(self.mycroot.getNodeInfectionTime(i))
+        speed = self.mycroot.getParameter("vi")
+        for i in range(0, len(toolateInfected)):
+            l = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]+1)).length()
+            self.assertEqual((simtime - toolateTime[i])*speed > l,True,"secondary infection not created in time")
         self.assertEqual(2 in infected, True, "secondary infection not created")
+
         for i in range(0, len(infected)):
             if infected[i] == 2:
                 if i > 0 and i <len(infected)-1 and infected[i-1] == 0 and infected[i+1] == 0:
                     wrong_pos.append(i)
         self.assertEqual(len(wrong_pos),0,"secondary infection not positioned correctly")
+
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
