@@ -25,7 +25,7 @@ namespace CPlantBox {
         void simulateHyphalGrowth(double dt);
 
         virtual std::vector<int> getNodeInfections(int ot) const; // returns Infections
-        virtual std::vector<double> getNodeIT(int ot) const; // returns Infection Time
+        virtual std::vector<double> getNodeInfectionTime(int ot) const; // returns Infection Time
 
         // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
         void initCallbacks() override;

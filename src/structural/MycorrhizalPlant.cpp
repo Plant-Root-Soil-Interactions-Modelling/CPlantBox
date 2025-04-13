@@ -73,7 +73,7 @@ std::vector<int> MycorrhizalPlant::getNodeInfections(int ot) const {
     return infs;
 }
 
-std::vector<double> MycorrhizalPlant::getNodeIT(int ot) const {
+std::vector<double> MycorrhizalPlant::getNodeInfectionTime(int ot) const {
     auto organs = this -> getOrgans(ot);
     std::vector<double> infTime = std::vector<double>(getNumberOfNodes());
     for (const auto& o : baseOrgans)
