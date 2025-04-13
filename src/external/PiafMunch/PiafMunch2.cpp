@@ -154,7 +154,11 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 	{ // edit (make different loops) to enter specific equations for specific nodes or conn.orders
 		int cpp_id = i -1;// o go from Fortran_vector numeration to cpp vector numeration
 		double CSTi = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
-		//double CSTi_exud = max(0.,C_ST[i]);// From A.Lacointe: solver may try C<0 even if actual C never does
+		double NSTi = max(0.,QN_ST[i]/vol_ST[i]);
+		double NXyli = max(0.,QN_Xyl[i]/vol_Xyl[i]);
+		double NCelli = max(0.,QN_Cell[i]/vol_Seg[i]);
+		double NStorei = max(0.,QN_Store[i]/vol_Seg[i]);
+		
 		double Cmeso = max(0.,Q_Mesophyll[i]/vol_ParApo[i]);//concentration in meosphyll compartment
 		//Q_Fl[i] = k_meso*max(Cmeso - CSTi, 0.);//flux from mesophyll to sieve tube
 		 
@@ -167,16 +171,15 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		double StarchSyn = 0;
 		if(denominator != 0)
 		{
-			StarchSyn = Vmax_S_ST * max(0.,Q_ST[i]) / (denominator) ; //  (Vmax and kHyd below) or k3 (below),  or all three, should be zero
+			StarchSyn = Vmax_S_ST * max(0.,CSTi) / (denominator) ; //  (Vmax and kHyd below) or k3 (below),  or all three, should be zero 
 		}
 		Q_Mucil_dot[i] = std::max(0.,k_mucil_[cpp_id] *   Q_S_ST[i]);//mucilage exudation
 		//an alternate, target-oriented,  expression of starch variation rate, mutually exclusive of (AmSyn - kHyd * Amid), so that...
         double Starch_dot_alt = k_S_ST * (CSTi - C_targ) * vol_ST[i] ;	
 		Q_S_ST_dot[i] = StarchSyn + Starch_dot_alt - kHyd_S_ST *std::max(0., Q_S_ST[i]) ; // (Vmax and kHyd) or k3 (below),  or all three, should be zero
 		
-        if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations (remove 4-lines-block if not relevant)
-            //cout << "at t=" << t << ", node#" << i << ": Starch <= 0 and Starch_dot < 0  =>  Starch_dot set to zero" << endl ;
-            Q_S_ST_dot[i] = 0. ;
+        if((Q_S_ST[i] <= 0.) && (Q_S_ST_dot[i] < 0.)) { // control negative starch concentrations
+			Q_S_ST_dot[i] = 0. ;
 			Q_Mucil_dot[i] = 0. ;
         }
         double st_2_starch = Q_S_ST_dot[i] ;//+ Q_Mucil_dot[i];
@@ -206,6 +209,8 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Crsi_exud.at(cpp_id) = max(0.,Csoil_node[cpp_id]-CSTimin_exud); //if CSTi < CSTimin, no sucrose usage
 		
 		CSTi_delta.at(cpp_id) = max(0.,CSTi_exud.at(cpp_id)-Crsi_exud.at(cpp_id)); //concentration gradient for passive exudation. TODO: take Csoil from dumux 
+		
+		// resulting sinks/sources
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta.at(cpp_id)*Q_Exudmax[i];//max exudation rate
@@ -220,9 +225,50 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		//Q_Rm_dot:
 		Q_Rm_dot[i] = min(Fu_lim, Q_Rmmax_);//realized rate of maintenance respiration 
 		
+		
+		// nitrogen
+		double k_N = std::exp(- beta_N*(NCelli + NStorei + NSTi + NXyli));
+		double k_C = 1 - std::exp(- beta_C * max(0.,C_ST[i]));
+		double F_PNU_NO3 = k_N*k_C * (F_PNU_NO3_max * NO3soil_node[cpp_id]/(K_PNU_NO3 + NO3soil_node[cpp_id])+ K2_PNU_NO3* NO3soil_node[cpp_id]);
+		double F_PNU_NH4 = k_N*k_C* (F_PNU_NH4_max * NH4soil_node[cpp_id]/(K_PNU_NH4 + NH4soil_node[cpp_id]));
+		double F_PNU = std::max(0.,F_PNU_NO3 + F_PNU_NH4);
+		
+		double F_Cell2ST = 0.;
+		double F_Cell2Xyl = 0.;
+		if(orgTypes.at(cpp_id) == 2)//root
+		{
+			F_Cell2ST = - Sn_root2ST*NSTi/(Kn_root2ST + NSTi);
+			F_Cell2Xyl = Sn_root2Xyl*NCelli/(Kn_root2Xyl + NCelli);
+		}
+		if(orgTypes.at(cpp_id) == 3)//stem
+		{			
+			F_Cell2ST = Sn_stem2ST*NCelli/(Kn_stem2ST + NCelli) - Sn_stem2ST*NSTi/(Kn_stem2ST + NSTi);
+			F_Cell2Xyl = 0.;
+		}
+		if(orgTypes.at(cpp_id) == 4)//leaf
+		{			
+			F_Cell2ST =  Sn_leaf2ST*NCelli/(Kn_leaf2ST + NCelli);
+			F_Cell2Xyl = - Sn_leaf2Xyl*NXyli/(Kn_leaf2Xyl + NXyli);
+		}
+		
+		double cnplant = CNPlant[orgTypes.at(cpp_id)];
+		double GtotTemp = max(min(Fu_lim - Q_Rm_dot[i], Q_Grmax[i]),0.);
+		GtotTemp = max(0.,min( GtotTemp/cnplant, max(0.,QN_Cell[i]))*cnplant);
+		
+		QN_Struct_dot[i] = GtotTemp/cnplant;
+		QN_Store_dot[i] = k_targ_Nstore * (NCelli - NCell_targ) * vol_Seg[i];
+        if((QN_Store[i] <= 0.) && (QN_Store_dot[i] < 0.)) { // control negative starch concentrations 
+			QN_Store_dot[i] = 0. ;
+        }
+		
+		QN_ST_dot[i] = Delta_JN_ST[i] + F_Cell2ST;
+		QN_Xyl_dot[i] = Delta_JN_Xyl[i] + F_Cell2Xyl;
+		QN_Cell_dot[i] = F_PNU - QN_Struct_dot[i] - QN_Store_dot[i] - F_Cell2ST - F_Cell2Xyl;
+		
+		
 		//Growth:
 		//add max(X,0.) in case of issues with rounding
-		Q_Gtot_dot[i] = max(min(Fu_lim - Q_Rm_dot[i], Q_Grmax[i]),0.);//realized rate of sucrose usage for growth + growth respiration
+		Q_Gtot_dot[i] = GtotTemp;//realized rate of sucrose usage for growth + growth respiration
 		//Exudation:
 		Q_Exud_dot[i] =  Q_Exudmax_;//realized rate of exudation
 		

@@ -117,6 +117,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 
 	void setRmax_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	void setAcross_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
+	void setAcross_xyl(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
 	void setPerimeter_st(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
 	void setRhoSucrose(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type),  
 	void setKrm1(std::vector<std::vector<double>> values, bool verbose = false); ///< sets a callback for kx_suc:=kx_suc(ot,type), 
@@ -135,8 +136,11 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     std::function<double(int, int)> Across_st_f = [](int type, int orgtype) {//cross-sectional area of all the sieve tubes in segment
 		throw std::runtime_error("get_Across_st not implemented"); 
 		return 0.; };
+    std::function<double(int, int)> Across_xyl_f = [](int type, int orgtype) {//cross-sectional area of all the sieve tubes in segment
+		throw std::runtime_error("get_Across_xyl not implemented"); 
+		return 0.; };
     std::function<double(int, int)> Perimeter_st_f = [](int type, int orgtype) {//cross-sectional area of all the sieve tubes in segment
-		throw std::runtime_error("get_Across_st not implemented"); 
+		throw std::runtime_error("get_Perimeter_st not implemented"); 
 		return 0.; };
     std::function<double(int,int)> Rmax_st_f = []( int type, int orgtype){//maximum initial growth rate use by phloem module
 		throw std::runtime_error("get_Rmax not implemented"); 
@@ -190,6 +194,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	std::vector<double> vol_Mesov;//volume of mesophyll (same as leaf blade volume), (cm3)
 	std::vector<double> JW_STv;//sieve tube water flow, (cm3 d-1)
     //for growth
+	std::vector<int> orgTypes;
 	std::vector<double> Fpsi;//water scarcity factor for growth, (-)
     std::vector<double> Flen;
     std::vector<int> GrowthZone;
@@ -248,6 +253,67 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	int expression = 1;//if implement several possible expression in C_fluxes
     bool StemGrowthPerPhytomer = true;
 	
+	// N module	
+	//		intermediary vals
+	double * QN_ST;
+	double * QN_Xyl;
+	double * QN_Cell;
+	double * QN_Struct;
+	double * QN_Store;
+	double * QN_ST_dot;
+	double * QN_Xyl_dot;
+	double * QN_Cell_dot;
+	double * QN_Struct_dot;
+	double * QN_Store_dot;
+	Fortran_vector N_ST;
+	Fortran_vector N_Xyl;
+	
+	Fortran_vector vol_Xyl;
+	Fortran_vector vol_Seg;
+	Fortran_vector i_amontXyl;
+	Fortran_vector N_amontXyl;
+	Fortran_vector N_amont;
+	Fortran_vector JN_ST;
+	Fortran_vector JN_Xyl;
+	Fortran_vector Delta_JN_ST;
+	Fortran_vector Delta_JN_Xyl;
+	std::vector<double> NO3soil_seg;
+	std::vector<double> NO3soil_node;
+	std::vector<double> NH4soil_seg;
+	std::vector<double> NH4soil_node;
+	//		boolean choices
+	//		To calibrate/set
+	double initValN = 0.8;
+	double NO3soilDefault = 1.5/14*1e3*1e-6; //g N m-3 => mmol N cm-3
+	double NH4soilDefault = 1.5/14*1e3*1e-6; 
+	double beta_N = 0.0025;
+	double beta_C= 4000/1e3*0.5;//micromol g-1 => mmol cm-3 (assume  0.5 g/cm3), barillot2016
+	
+	double F_PNU_NO3_max= 0.1333 * 24 * 3600;// d-1 Barillot2016
+	double K_PNU_NO3= 211812/1e-6/14*1e3; // g/m3 => mmol/cm-3 Barillot2016
+	double K2_PNU_NO3=4.614*1e6/1e3/24/3600; // m3 micomol-1 s-1 => cm3 mmol-1 d-1
+	double F_PNU_NH4_max= 0.1333 * 24 * 3600;// -
+	double K_PNU_NH4=211812/1e-6/14*1e3;
+	
+	double Kn_root2ST= 1 *24*3600;//s-1 to d-1
+	double Sn_root2ST=0.03*1e-3*0.5*24*3600/10; // dummx value (from C in Barillot) => micromol C g-1 => mmol N cm-3
+	double Kn_root2Xyl=1 *24*3600;
+	double Sn_root2Xyl=0.03*1e-3*0.5*24*3600/10;
+	
+	double Kn_stem2ST=1 *24*3600;
+	double Sn_stem2ST=0.03*1e-3*0.5*24*3600/10;
+	double Kn_leaf2ST=1 *24*3600;
+	double Sn_leaf2ST=0.03*1e-3*0.5*24*3600/10;	
+	double Kn_leaf2Xyl=1 *24*3600;	
+	double Sn_leaf2Xyl=0.03*1e-3*0.5*24*3600/10;
+	
+	double k_targ_Nstore= 50;//dummy value
+	double NCell_targ= 1; // mmol g-1 struct
+	std::map<int, double> CNPlant = {{2,25},{3,25},{4,25}};// plant tissues C:N ratio
+
+	// soil data, link with DuMux (mmol N cm-3)
+	
+	
 	//internal PiafMunch functions but cannot protect
 	void initialize_carbon(vector<double> vecIn) ;							// initializes carbon system parameters and constants (implemented in 'initialize.cpp')
 	void initialize_hydric() ;							// initializes hydric system parameters and constants (implemented in 'initialize.cpp')
@@ -256,7 +322,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	void aux(double t, double * y);
 	void update_viscosity() ;
 	void C_fluxes(double t, int Nt) ; // in  PiafMunch2.cpp
-	
+		
 	protected:
 	//internal parameters
 	double TairK_phloem;//temperature in K for phloem tissue
@@ -265,7 +331,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	Fortran_vector Q_GrmaxBU ;
 	//bool hayErrores = false;
 	int errorID = -1;
-	int neq_coef = 10;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
+	int neq_coef = 15;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
 	std::vector<double> BackUpMaxGrowth;//to check at runtime if growth is correct
 	
 	//retrieve tissue-specific parameters
@@ -306,6 +372,10 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     double Across_st_perOrgType( int type, int organType) { return Across_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
     double Across_st_perType( int type, int organType) {return Across_st.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
     
+	double Across_xyl_const( int type, int organType) { return Across_xyl.at(0).at(0); }  //constant
+    double Across_xyl_perOrgType( int type, int organType) { return Across_xyl.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
+    double Across_xyl_perType( int type, int organType) {return Across_xyl.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
+	
 	double Perimeter_st_const( int type, int organType) { return Perimeter_st.at(0).at(0); }  //constant
     double Perimeter_st_perOrgType( int type, int organType) { return Perimeter_st.at(organType - 2).at(0); } //per organ type (goes from 2 (root) to 4 (leaf))
     double Perimeter_st_perType( int type, int organType) {return Perimeter_st.at(organType - 2).at(type); }//per subtype and organ type (goes from 2 (root) to 4 (leaf))
@@ -330,6 +400,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     std::vector<std::vector<double>> kr_st;//  [mmol hPa-1 day-1]
 	 std::vector<std::vector<double>> kx_st; //  [cm3 hPa-1 day-1]
     std::vector<std::vector<double>> Across_st; // [cm2]
+    std::vector<std::vector<double>> Across_xyl; // [cm2]
     std::vector<std::vector<double>> Perimeter_st; // [cm]
 	 std::vector<std::vector<double>> Rmax_st; // [cm day-1]
 	std::vector<std::vector<double>> rhoSucrose;

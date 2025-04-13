@@ -161,6 +161,16 @@ extern Fortran_vector Y0	; // (set in GUI) initial condition vector is made of Q
 
 void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 	
+	i_amontXyl = Fortran_vector(Nc, 0.)	; 
+	N_amontXyl = Fortran_vector(Nc, 0.)	; 
+	N_amont = Fortran_vector(Nc, 0.)	; 
+	JN_ST = Fortran_vector(Nc, 0.)	; 
+	JN_Xyl = Fortran_vector(Nc, 0.)	; 
+	Delta_JN_ST = Fortran_vector(Nt, 0.) ;
+	Delta_JN_Xyl = Fortran_vector(Nt, 0.) ;
+	N_ST = Fortran_vector(Nt, 0.);
+	N_Xyl = Fortran_vector(Nt, 0.);
+	
 	JS_ST = Fortran_vector(Nc, 0.) ; // (mmol / h)   Axial phloem sugar flux
     //JS_PhlMb = Fortran_vector(Nt, 0.)			; // CrossMembrane phloem sugar fluxes from apoplasm into sieve tubes (mmol / h)
     RespMaint = Fortran_vector(Nt, 0.)			; // Maintenance respiration rate										(mmol / h)
@@ -200,6 +210,8 @@ void PhloemFlux::initialize_carbon(vector<double> vecIn) {
 				for(int z = 0; z < Nt;z++){
 					Y0[z + 1] = initValST * vol_ST[z + 1]; //conz to content
 					Y0[z + 1  + Nt * 8] = initValST * vol_ST[z + 1]; //starch
+					Y0[z + 1  + Nt * 12] = initValN * vol_Seg[z + 1]; //cell N
+					Y0[z + 1  + Nt * 14] = initValN * vol_Seg[z + 1]; //storage N
 				}
 				for(int z = 0; z < Nt;z++){
 					if(vol_ParApo[z + 1] > 0){

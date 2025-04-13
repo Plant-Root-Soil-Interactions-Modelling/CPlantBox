@@ -206,8 +206,14 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	Q_S_ST = Q_S_Mesophyll + Nt;
 	Q_Mucil = Q_S_ST + Nt ;
 	
+	QN_ST = Q_Mucil + Nt ;
+	QN_Xyl = QN_ST + Nt ;
+	QN_Cell = QN_Xyl + Nt ;
+	QN_Struct = QN_Cell + Nt ;
+	QN_Store = QN_Struct + Nt ;
+	
 	for (int i=1; i<=Nt; i++)  {
-		double volSTi = vol_ST[i];
+		double volSTi = std::max(0.,vol_ST[i]);
 		double QSTi = Q_ST[i];
 		
 		if (QSTi < 0.){ QSTi = 0. ; Q_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
@@ -215,6 +221,12 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 		if (Q_S_ST[i] < 0.){ Q_S_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		if (Q_S_Mesophyll[i] < 0.){ Q_S_Mesophyll[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 		C_ST[i] = QSTi / volSTi ; // Concentration of sugar in sieve tubes		(mmol / ml)
+	
+		if (QN_Cell[i] < 0.){ QN_Cell[i] =0;}
+		if (QN_ST[i] < 0.){ QN_ST[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+		if (QN_Xyl[i] < 0.){ QN_Xyl[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+		if (QN_Struct[i] < 0.){ QN_Struct[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
+		if (QN_Store[i] < 0.){ QN_Store[i] =0;}// fix any artefact from solver (may try C<0 even if actual C never does)
 	
 	}
 	Q_ST_dot = y_dot ; 
@@ -231,6 +243,11 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	Q_S_ST_dot = Q_S_Mesophyll_dot + Nt ;
 	Q_Mucil_dot = Q_S_ST_dot + Nt ;
 	
+	QN_ST_dot = Q_Mucil_dot + Nt ;
+	QN_Xyl_dot = QN_ST_dot + Nt ;
+	QN_Cell_dot = QN_Xyl_dot + Nt ;
+	QN_Struct_dot = QN_Cell_dot + Nt ;
+	QN_Store_dot = QN_Struct_dot + Nt ;
 	//Add later
 	/*if (Adv_BioPhysics) {
 		dummy.set(1.) ; dummy.sub_mult(PartMolalVol, C_ST) ; // dummy = 1 - PartMolalVol * C_ST
@@ -245,6 +262,12 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	JW_ST.set_matmult(Delta, P_ST) ; 
 	for(int j = 1 ; j <= Nc ; j ++) {
 		//int i_aval; double C_aval;
+		if(JW_Xyl[j] > 0)
+		{  
+			i_amontXyl[j] = I_Upflow[j] ; 
+		}else{  
+			i_amontXyl[j] = I_Downflow[j] ; 
+		}
 		if(JW_ST[j] > 0)
 		{  
 			i_amont[j] = I_Upflow[j] ; 
@@ -252,6 +275,8 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 			i_amont[j] = I_Downflow[j] ; 
 		}
 		C_amont[j] = C_ST[i_amont[j]] ; 
+		N_amont[j] = N_ST[i_amont[j]] ; 
+		N_amontXyl[j] = N_Xyl[i_amontXyl[j]] ; 
 		
 		if((errorID == I_Upflow[j])||(errorID == I_Downflow[j]))//found an error in last run of C_fluxes function
 		{
@@ -271,7 +296,11 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	JW_ST /= r_ST;
 	
 	JS_ST.set_elemult(JW_ST, C_amont) ;	// 	i.e.   JS_ST = JW_ST * C_amont			   (eq. 11)
+	JN_ST.set_elemult(JW_ST, N_amont) ;
+	JN_Xyl.set_elemult(JW_Xyl, N_amontXyl) ;
 	Delta_JS_ST.set_matmult(Delta2, JS_ST) ;
+	Delta_JN_ST.set_matmult(Delta2, JN_ST) ;
+	Delta_JN_Xyl.set_matmult(Delta2, JN_Xyl) ;
 	
 	C_fluxes(t, Nt) ; //see PiafMunch2.cpp
 	
