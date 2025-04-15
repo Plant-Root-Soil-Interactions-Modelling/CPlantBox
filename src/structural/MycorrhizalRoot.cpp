@@ -93,8 +93,9 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     }
 }
 
-void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence, double dt){
+void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
 
+    double max_length_infection = age*getRootRandomParameter()->vi;
     for (size_t i = 0; i < nodes.size()-1; i++)
     {
         if (infected.at(i) == 1 || infected.at(i)== 3)
@@ -105,7 +106,7 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence, double 
             if (i>=1) {  // secondary infection in basal direction can only occur if there is another node in basal direction in this root
                 int basalnode = i-1;
                 double cursegLength;
-                while (basalnode >= 0 && basalnode < nodes.size()-1 && infectionLength < maxLength && infected.at(oldNode) != 0)
+                while (basalnode >= 0 && basalnode < nodes.size()-1 && infectionLength < max_length_infection && infected.at(oldNode) != 0)
                 {
                     cursegLength = abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());
                     infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
@@ -129,7 +130,7 @@ void MycorrhizalRoot::secondaryInfection(double maxLength, bool silence, double 
             oldNode = i;
             infectionLength = 0;
             double cursegLength;
-            while (apicalnode < nodes.size()-1 && infectionLength < maxLength && infected.at(oldNode) != 0)
+            while (apicalnode < nodes.size()-1 && abs(nodes.at(i).minus(nodes.at(apicalnode)).length()) < max_length_infection && infected.at(oldNode) != 0)
             {
                 cursegLength = abs(nodes.at(oldNode).minus(nodes.at(apicalnode)).length());
                 infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
@@ -196,9 +197,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
         primaryInfection(dt,verbose);
 
         // Secondary Infection
-        auto max_length_infection = age*getRootRandomParameter()->vi;
-
-        secondaryInfection(max_length_infection,verbose,dt);
+        secondaryInfection(verbose,dt);
 
         for (auto l : children)
         {

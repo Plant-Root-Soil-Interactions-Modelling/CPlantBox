@@ -62,7 +62,11 @@ for i in range(0, len(root)):
 mycp.initialize(True)
 
 
-simtime = 10
+simtime = 100
+fpd = 24
+N = simtime * fpd
+dt = simtime / N
+time = np.linspace(0, simtime, N)
 
 primInfL =[]
 secInfL = []
@@ -70,8 +74,8 @@ lenghtL = []
 ratioL = []
 
 
-for t in range(0,simtime):
-    mycp.simulate(1, False)
+for t in range(0,N):
+    mycp.simulate(dt, False)
     # print(mycp.getParameter("primaryInfection"))
     primInfL.append(sum(mycp.getParameter("primaryInfection")))
     secInfL.append(sum(mycp.getParameter("secondaryInfection")))
@@ -79,15 +83,17 @@ for t in range(0,simtime):
     ratioL.append(sum(mycp.getParameter("primaryInfection"))/sum(mycp.getParameter("length")))
 ratio = True
 if ratio:
-    plt.plot(np.asarray(ratioL), label="Primary Infection Ratio")
+    plt.plot(time, np.asarray(ratioL), label="Primary Infection Ratio")
     plt.title("Infection Ratio over time")
+    plt.legend()
     plt.xlabel("Time")
     plt.ylabel("[cm]")
     plt.show()
 else:
-    plt.plot(np.asarray(primInfL), label="Primary Infection")
-    plt.plot(np.asarray(secInfL), label="Secondary Infection")
-    plt.plot(np.asarray(lenghtL), label="Length")
+    plt.plot(time, np.asarray(primInfL), label="Primary Infection")
+    plt.plot(time, np.asarray(secInfL), label="Secondary Infection")
+    plt.plot(time, np.asarray(lenghtL), label="Length")
+    plt.legend()
     plt.title("Infection over time")
     plt.xlabel("Time")
     plt.ylabel("[cm]")

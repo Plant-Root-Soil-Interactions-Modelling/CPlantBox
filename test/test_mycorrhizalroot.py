@@ -173,7 +173,9 @@ class TestMycorrhizalRoot(unittest.TestCase):
         speed = self.mycroot.getParameter("vi")
         for i in range(0, len(toolateInfected)):
             l = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]+1)).length()
+            r = self.mycroot.getNode(toolateInfected[i]).minus(self.mycroot.getNode(toolateInfected[i]-1)).length()
             self.assertEqual((simtime - toolateTime[i])*speed > l,True,"secondary infection not created in time")
+            self.assertEqual((simtime - toolateTime[i])*speed > r,True,"secondary infection not created in time")
         self.assertEqual(2 in infected, True, "secondary infection not created")
 
         for i in range(0, len(infected)):

@@ -24,12 +24,12 @@ infbox = pb.SDF_PlantBox(3, 3, 3)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
 animation = False
-infradius = 1
+infradius = 0
 for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:
         dispersed = False
-    root[i].dx = 0.1
+    root[i].dx = 0.05
     root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
 
 mycp.initialize(True)
@@ -51,9 +51,10 @@ else:
 if animation:
     for i in range(0, N):
         mycp.simulate(dt, False)
+        # mycp.simulateHyphalGrowth(simtime)
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("infection", mycp.getNodeInfections(2))
-        ana.addData("infectionTime", mycp.getNodeIT(2))
+        ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
         ana.write(filename + "{:04d}".format(i) + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
         print("Frame " + str(i) + " of " + str(N))
 
@@ -61,19 +62,19 @@ else:
     mycp.simulate(simtime, True)
     # print("sim time", mycp.getSimTime())
 
-    mycp.simulateHyphalGrowth(simtime)
+    # mycp.simulateHyphalGrowth(simtime)
     # hyphae = mycp.getOrgans(5)
     # print("number of hyphae", len(hyphae))
     # print("type", type(hyphae))
     # for h in hyphae:
-    #     print(h.getParameter("length"))
+    #     print(h.getParameter("age"))
     
 
     ana = pb.SegmentAnalyser(mycp)
     ana.addData("infection", mycp.getNodeInfections(2))
-    ana.addData("infectionTime", mycp.getNodeIT(2))
-    pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
+    ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
+    pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
     vp.plot_roots(ana, "infection")
     # vp.plot_plant(mycp, "organType")
-    ana.write(filename + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime"])
+    ana.write(filename + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
 
