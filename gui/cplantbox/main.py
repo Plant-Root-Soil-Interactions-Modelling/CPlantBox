@@ -12,7 +12,7 @@ from dash_vtk.utils import to_mesh_state
 from conversions import *
 
 """ INITIALIZE """
-app = dash.Dash(__name__, external_stylesheets = [dbc.themes.MINTY])
+app = dash.Dash(__name__, suppress_callback_exceptions = True, external_stylesheets = [dbc.themes.MINTY])
 app.title = "CPlantbox Dash App"
 
 param_names = get_parameter_names()
@@ -88,16 +88,14 @@ app.layout = dbc.Container([
 
 """ Simulation Panel """
 
-
-@app.callback(
-    # Output('root-store', 'data'),
-    Input('plant-dropdown', 'value'),
-    State('root-store', 'data')
-)
-def update_plant(plant_value, data):
-    debug_params(plant_value)
-    return None
-
+# @app.callback(
+#     # Output('root-store', 'data'),
+#     Input('plant-dropdown', 'value'),
+#     State('root-store', 'data')
+# )
+# def update_plant(plant_value, data):
+#     debug_params(plant_value)
+#     return None
 
 """ Parameters Panel"""
 
@@ -106,15 +104,16 @@ def update_plant(plant_value, data):
 @app.callback(
     Output('organtype-tabs-content', 'children'),
     Input('organtype-tabs', 'value'),
-    State('root-store', 'data'),
+    State('plant-dropdown', 'value'),
     State('seed-store', 'data'),
+    State('root-store', 'data'),
     State('stem-store', 'data'),
     State('leaf-store', 'data'),
 )
-def render_organtype_tab(tab, root_data, seed_data, stem_data, leaf_data):
+def render_organtype_tab(tab, plant_dropdown, seed_data, root_data, stem_data, leaf_data):
     if tab == 'Seed':
         print("render_organtype_tab() seed:", seed_data)
-        return seed_layout(seed_data)
+        return seed_layout(seed_data, plant_dropdown)
     elif tab == 'Root':
         print("render_organtype_tab() root:", root_data)
         return root_layout(root_data)
@@ -127,26 +126,28 @@ def render_organtype_tab(tab, root_data, seed_data, stem_data, leaf_data):
 
 
 # Generate sliders for seed tab from stored values
-def generate_seed_sliders(seed_values):
+def generate_seed_sliders(seed_values, dicot):
+    print("generate_seed_sliders()", seed_values, dicot)
     sliders = [html.Div(className = "spacer"), html.Div(className = "spacer"), ]
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(seed_parameter_sliders.keys()):
-        min_ = seed_parameter_sliders[key][0]
-        max_ = seed_parameter_sliders[key][1]
-        sliders.append(html.H6(key))
-        sliders.append(
-            dcc.Slider(
-                        id = {'type': 'dynamic-seed-slider', 'index': i},
-                        min = min_,
-                        max = max_,
-                        value = seed_values[i],
-                        marks = {
-                            min_: str(min_),
-                            max_: str(max_)
-                            },
-                        tooltip = { "always_visible": False},
-                    )
-            )
+        if not dicot or i > 1:
+            min_ = seed_parameter_sliders[key][0]
+            max_ = seed_parameter_sliders[key][1]
+            sliders.append(html.H6(key))
+            sliders.append(
+                dcc.Slider(
+                            id = {'type': 'dynamic-seed-slider', 'index': i},
+                            min = min_,
+                            max = max_,
+                            value = seed_values[i],
+                            marks = {
+                                min_: str(min_),
+                                max_: str(max_)
+                                },
+                            tooltip = { "always_visible": False},
+                        )
+                )
     return html.Div(sliders)
 
 
@@ -193,8 +194,10 @@ def root_layout(data):
     return [tab, content]
 
 
-def seed_layout(data):
-    return generate_seed_sliders(data["seed"])
+def seed_layout(data, plant_dropdown):
+    dicot = plant_dropdown in ["Anagallis"]
+    print("seed_layout()", plant_dropdown, dicot)
+    return generate_seed_sliders(data["seed"], dicot)
 
 
 def stem_layout(data):
@@ -210,7 +213,6 @@ def leaf_layout(data):
     Output('root-tabs-content', 'children'),
     Input('root-tabs', 'value'),
     State('root-store', 'data'),
-    suppress_callback_exceptions = True
 )
 def render_organtype_tab(selected_tab, data):
     stored_values = data.get(selected_tab, ROOT_SLIDER_INITIALS)
@@ -219,16 +221,15 @@ def render_organtype_tab(selected_tab, data):
 
 
 @app.callback(
-    Output('seed-store', 'data', allow_duplicate = True),
+    Output('seed-store', 'data'),  # , allow_duplicate = True
     Input({'type': 'dynamic-seed-slider', 'index': dash.ALL}, 'value'),
     State('seed-store', 'data'),
     prevent_initial_call = True,
-    suppress_callback_exceptions = True
 )
 def update_seed_store(slider_values, store_data):
-    print("update_seed_store()", slider_values)
-    if len(store_data) > 1:  # called empty
-        store_data = slider_values
+    # print("update_seed_store()", store_data, slider_values, len(store_data["seed"]))
+    if len(slider_values) > 1:  # called empty
+        store_data["seed"] = slider_values
     return store_data
 
 
@@ -239,10 +240,9 @@ def update_seed_store(slider_values, store_data):
     State('root-tabs', 'value'),
     State('root-store', 'data'),
     prevent_initial_call = True,
-    suppress_callback_exceptions = True
 )
 def update_root_store(slider_values, current_tab, store_data):
-    print("update_root_store()", current_tab, slider_values)
+    # print("update_root_store()", current_tab, slider_values)
     store_data[current_tab] = slider_values
     return store_data
 
@@ -256,7 +256,6 @@ def update_root_store(slider_values, current_tab, store_data):
     State('time-slider', 'value'),
     State('root-store', 'data'),
     prevent_initial_call = True,
-    suppress_callback_exceptions = True
 )
 def click_simulate(n_clicks, selected_tab, plant_value, time_slider_value, root_store_data):
 
