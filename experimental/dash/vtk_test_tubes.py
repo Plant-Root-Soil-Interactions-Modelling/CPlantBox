@@ -6,10 +6,9 @@ import numpy as np
 
 
 def create_polyline_with_radii():
-    # Create points and radius data
     points = vtk.vtkPoints()
     radii = vtk.vtkFloatArray()
-    radii.SetName("TubeRadius")  # Important: name used by tube filter
+    radii.SetName("TubeRadius")
 
     num_pts = 20
     for i in range(num_pts):
@@ -17,17 +16,13 @@ def create_polyline_with_radii():
         y = np.sin(i * 0.3)
         z = 0
         points.InsertNextPoint(x, y, z)
+        radii.InsertNextValue(0.05 + 0.03 * np.cos(i * 0.5))  # varying radius
 
-        # Radius can vary by point — here as a function of sin
-        radii.InsertNextValue(0.05 + 0.03 * np.cos(i * 0.5))
-
-    # Create a single polyline
     lines = vtk.vtkCellArray()
     lines.InsertNextCell(num_pts)
     for i in range(num_pts):
         lines.InsertCellPoint(i)
 
-    # Build the polydata
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
     polydata.SetLines(lines)
@@ -41,10 +36,16 @@ def apply_tube_filter(polydata):
     tube_filter.SetInputData(polydata)
     tube_filter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
     tube_filter.SetNumberOfSides(20)
-    tube_filter.SetRadius(1.0)  # multiplier, actual radius comes from scalars
+    tube_filter.SetRadius(1.0)
     tube_filter.SetCapping(True)
     tube_filter.Update()
-    return tube_filter.GetOutput()
+
+    # Convert triangle strips to regular triangles
+    triangle_filter = vtk.vtkTriangleFilter()
+    triangle_filter.SetInputConnection(tube_filter.GetOutputPort())
+    triangle_filter.Update()
+
+    return triangle_filter.GetOutput()
 
 
 def vtk_polydata_to_dashvtk_dict(polydata):
@@ -54,11 +55,13 @@ def vtk_polydata_to_dashvtk_dict(polydata):
     n_points = points.GetNumberOfPoints()
     n_polys = polys.GetNumberOfCells()
 
-    # Extract points
+    # Debug info
+    print(f"Number of points: {n_points}, polys: {n_polys}")
+
     pts = np.array([points.GetPoint(i) for i in range(n_points)], dtype = np.float32)
     pts = pts.flatten().tolist()
 
-    # Extract polygon connectivity
+    # Extract polygons
     polys.InitTraversal()
     id_list = vtk.vtkIdList()
     conn = []
@@ -75,15 +78,15 @@ def vtk_polydata_to_dashvtk_dict(polydata):
     }
 
 
-# Create polyline + radii, apply tube filter
+# Build geometry
 polyline = create_polyline_with_radii()
 tube = apply_tube_filter(polyline)
 vtk_data = vtk_polydata_to_dashvtk_dict(tube)
 
-# Dash app with dash-vtk
+# Dash app
 app = dash.Dash(__name__)
-
 app.layout = html.Div([
+    html.Div("Polyline with Varying Radius via Tube Filter"),
     dash_vtk.View([
         dash_vtk.GeometryRepresentation([
             dash_vtk.PolyData(
@@ -91,8 +94,8 @@ app.layout = html.Div([
                 polys = vtk_data["polys"]
             )
         ])
-    ], style = {"height": "500px", "width": "500px"})
+    ], style = {"height": "500px", "width": "500px", "border": "1px solid #ccc"})
 ])
 
 if __name__ == "__main__":
-    app.run_server(debug = True)
+    app.run(debug = True)

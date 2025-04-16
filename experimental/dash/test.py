@@ -128,8 +128,9 @@ app.layout = dbc.Container([
             html.Br(),
             dcc.Tabs(
                 id = 'tabs-container',
+                className = "vertical-tabs",
                 value = 'tab-1',
-                children = [dcc.Tab(label = f'{name}', value = f'tab-{i}') for i, name in enumerate(tabs_names)]
+                children = [dcc.Tab(label = f'{name}', value = f'tab-{i}', className = 'tab', selected_className = 'tab--selected') for i, name in enumerate(tabs_names)]
             ),
             html.Div(id = 'tab-content')
         ], width = 3),
