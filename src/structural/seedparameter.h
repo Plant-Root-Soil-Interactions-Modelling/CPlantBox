@@ -28,7 +28,7 @@ public:
     SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
         double nz, int maxtil, double simtime,  double fTi = 0., double dTi = 0.):
             OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
-            delayRC(dRC), nz(nz), maxTil(maxtil), firstTi(fTi), delayTi(dTi),  simtime(simtime) {  };
+            delayRC(dRC), nz(nz), maxTil(maxtil), firstTil(fTi), delayTil(dTi),  simtime(simtime) {  };
     virtual ~SeedSpecificParameter() { };
 
     /*
@@ -50,8 +50,8 @@ public:
 
     //Tillers
     int maxTil;         ///< maximal number of tillers
-	double firstTi;     ///< First emergence of a shoot borne root [day]
-    double delayTi;     ///< Time delay between the shoot borne roots [day]
+	double firstTil;     ///< First emergence of a shoot borne root [day]
+    double delayTil;     ///< Time delay between the shoot borne roots [day]
 
     //Simulation parameters
     double simtime;     ///< recommended final simulation time
@@ -106,10 +106,10 @@ public:
     // Stem parameters
     int maxTil = 0;        ///< Maximal number of tillers
     double maxTils = 0.;   ///< Standard deviation of tillers
-	double firstTi = 1.e9;  ///< Mean emergence of first basal root [day]
-    double firstTis = 0.;   ///< Standard deviation of emergence of first basal root [day]
-    double delayTi = 1.e9;  ///< Mean time delay between the basal roots [day]
-    double delayTis = 0.;   ///< Standard deviation of time delay between the basal roots [day]
+	double firstTil = 1.e9;  ///< Mean emergence of first basal root [day]
+    double firstTils = 0.;   ///< Standard deviation of emergence of first basal root [day]
+    double delayTil = 1.e9;  ///< Mean time delay between the basal roots [day]
+    double delayTils = 0.;   ///< Standard deviation of time delay between the basal roots [day]
 
     // Simulation parameters
     double simtime = 30.;  ///< Mean recommended final simulation time

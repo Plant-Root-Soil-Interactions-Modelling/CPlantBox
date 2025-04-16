@@ -52,7 +52,7 @@ public:
 	std::shared_ptr<Seed> getSeed(); ///< the plant seed
 
     /* organ parameter management */
-    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter
+    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int ot, int subType) const; ///< returns the respective the type parameter
     std::vector<std::shared_ptr<OrganRandomParameter>> getOrganRandomParameter(int ot) const; ///< returns all type parameters of an organ type (e.g. root)
     void setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p); ///< sets an organ type parameter, subType and organType defined within p
     int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str
