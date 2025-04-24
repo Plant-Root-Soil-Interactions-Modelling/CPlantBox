@@ -782,7 +782,7 @@ SegmentAnalyser SegmentAnalyser::foto(const Vector3d& pos, const Matrix3d& ons, 
  *
  * @param plane 	half plane
  */
-SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
+SegmentAnalyser SegmentAnalyser::cut(const SignedDistanceFunction& plane) const
 {
     SegmentAnalyser f;
     f.nodes = nodes; // copy all nodes
