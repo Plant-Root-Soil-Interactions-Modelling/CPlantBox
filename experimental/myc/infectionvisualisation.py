@@ -59,7 +59,10 @@ if animation:
         print("Frame " + str(i) + " of " + str(N))
 
 else:
-    mycp.simulate(simtime, True)
+    for i in range(0, N):
+        mycp.simulate(dt, False)
+
+    # mycp.simulate(simtime, False)
     # print("sim time", mycp.getSimTime())
 
     # mycp.simulateHyphalGrowth(simtime)

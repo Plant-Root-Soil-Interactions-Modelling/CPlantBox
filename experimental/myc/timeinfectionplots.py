@@ -13,29 +13,6 @@ name = "Anagallis_femina_Leitner_2010"
 # name = "Heliantus_Pagès_2013"
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
-# plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
-# p0 = pb.MycorrhizalRootRandomParameter(plant)
-# p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx, p0.infradius = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5, 0.0
-# p0.successor = [[2]]
-# p0.successorP = [[1.]]
-# p1 = pb.MycorrhizalRootRandomParameter(plant)
-# p1.name, p1.subType, p1.lmax, p1.r, p1.dx, p1.infradius = "lateral", 2, 25., 2., 0.1, 0.0
-# p0, p1 = p0, p1  # needed at later point
-# plant.setOrganRandomParameter(p0)  # the organism manages the type parameters and takes ownership
-# plant.setOrganRandomParameter(p1)
-# srp = pb.SeedRandomParameter(plant)
-# plant.setOrganRandomParameter(srp)
-
-# param0 = p0.realize()  # set up root by hand (without a root system)
-# param0.la, param0.lb = 0, 0  # its important parent has zero length, otherwise creation times are messed up
-# parentroot = pb.MycorrhizalRoot(1, param0, True, True, 0., 0., pb.Vector3d(0, 0, -1), 0,False, 0)  # takes ownership of param0
-# parentroot.setOrganism(plant)
-# parentroot.addNode(pb.Vector3d(0, 0, -3), 0)  # there is no nullptr in Python
-
-# parentroot = parentroot  # store parent (not owned by child Organ)
-# mycroot = pb.MycorrhizalRoot(plant, p0.subType,  0, parentroot, 0)
-# mycroot.setOrganism(plant)
-
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
@@ -62,32 +39,40 @@ for i in range(0, len(root)):
 mycp.initialize(True)
 
 
-simtime = 100
+simtime = 10
 fpd = 24
 N = simtime * fpd
 dt = simtime / N
 time = np.linspace(0, simtime, N)
 
-primInfL =[]
-secInfL = []
-lenghtL = []
-ratioL = []
+primInfL =[] # legnth of primary infection
+secInfL = [] # legnth of secondary infection
+lenghtL = [] # legnth of the root system
+nonmycL = [] # legnth of the non-mycorrhizal part
+ratioL = [] # ratio of primary infection to non-mycorrhizal part from each time step
 
+mycp.simulate(dt, False)
+primInfL.append(sum(mycp.getParameter("primaryInfection")))
+secInfL.append(sum(mycp.getParameter("secondaryInfection")))
+lenghtL.append(sum(mycp.getParameter("length")))
+nonmycL.append(lenghtL[-1]-primInfL[-1]-secInfL[-1])
+ratioL.append(abs(primInfL[-1])/(nonmycL[-1]))
 
-for t in range(0,N):
+for t in range(1,N):
     mycp.simulate(dt, False)
-    # print(mycp.getParameter("primaryInfection"))
     primInfL.append(sum(mycp.getParameter("primaryInfection")))
     secInfL.append(sum(mycp.getParameter("secondaryInfection")))
     lenghtL.append(sum(mycp.getParameter("length")))
-    ratioL.append(sum(mycp.getParameter("primaryInfection"))/sum(mycp.getParameter("length")))
+    nonmycL.append(lenghtL[-2]-primInfL[-2]-secInfL[-2])
+    ratioL.append(abs(primInfL[-1]-primInfL[-2])/(nonmycL[-1]))
+
 ratio = True
 if ratio:
     plt.plot(time, np.asarray(ratioL), label="Primary Infection Ratio")
     plt.title("Infection Ratio over time")
     plt.legend()
     plt.xlabel("Time")
-    plt.ylabel("[cm]")
+    plt.ylabel("Ratio")
     plt.show()
 else:
     plt.plot(time, np.asarray(primInfL), label="Primary Infection")

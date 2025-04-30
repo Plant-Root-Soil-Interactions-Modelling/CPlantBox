@@ -132,13 +132,15 @@ void MycorrhizalPlant::simulateHyphalGrowth(double dt)
 
 void MycorrhizalPlant::initCallbacks() {
 
-    std::cout << "MycorrhizalPlant::initCallbacks()\n";
+    // std::cout << "MycorrhizalPlant::initCallbacks()\n";
 
-    Plant::initCallbacks();
+    Plant::initCallbacks(); 
 
     for (auto& p_otp :organParam[Organism::ot_root]) {
         auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
-        // rp->f_inf  = f_inf;
+        // auto bigbox = std::make_shared<SDF_PlantBox>(1.e100,1.e100,1.e100); TODO Fix this
+        // auto inf_ = std::make_shared<SoilLookUpSDF>(bigbox,rp->p,0.0,0.0);
+        // rp->f_inf  = inf_;
     }
 
     // Create tropisms and growth functions per random hyphae parameter
