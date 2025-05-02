@@ -24,7 +24,7 @@ infbox = pb.SDF_PlantBox(3, 3, 3)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
 animation = False
-infradius = 0
+infradius = 1
 for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:

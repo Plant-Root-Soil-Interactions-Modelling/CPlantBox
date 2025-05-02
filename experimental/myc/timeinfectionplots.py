@@ -33,6 +33,7 @@ for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:
         dispersed = False
+        print("ATTENTION: The infection radius is not 0, the infection will be local")
     root[i].dx = 0.05
     root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
 
@@ -56,18 +57,23 @@ primInfL.append(sum(mycp.getParameter("primaryInfection")))
 secInfL.append(sum(mycp.getParameter("secondaryInfection")))
 lenghtL.append(sum(mycp.getParameter("length")))
 nonmycL.append(lenghtL[-1]-primInfL[-1]-secInfL[-1])
-ratioL.append(abs(primInfL[-1])/(nonmycL[-1]))
+ratioL.append(abs(primInfL[-1])/(nonmycL[-1])) 
 
 for t in range(1,N):
     mycp.simulate(dt, False)
     primInfL.append(sum(mycp.getParameter("primaryInfection")))
     secInfL.append(sum(mycp.getParameter("secondaryInfection")))
     lenghtL.append(sum(mycp.getParameter("length")))
-    nonmycL.append(lenghtL[-2]-primInfL[-2]-secInfL[-2])
+    if lenghtL[-2] <= primInfL[-2] + secInfL[-2]:
+        nonmycL.append(0.001)
+    else:
+        nonmycL.append(lenghtL[-2]-primInfL[-2]-secInfL[-2])
     ratioL.append(abs(primInfL[-1]-primInfL[-2])/(nonmycL[-1]))
 
 ratio = True
 if ratio:
+    # print(sum(ratioL)/len(ratioL))
+    # plt.plot(time, np.log(np.asarray(primInfL)), label="log(Primary Infection)")
     plt.plot(time, np.asarray(ratioL), label="Primary Infection Ratio")
     plt.title("Infection Ratio over time")
     plt.legend()
