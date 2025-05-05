@@ -46,43 +46,61 @@ N = simtime * fpd
 dt = simtime / N
 time = np.linspace(0, simtime, N)
 
-primInfL =[] # legnth of primary infection
-secInfL = [] # legnth of secondary infection
-lenghtL = [] # legnth of the root system
-nonmycL = [] # legnth of the non-mycorrhizal part
-ratioL = [] # ratio of primary infection to non-mycorrhizal part from each time step
+observed_primary = [] # legnth of primary infection
+observed_new_primary = [] # legnth of new primary infection
+expected_new_primary = [] # expected new primary infection
+observed_secondary = [] # legnth of secondary infection
+total_lengths = [] # legnth of the root system
+# nonmycL = [] # legnth of the non-mycorrhizal part
+# ratioL = [] # ratio of primary infection to non-mycorrhizal part from each time step
 
 mycp.simulate(dt, False)
-primInfL.append(sum(mycp.getParameter("primaryInfection")))
-secInfL.append(sum(mycp.getParameter("secondaryInfection")))
-lenghtL.append(sum(mycp.getParameter("length")))
-nonmycL.append(lenghtL[-1]-primInfL[-1]-secInfL[-1])
-ratioL.append(abs(primInfL[-1])/(nonmycL[-1])) 
+observed_primary.append(sum(mycp.getParameter("primaryInfection")))
+observed_secondary.append(sum(mycp.getParameter("secondaryInfection")))
+total_lengths.append(sum(mycp.getParameter("length")))
+# nonmycL.append(total_lengths[-1]-observed_new_primary[-1]-observed_secondary[-1])
+# ratioL.append(abs(observed_new_primary[-1])/(nonmycL[-1])) 
 
-for t in range(1,N):
+
+for t in range(1, len(time)):
     mycp.simulate(dt, False)
-    primInfL.append(sum(mycp.getParameter("primaryInfection")))
-    secInfL.append(sum(mycp.getParameter("secondaryInfection")))
-    lenghtL.append(sum(mycp.getParameter("length")))
-    if lenghtL[-2] <= primInfL[-2] + secInfL[-2]:
-        nonmycL.append(0.001)
-    else:
-        nonmycL.append(lenghtL[-2]-primInfL[-2]-secInfL[-2])
-    ratioL.append(abs(primInfL[-1]-primInfL[-2])/(nonmycL[-1]))
+    observed_primary.append(sum(mycp.getParameter("primaryInfection")))
+    observed_secondary.append(sum(mycp.getParameter("secondaryInfection")))
+    total_lengths.append(sum(mycp.getParameter("length")))
+
+    # Differenzen
+    delta_obs = observed_primary[t] - observed_primary[t-1]
+    observed_new_primary.append(delta_obs)
+
+    # Nicht infizierte Länge zum Start dieses Zeitschritts
+    L_susceptible = (total_lengths[t-1]
+                     - observed_primary[t-1]
+                     - observed_secondary[t-1])
+
+    delta_expected =  mycp.getOrganRandomParameter(pb.root)[1].p * L_susceptible * dt
+    expected_new_primary.append(delta_expected)
+
+    print(f"t={t}:")
+    print(f"- Beobachtet:   {delta_obs:.2f} mm neue primäre Infektion")
+    print(f"- Erwartet:     {delta_expected:.2f} mm")
+    print(f"- Abweichung:   {delta_obs - delta_expected:.2f} mm")
+    print(f"- Totale Länge: {total_lengths[t]:.2f} mm")
+    print(f"- Primäre Infektion: {observed_primary[t]:.2f} mm")
+    print("-" * 30)
 
 ratio = True
 if ratio:
-    # print(sum(ratioL)/len(ratioL))
-    # plt.plot(time, np.log(np.asarray(primInfL)), label="log(Primary Infection)")
-    plt.plot(time, np.asarray(ratioL), label="Primary Infection Ratio")
-    plt.title("Infection Ratio over time")
+    plt.figure(figsize=(10, 6))
+    plt.plot(observed_new_primary, label="Primary Infection")
+    plt.plot(expected_new_primary, label="Expected Primary Infection")
+    plt.title("Expected vs Observed Primary Infection")
     plt.legend()
-    plt.xlabel("Time")
-    plt.ylabel("Ratio")
+    plt.xlabel("Time Step")
+    plt.ylabel("Primary Infection Length [cm]")
     plt.show()
 else:
-    plt.plot(time, np.asarray(primInfL), label="Primary Infection")
-    plt.plot(time, np.asarray(secInfL), label="Secondary Infection")
+    plt.plot(time, np.asarray(observed_new_primary), label="Primary Infection")
+    plt.plot(time, np.asarray(observed_secondary), label="Secondary Infection")
     plt.plot(time, np.asarray(lenghtL), label="Length")
     plt.legend()
     plt.title("Infection over time")

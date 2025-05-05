@@ -74,7 +74,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
 
                 // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
-                infTime = log(1-plant.lock()->rand())/log(1-p)/cursegLength + nodeCTs.at(i);
+                infTime = log(1-plant.lock()->rand())/log(1-p)/cursegLength/dt + nodeCTs.at(i);
 
                 // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
                 if (infected.at(i) == 0 && infTime < age)
@@ -100,8 +100,9 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
             
             // std::cout << infTime << std::endl;
             // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
-            if (infected.at(i) == 0)
+            if (infected.at(i) == 0 && infTime < age)
             {
+                // std::cout << "infected at " << i << std::endl;
                 setInfection(i,1,infTime);
             }
         }
@@ -142,6 +143,8 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                             std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateInfection(dt,silence);
                         }
                     }
+                    
+                    
                     oldNode = basalnode;
                     basalnode--;
                 }
@@ -220,7 +223,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
         primaryInfection(dt,verbose);
 
         // Secondary Infection
-        // secondaryInfection(verbose,dt);
+        secondaryInfection(verbose,dt);
 
         for (auto l : children)
         {
