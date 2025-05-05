@@ -4,7 +4,7 @@ from visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
-from IPython.display import Image, display
+# from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)

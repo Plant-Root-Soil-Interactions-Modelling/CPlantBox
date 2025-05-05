@@ -1,16 +1,16 @@
-import sys;sys.path.append("../..");sys.path.append("../../src/")  # |\label{l13:path}|
+import sys;sys.path.append("../..");sys.path.append("../../src/")  
 
 import numpy as np
 
-import plantbox as pb  # |\label{l13:cplantbox}|
-import visualisation.vtk_plot as vp  # |\label{l13:vtk_plot}|
+import plantbox as pb  
+import visualisation.vtk_plot as vp  
 
-plant = pb.Plant()  # Create a new plant |\label{l13:plant}|
+plant = pb.Plant()  
 
 # Open plant and root parameter from a file
 path = "../../modelparameter/structural/plant/"
 name = "fspm2023"
-plant.readParameters(path + name + ".xml")  # |\label{l13:readparameters}|
+plant.readParameters(path + name + ".xml")  
 
 rrp = plant.getOrganRandomParameter(pb.root)
 srp = plant.getOrganRandomParameter(pb.seed)
