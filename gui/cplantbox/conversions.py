@@ -70,6 +70,8 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     # 3. simulate
     plant.initialize()
     plant.simulate(time_slider_value)
+    """ TODO """
+    # 4. make plant seriazable (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
     return plant
 
 
