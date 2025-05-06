@@ -73,8 +73,24 @@ app.layout = dbc.Container([
 
         # Panel 3
         dbc.Col([
-            html.Div(className = "largeSpacer"),
-            html.Div(id = 'panel3')
+            html.H5("Results"),
+            dcc.Tabs(
+                id = 'result-tabs',
+                value = "VTK3D",
+                children = [
+                            dcc.Tab(label = '3D', value = 'VTK3D', className = 'tab', selected_className = 'tabSelected'),
+                            dcc.Tab(label = '1D Profile', value = 'Profile1D', className = 'tab', selected_className = 'tabSelected')
+                        ]
+                ),            
+            # dcc.Dropdown(
+            #     id = 'results-dropdown',
+            #     options = ["Type", "Age" ,"Radius"],
+            #     value = "Type",
+            #     className = 'customDropdown'
+            # ),
+            #html.Div(className = "largeSpacer"),
+            html.Div(className = "spacer"),
+            html.Div(id = 'results-tabs-content')
         ], width = 6),
     ]),
 
@@ -86,7 +102,6 @@ app.layout = dbc.Container([
 ], fluid = True)
 
 """ 1. LEFT - Simulation Panel """
-
 
 # plant-dropdown
 @app.callback(
@@ -108,7 +123,7 @@ def update_plant(plant_value, seed_data, root_data, typename_data, tabs_value):
 
 # create-button
 @app.callback(
-    Output('panel3', 'children'),
+    Output('results-tabs-content', 'children'),
     Input('create-button', 'n_clicks'),
     State('plant-dropdown', 'value'),
     State('time-slider', 'value'),
@@ -118,21 +133,46 @@ def update_plant(plant_value, seed_data, root_data, typename_data, tabs_value):
     State('leaf-store', 'data'),
     prevent_initial_call = True,
 )
+
 def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data):
+    
     print("click_simulate()", plant_value)
-    p_name = "creationTime"
     plant = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
-    pd = vp.segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data
-    tube_plot_actor, color_bar, lut = vp.plot_roots(pd, p_name, "", render = False, returnLut = True)
+    pd = vp.segs_to_polydata(plant, 1., ["radius", "subType", "organType", "creationTime"])  # poly data
+    tube = apply_tube_filter(pd)
+    vtk_data = vtk_polydata_to_dashvtk_dict(tube)
 
-    vtk_data = vtk_polyline_to_dict(pd)
-
-    geom_rep = dash_vtk.GeometryRepresentation([
+    cellData = pd.GetCellData()
+    color_pick = cellData["creationTime"]
+    color_pick = np.repeat(color_pick, 24) # 24 = 3*(7+1) ??? 
+    print("number of cell colors", len(color_pick), "\n", type(color_pick))
+    
+    geom_rep = dash_vtk.GeometryRepresentation(
+        mapper = {
+                "colorByArrayName": "Colors",
+                "colorMode": "cell",
+                },
+        colorDataRange = [0, 30.],
+        children = [ 
             dash_vtk.PolyData(
-                points = vtk_data["points"],
-                lines = vtk_data["lines"]
-                )
-        ])
+                points = vtk_data["points"], 
+                polys = vtk_data["polys"],
+                children = [
+                    dash_vtk.CellData([
+                        dash_vtk.DataArray(
+                            # 1) registration makes it active scalars
+                            registration = "setScalars",
+                            # 2) type must be a JS TypedArray
+                            # type = "Uint8Array",
+                            name = "Colors",
+                            numberOfComponents = 1,
+                            values = color_pick,
+                        )
+                    ])
+                ]
+                ) 
+            ]
+        )
 
     content = dash_vtk.View(children = [ geom_rep ])
 
