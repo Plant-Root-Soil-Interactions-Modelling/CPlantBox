@@ -30,8 +30,8 @@ SEED_SLIDER_INITIALS = [180, 1, 7, 7, 20, 7, 7, 15, 5]
 app.layout = dbc.Container([
 
     dcc.Store(id = 'seed-store', data = {"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False }),
-    dcc.Store(id = 'root-store', data = {f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1,5)}),
-    dcc.Store(id = 'root-typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1,5)}),
+    dcc.Store(id = 'root-store', data = {f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),
+    dcc.Store(id = 'root-typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),
     dcc.Store(id = 'stem-store', data = {}),
     dcc.Store(id = 'leaf-store', data = {}),
 
@@ -85,14 +85,15 @@ app.layout = dbc.Container([
 
 ], fluid = True)
 
-""" Simulation Panel """
+""" 1. LEFT - Simulation Panel """
+
 
 # plant-dropdown
-@app.callback( 
-    Output('seed-store', 'data'), # , allow_duplicate=True
+@app.callback(
+    Output('seed-store', 'data'),  # , allow_duplicate=True
     Output('root-store', 'data'),
     Output('root-typename-store', 'data'),
-    Output('organtype-tabs', 'value'), # to trigger update
+    Output('organtype-tabs', 'value'),  # to trigger update
     Input('plant-dropdown', 'value'),
     State('seed-store', 'data'),
     State('root-store', 'data'),
@@ -100,9 +101,10 @@ app.layout = dbc.Container([
     State('organtype-tabs', 'value'),
     # prevent_initial_call = True,
 )
-def update_plant(plant_value, seed_data, root_data,  typename_data, tabs_value):
-    set_data(plant_value, seed_data, root_data, typename_data ) # place holder for root type names 
+def update_plant(plant_value, seed_data, root_data, typename_data, tabs_value):
+    set_data(plant_value, seed_data, root_data, typename_data)
     return (seed_data, root_data, typename_data, tabs_value)
+
 
 # create-button
 @app.callback(
@@ -119,24 +121,26 @@ def update_plant(plant_value, seed_data, root_data,  typename_data, tabs_value):
 def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data):
     print("click_simulate()", plant_value)
     p_name = "creationTime"
-    plant = simulate_plant(plant_value, time_slider_value,  seed_data, root_data, stem_data, leaf_data)
+    plant = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
     pd = vp.segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data
     tube_plot_actor, color_bar, lut = vp.plot_roots(pd, p_name, "", render = False, returnLut = True)
 
     vtk_data = vtk_polyline_to_dict(pd)
 
-    content = dash_vtk.View([
-        dash_vtk.GeometryRepresentation([
+    geom_rep = dash_vtk.GeometryRepresentation([
             dash_vtk.PolyData(
                 points = vtk_data["points"],
                 lines = vtk_data["lines"]
                 )
-        ]),
-    ])
+        ])
+
+    content = dash_vtk.View(children = [ geom_rep ])
+
     return html.Div(content, style = {"width": "100%", "height": "600px"})
 
 
 """ Parameters Panel"""
+
 
 # organtype-tabs
 @app.callback(
@@ -162,15 +166,17 @@ def render_organtype_tab(tab, seed_data, root_data, root_type_names, stem_data, 
         print("render_organtype_tab() leaf:", leaf_data)
         return leaf_layout(leaf_data)
 
+
 """ Parameters Panel - Seed"""
+
 
 # Generate sliders for seed tab from stored values
 def generate_seed_sliders(data):
-    seed_values = data["seed"] 
+    seed_values = data["seed"]
     print("generate_seed_sliders()", seed_values)
     sliders = [
-        html.Div(className = "spacer"), 
-        html.Div(className = "spacer"),        
+        html.Div(className = "spacer"),
+        html.Div(className = "spacer"),
         ]
     for i, key in enumerate(seed_parameter_sliders.keys()):
         min_ = seed_parameter_sliders[key][0]
@@ -190,36 +196,37 @@ def generate_seed_sliders(data):
                     )
             )
     if data["shoot-checkbox"]:
-        v = ['agree'] 
-    else: 
-        v =[]
+        v = ['agree']
+    else:
+        v = []
     sliders.insert(2, dcc.Checklist(
-        id='shoot-checkbox',
-        options=[{'label': html.Span(' Shoot borne roots', className='checkbox-label'), 'value': 'agree'}],
-        className='checkbox',
-        value=v
+        id = 'shoot-checkbox',
+        options = [{'label': html.Span(' Shoot borne roots', className = 'checkbox-label'), 'value': 'agree'}],
+        className = 'checkbox',
+        value = v
     ))
     if data["basal-checkbox"]:
-        v = ['agree'] 
-    else: 
-        v =[]    
-    sliders.insert(3+2*2, dcc.Checklist(
-        id='basal-checkbox',
-        options=[{'label': html.Span(' Basal roots', className='checkbox-label'), 'value': 'agree'}],
-        className='checkbox',
-        value=v 
+        v = ['agree']
+    else:
+        v = []
+    sliders.insert(3 + 2 * 2, dcc.Checklist(
+        id = 'basal-checkbox',
+        options = [{'label': html.Span(' Basal roots', className = 'checkbox-label'), 'value': 'agree'}],
+        className = 'checkbox',
+        value = v
     ))
     if data["tillers-checkbox"]:
-        v = ['agree'] 
-    else: 
-        v =[]        
-    sliders.insert(4+5*2, dcc.Checklist(
-        id='tillers-checkbox',
-        options=[{'label': html.Span(' Tillers', className='checkbox-label'), 'value': 'agree'}],
-        className='checkbox',
-        value=v 
-    ))         
+        v = ['agree']
+    else:
+        v = []
+    sliders.insert(4 + 5 * 2, dcc.Checklist(
+        id = 'tillers-checkbox',
+        options = [{'label': html.Span(' Tillers', className = 'checkbox-label'), 'value': 'agree'}],
+        className = 'checkbox',
+        value = v
+    ))
     return html.Div(sliders)
+
 
 # dynamic-seed-slider
 @app.callback(
@@ -234,7 +241,8 @@ def update_seed_store(slider_values, data):
         data["seed"] = slider_values
     return data
 
-# checkbox  
+
+# checkbox
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 0}, 'disabled'),
     Output('seed-store', 'data', allow_duplicate = True),
@@ -245,12 +253,16 @@ def update_seed_store(slider_values, data):
 def toggle_slider(checkbox_value, data):
     data["shoot-checkbox"] = 'agree' in checkbox_value
     return ('agree' not in checkbox_value, data)  # disable if not checked
+
+
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 1}, 'disabled'),
     Input('shoot-checkbox', 'value')
 )
 def toggle_slider(checkbox_value):
     return 'agree' not in checkbox_value  # disable if not checked
+
+
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 2}, 'disabled'),
     Output('seed-store', 'data', allow_duplicate = True),
@@ -261,18 +273,24 @@ def toggle_slider(checkbox_value):
 def toggle_slider(checkbox_value, data):
     data["basal-checkbox"] = 'agree' in checkbox_value
     return ('agree' not in checkbox_value, data)  # disable if not checked
+
+
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 3}, 'disabled'),
     Input('basal-checkbox', 'value')
 )
 def toggle_slider(checkbox_value):
     return 'agree' not in checkbox_value  # disable if not checked
+
+
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 4}, 'disabled'),
     Input('basal-checkbox', 'value')
 )
 def toggle_slider(checkbox_value):
     return 'agree' not in checkbox_value  # disable if not checked
+
+
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 5}, 'disabled'),
     Output('seed-store', 'data', allow_duplicate = True),
@@ -283,12 +301,16 @@ def toggle_slider(checkbox_value):
 def toggle_slider(checkbox_value, data):
     data["tillers-checkbox"] = 'agree' in checkbox_value
     return ('agree' not in checkbox_value, data)  # disable if not checked
+
+
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 6}, 'disabled'),
     Input('tillers-checkbox', 'value')
 )
 def toggle_slider(checkbox_value):
     return 'agree' not in checkbox_value  # disable if not checked
+
+
 @app.callback(
     Output({'type': 'dynamic-seed-slider', 'index': 7}, 'disabled'),
     Input('tillers-checkbox', 'value')
@@ -296,7 +318,10 @@ def toggle_slider(checkbox_value):
 def toggle_slider(checkbox_value):
     return 'agree' not in checkbox_value  # disable if not checked
 
+
 """ Parameters Panel - Root"""
+
+
 # Generate sliders for root tabs from stored values
 def generate_root_sliders(root_values):
     sliders = []
@@ -331,10 +356,10 @@ def root_layout(data, root_type_names):
     """ root tab layout: with root subTypes as sub tabs """
     rootPanelChildren = []
     for i, name in enumerate(root_type_names):
-        ctab = dcc.Tab(label = root_type_names[f'tab-{i+1}'], value = f'tab-{i+1}', 
-                      className = 'tab', selected_className = 'tabSelected') 
+        ctab = dcc.Tab(label = root_type_names[f'tab-{i+1}'], value = f'tab-{i+1}',
+                      className = 'tab', selected_className = 'tabSelected')
         rootPanelChildren.append(ctab)
-    
+
     tab = dcc.Tabs(
         id = 'root-tabs',
         value = 'tab-1',
@@ -343,6 +368,7 @@ def root_layout(data, root_type_names):
     content = html.Div(id = 'root-tabs-content')
     stored_values = data.get('tab-1', ROOT_SLIDER_INITIALS)
     return [tab, content]
+
 
 # render_organtype_tab - Display sliders for the selected tab, using stored values
 @app.callback(
@@ -355,6 +381,7 @@ def render_organtype_tab(selected_tab, data):
     print("update_tab_content()", selected_tab, data)
     return generate_root_sliders(stored_values)
 
+
 def stem_layout(data):
     return html.Div([html.H5("not implemented (yet)")])
 
@@ -365,7 +392,7 @@ def leaf_layout(data):
 
 # Update root-store when any slider changes
 @app.callback(
-    Output('root-store', 'data', allow_duplicate = True), # 
+    Output('root-store', 'data', allow_duplicate = True),  #
     Input({'type': 'dynamic-slider', 'index': dash.ALL}, 'value'),
     State('root-tabs', 'value'),
     State('root-store', 'data'),
@@ -375,9 +402,6 @@ def update_root_store(slider_values, current_tab, store_data):
     # print("update_root_store()", current_tab, slider_values)
     store_data[current_tab] = slider_values
     return store_data
-
-
-
 
 
 if __name__ == '__main__':
