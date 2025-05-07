@@ -32,6 +32,7 @@ app.layout = dbc.Container([
     dcc.Store(id = 'seed-store', data = {"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False }),
     dcc.Store(id = 'root-store', data = {f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),
     dcc.Store(id = 'root-typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),
+    dcc.Store(id = 'result-store', data = {}),
     dcc.Store(id = 'stem-store', data = {}),
     dcc.Store(id = 'leaf-store', data = {}),
 
@@ -40,12 +41,10 @@ app.layout = dbc.Container([
         dbc.Col([
             html.H5("Simulation"),
             html.H6("Plant"),
-            dcc.Dropdown(
-                id = 'plant-dropdown',
-                options = plants,
-                value = plants[0]['value'],
-                className = 'customDropdown'
-            ),
+            dcc.Dropdown(id = 'plant-dropdown',
+                        options = plants,
+                        value = plants[0]['value'],
+                        className = 'customDropdown'),
             html.Div(className = "spacer"),
             html.H6("Simulation time [day]"),
             dcc.Slider(id = 'time-slider', min = 1, max = 180, step = 1, value = 30,
@@ -53,6 +52,10 @@ app.layout = dbc.Container([
                        tooltip = { "always_visible": False}),
             html.Div(className = "spacer"),
             dbc.Button("Create", id = "create-button"),
+            html.Div(className = "largeSpacer"),
+            dcc.Loading(id = "loading-spinner",
+                        type = "circle",  # Options: "default", "circle", "dot", "cube"
+                        children = html.Div(id = "loading-spinner-output"))
         ], width = 2),
 
         # Panel 2
@@ -79,18 +82,20 @@ app.layout = dbc.Container([
                 value = "VTK3D",
                 children = [
                             dcc.Tab(label = '3D', value = 'VTK3D', className = 'tab', selected_className = 'tabSelected'),
-                            dcc.Tab(label = '1D Profile', value = 'Profile1D', className = 'tab', selected_className = 'tabSelected')
+                            dcc.Tab(label = '3D Age', value = 'VTK3DAge', className = 'tab', selected_className = 'tabSelected'),
+                            dcc.Tab(label = '1D Profiles', value = 'Profile1D', className = 'tab', selected_className = 'tabSelected'),
+                            dcc.Tab(label = 'Dynamics', value = 'Dynamics', className = 'tab', selected_className = 'tabSelected')
                         ]
-                ),            
+                ),
             # dcc.Dropdown(
             #     id = 'results-dropdown',
             #     options = ["Type", "Age" ,"Radius"],
             #     value = "Type",
             #     className = 'customDropdown'
             # ),
-            #html.Div(className = "largeSpacer"),
+            # html.Div(className = "largeSpacer"),
             html.Div(className = "spacer"),
-            html.Div(id = 'results-tabs-content')
+            html.Div(id = 'result-tabs-content')
         ], width = 6),
     ]),
 
@@ -103,8 +108,8 @@ app.layout = dbc.Container([
 
 """ 1. LEFT - Simulation Panel """
 
-# plant-dropdown
-@app.callback(
+
+@app.callback(# plant-dropdown
     Output('seed-store', 'data'),  # , allow_duplicate=True
     Output('root-store', 'data'),
     Output('root-typename-store', 'data'),
@@ -121,9 +126,10 @@ def update_plant(plant_value, seed_data, root_data, typename_data, tabs_value):
     return (seed_data, root_data, typename_data, tabs_value)
 
 
-# create-button
-@app.callback(
-    Output('results-tabs-content', 'children'),
+@app.callback(# create-button
+    Output('result-tabs-content', 'children', allow_duplicate = True),
+    Output('result-store', 'data'),
+    Output('loading-spinner-output', 'children'),
     Input('create-button', 'n_clicks'),
     State('plant-dropdown', 'value'),
     State('time-slider', 'value'),
@@ -131,59 +137,21 @@ def update_plant(plant_value, seed_data, root_data, typename_data, tabs_value):
     State('root-store', 'data'),
     State('stem-store', 'data'),
     State('leaf-store', 'data'),
+    State('result-store', 'data'),
+    State('result-tabs', 'value'),
     prevent_initial_call = True,
 )
-
-def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data):
-    
+def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data, vtk_data, result_value):
     print("click_simulate()", plant_value)
-    plant = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
-    pd = vp.segs_to_polydata(plant, 1., ["radius", "subType", "organType", "creationTime"])  # poly data
-    tube = apply_tube_filter(pd)
-    vtk_data = vtk_polydata_to_dashvtk_dict(tube)
-
-    cellData = pd.GetCellData()
-    color_pick = cellData["creationTime"]
-    color_pick = np.repeat(color_pick, 24) # 24 = 3*(7+1) ??? 
-    print("number of cell colors", len(color_pick), "\n", type(color_pick))
-    
-    geom_rep = dash_vtk.GeometryRepresentation(
-        mapper = {
-                "colorByArrayName": "Colors",
-                "colorMode": "cell",
-                },
-        colorDataRange = [0, 30.],
-        children = [ 
-            dash_vtk.PolyData(
-                points = vtk_data["points"], 
-                polys = vtk_data["polys"],
-                children = [
-                    dash_vtk.CellData([
-                        dash_vtk.DataArray(
-                            # 1) registration makes it active scalars
-                            registration = "setScalars",
-                            # 2) type must be a JS TypedArray
-                            # type = "Uint8Array",
-                            name = "Colors",
-                            numberOfComponents = 1,
-                            values = color_pick,
-                        )
-                    ])
-                ]
-                ) 
-            ]
-        )
-
-    content = dash_vtk.View(children = [ geom_rep ])
-
-    return html.Div(content, style = {"width": "100%", "height": "600px"})
+    vtk_data = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
+    content = render_result_tab(result_value, vtk_data)
+    return (content, vtk_data, html.H6(""))
 
 
 """ Parameters Panel"""
 
 
-# organtype-tabs
-@app.callback(
+@app.callback(# organtype-tabs
     Output('organtype-tabs-content', 'children'),
     Input('organtype-tabs', 'value'),
     State('seed-store', 'data'),
@@ -207,11 +175,10 @@ def render_organtype_tab(tab, seed_data, root_data, root_type_names, stem_data, 
         return leaf_layout(leaf_data)
 
 
-""" Parameters Panel - Seed"""
-
-
-# Generate sliders for seed tab from stored values
-def generate_seed_sliders(data):
+#
+#  Parameters Panel - Seed
+#
+def generate_seed_sliders(data):  # Generate sliders for seed tab from stored values
     seed_values = data["seed"]
     print("generate_seed_sliders()", seed_values)
     sliders = [
@@ -268,8 +235,7 @@ def generate_seed_sliders(data):
     return html.Div(sliders)
 
 
-# dynamic-seed-slider
-@app.callback(
+@app.callback(# dynamic-seed-slider
     Output('seed-store', 'data', allow_duplicate = True),
     Input({'type': 'dynamic-seed-slider', 'index': dash.ALL}, 'value'),
     State('seed-store', 'data'),
@@ -282,8 +248,7 @@ def update_seed_store(slider_values, data):
     return data
 
 
-# checkbox
-@app.callback(
+@app.callback(# shoot-checkbox
     Output({'type': 'dynamic-seed-slider', 'index': 0}, 'disabled'),
     Output('seed-store', 'data', allow_duplicate = True),
     Input('shoot-checkbox', 'value'),
@@ -295,7 +260,7 @@ def toggle_slider(checkbox_value, data):
     return ('agree' not in checkbox_value, data)  # disable if not checked
 
 
-@app.callback(
+@app.callback(# shoot-checkbox
     Output({'type': 'dynamic-seed-slider', 'index': 1}, 'disabled'),
     Input('shoot-checkbox', 'value')
 )
@@ -359,11 +324,10 @@ def toggle_slider(checkbox_value):
     return 'agree' not in checkbox_value  # disable if not checked
 
 
-""" Parameters Panel - Root"""
-
-
-# Generate sliders for root tabs from stored values
-def generate_root_sliders(root_values):
+#
+# Parameters Panel - Root
+#
+def generate_root_sliders(root_values):  # Generate sliders for root tabs from stored values
     sliders = []
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(root_parameter_sliders.keys()):
@@ -410,24 +374,16 @@ def root_layout(data, root_type_names):
     return [tab, content]
 
 
-# render_organtype_tab - Display sliders for the selected tab, using stored values
+# render_root_tab - Display sliders for the selected tab, using stored values
 @app.callback(
     Output('root-tabs-content', 'children'),
     Input('root-tabs', 'value'),
     State('root-store', 'data'),
 )
-def render_organtype_tab(selected_tab, data):
+def render_root_tab(selected_tab, data):
     stored_values = data.get(selected_tab, ROOT_SLIDER_INITIALS)
-    print("update_tab_content()", selected_tab, data)
+    print("render_organtype_tab()", selected_tab, data)
     return generate_root_sliders(stored_values)
-
-
-def stem_layout(data):
-    return html.Div([html.H5("not implemented (yet)")])
-
-
-def leaf_layout(data):
-    return html.Div([html.H5("not implemented (yet)")])
 
 
 # Update root-store when any slider changes
@@ -442,6 +398,94 @@ def update_root_store(slider_values, current_tab, store_data):
     # print("update_root_store()", current_tab, slider_values)
     store_data[current_tab] = slider_values
     return store_data
+
+
+#
+# Parameters Panel - Stem
+#
+def stem_layout(data):
+    return html.Div([html.H5("not implemented (yet)")])
+
+
+#
+# Parameters Panel - Leaf
+#
+def leaf_layout(data):
+    return html.Div([html.H5("not implemented (yet)")])
+
+
+""" Results Panel """
+
+
+@app.callback(
+    Output('result-tabs-content', 'children', allow_duplicate = True),
+    Input('result-tabs', 'value'),
+    State('result-store', 'data'),
+    prevent_initial_call = True,
+)
+def render_result_tab(tab, vtk_data):
+
+    print("render_result_tab()", tab)
+
+    if not vtk_data:
+        print("no data")
+        return html.Div([html.H6("press the create button")])
+
+    if tab == 'VTK3D':
+        color_pick = vtk_data["subType"]
+        color_pick = np.repeat(color_pick, 24)  # 24 = 3*(7+1) ???
+        # print("number of cell colors", len(color_pick), "\n", type(color_pick))
+    elif tab == 'VTK3DAge':
+        color_pick = vtk_data["creationTime"]
+        color_pick = np.repeat(color_pick, 24)  # 24 = 3*(7+1) ???
+    elif tab == 'Profile1D':
+        return html.Div([html.H5("not implemented (yet)")])
+    elif tab == 'Dynamics':
+        return html.Div([html.H5("not implemented (yet)")])
+
+    if tab.startswith('VTK'):
+        print("VTK plot...", len(vtk_data["points"]), len(vtk_data["polys"]))
+        color_range = [np.min(color_pick), np.max(color_pick)]  # set range from min to max
+        geom_rep = dash_vtk.GeometryRepresentation(
+            mapper = {
+                    "colorByArrayName": "Colors",
+                    "colorMode": "cell",
+                    },
+            colorDataRange = color_range,
+            children = [
+                dash_vtk.PolyData(
+                    points = vtk_data["points"],
+                    polys = vtk_data["polys"],
+                    children = [
+                        dash_vtk.CellData([
+                            dash_vtk.DataArray(
+                                # 1) registration makes it active scalars
+                                registration = "setScalars",
+                                # 2) type must be a JS TypedArray
+                                # type = "Uint8Array",
+                                name = "Colors",
+                                numberOfComponents = 1,
+                                values = color_pick,
+                            )
+                        ])
+                    ]
+                    )
+                ]
+            )
+        leaf_rep = dash_vtk.GeometryRepresentation(
+            children = [
+                dash_vtk.PolyData(
+                    points = vtk_data["leaf_points"],
+                    polys = vtk_data["leaf_polys"]
+                )
+            ],
+            property = {
+                "color": [0, 1, 0],  # Green
+                "opacity": 0.7
+            }
+        )
+        content = dash_vtk.View(children = [ geom_rep, leaf_rep ])
+        return html.Div(content, style = {"width": "100%", "height": "600px"})
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
+from vtk.util import numpy_support
 import numpy as np
 
 import plantbox as pb
@@ -51,7 +52,7 @@ def get_root_slider_names():
 
 def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, leaf_data):
     """ simulates the plant xml parameter set with slider values """
-    # 1. open xml
+    # 1. open base xml
     fname = get_parameter_names()[int(plant_)][1]
     plant = pb.Plant()
     plant.readParameters("params/" + fname)
@@ -61,18 +62,44 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     lrp = plant.getOrganRandomParameter(pb.leaf)
     # 2. apply sliders to params
     apply_sliders(srp[0], seed_data["seed"], rrp, root_data, strp, stem_data, lrp, leaf_data)
-    srp = plant.getOrganRandomParameter(pb.seed)
-    print("firstB", srp[0].firstB)
-    print("delayB", srp[0].delayB)
-    print("maxB", srp[0].maxB)
-    plant.setOrganRandomParameter(srp[0])
-    # print("maxB", srp[0].maxB)
     # 3. simulate
+    N = 50
+    t_ = np.linspace(0., time_slider_value, N + 1)
+    v_, v1_, v2_, v3_ = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N)
     plant.initialize()
-    plant.simulate(time_slider_value)
-    """ TODO """
-    # 4. make plant seriazable (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
-    return plant
+    for i, dt in enumerate(np.diff(t_)):
+        plant.simulate(dt)
+        ot = np.array(plant.getParameter("organType"))
+        st = np.array(plant.getParameter("subType"))
+        l = np.array(plant.getParameter("length"))
+        v_[i] = np.sum(l)
+        v1_[i] = np.sum(l[st == 1])
+        v2_[i] = np.sum(l[st == 2])
+        v3_[i] = np.sum(l[st == 3])
+
+    # 4. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
+    pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "creationTime"])  # poly-data, "radius",
+    tube = apply_tube_filter(pd)  # polydata + tube filter
+    vtk_data = vtk_polydata_to_dashvtk_dict(tube)
+    cellData = pd.GetCellData()
+    cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
+    vtk_data["creationTime"] = cT
+    vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
+    vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType"))
+    vtk_data["organType"] = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))
+    vtk_data["time"] = t_[1:]
+
+    # leaf geometry
+    leaf_points = vtk.vtkPoints()
+    leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
+    leafes = plant.getOrgans(pb.leaf)
+    for l in leafes:
+        vp.create_leaf_(l, leaf_points, leaf_polys)
+    pts_array = vtk.util.numpy_support.vtk_to_numpy(leaf_points.GetData()).astype(np.float32)
+    polys_data = vtk.util.numpy_support.vtk_to_numpy(leaf_polys.GetData())
+    vtk_data["leaf_points"] = pts_array.flatten().tolist()
+    vtk_data["leaf_polys"] = polys_data.tolist()
+    return vtk_data
 
 
 def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_data):

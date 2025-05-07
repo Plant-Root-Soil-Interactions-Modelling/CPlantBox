@@ -31,35 +31,6 @@ def vtk_polyline_to_dict(polydata):
         "lines": conn,
     }
 
-# def vtk_polydata_to_dashvtk_dict(polydata):
-#     """ converts tubes to a dict """
-#     points = polydata.GetPoints()
-#     polys = polydata.GetPolys()
-#
-#     n_points = points.GetNumberOfPoints()
-#     n_polys = polys.GetNumberOfCfrom vtk.util import numpy_supportells()
-#
-#     # Debug info
-#     print(f"Number of points: {n_points}, polys: {n_polys}")
-#
-#     pts = np.array([points.GetPoint(i) for i in range(n_points)], dtype = np.float32)
-#     pts = pts.flatten().tolist()
-#
-#     # Extract polygons
-#     polys.InitTraversal()
-#     id_list = vtk.vtkIdList()
-#     conn = []
-#
-#     for _ in range(n_polys):
-#         polys.GetNextCell(id_list)
-#         conn.append(id_list.GetNumberOfIds())
-#         for j in range(id_list.GetNumberOfIds()):
-#             conn.append(id_list.GetId(j))
-#
-#     return {
-#         "points": pts,
-#         "polys": conn,
-#     }
 
 def vtk_polydata_to_dashvtk_dict(polydata):
     """Converts vtkPolyData to a dictionary with optimized handling for large arrays."""
@@ -78,17 +49,17 @@ def vtk_polydata_to_dashvtk_dict(polydata):
     polys_data = vtk.util.numpy_support.vtk_to_numpy(polys.GetData())
     conn = polys_data.tolist()
 
-    return {
+    vtk_data = {
         "points": pts,
         "polys": conn,
     }
 
+    return vtk_data
+
 
 def apply_tube_filter(polydata):
     """ applies the tube filter """
-    
     polydata.GetPointData().SetActiveScalars("radius")
-    
     tube_filter = vtk.vtkTubeFilter()
     tube_filter.SetInputData(polydata)
     tube_filter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
@@ -96,16 +67,9 @@ def apply_tube_filter(polydata):
     tube_filter.SetRadius(1.0)
     tube_filter.SetCapping(True)
     tube_filter.Update()
-    triangle_filter = vtk.vtkTriangleFilter() # Convert triangle strips to regular triangles
+    triangle_filter = vtk.vtkTriangleFilter()  # Convert triangle strips to regular triangles
     triangle_filter.SetInputConnection(tube_filter.GetOutputPort())
     triangle_filter.Update()
-    
+
     return triangle_filter.GetOutput()
 
-
-
-
-
-# polyline = add_radii()
-# tube = apply_tube_filter(polyline)
-# vtk_data = vtk_polydata_to_dashvtk_dict(tube)
