@@ -540,7 +540,7 @@ PYBIND11_MODULE(plantbox, m) {
            .def("map2D", &SegmentAnalyser::map2D)
            .def("getOrgans", &SegmentAnalyser::getOrgans, py::arg("ot") = -1)
            .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
-           .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
+           .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SignedDistanceFunction&) const) &SegmentAnalyser::cut)
            .def("addData", &SegmentAnalyser::addData)
            .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}))
            .def_readwrite("nodes", &SegmentAnalyser::nodes)
