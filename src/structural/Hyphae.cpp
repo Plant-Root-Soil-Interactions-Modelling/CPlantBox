@@ -213,7 +213,7 @@ std::shared_ptr<const HyphaeSpecificParameter> Hyphae::param() const
  */
 double Hyphae::getParameter(std::string name) const // TODO
 {
-    //    // specific parameters
+    // specific parameters
     //    if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
     //	if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
     //    if (name=="lb") { return param()->lb; } // basal zone [cm]

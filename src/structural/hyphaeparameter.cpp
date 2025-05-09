@@ -17,7 +17,7 @@ namespace CPlantBox {
 std::string HyphaeSpecificParameter::toString() const
 {
     std::stringstream str;
-    str << "HyphaeSpecificParameter: subType\t" << subType << ", radius " << a << ", " <<  std::endl; // TODO ....
+    str << "HyphaeSpecificParameter: subType\t" << subType << ", radius " << a << ", " << "tip elongation rate " << v << ", " << "branching rate " << b << ", " << "hyphal lifetime " << hlt << ", branching angle " << theta << std::endl; 
     return str.str();
 }
 
