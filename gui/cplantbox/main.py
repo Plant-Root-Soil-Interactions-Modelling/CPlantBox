@@ -1,3 +1,4 @@
+""" CPlantBox Webapp (using Python dash), D. Leitner 2025 """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import numpy as np
@@ -6,10 +7,9 @@ import vtk
 import dash
 from dash import html, dcc, Input, Output, State, ctx
 import dash_bootstrap_components as dbc
-import dash_vtk
-from dash_vtk.utils import to_mesh_state
 
-from conversions import *
+from conversions import *  # auxiliary stuff
+from plots import *  # figures
 
 """ INITIALIZE """
 app = dash.Dash(__name__, suppress_callback_exceptions = True, external_stylesheets = [dbc.themes.SANDSTONE])  # SANDSTONE, MINTY, MORPH
@@ -87,13 +87,6 @@ app.layout = dbc.Container([
                             dcc.Tab(label = 'Dynamics', value = 'Dynamics', className = 'tab', selected_className = 'tabSelected')
                         ]
                 ),
-            # dcc.Dropdown(
-            #     id = 'results-dropdown',
-            #     options = ["Type", "Age" ,"Radius"],
-            #     value = "Type",
-            #     className = 'customDropdown'
-            # ),
-            # html.Div(className = "largeSpacer"),
             html.Div(className = "spacer"),
             html.Div(id = 'result-tabs-content')
         ], width = 6),
@@ -434,58 +427,16 @@ def render_result_tab(tab, vtk_data):
     if tab == 'VTK3D':
         color_pick = vtk_data["subType"]
         color_pick = np.repeat(color_pick, 24)  # 24 = 3*(7+1) ???
-        # print("number of cell colors", len(color_pick), "\n", type(color_pick))
+        print("number of cell colors", len(color_pick), "\n", type(color_pick))
+        return vtk3D_plot(vtk_data, color_pick)
     elif tab == 'VTK3DAge':
         color_pick = vtk_data["creationTime"]
         color_pick = np.repeat(color_pick, 24)  # 24 = 3*(7+1) ???
+        return vtk3D_plot(vtk_data, color_pick)
     elif tab == 'Profile1D':
-        return html.Div([html.H5("not implemented (yet)")])
+        return profile_plot(vtk_data)
     elif tab == 'Dynamics':
-        return html.Div([html.H5("not implemented (yet)")])
-
-    if tab.startswith('VTK'):
-        print("VTK plot...", len(vtk_data["points"]), len(vtk_data["polys"]))
-        color_range = [np.min(color_pick), np.max(color_pick)]  # set range from min to max
-        geom_rep = dash_vtk.GeometryRepresentation(
-            mapper = {
-                    "colorByArrayName": "Colors",
-                    "colorMode": "cell",
-                    },
-            colorDataRange = color_range,
-            children = [
-                dash_vtk.PolyData(
-                    points = vtk_data["points"],
-                    polys = vtk_data["polys"],
-                    children = [
-                        dash_vtk.CellData([
-                            dash_vtk.DataArray(
-                                # 1) registration makes it active scalars
-                                registration = "setScalars",
-                                # 2) type must be a JS TypedArray
-                                # type = "Uint8Array",
-                                name = "Colors",
-                                numberOfComponents = 1,
-                                values = color_pick,
-                            )
-                        ])
-                    ]
-                    )
-                ]
-            )
-        leaf_rep = dash_vtk.GeometryRepresentation(
-            children = [
-                dash_vtk.PolyData(
-                    points = vtk_data["leaf_points"],
-                    polys = vtk_data["leaf_polys"]
-                )
-            ],
-            property = {
-                "color": [0, 1, 0],  # Green
-                "opacity": 0.7
-            }
-        )
-        content = dash_vtk.View(children = [ geom_rep, leaf_rep ])
-        return html.Div(content, style = {"width": "100%", "height": "600px"})
+        return dynamics_plot(vtk_data)
 
 
 if __name__ == '__main__':

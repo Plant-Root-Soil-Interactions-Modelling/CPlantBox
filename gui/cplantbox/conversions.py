@@ -13,8 +13,15 @@ def get_parameter_names():
     """ returns a list of plant parameter names with two values each, 
       first a short name, second exact filename """
     parameter_names = [
-        ("Maize", "Zea_mays_1_Leitner_2010.xml"),
-        ("Anagallis", "Anagallis_femina_Leitner_2010.xml"),
+        ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
+        ("Maize", "new_maize.xml"),
+        ("MaizeP3", "maize_p3.xml"),
+        # ("Anagallis", "Anagallis_femina_Leitner_2010.xml"),
+        ("Morning Glory9", "morning_glory_14m_d.xml"),
+        ("Morning Glory14", "morning_glory_14m_d.xml"),
+        ("Wheat11", "Triticum_aestivum_a_Bingham_2011.xml"),
+        ("Wheat21", "Triticum_aestivum_adapted_2021.xml"),
+        ("Wheat21", "Triticum_aestivum_adapted_2023.xml"),
         ("FSPM", "fspm2023.xml") ]
     return parameter_names
 
@@ -60,35 +67,50 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     rrp = plant.getOrganRandomParameter(pb.root)
     strp = plant.getOrganRandomParameter(pb.stem)
     lrp = plant.getOrganRandomParameter(pb.leaf)
+    number_r = len(rrp[1:])  # number of root types
+    number_s = len(strp[1:])  # number of stem types
     # 2. apply sliders to params
     apply_sliders(srp[0], seed_data["seed"], rrp, root_data, strp, stem_data, lrp, leaf_data)
     # 3. simulate
     N = 50
     t_ = np.linspace(0., time_slider_value, N + 1)
-    v_, v1_, v2_, v3_ = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N)
+    root_length = np.zeros((number_r, N))
+    stem_length = np.zeros((number_s, N))
+    leaf_length = np.zeros((N,))
     plant.initialize()
     for i, dt in enumerate(np.diff(t_)):
         plant.simulate(dt)
         ot = np.array(plant.getParameter("organType"))
         st = np.array(plant.getParameter("subType"))
         l = np.array(plant.getParameter("length"))
-        v_[i] = np.sum(l)
-        v1_[i] = np.sum(l[st == 1])
-        v2_[i] = np.sum(l[st == 2])
-        v3_[i] = np.sum(l[st == 3])
+        for j in range(number_r):
+            root_length[j, i] = np.sum(l[np.logical_and(st == j + 1, ot == pb.root)])
+        for j in range(number_s):
+            stem_length[j, i] = np.sum(l[np.logical_and(st == j + 1, ot == pb.stem)])
+        leaf_length[i] = np.sum(l[ot == pb.leaf])
+    # 4. make depth profiles
+    ana = pb.SegmentAnalyser(plant)
+    length = ana.getSummed("length")
+    rld = np.array(ana.distribution("length", 0., -150, 150, True)) / length
 
-    # 4. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
-    pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "creationTime"])  # poly-data, "radius",
+    # 5. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
+    pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
     vtk_data = vtk_polydata_to_dashvtk_dict(tube)
     cellData = pd.GetCellData()
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
     vtk_data["creationTime"] = cT
     vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
-    vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType"))
     vtk_data["organType"] = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))
+    vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType"))
+    vtk_data["radius"] = numpy_support.vtk_to_numpy(cellData.GetArray("radius"))
     vtk_data["time"] = t_[1:]
-
+    for j in range(number_r):
+        vtk_data[f"root_length-{j+1}"] = list(root_length[j,:])
+    for j in range(number_s):
+        vtk_data[f"stem_length-{j+1}"] = list(stem_length[j,:])
+    vtk_data["leaf_length"] = list(leaf_length[:])
+    vtk_data["rld"] = rld
     # leaf geometry
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
@@ -99,6 +121,10 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     polys_data = vtk.util.numpy_support.vtk_to_numpy(leaf_polys.GetData())
     vtk_data["leaf_points"] = pts_array.flatten().tolist()
     vtk_data["leaf_polys"] = polys_data.tolist()
+    # general
+    vtk_data["number_r"] = number_r
+    vtk_data["number_s"] = number_s
+
     return vtk_data
 
 
@@ -114,7 +140,7 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
     srp.delayTil = seed_data[6]
     srp.maxTil = seed_data[7]
     # root
-    print(root_data)
+    # print(root_data)
     for i, p in enumerate(rrp[1:]):
         print(p.name, p.subType)
         d = root_data[f"tab-{i+1}"]
