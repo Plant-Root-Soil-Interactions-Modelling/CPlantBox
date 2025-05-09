@@ -13,17 +13,21 @@ def get_parameter_names():
     """ returns a list of plant parameter names with two values each, 
       first a short name, second exact filename """
     parameter_names = [
-        ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
-        ("Maize", "new_maize.xml"),
-        ("MaizeP3", "maize_p3.xml"),
+        # ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
+        ("Maize_", "new_maize.xml"),
+        # ("Maize2", "maize.xml"),
+        ("Maize", "P3.xml"),
+        ("Maize", "P0.xml"),
         # ("Anagallis", "Anagallis_femina_Leitner_2010.xml"),
         ("Morning Glory9", "morning_glory_14m_d.xml"),
         ("Morning Glory14", "morning_glory_14m_d.xml"),
-        ("Wheat11", "Triticum_aestivum_a_Bingham_2011.xml"),
-        ("Wheat21", "Triticum_aestivum_adapted_2021.xml"),
-        ("Wheat21", "Triticum_aestivum_adapted_2023.xml"),
+        # ("Wheat11", "Triticum_aestivum_a_Bingham_2011.xml"),
+        # ("Wheat21", "Triticum_aestivum_adapted_2021.xml"),
+        ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
         ("FSPM", "fspm2023.xml") ]
     return parameter_names
+
+# Felix Maximilian Bauer, Dirk Norbert Baker, Mona Giraud, Juan Carlos Baca Cabrera, Jan Vanderborght, Guillaume Lobet, Andrea Schnepf, Root system architecture reorganization under decreasing soil phosphorus lowers root system conductance of Zea mays, Annals of Botany, 2024;, mcae198, https://doi.org/10.1093/aob/mcae198
 
 
 def get_seed_slider_names():
@@ -57,6 +61,38 @@ def get_root_slider_names():
     return parameter_sliders
 
 
+def get_stem_slider_names():
+    """ return slider names as keys of dict and bounds as values"""
+    parameter_sliders = {
+        "Maximal length [cm]": (1, 200),
+        "Initial growth rate [cm/day]": (0.5, 10),
+        "Initial angle [°]": (0., 90.),
+        # "Basal zone [cm]": (0.1, 20),
+        "Phytomer distance [cm]": (0.1, 20),
+        # "Apical zone [cm]": (0.1, 20),
+        "Radius [cm]": (1.e-3, 0.25),
+        "Tropism strength [1]": (0, 6),
+        "Tropism tortuosity [1]": (0., 1.),
+    }
+    return parameter_sliders
+
+
+def fix_dx(rrp, strp, lrp):
+    """ overrides the xml resolution settings to ensure smooth visualization """
+    for r in rrp:
+        # print(r.subType, ":", r.dx, r.dxMin)
+        r.dx = 0.5
+        r.dxMin = 1.e-6
+    for r in strp:
+        # print(r.subType, ":", r.dx, r.dxMin)
+        r.dx = 0.5
+        r.dxMin = 1.e-6
+    for r in lrp:
+        # print(r.subType, ":", r.dx, r.dxMin)
+        r.dx = 0.5
+        r.dxMin = 1.e-6
+
+
 def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, leaf_data):
     """ simulates the plant xml parameter set with slider values """
     # 1. open base xml
@@ -67,6 +103,7 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     rrp = plant.getOrganRandomParameter(pb.root)
     strp = plant.getOrganRandomParameter(pb.stem)
     lrp = plant.getOrganRandomParameter(pb.leaf)
+    fix_dx(rrp, strp, lrp)
     number_r = len(rrp[1:])  # number of root types
     number_s = len(strp[1:])  # number of stem types
     # 2. apply sliders to params
@@ -156,7 +193,7 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.tropismT = tropism_names[d[9]]
 
 
-def set_data(plant_, seed_data, root_data, root_typenames):
+def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     print("set_data()")
     """ set root, seed, stem, and leaf data from xml """
     tropisms_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism" }
@@ -173,17 +210,26 @@ def set_data(plant_, seed_data, root_data, root_typenames):
         p.firstTil, p.delayTil, p.maxTil
     ]
     """ root """
-    root_typenames.clear()
+    typename_data.clear()
     rrp = plant.getOrganRandomParameter(pb.root)
+    typename_data["number_roottypes"] = len(rrp[1:])
     for i, p in enumerate(rrp[1:]):
         tropism_name = tropisms_names_[int(p.tropismT)]
         root_data[f"tab-{i+1}"] = [
             p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a,
             p.tropismN, p.tropismS, tropism_name
         ]
-        root_typenames[f"tab-{i+1}"] = p.name
+        typename_data[f"root tab-{i+1}"] = p.name
     """ stem """
-
+    strp = plant.getOrganRandomParameter(pb.stem)
+    typename_data["number_stemtypes"] = len(strp[1:])
+    for i, p in enumerate(strp[1:]):
+        tropism_name = tropisms_names_[int(p.tropismT)]
+        stem_data[f"tab-{i+1}"] = [
+            p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a,
+            p.tropismN, p.tropismS, tropism_name
+        ]
+        typename_data[f"stem tab-{i+1}"] = p.name
     """ leaf """
 
 
