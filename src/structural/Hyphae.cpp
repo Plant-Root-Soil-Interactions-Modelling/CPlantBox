@@ -95,57 +95,19 @@ void Hyphae::simulate(double dt, bool verbose)
         }
         age+=dt;
 
-        //        // probabilistic branching model
-        //        if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
-        //            double P = getHyphaeRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
-        //            if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
-        //                double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
-        //                if (plant.lock()->rand()>p) { // not rand()<p
-        //                    age -= dt; // the root does not emerge in this time step
-        //                }
-        //            }
-        //        }
-
         if (age>0) { // unborn  roots have no children
 
             if (children.size() == 0) { // ELONGATE
 
                 if (active) {
 
-//                    // length increment
-//                    double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
-
                     double targetlength = p.v*(age+dt);
                     double dl = targetlength-length; // unimpeded elongation in time step dt
-//                    double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
-//                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+                    // double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+                    // double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                     createSegments(dl,dt,verbose);
                     // std::cout << "*";
                     length+=dl;
-
-                    //                    /* basal zone */
-                    //                    if ((dl>0)&&(length<p.lb)) { // length is the current length of the root
-                    //                        if (length+dl<=p.lb) {
-                    //
-                    //                            length+=dl; // - this->epsilonDx;
-                    //                            dl=0;
-                    //                        } else {
-                    //                            double ddx = p.lb-length;
-                    //                            createSegments(ddx,dt_,verbose);
-                    //                            dl-=ddx; // ddx already has been created
-                    //                            length=p.lb;
-                    //                            //                          if(this->epsilonDx != 0){//this sould not happen as p.lb was redefined in rootparameter::realize to avoid this
-                    //                            //                              throw std::runtime_error("Root::simulate: p.lb - length < dxMin");
-                    //                            //                          } // this could happen, if the tip ends in this section
-                    //                        }
-                    //                    }
-
-//                    /* apical zone */
-//                    if (dl>0) {
-//                        createSegments(dl,dt_,verbose);
-//                        length+=dl; // - this->epsilonDx;
-//                    }
-
                 }
 
                 // active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
