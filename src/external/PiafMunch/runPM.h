@@ -175,12 +175,17 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	std::vector<double> delta_vol_org_i, delta_vol_org, delta_vol_org_imax, delta_vol_org_max;
 	std::vector<double> delta_vol_node_i, delta_vol_node, delta_vol_node_imax, delta_vol_node_max;
 	
-	// soil data, link with DuMux (mmol Suc cm-3)
+	// soil data, link with DuMux (mmol Suc or N cm-3)
 	std::vector<double> Csoil_seg;
 	std::vector<double> Csoil_node;
 	std::vector<double> CSTi_delta;
 	std::vector<double> CSTi_exud;
 	std::vector<double> Crsi_exud;
+	std::vector<double> F_PNU_NO3_seg; //NO3 uptake rate, mmol N d-1
+	std::vector<double> F_PNU_NH4_seg;  //NH4 uptake rate, mmol N d-1
+	std::vector<double> F_PNU_NO3_node; //NO3 uptake rate, mmol N d-1
+	std::vector<double> F_PNU_NH4_node;
+	double *QN_Exud_dot, *QN_Exud;
 
 	double CsoilDefault =1e-4;//dummy value for soil concentration so that we always have ((Exud==0)||(Gr*Rm>0))
 	//all in (mmol Suc d-1)
@@ -277,23 +282,19 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	Fortran_vector JN_Xyl;
 	Fortran_vector Delta_JN_ST;
 	Fortran_vector Delta_JN_Xyl;
-	std::vector<double> NO3soil_seg;
-	std::vector<double> NO3soil_node;
-	std::vector<double> NH4soil_seg;
-	std::vector<double> NH4soil_node;
+	std::vector<double> k_N;
+	std::vector<double> k_C;
 	//		boolean choices
 	//		To calibrate/set
 	double initValN = 0.8;
-	double NO3soilDefault = 1.5/14*1e3*1e-6; //g N m-3 => mmol N cm-3
-	double NH4soilDefault = 1.5/14*1e3*1e-6; 
 	double beta_N = 0.0025;
 	double beta_C= 4000/1e3*0.5;//micromol g-1 => mmol cm-3 (assume  0.5 g/cm3), barillot2016
 	
-	double F_PNU_NO3_max= 0.1333 * 24 * 3600;// d-1 Barillot2016
-	double K_PNU_NO3= 211812/1e-6/14*1e3; // g/m3 => mmol/cm-3 Barillot2016
-	double K2_PNU_NO3=4.614*1e6/1e3/24/3600; // m3 micomol-1 s-1 => cm3 mmol-1 d-1
-	double F_PNU_NH4_max= 0.1333 * 24 * 3600;// -
-	double K_PNU_NH4=211812/1e-6/14*1e3;
+	//double F_PNU_NO3_max= 0.1333 * 24 * 3600;// d-1 Barillot2016
+	//double K_PNU_NO3= 211812/1e-6/14*1e3; // g/m3 => mmol/cm-3 Barillot2016
+	//double K2_PNU_NO3=4.614*1e6/1e3/24/3600; // m3 micomol-1 s-1 => cm3 mmol-1 d-1
+	//double F_PNU_NH4_max= 0.1333 * 24 * 3600;// -
+	//double K_PNU_NH4=211812/1e-6/14*1e3;
 	
 	double Kn_root2ST= 1 *24*3600;//s-1 to d-1
 	double Sn_root2ST=0.03*1e-3*0.5*24*3600/10; // dummx value (from C in Barillot) => micromol C g-1 => mmol N cm-3
@@ -331,7 +332,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	Fortran_vector Q_GrmaxBU ;
 	//bool hayErrores = false;
 	int errorID = -1;
-	int neq_coef = 15;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
+	int neq_coef = 16;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
 	std::vector<double> BackUpMaxGrowth;//to check at runtime if growth is correct
 	
 	//retrieve tissue-specific parameters

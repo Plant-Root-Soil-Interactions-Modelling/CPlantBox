@@ -354,6 +354,8 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	int ot, st;
 	JW_Xyl = Fortran_vector(Nc, 0.)	; //outputFlux;
 	Ag =Fortran_vector(Nt, 0.);
+	k_N = std::vector<double>(Nt, 0.);
+	k_C = std::vector<double>(Nt, 0.);
 	a_STv = std::vector<double>(Nt, 0.);//.resize(Nc , 0.)  ;//for postprocessing
 	orgTypes = std::vector<int>(Nt, 0);
 	len_leaf =Fortran_vector(Nt, 0.);
@@ -367,8 +369,8 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	exud_k=Fortran_vector(Nt, 0.);
 	krm2=Fortran_vector(Nt, 0.);
 	Csoil_node=std::vector<double>(Nt, 0.);
-	NO3soil_node=std::vector<double>(Nt, 0.);
-	NH4soil_node=std::vector<double>(Nt, 0.);
+	F_PNU_NO3_node=std::vector<double>(Nt, 0.);
+	F_PNU_NH4_node=std::vector<double>(Nt, 0.);
 	CSTi_exud=std::vector<double>(Nt, 0.);
 	Crsi_exud=std::vector<double>(Nt, 0.);
     CSTi_delta=std::vector<double>(Nt, 0.);
@@ -490,19 +492,20 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 				}else{
 					Csoil_node.at(segmentsPlant[k-1].y ) = CsoilDefault;
 				}
-				if(NO3soil_seg.size() > 0.)
+				
+				if(F_PNU_NO3_seg.size() > 0.)
 				{
 					// Csoil_node is a std::vecto not a fotran vector
-					NO3soil_node.at(segmentsPlant[k-1].y ) = NO3soil_seg.at(k -1);					
+					F_PNU_NO3_node.at(segmentsPlant[k-1].y ) = F_PNU_NO3_seg.at(k -1);					
 				}else{
-					NO3soil_node.at(segmentsPlant[k-1].y ) = NO3soilDefault;
+					F_PNU_NO3_node.at(segmentsPlant[k-1].y ) = 0.;
 				}
-				if(NH4soil_seg.size() > 0.)
+				if(F_PNU_NH4_seg.size() > 0.)
 				{
 					// Csoil_node is a std::vecto not a fotran vector
-					NH4soil_node.at(segmentsPlant[k-1].y ) = NH4soil_seg.at(k -1);					
+					F_PNU_NH4_node.at(segmentsPlant[k-1].y ) = F_PNU_NH4_seg.at(k -1);					
 				}else{
-					NH4soil_node.at(segmentsPlant[k-1].y ) = NH4soilDefault;
+					F_PNU_NH4_node.at(segmentsPlant[k-1].y ) = 0.;
 				}
 			}
 			if(doTroubleshooting){std::cout<<"QexudMax "<<Q_Exudmax[nodeID ]<<std::endl;}

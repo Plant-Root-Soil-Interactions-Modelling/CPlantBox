@@ -1231,7 +1231,22 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kM_S_Mesophyll",&PhloemFlux::kM_S_Mesophyll)
             .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
             .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll)
-            .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_);
+            .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_)
+            .def_readwrite("F_PNU_NO3",&PhloemFlux::F_PNU_NO3_seg)
+            .def_readwrite("F_PNU_NH4",&PhloemFlux::F_PNU_NH4_seg)
+            .def_readwrite("NCell_targ",&PhloemFlux::NCell_targ)
+            .def_readwrite("k_targ_Nstore",&PhloemFlux::k_targ_Nstore)
+            .def_readwrite("CNPlant",&PhloemFlux::CNPlant)
+            .def_readwrite("Kn_root2ST",&PhloemFlux::Kn_root2ST)
+            .def_readwrite("Sn_root2ST",&PhloemFlux::Sn_root2ST)
+            .def_readwrite("Kn_root2Xyl",&PhloemFlux::Kn_root2Xyl)
+            .def_readwrite("Sn_root2Xyl",&PhloemFlux::Sn_root2Xyl)
+            .def_readwrite("Kn_stem2ST",&PhloemFlux::Kn_stem2ST)
+            .def_readwrite("Sn_stem2ST",&PhloemFlux::Sn_stem2ST)
+            .def_readwrite("Kn_leaf2ST",&PhloemFlux::Kn_leaf2ST)
+            .def_readwrite("Sn_leaf2ST",&PhloemFlux::Sn_leaf2ST)
+            .def_readwrite("Kn_leaf2Xyl",&PhloemFlux::Kn_leaf2Xyl)
+            .def_readwrite("Sn_leaf2Xyl",&PhloemFlux::Sn_leaf2Xyl);
 
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())

@@ -203,7 +203,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
             }
         }
 		
-		Q_Fl[i] = (Vmaxloading *len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
+		Q_Fl[i] = (Vmaxloading * len_leaf[i])* Cmeso/(Mloading + Cmeso) * exp(-CSTi* beta_loading);//phloem loading. from Stanfield&Bartlett_2022
 		CSTi = max(0., CSTi-CSTimin); //if CSTi < CSTimin, no sucrose usage
 		CSTi_exud.at(cpp_id) = max(0., max(0.,CSTi)-CSTimin_exud); //if CSTi < CSTimin, no sucrose usage
 		Crsi_exud.at(cpp_id) = max(0.,Csoil_node[cpp_id]-CSTimin_exud); //if CSTi < CSTimin, no sucrose usage
@@ -214,6 +214,7 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		Q_Rmmax_ = (Q_Rmmax[i] + krm2[i] * CSTi) * pow(Q10,(TairC - TrefQ10)/10);//max maintenance respiration rate
 		
 		Q_Exudmax_ = CSTi_delta.at(cpp_id)*Q_Exudmax[i];//max exudation rate
+		
 		Fu_lim = (Q_Rmmax_  + Q_Grmax[i])* (CSTi/(CSTi + KMfu));//active transport of sucrose out of sieve tube			
 		Q_ST_dot[i] = Q_Fl[i] - Fu_lim -Q_Exudmax_ + Delta_JS_ST[i] - st_2_starch;//variation of sucrose content in node
 		
@@ -227,11 +228,11 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 		
 		
 		// nitrogen
-		double k_N = std::exp(- beta_N*(NCelli + NStorei + NSTi + NXyli));
-		double k_C = 1 - std::exp(- beta_C * max(0.,C_ST[i]));
-		double F_PNU_NO3 = k_N*k_C * (F_PNU_NO3_max * NO3soil_node[cpp_id]/(K_PNU_NO3 + NO3soil_node[cpp_id])+ K2_PNU_NO3* NO3soil_node[cpp_id]);
-		double F_PNU_NH4 = k_N*k_C* (F_PNU_NH4_max * NH4soil_node[cpp_id]/(K_PNU_NH4 + NH4soil_node[cpp_id]));
-		double F_PNU = std::max(0.,F_PNU_NO3 + F_PNU_NH4);
+		k_N[cpp_id] = std::exp(- beta_N*(NCelli + NStorei + NSTi + NXyli));
+		k_C[cpp_id] = 1 - std::exp(- beta_C * max(0.,C_ST[i]));
+		//double F_PNU_NO3 = k_N*k_C * (F_PNU_NO3_max * NO3soil_node[cpp_id]/(K_PNU_NO3 + NO3soil_node[cpp_id])+ K2_PNU_NO3* NO3soil_node[cpp_id]);
+		//double F_PNU_NH4 = k_N*k_C* (F_PNU_NH4_max * NH4soil_node[cpp_id]/(K_PNU_NH4 + NH4soil_node[cpp_id]));
+		double F_PNU = std::max(0.,F_PNU_NO3_node[cpp_id] + F_PNU_NH4_node[cpp_id]);
 		
 		double F_Cell2ST = 0.;
 		double F_Cell2Xyl = 0.;
@@ -261,10 +262,11 @@ void PhloemFlux::C_fluxes(double t, int Nt)
 			QN_Store_dot[i] = 0. ;
         }
 		
+	
+		QN_Exud_dot[i] = std::max(0., Q_Exudmax_ *  std::max(0.,QN_Cell[i])/max(0.,C_ST[i]));
 		QN_ST_dot[i] = Delta_JN_ST[i] + F_Cell2ST;
 		QN_Xyl_dot[i] = Delta_JN_Xyl[i] + F_Cell2Xyl;
-		QN_Cell_dot[i] = F_PNU - QN_Struct_dot[i] - QN_Store_dot[i] - F_Cell2ST - F_Cell2Xyl;
-		
+		QN_Cell_dot[i] = F_PNU - QN_Struct_dot[i] - QN_Store_dot[i] - F_Cell2ST - F_Cell2Xyl - QN_Exud_dot[i];
 		
 		//Growth:
 		//add max(X,0.) in case of issues with rounding

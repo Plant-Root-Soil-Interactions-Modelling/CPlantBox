@@ -211,6 +211,7 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	QN_Cell = QN_Xyl + Nt ;
 	QN_Struct = QN_Cell + Nt ;
 	QN_Store = QN_Struct + Nt ;
+	QN_Exud = QN_Store + Nt ;
 	
 	for (int i=1; i<=Nt; i++)  {
 		double volSTi = std::max(0.,vol_ST[i]);
@@ -248,6 +249,7 @@ void PhloemFlux::f(double t, double *y, double *y_dot) { // the function to be p
 	QN_Cell_dot = QN_Xyl_dot + Nt ;
 	QN_Struct_dot = QN_Cell_dot + Nt ;
 	QN_Store_dot = QN_Struct_dot + Nt ;
+	QN_Exud_dot = QN_Store_dot + Nt ;
 	//Add later
 	/*if (Adv_BioPhysics) {
 		dummy.set(1.) ; dummy.sub_mult(PartMolalVol, C_ST) ; // dummy = 1 - PartMolalVol * C_ST
