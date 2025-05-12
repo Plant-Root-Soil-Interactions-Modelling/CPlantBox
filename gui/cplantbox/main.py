@@ -18,7 +18,7 @@ app.title = "CPlantbox Dash App"
 param_names = get_parameter_names()
 plants = [{'label': name[0], 'value': str(i)} for i, name in enumerate(param_names)]
 
-tropisms_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2 }  # "Hydrotropism": 3
+tropisms_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Antigravitropism": 4 }  # "Hydrotropism": 3, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5,  tt_antigravi2gravi = 6
 
 root_parameter_sliders = get_root_slider_names()
 stem_parameter_sliders = get_stem_slider_names()
@@ -197,8 +197,8 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
                         max = max_,
                         value = seed_values[i],
                         marks = {
-                            min_: str(min_),
-                            max_: str(max_)
+                            min_ + 1.e-4: str(min_),
+                            max_ - 1.e-4: str(max_)
                             },
                         tooltip = { "always_visible": False},
                     )
@@ -329,12 +329,14 @@ def toggle_slider(checkbox_value):
 # Parameters Panel - Root
 #
 def generate_root_sliders(root_values):  # Generate sliders for root tabs from stored values
+    # print("generate_root_sliders()")
     sliders = []
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(root_parameter_sliders.keys()):
         min_ = root_parameter_sliders[key][0]
         max_ = root_parameter_sliders[key][1]
         sliders.append(html.H6(key))
+        # print(key, str(min_), str(max_), min_, max_, root_values[i])
         sliders.append(
             dcc.Slider(
                         id = {'type': 'dynamic-slider', 'index': i},
@@ -342,8 +344,8 @@ def generate_root_sliders(root_values):  # Generate sliders for root tabs from s
                         max = max_,
                         value = root_values[i],
                         marks = {
-                            min_: str(min_),
-                            max_: str(max_)
+                            min_ + 1.e-4: str(min_),
+                            max_ - 1.e-4: str(max_)
                             },
                         tooltip = { "always_visible": False},
                     )
@@ -515,4 +517,4 @@ def render_result_tab(tab, vtk_data):
 
 
 if __name__ == '__main__':
-    app.run()  # , suppress_callback_exceptions = True
+    app.run(debug = True)  # , suppress_callback_exceptions = True

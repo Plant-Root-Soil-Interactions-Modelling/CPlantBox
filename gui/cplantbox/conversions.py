@@ -33,14 +33,14 @@ def get_parameter_names():
 def get_seed_slider_names():
     """ return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
-        "First shoot borne root [day]": (1., 30.),
-        "Shoot borne delay [day]": (1., 21.),
-        "First basal root [day]": (1., 30.),
-        "Basal root delay [day]": (1., 21.),
-        "Maximal number of basal roots [1]": (0., 50.),
-        "First tiller [day]": (1., 30.),
-        "Tiller delay [day]": (1., 21),
-        "Maximal number of tillers [1]": (0., 25),
+        "First shoot borne root [day]": (1, 30),
+        "Shoot borne delay [day]": (1, 21),
+        "First basal root [day]": (1, 30),
+        "Basal root delay [day]": (1, 21),
+        "Maximal number of basal roots [1]": (0, 50),
+        "First tiller [day]": (1, 30),
+        "Tiller delay [day]": (1, 21),
+        "Maximal number of tillers [1]": (0, 7),
     }
     return parameter_sliders
 
@@ -50,13 +50,13 @@ def get_root_slider_names():
     parameter_sliders = {
         "Maximal length [cm]": (1, 200),
         "Initial growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0., 90.),
+        "Initial angle [°]": (0., 90),
         "Basal zone [cm]": (0.1, 20),
         "Interlateral distance [cm]": (0.1, 20),
         "Apical zone [cm]": (0.1, 20),
         "Radius [cm]": (1.e-3, 0.25),
         "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0., 1.),
+        "Tropism tortuosity [1]": (0, 1),
     }
     return parameter_sliders
 
@@ -66,7 +66,7 @@ def get_stem_slider_names():
     parameter_sliders = {
         "Maximal length [cm]": (1, 200),
         "Initial growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0., 90.),
+        "Initial angle [°]": (0., 90),
         # "Basal zone [cm]": (0.1, 20),
         "Phytomer distance [cm]": (0.1, 20),
         # "Apical zone [cm]": (0.1, 20),
@@ -107,7 +107,14 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     number_r = len(rrp[1:])  # number of root types
     number_s = len(strp[1:])  # number of stem types
     # 2. apply sliders to params
-    apply_sliders(srp[0], seed_data["seed"], rrp, root_data, strp, stem_data, lrp, leaf_data)
+    apply_sliders(srp[0], seed_data, rrp, root_data, strp, stem_data, lrp, leaf_data)
+    srp[0].seedPos.x = 0.  # override position (always)
+    srp[0].seedPos.y = 0.
+    srp[0].seedPos.z = -3.
+    # print("SEED SRP")
+    # print(len(srp))
+    # print(srp[0])
+
     # 3. simulate
     N = 50
     t_ = np.linspace(0., time_slider_value, N + 1)
@@ -128,8 +135,10 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     # 4. make depth profiles
     ana = pb.SegmentAnalyser(plant)
     length = ana.getSummed("length")
-    rld = np.array(ana.distribution("length", 0., -150, 150, True)) / length
-
+    max_ = ana.getMaxBounds().z
+    min_ = ana.getMinBounds().z
+    rld = np.array(ana.distribution("length", max_, min_, int(np.round(max_ - min_)), True)) / length
+    z_ = np.linspace(max_, min_, int(np.round(max_ - min_)))
     # 5. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
     pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
@@ -148,6 +157,7 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
         vtk_data[f"stem_length-{j+1}"] = list(stem_length[j,:])
     vtk_data["leaf_length"] = list(leaf_length[:])
     vtk_data["rld"] = rld
+    vtk_data["z"] = z_
     # leaf geometry
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
@@ -166,20 +176,27 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
 
 
 def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_data):
-    tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2 }
+    tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Antigravitropism": 4 }
     # seed
-    srp.firstSB = seed_data[0]
-    srp.delaySB = seed_data[1]
-    srp.firstB = seed_data[2]
-    srp.delayB = seed_data[3]
-    srp.maxB = seed_data[4]
-    srp.firstTil = seed_data[5]
-    srp.delayTil = seed_data[6]
-    srp.maxTil = seed_data[7]
+    srp.firstSB = seed_data["seed"][0]
+    srp.delaySB = seed_data["seed"][1]
+    srp.firstB = seed_data["seed"][2]
+    srp.delayB = seed_data["seed"][3]
+    srp.maxB = seed_data["seed"][4]
+    srp.firstTil = seed_data["seed"][5]
+    srp.delayTil = seed_data["seed"][6]
+    srp.maxTil = int(seed_data["seed"][7] + 0.5)
+    if not seed_data["shoot-checkbox"]:
+        # print("no shootborne")
+        srp.firstSB = 1.e6  # disable
+        srp.delaySB = 1.e6
+    if not seed_data["basal-checkbox"]:
+        srp.firstB = 1.e6  # disable
+    if not seed_data["tillers-checkbox"]:
+        srp.firstTil = 1.e6  # disable
     # root
-    # print(root_data)
     for i, p in enumerate(rrp[1:]):
-        print(p.name, p.subType)
+        # print(p.name, p.subType)
         d = root_data[f"tab-{i+1}"]
         p.lmax = d[0]
         p.r = d[1]
@@ -191,10 +208,29 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.tropismN = d[7]
         p.tropismS = d[8]
         p.tropismT = tropism_names[d[9]]
+    # stem
+    for i, p in enumerate(strp[1:]):
+        # print(p.name, p.subType)
+        d = stem_data[f"tab-{i+1}"]
+        p.lmax = d[0]
+        p.r = d[1]
+        p.theta = d[2] / 180.*np.pi
+        p.ln = d[3]
+        p.a = d[4]
+        p.tropismN = d[5]
+        p.tropismS = d[6]
+        p.tropismT = tropism_names[d[7]]
+    # leaf
 
 
 def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
+    """ sets all store data from the xml file """
     print("set_data()")
+    seed_data.clear()
+    root_data.clear()
+    stem_data.clear()
+    leaf_data.clear()
+    typename_data.clear()
     """ set root, seed, stem, and leaf data from xml """
     tropisms_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism" }
     """ open xml """
@@ -209,8 +245,11 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
         p.firstB, p.delayB, p.maxB,
         p.firstTil, p.delayTil, p.maxTil
     ]
+    seed_data["shoot-checkbox"] = p.firstSB < 1.e3 and p.delaySB < 1.e3
+    seed_data["basal-checkbox"] = p.firstB < 1.e3 and p.delayB < 1.e3 and p.maxB > 0
+    seed_data["tillers-checkbox"] = p.firstTil < 1.e3 and p.delayTil < 1.e3 and p.maxTil > 0
+    # p.simulationTime # where to put it
     """ root """
-    typename_data.clear()
     rrp = plant.getOrganRandomParameter(pb.root)
     typename_data["number_roottypes"] = len(rrp[1:])
     for i, p in enumerate(rrp[1:]):
@@ -226,7 +265,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     for i, p in enumerate(strp[1:]):
         tropism_name = tropisms_names_[int(p.tropismT)]
         stem_data[f"tab-{i+1}"] = [
-            p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a,
+            p.lmax, p.r, p.theta / np.pi * 180, p.ln, p.a,
             p.tropismN, p.tropismS, tropism_name
         ]
         typename_data[f"stem tab-{i+1}"] = p.name

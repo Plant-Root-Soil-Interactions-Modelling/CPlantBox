@@ -55,7 +55,7 @@ def vtk3D_plot(vtk_data, color_pick):
 
 def profile_plot(vtk_data):
 
-    z_ = np.linspace(0, -150, 150)
+    z_ = vtk_data["z"]
     rld = vtk_data["rld"]
     rld = go.Scatter(x = rld, y = z_, mode = 'lines', name = "length fraction")
     traces = [rld]
@@ -69,6 +69,7 @@ def profile_plot(vtk_data):
                     xaxis = {'title': 'Fraction [-]'},
                     yaxis = {'title': 'Depth [cm]'},
                     hovermode = 'closest',
+                    colorway = qualitative.Set2,
                 ),
             },
             style = {'width': '100%', 'height': '600px'}
