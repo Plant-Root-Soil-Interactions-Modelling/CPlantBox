@@ -4,7 +4,7 @@ from visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
-from IPython.display import Image, display
+# from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -78,8 +78,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     mapper.SetInputData(polyData)
     mapper.ScalarVisibilityOn();
     mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
-    # mapper.SetArrayName(p_name)
-    mapper.SelectColorArray(p_name)
+    # mapper.SelectColorArray(p_name)
     mapper.UseLookupTableScalarRangeOn()
 
     actor = vtk.vtkActor()
@@ -87,7 +86,8 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 
     # lut = create_lookup_table()  # 24
     mapper.SetLookupTable(lut)
-    # actor.GetProperty().SetColor(colors.GetColor3d("Green"))
+    colors = vtk.vtkNamedColors()
+    actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
         ren = render_window([tube_plot_actor, actor], "plot_plant", color_bar, tube_plot_actor.GetBounds(), interactiveImage)
