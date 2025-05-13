@@ -68,17 +68,18 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
             for (size_t i = 1; i <nodes.size(); i++)
             {
                 double p = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()); // get rate of infection based on node position
+                if (age - nodeCTs.at(i) > getRootRandomParameter() ->minAge) {p = 0;}//account for minimal age in rate
                 p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
-                if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {p = 0;} // account for minimal age in rate
-
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
-
+            
                 // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
-                infTime = log(1-plant.lock()->rand())/log(1-p)/cursegLength/dt + nodeCTs.at(i);
-
+                infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
+                    
+                // std::cout << infTime << std::endl;
                 // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
-                if (infected.at(i) == 0 && infTime < age)
-                {
+                if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0)
+                {                        
+                    // std::cout << "infected at " << i << std::endl;
                     setInfection(i,1,infTime);
                 }
             }
@@ -86,25 +87,20 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     } else { //if this is not a loclized infection use equal probability everywhere
         for (size_t i=1; i<nodes.size(); i++) {
             double p = getRootRandomParameter()->p; // get rate of infection based on node position
-            p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
-            if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {p = 0;} // account for minimal age in rate
-
-            double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
-
-            // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
-            infTime = log(plant.lock()->rand())/log(1-p)/cursegLength + nodeCTs.at(i);
-            // if (infTime> age)
-            // {
-            //     std::cout<< "!" << std::endl;
-            // }
+            if (age - nodeCTs.at(i) > getRootRandomParameter() ->minAge) {p = 0;}//account for minimal age in rate
+                p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
+                double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
             
-            // std::cout << infTime << std::endl;
-            // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
-            if (infected.at(i) == 0 && infTime < age)
-            {
-                // std::cout << "infected at " << i << std::endl;
-                setInfection(i,1,infTime);
-            }
+                // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
+                infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
+                    
+                // std::cout << infTime << std::endl;
+                // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
+                if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0)
+                {                        
+                    // std::cout << "infected at " << i << std::endl;
+                    setInfection(i,1,infTime);
+                }
         }
     }
 }
@@ -133,9 +129,10 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                     infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
                     if (infectionLength > max_length_infection) {break;}
 
-                    if (infected.at(basalnode) == 0)
+                    if (infected.at(basalnode) == 0 && infTime <= age)
                     {
                         setInfection(basalnode,2,infTime);
+                        // std::cout<< "secondary infection from " << i << " to " << basalnode << std::endl;
                         if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
                         {
                             // std::cout << "basalnode is 0" << std::endl;
@@ -143,7 +140,6 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                             std::dynamic_pointer_cast<MycorrhizalRoot>(getParent())->simulateInfection(dt,silence);
                         }
                     }
-                    
                     
                     oldNode = basalnode;
                     basalnode--;
@@ -160,7 +156,7 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                 infectionLength += cursegLength;
                 infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
                 if (infectionLength > max_length_infection) {break;}
-                if (infected.at(apicalnode) == 0)
+                if (infected.at(apicalnode) == 0 && infTime <= age)
                 {
                     setInfection(apicalnode,2,infTime);
                     // std::cout<< "secondary infection from " << i << " to " << apicalnode << std::endl;
@@ -286,7 +282,6 @@ double MycorrhizalRoot::getParameter(std::string name) const {
             {
                 secondaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();
             }
-            
         }
         return secondaryInfectedLength;
     }
@@ -355,7 +350,6 @@ void MycorrhizalRoot::createLateral(double dt, bool verbose)
                 }
             }
         }
-
     }
     created_linking_node ++;
     storeLinkingNodeLocalId(created_linking_node,verbose);//needed (currently) only for stems when doing nodal growth
@@ -377,7 +371,7 @@ std::string MycorrhizalRoot::toString() const
 {
     // TODO this does not actually return the number of infected nodes fix this and add additional stuff
     std::stringstream newstring;
-    newstring << "; infected Nodes " << getNumberofInfectedNodes() << ".";
+    newstring << "; infected Nodes " << getNumberofInfectedNodes() << "; length of infected root segments "<< getParameter("primaryInfection") + getParameter("secondaryInfection")<< ".";
     return  Root::toString()+newstring.str();
 }
 

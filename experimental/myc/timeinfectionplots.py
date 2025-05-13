@@ -27,7 +27,6 @@ for rp in root:
 infbox = pb.SDF_PlantBox(3, 3, 3)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
-animation = False
 infradius = 0
 for i in range(0, len(root)):
     root[i].infradius = infradius
@@ -46,12 +45,12 @@ N = simtime * fpd
 dt = simtime / N
 time = np.linspace(0, simtime, N)
 
-observed_primary = [] # legnth of primary infection
-observed_new_primary = [] # legnth of new primary infection
+observed_primary = [] # length of primary infection
+observed_new_primary = [] # length of new primary infection
 expected_new_primary = [] # expected new primary infection
-observed_secondary = [] # legnth of secondary infection
-total_lengths = [] # legnth of the root system
-# nonmycL = [] # legnth of the non-mycorrhizal part
+observed_secondary = [] # length of secondary infection
+total_lengths = [] # length of the root system
+# nonmycL = [] # length of the non-mycorrhizal part
 # ratioL = [] # ratio of primary infection to non-mycorrhizal part from each time step
 
 mycp.simulate(dt, False)
@@ -80,28 +79,31 @@ for t in range(1, len(time)):
     delta_expected =  mycp.getOrganRandomParameter(pb.root)[1].p * L_susceptible * dt
     expected_new_primary.append(delta_expected)
 
-    print(f"t={t}:")
-    print(f"- Beobachtet:   {delta_obs:.2f} mm neue primäre Infektion")
-    print(f"- Erwartet:     {delta_expected:.2f} mm")
-    print(f"- Abweichung:   {delta_obs - delta_expected:.2f} mm")
-    print(f"- Totale Länge: {total_lengths[t]:.2f} mm")
-    print(f"- Primäre Infektion: {observed_primary[t]:.2f} mm")
-    print("-" * 30)
+    if t % 10 == 0:
+        print(f"t={t}:")
+        print(f"- Beobachtet:   {delta_obs:.2f} mm neue primäre Infektion")
+        print(f"- Erwartet:     {delta_expected:.2f} mm")
+        print(f"- Abweichung:   {delta_obs - delta_expected:.2f} mm")
+        print(f"- Totale Länge: {total_lengths[t]:.2f} mm")
+        print(f" - Nicht infizierte Länge: {L_susceptible:.2f} mm")
+        print(f"- Primäre Infektion: {observed_primary[t]:.2f} mm")
+        print(f"- Sekundäre Infektion: {observed_secondary[t]:.2f} mm")
+        print("-" * 30)
 
 ratio = True
 if ratio:
     plt.figure(figsize=(10, 6))
-    plt.plot(observed_new_primary, label="Primary Infection")
-    plt.plot(expected_new_primary, label="Expected Primary Infection")
+    plt.plot(time[1:], observed_new_primary, label="Primary Infection")
+    plt.plot(time[1:], expected_new_primary, label="Expected Primary Infection")
     plt.title("Expected vs Observed Primary Infection")
     plt.legend()
     plt.xlabel("Time Step")
     plt.ylabel("Primary Infection Length [cm]")
     plt.show()
 else:
-    plt.plot(time, np.asarray(observed_new_primary), label="Primary Infection")
-    plt.plot(time, np.asarray(observed_secondary), label="Secondary Infection")
-    plt.plot(time, np.asarray(lenghtL), label="Length")
+    plt.plot(np.asarray(observed_primary), label="Primary Infection")
+    plt.plot(np.asarray(observed_secondary), label="Secondary Infection")
+    plt.plot(np.asarray(total_lengths), label="Length")
     plt.legend()
     plt.title("Infection over time")
     plt.xlabel("Time")

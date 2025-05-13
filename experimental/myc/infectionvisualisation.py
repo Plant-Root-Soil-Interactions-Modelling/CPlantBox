@@ -20,11 +20,11 @@ root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     rp.hyphalEmergenceDensity = 1;
 
-infbox = pb.SDF_PlantBox(3, 3, 3)
+infbox = pb.SDF_PlantBox(10, 10, 10)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
 animation = False
-infradius = 1
+infradius = 0
 for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:
@@ -78,6 +78,7 @@ else:
     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
     vp.plot_roots(ana, "infection")
+    # vp.plot_roots(ana, "infectionTime")
     # vp.plot_plant(mycp, "organType")
     ana.write(filename + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
 
