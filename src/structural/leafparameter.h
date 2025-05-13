@@ -21,11 +21,11 @@ class LeafSpecificParameter : public OrganSpecificParameter
 public:
 
 	LeafSpecificParameter() :OrganSpecificParameter(-1, 0.) { };
-	LeafSpecificParameter(int subType, double lb, double la, 
-	const std::vector<double>& ln, double r, double a, double theta, 
+	LeafSpecificParameter(int subType, double lb, double la,
+	const std::vector<double>& ln, double r, double a, double theta,
 	double rlt, double leafArea, bool laterals, double Width_blade, double Width_petiole):
-		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r), 
-		theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals), 
+		OrganSpecificParameter(subType, a) , lb(lb), la(la), r(r),
+		theta(theta), rlt(rlt), areaMax(leafArea), laterals(laterals),
 		ln(ln), Width_blade(Width_blade), Width_petiole(Width_petiole)  { }; ///< Constructor setting all parameters
 
 	/*
@@ -57,8 +57,10 @@ public:
 class LeafRandomParameter : public OrganRandomParameter
 {
 public:
+
 	enum shapeTypes { shape_cylinder = 0, shape_cuboid = 1, shape_2D = 2}; ///< how is the shape of the leaf defined?, see @orgVolume and @orgVolume2Length
-    LeafRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
+
+	LeafRandomParameter(std::shared_ptr<Organism> plant); ///< default constructor
 	virtual ~LeafRandomParameter() { };
 
     void createLeafGeometry(std::vector<double> y, std::vector<double> l, int N); // create normalized leaf geometry
@@ -88,7 +90,7 @@ public:
 	double ln = 1.; 	///< Inter-lateral distance [cm]
 	double lns = 0.;  	///< Standard deviation inter-lateral distance [cm]
 	int lnf = 0; 		///< type of inter-branching distance (0 homogeneous, 1 linear inc, 2 linear dec, 3 exp inc, 4 exp dec)
-    double lmax = 0.;       ///< Maximal stem length [cm]
+    double lmax = 0.;       ///< Maximal leaf length [cm]
     double lmaxs = 0.;      ///< Standard deviation of maximal stem length [cm]
     double areaMax = 10.; 	///< maximal leaf area (reached when stem length reaches lmax) [cm2]
     double areaMaxs = 0.; 	///< Standard deviation of maximal leaf area [cm2]
@@ -119,8 +121,8 @@ public:
 	std::vector<double> leafGeometryPhi= {}; //2D shape
 	std::vector<double> leafGeometryX= {};//2D shape
 	int parametrisationType = 0; // 2D shape type : 0 .. radial, 1..along main axis
-	//how is the shape of the leaf deined? cylinder (a = radius), cuboid (a = thickness, Width_blade, Width_petiole), 2D (leafGeometryPhi, leafGeometryX, areaMax)
-	int shapeType = 2; //default: 2D shape
+	int shapeType = 2;  // Shape of the leaf: 0: cylinder (a = radius), 1: cuboid (a = thickness, Width_blade, Width_petiole), 2: 2D (leafGeometryPhi, leafGeometryX, areaMax)
+
 	/* call back functions */
     std::shared_ptr<SoilLookUp> f_se = std::make_shared<SoilLookUp>(); ///< scale elongation function
     std::shared_ptr<SoilLookUp> f_sa = std::make_shared<SoilLookUp>(); ///< scale angle function
@@ -131,7 +133,7 @@ public:
 
 protected:
 
-	
+
     void bindParameters() override; ///<sets up class introspectionbindParameters
     std::vector<double> intersections(double y, std::vector<double> phi, std::vector<double> l); ///< returns the intersection of a horizontal line at y-coordinate with the leaf geometry
     void normalizeLeafNodes(); ///< scales leaf area to 1
