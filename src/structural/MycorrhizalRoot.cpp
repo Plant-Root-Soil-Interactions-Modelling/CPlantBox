@@ -74,6 +74,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
             
                 // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
                 infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
+                // infTime = age - nodeCTs.at(i);
                     
                 // std::cout << infTime << std::endl;
                 // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
@@ -91,19 +92,17 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
                 p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
                 double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
             
-                // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
-                infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
+                // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i); // Variante 1
+                infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength); // Variante 2
+                // infTime = age - nodeCTs.at(i); // Variante 3
                     
-                // // std::cout << infTime << std::endl;
-                // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
-                if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0)
-                {                        
+                // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p)) // if condition Variante 1 & 3
+                if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0) // if condition Variante 2
+                {                         // für varianten 1 & 2
                     // std::cout << "infected at " << i << std::endl;
                     setInfection(i,1,infTime);
                 }
-                // if (infected.at(i) == 0 && plant.lock()->rand() < prob(dt,cursegLength,p))
-                // {
-                //     // std::cout << "infected at " << i << std::endl;
+                // { // für variante 3
                 //     setInfection(i,1,age);
                 // }
         }
