@@ -168,25 +168,17 @@ std::shared_ptr<const HyphaeSpecificParameter> Hyphae::param() const
 
 /**
  * @copydoc Organ::getParameter
- *
- * Note:
- * lnMean, and lnDev denotes the mean and standard deviation of the inter-lateral distance of this organ
- * ln_mean, and ln_dev is the mean and standard deviation from the RootRandomParmaeters
+ * @param name  name of the parameter
  */
-double Hyphae::getParameter(std::string name) const // TODO
+double Hyphae::getParameter(std::string name) const 
 {
     // specific parameters
-    //    if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
-    //	if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
-    //    if (name=="lb") { return param()->lb; } // basal zone [cm]
-    //    if (name=="la") { return param()->la; } // apical zone [cm]
-    //    if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
-    //    if (name=="theta") { return insertionAngle; } // angle between root and parent root [rad]
-    //    if (name=="rlt") { return param()->rlt; } // root life time [day]
-    //    // specific parameters member functions
-    //    if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes/branching points
-    //    if (name=="k") { return param()->getK(); }; // maximal root length [cm]^3]
-    //    if (name=="surface") { return 2*param()->a*M_PI*getLength(true); } // root surface [cm^2]
+        if (name=="type") { return this->param_->subType; }  // delete to avoid confusion?
+        if (name=="subType") { return this->param_->subType; }  // organ sub-type [-]
+        if (name=="v") { return param()->v; } // Tip elongation rate [cm day-1]
+        if (name=="b") { return param()->b; } // Branching rate [1 day-1]
+        if (name=="hlt") { return param()->hlt; } // Hyphal life time [day]
+        if (name=="theta") { return param()->theta; } // Branching angle [rad]
     return Organ::getParameter(name); // pass to base class
 }
 
