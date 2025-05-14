@@ -33,7 +33,7 @@ public:
     std::string toString() const override;
 
 //    /* From analytical equations */
-//    double calcLength(double age); ///< analytical length of the root
+    double calcLength(double age); ///< analytical length of the root
     double calcAge(double length) const; ///< analytical age of the root
 
     /* Abbreviations */

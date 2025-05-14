@@ -138,8 +138,14 @@ void MycorrhizalPlant::initCallbacks() {
 
     for (auto& p_otp :organParam[Organism::ot_root]) {
         auto rp = std::static_pointer_cast<MycorrhizalRootRandomParameter>(p_otp.second);
-        // auto bigbox = std::make_shared<SDF_PlantBox>(1.e100,1.e100,1.e100); TODO Fix this
-        // auto inf_ = std::make_shared<SoilLookUpSDF>(bigbox,rp->p,0.0,0.0);
+        auto bigbox = std::make_shared<SDF_PlantBox>(1.e100,1.e100,1.e100); // TODO Fix this
+        // auto inf_ = std::make_shared<SoilLookUpSDF>();
+        // auto sdf = SignedDistanceFunction();
+        // sdf = *bigbox;
+        // inf_->sdf = &sdf;
+        // inf_->fmax = rp->p;
+        // inf_->fmin = 0;
+        // inf_->slope = 0;
         // rp->f_inf  = inf_;
     }
 

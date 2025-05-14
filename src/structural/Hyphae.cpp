@@ -131,12 +131,12 @@ void Hyphae::simulate(double dt, bool verbose)
 // * @param age          age of the root [day]
 // * @return             root length [cm]
 // */
-//double Hyphae::calcLength(double age)
-//{
-//    assert(age >= 0 && "Hyphae::calcLength() negative hyphae age");
-//    return getHyphaeRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
-//}
-//
+double Hyphae::calcLength(double age)
+{
+   assert(age >= 0 && "Hyphae::calcLength() negative hyphae age");
+   return getHyphaeRandomParameter()->f_gf->getLength(age,param()->v,0., shared_from_this());
+}
+
 ///**
 // * Analytical age of the single root at a given length
 // *
