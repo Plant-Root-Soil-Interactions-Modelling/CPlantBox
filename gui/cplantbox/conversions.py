@@ -8,8 +8,8 @@ import visualisation.vtk_plot as vp
 
 from vtk_conversions import *
 
-tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Negative gravitropism": 4, "Twist": 5}
-tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 5: "Twist"}
+tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Negative gravitropism": 4, "Twist": 5, "Variable gravitropism": 6}
+tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 5: "Twist", 6: "Variable gravitropism"}
 
 
 def get_parameter_names():  # parameter xml file names
@@ -302,7 +302,7 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         set_leaf_geometry(d[0], p)
         p.lmax = d[1]
         p.r = d[2]
-        p.theta = d[3]
+        p.theta = d[3] / 180 * np.pi
         p.lb = d[4]
         p.rotBeta = d[5] / 180.
         p.tropismN = d[6]

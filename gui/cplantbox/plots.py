@@ -9,7 +9,7 @@ import dash_vtk
 
 
 def vtk3D_plot(vtk_data, color_pick):
-    """ 3D and 3D Age plot """
+    """ 3D and 3D age plot """
     color_range = [np.min(color_pick), np.max(color_pick)]  # set range from min to max
     geom_rep = dash_vtk.GeometryRepresentation(
         mapper = {
