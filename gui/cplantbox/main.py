@@ -26,7 +26,7 @@ leaf_parameter_sliders = get_leaf_slider_names()
 SEED_SLIDER_INITIALS = [180, 1, 7, 7, 20, 7, 7, 15, 5]
 ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
 STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180., 1, 0.2, "Gravitropism"]
-LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45, 2., 1., 0.2, "Gravitropism"]
+LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45, 2., 90, 1., 0.2, "Gravitropism"]
 
 """ LAYOUT """
 app.layout = dbc.Container([
@@ -430,16 +430,13 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
     successors = stem_values[-1]
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
-        if i in [7]:
+        style = {}
+        if i in [7]:  # rotBeta (not working)
             style = {'display': 'none'}
-        else:
-            style = {}
-
         if (not successors) and (i in [3]):
             style = {'display': 'none'}
-        else:
-            style = {}
-
+        # if (tab == 1) and (i == 2):  # no initial theta for main stem; makes sense for tillers
+        #     style = {'display': 'none'}
         min_ = stem_parameter_sliders[key][0]
         max_ = stem_parameter_sliders[key][1]
         sliders.append(html.H6(key, style = style))
@@ -558,9 +555,18 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
             ))
     return html.Div(sliders)
 
+# @app.callback(# leaf-dropdown
+#     Output({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
+#     Input({'type': 'leaf-dynamic-slider', 'index': 0}, 'value'),  # leaf-dropdown
+#     State({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
+# )
+# def update_leaf_shape(shape, slider_values):
+#     print("update_leaf_shape()", slider_values)
+#     set_leaf_sliders(slider_values)
+#     return slider_values
 
-# Update root-store when any slider changes
-@app.callback(
+
+@app.callback(# Update root-store when any slider changes
     Output('leaf-store', 'data', allow_duplicate = True),  #
     Input({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
     State('leaf-store', 'data'),

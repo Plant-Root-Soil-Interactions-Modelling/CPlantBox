@@ -15,17 +15,17 @@ tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "N
 def get_parameter_names():  # parameter xml file names
     """ returns a list of plant parameter names with two values each, first a short name, second exact filename """
     parameter_names = [
-        ("Demo_root", "root_only.xml"),
-        ("Demo_stem", "stem_only.xml"),
-        ("Demo_leaf", "leaf_only.xml"),
+        ("Demo Root", "root_only.xml"),
+        ("Demo Stem", "stem_only.xml"),
+        ("Demo Leaf", "leaf_only.xml"),
         # ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
-        ("Maize_", "new_maize.xml"),
-        # ("Maize2", "maize.xml"),
-        ("Maize", "P3.xml"),
+        # ("Maize_", "new_maize.xml"),
+        # # ("Maize2", "maize.xml"),
+        # ("Maize", "P3.xml"),
         ("Maize", "P0.xml"),
         # ("Anagallis", "Anagallis_femina_Leitner_2010.xml"),
-        ("Morning Glory9", "morning_glory_14m_d.xml"),
-        ("Morning Glory14", "morning_glory_14m_d.xml"),
+        # ("Morning Glory9", "morning_glory_14m_d.xml"),
+        # ("Morning Glory14", "morning_glory_14m_d.xml"),
         # ("Wheat11", "Triticum_aestivum_a_Bingham_2011.xml"),
         # ("Wheat21", "Triticum_aestivum_adapted_2021.xml"),
         ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
@@ -126,6 +126,11 @@ def set_leaf_geometry(shapename, p):
         p.la, p.lb, p.lmax = 5, 1, 11
         phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
         l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
+
+
+def set_leaf_sliders(slider_values):
+    """ TODO cannot get the callbacks running in dash"""
+    return slider_values
 
 
 def fix_dx(rrp, strp, lrp):
