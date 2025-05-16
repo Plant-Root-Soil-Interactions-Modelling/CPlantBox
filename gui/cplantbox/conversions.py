@@ -8,11 +8,16 @@ import visualisation.vtk_plot as vp
 
 from vtk_conversions import *
 
+tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Negative gravitropism": 4, "Twist": 5}
+tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 5: "Twist"}
 
-def get_parameter_names():
-    """ returns a list of plant parameter names with two values each, 
-      first a short name, second exact filename """
+
+def get_parameter_names():  # parameter xml file names
+    """ returns a list of plant parameter names with two values each, first a short name, second exact filename """
     parameter_names = [
+        ("Demo_root", "root_only.xml"),
+        ("Demo_stem", "stem_only.xml"),
+        ("Demo_leaf", "leaf_only.xml"),
         # ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
         ("Maize_", "new_maize.xml"),
         # ("Maize2", "maize.xml"),
@@ -30,7 +35,7 @@ def get_parameter_names():
 # Felix Maximilian Bauer, Dirk Norbert Baker, Mona Giraud, Juan Carlos Baca Cabrera, Jan Vanderborght, Guillaume Lobet, Andrea Schnepf, Root system architecture reorganization under decreasing soil phosphorus lowers root system conductance of Zea mays, Annals of Botany, 2024;, mcae198, https://doi.org/10.1093/aob/mcae198
 
 
-def get_seed_slider_names():
+def get_seed_slider_names():  # see set_data, apply_sliders
     """ return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
         "First shoot borne root [day]": (1, 30),
@@ -45,11 +50,11 @@ def get_seed_slider_names():
     return parameter_sliders
 
 
-def get_root_slider_names():
+def get_root_slider_names():  # see set_data, apply_sliders
     """ return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
         "Maximal length [cm]": (1, 200),
-        "Initial growth rate [cm/day]": (0.5, 10),
+        "Growth rate [cm/day]": (0.5, 10),
         "Initial angle [°]": (0., 90),
         "Basal zone [cm]": (0.1, 20),
         "Interlateral distance [cm]": (0.1, 20),
@@ -61,20 +66,66 @@ def get_root_slider_names():
     return parameter_sliders
 
 
-def get_stem_slider_names():
+def get_stem_slider_names():  # see set_data, apply_sliders
     """ return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
         "Maximal length [cm]": (1, 200),
-        "Initial growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0., 90),
-        # "Basal zone [cm]": (0.1, 20),
+        "Growth rate [cm/day]": (0.5, 10),
+        "Initial angle [°]": (0, 90),
         "Phytomer distance [cm]": (0.1, 20),
-        # "Apical zone [cm]": (0.1, 20),
         "Radius [cm]": (1.e-3, 0.25),
+        "Nodal growth start [day]": (0, 21),
+        "Nodal growth time span [day]": (0, 21),
+        "Fixed Rotation [°]": (0, 180),
         "Tropism strength [1]": (0, 6),
-        "Tropism tortuosity [1]": (0., 1.),
+        "Tropism tortuosity [1]": (0, 1),
     }
     return parameter_sliders
+
+
+def get_leaf_slider_names():  # see set_data, apply_sliders
+    """ return slider names as keys of dict and bounds as values"""
+    parameter_sliders = {
+        "Maximal length [cm]": (1, 50),
+        "Growth rate [cm/day]": (0.5, 10),
+        "Initial angle [°]": (0, 180.),
+        "Petiole length [cm]": (1, 10),  # lb
+        "Fixed Rotation [°]": (0, 180),
+        "Tropism strength [1]": (0, 6),
+        "Tropism tortuosity [1]": (0, 1),
+    }
+    return parameter_sliders
+
+
+def set_leaf_geometry(shapename, p):
+    """ shape name "Defined", "Long", "Round", "Maple", "Flower" """
+    if shapename == "Defined":
+        return
+    elif shapename == "Long":
+        p.lb = 1  # length of leaf stem
+        p.la, p.lmax = 3.5, 8.5
+        p.areaMax = 10  # cm2, area reached when length = lmax
+        phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+        l = np.array([3, 2.2, 1.7, 2, 3.5])  # distance from leaf center
+    elif shapename == "Round":
+        p.lb = 1  # length of leaf stem
+        p.la, p.lmax = 5, 11
+        p.areaMax = 3.145 * (p.la ** 2)
+        phi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
+        l_ = (p.lmax - p.lb) / 2  # == p.la
+        l = np.array([l_ for x_i in range(len(phi))])  # ([2, 2, 2, 4,1,1, 4]) #distance from leaf center
+    elif shapename == "Maple":
+        p.lb = 1  # length of leaf stem
+        p.areaMax = 50
+        p.la, p.lmax = 5, 11
+        phi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
+        l = np.array([2, 2, 2, 4, 1, 1, 4])  # distance from leaf center
+    elif shapename == "Flower":
+        p.lb = 1  # length of leaf stem
+        p.areaMax = 100
+        p.la, p.lb, p.lmax = 5, 1, 11
+        phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
+        l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
 
 
 def fix_dx(rrp, strp, lrp):
@@ -87,14 +138,28 @@ def fix_dx(rrp, strp, lrp):
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.5
         r.dxMin = 1.e-6
+        r.nodalGrowth = 1  # <------- !
+        # r.initBeta = 0.
+        # r.betaDev = 0.
+        print("delayNGStarts", r.delayNGStarts)
+        print("delayNGEnds", r.delayNGEnds)
+        print("initBeta", r.initBeta)
+        print("betaDev", r.betaDev)
+        print("rotBeta", r.rotBeta)
+        # r.rotBeta = 0.5
+        r.betaDev = 10
     for r in lrp:
         # print(r.subType, ":", r.dx, r.dxMin)
-        r.dx = 0.5
+        r.dx = 0.25
         r.dxMin = 1.e-6
+        r.initBeta = 0.
+        r.betaDev = 0.
+        r.rotBeta = 0.5
 
 
 def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, leaf_data):
     """ simulates the plant xml parameter set with slider values """
+    print("simulate_plant()")
     # 1. open base xml
     fname = get_parameter_names()[int(plant_)][1]
     plant = pb.Plant()
@@ -111,9 +176,11 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     srp[0].seedPos.x = 0.  # override position (always)
     srp[0].seedPos.y = 0.
     srp[0].seedPos.z = -3.
-    # print("SEED SRP")
-    # print(len(srp))
-    # print(srp[0])
+    srp[0].delayRC = 30.
+    print("delaySB", srp[0].delaySB)
+    print("firstSB", srp[0].firstSB)
+    print("delayRC", srp[0].delayRC)
+    print("nC", srp[0].nC)
 
     # 3. simulate
     N = 50
@@ -176,16 +243,16 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
 
 
 def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_data):
-    tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Antigravitropism": 4 }
     # seed
-    srp.firstSB = seed_data["seed"][0]
-    srp.delaySB = seed_data["seed"][1]
-    srp.firstB = seed_data["seed"][2]
-    srp.delayB = seed_data["seed"][3]
-    srp.maxB = seed_data["seed"][4]
-    srp.firstTil = seed_data["seed"][5]
-    srp.delayTil = seed_data["seed"][6]
-    srp.maxTil = int(seed_data["seed"][7] + 0.5)
+    s = seed_data["seed"]
+    srp.firstSB = s[0]
+    srp.delaySB = s[1]
+    srp.firstB = s[2]
+    srp.delayB = s[3]
+    srp.maxB = s[4]
+    srp.firstTil = s[5]
+    srp.delayTil = s[6]
+    srp.maxTil = int(s[7] + 0.5)
     if not seed_data["shoot-checkbox"]:
         # print("no shootborne")
         srp.firstSB = 1.e6  # disable
@@ -217,22 +284,31 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.theta = d[2] / 180.*np.pi
         p.ln = d[3]
         p.a = d[4]
-        p.tropismN = d[5]
-        p.tropismS = d[6]
-        p.tropismT = tropism_names[d[7]]
-    # leaf
+        p.delayNGStart = d[5]
+        p.delayNGEnd = d[5] + d[6]
+        p.rotBeta = d[7]
+        p.tropismN = d[8]
+        p.tropismS = d[9]
+        p.tropismT = tropism_names[d[10]]
+    # Leaf
+    if len(lrp) > 1:
+        p = lrp[1]
+        d = leaf_data["leaf"]
+        set_leaf_geometry(d[0], p)
+        p.lmax = d[1]
+        p.r = d[2]
+        p.theta = d[3]
+        p.lb = d[4]
+        p.rotBeta = d[5] / 180.
+        p.tropismN = d[6]
+        p.tropismS = d[7]
+        p.tropismT = tropism_names[d[8]]
 
 
 def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     """ sets all store data from the xml file """
-    print("set_data()")
-    seed_data.clear()
-    root_data.clear()
-    stem_data.clear()
-    leaf_data.clear()
+    # print("set_data()")
     typename_data.clear()
-    """ set root, seed, stem, and leaf data from xml """
-    tropisms_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism" }
     """ open xml """
     fname = get_parameter_names()[int(plant_)][1]  # xml filename
     plant = pb.Plant()
@@ -248,28 +324,41 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     seed_data["shoot-checkbox"] = p.firstSB < 1.e3 and p.delaySB < 1.e3
     seed_data["basal-checkbox"] = p.firstB < 1.e3 and p.delayB < 1.e3 and p.maxB > 0
     seed_data["tillers-checkbox"] = p.firstTil < 1.e3 and p.delayTil < 1.e3 and p.maxTil > 0
-    # p.simulationTime # where to put it
+    seed_data["simulationTime"] = p.simtime  # where to put it
     """ root """
     rrp = plant.getOrganRandomParameter(pb.root)
     typename_data["number_roottypes"] = len(rrp[1:])
     for i, p in enumerate(rrp[1:]):
-        tropism_name = tropisms_names_[int(p.tropismT)]
+        tropism_name = tropism_names_[int(p.tropismT)]
         root_data[f"tab-{i+1}"] = [
             p.lmax, p.r, p.theta / np.pi * 180, p.lb, p.ln, p.la, p.a,
-            p.tropismN, p.tropismS, tropism_name
+            p.tropismN, p.tropismS, tropism_name , len(p.successorST) > 0
         ]
         typename_data[f"root tab-{i+1}"] = p.name
     """ stem """
     strp = plant.getOrganRandomParameter(pb.stem)
     typename_data["number_stemtypes"] = len(strp[1:])
     for i, p in enumerate(strp[1:]):
-        tropism_name = tropisms_names_[int(p.tropismT)]
+        tropism_name = tropism_names_[int(p.tropismT)]
         stem_data[f"tab-{i+1}"] = [
             p.lmax, p.r, p.theta / np.pi * 180, p.ln, p.a,
-            p.tropismN, p.tropismS, tropism_name
+            p.delayNGStart, p.delayNGEnd - p.delayNGStart, p.rotBeta * 180,
+            p.tropismN, p.tropismS, tropism_name, len(p.successorST) > 0  # for p.rotBeta = 1 == 180 ° (???)
         ]
         typename_data[f"stem tab-{i+1}"] = p.name
     """ leaf """
+    lrp = plant.getOrganRandomParameter(pb.leaf)
+    if len(lrp) > 1:
+        p = lrp[1]
+        tropism_name = tropism_names_[int(p.tropismT)]
+        leaf_data["leaf"] = [
+            "Defined",
+            p.lmax, p.r,
+            p.theta / np.pi * 180, p.lb, p.rotBeta * 180,
+            p.tropismN, p.tropismS, tropism_name
+        ]
+    else:
+        leaf_data["leaf"] = None
 
 
 def param_to_dict(orp):

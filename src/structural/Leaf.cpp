@@ -220,8 +220,8 @@ void Leaf::simulate(double dt, bool verbose)
  */
 double Leaf::getParameter(std::string name) const {
 	if (name=="shapeType") { return getLeafRandomParameter()->shapeType; } // definition type of the leaf shape
-	if (name=="Width_petiole") { return param()->Width_petiole; } // [cm]
-	if (name=="Width_blade") { return param()->Width_blade; } // [cm]
+	if (name=="width_petiole") { return param()->width_petiole; } // [cm]
+	if (name=="width_blade") { return param()->width_blade; } // [cm]
 	if (name=="lb") { return param()->lb; } // basal zone [cm]
 	if (name=="la") { return param()->la; } // apical zone [cm]
 	//if (name=="nob") { return param()->nob; } // number of branches
@@ -497,7 +497,7 @@ double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
 				//TODO: compute it better later? not sur how to do it if the leaf is not convex
 				// how to take into account possible petiole area? add perimeter  *lengthInPetiole /2 ?
 				vol_ = (lengthInBlade / leafLength(realized)) * leafArea(realized) *a;
-				
+
 				if(withPetiole)
 				{
 					vol_ +=  M_PI * lengthInPetiole * param()->a * param()->a;

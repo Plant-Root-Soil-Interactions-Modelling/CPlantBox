@@ -28,7 +28,7 @@ public:
     StemSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt,
 	bool laterals= false, int nodalGrowth = 0, double delayNGStart = 0.,double delayNGEnd = 0., double delayLat = 0.):
         OrganSpecificParameter(type, a),  lb(lb), la(la), r(r), theta(theta), rlt(rlt), ln(ln),
-		laterals(laterals), nodalGrowth(nodalGrowth), delayNGStart(delayNGStart), delayNGEnd(delayNGEnd), delayLat(delayLat) { } ///< Constructor setting all parameters
+		laterals(laterals), nodalGrowth(nodalGrowth), delayNGStart(delayNGStart), delayNGEnd(delayNGEnd){ } ///< Constructor setting all parameters
 
     /*
      * Stem parameters per single stem
@@ -39,11 +39,12 @@ public:
     double theta;           ///< Angle between stem and parent stem [rad]
     double rlt;             ///< Stem life time [day]
     std::vector<double> ln; ///< Inter-lateral distances [cm]
-	bool laterals = false;
+
+    bool laterals = false;
 	int nodalGrowth;			///< whether to implement the internodal growth [1] (see @stem::simulate)
 	double delayNGStart;
 	double delayNGEnd;
-	double delayLat;
+
     int nob() const { return ln.size() + laterals; } ///< return the maximal number of branching points [1]
     double getK() const; ///< Returns the exact maximal stem length of this realization [cm]
 
@@ -73,7 +74,7 @@ public:
 
 
     /*
-     * Parameters per stem type
+     * Parameters per stem typedelayNGStart
      */
     double lb = 0.; 	    ///< Basal zone [cm]
     double lbs = 0.;        ///< Standard deviation basal zone [cm]
@@ -88,12 +89,10 @@ public:
     double rs = 0.;	    	///< Standard deviation initial growth rate [cm day-1]
     double a = 0.1; 		///< Stem radius [cm]
     double as = 0.; 		///< Standard deviation stem radius [cm]
-    double k = 0.;          ///< Maximal stem length [cm]
-    double ks = 0.;         ///< Maximal stem length deviation [cm]
     double rotBeta = 0.6;	///< Revrotation
     double betaDev = 0.2;	///< Deviation of RevRotation
     double initBeta = 0.2;	///< Initial RevRotation
-    int tropismT = 1;	    ///< Stem tropism parameter (Type)
+    int tropismT = 1;	    ///< Stem tropism parameter (Type) tt_plagio = 0, tt_gravi = 1, tt_exo = 2, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5,  tt_antigravi2gravi = 6
     double tropismN = 1.;   ///< Stem tropism parameter (number of trials)
     double tropismS = 0.2;  ///< Stem tropism parameter (mean value of expected changeg) [1/cm]
 	double tropismAge = 0.;	///< Leaf tropism parameter (age when switch tropism)
@@ -103,7 +102,7 @@ public:
     double rlt = 1e9;		///< Stem life time (days)
     double rlts = 0.;	    ///< Standard deviation stem life time (days)
     int gf = 1;			    ///< Growth function (1=negative exponential, 2=linear)
-	int nodalGrowth = 0;		///< whether to implement the internodal growth (see @stem::simulate)
+	int nodalGrowth = 1;		///< whether to implement the internodal growth (see @stem::simulate)
 	double delayNGStart = 0.;		///< delay between stem creation and start of nodal growth [day]
 	double delayNGStarts = 0.;		///< delay between stem creation and start of nodal growth, deviation [day]
 	double delayNGEnd = 0.;		///< delay between stem creation and start of nodal growth [day]

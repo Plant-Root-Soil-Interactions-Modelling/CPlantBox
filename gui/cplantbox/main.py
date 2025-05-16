@@ -18,23 +18,23 @@ app.title = "CPlantbox Dash App"
 param_names = get_parameter_names()
 plants = [{'label': name[0], 'value': str(i)} for i, name in enumerate(param_names)]
 
-tropisms_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Antigravitropism": 4 }  # "Hydrotropism": 3, tt_hydro = 3, tt_antigravi = 4, tt_twist = 5,  tt_antigravi2gravi = 6
-
+seed_parameter_sliders = get_seed_slider_names()
 root_parameter_sliders = get_root_slider_names()
 stem_parameter_sliders = get_stem_slider_names()
-seed_parameter_sliders = get_seed_slider_names()
+leaf_parameter_sliders = get_leaf_slider_names()
 
-ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
-STEM_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
 SEED_SLIDER_INITIALS = [180, 1, 7, 7, 20, 7, 7, 15, 5]
+ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
+STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180., 1, 0.2, "Gravitropism"]
+LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45, 2., 1., 0.2, "Gravitropism"]
 
 """ LAYOUT """
 app.layout = dbc.Container([
 
     dcc.Store(id = 'seed-store', data = {"seed": SEED_SLIDER_INITIALS, "basal-checkbox": False, "shoot-checkbox": False, "tillers-checkbox": False }),
     dcc.Store(id = 'root-store', data = {f"tab-{i}": ROOT_SLIDER_INITIALS for i in range(1, 5)}),
-    dcc.Store(id = 'stem-store', data = {}),
-    dcc.Store(id = 'leaf-store', data = {}),
+    dcc.Store(id = 'stem-store', data = {f"tab-{i}": STEM_SLIDER_INITIALS for i in range(1, 5)}),
+    dcc.Store(id = 'leaf-store', data = {"leaf": LEAF_SLIDER_INITIALS}),
     dcc.Store(id = 'typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),
     dcc.Store(id = 'result-store', data = {}),
 
@@ -46,6 +46,7 @@ app.layout = dbc.Container([
             dcc.Dropdown(id = 'plant-dropdown',
                         options = plants,
                         value = plants[0]['value'],
+                        clearable = False,
                         className = 'customDropdown'),
             html.Div(className = "spacer"),
             html.H6("Simulation time [day]"),
@@ -74,8 +75,8 @@ app.layout = dbc.Container([
                         ]
                 ),
             html.Div(id = 'organtype-tabs-content'),
-            dcc.Tabs(id = 'root-tabs', children = []),
-            dcc.Tabs(id = 'stem-tabs', children = []),
+            dcc.Tabs(id = 'root-tabs', children = [], value = ""),
+            dcc.Tabs(id = 'stem-tabs', children = [], value = ""),
         ], width = 3),
 
         # Panel 3
@@ -145,7 +146,7 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
 def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data, vtk_data, result_value):
     print("click_simulate()", plant_value)
     vtk_data = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
-    content = render_result_tab(result_value, vtk_data)
+    content = render_result_tab(result_value, vtk_data)  # call by hand
     return (content, vtk_data, html.H6(""))
 
 
@@ -162,6 +163,7 @@ def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_dat
     State('leaf-store', 'data'),
 )
 def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_data):
+    print("")
     if tab == 'Seed':
         print("render_organtype_tab() seed:", seed_data)
         return generate_seed_sliders(seed_data)
@@ -173,7 +175,7 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_
         return stem_layout(stem_data, type_names)
     elif tab == 'Leaf':
         print("render_organtype_tab() leaf:", leaf_data)
-        return leaf_layout(leaf_data)
+        return generate_leaf_sliders(leaf_data)
 
 
 #
@@ -187,6 +189,10 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         html.Div(className = "spacer"),
         ]
     for i, key in enumerate(seed_parameter_sliders.keys()):
+        if i in [4, 7]:  # for number of basal, number of tillers
+            step_ = 1
+        else:
+            step_ = 0.1
         min_ = seed_parameter_sliders[key][0]
         max_ = seed_parameter_sliders[key][1]
         sliders.append(html.H6(key))
@@ -201,6 +207,7 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
                             max_ - 1.e-4: str(max_)
                             },
                         tooltip = { "always_visible": False},
+                        step = step_,
                     )
             )
     if data["shoot-checkbox"]:
@@ -328,16 +335,25 @@ def toggle_slider(checkbox_value):
 #
 # Parameters Panel - Root
 #
-def generate_root_sliders(root_values):  # Generate sliders for root tabs from stored values
+def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs from stored values
+    """ @param root_values is root_data[current_tab] """
     # print("generate_root_sliders()")
+    style = {}
+    successors = root_values[-1]
     sliders = []
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(root_parameter_sliders.keys()):
+        style = {}
+        if (not successors) and (i in [3, 4, 5]):  # no lb, ln, la for highest order
+            style = {'display': 'none'}
+        if (tab == 1) and (i == 2):  # no initial growth rate theta for tap
+            style = {'display': 'none'}
+
         min_ = root_parameter_sliders[key][0]
         max_ = root_parameter_sliders[key][1]
-        sliders.append(html.H6(key))
-        # print(key, str(min_), str(max_), min_, max_, root_values[i])
-        sliders.append(
+        sliders.append(html.H6(key, style = style))
+        # print(key, str(min_), str(max_), min_, max_, "value", root_values[i])
+        sliders.append(html.Div([
             dcc.Slider(
                         id = {'type': 'dynamic-slider', 'index': i},
                         min = min_,
@@ -347,15 +363,17 @@ def generate_root_sliders(root_values):  # Generate sliders for root tabs from s
                             min_ + 1.e-4: str(min_),
                             max_ - 1.e-4: str(max_)
                             },
-                        tooltip = { "always_visible": False},
-                    )
+                        tooltip = { "always_visible": False}
+                    )], style = style)
             )
     sliders.append(dcc.Dropdown(
                 id = {'type': 'dynamic-slider', 'index': i},  # little white lie
-                options = list(tropisms_names.keys()),
+                options = list(tropism_names.keys()),
                 value = root_values[i + 1],
+                clearable = False,
                 className = 'customDropdown'
             ))
+    print("generate_root_sliders()", len(sliders))
     return html.Div(sliders)
 
 
@@ -372,7 +390,6 @@ def root_layout(data, type_names):
         children = rootPanelChildren,
     )
     content = html.Div(id = 'root-tabs-content')
-    stored_values = data.get('tab-1', ROOT_SLIDER_INITIALS)
     return [tab, content]
 
 
@@ -380,12 +397,12 @@ def root_layout(data, type_names):
 @app.callback(
     Output('root-tabs-content', 'children'),
     Input('root-tabs', 'value'),
-    State('root-store', 'data'),
+    State('root-store', 'data'), suppress_callback_exceptions = True
 )
-def render_root_tab(selected_tab, data):
-    stored_values = data.get(selected_tab, ROOT_SLIDER_INITIALS)
-    print("render_root_tab()", selected_tab, data)
-    return generate_root_sliders(stored_values)
+def render_root_tab(selected_tab, root_data):
+    stored_values = root_data.get(selected_tab, ROOT_SLIDER_INITIALS)
+    print("render_root_tab()", selected_tab, root_data[selected_tab], stored_values)
+    return generate_root_sliders(stored_values, int(selected_tab[-1]))
 
 
 # Update root-store when any slider changes
@@ -397,22 +414,36 @@ def render_root_tab(selected_tab, data):
     prevent_initial_call = True,
 )
 def update_root_store(slider_values, current_tab, store_data):
-    # print("update_root_store()", current_tab, slider_values)
+    print("update_root_store() from", store_data[current_tab])
+    successors = store_data[current_tab][-1]
     store_data[current_tab] = slider_values
+    store_data[current_tab].append(successors)
+    print("update_root_store() to  ", store_data[current_tab])
     return store_data
 
 
 #
 # Parameters Panel - Stem
 #
-def generate_stem_sliders(stem_values):  # Generate sliders for stem tabs from stored values
+def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs from stored values
     sliders = []
+    successors = stem_values[-1]
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
+        if i in [7]:
+            style = {'display': 'none'}
+        else:
+            style = {}
+
+        if (not successors) and (i in [3]):
+            style = {'display': 'none'}
+        else:
+            style = {}
+
         min_ = stem_parameter_sliders[key][0]
         max_ = stem_parameter_sliders[key][1]
-        sliders.append(html.H6(key))
-        sliders.append(
+        sliders.append(html.H6(key, style = style))
+        sliders.append(html.Div([
             dcc.Slider(
                         id = {'type': 'stem-dynamic-slider', 'index': i},
                         min = min_,
@@ -423,12 +454,13 @@ def generate_stem_sliders(stem_values):  # Generate sliders for stem tabs from s
                             max_: str(max_)
                             },
                         tooltip = { "always_visible": False},
-                    )
+                    )], style = style)
             )
     sliders.append(dcc.Dropdown(
                 id = {'type': 'stem-dynamic-slider', 'index': i},  # little white lie
-                options = list(tropisms_names.keys()),
+                options = list(tropism_names.keys()),
                 value = stem_values[i + 1],
+                clearable = False,
                 className = 'customDropdown'
             ))
     return html.Div(sliders)
@@ -459,8 +491,8 @@ def stem_layout(data, type_names):
 )
 def render_stem_tab(selected_tab, data):
     stored_values = data.get(selected_tab, STEM_SLIDER_INITIALS)
-    print("render_stem_tab()", selected_tab, data)
-    return generate_stem_sliders(stored_values)
+    print("render_stem_tab()", selected_tab, stored_values)
+    return generate_stem_sliders(stored_values, int(selected_tab[-1]))
 
 
 # Update root-store when any slider changes
@@ -472,16 +504,73 @@ def render_stem_tab(selected_tab, data):
     prevent_initial_call = True,
 )
 def update_stem_store(slider_values, current_tab, store_data):
-    # print("update_root_store()", current_tab, slider_values)
+    print("update_stem_store()", current_tab, slider_values)
+    successors = store_data[current_tab][-1]
     store_data[current_tab] = slider_values
+    store_data[current_tab].append(successors)
     return store_data
 
 
 #
 # Parameters Panel - Leaf
 #
-def leaf_layout(data):
-    return html.Div([html.H5("not implemented (yet)")])
+def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored values
+
+    if data["leaf"] is None:
+        return [html.Div(className = "spacer"), html.H6("There is no leaf defined in your plant data set") ]
+
+    leaf_values = data["leaf"]
+    print(len(leaf_values), len(leaf_parameter_sliders.keys()))
+    sliders = []
+    sliders.append(html.Div(className = "spacer"))
+    sliders.append(html.H6("Leaf shape"))
+    sliders.append(dcc.Dropdown(
+                id = {'type': 'leaf-dynamic-slider', 'index': 0},  # little white lie
+                options = ["Defined", "Long", "Round", "Maple", "Flower"],
+                value = "Defined",
+                clearable = False,
+                className = 'customDropdown'
+    ))
+    sliders.append(html.Div(className = "spacer"))
+    for i, key in enumerate(leaf_parameter_sliders.keys()):
+        min_ = leaf_parameter_sliders[key][0]
+        max_ = leaf_parameter_sliders[key][1]
+        sliders.append(html.H6(key))
+        sliders.append(
+            dcc.Slider(
+                        id = {'type': 'leaf-dynamic-slider', 'index': i + 1},
+                        min = min_,
+                        max = max_,
+                        value = leaf_values[i + 1],
+                        marks = {
+                            min_: str(min_),
+                            max_: str(max_)
+                            },
+                        tooltip = { "always_visible": False},
+                    )
+            )
+    sliders.append(dcc.Dropdown(
+                id = {'type': 'leaf-dynamic-slider', 'index': i + 1},  # little white lie
+                options = list(tropism_names.keys()),
+                value = leaf_values[i + 2],
+                clearable = False,
+                className = 'customDropdown'
+            ))
+    return html.Div(sliders)
+
+
+# Update root-store when any slider changes
+@app.callback(
+    Output('leaf-store', 'data', allow_duplicate = True),  #
+    Input({'type': 'leaf-dynamic-slider', 'index': dash.ALL}, 'value'),
+    State('leaf-store', 'data'),
+    prevent_initial_call = True,
+)
+def update_leaf_store(slider_values, store_data):
+    print("update_leaf_store()", slider_values)
+    if len(slider_values) > 1:  # called empty
+        store_data["leaf"] = slider_values
+    return store_data
 
 
 """ Results Panel """
@@ -517,4 +606,4 @@ def render_result_tab(tab, vtk_data):
 
 
 if __name__ == '__main__':
-    app.run(debug = True)  # , suppress_callback_exceptions = True
+    app.run(debug = True)

@@ -96,7 +96,6 @@ public:
     std::vector<std::vector<double> > successorWhere = std::vector<std::vector<double>>(0, std::vector<double> (0, 0));  	///< Where should rule be implemented [1] or not [-1]
     std::vector<std::vector<int> > successorOT = std::vector<std::vector<int>>(0, std::vector<int> (0, 0));			///< Lateral types [1]
 
-
 protected:
 
     /* class introspection */
