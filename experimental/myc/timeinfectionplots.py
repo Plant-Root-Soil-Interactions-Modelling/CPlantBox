@@ -79,16 +79,16 @@ for t in range(1, len(time)):
     delta_expected =  mycp.getOrganRandomParameter(pb.root)[1].p * L_susceptible * dt
     expected_new_primary.append(delta_expected)
 
-    if t % 10 == 0:
-        print(f"t={t}:")
-        print(f"- Beobachtet:   {delta_obs:.2f} mm neue primäre Infektion")
-        print(f"- Erwartet:     {delta_expected:.2f} mm")
-        print(f"- Abweichung:   {delta_obs - delta_expected:.2f} mm")
-        print(f"- Totale Länge: {total_lengths[t]:.2f} mm")
-        print(f" - Nicht infizierte Länge: {L_susceptible:.2f} mm")
-        print(f"- Primäre Infektion: {observed_primary[t]:.2f} mm")
-        print(f"- Sekundäre Infektion: {observed_secondary[t]:.2f} mm")
-        print("-" * 30)
+    # if t % 10 == 0:
+    #     print(f"t={t}:")
+    #     print(f"- Beobachtet:   {delta_obs:.2f} mm neue primäre Infektion")
+    #     print(f"- Erwartet:     {delta_expected:.2f} mm")
+    #     print(f"- Abweichung:   {delta_obs - delta_expected:.2f} mm")
+    #     print(f"- Totale Länge: {total_lengths[t]:.2f} mm")
+    #     print(f" - Nicht infizierte Länge: {L_susceptible:.2f} mm")
+    #     print(f"- Primäre Infektion: {observed_primary[t]:.2f} mm")
+    #     print(f"- Sekundäre Infektion: {observed_secondary[t]:.2f} mm")
+    #     print("-" * 30)
 
 ratio = True
 if ratio:

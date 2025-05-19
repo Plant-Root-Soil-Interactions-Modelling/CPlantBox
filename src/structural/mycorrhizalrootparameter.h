@@ -11,7 +11,7 @@ namespace CPlantBox {
 
     class MycorrhizalRootSpecificParameter :public RootSpecificParameter{
         public:
-        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.,0.15,0.13) { }
+        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.,0.,0.) { }
 
         MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, double p, double vi, int infected = false, bool laterals = false):
             RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), p(p), vi(vi) {};

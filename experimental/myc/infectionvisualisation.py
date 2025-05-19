@@ -61,11 +61,12 @@ if animation:
 else:
     for i in range(0, N):
         mycp.simulate(dt, False)
+        # mycp.simulateHyphalGrowth(dt)
 
     # mycp.simulate(simtime, False)
     # print("sim time", mycp.getSimTime())
 
-    # mycp.simulateHyphalGrowth(simtime)
+    mycp.simulateHyphalGrowth(simtime)
     # hyphae = mycp.getOrgans(5)
     # print("number of hyphae", len(hyphae))
     # print("type", type(hyphae))

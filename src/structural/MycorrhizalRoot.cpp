@@ -65,6 +65,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     {
         if (getRootRandomParameter()->f_inf)
         {
+            // std::cout << getRootRandomParameter()->f_inf->getValue(Vector3d(0,0,-10),shared_from_this()) << std::endl;
             for (size_t i = 1; i <nodes.size(); i++)
             {
                 double p = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()); // get rate of infection based on node position
