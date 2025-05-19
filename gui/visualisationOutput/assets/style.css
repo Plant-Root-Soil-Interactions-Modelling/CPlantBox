@@ -1,0 +1,80 @@
+/* Fonts */
+h5 { /* top font */
+    font-size: 18px;
+    padding-top: 15px;
+    padding-bottom: 10px;
+}
+
+h6, .checkbox-label { /* panel font */
+    padding-top: 0px;
+    font-size: 12px;
+    /*color: red;*/ 
+}
+
+.checkbox {
+    display: block;
+    margin-bottom: 10px; /* or whatever spacing you prefer */
+}
+
+.spacer { /* vertical space between panel 1 elements */
+    height: 20px; 
+}
+
+.largeSpacer { /* vertical margin for panel 3, e.g. h5 + margins + something */
+    height: 70px; 
+}
+
+  
+.customDropdown {    
+    font-size: 12px !important;
+} 
+
+/* Dropdown menu list items */
+.Select-menu-outer, .Select-option { 
+    font-size: 12px !important;
+}
+
+/* --- Fix the size of tabs --- */
+.tab, .tabSelected {
+    /* height: 30px; */
+    margin-top: 0px !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;    
+    font-size: 12px;    
+    /*flex: 0;  /* Equal width for all tabs */
+    /*max-width: 150px;  /* Set a fixed max width */
+    /*text-align: left;  /* Center text inside the tab */
+    /*white-space: nowrap;  /* Prevent text from wrapping */
+    overflow: hidden;  /* Hide overflowing text */
+    text-overflow: ellipsis;  /* Show '...' for long text */
+    /* padding: 1px; */
+    border-radius: 8px 8px 0 0;*/
+    border: 1px solid transparent;
+    transition: background 0.3s ease-in-out;
+}
+
+/* LOGO */
+.logoContainer {
+    position: fixed;
+    bottom: 75px;
+    left: 20px;
+    display: flex;
+    flex-direction: column; /* 👈 Stack vertically */
+    gap: 10px;
+    align-items: center;
+    z-index: 999;
+    /* Make sure it's always on top */
+}
+
+.logo {
+    height: auto;
+    width: 120px;
+    opacity: 1.;
+    transition: opacity 0.3s;
+}
+
+.logo:hover {
+    opacity: 0.5
+}
