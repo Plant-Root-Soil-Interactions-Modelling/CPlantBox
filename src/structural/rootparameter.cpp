@@ -55,7 +55,7 @@ RootRandomParameter::RootRandomParameter(std::shared_ptr<Organism> plant) :Organ
  */
 std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<Organism> p)
 {
-    // std::cout << "RootRandomParameter::copy\n"<< std::flush;
+    std::cout << "RootRandomParameter::copy\n"<< std::flush;
     auto r = std::make_shared<RootRandomParameter>(*this); // copy constructor breaks class introspection
     r->plant = p;
     r->bindParameters(); // fix class introspection
@@ -131,6 +131,7 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
     double a_ = std::max(a + p->randn()*as, 0.01); // radius
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
+    std::cout << this->toString() << std::flush;
 
     return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hasLaterals);
 }
