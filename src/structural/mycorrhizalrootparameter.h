@@ -49,7 +49,7 @@ namespace CPlantBox {
 
         double hyphalEmergenceDensity = 0; //< [1 / cm]
 
-        std::shared_ptr<SoilLookUpSDF> f_inf = std::make_shared<SoilLookUpSDF>();
+        std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();
 
     };
 }

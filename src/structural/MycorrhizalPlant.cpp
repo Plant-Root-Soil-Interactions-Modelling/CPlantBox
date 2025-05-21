@@ -141,12 +141,14 @@ void MycorrhizalPlant::initCallbacks() {
         auto bigbox = std::make_shared<SDF_PlantBox>(1.e100,1.e100,1.e100); // TODO Fix this
         auto inf_ = std::make_shared<SoilLookUpSDF>();
         auto sdf = SignedDistanceFunction();
+        // auto sdf = SoilLookUp();
         sdf = *bigbox;
         inf_->sdf = &sdf;
         inf_->fmax = rp->p;
         inf_->fmin = 0;
         inf_->slope = 0;
-        // rp->f_inf  = inf_;
+        // std::cout<< inf_->sdf->toString() << std::endl;
+        // rp->f_inf  = sdf; // set new one
     }
 
     // Create tropisms and growth functions per random hyphae parameter
