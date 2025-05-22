@@ -15,9 +15,9 @@ tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "N
 def get_parameter_names():  # parameter xml file names
     """ returns a list of plant parameter names with two values each, first a short name, second exact filename """
     parameter_names = [
+        ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
-        ("Demo Leaf", "leaf_only.xml"),
         # ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
         # ("Maize_", "new_maize.xml"),
         # # ("Maize2", "maize.xml"),

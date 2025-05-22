@@ -46,7 +46,7 @@ def vtk3D_plot(vtk_data, color_pick):
         ],
         property = {
             "color": [0, 1, 0],  # Green
-            "opacity": 0.7
+            "opacity": 0.85
         }
     )
     content = dash_vtk.View(children = [ geom_rep, leaf_rep ])
