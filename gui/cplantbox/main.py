@@ -114,6 +114,7 @@ app.layout = dbc.Container([
     Output('leaf-store', 'data'),
     Output('typename-store', 'data'),
     Output('organtype-tabs', 'value'),  # to trigger update
+    Output('time-slider', 'value'),
     Input('plant-dropdown', 'value'),
     State('seed-store', 'data'),
     State('root-store', 'data'),
@@ -125,7 +126,7 @@ app.layout = dbc.Container([
 )
 def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value):
     set_data(plant_value, seed_data, root_data, stem_data, leaf_data, typename_data)
-    return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value)
+    return (seed_data, root_data, stem_data, leaf_data, typename_data, tabs_value, seed_data["simulationTime"])
 
 
 @app.callback(# create-button

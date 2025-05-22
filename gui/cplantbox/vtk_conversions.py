@@ -79,14 +79,15 @@ def apply_tube_filter(polydata):
 def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, width = 100, discrete = False):
 
     if discrete:
-        n = int(vmax - vmin + 1)
-        print("vmin", vmin)
-        print("vmax", vmax)
-        print("n", n)
+        n = max(int(vmax - vmin + 1), 2)
         z = np.linspace(vmin - 0.5, vmax + 0.5, n).reshape(-1, 1)
     else:
         n = 256
         z = np.linspace(vmin, vmax, n).reshape(-1, 1)
+
+    # print("vmin", vmin)
+    # print("vmax", vmax)
+    # print("n", n)
 
     if height > width:
         x0 = 0

@@ -40,10 +40,10 @@ def get_seed_slider_names():  # see set_data, apply_sliders
     parameter_sliders = {
         "First shoot borne root [day]": (1, 30),
         "Shoot borne delay [day]": (1, 21),
-        "First basal root [day]": (1, 30),
+        "First basal root [day]": (1, 21),
         "Basal root delay [day]": (1, 21),
-        "Maximal number of basal roots [1]": (0, 50),
-        "First tiller [day]": (1, 30),
+        "Maximal number of basal roots [1]": (0, 30),
+        "First tiller [day]": (1, 21),
         "Tiller delay [day]": (1, 21),
         "Maximal number of tillers [1]": (0, 7),
     }
@@ -186,7 +186,6 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     print("firstSB", srp[0].firstSB)
     print("delayRC", srp[0].delayRC)
     print("nC", srp[0].nC)
-
     # 3. simulate
     N = 50
     t_ = np.linspace(0., time_slider_value, N + 1)
@@ -217,10 +216,10 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     vtk_data = vtk_polydata_to_dashvtk_dict(tube)
     cellData = pd.GetCellData()
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
-    vtk_data["creationTime"] = cT
-    vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
-    vtk_data["organType"] = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))
-    vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType"))
+    vtk_data["creationTime"] = cT  ################################################################### TODO somehow creationTime and Age are mixed up
+    # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
+    organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
+    vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2)
     vtk_data["radius"] = numpy_support.vtk_to_numpy(cellData.GetArray("radius"))
     vtk_data["time"] = t_[1:]
     for j in range(number_r):
@@ -248,6 +247,7 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
 
 
 def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_data):
+    """ slider values to cplantbox random parameters """
     # seed
     s = seed_data["seed"]
     srp.firstSB = s[0]
@@ -329,6 +329,14 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
     seed_data["shoot-checkbox"] = p.firstSB < 1.e3 and p.delaySB < 1.e3
     seed_data["basal-checkbox"] = p.firstB < 1.e3 and p.delayB < 1.e3 and p.maxB > 0
     seed_data["tillers-checkbox"] = p.firstTil < 1.e3 and p.delayTil < 1.e3 and p.maxTil > 0
+    if not seed_data["basal-checkbox"]:  # defaults in case someone turns it on
+        seed_data["seed"][2] = 7
+        seed_data["seed"][3] = 7
+        seed_data["seed"][4] = 5
+    if not seed_data["tillers-checkbox"]:  # defaults in case someone turns it on
+        seed_data["seed"][5] = 7
+        seed_data["seed"][6] = 11
+        seed_data["seed"][7] = 4
     seed_data["simulationTime"] = p.simtime  # where to put it
     """ root """
     rrp = plant.getOrganRandomParameter(pb.root)
