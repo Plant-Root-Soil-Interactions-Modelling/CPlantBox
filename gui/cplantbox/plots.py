@@ -3,12 +3,18 @@
 import numpy as np
 
 from dash import html, dcc, Input, Output, State, ctx
+import dash_bootstrap_components as dbc
+
 import plotly.graph_objs as go
 from plotly.colors import qualitative
+
 import dash_vtk
 
+from vtk_conversions import *
 
-def vtk3D_plot(vtk_data, color_pick):
+
+def vtk3D_plot(vtk_data, color_pick, type_):
+
     """ 3D and 3D age plot """
     color_range = [np.min(color_pick), np.max(color_pick)]  # set range from min to max
     geom_rep = dash_vtk.GeometryRepresentation(
@@ -50,7 +56,32 @@ def vtk3D_plot(vtk_data, color_pick):
         }
     )
     content = dash_vtk.View(children = [ geom_rep, leaf_rep ])
-    return html.Div(content, style = {"width": "100%", "height": "600px"})
+
+    if type_ == "Age":
+        label_ = "Age [day]"
+        cbar = generate_colorbar_image(vmin = color_range[0], vmax = color_range[1], colormap = "Jet_r", height = 40, width = 200)
+    else:
+        label_ = "Type [1]"
+        cbar = generate_colorbar_image(vmin = color_range[0], vmax = color_range[1], colormap = "Jet", height = 40, width = 200, discrete = True)
+
+    cbarcontent = dcc.Graph(
+                # id = 'dummy-id',
+                figure = cbar,
+                style = {'width': '200px', 'height': '40px'},
+                config = {
+                    'displayModeBar': False  # Hides the entire toolbar
+                }
+            )
+    style_ = {
+        'marginTop': '10px',
+        'marginRight': '10px',
+        'marginBottom': '10px',
+        'marginLeft': '10px'
+    }
+
+    colbar = html.Div([html.H6(label_, style = style_), cbarcontent], style = {'display': 'flex', 'justifyContent': 'flex-end'})
+
+    return [html.Div(content, style = {"width": "100%", "height": "600px"}), colbar]
 
 
 def profile_plot(vtk_data):

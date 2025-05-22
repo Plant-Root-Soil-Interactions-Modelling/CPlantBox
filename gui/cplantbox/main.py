@@ -193,10 +193,13 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
             step_ = 1
         else:
             step_ = 0.1
+        style = {}
+        if i in [0, 1]:
+            style = {'display': 'none'}
         min_ = seed_parameter_sliders[key][0]
         max_ = seed_parameter_sliders[key][1]
-        sliders.append(html.H6(key))
-        sliders.append(
+        sliders.append(html.H6(key, style = style))
+        sliders.append(html.Div([
             dcc.Slider(
                         id = {'type': 'dynamic-seed-slider', 'index': i},
                         min = min_,
@@ -208,7 +211,7 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
                             },
                         tooltip = { "always_visible": False},
                         step = step_,
-                    )
+                    )], style = style)
             )
     if data["shoot-checkbox"]:
         v = ['agree']
@@ -218,7 +221,8 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         id = 'shoot-checkbox',
         options = [{'label': html.Span(' Shoot borne roots', className = 'checkbox-label'), 'value': 'agree'}],
         className = 'checkbox',
-        value = v
+        value = v,
+        style = {'display': 'none'}
     ))
     if data["basal-checkbox"]:
         v = ['agree']
@@ -598,13 +602,13 @@ def render_result_tab(tab, vtk_data):
 
     if tab == 'VTK3D':
         color_pick = vtk_data["subType"]
-        color_pick = np.repeat(color_pick, 24)  # 24 = 3*(7+1) ???
-        print("number of cell colors", len(color_pick), "\n", type(color_pick))
-        return vtk3D_plot(vtk_data, color_pick)
+        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
+        # print("number of cell colors", len(color_pick), "cells", len(vtk_data["subType"]) , "\n", type(color_pick))
+        return vtk3D_plot(vtk_data, color_pick, "Type")
     elif tab == 'VTK3DAge':
         color_pick = vtk_data["creationTime"]
-        color_pick = np.repeat(color_pick, 24)  # 24 = 3*(7+1) ???
-        return vtk3D_plot(vtk_data, color_pick)
+        color_pick = np.repeat(color_pick, 16)  # 24 = 3*(7+1) (für n=7) ??? 16 (für n=5)
+        return vtk3D_plot(vtk_data, color_pick, "Age")
     elif tab == 'Profile1D':
         return profile_plot(vtk_data)
     elif tab == 'Dynamics':

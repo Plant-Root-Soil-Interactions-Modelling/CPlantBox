@@ -115,6 +115,7 @@ def write_leafOnly():
 
     seed = pb.SeedRandomParameter(plant)
     tap = pb.RootRandomParameter(plant)
+    lateral = pb.RootRandomParameter(plant)  ################################# TODO
     stem = pb.StemRandomParameter(plant)
     leaf = pb.LeafRandomParameter(plant)
 

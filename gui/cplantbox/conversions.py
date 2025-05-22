@@ -8,8 +8,8 @@ import visualisation.vtk_plot as vp
 
 from vtk_conversions import *
 
-tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Negative gravitropism": 4, "Twist": 5, "Variable gravitropism": 6}
-tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 5: "Twist", 6: "Variable gravitropism"}
+tropism_names = { "Plagiotropism": 0, "Gravitropism":1, "Exotropism": 2, "Negative gravitropism": 4, "Variable gravitropism": 6}  # "Twist": 5,
+tropism_names_ = { 0: "Plagiotropism", 1: "Gravitropism", 2: "Exotropism", 4: "Negative gravitropism", 6: "Variable gravitropism"}  # 5: "Twist",
 
 
 def get_parameter_names():  # parameter xml file names

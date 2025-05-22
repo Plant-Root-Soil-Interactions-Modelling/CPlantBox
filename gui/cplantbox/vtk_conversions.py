@@ -2,6 +2,8 @@ from vtk.util import numpy_support
 import vtk
 import numpy as np
 
+import plotly.graph_objs as go
+
 
 def vtk_polyline_to_dict(polydata):
     """ converts polylines to a dict """
@@ -63,7 +65,7 @@ def apply_tube_filter(polydata):
     tube_filter = vtk.vtkTubeFilter()
     tube_filter.SetInputData(polydata)
     tube_filter.SetVaryRadiusToVaryRadiusByAbsoluteScalar()
-    tube_filter.SetNumberOfSides(7)
+    tube_filter.SetNumberOfSides(5)
     tube_filter.SetRadius(1.0)
     tube_filter.SetCapping(True)
     tube_filter.Update()
@@ -72,4 +74,50 @@ def apply_tube_filter(polydata):
     triangle_filter.Update()
 
     return triangle_filter.GetOutput()
+
+
+def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, width = 100, discrete = False):
+
+    if discrete:
+        n = int(vmax - vmin + 1)
+        print("vmin", vmin)
+        print("vmax", vmax)
+        print("n", n)
+        z = np.linspace(vmin - 0.5, vmax + 0.5, n).reshape(-1, 1)
+    else:
+        n = 256
+        z = np.linspace(vmin, vmax, n).reshape(-1, 1)
+
+    if height > width:
+        x0 = 0
+        dx = 1
+        y0 = vmin
+        dy = (vmax - vmin) / (n - 1)
+    else:
+        y0 = 0
+        dy = 1
+        x0 = vmin
+        dx = (vmax - vmin) / (n - 1)
+        z = np.transpose(z)
+
+    fig = go.Figure(go.Heatmap(
+        z = z,
+        colorscale = colormap,
+        showscale = False,
+        x0 = x0, dx = dx,
+        y0 = y0, dy = dy,
+        colorbar = None
+    ))
+    fig.update_layout(
+        width = width,
+        height = height,
+        margin = dict(l = 10, r = 0, t = 10, b = 10),  # for the text
+        yaxis = dict(
+            showticklabels = False,
+            showgrid = False,
+            zeroline = False,
+            visible = False
+        )
+    )
+    return fig
 
