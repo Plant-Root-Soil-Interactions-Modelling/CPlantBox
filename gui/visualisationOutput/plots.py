@@ -24,6 +24,12 @@ from vtk.util.numpy_support import vtk_to_numpy
 from dash_vtk.utils import to_mesh_state, to_volume_state
 from vtk.util.numpy_support import vtk_to_numpy
 
+with open("data/4Andrea_coordcs.pkl", "rb") as file:
+    dataradial = pickle.load( file)
+dfcoord, dfcs, dfccat, dfcca, dfcoa = dataradial[0], dataradial[1], dataradial[2], dataradial[3], dataradial[4]
+with open("data/plantData.pkl", "rb") as file:
+    plantData = pickle.load(file)
+    
 
 def read_vtp(filename):
     reader = vtk.vtkXMLPolyDataReader()
@@ -176,7 +182,6 @@ def plot_mesh_cuts(grid, array_name, nz = 3):
 
 def process_soil_vti(file_main, pname):
     # Read input
-    print('file_main',file_main)
     image_data  = read_rect_vtu(file_main)
     cell_data = image_data.GetCellData()
 
@@ -185,9 +190,54 @@ def process_soil_vti(file_main, pname):
     data_range = [float(data_array.min()), float(data_array.max())] 
     cut_states =plot_mesh_cuts(image_data, pname, nz = 3)
     return cut_states, data_range
+    
+def generate_colorbar_image(vmin, vmax, colormap="Viridis", height=500, width=100):
+    # Create gradient data
+    z = np.linspace(vmin, vmax, 256).reshape(-1, 1)
 
-def vtk3D_plot(time, scenario, pSet, pname , soildata, rsidata): #vtk_data, color_pick):
+    fig = go.Figure(go.Heatmap(
+        z=z,
+        colorscale=colormap,
+        showscale=False,
+        x0=0, dx=1,
+        y0=vmin, dy=(vmax - vmin) / 256,
+        colorbar=None
+    ))
+
+    fig.update_layout(
+        width=width,
+        height=height,
+        margin=dict(l=0, r=100, t=20, b=20),  # add enough right margin for text
+        xaxis=dict(
+            showticklabels=False,
+            showgrid=False,
+            zeroline=False,
+            visible=False  # hide x-axis entirely
+        ),
+        yaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            ticks="outside",
+            side="right",  # display ticks on the right
+            tickvals=[vmin, vmax],
+            ticktext=[f"{vmin:.2e}", f"{vmax:.2e}"],
+            tickfont=dict(size=14),
+            range=[vmin, vmax],
+            automargin=True
+        )
+    )
+
+    return fig
+    
+def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
     """ 3D and 3D age plot """
+    time = data['time']
+    scenario = data['scenarios'+str(plantid)]
+    pSet = data['pSets'+str(plantid)]
+    pname = data['variable_plant'+str(plantid)]
+    soildata = data['soil'+str(plantid)]
+    rsidata = data['rsi'+str(plantid)]
+    
     print('vtk3D_plot', scenario, pSet, pname)
     if scenario == "lateDry":
         sc = "lD"
@@ -249,26 +299,30 @@ def vtk3D_plot(time, scenario, pSet, pname , soildata, rsidata): #vtk_data, colo
     else:
         viewChildren.append(dash_vtk.GeometryRepresentation(
             id="tubes-rep",
-            colorMapPreset="erdc_rainbow_bright",
+            colorMapPreset= "rainbow",#"Viridis (matplotlib)" ,#"erdc_rainbow_bright",
             colorDataRange=q_range,
+            #showCubeAxes=True,
             children=[
                 dash_vtk.Mesh(state=tube_state)
             ]))
+    cbar = generate_colorbar_image(vmin=q_range[0], vmax=q_range[1], 
+                            colormap="Rainbow", #"Viridis", 
+                            height=200, width=150)
         
     
     if soildata >= 0:
         print('adding soil' )
         for state in cut_states:
             viewChildren.append(
-                dash_vtk.GeometryRepresentation(
+               dash_vtk.GeometryRepresentation(
                 id="soil-rep",
             children=[
                 dash_vtk.Mesh(state=state)
             ],
             colorMapPreset="erdc_rainbow_bright",
             colorDataRange=q_range_soil,
-        )
-            )
+        ))
+            
     
     content = dash_vtk.View(
         id="vtk-view",
@@ -276,15 +330,56 @@ def vtk3D_plot(time, scenario, pSet, pname , soildata, rsidata): #vtk_data, colo
         background=[0.9, 0.9, 0.9],  # Light gray background
         cameraPosition=[81, -49, 17],
         #cameraFocalPoint=[4, -7, -1],
-        cameraViewUp=[-0.18, 0.09, 0.979])
+        cameraViewUp=[-0.18, 0.09, 0.979],
+        style={'flex': '1 1 auto', 'height': '100%', 'width': '100%'})
+    cbarcontent = dcc.Graph(
+            id = 'profile-plot',
+            figure = cbar,
+            style = {'width': '25%', 'height': '600px'}
+        )
 
+
+    return html.Div(
+                children=[
+                    html.Div(content, style={
+                        "flex": "1 1 auto",
+                        "height": "100%",
+                        "width": "100%",
+                        "display": "flex",
+                        "flexDirection": "column",
+                    })
+                ],
+                style={
+                    "flex": "1 1 auto",
+                    "height": "100%",
+                    "width": "100%",
+                    "display": "flex",
+                    "flexDirection": "column",
+        "padding": "5px", 
+                }
+            )
+'''
     
-    return html.Div(content, style = {"width": "50%", "height": "600px","flex": "1", "margin": "5px"})
+    return html.Div([
+            # First child: VTK 3D view (full width)
+            html.Div(
+                content,
+                style={'width': '100%', 'height': '100%'}
+            ),
 
-
-with open("data/plantData.pkl", "rb") as file:
-    plantData = pickle.load(file)
-    
+            # Second child: colorbar
+            #html.Div(
+            #    cbarcontent,
+            #    style={
+            #        "width": "100px",         # Narrow fixed width
+            #        "height": "20px",
+            #        "margin": "20px auto",     # auto horizontal margins centers it
+            #        "alignSelf": "center"
+            #    }
+            #)
+        ],
+        style={'flex': '1 1 auto', 'height': '100%', 'display': 'flex', 'flexDirection': 'column'})#return  html.Div(content, style = {'width': '100%', 'height': '80vh', 'minHeight': '600px'})
+'''
 def dotheplot_plotly(fig, toplot, cumsum, df, namesyaxes=None, ncols=3, maxTime=None, 
                      indexlegend1=0, indexlegend2=1, microbes=[5, 44, 61], 
                      scenarios=["baseline", "earlyDry", "lateDry"],cstLims=False):
@@ -302,7 +397,7 @@ def dotheplot_plotly(fig, toplot, cumsum, df, namesyaxes=None, ncols=3, maxTime=
             if tipi == "psiXyl":
                 max_y.append(0.)
                 min_y.append(min([dftemp[tipi].min(axis=0) for dftemp in df]
-                       )*changeDown)
+                       )*changeUp)
             else:
                 min_y.append(0.)
                 max_y.append(max([dftemp[tipi].max(axis=0) for dftemp in df]
@@ -377,6 +472,7 @@ def dotheplot_plotly(fig, toplot, cumsum, df, namesyaxes=None, ncols=3, maxTime=
                 fig.add_vline(x=xval, line_dash='dash', line_color='black', row=rowid + 1, col=colid + 1)
 
             if cstLims:#maxTime is not None:
+                print('ig.update_yaxes', min_y[rowid]* factor, max_y[rowid]* factor)
                 fig.update_xaxes(range=[10.,25.], row=rowid + 1, col=colid + 1)
                 fig.update_yaxes(range=[min_y[rowid]* factor, max_y[rowid]* factor], row=rowid + 1, col=colid + 1)
             else:
@@ -405,7 +501,7 @@ c_styles = {
     'earlyDry':  '#66c2a5' ,  # Green
     'lateDry': '#fc8d62'  # red
 }
-def plantData_plot_plotly(toplot, scenarios, pSet, maxTime, cstLims):
+def plantData_plot_plotly(toplot, scenarios, pSet):
     """ Generate a Plotly figure showing plant physiological data across scenarios and parameter sets """
     #print('toplot', toplot)
     ncols = 1
@@ -440,58 +536,205 @@ def plantData_plot_plotly(toplot, scenarios, pSet, maxTime, cstLims):
         df=plantData,
         namesyaxes=namesyaxes,
         ncols=ncols,
-        maxTime=maxTime,
+        maxTime=26.,
         microbes=pSet,
         scenarios=scenarios,
         indexlegend1=1,
         indexlegend2=1,
-        cstLims=cstLims
+        cstLims=True
     )
+    # === Custom legend traces ===
 
+    # Color legend (scenarios)
+    color_legend_traces = [
+        go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            line=dict(color=c_styles['baseline'], width=4),
+            name='baseline',
+            showlegend=True
+        ),
+        go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            line=dict(color=c_styles['earlyDry'], width=4),
+            name='earlyDry',
+            showlegend=True
+        ),
+        go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            line=dict(color=c_styles['lateDry'], width=4),
+            name='lateDry',
+            showlegend=True
+        )
+    ]
+
+    # Line style legend (microbes)
+    linestyle_legend_traces = [
+        go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            line=dict(color='black', dash=l_styles[5], width=4),
+            name='High respirating',
+            showlegend=True
+        ),
+        go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            line=dict(color='black', dash=l_styles[44], width=4),
+            name='High development',
+            showlegend=True
+        ),
+        go.Scatter(
+            x=[None], y=[None],
+            mode='lines',
+            line=dict(color='black', dash=l_styles[61], width=4),
+            name='Low activity',
+            showlegend=True
+        )
+    ]
+
+    # Add to the figure
+    for trace in color_legend_traces + linestyle_legend_traces:
+        fig.add_trace(trace)
     fig.update_layout(
-        height=int(1800/3),
-        width=1000,
-        title_text="Plant Physiological Responses",
+        #height=int(1800/3),
+        #width=1000,
+        #title_text="",
+        autosize=True,
         showlegend=True,
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.25,
+        xanchor="center",
+        x=0.5
+    ),
         font=dict(size=14)
     )
 
     content = dcc.Graph(
             id = 'profile-plot',
             figure = fig,
-            style = {'width': '100%', 'height': '600px'}
+        config={'responsive': True},
+        style={'width': '100%', 'height': '100%'}
         )
 
-    return  html.Div(content, style = {"width": "100%", "height": "600px"})
+    return  html.Div(content, style = {'width': '100%', 'height': '80vh', 'minHeight': '600px'})
     
+def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
+                            unitChangex=10, unitChangey=1e6, timeeval=-1.,
+                            colordf_=None, doLog=False):
+
+    color_palette = ['#8e0152','#c51b7d','#de77ae','#f1b6da','#fde0ef',
+                     '#e6f5d0','#b8e186','#7fbc41','#4d9221']
+    color_mapping = dict(zip(range(9), color_palette))
+
+    if timeeval < 0.:
+        timeeval = max(dfx_['time'])
+        
+    closest_time = dfx_['time'].iloc[(dfx_['time'] - timeeval).abs().argsort().values[0]]
+    dfx = dfx_[dfx_['time'] == closest_time].copy()
+    dfy = dfy_[dfy_['time'] == closest_time].copy()
+    if colordf_ is not None:
+        colordf = colordf_[colordf_['time'] == closest_time].copy()#colordf_.loc[[closest_time]]
+
+    # Convert pSet to string once if needed
+    pSet_str = str(pSets[0])
+    scenario = scenarios[0]
+
+    mask = (dfx['pSet'] == pSet_str) & (dfx['scenario'] == scenario)
+    dfx__ = dfx.loc[mask]
+    dfy__ = dfy.loc[mask]
+    if colordf_ is not None:
+        colordf__ = colordf.loc[mask]
+
+    # Preselect column names and values
+    xcols = [f'cellS{i}' for i in range(8, -1, -1)]
+    ycols = [f'cell{i}' for i in range(8, -1, -1)]
+
+    xdata = dfx__[xcols].values * unitChangex
+    ydata = dfy__[ycols].values * unitChangey
+    if colordf_ is not None:
+        cdata = colordf__[ycols].values
+
+    # Generate Plotly traces
+    traces = []
+    for i, (x, y) in enumerate(zip(xdata.T, ydata.T)):
+        cell_id = 8 - i  # because range is from 8 to 0
+        if colordf_ is not None:
+            trace = go.Scatter(
+                x=x,
+                y=y,
+                mode='markers',
+                marker=dict(
+                    color=cdata[:, i],
+                    colorscale='Rainbow',
+                    colorbar=dict(title='Value'),
+                    showscale=False
+                ),
+                name=f'Cell-id {cell_id}'
+            )
+        else:
+            trace = go.Scatter(
+                x=x,
+                y=y,
+                mode='markers',
+                marker=dict(color=color_mapping[cell_id]),
+                name=f'Cell {cell_id}'
+            )
+        traces.append(trace)
+
+    layout = go.Layout(
+        xaxis=dict(title=xlab, showgrid=False),
+        yaxis=dict(title=ylab, type='log' if doLog else 'linear', showgrid=False),
+        font=dict(size=16),
+        hovermode='closest',
+        showlegend=False
+    )
+
+    return go.Figure(data=traces, layout=layout)
 
 
-
-def profile_plot(vtk_data):
-
-    z_ = vtk_data["z"]
-    rld = vtk_data["rld"]
-    rld = go.Scatter(x = rld, y = z_, mode = 'lines', name = "length fraction")
-    traces = [rld]
+def profile_plot(data, index):
+    variable = data["variable"+str(index)] 
+    variableC = data["variableC"+str(index)] 
+    scenarios = data["scenarios"+str(index)] 
+    pSets = data["pSets"+str(index)]
+    doLog = (1 in data["doLog"+str(index)] )
+    time = data["time"] 
+    
+    if variable == 1:
+        df_y = dfcs
+    elif variable == 5:
+        df_y = dfcca
+        
+    if variableC == -1:
+        colordf = None
+    if variableC == 1:
+        colordf = dfcs
+    elif variableC == 5:
+        colordf = dfcca
+    elif variableC == 6:
+        colordf = dfccat
+        
+        
+    gofig = get_val_along_r_figure( dfcoord, df_y,scenarios=[scenarios],pSets=[pSets],unitChangex=10,unitChangey=1e6,
+                       ylab="low weight organic molecules-C (mumol/cm3)",
+                       xlab="distance from root surface (mm)",
+             doLog=doLog, timeeval=time,
+             colordf_=colordf)
 
     content = dcc.Graph(
             id = 'profile-plot',
-            figure = {
-                'data': traces,
-                'layout': go.Layout(
-                    # title='Line Plot of Multiple Arrays vs Time',
-                    xaxis = {'title': 'Fraction [-]'},
-                    yaxis = {'title': 'Depth [cm]'},
-                    hovermode = 'closest',
-                    colorway = qualitative.Set2,
-                ),
-            },
-            style = {'width': '100%', 'height': '600px'}
+            figure = gofig,
+            style = {'width': '100%',  'height': '100%'}
         )
+    return  html.Div(content, style = {"width": "100%",  'height': '80vh', 'minHeight': '600px'})
 
-    return  html.Div(content, style = {"width": "100%", "height": "600px"})
 
-
+    
 def dynamics_plot(vtk_data):
 
     N = 50  # hard coded, see conversions.py
