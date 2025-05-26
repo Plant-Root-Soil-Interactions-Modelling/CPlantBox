@@ -1,4 +1,5 @@
 #include "MycorrhizalRoot.h"
+#include "mycorrhizalrootparameter.h"
 #include "Root.h"
 #include "Stem.h"
 #include "Leaf.h"
@@ -31,7 +32,6 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
             infectionTime.push_back(-1);
         }
     }
-
     // std::cout<< "infected size " << infected.size() << std::endl;
     // std::cout<< "nodes size " << nodes.size() << std::endl;
 }
@@ -72,21 +72,21 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
         // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
-        infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
-        // infTime = age - nodeCTs.at(i);
+        // infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
+        infTime = age - nodeCTs.at(i);
         // std::cout << infTime << std::endl;
-        // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
-        if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0)
-        {                        
-            // std::cout << "infected at " << i << std::endl;
-            setInfection(i,1,infTime);
-        }
-        // { // für variante 3
-        //     setInfection(i,1,age);
+        if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
+        // if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0)
+        // {                        
+        //     // std::cout << "infected at " << i << std::endl;
+        //     setInfection(i,1,infTime);
         // }
+        { // für variante 3
+            setInfection(i,1,age);
+        }
         // std::cout << "infected at " << i << std::endl;
     }
-    
+    {
     // std::cout << getRootRandomParameter()->f_inf->getValue(Vector3d(0,0,-10),shared_from_this()) << std::endl;
 // if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
 // {
@@ -131,6 +131,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
 //             // }
 //     }
 // }
+    }
 }
 
 void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
@@ -272,6 +273,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     // std::cout << "\nstart " << getId() <<  std::flush;
     Root::simulate(dt,verbose);
     simulateInfection(dt,verbose);
+    // std::cout << getRootRandomParameter()->la << std::endl;
     // std::cout << "\nend " << getId() <<  std::flush;
 }
 

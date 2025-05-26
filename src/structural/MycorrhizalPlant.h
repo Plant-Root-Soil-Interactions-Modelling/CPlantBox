@@ -29,6 +29,7 @@ namespace CPlantBox {
 
         // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
         void initCallbacks() override;
+        // void addTree(); AABB tree
     };
 }
 

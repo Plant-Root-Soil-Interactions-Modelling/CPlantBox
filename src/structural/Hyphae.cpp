@@ -1,5 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "Hyphae.h"
+#include "sdf_rs.h"
 #include <numeric>
 
 namespace CPlantBox {
@@ -101,13 +102,19 @@ void Hyphae::simulate(double dt, bool verbose)
 
                 if (active) {
 
-                    double targetlength = p.v*(age+dt);
-                    double dl = targetlength-length; // unimpeded elongation in time step dt
-                    // double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
-                    // double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+                    double targetlength = p.v*(age+dt); // Warum hier age + dt wenn oben schon dt an age angerechnet wurde?
+                    double e = targetlength-length; // unimpeded elongation in time step dt
+                    double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+                    double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                     createSegments(dl,dt,verbose);
                     // std::cout << "*";
                     length+=dl;
+                    // if (sdf(plant.tree).getDist(nodes.at(nodes.size()-1)) < distTT) { // for tip tip anastomosis
+                    //     makeanastomosis();
+                    // }
+                    // if (sdf(plant.tree).getDist(nodes.at(nodes.size()-1)) < distTH) { //for tip hyphae anastomosis
+                    //     makeanastomosis();
+                    // }
                 }
 
                 // active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
@@ -124,6 +131,13 @@ void Hyphae::simulate(double dt, bool verbose)
     } // if alive
 
 }
+
+// void Hyphae::makeanastomosis(std::shared_ptr<Hyphae> a, std::shared_ptr<Hyphae> b)
+// {
+//     // create new hyphae
+//     // set parents of new hyphae to be the two hyphae
+//     // set the new hyphae to be children of the two hyphae
+// }
 
 ///**
 // * Analytical length of the single root at a given age

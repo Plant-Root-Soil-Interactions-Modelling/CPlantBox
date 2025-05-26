@@ -27,14 +27,15 @@ for rp in root:
 infbox = pb.SDF_PlantBox(3, 3, 3)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
-infradius = 0
+infradius = 1
 for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:
         dispersed = False
+        root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
         print("ATTENTION: The infection radius is not 0, the infection will be local")
     root[i].dx = 0.05
-    root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
+    
 
 mycp.initialize(True)
 
@@ -90,7 +91,7 @@ for t in range(1, len(time)):
     #     print(f"- Sekundäre Infektion: {observed_secondary[t]:.2f} mm")
     #     print("-" * 30)
 
-ratio = True
+ratio = False
 if ratio:
     plt.figure(figsize=(10, 6))
     plt.plot(time[1:], observed_new_primary, label="Primary Infection")

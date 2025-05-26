@@ -32,6 +32,8 @@ public:
     double getParameter(std::string name) const override;
     std::string toString() const override;
 
+    // void makeanastomosis(std::shared_ptr<Hyphae> a, std::shared_ptr<Hyphae> b); ///< creates an anastomosis with another hyphae
+
 //    /* From analytical equations */
     double calcLength(double age); ///< analytical length of the root
     double calcAge(double length) const; ///< analytical age of the root

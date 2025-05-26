@@ -24,15 +24,20 @@ infbox = pb.SDF_PlantBox(10, 10, 10)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
 animation = False
-infradius = 0
+infradius = 1
 for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:
         dispersed = False
+        root[i].f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
     root[i].dx = 0.05
-    root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
+    root[i].realize()
+    print(root[i].subType)
 
 mycp.initialize(True)
+roost = mycp.getOrganRandomParameter(pb.root)
+for i in range(0, len(roost)):
+    print(root[i].subType)
 
 simtime = 10
 fps = 30
@@ -51,7 +56,7 @@ else:
 if animation:
     for i in range(0, N):
         mycp.simulate(dt, False)
-        # mycp.simulateHyphalGrowth(simtime)
+        # mycp.simulateHyphalGrowth(dt)
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("infection", mycp.getNodeInfections(2))
         ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
@@ -60,6 +65,9 @@ if animation:
 
 else:
     for i in range(0, N):
+        # roost = mycp.getOrganRandomParameter(pb.root)
+        # for i in range(0, len(roost)):
+        #     print(root[i].subType)
         mycp.simulate(dt, False)
         # mycp.simulateHyphalGrowth(dt)
 

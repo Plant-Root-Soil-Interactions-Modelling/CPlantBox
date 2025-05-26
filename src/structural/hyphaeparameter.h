@@ -59,14 +59,16 @@ public:
 
     void bindParameters() override; ///<sets up class introspection
 
-    double v=0.1;              ///< tip elongation rate [cm/day]
+    double v=0.13;              ///< tip elongation rate [cm/day] 
     double vs=0.;             ///< standard deviation of tip elongation rate [cm/day]
-    double b=0.1;              ///< branching rate [1/day]
+    double b=0.5;              ///< branching rate [1/day]
     double bs=0.;             ///< standard deviation of branching rate [1/day]
-    double hlt=4;            ///< hyphal lifetime  [day]
+    double hlt=10;            ///< hyphal lifetime  [day]
     double hlts=0.;           ///< standard deviation of  hyphal lifetime  [day]
     double theta=60./180.*M_PI;          ///< branching angle [rad]
     double thetas=0.;         ///< standard deviation of branching angle  [rad]
+    double distTT = 0.; ///< distance for tip tip anastomosis [cm]
+    double distTH = 0.; ///< distance for tip hyphae anastomosis [cm]
 
     int tropismT = 2;       ///< Root tropism parameter (Type)
     double tropismN = 1.;   ///< Root tropism parameter (number of trials)

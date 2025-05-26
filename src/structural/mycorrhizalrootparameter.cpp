@@ -13,6 +13,8 @@ void MycorrhizalRootRandomParameter::bindParameters(){
     bindParameter("vi", &vi, "Rate of internal infection [cm / day]");
     bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
     bindParameter("infradius", &infradius, "Radius of the localized infection front");
+    bindParameter("hyphalDelay", &hyphalDelay, "Delay of hyphal emergence [day]");
+    bindParameter("hyphalEmergenceDensity", &hyphalEmergenceDensity, "Hyphal emergence density [1 / cm]");
 
     // TODO
 }
@@ -95,7 +97,7 @@ void MycorrhizalRootRandomParameter::bindParameters(){
 //     double a_ = std::max(a + pl->randn()*as, 0.01); // radius
 //     double theta_ = std::max(theta + pl->randn()*thetas, 0.); // initial elongation
 //     double rlt_ = std::max(rlt + pl->randn()*rlts, 0.); // root life time
-//     std::cout<< this->toString() << std::endl;
+//     // std::cout<< this->toString() << std::endl;
 
 //     return std::make_shared<MycorrhizalRootSpecificParameter>(
 //         subType, lb_, la_, ln_, r_, a_, theta_, rlt_, hasLaterals, p_, vi_);

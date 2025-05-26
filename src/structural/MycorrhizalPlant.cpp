@@ -162,4 +162,34 @@ void MycorrhizalPlant::initCallbacks() {
 
 }
 
+
+// void MycorrhizalPlant::addTree() {
+//     // TODO adapt from exudation model or push to hyphae???
+//     // right now just straight copy does not make sense
+//     dx3 = (length/nx)*(width/ny)*(depth/nz); // for integration of eqn 13
+//         roots = rs->getRoots();
+
+//         for (const auto& r : roots) {
+//             if (r->getNumberOfNodes()>1) { // started growing
+//                 // time when the root stopped growing
+//                 double sTime = r->getNodeCT(r->getNumberOfNodes()-1);
+//                 if (r->isActive()) {
+//                     stopTime.push_back(0);
+//                 } else {
+//                     stopTime.push_back(sTime);
+//                 }
+//                 // root tip
+//                 Vector3d t = r->getNode(r->getNumberOfNodes()-1);
+//                 tip.push_back(t);
+//                 // direction towards root base
+//                 Vector3d base = r->getNode(0);
+//                 double a = r->getNodeCT(r->getNumberOfNodes()-1) - r->getNodeCT(0);
+//                 v.push_back(base.minus(t).times(1./a));
+//             }
+
+//             sdfs.push_back(SDF_RootSystem(*r, observationRadius));
+
+//         }
+// }
+
 }
