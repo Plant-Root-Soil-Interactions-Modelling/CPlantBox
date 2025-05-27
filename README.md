@@ -1,25 +1,11 @@
-
 <img src="Logo_long_white.png" alt="drawing" width="400"/>
 
-# Hi, I am CPlantBox
-[![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
+# Introduction
 
-## I can :
-1. Create multiple plant structures
-2. Simulate the carbon transport (coupling with PiafMunch) and water flow inside of the plant
-3. Simulate the solute transport and water flow in the soil (coupling with DuMux)
+CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and it provides tools to build plant soil-interaction models. 
 
-
-## Try me 1 click
-You can discover CPlantBox with 
-[this web-based application](http://cplantbox.com) designed for conduct and visualize plant growth simulations. It is part of Xiaoran Zhou's PhD thesis. the source code is avialable at <a href="https://github.com/xiaoranzhou/cpb">github-xiaoranzhou 
-
-Cloud-based notebooks are also available:
-1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
-2. [water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
-
-# build local
-## semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
+# Installation
+## Python script (recommended)
 ### Linux
 This installation method requires ubuntu >= 20.04 and python >= 3.7.\
 For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
@@ -53,7 +39,7 @@ This script might work on other linux OS but has not been tested.
 CPlantBox is currently not available on windows. 
 Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 
-## manual linux installation 
+## Manual Linux installation 
 Clone the repository by running:
 ```bash
 git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
@@ -90,6 +76,16 @@ The documentation will be located in the folder /doc. Compile doc/latex/refman.t
 Collaboration diagrams give an overview of the code in folder /docs.
 
 # Examples
+
+## WebApps demonstration 
+
+[this web-based application](http://cplantbox.com) designed for conduct and visualize plant growth simulations. It is part of Xiaoran Zhou's PhD thesis. the source code is avialable at <a href="https://github.com/xiaoranzhou/cpb">github-xiaoranzhou 
+
+## Cloud base jupyter notebooks
+1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
+2. [water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
+
+## Videos
 Simulation videos availabe in Youtube Channel https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q
 
 
