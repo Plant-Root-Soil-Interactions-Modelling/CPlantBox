@@ -76,7 +76,7 @@ The official [CPlantBox webapp](https://cplantbox-danielleitner.pythonanywhere.c
 
 Another [web application](http://cplantbox.com) was designed to conduct simulations and visualize the dynamics of plant growth. The source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
 
-## Cloud base jupyter notebooks
+## Jupyter notebooks
 1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
 2. [Water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
 
