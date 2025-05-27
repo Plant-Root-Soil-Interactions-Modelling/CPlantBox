@@ -72,13 +72,13 @@ The documentation will be created in this folder. Compile doc/latex/refman.tex t
 
 ## WebApps
 
-The official [CPlantBox webapp](https://cplantbox-danielleitner.pythonanywhere.com/) helps to demonstrate the impact of various parameters and to analyse and explore the 3D plant geometry.  
+The official [CPlantBox webapp](https://cplantbox-danielleitner.pythonanywhere.com/) helps to demonstrate the impact of various CPlantBox parameters and to analyse and explore the resulting 3D plant geometry.  
 
-A [web application](http://cplantbox.com) designed for conduct simulations and visualize the dynamics of plant growth. It is part of Xiaoran Zhou's PhD thesis, the source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
+Another [web application](http://cplantbox.com) was designed to conduct simulations and visualize the dynamics of plant growth. The source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
 
 ## Cloud base jupyter notebooks
 1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
-2. [water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
+2. [Water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
 
 ## Videos
 Simulation videos availabe in Youtube Channel https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q
