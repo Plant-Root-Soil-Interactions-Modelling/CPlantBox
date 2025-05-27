@@ -23,7 +23,6 @@ class Stem : public Organ
 {
 public:
 
-    static std::vector<int> phytomerId;
 
     Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     		Vector3d partialIHeading_, int pni, bool moved = true, int oldNON = 0);
@@ -52,15 +51,16 @@ public:
     std::shared_ptr<StemRandomParameter> getStemRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const StemSpecificParameter> param() const; ///< root parameter
 
+    std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int shootborneType = 5;
 
 																										 
 protected:
 	void storeLinkingNodeLocalId(int numCreatedLN, bool silence) override; ///<  override by @see Organ::createNonGrowingLateral()
 	std::vector<int> localId_linking_nodes;
-	void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
-    int getphytomerId(int subtype) { return phytomerId[subtype]; }
-    void addPhytomerId(int subtype) { phytomerId[subtype]++;  }
+	void minusPhytomerId(int subtype) { stemphytomerId[subtype]--;  }
+    int getphytomerId(int subtype) { return stemphytomerId[subtype]; }
+    void addPhytomerId(int subtype) { stemphytomerId[subtype]++;  }
 
 };
 

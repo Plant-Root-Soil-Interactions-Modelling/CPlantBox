@@ -8,7 +8,6 @@
 
 namespace CPlantBox {
 
-std::vector<int> Stem::phytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /**
  * Constructs a root from given data.
@@ -53,11 +52,16 @@ Stem::Stem(std::shared_ptr<Organism> plant, int type, double delay,  std::shared
 {
 	assert(parent!=nullptr && "Stem::Stem parent must be set");
 	auto p = this->param();
-	addPhytomerId(p->subType);
-	double beta = getphytomerId(p->subType)*M_PI*getStemRandomParameter()->rotBeta +
+	int phytomerId = 0;
+	if(parent->organType()==Organism::ot_stem)
+	{
+		std::static_pointer_cast<Stem>(parent)->addPhytomerId(p->subType);
+		phytomerId = std::static_pointer_cast<Stem>(parent)->getphytomerId(p->subType);
+	}
+	double beta = phytomerId*M_PI*getStemRandomParameter()->rotBeta +
 			M_PI*plant->rand()*getStemRandomParameter()->betaDev;
 	beta = beta + getStemRandomParameter()->initBeta*M_PI;
-	if (getStemRandomParameter()->initBeta >0 && getphytomerId(p->subType)==0 ){
+	if (getStemRandomParameter()->initBeta >0 && phytomerId ){
 		beta = beta + getStemRandomParameter()->initBeta*M_PI;
 	}
 	double theta = p->theta;//M_PI*p->theta;
