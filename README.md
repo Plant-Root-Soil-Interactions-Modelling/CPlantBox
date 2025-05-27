@@ -50,8 +50,7 @@ Dependecies are listed in the requirements.txt file.
 CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 
 ## Installation on the JSC agrocluster
-Refer to the wiki:\
-https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/CPlantBox-on-the-J%C3%BClich-Supercomputer-cluster
+Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/CPlantBox-on-the-J%C3%BClich-Supercomputer-cluster)
 
 # Folder sructure
 
