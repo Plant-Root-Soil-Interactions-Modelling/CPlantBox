@@ -74,7 +74,7 @@ The documentation will be created in this folder. Compile doc/latex/refman.tex t
 
 The official [CPlantBox webapp](https://cplantbox-danielleitner.pythonanywhere.com/) to demonstrate the impact of various parameters and to to explore 3D geometry.  
 
-A [web application](http://cplantbox.com)designed for conduct simulations and visualize the dynamics of plant growth. It is part of Xiaoran Zhou's PhD thesis, the source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
+A [web application](http://cplantbox.com) designed for conduct simulations and visualize the dynamics of plant growth. It is part of Xiaoran Zhou's PhD thesis, the source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
 
 ## Cloud base jupyter notebooks
 1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
