@@ -148,9 +148,9 @@ def fix_dx(rrp, strp, lrp):
         # r.betaDev = 0.
         print("delayNGStarts", r.delayNGStarts)
         print("delayNGEnds", r.delayNGEnds)
-        print("initBeta", r.initBeta)
-        print("betaDev", r.betaDev)
-        print("rotBeta", r.rotBeta)
+        #print("initBeta", r.initBeta)
+        #print("betaDev", r.betaDev)
+        #print("rotBeta", r.rotBeta)
         # r.rotBeta = 0.5
         #r.betaDev = 10
     for r in lrp:
@@ -182,6 +182,7 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     srp[0].seedPos.y = 0.
     srp[0].seedPos.z = -3.
     srp[0].delayRC = 30.
+    srp[0].delayDefinitionShoot = 2
     print("delaySB", srp[0].delaySB)
     print("firstSB", srp[0].firstSB)
     print("delayRC", srp[0].delayRC)
