@@ -21,8 +21,8 @@ def get_parameter_names():  # parameter xml file names
         # ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
         # ("Maize_", "new_maize.xml"),
         # # ("Maize2", "maize.xml"),
-        # ("Maize", "P3.xml"),
-        ("Maize", "P0.xml"),
+        ("Maize3", "P3.xml"),
+        ("Maize0", "P0.xml"),
         # ("Anagallis", "Anagallis_femina_Leitner_2010.xml"),
         # ("Morning Glory9", "morning_glory_14m_d.xml"),
         # ("Morning Glory14", "morning_glory_14m_d.xml"),
@@ -105,8 +105,8 @@ def set_leaf_geometry(shapename, p):
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 3.5, 8.5
         p.areaMax = 10  # cm2, area reached when length = lmax
-        phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-        l = np.array([3, 2.2, 1.7, 2, 3.5])  # distance from leaf center
+        p.phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+        p.l = np.array([3, 2.2, 1.7, 2, 3.5])  # distance from leaf center
     elif shapename == "Round":
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 5, 11
@@ -162,7 +162,7 @@ def fix_dx(rrp, strp, lrp):
         r.rotBeta = 0.5
 
 
-def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, leaf_data):
+def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_data):
     """ simulates the plant xml parameter set with slider values """
     print("simulate_plant()")
     # 1. open base xml
@@ -187,12 +187,13 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     print("delayRC", srp[0].delayRC)
     print("nC", srp[0].nC)
     # 3. simulate
-    N = 50
-    t_ = np.linspace(0., time_slider_value, N + 1)
+    N = 25
+    t_ = np.linspace(0., time_slider, N + 1)
     root_length = np.zeros((number_r, N))
     stem_length = np.zeros((number_s, N))
     leaf_length = np.zeros((N,))
     plant.initialize()
+    rld_, z_ = [], []
     for i, dt in enumerate(np.diff(t_)):
         plant.simulate(dt)
         ot = np.array(plant.getParameter("organType"))
@@ -203,13 +204,14 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
         for j in range(number_s):
             stem_length[j, i] = np.sum(l[np.logical_and(st == j + 1, ot == pb.stem)])
         leaf_length[i] = np.sum(l[ot == pb.leaf])
-    # 4. make depth profiles
-    ana = pb.SegmentAnalyser(plant)
-    length = ana.getSummed("length")
-    max_ = ana.getMaxBounds().z
-    min_ = ana.getMinBounds().z
-    rld = np.array(ana.distribution("length", max_, min_, int(np.round(max_ - min_)), True)) / length
-    z_ = np.linspace(max_, min_, int(np.round(max_ - min_)))
+        if i in [4, 9, 14, 19, 24]:  # 4. make depth profiles
+            ana = pb.SegmentAnalyser(plant)
+            length = ana.getSummed("length")
+            max_ = ana.getMaxBounds().z
+            min_ = ana.getMinBounds().z
+            rld_.append(np.array(ana.distribution("length", max_, min_, int(np.round(max_ - min_)), True)))
+            z_.append(np.linspace(max_, min_, int(np.round(max_ - min_))))
+
     # 5. make results store compatible (store pd stuff need for vtk.js, inlcuding different colours & 1D plots)
     pd = vp.segs_to_polydata(plant, 1., ["subType", "organType", "radius", "creationTime"])  # poly-data, "radius",
     tube = apply_tube_filter(pd)  # polydata + tube filter
@@ -217,6 +219,10 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     cellData = pd.GetCellData()
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
     vtk_data["creationTime"] = cT  ################################################################### TODO somehow creationTime and Age are mixed up
+    for i in range(0, len(rld_)):
+        vtk_data[f"rld{i}"] = rld_[i]
+        vtk_data[f"z{i}"] = z_[i]
+
     # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
     organType = numpy_support.vtk_to_numpy(cellData.GetArray("organType"))  #
     vtk_data["subType"] = numpy_support.vtk_to_numpy(cellData.GetArray("subType")) + 5 * (organType - np.ones(organType.shape) * 2)
@@ -227,8 +233,6 @@ def simulate_plant(plant_, time_slider_value, seed_data, root_data, stem_data, l
     for j in range(number_s):
         vtk_data[f"stem_length-{j+1}"] = list(stem_length[j,:])
     vtk_data["leaf_length"] = list(leaf_length[:])
-    vtk_data["rld"] = rld
-    vtk_data["z"] = z_
     # leaf geometry
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area

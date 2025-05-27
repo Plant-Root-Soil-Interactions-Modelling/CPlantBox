@@ -6,6 +6,56 @@ import visualisation.vtk_plot as vp
 import numpy as np
 
 
+def write_leafOnly():
+    """ leafs on a  stem """
+    plant = pb.Plant()
+
+    seed = pb.SeedRandomParameter(plant)
+    tap = pb.RootRandomParameter(plant)
+    lateral = pb.RootRandomParameter(plant)  ################################# TODO
+    stem = pb.StemRandomParameter(plant)
+    leaf = pb.LeafRandomParameter(plant)
+
+    tap.name, stem.name, leaf.name = "Tap", "Stem", "Leaf"
+
+    tap.subType = 1
+    tap.lmax = 3
+    tap.la, tap.lb, tap.ln = 0., 1., 0.
+    tap.theta = 0.
+
+    stem.subType = 1
+    stem.lmax = 20
+    stem.la, stem.lb, stem.ln = 3, 2, 3
+    stem.theta = 0.
+    stem.r = 1.
+    stem.tropismT = 4
+    stem.successorOT = [[pb.leaf]]
+    stem.successorST = [[1]]
+    stem.successorP = [[1]]
+
+    leaf.parametrisationType = 0
+    leaf.a = 0.02
+    leaf.subType = 1
+    leaf.lb = 1  # length of leaf stem
+    leaf.la, leaf.lmax = 5, 11
+    l_ = (leaf.lmax - leaf.lb) / 2  # radius of a round leaf
+    leaf.areaMax = 3.145 * (l_ ** 2)
+    leaf.leafGeometryPhi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
+    leaf.leafGeometryX = l_ * np.ones((7,))
+    leaf.createGeometry()
+
+    plant.setOrganRandomParameter(seed)
+    plant.setOrganRandomParameter(tap)
+    plant.setOrganRandomParameter(stem)
+    plant.setOrganRandomParameter(leaf)
+
+    plant.initialize()
+    plant.simulate(50)
+    vp.plot_plant(plant, "organType")
+
+    plant.writeParameters("params/leaf_only.xml")
+
+
 def write_rootOnly():
     """ minimal root system """
     plant = pb.Plant()
@@ -109,56 +159,25 @@ def write_stemOnly():
     plant.writeParameters("params/stem_only.xml")
 
 
-def write_leafOnly():
-    """ leafs on a  stem """
+def update_maize(file_):
     plant = pb.Plant()
-
-    seed = pb.SeedRandomParameter(plant)
-    tap = pb.RootRandomParameter(plant)
-    lateral = pb.RootRandomParameter(plant)  ################################# TODO
-    stem = pb.StemRandomParameter(plant)
-    leaf = pb.LeafRandomParameter(plant)
-
-    tap.name, stem.name, leaf.name = "Tap", "Stem", "Leaf"
-
-    tap.subType = 1
-    tap.lmax = 3
-    tap.la, tap.lb, tap.ln = 0., 1., 0.
-    tap.theta = 0.
-
-    stem.subType = 1
-    stem.lmax = 20
-    stem.la, stem.lb, stem.ln = 3, 2, 3
-    stem.theta = 0.
-    stem.r = 1.
-    stem.tropismT = 4
-    stem.successorOT = [[pb.leaf]]
-    stem.successorST = [[1]]
-    stem.successorP = [[1]]
-
-    leaf.parametrisationType = 0
-    leaf.a = 0.02
-    leaf.subType = 1
-    leaf.lb = 1  # length of leaf stem
-    leaf.la, leaf.lmax = 5, 11
-    l_ = (leaf.lmax - leaf.lb) / 2  # radius of a round leaf
-    leaf.areaMax = 3.145 * (l_ ** 2)
-    leaf.leafGeometryPhi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
-    leaf.leafGeometryX = l_ * np.ones((7,))
-    leaf.createGeometry()
-
-    plant.setOrganRandomParameter(seed)
-    plant.setOrganRandomParameter(tap)
-    plant.setOrganRandomParameter(stem)
-    plant.setOrganRandomParameter(leaf)
-
-    plant.initialize()
-    plant.simulate(50)
-    vp.plot_plant(plant, "organType")
-
-    plant.writeParameters("params/leaf_only.xml")
+    plant.readParameters("params/" + file_)
+    for p in plant.getOrganRandomParameter(pb.leaf):
+        p.lb = 0  # length of leaf stem
+        p.la, p.lmax = 49.12433414, 49.12433414
+        p.areaMax = 71.95670914  # cm2, area reached when length = lmax
+        NLeaf = 100
+        phi = np.array([-90, -80, -45, 0., 45, 90]) / 180. * np.pi
+        l = np.array([49.12433414, 1 , 1, 0.3, 1, 49.12433414])  # distance from leaf center
+        p.tropismT = 1
+        p.tropismN = 5
+        p.tropismS = 0.05
+        p.createLeafRadialGeometry(phi, l, NLeaf)
+    plant.writeParameters("params/P0.xml" + file_)
 
 
 # write_rootOnly()
-write_stemOnly()
+# write_stemOnly()
 # write_leafOnly()
+update_maize("P0.xml")
+update_maize("P3.xml")

@@ -98,9 +98,17 @@ app.layout = dbc.Container([
     ]),
 
     html.Div([
+        html.A(
             html.Img(src = '/assets/cplantbox.png', className = 'logo'),
+            href = 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',  # Replace with actual URL
+            target = '_blank'
+        ),
+        html.A(
             html.Img(src = '/assets/fzj.png', className = 'logo'),
-        ], className = 'logoContainer')
+            href = 'https://www.fz-juelich.de/de',  # Replace with actual URL
+            target = '_blank'
+        ),
+    ], className = 'logoContainer')
 
 ], fluid = True)
 
@@ -140,14 +148,15 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
     State('root-store', 'data'),
     State('stem-store', 'data'),
     State('leaf-store', 'data'),
+    State('typename-store', 'data'),
     State('result-store', 'data'),
     State('result-tabs', 'value'),
     prevent_initial_call = True,
 )
-def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data, vtk_data, result_value):
+def click_simulate(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, vtk_data, result_value):
     print("click_simulate()", plant_value)
-    vtk_data = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
-    content = render_result_tab(result_value, vtk_data)  # call by hand
+    vtk_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data)
+    content = render_result_tab(result_value, vtk_data, typename_data)  # call by hand
     return (content, vtk_data, html.H6(""))
 
 
@@ -591,9 +600,10 @@ def update_leaf_store(slider_values, store_data):
     Output('result-tabs-content', 'children', allow_duplicate = True),
     Input('result-tabs', 'value'),
     State('result-store', 'data'),
+    State('typename-store', 'data'),
     prevent_initial_call = True,
 )
-def render_result_tab(tab, vtk_data):
+def render_result_tab(tab, vtk_data, typename_data):
 
     print("render_result_tab()", tab)
 
@@ -613,7 +623,7 @@ def render_result_tab(tab, vtk_data):
     elif tab == 'Profile1D':
         return profile_plot(vtk_data)
     elif tab == 'Dynamics':
-        return dynamics_plot(vtk_data)
+        return dynamics_plot(vtk_data, typename_data)
 
 
 if __name__ == '__main__':
