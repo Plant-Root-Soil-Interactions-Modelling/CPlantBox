@@ -62,18 +62,19 @@ Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Model
 
 # Code documentation
 
-Create the documentation by running doxygen in the folder 
-$ doxygen doxy_config
+Create the documentation by running doxygen in the docs/ folder 
+```bash
+doxygen doxy_config
+```
+The documentation will be created in this folder. Compile doc/latex/refman.tex to generate the full doxygen documentation in doc/latex/refman.pdf. Additionally, collaboration diagrams give an overview of the code in folder /docs.
 
-The documentation will be located in the folder /doc. Compile doc/latex/refman.tex to generate the full doxygen documentation in doc/latex/refman.pdf.
+# Online resources
 
-Collaboration diagrams give an overview of the code in folder /docs.
+## WebApps
 
-# Examples
+The official [CPlantBox webapp](https://cplantbox-danielleitner.pythonanywhere.com/) to demonstrate the impact of various parameters and to to explore 3D geometry.  
 
-## WebApps demonstration 
-
-[this web-based application](http://cplantbox.com) designed for conduct and visualize plant growth simulations. It is part of Xiaoran Zhou's PhD thesis. the source code is avialable at <a href="https://github.com/xiaoranzhou/cpb">github-xiaoranzhou 
+A [web application](http://cplantbox.com) designed for conduct simulations and visualize the dynamics of plant growth. It is part of Xiaoran Zhou's PhD thesis, the source code is avialable at <a href="https://github.com/xiaoranzhou/cpb">github-xiaoranzhou 
 
 ## Cloud base jupyter notebooks
 1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
