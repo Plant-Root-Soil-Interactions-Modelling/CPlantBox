@@ -5,7 +5,9 @@
 CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and it provides tools to build plant soil-interaction models. 
 
 # Installation
-## Python script (recommended)
+
+## Python script
+
 ### Linux
 This installation method requires ubuntu >= 20.04 and python >= 3.7.\
 For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
@@ -35,7 +37,7 @@ source cpbenv/bin/activate
 ```
 This script might work on other linux OS but has not been tested.
 
-### windows
+### Windows
 CPlantBox is currently not available on windows. 
 Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
 
