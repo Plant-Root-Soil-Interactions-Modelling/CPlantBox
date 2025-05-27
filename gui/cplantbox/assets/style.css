@@ -58,11 +58,11 @@ h6, .checkbox-label { /* panel font */
 /* LOGO */
 .logoContainer {
     position: fixed;
-    bottom: 75px;
-    left: 20px;
+    bottom: 20px;
+    left: 10px;
     display: flex;
-    flex-direction: column; /* 👈 Stack vertically */
-    gap: 10px;
+    flex-direction: row; /* 👈 Stack vertically */
+    gap: 5px;
     align-items: center;
     z-index: 999;
     /* Make sure it's always on top */
@@ -70,7 +70,7 @@ h6, .checkbox-label { /* panel font */
 
 .logo {
     height: auto;
-    width: 120px;
+    width: clamp(120px, 12vw, 300px);
     opacity: 1.;
     transition: opacity 0.3s;
 }

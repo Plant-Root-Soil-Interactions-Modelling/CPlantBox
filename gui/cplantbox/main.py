@@ -97,11 +97,14 @@ app.layout = dbc.Container([
         ], width = 6),
     ]),
 
-    html.Div([
-            html.Img(src = '/assets/cplantbox.png', className = 'logo'),
-            html.Img(src = '/assets/fzj.png', className = 'logo'),
-        ], className = 'logoContainer')
-
+        html.Div([
+    html.A(
+        html.Img(src='/assets/cplantbox.png', className='logo'),
+        href='https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',
+        target='_blank'  # Opens in a new tab
+    ),
+            html.Img(src='/assets/fzj.png', className='logo'),
+        ], className='logoContainer')
 ], fluid = True)
 
 """ 1. LEFT - Simulation Panel """
@@ -617,4 +620,4 @@ def render_result_tab(tab, vtk_data):
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = False)
