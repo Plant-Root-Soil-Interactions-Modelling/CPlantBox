@@ -72,7 +72,7 @@ The documentation will be created in this folder. Compile doc/latex/refman.tex t
 
 ## WebApps
 
-The official [CPlantBox webapp](https://cplantbox-danielleitner.pythonanywhere.com/) to demonstrate the impact of various parameters and to to explore 3D geometry.  
+The official [CPlantBox webapp](https://cplantbox-danielleitner.pythonanywhere.com/) helps to demonstrate the impact of various parameters and to analyse and explore the 3D plant geometry.  
 
 A [web application](http://cplantbox.com) designed for conduct simulations and visualize the dynamics of plant growth. It is part of Xiaoran Zhou's PhD thesis, the source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
 
