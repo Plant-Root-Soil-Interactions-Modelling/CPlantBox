@@ -81,7 +81,7 @@ Another [web application](http://cplantbox.com) was designed to conduct simulati
 2. [Water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
 
 ## Videos
-Simulation videos availabe in Youtube Channel https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q
+Simulation videos availabe in [Youtube channel](https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q).
 
 
 
