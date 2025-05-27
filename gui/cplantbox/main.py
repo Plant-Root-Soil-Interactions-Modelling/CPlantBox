@@ -439,8 +439,8 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
         style = {}
-        if i in [7]:  # rotBeta (not working)
-            style = {'display': 'none'}
+        #if i in [7]:  # rotBeta (not working)
+        #    style = {'display': 'none'}
         if (not successors) and (i in [3]):
             style = {'display': 'none'}
         # if (tab == 1) and (i == 2):  # no initial theta for main stem; makes sense for tillers
@@ -620,4 +620,4 @@ def render_result_tab(tab, vtk_data):
 
 
 if __name__ == '__main__':
-    app.run(debug = False)
+    app.run(debug = True)
