@@ -2,7 +2,7 @@
 
 # Introduction
 
-CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides gerneral tools to build plant soil-interaction models. To solve partial differential equations CPlantBox uses the finite volume solver DuMu$^x$ and some simplified Python interafaces in the repository _dumux-rosi_.   
+CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides gerneral tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository _dumux-rosi_.   
 
 # Installation
 
@@ -23,7 +23,7 @@ sudo apt-get upgrade
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installDumuxRosi_Ubuntu.py
 python3 installDumuxRosi_Ubuntu.py
 ```
-The script will install DuMu$^x$ and CPlantBox, and CPlantBox is setup within the virtual environment 'cpbenv'. 
+The script will install DuMu<sup>x</sup> and CPlantBox, and CPlantBox is setup within the virtual environment 'cpbenv'. 
 Activate the 'cpbenv' environment when using CPlantBox:
 ```bash
 source cpbenv/bin/activate
@@ -31,15 +31,15 @@ source cpbenv/bin/activate
 The scripts might work on other Linux OS but has not been tested.
 
 ## Linux - manual installation 
-Clone the repository by running:
+Clone the repository by running
 ```bash
 git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
 ```
-Run CMake which configures the CPlantBox libraries by 
+and use CMake to configure and compile the CPlantBox libraries 
 ```bash
 cmake . && make
 ```
-in the root folder, and run some Python tutorial examples (see tutorial/latex/PlantBox_RootSytem), e.g
+To test the installation run a tutorial example, e.g
 ```bash
 cd tutorial/examples/python
 python3 example1a.py
