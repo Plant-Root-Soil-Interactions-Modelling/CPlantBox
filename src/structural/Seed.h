@@ -30,6 +30,7 @@ public:
     virtual std::string toString() const override;
 
     void initialize(bool verbose = true);
+	
 
     std::shared_ptr<const SeedSpecificParameter> param() const { return std::static_pointer_cast<const SeedSpecificParameter>(param_); }
 

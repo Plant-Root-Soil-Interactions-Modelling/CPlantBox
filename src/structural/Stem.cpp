@@ -277,7 +277,7 @@ double Stem::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overri
 	bool verbose = false;
 	auto rp = getOrganRandomParameter(); // rename
 	double forDelay; //store necessary variables to define lateral growth delay
-	int delayDefinition = std::static_pointer_cast<const SeedRandomParameter>(getOrganism()->getOrganRandomParameter(Organism::ot_seed,0))->delayDefinition;
+	int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
 
 
 	assert(delayDefinition >= 0);

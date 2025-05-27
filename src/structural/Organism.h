@@ -126,6 +126,7 @@ public:
 	bool getStochastic(){return stochastic;}
 	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
 	virtual bool hasRelCoord(){ return false; } ///< overriden by @Plant::hasRelCoord()
+	int getDelayDefinition(int ot_lat);
 
 
 protected:
