@@ -2,16 +2,12 @@
 
 # Introduction
 
-CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and it provides tools to build plant soil-interaction models. 
+CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides gerneral tools to build plant soil-interaction models. To solve partial differential equations CPlantBox uses the finite volume solver DuMu$^x$ and some simplified Python interafaces in the repository _dumux-rosi_.   
 
 # Installation
 
-## Python script
-
-### Linux
-This installation method requires ubuntu >= 20.04 and python >= 3.7.\
-For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
-Run
+## Linux - with Python script
+This installation method requires Ubuntu >= 20.04 and Python >= 3.7. For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
 ```bash
 sudo apt-get update
 sudo apt-get upgrade
@@ -19,9 +15,7 @@ sudo apt-get upgrade
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox.py
 python3 installCPlantBox.py
 ```
-It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.\
-For CPlantBox <ins>__with__</ins> the dumux-rosi extension, download the python file "installDumuxRosi_Ubuntu.py" (based on the dumux installation file).\
-run
+For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Ubuntu.py" (the file is based on the DuMu$^x$ installation file).
 ```bash
 sudo apt-get update
 sudo apt-get upgrade
@@ -29,19 +23,14 @@ sudo apt-get upgrade
 wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installDumuxRosi_Ubuntu.py
 python3 installDumuxRosi_Ubuntu.py
 ```
-This will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
-CPlantBox is setup within the virtual environment 'cpbenv'. \
-**Do not forget to reactivate the 'cpbenv' environment when using CPlantBox:**
+The script will install DuMu$^x$ and CPlantBox, and CPlantBox is setup within the virtual environment 'cpbenv'. 
+Activate the 'cpbenv' environment when using CPlantBox:
 ```bash
 source cpbenv/bin/activate
 ```
-This script might work on other linux OS but has not been tested.
+The scripts might work on other Linux OS but has not been tested.
 
-### Windows
-CPlantBox is currently not available on windows. 
-Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
-
-## Manual Linux installation 
+## Linux - manual installation 
 Clone the repository by running:
 ```bash
 git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
@@ -55,11 +44,15 @@ in the root folder, and run some Python tutorial examples (see tutorial/latex/Pl
 cd tutorial/examples/python
 python3 example1a.py
 ```
+Dependecies are listed in the requirements.txt file.
 
-The dependecies are listed in the requirements.txt file.
+## Windows
+CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
+
 ## Installation on the JSC agrocluster
 Refer to the wiki:\
 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/CPlantBox-on-the-J%C3%BClich-Supercomputer-cluster
+
 # Folder sructure
 
 `/modelparameter`		Plant parameter files\
