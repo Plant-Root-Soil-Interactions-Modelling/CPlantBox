@@ -35,6 +35,7 @@ public:
     double theta;          ///< branching angle [rad]
 
     std::string toString() const override; ///< for debugging
+    double getMaxLength() const; ///< returns maximal length
 };
 
 

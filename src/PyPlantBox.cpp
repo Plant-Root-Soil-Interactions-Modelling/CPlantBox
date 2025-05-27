@@ -634,6 +634,7 @@ PYBIND11_MODULE(plantbox, m) {
      py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
              .def(py::init<>())
              .def(py::init<int , double, double,  double, double, double>())
+             .def("getMaxLength", &HyphaeSpecificParameter::getMaxLength)
              .def_readwrite("v", &HyphaeSpecificParameter::v)
              .def_readwrite("b", &HyphaeSpecificParameter::b)
              .def_readwrite("hlt", &HyphaeSpecificParameter::hlt)

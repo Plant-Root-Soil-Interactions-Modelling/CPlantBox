@@ -116,8 +116,9 @@ void Hyphae::simulate(double dt, bool verbose)
                     //     makeanastomosis();
                     // }
                 }
-
-                // active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+                // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
+                std::cout << "*" << std::flush;
+                active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
 
             } else { // NOT ACTIVE (children grow)
 

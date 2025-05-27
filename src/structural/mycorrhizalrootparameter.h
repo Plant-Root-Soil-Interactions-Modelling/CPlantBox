@@ -30,7 +30,7 @@ namespace CPlantBox {
         virtual ~MycorrhizalRootRandomParameter() {};
 
         std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
-        // std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
+        std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
         std::string toString(bool verbose = true) const override;
 
         void bindParameters() override;
