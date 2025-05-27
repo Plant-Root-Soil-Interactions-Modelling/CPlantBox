@@ -148,7 +148,7 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
     prevent_initial_call = True,
 )
 def click_simulate(n_clicks, plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data, vtk_data, result_value):
-    print("click_simulate()", plant_value)
+    print("click_simulate()", plant_value, stem_data)
     vtk_data = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
     content = render_result_tab(result_value, vtk_data)  # call by hand
     return (content, vtk_data, html.H6(""))
@@ -620,4 +620,4 @@ def render_result_tab(tab, vtk_data):
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = False, port=8051)

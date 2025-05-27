@@ -87,8 +87,6 @@ public:
     double lmaxs = 0.;      ///< Standard deviation of maximal stem length [cm]
     double r = 1;		    ///< Initial growth rate [cm day-1]
     double rs = 0.;	    	///< Standard deviation initial growth rate [cm day-1]
-    double a = 0.1; 		///< Stem radius [cm]
-    double as = 0.; 		///< Standard deviation stem radius [cm]
     double rotBeta = 0.6;	///< Revrotation
     double betaDev = 0.2;	///< Deviation of RevRotation
     double initBeta = 0.2;	///< Initial RevRotation
