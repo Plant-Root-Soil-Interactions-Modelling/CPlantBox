@@ -220,7 +220,7 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     cT = numpy_support.vtk_to_numpy(cellData.GetArray("creationTime"))
     vtk_data["creationTime"] = cT  ################################################################### TODO somehow creationTime and Age are mixed up
     for i in range(0, len(rld_)):
-        vtk_data[f"rld{i}"] = rld_[i]
+        vtk_data[f"rld{i}"] = rld_[i] / length
         vtk_data[f"z{i}"] = z_[i]
 
     # vtk_data["age"] = np.ones(cT.shape) * time_slider_value - cT
