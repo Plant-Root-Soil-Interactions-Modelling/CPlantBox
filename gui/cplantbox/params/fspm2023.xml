@@ -127,6 +127,7 @@
     <parameter name="ln" value="4" dev="0" functiontype="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="9" dev="0"/>
+    <parameter name="ldelay" value="1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="1" dev="0"/>
     <parameter name="a" value="0.20000000000000001" dev="0"/>
@@ -155,6 +156,7 @@
     <parameter name="ln" value="0" dev="0" functiontype="3"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="lmax" value="8.5" dev="0"/>
+    <parameter name="ldelay" value="1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="0.5" />
     <parameter name="a" value="0.016"/>

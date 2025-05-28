@@ -233,4 +233,5 @@ std::shared_ptr<Organ> Seed::createStem(std::shared_ptr<Organism> plant, int typ
 	return std::make_shared<Stem>(plant, type,delay, shared_from_this(), 0);
 }
 
+
 } // namespace CPlantBox
