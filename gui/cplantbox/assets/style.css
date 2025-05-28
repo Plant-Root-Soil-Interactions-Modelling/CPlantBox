@@ -61,7 +61,7 @@ h6, .checkbox-label { /* panel font */
     bottom: 20px;
     left: 10px;
     display: flex;
-    flex-direction: row; /* 👈 Stack vertically */
+    flex-direction: column; /* 👈 Stack vertically */
     gap: 5px;
     align-items: center;
     z-index: 999;
