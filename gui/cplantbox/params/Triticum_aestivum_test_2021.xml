@@ -28,7 +28,7 @@
         <parameter name="seedPos.z" value="-0.3"/>
         <!--Z-Coordinate of seed position [cm]-->
 		<parameter name="delayDefinition" value="1"/>
-        <parameter name="simulationTime" value="240"/>
+        <parameter name="simulationTime" value="15"/>
         <!--Recommended final simulation time  [day]-->
 </organ>
 

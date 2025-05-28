@@ -50,8 +50,8 @@ app.layout = dbc.Container([
                         className = 'customDropdown'),
             html.Div(className = "spacer"),
             html.H6("Simulation time [day]"),
-            dcc.Slider(id = 'time-slider', min = 1, max = 90, step = 1, value = 30,
-                       marks = {1: "1", 90: "90"},
+            dcc.Slider(id = 'time-slider', min = 1, max = 45, step = 1, value = 20,
+                       marks = {1: "1", 45: "45"},
                        tooltip = { "always_visible": False}),
             html.Div(className = "spacer"),
             dbc.Button("Create", id = "create-button"),
@@ -628,4 +628,4 @@ def render_result_tab(tab, vtk_data, typename_data):
 
 
 if __name__ == '__main__':
-    app.run(debug = False, port=8051)
+    app.run(debug = False)
