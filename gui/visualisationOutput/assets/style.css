@@ -59,10 +59,10 @@ h6, .checkbox-label { /* panel font */
 .logoContainer {
     position: fixed;
     bottom: 20px;
-    left: 5px;
+    left: 10px;
     display: flex;
     flex-direction: row; /* 👈 Stack vertically */
-    gap: 10px;
+    gap: 5px;
     align-items: center;
     z-index: 999;
     /* Make sure it's always on top */

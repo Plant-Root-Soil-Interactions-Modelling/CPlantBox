@@ -15,27 +15,15 @@ from plots import *  # figures
 app = dash.Dash(__name__, suppress_callback_exceptions = True, external_stylesheets = [dbc.themes.SANDSTONE])  # SANDSTONE, MINTY, MORPH
 app.title = "Model Output Visualisation"
 
-param_names = get_parameter_names()
-plants = [{'label': name[0], 'value': str(i)} for i, name in enumerate(param_names)]
-
-seed_parameter_sliders = get_seed_slider_names()
-root_parameter_sliders = get_root_slider_names()
-stem_parameter_sliders = get_stem_slider_names()
-leaf_parameter_sliders = get_leaf_slider_names()
-
-SEED_SLIDER_INITIALS = [180, 1, 7, 7, 20, 7, 7, 15, 5]
-ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
-STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180., 1, 0.2, "Gravitropism"]
-LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45, 2., 90, 1., 0.2, "Gravitropism"]
-
 """ LAYOUT """
 app.layout = dbc.Container([
     dcc.Store(id = 'seed-store', data = {"scenarios": ['baseline'],"variable":'psiXyl', "pSets": [44] }),
     dcc.Store(id = 'root-store', data = {"time": 22,"variable_plant0":'psiXyl', "scenarios0": 'baseline', "pSets0": 44,"soil0":-1,"rsi0":-1,
                                             "variable_plant1":'psiXyl', "scenarios1": 'baseline', "pSets1": 44,"soil1":-1,"rsi1":-1}),
-    dcc.Store(id = 'stem-store', data = {"time": 22,"variable0":1, "variableC0":-1, "scenarios0": 'baseline', "pSets0": 44,"doLog0":[],
-                                            "variable1":1, "variableC1":-1,  "scenarios1": 'baseline', "pSets1": 44,"doLog1": []}),
-    dcc.Store(id = 'leaf-store', data = {"leaf": LEAF_SLIDER_INITIALS}),
+    dcc.Store(id = 'stem-store', data = {"time": 22,"variable0":1, "variableC0":-1, "scenarios0": 'baseline', "pSets0": 44,"doLog0":[],#"doLogC0":[],
+                                            "LimC0":[],"LimV0":[],
+                                            "variable1":1, "variableC1":-1,  "scenarios1": 'baseline', "pSets1": 44,"doLog1": [],#"doLogC1": [],
+                                            "LimC1":[],"LimV1":[]}),
     dcc.Store(id = 'typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),
     dcc.Store(id = 'result-store', data = {}),
 
@@ -57,11 +45,32 @@ app.layout = dbc.Container([
             html.Div(id='organtype-tabs-content'),
             dcc.Tabs(id='root-tabs', children=[], value=""),
             dcc.Tabs(id='stem-tabs', children=[], value=""),
-        ], style={"flex": "1 1 auto", "overflowY": "auto",
-        "padding": "5px"}),
+        ],  style={
+    "flex": "1 1 auto",
+    #"overflowY": "auto",
+    "paddingRight": "10px",  
+    "paddingLeft": "10px",  
+}),
+
+    ])
+], md=5, lg=3, style={
+    "padding": "0",
+    "height": "100vh",         # Ensure it fills the screen height
+    "overflow": "hidden",      # Prevents scrollbars unless needed inside
+    "display": "flex",
+    "flexDirection": "column"
+})  , # Ensures full viewport height,
+
+        # Panel 3
+        dbc.Col([
+            #html.H5("Results"),
+            #html.Div(className = "spacer"),
+            html.Div(id = 'result-tabs-content',style={"height": "100%", "display": "flex", "flexDirection": "column"})
+        ], style={"height": "100vh", "padding": "0"})# md=7, lg=9,
+    ], style={"height": "100vh"}),  # Make row full viewport height
 
         # Logos at the bottom
-        html.Div([
+    html.Div([
     html.A(
         html.Img(src='/assets/cplantbox.png', className='logo'),
         href='https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox',
@@ -69,44 +78,10 @@ app.layout = dbc.Container([
     ),
             html.Img(src='/assets/fzj.png', className='logo'),
         ], className='logoContainer')
-    ])
-], md=5, lg=3, style={"padding": "0"})  , # Ensures full viewport height,
-
-        # Panel 3
-        dbc.Col([
-            #html.H5("Results"),
-            #html.Div(className = "spacer"),
-            html.Div(id = 'result-tabs-content',style={"height": "100%", "display": "flex", "flexDirection": "column"})
-        ], md=7, lg=9, style={"height": "100vh", "padding": "0"})
-    ], style={"height": "100vh"})  # Make row full viewport height
-
-    #html.Div([
-    #        html.Img(src = '/assets/cplantbox.png', className = 'logo'),
-    #        html.Img(src = '/assets/fzj.png', className = 'logo'),
-    #    ], className = 'logoContainer')
 
 ], fluid = True)
 
 """ 1. LEFT - Simulation Panel """
-
-
-
-@app.callback(# create-button
-    Output('result-tabs-content', 'children', allow_duplicate = True),
-    Output('result-store', 'data'),
-    Output('loading-spinner-output', 'children'),
-    Input('create-button', 'n_clicks'),
-    #State('plant-dropdown', 'value'),
-    State('scenario-dropdown', 'value'),
-    State('pSet-dropdown', 'value'),
-    State('time-slider', 'value'),
-    prevent_initial_call = True,
-)
-def click_simulate(n_clicks,  time_slider_value, scenario_dropdown_value, pSet_dropdown_value):
-    print("click_simulate()", plant_value)
-    #vtk_data = simulate_plant(plant_value, time_slider_value, seed_data, root_data, stem_data, leaf_data)
-    content = render_result_tab(time_slider_value)  # call by hand
-    return (content, vtk_data, html.H6(""))
 
 
 """ Parameters Panel"""
@@ -119,9 +94,8 @@ def click_simulate(n_clicks,  time_slider_value, scenario_dropdown_value, pSet_d
     State('root-store', 'data'),
     State('typename-store', 'data'),
     State('stem-store', 'data'),
-    State('leaf-store', 'data'),
 )
-def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_data):
+def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data):
     print("render_organtype_tab", tab)
     if tab == 'plantDataTab':
         print("render_organtype_tab() seed:", seed_data)
@@ -145,18 +119,24 @@ def render_organtype_tab(tab, seed_data, root_data, type_names, stem_data, leaf_
     elif tab == 'Profile1D':
         print("render_organtype_tab() stem:", stem_data)
         return html.Div([
+                    
                 html.Div(className = "spacer"),
                 html.H5("Simulation time [day]"),
                 dcc.Slider(
                     id='time-slider-1d',
                     min=10.013889, max=25, step=0.013889, value=22,
-                    marks={10.013889: "10-", 25: "25"},
+                    marks={10.013889: "10", 25: "25"},
                     tooltip={"always_visible": False}
                 ),
                 html.Div([
                     generate_1D_sliders(stem_data, idPlant="0"),
                     generate_1D_sliders(stem_data, idPlant="1")
-                ], style={"display": "flex", "flexDirection": "row"})
+                ], style={"display": "flex", "flexDirection": "row"}),
+                html.Div(className = "spacer"),
+                html.Div(
+                    dbc.Button("Display", id="create-button", size="lg", className="w-75"),
+                    style={"display": "flex", "justifyContent": "center", "marginTop": "10px"}
+                )
             ])
 
 def generate_1D_sliders(data, idPlant):  # Generate sliders for seed tab from stored values
@@ -184,18 +164,32 @@ def generate_1D_sliders(data, idPlant):  # Generate sliders for seed tab from st
                 clearable = False))
     
     if idPlant == "0":
-        checkboxes.append(html.H5("Perirhizal zone--values"))
+        checkboxes.append(html.H5("Perirhizal zone—Y-axis"))
     else:
-        checkboxes.append(html.H5("Perirhizal zone--values", style={"color": "white"}))
+        checkboxes.append(html.H5("Perirhizal zone—Y-axis", style={"color": "white"}))
     checkboxes.append(dcc.Dropdown(id = 'variables-Dropdown-1d'+idPlant,options=[
                     #{"label": " Water", "value": 0},
                     {"label": " Small molecules-C", "value": 1},
                     {"label": " Active copiotrophs-C", "value": 5}], value=1,
                 clearable = False))
+    checkboxes.append(html.Div(className = "spacer"))
     if idPlant == "0":
-        checkboxes.append(html.H5("Perirhizal zone--colors"))
+        checkboxes.append(html.H6("Unify Y-axis range across", style={"fontSize": "18px"}))
     else:
-        checkboxes.append(html.H5("Perirhizal zone--colors", style={"color": "white"}))
+        checkboxes.append(html.H6("Unify Y-Axis Range Across", style={"color": "white", "fontSize": "18px"}))
+    checkboxes.append(dcc.Checklist(id = 'LimV'+idPlant,options=[
+                    {"label": " Time", "value": 0},
+            {"label": html.Span("Scenario", style={'marginLeft': '20px'}), "value": 1},
+            {"label": html.Span("Microbial traits", style={'marginLeft': '20px'}), "value": 2}], value=[]))
+    checkboxes.append(html.Div(className = "spacer"))
+    checkboxes.append(dcc.Checklist(id = 'doLog'+idPlant,options=[
+                    {"label": " Logarithmic view", "value": 1}], value=[]))
+    checkboxes.append(html.Div(className = "spacer"))
+                    
+    if idPlant == "0":
+        checkboxes.append(html.H5("Perirhizal zone—color"))
+    else:
+        checkboxes.append(html.H5("Perirhizal zone—color", style={"color": "white", "fontSize": "18px"}))
     checkboxes.append(dcc.Dropdown(id = 'variablesC-Dropdown-1d'+idPlant,options=[
                     {"label": " Mesh-cell id", "value": -1},
                     #{"label": " Water", "value": 0},
@@ -204,41 +198,118 @@ def generate_1D_sliders(data, idPlant):  # Generate sliders for seed tab from st
                     {"label": " Active-to-total copiotrophs-C", "value": 6}], value=-1,
                 clearable = False))
                     
-                    
     checkboxes.append(html.Div(className = "spacer"))
-    checkboxes.append(dcc.Checklist(id = 'doLog'+idPlant,options=[
-                    {"label": " Logarithmic view", "value": 1}], value=[]))
+    if idPlant == "0":
+        checkboxes.append(html.H6("Unify color range across", style={"fontSize": "18px"}))
+    else:
+        checkboxes.append(html.H6("Limits", style={"color": "white"}))
+    checkboxes.append(dcc.Checklist(id = 'LimC'+idPlant,options=[
+                    {"label": " Time", "value": 0},
+            {"label": html.Span("Scenario", style={'marginLeft': '20px'}), "value": 1},
+            {"label": html.Span("Microbial traits", style={'marginLeft': '20px'}), "value": 2}], value=[]))
+    checkboxes.append(html.Div(className = "spacer"))
+    #checkboxes.append(dcc.Checklist(id = 'doLogC'+idPlant,options=[
+    #                {"label": " Logarithmic view", "value": 1}], value=[]))
+            
+    
     return html.Div(checkboxes, style={'width': '50%'})
 
+@app.callback(
+    Output('LimC0', 'value'),
+    Input('LimC0', 'value'),
+    prevent_initial_call=True
+)
+def enforce_time_selection1(Lim):
+    # Ensure inputs are lists, even if something went wrong
+    if not isinstance(Lim, list):
+        Lim = [Lim] if Lim is not None else []
+    if 1 in Lim or 2 in Lim:
+        Lim = sorted(set(Lim + [0]))
+    return Lim
+
+@app.callback(
+    Output('LimC1', 'value'),
+    Input('LimC1', 'value'),
+    prevent_initial_call=True
+)
+def enforce_time_selection1(Lim):
+    # Ensure inputs are lists, even if something went wrong
+    if not isinstance(Lim, list):
+        Lim = [Lim] if Lim is not None else []
+    if 1 in Lim or 2 in Lim:
+        Lim = sorted(set(Lim + [0]))
+    return Lim
+@app.callback(
+    Output('LimV0', 'value'),
+    Input('LimV0', 'value'),
+    prevent_initial_call=True
+)
+def enforce_time_selection1(Lim):
+    # Ensure inputs are lists, even if something went wrong
+    if not isinstance(Lim, list):
+        Lim = [Lim] if Lim is not None else []
+    if 1 in Lim or 2 in Lim:
+        Lim = sorted(set(Lim + [0]))
+    return Lim
+
+@app.callback(
+    Output('LimV1', 'value'),
+    Input('LimV1', 'value'),
+    prevent_initial_call=True
+)
+def enforce_time_selection1(Lim):
+    # Ensure inputs are lists, even if something went wrong
+    if not isinstance(Lim, list):
+        Lim = [Lim] if Lim is not None else []
+    if 1 in Lim or 2 in Lim:
+        Lim = sorted(set(Lim + [0]))
+    return Lim
 
 @app.callback(# dynamic-seed-slider
     Output('stem-store', 'data', allow_duplicate = True),
-    Input('time-slider-1d', 'value'),
-    Input('variables-Dropdown-1d0', 'value'),
-    Input('variablesC-Dropdown-1d0', 'value'),
-    Input('Scenario-Dropdown-1d0', 'value'),
-    Input('pSet-Dropdown-1d0', 'value'),
-    Input('doLog0', 'value'),
-    Input('variables-Dropdown-1d1', 'value'),
-    Input('variablesC-Dropdown-1d1', 'value'),
-    Input('Scenario-Dropdown-1d1', 'value'),
-    Input('pSet-Dropdown-1d1', 'value'),
-    Input('doLog1', 'value'),
+    Input('create-button', 'n_clicks'),
+    State('time-slider-1d', 'value'),
+    State('variables-Dropdown-1d0', 'value'),
+    State('variablesC-Dropdown-1d0', 'value'),
+    State('Scenario-Dropdown-1d0', 'value'),
+    State('pSet-Dropdown-1d0', 'value'),
+    State('doLog0', 'value'),
+    #Input('doLogC0', 'value'),
+    State('LimC0', 'value'),
+    State('LimV0', 'value'),
+    #Input('create-button1', 'n_clicks'),
+    State('variables-Dropdown-1d1', 'value'),
+    State('variablesC-Dropdown-1d1', 'value'),
+    State('Scenario-Dropdown-1d1', 'value'),
+    State('pSet-Dropdown-1d1', 'value'),
+    State('doLog1', 'value'),
+    #Input('doLogC1', 'value'),
+    State('LimC1', 'value'),
+    State('LimV1', 'value'),
     State('stem-store', 'data'),
     prevent_initial_call = True,
 )
-def update_stem_store(time, variable0,variableC0,scenarios0, pSets0,doLog0, variable1, variableC1, scenarios1, pSets1, doLog1,data):
+def update_stem_store(n_clicks, time, variable0,variableC0,scenarios0, pSets0,doLog0,#doLogC0,
+                        LimC0,LimV0, #n_clicks1, 
+                    variable1, variableC1, scenarios1, pSets1, doLog1, #doLogC1,
+                    LimC1,LimV1,data):
     data["time"] = time
     data["variable0"] = variable0
     data["variableC0"] = variableC0
     data["scenarios0"] = scenarios0
     data["pSets0"] = pSets0
     data["doLog0"] = doLog0
+    #data["doLogC0"] = doLogC0
+    data["LimC0"] = LimC0
+    data["LimV0"] = LimV0
     data["variable1"] = variable1
     data["variableC1"] = variableC1
     data["scenarios1"] = scenarios1
     data["pSets1"] = pSets1
     data["doLog1"] = doLog1
+    #data["doLogC1"] = doLogC1
+    data["LimC1"] = LimC1
+    data["LimV1"] = LimV1
     return data
     
 def generate_VTK3D_sliders(data, idPlant):  # Generate sliders for seed tab from stored values
@@ -347,14 +418,6 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
         html.Div(className = "spacer"),
         ]        
     
-    
-    #checkboxes.append(html.H5("Simulation time [day]"))
-    #checkboxes.append(dcc.Slider(id = 'time-slider', min = 10.1, max = 25, step = 0.1, value = 22,
-    #           marks = {10.1: "10.1", 25: "25"},
-    #           tooltip = { "always_visible": False}))
-    #checkboxes.append(html.Div(className = "spacer"))
-    #checkboxes.append(dcc.Checklist(id = 'cst-lims',options=[
-    #                {"label": " Constant limits", "value": 1}], value=[]))
     html.Div(className = "spacer")
     checkboxes.append(html.H5("Scenario"))
     checkboxes.append(
@@ -422,12 +485,13 @@ def render_result_tab(tab,rootdata,seeddata, stemdata):# scenarios, pSet,
             thekey = str(time.time())
         else:
             thekey = 'coucou'
-        
+        im3d0, cbar0 = vtk3D_plot(rootdata, 0)
+        im3d1, cbar1 = vtk3D_plot(rootdata, 1)
         return html.Div(
-                    [vtk3D_plot(rootdata, 0), vtk3D_plot(rootdata, 1)],
+                    [im3d0, im3d1, cbar0, cbar1],
                     style={"display": "flex", "flexDirection": "row", "height": "100%"},
-                    key=thekey
-                )# <- this forces remount
+                    key=thekey # <- this forces remount
+                )
     elif tab == 'plantDataTab':
         data = seeddata
         toplot = data['variable']

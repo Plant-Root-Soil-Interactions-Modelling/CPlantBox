@@ -24,12 +24,159 @@ from vtk.util.numpy_support import vtk_to_numpy
 from dash_vtk.utils import to_mesh_state, to_volume_state
 from vtk.util.numpy_support import vtk_to_numpy
 
-with open("data/4Andrea_coordcs.pkl", "rb") as file:
-    dataradial = pickle.load( file)
-dfcoord, dfcs, dfccat, dfcca, dfcoa = dataradial[0], dataradial[1], dataradial[2], dataradial[3], dataradial[4]
+
+
+
 with open("data/plantData.pkl", "rb") as file:
     plantData = pickle.load(file)
+with open("data/dfcoord_long.pkl", "rb") as file:
+    dfcoord  = pickle.load( file)    
+with open("data/dfcs_long.pkl", "rb") as file:
+    dfcs  = pickle.load( file)    
+with open("data/dfcca_long.pkl", "rb") as file:
+    dfcca  = pickle.load( file)    
+with open("data/dfccat_long.pkl", "rb") as file:
+    dfccat  = pickle.load( file)
+with open("data/colorbar_minmax.pkl", "rb") as f:
+    colorbar_minmax = pickle.load(f)
+
     
+def compute_minmax_nested():
+    """
+    Build a nested dictionary with min/max values structured as:
+    {
+        'dfname': {
+            'overall': [min, max],
+            'scenario1': {
+                'pset1': [min, max],
+                'pset2': [min, max],
+                ...
+            },
+            ...
+        },
+        ...
+    }
+    """
+    scenario_col='scenario'; pset_col='pSet'; value_col='value'
+    minmax_dict = {}
+
+    for df_name, df in [('dfcs', dfcs), ('dfcca', dfcca)]:#, ('dfccat', dfccat)]:
+        df_minmax = {}
+        
+        # Overall min/max
+        overall_min = df[value_col].min()
+        overall_max = df[value_col].max()
+        df_minmax['overall'] = [overall_min, overall_max]
+
+        for pset in ['5','44','61']:#scenario_df[pset_col].unique():
+            pset_df = df[df[pset_col] == pset]
+            scenario_dict = {}
+            overall_min = pset_df[value_col].min()
+            overall_max = pset_df[value_col].max()
+            df_minmax[pset] = [overall_min, overall_max]
+            
+        # Per scenario and pset
+        for scenario in ['baseline','earlyDry', 'lateDry']:#df[scenario_col].unique():
+            scenario_df = df[df[scenario_col] == scenario]
+            scenario_dict = {}
+            overall_min = scenario_df[value_col].min()
+            overall_max = scenario_df[value_col].max()
+            scenario_dict['overall'] = [overall_min, overall_max]
+
+            for pset in ['5','44','61']:#scenario_df[pset_col].unique():
+                pset_df = scenario_df[scenario_df[pset_col] == pset]
+                min_val = pset_df[value_col].min()
+                max_val = pset_df[value_col].max()
+                scenario_dict[pset] = [min_val, max_val]
+
+            df_minmax[scenario] = scenario_dict
+
+            
+        minmax_dict[df_name] = df_minmax
+
+    # Save to pickle
+    with open("data/colorbar_minmax.pkl", "wb") as f:
+        pickle.dump(minmax_dict, f)
+    
+
+        
+def getminmax_():
+    cminmaxdfcs = [
+        dfcs['value'].min(),
+        dfcs['value'].max()
+    ]
+
+    cminmaxdfcca = [
+        dfcca['value'].min(),
+        dfcca['value'].max()
+    ]
+
+    # Assuming dfccat is categorical with values 0 or 1
+    cminmaxdfccat = [0.0, 1.0]
+
+    # Store all in a dictionary
+    minmax_dict = {
+        'dfcs': cminmaxdfcs,
+        'dfcca': cminmaxdfcca,
+        'dfccat': cminmaxdfccat
+    }
+
+    # Save to pickle
+    with open("data/colorbar_minmax.pkl", "wb") as f:
+        pickle.dump(minmax_dict, f)
+        
+    
+
+# Define helper to reshape each table to long format
+def reshape_radial_df_(df, xcol_prefix='cellS', ycol_prefix='cell'):
+    # Detect whether it's a coord or value df
+    if any(col.startswith(xcol_prefix) for col in df.columns):
+        cols = [f'{xcol_prefix}{i}' for i in range(8, -1, -1)]
+        long_df = df.melt(id_vars=['time', 'scenario', 'pSet'], 
+                          value_vars=cols, 
+                          var_name='cell', 
+                          value_name='distance')
+        long_df['cell'] = long_df['cell'].str.extract(r'(\d+)').astype(int)
+    else:
+        cols = [f'{ycol_prefix}{i}' for i in range(8, -1, -1)]
+        long_df = df.melt(id_vars=['time', 'scenario', 'pSet'], 
+                          value_vars=cols, 
+                          var_name='cell', 
+                          value_name='value')
+        long_df['cell'] = long_df['cell'].str.extract(r'(\d+)').astype(int)
+    return long_df
+def reshape_radial_df():
+    with open("data/4Andrea_coordcs.pkl", "rb") as file:
+        dataradial = pickle.load( file)
+    dfcoord, dfcs, dfccat, dfcca, dfcoa = dataradial[0], dataradial[1], dataradial[2], dataradial[3], dataradial[4]
+    del dataradial
+    # Reshape to long format immediately
+    print('dfcoord_long')
+    dfcoord_long = reshape_radial_df_(dfcoord, xcol_prefix='cellS')
+    with open("data/dfcoord_long.pkl", "wb") as file:
+        pickle.dump(dfcoord_long, file)
+    del dfcoord_long
+    print('dfcs_long')
+    dfcs_long    = reshape_radial_df_(dfcs)
+    with open("data/dfcs_long.pkl", "wb") as file:
+        pickle.dump(dfcs_long, file)
+    del dfcs_long
+    print('dfcca_long')
+    dfcca_long   = reshape_radial_df_(dfcca)
+    with open("data/dfcca_long.pkl", "wb") as file:
+        pickle.dump(dfcca_long, file)
+    del dfcca_long
+    print('dfccat_long')
+    dfccat_long  = reshape_radial_df_(dfccat)
+    with open("data/dfccat_long.pkl", "wb") as file:
+        pickle.dump(dfccat_long, file)
+    del dfccat_long
+    print('dfcoa_long')
+    dfcoa_long   = reshape_radial_df_(dfcoa)
+    with open("data/dfcoa_long.pkl", "wb") as file:
+        pickle.dump(dfcoa_long, file)
+    del dfcoa_long
+        
 
 def read_vtp(filename):
     reader = vtk.vtkXMLPolyDataReader()
@@ -191,42 +338,49 @@ def process_soil_vti(file_main, pname):
     cut_states =plot_mesh_cuts(image_data, pname, nz = 3)
     return cut_states, data_range
     
-def generate_colorbar_image(vmin, vmax, colormap="Viridis", height=500, width=100):
-    # Create gradient data
-    z = np.linspace(vmin, vmax, 256).reshape(-1, 1)
+def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, width = 100, discrete = False):
+
+    if discrete:
+        n = int(vmax - vmin + 1)
+        print("vmin", vmin)
+        print("vmax", vmax)
+        print("n", n)
+        z = np.linspace(vmin - 0.5, vmax + 0.5, n).reshape(-1, 1)
+    else:
+        n = 256
+        z = np.linspace(vmin, vmax, n).reshape(-1, 1)
+
+    if height > width:
+        x0 = 0
+        dx = 1
+        y0 = vmin
+        dy = (vmax - vmin) / (n - 1)
+    else:
+        y0 = 0
+        dy = 1
+        x0 = vmin
+        dx = (vmax - vmin) / (n - 1)
+        z = np.transpose(z)
 
     fig = go.Figure(go.Heatmap(
-        z=z,
-        colorscale=colormap,
-        showscale=False,
-        x0=0, dx=1,
-        y0=vmin, dy=(vmax - vmin) / 256,
-        colorbar=None
+        z = z,
+        colorscale = colormap,
+        showscale = False,
+        x0 = x0, dx = dx,
+        y0 = y0, dy = dy,
+        colorbar = None
     ))
-
     fig.update_layout(
-        width=width,
-        height=height,
-        margin=dict(l=0, r=100, t=20, b=20),  # add enough right margin for text
-        xaxis=dict(
-            showticklabels=False,
-            showgrid=False,
-            zeroline=False,
-            visible=False  # hide x-axis entirely
-        ),
-        yaxis=dict(
-            showgrid=False,
-            zeroline=False,
-            ticks="outside",
-            side="right",  # display ticks on the right
-            tickvals=[vmin, vmax],
-            ticktext=[f"{vmin:.2e}", f"{vmax:.2e}"],
-            tickfont=dict(size=14),
-            range=[vmin, vmax],
-            automargin=True
+        width = width,
+        height = height,
+        margin = dict(l = 10, r = 0, t = 10, b = 10),  # for the text
+        yaxis = dict(
+            showticklabels = False,
+            showgrid = False,
+            zeroline = False,
+            visible = False
         )
     )
-
     return fig
     
 def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
@@ -307,8 +461,28 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
             ]))
     cbar = generate_colorbar_image(vmin=q_range[0], vmax=q_range[1], 
                             colormap="Rainbow", #"Viridis", 
-                            height=200, width=150)
-        
+                            height=40, width=200)
+    #cbarcontent = dcc.Graph(
+    #        id = 'profile-plot',
+    #        figure = cbar,
+    #        style = {'width': '25%', 'height': '600px'}
+    #    )
+    cbarcontent = dcc.Graph(
+                # id = 'dummy-id',
+                figure = cbar,
+                style = {'width': '200px', 'height': '40px'},
+                config = {
+                    'displayModeBar': False  # Hides the entire toolbar
+                }
+            )
+    #style_ = {
+    #    'marginTop': '10px',
+    #    'marginRight': '10px',
+    #    'marginBottom': '10px',
+    #    'marginLeft': '10px'
+    #}
+
+    colbar = html.Div([cbarcontent], style = {'display': 'flex', 'justifyContent': 'flex-end'})    
     
     if soildata >= 0:
         print('adding soil' )
@@ -332,14 +506,10 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
         #cameraFocalPoint=[4, -7, -1],
         cameraViewUp=[-0.18, 0.09, 0.979],
         style={'flex': '1 1 auto', 'height': '100%', 'width': '100%'})
-    cbarcontent = dcc.Graph(
-            id = 'profile-plot',
-            figure = cbar,
-            style = {'width': '25%', 'height': '600px'}
-        )
+    
 
 
-    return html.Div(
+    return (html.Div(
                 children=[
                     html.Div(content, style={
                         "flex": "1 1 auto",
@@ -357,29 +527,8 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
                     "flexDirection": "column",
         "padding": "5px", 
                 }
-            )
-'''
-    
-    return html.Div([
-            # First child: VTK 3D view (full width)
-            html.Div(
-                content,
-                style={'width': '100%', 'height': '100%'}
-            ),
-
-            # Second child: colorbar
-            #html.Div(
-            #    cbarcontent,
-            #    style={
-            #        "width": "100px",         # Narrow fixed width
-            #        "height": "20px",
-            #        "margin": "20px auto",     # auto horizontal margins centers it
-            #        "alignSelf": "center"
-            #    }
-            #)
-        ],
-        style={'flex': '1 1 auto', 'height': '100%', 'display': 'flex', 'flexDirection': 'column'})#return  html.Div(content, style = {'width': '100%', 'height': '80vh', 'minHeight': '600px'})
-'''
+            ),colbar)
+            
 def dotheplot_plotly(fig, toplot, cumsum, df, namesyaxes=None, ncols=3, maxTime=None, 
                      indexlegend1=0, indexlegend2=1, microbes=[5, 44, 61], 
                      scenarios=["baseline", "earlyDry", "lateDry"],cstLims=False):
@@ -622,109 +771,178 @@ def plantData_plot_plotly(toplot, scenarios, pSet):
         )
 
     return  html.Div(content, style = {'width': '100%', 'height': '80vh', 'minHeight': '600px'})
-    
-def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
-                            unitChangex=10, unitChangey=1e6, timeeval=-1.,
-                            colordf_=None, doLog=False):
 
-    color_palette = ['#8e0152','#c51b7d','#de77ae','#f1b6da','#fde0ef',
-                     '#e6f5d0','#b8e186','#7fbc41','#4d9221']
+def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
+                            unitChangex=10, unitChangey=1e6, unitChangeC=1., timeeval=-1.,
+                            colordf_=None, doLog=False, legendtxt='{}', cminmax=None,
+                            vminmax=None, doLogC=False):
+
+
+    color_palette = ['#8e0152', '#c51b7d', '#de77ae', '#f1b6da', '#fde0ef',
+                     '#e6f5d0', '#b8e186', '#7fbc41', '#4d9221']
     color_mapping = dict(zip(range(9), color_palette))
 
-    if timeeval < 0.:
+    if timeeval < 0:
         timeeval = max(dfx_['time'])
-        
-    closest_time = dfx_['time'].iloc[(dfx_['time'] - timeeval).abs().argsort().values[0]]
-    dfx = dfx_[dfx_['time'] == closest_time].copy()
-    dfy = dfy_[dfy_['time'] == closest_time].copy()
-    if colordf_ is not None:
-        colordf = colordf_[colordf_['time'] == closest_time].copy()#colordf_.loc[[closest_time]]
 
-    # Convert pSet to string once if needed
+    closest_time = dfx_['time'].iloc[(dfx_['time'] - timeeval).abs().argsort().values[0]]
+    dfx = dfx_[dfx_['time'] == closest_time]
+    dfy = dfy_[dfy_['time'] == closest_time]
+    colordf = colordf_[colordf_['time'] == closest_time].copy() if colordf_ is not None else None
+
     pSet_str = str(pSets[0])
     scenario = scenarios[0]
-
     mask = (dfx['pSet'] == pSet_str) & (dfx['scenario'] == scenario)
-    dfx__ = dfx.loc[mask]
-    dfy__ = dfy.loc[mask]
-    if colordf_ is not None:
-        colordf__ = colordf.loc[mask]
+    dfx, dfy = dfx.loc[mask], dfy.loc[mask]
+    if colordf is not None:
+        colordf = colordf.loc[mask]
 
-    # Preselect column names and values
-    xcols = [f'cellS{i}' for i in range(8, -1, -1)]
-    ycols = [f'cell{i}' for i in range(8, -1, -1)]
+    dfx['distance'] *= unitChangex
+    dfy['value'] *= unitChangey
 
-    xdata = dfx__[xcols].values * unitChangex
-    ydata = dfy__[ycols].values * unitChangey
-    if colordf_ is not None:
-        cdata = colordf__[ycols].values
-
-    # Generate Plotly traces
     traces = []
-    for i, (x, y) in enumerate(zip(xdata.T, ydata.T)):
-        cell_id = 8 - i  # because range is from 8 to 0
-        if colordf_ is not None:
-            trace = go.Scatter(
-                x=x,
-                y=y,
-                mode='markers',
+
+    if colordf is not None:
+        x, y = dfx['distance'].values, dfy['value'].values
+        cdata = colordf['value'].values * unitChangeC
+
+        if doLogC:
+            tick_orig = np.geomspace(cdata.min(), cdata.max(), 6)
+            tick_vals = np.log10(tick_orig)
+            tick_text = [f'{v:.2g}' for v in tick_orig]
+            cdata = np.log10(cdata)
+
+        marker = dict(
+            color=cdata,
+            #size=5,
+            #symbol='cross', 
+            colorscale='Rainbow',
+            colorbar=dict(
+                title=legendtxt,
+                orientation='h',
+                x=0.5,
+                xanchor='center',
+                y=-0.18,
+                yanchor='top',
+                len=1.0,
+                thickness=20
+            ),
+            showscale=True
+        )
+        if cminmax is not None:
+            marker['cmin'], marker['cmax'] = cminmax
+
+        traces.append(go.Scattergl(x=x, y=y, mode='markers', marker=marker, name=legendtxt))
+    else:
+        for cell_id in sorted(dfy['cell'].unique()):
+            x = dfx[dfx['cell'] == cell_id]['distance'].values
+            y = dfy[dfy['cell'] == cell_id]['value'].values
+            traces.append(go.Scattergl(
+                x=x, y=y, mode='markers',
                 marker=dict(
-                    color=cdata[:, i],
-                    colorscale='Rainbow',
-                    colorbar=dict(title='Value'),
-                    showscale=False
-                ),
-                name=f'Cell-id {cell_id}'
-            )
-        else:
-            trace = go.Scatter(
-                x=x,
-                y=y,
-                mode='markers',
-                marker=dict(color=color_mapping[cell_id]),
-                name=f'Cell {cell_id}'
-            )
-        traces.append(trace)
+            #symbol='cross',
+            #size=5,
+            color=color_mapping[cell_id]),
+                name=legendtxt.format(cell_id)
+            ))
+
+    y_range = None
+    if vminmax is not None:
+        y_range = (
+            [np.log10(vminmax[0] * unitChangey), np.log10(vminmax[1] * unitChangey)]
+            if doLog else
+            [vminmax[0] * unitChangey, vminmax[1] * unitChangey]
+        )
 
     layout = go.Layout(
-        xaxis=dict(title=xlab, showgrid=False),
-        yaxis=dict(title=ylab, type='log' if doLog else 'linear', showgrid=False),
+        xaxis=dict(title=xlab, showgrid=False, range=[-0.1,5.]),
+        yaxis=dict(title=ylab, type='log' if doLog else 'linear', showgrid=False,
+                   range=y_range),
         font=dict(size=16),
         hovermode='closest',
-        showlegend=False
+        showlegend=(colordf_ is None),
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.2,
+            xanchor="center",
+            x=0.5,
+        )
     )
 
     return go.Figure(data=traces, layout=layout)
 
+def getrange( thedict,indexes, scenario, pset):
+    print('getrange',indexes, scenario, pset )
+    if len(indexes) == 0:
+        return None
+    elif len(indexes) == 3:
+        return thedict['overall'] 
+    elif 0 in indexes:
+        if len(indexes) == 1:
+            return thedict[scenario][str(pset)] 
+        elif len(indexes) == 2:
+            if 1 in indexes:
+                return thedict[str(pset)] 
+            else:
+                return thedict[scenario]['overall']  
 
 def profile_plot(data, index):
     variable = data["variable"+str(index)] 
     variableC = data["variableC"+str(index)] 
     scenarios = data["scenarios"+str(index)] 
     pSets = data["pSets"+str(index)]
+    limC = data["LimC"+str(index)]
+    limV = data["LimV"+str(index)]
     doLog = (1 in data["doLog"+str(index)] )
+    doLogC = False
     time = data["time"] 
-    
     if variable == 1:
         df_y = dfcs
+        vrminmax =  getrange(colorbar_minmax['dfcs'], np.array(limV), scenarios,pSets)
+        unitChangey = 1e6
+        legendtxty ="low weight organic molecules-C (mumol/cm3)" # "low weight organic molecules-C (mumol/cm3)"
+        
     elif variable == 5:
         df_y = dfcca
+        vrminmax =  getrange(colorbar_minmax['dfcca'], np.array(limV), scenarios,pSets)
+        unitChangey = 1e3
+        legendtxty = 'Active copiotrophs-C (mmol/cm3)'
         
     if variableC == -1:
         colordf = None
+        legendtxt = 'Cell-id {}'
+        crminmax = None
+        unitChangeC = 1.
     if variableC == 1:
         colordf = dfcs
+        legendtxt ="Low weight organic<br>molecules-C (mumol/cm3)"
+        unitChangeC = 1e6
+        crminmax = getrange(colorbar_minmax['dfcs'], np.array(limC), scenarios,pSets)
     elif variableC == 5:
         colordf = dfcca
+        legendtxt = 'Active copiotrophs-C<br>(mmol/cm3)'
+        unitChangeC = 1e3
+        crminmax = getrange(colorbar_minmax['dfcca'], np.array(limC), scenarios,pSets )
     elif variableC == 6:
         colordf = dfccat
-        
-        
-    gofig = get_val_along_r_figure( dfcoord, df_y,scenarios=[scenarios],pSets=[pSets],unitChangex=10,unitChangey=1e6,
-                       ylab="low weight organic molecules-C (mumol/cm3)",
+        legendtxt = 'Active-to-total<br>copiotrophs-C'
+        unitChangeC = 1.
+        crminmax = [0.,1.]
+    
+    print('profile_plot',index,  limC, limV, crminmax, scenarios, pSets)
+    assert ((crminmax is None) or (len(crminmax)==2))    
+    gofig = get_val_along_r_figure( dfcoord, df_y,scenarios=[scenarios],pSets=[pSets],unitChangex=10,unitChangey=unitChangey,#1e6,
+                       unitChangeC=unitChangeC,
+                       ylab=legendtxty,
                        xlab="distance from root surface (mm)",
              doLog=doLog, timeeval=time,
-             colordf_=colordf)
+             colordf_=colordf, legendtxt=legendtxt, cminmax=crminmax, vminmax=vrminmax,
+             doLogC = doLogC)
+    gofig.update_layout(
+    margin=dict(l=50, r=50, t=50, b=100),  # ← changed from 50 to 100
+    autosize=True,
+    )
 
     content = dcc.Graph(
             id = 'profile-plot',

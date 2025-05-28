@@ -23,7 +23,7 @@ class Stem : public Organ
 {
 public:
 
-    static std::vector<int> phytomerId;
+    static std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     		Vector3d partialIHeading_, int pni, bool moved = true, int oldNON = 0);
@@ -58,9 +58,9 @@ public:
 protected:
 	void storeLinkingNodeLocalId(int numCreatedLN, bool silence) override; ///<  override by @see Organ::createNonGrowingLateral()
 	std::vector<int> localId_linking_nodes;
-	void minusPhytomerId(int subtype) { phytomerId[subtype]--;  }
-    int getphytomerId(int subtype) { return phytomerId[subtype]; }
-    void addPhytomerId(int subtype) { phytomerId[subtype]++;  }
+	void minusPhytomerId(int subtype) { stemphytomerId[subtype]--;  }
+    int getphytomerId(int subtype) { return stemphytomerId[subtype]; }
+    void addPhytomerId(int subtype) { stemphytomerId[subtype]++;  }
 
 };
 

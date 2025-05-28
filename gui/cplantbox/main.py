@@ -97,10 +97,10 @@ app.layout = dbc.Container([
         ], width = 6),
     ]),
 
-    html.Div([
-            html.Img(src = '/assets/cplantbox.png', className = 'logo'),
-            html.Img(src = '/assets/fzj.png', className = 'logo'),
-        ], className = 'logoContainer')
+    #html.Div([
+    #        html.Img(src = '/assets/cplantbox.png', className = 'logo'),
+    #        html.Img(src = '/assets/fzj.png', className = 'logo'),
+    #    ], className = 'logoContainer')
 
 ], fluid = True)
 
@@ -426,13 +426,15 @@ def update_root_store(slider_values, current_tab, store_data):
 # Parameters Panel - Stem
 #
 def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs from stored values
+    print('in generate_stem_sliders', stem_parameter_sliders.keys())
     sliders = []
     successors = stem_values[-1]
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
+        print('generate_stem_sliders',i, key )
         style = {}
-        if i in [7]:  # rotBeta (not working)
-            style = {'display': 'none'}
+        #if i in [7]:  # rotBeta (not working)
+        #    style = {'display': 'none'}
         if (not successors) and (i in [3]):
             style = {'display': 'none'}
         # if (tab == 1) and (i == 2):  # no initial theta for main stem; makes sense for tillers
@@ -489,6 +491,7 @@ def stem_layout(data, type_names):
 def render_stem_tab(selected_tab, data):
     stored_values = data.get(selected_tab, STEM_SLIDER_INITIALS)
     print("render_stem_tab()", selected_tab, stored_values)
+    print('to generate_stem_sliders')
     return generate_stem_sliders(stored_values, int(selected_tab[-1]))
 
 
