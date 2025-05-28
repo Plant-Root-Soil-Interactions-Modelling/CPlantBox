@@ -148,11 +148,11 @@ def fix_dx(rrp, strp, lrp):
         # r.betaDev = 0.
         print("delayNGStarts", r.delayNGStarts)
         print("delayNGEnds", r.delayNGEnds)
-        print("initBeta", r.initBeta)
-        print("betaDev", r.betaDev)
-        print("rotBeta", r.rotBeta)
+        #print("initBeta", r.initBeta)
+        #print("betaDev", r.betaDev)
+        #print("rotBeta", r.rotBeta)
         # r.rotBeta = 0.5
-        r.betaDev = 10
+        #r.betaDev = 10
     for r in lrp:
         # print(r.subType, ":", r.dx, r.dxMin)
         r.dx = 0.25
@@ -182,6 +182,7 @@ def simulate_plant(plant_, time_slider, seed_data, root_data, stem_data, leaf_da
     srp[0].seedPos.y = 0.
     srp[0].seedPos.z = -3.
     srp[0].delayRC = 30.
+    srp[0].delayDefinitionShoot = 2
     print("delaySB", srp[0].delaySB)
     print("firstSB", srp[0].firstSB)
     print("delayRC", srp[0].delayRC)
@@ -295,7 +296,7 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         p.a = d[4]
         p.delayNGStart = d[5]
         p.delayNGEnd = d[5] + d[6]
-        p.rotBeta = d[7]
+        p.rotBeta = d[7]/ 180.
         p.tropismN = d[8]
         p.tropismS = d[9]
         p.tropismT = tropism_names[d[10]]

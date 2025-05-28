@@ -82,6 +82,7 @@ public:
     Vector3d seedPos  = Vector3d(0.,0.,-3.); ///< Mean position of the seed [cm]
     Vector3d seedPoss = Vector3d(0.,0.,0.);  ///< Standard deviation of position  [cm]
 	int delayDefinition = Organism::dd_distance; ///< how is the delay of the laterals defined
+	int delayDefinitionShoot = Organism::dd_distance; ///< how is the delay of the laterals defined
 
     // Basal roots (nodal roots)
     double firstB = 1.e9;  ///< Mean emergence of first basal root [day]

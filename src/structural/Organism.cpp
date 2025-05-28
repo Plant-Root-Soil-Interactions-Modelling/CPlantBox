@@ -549,6 +549,14 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
     return so;
     }
 
+
+int Organism::getDelayDefinition(int ot_lat) 
+{
+	auto srp = std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(Organism::ot_seed,0 ));
+	if((ot_lat ==  Organism::ot_stem)||(ot_lat ==  Organism::ot_leaf)){return srp->delayDefinitionShoot;
+	}else{return srp->delayDefinition;}
+}
+
 /**
  * @return Quick info about the object for debugging
  */

@@ -605,6 +605,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
             .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
             .def_readwrite("delayDefinition", &SeedRandomParameter::delayDefinition)
+            .def_readwrite("delayDefinitionShoot", &SeedRandomParameter::delayDefinitionShoot)
             .def_readwrite("firstB", &SeedRandomParameter::firstB)
             .def_readwrite("firstBs", &SeedRandomParameter::firstBs)
             .def_readwrite("delayB", &SeedRandomParameter::delayB)

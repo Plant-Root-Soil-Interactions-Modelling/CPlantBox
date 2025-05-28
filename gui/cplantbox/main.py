@@ -153,6 +153,7 @@ def update_plant(plant_value, seed_data, root_data, stem_data, leaf_data, typena
     State('result-tabs', 'value'),
     prevent_initial_call = True,
 )
+
 def click_simulate(n_clicks, plant_value, time_slider, seed_data, root_data, stem_data, leaf_data, typename_data, vtk_data, result_value):
     print("click_simulate()", plant_value)
     vtk_data = simulate_plant(plant_value, time_slider, seed_data, root_data, stem_data, leaf_data)
@@ -445,8 +446,8 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
     sliders.append(html.Div(className = "spacer"))
     for i, key in enumerate(stem_parameter_sliders.keys()):
         style = {}
-        if i in [7]:  # rotBeta (not working)
-            style = {'display': 'none'}
+        #if i in [7]:  # rotBeta (not working)
+        #    style = {'display': 'none'}
         if (not successors) and (i in [3]):
             style = {'display': 'none'}
         # if (tab == 1) and (i == 2):  # no initial theta for main stem; makes sense for tillers
@@ -627,4 +628,4 @@ def render_result_tab(tab, vtk_data, typename_data):
 
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = False, port=8051)

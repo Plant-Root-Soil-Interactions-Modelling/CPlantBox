@@ -96,9 +96,9 @@
         <!--nodal growth function (sequential = 0, equal = 0)-->
         <parameter name="tropismT" value="2"/>
         <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="BetaDev" value="10"/>
+        <parameter name="BetaDev" value="0"/>
         <!--RevRotation deviation-->
-        <parameter name="InitBeta" value="0.2"/>
+        <parameter name="InitBeta" value="0."/>
         <!--Initial RevRotation-->
         <parameter name="RotBeta" value="0.60000002"/>
         <!--RevRotation of the stem-->
@@ -146,9 +146,9 @@
         <!--nodal growth function (sequential = 0, equal = 0)-->
         <parameter name="tropismT" value="4"/>
         <!--Type of stem tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)-->
-        <parameter name="BetaDev" value="0.2"/>
+        <parameter name="BetaDev" value="0"/>
         <!--RevRotation deviation-->
-        <parameter name="InitBeta" value="0.2"/>
+        <parameter name="InitBeta" value="0."/>
         <!--Initial RevRotation-->
         <parameter name="RotBeta" value="0.60000002"/>
         <!--RevRotation of the stem-->
