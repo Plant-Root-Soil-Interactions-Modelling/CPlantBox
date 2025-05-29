@@ -58,23 +58,26 @@ h6, .checkbox-label { /* panel font */
 /* LOGO */
 .logoContainer {
     position: fixed;
-    bottom: 20px;
-    left: 10px;
+    bottom: 2vh;      /* Relative to viewport height */
+    left: 2vw;        /* Relative to viewport width */
     display: flex;
-    flex-direction: column; /* 👈 Stack vertically */
-    gap: 5px;
-    align-items: center;
+    flex-direction: column;
+    gap: 1.5vh;
+    align-items: flex-start;
     z-index: 999;
-    /* Make sure it's always on top */
 }
 
+/* LOGO Image: responsive with clamp */
 .logo {
+    width: clamp(60px, 20vw, 160px); /* Adjust based on screen size */
     height: auto;
-    width: clamp(120px, 12vw, 300px);
-    opacity: 1.;
-    transition: opacity 0.3s;
+    opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 .logo:hover {
-    opacity: 0.5
+    opacity: 0.6;
 }
+
+
+

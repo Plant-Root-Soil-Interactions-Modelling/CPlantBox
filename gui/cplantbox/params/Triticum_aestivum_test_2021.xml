@@ -140,7 +140,7 @@
     <parameter name="a" value="0.03" dev="0"/>
     <parameter name="Width_petiole" value="0.35" />
     <parameter name="Width_blade" value="0.9" />
-    <parameter name="shapeType" value="1" />
+    <parameter name="shapeType" value="2" />
     <parameter name="tropismT" value="1"/>
     <parameter name="tropismN" value="18"/>
     <parameter name="tropismS" value="0.02"/>

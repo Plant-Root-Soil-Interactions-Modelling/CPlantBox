@@ -67,7 +67,7 @@ def vtk3D_plot(vtk_data, color_pick, type_):
     cbarcontent = dcc.Graph(
                 # id = 'dummy-id',
                 figure = cbar,
-                style = {'width': '200px', 'height': '40px'},
+                style = {'width': '200px', 'height': '60px','marginTop': '10px'},
                 config = {
                     'displayModeBar': False  # Hides the entire toolbar
                 }
@@ -101,8 +101,8 @@ def profile_plot(vtk_data):
                 'data': traces,
                 'layout': go.Layout(
                     # title='Line Plot of Multiple Arrays vs Time',
-                    xaxis = {'title': 'Length fraction per cm soil layer [-]'},
-                    yaxis = {'title': 'Depth [cm]'},
+                    xaxis = {'title': 'Fraction of plant organ length per cm layer [-]'},
+                    yaxis = {'title': 'Vertical position [cm]'},
                     hovermode = 'closest',
                     colorway = qualitative.Set2,
                 ),

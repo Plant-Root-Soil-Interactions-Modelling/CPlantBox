@@ -112,7 +112,7 @@ def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, widt
     fig.update_layout(
         width = width,
         height = height,
-        margin = dict(l = 10, r = 0, t = 10, b = 10),  # for the text
+        margin = dict(l = 10, r = 0, t = 0, b = 0),  # for the text
         yaxis = dict(
             showticklabels = False,
             showgrid = False,

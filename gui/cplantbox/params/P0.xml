@@ -248,13 +248,13 @@
 		<!--Apical zone [cm];-->
 		<parameter name="ln" value="0" dev="0" functiontype="3"/>
 		<!--Inter-lateral distance [cm];-->
-		<parameter name="lmax" value="38.41053981" dev="7.880276917"/>
+		<parameter name="lmax" value="38.41053981" dev="0"/>
 		<parameter name="r" value="7.921748215" dev="2.337502885"/>
 		<parameter name="tropismT" value="1"/>
-		<parameter name="tropismN" value="5"/>
+		<parameter name="tropismN" value="3"/>
 		<parameter name="tropismS" value="0.05"/>
 		<parameter name="dx" value="1"/>
-		<parameter name="theta" value="0.739136061" dev="0.261949409"/>
+		<parameter name="theta" value="0.12" dev="0.261949409"/>
 		<parameter name="rlt" value="1000000000" dev="0"/>
 		<parameter name="gf" value="1"/>
 		<parameter name="RotBeta" value="1"/>

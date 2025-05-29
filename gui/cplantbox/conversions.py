@@ -80,8 +80,8 @@ def get_leaf_slider_names():  # see set_data, apply_sliders
     parameter_sliders = {
         "Maximal length [cm]": (1, 50),
         "Growth rate [cm/day]": (0.5, 10),
-        "Initial angle [°]": (0, 180.),
-        "Petiole length [cm]": (1, 10),  # lb
+        "Initial angle [°]": (0, 180),
+        "Petiole length [cm]": (0.1, 10),  # lb
         "Fixed Rotation [°]": (0, 180),
         "Tropism strength [1]": (0, 6),
         "Tropism tortuosity [1]": (0, 1),
@@ -97,8 +97,8 @@ def set_leaf_geometry(shapename, p):
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 3.5, 8.5
         p.areaMax = 10  # cm2, area reached when length = lmax
-        p.phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-        p.l = np.array([3, 2.2, 1.7, 2, 3.5])  # distance from leaf center
+        phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
+        l = np.array([3, 2.2, 1.7, 2, 3.5])  # distance from leaf center
     elif shapename == "Round":
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 5, 11
@@ -111,13 +111,14 @@ def set_leaf_geometry(shapename, p):
         p.areaMax = 50
         p.la, p.lmax = 5, 11
         phi = np.array([-90, -45, 0., 45, 67.5, 70, 90]) / 180. * np.pi
-        l = np.array([2, 2, 2, 4, 1, 1, 4])  # distance from leaf center
+        l = np.array([5, 2, 2, 4, 1, 1, 5])  # distance from leaf center
     elif shapename == "Flower":
         p.lb = 1  # length of leaf stem
-        p.areaMax = 100
+        p.areaMax = 50
         p.la, p.lb, p.lmax = 5, 1, 11
         phi = np.array([-90., -67.5, -45, -22.5, 0, 22.5, 45, 67.5, 90]) / 180. * np.pi
-        l = np.array([5., 1, 5, 1, 5, 1, 5, 1, 5])
+        l = np.array([5., 1, 4.5, 1, 4, 1, 4.5, 1, 5])    
+    p.createLeafRadialGeometry(phi, l, 100)
 
 
 def set_leaf_sliders(slider_values):

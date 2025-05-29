@@ -102,7 +102,7 @@
     <parameter name="lmax" value="10" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="10" dev="0"/>
-    <parameter name="a" value="0.20000000000000001" dev="0"/>
+    <parameter name="a" value="0.06" dev="0"/>
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="10"/>
     <parameter name="InitBeta" value="0"/>
@@ -130,7 +130,7 @@
     <parameter name="ldelay" value="1" dev="0"/>
     <!--Inter-lateral distance [cm];-->
     <parameter name="r" value="1" dev="0"/>
-    <parameter name="a" value="0.20000000000000001" dev="0"/>
+    <parameter name="a" value="0.05" dev="0"/>
     <parameter name="RotBeta" value="0"/>
     <parameter name="BetaDev" value="10"/>
     <parameter name="InitBeta" value="0"/>

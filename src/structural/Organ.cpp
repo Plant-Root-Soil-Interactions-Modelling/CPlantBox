@@ -559,8 +559,9 @@ Vector3d Organ::getiHeading0()  const
  */
 Vector3d Organ::heading(int n ) const
 {
-
-	if(n<0){n=nodes.size()-1 ;}
+	if(n<0) {
+		n=nodes.size()-1 ;
+	}
 	if ((nodes.size()>1)&&(n>0)) {
 		n = std::min(int(nodes.size()),n);
 		Vector3d h = getNode(n).minus(getNode(n-1));
