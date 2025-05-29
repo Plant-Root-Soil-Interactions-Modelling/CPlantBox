@@ -98,7 +98,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 
 
 def create_leaf_(leaf, leaf_points, leaf_polys):
-    """ used by plot plant """
+    """ used by plot plant, and cplantbox dash gui; adds to leaf_points, and leaf_polys """
     offs = leaf_points.GetNumberOfPoints()
     globalIdx_y = []  # index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #

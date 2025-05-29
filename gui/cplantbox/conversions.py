@@ -18,16 +18,8 @@ def get_parameter_names():  # parameter xml file names
         ("Demo Leaf", "leaf_only.xml"),
         ("Demo Root", "root_only.xml"),
         ("Demo Stem", "stem_only.xml"),
-        # ("Maize2014", "Zea_mays_4_Leitner_2014.xml"),
-        # ("Maize_", "new_maize.xml"),
-        # # ("Maize2", "maize.xml"),
-        ("Maize3", "P3.xml"),
-        ("Maize0", "P0.xml"),
-        # ("Anagallis", "Anagallis_femina_Leitner_2010.xml"),
-        # ("Morning Glory9", "morning_glory_14m_d.xml"),
-        # ("Morning Glory14", "morning_glory_14m_d.xml"),
-        # ("Wheat11", "Triticum_aestivum_a_Bingham_2011.xml"),
-        # ("Wheat21", "Triticum_aestivum_adapted_2021.xml"),
+#        ("Maize3", "P3.xml"),
+        ("Maize", "P0.xml"),
         ("Wheat", "Triticum_aestivum_test_2021.xml"),  # Monas File
         ("FSPM", "fspm2023.xml") ]
     return parameter_names
