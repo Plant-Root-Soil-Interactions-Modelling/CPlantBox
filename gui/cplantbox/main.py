@@ -26,7 +26,7 @@ leaf_parameter_sliders = get_leaf_slider_names()
 SEED_SLIDER_INITIALS = [180, 1, 7, 7, 20, 7, 7, 15, 5]
 ROOT_SLIDER_INITIALS = [100, 3, 45, 1, 1, 7, 0.1, 1, 0.2, "Gravitropism"]
 STEM_SLIDER_INITIALS = [100, 3, 45, 1, 0.1, 7, 14, 180., 1, 0.2, "Gravitropism"]
-LEAF_SLIDER_INITIALS = ["Defined", 30, 1, 45., 2., 90, 1., 0.2, "Gravitropism"]
+LEAF_SLIDER_INITIALS = ["Defined", 30, 50, 1, 45., 2., 90, 1., 0.2, "Gravitropism"]
 
 """ LAYOUT """
 app.layout = dbc.Container([
@@ -46,7 +46,8 @@ app.layout = dbc.Container([
             dcc.Dropdown(id = 'plant-dropdown',
                         options = plants,
                         value = plants[0]['value'],
-                        clearable = False,
+                        clearable = False,                        
+                        searchable=False,
                         className = 'customDropdown'),
             html.Div(className = "spacer"),
             html.H6("Simulation time [day]"),
@@ -387,6 +388,7 @@ def generate_root_sliders(root_values, tab):  # Generate sliders for root tabs f
                 options = list(tropism_names.keys()),
                 value = root_values[i + 1],
                 clearable = False,
+                searchable=False,
                 className = 'customDropdown'
             ))    
     return html.Div(sliders)
@@ -473,6 +475,7 @@ def generate_stem_sliders(stem_values, tab):  # Generate sliders for stem tabs f
                 options = list(tropism_names.keys()),
                 value = stem_values[i + 1],
                 clearable = False,
+                searchable=False,
                 className = 'customDropdown'
             ))
     return html.Div(sliders)
@@ -538,9 +541,10 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
     sliders.append(html.H6("Leaf shape"))
     sliders.append(dcc.Dropdown(
                 id = {'type': 'leaf-dynamic-slider', 'index': 0},  # little white lie
-                options = ["Defined", "Long", "Round", "Maple", "Flower"],
+                options = ["Defined", "Pandurate", "Round", "Maple", "Flower"],
                 value = "Defined",
                 clearable = False,
+                searchable=False,
                 className = 'customDropdown'
     ))
     sliders.append(html.Div(className = "spacer"))
@@ -566,6 +570,7 @@ def generate_leaf_sliders(data):  # Generate sliders for leaf tabs from stored v
                 options = list(tropism_names.keys()),
                 value = leaf_values[i + 2],
                 clearable = False,
+                searchable=False,
                 className = 'customDropdown'
             ))
     return html.Div(sliders)

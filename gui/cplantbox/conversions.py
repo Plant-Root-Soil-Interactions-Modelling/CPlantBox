@@ -79,6 +79,7 @@ def get_leaf_slider_names():  # see set_data, apply_sliders
     """ return slider names as keys of dict and bounds as values"""
     parameter_sliders = {
         "Maximal length [cm]": (1, 50),
+        "Maximal leaf area [cm²]": (1, 100),
         "Growth rate [cm/day]": (0.5, 10),
         "Initial angle [°]": (0, 180),
         "Petiole length [cm]": (0.1, 10),  # lb
@@ -93,12 +94,12 @@ def set_leaf_geometry(shapename, p):
     """ shape name "Defined", "Long", "Round", "Maple", "Flower" """
     if shapename == "Defined":
         return
-    elif shapename == "Long":
+    elif shapename == "Pandurate":
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 3.5, 8.5
         p.areaMax = 10  # cm2, area reached when length = lmax
         phi = np.array([-90, -45, 0., 45, 90]) / 180. * np.pi
-        l = np.array([3, 2.2, 1.7, 2, 3.5])  # distance from leaf center
+        l = np.array([3, 1.5, 1., 2, 3.5])  # distance from leaf center
     elif shapename == "Round":
         p.lb = 1  # length of leaf stem
         p.la, p.lmax = 5, 11
@@ -299,13 +300,14 @@ def apply_sliders(srp, seed_data, rrp, root_data, strp, stem_data, lrp, leaf_dat
         d = leaf_data["leaf"]
         set_leaf_geometry(d[0], p)
         p.lmax = d[1]
-        p.r = d[2]
-        p.theta = d[3] / 180 * np.pi
-        p.lb = d[4]
-        p.rotBeta = d[5] / 180.
-        p.tropismN = d[6]
-        p.tropismS = d[7]
-        p.tropismT = tropism_names[d[8]]
+        p.areaMax = d[2]
+        p.r = d[3]
+        p.theta = d[4] / 180. * np.pi
+        p.lb = d[5]
+        p.rotBeta = d[6] / 180.
+        p.tropismN = d[7]
+        p.tropismS = d[8]
+        p.tropismT = tropism_names[d[9]]
 
 
 def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
@@ -364,7 +366,7 @@ def set_data(plant_, seed_data, root_data, stem_data, leaf_data, typename_data):
         tropism_name = tropism_names_[int(p.tropismT)]
         leaf_data["leaf"] = [
             "Defined",
-            p.lmax, p.r,
+            p.lmax, p.areaMax, p.r,
             p.theta / np.pi * 180, p.lb, p.rotBeta * 180,
             p.tropismN, p.tropismS, tropism_name
         ]
