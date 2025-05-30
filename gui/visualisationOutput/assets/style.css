@@ -1,8 +1,9 @@
 /* Fonts */
 h5 { /* top font */
     font-size: 18px;
-    padding-top: 15px;
-    padding-bottom: 10px;
+    padding-top: 20px;
+    padding-bottom: 5px;
+    margin-bottom: 0px;
 }
 
 h6, .checkbox-label { /* panel font */
@@ -42,7 +43,7 @@ h6, .checkbox-label { /* panel font */
     padding-bottom: 5px !important;
     padding-left: 2px !important;
     padding-right: 2px !important;    
-    font-size: 12px;    
+    font-size: 15px;    
     /*flex: 0;  /* Equal width for all tabs */
     /*max-width: 150px;  /* Set a fixed max width */
     /*text-align: left;  /* Center text inside the tab */
@@ -62,7 +63,7 @@ h6, .checkbox-label { /* panel font */
     left: 10px;
     display: flex;
     flex-direction: row; /* 👈 Stack vertically */
-    gap: 5px;
+    gap: 10px;
     align-items: center;
     z-index: 999;
     /* Make sure it's always on top */
@@ -70,7 +71,7 @@ h6, .checkbox-label { /* panel font */
 
 .logo {
     height: auto;
-    width: clamp(120px, 12vw, 300px);
+    width: clamp(120px, 12vw, 180px);
     opacity: 1.;
     transition: opacity 0.3s;
 }

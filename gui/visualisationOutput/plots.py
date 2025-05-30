@@ -23,9 +23,7 @@ from plotly.subplots import make_subplots
 from vtk.util.numpy_support import vtk_to_numpy
 from dash_vtk.utils import to_mesh_state, to_volume_state
 from vtk.util.numpy_support import vtk_to_numpy
-
-
-
+import time
 
 with open("data/plantData.pkl", "rb") as file:
     plantData = pickle.load(file)
@@ -235,11 +233,9 @@ def process_rsi_vtp(file_main):
     c2p.PassCellDataOn()
     c2p.Update()
     pointdata = c2p.GetOutput()
-    print('get arrays')
     point_data = pointdata.GetPointData()
-    for i in range(point_data.GetNumberOfArrays()):
-        print(f"- {point_data.GetArrayName(i)}")
-    print('get arraysDone')
+    #for i in range(point_data.GetNumberOfArrays()):
+    #    print(f"- {point_data.GetArrayName(i)}")
     pname = point_data.GetArrayName(0)
     # Tube filter
     tube = vtk.vtkTubeFilter()
@@ -254,12 +250,9 @@ def process_rsi_vtp(file_main):
     q_exud = vtk_to_numpy(array) if array else np.array([])
     q_range = [float(q_exud.min()), float(q_exud.max())] if q_exud.size > 0 else [0.0, 1e-6]
 
-    print('q_exud',pname, q_range)
     # Create tube state and manually set scalar field + lookup table
     tube_state = to_mesh_state(tube.GetOutput(), pname)
-    print('tube_state',tube_state.keys())
     q_range = tube_state["field"]["dataRange"]
-    print('q_exud',pname, q_range)
     
     return tube_state, q_range
     
@@ -342,9 +335,9 @@ def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, widt
 
     if discrete:
         n = int(vmax - vmin + 1)
-        print("vmin", vmin)
-        print("vmax", vmax)
-        print("n", n)
+        #print("vmin", vmin)
+        #print("vmax", vmax)
+        #print("n", n)
         z = np.linspace(vmin - 0.5, vmax + 0.5, n).reshape(-1, 1)
     else:
         n = 256
@@ -392,7 +385,6 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
     soildata = data['soil'+str(plantid)]
     rsidata = data['rsi'+str(plantid)]
     
-    print('vtk3D_plot', scenario, pSet, pname)
     if scenario == "lateDry":
         sc = "lD"
     elif scenario == "earlyDry":
@@ -485,7 +477,6 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
     colbar = html.Div([cbarcontent], style = {'display': 'flex', 'justifyContent': 'flex-end'})    
     
     if soildata >= 0:
-        print('adding soil' )
         for state in cut_states:
             viewChildren.append(
                dash_vtk.GeometryRepresentation(
@@ -621,7 +612,6 @@ def dotheplot_plotly(fig, toplot, cumsum, df, namesyaxes=None, ncols=3, maxTime=
                 fig.add_vline(x=xval, line_dash='dash', line_color='black', row=rowid + 1, col=colid + 1)
 
             if cstLims:#maxTime is not None:
-                print('ig.update_yaxes', min_y[rowid]* factor, max_y[rowid]* factor)
                 fig.update_xaxes(range=[10.,25.], row=rowid + 1, col=colid + 1)
                 fig.update_yaxes(range=[min_y[rowid]* factor, max_y[rowid]* factor], row=rowid + 1, col=colid + 1)
             else:
@@ -652,7 +642,6 @@ c_styles = {
 }
 def plantData_plot_plotly(toplot, scenarios, pSet):
     """ Generate a Plotly figure showing plant physiological data across scenarios and parameter sets """
-    #print('toplot', toplot)
     ncols = 1
     #toplot = ['psiXyl', 'Q_Gr', 'Q_Exud']
     nrows = len(toplot)
@@ -699,50 +688,27 @@ def plantData_plot_plotly(toplot, scenarios, pSet):
         go.Scatter(
             x=[None], y=[None],
             mode='lines',
-            line=dict(color=c_styles['baseline'], width=4),
-            name='baseline',
+            line=dict(color=c_styles[scsc], width=4),
+            name=scsc,
             showlegend=True
-        ),
-        go.Scatter(
-            x=[None], y=[None],
-            mode='lines',
-            line=dict(color=c_styles['earlyDry'], width=4),
-            name='earlyDry',
-            showlegend=True
-        ),
-        go.Scatter(
-            x=[None], y=[None],
-            mode='lines',
-            line=dict(color=c_styles['lateDry'], width=4),
-            name='lateDry',
-            showlegend=True
-        )
+        ) for scsc in scenarios
     ]
 
     # Line style legend (microbes)
+    pset_names = {
+        5:'High respiration',
+        44:'High development',
+        61:'Low activity'
+    }
     linestyle_legend_traces = [
         go.Scatter(
             x=[None], y=[None],
             mode='lines',
-            line=dict(color='black', dash=l_styles[5], width=4),
-            name='High respirating',
+            line=dict(color='black', dash=l_styles[pp_], width=4),
+            name=pset_names[pp_],
             showlegend=True
-        ),
-        go.Scatter(
-            x=[None], y=[None],
-            mode='lines',
-            line=dict(color='black', dash=l_styles[44], width=4),
-            name='High development',
-            showlegend=True
-        ),
-        go.Scatter(
-            x=[None], y=[None],
-            mode='lines',
-            line=dict(color='black', dash=l_styles[61], width=4),
-            name='Low activity',
-            showlegend=True
-        )
-    ]
+        ) for pp_ in pSet]
+        
 
     # Add to the figure
     for trace in color_legend_traces + linestyle_legend_traces:
@@ -785,6 +751,9 @@ def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
     if timeeval < 0:
         timeeval = max(dfx_['time'])
 
+    t_start = time.time()
+    
+    # Block A: filter time
     closest_time = dfx_['time'].iloc[(dfx_['time'] - timeeval).abs().argsort().values[0]]
     dfx = dfx_[dfx_['time'] == closest_time]
     dfy = dfy_[dfy_['time'] == closest_time]
@@ -794,57 +763,40 @@ def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
     scenario = scenarios[0]
     mask = (dfx['pSet'] == pSet_str) & (dfx['scenario'] == scenario)
     dfx, dfy = dfx.loc[mask], dfy.loc[mask]
-    if colordf is not None:
-        colordf = colordf.loc[mask]
+    colordf = colordf.loc[mask]
 
-    dfx['distance'] *= unitChangex
-    dfy['value'] *= unitChangey
+    x = dfx['distance'].to_numpy() * unitChangex
+    y = dfy['value'].to_numpy() * unitChangey
 
-    traces = []
+    cdata = colordf['value'].to_numpy() * unitChangeC
 
-    if colordf is not None:
-        x, y = dfx['distance'].values, dfy['value'].values
-        cdata = colordf['value'].values * unitChangeC
+    if doLogC:
+        tick_orig = np.geomspace(cdata.min(), cdata.max(), 6)
+        tick_vals = np.log10(tick_orig)
+        tick_text = [f'{v:.2g}' for v in tick_orig]
+        cdata = np.log10(cdata)
 
-        if doLogC:
-            tick_orig = np.geomspace(cdata.min(), cdata.max(), 6)
-            tick_vals = np.log10(tick_orig)
-            tick_text = [f'{v:.2g}' for v in tick_orig]
-            cdata = np.log10(cdata)
+    marker = dict(
+        color=cdata,
+        #size=5,
+        #symbol='cross', 
+        colorscale='Rainbow',
+        colorbar=dict(
+            title=legendtxt,
+            orientation='h',
+            x=0.5,
+            xanchor='center',
+            y=-0.18,
+            yanchor='top',
+            len=1.0,
+            thickness=20
+        ),
+        showscale=True
+    )
+    if cminmax is not None:
+        marker['cmin'], marker['cmax'] = cminmax
 
-        marker = dict(
-            color=cdata,
-            #size=5,
-            #symbol='cross', 
-            colorscale='Rainbow',
-            colorbar=dict(
-                title=legendtxt,
-                orientation='h',
-                x=0.5,
-                xanchor='center',
-                y=-0.18,
-                yanchor='top',
-                len=1.0,
-                thickness=20
-            ),
-            showscale=True
-        )
-        if cminmax is not None:
-            marker['cmin'], marker['cmax'] = cminmax
 
-        traces.append(go.Scattergl(x=x, y=y, mode='markers', marker=marker, name=legendtxt))
-    else:
-        for cell_id in sorted(dfy['cell'].unique()):
-            x = dfx[dfx['cell'] == cell_id]['distance'].values
-            y = dfy[dfy['cell'] == cell_id]['value'].values
-            traces.append(go.Scattergl(
-                x=x, y=y, mode='markers',
-                marker=dict(
-            #symbol='cross',
-            #size=5,
-            color=color_mapping[cell_id]),
-                name=legendtxt.format(cell_id)
-            ))
 
     y_range = None
     if vminmax is not None:
@@ -854,6 +806,11 @@ def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
             [vminmax[0] * unitChangey, vminmax[1] * unitChangey]
         )
 
+    print(f"Filtering: {time.time() - t_start:.3f} s")
+    t_plot = time.time()
+    
+    traces =[go.Scattergl(x=x, y=y, mode='markers', marker=marker, name=legendtxt)]
+    
     layout = go.Layout(
         xaxis=dict(title=xlab, showgrid=False, range=[-0.1,5.]),
         yaxis=dict(title=ylab, type='log' if doLog else 'linear', showgrid=False,
@@ -869,11 +826,11 @@ def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
             x=0.5,
         )
     )
-
+    
+    print(f"Plotting: {time.time() - t_plot:.3f} s")
     return go.Figure(data=traces, layout=layout)
 
 def getrange( thedict,indexes, scenario, pset):
-    print('getrange',indexes, scenario, pset )
     if len(indexes) == 0:
         return None
     elif len(indexes) == 3:
@@ -896,7 +853,7 @@ def profile_plot(data, index):
     limV = data["LimV"+str(index)]
     doLog = (1 in data["doLog"+str(index)] )
     doLogC = False
-    time = data["time"] 
+    time_ = data["time"] 
     if variable == 1:
         df_y = dfcs
         vrminmax =  getrange(colorbar_minmax['dfcs'], np.array(limV), scenarios,pSets)
@@ -930,15 +887,16 @@ def profile_plot(data, index):
         unitChangeC = 1.
         crminmax = [0.,1.]
     
-    print('profile_plot',index,  limC, limV, crminmax, scenarios, pSets)
     assert ((crminmax is None) or (len(crminmax)==2))    
+    print('get_val_along_r_figure',index,data)
     gofig = get_val_along_r_figure( dfcoord, df_y,scenarios=[scenarios],pSets=[pSets],unitChangex=10,unitChangey=unitChangey,#1e6,
                        unitChangeC=unitChangeC,
                        ylab=legendtxty,
                        xlab="distance from root surface (mm)",
-             doLog=doLog, timeeval=time,
+             doLog=doLog, timeeval=time_,
              colordf_=colordf, legendtxt=legendtxt, cminmax=crminmax, vminmax=vrminmax,
              doLogC = doLogC)
+    t_start = time.time()
     gofig.update_layout(
     margin=dict(l=50, r=50, t=50, b=100),  # ← changed from 50 to 100
     autosize=True,
@@ -949,6 +907,7 @@ def profile_plot(data, index):
             figure = gofig,
             style = {'width': '100%',  'height': '100%'}
         )
+    print(f"Send: {time.time() - t_start:.3f} s")
     return  html.Div(content, style = {"width": "100%",  'height': '80vh', 'minHeight': '600px'})
 
 
