@@ -22,9 +22,9 @@ app.layout = dbc.Container([
     dcc.Store(id = 'root-store', data = {"time": 22,"variable_plant0":'psiXyl', "scenarios0": 'baseline', "pSets0": 44,"soil0":0,"rsi0":-1,
                                             "variable_plant1":'psiXyl', "scenarios1": 'lateDry', "pSets1": 44,"soil1":0,"rsi1":-1}),
     dcc.Store(id = 'stem-store', data = {"time": 12,"variable0":1, "variableC0":6, "scenarios0": 'baseline', "pSets0": 5,"doLog0":[1],#"doLogC0":[],
-                                            "LimC0":[0,1],"LimV0":[0,1],
+                                            "LimC0":[],"LimV0":[0,1],
                                             "variable1":1, "variableC1":6,  "scenarios1": 'lateDry', "pSets1": 5,"doLog1": [1],#"doLogC1": [],
-                                            "LimC1":[0,1],"LimV1":[0,1]}),
+                                            "LimC1":[],"LimV1":[0,1]}),
     dcc.Store(id = 'typename-store', data = {f"tab-{i}": f"Order {i} root" for i in range(1, 5)}),
     dcc.Store(id = 'create-button', data = {'value':0}),
     dcc.Store(id = 'result-store', data = {}),
@@ -215,7 +215,7 @@ def generate_1D_sliders(data, idPlant):  # Generate sliders for seed tab from st
         dcc.Checklist(id = 'LimC'+idPlant,options=[
                     {"label": " Time", "value": 0},
             {"label": html.Span("Weather scenarios", style={'marginLeft': '20px'}), "value": 1},
-            {"label": html.Span("Microbial traits", style={'marginLeft': '20px'}), "value": 2}], value=[0,1])
+            {"label": html.Span("Microbial traits", style={'marginLeft': '20px'}), "value": 2}], value=[])
     #checkboxes.append(html.Div(className = "spacer"))
     #checkboxes.append(dcc.Checklist(id = 'doLogC'+idPlant,options=[
     #                {"label": " Logarithmic view", "value": 1}], value=[]))
@@ -484,14 +484,14 @@ def update_seed_store(variable, scenarios, pSets,  data):
 
 @app.callback(
     Output('result-tabs-content', 'children', allow_duplicate = True),
-    Input('organtype-tabs', 'value'),
     Input('create-button', 'n_clicks'),
+    State('organtype-tabs', 'value'),
     State('root-store', 'data'),
     State('seed-store', 'data'),
     State('stem-store', 'data'),
     prevent_initial_call = True,
 )
-def render_result_tab(tab,n_clicks,rootdata,seeddata, stemdata):# scenarios, pSet,
+def render_result_tab(n_clicks,tab,rootdata,seeddata, stemdata):# scenarios, pSet,
     print('render')
     if tab == 'VTK3D':
         if (rootdata['rsi0'] >= 0) or (rootdata['rsi1'] >= 0):

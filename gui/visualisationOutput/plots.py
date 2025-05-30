@@ -24,20 +24,38 @@ from vtk.util.numpy_support import vtk_to_numpy
 from dash_vtk.utils import to_mesh_state, to_volume_state
 from vtk.util.numpy_support import vtk_to_numpy
 import time
+from plantbox import Perirhizal
 
+perirhizal = Perirhizal()
+
+t_start = time.time()
 with open("data/plantData.pkl", "rb") as file:
-    plantData = pickle.load(file)
+    plantData = pickle.load(file) # TODO: just keep the columns i want
+    
 with open("data/dfcoord_long.pkl", "rb") as file:
     dfcoord  = pickle.load( file)    
+perirhizal.x = dfcoord['distance'].to_numpy() * 10.
+perirhizal.times_= dfcoord['time'].to_numpy() 
+perirhizal.pSets = dfcoord['pSet'].to_numpy()
+perirhizal.scenarios = dfcoord['scenario'].to_numpy()
+del dfcoord
 with open("data/dfcs_long.pkl", "rb") as file:
-    dfcs  = pickle.load( file)    
+    dfcs  = pickle.load( file)   
+perirhizal.dfcs_y = dfcs['value'].to_numpy() * 1e6
+del dfcs 
 with open("data/dfcca_long.pkl", "rb") as file:
     dfcca  = pickle.load( file)    
+perirhizal.dfcca_y = dfcca['value'].to_numpy() * 1e3
+del dfcca
 with open("data/dfccat_long.pkl", "rb") as file:
     dfccat  = pickle.load( file)
+perirhizal.dfccat_y = dfccat['value'].to_numpy() 
+del dfccat
 with open("data/colorbar_minmax.pkl", "rb") as f:
     colorbar_minmax = pickle.load(f)
+t_end = time.time()
 
+print('time to load data', t_end-t_start)
     
 def compute_minmax_nested():
     """
@@ -737,39 +755,82 @@ def plantData_plot_plotly(toplot, scenarios, pSet):
         )
 
     return  html.Div(content, style = {'width': '100%', 'height': '80vh', 'minHeight': '600px'})
-
-def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
-                            unitChangex=10, unitChangey=1e6, unitChangeC=1., timeeval=-1.,
-                            colordf_=None, doLog=False, legendtxt='{}', cminmax=None,
-                            vminmax=None, doLogC=False):
-
-
-    color_palette = ['#8e0152', '#c51b7d', '#de77ae', '#f1b6da', '#fde0ef',
-                     '#e6f5d0', '#b8e186', '#7fbc41', '#4d9221']
-    color_mapping = dict(zip(range(9), color_palette))
-
-    if timeeval < 0:
-        timeeval = max(dfx_['time'])
-
-    t_start = time.time()
     
+def filet_data_(dfx, dfy, colordf,scenarios, pSets, timeeval, 
+                unitChangex, unitChangey, unitChangeC):
+    
+    t_start = time.time()
     # Block A: filter time
-    closest_time = dfx_['time'].iloc[(dfx_['time'] - timeeval).abs().argsort().values[0]]
-    dfx = dfx_[dfx_['time'] == closest_time]
-    dfy = dfy_[dfy_['time'] == closest_time]
-    colordf = colordf_[colordf_['time'] == closest_time].copy() if colordf_ is not None else None
-
+    closest_time = dfx['time'].iloc[(dfx['time'] - timeeval).abs().argsort().values[0]]
+    mask = (dfx['time'] == closest_time)
+    dfx = dfx[mask]
+    dfy = dfy[mask]
+    colordf = colordf[mask]
+    
     pSet_str = str(pSets[0])
     scenario = scenarios[0]
     mask = (dfx['pSet'] == pSet_str) & (dfx['scenario'] == scenario)
     dfx, dfy = dfx.loc[mask], dfy.loc[mask]
     colordf = colordf.loc[mask]
+    
+
 
     x = dfx['distance'].to_numpy() * unitChangex
     y = dfy['value'].to_numpy() * unitChangey
 
     cdata = colordf['value'].to_numpy() * unitChangeC
 
+    print(f"Filtering: {time.time() - t_start:.3f} s")
+    return x, y, cdata 
+    
+def filet_data(x, y, cdata, pSets, scenarios, times_, scenario, pSet_str, timeeval):
+    t_start = time.time()
+
+    # Block A: filter time
+    closest_time = times_[(np.abs(times_ - timeeval)).argsort()[0]]
+    mask_time = (times_ == closest_time)
+
+    dfx = x[mask_time]
+    dfy = y[mask_time]
+    colordf = cdata[mask_time]
+    pSets_filtered = pSets[mask_time]
+    scenarios_filtered = scenarios[mask_time]
+
+    # Block B: filter by scenario and pSet
+    mask_meta = (pSets_filtered == pSet_str) & (scenarios_filtered == scenario)
+
+    dfx = dfx[mask_meta]
+    dfy = dfy[mask_meta]
+    colordf = colordf[mask_meta]
+
+    print(f"Filtering: {time.time() - t_start:.3f} s")
+    return dfx, dfy, colordf
+
+def get_val_along_r_figure(variable, variableC,  scenarios, pSets, ylab=None, xlab=None,
+                            unitChangex=10, unitChangey=1e6, unitChangeC=1., timeeval=25.,
+                            doLog=False, legendtxt='{}', cminmax=None,
+                            vminmax=None, doLogC=False):
+
+
+    color_palette = ['#8e0152', '#c51b7d', '#de77ae', '#f1b6da', '#fde0ef',
+                     '#e6f5d0', '#b8e186', '#7fbc41', '#4d9221']
+    color_mapping = dict(zip(range(9), color_palette))
+    t_start = time.time()
+    perirhizal.filter_data(variable, variableC,scenarios,pSets, timeeval)    
+    x = perirhizal.dfx_final
+    y = perirhizal.dfy_final
+    cdata = perirhizal.colordf_final
+    print('filtering time',  time.time() - t_start, len(x),len(x), len(cdata))
+    #x,y,cdata = filet_data(
+    #                       np.array(perirhizal.x), 
+    #                       np.array(perirhizal.dfcs_y), 
+    #                       np.array(perirhizal.dfccat_y), 
+    #                       np.array(perirhizal.pSets), 
+    #                       np.array(perirhizal.scenarios), 
+    #                       np.array(perirhizal.times_), 
+    #                       scenarios, pSets, timeeval)
+    #print('filtering time2',  time.time() - t_start, len(x),len(x), len(cdata))
+    
     if doLogC:
         tick_orig = np.geomspace(cdata.min(), cdata.max(), 6)
         tick_vals = np.log10(tick_orig)
@@ -806,7 +867,6 @@ def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
             [vminmax[0] * unitChangey, vminmax[1] * unitChangey]
         )
 
-    print(f"Filtering: {time.time() - t_start:.3f} s")
     t_plot = time.time()
     
     traces =[go.Scattergl(x=x, y=y, mode='markers', marker=marker, name=legendtxt)]
@@ -817,7 +877,7 @@ def get_val_along_r_figure(dfx_, dfy_, scenarios, pSets, ylab=None, xlab=None,
                    range=y_range),
         font=dict(size=16),
         hovermode='closest',
-        showlegend=(colordf_ is None),
+        showlegend=False, #(colordf_ is None),
         legend=dict(
             orientation="h",
             yanchor="top",
@@ -855,46 +915,41 @@ def profile_plot(data, index):
     doLogC = False
     time_ = data["time"] 
     if variable == 1:
-        df_y = dfcs
         vrminmax =  getrange(colorbar_minmax['dfcs'], np.array(limV), scenarios,pSets)
         unitChangey = 1e6
         legendtxty ="low weight organic molecules-C (mumol/cm3)" # "low weight organic molecules-C (mumol/cm3)"
         
     elif variable == 5:
-        df_y = dfcca
         vrminmax =  getrange(colorbar_minmax['dfcca'], np.array(limV), scenarios,pSets)
         unitChangey = 1e3
         legendtxty = 'Active copiotrophs-C (mmol/cm3)'
         
     if variableC == -1:
-        colordf = None
         legendtxt = 'Cell-id {}'
         crminmax = None
         unitChangeC = 1.
     if variableC == 1:
-        colordf = dfcs
         legendtxt ="Low weight organic<br>molecules-C (mumol/cm3)"
         unitChangeC = 1e6
         crminmax = getrange(colorbar_minmax['dfcs'], np.array(limC), scenarios,pSets)
     elif variableC == 5:
-        colordf = dfcca
         legendtxt = 'Active copiotrophs-C<br>(mmol/cm3)'
         unitChangeC = 1e3
         crminmax = getrange(colorbar_minmax['dfcca'], np.array(limC), scenarios,pSets )
     elif variableC == 6:
-        colordf = dfccat
         legendtxt = 'Active-to-total<br>copiotrophs-C'
         unitChangeC = 1.
         crminmax = [0.,1.]
     
     assert ((crminmax is None) or (len(crminmax)==2))    
     print('get_val_along_r_figure',index,data)
-    gofig = get_val_along_r_figure( dfcoord, df_y,scenarios=[scenarios],pSets=[pSets],unitChangex=10,unitChangey=unitChangey,#1e6,
+    gofig = get_val_along_r_figure(variable, variableC, scenarios=scenarios,pSets=str(pSets),
+                        unitChangex=10,unitChangey=unitChangey,#1e6,
                        unitChangeC=unitChangeC,
                        ylab=legendtxty,
                        xlab="distance from root surface (mm)",
              doLog=doLog, timeeval=time_,
-             colordf_=colordf, legendtxt=legendtxt, cminmax=crminmax, vminmax=vrminmax,
+             legendtxt=legendtxt, cminmax=crminmax, vminmax=vrminmax,
              doLogC = doLogC)
     t_start = time.time()
     gofig.update_layout(

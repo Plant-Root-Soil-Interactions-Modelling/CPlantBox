@@ -3,6 +3,72 @@
 
 namespace CPlantBox {
 
+
+void Perirhizal::filter_data(
+           int variable,
+           int variableC,
+		   const std::string& scenario,
+           const std::string& pSet_str,
+           double timeeval) {
+			   
+	const std::vector<double>* y_ptr = nullptr;
+	const std::vector<double>* cdata_ptr = nullptr;
+
+	switch (variable) {
+		case 1: y_ptr = &dfcs_y; break;
+		case 5: y_ptr = &dfcca_y; break;
+		default: throw std::runtime_error("Invalid variable");
+	}
+	switch (variableC) {
+		case 1: cdata_ptr = &dfcs_y; break;
+		case 5: cdata_ptr = &dfcca_y; break;
+		case 6: cdata_ptr = &dfccat_y; break;
+		default: throw std::runtime_error("Invalid variableC");
+	}
+
+	const std::vector<double>& y = *y_ptr;
+	const std::vector<double>& cdata = *cdata_ptr;
+    // Block A: find closest time
+    double min_diff = 1e6;
+    double closest_time = times_[0];
+    for (double t : times_) {
+        double diff = std::abs(t - timeeval);
+        if (diff < min_diff) {
+            min_diff = diff;
+            closest_time = t;
+        }
+    }
+
+    // Block A: apply time mask
+    std::vector<double> dfx, dfy, colordf;
+    std::vector<std::string> pSets_filtered, scenarios_filtered;
+
+    for (size_t i = 0; i < times_.size(); ++i) {
+        if (times_[i] == closest_time) {
+            dfx.push_back(x[i]);
+            dfy.push_back(y[i]);
+            colordf.push_back(cdata[i]);
+            pSets_filtered.push_back(pSets[i]);
+            scenarios_filtered.push_back(scenarios[i]);
+        }
+    }
+
+    // Block B: apply metadata mask
+    dfx_final.clear();
+    dfy_final.clear();
+    colordf_final.clear();
+
+    for (size_t i = 0; i < pSets_filtered.size(); ++i) {
+        if (pSets_filtered[i] == pSet_str && scenarios_filtered[i] == scenario) {
+            dfx_final.push_back(dfx[i]);
+            dfy_final.push_back(dfy[i]);
+            colordf_final.push_back(colordf[i]);
+        }
+    }
+
+}
+
+
 /**
  * Calculates outer segment radii [cm], so that the summed segment volumes per cell equals the cell volume
  * @param type          prescribed cylinder volume proportional to 0: segment volume, 1: segment surface, 2: segment length

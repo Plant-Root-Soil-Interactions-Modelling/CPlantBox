@@ -8,7 +8,6 @@
 
 namespace CPlantBox {
 
-std::vector<int> Stem::phytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /**
  * Constructs a root from given data.

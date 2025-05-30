@@ -23,7 +23,7 @@ class Stem : public Organ
 {
 public:
 
-    static std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<int> stemphytomerId = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     Stem(int id,  std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     		Vector3d partialIHeading_, int pni, bool moved = true, int oldNON = 0);

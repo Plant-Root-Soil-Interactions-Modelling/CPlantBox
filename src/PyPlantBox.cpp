@@ -950,8 +950,20 @@ PYBIND11_MODULE(plantbox, m) {
            .def(py::init<>())
            .def(py::init<std::shared_ptr<MappedSegments>>())
            .def("segOuterRadii",&Perirhizal::segOuterRadii,  py::arg("type"), py::arg("vols") = std::vector<double>(0))
-           .def_readwrite("ms",  &Perirhizal::ms);
-
+		   .def("filter_data", &Perirhizal::filter_data,
+					 py::arg("variable"), py::arg("variableC"),
+					 py::arg("scenario"), py::arg("pSet_str"), py::arg("timeeval"))
+           .def_readwrite("ms",  &Perirhizal::ms)
+           .def_readwrite("dfx_final",  &Perirhizal::dfx_final)
+           .def_readwrite("dfy_final",  &Perirhizal::dfy_final)
+           .def_readwrite("colordf_final",  &Perirhizal::colordf_final)
+           .def_readwrite("times_",  &Perirhizal::times_)
+           .def_readwrite("pSets",  &Perirhizal::pSets)
+           .def_readwrite("scenarios",  &Perirhizal::scenarios)
+           .def_readwrite("x",  &Perirhizal::x)
+           .def_readwrite("dfcs_y",  &Perirhizal::dfcs_y)
+           .def_readwrite("dfcca_y",  &Perirhizal::dfcca_y)
+           .def_readwrite("dfccat_y",  &Perirhizal::dfccat_y);
     /*
      * XylemFlux.h
      */
