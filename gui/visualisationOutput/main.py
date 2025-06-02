@@ -154,8 +154,8 @@ def generate_1D_sliders(data, idPlant):  # Generate sliders for seed tab from st
     checkboxes.append(
         dcc.Dropdown(id = 'Scenario-Dropdown-1d'+idPlant,options=[
                     {"label": " Baseline", "value": "baseline"},
-                    {"label": " Early dry spell", "value": "earlyDry"},
-                    {"label": " Late dry spell", "value": "lateDry"}
+                    {"label": " Early dry spell (11d-18d)", "value": "earlyDry"},
+                    {"label": " Late dry spell (18d-25d)", "value": "lateDry"}
                     ], value=value_,
                 clearable = False))
     if idPlant == "0":
@@ -335,8 +335,8 @@ def generate_VTK3D_sliders(data, idPlant):  # Generate sliders for seed tab from
     checkboxes.append(
         dcc.Dropdown(id = 'Scenario-Dropdown'+idPlant,options=[
                     {"label": " Baseline", "value": "baseline"},
-                    {"label": " Early dry spell", "value": "earlyDry"},
-                    {"label": " Late dry spell", "value": "lateDry"}
+                    {"label": " Early dry spell (11d-18d)", "value": "earlyDry"},
+                    {"label": " Late dry spell (18d-25d)", "value": "lateDry"}
                     ], value=value_,
                 clearable = False))
     if idPlant == "0":
@@ -373,7 +373,7 @@ def generate_VTK3D_sliders(data, idPlant):  # Generate sliders for seed tab from
         checkboxes.append(html.H5("Soil", style={"color": "white"}))
     checkboxes.append(dcc.Dropdown(id = 'Soil-Dropdown'+idPlant,options=[
                     {"label": " None", "value": -1},
-                    {"label": " Water", "value": 0},
+                    {"label": " Water potential", "value": 0},
                     {"label": " Low weight organic molecules-C", "value": 1},
                     {"label": " Active copiotrophs-C", "value": 5}], value=0,
                 clearable = False))
@@ -383,7 +383,7 @@ def generate_VTK3D_sliders(data, idPlant):  # Generate sliders for seed tab from
         checkboxes.append(html.H5("Perirhizal zone", style={"color": "white"}))
     checkboxes.append(dcc.Dropdown(id = 'RSI-Dropdown'+idPlant,options=[
                     {"label": " None", "value": -1},
-                    {"label": " Water", "value": 0},
+                    {"label": " Water potential", "value": 0},
                     {"label": " Low weight organic molecules-C", "value": 1},
                     {"label": " Active copiotrophs-C", "value": 5}], value=-1,
                 clearable = False))
@@ -433,8 +433,8 @@ def generate_seed_sliders(data):  # Generate sliders for seed tab from stored va
     checkboxes.append(
         dcc.Checklist(id = 'Scenario-Checklist',options=[
                     {"label": " Baseline", "value": "baseline"},
-                    {"label": " Early dry spell", "value": "earlyDry"},
-                    {"label": " Late dry spell", "value": "lateDry"}
+                    {"label": " Early dry spell (11d-18d)", "value": "earlyDry"},
+                    {"label": " Late dry spell (18d-25d)", "value": "lateDry"}
                     ], value=["baseline","lateDry"]))
     #checkboxes.append(html.Div(className = "spacer"))
     checkboxes.append(html.H5("Microbial traits"))
@@ -498,10 +498,10 @@ def render_result_tab(n_clicks,tab,rootdata,seeddata, stemdata):# scenarios, pSe
             thekey = str(time.time())
         else:
             thekey = 'coucou'
-        im3d0, cbar0 = vtk3D_plot(rootdata, 0)
-        im3d1, cbar1 = vtk3D_plot(rootdata, 1)
+        im3d0 = vtk3D_plot(rootdata, 0)
+        im3d1 = vtk3D_plot(rootdata, 1)
         return html.Div(
-                    [im3d0, im3d1, cbar0, cbar1],
+                    [im3d0, im3d1],
                     style={"display": "flex", "flexDirection": "row", "height": "100%"},
                     key=thekey # <- this forces remount
                 )

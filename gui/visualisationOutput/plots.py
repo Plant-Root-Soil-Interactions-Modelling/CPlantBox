@@ -29,30 +29,31 @@ from plantbox import Perirhizal
 perirhizal = Perirhizal()
 
 t_start = time.time()
-with open("data/plantData.pkl", "rb") as file:
-    plantData = pickle.load(file) # TODO: just keep the columns i want
-    
-with open("data/dfcoord_long.pkl", "rb") as file:
-    dfcoord  = pickle.load( file)    
-perirhizal.x = dfcoord['distance'].to_numpy() * 10.
-perirhizal.times_= dfcoord['time'].to_numpy() 
-perirhizal.pSets = dfcoord['pSet'].to_numpy()
-perirhizal.scenarios = dfcoord['scenario'].to_numpy()
-del dfcoord
-with open("data/dfcs_long.pkl", "rb") as file:
-    dfcs  = pickle.load( file)   
-perirhizal.dfcs_y = dfcs['value'].to_numpy() * 1e6
-del dfcs 
-with open("data/dfcca_long.pkl", "rb") as file:
-    dfcca  = pickle.load( file)    
-perirhizal.dfcca_y = dfcca['value'].to_numpy() * 1e3
-del dfcca
-with open("data/dfccat_long.pkl", "rb") as file:
-    dfccat  = pickle.load( file)
-perirhizal.dfccat_y = dfccat['value'].to_numpy() 
-del dfccat
-with open("data/colorbar_minmax.pkl", "rb") as f:
-    colorbar_minmax = pickle.load(f)
+if True:
+    with open("data/plantData.pkl", "rb") as file:
+        plantData = pickle.load(file) # TODO: just keep the columns i want
+        
+    with open("data/dfcoord_long.pkl", "rb") as file:
+        dfcoord  = pickle.load( file)    
+    perirhizal.x = dfcoord['distance'].to_numpy() * 10.
+    perirhizal.times_= dfcoord['time'].to_numpy() 
+    perirhizal.pSets = dfcoord['pSet'].to_numpy()
+    perirhizal.scenarios = dfcoord['scenario'].to_numpy()
+    del dfcoord
+    with open("data/dfcs_long.pkl", "rb") as file:
+        dfcs  = pickle.load( file)   
+    perirhizal.dfcs_y = dfcs['value'].to_numpy() * 1e6
+    del dfcs 
+    with open("data/dfcca_long.pkl", "rb") as file:
+        dfcca  = pickle.load( file)    
+    perirhizal.dfcca_y = dfcca['value'].to_numpy() * 1e3
+    del dfcca
+    with open("data/dfccat_long.pkl", "rb") as file:
+        dfccat  = pickle.load( file)
+    perirhizal.dfccat_y = dfccat['value'].to_numpy() 
+    del dfccat
+    with open("data/colorbar_minmax.pkl", "rb") as f:
+        colorbar_minmax = pickle.load(f)
 t_end = time.time()
 
 print('time to load data', t_end-t_start)
@@ -267,9 +268,9 @@ def process_rsi_vtp(file_main):
     array = pointdata.GetPointData().GetArray(pname)
     q_exud = vtk_to_numpy(array) if array else np.array([])
     q_range = [float(q_exud.min()), float(q_exud.max())] if q_exud.size > 0 else [0.0, 1e-6]
-
     # Create tube state and manually set scalar field + lookup table
     tube_state = to_mesh_state(tube.GetOutput(), pname)
+    
     q_range = tube_state["field"]["dataRange"]
     
     return tube_state, q_range
@@ -349,7 +350,84 @@ def process_soil_vti(file_main, pname):
     cut_states =plot_mesh_cuts(image_data, pname, nz = 3)
     return cut_states, data_range
     
-def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, width = 100, discrete = False):
+def rgb_points_to_plotly_colorscale(rgb_points):
+    n = len(rgb_points) // 4
+    points = []
+    
+    for i in range(n):
+        scalar = rgb_points[4*i]
+        r = rgb_points[4*i + 1]
+        g = rgb_points[4*i + 2]
+        b = rgb_points[4*i + 3]
+        points.append((scalar, r, g, b))
+    
+    scalars = [p[0] for p in points]
+    min_s, max_s = min(scalars), max(scalars)
+    def normalize(s): 
+        return (s - min_s) / (max_s - min_s) if max_s > min_s else 0
+    
+    def to_rgb(r,g,b):
+        return f"rgb({int(r*255)}, {int(g*255)}, {int(b*255)})"
+    
+    colorscale = []
+    for scalar, r, g, b in points:
+        pos = normalize(scalar)
+        colorscale.append([pos, to_rgb(r, g, b)])
+    return colorscale
+
+# Your provided long RGBPoints list
+rgb_points = [
+    0, 0.34902, 0, 0.129412,
+    0.025, 0.4, 0.00392157, 0.101961,
+    0.05, 0.470588, 0.0156863, 0.0901961,
+    0.075, 0.54902, 0.027451, 0.0705882,
+    0.1, 0.619608, 0.0627451, 0.0431373,
+    0.125, 0.690196, 0.12549, 0.0627451,
+    0.15, 0.7411759999999999, 0.184314, 0.0745098,
+    0.175, 0.788235, 0.266667, 0.0941176,
+    0.2, 0.811765, 0.345098, 0.113725,
+    0.225, 0.831373, 0.411765, 0.133333,
+    0.25, 0.85098, 0.47451, 0.145098,
+    0.275, 0.870588, 0.54902, 0.156863,
+    0.3, 0.878431, 0.619608, 0.168627,
+    0.325, 0.890196, 0.658824, 0.196078,
+    0.35, 0.9098039999999999, 0.717647, 0.235294,
+    0.375, 0.929412, 0.776471, 0.278431,
+    0.395522, 0.94902, 0.823529, 0.321569,
+    0.418905, 0.968627, 0.87451, 0.407843,
+    0.444278, 0.980392, 0.917647, 0.509804,
+    0.470149, 0.988235, 0.956863, 0.643137,
+    0.483582, 0.992157, 0.964706, 0.7137250000000001,
+    0.499, 0.988235, 0.980392, 0.870588,
+    0.5, 1, 1, 1,
+    0.501, 0.913725, 0.988235, 0.9372549999999999,
+    0.516418, 0.827451, 0.980392, 0.886275,
+    0.531343, 0.764706, 0.980392, 0.866667,
+    0.546766, 0.658824, 0.980392, 0.843137,
+    0.564179, 0.572549, 0.964706, 0.835294,
+    0.587562, 0.423529, 0.941176, 0.87451,
+    0.60597, 0.262745, 0.901961, 0.862745,
+    0.629851, 0.0705882, 0.8549020000000001, 0.870588,
+    0.651741, 0.0509804, 0.8, 0.85098,
+    0.681592, 0.0235294, 0.709804, 0.831373,
+    0.712935, 0.0313725, 0.615686, 0.811765,
+    0.75, 0.0313725, 0.537255, 0.788235,
+    0.775, 0.0392157, 0.466667, 0.7686269999999999,
+    0.8, 0.0509804, 0.396078, 0.7411759999999999,
+    0.825, 0.054902, 0.317647, 0.709804,
+    0.85, 0.054902, 0.243137, 0.678431,
+    0.875, 0.0431373, 0.164706, 0.639216,
+    0.9, 0.0313725, 0.09803920000000001, 0.6,
+    0.925, 0.0392157, 0.0392157, 0.5607839999999999,
+    0.95, 0.105882, 0.0509804, 0.509804,
+    0.975, 0.113725, 0.0235294, 0.45098,
+    1, 0.12549, 0, 0.380392
+]
+
+# Convert to Plotly colorscale
+plotly_colorscale = rgb_points_to_plotly_colorscale(rgb_points)
+    
+def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, width = 100, discrete = False, custom=False):
 
     if discrete:
         n = int(vmax - vmin + 1)
@@ -372,19 +450,34 @@ def generate_colorbar_image(vmin, vmax, colormap = "Viridis", height = 500, widt
         x0 = vmin
         dx = (vmax - vmin) / (n - 1)
         z = np.transpose(z)
-
-    fig = go.Figure(go.Heatmap(
-        z = z,
-        colorscale = colormap,
-        showscale = False,
-        x0 = x0, dx = dx,
-        y0 = y0, dy = dy,
-        colorbar = None
-    ))
+    custom_colorscale = [
+        [0.0, "rgb(180, 4, 38)"],
+        [0.5, "rgb(221, 221, 221)"],
+        [1.0, "rgb(59, 76, 192)"]
+    ]
+    if custom:
+        fig = go.Figure(go.Heatmap(
+            z = z,
+            colorscale = plotly_colorscale,
+    #colorbar=dict(title="Value"),
+            showscale = False,
+            x0 = x0, dx = dx,
+            y0 = y0, dy = dy,
+            colorbar = None
+        ))
+    else:
+        fig = go.Figure(go.Heatmap(
+            z = z,
+            colorscale = colormap,
+            showscale = False,
+            x0 = x0, dx = dx,
+            y0 = y0, dy = dy,
+            colorbar = None
+        ))
     fig.update_layout(
         width = width,
         height = height,
-        margin = dict(l = 10, r = 0, t = 10, b = 10),  # for the text
+        margin = dict(l = 10, r = 0, t = 10, b = 40),  # for the text
         yaxis = dict(
             showticklabels = False,
             showgrid = False,
@@ -403,6 +496,50 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
     soildata = data['soil'+str(plantid)]
     rsidata = data['rsi'+str(plantid)]
     
+    
+    vars_plant = {
+        'psiXyl': "Mean plant water potential (hPa)",
+        'Q_Gr': "C used for growth (mmol C)",
+        "Q_Rm": "C used for maintenance respiration (mmol C)",
+        'Q_Exud': "C used for exudation (mmol C)"
+    }
+    vars_plant_ = vars_plant[pname]
+    coef_plant = {
+        'psiXyl': 1.,
+        'Q_Gr': 12.,
+        "Q_Rm": 12.,
+        'Q_Exud': 12.
+    }
+    coef_plant_ = coef_plant[pname]
+    vars_soil = {
+        -1:None,
+        0:"Water potential (hPa)", 
+        1:"Low weight organic molecules-C (mumol C/cm3)", 
+        5:"Active copiotrophs-C (mumol C/cm3)"
+    }
+    vars_soil_ = vars_soil[soildata]
+    coef_soil = {
+        -1:0.,
+        0:1., 
+        1:1e6,#"Low weight organic molecules-C (mumol C)", 
+        5:1e6,#"Active copiotrophs-C (mmol C)"
+    }
+    coef_soil_ = coef_soil[soildata]
+    vars_rsi = {
+        -1:None,
+        0:"Water potential (hPa)", 
+        1:"Low weight organic molecules-C (mumol C/cm3)", 
+        5:"Active copiotrophs-C (mumol C/cm3)"
+    }
+    vars_rsi_ = vars_rsi[rsidata]
+    coef_rsi = {
+        -1:0.,
+        0:1., 
+        1:1e6,#"Low weight organic molecules-C (mumol C)", 
+        5:1e6,#"Active copiotrophs-C (mmol C)"
+    }
+    coef_rsi_ = coef_rsi[rsidata]
+    
     if scenario == "lateDry":
         sc = "lD"
     elif scenario == "earlyDry":
@@ -414,17 +551,34 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
     file_main = path + filename + ".vtp"
     file_leaf = path + filename + "_leaf.vtp"
 
-    tube_state, leaf_state, q_range = process_plant_vtp(file_main, file_leaf, pname)
-    viewChildren = [
-            
-            dash_vtk.GeometryRepresentation(
-            id="leaf-rep",
-            colorMapPreset="erdc_rainbow_bright",
-            colorDataRange=q_range,
-            children=[
-                dash_vtk.Mesh(state=leaf_state)
-            ])
-        ]
+    tube_state, leaf_state, q_range_plant = process_plant_vtp(file_main, file_leaf, pname)
+    if rsidata >= 0:
+        viewChildren = [
+                
+                dash_vtk.GeometryRepresentation(
+                id="leaf-rep",
+                #colorMapPreset="erdc_rainbow_bright",
+                #colorDataRange=q_range_plant,
+    property={
+        "color": [0.0, 1.0, 0.0],   # RGB (Green)
+        "opacity": 1.0
+    },
+    mapper={"scalarVisibility": False} ,
+                children=[
+                    dash_vtk.Mesh(state=leaf_state)
+                ])
+            ]
+    else:
+        viewChildren = [
+                
+                dash_vtk.GeometryRepresentation(
+                id="leaf-rep",
+                colorMapPreset="Warm to Cool (Extended)" if coef_plant_ == 1. else "erdc_rainbow_bright",# "erdc_rainbow_bright",
+                colorDataRange=q_range_plant,
+                children=[
+                    dash_vtk.Mesh(state=leaf_state)
+                ])
+            ]
     q_range_rsi = None
     q_range_soil = None
     if rsidata >= 0:
@@ -435,7 +589,6 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
             filename = path + "C"+str(int(rsidata))+"_"+str(int(time*10))+ ".vtp"
             #pname = "[C"+str(int(soildata))+"] (mol/cm3)"
         rsi_state, q_range_rsi = process_rsi_vtp(filename)
-        
     if soildata >= 0:
         if soildata == 0:
             filename = path + "soil_rx"+str(int(time*10))+ ".vti"
@@ -445,55 +598,80 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
             pname = "[C"+str(int(soildata))+"] (mol/cm3)"
         cut_states, q_range_soil = process_soil_vti(filename, pname)
     
+    if rsidata == 0:
+        # theta_r, theta_s, alpha, n, Ks
+        soilVG = [0.08, 0.43, 0.04, 1.6, 50]
+        VGm = 1. - 1. / soilVG[3]
+        q_range_rsi_ = [-pow(pow((soilVG[1] - soilVG[0]) / (theta - soilVG[0]), (1. / VGm)) - 1., 1. / soilVG[3]) / soilVG[2] for theta in q_range_rsi]
+    else:
+        q_range_rsi_ = q_range_rsi
     if (rsidata == soildata) and (q_range_rsi is not None) and (q_range_soil is not None):
-        q_range = [min(q_range_rsi[0], q_range_soil[0]), max(q_range_rsi[1], q_range_soil[1])]
-        q_range_rsi = q_range
-        q_range_soil = q_range
+        q_range_rsi_ = [min(q_range_rsi_[0], q_range_soil[0]), max(q_range_rsi_[1], q_range_soil[1])]
+        q_range_soil = q_range_rsi_
+        if rsidata == 0:
+            q_range_rsi = [soilVG[0] + (soilVG[1] - soilVG[0]) / pow(1. + pow(soilVG[2] * abs(h), soilVG[3]), VGm)  for h in q_range_rsi_]
+        else:
+            q_range_rsi = q_range_rsi_
+        
+        
+    if soildata >= 0:
+        
+        cbarSoil = generate_colorbar_image(vmin=q_range_soil[0] * coef_soil_, vmax=q_range_soil[1] * coef_soil_, 
+                            colormap="Rainbow", #"Viridis", 
+                            height=60, width=200, custom = (soildata == 0))           
+        cbarcontentSoil = dcc.Graph(
+                    # id = 'dummy-id',
+                    figure = cbarSoil,
+                    style = {'width': '200px', 'height': '150px'},
+                    config = {
+                        'displayModeBar': False  # Hides the entire toolbar
+                    }
+                )
+    else:
+        cbarcontentSoil = None
         
     if rsidata >= 0:
         viewChildren.append(
             dash_vtk.GeometryRepresentation(
             id="tubesRSI-rep",
-            colorMapPreset="erdc_rainbow_bright",
+            colorMapPreset=  "Warm to Cool (Extended)" if rsidata == 0 else "erdc_rainbow_bright",#"erdc_rainbow_bright",#"Warm to Cool (Extended)" 
             colorDataRange=q_range_rsi,
             children=[
                 dash_vtk.Mesh(state=rsi_state)
             ])
         )
+        plant_rsi_Name = "Perirhizal zone"
+        vars_plant_rsi_ = vars_rsi_
+        coef_plant_rsi_ = coef_rsi_
+        q_range_plant_rsi = q_range_rsi_
     else:
         viewChildren.append(dash_vtk.GeometryRepresentation(
             id="tubes-rep",
-            colorMapPreset= "rainbow",#"Viridis (matplotlib)" ,#"erdc_rainbow_bright",
-            colorDataRange=q_range,
+            colorMapPreset="Warm to Cool (Extended)" if coef_plant_ == 1. else "erdc_rainbow_bright",# "rainbow",#"Viridis (matplotlib)" ,#"erdc_rainbow_bright",
+            colorDataRange=q_range_plant,
             #showCubeAxes=True,
             children=[
                 dash_vtk.Mesh(state=tube_state)
             ]))
-    cbar = generate_colorbar_image(vmin=q_range[0], vmax=q_range[1], 
+        plant_rsi_Name = "Plant"
+        vars_plant_rsi_ = vars_plant_
+        coef_plant_rsi_ = coef_plant_
+        q_range_plant_rsi = q_range_plant
+        
+    cbar = generate_colorbar_image(vmin=q_range_plant_rsi[0] * coef_plant_rsi_, 
+                        vmax=q_range_plant_rsi[1] * coef_plant_rsi_, 
                             colormap="Rainbow", #"Viridis", 
-                            height=40, width=200)
-    #cbarcontent = dcc.Graph(
-    #        id = 'profile-plot',
-    #        figure = cbar,
-    #        style = {'width': '25%', 'height': '600px'}
-    #    )
+                            height=60, width=200, custom = (coef_plant_rsi_ == 1.))
+                            
     cbarcontent = dcc.Graph(
                 # id = 'dummy-id',
                 figure = cbar,
-                style = {'width': '200px', 'height': '40px'},
+                style = {'width': '200px', 'height': '150px'},
                 config = {
                     'displayModeBar': False  # Hides the entire toolbar
                 }
             )
-    #style_ = {
-    #    'marginTop': '10px',
-    #    'marginRight': '10px',
-    #    'marginBottom': '10px',
-    #    'marginLeft': '10px'
-    #}
 
-    colbar = html.Div([cbarcontent], style = {'display': 'flex', 'justifyContent': 'flex-end'})    
-    
     if soildata >= 0:
         for state in cut_states:
             viewChildren.append(
@@ -502,7 +680,7 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
             children=[
                 dash_vtk.Mesh(state=state)
             ],
-            colorMapPreset="erdc_rainbow_bright",
+            colorMapPreset="Warm to Cool (Extended)" if soildata == 0 else "erdc_rainbow_bright",#"erdc_rainbow_bright",
             colorDataRange=q_range_soil,
         ))
             
@@ -515,28 +693,69 @@ def vtk3D_plot(data, plantid):#): #vtk_data, color_pick):
         #cameraFocalPoint=[4, -7, -1],
         cameraViewUp=[-0.18, 0.09, 0.979],
         style={'flex': '1 1 auto', 'height': '100%', 'width': '100%'})
+          
+
+    cbar_blocks = [
+        html.Div([
+            html.Div([
+                plant_rsi_Name, html.Br(), vars_plant_rsi_
+            ], style={
+                "textAlign": "center",
+                "fontWeight": "bold",
+                "marginBottom": "5px"
+            }),
+            cbarcontent
+        ], style={
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "left"
+        })
+    ]
+
+    if soildata >= 0:
+        cbar_blocks.append(
+        html.Div([
+            html.Div([
+                "Soil", html.Br(), vars_soil_
+            ], style={
+                "textAlign": "center",
+                "fontWeight": "bold",
+                "marginBottom": "5px"
+            }),
+                cbarcontentSoil
+            ], style={
+                "display": "flex",
+                "flexDirection": "column",
+                "alignItems": "right"
+            })
+        )
+
+    cbarDiv = html.Div(
+        children=cbar_blocks,
+        style={
+            'display': 'flex',
+            'justifyContent': 'center',
+            'gap': '40px',
+            'marginTop': '10px',
+            'paddingBottom': '10px'
+        }
+    )
     
-
-
-    return (html.Div(
-                children=[
-                    html.Div(content, style={
-                        "flex": "1 1 auto",
-                        "height": "100%",
-                        "width": "100%",
-                        "display": "flex",
-                        "flexDirection": "column",
-                    })
-                ],
-                style={
-                    "flex": "1 1 auto",
-                    "height": "100%",
-                    "width": "100%",
-                    "display": "flex",
-                    "flexDirection": "column",
-        "padding": "5px", 
-                }
-            ),colbar)
+    return html.Div(
+            children=[
+                content,
+                cbarDiv
+            ],
+            style={
+                "flex": "1 1 0",
+                "display": "flex",
+                "flexDirection": "column",
+                "alignItems": "center",  # Optional, centers the plot
+                "padding": "5px",
+                "width": "100%",
+                "height": "100%"
+            }
+        )
             
 def dotheplot_plotly(fig, toplot, cumsum, df, namesyaxes=None, ncols=3, maxTime=None, 
                      indexlegend1=0, indexlegend2=1, microbes=[5, 44, 61], 
@@ -921,8 +1140,8 @@ def profile_plot(data, index):
         
     elif variable == 5:
         vrminmax =  getrange(colorbar_minmax['dfcca'], np.array(limV), scenarios,pSets)
-        unitChangey = 1e3
-        legendtxty = 'Active copiotrophs-C (mmol/cm3)'
+        unitChangey = 1e6
+        legendtxty = 'Active copiotrophs-C (mumol/cm3)'
         
     if variableC == -1:
         legendtxt = 'Cell-id {}'
@@ -933,16 +1152,16 @@ def profile_plot(data, index):
         unitChangeC = 1e6
         crminmax = getrange(colorbar_minmax['dfcs'], np.array(limC), scenarios,pSets)
     elif variableC == 5:
-        legendtxt = 'Active copiotrophs-C<br>(mmol/cm3)'
-        unitChangeC = 1e3
+        legendtxt = 'Active copiotrophs-C<br>(mumol/cm3)'
+        unitChangeC = 1e6
         crminmax = getrange(colorbar_minmax['dfcca'], np.array(limC), scenarios,pSets )
     elif variableC == 6:
-        legendtxt = 'Active-to-total<br>copiotrophs-C'
+        legendtxt = 'Active-to-total<br>copiotrophs-C (-)'
         unitChangeC = 1.
         crminmax = [0.,1.]
     
     assert ((crminmax is None) or (len(crminmax)==2))    
-    print('get_val_along_r_figure',index,data)
+    
     gofig = get_val_along_r_figure(variable, variableC, scenarios=scenarios,pSets=str(pSets),
                         unitChangex=10,unitChangey=unitChangey,#1e6,
                        unitChangeC=unitChangeC,
@@ -966,53 +1185,4 @@ def profile_plot(data, index):
     return  html.Div(content, style = {"width": "100%",  'height': '80vh', 'minHeight': '600px'})
 
 
-    
-def dynamics_plot(vtk_data):
-
-    N = 50  # hard coded, see conversions.py
-    number_r = vtk_data["number_r"]
-    number_s = vtk_data["number_s"]
-    time = vtk_data["time"]
-
-    # fetch results
-    root_length = np.zeros((number_r, N))
-    stem_length = np.zeros((number_s, N))
-    for j in range(number_r):
-        root_length[j,:] = vtk_data[f"root_length-{j+1}"]
-    for j in range(number_s):
-        stem_length[j,:] = vtk_data[f"stem_length-{j+1}"]
-    leaf_length = vtk_data["leaf_length"]
-    rlength = np.sum(root_length, axis = 0)
-    slength = np.sum(stem_length, axis = 0)
-
-    # Create line traces
-    go_leaf_length = go.Scatter(x = time, y = leaf_length, mode = 'lines', name = "leaf length")  # , line = { 'color': 'blue' }
-    go_stem_length = go.Scatter(x = time, y = slength, mode = 'lines', name = "stem length")
-    go_root_length = go.Scatter(x = time, y = rlength, mode = 'lines', name = "root length")
-    go_stem_length_ = []
-    for j in range(number_s):
-        go_stem_length_.append(go.Scatter(x = time, y = stem_length[j,:], mode = 'lines', name = f"stem_length-{j+1}"))
-    go_root_length_ = []
-    for j in range(number_r):
-        go_root_length_.append(go.Scatter(x = time, y = root_length[j,:], mode = 'lines', name = f"root_length-{j+1}"))
-
-    traces = [go_leaf_length, go_stem_length] + go_stem_length_ + [go_root_length] + go_root_length_
-
-    content = dcc.Graph(
-            id = 'profile-plot',
-            figure = {
-                'data': traces,
-                'layout': go.Layout(
-                    # title='Line Plot of Multiple Arrays vs Time',
-                    xaxis = {'title': 'Time [day]'},
-                    yaxis = {'title': 'Length [cm]'},
-                    hovermode = 'closest',
-                    # hovertemplate='Time: %{x:.2f}<br>sin(t): %{y:.2f}<extra></extra>'
-                    colorway = qualitative.Set2,
-                )
-            },
-            style = {'width': '100%', 'height': '600px'}
-        )
-
-    return  html.Div(content, style = {"width": "100%", "height": "600px"})
 
