@@ -19,89 +19,89 @@ void MycorrhizalRootRandomParameter::bindParameters(){
     // TODO
 }
 
-std::shared_ptr<OrganSpecificParameter> MycorrhizalRootRandomParameter::realize() {
-    // std::cout << "MycorrhizalRootRandomParameter::realize called" << std::endl;
-    assert(dx > dxMin && "MycorrhizalRootRandomParameter::realize(): dxMin must be smaller than dx");
-    auto pl = plant.lock();
+// std::shared_ptr<OrganSpecificParameter> MycorrhizalRootRandomParameter::realize() {
+//     // std::cout << "MycorrhizalRootRandomParameter::realize called" << std::endl;
+//     assert(dx > dxMin && "MycorrhizalRootRandomParameter::realize(): dxMin must be smaller than dx");
+//     auto pl = plant.lock();
 
-    double p_ = std::max(p + pl->randn()*ps, 0.); // rate of primary infection for dispersed inoculum
-    double vi_ = std::max(vi + pl->randn()*vis, 0.);  // speed of node to node infection
-    // std::cout<< "MycorrhizalRootRandomParameter::realize called" << std::endl;
+//     double p_ = std::max(p + pl->randn()*ps, 0.); // rate of primary infection for dispersed inoculum
+//     double vi_ = std::max(vi + pl->randn()*vis, 0.);  // speed of node to node infection
+//     // std::cout<< "MycorrhizalRootRandomParameter::realize called" << std::endl;
 
-    // // Use base class realization to get all randomized root parameters
-    // auto baseroot = this -> RootRandomParameter::realize();
-    // std::cout << baseroot->toString() << std::endl;
-    // auto castedroot = std::dynamic_pointer_cast<RootSpecificParameter>(baseroot);
+//     // // Use base class realization to get all randomized root parameters
+//     // auto baseroot = this -> RootRandomParameter::realize();
+//     // std::cout << baseroot->toString() << std::endl;
+//     // auto castedroot = std::dynamic_pointer_cast<RootSpecificParameter>(baseroot);
 
-    // // Use the realized parameters from the base class
-    // auto lb_ = castedroot->lb;
-    // auto la_ = castedroot->la;
-    // auto ln_ = castedroot->ln;
-    // auto r_ = castedroot->r;
-    // auto a_ = castedroot->a;
-    // auto theta_ = castedroot->theta;
-    // auto rlt_ = castedroot->rlt;
-    // auto hasLaterals = castedroot->laterals;
+//     // // Use the realized parameters from the base class
+//     // auto lb_ = castedroot->lb;
+//     // auto la_ = castedroot->la;
+//     // auto ln_ = castedroot->ln;
+//     // auto r_ = castedroot->r;
+//     // auto a_ = castedroot->a;
+//     // auto theta_ = castedroot->theta;
+//     // auto rlt_ = castedroot->rlt;
+//     // auto hasLaterals = castedroot->laterals;
 
-    double lb_; //define the parameters outside of the if functions:
-    double la_;
-    std::vector<double> ln_; // stores the inter-distances
-    double nob_sd = pl->randn()*nobs();
-    int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
-    bool hasLaterals = (successorST.size()>0) && (nob_real>0);
+//     double lb_; //define the parameters outside of the if functions:
+//     double la_;
+//     std::vector<double> ln_; // stores the inter-distances
+//     double nob_sd = pl->randn()*nobs();
+//     int nob_real = round(std::max(nob() + nob_sd, 0.)); // real maximal number of branching points
+//     bool hasLaterals = (successorST.size()>0) && (nob_real>0);
 
-    if (!hasLaterals) { // no laterals
-        lb_ = 0;
-        la_ = std::max(lmax + pl->randn()*lmaxs, 0.); // la, and lb is ignored
-        la_ = snap(la_);
-    } else { // laterals
-        lb_ = snap(std::max(lb + pl->randn()*lbs, 0.)); // length of basal zone
-        la_ = snap(std::max(la + pl->randn()*las, 0.)); // length of apical zone
-        double ln_mean = ln;
-        if(ln < dxMin && ln != 0) { // limit to minimum resolution
-            ln_mean = dxMin;
-        }
-        double nob1 = std::max((lmax-la_-lb_)/ln_mean+1, 0.); // use new la_, lb_ and ln_mean
-        int nob_ = std::min(std::max(round(nob1 + nob_sd), 0.), double(nob_real)); // maximal number of branches +1
-        int latMissing = nob_real - nob_;
-        assert((latMissing >= 0) && "RootRandomParameter::realize(): latMissing < 0");
-        int latExtraMean = floor(latMissing/nob_real); // mean number of extra laterals per branching point to keep correct number
-        int latExtra = latMissing - latExtraMean*(nob_);
-        for (int j = 0; j<latExtraMean; j++) { //at end of basal zone
-            ln_.push_back(0);
-        }
-        if (latExtra> 0) { //at end of basal zone
-            ln_.push_back(0);
-            latExtra--;
-        }
-        double sum_ln = nob_*ln_mean; // mean length of lateral zone
+//     if (!hasLaterals) { // no laterals
+//         lb_ = 0;
+//         la_ = std::max(lmax + pl->randn()*lmaxs, 0.); // la, and lb is ignored
+//         la_ = snap(la_);
+//     } else { // laterals
+//         lb_ = snap(std::max(lb + pl->randn()*lbs, 0.)); // length of basal zone
+//         la_ = snap(std::max(la + pl->randn()*las, 0.)); // length of apical zone
+//         double ln_mean = ln;
+//         if(ln < dxMin && ln != 0) { // limit to minimum resolution
+//             ln_mean = dxMin;
+//         }
+//         double nob1 = std::max((lmax-la_-lb_)/ln_mean+1, 0.); // use new la_, lb_ and ln_mean
+//         int nob_ = std::min(std::max(round(nob1 + nob_sd), 0.), double(nob_real)); // maximal number of branches +1
+//         int latMissing = nob_real - nob_;
+//         assert((latMissing >= 0) && "RootRandomParameter::realize(): latMissing < 0");
+//         int latExtraMean = floor(latMissing/nob_real); // mean number of extra laterals per branching point to keep correct number
+//         int latExtra = latMissing - latExtraMean*(nob_);
+//         for (int j = 0; j<latExtraMean; j++) { //at end of basal zone
+//             ln_.push_back(0);
+//         }
+//         if (latExtra> 0) { //at end of basal zone
+//             ln_.push_back(0);
+//             latExtra--;
+//         }
+//         double sum_ln = nob_*ln_mean; // mean length of lateral zone
 
-        for (int i = 0; i<nob_-1; i++) { // create inter-root distances
-            double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
-            double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
-            double pf = (ln_mean + f) / ln_mean; // we scale lns by the change in percentage
-            double d = std::max(ln_mean + f + pf*pl->randn()*lns, 1.e-5); // miminum is 1.e-5
-            d = snap(d);
-            ln_.push_back(d);
-            for (int j = 0; j<latExtraMean; j++) {
-                ln_.push_back(0);
-            }
-            if (latExtra> 0) {
-                ln_.push_back(0);
-                latExtra--;
-            }
-        }
-    }
+//         for (int i = 0; i<nob_-1; i++) { // create inter-root distances
+//             double z = ((double)i+0.5)*ln_mean; // regular position along root lateral zone
+//             double f = lnk*(z-sum_ln/2.); // evaluate slope lnk f(mid) = 0
+//             double pf = (ln_mean + f) / ln_mean; // we scale lns by the change in percentage
+//             double d = std::max(ln_mean + f + pf*pl->randn()*lns, 1.e-5); // miminum is 1.e-5
+//             d = snap(d);
+//             ln_.push_back(d);
+//             for (int j = 0; j<latExtraMean; j++) {
+//                 ln_.push_back(0);
+//             }
+//             if (latExtra> 0) {
+//                 ln_.push_back(0);
+//                 latExtra--;
+//             }
+//         }
+//     }
 
-    double r_ = std::max(r + pl->randn()*rs, 0.); // initial elongation
-    double a_ = std::max(a + pl->randn()*as, 0.01); // radius
-    double theta_ = std::max(theta + pl->randn()*thetas, 0.); // initial elongation
-    double rlt_ = std::max(rlt + pl->randn()*rlts, 0.); // root life time
-    // std::cout<< this->toString() << std::endl;
+//     double r_ = std::max(r + pl->randn()*rs, 0.); // initial elongation
+//     double a_ = std::max(a + pl->randn()*as, 0.01); // radius
+//     double theta_ = std::max(theta + pl->randn()*thetas, 0.); // initial elongation
+//     double rlt_ = std::max(rlt + pl->randn()*rlts, 0.); // root life time
+//     // std::cout<< this->toString() << std::endl;
 
-    return std::make_shared<MycorrhizalRootSpecificParameter>(
-        subType, lb_, la_, ln_, r_, a_, theta_, rlt_, hasLaterals, p_, vi_);
-}
+//     return std::make_shared<MycorrhizalRootSpecificParameter>(
+//         subType, lb_, la_, ln_, r_, a_, theta_, rlt_, hasLaterals, p_, vi_);
+// }
 
 MycorrhizalRootRandomParameter::MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant) :RootRandomParameter(plant) {
     // std::cout << "MycorrhizalRootRandomParameter::MycorrhizalRootRandomParameter called" << std::endl;
