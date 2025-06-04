@@ -24,20 +24,18 @@ infbox = pb.SDF_PlantBox(10, 10, 10)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
 animation = False
-infradius = 1
+infradius = 0
 for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:
         dispersed = False
         root[i].f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
     root[i].dx = 0.05
-    root[i].realize()
-    print(root[i].subType)
+    # root[i].realize()
+    # print(root[i].subType)
 
 mycp.initialize(True)
-roost = mycp.getOrganRandomParameter(pb.root)
-for i in range(0, len(roost)):
-    print(root[i].subType)
+
 
 simtime = 10
 fps = 30
@@ -65,16 +63,16 @@ if animation:
 
 else:
     for i in range(0, N):
+        mycp.simulate(dt, False)
         # roost = mycp.getOrganRandomParameter(pb.root)
         # for i in range(0, len(roost)):
         #     print(root[i].subType)
-        mycp.simulate(dt, False)
         # mycp.simulateHyphalGrowth(dt)
 
     # mycp.simulate(simtime, False)
     # print("sim time", mycp.getSimTime())
 
-    mycp.simulateHyphalGrowth(simtime)
+    # mycp.simulateHyphalGrowth(simtime)
     # hyphae = mycp.getOrgans(5)
     # print("number of hyphae", len(hyphae))
     # print("type", type(hyphae))

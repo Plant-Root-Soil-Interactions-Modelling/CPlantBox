@@ -5,6 +5,7 @@ import visualisation.vtk_plot as vp
 
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 
 mycp = pb.MycorrhizalPlant()
@@ -27,7 +28,7 @@ for rp in root:
 infbox = pb.SDF_PlantBox(3, 3, 3)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 dispersed = True
-infradius = 1
+infradius = 0
 for i in range(0, len(root)):
     root[i].infradius = infradius
     if root[i].infradius != 0:
@@ -39,72 +40,160 @@ for i in range(0, len(root)):
 
 mycp.initialize(True)
 
-
-simtime = 10
-fpd = 24
-N = simtime * fpd
-dt = simtime / N
+# --- Simulationseinstellungen ---
+simtime = 10            # Gesamtdauer (Tage)
+fpd = 25                # Schritte pro Tag
+N = simtime * fpd       # Gesamtanzahl Schritte
+dt = simtime / N        # Schrittweite in Tagen
 time = np.linspace(0, simtime, N)
+ratio = True            # Set to True for ratio plots, False for absolute values
 
-observed_primary = [] # length of primary infection
-observed_new_primary = [] # length of new primary infection
-expected_new_primary = [] # expected new primary infection
-observed_secondary = [] # length of secondary infection
-total_lengths = [] # length of the root system
-# nonmycL = [] # length of the non-mycorrhizal part
-# ratioL = [] # ratio of primary infection to non-mycorrhizal part from each time step
+# --- Datenspeicher initialisieren ---
+observed_primary = []
+observed_new_primary = []
+expected_new_primary = []
+expected_primary = []
 
+observed_secondary = []
+total_lengths = []
+nonmycL = []
+
+observed_segment_primary = []
+observed_segment_new_primary = []
+expected_segment_new_primary = []
+expected_segment_primary = []
+
+observed_segment_secondary = []
+observed_segment_noninf = []
+observed_segment_total = []
+
+# --- Initialer Schritt ---
 mycp.simulate(dt, False)
+infs = mycp.getNodeInfections(2)
+temp_ana = pb.SegmentAnalyser(mycp)
+# Segmentbasierte Infektionslängen
+primary_seg = secondary_seg = noninf_seg = 0
+for i in range(1, len(infs)):
+    seg_len = temp_ana.getSegmentLength(i - 1)
+    if infs[i] == 1:
+        primary_seg += seg_len
+    elif infs[i] == 2:
+        secondary_seg += seg_len
+    elif infs[i] == 0:
+        noninf_seg += seg_len
+
+observed_segment_primary.append(primary_seg)
+observed_segment_secondary.append(secondary_seg)
+observed_segment_noninf.append(noninf_seg)
+observed_segment_total.append(primary_seg + secondary_seg + noninf_seg)
+
+# Globaldaten
 observed_primary.append(sum(mycp.getParameter("primaryInfection")))
 observed_secondary.append(sum(mycp.getParameter("secondaryInfection")))
 total_lengths.append(sum(mycp.getParameter("length")))
-# nonmycL.append(total_lengths[-1]-observed_new_primary[-1]-observed_secondary[-1])
-# ratioL.append(abs(observed_new_primary[-1])/(nonmycL[-1])) 
+nonmycL.append(total_lengths[0] - observed_primary[0] - observed_secondary[0])
 
+# Erwartungswertberechnung
+P = mycp.getOrganRandomParameter(pb.root)[1].p * dt
+expected_primary.append(nonmycL[0] * P)
+expected_segment_primary.append(observed_segment_noninf[0] * P)
 
+# --- Hauptzeitschleife ---
 for t in range(1, len(time)):
     mycp.simulate(dt, False)
+    infs = mycp.getNodeInfections(2)
+    temp_ana = pb.SegmentAnalyser(mycp)
+
+    primary_seg = secondary_seg = noninf_seg = 0
+    for i in range(1, len(infs)):
+        seg_len = temp_ana.getSegmentLength(i - 1)
+        if infs[i] == 1:
+            primary_seg += seg_len
+        elif infs[i] == 2:
+            secondary_seg += seg_len
+        elif infs[i] == 0:
+            noninf_seg += seg_len
+
+    observed_segment_primary.append(primary_seg)
+    observed_segment_secondary.append(secondary_seg)
+    observed_segment_noninf.append(noninf_seg)
+    observed_segment_total.append(primary_seg + secondary_seg + noninf_seg)
+
     observed_primary.append(sum(mycp.getParameter("primaryInfection")))
     observed_secondary.append(sum(mycp.getParameter("secondaryInfection")))
     total_lengths.append(sum(mycp.getParameter("length")))
 
-    # Differenzen
-    delta_obs = observed_primary[t] - observed_primary[t-1]
+    # --- Differenzen und Erwartungswerte ---
+    delta_obs = observed_primary[t] - observed_primary[t - 1]
+    delta_obs_segment = observed_segment_primary[t] - observed_segment_primary[t - 1]
     observed_new_primary.append(delta_obs)
+    observed_segment_new_primary.append(delta_obs_segment)
 
-    # Nicht infizierte Länge zum Start dieses Zeitschritts
-    L_susceptible = (total_lengths[t-1]
-                     - observed_primary[t-1]
-                     - observed_secondary[t-1])
+    nonmycL.append(total_lengths[t] - observed_primary[t] - observed_secondary[t])
+    delta_expected = nonmycL[t] * P
+    delta_expected_segment = observed_segment_noninf[t] * P
 
-    delta_expected =  mycp.getOrganRandomParameter(pb.root)[1].p * L_susceptible * dt
     expected_new_primary.append(delta_expected)
+    expected_primary.append(expected_primary[t - 1] + delta_expected)
 
-    # if t % 10 == 0:
-    #     print(f"t={t}:")
-    #     print(f"- Beobachtet:   {delta_obs:.2f} mm neue primäre Infektion")
-    #     print(f"- Erwartet:     {delta_expected:.2f} mm")
-    #     print(f"- Abweichung:   {delta_obs - delta_expected:.2f} mm")
-    #     print(f"- Totale Länge: {total_lengths[t]:.2f} mm")
-    #     print(f" - Nicht infizierte Länge: {L_susceptible:.2f} mm")
-    #     print(f"- Primäre Infektion: {observed_primary[t]:.2f} mm")
-    #     print(f"- Sekundäre Infektion: {observed_secondary[t]:.2f} mm")
-    #     print("-" * 30)
+    expected_segment_new_primary.append(delta_expected_segment)
+    expected_segment_primary.append(expected_segment_primary[t - 1] + delta_expected_segment)
+    # --- Ausgabe der Wahrscheinlichkeiten --- 
+    obtf = math.floor(N/10)  # Beobachtungszeitraum für die empirische Wahrscheinlichkeit
+    if t % obtf == 0 and t > 0:
+        # Beobachtet: Gesamtlänge
+        total_observed = observed_primary[t] - observed_primary[t-obtf]
+        total_nonmyc = sum(nonmycL[t-obtf:t])
+        P_empirisch = total_observed / total_nonmyc if total_nonmyc > 0 else 0
 
-ratio = False
+        # Beobachtet: Segmentbasiert
+        total_observed_seg = observed_segment_primary[t] - observed_segment_primary[t-obtf]
+        total_nonmyc_seg = sum(observed_segment_noninf[t-obtf:t])
+        P_empirisch_seg = total_observed_seg / total_nonmyc_seg if total_nonmyc_seg > 0 else 0
+
+        print(f"Zeitschritt t={t} mit Beobachtunszeitraum deltat={obtf}:")
+        print(f"- Definiert:      P = {P:.5f}")
+        print(f"- Gemessen (gesamt):     P_emp = {P_empirisch:.5f}")
+        print(f"- Gemessen (Segment):    P_emp_seg = {P_empirisch_seg:.5f}")
+        print("-" * 40)
+
+# --- Plot ---
 if ratio:
-    plt.figure(figsize=(10, 6))
-    plt.plot(time[1:], observed_new_primary, label="Primary Infection")
-    plt.plot(time[1:], expected_new_primary, label="Expected Primary Infection")
-    plt.title("Expected vs Observed Primary Infection")
-    plt.legend()
-    plt.xlabel("Time Step")
-    plt.ylabel("Primary Infection Length [cm]")
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharex=True)
+
+    # Maximaler Y-Wert über beide Plots hinweg
+    y_max = max(
+        max(observed_new_primary + expected_new_primary),
+        max(observed_segment_new_primary + expected_segment_new_primary)
+    ) * 1.05  # 5 % Puffer
+
+    # Plot 1: Gesamtlängenvergleich
+    axes[0].plot(time[1:], observed_new_primary, label="Beobachtet (gesamt)", color="tab:blue")
+    axes[0].plot(time[1:], expected_new_primary, label="Erwartet (gesamt)", color="tab:orange")
+    axes[0].set_title("Primäre Infektion (gesamt)")
+    axes[0].set_xlabel("Zeit [Tage]")
+    axes[0].set_ylabel("Infizierte Länge [cm]")
+    axes[0].set_ylim(0, y_max)
+    axes[0].legend()
+    axes[0].grid(True)
+
+    # Plot 2: Segmentbasierter Vergleich
+    axes[1].plot(time[1:], observed_segment_new_primary, label="Beobachtet (Segment)", color="tab:green")
+    axes[1].plot(time[1:], expected_segment_new_primary, label="Erwartet (Segment)", color="tab:red")
+    axes[1].set_title("Primäre Infektion pro Segment")
+    axes[1].set_xlabel("Zeit [Tage]")
+    axes[1].set_ylabel("Infizierte Länge [cm]")
+    axes[1].set_ylim(0, y_max)
+    axes[1].legend()
+    axes[1].grid(True)
+
+    plt.tight_layout()
     plt.show()
 else:
     plt.plot(np.asarray(observed_primary), label="Primary Infection")
     plt.plot(np.asarray(observed_secondary), label="Secondary Infection")
     plt.plot(np.asarray(total_lengths), label="Length")
+    plt.plot(np.asarray(total_lengths) - np.asarray(observed_primary) - np.asarray(observed_secondary), label="Non-mycorrhizal Length")
     plt.legend()
     plt.title("Infection over time")
     plt.xlabel("Time")
