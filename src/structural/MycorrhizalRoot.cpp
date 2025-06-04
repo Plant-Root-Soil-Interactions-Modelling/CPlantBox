@@ -62,7 +62,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     double infTime;
     double p;
     for (size_t i = 1; i < nodes.size(); i++){
-        if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1)
+        if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1.)
         {
             p = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this());
         } else {
@@ -73,20 +73,18 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
         // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
         // infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
+
         infTime = age - nodeCTs.at(i);
-        // std::cout << infTime << std::endl;
-        if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
-        // if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0)
-        // {                        
-        //     // std::cout << "infected at " << i << std::endl;
-        //     setInfection(i,1,infTime);
-        // }
+
+        if (infected.at(i) == 0 && plant.lock()->rand() < p*cursegLength*infTime)
+
         { // für variante 3
+            // std::cout<< p*cursegLength*infTime << std::endl;
             setInfection(i,1,age);
         }
-        // std::cout << "infected at " << i << std::endl;
+
     }
-    {
+{
     // std::cout << getRootRandomParameter()->f_inf->getValue(Vector3d(0,0,-10),shared_from_this()) << std::endl;
 // if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
 // {
@@ -248,7 +246,7 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
         primaryInfection(dt,verbose);
 
         // Secondary Infection
-        secondaryInfection(verbose,dt);
+        // secondaryInfection(verbose,dt);
 
         for (auto l : children)
         {
