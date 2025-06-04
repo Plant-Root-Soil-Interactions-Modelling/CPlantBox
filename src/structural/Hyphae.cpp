@@ -90,25 +90,31 @@ void Hyphae::simulate(double dt, bool verbose)
     if (alive) { // dead hypaes won't grow
 
         // increase age
-        if (age+dt>p.hlt) { // root life time
+        if (age+dt>p.hlt) { // hyphal life time
             dt=p.hlt-age; // remaining life span
-            alive = false; // this root is dead
+            alive = false; // this hyphe is dead
         }
         age+=dt;
 
-        if (age>0) { // unborn  roots have no children
+        if (age>0) { // unborn hyphae have no children
 
             if (children.size() == 0) { // ELONGATE
 
                 if (active) {
 
-                    double targetlength = p.v*(age+dt); // Warum hier age + dt wenn oben schon dt an age angerechnet wurde?
+                    double targetlength = p.v*(age); // Warum hier age + dt wenn oben schon dt an age angerechnet wurde?
                     double e = targetlength-length; // unimpeded elongation in time step dt
                     double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                     double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
+                    length = getLength();
                     createSegments(dl,dt,verbose);
                     // std::cout << "*";
                     length+=dl;
+                    if (dl == 0.)
+                    {
+                        active = false; // if no length increment, hyphae become inactive
+                    }
+                    
                     // if (sdf(plant.tree).getDist(nodes.at(nodes.size()-1)) < distTT) { // for tip tip anastomosis
                     //     makeanastomosis();
                     // }
@@ -117,8 +123,9 @@ void Hyphae::simulate(double dt, bool verbose)
                     // }
                 }
                 // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
-                std::cout << "*" << std::flush;
+                // std::cout << age << std::endl;
                 active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+                std::cout << "Hyphae active: " << active << std::endl;
 
             } else { // NOT ACTIVE (children grow)
 
