@@ -42,7 +42,7 @@ mycp.initialize(True)
 
 # --- Simulationseinstellungen ---
 simtime = 10            # Gesamtdauer (Tage)
-fpd = 250                # Schritte pro Tag
+fpd = 25                # Schritte pro Tag
 N = simtime * fpd       # Gesamtanzahl Schritte
 dt = simtime / N        # Schrittweite in Tagen
 time = np.linspace(0, simtime, N)
@@ -94,7 +94,7 @@ total_lengths.append(sum(mycp.getParameter("length")))
 nonmycL.append(total_lengths[0] - observed_primary[0] - observed_secondary[0])
 
 # Erwartungswertberechnung
-P = mycp.getOrganRandomParameter(pb.root)[1].p * dt
+P = mycp.getOrganRandomParameter(pb.root)[1].p * dt # p = lambda
 expected_primary.append(0)
 expected_segment_primary.append(0)
 
@@ -104,16 +104,21 @@ for t in range(1, len(time)):
     infs = mycp.getNodeInfections(2)
     temp_ana = pb.SegmentAnalyser(mycp)
 
+    seg_len_ = []
     primary_seg = secondary_seg = noninf_seg = 0
     for i in range(1, len(infs)):
-        seg_len = temp_ana.getSegmentLength(i - 1)
+        seg_len = temp_ana.getSegmentLength(i - 1)  
         if infs[i] == 1:
             primary_seg += seg_len
         elif infs[i] == 2:
             secondary_seg += seg_len
         elif infs[i] == 0:
             noninf_seg += seg_len
-
+            seg_len_.append(seg_len)
+        
+    dx = np.mean(seg_len_) 
+    print("dx", dx)
+    
     observed_segment_primary.append(primary_seg)
     observed_segment_secondary.append(secondary_seg)
     observed_segment_noninf.append(noninf_seg)
@@ -130,8 +135,10 @@ for t in range(1, len(time)):
     observed_segment_new_primary.append(delta_obs_segment)
 
     nonmycL.append(total_lengths[t] - observed_primary[t] - observed_secondary[t])
-    delta_expected = nonmycL[t] * P
-    delta_expected_segment = observed_segment_noninf[t] * P
+    
+    delta_expected = nonmycL[t] * P*dx # P := dt * lambda  
+     
+    delta_expected_segment = observed_segment_noninf[t] * P*dx
 
     expected_new_primary.append(delta_expected)
     expected_primary.append(expected_primary[-1] + delta_expected)
@@ -193,10 +200,10 @@ if ratio:
     plt.tight_layout()
     plt.show()
 else:
-    plt.plot(np.asarray(observed_primary), label="Primary Infection")
-    plt.plot(np.asarray(expected_primary), label="Expected Primary Infection")
+    plt.plot(time, np.asarray(observed_primary), label="Primary Infection")
+    plt.plot(time, np.asarray(expected_primary), label="Expected Primary Infection")
     # plt.plot(np.asarray(observed_secondary), label="Secondary Infection")
-    plt.plot(np.asarray(total_lengths), label="Length")
+    # plt.plot(np.asarray(total_lengths), label="Length")
     # plt.plot(np.asarray(total_lengths) - np.asarray(observed_primary) - np.asarray(observed_secondary), label="Non-mycorrhizal Length")
     plt.legend()
     plt.title("Infection over time")
