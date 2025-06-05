@@ -59,7 +59,7 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 }
 
 void MycorrhizalRoot::primaryInfection(double dt, bool silence){
-    double infTime;
+    // double infTime;
     double p;
     for (size_t i = 1; i < nodes.size(); i++){
         if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1.)
@@ -75,12 +75,12 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
         // infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
 
-        infTime = age - nodeCTs.at(i);
+        // infTime = age - nodeCTs.at(i);
 
-        if (infected.at(i) == 0 && plant.lock()->rand() < p*cursegLength*infTime)
+        if (infected.at(i) == 0 && plant.lock()->rand() < p*cursegLength*dt)
 
         {
-            // std::cout<< p*cursegLength*infTime << std::endl;
+            std::cout<< p << std::endl;
             setInfection(i,1,age);
         }
 
@@ -298,7 +298,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
             if (infected.at(i)==1)
             {
                 primaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();
-            }
+                }
         }
         return primaryInfectedLength;
     }

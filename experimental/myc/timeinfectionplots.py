@@ -42,11 +42,11 @@ mycp.initialize(True)
 
 # --- Simulationseinstellungen ---
 simtime = 10            # Gesamtdauer (Tage)
-fpd = 25                # Schritte pro Tag
+fpd = 250                # Schritte pro Tag
 N = simtime * fpd       # Gesamtanzahl Schritte
 dt = simtime / N        # Schrittweite in Tagen
 time = np.linspace(0, simtime, N)
-ratio = True            # Set to True for ratio plots, False for absolute values
+ratio = False            # Set to True for ratio plots, False for absolute values
 
 # --- Datenspeicher initialisieren ---
 observed_primary = []
@@ -95,8 +95,8 @@ nonmycL.append(total_lengths[0] - observed_primary[0] - observed_secondary[0])
 
 # Erwartungswertberechnung
 P = mycp.getOrganRandomParameter(pb.root)[1].p * dt
-expected_primary.append(nonmycL[0] * P)
-expected_segment_primary.append(observed_segment_noninf[0] * P)
+expected_primary.append(0)
+expected_segment_primary.append(0)
 
 # --- Hauptzeitschleife ---
 for t in range(1, len(time)):
@@ -134,16 +134,17 @@ for t in range(1, len(time)):
     delta_expected_segment = observed_segment_noninf[t] * P
 
     expected_new_primary.append(delta_expected)
-    expected_primary.append(expected_primary[t - 1] + delta_expected)
+    expected_primary.append(expected_primary[-1] + delta_expected)
 
     expected_segment_new_primary.append(delta_expected_segment)
-    expected_segment_primary.append(expected_segment_primary[t - 1] + delta_expected_segment)
+    expected_segment_primary.append(expected_segment_primary[-1] + delta_expected_segment)
     # --- Ausgabe der Wahrscheinlichkeiten --- 
     obtf = math.floor(N/10)  # Beobachtungszeitraum für die empirische Wahrscheinlichkeit
     if t % obtf == 0 and t > 0:
         # Beobachtet: Gesamtlänge
         total_observed = observed_primary[t] - observed_primary[t-obtf]
         total_nonmyc = sum(nonmycL[t-obtf:t])
+        # print(mycp.getOrganRandomParameter(pb.root)[1].p)
         P_empirisch = total_observed / total_nonmyc if total_nonmyc > 0 else 0
 
         # Beobachtet: Segmentbasiert
@@ -155,6 +156,8 @@ for t in range(1, len(time)):
         print(f"- Definiert:      P = {P:.5f}")
         print(f"- Gemessen (gesamt):     P_emp = {P_empirisch:.5f}")
         print(f"- Gemessen (Segment):    P_emp_seg = {P_empirisch_seg:.5f}")
+        print("f totale Länge:", total_lengths[t])
+        print("f total Länge Segment:", observed_segment_total[t])
         print("-" * 40)
 
 # --- Plot ---
@@ -172,7 +175,7 @@ if ratio:
     axes[0].plot(time[1:], expected_new_primary, label="Erwartet (gesamt)", color="tab:orange")
     axes[0].set_title("Primäre Infektion (gesamt)")
     axes[0].set_xlabel("Zeit [Tage]")
-    axes[0].set_ylabel("Infizierte Länge [cm]")
+    axes[0].set_ylabel("Änderung Infizierte Länge [cm]")
     axes[0].set_ylim(0, y_max)
     axes[0].legend()
     axes[0].grid(True)
@@ -182,7 +185,7 @@ if ratio:
     axes[1].plot(time[1:], expected_segment_new_primary, label="Erwartet (Segment)", color="tab:red")
     axes[1].set_title("Primäre Infektion pro Segment")
     axes[1].set_xlabel("Zeit [Tage]")
-    axes[1].set_ylabel("Infizierte Länge [cm]")
+    axes[1].set_ylabel("Änderung Infizierte Länge [cm]")
     axes[1].set_ylim(0, y_max)
     axes[1].legend()
     axes[1].grid(True)
@@ -191,9 +194,10 @@ if ratio:
     plt.show()
 else:
     plt.plot(np.asarray(observed_primary), label="Primary Infection")
-    plt.plot(np.asarray(observed_secondary), label="Secondary Infection")
+    plt.plot(np.asarray(expected_primary), label="Expected Primary Infection")
+    # plt.plot(np.asarray(observed_secondary), label="Secondary Infection")
     plt.plot(np.asarray(total_lengths), label="Length")
-    plt.plot(np.asarray(total_lengths) - np.asarray(observed_primary) - np.asarray(observed_secondary), label="Non-mycorrhizal Length")
+    # plt.plot(np.asarray(total_lengths) - np.asarray(observed_primary) - np.asarray(observed_secondary), label="Non-mycorrhizal Length")
     plt.legend()
     plt.title("Infection over time")
     plt.xlabel("Time")
