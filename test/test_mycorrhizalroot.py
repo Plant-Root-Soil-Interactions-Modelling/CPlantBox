@@ -27,6 +27,7 @@ def rootLateralLength(t, et, r, k):  # length of first order laterals (without s
 class TestMycorrhizalRoot(unittest.TestCase):
 # TODO add test for localized infection
 # TODO modify for new parameters
+# TODO remove all instances of infradius
     def mycroot_example_rrp(self):
         """ an example used in the tests below, a main root with laterals """
         self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)

@@ -12,7 +12,6 @@ void MycorrhizalRootRandomParameter::bindParameters(){
     bindParameter("maxAge", &maxAge, "Maximal infection age of a root segment [day]");
     bindParameter("vi", &vi, "Rate of internal infection [cm / day]");
     bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
-    bindParameter("infradius", &infradius, "Radius of the localized infection front");
     bindParameter("hyphalDelay", &hyphalDelay, "Delay of hyphal emergence [day]");
     bindParameter("hyphalEmergenceDensity", &hyphalEmergenceDensity, "Hyphal emergence density [1 / cm]");
 

@@ -20,19 +20,14 @@ root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     rp.hyphalEmergenceDensity = 1;
 
-infbox = pb.SDF_PlantBox(10, 10, 10)
+infbox = pb.SDF_PlantBox(10, 10, 5)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
-dispersed = True
-animation = False
-infradius = 0
+local = True
+animation = True
 for i in range(0, len(root)):
-    root[i].infradius = infradius
-    if root[i].infradius != 0:
-        dispersed = False
+    if local:
         root[i].f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
     root[i].dx = 0.05
-    # root[i].realize()
-    # print(root[i].subType)
 
 mycp.initialize(True)
 
