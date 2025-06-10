@@ -213,7 +213,7 @@ void RootRandomParameter::read(std::istream & cin)
     cin.getline(ch,256);
     std::string s; // dummy
     cin >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> lmax >> lmaxs;
-    cin >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
+    cin >> s >> r >> rs >> s >> a >> as >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
     int n;
     cin  >> s >> n;
     successorST.clear();
@@ -246,8 +246,7 @@ void RootRandomParameter::write(std::ostream & cout) const {
     cout << "# Root type parameter for " << name << "\n";
     cout << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
         << "ln\t" << ln << "\t" << lns << "\n" << "lmax\t"<< lmax <<"\t"<< lmaxs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
-        "a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
-        << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successorST.size() << "\t";
+        "a\t" << a << "\t" << as << "\n" << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successorST.size() << "\t";
     for (size_t i=0; i<successorST.size(); i++) {
         for (int j=0; i<successorST.at(i).size(); j++) {
 				cout << successorST.at(i).at(j) << "\t";
@@ -274,9 +273,6 @@ void RootRandomParameter::bindParameters()
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
     bindParameter("lmax", &lmax, "Maximal root length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-    bindParameter("colorR", &colorR, "Root color, red component [0.-1.]");
-    bindParameter("colorG", &colorG, "Root color, green component [0.-1.]");
-    bindParameter("colorB", &colorB, "Root color, blue component [0.-1.]");
     bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");
