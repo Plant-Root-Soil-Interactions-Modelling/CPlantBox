@@ -613,7 +613,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("vis", &MycorrhizalRootRandomParameter::vis)
             .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
-            .def_readwrite("infradius", &MycorrhizalRootRandomParameter::infradius)
+        //     .def_readwrite("infradius", &MycorrhizalRootRandomParameter::infradius)
             .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf)
             .def_readwrite("hyphalEmergenceDensity", &MycorrhizalRootRandomParameter::hyphalEmergenceDensity);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")

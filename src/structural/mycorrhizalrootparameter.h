@@ -44,7 +44,7 @@ namespace CPlantBox {
         double vi = 0.13;       ///< speed of internal infection [cm / day]
         double vis = 0.;        ///< Standard deviation of speed of internal infection [cm / day]
         double maxInfection = 1;    ///< Percentage of maximal infection
-        double infradius = 1;     ///< Radius of the localized inoculum
+        // double infradius = 1;     ///< Radius of the localized inoculum
         double hyphalDelay = 0.;
 
         double hyphalEmergenceDensity = 0; //< [1 / cm]
