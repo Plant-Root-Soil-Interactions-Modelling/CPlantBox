@@ -89,9 +89,6 @@ public:
     double lmaxs = 0.;      ///< Standard deviation of maximal root length [cm]
     double r = 1;           ///< Initial growth rate [cm day-1]
     double rs = 0.;         ///< Standard deviation initial growth rate [cm day-1]
-    double colorR = 0.6;    ///< Root color (red)
-    double colorG = 0.2;    ///< Root color (green)
-    double colorB = 0.2;    ///< Root color (blue)
     int tropismT = 1;       ///< Root tropism parameter (Type)
     double tropismN = 1.;   ///< Root tropism parameter (number of trials)
     double tropismS = 0.2;  ///< Root tropism parameter (mean value of expected changeg) [1/cm]
