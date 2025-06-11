@@ -144,7 +144,7 @@ void MycorrhizalPlant::initCallbacks() {
         // auto sdf = SoilLookUp();
         sdf = *bigbox;
         inf_->sdf = &sdf;
-        inf_->fmax = rp->p;
+        inf_->fmax = rp->lambda;
         inf_->fmin = 0;
         inf_->slope = 0;
         // std::cout<< inf_->sdf->toString() << std::endl;

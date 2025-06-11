@@ -59,21 +59,21 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 }
 
 void MycorrhizalRoot::primaryInfection(double dt, bool silence){
-    double p;
+    double lambda;
     for (size_t i = 1; i < nodes.size(); i++){
         if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1.)
         {
-            p = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this());
+            lambda = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this());
         } 
         else {
-            p = getRootRandomParameter()->p;
+            lambda = getRootRandomParameter()->lambda;
         }
-        // if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {p = 0;}//account for minimal age in rate
-        // p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
+        // if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lambda = 0;}//account for minimal age in rate
+        // lambda = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lambda; // account for maximal age in rate
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
-        if (infected.at(i) == 0 && plant.lock()->rand() < p*cursegLength*dt)
+        if (infected.at(i) == 0 && plant.lock()->rand() < lambda*cursegLength*dt)
         {
-            // std::cout<< p << std::endl;
+            // std::cout<< lambda << std::endl;
             setInfection(i,1,age);
         }
     }
