@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-
+input("Only run this script if secondary infection is disabled.\nPress Enter to continue...")
 mycp = pb.MycorrhizalPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
