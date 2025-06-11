@@ -59,21 +59,18 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 }
 
 void MycorrhizalRoot::primaryInfection(double dt, bool silence){
-    double lambda;
+    double lmbd;
     for (size_t i = 1; i < nodes.size(); i++){
         if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1.)
         {
-            lambda = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this());
+            lmbd = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this());
         } 
         else {
-            lambda = getRootRandomParameter()->lambda;
+            lmbd = getRootRandomParameter()->lmbd;
         }
-        // if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lambda = 0;}//account for minimal age in rate
-        // lambda = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lambda; // account for maximal age in rate
-        double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
-        if (infected.at(i) == 0 && plant.lock()->rand() < lambda*cursegLength*dt)
+        double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
+        if (infected.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
-            // std::cout<< lambda << std::endl;
             setInfection(i,1,age);
         }
     }
@@ -239,22 +236,22 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
         primaryInfection(dt,verbose);
 
         // Secondary Infection
-        secondaryInfection(verbose,dt);
+        // secondaryInfection(verbose,dt);
 
-        for (auto l : children)
-        {
-            if (l->organType()==Organism::ot_root) {
+        // for (auto l : children)
+        // {
+        //     if (l->organType()==Organism::ot_root) {
 
-                if (infected.at(l->parentNI) != 0) { // the base of root l is infected
+        //         if (infected.at(l->parentNI) != 0) { // the base of root l is infected
 
-                    if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0) {
+        //             if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0) {
 
-                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
-                    }
-                }
-                std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
-            }
-        }
+        //                 std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
+        //             }
+        //         }
+        //         std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
+        //     }
+        // }
     }
 }
 

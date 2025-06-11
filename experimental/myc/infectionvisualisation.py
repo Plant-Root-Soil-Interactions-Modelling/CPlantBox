@@ -23,7 +23,7 @@ for rp in root:
 infbox = pb.SDF_PlantBox(10, 10, 5)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 local = True
-animation = True
+animation = False
 for i in range(0, len(root)):
     if local:
         root[i].f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
@@ -41,7 +41,7 @@ dt = simtime / N
 filename = "infection"
 if animation:
     filename = "animation"
-if dispersed:
+if not local:
     filename = filename + "_dispersed"
 else:
     filename = filename + "_local"
@@ -63,16 +63,21 @@ else:
         # for i in range(0, len(roost)):
         #     print(root[i].subType)
         # mycp.simulateHyphalGrowth(dt)
+        # hyphae = mycp.getOrgans(5)
+        # print("number of hyphae", len(hyphae))
+        # print("type", type(hyphae))
+        # for h in hyphae:
+        #     print(h.getParameter("age"))
 
     # mycp.simulate(simtime, False)
     # print("sim time", mycp.getSimTime())
 
-    # mycp.simulateHyphalGrowth(simtime)
-    # hyphae = mycp.getOrgans(5)
-    # print("number of hyphae", len(hyphae))
-    # print("type", type(hyphae))
-    # for h in hyphae:
-    #     print(h.getParameter("age"))
+    mycp.simulateHyphalGrowth(simtime)
+    hyphae = mycp.getOrgans(5)
+    print("number of hyphae", len(hyphae))
+    print("type", type(hyphae))
+    for h in hyphae:
+        print(h.getParameter("age"))
     
 
     ana = pb.SegmentAnalyser(mycp)

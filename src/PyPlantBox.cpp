@@ -606,8 +606,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("nob", &RootSpecificParameter::nob);
      py::class_<MycorrhizalRootRandomParameter, RootRandomParameter, OrganRandomParameter, std::shared_ptr<MycorrhizalRootRandomParameter>>(m, "MycorrhizalRootRandomParameter")
             .def(py::init<std::shared_ptr<Organism>>())
-            .def_readwrite("lambda", &MycorrhizalRootRandomParameter::lambda)
-            .def_readwrite("lambdas", &MycorrhizalRootRandomParameter::lambdas)
+            .def_readwrite("lmbd", &MycorrhizalRootRandomParameter::lmbd)
+            .def_readwrite("lmbds", &MycorrhizalRootRandomParameter::lmbds)
             .def_readwrite("minAge", &MycorrhizalRootRandomParameter::minAge)
             .def_readwrite("maxAge", &MycorrhizalRootRandomParameter::maxAge)
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
@@ -619,7 +619,7 @@ PYBIND11_MODULE(plantbox, m) {
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
             .def(py::init<>())
             .def(py::init<int, double, double, const std::vector<double>&, double, double, double, double, double, double, bool>())
-            .def_readwrite("lambda", &MycorrhizalRootSpecificParameter::lambda)
+            .def_readwrite("lmbd", &MycorrhizalRootSpecificParameter::lmbd)
             .def_readwrite("vi", &MycorrhizalRootSpecificParameter::vi);
      /*
       * hyphaeparameter.h

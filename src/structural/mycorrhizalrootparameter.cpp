@@ -7,7 +7,7 @@ namespace CPlantBox {
 void MycorrhizalRootRandomParameter::bindParameters(){
     // std::cout << "MycorrhizalRootRandomParameter::bindParameters called" << std::endl;
     RootRandomParameter::bindParameters();
-    bindParameter("lambda", &lambda, "Rate of primary infection for dispersed inoculum [1/(cm day)]");
+    bindParameter("lmbd", &lmbd, "Rate of primary infection for dispersed inoculum [1/(cm day)]");
     bindParameter("minAge", &minAge, "Minimal infectious age of a root segment [day]");
     bindParameter("maxAge", &maxAge, "Maximal infection age of a root segment [day]");
     bindParameter("vi", &vi, "Rate of internal infection [cm / day]");
@@ -22,7 +22,7 @@ void MycorrhizalRootRandomParameter::bindParameters(){
 //     assert(dx > dxMin && "MycorrhizalRootRandomParameter::realize(): dxMin must be smaller than dx");
 //     auto p = plant.lock();
 
-//     double lambda_ = std::max(lambda + p->randn()*lambdas, 0.); // rate of primary infection for dispersed inoculum
+//     double lmbd_ = std::max(lmbd + p->randn()*lmbds, 0.); // rate of primary infection for dispersed inoculum
 //     double vi_ = std::max(vi + p->randn()*vis, 0.);  // speed of node to node infection
 //     // std::cout<< "MycorrhizalRootRandomParameter::realize called" << std::endl;
 
