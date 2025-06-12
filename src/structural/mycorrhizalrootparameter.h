@@ -11,9 +11,10 @@ namespace CPlantBox {
 
     class MycorrhizalRootSpecificParameter :public RootSpecificParameter{
         public:
-        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0.,0.15, 0.13, 0., 0.) { }
+        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0.,0.15, 0.13, false, 0., 0.) { }
 
-        MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, double lmbd, double vi, int infected = false, bool laterals = false):
+        MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, 
+				bool laterals, double lmbd, double vi, int infected = false):
             RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), lmbd(lmbd), vi(vi) {};
 
         double lmbd = 0.15;        ///< Rate of primary infection for dispersed inoculum [1/(cm day)]

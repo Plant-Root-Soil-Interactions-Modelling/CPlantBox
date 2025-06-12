@@ -32,7 +32,7 @@ for i in range(0, len(root)):
 mycp.initialize(True)
 
 
-simtime = 10
+simtime = 30
 fps = 30
 anim_time = 10
 N = fps * anim_time
@@ -77,7 +77,7 @@ else:
     print("number of hyphae", len(hyphae))
     print("type", type(hyphae))
     for h in hyphae:
-        print(h.getParameter("age"))
+        print('hyphae',h.getParameter("age"), h.getParameter("length"))
     
 
     ana = pb.SegmentAnalyser(mycp)

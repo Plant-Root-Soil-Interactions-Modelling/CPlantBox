@@ -82,7 +82,7 @@ std::shared_ptr<OrganSpecificParameter> MycorrhizalRootRandomParameter::realize(
     // std::cout<< this->toString() << std::endl;
 
     return std::make_shared<MycorrhizalRootSpecificParameter>(
-        subType, lb_, la_, ln_, r_, a_, theta_, rlt_, hasLaterals, p_, vi_);
+        subType, lb_, la_, ln_, r_, a_, theta_, rlt_, hasLaterals, lmbd_, vi_);
 }
 
 MycorrhizalRootRandomParameter::MycorrhizalRootRandomParameter(std::shared_ptr<Organism> plant) :RootRandomParameter(plant) {

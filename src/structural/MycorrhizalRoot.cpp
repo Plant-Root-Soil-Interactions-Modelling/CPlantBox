@@ -220,10 +220,10 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
         }
     }
 
-//    if ((nodes.size()>1) && (cumLength>0)) {
-//        std::cout << "MycorrhizalRoot::hyphalGrowth() " << nodes.size()<< ", " << hed << ", noh " << numberOfHyphae
-//            << ", cum length "<< cumLength << ", actual density " << numberOfHyphae/cumLength <<"\n" <<std::flush;
-//    }
+   // if ((nodes.size()>1) && (cumLength>0)) {
+       // std::cout << "MycorrhizalRoot::hyphalGrowth() " << nodes.size()<< ", " << hed << ", noh " << numberOfHyphae
+           // << ", cum length "<< cumLength << ", actual density " << numberOfHyphae/cumLength <<"\n" <<std::flush;
+   // }
 
 }
 
