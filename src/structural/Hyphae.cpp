@@ -101,8 +101,19 @@ void Hyphae::simulate(double dt, bool verbose)
             if (children.size() == 0) { // ELONGATE
 
                 if (active) {
+					double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
+					double dt_; // time step
+					if (age<dt) { // the root emerged in this time step, adjust time step
+						dt_= age;
+					} else {
+						dt_=dt;
+					}
 
-                    double targetlength = p.v*(age); // Warum hier age + dt wenn oben schon dt an age angerechnet wurde?
+					double targetlength = calcLength(age_+dt_);//+ this->epsilonDx; 
+					// TODO: maybe add later the epsilonDx. could be usefull for flow computation + in case of length errors created by anastomosis
+
+                    //double targetlength = p.v*(age); // Warum hier age + dt wenn oben schon dt an age angerechnet wurde?
+					
                     double e = targetlength-length; // unimpeded elongation in time step dt
                     double scale = 1.; //getHyphaeRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
                     double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
@@ -156,7 +167,7 @@ void Hyphae::simulate(double dt, bool verbose)
 double Hyphae::calcLength(double age)
 {
    assert(age >= 0 && "Hyphae::calcLength() negative hyphae age");
-   return getHyphaeRandomParameter()->f_gf->getLength(age,param()->v,0., shared_from_this());
+   return getHyphaeRandomParameter()->f_gf->getLength(age,param()->v,param()->getMaxLength(), shared_from_this());
 }
 
 ///**
@@ -169,7 +180,7 @@ double Hyphae::calcLength(double age)
 double Hyphae::calcAge(double length) const
 {
     assert(length >= 0 && "Hyphae::calcAge() negative hyphae length");
-    return getHyphaeRandomParameter()->f_gf->getAge(length,param()->v, 0., shared_from_this());
+    return getHyphaeRandomParameter()->f_gf->getAge(length,param()->v, param()->getMaxLength(), shared_from_this());
 }
 
 /**

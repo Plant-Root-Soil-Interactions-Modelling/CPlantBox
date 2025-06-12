@@ -212,6 +212,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
             numberOfHyphae += emergedHyphae.at(i);
 
             int new_noh = int(hed * cumLength - numberOfHyphae);
+			assert("MycorrhizalRoot::simulateHyphalGrowth(): new_noh < 0"&&(new_noh>=0));
             for  (size_t j = 0; j < new_noh; j++) {
                 createHyphae(i);
                 numberOfHyphae += 1;

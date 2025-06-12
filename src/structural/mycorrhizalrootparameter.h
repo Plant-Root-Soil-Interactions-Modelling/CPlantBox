@@ -29,7 +29,7 @@ namespace CPlantBox {
         virtual ~MycorrhizalRootRandomParameter() {};
 
         std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
-        // std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
+        std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
         std::string toString(bool verbose = true) const override;
 
         void bindParameters() override;
@@ -48,7 +48,8 @@ namespace CPlantBox {
 
         double hyphalEmergenceDensity = 0; //< [1 / cm]
 
-        std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();
+        std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();    
+		void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
 
     };
 }
