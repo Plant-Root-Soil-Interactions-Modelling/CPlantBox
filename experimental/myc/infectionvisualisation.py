@@ -3,7 +3,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 
-mycp = pb.MycorrhizalPlant()
+mycp = pb.MycorrhizalPlant(1)
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"
 # name = "Heliantus_Pagès_2013"
@@ -32,7 +32,7 @@ for i in range(0, len(root)):
 mycp.initialize(True)
 
 
-simtime = 10
+simtime = 30
 fps = 30
 anim_time = 10
 N = fps * anim_time
@@ -45,7 +45,8 @@ if not local:
     filename = filename + "_dispersed"
 else:
     filename = filename + "_local"
-
+roots = mycp.getOrganRandomParameter(pb.root)
+print(root[1]) # check that AMF random params got updated from the xml file
 if animation:
     for i in range(0, N):
         mycp.simulate(dt, False)
@@ -76,8 +77,8 @@ else:
     hyphae = mycp.getOrgans(5)
     print("number of hyphae", len(hyphae))
     print("type", type(hyphae))
-    for h in hyphae:
-        print(h.getParameter("age"))
+    #for h in hyphae:
+    #    print('hyphae',h.getParameter("age"), h.getParameter("length"))
     
 
     ana = pb.SegmentAnalyser(mycp)

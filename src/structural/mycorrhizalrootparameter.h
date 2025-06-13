@@ -11,9 +11,10 @@ namespace CPlantBox {
 
     class MycorrhizalRootSpecificParameter :public RootSpecificParameter{
         public:
-        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0.,0.15, 0.13, 0., 0.) { }
+        MycorrhizalRootSpecificParameter(): MycorrhizalRootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0.,0.15, 0.13, false, 0., 0.) { }
 
-        MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, double lmbd, double vi, int infected = false, bool laterals = false):
+        MycorrhizalRootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, 
+				bool laterals, double lmbd, double vi, int infected = false):
             RootSpecificParameter(type,lb,la,ln,r,a,theta,rlt,laterals), lmbd(lmbd), vi(vi) {};
 
         double lmbd = 0.15;        ///< Rate of primary infection for dispersed inoculum [1/(cm day)]
@@ -29,7 +30,7 @@ namespace CPlantBox {
         virtual ~MycorrhizalRootRandomParameter() {};
 
         std::shared_ptr<OrganRandomParameter> copy(std::shared_ptr<Organism> plant) override;
-        // std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
+        std::shared_ptr<OrganSpecificParameter> realize() override; ///< Creates a specific root from the root parameter set
         std::string toString(bool verbose = true) const override;
 
         void bindParameters() override;
@@ -48,7 +49,8 @@ namespace CPlantBox {
 
         double hyphalEmergenceDensity = 0; //< [1 / cm]
 
-        std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();
+        std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();    
+		void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set
 
     };
 }

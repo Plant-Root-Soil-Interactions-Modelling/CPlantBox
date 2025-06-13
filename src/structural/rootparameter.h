@@ -28,7 +28,7 @@ public:
 
     RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a, double theta, double rlt, bool laterals = false):
             OrganSpecificParameter(type, a),  lb(lb), la(la), r(r),
-        theta(theta), rlt(rlt), ln(ln), laterals(laterals) { }; ///< Constructor setting all parameters
+        theta(theta), rlt(rlt), ln(ln), laterals(laterals) {}; ///< Constructor setting all parameters
 
     /*
      * RootBox parameters per single root
