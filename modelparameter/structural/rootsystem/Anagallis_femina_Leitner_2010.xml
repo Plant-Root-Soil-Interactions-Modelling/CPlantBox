@@ -46,6 +46,7 @@
         <!--Apical zone [cm]-->
         <parameter name="lb" value="1"/>
         <!--Basal zone [cm]-->
+        <parameter name="vi" value="0.70" dev="0.13"/>
         <parameter name="lmax" value="33.400002" dev="3.3"/>
         <!--Maximal root length [cm]-->
         <parameter name="ln" value="0.80000001"/>

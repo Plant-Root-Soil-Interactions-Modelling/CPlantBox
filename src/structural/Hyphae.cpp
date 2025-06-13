@@ -136,7 +136,7 @@ void Hyphae::simulate(double dt, bool verbose)
                 // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
                 // std::cout << age << std::endl;
                 active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
-                std::cout << "Hyphae active: " << active << std::endl;
+                //std::cout << "Hyphae active: " << active << std::endl;
 
             } else { // NOT ACTIVE (children grow)
 
