@@ -236,22 +236,22 @@ void MycorrhizalRoot::simulateInfection(double dt, bool verbose) {
         primaryInfection(dt,verbose);
 
         // Secondary Infection
-        // secondaryInfection(verbose,dt);
+        secondaryInfection(verbose,dt);
 
-        // for (auto l : children)
-        // {
-        //     if (l->organType()==Organism::ot_root) {
+        for (auto l : children)
+        {
+            if (l->organType()==Organism::ot_root) {
 
-        //         if (infected.at(l->parentNI) != 0) { // the base of root l is infected
+                if (infected.at(l->parentNI) != 0) { // the base of root l is infected
 
-        //             if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0) {
+                    if (l->getNumberOfNodes() > 1 && std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> getNodeInfection(1) == 0) {
 
-        //                 std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
-        //             }
-        //         }
-        //         std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
-        //     }
-        // }
+                        std::dynamic_pointer_cast<MycorrhizalRoot>(l) ->setInfection(0, 3, infectionTime.at(l->parentNI));
+                    }
+                }
+                std::dynamic_pointer_cast<MycorrhizalRoot>(l) -> simulateInfection(dt, verbose);
+            }
+        }
     }
 }
 

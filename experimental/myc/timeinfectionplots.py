@@ -115,7 +115,7 @@ for t in range(1, len(time)):
             noninf_seg += seg_len
     
     dx = np.mean(seg_len_) 
-    print("dx", dx)
+    # print("dx", dx)
     
     observed_segment_primary.append(primary_seg)
     observed_segment_secondary.append(secondary_seg)
@@ -200,11 +200,12 @@ if ratio:
 else:
     plt.plot(time, np.asarray(observed_primary), label="Primary Infection")
     plt.plot(time, np.asarray(expected_primary), label="Expected Primary Infection")
-    # plt.plot(np.asarray(observed_secondary), label="Secondary Infection")
-    # plt.plot(np.asarray(total_lengths), label="Length")
+    # # plt.plot(time, np.asarray(observed_secondary), label="Secondary Infection")
+    # plt.plot(time, np.asarray(observed_primary) + np.asarray(observed_secondary), label="Observed Infected Length")
+    # plt.plot(time, np.asarray(total_lengths), label="Total Length")
     # plt.plot(np.asarray(total_lengths) - np.asarray(observed_primary) - np.asarray(observed_secondary), label="Non-mycorrhizal Length")
     plt.legend()
-    plt.title("Infection over time")
+    # plt.title("Infection over time")
     plt.xlabel("Time")
     plt.ylabel("[cm]")
     plt.show()
