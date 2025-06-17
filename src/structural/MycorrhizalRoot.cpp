@@ -7,6 +7,8 @@
 #include "Organism.h"
 #include "Hyphae.h"
 
+#include "math.h"
+
 namespace CPlantBox {
 
 MycorrhizalRoot::MycorrhizalRoot(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
@@ -201,6 +203,22 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
     double cumLength = 0.; // cumulative infected length
     double numberOfHyphae= 0;
 
+    // for (size_t i = 0; i < nodes.size(); i++) {
+    //     numberOfHyphae += emergedHyphae.at(i);
+    // }
+    // int new_noh = int(hed * getParameter("infectionLength") - numberOfHyphae);
+
+    // int currentNode = 1;
+    // while (new_noh > 0)
+    // {
+    //     if (infected.at(currentNode) > 0 && currentNode % new_noh == 0) { // if the current node is infected and the number of hyphae to be created is reached
+    //         createHyphae(currentNode);
+    //         numberOfHyphae += 1;
+    //         new_noh -= 1;
+    //     }
+    // }
+    
+    
     for (size_t i = 1; i < nodes.size(); i++) {
 
         if (infected.at(i) > 0) {
@@ -304,6 +322,18 @@ double MycorrhizalRoot::getParameter(std::string name) const {
         }
         return secondaryInfectedLength;
     }
+    if (name == "infectionLength") 
+    {
+        double infectedLength = 0;
+        for (size_t i = 1; i < nodes.size(); i++)
+        {
+            if (infected.at(i)>0)
+            {
+                infectedLength += nodes.at(i).minus(nodes.at(i-1)).length();
+            }
+        }
+        return infectedLength;
+    }
     
     return Root::getParameter(name);
 }
@@ -390,7 +420,7 @@ std::string MycorrhizalRoot::toString() const
 {
     // TODO this does not actually return the number of infected nodes fix this and add additional stuff
     std::stringstream newstring;
-    newstring << "; infected Nodes " << getNumberofInfectedNodes() << "; length of infected root segments "<< getParameter("primaryInfection") + getParameter("secondaryInfection")<< ".";
+    newstring << "; number of infected Nodes " << getNumberofInfectedNodes() << "; length of infected root segments "<< getParameter("infectionLength")<< ".";
     return  Root::toString()+newstring.str();
 }
 
@@ -406,6 +436,8 @@ int MycorrhizalRoot::getNumberofInfectedNodes() const
     }
     return numberInfectedNodes;
 }
+
+
 double MycorrhizalRoot::prob(double t, double segLength, double p)
 {
     return 1 - pow(1-p,t*segLength);
