@@ -37,7 +37,6 @@ std::shared_ptr<Organism> Plant::copy()
     return no;
 }
 
-
 /**
  * todo docme , this could be made unique? and probably should be protected
  */
@@ -224,7 +223,7 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
-	void Plant::simulate(double dt, bool verbose)
+void Plant::simulate(double dt, bool verbose)
 {
 	abs2rel();
     Organism::simulate(dt, verbose);
@@ -238,6 +237,63 @@ void Plant::simulate()
 {
     auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);
     Plant::simulate(srp->simtime);
+}
+
+/**
+ * Simulates root system growth for a time span, elongates a maximum of @param maxinc total length [cm/day]
+ * using the proportional elongation @param se to impede overall growth.
+ *
+ * @param dt        time step [day]
+ * @param maxinc_   maximal total length [cm/day] the root system is allowed to grow in this time step
+ * @param se        The class ProportionalElongation is used to scale overall root growth
+ * @param verbose   indicates if status is written to the console (cout) (default = false)
+ */
+void Plant::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElongation> se, bool verbose)
+{
+    const double accuracy = 1.e-3;
+    const int maxiter = 20;
+    double maxinc = dt*maxinc_; // [cm]
+    double ol = this->getSummed("lengthTh");
+    int i = 0;
+
+    // test run with scale == 1 (on copy)
+    std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy());
+    se->setScale(1.);
+    rs->simulate(dt, verbose);
+    double l = rs->getSummed("lengthTh");
+    double inc_ = l - ol;
+    if (verbose) {
+        std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
+    }
+
+    if ((inc_>maxinc) && (std::abs(inc_-maxinc)>accuracy)) { // if necessary, perform a binary search
+
+        double sl = 0.; // left
+        double sr = 1.; // right
+
+        while ( ((std::abs(inc_-maxinc)) > accuracy) && (i<maxiter) )  { // binary search
+
+            double m = (sl+sr)/2.; // mid
+
+            // test run (on copy) with scale m
+            std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old
+            se->setScale(m);
+            rs->simulate(dt, verbose);
+            l = rs->getSummed("lengthTh");
+            inc_ = l - ol;
+
+            if (verbose) {
+                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
+            }
+            if (inc_>maxinc) { // concatenate
+                sr = m;
+            } else {
+                sl = m;
+            }
+            i++;
+        }
+    }
+    this->simulate(dt, verbose);
 }
 
 /**
@@ -256,7 +312,6 @@ void Plant::abs2rel()
 
 }
 
-
 /**
  * go from relative to absolute coordinates for aboveground organs
  */
@@ -270,9 +325,7 @@ void Plant::rel2abs()
 		//}
 
     }
-
 }
-
 
 /**
  * Creates a specific tropism from the tropism type index.
