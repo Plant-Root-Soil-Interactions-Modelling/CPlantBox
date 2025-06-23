@@ -3,64 +3,45 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import visualisation.vtk_plot as vp
-
 import numpy as np
 
-rs = pb.Plant()
+plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-rs.readParameters(path + name + ".xml")
+name = "Glycine_max_Moraes2020"
+plant.readParameters(path + name + ".xml")
 
-# box with a left and a right compartment for analysis
-sideBox = pb.SDF_PlantBox(10, 10, 50)
-left = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(-4.99, 0, 0))
-right = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(4.99, 0, 0))
-leftright = pb.SDF_Union(left, right)
-# rs.setGeometry(leftright)
+box = pb.SDF_PlantBox(10, 10, 50)  # nutrient rich patch
+patch = pb.SDF_RotateTranslate(box, pb.Vector3d(-4.99, 0, 0))
 
-# left compartment has a minimum of 0.01, 1 elsewhere
-maxS = 1.  # maximal
-minS = 0.002  # minimal
+max_ = 1.  # maximal
+min_ = 0.002  # minimal
 slope = 1.  # [cm] linear gradient between min and max
-leftC = pb.SDF_Complement(left)
-soilprop = pb.SoilLookUpSDF(left, maxS, minS, slope)
-
-# Manually set scaling function and tropism parameters
-sigma = [0.4, 1., 1., 1., 1. ] * 2
-
-for p in rs.getOrganRandomParameter(pb.root):
-    p.dx = 0.25
-    # p.tropismS = sigma[p.subType - 1]
+soilprop = pb.SoilLookUpSDF(patch, max_, min_, slope)
 
 # 3. Scale branching probability
-p = rs.getOrganRandomParameter(pb.root, 2)
-p.ln = p.ln / 5
-p = rs.getOrganRandomParameter(pb.root, 3)
+p = plant.getOrganRandomParameter(pb.root, 2)
+p.ln = p.ln / 5  # increase overall branching density
+p = plant.getOrganRandomParameter(pb.root, 3)
 p.f_sbp = soilprop
 
-# simulation
-rs.initialize()
-simtime = 60.
+# Simulation
+plant.initialize()
+simtime = 15.
 dt = 1.
 for i in range(0, round(simtime / dt)):
-    rs.simulate(dt, True)
+    plant.simulate(dt)
 
-# analysis
-l = rs.getSummed("length")
-al = pb.SegmentAnalyser(rs)
-al.crop(left)
-ll = al.getSummed("length")
-ar = pb.SegmentAnalyser(rs)
-ar.crop(right)
-lr = ar.getSummed("length")
-print('\nLeft  compartment total root length {:g} cm, {:g}%'.format(ll, 100 * ll / l))
-print('\nRight compartment total root length {:g} cm, {:g}% \n'.format(lr, 100 * lr / l))
+# Analysis
+l = plant.getSummed("length")
+ana = pb.SegmentAnalyser(plant)
+ana.crop(patch)
+l_in = ana.getSummed("length")
+ana = pb.SegmentAnalyser(plant)
+ana.crop(pb.SDF_Complement(patch))
+l_out = ana.getSummed("length")
+print('\nLeft  compartment total root length {:g} cm, {:g}%'.format(l_in, 100 * l_in / l))
+print('Right compartment total root length {:g} cm, {:g}% \n'.format(l_out, 100 * l_out / l))
 
-# write results
-rs.write("results/example_5d.py")  # compartment geometry
-rs.write("results/example_5d.vtp")  # root system
-
-# Plot, using vtk
-# vp.plot_roots(rs, "subType")
-vp.plot_roots_and_container(rs, left)
+plant.write("results/example_3_5.vtp")  # write results
+vp.plot_roots_and_container(plant, patch)
 
