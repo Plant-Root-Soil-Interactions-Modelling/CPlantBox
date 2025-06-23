@@ -433,7 +433,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("__str__",&SoilLookUp::toString);
     py::class_<SoilLookUpSDF, SoilLookUp, std::shared_ptr<SoilLookUpSDF>>(m,"SoilLookUpSDF")
             .def(py::init<>())
-            .def(py::init<SignedDistanceFunction*, double, double, double>())
+            .def(py::init<std::shared_ptr<SignedDistanceFunction>, double, double, double>())
             .def_readwrite("sdf", &SoilLookUpSDF::sdf)
             .def_readwrite("fmax", &SoilLookUpSDF::fmax)
             .def_readwrite("fmin", &SoilLookUpSDF::fmin)
@@ -920,6 +920,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setTropism", &Plant::setTropism)
             .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false)
             .def("simulate",(void (Plant::*)()) &Plant::simulate)
+            .def("simulate",(void (Plant::*)(double, double, std::shared_ptr<ProportionalElongation>, bool)) &Plant::simulate)
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)

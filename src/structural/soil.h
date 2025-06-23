@@ -117,15 +117,14 @@ public:
     std::shared_ptr<SoilLookUp> copy() override { return std::make_shared<SoilLookUpSDF>(*this); }  // todo?: now its a shallow copy
 
     /**
-     * Creates the soil property from a signed distance function,
-     * inside the geometry the value is largest
+     * Linearly interpolates between inside the domain (max_) and outside the domain (min_)
      *
      * @param sdf_      the signed distance function representing the geometry
-     * @param max_      the maximal value of the soil property
-     * @param min_      the minimal value of the soil property
+     * @param max_      the maximal value of the soil property (inside the geometry)
+     * @param min_      the minimal value of the soil property (outside the geometry)
      * @param slope_    scales the linear gradient of the sdf (note that |grad(sdf)|= 1)
      */
-    SoilLookUpSDF(SignedDistanceFunction* sdf_, double max_=1, double min_=0, double slope_=1) {
+    SoilLookUpSDF(std::shared_ptr<SignedDistanceFunction> sdf_, double max_=1, double min_=0, double slope_=1) {
         this->sdf=sdf_;
         fmax = max_;
         fmin = min_;
@@ -144,7 +143,7 @@ public:
 
     std::string toString() const override { return "SoilLookUpSDF"; } ///< Quick info about the object for debugging
 
-    SignedDistanceFunction* sdf; ///< signed distance function representing the geometry
+    std::shared_ptr<SignedDistanceFunction> sdf; ///< signed distance function representing the geometry
     double fmax; ///< maximum is reached within the geometry at the distance slope
     double fmin; ///< minimum is reached outside of the geometry at the distance slope
     double slope; ///< half length of linear interpolation between fmax and fmin
