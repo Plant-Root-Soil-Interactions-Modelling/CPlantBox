@@ -250,17 +250,35 @@ void Plant::simulate()
  */
 void Plant::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElongation> se, bool verbose)
 {
+    return this->simulateLimited(dt, maxinc_, "lengthTh", {1.,1.,1.,1.,1.}, se, verbose);
+}
+
+/**
+ * Simulates root system growth for a time span, elongates a maximum of @param maxinc total length [cm/day]
+ * using the proportional elongation @param se to impede overall growth.
+ *
+ * @param dt            time step [day]
+ * @param maxinc_       maximal paramName [(paramName units)/day] the root system is allowed to grow in this time step
+ * @param paramName     e.g. length or volume
+ * @param scales        per organ type { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 };
+ * @param se            The class ProportionalElongation is used to scale overall root growth
+ * @param verbose       indicates if status is written to the console (cout) (default = false)
+ */
+void Plant::simulateLimited(double dt, double max_, std::string paramName, std::vector<double> scales,
+    std::shared_ptr<ProportionalElongation> se, bool verbose)
+{
     const double accuracy = 1.e-3;
     const int maxiter = 20;
-    double maxinc = dt*maxinc_; // [cm]
-    double ol = this->getSummed("lengthTh");
+    double maxinc = dt*max_; // [cm]
+
+    double ol = weightedSum(paramName, scales);
     int i = 0;
 
     // test run with scale == 1 (on copy)
     std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy());
     se->setScale(1.);
     rs->simulate(dt, verbose);
-    double l = rs->getSummed("lengthTh");
+    double l = weightedSum(paramName, scales);
     double inc_ = l - ol;
     if (verbose) {
         std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
@@ -279,7 +297,7 @@ void Plant::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElon
             std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old
             se->setScale(m);
             rs->simulate(dt, verbose);
-            l = rs->getSummed("lengthTh");
+            l = weightedSum(paramName, scales);
             inc_ = l - ol;
 
             if (verbose) {
@@ -295,6 +313,16 @@ void Plant::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElon
     }
     this->simulate(dt, verbose);
 }
+
+double Plant::weightedSum(std::string paramName, std::vector<double> scales) {
+    double sum=0.;
+    for (auto o : this->getOrgans()) {
+        int i  = o->organType();
+        sum += scales.at(i)*o->getParameter(paramName);
+    }
+    return sum;
+}
+
 
 /**
  * go from absolute to relative coordinates for aboveground organs

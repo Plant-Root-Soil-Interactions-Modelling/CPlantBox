@@ -354,8 +354,8 @@ double Organ::getParameter(std::string name) const {
 	if (name=="alive") { return isAlive(); }
 	if (name=="active") { return isActive(); }
 	if (name=="age") { return getAge(); }
-    if (name=="length") { return getLength(true); } //realized organ length, dependent on dxMin and dx
-	if (name=="lengthTh") { return getLength(false); } //theoratical organ length, dependent on dxMin and dx
+    if (name=="length") { return getLength(true); } // realized organ length, dependent on dxMin and dx
+	if (name=="lengthTh") { return getLength(false); } // theoratical organ length, dependent on dxMin and dx
     if (name=="numberOfNodes") { return getNumberOfNodes(); }
     if (name=="numberOfSegments") { return getNumberOfSegments(); }
     if (name=="hasMoved") { return hasMoved(); }
