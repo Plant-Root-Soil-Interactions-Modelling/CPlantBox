@@ -3,58 +3,42 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 import visualisation.vtk_plot as vp
-
 import numpy as np
 
-rs = pb.Plant()
+plant = pb.Plant()
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
-rs.readParameters(path + name + ".xml")
+name = "Glycine_max_Moraes2020"
+plant.readParameters(path + name + ".xml")
 
-# box with a left and a right compartment for analysis
-sideBox = pb.SDF_PlantBox(10, 20, 50)
-left = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(-4.99, 0, 0))
-right = pb.SDF_RotateTranslate(sideBox, pb.Vector3d(4.99, 0, 0))
-leftright = pb.SDF_Union(left, right)
-rs.setGeometry(leftright)
+box = pb.SDF_PlantBox(10, 10, 30)  # nutrient rich patch  # |\label{l34:patch2}|
+patch = pb.SDF_RotateTranslate(box, pb.Vector3d(-5, 0., -10))
 
-# left compartment has a minimum of 0.01, 1 elsewhere
-maxS = 1.  # maximal
-minS = 0.1  # minimal
+max_ = 1.  # maximal |\label{l34:rate2_start}|
+min_ = 0.1  # minimal
 slope = 1.  # [cm] linear gradient between min and max
-leftC = pb.SDF_Complement(left)
-soilprop = pb.SoilLookUpSDF(leftC, maxS, minS, slope)
-
-# Manually set scaling function and tropism parameters
-sigma = [0.4, 1., 1., 1., 1. ] * 2
+soilprop = pb.SoilLookUpSDF(patch, max_, min_, slope)  # |\label{l34:rate2}|
 
 for organ_type in [pb.root, pb.stem, pb.leaf]:
-    for p in rs.getOrganRandomParameter(organ_type):
+    for p in plant.getOrganRandomParameter(organ_type):
         if p.subType > 2:
             p.dx = 0.25  # adjust resolution
             p.f_sa = soilprop  # Scale insertion angle
             p.lmax = 2 * p.lmax  # make second order laterals longer
 
-# simulation
-rs.initialize()
-simtime = 60.
+plant.initialize()
+simtime = 15.
 dt = 1.
 for i in range(0, round(simtime / dt)):
-    rs.simulate(dt, False)
+    plant.simulate(dt)
 
-# analysis
-al = pb.SegmentAnalyser(rs)
-al.crop(left)
-lm_theta = np.mean(al.getParameter("theta"))
-ar = pb.SegmentAnalyser(rs)
-ar.crop(right)
-rm_theta = np.mean(ar.getParameter("theta"))
-print('\nLeft  compartment mean insertion angle is {:g} degrees'.format(lm_theta))
-print('\nRight compartment mean insertion angle is {:g} degrees\n'.format(rm_theta))
+ana = pb.SegmentAnalyser(plant)  # |\label{l34:analysis2}|
+ana.crop(patch)
+lm_theta = np.mean(ana.getParameter("theta"))
+ana = pb.SegmentAnalyser(plant)
+ana.crop(pb.SDF_Complement(patch))
+rm_theta = np.mean(ana.getParameter("theta"))
+print('\nMean insertion angle within patch {:g} degrees'.format(lm_theta))
+print('Mean insertion angle outside patch {:g} degrees\n'.format(rm_theta))
 
-# write results
-rs.write("results/example_5c.py")  # compartment geometry
-rs.write("results/example_5c.vtp")  # root system
-
-# plot, using vtk
-vp.plot_roots(rs, "theta")  # press 'y'
+plant.write("results/example_3_4b.vtp")
+vp.plot_roots_and_container(plant, patch, "theta")
