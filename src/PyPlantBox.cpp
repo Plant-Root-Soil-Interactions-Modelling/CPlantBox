@@ -921,6 +921,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false)
             .def("simulate",(void (Plant::*)()) &Plant::simulate)
             .def("simulate",(void (Plant::*)(double, double, std::shared_ptr<ProportionalElongation>, bool)) &Plant::simulate)
+            .def("simulateLimited", &Plant::simulateLimited)
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
