@@ -46,7 +46,7 @@ print("Width", width, "Depth", depth, " at a Resolution", nx, ny, nz)
 # Model parameter
 #
 model = pb.ExudationModel(width, width, depth, nx, ny, nz, rs)
-model.Q = 18.4  # Citrate exudation rate (µg/d/cm root)
+model.Q = 18.4  # Citrate exudation rate (mu g/d/cm root)
 model.Dl = 0.171  # Citrate liquid diffusion coefficient (cm2/d)
 model.theta = 0.3	 #Soil water content (cm^3/cm^3)
 model.R = 16.7  # Retardation factor, (-)
