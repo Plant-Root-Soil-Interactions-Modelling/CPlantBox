@@ -211,7 +211,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
     // int currentNode = 1;
     // while (new_noh > 0)
     // {
-    //     if (infected.at(currentNode) > 0 && currentNode % new_noh == 0) { // if the current node is infected and the number of hyphae to be created is reached
+    //     if (infected.at(currentNode) > 0 && currentNode % new_noh == 0 || new_noh % currentNode == 0) { // if the current node is infected and the number of hyphae to be created is reached
     //         createHyphae(currentNode);
     //         numberOfHyphae += 1;
     //         new_noh -= 1;

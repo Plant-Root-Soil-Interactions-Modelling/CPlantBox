@@ -5,7 +5,7 @@ import visualisation.vtk_plot as vp
 
 mycp = pb.MycorrhizalPlant(1)
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"
+name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
@@ -22,7 +22,7 @@ for rp in root:
 
 infbox = pb.SDF_PlantBox(10, 10, 5)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
-local = True
+local = False
 animation = False
 for i in range(0, len(root)):
     if local:
@@ -32,7 +32,7 @@ for i in range(0, len(root)):
 mycp.initialize(True)
 
 
-simtime = 30
+simtime = 10
 fps = 30
 anim_time = 10
 N = fps * anim_time
@@ -46,7 +46,7 @@ if not local:
 else:
     filename = filename + "_local"
 roots = mycp.getOrganRandomParameter(pb.root)
-print(root[1]) # check that AMF random params got updated from the xml file
+# print(root[1]) # check that AMF random params got updated from the xml file
 if animation:
     for i in range(0, N):
         mycp.simulate(dt, False)
@@ -74,9 +74,9 @@ else:
     # print("sim time", mycp.getSimTime())
 
     mycp.simulateHyphalGrowth(simtime)
-    hyphae = mycp.getOrgans(5)
-    print("number of hyphae", len(hyphae))
-    print("type", type(hyphae))
+    # hyphae = mycp.getOrgans(5)
+    # print("number of hyphae", len(hyphae))
+    # print("type", type(hyphae))
     #for h in hyphae:
     #    print('hyphae',h.getParameter("age"), h.getParameter("length"))
     

@@ -9,7 +9,7 @@ names = ["Anagallis_femina_Leitner_2010", "Heliantus_Pagès_2013","maize","Glyci
 
 # --- Begin code previously in read_initlization ---
 name = names[3]
-local = True
+local = False
 
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
@@ -50,7 +50,7 @@ else:
 for i in range(0, N):
     mycp.simulate(dt, False)
     # mycp.simulateHyphalGrowth(dt)
-    if i % (fps*2) == 0:
+    if i % (fps) == 0:
         print("Frame " + str(i) + " of " + str(N))
         ana = pb.SegmentAnalyser(mycp)
         ana.addData("infection", mycp.getNodeInfections(2))
