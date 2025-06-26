@@ -9,12 +9,13 @@ import numpy as np
 
 # Parameter
 simtime = 50  # days
-dt = 1
+dt = 1  # day
 N = round(simtime / dt)  # steps
 maxinc = 20;  # maximal length increment (cm/day), TODO base this value on some fancy model
+maxvol = 0.1;  # cm3
 
 # Initialize root system
-rs = pb.RootSystem()
+rs = pb.Plant()
 name = "../../modelparameter/structural/rootsystem/Zea_mays_4_Leitner_2014"
 rs.readParameters(name + ".xml")
 
@@ -29,7 +30,7 @@ se = pb.ProportionalElongation()
 se.setBaseLookUp(scale_elongation)
 
 # Manually set scaling function
-for p in rs.getRootRandomParameter():  # rs.getOrganRandomParameter(pb.OrganTypes.root)
+for p in rs.getOrganRandomParameter(pb.OrganTypes.root):  # rs.getOrganRandomParameter(pb.OrganTypes.root)
     p.f_se = se
 
 rs.initialize()
@@ -45,7 +46,9 @@ for i in range(0, N):
 
     # if soil_strength is dynamic: update soil_strength according to some model (update like in L58-L60)
 
-    rs.simulate(dt, maxinc, se, True)  # True = disable debug messages, False = enable debug messages
+    # rs.simulate(dt, maxinc, se, True)
+    rs.simulateLimited(dt, maxvol, "volume", [0., 0., 0.1, 0.1, 0.1], se, True)  # { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 };
+    # "length", "lenghtTh"
 
     l = rs.getSummed("length")
     inc = l - ol

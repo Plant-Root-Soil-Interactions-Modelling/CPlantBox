@@ -437,6 +437,7 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     scalarBar.SetDrawAnnotations(False)
     textProperty = vtk.vtkTextProperty()
     textProperty.SetFontSize(30)
+    textProperty.SetColor(0.2, 0.2, 0.2)  # dark grey
     scalarBar.SetAnnotationTextProperty(textProperty)
     scalarBar.SetTitleTextProperty(textProperty)
     scalarBar.SetLabelTextProperty(textProperty)
@@ -834,7 +835,7 @@ def sdf_to_vtk_mesh(sdf, initial_resolution = 100, expansion_factor = 1.5, resol
     """ Converts an SDF to a VTK Mesh using Marching Cubes with auto-detected bounds.
     @param sdf: SDF function from PlantBox (hopefully, supports all SDF types: Box, Cylinder, Union, etc.)
     @param initial_resolution: Initial grid resolution for adaptive scanning.
-    @üaram resolution: Resolution of resulting mesh
+    @param resolution: Resolution of resulting mesh
     @param expansion_factor: Factor to expand detected surface bounds to ensure full capture.
     @return: VTK PolyData of the shape."""
     # **Step 1: Initial Sampling to Estimate Bounds**
@@ -936,9 +937,10 @@ def plot_container(sdf, p_name = "Container", win_title = "", render = True, int
     return [meshActor], scalar_bar, detected_bounds
 
 
-def plot_roots_and_container(root_system, sdf, title = "Root System & Container", render = True, interactive = True):
+def plot_roots_and_container(root_system, sdf, p_name = "subType", title = "Root System & Container", render = True, interactive = True):
     """ Combines root system and container visualization into a single plot.
     @param root_system: Root system object (e.g., 'rs' from CPlantBox).
+    @param p_name parameter name for visualization
     @param sdf: Container geometry (e.g., splitBox, rhizoTube).
     @param title: Window title.
     @param render: Whether to open an interactive VTK window.
@@ -947,7 +949,7 @@ def plot_roots_and_container(root_system, sdf, title = "Root System & Container"
     """
 
     # Generate root system actor
-    root_actor, root_cbar = plot_roots(root_system, "type", render = False)
+    root_actor, root_cbar = plot_roots(root_system, p_name, render = False)
 
     # Generate container mesh with marching cubes
     mesh_actor, mesh_cbar, mesh_bounds = plot_container(sdf, p_name = "Container", render = False)
