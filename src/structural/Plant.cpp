@@ -37,7 +37,6 @@ std::shared_ptr<Organism> Plant::copy()
     return no;
 }
 
-
 /**
  * todo docme , this could be made unique? and probably should be protected
  */
@@ -224,7 +223,7 @@ void Plant::setTropism(std::shared_ptr<Tropism> tf, int organType, int subType) 
  * @param dt		duration of the simulation
  * @param verbose	whether to print information
  */
-	void Plant::simulate(double dt, bool verbose)
+void Plant::simulate(double dt, bool verbose)
 {
 	abs2rel();
     Organism::simulate(dt, verbose);
@@ -239,6 +238,91 @@ void Plant::simulate()
     auto srp = std::static_pointer_cast<SeedRandomParameter>(organParam[Organism::ot_seed][0]);
     Plant::simulate(srp->simtime);
 }
+
+/**
+ * Simulates root system growth for a time span, elongates a maximum of @param maxinc total length [cm/day]
+ * using the proportional elongation @param se to impede overall growth.
+ *
+ * @param dt        time step [day]
+ * @param maxinc_   maximal total length [cm/day] the root system is allowed to grow in this time step
+ * @param se        The class ProportionalElongation is used to scale overall root growth
+ * @param verbose   indicates if status is written to the console (cout) (default = false)
+ */
+void Plant::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElongation> se, bool verbose)
+{
+    return this->simulateLimited(dt, maxinc_, "lengthTh", {1.,1.,1.,1.,1.}, se, verbose);
+}
+
+/**
+ * Simulates root system growth for a time span, elongates a maximum of @param maxinc total length [cm/day]
+ * using the proportional elongation @param se to impede overall growth.
+ *
+ * @param dt            time step [day]
+ * @param maxinc_       maximal paramName [(paramName units)/day] the root system is allowed to grow in this time step
+ * @param paramName     e.g. length or volume
+ * @param scales        per organ type { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 };
+ * @param se            The class ProportionalElongation is used to scale overall root growth
+ * @param verbose       indicates if status is written to the console (cout) (default = false)
+ */
+void Plant::simulateLimited(double dt, double max_, std::string paramName, std::vector<double> scales,
+    std::shared_ptr<ProportionalElongation> se, bool verbose)
+{
+    const double accuracy = 1.e-3;
+    const int maxiter = 20;
+    double maxinc = dt*max_; // [cm]
+
+    double ol = weightedSum(paramName, scales);
+    int i = 0;
+
+    // test run with scale == 1 (on copy)
+    std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy());
+    se->setScale(1.);
+    rs->simulate(dt, verbose);
+    double l = weightedSum(paramName, scales);
+    double inc_ = l - ol;
+    if (verbose) {
+        std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
+    }
+
+    if ((inc_>maxinc) && (std::abs(inc_-maxinc)>accuracy)) { // if necessary, perform a binary search
+
+        double sl = 0.; // left
+        double sr = 1.; // right
+
+        while ( ((std::abs(inc_-maxinc)) > accuracy) && (i<maxiter) )  { // binary search
+
+            double m = (sl+sr)/2.; // mid
+
+            // test run (on copy) with scale m
+            std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old
+            se->setScale(m);
+            rs->simulate(dt, verbose);
+            l = weightedSum(paramName, scales);
+            inc_ = l - ol;
+
+            if (verbose) {
+                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
+            }
+            if (inc_>maxinc) { // concatenate
+                sr = m;
+            } else {
+                sl = m;
+            }
+            i++;
+        }
+    }
+    this->simulate(dt, verbose);
+}
+
+double Plant::weightedSum(std::string paramName, std::vector<double> scales) {
+    double sum=0.;
+    for (auto o : this->getOrgans()) {
+        int i  = o->organType();
+        sum += scales.at(i)*o->getParameter(paramName);
+    }
+    return sum;
+}
+
 
 /**
  * go from absolute to relative coordinates for aboveground organs
@@ -256,7 +340,6 @@ void Plant::abs2rel()
 
 }
 
-
 /**
  * go from relative to absolute coordinates for aboveground organs
  */
@@ -270,9 +353,7 @@ void Plant::rel2abs()
 		//}
 
     }
-
 }
-
 
 /**
  * Creates a specific tropism from the tropism type index.

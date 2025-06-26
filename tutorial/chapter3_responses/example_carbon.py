@@ -1,7 +1,7 @@
 """
 revised 9.2024
 """
-import sys; sys.path.append("../../.."); sys.path.append("../../../src/")
+import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
 
@@ -15,7 +15,7 @@ maxinc = 20;  # maximal length increment (cm/day), TODO base this value on some 
 
 # Initialize root system
 rs = pb.RootSystem()
-name = "../../../modelparameter/structural/rootsystem/Zea_mays_4_Leitner_2014"
+name = "../../modelparameter/structural/rootsystem/Zea_mays_4_Leitner_2014"
 rs.readParameters(name + ".xml")
 
 # Set up depth dependent elongation scaling function

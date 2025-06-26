@@ -51,14 +51,14 @@ public:
   /* Simulation */
   void setSoil(std::shared_ptr<SoilLookUp> soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before Plant::initialize())
   void reset(); ///< resets the plant class, keeps the organ type parameters
-  void initializeLB(bool verbose = true);
-  ///< creates the base roots (length based lateral emergence times), call before simulation and after setting plant and root parameters
-  void initializeDB(bool verbose = true);
-  ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting plant and root parameters
+  void initializeLB(bool verbose = true); ///< creates the base roots (length based lateral emergence times), call before simulation and after setting plant and root parameters
+  void initializeDB(bool verbose = true); ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting plant and root parameters
   void initialize(bool verbose = true) override { initializeLB(verbose); };
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
   void simulate(double dt, bool verbose = false) override;
+  void simulate(double dt, double maxinc, std::shared_ptr<ProportionalElongation> se, bool verbose = true); ///< simulates the plant with a maximal elongation
+  void simulateLimited(double dt, double max_, std::string paramName, std::vector<double> scales, std::shared_ptr<ProportionalElongation> se, bool verbose);  ///< simulates plant with limited costs
 
   /* call back function creation */
   void initCallbacks(); ///< sets up callback functions for tropisms and growth functions, called by initialize()
@@ -72,11 +72,14 @@ public:
   void rel2abs();
 
 protected:
-  void initialize_(bool verbose = true);
+
   std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
+
+  void initialize_(bool verbose = true); // called by initializeLB, and initializeDB
+  double weightedSum(std::string paramName, std::vector<double> scales); // weighted sum per organ type (used by simulate_limited)
 
 };
 
 } // namespace CPlantBox
 
-#endif /* ROOTSYSTEM_H_ */
+#endif /* PLANT_H_ */

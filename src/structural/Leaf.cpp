@@ -125,7 +125,7 @@ void Leaf::simulate(double dt, bool verbose)
 			//currently, does not use absolute coordinates for these function.
 			double P = getLeafRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
 			if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
-				double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
+                double p = 1.-(1.-P*dt); //probability of emergence in this time step
 				if (plant.lock()->rand()>p) { // not rand()<p
 					age -= dt; // the leaf does not emerge in this time step
 				}

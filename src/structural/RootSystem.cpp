@@ -11,7 +11,9 @@ namespace CPlantBox {
  * Creates a root system
  */
 RootSystem::RootSystem(): Organism()
-{ }
+{
+    std::cout << "Warning: The 'RootSystem' class is deprecated and will be removed in a future release. Please use the 'Plant' class instead.\n" << std::flush;
+}
 
 /**
  * Deep copies the organism
@@ -421,7 +423,7 @@ std::vector<Vector3d> RootSystem::getNodes() const
     auto v = Organism::getNodes();
     // node 0 is the artifical node created by initialize() to link seed and shoot-born roots
     // node 1 is the seed
-    v.at(0) = v.at(1); 
+    v.at(0) = v.at(1);
     v.at(0).z = v.at(1).z + 1; // 1cm above the seed by default
     return v;
 }

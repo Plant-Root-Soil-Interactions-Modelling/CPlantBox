@@ -48,10 +48,9 @@ ana.addData("SUF", hm.get_suf(initial_age))  # standard uptake fraction [1]
 ana.addAge(initial_age)  # age [day] |\label{l41:age}|
 ana.addHydraulicConductivities(params, initial_age)  # kr [1/day], kx [cm3/day] |\label{l41:conductivities}|
 ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" [cm3/day], "radial_flux" [ (cm3/cm2) / day] |\label{l41:fluxes}|
-vp.plot_roots(ana, "radial_flux")
+vp.plot_plant(ana, "radial_flux")  # |\label{l41:sa_end}|
 
 """ output for paraview """
 ana.write("example4_1_roothydraulics.vtp",  # |\label{l41:paraview}|
-          types = ["radius", "subType", "age", "hx", "SUF", "kr", "kx", "axial_flux", "radial_flux"])
+          typvcaes = ["radius", "subType", "age", "hx", "SUF", "kr", "kx", "axial_flux", "radial_flux"])
 
-# q_radial = hm.radial_fluxes(initial_age, hx, hsr, False)  # [cm3/day] |\label{l41:neumann}|

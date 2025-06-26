@@ -121,7 +121,7 @@ void Root::simulate(double dt, bool verbose)
         if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
             double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
             if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
-                double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
+                double p = 1.-(1.-P*dt); //probability of emergence in this time step
                 if (plant.lock()->rand()>p) { // not rand()<p
                     age -= dt; // the root does not emerge in this time step
                 }
