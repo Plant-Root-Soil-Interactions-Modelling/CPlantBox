@@ -268,7 +268,7 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
     std::shared_ptr<ProportionalElongation> se, bool verbose)
 {
     const double accuracy = 1.e-3;
-    const int maxiter = 20;
+    const int maxiter = 100;
     double maxinc = dt*max_; // [cm]
 
     double ol = weightedSum(paramName, scales);
