@@ -203,7 +203,7 @@ public:
     :scale(scale) {
     }
 
-    ProportionalElongation(double scale, SoilLookUp* baseLookUp)
+    ProportionalElongation(double scale, std::shared_ptr<SoilLookUp> baseLookUp)
     :scale(scale), baseLookUp(baseLookUp) {
     }
 
