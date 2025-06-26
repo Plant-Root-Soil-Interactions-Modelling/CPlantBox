@@ -288,6 +288,8 @@ double Root::getParameter(std::string name) const
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
     if (name=="theta") { return insertionAngle; } // angle between root and parent root [rad]
+    if (name=="theta_deg") { return insertionAngle/M_PI*180.; } // angle between root and parent root [°]
+
     if (name=="rlt") { return param()->rlt; } // root life time [day]
     // specific parameters member functions
     if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes/branching points

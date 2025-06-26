@@ -60,12 +60,12 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             else:
                 subTypes = subType
         if organType == -1:
-            organTypes = [pb.OrganTypes.root,pb.OrganTypes.stem,pb.OrganTypes.leaf] 
+            organTypes = [pb.OrganTypes.root, pb.OrganTypes.stem, pb.OrganTypes.leaf]
         else:
-            if isinstance(organType, (int,pb.OrganTypes)):
+            if isinstance(organType, (int, pb.OrganTypes)):
                 organTypes = [organType]
             else:
-                organTypes = organType                
+                organTypes = organType
         for ot in organTypes:
             for st in subTypes:
                 # print(f, st, ot)
@@ -109,7 +109,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         """ writes the parameters into a json file """
         with open(filename + ".json", "r") as f:
             json_dict = json.load(f)
-        self.setKrValues(json_dict["krPerSegment"])
+        self.setKrValues(json_dict["krPerSegment"])  # can be empty
         self.setKxValues(json_dict["kxPerSegment"])
         for ot in [int(pb.OrganTypes.root), int(pb.OrganTypes.stem), int(pb.OrganTypes.leaf)]:
             for st in range(0, self.maxSubTypes):

@@ -278,7 +278,7 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
     std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy());
     se->setScale(1.);
     rs->simulate(dt, verbose);
-    double l = weightedSum(paramName, scales);
+    double l = rs->weightedSum(paramName, scales);
     double inc_ = l - ol;
     if (verbose) {
         std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
@@ -297,7 +297,7 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
             std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old
             se->setScale(m);
             rs->simulate(dt, verbose);
-            l = weightedSum(paramName, scales);
+            l = rs->weightedSum(paramName, scales);
             inc_ = l - ol;
 
             if (verbose) {
