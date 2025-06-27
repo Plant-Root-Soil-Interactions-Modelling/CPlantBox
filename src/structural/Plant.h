@@ -42,7 +42,6 @@ public:
 
   std::shared_ptr<Organism> copy() override; ///< deep copies the organism
 
-
   /* parameters */
   void initializeReader() override; ///< initializes XML reader
   void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = true) override {this->initializeReader(); Organism::readParameters(name, basetag, fromFile, verbose); };
@@ -76,7 +75,7 @@ protected:
   std::shared_ptr<SoilLookUp> soil; ///< callback for hydro, or chemo tropism (needs to set before initialize()) TODO should be a part of tf, or rtparam
 
   void initialize_(bool verbose = true); // called by initializeLB, and initializeDB
-  double weightedSum(std::string paramName, std::vector<double> scales); // weighted sum per organ type (used by simulate_limited)
+  double weightedSum(std::string paramName, std::vector<double> scales) const; // weighted sum per organ type (used by simulate_limited)
 
 };
 

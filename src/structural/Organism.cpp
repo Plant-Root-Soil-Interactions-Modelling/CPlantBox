@@ -29,6 +29,7 @@ Organism::Organism(unsigned int seednum)
         seed_val = std::chrono::system_clock::now().time_since_epoch().count()+instances;
     }
     gen = std::mt19937(seed_val);
+    plantId = instances; // for debugging
 };
 
 
@@ -550,7 +551,7 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
     }
 
 
-int Organism::getDelayDefinition(int ot_lat) 
+int Organism::getDelayDefinition(int ot_lat)
 {
 	auto srp = std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(Organism::ot_seed,0 ));
 	if((ot_lat ==  Organism::ot_stem)||(ot_lat ==  Organism::ot_leaf)){return srp->delayDefinitionShoot;

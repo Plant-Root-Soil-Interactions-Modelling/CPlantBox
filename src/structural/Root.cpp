@@ -101,7 +101,6 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
-    // std::cout << "\nstart" << getId() <<  std::flush;
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
@@ -129,7 +128,6 @@ void Root::simulate(double dt, bool verbose)
         }
 
         if (age>0) { // unborn  roots have no children
-
             // children first (lateral roots grow even if base root is inactive)
             for (auto l:children) {
                 l->simulate(dt,verbose);
@@ -137,7 +135,6 @@ void Root::simulate(double dt, bool verbose)
 
 
             if (active) {
-
                 // length increment
                 double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
                 double dt_; // time step
@@ -154,7 +151,6 @@ void Root::simulate(double dt, bool verbose)
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                 length = getLength();
                 this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
-
                 // create geometry
                 if (p.laterals ) { // root has children
                     /* basal zone */
@@ -173,7 +169,6 @@ void Root::simulate(double dt, bool verbose)
                             //							} // this could happen, if the tip ends in this section
                         }
                     }
-
                     /* branching zone */
                     if ((dl>0)&&(length>=p.lb)) {
                         double s = p.lb; // summed length
@@ -209,7 +204,6 @@ void Root::simulate(double dt, bool verbose)
                             createLateral(dt_, verbose);
                         }
                     }
-
                     /* apical zone */
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);

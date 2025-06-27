@@ -37,6 +37,7 @@ std::shared_ptr<Organism> Plant::copy()
     return no;
 }
 
+
 /**
  * todo docme , this could be made unique? and probably should be protected
  */
@@ -250,7 +251,7 @@ void Plant::simulate()
  */
 void Plant::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElongation> se, bool verbose)
 {
-    return this->simulateLimited(dt, maxinc_, "lengthTh", {1.,1.,1.,1.,1.}, se, verbose);
+    this->simulateLimited(dt, maxinc_, "lengthTh", {1.,1.,1.,1.,1.}, se, verbose);
 }
 
 /**
@@ -268,17 +269,19 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
     std::shared_ptr<ProportionalElongation> se, bool verbose)
 {
     const double accuracy = 1.e-3;
-    const int maxiter = 100;
+    const int maxiter = 20;
     double maxinc = dt*max_; // [cm]
 
-    double ol = weightedSum(paramName, scales);
+    // double ol = weightedSum(paramName, scales);
+    double ol = this->getSummed("lengthTh");
     int i = 0;
 
     // test run with scale == 1 (on copy)
     std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy());
     se->setScale(1.);
     rs->simulate(dt, verbose);
-    double l = rs->weightedSum(paramName, scales);
+    //double l = rs->weightedSum(paramName, scales);
+    double l = rs->getSummed("lengthTh");
     double inc_ = l - ol;
     if (verbose) {
         std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
@@ -294,14 +297,15 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
             double m = (sl+sr)/2.; // mid
 
             // test run (on copy) with scale m
-            std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old
+            rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old #############
             se->setScale(m);
-            rs->simulate(dt, verbose);
-            l = rs->weightedSum(paramName, scales);
+            rs->simulate(dt, false);
+            // l = rs->weightedSum(paramName, scales);
+            l = rs->getSummed("lengthTh");
             inc_ = l - ol;
 
             if (verbose) {
-                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
+                std::cout <<  i << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
             }
             if (inc_>maxinc) { // concatenate
                 sr = m;
@@ -314,9 +318,10 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
     this->simulate(dt, verbose);
 }
 
-double Plant::weightedSum(std::string paramName, std::vector<double> scales) {
+double Plant::weightedSum(std::string paramName, std::vector<double> scales) const {
     double sum=0.;
-    for (auto o : this->getOrgans()) {
+    auto organs = this->getOrgans();
+    for (const auto& o : organs) {
         int i  = o->organType();
         sum += scales.at(i)*o->getParameter(paramName);
     }

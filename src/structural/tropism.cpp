@@ -48,10 +48,9 @@ Vector3d Tropism::getPosition(const Vector3d& pos, const Matrix3d& old, double a
  */
 Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o, int nodeIdx)
 {
-    double a = sigma*randn(nodeIdx)*sqrt(dx);
+    double a = sigma*randn(nodeIdx)*sqrt(dx); // <-- causes a segmentation fault if plant is expired
     double b = rand(nodeIdx)*2*M_PI;
     double v;
-
     double n_=n*sqrt(dx);
     if (n_>0) {
         double dn = n_-floor(n_);
@@ -76,7 +75,6 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
         a = bestA;
         b = bestB;
     }
-
     return Vector2d(a,b);
 }
 
@@ -94,11 +92,12 @@ Vector2d Tropism::getUCHeading(const Vector3d& pos, const Matrix3d& old, double 
  */
 Vector2d Tropism::getHeading(const Vector3d& pos, const Matrix3d& old, double dx, const std::shared_ptr<Organ> o, int nodeIdx)
 {
-    if(nodeIdx > 0 ){gen =  std::mt19937(plant.lock()->getSeedVal() + nodeIdx + o->getId());}
+    if (nodeIdx > 0){
+        gen =  std::mt19937(plant.lock()->getSeedVal() + nodeIdx + o->getId());
+    }
     Vector2d h = this->getUCHeading(pos, old, dx, o, nodeIdx);
     double a = h.x;
     double b = h.y;
-
     if (!geometry.expired()) {
         double d = geometry.lock()->getDist(this->getPosition(pos,old,a,b,dx));
         double dmin = d;

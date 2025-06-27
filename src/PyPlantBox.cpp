@@ -291,8 +291,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a_s", &OrganRandomParameter::as) // as is a keyword in python
             .def_readwrite("dx", &OrganRandomParameter::dx)
             .def_readwrite("dxMin", &OrganRandomParameter::dxMin)
-			.def_readwrite("plant",&OrganRandomParameter::plant)
-            .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
             .def_readwrite("successor", &OrganRandomParameter::successorST)//for backward compatibility
             .def_readwrite("successorOT", &OrganRandomParameter::successorOT)
             .def_readwrite("successorST", &OrganRandomParameter::successorST)
@@ -300,7 +298,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("successorNo", &OrganRandomParameter::successorNo)
             .def_readwrite("successorP", &OrganRandomParameter::successorP)
             .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
-            .def_readwrite("ldelays", &OrganRandomParameter::ldelays);
+            .def_readwrite("ldelays", &OrganRandomParameter::ldelays)
+            .def_readwrite("plant",&OrganRandomParameter::plant)
+            .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
+            .def_readwrite("f_tf", &OrganRandomParameter::f_tf);
     /**
      * Organ.h
      */
@@ -410,6 +411,9 @@ PYBIND11_MODULE(plantbox, m) {
 
             .def("setMinDx", &Organism::setMinDx)
             .def("setSeed", &Organism::setSeed)
+            .def("getSeedVal", &Organism::getSeedVal)
+            .def_readwrite("plantId", &Organism::plantId)
+
             .def("rand", &Organism::rand)
             .def("randn", &Organism::randn)
             //        .def_readwrite("seed_nC_", &Organism::seed_nC_)
@@ -487,12 +491,14 @@ PYBIND11_MODULE(plantbox, m) {
             .def("copy",&Tropism::copy) // todo policy
             .def("setGeometry",&Tropism::setGeometry)
             .def("setTropismParameter",&Tropism::setTropismParameter)
+            .def("setSigma",&Tropism::setSigma)
             .def("getHeading",&Tropism::getHeading)
             .def("getUCHeading",&Tropism::getUCHeading)
             .def("tropismObjective",&Tropism::tropismObjective)
             .def("getPosition",&Tropism::getPosition)
             .def_readwrite("alphaN", &Tropism::alphaN)
-            .def_readwrite("betaN", &Tropism::betaN);
+            .def_readwrite("betaN", &Tropism::betaN)
+            .def("isExpired",&Tropism::isExpired);
     py::class_<Gravitropism, Tropism, std::shared_ptr<Gravitropism>>(m, "Gravitropism")
             .def(py::init<std::shared_ptr<Organism>, double, double>());
     py::class_<Plagiotropism, Tropism, std::shared_ptr<Plagiotropism>>(m, "Plagiotropism")
@@ -574,7 +580,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlts", &RootRandomParameter::rlts)
             .def_readwrite("gf", &RootRandomParameter::gf)
             .def_readwrite("lnk", &RootRandomParameter::lnk)
-			.def_readwrite("f_tf", &RootRandomParameter::f_tf)
             .def_readwrite("f_se", &RootRandomParameter::f_se)
             .def_readwrite("f_sa", &RootRandomParameter::f_sa)
             .def_readwrite("f_sbp", &RootRandomParameter::f_sbp)
@@ -681,7 +686,6 @@ PYBIND11_MODULE(plantbox, m) {
       .def_readwrite("rlt", &LeafRandomParameter::rlt)
       .def_readwrite("rlts", &LeafRandomParameter::rlts)
       .def_readwrite("gf", &LeafRandomParameter::gf)
-      .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
       .def_readwrite("f_se", &LeafRandomParameter::f_se)
       .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
       .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
@@ -744,7 +748,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &StemRandomParameter::rlt)
             .def_readwrite("rlts", &StemRandomParameter::rlts)
             .def_readwrite("gf", &StemRandomParameter::gf)
-            .def_readwrite("f_tf", &StemRandomParameter::f_tf)
             .def_readwrite("f_se", &StemRandomParameter::f_se)
             .def_readwrite("f_sa", &StemRandomParameter::f_sa)
             .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
