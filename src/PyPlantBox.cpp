@@ -498,7 +498,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getPosition",&Tropism::getPosition)
             .def_readwrite("alphaN", &Tropism::alphaN)
             .def_readwrite("betaN", &Tropism::betaN)
-            .def("isExpired",&Tropism::isExpired);
+            .def("isExpired",&Tropism::isExpired)
+            .def("getPlant",&Tropism::getPlant);
+
     py::class_<Gravitropism, Tropism, std::shared_ptr<Gravitropism>>(m, "Gravitropism")
             .def(py::init<std::shared_ptr<Organism>, double, double>());
     py::class_<Plagiotropism, Tropism, std::shared_ptr<Plagiotropism>>(m, "Plagiotropism")
