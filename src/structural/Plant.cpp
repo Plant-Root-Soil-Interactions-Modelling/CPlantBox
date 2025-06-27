@@ -24,14 +24,18 @@ Plant::Plant(unsigned int seednum): Organism(seednum)
  */
 std::shared_ptr<Organism> Plant::copy()
 {
-    auto no = std::make_shared<Plant>(*this); // copy constructor
+    auto no = std::make_shared<Plant>(*this); // default copy constructor
+    std::cout << "instances before increase (copy)" << instances << "\n";
+    instances++;
+    no->plantId = instances; // add code for instance counting
+    std::cout << "Created Organism (copy): " << no->plantId << " from " << plantId << "\n" << std::flush;
+
     for (int i=0; i<baseOrgans.size(); i++) {
         no->baseOrgans[i] = baseOrgans[i]->copy(no);
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
-        for (auto& otp : organParam[ot]) {
-            otp.second = otp.second->copy(no);
-            no->setOrganRandomParameter(otp.second);
+        for (auto& otp : no->organParam[ot]) {
+            no->setOrganRandomParameter(otp.second->copy(no));
         }
     }
     return no;
