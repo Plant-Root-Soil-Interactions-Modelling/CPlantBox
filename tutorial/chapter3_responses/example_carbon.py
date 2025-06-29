@@ -10,20 +10,20 @@ import numpy as np
 
 def check_tfs(plant):
     """ checks if plant tropisms have a parent plant and plots parent plant id """
-    for p in rs.getOrganRandomParameter(pb.root):
+    for p in plant.getOrganRandomParameter(pb.root):
         if p.f_tf.isExpired():
             raise Exception("root with subType " + str(p.subType) + " has tropism without parent plant")
-        print("root with subType {:g}, tropism {:s} is owned by plant {:g}".format(p.subType, str(type(p.f_tf)), p.f_tf.getPlant().plantId))
+        print("root with subType {:g}, tropism {:s} is owned by plant {:g} of {:g}".format(p.subType, str(type(p.f_tf)), p.f_tf.getPlant().plantId, plant.plantId))
 
-    for p in rs.getOrganRandomParameter(pb.stem):
+    for p in plant.getOrganRandomParameter(pb.stem):
         if p.f_tf.isExpired():
             raise Exception("stem with subType " + str(p.subType) + " has tropism without parent plant")
-        print("stem with subType {:g}, tropism {:s} is owned by plant {:g}".format(p.subType, str(type(p.f_tf)), p.f_tf.getPlant().plantId))
+        print("stem with subType {:g}, tropism {:s} is owned by plant {:g} of {:g}".format(p.subType, str(type(p.f_tf)), p.f_tf.getPlant().plantId, plant.plantId))
 
-    for p in rs.getOrganRandomParameter(pb.leaf):
+    for p in plant.getOrganRandomParameter(pb.leaf):
         if p.f_tf.isExpired():
             raise Exception("leaf with subType " + str(p.subType) + "has tropism without parent plant")
-        print("leaf with subType {:g}, tropism {:s} is owned by plant {:g}".format(p.subType, str(type(p.f_tf)), p.f_tf.getPlant().plantId))
+        print("leaf with subType {:g}, tropism {:s} is owned by plant {:g} of {:g}".format(p.subType, str(type(p.f_tf)), p.f_tf.getPlant().plantId, plant.plantId))
 
 
 def elongate(rs, dt, inc, se):
@@ -35,13 +35,6 @@ def elongate(rs, dt, inc, se):
     i = 0
 
     rs_ = rs.copy()
-
-    print("\n\n")
-    print("copy ", rs_.plantId)
-    check_tfs(rs_)
-    print("original", rs.plantId)
-    check_tfs(rs)
-    ddd
 
     se.setScale(1.)
     rs_.simulate(dt, True)
@@ -58,10 +51,10 @@ def elongate(rs, dt, inc, se):
             print("\nIteration", i)
             m = (sl + sr) / 2.  # mid
             rs_ = rs.copy()
-            print("copy ")
-            check_tfs(rs_)
-            print("original")
-            check_tfs(rs)
+            # print("copy ")
+            # check_tfs(rs_)
+            # print("original")
+            # check_tfs(rs)
             se.setScale(m)
             rs_.simulate(dt, True)
             inc_ = rs_.getSummed("length") - ol
@@ -81,7 +74,7 @@ def elongate(rs, dt, inc, se):
 simtime = 50  # days
 dt = 1  # day
 N = round(simtime / dt)  # steps
-maxinc = 0.1;  # 20  # maximal length increment (cm/day), TODO base this value on some fancy model
+maxinc = 20;  # 20  # maximal length increment (cm/day), TODO base this value on some fancy model
 maxvol = 0.1;  # cm3
 
 # Initialize root system
@@ -104,7 +97,7 @@ for p in rs.getOrganRandomParameter(pb.OrganTypes.root):  # rs.getOrganRandomPar
     p.f_se = se
 
 rs.initialize()
-check_tfs(rs)
+# check_tfs(rs)
 
 ol = 0
 
@@ -119,10 +112,11 @@ for i in range(0, N):
 
     # if soil_strength is dynamic: update soil_strength according to some model (update like in L58-L60)
 
-    elongate(rs, dt, maxinc, se)  #  for debugging
-    check_tfs(rs)
+    # elongate(rs, dt, maxinc, se)  #  for debugging
+    # check_tfs(rs)
 
-    # rs.simulate(dt, maxinc, se, True)
+    rs.simulate(dt, maxinc, se, False)
+    check_tfs(rs)
 
     # rs.simulateLimited(dt, maxvol, "volume", [0., 0., 0.1, 0.1, 0.1], se, True)  # { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 };
     # "length", "lenghtTh"

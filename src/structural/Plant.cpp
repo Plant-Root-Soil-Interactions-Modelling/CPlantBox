@@ -25,17 +25,19 @@ Plant::Plant(unsigned int seednum): Organism(seednum)
 std::shared_ptr<Organism> Plant::copy()
 {
     auto no = std::make_shared<Plant>(*this); // default copy constructor
-    std::cout << "instances before increase (copy)" << instances << "\n";
+    // std::cout << "instances before increase (copy) " << instances << "\n";
     instances++;
     no->plantId = instances; // add code for instance counting
-    std::cout << "Created Organism (copy): " << no->plantId << " from " << plantId << "\n" << std::flush;
-
+    // std::cout << "Created Organism (copy): " << no->plantId << " from " << plantId << "\n" << std::flush;
     for (int i=0; i<baseOrgans.size(); i++) {
         no->baseOrgans[i] = baseOrgans[i]->copy(no);
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : no->organParam[ot]) {
-            no->setOrganRandomParameter(otp.second->copy(no));
+            // no->setOrganRandomParameter(otp.second->copy(no));
+        	std::shared_ptr<OrganRandomParameter> new_params= otp.second->copy(no);
+        	// std::cout << "Plant::copy() " << new_params->plant.lock()->plantId << std::flush <<  "\n";
+			no->setOrganRandomParameter(new_params);
         }
     }
     return no;
@@ -276,16 +278,14 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
     const int maxiter = 20;
     double maxinc = dt*max_; // [cm]
 
-    // double ol = weightedSum(paramName, scales);
-    double ol = this->getSummed("lengthTh");
+    double ol = this->weightedSum(paramName, scales);
     int i = 0;
 
     // test run with scale == 1 (on copy)
     std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy());
     se->setScale(1.);
     rs->simulate(dt, verbose);
-    //double l = rs->weightedSum(paramName, scales);
-    double l = rs->getSummed("lengthTh");
+    double l = rs->weightedSum(paramName, scales);
     double inc_ = l - ol;
     if (verbose) {
         std::cout << "expected increase is " << inc_ << " maximum is " << maxinc << "\n";
@@ -301,11 +301,10 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
             double m = (sl+sr)/2.; // mid
 
             // test run (on copy) with scale m
-            rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old #############
+            std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old #############
             se->setScale(m);
             rs->simulate(dt, false);
-            // l = rs->weightedSum(paramName, scales);
-            l = rs->getSummed("lengthTh");
+            l = rs->weightedSum(paramName, scales);
             inc_ = l - ol;
 
             if (verbose) {

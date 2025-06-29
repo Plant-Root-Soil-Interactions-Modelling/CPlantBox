@@ -73,7 +73,10 @@ std::shared_ptr<Organism> Organism::copy()
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : no->organParam[ot]) {
-            otp.second = otp.second->copy(no);
+            // no->setOrganRandomParameter(otp.second->copy(no));
+        	std::shared_ptr<OrganRandomParameter> new_params= otp.second->copy(no);
+        	// std::cout << "Plant::copy() " << new_params->plant.lock()->plantId << std::flush <<  "\n";
+			no->setOrganRandomParameter(new_params);
         }
     }
     return no;

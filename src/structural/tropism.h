@@ -110,7 +110,7 @@ public:
 		auto nt = std::make_shared<Gravitropism>(*this); // default copy constructor
         nt->plant  =  std::weak_ptr<Organism>(); // necessary?
 		nt->plant = plant;
-		std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << plant->plantId << "\n";
+		//std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << nt->plant.lock()->plantId  << "\n";
 		return nt;
 	} ///< copy constructor
 
@@ -135,7 +135,7 @@ public:
 	    auto nt = std::make_shared<Plagiotropism>(*this); // default copy constructor
         nt->plant  =  std::weak_ptr<Organism>(); // necessary?
 		nt->plant = plant;
-		std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << plant->plantId << "\n";
+		// std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << nt->plant.lock()->plantId  << "\n";
 		return nt;
 	} ///< copy constructor
 
@@ -160,7 +160,7 @@ public:
         auto nt = std::make_shared<Exotropism>(*this); // default copy constructor
         nt->plant  =  std::weak_ptr<Organism>(); // necessary?
         nt->plant = plant;
-        std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << plant->plantId << "\n";
+        // std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << nt->plant.lock()->plantId << "\n";
         return nt;
     } ///< copy constructor
 

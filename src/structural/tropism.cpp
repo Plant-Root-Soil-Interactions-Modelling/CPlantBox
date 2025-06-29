@@ -17,7 +17,7 @@ std::shared_ptr<Tropism> Tropism::copy(std::shared_ptr<Organism> plant)
     auto nt = std::make_shared<Tropism>(*this); // default copy constructor
     nt->plant  =  std::weak_ptr<Organism>(); // necessary?
     nt->plant = plant;
-    std::cout << "Base class - Copy tropism: from " << this->plant.lock()->plantId << " to " << plant->plantId << "\n";
+    std::cout << "Base class - Copy tropism: from " << this->plant.lock()->plantId << " to " << nt->plant.lock()->plantId << "\n";
     return nt;
 }
 
