@@ -55,8 +55,9 @@ RootRandomParameter::RootRandomParameter(std::shared_ptr<Organism> plant) :Organ
  */
 std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<Organism> p)
 {
-    // std::cout << "RootRandomParameter::copy\n"<< std::flush;
+    // std::cout << "RootRandomParameter::copy() into plant "<< (p->plantId) <<  "\n"<< std::flush;
     auto r = std::make_shared<RootRandomParameter>(*this); // copy constructor breaks class introspection
+    r->plant = std::weak_ptr<Organism>(); // necessary?
     r->plant = p;
     r->bindParameters(); // fix class introspection
     r->f_tf = f_tf->copy(p); // copy call back function classes

@@ -68,11 +68,15 @@ public:
 
 	static Vector3d getPosition(const Vector3d& pos, const Matrix3d& old, double a, double b, double dx);
 	///< Auxiliary function: Applies angles a and b and goes dx [cm] into the new direction
-	double ageSwitch;
-	int alphaN = 20;//stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
-	int betaN = 5;//stop protecting in case want to increase number of trials
+
+	int alphaN = 20; //stop protecting in case want to increase number of trials => very important to respect soil boundaries when using photosynthesis
+	int betaN = 5; //stop protecting in case want to increase number of trials
 
 	bool isExpired() { return (!plant.lock()); } // for debugging
+	std::shared_ptr<Organism> getPlant() { return plant.lock(); }
+
+    double ageSwitch; // DL: why not put this in the specialisation (i.g. AntiGravi2Gravitropism)?
+
 
 protected:
 
@@ -104,7 +108,9 @@ public:
 
 	std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant) override {
 		auto nt = std::make_shared<Gravitropism>(*this); // default copy constructor
+        nt->plant  =  std::weak_ptr<Organism>(); // necessary?
 		nt->plant = plant;
+		//std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << nt->plant.lock()->plantId  << "\n";
 		return nt;
 	} ///< copy constructor
 
@@ -127,7 +133,9 @@ public:
 
 	std::shared_ptr<Tropism>  copy(std::shared_ptr<Organism> plant) override {
 	    auto nt = std::make_shared<Plagiotropism>(*this); // default copy constructor
+        nt->plant  =  std::weak_ptr<Organism>(); // necessary?
 		nt->plant = plant;
+		// std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << nt->plant.lock()->plantId  << "\n";
 		return nt;
 	} ///< copy constructor
 
@@ -150,7 +158,9 @@ public:
 
     std::shared_ptr<Tropism> copy(std::shared_ptr<Organism> plant) override {
         auto nt = std::make_shared<Exotropism>(*this); // default copy constructor
+        nt->plant  =  std::weak_ptr<Organism>(); // necessary?
         nt->plant = plant;
+        // std::cout << "Copy tropism: from " << this->plant.lock()->plantId << " to " << nt->plant.lock()->plantId << "\n";
         return nt;
     } ///< copy constructor
 

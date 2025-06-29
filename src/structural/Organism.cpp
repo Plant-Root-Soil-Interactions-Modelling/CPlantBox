@@ -14,6 +14,7 @@
 namespace CPlantBox {
 
 std::vector<std::string> Organism::organTypeNames = { "organ", "seed", "root", "stem", "leaf" };
+
 int Organism::instances = 0; // number of instances
 
 /**
@@ -30,6 +31,7 @@ Organism::Organism(unsigned int seednum)
     }
     gen = std::mt19937(seed_val);
     plantId = instances; // for debugging
+    std::cout << "Created Organism: " << plantId << "\n" << std::flush;
 };
 
 
@@ -64,13 +66,17 @@ std::string Organism::organTypeName(int ot)
  */
 std::shared_ptr<Organism> Organism::copy()
 {
+    std::cout << "Warning Organism (copy) should not be called directly: " << plantId << "\n" << std::flush;
     auto no = std::make_shared<Organism>(*this); // copy constructor
     for (int i = 0; i < baseOrgans.size(); i++) {
         no->baseOrgans[i] = baseOrgans[i]->copy(no);
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : no->organParam[ot]) {
-            otp.second = otp.second->copy(no);
+            // no->setOrganRandomParameter(otp.second->copy(no));
+        	std::shared_ptr<OrganRandomParameter> new_params= otp.second->copy(no);
+        	// std::cout << "Plant::copy() " << new_params->plant.lock()->plantId << std::flush <<  "\n";
+			no->setOrganRandomParameter(new_params);
         }
     }
     return no;

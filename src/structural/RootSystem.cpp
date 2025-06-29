@@ -28,8 +28,10 @@ std::shared_ptr<Organism> RootSystem::copy()
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : nrs->organParam[ot]) {
-            otp.second = otp.second->copy(nrs);
-			nrs->setOrganRandomParameter(otp.second);
+            // no->setOrganRandomParameter(otp.second->copy(no));
+        	std::shared_ptr<OrganRandomParameter> new_params= otp.second->copy(nrs);
+        	// std::cout << "Plant::copy() " << new_params->plant.lock()->plantId << std::flush <<  "\n";
+        	nrs->setOrganRandomParameter(new_params);
         }
     }
     return nrs;
