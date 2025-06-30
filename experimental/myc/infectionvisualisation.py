@@ -63,7 +63,7 @@ else:
         # roost = mycp.getOrganRandomParameter(pb.root)
         # for i in range(0, len(roost)):
         #     print(root[i].subType)
-        # mycp.simulateHyphalGrowth(dt)
+        mycp.simulateHyphalGrowth(dt)
         # hyphae = mycp.getOrgans(5)
         # print("number of hyphae", len(hyphae))
         # print("type", type(hyphae))
@@ -73,7 +73,7 @@ else:
     # mycp.simulate(simtime, False)
     # print("sim time", mycp.getSimTime())
 
-    mycp.simulateHyphalGrowth(simtime)
+    # mycp.simulateHyphalGrowth(simtime)
     # hyphae = mycp.getOrgans(5)
     # print("number of hyphae", len(hyphae))
     # print("type", type(hyphae))
