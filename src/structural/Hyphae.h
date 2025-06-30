@@ -30,6 +30,9 @@ public:
     void simulate(double dt, bool silence = false) override; ///< root growth for a time span of @param dt
 
     double getParameter(std::string name) const override;
+
+    void createLateral(double ageLN, bool silence) override; ///< creates a lateral hyphae
+
     std::string toString() const override;
 
     // void makeanastomosis(std::shared_ptr<Hyphae> a, std::shared_ptr<Hyphae> b); ///< creates an anastomosis with another hyphae
