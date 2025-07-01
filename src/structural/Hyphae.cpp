@@ -128,7 +128,11 @@ void Hyphae::simulate(double dt, bool verbose)
                     length+=dl;
                     if (dl == 0.)
                     {
-                        // TODO add in branching here i.e. if created linking node then make two new hyphae
+                        // TODO add in branching here
+                        // if (branching && at last node) {
+                        //     createLateral(dt, verbose); // create a lateral hyphae
+                        //     createLateral(dt, verbose); // create a lateral hyphae
+                        // }
                         active = false; // if no length increment, hyphae become inactive
                     }
                     
