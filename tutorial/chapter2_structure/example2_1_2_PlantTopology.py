@@ -1,4 +1,3 @@
-# <21AStart>
 import sys; sys.path.append("../.."); sys.path.append("../../src/") # |\label{l2_1:importStart}|
 path = "../../modelparameter/structural/plant/"
 sys.path.append(path)
@@ -30,20 +29,19 @@ time = 100
 p.simulate(time, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1a.vtp")
-# <21AEnd>
 
-# ## Several successor types, specific locations    
+### Several successor types, specific locations    
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1.xml")
 
-rrp = p.getOrganRandomParameter(pb.root)[1] # define laterals of taproot #|\label{l2_1:arrayStart2}|
+rrp = p.getOrganRandomParameter(pb.root)[1] #|\label{l2_1:arrayStart2}|
 rrp.successorOT     = [[2], [4], [3]] 
 rrp.successorST     = [[2], [1], [2]] 
 rrp.successorNo     = [4, 1, 6] 
 rrp.successorP      = [[1.0], [1.0], [1.0]] 
 rrp.successorWhere  = [[-1.0, -3.0, -5.0, -7.0], [], []]
 
-srp = p.getOrganRandomParameter(pb.stem)[1] # define laterals of stem
+srp = p.getOrganRandomParameter(pb.stem)[1]
 srp.successorOT     = [[2], [4]] 
 srp.successorST     = [[1], [1]] 
 srp.successorNo     = [1, 4] 
@@ -61,14 +59,14 @@ p.write("results/example2_1b.vtp")
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1.xml")
 
-rrp = p.getOrganRandomParameter(pb.root)[1] # define laterals of taproot #|\label{l2_1:arrayStart3}|
+rrp = p.getOrganRandomParameter(pb.root)[1] #|\label{l2_1:arrayStart3}|
 rrp.successorOT     = [[2]] 
 rrp.successorST     = [[2]] 
 rrp.successorP      = [[1.0]] 
 rrp.successorNo     = [1] 
 rrp.successorWhere  = [[3.0, 5.0]]
 
-srp = p.getOrganRandomParameter(pb.stem)[1] # define laterals of stem
+srp = p.getOrganRandomParameter(pb.stem)[1] 
 srp.successorOT     = [[3, 4, 2], [3]] 
 srp.successorST     = [[2, 1, 3], [2]] 
 srp.successorP      = [[0.2, 0.3, 0.3], [1.0]] 
