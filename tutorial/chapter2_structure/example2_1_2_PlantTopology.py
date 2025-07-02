@@ -30,7 +30,7 @@ time = 100
 p.simulate(time, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1a.vtp")
-# <2_1_AEnd>
+# <21AEnd>
 
 # ## Several successor types, specific locations    
 p = pb.MappedPlant(2)
