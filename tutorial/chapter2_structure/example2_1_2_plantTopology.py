@@ -6,7 +6,7 @@ import visualisation.vtk_plot as vp
 from example1f import template_text # |\label{l2_1:importEnd}|
 
 
-### Simple example
+###Simple example
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1.xml", verbose = True)
 
@@ -30,7 +30,7 @@ p.simulate(time, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1a.vtp")
 
-### Several successor types, specific locations    
+###Several successor types, specific locations    
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1.xml")
 
@@ -55,7 +55,7 @@ p.simulate(time, False)
 vp.plot_plant(p, "organType")
 p.write("results/example2_1b.vtp")
 
-### Several successor types, specific locations and probabilistic branching    
+###Probabilistic branching    
 p = pb.MappedPlant(2)
 p.readParameters(path + "example2_1.xml")
 
