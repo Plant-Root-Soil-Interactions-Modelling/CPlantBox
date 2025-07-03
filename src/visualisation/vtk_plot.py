@@ -232,7 +232,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     @param scalarBar                one or a list of vtkScalarBarActor (optional)
     @param bounds                   spatial bounds (to set axes actor, and camera position and focal point)
     @param interactiveImage         make image interactive or static (should be static for google Colab)
-    @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write png
+    @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write jpg
 
     (built in)
     Keypress j / Keypress t: toggle between joystick (position sensitive) and trackball (motion sensitive) styles. In joystick style, motion occurs continuously as long as a mouse button is pressed. In trackball style, motion occurs when the mouse button is pressed and the mouse pointer moves.
@@ -250,13 +250,12 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     Keypress w: modify the representation of all actors so that they are wireframe.
 
     (additional)
-    Keypress g: save as png
+    Keypress g: save as jpg
     Keypress x,y,z,v: various views
     """
     colors = vtk.vtkNamedColors()  # Set the background color
     ren = vtk.vtkRenderer()  # Set up window with interaction
-    ren.SetBackground(colors.GetColor3d("Silver"))
-    # ren.SetBackground(colors.GetColor3d("White"))
+    ren.SetBackground(colors.GetColor3d("White"))
 
     # Actors
     if isinstance(actor, list):
@@ -325,13 +324,14 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
         windowToImageFilter.SetInput(renWin)
         windowToImageFilter.Update()
 
-        writer = vtk.vtkPNGWriter()
+        writer = vtk.vtkJPEGWriter()
+        writer.SetQuality(80)
         writer.SetWriteToMemory(1)
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
 
         # move this somewhere else?
-        im = Image(writer.GetResult(), format = "png")
+        im = Image(writer.GetResult(), format = "jpeg")
         display(im)
 
 
@@ -342,8 +342,8 @@ def keypress_callback_(obj, ev, bounds):
     if key == 'g':
         renWin = obj.GetRenderWindow()
         file_name = renWin.GetWindowName()
-        write_png(renWin, file_name)
-        print("saved", file_name + ".png")
+        write_jpg(renWin, file_name, magnification=5)
+        print("saved", file_name + ".jpg")
     if key == 'x' or key == 'y' or key == 'z' or key == 'v':
         renWin = obj.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
@@ -370,20 +370,39 @@ def keypress_callback_(obj, ev, bounds):
         renWin.Render()
 
 
-def write_png(renWin, fileName):
-    """" Save the current render window in a png (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
+def write_jpg(renWin, fileName, magnification=5):
+    """" Save the current render window in a jpg (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
     @param renWin        the vtkRenderWindow
     @parma fileName      file name without extension
     """
+    ren = renWin.GetRenderers().GetFirstRenderer()
+
+    # Find and temporarily adjust the scalar bar, so that screenshot has nice scale but viewer can also be reset
+    bars = [a for a in ren.GetActors2D() if isinstance(a, vtk.vtkScalarBarActor)]
+    # Patch titles with \n, hardcoded as there is no clean solution 
+    original_titles = []
+    for bar in bars:
+        orig_title = bar.GetTitle()
+        original_titles.append(orig_title)
+        bar.SetTitle(orig_title + "\n\n\n")       
+    renWin.Render()
+    
     windowToImageFilter = vtk.vtkWindowToImageFilter();
     windowToImageFilter.SetInput(renWin)
-    windowToImageFilter.SetInputBufferTypeToRGBA()  # also record the alpha (transparency) channel
+    windowToImageFilter.SetScale(magnification)
+    windowToImageFilter.SetInputBufferTypeToRGB()
     windowToImageFilter.ReadFrontBufferOff()  # read from the back buffer
     windowToImageFilter.Update()
-    writer = vtk.vtkPNGWriter()
-    writer.SetFileName(fileName + ".png")
+    writer = vtk.vtkJPEGWriter()
+    writer.SetFileName(fileName + ".jpg")
     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
     writer.Write()
+    
+    # Restore original titles
+    for bar, orig_title in zip(bars, original_titles):
+        bar.SetTitle(orig_title)
+
+    renWin.Render()
 
 
 def create_lookup_table(tableIdx = 15, numberOfColors = 256):
@@ -434,14 +453,15 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     scalarBar = vtk.vtkScalarBarActor()
     scalarBar.SetLookupTable(lut)
     scalarBar.SetTitle(p_name)
-    scalarBar.SetDrawAnnotations(False)
+    scalarBar.SetTextPad(10)
+    scalarBar.SetDrawAnnotations(True)
     textProperty = vtk.vtkTextProperty()
     textProperty.SetFontSize(30)
-    textProperty.SetColor(0.2, 0.2, 0.2)  # dark grey
+    textProperty.SetColor(0.0, 0.0, 0.0)  # pure black
     scalarBar.SetAnnotationTextProperty(textProperty)
     scalarBar.SetTitleTextProperty(textProperty)
     scalarBar.SetLabelTextProperty(textProperty)
-    scalarBar.AnnotationTextScalingOff()
+    scalarBar.AnnotationTextScalingOn()
     scalarBar.SetUnconstrainedFontSize(True)
 
     return scalarBar
@@ -737,9 +757,11 @@ def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True)
 class AnimateRoots:
     """ class to make an interactive animation (TODO unfinished and doc)"""
 
-    def __init__(self, rootsystem = None):
+    def __init__(self, rootsystem = None, container_sdf = None):
         self.rootsystem = rootsystem
         self.root_name = "subType"
+        self.container_sdf = container_sdf
+        self.container_actor = None
         # self.soil_name = "subType"
         #
         self.min = None
@@ -759,8 +781,17 @@ class AnimateRoots:
 
     def start(self, axis = 'x', avi_file = None):
         """ creates plot and adjusts camera """
+        if self.container_sdf:
+            # Create the container actor once and store it, so it does not have to be recalculated each frame
+            container_actors, _, _ = plot_container(self.container_sdf, render=False)
+            self.container_actor = container_actors[0]
+            
         self.create_root_actors()
         self.create_soil_actors()
+        if self.container_actor:
+            self.actors.append(self.container_actor)
+        
+        
         self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
         renWin = self.iren.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
@@ -792,13 +823,16 @@ class AnimateRoots:
         self.actors = []
         self.create_root_actors()
         self.create_soil_actors()
+        
+        if self.container_actor:
+            self.actors.append(self.container_actor)
         for a in self.actors:
             ren.AddActor(a)
 
         self.iren.Render()
         if self.avi_name:
-            write_png(renWin, self.avi_name + str(self.fram_c))
-            print("saved", self.avi_name + str(self.fram_c) + ".png")
+            write_jpg(renWin, self.avi_name + str(self.fram_c))
+            print("saved", self.avi_name + str(self.fram_c) + ".jpg")
             self.fram_c = self.fram_c + 1
 
     def create_root_actors(self):
@@ -860,8 +894,19 @@ def sdf_to_vtk_mesh(sdf, initial_resolution = 100, expansion_factor = 1.5, resol
         raise ValueError("No valid surface detected. Check SDF function!")
 
     # **Step 2: Compute Adaptive Bounds**
-    xmin, ymin, zmin = surface_points.min(axis = 0) * expansion_factor
-    xmax, ymax, zmax = surface_points.max(axis = 0) * expansion_factor
+    min_bounds = surface_points.min(axis=0)
+    max_bounds = surface_points.max(axis=0)
+
+    # Calculate center and size of the detected bounds
+    center = (min_bounds + max_bounds) / 2.0
+    size = max_bounds - min_bounds
+
+    # Scale the size by the expansion factor
+    expanded_size = size * expansion_factor
+
+    # Recalculate the new min and max from the center and expanded size
+    xmin, ymin, zmin = center - (expanded_size / 2.0)
+    xmax, ymax, zmax = center + (expanded_size / 2.0)
 
     # **Step 3: Generate VTK Mesh Using Marching Cubes**
     image_data = vtk.vtkImageData()
