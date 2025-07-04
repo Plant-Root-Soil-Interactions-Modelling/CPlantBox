@@ -46,7 +46,7 @@ def plot_results(h, c , times, net_inf, depth = -200.):
     divider = make_axes_locatable(ax[2])
     cax = divider.append_axes('right', size = '5%', pad = 0.05)
     cmap_ = matplotlib.cm.get_cmap('jet')
-    im = ax[2].imshow(c, cmap = cmap_, aspect = 'auto', vmin = 0., extent = [0 , sim_time, depth, 0.])  # vmax = 1.e-3, interpolation = 'bicubic', interpolation = 'nearest',
+    im = ax[2].imshow(c, cmap = cmap_, aspect = 'auto', vmin = 0., vmax = 1.e-4, extent = [0 , sim_time, depth, 0.])  # vmax = 1.e-3, interpolation = 'bicubic', interpolation = 'nearest',
     cb = fig.colorbar(im, cax = cax, orientation = 'vertical')
     cb.ax.get_yaxis().labelpad = 30
     cb.set_label('nitrate concentration [g/cm$^3$]', rotation = 270)
@@ -86,12 +86,16 @@ def net_infiltration_table_pickle(filename, start_data, end_data):
         df = pickle.load(f)
     print(df)
     y = df["Net_infilteration"].loc[start_data: end_data].values / 10. * 24.  # mm -> cm, /hour -> /day
-    # print(np.min(y))
-    # print(np.max(y))
     y_, x_ = [], []
     for i in range(0, y.shape[0]):
         x_.extend([float(i) / 24, float(i + 1) / 24])  # hour -> day
         y_.extend([y[i], y[i]])
+    # print(np.min(y))
+    # print(np.max(y))
+    plt.plot(x_, y_)
+    plt.show()
+    ddd
+
     return x_, y_
 
 
@@ -107,22 +111,22 @@ def add_nitrificatin_source(s, soil_sol_fluxes, nit_flux = 0.):
 if __name__ == '__main__':
 
     """ parameters """
-    # start_date_str = '1995-05-01 00:00:00'
-    # end_date_str = '1995-08-09 00:00:00'
-    # times, net_inf = net_infiltration_table_pickle("95.pkl", start_date_str, end_date_str)
+    start_date_str = '1995-05-01 00:00:00'
+    end_date_str = '1995-08-09 00:00:00'
+    times, net_inf = net_infiltration_table_pickle("95.pkl", start_date_str, end_date_str)
 
     # start_date_str = '1996-05-01 00:00:00'
     # end_date_str = '1996-08-09 00:00:00'
     # times, net_inf = net_infiltration_table_pickle("96.pkl", start_date_str, end_date_str)
 
-    start_date_str = '1997-05-01 00:00:00'
-    end_date_str = '1997-08-09 00:00:00'
-    times, net_inf = net_infiltration_table_pickle("97.pkl", start_date_str, end_date_str)
+    # start_date_str = '1997-05-01 00:00:00'
+    # end_date_str = '1997-08-09 00:00:00'
+    # times, net_inf = net_infiltration_table_pickle("97.pkl", start_date_str, end_date_str)
 
     min_b = [-38., -8., -100.]
     max_b = [38., 8., 0.]
     area = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1])  # [cm2]
-    # soil = [0.0639, 0.3698, 0.0096, 1.4646, 4.47]  # loam
+
     soil = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
     vg.create_mfp_lookup(vg.Parameters(soil), -1.e5, 1000)
 
@@ -138,22 +142,21 @@ if __name__ == '__main__':
     # nitrification range: 0.5-5 kg/ha/day;  1 kg/ha/day = 1.e-5 g/cm2/day
 
     fertilization_time = 30  # [day] fertilisation event
-    fertilization_amount = 7.e-4  #  [g/cm2]
+    fertilization_amount = 80 * 1.e-5  #  [g/cm2] = 80 [kg/ha]
 
-    nitrification_rate = 0. * 0.01 * 1.e-7 * (area * 1)  # nitrification rate [g/day]
-    nitrate_z = [0., -30., -30., -200.]  # initial nitrate: top soil layer of 30 cm
+    nitrification_rate = 0.*0.1 * 1.e-6  # 1 mg/dm3/day = 1.e-6 / cm3 /day
+    nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
 
-    nitrate_initial_values = np.array([2.6e-4, 2.6e-4, 0.75 * 2.6e-4, 0.75 * 2.6e-4])  #  initial nitrate concentrations: kg / m3 (~4.e-4)
+    nitrate_initial_values = 1.e-2 * np.array([2.6e-4, 2.6e-4, 0.75 * 2.6e-4, 0.75 * 2.6e-4])  #  initial nitrate concentrations: kg / m3 (~4.e-4)
 
     cell_number = [1, 1, 100]  # resolution (1D model)
-    dt = 3600. / (24.*3600)
+    dt = 360. / (24.*3600)
 
     """ start """
     start_date = datetime.datetime.strptime(start_date_str , '%Y-%m-%d %H:%M:%S')
     end_date = datetime.datetime.strptime(end_date_str , '%Y-%m-%d %H:%M:%S')
     timedelta_ = end_date - start_date
     sim_time = timedelta_.days
-    print("Simtime = ", sim_time)
 
     s = RichardsWrapper(RichardsNCSP())  # water and one solute
     s.initialize()
@@ -173,14 +176,18 @@ if __name__ == '__main__':
 
     # hard coded initial fertilizer application [fertilizer is applied 1 day]
     sol_times = np.array([0., 1.,
-                          2., fertilization_time,
+                          1., fertilization_time,
                           fertilization_time, fertilization_time + 1,
-                          fertilization_time + 1, 1.e3])  #
+                          fertilization_time + 1, sim_time])  #
 
     sol_influx = np.array([0.3 * fertilization_amount, 0.3 * fertilization_amount,
                            0., 0.,
                            0.7 * fertilization_amount, 0.7 * fertilization_amount,
                            0., 0.])  # g/(cm2 day)
+
+    # plt.plot(sol_times, sol_influx)  # quick check
+    # plt.show()
+
     s.setTopBC_solute(["managed"], [0.5], [sol_times, sol_influx])
     s.setBotBC_solute(["outflow"])
 
