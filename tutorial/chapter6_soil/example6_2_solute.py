@@ -18,7 +18,7 @@ from richards import RichardsWrapper  # Python part, macroscopic soil model
 import functional.van_genuchten as vg
 
 
-def plot_results(h, c , times, net_inf, depth = -200.):
+def plot_results(h, c , times, net_inf, depth = -100.):
     """ creates a figures presenting soil water matric potential and nitrate concentration over time """
     c = np.transpose(c)
     c = c[::-1,:]
@@ -64,14 +64,14 @@ def plot_final_profile(h, c , times, net_inf, depth = -200.):
     fig, ax1 = plt.subplots()
     h = h[:, -1]
     color = 'tab:red'
-    ax1.plot(h, np.linspace(0., -200, h.shape[0]), color = color)
+    ax1.plot(h, np.linspace(0., depth, h.shape[0]), color = color)
     ax1.set_xlabel("soil matric potential [cm]", color = color)
     ax1.set_ylabel("depth [cm]")
     ax1.tick_params(axis = 'x', labelcolor = color)
     ax2 = ax1.twiny()
     c = c[:, -1]
     color = 'tab:blue'
-    ax2.plot(c, np.linspace(0., -200, c.shape[0]), ':', color = color)
+    ax2.plot(c, np.linspace(0., depth, c.shape[0]), ':', color = color)
     ax2.set_xlabel("nitrate concentration [g/cm$^3$]", color = color)
     ax2.set_ylabel("depth [cm]")
     ax2.tick_params(axis = 'x', labelcolor = color)
@@ -92,9 +92,9 @@ def net_infiltration_table_pickle(filename, start_data, end_data):
         y_.extend([y[i], y[i]])
     # print(np.min(y))
     # print(np.max(y))
-    plt.plot(x_, y_)
-    plt.show()
-    ddd
+    # plt.plot(x_, y_)
+    # plt.show()
+    # ddd
 
     return x_, y_
 
@@ -141,16 +141,16 @@ if __name__ == '__main__':
     # fertilization amount: up to ~60–80 kg/ha NO₃⁻-N -> 70kg/ha -> 70000g / 10000 m2 -> 7.e-4 g cm-2
     # nitrification range: 0.5-5 kg/ha/day;  1 kg/ha/day = 1.e-5 g/cm2/day
 
-    fertilization_time = 30  # [day] fertilisation event
+    fertilization_time = 31  # [day] fertilisation event
     fertilization_amount = 80 * 1.e-5  #  [g/cm2] = 80 [kg/ha]
 
-    nitrification_rate = 0.*0.1 * 1.e-6  # 1 mg/dm3/day = 1.e-6 / cm3 /day
+    nitrification_rate = 0.1 * 1.e-6  # 1 mg/dm3/day = 1.e-6 / cm3 /day
     nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
 
     nitrate_initial_values = 1.e-2 * np.array([2.6e-4, 2.6e-4, 0.75 * 2.6e-4, 0.75 * 2.6e-4])  #  initial nitrate concentrations: kg / m3 (~4.e-4)
 
     cell_number = [1, 1, 100]  # resolution (1D model)
-    dt = 360. / (24.*3600)
+    dt = 3600. / (24.*3600)
 
     """ start """
     start_date = datetime.datetime.strptime(start_date_str , '%Y-%m-%d %H:%M:%S')
@@ -180,7 +180,7 @@ if __name__ == '__main__':
                           fertilization_time, fertilization_time + 1,
                           fertilization_time + 1, sim_time])  #
 
-    sol_influx = np.array([0.3 * fertilization_amount, 0.3 * fertilization_amount,
+    sol_influx = np.array([0. * fertilization_amount, 0. * fertilization_amount,
                            0., 0.,
                            0.7 * fertilization_amount, 0.7 * fertilization_amount,
                            0., 0.])  # g/(cm2 day)
@@ -189,6 +189,7 @@ if __name__ == '__main__':
     # plt.show()
 
     s.setTopBC_solute(["managed"], [0.5], [sol_times, sol_influx])
+    # s.setTopBC_solute(["constantFlux"], [0.], [0.])
     s.setBotBC_solute(["outflow"])
 
     s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
@@ -214,10 +215,21 @@ if __name__ == '__main__':
     N = int(np.ceil(sim_time / dt))
     for i in range(0, N):
         t = i * dt  # current simulation time
+
         print(t, "days")
-        soil_sol_fluxes = {}  # empy dict
-        add_nitrificatin_source(s, soil_sol_fluxes, nit_flux = nitrification_rate)  # nitrification debendent on tillage practice
-        s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)  # richards.py [g/day]
+
+        # if t >= fertilization_time and t < fertilization_time + 1:
+        #     ind = s.pick([0, 0, -0.5])
+        #     print("ferilizing")
+        #     soil_sol_fluxes = { ind: fertilization_amount}
+        #     s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
+        # else:
+        #     s.setSource({}, eq_idx = 1)
+
+        # soil_sol_fluxes = {}  # empy dict
+        # add_nitrificatin_source(s, soil_sol_fluxes, nit_flux = nitrification_rate)  # nitrification debendent on tillage practice
+        # s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)  # richards.py [g/day]
+
         s.solve(dt)
         c.append(s.getSolution_(1))
         h.append(s.getSolutionHead_())
