@@ -207,8 +207,8 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
         numberOfHyphae += emergedHyphae.at(i);
     }
     int new_noh = int(hed * getParameter("infectionLength") - numberOfHyphae);
-    std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae
-              <<  ", new noh " << new_noh << std::endl;
+    // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae
+            //   <<  ", new noh " << new_noh << std::endl;
 
     int currentNode = 1;
     while (new_noh > 0)

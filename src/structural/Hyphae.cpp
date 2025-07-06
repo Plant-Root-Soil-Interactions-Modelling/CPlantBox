@@ -129,10 +129,6 @@ void Hyphae::simulate(double dt, bool verbose)
                     if (dl == 0.)
                     {
                         // TODO add in branching here
-                        // if (branching && at last node) {
-                        //     createLateral(dt, verbose); // create a lateral hyphae
-                        //     createLateral(dt, verbose); // create a lateral hyphae
-                        // }
                         active = false; // if no length increment, hyphae become inactive
                     }
                     
@@ -145,7 +141,16 @@ void Hyphae::simulate(double dt, bool verbose)
                 }
                 // std::cout << p.getMaxLength() << " " << getLength(false) << std::endl;
                 // std::cout << age << std::endl;
+                bool activebefore = active; // store previous state
                 active = getLength(false)<=(p.getMaxLength()*(1 - 1e-11)); // become inactive, if final length is nearly reached
+                bool activeafter = active; // store new state
+
+                //  std::cout<< getParameter("b")*dt << std::endl;
+                if (plant.lock()->randn() > getParameter("b")*dt && (activebefore && !activeafter)) { // constructor always at last node
+                    std::cout << "create lateral hyphae at " << nodes.size()-1 << std::endl;
+                    createLateral(dt, verbose); // create a lateral hyphae
+                    createLateral(dt, verbose); // create a lateral hyphae
+                }
                 //std::cout << "Hyphae active: " << active << std::endl;
 
             } else { // NOT ACTIVE (children grow)
@@ -174,7 +179,7 @@ void Hyphae::simulate(double dt, bool verbose)
 // * @param age          age of the root [day]
 // * @return             root length [cm]
 // */
-double Hyphae::calcLength(double age)
+double Hyphae::calcLength(double age) // ACHTUNG MIT WACHSTUM EINSTELLEN LINEAR NICHT EXPONENTIELL 
 {
    assert(age >= 0 && "Hyphae::calcLength() negative hyphae age");
    return getHyphaeRandomParameter()->f_gf->getLength(age,param()->v,param()->getMaxLength(), shared_from_this());
@@ -268,6 +273,7 @@ void Hyphae::createLateral(double dt, bool silence)
                     switch(ot){
                     case Organism::ot_hyphae:{
                         auto lateral = std::make_shared<Hyphae>(plant.lock(), st, delay, shared_from_this(),  nodes.size() - 1);
+                        std::cout<< "OrganType of Parent: " << lateral->getParent()->getParameter("organType") << std::endl;
                         children.push_back(lateral);
                         lateral->simulate(growth_dt, silence);
                         break;}
