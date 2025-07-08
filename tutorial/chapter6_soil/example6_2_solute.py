@@ -46,7 +46,7 @@ def plot_results(h, c , times, net_inf, depth = -100.):
     divider = make_axes_locatable(ax[2])
     cax = divider.append_axes('right', size = '5%', pad = 0.05)
     cmap_ = matplotlib.cm.get_cmap('jet')
-    im = ax[2].imshow(c, cmap = cmap_, aspect = 'auto', vmin = 0., vmax = 1.e-4, extent = [0 , sim_time, depth, 0.])  # vmax = 1.e-3, interpolation = 'bicubic', interpolation = 'nearest',
+    im = ax[2].imshow(c, cmap = cmap_, aspect = 'auto', vmin = 0., vmax = 1.e-3, extent = [0 , sim_time, depth, 0.])  # vmax = 1.e-3, interpolation = 'bicubic', interpolation = 'nearest',
     cb = fig.colorbar(im, cax = cax, orientation = 'vertical')
     cb.ax.get_yaxis().labelpad = 30
     cb.set_label('nitrate concentration [g/cm$^3$]', rotation = 270)
@@ -59,17 +59,17 @@ def plot_results(h, c , times, net_inf, depth = -100.):
     plt.show()
 
 
-def plot_final_profile(h, c , times, net_inf, depth = -200.):
+def plot_profile(h, c , ind = -1, depth = -200.):
     """ shows the final profile"""
     fig, ax1 = plt.subplots()
-    h = h[:, -1]
+    h = h[:, ind]
     color = 'tab:red'
     ax1.plot(h, np.linspace(0., depth, h.shape[0]), color = color)
     ax1.set_xlabel("soil matric potential [cm]", color = color)
     ax1.set_ylabel("depth [cm]")
     ax1.tick_params(axis = 'x', labelcolor = color)
     ax2 = ax1.twiny()
-    c = c[:, -1]
+    c = c[:, ind]
     color = 'tab:blue'
     ax2.plot(c, np.linspace(0., depth, c.shape[0]), ':', color = color)
     ax2.set_xlabel("nitrate concentration [g/cm$^3$]", color = color)
@@ -90,7 +90,7 @@ def net_infiltration_table_pickle(filename, start_data, end_data):
     for i in range(0, y.shape[0]):
         x_.extend([float(i) / 24, float(i + 1) / 24])  # hour -> day
         y_.extend([y[i], y[i]])
-    return x_, y_
+    return np.array(x_), np.array(y_)
 
 
 def add_nitrificatin_source(s, soil_sol_fluxes, nit_flux = 0.):
@@ -105,46 +105,37 @@ def add_nitrificatin_source(s, soil_sol_fluxes, nit_flux = 0.):
 if __name__ == '__main__':
 
     """ parameters """
+    # TIME
     start_date_str = '1995-05-01 00:00:00'
     end_date_str = '1995-08-09 00:00:00'
-    times, net_inf = net_infiltration_table_pickle("95.pkl", start_date_str, end_date_str)
 
-    # start_date_str = '1996-05-01 00:00:00'
-    # end_date_str = '1996-08-09 00:00:00'
-    # times, net_inf = net_infiltration_table_pickle("96.pkl", start_date_str, end_date_str)
-
-    # start_date_str = '1997-05-01 00:00:00'
-    # end_date_str = '1997-08-09 00:00:00'
-    # times, net_inf = net_infiltration_table_pickle("97.pkl", start_date_str, end_date_str)
-
+    # SOIL
     min_b = [-38., -8., -100.]
     max_b = [38., 8., 0.]
     area = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1])  # [cm2]
-
+    vol = area * (max_b[2] - min_b[2])  # [cm3]
     soil = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
     vg.create_mfp_lookup(vg.Parameters(soil), -1.e5, 1000)
+    print("area", area, "cm2", "volume", vol, "cm3", vol * 1.e-6, "m3")
 
-    # water potentials
+    # INITIAL
     p_top = -300.  # initial matric potential [cm]
     p_bot = -100.  # initial matric potential [cm]
+    nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
+    # nitrate_initial_values = 1.e-2 * np.array([2.6e-4, 2.6e-4, 0.75 * 2.6e-4, 0.75 * 2.6e-4])  #  initial nitrate concentrations: kg / m3 (4.e-4)
+    nitrate_initial_values = np.array([2.e-5, 2.e-5, 2.e-5, 2.e-5])  #  kg / m3
 
-    # nitrate
+    # BC
+    times, net_inf = net_infiltration_table_pickle("95.pkl", start_date_str, end_date_str)
 
-    # Maize example
-    # fertilization timings: 1. May - 1. November, fertilization 30% (at planting), 70% 1. June
-    # fertilization amount: up to 60–80 kg/ha NO3⁻-N -> 70kg/ha -> 70000g / 10000 m2 -> 7.e-4 g cm-2
-    # nitrification range: 0.5-5 kg/ha/day;  1 kg/ha/day = 1.e-5 g/cm2/day
-
+    # REACTIONS
     fertilization_time = 31  # [day] fertilisation event
     fertilization_amount = 80 * 1.e-5  #  [g/cm2] = 80 [kg/ha]
 
     nitrification_rate = 0.1 * 1.e-6  # 1 mg/dm3/day = 1.e-6 / cm3 /day
-    nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
-
-    nitrate_initial_values = 1.e-2 * np.array([2.6e-4, 2.6e-4, 0.75 * 2.6e-4, 0.75 * 2.6e-4])  #  initial nitrate concentrations: kg / m3 (4.e-4)
 
     cell_number = [1, 1, 100]  # resolution (1D model)
-    dt = 3600. / (24.*3600)
+    dt = 360. / (24.*3600)
 
     """ start """
     start_date = datetime.datetime.strptime(start_date_str , '%Y-%m-%d %H:%M:%S')
@@ -165,8 +156,8 @@ if __name__ == '__main__':
     lai_noroots = lambda x: 0.
 
     s.setTopBC("atmospheric", 0.5, [times, net_inf])  # 0.5 is dummy value
-    s.setBotBC("freeDrainage")
-    # s.setBotBC("noflux")  # to approximate deep drainage
+    # s.setBotBC("freeDrainage")
+    s.setBotBC("noflux")  # to approximate deep drainage
 
     sol_times = np.array([0., 1.,
                           1., fertilization_time,
@@ -183,7 +174,8 @@ if __name__ == '__main__':
 
     # s.setTopBC_solute(["managed"], [0.5], [sol_times, sol_influx])
     s.setTopBC_solute(["constantFlux"], [0.], [0.])
-    s.setBotBC_solute(["outflow"])
+    # s.setBotBC_solute(["outflow"])
+    s.setBotBC_solute(["constantFlux"], [0.])
 
     s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
     s.setParameter("Component.MolarMass", "6.2e-2")
@@ -192,28 +184,32 @@ if __name__ == '__main__':
 
     print()
     theta = s.getWaterContent()
+    volume0 = s.getWaterVolume()
     print("1 m2 / area", 1.e4 / area)
-    print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000, "l")  # OK
+    print("domain water volume", volume0 , "cm3  = ", volume0 / 1000, "l")  # OK
     print("water content to water volume", np.sum(theta) * area, "cm3")  # OK
     print("domain water volume", s.getWaterVolume() / area, "cm3/cm2  = ", s.getWaterVolume() / area * 10, "l/m2")  # OK
     print("water content to water volume", np.sum(theta) * 1, "cm3/cm  = ", np.sum(theta) * 1 * 10, "l/m2")  # OK
-    print("sum net inf", np.sum(net_inf) / 2 * 10, "mm  = ", np.sum(net_inf) / 2 * 1 * 10, "l/m2")  # (cm m2)/m2 = 10 l / m2, (each value is twice)
+    print("sum net inf", 1. / 24 * np.sum(net_inf) / 2 * 10, "mm  = ", 1. / 24 * np.sum(net_inf) / 2 * 1 * 10, "l/m2")  # (cm m2)/m2 = 10 l / m2, (each value is twice)
+    print("sum net inf", 1. / 24 * np.sum(net_inf) / 2 * 10 / (1.e4 / area), "l change")
+
     print()
 
     wilting_point = -10000
     s.setCriticalPressure(wilting_point)
     s.ddt = 1e-4  # [day] initial Dumux time step
-    c, h = [], []  # resulting solute concentration
+    c, h, w = [], [], []  # resulting solute concentration
 
     N = int(np.ceil(sim_time / dt))
     for i in range(0, N):
+
         t = i * dt  # current simulation time
 
-        print(t, "days")
+        # print(t, "days")
 
         if t >= fertilization_time and t < fertilization_time + 1:
             ind = s.pick([0, 0, -0.5])
-            print("ferilizing")
+            # print("ferilizing")
             soil_sol_fluxes = { ind: fertilization_amount}
             s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
         else:
@@ -226,9 +222,32 @@ if __name__ == '__main__':
         s.solve(dt)
         c.append(s.getSolution_(1))
         h.append(s.getSolutionHead_())
+        w.append(s.getWaterContent())
 
     theta = s.getWaterContent()
-    print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000, "l")
-    print("water content to water volume", np.sum(theta) * area, "cm3")
+    print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")
+    # print("water content to water volume", np.sum(theta) * area, "cm3")  # 100 thetas
+    print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.e-3 * (s.getWaterVolume() - volume0), "l")
+
+    c_ = []  # nitrate amount
+    for i in range(0, N):
+        c_.append(np.sum(np.multiply(c[i], w[i])))
+
+    fig, ax1 = plt.subplots()
+    print("C shape", np.array(c).shape)
+    ax1.plot(np.array(list(range(0, N))) / 24., np.sum(c, axis = 1), "r", label = "concentration")
+    ax2 = ax1.twinx()
+    # ax2.plot(np.array(list(range(0, N))) / 24., w, label = "water volume")
+    # ax2.plot(np.array(list(range(0, N))) / 24., np.multiply(w, np.sum(c, axis = 1)), label = "amount")
+    ax2.plot(np.array(list(range(0, N))) / 24., c_, label = "amount")  # kg???????
+
+    plt.show()
 
     plot_results(h, c, times, net_inf, min_b[2])
+
+    # nitrate
+    # Maize example
+    # fertilization timings: 1. May - 1. November, fertilization 30% (at planting), 70% 1. June
+    # fertilization amount: up to 60–80 kg/ha NO3-N -> 70kg/ha -> 70000g / 10000 m2 -> 7.e-4 g cm-2
+    # nitrification range: 0.5-5 kg/ha/day;  1 kg/ha/day = 1.e-5 g/cm2/day
+
