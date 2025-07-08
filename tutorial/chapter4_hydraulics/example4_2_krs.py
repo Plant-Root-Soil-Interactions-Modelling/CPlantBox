@@ -80,7 +80,7 @@ for name in architectures:
 
     krs_all.append(krs_values)
     lengths.append(arch_lengths[-1])   # final length
-    surfaces.append(arch_surfaces[-1])  # final surface
+    surfaces.append(arch_surfaces[-1])  # final surface # |\label{l42:sim_end}|
 
 """ Plotting """ # |\label{l42:plotting}|
 
