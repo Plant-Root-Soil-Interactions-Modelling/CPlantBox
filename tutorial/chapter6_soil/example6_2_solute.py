@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
     # Maize example
     # fertilization timings: 1. May - 1. November, fertilization 30% (at planting), 70% 1. June
-    # fertilization amount: up to 60–80 kg/ha NO₃⁻-N -> 70kg/ha -> 70000g / 10000 m2 -> 7.e-4 g cm-2
+    # fertilization amount: up to 60–80 kg/ha NO3⁻-N -> 70kg/ha -> 70000g / 10000 m2 -> 7.e-4 g cm-2
     # nitrification range: 0.5-5 kg/ha/day;  1 kg/ha/day = 1.e-5 g/cm2/day
 
     fertilization_time = 31  # [day] fertilisation event
