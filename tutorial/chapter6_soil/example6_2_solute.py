@@ -90,12 +90,6 @@ def net_infiltration_table_pickle(filename, start_data, end_data):
     for i in range(0, y.shape[0]):
         x_.extend([float(i) / 24, float(i + 1) / 24])  # hour -> day
         y_.extend([y[i], y[i]])
-    # print(np.min(y))
-    # print(np.max(y))
-    # plt.plot(x_, y_)
-    # plt.show()
-    # ddd
-
     return x_, y_
 
 
@@ -138,7 +132,7 @@ if __name__ == '__main__':
 
     # Maize example
     # fertilization timings: 1. May - 1. November, fertilization 30% (at planting), 70% 1. June
-    # fertilization amount: up to ~60–80 kg/ha NO₃⁻-N -> 70kg/ha -> 70000g / 10000 m2 -> 7.e-4 g cm-2
+    # fertilization amount: up to 60–80 kg/ha NO₃⁻-N -> 70kg/ha -> 70000g / 10000 m2 -> 7.e-4 g cm-2
     # nitrification range: 0.5-5 kg/ha/day;  1 kg/ha/day = 1.e-5 g/cm2/day
 
     fertilization_time = 31  # [day] fertilisation event
@@ -147,7 +141,7 @@ if __name__ == '__main__':
     nitrification_rate = 0.1 * 1.e-6  # 1 mg/dm3/day = 1.e-6 / cm3 /day
     nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
 
-    nitrate_initial_values = 1.e-2 * np.array([2.6e-4, 2.6e-4, 0.75 * 2.6e-4, 0.75 * 2.6e-4])  #  initial nitrate concentrations: kg / m3 (~4.e-4)
+    nitrate_initial_values = 1.e-2 * np.array([2.6e-4, 2.6e-4, 0.75 * 2.6e-4, 0.75 * 2.6e-4])  #  initial nitrate concentrations: kg / m3 (4.e-4)
 
     cell_number = [1, 1, 100]  # resolution (1D model)
     dt = 3600. / (24.*3600)
@@ -174,7 +168,6 @@ if __name__ == '__main__':
     s.setBotBC("freeDrainage")
     # s.setBotBC("noflux")  # to approximate deep drainage
 
-    # hard coded initial fertilizer application [fertilizer is applied 1 day]
     sol_times = np.array([0., 1.,
                           1., fertilization_time,
                           fertilization_time, fertilization_time + 1,
@@ -188,8 +181,8 @@ if __name__ == '__main__':
     # plt.plot(sol_times, sol_influx)  # quick check
     # plt.show()
 
-    s.setTopBC_solute(["managed"], [0.5], [sol_times, sol_influx])
-    # s.setTopBC_solute(["constantFlux"], [0.], [0.])
+    # s.setTopBC_solute(["managed"], [0.5], [sol_times, sol_influx])
+    s.setTopBC_solute(["constantFlux"], [0.], [0.])
     s.setBotBC_solute(["outflow"])
 
     s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
@@ -218,13 +211,13 @@ if __name__ == '__main__':
 
         print(t, "days")
 
-        # if t >= fertilization_time and t < fertilization_time + 1:
-        #     ind = s.pick([0, 0, -0.5])
-        #     print("ferilizing")
-        #     soil_sol_fluxes = { ind: fertilization_amount}
-        #     s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
-        # else:
-        #     s.setSource({}, eq_idx = 1)
+        if t >= fertilization_time and t < fertilization_time + 1:
+            ind = s.pick([0, 0, -0.5])
+            print("ferilizing")
+            soil_sol_fluxes = { ind: fertilization_amount}
+            s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
+        else:
+            s.setSource({}, eq_idx = 1)
 
         # soil_sol_fluxes = {}  # empy dict
         # add_nitrificatin_source(s, soil_sol_fluxes, nit_flux = nitrification_rate)  # nitrification debendent on tillage practice
@@ -235,10 +228,7 @@ if __name__ == '__main__':
         h.append(s.getSolutionHead_())
 
     theta = s.getWaterContent()
-
     print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000, "l")
     print("water content to water volume", np.sum(theta) * area, "cm3")
-    print("domain water volume", s.getWaterVolume() / area, "cm  = ", s.getWaterVolume() / area * 10, "l/m2")
-    print("water content to water volume", np.sum(theta) * 1, "cm  = ", np.sum(theta) * 1 * 10, "l/m2")
 
     plot_results(h, c, times, net_inf, min_b[2])
