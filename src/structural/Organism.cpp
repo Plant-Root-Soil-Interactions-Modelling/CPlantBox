@@ -13,7 +13,7 @@
 
 namespace CPlantBox {
 
-std::vector<std::string> Organism::organTypeNames = { "organ", "seed", "root", "stem", "leaf" };
+std::vector<std::string> Organism::organTypeNames = { "organ", "seed", "root", "stem", "leaf", "hyphae" };
 int Organism::instances = 0; // number of instances
 
 /**
