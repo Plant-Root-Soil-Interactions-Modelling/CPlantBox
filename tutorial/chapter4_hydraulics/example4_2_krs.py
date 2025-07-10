@@ -14,13 +14,11 @@ import csv
 
 """ Simulation parameters """  # |\label{l42:parameters}|
 
-simtime = 4  # simulate from day 1 to 70
+simtime = 70  # simulate from day 1 to 70
 dt = 1
-Hs = -300  # soil water potential [cm] (field capacity)
-h0 = -15000  # water potential at root collar [cm] (permanent wilting point) |\label{l42:root_collar}|
 
 architectures = [  # |\label{l42:architecture}|
-    "wheat_Morandage",
+    "Heliantus_Pagès_2013",
     "Glycine_max_Moraes2020_opt2",
     "Brassica_oleracea_Vansteenkiste_2014",
     "Zea_mays_1_Leitner_2010"
@@ -65,8 +63,6 @@ for name in architectures:
     for t in range(0, simtime):
         plant.simulate(dt)
         ns = plant.getNumberOfMappedSegments()  # |\label{l42:segments}|
-        hsr = plant.total2matric(Hs * np.ones((ns,)))  # |\label{l42:segment_potential}|
-        # hx = hm.solve_dirichlet(day, h0, hsr, cells = False)  # |\label{l42:dirichlet}|
         krs, _ = hm.get_krs(t)
         krs_values.append(krs)  # |\label{l42:krs}|
 
