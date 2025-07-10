@@ -71,6 +71,7 @@ public:
 	double getEpsilon() const { return epsilonDx; } ///< return stored growth not yet added because too small
 	virtual double calcAge(double length) const {throw std::runtime_error( "calcAge() not implemented" ); } ///< needed for @Organ::getOrgans
 	virtual double calcLength(double age){throw std::runtime_error( "calcLength() not implemented" ); }
+
 	/* geometry */
     int getNumberOfNodes() const { return nodes.size(); } ///< number of nodes of the organ
     int getNumberOfSegments() const { return nodes.size()-1; } ///<  per default, the organ is represented by a polyline, i.e. getNumberOfNodes()-1
@@ -85,11 +86,11 @@ public:
 	void addNode(Vector3d n, int id, double t){addNode( n,  id, t, size_t(0), false);} //< for pybind, overwise error with parameter repartition
     void addNode(Vector3d n,  double t){addNode( n,   t, size_t(0),false);}; //< for link with pybind
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
-	double dx() const; ///< returns the max axial resolution
+
+    double dx() const; ///< returns the max axial resolution
 	double dxMin() const; ///< returns the min axial resolution
     void rel2abs() ;
 	void abs2rel() ;
-
 	void moveOrigin(int idx);//change idx of first node, in case of nodal growth
 	double calcCreationTime(double length, double dt); ///< analytical creation (=emergence) time of a node at a length
 
@@ -115,10 +116,11 @@ public:
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
+
 protected:
 
     mutable Vector3d partialIHeading;//variables mutable in case of pseudo stem (see @Leaf::heading)
-	
+
 	virtual void createLateral(double ageLN, bool silence); ///< creates a new lateral, called by Root::simulate(), overriden by @see RootDelay::createLateral()
 	virtual void storeLinkingNodeLocalId(int numCreatedLN, bool silence){;}; ///<  overriden by @see Stem::storeLinkingNodeLocalId()
 	virtual Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction. overriden by @see Leaf::getIncrement()

@@ -24,18 +24,25 @@ Plant::Plant(unsigned int seednum): Organism(seednum)
  */
 std::shared_ptr<Organism> Plant::copy()
 {
-    auto no = std::make_shared<Plant>(*this); // copy constructor
+    auto no = std::make_shared<Plant>(*this); // default copy constructor
+    // std::cout << "instances before increase (copy) " << instances << "\n";
+    instances++;
+    no->plantId = instances; // add code for instance counting
+    // std::cout << "Created Organism (copy): " << no->plantId << " from " << plantId << "\n" << std::flush;
     for (int i=0; i<baseOrgans.size(); i++) {
         no->baseOrgans[i] = baseOrgans[i]->copy(no);
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
-        for (auto& otp : organParam[ot]) {
-            otp.second = otp.second->copy(no);
-            no->setOrganRandomParameter(otp.second);
+        for (auto& otp : no->organParam[ot]) {
+            // no->setOrganRandomParameter(otp.second->copy(no));
+        	std::shared_ptr<OrganRandomParameter> new_params= otp.second->copy(no);
+        	// std::cout << "Plant::copy() " << new_params->plant.lock()->plantId << std::flush <<  "\n";
+			no->setOrganRandomParameter(new_params);
         }
     }
     return no;
 }
+
 
 /**
  * todo docme , this could be made unique? and probably should be protected
@@ -250,7 +257,7 @@ void Plant::simulate()
  */
 void Plant::simulate(double dt, double maxinc_, std::shared_ptr<ProportionalElongation> se, bool verbose)
 {
-    return this->simulateLimited(dt, maxinc_, "lengthTh", {1.,1.,1.,1.,1.}, se, verbose);
+    this->simulateLimited(dt, maxinc_, "lengthTh", {1.,1.,1.,1.,1.}, se, verbose);
 }
 
 /**
@@ -268,10 +275,10 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
     std::shared_ptr<ProportionalElongation> se, bool verbose)
 {
     const double accuracy = 1.e-3;
-    const int maxiter = 100;
+    const int maxiter = 20;
     double maxinc = dt*max_; // [cm]
 
-    double ol = weightedSum(paramName, scales);
+    double ol = this->weightedSum(paramName, scales);
     int i = 0;
 
     // test run with scale == 1 (on copy)
@@ -294,14 +301,14 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
             double m = (sl+sr)/2.; // mid
 
             // test run (on copy) with scale m
-            std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old
+            std::shared_ptr<Plant> rs = std::static_pointer_cast<Plant>(this->copy()); // reset to old #############
             se->setScale(m);
-            rs->simulate(dt, verbose);
+            rs->simulate(dt, false);
             l = rs->weightedSum(paramName, scales);
             inc_ = l - ol;
 
             if (verbose) {
-                std::cout << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
+                std::cout <<  i << "\t(sl, mid, sr) = (" << sl << ", " <<  m << ", " <<  sr << "), inc " <<  inc_ << ", err: " << std::abs(inc_-maxinc) << "<>" << accuracy << "\n";
             }
             if (inc_>maxinc) { // concatenate
                 sr = m;
@@ -314,9 +321,10 @@ void Plant::simulateLimited(double dt, double max_, std::string paramName, std::
     this->simulate(dt, verbose);
 }
 
-double Plant::weightedSum(std::string paramName, std::vector<double> scales) {
+double Plant::weightedSum(std::string paramName, std::vector<double> scales) const {
     double sum=0.;
-    for (auto o : this->getOrgans()) {
+    auto organs = this->getOrgans();
+    for (const auto& o : organs) {
         int i  = o->organType();
         sum += scales.at(i)*o->getParameter(paramName);
     }
