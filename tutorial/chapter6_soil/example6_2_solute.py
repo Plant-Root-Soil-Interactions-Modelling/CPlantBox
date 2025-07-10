@@ -108,7 +108,7 @@ def net_infiltration_csv(filename, start_date, end_date):
 
 if __name__ == '__main__':
 
-    """ Soil """
+    """ Soil """  # |\label{l62:init_soil}|
     s = RichardsWrapper(RichardsNCSP())  # water and a single solute
     min_b = [-38., -8., -100.]  # [cm]
     max_b = [38., 8., 0.]  # [cm]
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     s.createGrid(min_b, max_b, cell_number, False)
     s.setVGParameters([soil])
 
-    """ Inital conditions """
+    """ Inital conditions """  # |\label{l62:init_ic}|
     p_top = -300.  # initial matric potential [cm]
     p_bot = -100.  # initial matric potential [cm]
     nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     s.setLinearIC(p_top, p_bot)  # [cm] pressure head, linearly interpolated
     s.setICZ_solute(nitrate_initial_values[::-1], nitrate_z[::-1])  # step-wise function, ascending order
 
-    """ Boundary conditions """
+    """ Boundary conditions """  # |\label{l62:init_bc}|
     start_date_str = '2013-05-01'
     end_date_str = '2013-08-01'
     times, net_inf = net_infiltration_csv("RO_AKRW_003.2007-01-01T00_00_00.2015-01-01T00_00_00_net_infiltration.csv", start_date_str, end_date_str)
@@ -146,18 +146,18 @@ if __name__ == '__main__':
     s.setBotBC_solute(["constantFlux"], [0.])
     # s.setBotBC_solute(["outflow"])
 
-    """ Source """
+    """ Source """  # |\label{l62:init_source}|
     fertilization_time = 31  # [day] fertilisation event
     fertilization_amount = 80 * 1.e-5 * area  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
 
-    """ Initialze problem """
+    """ Initialze problem """  # |\label{l62:init}|
     s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
     s.setParameter("Component.MolarMass", "6.2e-2")  # [kg/mol]
     s.setParameter("Component.LiquidDiffusionCoefficient", "1.9e-9")  # [m2/s]
     s.initializeProblem()
     # plot_profile(s.getSolutionHead(), s.getSolution_(1))
 
-    """ Simulation loop """
+    """ Simulation loop """  # |\label{l62:loop_init}|
     start_date = datetime.datetime.strptime(start_date_str , '%Y-%m-%d')
     end_date = datetime.datetime.strptime(end_date_str , '%Y-%m-%d')
     timedelta_ = end_date - start_date
@@ -178,7 +178,8 @@ if __name__ == '__main__':
     c, h, w = [], [], []  # results
 
     N = int(np.ceil(sim_time / dt))
-    for i in range(0, N):
+
+    for i in range(0, N):  # |\label{l62:loop_loop}|
 
         t = i * dt  # current simulation time
         print(t, "days")
@@ -199,13 +200,11 @@ if __name__ == '__main__':
         w.append(s.getWaterContent())  # [1]
         c.append(s.getSolution_(1))  # [g/L]
 
-    theta = s.getWaterContent()
-    print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")
+    print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")  # |\label{l62:results}|
     print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")
     print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.e-3 * (s.getWaterVolume() - volume0), "l")
 
-    plot_history(w, c, N)
-
+    # plot_history(w, c, N)
     plot_profile(h[-1], c[-1])
     plot_results(h, c, times_, netinf_, min_b[2])
 
