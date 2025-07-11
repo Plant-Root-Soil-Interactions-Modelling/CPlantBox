@@ -1,7 +1,7 @@
 """ 
 Solute transport example - nitrate in movement in soil 
 """
-import sys; sys.path.append("../../../CPlantBox/"); sys.path.append("../../../CPlantBox/src")
+import sys; sys.path.append("../"); sys.path.append("../../../CPlantBox/"); sys.path.append("../../../CPlantBox/src")
 sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
 
 import datetime
@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
+import figure_style
 
 import plantbox as pb  # CPlantBox
 from rosi_richardsnc import RichardsNCSP  # C++ part (Dumux binding), macroscopic soil model
@@ -122,8 +123,8 @@ if __name__ == '__main__':
     s.setVGParameters([soil])
 
     """ Inital conditions """  # |\label{l62:init_ic}|
-    p_top = -300.  # initial matric potential [cm]
-    p_bot = -100.  # initial matric potential [cm]
+    p_top = -400.  # initial matric potential [cm]
+    p_bot = -300.  # initial matric potential [cm]
     nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
     nitrate_initial_values = np.array([2.e-2, 2.e-2, 1.e-2, 1.e-2])  #  [g/L]
     s.setLinearIC(p_top, p_bot)  # [cm] pressure head, linearly interpolated
@@ -139,12 +140,12 @@ if __name__ == '__main__':
     netinf_ = np.repeat(net_inf, 2)
     times_ = np.repeat(times, 2)
     s.setTopBC("atmospheric", 0.5, [times_[1:], netinf_[:-1] ])  # 0.5 is dummy value
-    # s.setBotBC("freeDrainage")
-    s.setBotBC("noflux")
+    s.setBotBC("freeDrainage")
+    # s.setBotBC("noflux")
     s.setTopBC_solute(["constantFlux"], [0.], [0.])
     # s.setTotBC_solute(["outflow"])
-    s.setBotBC_solute(["constantFlux"], [0.])
-    # s.setBotBC_solute(["outflow"])
+    # s.setBotBC_solute(["constantFlux"], [0.])
+    s.setBotBC_solute(["outflow"])
 
     """ Source """  # |\label{l62:init_source}|
     fertilization_time = 31  # [day] fertilisation event
@@ -162,7 +163,7 @@ if __name__ == '__main__':
     end_date = datetime.datetime.strptime(end_date_str , '%Y-%m-%d')
     timedelta_ = end_date - start_date
     sim_time = timedelta_.days
-    dt = 60. / (24.*3600)
+    dt = 360. / (24.*3600)
 
     theta = s.getWaterContent()
     volume0 = s.getWaterVolume()
@@ -185,11 +186,11 @@ if __name__ == '__main__':
         print(t, "days")
 
         if t >= fertilization_time and t < fertilization_time + 1:
-            ind = s.pick([0, 0, -5.5])
+            ind = s.pick([0, 0, -1.5])
             soil_sol_fluxes = { ind: 0.7 * fertilization_amount}
             s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
         elif t <= 1:
-            ind = s.pick([0, 0, -5.5])
+            ind = s.pick([0, 0, -1.5])
             soil_sol_fluxes = { ind: 0.3 * fertilization_amount}
             s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
         else:
@@ -204,7 +205,7 @@ if __name__ == '__main__':
     print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")
     print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.e-3 * (s.getWaterVolume() - volume0), "l")
 
-    # plot_history(w, c, N)
+    plot_history(w, c, N)
     plot_profile(h[-1], c[-1])
     plot_results(h, c, times_, netinf_, min_b[2])
 
