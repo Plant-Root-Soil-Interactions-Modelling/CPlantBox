@@ -28,7 +28,7 @@ def plot_results(h, c , times, net_inf, depth = -100.):
     h = np.transpose(h)
     h = h[::-1,:]
     fig, ax = plt.subplots(3, 1, figsize = (18, 10), gridspec_kw = {'height_ratios': [1.5, 3, 3]})
-    bar = ax[0].bar(times[::2], 10 * net_inf[::2], 0.8)  # cm -> mm
+    bar = ax[0].bar(times[::2], -10 * net_inf[::2], 0.8)  # cm -> mm
     ax[0].set_ylabel("net inf [mm/day]")
     ax[0].set_xlim(times[0] - 0.5, times[-1] + 0.5)
     divider = make_axes_locatable(ax[0])
@@ -107,105 +107,104 @@ def net_infiltration_csv(filename, start_date, end_date):
     return times.to_numpy(), netinf.to_numpy() / 10  # mm/day > cm/day
 
 
-if __name__ == '__main__':
+""" Soil """  # |\label{l62:init_soil}|
+s = RichardsWrapper(RichardsNCSP())  # water & single solute
+min_b = [-38., -8., -100.]  # [cm]
+max_b = [38., 8., 0.]  # [cm]
+cell_number = [1, 1, 100]  # [1] spatial resolution (1D model)
+area = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1])  # [cm2]
+vol = area * (max_b[2] - min_b[2])  # [cm3]
+soil = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
+print("Area", area, "cm2,", "volume", vol, "cm3")
+s.initialize()
+s.createGrid(min_b, max_b, cell_number, False)
+s.setVGParameters([soil])
 
-    """ Soil """  # |\label{l62:init_soil}|
-    s = RichardsWrapper(RichardsNCSP())  # water and a single solute
-    min_b = [-38., -8., -100.]  # [cm]
-    max_b = [38., 8., 0.]  # [cm]
-    cell_number = [1, 1, 100]  # [1] spatial resolution (1D model)
-    area = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1])  # [cm2]
-    vol = area * (max_b[2] - min_b[2])  # [cm3]
-    soil = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
-    print("Area", area, "cm2,", "volume", vol, "cm3", vol * 1.e-6, "m3")
-    s.initialize()
-    s.createGrid(min_b, max_b, cell_number, False)
-    s.setVGParameters([soil])
+""" Inital conditions """  # |\label{l62:init_ic}|
+p_top = -400.  # initial matric potential [cm]
+p_bot = -300.  # initial matric potential [cm]
+s.setLinearIC(p_top, p_bot)  # [cm] pressure head, linearly interpolated
+nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
+nitrate_initial_values = np.array([5.e-3, 5.e-3, 1.e-3, 1.e-3]) / 0.43  #  [kg/m3] -> [g/L]
+s.setICZ_solute(nitrate_initial_values[::-1], nitrate_z[::-1])  # step-wise function, ascending order
 
-    """ Inital conditions """  # |\label{l62:init_ic}|
-    p_top = -400.  # initial matric potential [cm]
-    p_bot = -300.  # initial matric potential [cm]
-    nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
-    nitrate_initial_values = np.array([2.e-2, 2.e-2, 1.e-2, 1.e-2])  #  [g/L]
-    s.setLinearIC(p_top, p_bot)  # [cm] pressure head, linearly interpolated
-    s.setICZ_solute(nitrate_initial_values[::-1], nitrate_z[::-1])  # step-wise function, ascending order
+""" Boundary conditions """  # |\label{l62:init_bc}|
+start_date_str = '2013-05-01'
+end_date_str = '2013-08-01'
+times, net_inf = net_infiltration_csv("RO_AKRW_003.2007-01-01T00_00_00.2015-01-01T00_00_00_net_infiltration.csv", start_date_str, end_date_str)
+# plt.bar(times, net_inf, color = 'skyblue', edgecolor = 'k', width = 0.8);,
+# print("net gain loss over the period: ", np.sum(net_inf), "l/m2")
+# plt.show()
+netinf_ = np.repeat(net_inf, 2)
+times_ = np.repeat(times, 2)
+s.setTopBC("atmospheric", 0.5, [times_[1:], netinf_[:-1] ])  # 0.5 is dummy value
+s.setBotBC("freeDrainage")
+# s.setBotBC("noflux")
+s.setTopBC_solute(["constantFlux"], [0.], [0.])
+# s.setTotBC_solute(["outflow"])
+# s.setBotBC_solute(["constantFlux"], [0.])
+s.setBotBC_solute(["outflow"])
 
-    """ Boundary conditions """  # |\label{l62:init_bc}|
-    start_date_str = '2013-05-01'
-    end_date_str = '2013-08-01'
-    times, net_inf = net_infiltration_csv("RO_AKRW_003.2007-01-01T00_00_00.2015-01-01T00_00_00_net_infiltration.csv", start_date_str, end_date_str)
-    # plt.bar(times, net_inf, color = 'skyblue', edgecolor = 'k', width = 0.8);
-    # print("net gain loss over the period: ", np.sum(net_inf), "l/m2")
-    # plt.show()
-    netinf_ = np.repeat(net_inf, 2)
-    times_ = np.repeat(times, 2)
-    s.setTopBC("atmospheric", 0.5, [times_[1:], netinf_[:-1] ])  # 0.5 is dummy value
-    s.setBotBC("freeDrainage")
-    # s.setBotBC("noflux")
-    s.setTopBC_solute(["constantFlux"], [0.], [0.])
-    # s.setTotBC_solute(["outflow"])
-    # s.setBotBC_solute(["constantFlux"], [0.])
-    s.setBotBC_solute(["outflow"])
+""" Source """  # |\label{l62:init_source}|
+fertilization_time = 31  # [day] fertilisation event
+fertilization_amount = 80 * 1.e-5 * area  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
 
-    """ Source """  # |\label{l62:init_source}|
-    fertilization_time = 31  # [day] fertilisation event
-    fertilization_amount = 80 * 1.e-5 * area  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
+""" Initialze problem """  # |\label{l62:init}|
+s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
+s.setParameter("Newton.EnableChop", "True")
+s.setParameter("Component.MolarMass", "6.2e-2")  # [kg/mol]
+s.setParameter("Component.LiquidDiffusionCoefficient", "1.9e-9")  # [m2/s]
+s.initializeProblem()
+# plot_profile(s.getSolutionHead(), s.getSolution_(1))
 
-    """ Initialze problem """  # |\label{l62:init}|
-    s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
-    s.setParameter("Component.MolarMass", "6.2e-2")  # [kg/mol]
-    s.setParameter("Component.LiquidDiffusionCoefficient", "1.9e-9")  # [m2/s]
-    s.initializeProblem()
-    # plot_profile(s.getSolutionHead(), s.getSolution_(1))
+""" Simulation loop """  # |\label{l62:loop_init}|
+start_date = datetime.datetime.strptime(start_date_str , '%Y-%m-%d')
+end_date = datetime.datetime.strptime(end_date_str , '%Y-%m-%d')
+timedelta_ = end_date - start_date
+sim_time = timedelta_.days
+dt = 3600. / (24.*3600)
 
-    """ Simulation loop """  # |\label{l62:loop_init}|
-    start_date = datetime.datetime.strptime(start_date_str , '%Y-%m-%d')
-    end_date = datetime.datetime.strptime(end_date_str , '%Y-%m-%d')
-    timedelta_ = end_date - start_date
-    sim_time = timedelta_.days
-    dt = 360. / (24.*3600)
+theta = s.getWaterContent()
+volume0 = s.getWaterVolume()
+print("\ndomain water volume", volume0 , "cm3  = ", volume0 / 1000, "l")  # OK
+print("water content to water volume", np.sum(theta) * area * 1, "cm3")  # OK
+print("domain water volume", s.getWaterVolume() / area, "cm3/cm2  = ", s.getWaterVolume() / area * 10, "l/m2")  # OK
+print("water content to water volume", np.sum(theta) * 1, "cm3/cm  = ", np.sum(theta) * 1 * 10, "l/m2")  # OK
+print("sum net inf", 10 * np.sum(net_inf), "mm")
 
-    theta = s.getWaterContent()
-    volume0 = s.getWaterVolume()
-    print("\ndomain water volume", volume0 , "cm3  = ", volume0 / 1000, "l")  # OK
-    print("water content to water volume", np.sum(theta) * area * 1, "cm3")  # OK
-    print("domain water volume", s.getWaterVolume() / area, "cm3/cm2  = ", s.getWaterVolume() / area * 10, "l/m2")  # OK
-    print("water content to water volume", np.sum(theta) * 1, "cm3/cm  = ", np.sum(theta) * 1 * 10, "l/m2")  # OK
-    print("sum net inf", 10 * np.sum(net_inf), "mm")
+wilting_point = -10000
+s.setCriticalPressure(wilting_point)
+s.ddt = 1e-4  # [day] initial Dumux time step
+c, h, w = [], [], []  # results
 
-    wilting_point = -10000
-    s.setCriticalPressure(wilting_point)
-    s.ddt = 1e-4  # [day] initial Dumux time step
-    c, h, w = [], [], []  # results
+N = int(np.ceil(sim_time / dt))
 
-    N = int(np.ceil(sim_time / dt))
+for i in range(0, N):  # |\label{l62:loop_loop}|
 
-    for i in range(0, N):  # |\label{l62:loop_loop}|
+    t = i * dt  # current simulation time
+    print(t, "days")
 
-        t = i * dt  # current simulation time
-        print(t, "days")
+    if t >= fertilization_time and t < fertilization_time + 1:  # |\label{l62:fert_start}|
+        ind = s.pick([0, 0, -1.5])
+        soil_sol_fluxes = { ind: 0.7 * fertilization_amount}
+        s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
+    elif t <= 1:
+        ind = s.pick([0, 0, -1.5])
+        soil_sol_fluxes = { ind: 0.3 * fertilization_amount}
+        s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
+    else:
+        s.setSource({}, eq_idx = 1)  # |\label{l62:fert_end}|
 
-        if t >= fertilization_time and t < fertilization_time + 1:
-            ind = s.pick([0, 0, -1.5])
-            soil_sol_fluxes = { ind: 0.7 * fertilization_amount}
-            s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
-        elif t <= 1:
-            ind = s.pick([0, 0, -1.5])
-            soil_sol_fluxes = { ind: 0.3 * fertilization_amount}
-            s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
-        else:
-            s.setSource({}, eq_idx = 1)
+    s.solve(dt)
+    h.append(s.getSolutionHead_())  # [cm]
+    w.append(s.getWaterContent())  # [1]
+    c.append(s.getSolution_(1))  # [g/L]
 
-        s.solve(dt)
-        h.append(s.getSolutionHead_())  # [cm]
-        w.append(s.getWaterContent())  # [1]
-        c.append(s.getSolution_(1))  # [g/L]
+print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")  # |\label{l62:results}|
+print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")
+print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.e-3 * (s.getWaterVolume() - volume0), "l")
 
-    print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")  # |\label{l62:results}|
-    print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")
-    print("change in water volume", s.getWaterVolume() - volume0, "cm3 = ", 1.e-3 * (s.getWaterVolume() - volume0), "l")
-
-    plot_history(w, c, N)
-    plot_profile(h[-1], c[-1])
-    plot_results(h, c, times_, netinf_, min_b[2])
+plot_history(w, c, N)
+plot_profile(h[-1], c[-1])
+plot_results(h, c, times_, netinf_, min_b[2])
 
