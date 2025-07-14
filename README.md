@@ -43,9 +43,9 @@ git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Mo
 2. Create the conda environment and build CPlantBox:
 
 ```bash
+cd CPlantBox
 conda env create -f environment.yml
 conda activate cpb
-cd CPlantBox
 git submodule update --init --recursive
 cmake .
 make
