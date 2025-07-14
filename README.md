@@ -30,6 +30,34 @@ source cpbenv/bin/activate
 ```
 The scripts might work on other Linux OS but has not been tested.
 
+## Linux - with conda environment
+
+This installation method uses ```conda``` to setup the building environment for CPlantBox. It'll pull the packages from the ```conda-forge``` channel to avoid licensing restrictions from default channels. For more info on conda restrictions, check this [article](https://www.fz-juelich.de/en/rse/the_latest/the-anaconda-is-squeezing-us)
+
+1. Clone the repository:
+
+```bash
+git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+```
+
+2. Create the conda environment and build CPlantBox:
+
+```bash
+cd CPlantBox
+conda env create -f environment.yml
+conda activate cpb
+git submodule update --init --recursive
+cmake .
+make
+```
+
+3. Test the installation by running a tutorial example, e.g.:
+
+```bash
+cd tutorial/examples/
+python example1a_small.py
+```
+
 ## Linux - manual installation 
 Clone the repository by running
 ```bash

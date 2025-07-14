@@ -1,0 +1,26 @@
+name: cpb
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - wget
+  - git
+  - gcc
+  - cmake==3.28.3
+  - pkg-config
+  - mpi4py
+  - pip
+  - pip:
+      - numpy
+      - scipy
+      - matplotlib
+      - vtk
+      - pandas
+      - pybind11[global]
+      - setuptools
+      - ipython
+      - ipykernel
+      - pytest
+      - dash
+      - dash_bootstrap_components
+      - dash_vtk
