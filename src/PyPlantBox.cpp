@@ -626,6 +626,7 @@ PYBIND11_MODULE(plantbox, m) {
       */
      py::class_<HyphaeRandomParameter, OrganRandomParameter, std::shared_ptr<HyphaeRandomParameter>>(m, "HyphaeRandomParameter")
              .def(py::init<std::shared_ptr<Organism>>())
+             .def("toString", &HyphaeRandomParameter::toString)
              .def_readwrite("v", &HyphaeRandomParameter::v)
              .def_readwrite("vs", &HyphaeRandomParameter::vs)
              .def_readwrite("b", &HyphaeRandomParameter::b)
@@ -827,6 +828,7 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<Hyphae, Organ, std::shared_ptr<Hyphae>>(m, "Hyphae")
             .def(py::init<std::shared_ptr<Organism>, int, double, std::shared_ptr<Organ>, int>())
             .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, bool, bool, double, double, Vector3d, int, bool, int>())
+            .def("toString", &Hyphae::toString)
             .def("getHyphaeRandomParameter", &Hyphae::getHyphaeRandomParameter)
             .def("createLateral", &Hyphae::createLateral)
             .def("param", &Hyphae::param);
