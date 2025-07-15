@@ -89,6 +89,7 @@ def plot_history(w, c, N):
     ax2.plot(np.linspace(0, sim_time, N), c_, color = color)
     ax2.set_ylabel("[kg/m$^3$] soil", color = color)
     ax2.set_xlabel("Time [day]")
+    plt.tight_layout()
     plt.show()
 
 
@@ -123,8 +124,8 @@ s.setVGParameters([soil])
 """ Inital conditions """  # |\label{l62:init_ic}|
 p_top = -400.  # initial matric potential [cm]
 p_bot = -300.  # initial matric potential [cm]
-s.setLinearIC(p_top, p_bot)  # [cm] pressure head, linearly interpolated
-nitrate_z = [0., -30., -30., -100.]  # initial nitrate: top soil layer of 30 cm
+s.setLinearIC(p_top, p_bot)  # [cm] pressure head
+nitrate_z = [0., -30., -30., -100.]  # top soil layer of 30 cm
 nitrate_initial_values = np.array([5.e-3, 5.e-3, 1.e-3, 1.e-3]) / 0.43  #  [kg/m3] -> [g/L]
 s.setICZ_solute(nitrate_initial_values[::-1], nitrate_z[::-1])  # step-wise function, ascending order
 
@@ -145,7 +146,7 @@ s.setTopBC_solute(["constantFlux"], [0.], [0.])
 # s.setBotBC_solute(["constantFlux"], [0.])
 s.setBotBC_solute(["outflow"])
 
-""" Source """  # |\label{l62:init_source}|
+""" Fertilizer """  # |\label{l62:init_source}|
 fertilization_time = 31  # [day] fertilisation event
 fertilization_amount = 80 * 1.e-5 * area  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
 
@@ -155,7 +156,9 @@ s.setParameter("Newton.EnableChop", "True")
 s.setParameter("Component.MolarMass", "6.2e-2")  # [kg/mol]
 s.setParameter("Component.LiquidDiffusionCoefficient", "1.9e-9")  # [m2/s]
 s.initializeProblem()
-# plot_profile(s.getSolutionHead(), s.getSolution_(1))
+wilting_point = -10000
+s.setCriticalPressure(wilting_point)
+s.ddt = 1e-4  # [day] initial Dumux time step
 
 """ Simulation loop """  # |\label{l62:loop_init}|
 start_date = datetime.datetime.strptime(start_date_str , '%Y-%m-%d')
@@ -171,13 +174,10 @@ print("water content to water volume", np.sum(theta) * area * 1, "cm3")  # OK
 print("domain water volume", s.getWaterVolume() / area, "cm3/cm2  = ", s.getWaterVolume() / area * 10, "l/m2")  # OK
 print("water content to water volume", np.sum(theta) * 1, "cm3/cm  = ", np.sum(theta) * 1 * 10, "l/m2")  # OK
 print("sum net inf", 10 * np.sum(net_inf), "mm")
-
-wilting_point = -10000
-s.setCriticalPressure(wilting_point)
-s.ddt = 1e-4  # [day] initial Dumux time step
-c, h, w = [], [], []  # results
+# plot_profile(s.getSolutionHead(), s.getSolution_(1))
 
 N = int(np.ceil(sim_time / dt))
+c, h, w = [], [], []  # results
 
 for i in range(0, N):  # |\label{l62:loop_loop}|
 
@@ -185,11 +185,11 @@ for i in range(0, N):  # |\label{l62:loop_loop}|
     print(t, "days")
 
     if t >= fertilization_time and t < fertilization_time + 1:  # |\label{l62:fert_start}|
-        ind = s.pick([0, 0, -1.5])
+        ind = s.pick([0, 0, -0.5])
         soil_sol_fluxes = { ind: 0.7 * fertilization_amount}
         s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
     elif t <= 1:
-        ind = s.pick([0, 0, -1.5])
+        ind = s.pick([0, 0, -0.5])
         soil_sol_fluxes = { ind: 0.3 * fertilization_amount}
         s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
     else:
