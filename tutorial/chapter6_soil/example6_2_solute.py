@@ -126,7 +126,7 @@ p_top = -400.  # initial matric potential [cm]
 p_bot = -300.  # initial matric potential [cm]
 s.setLinearIC(p_top, p_bot)  # [cm] pressure head
 nitrate_z = [0., -30., -30., -100.]  # top soil layer of 30 cm
-nitrate_initial_values = np.array([5.e-3, 5.e-3, 1.e-3, 1.e-3]) / 0.43  #  [kg/m3] -> [g/L]
+nitrate_initial_values = np.array([5.e-3, 5.e-3, 1.e-3, 1.e-3]) / 0.43 / 10000  #  [kg/m3] -> [g/L]
 s.setICZ_solute(nitrate_initial_values[::-1], nitrate_z[::-1])  # step-wise function, ascending order
 
 """ Boundary conditions """  # |\label{l62:init_bc}|
@@ -143,15 +143,18 @@ s.setBotBC("freeDrainage")
 # s.setBotBC("noflux")
 s.setTopBC_solute(["constantFlux"], [0.], [0.])
 # s.setTotBC_solute(["outflow"])
-# s.setBotBC_solute(["constantFlux"], [0.])
-s.setBotBC_solute(["outflow"])
+s.setBotBC_solute(["constantFlux"], [0.])
+# s.setBotBC_solute(["outflow"])
 
 """ Fertilizer """  # |\label{l62:init_source}|
 fertilization_time = 31  # [day] fertilisation event
-fertilization_amount = 80 * 1.e-5 * area  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
+fertilization_amount = 80 * 1.e-5 * area / 1000  #  80 [kg/ha] = 80*1.e-5 [g/cm2]; -> [kg/day]
 
 """ Initialze problem """  # |\label{l62:init}|
 s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
+s.setParameter("Newton.MaxAbsoluteResidual", "1.e-10")
+s.setParameter("Newton.SatisfyResidualAndShiftCriterion", "True")  #
+
 s.setParameter("Newton.EnableChop", "True")
 s.setParameter("Component.MolarMass", "6.2e-2")  # [kg/mol]
 s.setParameter("Component.LiquidDiffusionCoefficient", "1.9e-9")  # [m2/s]
@@ -193,7 +196,9 @@ for i in range(0, N):  # |\label{l62:loop_loop}|
         soil_sol_fluxes = { ind: 0.3 * fertilization_amount}
         s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)
     else:
-        s.setSource({}, eq_idx = 1)  # |\label{l62:fert_end}|
+        ind = s.pick([0, 0, -0.5])
+        soil_sol_fluxes = { ind: 0. * fertilization_amount}
+        s.setSource(soil_sol_fluxes.copy(), eq_idx = 1)  # |\label{l62:fert_end}|
 
     s.solve(dt)
     h.append(s.getSolutionHead_())  # [cm]
