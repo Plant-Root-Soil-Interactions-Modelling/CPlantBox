@@ -20,7 +20,9 @@ print(root, stem, leaf, seed)  # Print seed, root, stem, leaf, and seed paramete
 
 # Change a parameter
 root[1].r = 5  # Change elongation rate (r) |\label{l14:change_params_r}|
-root[1].ln = 2  # Change inter-lateral distance (ln) |\label{l14:change_params_ln}|
+root[1].ln = 0.25  # Change inter-lateral distance (ln) |\label{l14:change_params_ln}|
+root[2].dx = 0.5  # Change axial resolution |\label{l14:change_params_dx}|
+root[2].dxMin = 0.1  # Change minimal axial resolution
 
 print(root[1])  # Print new root parameters |\label{l14:print_new}|
 
