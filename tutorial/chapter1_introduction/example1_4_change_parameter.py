@@ -16,7 +16,8 @@ stem = plant.getOrganRandomParameter(pb.stem)  # |\label{l14:stem}|
 leaf = plant.getOrganRandomParameter(pb.leaf)  # |\label{l14:leaf}|
 seed = plant.getOrganRandomParameter(pb.seed)  # |\label{l14:seed}|
 
-print(root, stem, leaf, seed)  # Print seed, root, stem, leaf, and seed parameters |\label{l14:print}|
+print(root[1], stem[1], leaf[1], "\n")  # Print parameters of subType 1 of root, stem, and leaf  |\label{l14:print}|
+print(seed[0], "\n")  # Print the seed parameter  |\label{l14:print_seed}|
 
 # Change a parameter
 root[1].r = 5  # Change elongation rate (r [cm/day]) |\label{l14:change_params_r}|
