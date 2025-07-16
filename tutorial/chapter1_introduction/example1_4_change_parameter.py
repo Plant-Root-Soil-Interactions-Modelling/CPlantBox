@@ -11,18 +11,18 @@ name = "fspm2023"
 plant.readParameters(path + name + ".xml")  # |\label{l14:readparameters}|
 
 # Get input parameter by organ type
-root = plant.getOrganRandomParameter(pb.root)  # Get root parameters |\label{l14:root}|
-stem = plant.getOrganRandomParameter(pb.stem)  # Get stem parameters |\label{l14:stem}|
-leaf = plant.getOrganRandomParameter(pb.leaf)  # Get leaf parameters |\label{l14:leaf}|
-seed = plant.getOrganRandomParameter(pb.seed)  # Get seed parameters |\label{l14:seed}|
+root = plant.getOrganRandomParameter(pb.root)  # |\label{l14:root}|
+stem = plant.getOrganRandomParameter(pb.stem)  # |\label{l14:stem}|
+leaf = plant.getOrganRandomParameter(pb.leaf)  # |\label{l14:leaf}|
+seed = plant.getOrganRandomParameter(pb.seed)  # |\label{l14:seed}|
 
 print(root, stem, leaf, seed)  # Print seed, root, stem, leaf, and seed parameters |\label{l14:print}|
 
 # Change a parameter
-root[1].r = 5  # Change elongation rate (r) |\label{l14:change_params_r}|
-root[1].ln = 0.25  # Change inter-lateral distance (ln) |\label{l14:change_params_ln}|
-root[2].dx = 0.5  # Change axial resolution |\label{l14:change_params_dx}|
-root[2].dxMin = 0.1  # Change minimal axial resolution
+root[1].r = 5  # Change elongation rate (r [cm/day]) |\label{l14:change_params_r}|
+root[1].ln = 0.25  # Change inter-lateral distance (ln [cm]) |\label{l14:change_params_ln}|
+root[2].dx = 0.5  # Change axial resolution (dx [cm]) |\label{l14:change_params_dx}|
+root[2].dxMin = 0.1  # Change minimal axial resolution (dxMin [cm])
 
 print(root[1])  # Print new root parameters |\label{l14:print_new}|
 
