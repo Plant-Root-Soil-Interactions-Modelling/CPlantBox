@@ -207,22 +207,30 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
         numberOfHyphae += emergedHyphae.at(i);
     }
     int new_noh = int(hed * getParameter("infectionLength") - numberOfHyphae);
-    // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae
-            //   <<  ", new noh " << new_noh << std::endl;
+    std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae
+              <<  ", new noh " << new_noh << std::endl;
 
     int currentNode = 1;
-    while (new_noh > 0)
+    while (new_noh > 0) // TODO Something not right with amount of hyphae created
     {
-        if (infected.at(currentNode) > 0 && (currentNode % new_noh == 0 || new_noh % currentNode == 0)) { // if the current node is infected and the number of hyphae to be created is reached
+        // int hyphaeperNode =  (int) nodes.size() / new_noh;
+        int uneven = nodes.size() % new_noh;
+        if (infected.at(currentNode) > 0 && new_noh!= 0) { // if the current node is infected and the number of hyphae to be created is reached
             createHyphae(currentNode);
             numberOfHyphae += 1;
             new_noh -= 1;
-            } else {
+            if (uneven > 0) {
+                createHyphae(currentNode);
+                uneven--;
+                numberOfHyphae += 1;
+                new_noh -= 1;
+            }
             currentNode++;
             if (currentNode >= nodes.size()) {
                 currentNode = 1; // reset to the first node if the end of the nodes vector is reached
             }
         }
+        else currentNode++;
     }
     // std::cout << "MycorrhizalRoot::simulateHyphalGrowth() finished with " << numberOfHyphae << " hyphae created." << std::endl;
     
@@ -356,7 +364,7 @@ void MycorrhizalRoot::setInfection(int i, int infection, double t)
 void MycorrhizalRoot::createLateral(double dt, bool verbose)
 {
     auto rp = getOrganRandomParameter(); // rename
-
+    
     for(int i = 0; i < rp->successorST.size(); i++){//go through each successor rule
         //found id
         bool applyHere = getApplyHere(i);
@@ -420,7 +428,7 @@ void MycorrhizalRoot::createHyphae(int pni)
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
     emergedHyphae.at(pni) += 1;
-    // std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
+    std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
     hyphae->simulate(dt_);
 }
 

@@ -31,7 +31,7 @@ public:
 
     double getParameter(std::string name) const override;
 
-    void createLateral(double ageLN, bool silence) override; ///< creates a lateral hyphae
+    void createLateral(double pni); ///< creates a lateral hyphae
 
     std::string toString() const override;
 

@@ -4,15 +4,17 @@ import plantbox as pb
 import visualisation.vtk_plot as vp
 
 mycp = pb.MycorrhizalPlant(1)
-path = "../../modelparameter/structural/rootsystem/"
+# path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
-mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
+mycp.readParameters(name + ".xml", fromFile = True, verbose = True)
 
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
+hyphae_parameter.b = 0.1
 hyphae_parameter.v = 1
+hyphae_parameter.dx = 0.05
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
 
@@ -30,15 +32,16 @@ for i in range(0, len(root)):
     root[i].dx = 0.05
 
 mycp.initialize(True)
+# print(mycp.toString())
+mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-
-simtime = 10
+simtime = 8
 fps = 30
 anim_time = 10
 N = fps * anim_time
 dt = simtime / N
 
-filename = "infection"
+filename = "infection_" + str(simtime) + "_"
 if animation:
     filename = "animation"
 if not local:
@@ -63,7 +66,7 @@ else:
         # roost = mycp.getOrganRandomParameter(pb.root)
         # for i in range(0, len(roost)):
         #     print(root[i].subType)
-        mycp.simulateHyphalGrowth(dt)
+        # mycp.simulateHyphalGrowth(dt)
         # hyphae = mycp.getOrgans(5)
         # print("number of hyphae", len(hyphae))
         # print("type", type(hyphae))
@@ -73,8 +76,13 @@ else:
     # mycp.simulate(simtime, False)
     # print("sim time", mycp.getSimTime())
 
-    # mycp.simulateHyphalGrowth(simtime)
-    # hyphae = mycp.getOrgans(5)
+    mycp.simulateHyphalGrowth(simtime)
+    # hyphae = mycp.getOrganRandomParameter(5)
+    # for i in range(0, len(hyphae)):
+    #     print(hyphae[i])
+        # print("hyphae", hyphae[i].getParameter("age"), hyphae[i].getParameter("length"))
+        # print("hyphae", hyphae[i].getParameter("infection"), hyphae[i].getParameter("infectionTime"))
+        # print("hyphae", hyphae[i].getParameter("subType"))
     # print("number of hyphae", len(hyphae))
     # print("type", type(hyphae))
     #for h in hyphae:
