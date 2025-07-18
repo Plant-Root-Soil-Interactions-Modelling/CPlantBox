@@ -29,6 +29,15 @@ double HyphaeSpecificParameter::getMaxLength() const {
     double l = 0.5; // v*hlt is too long ie tip elongation rate * hyphal lifetime
     return l; 
 }
+
+/**
+ * @return The order of the hyphae, i.e. how many times it has branched
+ */
+int HyphaeSpecificParameter::getOrder() const {
+    int order = 0;
+
+    return order;
+}
 /**
  * Default constructor sets up hashmaps for class introspection
  */
