@@ -18,12 +18,12 @@ plant.initialize()  # |\label{l71m:root_system_end}|
 
 """ Macroscopic soil grid """  # |\label{l71m:grid_start}|
 min_b = np.array([-2, -2, -15])  # [cm]
-max_b = np.array([3, 4, -5])  # [cm]
-cell_number = np.array([3, 4, 11])  # [1]
-periodic = False
+max_b = np.array([2, 2, -5])  # [cm]
+cell_number = np.array([5, 3, 12])  # [1]
+periodic = True
 s = RichardsWrapper(RichardsSP())
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, periodic)
+s.createGrid(min_b, max_b, cell_number, periodic)  # TODO periodicity seems to not work for [1,X,X]
 s.setVGParameters([[0.08, 0.43, 0.04, 1.6, 50]])
 s.setHomogeneousIC(-300, True)  # cm pressure head, equilibrium
 s.setTopBC("noFlux")
@@ -42,7 +42,7 @@ segs = plant.segments  # |\label{l71m:segments}|
 x = np.array([plant.seg2cell[i] for i in range(0, len(segs))])  # |\label{l71m:seg2cell}|
 
 """ Find segment indices in a grid cell"""
-ci = plant.soil_index(0, -3, -7)  # grid cell index
+ci = plant.soil_index(0, 0, -7)  # grid cell index
 print("Cell at [0,0,-7] has index", ci)
 try:
     print(len(plant.cell2seg[ci]), "segments in this cell:")  # |\label{l71m:cell2seg}|
@@ -53,7 +53,7 @@ except:
 """ Visualize"""  # |\label{l71m:visualize}|
 ana = pb.SegmentAnalyser(plant.mappedSegments())  # |\label{l71m:mappedSegments}|
 ana.addData("linear_index", x)
-pd = vp.segs_to_polydata(ana, 1., ["linear_index"])
+pd = vp.segs_to_polydata(ana, 1., ["radius", "linear_index"])
 rootActor, rootCBar = vp.plot_roots(pd, "linear_index", "Segment index", False)
 grid = vp.uniform_grid(min_b, max_b, cell_number)
 meshActor, meshCBar = vp.plot_mesh(grid, "", "", False)
