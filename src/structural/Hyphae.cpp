@@ -228,6 +228,15 @@ double Hyphae::getParameter(std::string name) const
         if (name=="b") { return param()->b; } // Branching rate [1 day-1]
         if (name=="hlt") { return param()->hlt; } // Hyphal life time [day]
         if (name=="theta") { return param()->theta; } // Branching angle [rad]
+        if (name=="order") { 
+            int order = 0;
+            auto p = getParent();
+            while (p && p->organType() == Organism::ot_hyphae) {
+                order++;
+                p = p->getParent();
+            } // count parents until no hyphae parent is found
+            return order; // Order of the hyphae, i.e. how many times it branched
+        }
     return Organ::getParameter(name); // pass to base class
 }
 

@@ -20,7 +20,7 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 1;
+    rp.hyphalEmergenceDensity = 10;
 
 infbox = pb.SDF_PlantBox(10, 10, 5)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))

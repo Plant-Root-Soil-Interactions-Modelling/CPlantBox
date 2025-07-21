@@ -207,8 +207,8 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
         numberOfHyphae += emergedHyphae.at(i);
     }
     int new_noh = int(hed * getParameter("infectionLength") - numberOfHyphae);
-    std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae
-              <<  ", new noh " << new_noh << std::endl;
+    // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae
+            //   <<  ", new noh " << new_noh << std::endl;
 
     int currentNode = 1;
     while (new_noh > 0) // TODO Something not right with amount of hyphae created
@@ -428,7 +428,7 @@ void MycorrhizalRoot::createHyphae(int pni)
     auto hyphae = std::make_shared<Hyphae>(plant.lock(), subType,  delay, shared_from_this(), pni); // delay - dt_
     children.push_back(hyphae);
     emergedHyphae.at(pni) += 1;
-    std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
+    // std::cout << "********* simulate "  << ", "<< plant.lock()->getSimTime() <<", " << dt_ << "\n";
     hyphae->simulate(dt_);
 }
 
