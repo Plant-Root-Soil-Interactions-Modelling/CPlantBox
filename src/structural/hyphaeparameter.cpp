@@ -31,14 +31,6 @@ double HyphaeSpecificParameter::getMaxLength() const {
 }
 
 /**
- * @return The order of the hyphae, i.e. how many times it has branched
- */
-int HyphaeSpecificParameter::getOrder() const {
-    int order = 0;
-
-    return order;
-}
-/**
  * Default constructor sets up hashmaps for class introspection
  */
 HyphaeRandomParameter::HyphaeRandomParameter(std::shared_ptr<Organism> plant) :OrganRandomParameter(plant)

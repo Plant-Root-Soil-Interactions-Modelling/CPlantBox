@@ -36,7 +36,6 @@ public:
 
     std::string toString() const override; ///< for debugging
     double getMaxLength() const; ///< returns maximal length
-    int getOrder() const; ///< returns the order of the hyphae, i.e. how many times it has branched
 };
 
 
