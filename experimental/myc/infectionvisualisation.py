@@ -4,17 +4,17 @@ import plantbox as pb
 import visualisation.vtk_plot as vp
 
 mycp = pb.MycorrhizalPlant(1)
-# path = "../../modelparameter/structural/rootsystem/"
+path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
-mycp.readParameters(name + ".xml", fromFile = True, verbose = True)
+mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
-hyphae_parameter.b = 0.1
-hyphae_parameter.v = 1
-hyphae_parameter.dx = 0.05
+# hyphae_parameter.b = 0.1
+# hyphae_parameter.v = 1
+hyphae_parameter.dx = 0.01
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
 
@@ -33,9 +33,9 @@ for i in range(0, len(root)):
 
 mycp.initialize(True)
 # print(mycp.toString())
-mycp.writeParameters(name + "_parameters.xml", 'plant', True)
+# mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 8
+simtime = 10
 fps = 30
 anim_time = 10
 N = fps * anim_time
@@ -66,17 +66,13 @@ else:
         # roost = mycp.getOrganRandomParameter(pb.root)
         # for i in range(0, len(roost)):
         #     print(root[i].subType)
-        # mycp.simulateHyphalGrowth(dt)
+        mycp.simulateHyphalGrowth(dt)
         # hyphae = mycp.getOrgans(5)
         # print("number of hyphae", len(hyphae))
         # print("type", type(hyphae))
         # for h in hyphae:
         #     print(h.getParameter("age"))
 
-    # mycp.simulate(simtime, False)
-    # print("sim time", mycp.getSimTime())
-
-    mycp.simulateHyphalGrowth(simtime)
     # hyphae = mycp.getOrganRandomParameter(5)
     # for i in range(0, len(hyphae)):
     #     print(hyphae[i])
