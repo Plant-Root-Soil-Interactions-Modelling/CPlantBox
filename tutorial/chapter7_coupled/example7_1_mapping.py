@@ -14,7 +14,7 @@ plant = pb.MappedPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010
 plant.readParameters(path + name + ".xml")
-plant.setSeed(4)
+plant.setSeed(4)  # |\label{l71m:random}|
 plant.initialize()  # |\label{l71m:root_system_end}|
 
 """ Macroscopic soil grid """  # |\label{l71m:grid_start}|
@@ -23,7 +23,7 @@ max_b = np.array([2, 2, -5])  # [cm]
 cell_number = np.array([2, 3, 6])  # [1]
 s = RichardsWrapper(RichardsSP())
 s.initialize()
-periodic = True
+periodic = True  # # |\label{l71m:periodic}|
 s.createGrid(min_b, max_b, cell_number, periodic)
 s.setVGParameters([[0.08, 0.43, 0.04, 1.6, 50]])
 s.setHomogeneousIC(-300, True)  # cm pressure head, equilibrium
