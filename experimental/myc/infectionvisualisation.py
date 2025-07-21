@@ -41,7 +41,7 @@ anim_time = 10
 N = fps * anim_time
 dt = simtime / N
 
-filename = "infection_" + str(simtime) + "_"
+filename = "infection_" + str(simtime)
 if animation:
     filename = "animation"
 if not local:
