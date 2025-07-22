@@ -44,14 +44,14 @@ dt = 360. / (24 * 3600)  # [days] Time step must be very small # |\label{l71c:pa
 """ Initialize macroscopic soil model """
 s = RichardsWrapper(RichardsSP())  # |\label{l71c:soil}|
 s.initialize()
-s.createGrid(min_b, max_b, cell_number, True)  # [cm]
+s.createGrid(min_b, max_b, cell_number, periodic = True)  # [cm]
 s.setHomogeneousIC(initial, True)  # [cm] total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.setVGParameters([loam])
 # s.setParameter("Newton.EnableChop", "True")
 # s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
-s.setParameter("Soil.SourceSlope", "200")  # |\label{l71c:regularisation}|
+s.setParameter("Soil.SourceSlope", "1000")  # |\label{l71c:regularisation}|
 s.initializeProblem()
 s.setCriticalPressure(wilting_point)  # |\label{l71c:soil_end}|
 
@@ -84,7 +84,7 @@ start_time = timeit.default_timer()  # |\label{l71c:init3}|
 x_, y_ = [], []
 sx = s.getSolutionHead()  # # |\label{l71c:ic}|
 N = round(sim_time / dt)
-t = 0.
+t = 0.  # |\label{l71c:init3_end}|
 
 for i in range(0, N):  # |\label{l71c:loop}|
 
