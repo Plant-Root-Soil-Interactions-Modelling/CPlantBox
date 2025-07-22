@@ -31,14 +31,14 @@ cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010 TODO <<<<-------
+trans = 6.4  # cm3 /day (sinusoidal) = mL/day
+wilting_point = -10000  # cm
+rs_age = 14  # root system initial age [day]
+
 loam = [0.08, 0.43, 0.04, 1.6, 50]
 initial = -600  # cm
 
-trans = 6.4  # cm3 /day (sinusoidal) = mL/day
-wilting_point = -10000  # cm
-
 sim_time = 7.5  # [day]
-rs_age = 14  # root system initial age [day]
 dt = 360. / (24 * 3600)  # [days] Time step must be very small # |\label{l71c:param_end}|
 
 """ Initialize macroscopic soil model """
@@ -89,7 +89,7 @@ t = 0.
 for i in range(0, N):  # |\label{l71c:loop}|
 
     # plant.simulate(dt) # |\label{l71c:plant}|
-    sx = s.getSolutionHead()  # |\label{l71c:soil}|
+    sx = s.getSolutionHead()  # |\label{l71c:potential}|
     rx = hm.solve(rs_age + t, -trans * sinusoidal(t), sx, cells = True)  # |\label{l71c:xylem}|
 
     fluxes = hm.soil_fluxes(rs_age + t, rx, sx)  # |\label{l71c:soil_model}|
