@@ -196,7 +196,8 @@ void MycorrhizalRoot::simulatePrimaryInfection(double dt) {
 }
 
 void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
-
+    // TODO abhängig von Hyphen bereits an einer Node vorhanden
+    std::cout << "MycorrhizalRoot::simulateHyphalGrowth() called on root: " << id << std::endl;
     auto rrp = getRootRandomParameter(); // param()
     double hed = rrp->hyphalEmergenceDensity;
 
@@ -210,31 +211,28 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
     // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae
             //   <<  ", new noh " << new_noh << std::endl;
 
-    int currentNode = 1;
-    while (new_noh > 0) // TODO Something not right with amount of hyphae created
+    int currentNode = 0;
+    while (new_noh > 0 && currentNode < nodes.size()) // TODO Something not right with amount of hyphae created
     {
         // int hyphaeperNode =  (int) nodes.size() / new_noh;
-        int uneven = nodes.size() % new_noh;
-        if (infected.at(currentNode) > 0 && new_noh!= 0) { // if the current node is infected and the number of hyphae to be created is reached
+        // int uneven = nodes.size() % new_noh;
+        std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): infected at node " << currentNode << ": " << infected.at(currentNode) << std::endl;
+        std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): emerged hyphae at node " << currentNode << ": " << emergedHyphae.at(currentNode) << std::endl;
+        if (infected.at(currentNode) > 0 && emergedHyphae.at(currentNode)== 0) { // if the current node is infected and the number of hyphae to be created is reached
             createHyphae(currentNode);
             numberOfHyphae += 1;
             new_noh -= 1;
-            if (uneven > 0) {
-                createHyphae(currentNode);
-                uneven--;
-                numberOfHyphae += 1;
-                new_noh -= 1;
-            }
-            currentNode++;
-            if (currentNode >= nodes.size()) {
-                currentNode = 1; // reset to the first node if the end of the nodes vector is reached
-            }
         }
-        else currentNode++;
+        currentNode++;
+    } 
+    for (auto l : children)
+    {
+        if (l->organType() != Organism::ot_hyphae) {
+            std::dynamic_pointer_cast<MycorrhizalRoot>(l)->simulateHyphalGrowth();
+        }
     }
-    // std::cout << "MycorrhizalRoot::simulateHyphalGrowth() finished with " << numberOfHyphae << " hyphae created." << std::endl;
-    
-    
+{
+    // std::cout << "MycorrhizalRoot::simulateHyphalGrowth() finished with " << numberOfHyphae << " hyphae created." << std::endl;  
     // for (size_t i = 1; i < nodes.size(); i++) {
 
     //     if (infected.at(i) > 0) {
@@ -258,7 +256,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
        // std::cout << "MycorrhizalRoot::hyphalGrowth() " << nodes.size()<< ", " << hed << ", noh " << numberOfHyphae
            // << ", cum length "<< cumLength << ", actual density " << numberOfHyphae/cumLength <<"\n" <<std::flush;
    // }
-
+ }
 }
 
 
@@ -296,6 +294,7 @@ void MycorrhizalRoot::simulate(double dt, bool verbose)
     // std::cout << "\nstart " << getId() <<  std::flush;
     Root::simulate(dt,verbose);
     simulateInfection(dt,verbose);
+    simulateHyphalGrowth();
     // std::cout << getRootRandomParameter()->la << std::endl;
     // std::cout << "\nend " << getId() <<  std::flush;
 }

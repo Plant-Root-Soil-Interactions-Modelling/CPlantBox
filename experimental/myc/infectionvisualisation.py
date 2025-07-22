@@ -20,7 +20,7 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 10;
+    rp.hyphalEmergenceDensity = 2;
 
 infbox = pb.SDF_PlantBox(10, 10, 5)
 infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
@@ -66,7 +66,7 @@ else:
         # roost = mycp.getOrganRandomParameter(pb.root)
         # for i in range(0, len(roost)):
         #     print(root[i].subType)
-        mycp.simulateHyphalGrowth(dt)
+        # mycp.simulateHyphalGrowth(dt)
         # hyphae = mycp.getOrgans(5)
         # print("number of hyphae", len(hyphae))
         # print("type", type(hyphae))
