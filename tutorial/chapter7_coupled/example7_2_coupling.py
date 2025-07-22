@@ -32,7 +32,7 @@ cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010 TODO <<<<-------
 trans = 6.4  # cm3 /day (sinusoidal) = mL/day
-wilting_point = -15000  # cm
+wilting_point = -10000  # cm
 rs_age = 14  # root system initial age [day]
 
 loam = [0.08, 0.43, 0.04, 1.6, 50]
