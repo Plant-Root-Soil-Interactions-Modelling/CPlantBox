@@ -62,15 +62,15 @@ sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.1)  # |\label{l71c
 plant.setGeometry(sdf)  # |\label{l71c:soil_plant_end}|
 
 """ root hydraulic properties """
-params = PlantHydraulicParameters()  # |\label{l71c:hydraulicparams}|
-# params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
-kz = 4.32e-2  # [cm^3/day]
-kr = 1.728e-4  # [1/day]
-params.set_kr_const(kr)
-params.set_kx_const(kz)
+params = PlantHydraulicParameters()  # |\label{l71c:hydraulic}|
+params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
+# kz = 4.32e-2  # [cm^3/day]
+# kr = 1.728e-4  # [1/day]
+# params.set_kr_const(kr)
+# params.set_kx_const(kz)
 # params.plot_conductivities(True)  # for maize
-hm = HydraulicModel_Meunier(plant, params)  # |\label{l71c:hydraulicparams_end}|
-hm.wilting_point = wilting_point
+hm = HydraulicModel_Doussan(plant, params)
+hm.wilting_point = wilting_point  # |\label{l71c:hydraulic_end}|
 
 """ Coupling (map indices) """
 picker = lambda x, y, z: s.pick([x, y, z])  # |\label{l71c:coupling}|
