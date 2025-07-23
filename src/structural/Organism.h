@@ -23,7 +23,10 @@ class Seed;
 /**
  * Organism
  *
+<<<<<<< HEAD
  * Base class of Plant or RootSystem
+=======
+>>>>>>> master
  *
  * Manages the OrganRandomParameters
  * Offers an interface for the simulation loop (initialize, simulate, ...)
@@ -53,7 +56,7 @@ public:
 	std::shared_ptr<Seed> getSeed(); ///< the plant seed
 
     /* organ parameter management */
-    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter
+    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int ot, int subType) const; ///< returns the respective the type parameter
     std::vector<std::shared_ptr<OrganRandomParameter>> getOrganRandomParameter(int ot) const; ///< returns all type parameters of an organ type (e.g. root)
     void setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p); ///< sets an organ type parameter, subType and organType defined within p
     int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str
@@ -120,22 +123,23 @@ public:
     /* random number generator */
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
 
-    virtual double rand() {if(stochastic){return UD(gen); } else { return 0.5; } }  ///< uniformly distributed random number [0, 1[
-    virtual double randn() {if(stochastic){return ND(gen); } else { return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
-	unsigned int  getSeedVal(){return seed_val;}
-	void setStochastic(bool stochastic_){stochastic = stochastic_;}
-	bool getStochastic(){return stochastic;}
+    virtual double rand() { if (stochastic) { return UD(gen); } else { return 0.5; } }  ///< uniformly distributed random number [0, 1[
+    virtual double randn() { if (stochastic) { return ND(gen); } else { return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
+	unsigned int  getSeedVal(){ return seed_val; }
+	void setStochastic(bool stochastic_){ stochastic = stochastic_; }
+	bool getStochastic(){ return stochastic; }
 	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
 	virtual bool hasRelCoord(){ return false; } ///< overriden by @Plant::hasRelCoord()
+	int getDelayDefinition(int ot_lat);
 
-
-	static const int numberOfOrganTypes = 6;
+    int plantId; // unique plant id (for debugging copy)
 
 protected:
 
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
     virtual tinyxml2:: XMLElement* getRSMLScene(tinyxml2::XMLDocument& doc) const;
 
+    static const int numberOfOrganTypes = 5;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
 
     std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)
@@ -155,7 +159,7 @@ protected:
     std::mt19937 gen;
     std::uniform_real_distribution<double> UD;
     std::normal_distribution<double> ND;
-	bool stochastic = true;///<  wether to implement stochasticity
+	bool stochastic = true;///<  Whether to implement stochasticity
 
 };
 

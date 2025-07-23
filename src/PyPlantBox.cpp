@@ -24,6 +24,10 @@ namespace py = pybind11;
 #include "Root.h"
 #include "MycorrhizalRoot.h"
 #include "Hyphae.h"
+#include "seedparameter.h"
+#include "leafparameter.h"
+#include "stemparameter.h"
+#include "Root.h"
 #include "Seed.h"
 #include "Leaf.h"
 #include "Stem.h"
@@ -93,12 +97,6 @@ public:
     { PYBIND11_OVERLOAD( std::string, SoilLookUp, toString); }
 
 };
-
-// todo
-// SignedDistanceFunction
-// OrganRandomParameter
-// Organ
-// Seed
 
 /**
  * plantbox
@@ -302,8 +300,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a_s", &OrganRandomParameter::as) // as is a keyword in python
             .def_readwrite("dx", &OrganRandomParameter::dx)
             .def_readwrite("dxMin", &OrganRandomParameter::dxMin)
-			.def_readwrite("plant",&OrganRandomParameter::plant)
-            .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
             .def_readwrite("successor", &OrganRandomParameter::successorST)//for backward compatibility
             .def_readwrite("successorOT", &OrganRandomParameter::successorOT)
             .def_readwrite("successorST", &OrganRandomParameter::successorST)
@@ -311,7 +307,10 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("successorNo", &OrganRandomParameter::successorNo)
             .def_readwrite("successorP", &OrganRandomParameter::successorP)
             .def_readwrite("ldelay", &OrganRandomParameter::ldelay)
-            .def_readwrite("ldelays", &OrganRandomParameter::ldelays);
+            .def_readwrite("ldelays", &OrganRandomParameter::ldelays)
+            .def_readwrite("plant",&OrganRandomParameter::plant)
+            .def_readwrite("f_gf", &OrganRandomParameter::f_gf)
+            .def_readwrite("f_tf", &OrganRandomParameter::f_tf);
     /**
      * Organ.h
      */
@@ -421,6 +420,9 @@ PYBIND11_MODULE(plantbox, m) {
 
             .def("setMinDx", &Organism::setMinDx)
             .def("setSeed", &Organism::setSeed)
+            .def("getSeedVal", &Organism::getSeedVal)
+            .def_readwrite("plantId", &Organism::plantId)
+
             .def("rand", &Organism::rand)
             .def("randn", &Organism::randn)
             //        .def_readwrite("seed_nC_", &Organism::seed_nC_)
@@ -444,7 +446,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("__str__",&SoilLookUp::toString);
     py::class_<SoilLookUpSDF, SoilLookUp, std::shared_ptr<SoilLookUpSDF>>(m,"SoilLookUpSDF")
             .def(py::init<>())
-            .def(py::init<SignedDistanceFunction*, double, double, double>())
+            .def(py::init<std::shared_ptr<SignedDistanceFunction>, double, double, double>())
             .def_readwrite("sdf", &SoilLookUpSDF::sdf)
             .def_readwrite("fmax", &SoilLookUpSDF::fmax)
             .def_readwrite("fmin", &SoilLookUpSDF::fmin)
@@ -498,12 +500,16 @@ PYBIND11_MODULE(plantbox, m) {
             .def("copy",&Tropism::copy) // todo policy
             .def("setGeometry",&Tropism::setGeometry)
             .def("setTropismParameter",&Tropism::setTropismParameter)
+            .def("setSigma",&Tropism::setSigma)
             .def("getHeading",&Tropism::getHeading)
             .def("getUCHeading",&Tropism::getUCHeading)
             .def("tropismObjective",&Tropism::tropismObjective)
             .def("getPosition",&Tropism::getPosition)
             .def_readwrite("alphaN", &Tropism::alphaN)
-            .def_readwrite("betaN", &Tropism::betaN);
+            .def_readwrite("betaN", &Tropism::betaN)
+            .def("isExpired",&Tropism::isExpired)
+            .def("getPlant",&Tropism::getPlant);
+
     py::class_<Gravitropism, Tropism, std::shared_ptr<Gravitropism>>(m, "Gravitropism")
             .def(py::init<std::shared_ptr<Organism>, double, double>());
     py::class_<Plagiotropism, Tropism, std::shared_ptr<Plagiotropism>>(m, "Plagiotropism")
@@ -549,9 +555,9 @@ PYBIND11_MODULE(plantbox, m) {
            .def("distribution2", (std::vector<std::vector<SegmentAnalyser>> (SegmentAnalyser::*)(double, double, double, double, int, int) const) &SegmentAnalyser::distribution2) //overloads
            .def("mapPeriodic", &SegmentAnalyser::mapPeriodic)
            .def("map2D", &SegmentAnalyser::map2D)
-           .def("getOrgans", &SegmentAnalyser::getOrgans)
+           .def("getOrgans", &SegmentAnalyser::getOrgans, py::arg("ot") = -1)
            .def("getNumberOfOrgans", &SegmentAnalyser::getNumberOfOrgans)
-           .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SDF_HalfPlane&) const) &SegmentAnalyser::cut)
+           .def("cut", (SegmentAnalyser (SegmentAnalyser::*)(const SignedDistanceFunction&) const) &SegmentAnalyser::cut)
            .def("addData", &SegmentAnalyser::addData)
            .def("write", &SegmentAnalyser::write, py::arg("name"), py::arg("types") = std::vector<std::string>({"radius", "subType", "creationTime", "organType"}))
            .def_readwrite("nodes", &SegmentAnalyser::nodes)
@@ -576,9 +582,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("lmaxs", &RootRandomParameter::lmaxs)
             .def_readwrite("r", &RootRandomParameter::r)
             .def_readwrite("rs", &RootRandomParameter::rs)
-            .def_readwrite("colorR", &RootRandomParameter::colorR)
-            .def_readwrite("colorG", &RootRandomParameter::colorG)
-            .def_readwrite("colorB", &RootRandomParameter::colorB)
             .def_readwrite("tropismT", &RootRandomParameter::tropismT)
             .def_readwrite("tropismN", &RootRandomParameter::tropismN)
             .def_readwrite("tropismS", &RootRandomParameter::tropismS)
@@ -588,10 +591,13 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlts", &RootRandomParameter::rlts)
             .def_readwrite("gf", &RootRandomParameter::gf)
             .def_readwrite("lnk", &RootRandomParameter::lnk)
-			.def_readwrite("f_tf", &RootRandomParameter::f_tf)
             .def_readwrite("f_se", &RootRandomParameter::f_se)
             .def_readwrite("f_sa", &RootRandomParameter::f_sa)
-            .def_readwrite("f_sbp", &RootRandomParameter::f_sbp);
+            .def_readwrite("f_sbp", &RootRandomParameter::f_sbp)
+			.def_readwrite("hairsElongation", &RootRandomParameter::hairsElongation)
+			.def_readwrite("hairsZone", &RootRandomParameter::hairsZone)
+			.def_readwrite("hairsLength", &RootRandomParameter::hairsLength);
+
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
@@ -643,6 +649,9 @@ PYBIND11_MODULE(plantbox, m) {
 
 
      /*
+			.def("getK",&RootSpecificParameter::getK)
+            .def("nob", &RootSpecificParameter::nob);
+    /*
      * seedparameter.h
      */
     py::class_<SeedRandomParameter, OrganRandomParameter, std::shared_ptr<SeedRandomParameter>>(m, "SeedRandomParameter")
@@ -650,6 +659,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("seedPos", &SeedRandomParameter::seedPos)
             .def_readwrite("seedPoss", &SeedRandomParameter::seedPoss)
             .def_readwrite("delayDefinition", &SeedRandomParameter::delayDefinition)
+            .def_readwrite("delayDefinitionShoot", &SeedRandomParameter::delayDefinitionShoot)
             .def_readwrite("firstB", &SeedRandomParameter::firstB)
             .def_readwrite("firstBs", &SeedRandomParameter::firstBs)
             .def_readwrite("delayB", &SeedRandomParameter::delayB)
@@ -666,8 +676,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("delayRCs", &SeedRandomParameter::delayRCs)
             .def_readwrite("nz", &SeedRandomParameter::nz)
             .def_readwrite("nzs", &SeedRandomParameter::nzs)
-            .def_readwrite("delayTil", &SeedRandomParameter::delayTi)
-            .def_readwrite("firstTil", &SeedRandomParameter::firstTi)
+            .def_readwrite("delayTil", &SeedRandomParameter::delayTil)
+            .def_readwrite("firstTil", &SeedRandomParameter::firstTil)
             .def_readwrite("maxTil", &SeedRandomParameter::maxTil)
             .def_readwrite("maxTils", &SeedRandomParameter::maxTils)
             .def_readwrite("simtime", &SeedRandomParameter::simtime)
@@ -691,18 +701,16 @@ PYBIND11_MODULE(plantbox, m) {
      */
     py::class_<LeafRandomParameter, OrganRandomParameter, std::shared_ptr<LeafRandomParameter>>(m, "LeafRandomParameter")
       .def(py::init<std::shared_ptr<Organism>>())
-      .def("createLeafGeometry",&LeafRandomParameter::createLeafGeometry)
-      .def("createLeafRadialGeometry",&LeafRandomParameter::createLeafRadialGeometry)
+      .def("createGeometry", &LeafRandomParameter::createGeometry)
+
+      .def("createLeafGeometry",&LeafRandomParameter::createLeafGeometry) // don't use directly: set parametrisationType, leafGeometryPhi, leafGeometryX, geometryN and use createGeometry()
+      .def("createLeafRadialGeometry",&LeafRandomParameter::createLeafRadialGeometry) // don't use directly: set parametrisationType, leafGeometryX, geometryN and use createGeometry()
+
       .def("getLateralType",&LeafRandomParameter::getLateralType)
       .def("nob",&LeafRandomParameter::nob)
       .def("nobs",&LeafRandomParameter::nobs)
       .def("leafLength",&LeafRandomParameter::leafLength)
       .def("leafMid",&LeafRandomParameter::leafMid)
-			.def_readwrite("geometryN", &LeafRandomParameter::geometryN)
-			.def_readwrite("parametrisationType", &LeafRandomParameter::parametrisationType)
-			.def_readwrite("leafGeometry", &LeafRandomParameter::leafGeometry)
-			.def_readwrite("leafGeometryPhi", &LeafRandomParameter::leafGeometryPhi)
-			.def_readwrite("leafGeometryX", &LeafRandomParameter::leafGeometryX)
       .def_readwrite("lb", &LeafRandomParameter::lb)
       .def_readwrite("lbs", &LeafRandomParameter::lbs)
       .def_readwrite("la", &LeafRandomParameter::la)
@@ -719,6 +727,9 @@ PYBIND11_MODULE(plantbox, m) {
       .def_readwrite("RotBeta", &LeafRandomParameter::rotBeta)
       .def_readwrite("BetaDev", &LeafRandomParameter::betaDev)
       .def_readwrite("InitBeta", &LeafRandomParameter::initBeta)
+      .def_readwrite("rotBeta", &LeafRandomParameter::rotBeta)
+      .def_readwrite("betaDev", &LeafRandomParameter::betaDev)
+      .def_readwrite("initBeta", &LeafRandomParameter::initBeta)
       .def_readwrite("tropismT", &LeafRandomParameter::tropismT)
       .def_readwrite("tropismN", &LeafRandomParameter::tropismN)
       .def_readwrite("tropismS", &LeafRandomParameter::tropismS)
@@ -727,13 +738,19 @@ PYBIND11_MODULE(plantbox, m) {
       .def_readwrite("rlt", &LeafRandomParameter::rlt)
       .def_readwrite("rlts", &LeafRandomParameter::rlts)
       .def_readwrite("gf", &LeafRandomParameter::gf)
-      .def_readwrite("f_tf", &LeafRandomParameter::f_tf)
       .def_readwrite("f_se", &LeafRandomParameter::f_se)
       .def_readwrite("f_sa", &LeafRandomParameter::f_sa)
       .def_readwrite("f_sbp", &LeafRandomParameter::f_sbp)
       .def_readwrite("tropismAge", &LeafRandomParameter::tropismAge)
       .def_readwrite("tropismAges", &LeafRandomParameter::tropismAges)
-       .def_readwrite("Width_blade", &LeafRandomParameter::Width_blade)  ;
+      .def_readwrite("Width_blade", &LeafRandomParameter::Width_blade)
+      .def_readwrite("geometryN", &LeafRandomParameter::geometryN)
+      .def_readwrite("parametrisationType", &LeafRandomParameter::parametrisationType)
+      .def_readwrite("leafGeometry", &LeafRandomParameter::leafGeometry)
+      .def_readwrite("leafGeometryPhi", &LeafRandomParameter::leafGeometryPhi)
+      .def_readwrite("leafGeometryX", &LeafRandomParameter::leafGeometryX)
+      .def_readwrite("shapeType", &LeafRandomParameter::shapeType);
+
     py::class_<LeafSpecificParameter, OrganSpecificParameter, std::shared_ptr<LeafSpecificParameter>>(m, "LeafSpecificParameter")
             .def(py::init<>())
             .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, double, bool, double, double>())
@@ -746,6 +763,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &LeafSpecificParameter::rlt)
             .def_readwrite("leafArea", &LeafSpecificParameter::areaMax)
             .def_readwrite("laterals", &LeafSpecificParameter::laterals)
+            .def_readwrite("laterals", &LeafSpecificParameter::width_blade)
+            .def_readwrite("laterals", &LeafSpecificParameter::width_petiole)
 			.def("getK",&LeafSpecificParameter::getK)
             .def("nob",&LeafSpecificParameter::nob);
     /*
@@ -760,8 +779,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("lbs", &StemRandomParameter::lbs)
             .def_readwrite("la", &StemRandomParameter::la)
             .def_readwrite("las", &StemRandomParameter::las)
-            .def_readwrite("k", &StemRandomParameter::k)
-            .def_readwrite("ks", &StemRandomParameter::ks)
             .def_readwrite("ln", &StemRandomParameter::ln)
             .def_readwrite("lns", &StemRandomParameter::lns)
             .def_readwrite("lnf", &StemRandomParameter::lnf)
@@ -772,6 +789,9 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("RotBeta", &StemRandomParameter::rotBeta)
             .def_readwrite("BetaDev", &StemRandomParameter::betaDev)
             .def_readwrite("InitBeta", &StemRandomParameter::initBeta)
+            .def_readwrite("rotBeta", &StemRandomParameter::rotBeta)
+            .def_readwrite("betaDev", &StemRandomParameter::betaDev)
+            .def_readwrite("initBeta", &StemRandomParameter::initBeta)
             .def_readwrite("tropismT", &StemRandomParameter::tropismT)
             .def_readwrite("tropismN", &StemRandomParameter::tropismN)
             .def_readwrite("tropismS", &StemRandomParameter::tropismS)
@@ -780,7 +800,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("rlt", &StemRandomParameter::rlt)
             .def_readwrite("rlts", &StemRandomParameter::rlts)
             .def_readwrite("gf", &StemRandomParameter::gf)
-            .def_readwrite("f_tf", &StemRandomParameter::f_tf)
             .def_readwrite("f_se", &StemRandomParameter::f_se)
             .def_readwrite("f_sa", &StemRandomParameter::f_sa)
             .def_readwrite("f_sbp", &StemRandomParameter::f_sbp)
@@ -934,6 +953,11 @@ PYBIND11_MODULE(plantbox, m) {
         .def("total2matric",&MappedSegments::total2matric)
 		.def("getNumberOfMappedSegments",&MappedSegments::getNumberOfMappedSegments)
         .def("getSegmentMapper",&MappedSegments::getSegmentMapper)
+        .def("getEffectiveRadius",&MappedSegments::getEffectiveRadius)
+        .def("getEffectiveRadii",&MappedSegments::getEffectiveRadii)
+		.def("calcExchangeZoneCoefs",&MappedSegments::calcExchangeZoneCoefs)
+        .def_readwrite("exchangeZoneCoefs", &MappedPlant::exchangeZoneCoefs)
+        .def_readwrite("distanceTip", &MappedPlant::distanceTip)
         .def_readwrite("nodes", &MappedSegments::nodes)
         .def_readwrite("nodeCTs", &MappedSegments::nodeCTs)
         .def_readwrite("segments", &MappedSegments::segments)
@@ -946,7 +970,8 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-		.def_readwrite("organParam", &MappedSegments::plantParam);
+		.def_readwrite("organParam", &MappedSegments::plantParam)
+	    .def_readwrite("segO", &MappedSegments::segO);
     py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
         .def(py::init<>())
         .def("mappedSegments",  &MappedRootSystem::mappedSegments)
@@ -967,6 +992,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def("setTropism", &Plant::setTropism)
             .def("simulate",(void (Plant::*)(double,bool)) &Plant::simulate, py::arg("dt"), py::arg("verbose") = false)
             .def("simulate",(void (Plant::*)()) &Plant::simulate)
+            .def("simulate",(void (Plant::*)(double, double, std::shared_ptr<ProportionalElongation>, bool)) &Plant::simulate)
+            .def("simulateLimited", &Plant::simulateLimited)
             .def("initCallbacks", &Plant::initCallbacks)
             .def("createTropismFunction", &Plant::createTropismFunction)
             .def("createGrowthFunction", &Plant::createGrowthFunction)
@@ -997,6 +1024,8 @@ PYBIND11_MODULE(plantbox, m) {
                         .def("simulateSecondaryInfection", &MycorrhizalPlant::simulateSecondaryInfection)
                         .def("getNodeInfectionTime", &MycorrhizalPlant::getNodeInfectionTime)
                         .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections);
+			.def("getNodeIds",&MappedPlant::getNodeIds);
+
 	/**
 	 * Perirhizal.h
 	 */
@@ -1057,37 +1086,38 @@ PYBIND11_MODULE(plantbox, m) {
     py::class_<PlantHydraulicParameters, std::shared_ptr<PlantHydraulicParameters>>(m, "PlantHydraulicParameters")
             .def(py::init<>())
             .def(py::init<std::shared_ptr<CPlantBox::MappedSegments>>())
-            .def("setKr",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKr),
-                    py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=true)
-            .def("setKx",py::overload_cast<std::vector<double>, std::vector<double>, bool> (&PlantHydraulicParameters::setKx),
-                py::arg("values"), py::arg("age") = std::vector<double>(0), py::arg("verbose")=true)
-            .def("setKr",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, double, bool> (&PlantHydraulicParameters::setKr),
-                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0),py::arg("kr_length_") = -1.0, py::arg("verbose")=false)
-            .def("setKx",py::overload_cast<std::vector<std::vector<double>>,std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKx),
-                py::arg("values"), py::arg("age") = std::vector<std::vector<double>>(0), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
-                py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
-            .def("setKxTables",py::overload_cast<std::vector<std::vector<double>>, std::vector<std::vector<double>>, bool> (&PlantHydraulicParameters::setKxTables),
-                py::arg("values"), py::arg("age"), py::arg("verbose")=false)
-            .def("setKrTables",py::overload_cast<std::vector<std::vector< std::vector<double> >>, std::vector<std::vector<std::vector<double>>>, bool, bool> (&PlantHydraulicParameters::setKrTables),
-                    py::arg("values"), py::arg("age"), py::arg("verbose")=false, py::arg("ageBased")=true)
-            .def("setKxTables",py::overload_cast< std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>, bool> (&PlantHydraulicParameters::setKxTables), py::arg("values"), py::arg("age"), py::arg("verbose")=false)
+            .def("setMode", &PlantHydraulicParameters::setMode)
+            .def("setKrConst", &PlantHydraulicParameters::setKrConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root, py::arg("kr_length") = -1.)
+            .def("setKxConst", &PlantHydraulicParameters::setKxConst, py::arg("v"), py::arg("subType"), py::arg("organType") = Organism::ot_root)
+            .def("setKrAgeDependent", &PlantHydraulicParameters::setKrAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
+            .def("setKxAgeDependent", &PlantHydraulicParameters::setKxAgeDependent, py::arg("age"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
+            .def("setKrDistanceDependent", &PlantHydraulicParameters::setKrDistanceDependent, py::arg("distance"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
+            .def("setKxDistanceDependent", &PlantHydraulicParameters::setKxDistanceDependent, py::arg("distance"), py::arg("values"), py::arg("subType"), py::arg("organType")= Organism::ot_root)
             .def("setKrValues", &PlantHydraulicParameters::setKrValues)
             .def("setKxValues", &PlantHydraulicParameters::setKxValues)
-            .def("getEffKr", &PlantHydraulicParameters::getEffKr)
             .def("getKr", &PlantHydraulicParameters::getKr)
+            .def("getEffKr", &PlantHydraulicParameters::getEffKr)
             .def("getKx", &PlantHydraulicParameters::getKx)
+            .def_readonly("kr_f", &PlantHydraulicParameters::kr_f)
+            .def_readonly("kx_f", &PlantHydraulicParameters::kx_f)
+            //.def_readonly("kr_f_wrapped", &PlantHydraulicParameters::kr_f_wrapped)
+            .def_readonly("krMode", &PlantHydraulicParameters::krMode)
+            .def_readonly("kxMode", &PlantHydraulicParameters::kxMode)
+            .def_readonly("maxSubTypes", &PlantHydraulicParameters::maxSubTypes)
+            .def_readwrite("krValues", &PlantHydraulicParameters::krValues)
+            .def_readwrite("kxValues", &PlantHydraulicParameters::kxValues)
+            .def_readwrite("kr_ages", &PlantHydraulicParameters::kr_ages)
+            .def_readwrite("kr_values", &PlantHydraulicParameters::kr_values)
+            .def_readwrite("kx_ages", &PlantHydraulicParameters::kx_ages)
+            .def_readwrite("kx_values", &PlantHydraulicParameters::kx_values)
             .def_readwrite("ms", &PlantHydraulicParameters::ms)
-            .def_readonly("kr_f_cpp", &PlantHydraulicParameters::kr_f)
-            .def_readonly("kx_f_cpp", &PlantHydraulicParameters::kx_f)
             .def_readwrite("psi_air", &PlantHydraulicParameters::psi_air);
-
         /*
          * PlantHydraulicModel.h
          */
         py::class_<PlantHydraulicModel, std::shared_ptr<PlantHydraulicModel>>(m, "PlantHydraulicModel")
             .def(py::init<std::shared_ptr<MappedSegments>, std::shared_ptr<PlantHydraulicParameters>>())
-            .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true)
+            .def("linearSystemMeunier",&PlantHydraulicModel::linearSystemMeunier, py::arg("simTime") , py::arg("sx") , py::arg("cells") = true, py::arg("soil_k") = std::vector<double>())
             .def("getRadialFluxes", &PlantHydraulicModel::getRadialFluxes)
             .def("sumSegFluxes", &PlantHydraulicModel::sumSegFluxes)
             .def_readwrite("ms", &PlantHydraulicModel::ms)
@@ -1100,13 +1130,12 @@ PYBIND11_MODULE(plantbox, m) {
 	/*
      * Photosynthesis.h
      */
-   py::class_<Photosynthesis, XylemFlux, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),  py::arg("psiXylInit")=-500.0 ,  py::arg("ciInit")= 350e-6)
-			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis, py::arg("ea_"),py::arg("es_") ,
-			py::arg("sim_time_")=1.0,
-					py::arg("sxx_") = std::vector<double>(1,-200.0)  ,
-					 py::arg("cells_") = true,py::arg("soil_k_") = std::vector<double>(),
-					py::arg("doLog_")=false, py::arg("verbose_")=true,  py::arg("TairC_") = 25,  py::arg("outputDir_")="")
+   py::class_<Photosynthesis, PlantHydraulicModel, std::shared_ptr<Photosynthesis>>(m, "Photosynthesis")
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>,double, double>(),  py::arg("plant"),py::arg("params"),  py::arg("psiXylInit")=-500.0 ,  py::arg("ciInit")= 350e-6)
+			.def("solve_photosynthesis",&Photosynthesis::solve_photosynthesis,py::arg("sim_time"),
+					py::arg("sxx")  , py::arg("ea"),py::arg("es"),py::arg("TleafK")  ,
+					py::arg("cells") = true,py::arg("soil_k") = std::vector<double>(),
+					py::arg("doLog")=false, py::arg("verbose")=true,    py::arg("outputDir")="")
             .def_readwrite("PhotoType", &Photosynthesis::PhotoType)
             .def_readwrite("psiXyl_old", &Photosynthesis::psiXyl_old)
             .def_readwrite("psiXyl4Phloem", &Photosynthesis::psiXyl4Phloem)
@@ -1143,7 +1172,6 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("EAL",&Photosynthesis::EAL)
             .def_readwrite("hrelL",&Photosynthesis::hrelL)
             .def_readwrite("pg",&Photosynthesis::pg)
-            .def_readwrite("vQlight", &Photosynthesis::vQlight)
             .def_readwrite("Qlight", &Photosynthesis::Qlight)
             .def_readwrite("Jw", &Photosynthesis::Jw)
             .def_readwrite("Ev", &Photosynthesis::Ev)
@@ -1154,9 +1182,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("loop", &Photosynthesis::loop)
             .def_readwrite("Patm", &Photosynthesis::Patm)
             .def_readwrite("cs", &Photosynthesis::cs)
-            .def_readwrite("vcs", &Photosynthesis::vcs)
             .def_readwrite("TleafK", &Photosynthesis::TleafK)
-            .def_readwrite("TairC", &Photosynthesis::TairC)
             .def_readwrite("Chl", &Photosynthesis::Chl)
             .def_readwrite("g0", &Photosynthesis::g0)
             .def_readwrite("g_bl", &Photosynthesis::g_bl)
@@ -1172,12 +1198,12 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a3", &Photosynthesis::a3)
             .def_readwrite("Rd_ref", &Photosynthesis::Rd_ref)
             .def_readwrite("Kc_ref", &Photosynthesis::Kc_ref)
+            .def_readwrite("Q10_photo", &Photosynthesis::Q10_photo)
             .def_readwrite("VcmaxrefChl1", &Photosynthesis::VcmaxrefChl1)
             .def_readwrite("VcmaxrefChl2", &Photosynthesis::VcmaxrefChl2)
             .def_readwrite("outputFlux", &Photosynthesis::outputFlux)
             .def_readwrite("outputFlux_old", &Photosynthesis::outputFlux_old)
             .def_readwrite("doLog", &Photosynthesis::doLog)
-            .def_readwrite("R_ph", &Photosynthesis::R_ph)
             .def_readonly("rho_h2o", &Photosynthesis::rho_h2o)
             .def_readonly("R_ph", &Photosynthesis::R_ph)
             .def_readonly("Mh2o", &Photosynthesis::Mh2o);
@@ -1191,11 +1217,10 @@ PYBIND11_MODULE(plantbox, m) {
      * runPM.h
      */
     py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
-            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, double, double>(),  py::arg("plant_"),
+            .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(),  py::arg("plant"),py::arg("params"),
 			py::arg("psiXylInit"),  py::arg("ciInit") )
             .def("waterLimitedGrowth",&PhloemFlux::waterLimitedGrowth)
-            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length_") = -1.0, py::arg("verbose") = false)
-
+            .def("setKr_st",&PhloemFlux::setKr_st, py::arg("values"), py::arg("kr_length") = -1.0, py::arg("verbose") = false)
             .def("setKx_st",&PhloemFlux::setKx_st, py::arg("values"), py::arg("verbose") = false)
             .def("setRmax_st",&PhloemFlux::setRmax_st, py::arg("values"), py::arg("verbose") = false)
             .def("setAcross_st",&PhloemFlux::setAcross_st, py::arg("values"), py::arg("verbose") = false)
@@ -1205,7 +1230,6 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("startPM",&PhloemFlux::startPM)
             .def_readonly("rhoSucrose_f",&PhloemFlux::rhoSucrose_f)
             .def_readwrite("psiMin", &PhloemFlux::psiMin)
-
             .def_readwrite("Q_out",&PhloemFlux::Q_outv)
             .def_readwrite("Q_init",&PhloemFlux::Q_init)
             .def_readwrite("Q_out_dot",&PhloemFlux::Q_out_dotv)
@@ -1265,7 +1289,6 @@ PYBIND11_MODULE(plantbox, m) {
 			.def_readwrite("GrowthZoneLat",&PhloemFlux::GrowthZoneLat)
 			.def_readwrite("psi_osmo_proto",&PhloemFlux::psi_osmo_proto)
 			.def_readwrite("psi_p_symplasm",&PhloemFlux::psi_p_symplasm)
-
             .def_readwrite("C_targ",&PhloemFlux::C_targ)
             .def_readwrite("C_targMesophyll",&PhloemFlux::C_targMesophyll)
             .def_readwrite("Vmax_S_ST",&PhloemFlux::Vmax_S_ST)

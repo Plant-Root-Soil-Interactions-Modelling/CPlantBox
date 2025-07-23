@@ -16,6 +16,22 @@
     <parameter name="simulationTime" value="60" dev="0"/>
 </organ>
 
+<<<<<<< HEAD
+=======
+<organ type="root" name="taproot" subType="1">
+    <parameter name="lmax" value="0.1" dev="0"/>
+    <!--Inter-lateral distance [cm];-->
+        <parameter name="r" value="2.4" dev="0"/>
+     <parameter name="a" value="0.05" dev="0"/>
+    <parameter name="tropismT" value="1"/>
+    <parameter name="tropismN" value="0.5"/>
+    <parameter name="tropismS" value="0.261799"/>
+    <parameter name="theta" value="0.4" dev="0.0"/>
+    <parameter name="rlt" value="1000000000" dev="0"/>
+    <parameter name="gf" value="3"/>
+</organ>
+
+>>>>>>> master
 <organ type="stem" name="mainstem" subType="1">
     <parameter name="lb" value="30" dev="0"/>
     <!--Basal zone [cm]-->

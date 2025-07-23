@@ -7,7 +7,11 @@ import visualisation.vtk_plot as vp
 import numpy as np
 
 """ root system """
+<<<<<<< HEAD
 rs = pb.MappedRootSystem()
+=======
+rs = pb.MappedPlant()
+>>>>>>> master
 path = "../../modelparameter/structural/rootsystem/"
 name = "Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010
 rs.readParameters(path + name + ".xml")

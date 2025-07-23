@@ -8,7 +8,7 @@ set(RELEASE_OPTS "-std=c++17 -fno-strict-aliasing -fstrict-overflow -fno-finite-
 set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
 
-# set default build type to release Release
+# set default build type to release Release, Debug
 set(CMAKE_BUILD_TYPE Release )
 
 # add source directory to the include path
@@ -17,7 +17,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/functional)
 
 # add subdirectories
 add_subdirectory(src)
-# add_subdirectory(tutorial)
+#add_subdirectory(tutorial)
 
 # build tutorial (TODO)
 # INCLUDE(UseLATEX.cmake)

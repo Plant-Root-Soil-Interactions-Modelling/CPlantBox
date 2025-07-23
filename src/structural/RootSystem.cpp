@@ -11,7 +11,9 @@ namespace CPlantBox {
  * Creates a root system
  */
 RootSystem::RootSystem(): Organism()
-{ }
+{
+    std::cout << "Warning: The 'RootSystem' class is deprecated and will be removed in a future release. Please use the 'Plant' class instead.\n" << std::flush;
+}
 
 /**
  * Deep copies the organism
@@ -26,8 +28,10 @@ std::shared_ptr<Organism> RootSystem::copy()
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : nrs->organParam[ot]) {
-            otp.second = otp.second->copy(nrs);
-			nrs->setOrganRandomParameter(otp.second);
+            // no->setOrganRandomParameter(otp.second->copy(no));
+        	std::shared_ptr<OrganRandomParameter> new_params= otp.second->copy(nrs);
+        	// std::cout << "Plant::copy() " << new_params->plant.lock()->plantId << std::flush <<  "\n";
+        	nrs->setOrganRandomParameter(new_params);
         }
     }
     return nrs;
@@ -421,7 +425,7 @@ std::vector<Vector3d> RootSystem::getNodes() const
     auto v = Organism::getNodes();
     // node 0 is the artifical node created by initialize() to link seed and shoot-born roots
     // node 1 is the seed
-    v.at(0) = v.at(1); 
+    v.at(0) = v.at(1);
     v.at(0).z = v.at(1).z + 1; // 1cm above the seed by default
     return v;
 }

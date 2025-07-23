@@ -4,7 +4,7 @@ from visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
-from IPython.display import Image, display
+# from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -38,27 +38,55 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
         plots a whole plant as a tube plot, and additionally plot leaf surface areas as polygons
     """
     # plant as tube plot
-    pd = segs_to_polydata(plant, 1., ["radius", "organType", "creationTime", p_name])  # poly data
-    tube_plot_actor, color_bar = plot_roots(pd, p_name, "", render = False)
+    if isinstance(plant, pb.MappedSegments):
+        ana = pb.SegmentAnalyser(plant.mappedSegments())  # for MappedPlant and MappedRootSystem
+        setLeafColor = False
+    elif isinstance(plant, pb.Organism):
+        ana = pb.SegmentAnalyser(plant)  # for Organism like Plant or RootSystem
+        setLeafColor = True
+    else:
+        ana = plant
 
-    # leafes as polygons
+    pd = segs_to_polydata(ana, 1., ["radius", "organType", "creationTime", p_name])  # poly data
+    tube_plot_actor, color_bar, lut = plot_roots(pd, p_name, "", render = False, returnLut = True)
+
+    # leaves as polygons
     leaf_points = vtk.vtkPoints()
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
 
-    leafes = plant.getOrgans(pb.leaf)
-    for l in leafes:
-        create_leaf_(l, leaf_points, leaf_polys)
+    globalIdx_y = []
+    leaves = plant.getOrgans(ot = pb.leaf)
+    for l in leaves:
+        globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
+    globalIdx_y = np.array(globalIdx_y)
 
     polyData = vtk.vtkPolyData()
     polyData.SetPoints(leaf_points)
     polyData.SetPolys(leaf_polys)
 
-    colors = vtk.vtkNamedColors()
+    if (len(globalIdx_y) > 0):
+        segs_idx = np.array([seg.y - 1 for seg in ana.segments])
+        param = np.array(ana.getParameter(p_name))[segs_idx]  # defined per segment
+        paramLeaf = param[globalIdx_y - 1]
+        data = vtk_data(paramLeaf)
+        data.SetName(p_name)
+        polyData.GetCellData().AddArray(data)
+    # else:
+    #    colors = vtk.vtkNamedColors()
 
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polyData)
+    mapper.ScalarVisibilityOn();
+    mapper.SetScalarModeToUseCellFieldData()  # maybe because radius is active scalar in point data?
+    # mapper.SelectColorArray(p_name)
+    mapper.UseLookupTableScalarRangeOn()
+
     actor = vtk.vtkActor()
     actor.SetMapper(mapper);
+
+    # lut = create_lookup_table()  # 24
+    mapper.SetLookupTable(lut)
+    colors = vtk.vtkNamedColors()
     actor.GetProperty().SetColor(colors.GetColor3d("Green"))
 
     if render:
@@ -72,7 +100,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
 def create_leaf_(leaf, leaf_points, leaf_polys):
     """ used by plot plant """
     offs = leaf_points.GetNumberOfPoints()
-
+    globalIdx_y = []  # index of y node
     for i in range(0, leaf.getNumberOfNodes() - 1):  #
 
         ln1 = leaf.getLeafVis(i)
@@ -81,36 +109,38 @@ def create_leaf_(leaf, leaf_points, leaf_polys):
         if len(ln1) > 0 or len(ln2) > 0:
             n1 = leaf.getNode(i)
             n2 = leaf.getNode(i + 1)
-
-#             if len(ln1) > 0 and len(ln2) == 0:
-#                 print(" 2 -> 0")
-#             if len(ln1) == 0 and len(ln2) > 0:
-#                 print(" 0 -> 2")
-
+            glIdx = leaf.getNodeId(i + 1)
             if len(ln1) == 2 and len(ln2) == 2:  # normal case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx, glIdx]
             elif len(ln1) == 6 and len(ln2) == 6:  # convex case
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[1], ln1[2], ln2[2], ln2[1], leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[3], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(ln1[4], ln1[5], ln2[5], ln2[4], leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx, glIdx, glIdx, glIdx]
             elif len(ln1) == 2 and len(ln2) == 6:  # normal to convex case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[1], ln2[3], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx, glIdx]
                 if x2[1] <= x1[0]:
                     offs = add_quad_(ln1[0], ln1[0], ln2[1], ln2[2], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[1], ln1[1], ln2[4], ln2[5], leaf_points, leaf_polys, offs)
+                    globalIdx_y = globalIdx_y + [glIdx, glIdx]
             elif len(ln1) == 6 and len(ln2) == 2:  # convex to normal case
                 x1 = leaf.getLeafVisX(i)
                 x2 = leaf.getLeafVisX(i + 1)
                 offs = add_quad_(n1, ln1[0], ln2[0], n2, leaf_points, leaf_polys, offs)
                 offs = add_quad_(n1, ln1[3], ln2[1], n2, leaf_points, leaf_polys, offs)
+                globalIdx_y = globalIdx_y + [glIdx, glIdx]
                 if x1[1] <= x2[0]:
                     offs = add_quad_(ln1[1], ln1[2], ln2[0], ln2[0], leaf_points, leaf_polys, offs)
                     offs = add_quad_(ln1[4], ln1[5], ln2[1], ln2[1], leaf_points, leaf_polys, offs)
+                    globalIdx_y = globalIdx_y + [glIdx, glIdx]
+    return globalIdx_y
 
 
 def add_quad_(a, b, c, d, leaf_points, leaf_polys, offs):
@@ -202,7 +232,7 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     @param scalarBar                one or a list of vtkScalarBarActor (optional)
     @param bounds                   spatial bounds (to set axes actor, and camera position and focal point)
     @param interactiveImage         make image interactive or static (should be static for google Colab)
-    @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write png
+    @return a vtkRenderWindowInteractor     use render_window(...).Start() to start interaction loop, or render_window(...).GetRenderWindow(), to write jpg
 
     (built in)
     Keypress j / Keypress t: toggle between joystick (position sensitive) and trackball (motion sensitive) styles. In joystick style, motion occurs continuously as long as a mouse button is pressed. In trackball style, motion occurs when the mouse button is pressed and the mouse pointer moves.
@@ -220,13 +250,12 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
     Keypress w: modify the representation of all actors so that they are wireframe.
 
     (additional)
-    Keypress g: save as png
+    Keypress g: save as jpg
     Keypress x,y,z,v: various views
     """
     colors = vtk.vtkNamedColors()  # Set the background color
     ren = vtk.vtkRenderer()  # Set up window with interaction
-    ren.SetBackground(colors.GetColor3d("Silver"))
-    # ren.SetBackground(colors.GetColor3d("White"))
+    ren.SetBackground(colors.GetColor3d("White"))
 
     # Actors
     if isinstance(actor, list):
@@ -295,13 +324,14 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
         windowToImageFilter.SetInput(renWin)
         windowToImageFilter.Update()
 
-        writer = vtk.vtkPNGWriter()
+        writer = vtk.vtkJPEGWriter()
+        writer.SetQuality(80)
         writer.SetWriteToMemory(1)
         writer.SetInputConnection(windowToImageFilter.GetOutputPort())
         writer.Write()
 
         # move this somewhere else?
-        im = Image(writer.GetResult(), format = "png")
+        im = Image(writer.GetResult(), format = "jpeg")
         display(im)
 
 
@@ -312,8 +342,8 @@ def keypress_callback_(obj, ev, bounds):
     if key == 'g':
         renWin = obj.GetRenderWindow()
         file_name = renWin.GetWindowName()
-        write_png(renWin, file_name)
-        print("saved", file_name + ".png")
+        write_jpg(renWin, file_name, magnification=5)
+        print("saved", file_name + ".jpg")
     if key == 'x' or key == 'y' or key == 'z' or key == 'v':
         renWin = obj.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
@@ -340,20 +370,39 @@ def keypress_callback_(obj, ev, bounds):
         renWin.Render()
 
 
-def write_png(renWin, fileName):
-    """" Save the current render window in a png (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
+def write_jpg(renWin, fileName, magnification=5):
+    """" Save the current render window in a jpg (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
     @param renWin        the vtkRenderWindow
     @parma fileName      file name without extension
     """
+    ren = renWin.GetRenderers().GetFirstRenderer()
+
+    # Find and temporarily adjust the scalar bar, so that screenshot has nice scale but viewer can also be reset
+    bars = [a for a in ren.GetActors2D() if isinstance(a, vtk.vtkScalarBarActor)]
+    # Patch titles with \n, hardcoded as there is no clean solution 
+    original_titles = []
+    for bar in bars:
+        orig_title = bar.GetTitle()
+        original_titles.append(orig_title)
+        bar.SetTitle(orig_title + "\n\n\n")       
+    renWin.Render()
+    
     windowToImageFilter = vtk.vtkWindowToImageFilter();
     windowToImageFilter.SetInput(renWin)
-    windowToImageFilter.SetInputBufferTypeToRGBA()  # also record the alpha (transparency) channel
+    windowToImageFilter.SetScale(magnification)
+    windowToImageFilter.SetInputBufferTypeToRGB()
     windowToImageFilter.ReadFrontBufferOff()  # read from the back buffer
     windowToImageFilter.Update()
-    writer = vtk.vtkPNGWriter()
-    writer.SetFileName(fileName + ".png")
+    writer = vtk.vtkJPEGWriter()
+    writer.SetFileName(fileName + ".jpg")
     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
     writer.Write()
+    
+    # Restore original titles
+    for bar, orig_title in zip(bars, original_titles):
+        bar.SetTitle(orig_title)
+
+    renWin.Render()
 
 
 def create_lookup_table(tableIdx = 15, numberOfColors = 256):
@@ -404,24 +453,26 @@ def create_scalar_bar(lut, grid = None, p_name = ""):
     scalarBar = vtk.vtkScalarBarActor()
     scalarBar.SetLookupTable(lut)
     scalarBar.SetTitle(p_name)
-    scalarBar.SetDrawAnnotations(False)
+    scalarBar.SetTextPad(10)
+    scalarBar.SetDrawAnnotations(True)
     textProperty = vtk.vtkTextProperty()
     textProperty.SetFontSize(30)
+    textProperty.SetColor(0.0, 0.0, 0.0)  # pure black
     scalarBar.SetAnnotationTextProperty(textProperty)
     scalarBar.SetTitleTextProperty(textProperty)
     scalarBar.SetLabelTextProperty(textProperty)
-    scalarBar.AnnotationTextScalingOff()
+    scalarBar.AnnotationTextScalingOn()
     scalarBar.SetUnconstrainedFontSize(True)
 
     return scalarBar
 
 
-def plot_segments(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+def plot_segments(pd, p_name:str, win_title:str = " ", render:bool = True, interactiveImage:bool = True):
     """ see plot roots """
-    return plot_roots(pd, p_name, render, interactiveImage)
+    return plot_roots(pd, p_name, win_title, render, interactiveImage)
 
 
-def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True):
+def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interactiveImage:bool = True, returnLut:bool = False):
     """ plots the root system
     @param pd                       RootSystem, SegmentAnalyser, or polydata representing the root system (lines, or polylines)
     @param p_name                   parameter name of the data to be visualized
@@ -468,6 +519,10 @@ def plot_roots(pd, p_name:str, win_title:str = "", render:bool = True, interacti
         ren = render_window(plantActor, win_title, scalar_bar, pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
+
+    if returnLut:
+        return plantActor, scalar_bar, lut
+
     return plantActor, scalar_bar
 
 
@@ -702,9 +757,11 @@ def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True)
 class AnimateRoots:
     """ class to make an interactive animation (TODO unfinished and doc)"""
 
-    def __init__(self, rootsystem = None):
+    def __init__(self, rootsystem = None, container_sdf = None):
         self.rootsystem = rootsystem
         self.root_name = "subType"
+        self.container_sdf = container_sdf
+        self.container_actor = None
         # self.soil_name = "subType"
         #
         self.min = None
@@ -724,8 +781,17 @@ class AnimateRoots:
 
     def start(self, axis = 'x', avi_file = None):
         """ creates plot and adjusts camera """
+        if self.container_sdf:
+            # Create the container actor once and store it, so it does not have to be recalculated each frame
+            container_actors, _, _ = plot_container(self.container_sdf, render=False)
+            self.container_actor = container_actors[0]
+            
         self.create_root_actors()
         self.create_soil_actors()
+        if self.container_actor:
+            self.actors.append(self.container_actor)
+        
+        
         self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
         renWin = self.iren.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
@@ -757,13 +823,16 @@ class AnimateRoots:
         self.actors = []
         self.create_root_actors()
         self.create_soil_actors()
+        
+        if self.container_actor:
+            self.actors.append(self.container_actor)
         for a in self.actors:
             ren.AddActor(a)
 
         self.iren.Render()
         if self.avi_name:
-            write_png(renWin, self.avi_name + str(self.fram_c))
-            print("saved", self.avi_name + str(self.fram_c) + ".png")
+            write_jpg(renWin, self.avi_name + str(self.fram_c))
+            print("saved", self.avi_name + str(self.fram_c) + ".jpg")
             self.fram_c = self.fram_c + 1
 
     def create_root_actors(self):
@@ -795,3 +864,163 @@ class AnimateRoots:
             self.actors.extend(meshActor)
             self.bounds = grid.GetBounds()
 
+
+def sdf_to_vtk_mesh(sdf, initial_resolution = 100, expansion_factor = 1.5, resolution = 100):
+    """ Converts an SDF to a VTK Mesh using Marching Cubes with auto-detected bounds.
+    @param sdf: SDF function from PlantBox (hopefully, supports all SDF types: Box, Cylinder, Union, etc.)
+    @param initial_resolution: Initial grid resolution for adaptive scanning.
+    @param resolution: Resolution of resulting mesh
+    @param expansion_factor: Factor to expand detected surface bounds to ensure full capture.
+    @return: VTK PolyData of the shape."""
+    # **Step 1: Initial Sampling to Estimate Bounds**
+    grid_range = 100  # Initial search range in each direction
+    scan_res = initial_resolution  # Lower resolution for fast scanning
+
+    sdf_values, points = [], []
+
+    for x in np.linspace(-grid_range, grid_range, scan_res):
+        for y in np.linspace(-grid_range, grid_range, scan_res):
+            for z in np.linspace(-grid_range, grid_range, scan_res):
+                point = pb.Vector3d(x, y, z)
+                sdf_val = sdf.getDist(point)
+
+                sdf_values.append(sdf_val)
+                points.append((x, y, z))
+
+    # Find surface region (SDF values near zero)
+    surface_points = np.array([p for p, v in zip(points, sdf_values) if abs(v) < 2.0])
+
+    if surface_points.size == 0:
+        raise ValueError("No valid surface detected. Check SDF function!")
+
+    # **Step 2: Compute Adaptive Bounds**
+    min_bounds = surface_points.min(axis=0)
+    max_bounds = surface_points.max(axis=0)
+
+    # Calculate center and size of the detected bounds
+    center = (min_bounds + max_bounds) / 2.0
+    size = max_bounds - min_bounds
+
+    # Scale the size by the expansion factor
+    expanded_size = size * expansion_factor
+
+    # Recalculate the new min and max from the center and expanded size
+    xmin, ymin, zmin = center - (expanded_size / 2.0)
+    xmax, ymax, zmax = center + (expanded_size / 2.0)
+
+    # **Step 3: Generate VTK Mesh Using Marching Cubes**
+    image_data = vtk.vtkImageData()
+    image_data.SetDimensions(resolution, resolution, resolution)
+    image_data.SetSpacing(
+        (xmax - xmin) / (resolution - 1),
+        (ymax - ymin) / (resolution - 1),
+        (zmax - zmin) / (resolution - 1)
+    )
+    image_data.SetOrigin(xmin, ymin, zmin)
+
+    # Store SDF values
+    scalars = vtk.vtkDoubleArray()
+    scalars.SetNumberOfComponents(1)
+    scalars.SetName("SDF Values")
+
+    for z in np.linspace(zmin, zmax, resolution):
+        for y in np.linspace(ymin, ymax, resolution):
+            for x in np.linspace(xmin, xmax, resolution):
+                sdf_val = sdf.getDist(pb.Vector3d(x, y, z))
+                scalars.InsertNextValue(sdf_val)
+
+    image_data.GetPointData().SetScalars(scalars)
+
+    mc = vtk.vtkMarchingCubes()
+    mc.SetInputData(image_data)
+    mc.SetValue(0, 0.0)
+    mc.ComputeNormalsOn()
+    mc.Update()
+
+    return mc.GetOutput()
+
+
+def plot_container(sdf, p_name = "Container", win_title = "", render = True, interactiveImage = True):
+    """ Visualizes an SDF-based container using VTK, with automatic bounding box detection.
+    @param sdf: SDF function from PlantBox.
+    @param p_name: Label for visualization.
+    @param win_title: Title of the render window.
+    @param render: Whether to display the interactive window.
+    @return: Tuple (vtkActor, vtkScalarBarActor, detected_bounds).
+    """
+
+    # Convert SDF to VTK Mesh with auto-detected bounds
+    mesh = sdf_to_vtk_mesh(sdf)
+
+    # VTK Pipeline
+    mapper = vtk.vtkDataSetMapper()
+    mapper.SetInputData(mesh)
+    mapper.Update()
+
+    meshActor = vtk.vtkActor()
+    meshActor.SetMapper(mapper)
+
+    # Appearance settings
+    meshActor.GetProperty().SetColor(0.0, 0.0, 1.0)  # Blue container
+    meshActor.GetProperty().SetOpacity(0.2)  # Semi-transparent
+    meshActor.GetProperty().SetRepresentationToSurface()
+
+    # Extract bounds dynamically
+    detected_bounds = meshActor.GetBounds()
+
+    # Create lookup table and scalar bar
+    lut = create_lookup_table()
+    scalar_bar = create_scalar_bar(lut, mesh, p_name)
+    mapper.SetLookupTable(lut)
+
+    # Render container
+    if render:
+        ren = render_window(meshActor, win_title, scalar_bar, detected_bounds, interactiveImage)
+        if interactiveImage:
+            ren.Start()
+
+    return [meshActor], scalar_bar, detected_bounds
+
+
+def plot_roots_and_container(root_system, sdf, p_name = "subType", title = "Root System & Container", render = True, interactive = True):
+    """ Combines root system and container visualization into a single plot.
+    @param root_system: Root system object (e.g., 'rs' from CPlantBox).
+    @param p_name parameter name for visualization
+    @param sdf: Container geometry (e.g., splitBox, rhizoTube).
+    @param title: Window title.
+    @param render: Whether to open an interactive VTK window.
+    @param interactive: Whether the visualization should be interactive.
+    @return: If render=False, returns (actors, colorbars, bounds).
+    """
+
+    # Generate root system actor
+    root_actor, root_cbar = plot_roots(root_system, p_name, render = False)
+
+    # Generate container mesh with marching cubes
+    mesh_actor, mesh_cbar, mesh_bounds = plot_container(sdf, p_name = "Container", render = False)
+
+    # Combine actors for rendering
+    all_actors = [mesh_actor[0], root_actor]
+
+    # Render in a single window
+    if render:
+        render_window(all_actors, title, root_cbar, mesh_bounds, interactive).Start()
+    else:
+        return all_actors, [root_cbar, mesh_cbar], mesh_bounds
+
+
+def write_container(sdf, filename = "container.vtp", resolution = 100):
+    """ Saves an SDF-based container as a VTP file, with automatic bounding box detection.
+    @param sdf: SDF function from PlantBox.
+    @param filename: Output file name (default: "container.vtp").
+    @param resolution: Resolution for mesh generation (default: 100).
+    """
+
+    # Convert SDF to VTK Mesh with specified resolution
+    mesh = sdf_to_vtk_mesh(sdf, resolution = resolution)
+
+    # Write VTK mesh to VTP file
+    writer = vtk.vtkXMLPolyDataWriter()
+    writer.SetFileName(filename)
+    writer.SetInputData(mesh)
+    writer.Write()

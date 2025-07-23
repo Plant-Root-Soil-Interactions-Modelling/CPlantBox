@@ -28,7 +28,11 @@ public:
     SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
         double nz, int maxtil, double simtime,  double fTi = 0., double dTi = 0.):
             OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
+<<<<<<< HEAD
             delayRC(dRC), nz(nz), maxTil(maxtil), firstTi(fTi), delayTi(dTi),  simtime(simtime) {  };
+=======
+            delayRC(dRC), nz(nz), maxTil(maxtil), firstTil(fTi), delayTil(dTi),  simtime(simtime) {  };
+>>>>>>> master
     virtual ~SeedSpecificParameter() { };
 
     /*
@@ -50,8 +54,8 @@ public:
 
     //Tillers
     int maxTil;         ///< maximal number of tillers
-	double firstTi;     ///< First emergence of a shoot borne root [day]
-    double delayTi;     ///< Time delay between the shoot borne roots [day]
+	double firstTil;     ///< First emergence of a shoot borne root [day]
+    double delayTil;     ///< Time delay between the shoot borne roots [day]
 
     //Simulation parameters
     double simtime;     ///< recommended final simulation time
@@ -82,6 +86,7 @@ public:
     Vector3d seedPos  = Vector3d(0.,0.,-3.); ///< Mean position of the seed [cm]
     Vector3d seedPoss = Vector3d(0.,0.,0.);  ///< Standard deviation of position  [cm]
 	int delayDefinition = Organism::dd_distance; ///< how is the delay of the laterals defined
+	int delayDefinitionShoot = Organism::dd_distance; ///< how is the delay of the laterals defined
 
     // Basal roots (nodal roots)
     double firstB = 1.e9;  ///< Mean emergence of first basal root [day]
@@ -92,7 +97,7 @@ public:
     double maxBs = 0.;     ///< Standard deviation of maximal number of basal roots [1]
 
     // Shoot borne roots (crown roots)
-    double nC = 0.;        ///< Mean maximal number of roots per root crown [1]
+    double nC = 7.;        ///< Mean maximal number of roots per root crown [1]
     double nCs = 0.;       ///< Standard deviation of maximal number of roots per root crown [1]
     double firstSB = 1.e9; ///< Mean first emergence of a shoot borne root [day]
     double firstSBs = 0.;  ///< Standard deviation of first emergence of a shoot borne root [day]
@@ -106,10 +111,10 @@ public:
     // Stem parameters
     int maxTil = 0;        ///< Maximal number of tillers
     double maxTils = 0.;   ///< Standard deviation of tillers
-	double firstTi = 1.e9;  ///< Mean emergence of first basal root [day]
-    double firstTis = 0.;   ///< Standard deviation of emergence of first basal root [day]
-    double delayTi = 1.e9;  ///< Mean time delay between the basal roots [day]
-    double delayTis = 0.;   ///< Standard deviation of time delay between the basal roots [day]
+	double firstTil = 1.e9;  ///< Mean emergence of first basal root [day]
+    double firstTils = 0.;   ///< Standard deviation of emergence of first basal root [day]
+    double delayTil = 1.e9;  ///< Mean time delay between the basal roots [day]
+    double delayTils = 0.;   ///< Standard deviation of time delay between the basal roots [day]
 
     // Simulation parameters
     double simtime = 30.;  ///< Mean recommended final simulation time

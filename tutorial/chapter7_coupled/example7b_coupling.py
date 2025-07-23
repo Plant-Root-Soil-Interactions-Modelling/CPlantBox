@@ -31,12 +31,20 @@ loam = [0.08, 0.43, 0.04, 1.6, 50]
 initial = -659.8 + 12.5  # -659.8
 
 trans = 6.4  # cm3 /day (sinusoidal)
+<<<<<<< HEAD
 wilting_point = -15000  # cm
+=======
+wilting_point = -10000  # cm
+>>>>>>> master
 
 sim_time = 7  # [day] for task b
 rs_age = 10  # root system initial age
 age_dependent = False  # conductivities
+<<<<<<< HEAD
 dt = 120. / (24 * 3600)  # [days] Time step must be very small
+=======
+dt = 360. / (24 * 3600)  # [days] Time step must be very small
+>>>>>>> master
 
 """ Initialize macroscopic soil model """
 s = RichardsWrapper(RichardsSP())
@@ -50,7 +58,11 @@ s.initializeProblem()
 s.setCriticalPressure(wilting_point)
 
 """ Initialize xylem model """
+<<<<<<< HEAD
 rs = pb.MappedRootSystem()
+=======
+rs = pb.MappedPlant()
+>>>>>>> master
 rs.readParameters(path + name + ".xml")
 if not periodic:
     sdf = pb.SDF_PlantBox(0.99 * (max_b[0] - min_b[0]), 0.99 * (max_b[1] - min_b[1]), max_b[2] - min_b[2])
@@ -108,7 +120,11 @@ ax1.plot(x_, -np.array(y_), 'g')  # actual transpiration (neumann)
 ax2 = ax1.twinx()
 ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative transpiration (neumann)
 ax1.set_xlabel("Time [d]")
+<<<<<<< HEAD
 ax1.set_ylabel("Transpiration $[cm^3 d^{-1}]$")
+=======
+ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
+>>>>>>> master
 ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
 np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter = ';')
 plt.show()

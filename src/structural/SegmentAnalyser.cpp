@@ -6,6 +6,8 @@
 #include "MappedOrganism.h"
 #include "XylemFlux.h"
 #include "PlantHydraulicParameters.h"
+#include "PlantHydraulicModel.h"
+
 #include <algorithm>
 #include <iomanip>
 #include <istream>
@@ -44,7 +46,7 @@ SegmentAnalyser::SegmentAnalyser(const std::vector<Vector3d>& nodes, const std::
  *
  * @param plant     the the organism that is analysed
  */
-SegmentAnalyser::SegmentAnalyser(const Organism& plant)
+SegmentAnalyser::SegmentAnalyser(const Organism& plant) 
 {
     //std::cout << "construct from Organism\n";
     nodes = plant.getNodes();
@@ -95,6 +97,7 @@ SegmentAnalyser::SegmentAnalyser(const MappedSegments& plant) :nodes(plant.nodes
     data["radius"] = plant.radii;
     data["subType"] = subTypesd;
     data["organType"] = organTypesd;
+    segO = plant.segO;
 }
 
 /**
@@ -236,9 +239,9 @@ void SegmentAnalyser::addHydraulicConductivities(const PlantHydraulicParameters&
  *
  * use addConductivities before!
  */
-void SegmentAnalyser::addFluxes(const XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
+void SegmentAnalyser::addFluxes(const PlantHydraulicModel& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime) {
 
-    std::vector<double> radial_flux = rs.segFluxes(simTime, rx, sx, true, false); // volumetric flux, approx = true, cells = false
+    std::vector<double> radial_flux = rs.getRadialFluxes(simTime, rx, sx, true, false); // volumetric flux, approx = true, cells = false
     std::vector<double> a = data["radius"];
     for (int i =0; i< radial_flux.size(); i++) {
         radial_flux[i] /= (2.*M_PI*a.at(i));
@@ -720,11 +723,13 @@ void SegmentAnalyser::map2D() {
 /**
  * @return The origin's of the segments, i.e. the organ's where the segments are part of (unique, no special ordering)
  */
-std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans() const
+std::vector<std::shared_ptr<Organ>> SegmentAnalyser::getOrgans(int ot) const
 {
     std::set<std::shared_ptr<Organ>> rootset;  // praise the stl
     for (auto o : segO) {
-        rootset.insert(o.lock());
+		if ((ot<0) || (ot == o.lock()->organType())) {
+			rootset.insert(o.lock());
+		}
     }
     return std::vector<std::shared_ptr<Organ>>(rootset.begin(), rootset.end());
 }
@@ -777,7 +782,7 @@ SegmentAnalyser SegmentAnalyser::foto(const Vector3d& pos, const Matrix3d& ons, 
  *
  * @param plane 	half plane
  */
-SegmentAnalyser SegmentAnalyser::cut(const SDF_HalfPlane& plane) const
+SegmentAnalyser SegmentAnalyser::cut(const SignedDistanceFunction& plane) const
 {
     SegmentAnalyser f;
     f.nodes = nodes; // copy all nodes

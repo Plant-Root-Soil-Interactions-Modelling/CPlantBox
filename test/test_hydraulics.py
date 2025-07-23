@@ -1,6 +1,7 @@
 import sys; sys.path.append(".."); sys.path.append("../src")
 
-import unittestimport plantbox as pb
+import unittest
+import plantbox as pb
 
 from functional.PlantHydraulicModel import HydraulicModel_Doussan
 from functional.PlantHydraulicModel import HydraulicModel_Meunier
@@ -83,7 +84,7 @@ class TestPlantHydraulicModel(unittest.TestCase):
         return None
 
     def test_equilibrium(self):
-        """ for constant total potential and zero uptake fluxes should vanish. 
+        """ For constant total potential and zero uptake, all fluxes should vanish. 
             Depending on the method there might be some numerical noise
         """
         self.setup_analytic()

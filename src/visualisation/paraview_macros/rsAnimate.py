@@ -14,7 +14,9 @@ tube1 = FindSource('Tube1')
 # create a new 'Threshold'
 threshold1 = Threshold(Input=tube1)
 threshold1.Scalars = ['POINTS', 'creationTime']
-threshold1.ThresholdRange = [0.0, 19.76020050048828]
+threshold1.LowerThreshold = 0.0
+threshold1.UpperThreshold = 19.76020050048828
+threshold1.ThresholdMethod = 'Between'
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
@@ -70,7 +72,11 @@ threshold1Display.SetScalarBarVisibility(renderView1, True)
 renderView1.ResetCamera()
 
 # get animation track
+<<<<<<< HEAD
 threshold1ThresholdBetweenTrack = GetAnimationTrack('ThresholdBetween', index=1, proxy=threshold1)
+=======
+threshold1ThresholdBetweenTrack = GetAnimationTrack('UpperThreshold', proxy=threshold1)
+>>>>>>> master
 
 # create keyframes for this animation track
 

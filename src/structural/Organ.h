@@ -85,11 +85,11 @@ public:
 	void addNode(Vector3d n, int id, double t){addNode( n,  id, t, size_t(0), false);} //< for pybind, overwise error with parameter repartition
     void addNode(Vector3d n,  double t){addNode( n,   t, size_t(0),false);}; //< for link with pybind
     std::vector<Vector2i> getSegments() const; ///< per default, the organ is represented by a polyline
-	double dx() const; ///< returns the max axial resolution
+
+    double dx() const; ///< returns the max axial resolution
 	double dxMin() const; ///< returns the min axial resolution
     void rel2abs() ;
 	void abs2rel() ;
-
 	void moveOrigin(int idx);//change idx of first node, in case of nodal growth
 	double calcCreationTime(double length, double dt); ///< analytical creation (=emergence) time of a node at a length
 
@@ -112,9 +112,8 @@ public:
     virtual Vector3d heading(int n)  const ; ///< current (absolute) heading of the organs at node n
     Vector3d getiHeading0() const ;///< the initial coordinate system of the root, when it was created
 	bool hasRelCoord() const; //check if organ has relative coordinates
-
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
-	virtual double orgVolume(double length_ = -1.,  bool realized = false) const; //organ volume for current or for a specific length
+	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
 	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
 
 protected:

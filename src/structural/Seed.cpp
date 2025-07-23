@@ -63,7 +63,7 @@ void Seed::initialize(bool verbose)
 	/*
 	 * Create roots
 	 */
-	const double maxT = 90.; // maximal simulation time
+	const double maxT = 300.; // maximal simulation time
 	auto sp = this->param(); // rename (SeedSpecificParameter)
 
 	// Taproot
@@ -168,12 +168,12 @@ void Seed::initialize(bool verbose)
 				p->setOrganRandomParameter(tillParam);
 			}
 			int maxTi = sp->maxTil;
-			double delay = sp->firstTi;
+			double delay = sp->firstTil;
 			for (int i=0; i<maxTi; i++) {
 				std::shared_ptr<Organ> tiller = createStem(plant.lock(), tillerType,  delay);
 				tiller->addNode(Vector3d(0.,0.,0.), getNodeId(0), 0);
 				children.push_back(tiller);
-				delay += sp->delayTi;
+				delay += sp->delayTil;
 			}
 		}
 	}

@@ -61,13 +61,17 @@ std::string Organism::organTypeName(int ot)
  */
 std::shared_ptr<Organism> Organism::copy()
 {
+    std::cout << "Warning Organism (copy) should not be called directly: " << plantId << "\n" << std::flush;
     auto no = std::make_shared<Organism>(*this); // copy constructor
     for (int i = 0; i < baseOrgans.size(); i++) {
         no->baseOrgans[i] = baseOrgans[i]->copy(no);
     }
     for (int ot = 0; ot < numberOfOrganTypes; ot++) { // copy organ type parameters
         for (auto& otp : no->organParam[ot]) {
-            otp.second = otp.second->copy(no);
+            // no->setOrganRandomParameter(otp.second->copy(no));
+        	std::shared_ptr<OrganRandomParameter> new_params= otp.second->copy(no);
+        	// std::cout << "Plant::copy() " << new_params->plant.lock()->plantId << std::flush <<  "\n";
+			no->setOrganRandomParameter(new_params);
         }
     }
     return no;
@@ -546,6 +550,14 @@ std::vector<std::shared_ptr<Organ>> Organism::getNewSegmentOrigins(int ot) const
     }
     return so;
     }
+
+
+int Organism::getDelayDefinition(int ot_lat)
+{
+	auto srp = std::static_pointer_cast<SeedRandomParameter>(this->getOrganRandomParameter(Organism::ot_seed,0 ));
+	if((ot_lat ==  Organism::ot_stem)||(ot_lat ==  Organism::ot_leaf)){return srp->delayDefinitionShoot;
+	}else{return srp->delayDefinition;}
+}
 
 /**
  * @return Quick info about the object for debugging

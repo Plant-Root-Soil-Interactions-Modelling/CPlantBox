@@ -532,8 +532,16 @@ Vector3d MappedSegments::getMinBounds() {
 int MappedSegments::getSegment2leafId(int si_){
 		throw std::runtime_error("MappedSegments::getsegment2leafId: tried to access leafId of");
 		return -1;
-	}
+}
 
+std::vector<double> MappedSegments::getEffectiveRadii() {
+	int n = radii.size();
+	std::vector<double> radii_(n);
+	for (int i = 0; i<n; i++) {
+		radii_.at(i) = this->getEffectiveRadius(i);
+	}
+	return radii_;
+}
 
 
 
@@ -625,6 +633,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 	radii.resize(radii.size()+newsegO.size());
 	subTypes.resize(subTypes.size()+newsegO.size());
 	organTypes.resize(organTypes.size()+newsegO.size());
+	this->segO.resize(this->segO.size()+newsegO.size());
 
 
 	c = 0;
@@ -640,6 +649,7 @@ void MappedRootSystem::simulate(double dt, bool verbose)
 		radii.at(segIdx) = so->param()->a;
 		subTypes.at(segIdx) = so->param()->subType;
 		organTypes.at(segIdx) = so->organType();
+		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
 	}
 	// map new segments
 	this->mapSegments(newsegs);
@@ -693,7 +703,7 @@ void MappedPlant::initialize_(bool verbose, bool stochastic, bool LB) {
 	nodeCTs = this->getNodeCTs();
 	mapSegments(segments);
 	mapSubTypes();
-	plantParam = this->organParam; // todo, remove???
+	plantParam = this->organParam;
 }
 
 /**
@@ -767,10 +777,11 @@ void MappedPlant::simulate(double dt, bool verbose)
 	auto newsegO = this->getSegmentOrigins(); // to add radius and type (TODO cutting)
 	radii.resize(newsegO.size());
 	subTypes.resize(newsegO.size());
-	organTypes.resize(newsegO.size());
+	organTypes.resize(newsegO.size());  
 	segVol.resize(newsegO.size());
 	bladeLength.resize(newsegO.size());
 	leafBladeSurface.resize(newsegO.size());
+	this->segO.resize(newsegO.size());
 
 	c = 0;
 	if (verbose) {
@@ -782,14 +793,15 @@ void MappedPlant::simulate(double dt, bool verbose)
 		radii.at(segIdx) = so->param()->a;
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
+		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment
 
-		if(organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
+		if (organTypes.at(segIdx) == Organism::ot_leaf) //leaves can be cylinder, cuboid or characterized by user-defined 2D shape
 		{
 			int index;
 			auto nodeIds = so->getNodeIds();
 			auto it = find(nodeIds.begin(), nodeIds.end(), newsegs[c].y);
 			if (it != nodeIds.end()){ index = it - nodeIds.begin() -1;
-			}else {
+			} else {
 				throw std::runtime_error("MappedPlant::simulate: global segment index not found in organ");
 			}
 			int localSegId = index;
@@ -799,14 +811,13 @@ void MappedPlant::simulate(double dt, bool verbose)
 			leafBladeSurface.at(segIdx) =  std::static_pointer_cast<Leaf>(so)->leafAreaAtSeg(localSegId,realized, withPetiole);
 			withPetiole = true;
 			segVol.at(segIdx) = std::static_pointer_cast<Leaf>(so)->leafVolAtSeg(localSegId, realized, withPetiole);//* thickness;
-			if(segVol.at(segIdx) < 0)
-			{
+			if(segVol.at(segIdx) < 0) {
 				std::stringstream errMsg;
 				errMsg <<"MappedPlant::simulate: computation of leaf volume failed "<<segVol.at(segIdx)<<"\n";
 				throw std::runtime_error(errMsg.str().c_str());
 			}
 
-		}else{ //stems and roots are cylinder
+		} else { //stems and roots are cylinder
 			auto s = segments.at(segIdx);
 			double length_seg = (nodes.at(s.x).minus(nodes.at(s.y))).length();
 			segVol.at(segIdx) = radii.at(segIdx) * radii.at(segIdx) * M_PI * length_seg;
@@ -841,8 +852,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 					remove = (newCellIdx!=cellIdx);
 				}
 			} else {
-				if(!constantLoc)
-				{
+				if (!constantLoc) {
 					remove = true;
 				}
 			}
@@ -853,12 +863,12 @@ void MappedPlant::simulate(double dt, bool verbose)
 	}
 	MappedSegments::unmapSegments(rSegs);
 	MappedSegments::mapSegments(rSegs);
-	if(kr_length > 0.){calcExchangeZoneCoefs();}
+	if (kr_length > 0. || rootHairs) {
+	    calcExchangeZoneCoefs();
+	}
 	getSegment2leafIds();
 
 }
-
-
 
 /**
  * computes coeficients for kr
@@ -891,13 +901,13 @@ void MappedPlant::calcExchangeZoneCoefs() { //
 		}
 	}
 	const int notFound = std::count(exchangeZoneCoefs.cbegin(), exchangeZoneCoefs.cend(), -1.0);
-	if(notFound != 0)
-	{
+	if (notFound != 0) {
 		std::stringstream errMsg;
 		errMsg <<"MappedPlant::calcExchangeZoneCoefs(): "<<notFound<<" elements not initalized";
 		throw std::runtime_error(errMsg.str().c_str());
 		std::cout<<"notFound "<<notFound<<std::endl;
 	}
+	// std::cout << "distanceTip " << distanceTip.size()  << "\n" << std::flush;
 }
 
 
@@ -985,6 +995,29 @@ std::vector<int> MappedPlant::getNodeIds(int ot) const
 	return nodeId;
 }
 
+
+/**
+ *  returns the plant radius plus root hair length
+ */
+double MappedPlant::getEffectiveRadius(int si) {
+    int ot = organTypes.at(si);
+    if (ot == Organism::ot_root) {
+        int st = subTypes.at(si);
+        double l = distanceTip.at(si);
+        auto rrp = std::static_pointer_cast<RootRandomParameter>(this->getOrganRandomParameter(ot, st));
+        double zl = rrp->hairsZone;
+        double el = rrp->hairsElongation;
+        if (l<(zl+el) && l>el) { // add effective root length
+            double hl = rrp->hairsLength;
+            return this->radii.at(si)+hl;
+        } else {
+            return this->radii.at(si);
+        }
+    } else {
+        return this->radii.at(si);
+    }
+}
+
 /**
  * index of segment of organ type ot
  * @param ot        the expected organ type, where -1 denotes all organ types (default)
@@ -999,7 +1032,9 @@ double MappedPlant::getPerimeter(int si_, double l_)
 	//int leafId = getSegment2leafId(si_);
 	return leafBladeSurface.at(si_) / l_ *2;
 
-    }else{return 2 * M_PI * radii[si_];}
+    } else {
+    	return 2 * M_PI * this->getEffectiveRadius(si_);
+    }
 }
 
 int MappedPlant::getSegment2leafId(int si_) {

@@ -125,7 +125,7 @@ void Leaf::simulate(double dt, bool verbose)
 			//currently, does not use absolute coordinates for these function.
 			double P = getLeafRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
 			if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
-				double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
+                double p = 1.-(1.-P*dt); //probability of emergence in this time step
 				if (plant.lock()->rand()>p) { // not rand()<p
 					age -= dt; // the leaf does not emerge in this time step
 				}
@@ -220,8 +220,8 @@ void Leaf::simulate(double dt, bool verbose)
  */
 double Leaf::getParameter(std::string name) const {
 	if (name=="shapeType") { return getLeafRandomParameter()->shapeType; } // definition type of the leaf shape
-	if (name=="Width_petiole") { return param()->Width_petiole; } // [cm]
-	if (name=="Width_blade") { return param()->Width_blade; } // [cm]
+	if (name=="width_petiole") { return param()->width_petiole; } // [cm]
+	if (name=="width_blade") { return param()->width_blade; } // [cm]
 	if (name=="lb") { return param()->lb; } // basal zone [cm]
 	if (name=="la") { return param()->la; } // apical zone [cm]
 	//if (name=="nob") { return param()->nob; } // number of branches
@@ -317,7 +317,18 @@ double Leaf::leafArea(bool realized, bool withPetiole) const
 			} break;
 			case LeafRandomParameter::shape_2D:{
 				// how to take into account possible petiole area? add perimeter  *param()->lb /2 ?
-				return param()->areaMax * (leafLength(realized)/param()->leafLength());
+				double perimeter =  2 * M_PI * param()->a;
+				if (length_ <= param()->lb) {
+					surfacePetiole =  perimeter  * length_ /2;
+				} else {
+					//surface of basal zone
+					surfacePetiole = perimeter  *param()->lb /2 ;
+					//surface rest of leaf
+
+					surface_ =  param()->areaMax * (leafLength(realized)/param()->leafLength());
+				}
+				if(withPetiole){surface_ += surfacePetiole;}
+				return surface_;
 			} break;
 
 			default:
@@ -380,6 +391,10 @@ double Leaf::leafAreaAtSeg(int localSegId, bool realized, bool withPetiole)
 				//TODO: compute it better later? not sur how to do it if the leaf is not convex
 				// how to take into account possible petiole area? add perimeter  *lengthInPetiole /2 ?
 				surface_ = (lengthInBlade / leafLength(realized)) * leafArea(realized);
+				if(withPetiole)
+				{
+					surface_ +=  2 * M_PI * lengthInPetiole * param()->a / 2;
+				}
 			} break;
 
 			default:
@@ -482,6 +497,11 @@ double Leaf::leafVolAtSeg(int localSegId,bool realized, bool withPetiole)
 				//TODO: compute it better later? not sur how to do it if the leaf is not convex
 				// how to take into account possible petiole area? add perimeter  *lengthInPetiole /2 ?
 				vol_ = (lengthInBlade / leafLength(realized)) * leafArea(realized) *a;
+
+				if(withPetiole)
+				{
+					vol_ +=  M_PI * lengthInPetiole * param()->a * param()->a;
+				}
 				if(vol_ < 0)
 				{
 					std::stringstream errMsg;
@@ -536,8 +556,12 @@ double Leaf::orgVolume(double length_, bool realized) const
 			vol_ = length_ * p.a * p.a * M_PI;
 		} break;
 		case LeafRandomParameter::shape_2D:{
-			// how to take into account possible petiole volume? add lengthPetiole * p.a * p.a * M_PI;  ?
-			vol_ = leafArea(realized) * p.a ;//assume p.a is thickness
+			if ((p.laterals)||(length_ <= p.lb)) {
+				vol_ =  length_ * p.a * p.a * M_PI;
+			} else {
+                double leafArea_ = param()->areaMax * ((length_ - p.lb)/param()->leafLength());
+                vol_ = leafArea_ * p.a + p.lb * p.a * p.a * M_PI;//assume p.a is thickness
+            }
 		} break;
 		default:
 			throw  std::runtime_error("Leaf::orgVolume: undefined leaf shape type");
@@ -577,9 +601,13 @@ double Leaf::orgVolume2Length(double volume_)
 				length_ = volume_/(p.a*p.a*M_PI);
 			} break;
 			case LeafRandomParameter::shape_2D:{
-				double area_ = volume_ / p.a;//assume p.a is thickness
-				bool realized = false;
-				length_ = leafLength(realized ) * (area_ / p.areaMax); //assume area/areaMax = length / lengthmax
+                double volPetiole = p.lb * p.a * p.a * M_PI;
+                if((p.laterals) || (volume_ <= volPetiole)){
+                    length_ = volume_/(p.a * p.a * M_PI);
+                }else{
+                    double area_ = (volume_ -volPetiole )/ p.a;//assume p.a is thickness
+                    length_ = p.leafLength() * (area_ / p.areaMax) + p.lb; //assume area/areaMax = length / lengthmax
+                }
 			} break;
 			default:
 				throw  std::runtime_error("Leaf::orgVolume2Length: undefined leaf shape type");

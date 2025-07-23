@@ -344,11 +344,6 @@ void OrganRandomParameter::readSuccessor(tinyxml2::XMLElement* p, bool verbose)
 
 		replaceByDefaultValue = true;lookfor = std::vector<std::string>{"organType","organtype"};
 		if((successorST.at(ruleId).at(0) == 2)&&(this->organType == Organism::ot_stem)){
-			if(verbose)
-			{
-				std::cout<<"OrganRandomParameter::readSuccessor: gave a stem a successor of subtype 2 and did not specify type.";
-				std::cout<<" For backward compatibility, this will be considered as a leaf successor"<<std::endl;
-			}
 			//for backward compatibility =>
 			//if (no organtype given) + (parent is stem) + (subtype == 2) == we want a leaf
 			defaultVal = Organism::ot_leaf;
@@ -441,7 +436,7 @@ tinyxml2::XMLElement* OrganRandomParameter::writeXML(tinyxml2::XMLDocument& doc,
         if (!(key.compare("subType")==0 || key.compare("organType")==0)) { // already written in organ attributes
             tinyxml2::XMLElement* p = doc.NewElement("parameter");
             p->SetAttribute("name", key.c_str());
-            p->SetAttribute ("value", round(float(*dp.second)*1000)/1000); // float output is much nicer but with "stupid" rounding added bc of float representation issues
+            p->SetAttribute ("value", float(*dp.second)); // float output is much nicer
             if (param_sd.count(key)) { // deviations
                 double d = *(param_sd.at(key));
                 if (d!=0) {
