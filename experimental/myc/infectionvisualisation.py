@@ -3,7 +3,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import visualisation.vtk_plot as vp
 
-mycp = pb.MycorrhizalPlant(1)
+mycp = pb.MycorrhizalPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
@@ -63,26 +63,7 @@ if animation:
 else:
     for i in range(0, N):
         mycp.simulate(dt, False)
-        # roost = mycp.getOrganRandomParameter(pb.root)
-        # for i in range(0, len(roost)):
-        #     print(root[i].subType)
         # mycp.simulateHyphalGrowth(dt)
-        # hyphae = mycp.getOrgans(5)
-        # print("number of hyphae", len(hyphae))
-        # print("type", type(hyphae))
-        # for h in hyphae:
-        #     print(h.getParameter("age"))
-
-    # hyphae = mycp.getOrganRandomParameter(5)
-    # for i in range(0, len(hyphae)):
-    #     print(hyphae[i])
-        # print("hyphae", hyphae[i].getParameter("age"), hyphae[i].getParameter("length"))
-        # print("hyphae", hyphae[i].getParameter("infection"), hyphae[i].getParameter("infectionTime"))
-        # print("hyphae", hyphae[i].getParameter("subType"))
-    # print("number of hyphae", len(hyphae))
-    # print("type", type(hyphae))
-    #for h in hyphae:
-    #    print('hyphae',h.getParameter("age"), h.getParameter("length"))
     
 
     ana = pb.SegmentAnalyser(mycp)
