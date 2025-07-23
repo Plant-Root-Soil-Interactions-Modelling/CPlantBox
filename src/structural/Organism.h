@@ -23,10 +23,6 @@ class Seed;
 /**
  * Organism
  *
-<<<<<<< HEAD
- * Base class of Plant or RootSystem
-=======
->>>>>>> master
  *
  * Manages the OrganRandomParameters
  * Offers an interface for the simulation loop (initialize, simulate, ...)
@@ -139,7 +135,7 @@ protected:
     virtual tinyxml2:: XMLElement* getRSMLMetadata(tinyxml2::XMLDocument& doc) const;
     virtual tinyxml2:: XMLElement* getRSMLScene(tinyxml2::XMLDocument& doc) const;
 
-    static const int numberOfOrganTypes = 5;
+    static const int numberOfOrganTypes = 6;
     std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, numberOfOrganTypes> organParam;
 
     std::shared_ptr<SignedDistanceFunction> geometry = std::make_shared<SignedDistanceFunction>();  ///< Confining geometry (unconfined by default)

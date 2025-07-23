@@ -1024,7 +1024,6 @@ PYBIND11_MODULE(plantbox, m) {
                         .def("simulateSecondaryInfection", &MycorrhizalPlant::simulateSecondaryInfection)
                         .def("getNodeInfectionTime", &MycorrhizalPlant::getNodeInfectionTime)
                         .def("getNodeInfections",&MycorrhizalPlant::getNodeInfections);
-			.def("getNodeIds",&MappedPlant::getNodeIds);
 
 	/**
 	 * Perirhizal.h

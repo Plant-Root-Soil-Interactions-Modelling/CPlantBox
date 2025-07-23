@@ -84,7 +84,7 @@ public:
 	bool constantLoc = false;// the roots remain in the soil voxel they appear in
 
     const double eps = 1.e-5;
-    std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 5> plantParam;
+    std::array<std::map<int, std::shared_ptr<OrganRandomParameter>>, 6> plantParam;
 	double kr_length = -1.0; //define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
 	//% of segment length in the root exchange zone, see MappedPlant::simulate.
 	//only needed if carbon- and water-limited growth (i.e., for plants with phloem module)
