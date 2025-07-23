@@ -28,11 +28,7 @@ public:
     SeedSpecificParameter(int type, Vector3d seedPos, double fB, double dB, int mB, int nC, double fSB, double dSB, double dRC,
         double nz, int maxtil, double simtime,  double fTi = 0., double dTi = 0.):
             OrganSpecificParameter(type, 0.), seedPos(seedPos), firstB(fB), delayB(dB), maxB(mB), nC(nC), firstSB(fSB), delaySB(dSB),
-<<<<<<< HEAD
-            delayRC(dRC), nz(nz), maxTil(maxtil), firstTi(fTi), delayTi(dTi),  simtime(simtime) {  };
-=======
             delayRC(dRC), nz(nz), maxTil(maxtil), firstTil(fTi), delayTil(dTi),  simtime(simtime) {  };
->>>>>>> master
     virtual ~SeedSpecificParameter() { };
 
     /*
