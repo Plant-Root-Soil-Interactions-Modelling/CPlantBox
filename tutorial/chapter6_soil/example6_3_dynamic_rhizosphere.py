@@ -15,8 +15,7 @@ import pandas as pd
 import plantbox as pb  # CPlantBox
 from functional.xylem_flux import *  # root system Python hybrid solver
 from rosi_richardsnc_cyl import RichardsNCCylFoam   # C++ part (Dumux binding), macroscopic soil model
-from richards import RichardsWrapper  # Python part, macroscopic soil model
-from richards_no_mpi import RichardsNoMPIWrapper  # Python part of cylindrcial
+from richards_flat import RichardsFlatWrapper  # Python part of cylindrcial
 import functional.van_genuchten as vg
 
 
@@ -59,7 +58,7 @@ def plot_history(area, w, c, N):
 
 
 """ Soil """  # |\label{l63:init_soil}|
-s = RichardsNoMPIWrapper(RichardsNCCylFoam())  # water & single solute
+s = RichardsFlatWrapper(RichardsNCCylFoam())  # water & single solute
 logbase = 0.5
 NC = 10 # [1] spatial resolution (1D model)
 a_in = 0.02 # cm
@@ -112,11 +111,11 @@ s.ddt = 1e-4  # [day] initial Dumux time step
 sim_time = 3
 dt = 3600. / (24.*3600)
 
-cc = np.array(s.getCellCenters()).flatten()  # [cm] 
-points =  np.array(s.getPoints()).flatten()  # [cm] cell faces
+cc = np.array(s.getCellCenters())  # [cm] 
+points =  np.array(s.getPoints())  # [cm] cell faces
 area = np.pi * (points[1:]**2 - points[:-1]**2)  # [cm2] area of each cell
 print("area per cell", area, "cm2", "distance from root surface", cc, "cm")
-theta =  np.array(s.getWaterContent()).flatten()
+theta =  np.array(s.getWaterContent()) 
 volume0 =  np.sum(np.multiply(theta , area))
 print("\ndomain water volume", volume0, "cm3/cm  = ", volume0 / 1000, "l/cm")  
 print("water content to water volume",volume0 , "cm3/cm") 
@@ -134,10 +133,10 @@ for i in range(0, N):  # |\label{l63:loop_loop}|
     s.setInnerBC("fluxCyl", -RS_Uptake_Wmax * sinusoidal(t))  # [cm/day]
     
     s.solve(dt)
-    h.append(s.getSolutionHead_().flatten())  # [cm]
-    w.append(s.getWaterContent().flatten())  # [1]
-    c.append(s.getSolution_(1).flatten())  # [g/L]
-    cmin = cmin if cmin < min(s.getSolution_(1).flatten()) else min(s.getSolution_(1).flatten())      
+    h.append(s.getSolutionHead())  # [cm]
+    w.append(s.getWaterContent())  # [1]
+    c.append(s.getSolution(1))  # [g/L]
+    cmin = cmin if cmin < min(s.getSolution(1)) else min(s.getSolution(1))      
 
 theta = w[-1]
 volumef = np.sum(np.multiply(theta , area))
