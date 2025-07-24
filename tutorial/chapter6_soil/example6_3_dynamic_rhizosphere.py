@@ -19,44 +19,6 @@ from richards_no_mpi import RichardsNoMPIWrapper  # Python part of cylindrcial
 import functional.van_genuchten as vg
 
 
-def plot_results(h, c , times, net_inf, depth = -100.):
-    """ creates a figures presenting soil water matric potential and 
-    nitrate concentration over time """
-    c = np.transpose(c)
-    c = c[::-1,:]
-    h = np.transpose(h)
-    h = h[::-1,:]
-    fig, ax = plt.subplots(3, 1, figsize = (18, 10), gridspec_kw = {'height_ratios': [1.5, 3, 3]})
-    bar = ax[0].bar(times[::2], -10 * net_inf[::2], 0.8)  # cm -> mm
-    ax[0].set_ylabel("net inf [mm/day]")
-    ax[0].set_xlim(times[0] - 0.5, times[-1] + 0.5)
-    divider = make_axes_locatable(ax[0])
-    cax0 = divider.append_axes('right', size = '5%', pad = 0.05)
-    cax0.axis('off')
-    divider = make_axes_locatable(ax[1])
-    cax = divider.append_axes('right', size = '5%', pad = 0.05)
-    cmap_reversed = matplotlib.cm.get_cmap('jet_r')
-    im = ax[1].imshow(h, cmap = cmap_reversed, aspect = 'auto', vmin = -1.e3, extent = [0 , sim_time, depth, 0.])
-    cb = fig.colorbar(im, cax = cax, orientation = 'vertical')
-    cb.ax.get_yaxis().labelpad = 30
-    cb.set_label('soil matric potential [cm]', rotation = 270)
-    ax[1].set_ylabel("depth [cm]")
-    ax[1].set_xlabel("time [days]")
-    divider = make_axes_locatable(ax[2])
-    cax = divider.append_axes('right', size = '5%', pad = 0.05)
-    cmap_ = matplotlib.cm.get_cmap('jet')
-    im = ax[2].imshow(c, cmap = cmap_, aspect = 'auto', extent = [0 , sim_time, depth, 0.])
-    cb = fig.colorbar(im, cax = cax, orientation = 'vertical')
-    cb.ax.get_yaxis().labelpad = 30
-    cb.set_label('nitrate concentration [g/L]', rotation = 270)
-    ax[2].set_ylabel("depth [cm]")
-    ax[2].set_xlabel("time [days]")
-    print("range", np.min(h), np.max(h), "cm")
-    print("range", np.min(c), np.max(c), "g/L")
-    plt.tight_layout()
-    plt.show()
-
-
 def plot_profile(h, c, cc, depth = -100.):
     """ shows soil matric potential and concentration in the profile"""
     fig, ax1 = plt.subplots()
