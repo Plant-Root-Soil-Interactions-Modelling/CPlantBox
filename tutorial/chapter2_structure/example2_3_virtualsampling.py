@@ -37,17 +37,18 @@ soilSpace = pb.SDF_PlantContainer(500,500, 500, True)
 allRS = []
 for i in range(0, M):
     for j in range(0, N):
-        rs = pb.RootSystem()
-        rs.readParameters(path + name + ".xml", fromFile = True, verbose = False )
-        rs.getRootSystemParameter().seedPos = pb.Vector3d(distp * i, distr * j, -3.)  # cm
-        rs.setGeometry(soilSpace)
-        rs.initialize(False)
-        rs.simulate(30*months, False)
-        allRS.append(rs) 
+        plant = pb.Plant()
+        plant.readParameters(path + name + ".xml", fromFile = True, verbose = False )
+        seed = plant.getOrganRandomParameter(pb.seed)[0]
+        seed.seedPos = pb.Vector3d(distp * i, distr * j, -3.)  # cm
+        plant.setGeometry(soilSpace)
+        plant.initialize(False)
+        plant.simulate(30*months, False)
+        allRS.append(plant) 
         if i+ j == 0:
-            allAna = pb.SegmentAnalyser(rs)
+            allAna = pb.SegmentAnalyser(plant)
         else:
-            allAna.addSegments(rs)
+            allAna.addSegments(plant)
 rld=np.zeros([len(soilcolumns)*len(times[1:]), layers])
 
 for k in range(len(soilcolumns)):
