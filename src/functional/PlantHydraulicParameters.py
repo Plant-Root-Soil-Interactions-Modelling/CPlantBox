@@ -18,8 +18,8 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         
         Values are set in dependence on subType and organType, are given
         constant:                 setKrConst, setKxConst,
-        age dependent:            setKrAge, setKxAge, 
-        distance dependent:       setKrDistance, setKxDistance, or  
+        age dependent:            setKrAgeDependent, setKxAgeDependent, 
+        distance dependent:       setKrDistanceDependent, setKxDistanceDependent, or  
         per segment:              setKrValues
         
         Python setter are more flexible: 
@@ -28,8 +28,8 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             or multiple types (list), e.g. subType = [2,3]
         
         set_kr_const, set_kx_const -> setKrConst, setKxConst
-        set_kr_age, set_kx_age -> setKrAge, setKxAge
-        set_kr_distance, set_kx_distance -> setKrDistance, setKxDistance
+        set_kr_age_dependent, set_kx_age_dependent -> setKrAgeDependent, setKxAgeDependent
+        set_kr_distance_dependent, set_kx_distance_dependent -> setKrDistanceDependent, setKxDistanceDependent
         
         it is not possible to use different methods (const, age, or distance) for different subTypes or organTypes
         it is possible to use different methods for kr and kx 
@@ -115,10 +115,10 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             for st in range(0, self.maxSubTypes):
                 age_ = json_dict["kx_ages"][str(ot)][st]
                 value_ = json_dict["kx_values"][str(ot)][st]
-                self.setKxAge(age_, value_, st, ot)
+                self.setKxAgeDependent(age_, value_, st, ot)
                 age_ = json_dict["kr_ages"][str(ot)][st]
                 value_ = json_dict["kr_values"][str(ot)][st]
-                self.setKrAge(age_, value_, st, ot)
+                self.setKrAgeDependent(age_, value_, st, ot)
         mode = json_dict["mode"]
         self.setMode(mode["krMode"], mode["kxMode"])
 
@@ -211,17 +211,17 @@ if __name__ == "__main__":
     kr1 = np.array([[-1e4, 0.], [-0.1, 0.], [0., 0.000181], [10., 0.000181], [16, 0.0000173], [300, 0.0000173]])  #   time, value; [1 day-1]
     values = [kr00[:, 1], kr0[:, 1], kr1[:, 1], kr1[:, 1], kr0[:, 1], kr0[:, 1]]
     ages = [kr00[:, 0], kr0[:, 0], kr1[:, 0], kr1[:, 0], kr0[:, 0], kr0[:, 0]]
-    [params.setKrAge(ages[i], values[i], i) for i in range(0, 6)]
+    [params.setKrAgeDependent(ages[i], values[i], i) for i in range(0, 6)]
     kx00 = np.array([[0., 1.e3]])  # artificial shoot
     kx0 = np.array([[0., 0.000864], [5., 0.00173], [12., 0.0295], [15., 0.0295], [20., 0.432], [300., 0.432]])  #  time, value; [cm3 day-1]
     kx1 = np.array([[0., 0.0000864], [5., 0.0000864], [10., 0.0000864], [12., 0.0006048], [20., 0.0006048], [23., 0.00173], [300., 0.00173]])  #  time, value; [cm3 day-1]
     ages = [kx00[:, 0], kx0[:, 0], kx1[:, 0], kx1[:, 0], kx0[:, 0], kx0[:, 0]]
     values = [kx00[:, 1], kx0[:, 1], kx1[:, 1], kx1[:, 1], kx0[:, 1], kx0[:, 1]]
-    [params.setKxAge(ages[i], values[i], i) for i in range(0, 6)]
+    [params.setKxAgeDependent(ages[i], values[i], i) for i in range(0, 6)]
     params.plot_conductivities(True)
 
-    params.write_parameters("test")
+    params.write_parameters("couvreur2012")
 
     params2 = PlantHydraulicParameters()
-    params2.read_parameters("test")
+    params2.read_parameters("couvreur2012")
     params2.plot_conductivities(True)

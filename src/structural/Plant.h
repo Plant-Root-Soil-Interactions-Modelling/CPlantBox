@@ -50,8 +50,8 @@ public:
   /* Simulation */
   void setSoil(std::shared_ptr<SoilLookUp> soil_) { soil = soil_; } ///< optionally sets a soil for hydro tropism (call before Plant::initialize())
   void reset(); ///< resets the plant class, keeps the organ type parameters
-  void initializeLB(bool verbose = true); ///< creates the base roots (length based lateral emergence times), call before simulation and after setting plant and root parameters
-  void initializeDB(bool verbose = true); ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting plant and root parameters
+  virtual void initializeLB(bool verbose = true); ///< creates the base roots (length based lateral emergence times), call before simulation and after setting plant and root parameters
+  virtual void initializeDB(bool verbose = true); ///< creates the base roots (delay based lateral emergence times), call before simulation and after setting plant and root parameters
   void initialize(bool verbose = true) override { initializeLB(verbose); };
   void setTropism(std::shared_ptr<Tropism> tf, int organType, int subType = -1); ///< todo docme
   void simulate(); ///< simulates root system growth for the time defined in the root system parameters
