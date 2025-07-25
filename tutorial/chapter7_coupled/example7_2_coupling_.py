@@ -26,12 +26,12 @@ cell_number = [17, 5, 50]  # 1D
 
 path = "../../modelparameter/structural/rootsystem/"
 name = "Zeamays_synMRI_modified"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
-trans = 250  # cm3 /day (sinusoidal) = mL/day
+trans = 100  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -15000  # cm
 rs_age = 21  # root system initial age [day]
 
 loam = [0.08, 0.43, 0.04, 1.6, 50]
-initial = -400  # cm
+initial = -300  # cm
 
 sim_time = 7.5  # [day]
 dt = 360. / (24 * 3600)  # [days]  # |\label{l72c:param_end}|
@@ -44,7 +44,7 @@ s.setHomogeneousIC(initial, True)  # [cm] total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.setVGParameters([loam])
-s.setParameter("Soil.SourceSlope", "500")  # |\label{l72c:regularisation}|
+s.setParameter("Soil.SourceSlope", "1000")  # |\label{l72c:regularisation}|
 s.initializeProblem()
 s.setCriticalPressure(wilting_point)  # |\label{l72c:soil_end}|
 
@@ -57,7 +57,11 @@ plant.setGeometry(sdf)  # |\label{l72c:soil_plant_end}|
 """ root hydraulic properties """
 params = PlantHydraulicParameters()  # |\label{l72c:hydraulic}|
 params.read_parameters("../../modelparameter/functional/plant_hydraulics/couvreur2012")
-# params.plot_conductivities(True) # |\label{l72c:plot_conductivities}|
+# params.plot_conductivities(True)
+# kz = 4.32e-2  # [cm^3/day] # TODO have we described the options in the book?
+# kr = 1.728e-4  # [1/day]
+# params.set_kr_const(kr)
+# params.set_kx_const(kz)
 hm = HydraulicModel_Doussan(plant, params)
 hm.wilting_point = wilting_point  # |\label{l72c:hydraulic_end}|
 
@@ -77,16 +81,26 @@ N = round(sim_time / dt)
 for i in range(0, N):  # |\label{l72c:loop}|
 
     plant.simulate(dt)  # |\label{l72c:plant}|
+    # hm.test_unmapped()
     hs = s.getSolutionHead()  # |\label{l72c:hs}|
     hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hs, cells = True)  # |\label{l72c:hx}|
 
+    water = s.getWaterVolume()
     fluxes = hm.soil_fluxes(rs_age + t, hx, hs)  # |\label{l72c:soil_model}|
     s.setSource(fluxes)
     s.solve(dt)  # |\label{l72c:soil_model_end}|
+    soil_water = (s.getWaterVolume() - water) / dt
 
     x_.append(t)
     y_.append(float(hm.get_transpiration(rs_age + t, hx, hs, cells = True)))  # |\label{l72c:results}|
 
+    # checks
+    if hx[0] > wilting_point:
+        err2 = np.linalg.norm(-trans * sinusoidal(t) - hm.get_transpiration(rs_age + t, hx, hs, cells = True))
+        if err2 > 1.e-6:
+            print("error: potential transpiration differs root collar flux in Neumann case" , err2)
+            print(-trans * sinusoidal(t))
+            print(collar_flux)
     n = round(float(i) / float(N) * 100.)  # |\label{l72c:progress}|
     print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm soil [{:g}, {:g}] cm root at {:g} days {:g}"
             .format(np.min(hs), np.max(hs), np.min(hx), np.max(hx), s.simTime, hx[0]))
@@ -113,3 +127,4 @@ ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
 ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
 np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter = ';')
 plt.show()
+
