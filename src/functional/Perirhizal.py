@@ -353,7 +353,7 @@ class PerirhizalPython(Perirhizal):
             print("PerirhizalPython.get_outer_radii() unknown type (should be 'length', 'surface', or 'volume')", type)
             raise
 
-    def get_outer_radii_(self, type:str, volumes:list = []):
+    def get_outer_radii_(self, type:str, volumes:list = None):
         """ python version of segOuterRadii, see get_outer_radii() """
         if type == "length":
             f = lambda a, l: l  # cm
