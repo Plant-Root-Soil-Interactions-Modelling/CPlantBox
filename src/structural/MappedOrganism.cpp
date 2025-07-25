@@ -627,6 +627,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 		{
 			int index;
 			auto nodeIds = so->getNodeIds();
+		    for (int& i : nodeIds) { // shift
+		        i += shift;
+		    }
 			auto it = find(nodeIds.begin(), nodeIds.end(), newsegs[c].y);
 			if (it != nodeIds.end()){ index = it - nodeIds.begin() -1;
 			} else {
