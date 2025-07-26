@@ -870,10 +870,11 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setRadius", &MappedSegments::setRadius)
         .def("setTypes", &MappedSegments::setSubTypes) //kept for backward compatibility
         .def("setSubTypes", &MappedSegments::setSubTypes)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool)) &MappedSegments::setSoilGrid,
-        		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
-        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, bool)) &MappedSegments::setSoilGrid, py::arg("s"), py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool, bool)) &MappedSegments::setSoilGrid,
+        		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), 
+				py::arg("cut") = true, py::arg("noChanges") = false)
         .def("mapSegments",  &MappedSegments::mapSegments)
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)

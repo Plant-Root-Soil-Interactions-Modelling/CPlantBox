@@ -35,8 +35,8 @@ public:
     void setRadius(double a); ///< sets a constant radius for all segments
     void setSubTypes(int t); ///< sets a constant sub type for all segments
 
-    void setSoilGrid(const std::function<int(double,double,double)>& s); ///< sets the soil, resets the mappers, and maps all segments
-    void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res, bool cut = true); ///< sets the soil, resets the mappers, cuts and maps all segments
+    void setSoilGrid(const std::function<int(double,double,double)>& s, bool noChanges = false); ///< sets the soil, resets the mappers, and maps all segments
+    void setSoilGrid(const std::function<int(double,double,double)>& s, Vector3d min, Vector3d max, Vector3d res, bool cut = true, bool noChanges = false); ///< sets the soil, resets the mappers, cuts and maps all segments
     void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut = true, bool noChanges = false); ///< sets an underlying rectangular grid, and cuts all segments accordingly
 
     void mapSegments(const std::vector<Vector2i>& segs);

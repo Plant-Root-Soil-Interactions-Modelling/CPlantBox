@@ -100,7 +100,7 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
             organTypes = np.array(self.plant.organTypes)
             return np.array(leafBlade)[organTypes == ot]
         
-    def get_tot_transpiration(self):
+    def get_transpiration(self):
         """ actual transpiration [cm3 day-1], calculated as the sum of all leaf radial fluxes"""
         return sum(self.Ev)
 

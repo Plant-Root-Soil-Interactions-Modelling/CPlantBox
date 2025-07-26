@@ -18,7 +18,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
         
         Values are set in dependence on subType and organType, are given
         constant:                 setKrConst, setKxConst,
-        age dependent:            setKrAge, setKxAge, 
+        age dependent:            setKrAgeDependent, setKxAgeDependent, 
         distance dependent:       setKrDistance, setKxDistance, or  
         per segment:              setKrValues
         
@@ -28,7 +28,7 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             or multiple types (list), e.g. subType = [2,3]
         
         set_kr_const, set_kx_const -> setKrConst, setKxConst
-        set_kr_age, set_kx_age -> setKrAge, setKxAge
+        set_kr_age, set_kx_age -> setKrAgeDependent, setKxAgeDependent
         set_kr_distance, set_kx_distance -> setKrDistance, setKxDistance
         
         it is not possible to use different methods (const, age, or distance) for different subTypes or organTypes
@@ -115,10 +115,10 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             for st in range(0, self.maxSubTypes):
                 age_ = json_dict["kx_ages"][str(ot)][st]
                 value_ = json_dict["kx_values"][str(ot)][st]
-                self.setKxAge(age_, value_, st, ot)
+                self.setKxAgeDependent(age_, value_, st, ot)
                 age_ = json_dict["kr_ages"][str(ot)][st]
                 value_ = json_dict["kr_values"][str(ot)][st]
-                self.setKrAge(age_, value_, st, ot)
+                self.setKrAgeDependent(age_, value_, st, ot)
         mode = json_dict["mode"]
         self.setMode(mode["krMode"], mode["kxMode"])
 
@@ -217,7 +217,7 @@ if __name__ == "__main__":
     kx1 = np.array([[0., 0.0000864], [5., 0.0000864], [10., 0.0000864], [12., 0.0006048], [20., 0.0006048], [23., 0.00173], [300., 0.00173]])  #  time, value; [cm3 day-1]
     ages = [kx00[:, 0], kx0[:, 0], kx1[:, 0], kx1[:, 0], kx0[:, 0], kx0[:, 0]]
     values = [kx00[:, 1], kx0[:, 1], kx1[:, 1], kx1[:, 1], kx0[:, 1], kx0[:, 1]]
-    [params.setKxAge(ages[i], values[i], i) for i in range(0, 6)]
+    [params.setKxAgeDependent(ages[i], values[i], i) for i in range(0, 6)]
     params.plot_conductivities(True)
 
     params.write_parameters("test")
