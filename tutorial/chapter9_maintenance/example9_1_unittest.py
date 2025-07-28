@@ -8,7 +8,7 @@ class TestPlant(unittest.TestCase):
 
     def root_example_rrp(self):
         """ an example used in the tests below, a main root with laterals """
-        self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter)
+        self.plant = pb.Organism()  # store organism (not owned by Organ, or OrganRandomParameter) #|\label{l9_1:defRootBegin}|
         p0 = pb.RootRandomParameter(self.plant)
         p0.name, p0.subType, p0.la, p0.lb, p0.lmax, p0.ln, p0.r, p0.dx = "taproot", 1, 10., 1., 100., 1., 1.5, 0.5
         p0.successor = [[2]]
@@ -29,22 +29,22 @@ class TestPlant(unittest.TestCase):
 
         self.parentroot = parentroot  # store parent (not owned by child Organ)
         self.root = pb.Root(self.plant, p0.subType,  0, self.parentroot , 0)
-        self.root.setOrganism(self.plant)
+        self.root.setOrganism(self.plant) #|\label{l9_1:defRootEnd}|
 
     def test_parameter(self):
         """ tests some parameters on sequential organ list """
-        self.root_example_rrp()
+        self.root_example_rrp() #|\label{l9_1:callSelf}|
         simtime = 30.
-        self.root.simulate(simtime, False)
+        self.root.simulate(simtime, False) #|\label{l9_1:parasbegin}|
         organs = self.root.getOrgans()
         age, ct = [], []
         for o in organs:
             age.append(o.getParameter("age"))
             ct.append(o.getParameter("creationTime"))
 
-        nol = round(self.root.getParameter("numberOfLaterals"))
+        nol = round(self.root.getParameter("numberOfLaterals")) #|\label{l9_1:parasend}|
         for i in range(0, nol):
-            self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree")
+            self.assertAlmostEqual(age[i], simtime - ct[i], 10, "getParameter: age and creation time does not agree") #|\label{l9_1:AssertAlmostEqual}|
     
     def test_copy(self):
         """ checks if the root system can be copied, and if randomness works """
@@ -55,9 +55,9 @@ class TestPlant(unittest.TestCase):
         rs.readParameters(path + name + ".xml", verbose = False)
         rs.setSeed(seed)
         rs.initialize(False)
-        rs2 = rs.copy()  # copy root system
-        self.assertIsNot(rs2, rs, "copy: not a copy")
-        self.assertEqual(str(rs), str(rs2), "copy: the organisms should be equal")
+        rs2 = rs.copy()  # copy root system #|\label{l9_1:copy}|
+        self.assertIsNot(rs2, rs, "copy: not a copy") #|\label{l9_1:AssertIsNot}|
+        self.assertEqual(str(rs), str(rs2), "copy: the organisms should be equal") #|\label{l9_1:AssertEqual}|
 
 if __name__ == '__main__':
     unittest.main()
