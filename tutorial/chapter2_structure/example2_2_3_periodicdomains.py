@@ -21,7 +21,7 @@ rs.simulate(60)  # days
 ana = pb.SegmentAnalyser(rs)
 ana.write("results/periodic.vtp")
 
-ana.mapPeriodic(15, 10)
+ana.mapPeriodic(15, 10) #|\label{l2_2_3:periodicity}|
 ana.write("results/periodic.vtp")
 
 # Export geometry as Paraview Python script
