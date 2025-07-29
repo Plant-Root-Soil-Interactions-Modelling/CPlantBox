@@ -59,5 +59,5 @@ class TestPlant(unittest.TestCase):
         self.assertIsNot(rs2, rs, "copy: not a copy") #|\label{l9_1:AssertIsNot}|
         self.assertEqual(str(rs), str(rs2), "copy: the organisms should be equal") #|\label{l9_1:AssertEqual}|
 
-if __name__ == '__main__':
-    unittest.main()
+if __name__ == '__main__': #|\label{l9_1:RunTestBegin}|
+    unittest.main() #|\label{l9_1:RunTestEnd}|
