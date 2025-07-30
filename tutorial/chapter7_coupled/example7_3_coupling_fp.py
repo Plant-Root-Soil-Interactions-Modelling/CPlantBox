@@ -20,6 +20,7 @@ import timeit
 def sinusoidal(t):
     return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.
 
+
 """ Parameters """  # |\label{l73c:param}|
 min_b = [-4., -4., -25.]
 max_b = [4., 4., 0.]
@@ -71,7 +72,7 @@ plant.simulate(rs_age, True)
 hm.test()  # |\label{l73c:test}|
 
 peri = PerirhizalPython(hm.ms)
-# peri.open_lookup("../table_loam")
+# peri.open_lookup("hydrus_loam")
 peri.set_soil(vg.Parameters(loam))
 
 outer_r = peri.get_outer_radii("length")
@@ -93,7 +94,6 @@ for i in range(0, N):
 
     hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)
     hx_old = hx.copy()
-
 
     kr_ = hm.params.getKr(rs_age + t)
     inner_kr_ = np.multiply(inner_r, kr_)  # multiply for table look up; here const
@@ -118,7 +118,7 @@ for i in range(0, N):
             print("error: potential transpiration differs root collar flux in Neumann case" , err2)
             print(-trans * sinusoidal(t))
             print(collar_flux)
-            
+
     water = s.getWaterVolume()
     fluxes = hm.soil_fluxes(rs_age + t, hx, hs)
     s.setSource(fluxes)
@@ -146,7 +146,7 @@ s.writeDumuxVTK(name)
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
 """ VTK visualisation """  # |\label{l73c:plots}|
-vp.plot_roots_and_soil(hm.ms, "pressure head", hx, s, True, np.array(min_b), np.array(max_b), cell_number, name)
+vp.plot_roots_and_soil(hm.ms.mappedSegments(), "pressure head", hx, s, True, np.array(min_b), np.array(max_b), cell_number, name)
 
 """ Transpiration over time """
 fig, ax1 = plt.subplots()
