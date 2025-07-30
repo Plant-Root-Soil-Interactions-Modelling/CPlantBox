@@ -28,8 +28,9 @@ class PlantHydraulicParameters(PlantHydraulicParametersCPP):
             or multiple types (list), e.g. subType = [2,3]
         
         set_kr_const, set_kx_const -> setKrConst, setKxConst
-        set_kr_age, set_kx_age -> setKrAgeDependent, setKxAgeDependent
-        set_kr_distance, set_kx_distance -> setKrDistanceDependent, setKxDistanceDependent
+        set_kr_age_dependent, set_kx_age_dependent -> setKrAgeDependent, setKxAgeDependent
+        set_kr_distance_dependent, set_kx_distance_dependent -> setKrDistanceDependent, setKxDistanceDependent
+
         
         it is not possible to use different methods (const, age, or distance) for different subTypes or organTypes
         it is possible to use different methods for kr and kx 
@@ -220,8 +221,8 @@ if __name__ == "__main__":
     [params.setKxAgeDependent(ages[i], values[i], i) for i in range(0, 6)]
     params.plot_conductivities(True)
 
-    params.write_parameters("test")
+    params.write_parameters("couvreur2012")
 
     params2 = PlantHydraulicParameters()
-    params2.read_parameters("test")
+    params2.read_parameters("couvreur2012")
     params2.plot_conductivities(True)

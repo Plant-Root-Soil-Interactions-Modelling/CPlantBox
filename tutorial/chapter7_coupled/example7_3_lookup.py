@@ -1,19 +1,14 @@
-""" coupling with DuMux as solver for the soil part, dumux-rosi must be installed & compiled """
+""" how to create a look up table for nonlinear perirhzal resistances, 
+    run on mulitple threads using: mpiexec -n 4 python3 example7_3_lookup.py """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
-sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
-sys.path.append("../../../dumux-rosi/python/modules/")  # python wrappers
 
-import plantbox as pb
-import visualisation.vtk_plot as vp
-from functional.PlantHydraulicParameters import PlantHydraulicParameters
-from functional.PlantHydraulicModel import HydraulicModel_Doussan
-from functional.PlantHydraulicModel import HydraulicModel_Meunier
-from functional.Perirhizal import PerirhizalPython  # |\label{l73:perirhizal}|
+from functional.Perirhizal import PerirhizalPython
 import functional.van_genuchten as vg
-from rosi_richards import RichardsSP  # C++ part (Dumux binding)
-from richards import RichardsWrapper  # Python part
-import numpy as np
-import matplotlib.pyplot as plt
-import timeit
 
-peri = PerirhizalPython
+peri = PerirhizalPython()
+hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
+filename = "hydrus_loam"
+sp = vg.Parameters(hydrus_loam)
+vg.create_mfp_lookup(sp)
+peri.create_lookup_mpi(filename, sp)
+# peri.open_lookup(filename)

@@ -30,7 +30,7 @@ trans = 250  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -15000  # cm
 rs_age = 21  # root system initial age [day]
 
-loam = [0.08, 0.43, 0.04, 1.6, 50]
+loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 initial = -400  # cm
 
 sim_time = 7.5  # [day]
@@ -100,16 +100,15 @@ for i in range(0, N):  # |\label{l72c:loop}|
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l72c:timing}|
 
 """ VTK visualisation """  # |\label{l72c:plots}|
-vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number, name)
+vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number)
 
 """ Transpiration over time """
 fig, ax1 = plt.subplots()
 ax1.plot(x_, trans * sinusoidal(x_), 'k')  # potential transpiration
-ax1.plot(x_, -np.array(y_), 'g')  # actual transpiration (neumann)
+ax1.plot(x_, -np.array(y_), 'g')  # actual transpiration
 ax2 = ax1.twinx()
-ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative transpiration (neumann)
+ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative transpiratio
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
 ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
-np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter = ';')
 plt.show()
