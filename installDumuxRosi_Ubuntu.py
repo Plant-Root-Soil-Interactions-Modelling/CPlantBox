@@ -87,7 +87,7 @@ for program in programs:
 
 if len(error) > 0:
     print("Program(s) {0} has/have not been found. try running sudo apt-get install {0}".format(" ".join(error)))
-    # raise Exception('import modules')
+    raise Exception('import modules')
 
 # check some prerequistes
 modules = ['numpy', 'scipy', 'matplotlib', 'vtk', 'pandas', 'pybind11[global]', 'ipython']  # 'mpi4py',

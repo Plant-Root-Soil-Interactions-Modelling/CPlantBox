@@ -20,7 +20,6 @@ import timeit
 def sinusoidal(t):
     return np.sin(2. * np.pi * np.array(t) - 0.5 * np.pi) + 1.
 
-
 """ Parameters """  # |\label{l73c:param}|
 min_b = [-4., -4., -25.]
 max_b = [4., 4., 0.]
@@ -32,8 +31,7 @@ trans = 10  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -10000  # cm
 rs_age = 14  # root system initial age [day]
 
-loam = [0.08, 0.43, 0.04, 1.6, 50]
-# loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
+loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 initial = -500  # cm
 
 sim_time = 0.5  # 7.5  # [day]
@@ -96,6 +94,7 @@ for i in range(0, N):
     hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)
     hx_old = hx.copy()
 
+
     kr_ = hm.params.getKr(rs_age + t)
     inner_kr_ = np.multiply(inner_r, kr_)  # multiply for table look up; here const
 
@@ -108,9 +107,9 @@ for i in range(0, N):
 
         """ xylem matric potential """
         hx = hm.solve_again(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)
-
         err = np.linalg.norm(hx - hx_old)
         hx_old = hx.copy()
+
         c += 1
 
     if hx[0] > wilting_point:
@@ -119,7 +118,7 @@ for i in range(0, N):
             print("error: potential transpiration differs root collar flux in Neumann case" , err2)
             print(-trans * sinusoidal(t))
             print(collar_flux)
-
+            
     water = s.getWaterVolume()
     fluxes = hm.soil_fluxes(rs_age + t, hx, hs)
     s.setSource(fluxes)

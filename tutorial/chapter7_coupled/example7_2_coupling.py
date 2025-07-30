@@ -30,7 +30,6 @@ trans = 250  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -15000  # cm
 rs_age = 21  # root system initial age [day]
 
-loam = [0.08, 0.43, 0.04, 1.6, 50]
 loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
 initial = -400  # cm
 
