@@ -135,7 +135,7 @@ for i in range(0, N):  # |\label{l73c:loop}|
         vp.write_soil("results/example73_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
         vp.write_plant("results/example73_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l73c:write_end}|
 
-    t += dt  # |\label{l73c:fixpoint_end}|
+    t += dt
 
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
