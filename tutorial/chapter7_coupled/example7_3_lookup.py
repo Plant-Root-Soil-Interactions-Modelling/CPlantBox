@@ -5,10 +5,10 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 from functional.Perirhizal import PerirhizalPython
 import functional.van_genuchten as vg
 
-peri = PerirhizalPython()
-hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]
+peri = PerirhizalPython()  # |\label{l73l:peri}|
+hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # |\label{l73l:soil}|
 filename = "hydrus_loam"
-sp = vg.Parameters(hydrus_loam)
-vg.create_mfp_lookup(sp)
-peri.create_lookup_mpi(filename, sp)
+sp = vg.Parameters(hydrus_loam)  # |\label{l73l:soil_end}|
+vg.create_mfp_lookup(sp)  # |\label{l73l:mfp}|
+peri.create_lookup_mpi("results/" + filename, sp)  # |\label{l73l:lookup}|
 # peri.open_lookup(filename)

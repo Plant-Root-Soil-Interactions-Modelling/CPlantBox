@@ -12,6 +12,7 @@ from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part
 import numpy as np
 import matplotlib.pyplot as plt
+import figure_style
 import timeit
 
 
@@ -22,7 +23,7 @@ def sinusoidal(t):
 """ Parameters """  # |\label{l72c:param}|
 min_b = [-35., -10., -50.]  # [cm]
 max_b = [35., 10., 0.]  # [cm]
-cell_number = [17, 5, 50]  # 1D
+cell_number = [17, 5, 50]  # ~[4*4*1] cm3
 
 path = "../../modelparameter/structural/rootsystem/"
 name = "Zeamays_synMRI_modified"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
