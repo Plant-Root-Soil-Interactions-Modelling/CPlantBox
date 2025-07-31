@@ -11,6 +11,8 @@
 #include <map>
 #include <memory>
 #include <assert.h>
+#include <optional>
+#include <iostream>
 
 
 
@@ -38,6 +40,7 @@ public :
 
   double LeafWidthScaleFactor() const { return this->leaf_width_scale_factor_; }
   void SetLeafWidthScaleFactor(double factor) { this->leaf_width_scale_factor_ = factor; }
+  void SetMinimumLeafWidth(double width) {this->leaf_minimum_width_ = std::max(0.0, width);};
 
   void SetGeometryResolution(int resolution) { this->geometry_resolution_ = resolution; } // set the resolution of the geometry (number of cells in each direction
   void SetLeafResolution(int resolution) { this->leaf_resolution_ = resolution;}
@@ -94,6 +97,25 @@ public :
 
   void SetVerbose(bool verbose) { this->verbose_ = verbose; }
   void SetAddVerticalLeafOffset(bool add) { this->add_vertical_leaf_offset_ = add; }
+  void SetRightPenalty(double penalty) { this->right_penalty_ = penalty; }
+  void SetShapeFunction(std::function<double(double)> shape_function) { 
+    if(verbose_) std::cout << "Setting shape function" << std::endl;
+    this->shape_function_ = shape_function;
+  }
+  void ClearShapeFunction() { this->shape_function_ = std::nullopt; }
+
+  void SetUseStemInfluence(bool use, double radius) { 
+    this->use_stem_influence_ = use;
+    this->stem_influence_radius_ = radius;
+  }
+
+  void SetUseStemRadiusAsMin(bool use) { this->use_stem_radius_as_min_ = use; }
+
+  void SetNotUseStemInfluence() { this->use_stem_influence_ = false; }
+
+  int GetNumOrgans() const;
+
+  std::string SelfCheck() const;
 
 protected:
   std::shared_ptr<MappedPlant> plant_{nullptr};
@@ -101,8 +123,13 @@ protected:
   bool include_midline_in_leaf_{true};
   bool verbose_{false};
   bool add_vertical_leaf_offset_{false};
+  double right_penalty_{0.1};
 
   double leaf_width_scale_factor_{1.0};
+  double leaf_minimum_width_{0.0};
+  double stem_influence_radius_{0.0};
+  bool use_stem_influence_{false};
+  bool use_stem_radius_as_min_{false};
 
   /**
    * A private method to build the attachment map for the leaf organs
@@ -150,6 +177,9 @@ protected:
   std::vector<int> geometry_node_ids_; // the node ids for each vertex
   unsigned int geometry_resolution_{8}; // the resolution of the cylindric geometry
   unsigned int leaf_resolution_{20}; // the resolution of the leaf geometry
+  // optional alternative shape defining function that takes [0,1] and produces [0,1]
+  
+  std::optional<std::function<double(double)>> shape_function_ = std::nullopt;
 };
 
 } // namespace CPlantBox

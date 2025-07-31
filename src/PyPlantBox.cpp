@@ -879,7 +879,6 @@ PYBIND11_MODULE(plantbox, m) {
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
         .def("sort",&MappedSegments::sort)
-        .def("segOuterRadii",&MappedSegments::segOuterRadii, py::arg("type") = 0, py::arg("vols") = std::vector<double>(0))
 		.def("segLength",&MappedSegments::segLength)
 		.def("getHs",&MappedSegments::getHs)
         .def("getSegmentZ",&MappedSegments::getSegmentZ)
@@ -904,12 +903,7 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-		.def_readwrite("organParam", &MappedSegments::plantParam)
 	    .def_readwrite("segO", &MappedSegments::segO);
-    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
-        .def(py::init<>())
-        .def("mappedSegments",  &MappedRootSystem::mappedSegments)
-        .def("addSegments", &MappedRootSystem::rootSystem);
 
     /*
      * Plant.h
@@ -939,9 +933,6 @@ PYBIND11_MODULE(plantbox, m) {
 	py::class_<MappedPlant, Plant, MappedSegments,  std::shared_ptr<MappedPlant>>(m, "MappedPlant")
 			.def(py::init<unsigned int>(),  py::arg("seednum")=0)
 			.def("mappedSegments", &MappedPlant::mappedSegments)
-			.def("initialize", &MappedPlant::initialize, py::arg("verbose") = true, py::arg("stochastic") = true)
-			.def("initializeLB", &MappedPlant::initializeLB, py::arg("verbose") = true, py::arg("stochastic") = true)
-			.def("initializeDB", &MappedPlant::initializeDB, py::arg("verbose") = true, py::arg("stochastic") = true)
 			.def("printNodes",  &MappedPlant::printNodes)
 			.def("plant", &MappedPlant::plant)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)

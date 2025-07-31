@@ -1,7 +1,7 @@
 """ 
 Solute transport example - nitrate in movement in soil 
 """
-import sys; sys.path.append("../"); sys.path.append("../../../CPlantBox/"); sys.path.append("../../../CPlantBox/src")
+import sys; sys.path.append("../"); sys.path.append("../.."); sys.path.append("../../src/")
 sys.path.append("../../../dumux-rosi/python/modules"); sys.path.append("../../../dumux-rosi/build-cmake/cpp/python_binding/");
 
 import datetime
@@ -110,8 +110,8 @@ def net_infiltration_csv(filename, start_date, end_date):
 
 """ Soil """  # |\label{l62:init_soil}|
 s = RichardsWrapper(RichardsNCSP())  # water & single solute
-min_b = [-38., -8., -100.]  # [cm]
-max_b = [38., 8., 0.]  # [cm]
+min_b = [-35., -10., -100.]  # [cm]
+max_b = [35., 10., 0.]  # [cm]
 cell_number = [1, 1, 100]  # [1] spatial resolution (1D model)
 area = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1])  # [cm2]
 vol = area * (max_b[2] - min_b[2])  # [cm3]

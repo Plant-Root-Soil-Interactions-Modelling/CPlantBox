@@ -240,6 +240,20 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         heff = suf.dot(self.ms.matric2total(rsx))
         return heff[0]
 
+    def test_unmapped(self):
+        pass_ = True
+        segs = self.get_segments()
+        types = self.ms.subTypes
+        ots = self.ms.organTypes
+        nodes = self.get_nodes()
+        map = self.ms.seg2cell
+        for seg_id, cell_id in map.items():
+            if cell_id < 0:
+                print("Warning: segment ", seg_id, "is not mapped, this will cause problems with coupling!",
+                      "organType", ots[seg_id], "subType", types[seg_id], "mid", nodes[segs[seg_id][0]], nodes[segs[seg_id][1]])
+                pass_ = False
+        return pass_
+
     def test(self):
         """ perfoms some sanity checks, and prints to the console """
         print("PlantHydraulicModel.test():")

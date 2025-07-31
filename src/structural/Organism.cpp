@@ -31,7 +31,7 @@ Organism::Organism(unsigned int seednum)
     }
     gen = std::mt19937(seed_val);
     plantId = instances; // for debugging
-    std::cout << "Created Organism: " << plantId << "\n" << std::flush;
+    // std::cout << "Created Organism: " << plantId << "\n" << std::flush;
 };
 
 

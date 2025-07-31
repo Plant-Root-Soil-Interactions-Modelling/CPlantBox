@@ -342,7 +342,12 @@ def keypress_callback_(obj, ev, bounds):
     if key == 'g':
         renWin = obj.GetRenderWindow()
         file_name = renWin.GetWindowName()
-        write_jpg(renWin, file_name, magnification=5)
+        write_jpg(renWin, file_name, magnification = 5)
+        print("saved", file_name + ".jpg")
+    if key == 's':  # for small
+        renWin = obj.GetRenderWindow()
+        file_name = renWin.GetWindowName()
+        write_jpg(renWin, file_name, magnification = 1)
         print("saved", file_name + ".jpg")
     if key == 'x' or key == 'y' or key == 'z' or key == 'v':
         renWin = obj.GetRenderWindow()
@@ -370,7 +375,7 @@ def keypress_callback_(obj, ev, bounds):
         renWin.Render()
 
 
-def write_jpg(renWin, fileName, magnification=5):
+def write_jpg(renWin, fileName, magnification = 5):
     """" Save the current render window in a jpg (e.g. from vtkRenderWindowInteractor.GetRenderWindow())
     @param renWin        the vtkRenderWindow
     @parma fileName      file name without extension
@@ -379,14 +384,14 @@ def write_jpg(renWin, fileName, magnification=5):
 
     # Find and temporarily adjust the scalar bar, so that screenshot has nice scale but viewer can also be reset
     bars = [a for a in ren.GetActors2D() if isinstance(a, vtk.vtkScalarBarActor)]
-    # Patch titles with \n, hardcoded as there is no clean solution 
+    # Patch titles with \n, hardcoded as there is no clean solution
     original_titles = []
     for bar in bars:
         orig_title = bar.GetTitle()
         original_titles.append(orig_title)
-        bar.SetTitle(orig_title + "\n\n\n")       
+        bar.SetTitle(orig_title + "\n\n\n")
     renWin.Render()
-    
+
     windowToImageFilter = vtk.vtkWindowToImageFilter();
     windowToImageFilter.SetInput(renWin)
     windowToImageFilter.SetScale(magnification)
@@ -397,7 +402,7 @@ def write_jpg(renWin, fileName, magnification=5):
     writer.SetFileName(fileName + ".jpg")
     writer.SetInputConnection(windowToImageFilter.GetOutputPort())
     writer.Write()
-    
+
     # Restore original titles
     for bar, orig_title in zip(bars, original_titles):
         bar.SetTitle(orig_title)
@@ -545,6 +550,8 @@ def plot_mesh(grid, p_name, win_title = "", render = True, interactiveImage = Tr
     meshActor = vtk.vtkActor()
     meshActor.SetMapper(mapper)
     meshActor.GetProperty().SetRepresentationToWireframe();
+    meshActor.GetProperty().SetLineWidth(2.0)  # Increase line width
+    meshActor.GetProperty().SetColor(0.0, 0.0, 0.0)
 
     lut = create_lookup_table()
     scalar_bar = create_scalar_bar(lut, grid, p_name)  # vtkScalarBarActor
@@ -754,7 +761,14 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
 
 
 def write_soil(filename, s, min_b, max_b, cell_number, solutes = []):
-    """ TODO """
+    """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
+        @param filename      filename without extension 
+        @parma s             soil model (e.g. Richards, RichardsNC)
+        @parma min_b         minimum of bounding box
+        @parma max_b         maximum of bounding box
+        @parma cell_number   resolution of soil grid
+        @parma solutes       (optionally) names of solutes, list of str (e.g. in case of RichardsNC)
+    """
     soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
     soil_water_content = vtk_data(np.array(s.getWaterContent()))
     soil_water_content.SetName("water content")
@@ -835,15 +849,14 @@ class AnimateRoots:
         """ creates plot and adjusts camera """
         if self.container_sdf:
             # Create the container actor once and store it, so it does not have to be recalculated each frame
-            container_actors, _, _ = plot_container(self.container_sdf, render=False)
+            container_actors, _, _ = plot_container(self.container_sdf, render = False)
             self.container_actor = container_actors[0]
-            
+
         self.create_root_actors()
         self.create_soil_actors()
         if self.container_actor:
             self.actors.append(self.container_actor)
-        
-        
+
         self.iren = render_window(self.actors, "AnimateRoots", self.color_bar, self.bounds)
         renWin = self.iren.GetRenderWindow()
         ren = renWin.GetRenderers().GetItemAsObject(0)
@@ -875,7 +888,7 @@ class AnimateRoots:
         self.actors = []
         self.create_root_actors()
         self.create_soil_actors()
-        
+
         if self.container_actor:
             self.actors.append(self.container_actor)
         for a in self.actors:
@@ -946,8 +959,8 @@ def sdf_to_vtk_mesh(sdf, initial_resolution = 100, expansion_factor = 1.5, resol
         raise ValueError("No valid surface detected. Check SDF function!")
 
     # **Step 2: Compute Adaptive Bounds**
-    min_bounds = surface_points.min(axis=0)
-    max_bounds = surface_points.max(axis=0)
+    min_bounds = surface_points.min(axis = 0)
+    max_bounds = surface_points.max(axis = 0)
 
     # Calculate center and size of the detected bounds
     center = (min_bounds + max_bounds) / 2.0
