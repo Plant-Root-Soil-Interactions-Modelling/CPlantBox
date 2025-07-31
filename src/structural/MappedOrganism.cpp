@@ -362,6 +362,106 @@ void MappedSegments::sort() {
 	organTypes = newTypesorgan;
 }
 
+
+/**
+ * Sums segment fluxes over each cell
+ *
+ * @param segFluxes 	segment fluxes given per segment index [cm3/day]
+ * @return hash map with cell indices as keys and fluxes as values [cm3/day]
+ */
+std::map<int,double> MappedSegments::sumSegFluxes(const std::vector<double>& segFluxes)
+{
+    std::map<int,double> fluxes;
+    for (int si = 0; si<this->segments.size(); si++) {
+        int j = this->segments[si].y;
+        int segIdx = j-1;
+
+        if (this->seg2cell.count(segIdx)>0)
+		{
+			int cellIdx = this->seg2cell[segIdx];
+			if (cellIdx>=0)
+			{
+				if(this->organTypes[segIdx] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					if (fluxes.count(cellIdx)==0) {
+						fluxes[cellIdx] = segFluxes[segIdx];
+					} else {
+						fluxes[cellIdx] = fluxes[cellIdx] + segFluxes[segIdx]; // sum up fluxes per cell
+					}
+				}else{
+					if(segFluxes[segIdx] != 0.)
+					{
+						std::stringstream errMsg;
+						errMsg<<"MappedSegments::sumSegFluxes. ot:"<<this->organTypes[segIdx]<<" segIdx:"<<segIdx
+						<<" cellIdx:"<<cellIdx<<" segFluxes[segIdx] :"
+						<<segFluxes[segIdx]<<"=> shoot segment bellow ground ans exchanges water" <<std::endl;
+
+						throw std::runtime_error(errMsg.str().c_str());
+					}
+				}
+			}
+        }
+    }
+    return fluxes;
+}
+
+/**
+ * Splits soil fluxes per cell to the segments within the cell, so that the summed fluxes agree, @see sumSoilFluxes()
+ *
+ * @param soilFluxes 	cell fluxes per global index [cm3/day]
+ * @param type 			split flux proportional to 0: segment volume, 1: segment surface, 2: segment length
+ * @return fluxes for each segment [cm3/day]
+ */
+std::vector<double> MappedSegments::splitSoilFluxes(const std::vector<double>& soilFluxes, int type) const
+{
+    auto lengths =  this->segLength();
+    std::vector<double> fluxes = std::vector<double>(this->segments.size());
+    std::fill(fluxes.begin(), fluxes.end(), 0.);
+    auto map = this->cell2seg;
+	double fluxesTotTot =0;
+    for(auto iter = map.begin(); iter != map.end(); ++iter) {
+        int cellId =  iter->first;
+        auto segs = map.at(cellId);
+		if (cellId>=0) {
+			double v = 0.;  // calculate sum over cell
+			for (int i : segs) {
+
+				if(this->organTypes[i] == Organism::ot_root)//only divid the fluxes between the root segments
+				{
+					if (type==0) { // volume
+						v += M_PI*(this->radii[i]*this->radii[i])*lengths[i];
+					} else if (type==1) { // surface
+						v += 2*M_PI*this->radii[i]*lengths[i];
+					} else if (type==2) { // length
+						v += lengths[i];
+					}
+				}
+			}
+			double fluxesTot = 0;
+			for (int i : segs) { // calculate outer radius
+
+				if(this->organTypes[i] == Organism::ot_root)
+				{
+					double t =0.; // proportionality factor (must sum up to == 1 over cell)
+					if (type==0) { // volume
+						t = M_PI*(this->radii[i]*this->radii[i])*lengths[i]/v;
+					} else if (type==1) { // surface
+						t = 2*M_PI*this->radii[i]*lengths[i]/v;
+					} else if (type==2) { // length
+						t = lengths[i]/v;
+					}
+					if(fluxes[i] !=0){std::cout<<"fluxes "<<i<<" already set "<<std::endl;assert(false);}
+					fluxes[i] = t*soilFluxes.at(cellId);
+					fluxesTot +=  t*soilFluxes.at(cellId);
+					fluxesTotTot += t*soilFluxes.at(cellId);
+				}
+			}
+		}
+    }
+    return fluxes;
+}
+
+
 /**
  * Calculates outer segment radii [cm], so that the summed segment volumes per cell equals the cell volume
  * @param type 			prescribed cylinder volume proportional to 0: segment volume, 1: segment surface, 2: segment length

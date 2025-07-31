@@ -25,7 +25,6 @@ from matplotlib.dates import DateFormatter, HourLocator
 """ Main parameters """  # |\label{l74:param}|
 path = "../../modelparameter/structural/plant/"
 name = "Triticum_aestivum_test_2021" 
-
 plant_age = 14.3  # root system initial age [day]
 sim_end = 14.8
 dt = 20/60/24 # d
@@ -108,7 +107,7 @@ x_, y_ = [], []
 net_flux_water = np.zeros(np.prod(cell_number))
 net_flux_solute = np.zeros(np.prod(cell_number))
 
-for i in range(N):  # |\label{6h:loop}|
+for i in range(N):  # |\label{l74:loop}|
     """ Weather variables """
     diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(plant_age % 1,unit='d'))
     line_data = np.where(diffDt == min(diffDt))[0][0]
@@ -120,7 +119,7 @@ for i in range(N):  # |\label{6h:loop}|
     rs.update()
 
     """ Plant transpiration """
-    h_rsi = rs.get_inner_heads(weatherData_)  # pressure head at the root soil interface, i.e. inner values of the perirhizal models [cm]
+    h_rsi = rs.get_inner_heads(weatherData_)  # inner values of the perirhizal models [cm]
     soil_k = np.divide(vg.hydraulic_conductivity(h_rsi, vg_loam), rs.radii)  # [cm3/day/cm] hydraulic conductivity at the root-soil interface, perirhizal model
     hm.pCO2 = weatherData_['co2']
     es = hm.get_es(weatherData_['Tair'])
@@ -128,22 +127,22 @@ for i in range(N):  # |\label{6h:loop}|
 
     hm.solve(sim_time = plant_age, rsx = h_rsi, cells = False,
             ea = ea, es = es, 
-            PAR = weatherData_['PAR'] * (24 * 3600) / 1e4, #TODO move unit change to inside the module
-            TairC = weatherData_['Tair'])  # |\label{6h:solve}|
+            PAR = weatherData_['PAR'] * (24 * 3600) / 1e4, # [mol photons m-2 s-1] -> [mol photons cm-2 d-1] 
+            TairC = weatherData_['Tair'])  # |\label{l74:solve}|
     
-    proposed_inner_fluxes_water = np.array(hm.outputFlux) # [cm3/day] TODO: rename
+    proposed_inner_fluxes_water = hm.radial_fluxes() # [cm3/day] 
     h_xylem = hm.get_water_potential()
         
     """ Perirhizal zone models """
-    proposed_outer_fluxes_water  = rs.splitSoilVals(soilVals = net_flux_water, compId = 0, dt = dt)
+    proposed_outer_fluxes_water  = rs.splitSoilVals(soilVals = net_flux_water,  compId = 0, dt = dt)
     proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals = net_flux_solute, compId = 1, dt = dt)         
-    rs.solve(dt, proposed_inner_fluxes_water , # inner BC water
-                                proposed_outer_fluxes_water, # outer BC water
-                                proposed_outer_fluxes_solute) # outer BC solute 1
-    
+    rs.solve(dt, proposed_inner_fluxes_water,  # inner BC water
+                 proposed_outer_fluxes_water,  # outer BC water
+                 proposed_outer_fluxes_solute) # outer BC solute 1
+
     """ Bulk soil """
-    soil_source_water  = hm.sumSegFluxes(rs.getRealisedInnerFluxes(0)) # [cm3/day]  per soil cell # TODO: move sumSegFluxes to perirhizal object?
-    soil_source_solute = hm.sumSegFluxes(rs.getRealisedInnerFluxes(1)) # [g/day]  per soil cell
+    soil_source_water  = rs.sumSegFluxes(rs.getRealisedInnerFluxes(0)) # [cm3/day]  per soil cell # TODO: move sumSegFluxes to mapped segments
+    soil_source_solute = rs.sumSegFluxes(rs.getRealisedInnerFluxes(1)) # [g/day]  per soil cell
 
     s.setSource(soil_source_water , 0) # [cm3/day], in richards.py
     s.setSource(soil_source_solute, 1) # [g/day], in richards.py
@@ -154,7 +153,7 @@ for i in range(N):  # |\label{6h:loop}|
     """ Post processing """
     rs.check1d3dDiff()
     
-    # intracell exchange, # todo: add in other example how to get the leaching rate
+    # intracell exchange
     net_fluxes = - np.array([s.getFluxesPerCell(nc)  for nc in range(s.numComp)]) # < 0 means leave the cell, > 0 means enter the cell
     net_flux_water  = net_fluxes[0] - rs.alldiff1d3dCNW[0] /dt # [cm3/day] per soil cell
     net_flux_solute = net_fluxes[1] - rs.alldiff1d3dCNW[1] /dt # [g/day] per soil cell
@@ -174,7 +173,7 @@ for i in range(N):  # |\label{6h:loop}|
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l74:timing}|
 
 """ VTK visualisation """  # |\label{l74:plots}|
-vp.plot_plant_and_soil(hm.ms, "xylem pressure head", h_xylem, s,
+vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s,
                         False, np.array(min_b), np.array(max_b), cell_number, name,
                         sol_ind = 1)
 
