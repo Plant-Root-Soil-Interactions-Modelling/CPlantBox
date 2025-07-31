@@ -143,7 +143,7 @@ for i in range(N):  # |\label{l74:loop}|
     """ Bulk soil """
     soil_source_water  = rs.sumSegFluxes(rs.getRealisedInnerFluxes(0)) # [cm3/day]  per soil cell # TODO: move sumSegFluxes to mapped segments
     soil_source_solute = rs.sumSegFluxes(rs.getRealisedInnerFluxes(1)) # [g/day]  per soil cell
-
+    
     s.setSource(soil_source_water , 0) # [cm3/day], in richards.py
     s.setSource(soil_source_solute, 1) # [g/day], in richards.py
 
@@ -152,7 +152,7 @@ for i in range(N):  # |\label{l74:loop}|
     
     """ Post processing """
     rs.check1d3dDiff()
-    
+   
     # intracell exchange
     net_fluxes = - np.array([s.getFluxesPerCell(nc)  for nc in range(s.numComp)]) # < 0 means leave the cell, > 0 means enter the cell
     net_flux_water  = net_fluxes[0] - rs.alldiff1d3dCNW[0] /dt # [cm3/day] per soil cell

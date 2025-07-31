@@ -41,8 +41,8 @@ def init_conductivities(r, age_dependent:bool = False):
         else:  # we set it as table to be able to make the rootsystem grow in a predefined way
             kr = np.array([[-1e4, 1.e-9], [-1.e-9, 1.e-9], [0., kr_const_], [1e4, kr_const_]])
             kx = np.array([[0, kx_const_], [1e4, kx_const_]])
-            r.set_kr_age(kr[:, 0], kr[:, 1])
-            r.set_kx_age(kx[:, 0], kx[:, 1])
+            r.set_kr_age_dependent(kr[:, 0], kr[:, 1])
+            r.set_kx_age_dependent(kx[:, 0], kx[:, 1])
     else:
 
         if age_dependent:

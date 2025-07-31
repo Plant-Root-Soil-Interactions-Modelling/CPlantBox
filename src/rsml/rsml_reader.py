@@ -260,18 +260,18 @@ def get_parameter(polylines:list, funcs:dict, props:dict) -> (list, list, list):
                     else:
                         radii.append(diam[i][j] / 2.)
             else:
-                radii.append(np.NaN)
+                radii.append(np.nan)
             if type_ is not None:
                 if type_p:
                     types.append(type_[i])
                 else:
                     types.append(type_[i][j])
             else:
-                types.append(np.NaN)
+                types.append(np.nan)
             if et is not None:
                 cts.append(et[i][j])
             else:
-                cts.append(np.NaN)
+                cts.append(np.nan)
 
     return radii, cts, types, tag_names
 

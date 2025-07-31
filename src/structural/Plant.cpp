@@ -110,8 +110,8 @@ void Plant::initializeLB(bool verbose)
     baseOrgans.push_back(seed);
 	seed->initialize(verbose);
     initialize_(verbose);
-
 }
+
 /**
  * Sets up the plant according to the plant parameters,
  * a confining geometry, the tropism functions, and the growth functions.

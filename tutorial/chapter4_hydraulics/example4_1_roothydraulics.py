@@ -51,6 +51,6 @@ ana.addFluxes(hm, hx, hsr, initial_age)  # "axial_flux" [cm3/day], "radial_flux"
 vp.plot_plant(ana, "radial_flux")  # |\label{l41:sa_end}|
 
 """ output for paraview """
-ana.write("example4_1_roothydraulics.vtp",  # |\label{l41:paraview}|
-          typvcaes = ["radius", "subType", "age", "hx", "SUF", "kr", "kx", "axial_flux", "radial_flux"])
+ana.write("restuls/example4_1_roothydraulics.vtp",  # |\label{l41:paraview}|
+          types = ["radius", "subType", "age", "hx", "SUF", "kr", "kx", "axial_flux", "radial_flux"])
 
