@@ -46,7 +46,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
         setLeafColor = True
     else:
         ana = plant
-    print('plot_plant: ana',ana, type(ana))
+    print('plot_plant: ana', ana, type(ana))
     pd = segs_to_polydata(ana, 1., ["radius", "organType", "creationTime", p_name])  # poly data
     tube_plot_actor, color_bar, lut = plot_roots(pd, p_name, "", render = False, returnLut = True)
 
@@ -55,7 +55,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
 
     globalIdx_y = []
-    leaves = plant.getOrgans(ot = pb.leaf)
+    leaves = plant.getOrgans(ot = pb.leaf)  # <--------- TODO DL: will only work for Plant, not for MappedSegments
     for l in leaves:
         globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
     globalIdx_y = np.array(globalIdx_y)
@@ -644,7 +644,7 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     if periodic:
         w = np.array(max_b) - np.array(min_b)
         ana.mapPeriodic(w[0], w[1])
-        
+
     pd = segs_to_polydata(ana, 1., [pname, "radius"])
 
     pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
@@ -661,7 +661,7 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         d.SetName(pname_mesh)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
 
-    plantActors, rootCBar = plot_plant(ana, pname,False, False)
+    plantActors, rootCBar = plot_plant(ana, pname, False, False)
     tube_plot_actor = plantActors[0]
     leafActor = plantActors[1]
     meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
@@ -675,7 +675,8 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         path = "results/"
         write_vtp(path + filename + ".vtp", pd)
         write_vtu(path + filename + ".vtu", soil_grid)
-        
+
+
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
@@ -802,22 +803,22 @@ def write_plant(filename, plant, add_params = []):
     write_vtp(filename + "_leafs.vtp", pd_leafs)
 
 
-def plot_roots_and_soil_files(filename: str, pname:str, interactiveImage = True):
+def plot_roots_and_soil_files(filename: str, pname_mesh:str, pname:str, path = "results/", interactiveImage = True):
     """ Plots soil slices and roots from two files (one vtp and one vtu), created by plot_roots_and_soil()
     @param filename      file name (without extension)
     @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
     """
-    path = "results/"
     pd = read_vtp(path + filename + ".vtp")
-    soil_grid = read_rect_vtu(path + filename + ".vtp")
-    rootActor, rootCBar = plot_roots(pd, pname, "", False)
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname, 4, "", False)
-    lut = meshActors[-1].GetMapper().GetLookupTable()  # same same
-    rootActor.GetMapper().SetLookupTable(lut)
-    meshActors.extend([rootActor])
-    ren = render_window(meshActors, filename, meshCBar, soil_grid.GetBounds(), interactiveImage)
+    soil_grid = read_rect_vtu(path + filename + ".vtu")
+    rootActor, rootCBar = plot_roots(pd, pname, False, False)
+    tube_plot_actor = rootActor
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+    meshActors.extend([tube_plot_actor])
+    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
     if interactiveImage:
         ren.Start()
+    else:
+        return ren
 
 
 class AnimateRoots:
