@@ -71,7 +71,7 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
         else:
             raise Exception(f'unexpected object type for TairC ({type(TairC)})')
             
-        self.solve_photosynthesis(sim_time = sim_time, sxx = rsx, cells = True, 
+        self.solve_photosynthesis(sim_time = sim_time, sxx = rsx, cells = cells, 
                                         ea =  ea, es = es, TleafK =  TairK , soil_k = soil_k,  
                                 verbose = verbose, doLog = doLog, outputDir = outputDirectory)
                                 

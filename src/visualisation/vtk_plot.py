@@ -46,7 +46,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
         setLeafColor = True
     else:
         ana = plant
-
+    print('plot_plant: ana',ana, type(ana))
     pd = segs_to_polydata(ana, 1., ["radius", "organType", "creationTime", p_name])  # poly data
     tube_plot_actor, color_bar, lut = plot_roots(pd, p_name, "", render = False, returnLut = True)
 
@@ -617,6 +617,58 @@ def plot_mesh_cuts(grid, p_name, nz = 3, win_title = "", render = True, interact
     return actors, scalar_bar
 
 
+def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
+    """ Plots soil slices and roots, additionally saves both grids as files
+    @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
+    @param pname         root and soil parameter that will be visualized ("pressure head", or "water content")
+    @param s             soil, of type RichardsSP, or RichardsNCSP
+    @param rp            root parameter segment data (will be added, in case SegmentAnalyser is creaeted)
+    @param periodic      if yes the root system will be mapped into the domain
+    @param min_b         minimum of domain boundaries
+    @param max_b         maximum of domain boundaries
+    @param cell_number   domain resolution
+    @param filename      file name (without extension)
+    """
+    if isinstance(rs, pb.SegmentAnalyser):
+        ana = rs
+    else:
+        ana = pb.SegmentAnalyser(rs)
+        ana.addData(pname, rp)
+    if periodic:
+        w = np.array(max_b) - np.array(min_b)
+        ana.mapPeriodic(w[0], w[1])
+        
+    pd = segs_to_polydata(ana, 1., [pname, "radius"])
+
+    pname_mesh = "pressure head"  # pname <------ TODO find better function arguments
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(s.getWaterContent()))
+    soil_water_content.SetName("water content")
+    soil_grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    soil_grid.GetCellData().AddArray(soil_pressure)
+    if sol_ind > 0:
+        d = vtk_data(np.array(s.getSolution(sol_ind)))
+        pname_mesh = "solute no " + str(sol_ind) + " g/cm3"
+        d.SetName(pname_mesh)  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(d)
+
+    plantActors, rootCBar = plot_plant(ana, pname,False, False)
+    tube_plot_actor = plantActors[0]
+    leafActor = plantActors[1]
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
+    meshActors.extend([tube_plot_actor])
+    meshActors.extend([leafActor])
+    ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
+    if interactiveImage:
+        ren.Start()
+
+    if filename:
+        path = "results/"
+        write_vtp(path + filename + ".vtp", pd)
+        write_vtu(path + filename + ".vtu", soil_grid)
+        
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments

@@ -70,14 +70,15 @@ for i in range(line_init, line_end):  # |\label{6h:loop}|
     ea = es * weatherData['RH'][i]
 
     hm.solve(sim_time = plant_age, rsx = p_s, cells = True,
-             ea = ea, es = es, PAR = weatherData['PAR'][i] * (24 * 3600) / 1e4, TairC = weatherData['Tair'][i])  # |\label{6h:solve}|
-
+             ea = ea, es = es, PAR = weatherData['PAR'][i] * (24 * 3600) / 1e4, TairC = weatherData['Tair'][i],
+             verbose = 0)  # |\label{6h:solve}|
+             
     hx = hm.get_water_potential()  # |\label{6h:results}|
     results['transpiration'].append(hm.get_transpiration() / 18 * 1e3)  # [cm3/day] * [mol/cm3] * [mmol/mol]
     results['An'].append(np.sum(hm.get_net_assimilation()) * 1e3)
     results['Vc'].append(np.sum(hm.get_Vc()) * 1e3)
     results['Vj'].append(np.sum(hm.get_Vj()) * 1e3)  # |\label{6h:resultsEnd}|
-
+    
     print('at', weatherData['time'][i], 'mean water potential (cm)', np.round(np.mean(hx)),
             '\n\tin [mmol d-1], net assimilation:', np.round(np.sum(hm.get_net_assimilation()) * 1e3, 2),
             'transpiration:', np.round(hm.get_transpiration() / 18 * 1e3, 2))

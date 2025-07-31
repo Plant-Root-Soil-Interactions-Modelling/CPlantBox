@@ -110,13 +110,13 @@ public:
 	std::vector<double> kp25; //initial slope of the CO2 response curve for Vp [mol CO2 m-2 s-1] at the reference temperature
 	
 	//		to evaluate convergence, @see Photosynthesis::getError
-	int maxLoop = 5000; int minLoop = 1;std::string outputDir="";
+	int maxLoop = 50000; int minLoop = 1;std::string outputDir="";
 	bool doLog = false; int verbose_photosynthesis = 0;
     int loop;									   
     std::vector<double> maxErrAbs= std::vector<double>(9, 0.);	
 	std::vector<double> maxErr= std::vector<double>(9, 0.);	
     //psi_x, An, gco2, ci, pg, outputFlux, 0, sum(F), sum(An)
-    std::vector<double> maxErrAbsLim = { 1.,1e-6 , 0.002, 1e-6, 1,1,1,1,1e-6 };	
+    std::vector<double> maxErrAbsLim = { 1.,1e-6 , 0.002, 1e-6, 1,1,1e-6,1,1e-6 };	
 	std::vector<double> maxErrLim  =  std::vector<double>(9, 1e-4);  	
     bool canStop();
 	std::vector<double> outputFlux_old;
