@@ -120,7 +120,7 @@ void Photosynthesis::solve_photosynthesis( double sim_time_ , std::vector<double
 		if((verbose_photosynthesis > 0)){
 			std::cout<<"leuning computation module at "<<(loop-1)<<" trials. "
 			"Sum of max relative error calculated at the "
-			"last two trials: "<<(this->stop)<<std::endl;
+			"last two trials: stop? "<<(this->stop)<<std::endl;
 			std::cout<<"each val "<<maxErr[0]<<" "<<maxErr[1]<<" "<<maxErr[2]<<" "<<maxErr[3]<<" "<<maxErr[4];
 			std::cout<<" "<<maxErr[5]<<" "<<maxErr[6]<<" "<<maxErr[7]<<" "<<maxErr[8]<<std::endl;
 			std::cout<<"each val abs "<<maxErrAbs[0]<<" "<<maxErrAbs[1]<<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4];
@@ -131,8 +131,8 @@ void Photosynthesis::solve_photosynthesis( double sim_time_ , std::vector<double
 
 
 	 
-	loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs. when fw ~ 0, need to do it one last time to be sure that seg_flux_leaf = Ev 
-	outputFlux = getRadialFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
+	//loopCalcs(sim_time_, sxx_, cells_) ;//compute photosynthesis outputs. when fw ~ 0, need to do it one last time to be sure that seg_flux_leaf = Ev # TODO: add as error matrix because then the sum of fluxes becomes wrong
+	// outputFlux = getRadialFluxes(sim_time_, this->psiXyl, sxx_, false, cells_, soil_k_);//approx = false
 	loop++ ;
 
 	// for phloem flow
@@ -368,9 +368,9 @@ void Photosynthesis::getError(double simTime)
 			if(this->outputFlux[i] !=0){tempVal=  std::min(std::abs(this->outputFlux[i]), std::abs(this->outputFlux_old[i]));
 				}else{tempVal=1.;}
 			maxErrAbs[5] =std::max(std::abs((this->outputFlux[i]-outputFlux_old[i])),maxErrAbs[5]);
-			maxErrAbs[7] += std::abs((this->outputFlux[i]-outputFlux_old[i]));//becasue sum of fluxes important
+			maxErrAbs[7] +=(this->outputFlux[i]);//becasue sum of fluxes important
 			maxErr[5] =std::max(std::abs((this->outputFlux[i]-outputFlux_old[i])/tempVal),maxErr[5]);
-			maxErr[7] += std::abs((this->outputFlux[i]-outputFlux_old[i])/tempVal);//becasue sum of fluxes important
+			maxErr[7] += this->outputFlux[i]/tempVal;//becasue sum of fluxes important
 		}
 
 		if(doLog){
@@ -383,6 +383,8 @@ void Photosynthesis::getError(double simTime)
 			myfile1 <<std::endl;
 		}
 	}
+	maxErrAbs[7] = std::abs(maxErrAbs[7]);
+	maxErr[7] = std::abs(maxErr[7]);
 	myfile1 <<std::endl<<std::endl<<std::endl;
 	for (int i = 0; i < this->An.size(); i++)
 	{ //f = f < 0 ? -f : f;
@@ -407,7 +409,10 @@ void Photosynthesis::getError(double simTime)
 		maxErrAbs[4] =std::max(std::abs((this->pg[i]-pg_old[i])),maxErrAbs[4]);
 		maxErr[4] =std::max(std::abs((this->pg[i]-pg_old[i])/tempVal),maxErr[4]);
 
-		maxErr[6] =0.;
+		int idl= seg_leaves_idx.at(i); // global segment indx
+		maxErrAbs[6] = std::abs((this->outputFlux[idl]-this->Ev.at(i)));
+		maxErr[6] = std::abs((this->outputFlux[idl]-this->Ev.at(i)))/std::min(std::abs(this->outputFlux[i]),std::abs(this->Ev.at(i)));
+		
 		if(doLog){
 			myfile1 <<i<<" abs: "<<maxErrAbs[1] <<" "<<maxErrAbs[1] <<" "<<maxErrAbs[2]<<" "<<maxErrAbs[3]<<" "<<maxErrAbs[4] <<" "<<maxErrAbs[5] <<" "<<maxErrAbs[6]<<" "<<maxErrAbs[7]<<" "<<maxErrAbs[8]<<" an: ";
 			myfile1  <<this->An[i]<<" an_old: "<<An_old[i]<<" gco2: "<<this->gco2[i]<<" gco2_old> "<<gco2_old[i];
