@@ -74,8 +74,8 @@ hm.test()  # |\label{l73c:test}|
 
 """ Perirhizal initialization """
 peri = PerirhizalPython(hm.ms)  # |\label{l73c:peri}|
-peri.open_lookup("results/hydrus_loam")  # |\label{l73c:peritable}|
 # peri.set_soil(vg.Parameters(loam))  # |\label{l73c:perisoil}|
+peri.open_lookup("results/hydrus_loam")  # |\label{l73c:peritable}|
 
 outer_r = peri.get_outer_radii("length")  # |\label{l73c:outer}|
 inner_r = peri.ms.radii
@@ -112,7 +112,7 @@ for i in range(0, N):  # |\label{l73c:loop}|
         err = np.linalg.norm(hx - hx_old)
         hx_old = hx.copy()
 
-        c += 1
+        c += 1  # |\label{l73c:fixpoint_end}|
 
     water = s.getWaterVolume()  # |\label{l73c:domain_water}|
     fluxes = hm.soil_fluxes(rs_age + t, hx, hs)
@@ -136,8 +136,6 @@ for i in range(0, N):  # |\label{l73c:loop}|
         vp.write_plant("results/example73_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l73c:write_end}|
 
     t += dt
-
-s.writeDumuxVTK(name)
 
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
