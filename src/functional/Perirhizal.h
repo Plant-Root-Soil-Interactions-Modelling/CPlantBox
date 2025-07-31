@@ -22,6 +22,8 @@ public:
     Perirhizal() { }
     Perirhizal(std::shared_ptr<MappedSegments> ms) :ms(ms) { }
 
+	std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
+    std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
     std::vector<double> segOuterRadii(int type, const std::vector<double>& vols = std::vector<double>(0)) const; ///< outer cylinder radii to match cell volume
 
     std::shared_ptr<MappedSegments> ms;

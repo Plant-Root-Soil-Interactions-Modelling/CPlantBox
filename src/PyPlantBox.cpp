@@ -903,7 +903,14 @@ PYBIND11_MODULE(plantbox, m) {
         .def_readwrite("minBound", &MappedSegments::minBound)
         .def_readwrite("maxBound", &MappedSegments::maxBound)
         .def_readwrite("resolution", &MappedSegments::resolution)
-	    .def_readwrite("segO", &MappedSegments::segO);
+		.def_readwrite("organParam", &MappedSegments::plantParam)
+	    .def_readwrite("segO", &MappedSegments::segO)
+		.def("sumSegFluxes",&MappedSegments::sumSegFluxes)
+		.def("splitSoilFluxes",&MappedSegments::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0);
+    py::class_<MappedRootSystem, RootSystem, MappedSegments,  std::shared_ptr<MappedRootSystem>>(m, "MappedRootSystem")
+        .def(py::init<>())
+        .def("mappedSegments",  &MappedRootSystem::mappedSegments)
+        .def("addSegments", &MappedRootSystem::rootSystem);
 
     /*
      * Plant.h
@@ -944,19 +951,19 @@ PYBIND11_MODULE(plantbox, m) {
 	 * Perirhizal.h
 	 */
     py::class_<Perirhizal, std::shared_ptr<Perirhizal>> (m, "Perirhizal")
-           .def(py::init<>())
-           .def(py::init<std::shared_ptr<MappedSegments>>())
-           .def("segOuterRadii",&Perirhizal::segOuterRadii,  py::arg("type"), py::arg("vols") = std::vector<double>(0))
-           .def("adapt_values",&Perirhizal::adapt_values,  py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_")=-1., py::arg("volumes_"), py::arg("divideEqually_"),  py::arg("verbose_"))
-           .def("distributeValSolute_",&Perirhizal::distributeValSolute_,  py::arg("seg_values_content"), py::arg("volumes"), py::arg("source"), 
+            .def(py::init<>())
+            .def(py::init<std::shared_ptr<MappedSegments>>())
+            .def("segOuterRadii",&Perirhizal::segOuterRadii,  py::arg("type"), py::arg("vols") = std::vector<double>(0))
+            .def("adapt_values",&Perirhizal::adapt_values,  py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_")=-1., py::arg("volumes_"), py::arg("divideEqually_"),  py::arg("verbose_"))
+            .def("distributeValSolute_",&Perirhizal::distributeValSolute_,  py::arg("seg_values_content"), py::arg("volumes"), py::arg("source"), 
                    py::arg("dt"))
-           .def("distributeValWater_",&Perirhizal::distributeValWater_,  py::arg("seg_values_perVol"), py::arg("volumes"), py::arg("source"), 
+            .def("distributeValWater_",&Perirhizal::distributeValWater_,  py::arg("seg_values_perVol"), py::arg("volumes"), py::arg("source"), 
                    py::arg("dt"), py::arg("theta_S"), py::arg("theta_wilting_point"))
-           .def("splitSoilVals_",&Perirhizal::splitSoilVals,  py::arg("soilVals"),
-                py::arg("cellIds"), py::arg("isWater"), 
-                   py::arg("seg_values"), py::arg("seg_volume"), py::arg("dt"),
-               py::arg("theta_S"), py::arg("theta_wilting_point"))			  
-           .def_readwrite("ms",  &Perirhizal::ms);
+            .def("splitSoilVals_",&Perirhizal::splitSoilVals,  py::arg("soilVals"), py::arg("cellIds"), py::arg("isWater"), 
+                   py::arg("seg_values"), py::arg("seg_volume"), py::arg("dt"), py::arg("theta_S"), py::arg("theta_wilting_point"))		
+			.def("sumSegFluxes",&Perirhizal::sumSegFluxes)
+			.def("splitSoilFluxes",&Perirhizal::splitSoilFluxes, py::arg("soilFluxes"), py::arg("type") = 0)	  
+            .def_readwrite("ms",  &Perirhizal::ms);
 
     /*
      * XylemFlux.h
