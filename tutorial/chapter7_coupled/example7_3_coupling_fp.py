@@ -115,10 +115,10 @@ for i in range(0, N):  # |\label{l73c:loop}|
         c += 1  # |\label{l73c:fixpoint_end}|
 
     water = s.getWaterVolume()  # |\label{l73c:domain_water}|
-    fluxes = hm.soil_fluxes(rs_age + t, hx, hs)
-    s.setSource(fluxes)
+    fluxes = hm.radial_fluxes(rs_age + t, hx, hsr, cells = False)  # |\label{l73c:fluxes}|
+    s.setSource(hm.sumSegFluxes(fluxes))  # TODO will be moved to MappedSegments # |\label{l73c:soil_fluxes}|
     s.solve(dt)
-    soil_water = (s.getWaterVolume() - water) / dt
+    soil_water = (s.getWaterVolume() - water) / dt  # |\label{l73c:domain_water_end}|
 
     hs = s.getSolutionHead()  # per cell # |\label{l73c:new_hs}|
     hs_ = hm.ms.getHs(hs)  # per segment
