@@ -71,7 +71,7 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
         else:
             raise Exception(f'unexpected object type for TairC ({type(TairC)})')
             
-        self.solve_photosynthesis(sim_time = sim_time, sxx = rsx, cells = True, 
+        self.solve_photosynthesis(sim_time = sim_time, sxx = rsx, cells = cells, 
                                         ea =  ea, es = es, TleafK =  TairK , soil_k = soil_k,  
                                 verbose = verbose, doLog = doLog, outputDir = outputDirectory)
                                 
@@ -100,7 +100,7 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
             organTypes = np.array(self.plant.organTypes)
             return np.array(leafBlade)[organTypes == ot]
         
-    def get_tot_transpiration(self):
+    def get_transpiration(self):
         """ actual transpiration [cm3 day-1], calculated as the sum of all leaf radial fluxes"""
         return sum(self.Ev)
 

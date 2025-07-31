@@ -32,7 +32,7 @@ public:
 
     virtual ~MappedSegments() { }
 
-    void setSoilGrid(const std::function<int(double,double,double)>& s); ///< sets the soil, resets the mappers, and maps all segments
+    void setSoilGrid(const std::function<int(double,double,double)>& s, bool noChanges = false); ///< sets the soil, resets the mappers, and maps all segments
     void setRectangularGrid(Vector3d min, Vector3d max, Vector3d res, bool cut = true, bool noChanges = false); ///< sets an underlying rectangular grid, and cuts all segments accordingly
     void mapSegments(const std::vector<Vector2i>& segs);
     void cutSegments(); // cut and add segments

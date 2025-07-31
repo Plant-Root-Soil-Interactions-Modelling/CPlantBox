@@ -94,10 +94,11 @@ void MappedSegments::setSubTypes(int t) {
  *
  * @param s 		the callback function picks a cell with spatial coordinate [cm] and returns the index of the cell [1]
  */
-void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s) {
+void MappedSegments::setSoilGrid(const std::function<int(double,double,double)>& s, bool noChanges) {
 	soil_index = s;
 	seg2cell.clear(); // re-map all segments
 	cell2seg.clear();
+	constantLoc = noChanges;
 	mapSegments(segments);
 }
 

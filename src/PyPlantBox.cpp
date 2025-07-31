@@ -870,10 +870,11 @@ PYBIND11_MODULE(plantbox, m) {
         .def("setRadius", &MappedSegments::setRadius)
         .def("setTypes", &MappedSegments::setSubTypes) //kept for backward compatibility
         .def("setSubTypes", &MappedSegments::setSubTypes)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&)) &MappedSegments::setSoilGrid)
-        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool)) &MappedSegments::setSoilGrid,
-        		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true)
-        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, bool)) &MappedSegments::setSoilGrid, py::arg("s"), py::arg("noChanges") = false)
+        .def("setSoilGrid", (void (MappedSegments::*)(const std::function<int(double,double,double)>&, Vector3d, Vector3d, Vector3d, bool, bool)) &MappedSegments::setSoilGrid,
+        		py::arg("s"), py::arg("min"), py::arg("max"), py::arg("res"), py::arg("cut") = true, py::arg("noChanges") = false)
+        .def("setRectangularGrid", &MappedSegments::setRectangularGrid, py::arg("min"), py::arg("max"), py::arg("res"), 
+				py::arg("cut") = true, py::arg("noChanges") = false)
         .def("mapSegments",  &MappedSegments::mapSegments)
         .def("cutSegments", &MappedSegments::cutSegments)
         .def_readwrite("soil_index", &MappedSegments::soil_index)
@@ -946,6 +947,15 @@ PYBIND11_MODULE(plantbox, m) {
            .def(py::init<>())
            .def(py::init<std::shared_ptr<MappedSegments>>())
            .def("segOuterRadii",&Perirhizal::segOuterRadii,  py::arg("type"), py::arg("vols") = std::vector<double>(0))
+           .def("adapt_values",&Perirhizal::adapt_values,  py::arg("val_new_"), py::arg("minVal_"), py::arg("maxVal_")=-1., py::arg("volumes_"), py::arg("divideEqually_"),  py::arg("verbose_"))
+           .def("distributeValSolute_",&Perirhizal::distributeValSolute_,  py::arg("seg_values_content"), py::arg("volumes"), py::arg("source"), 
+                   py::arg("dt"))
+           .def("distributeValWater_",&Perirhizal::distributeValWater_,  py::arg("seg_values_perVol"), py::arg("volumes"), py::arg("source"), 
+                   py::arg("dt"), py::arg("theta_S"), py::arg("theta_wilting_point"))
+           .def("splitSoilVals_",&Perirhizal::splitSoilVals,  py::arg("soilVals"),
+                py::arg("cellIds"), py::arg("isWater"), 
+                   py::arg("seg_values"), py::arg("seg_volume"), py::arg("dt"),
+               py::arg("theta_S"), py::arg("theta_wilting_point"))			  
            .def_readwrite("ms",  &Perirhizal::ms);
 
     /*
