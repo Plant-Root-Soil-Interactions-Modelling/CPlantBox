@@ -64,6 +64,29 @@ std::vector<double> Perirhizal::segOuterRadii(int type, const std::vector<double
     return outer_radii;
 }
 
+
+/**
+ * Sums segment fluxes over each cell
+ *
+ * @param segFluxes 	segment fluxes given per segment index [cm3/day]
+ * @return hash map with cell indices as keys and fluxes as values [cm3/day]
+ */
+std::map<int,double> Perirhizal::sumSegFluxes(const std::vector<double>& segFluxes)
+{
+	return this->ms->sumSegFluxes(segFluxes);
+}
+
+/**
+ * Splits soil fluxes per cell to the segments within the cell, so that the summed fluxes agree, @see sumSoilFluxes()
+ *
+ * @param soilFluxes 	cell fluxes per global index [cm3/day]
+ * @param type 			split flux proportional to 0: segment volume, 1: segment surface, 2: segment length
+ * @return fluxes for each segment [cm3/day]
+ */
+std::vector<double> Perirhizal::splitSoilFluxes(const std::vector<double>& soilFluxes, int type) const {
+	return this->ms->splitSoilFluxes(soilFluxes, type);
+}
+
 void Perirhizal::redistribute_excess() {
     // Identify and handle excess values
     double extraElement = 0.0;

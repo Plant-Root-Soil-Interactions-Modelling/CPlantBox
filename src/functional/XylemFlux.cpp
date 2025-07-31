@@ -106,7 +106,7 @@ void XylemFlux::linearSystem(double simTime, const std::vector<double>& sx, bool
 std::map<int,double> XylemFlux::soilFluxes(double simTime, const std::vector<double>& rx, const std::vector<double>& sx,
     bool approx, const std::vector<double> soil_k)
 {
-    return sumSegFluxes(segFluxes(simTime,  rx, sx, approx, true, soil_k));
+    return rs->sumSegFluxes(segFluxes(simTime,  rx, sx, approx, true, soil_k));
 }
 
 /**
@@ -195,6 +195,7 @@ std::vector<double> XylemFlux::segFluxes(double simTime, const std::vector<doubl
  */
 std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxes)
 {
+    std::cout << "XylemFlux::sumSegFluxes: DEPRICATED use class MappedSegments instead (ms.sumSegFluxes) \n" << std::flush;
     std::map<int,double> fluxes;
     for (int si = 0; si<rs->segments.size(); si++) {
         int j = rs->segments[si].y;
@@ -238,6 +239,7 @@ std::map<int,double> XylemFlux::sumSegFluxes(const std::vector<double>& segFluxe
  */
 std::vector<double> XylemFlux::splitSoilFluxes(const std::vector<double>& soilFluxes, int type) const
 {
+    std::cout << "XylemFlux::splitSoilFluxes: DEPRICATED use class MappedSegments instead (ms.splitSoilFluxes) \n" << std::flush;
     auto lengths =  this->rs->segLength();
     std::vector<double> fluxes = std::vector<double>(rs->segments.size());
     std::fill(fluxes.begin(), fluxes.end(), 0.);
