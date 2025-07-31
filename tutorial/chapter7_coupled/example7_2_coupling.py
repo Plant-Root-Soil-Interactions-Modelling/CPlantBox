@@ -112,4 +112,5 @@ ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative transpiratio
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
 ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
+np.save("results/" + name, np.vstack((x_, -np.array(y_))))  # |\label{l72c:npsave}|
 plt.show()

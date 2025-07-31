@@ -14,6 +14,7 @@ from rosi_richards import RichardsSP  # C++ part (Dumux binding)
 from richards import RichardsWrapper  # Python part
 import numpy as np
 import matplotlib.pyplot as plt
+import figure_style
 import timeit
 
 
@@ -22,20 +23,20 @@ def sinusoidal(t):
 
 
 """ Parameters """  # |\label{l73c:param}|
-min_b = [-4., -4., -25.]
-max_b = [4., 4., 0.]
-cell_number = [8, 8, 25]  # [16, 16, 30]  # [32, 32, 60]
+min_b = [-35., -10., -50.]  # [cm]
+max_b = [35., 10., 0.]  # [cm]
+cell_number = [17, 5, 50]  # ~[4*4*1] cm3
 
 path = "../../modelparameter/structural/rootsystem/"
-name = "Anagallis_femina_Leitner_2010"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Anagallis_femina_Leitner_2010 TODO <<<<-------
-trans = 10  # cm3 /day (sinusoidal) = mL/day
-wilting_point = -10000  # cm
-rs_age = 14  # root system initial age [day]
+name = "Zeamays_synMRI_modified"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
+trans = 250  # cm3 /day (sinusoidal) = mL/day
+wilting_point = -15000  # cm
+rs_age = 21  # root system initial age [day]
 
 loam = [0.078, 0.43, 0.036, 1.56, 24.96]  # hydrus loam
-initial = -500  # cm
+initial = -400  # cm
 
-sim_time = 0.5  # 7.5  # [day]
+sim_time = 7.5  # [day]
 dt = 360. / (24 * 3600)  # [days]  # |\label{l73c:param_end}|
 
 """ Initialize macroscopic soil model """
@@ -66,72 +67,67 @@ hm.wilting_point = wilting_point  # |\label{l73c:hydraulic_end}|
 """ Coupling (map indices) """
 picker = lambda x, y, z: s.pick([x, y, z])  # |\label{l73c:coupling}|
 plant.setSoilGrid(picker)
-plant.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), False, False)  # d(Vector3d min, Vector3d max, Vector3d res, bool cut, bool noChanges)
+plant.setRectangularGrid(pb.Vector3d(min_b), pb.Vector3d(max_b), pb.Vector3d(cell_number), False, False)  # |\label{l73c:rectgrid}|
 plant.initialize(True)
 plant.simulate(rs_age, True)
 hm.test()  # |\label{l73c:test}|
 
-peri = PerirhizalPython(hm.ms)
-# peri.open_lookup("hydrus_loam")
-peri.set_soil(vg.Parameters(loam))
+""" Perirhizal initialization """
+peri = PerirhizalPython(hm.ms)  # |\label{l73c:peri}|
+peri.open_lookup("results/hydrus_loam")  # |\label{l73c:peritable}|
+# peri.set_soil(vg.Parameters(loam))  # |\label{l73c:perisoil}|
 
-outer_r = peri.get_outer_radii("length")
+outer_r = peri.get_outer_radii("length")  # |\label{l73c:outer}|
 inner_r = peri.ms.radii
-rho_ = np.divide(outer_r, np.array(inner_r))
+rho_ = np.divide(outer_r, np.array(inner_r))  # |\label{l73c:rho}|
 
 """ Numerical solution (a) """
 start_time = timeit.default_timer()
 x_, y_, z_ = [], [], []
 
-hs = s.getSolutionHead_()  # [cm] matric potential
-hs_ = hm.ms.getHs(hs)  # [cm] matric potential per segment
-hsr = hs_.copy()  # initial values for fix point iteration
+hs = s.getSolutionHead_()  # [cm] matric potential # |\label{l73c:initial_hs}|
+hs_ = hm.ms.getHs(hs)  # [cm] matric potential per segment  |\label{l73c:geths}|
+hsr = hs_.copy()  # initial values for fix point iteration # |\label{l73c:initial_hsr}|
 
 N = round(sim_time / dt)
 t = 0.
 
-for i in range(0, N):
+for i in range(0, N):  # |\label{l73c:loop}|
 
-    hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)
+    hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)  # |\label{l73c:initial_hx}|
     hx_old = hx.copy()
 
-    kr_ = hm.params.getKr(rs_age + t)
+    kr_ = hm.params.getKr(rs_age + t)  # |\label{l73c:update_kr}|
     inner_kr_ = np.multiply(inner_r, kr_)  # multiply for table look up; here const
 
     err = 1.e6
     c = 0
-    while err > 100. and c < 100:
+    while err > 100. and c < 100:  # |\label{l73c:fixpoint}|
 
         """ interpolation """
-        hsr = peri.soil_root_interface_potentials(hx[1:], hs_, inner_kr_, rho_)
+        hsr = peri.soil_root_interface_potentials(hx[1:], hs_, inner_kr_, rho_)  # |\label{l73c:interpolation}|
 
         """ xylem matric potential """
-        hx = hm.solve_again(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)
+        hx = hm.solve_again(rs_age + t, -trans * sinusoidal(t), hsr, cells = False)  # |\label{l73c:hydraulic_hsr}|
         err = np.linalg.norm(hx - hx_old)
         hx_old = hx.copy()
 
         c += 1
 
-    if hx[0] > wilting_point:
-        err2 = np.linalg.norm(-trans * sinusoidal(t) - hm.get_transpiration(rs_age + t, hx.copy(), hsr.copy()))
-        if err2 > 1.e-6:
-            print("error: potential transpiration differs root collar flux in Neumann case" , err2)
-            print(-trans * sinusoidal(t))
-            print(collar_flux)
-
-    water = s.getWaterVolume()
+    water = s.getWaterVolume()  # |\label{l73c:domain_water}|
     fluxes = hm.soil_fluxes(rs_age + t, hx, hs)
     s.setSource(fluxes)
     s.solve(dt)
     soil_water = (s.getWaterVolume() - water) / dt
 
-    hs = s.getSolutionHead()
-    hs_ = hm.ms.getHs(hs)
+    hs = s.getSolutionHead()  # per cell # |\label{l73c:new_hs}|
+    hs_ = hm.ms.getHs(hs)  # per segment
 
-    x_.append(t)
+    x_.append(t)  # |\label{l73c:results}|
     y_.append(hm.get_transpiration(rs_age + t, hx.copy(), hsr.copy()))  # cm3/day
     z_.append(soil_water)  # cm3/day
-    n = round(float(i) / float(N) * 100.)
+
+    n = round(float(i) / float(N) * 100.)  # |\label{l73c:progress}|
     print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], {:g} iterations, soil hs [{:g}, {:g}], interface [{:g}, {:g}] cm, root [{:g}, {:g}] cm, {:g} days"
           .format(c, np.min(hs), np.max(hs), np.min(hsr), np.max(hsr), np.min(hx), np.max(hx), s.simTime))
 
@@ -157,6 +153,6 @@ ax2.plot(x_, np.cumsum(-np.array(y_) * dt), 'c--')  # cumulative transpiration (
 ax1.set_xlabel("Time [d]")
 ax1.set_ylabel("Transpiration $[mL d^{-1}]$ per plant")
 ax1.legend(['Potential', 'Actual', 'Cumulative'], loc = 'upper left')
-np.savetxt(name, np.vstack((x_, -np.array(y_))), delimiter = ';')
+np.save("results/" + name + "_fp", np.vstack((x_, -np.array(y_), np.array(z_))))  # |\label{l72c:npsave}|
 plt.show()
 
