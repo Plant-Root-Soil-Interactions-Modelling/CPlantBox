@@ -788,7 +788,7 @@ def write_plant(filename, plant, add_params = []):
     """ write the plants organ ceneterlines and leafs into two seperate vtp files"""
     params = ["radius", "subType", "organType", "age"]
     params.extend(add_params)
-    pd = segs_to_polydata(plant, 1., params)
+    pd = segs_to_polydata(plant, 1., params)  # TODO: DL this would work for a SegmentAnalyser (and there we could attach data),  maybe split leaf part
     write_vtp(filename + ".vtp", pd)
 
     leaf_points = vtk.vtkPoints()
