@@ -120,12 +120,12 @@ for i in range(0, N):  # |\label{l73c:loop}|
     s.solve(dt)
     soil_water = (s.getWaterVolume() - water) / dt  # |\label{l73c:domain_water_end}|
 
-    hs = s.getSolutionHead()  # per cell # |\label{l73c:new_hs}|
-    hs_ = hm.ms.getHs(hs)  # per segment
+    hs = s.getSolutionHead()  # per cell |\label{l73c:new_hs}|
+    hs_ = hm.ms.getHs(hs)  # per segment |\label{l73c:new_hs2}|
 
     x_.append(t)  # |\label{l73c:results}|
     y_.append(hm.get_transpiration(rs_age + t, hx.copy(), hsr.copy()))  # cm3/day
-    z_.append(soil_water)  # cm3/day
+    z_.append(soil_water)  # cm3/day |\label{l73c:results_end}|
 
     n = round(float(i) / float(N) * 100.)  # |\label{l73c:progress}|
     print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], {:g} iterations, soil hs [{:g}, {:g}], interface [{:g}, {:g}] cm, root [{:g}, {:g}] cm, {:g} days"
@@ -135,7 +135,7 @@ for i in range(0, N):  # |\label{l73c:loop}|
         vp.write_soil("results/example73_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
         vp.write_plant("results/example73_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l73c:write_end}|
 
-    t += dt
+    t += dt  # |\label{l73c:fixpoint_end}|
 
 print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s")  # |\label{l73c:timing}|
 
