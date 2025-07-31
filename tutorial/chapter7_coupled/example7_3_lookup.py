@@ -11,4 +11,3 @@ filename = "hydrus_loam"
 sp = vg.Parameters(hydrus_loam)  # |\label{l73l:soil_end}|
 vg.create_mfp_lookup(sp)  # |\label{l73l:mfp}|
 peri.create_lookup_mpi("results/" + filename, sp)  # |\label{l73l:lookup}|
-# peri.open_lookup(filename)
