@@ -1,4 +1,15 @@
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
+from pathlib import Path
+import sys
+
+# project root = CPlantBox
+root = Path(__file__).resolve().parents[2]
+
+# add the built extension and Python helpers
+sys.path.insert(0, str(root / "build" / "Release"))
+sys.path.insert(0, str(root / "src"))
+
+import plantbox as pb
+print("Imported plantbox:", pb)
 
 import functional.xylem_flux as xylem_flux
 import visualisation.vtk_plot as vp
@@ -13,11 +24,37 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationTool
 from matplotlib.backend_bases import key_press_handler  # Implement the default Matplotlib key bindings
 import matplotlib.pyplot as plt
 import numpy as np
+import multiprocessing
+import os
 
 """ TODO animation, and optional remesh and RSML (re)write would be nice, writing artifical shoot(?!) """
 """ log file """
 
+def run_vtk_plot_process(rsml_path, plot_name):
+    #aims at creating a different subprocess for vtk and tkinter, their concurrance causes trouble in windows
+    data = ViewerDataModel()
+    data.open_rsml(rsml_path)
 
+    if not data.exists():
+        return
+
+    if plot_name == "SUF":
+        print("Calculating SUF using the default scenario...")
+        r = data.xylem_flux
+
+        viewer_conductivities.init_constant_scenario1(r)
+
+        if len(data.base_nodes) > 0:
+            r.neumann_ind = [data.base_nodes[0]]
+            suf = r.get_suf(data.max_ct)
+            data.analyser.addData("SUF", suf)
+        else:
+            print("Error: No base nodes found to calculate SUF.")
+            return
+
+    vp.plot_roots(data.analyser, plot_name)
+
+  
 class App:
 
     def __init__(self, root):
@@ -223,7 +260,11 @@ class App:
     def view_vtk_plot(self, name):
         """ vtk plot coloring name """
         if self.data.exists():
-            vp.plot_roots(self.data.analyser, name)
+            plot_process = multiprocessing.Process(
+                target=run_vtk_plot_process, 
+                args=(fname, name) 
+            )
+            plot_process.start()
         else:
             tkinter.messagebox.showwarning("Warning", "Open RSML file first")
 
@@ -240,9 +281,11 @@ class App:
         """ button """
         if self.data.exists():
             j = self.combo3.current()
-            root = tkinter.Tk()
-            root.wm_title("Root conductivities")
-            r = self.data.xylem_flux  # rename
+
+            new_window = tkinter.Toplevel(self.root) 
+            new_window.wm_title("Root conductivities")
+
+            r = self.data.xylem_flux
             if j == 0:
                 viewer_conductivities.init_constant_scenario1(r)
             elif j == 1:
@@ -251,11 +294,12 @@ class App:
                 viewer_conductivities.init_dynamic_scenario1(r)
             elif j == 3:
                 viewer_conductivities.init_dynamic_scenario2(r)
-            fig = r.plot_conductivities(monocot = False, plot_now = False, axes_ind = [0], lateral_ind = [1, 2, 3])
-            canvas = FigureCanvasTkAgg(fig, master = root)  # A tk.DrawingArea.
+            
+            fig = r.plot_conductivities(monocot=False, plot_now=False, axes_ind=[0], lateral_ind=[1, 2, 3])
+            
+            canvas = FigureCanvasTkAgg(fig, master=new_window)
             canvas.draw()
-            canvas.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
-            tkinter.mainloop()
+            canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
     def file_open(self):
         """ menu item: open rsml file """
@@ -366,4 +410,16 @@ class App:
 if __name__ == '__main__':
     root = tkinter.Tk()
     app = App(root)
+
+    if len(sys.argv) > 1:
+        fname_arg = sys.argv[1]
+        if os.path.isfile(fname_arg) and fname_arg.lower().endswith(('.rsml', '.xml')):
+            global fname 
+            fname = fname_arg
+            app.data.open_rsml(fname)
+            app.update_all()
+            app.view_vtk_plot("subType")
+        else:
+            print(f"Error: File not found or not a valid RSML file: {fname_arg}")
+
     root.mainloop()
