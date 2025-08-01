@@ -45,7 +45,7 @@ To run code/examples you will need some extra Python packages such as `vtk`, `pa
 
 	# upgrade pip and install needed modules
 	python -m pip install --upgrade pip
-	pip install vtk pandas numpy
+	pip install vtk pandas numpy scipy
 
 	# Note: you can also do this later, the packages do not matter for the install itself. If code fails due to missing package => find pip command to install the package.
 
