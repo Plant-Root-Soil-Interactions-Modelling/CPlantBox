@@ -103,6 +103,7 @@ STEP 3: BUILD CPlantBox
 1. Navigate to the CPlantBox repository root and create a clean build directory:
 
     cd ../CPlantBox
+	mkdir build
 
 2. Configure the project with CMake. Replace the toolchain path if your vcpkg
    is located elsewhere:
