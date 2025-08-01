@@ -27,27 +27,8 @@ PREREQUISITES
    Download from: https://www.python.org/downloads/windows/  
    On the installer’s first page, check “Add python.exe to PATH”.
 
-5. vcpkg (dependency manager).
-   Clone the repo via Windows PowerShell: 
-   
-   git clone https://github.com/microsoft/vcpkg
-   cd vcpkg
-   
-   Then bootstrap it with: 
-     .\bootstrap-vcpkg.bat
+
 	 
-	# if PowerShell blocks the script, temporarily allow it:
-	Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-
-   IMPORTANT: vcpkg and the CPlantBox repository must live as siblings in the same
-   workspace! Otherwise build will not work. Example layout:
-   
-   C:\CPlantBox-windows\
-		CPlantBox\          <-- source repo
-		vcpkg\              <-- vcpkg clone
-
-# Note: The build uses the static MSVC runtime (configured in CMake), so you hopefully  
-  dont need to install Visual C++ Redistributable separately. To be tested..
 
 
 
@@ -92,10 +73,24 @@ STEP 2: BOOTSTRAP vcpkg AND INSTALL DEPENDENCIES
     cd vcpkg
     .\bootstrap-vcpkg.bat
 
+    # if PowerShell blocks the script, temporarily allow it:
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+
     # Install required libraries for x64-windows
     .\vcpkg install eigen3 tinyxml2 pybind11:x64-windows
 
-    # Note: adjust path below when invoking CMake to point to your vcpkg clone
+
+    IMPORTANT: vcpkg and the CPlantBox repository must live as siblings in the sameworkspace! Otherwise build will not work.
+    Example layout:
+   
+    C:\CPlantBox-windows\
+                CPlantBox\          <-- source repo
+		vcpkg\              <-- vcpkg clone
+
+# Note: The build uses the static MSVC runtime (configured in CMake), so you hopefully  
+  dont need to install Visual C++ Redistributable separately. To be tested..
+
 
 
 STEP 3: BUILD CPlantBox
