@@ -1,14 +1,13 @@
 """ Example of the photosynthesis module, using real data from the Selhausen lysimeter setup """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")  # |\label{6h:imports}|
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+import pandas as pd
+import numpy as np 
 import plantbox as pb
 import visualisation.vtk_plot as vp
 from functional.PlantHydraulicParameters import PlantHydraulicParameters
 from functional.Photosynthesis import PhotosynthesisPython  # |\label{6h:importsPhotosynthesis}|
-
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-import pandas as pd
-import numpy as np  # |\label{6h:importsEnd}|
 
 """ Parameters and variables """
 plant_age = 14  # plant age [day]       # |\label{6h:Parameters}|
