@@ -1,0 +1,169 @@
+========================================================================
+CPlantBox Windows Build Guide
+========================================================================
+
+OVERVIEW
+--------
+This builds the Python extension `plantbox.pyd` on Windows (x64, Python 3.12)
+with the CPlantBox C++ core statically linked. 
+
+PhloemFlux / PiafMunchis disabled due to dependency on legacy SUNDIALS/KLU package. vcpkg cannot easily access legacy versions
+
+
+PREREQUISITES
+-------------
+1. Visual Studio 2022 (Community is fine).  
+   Download from: https://visualstudio.microsoft.com/downloads/  
+   -> Choose the Community edition and during installation enable "Desktop development with C++".
+
+2. Git.  
+   Get the Standalone Windows installer "Git for Windows/x64 Setup" from: https://git-scm.com/download/win
+
+3. CMake (Previous Release (3.31.8)).  
+   Download Windows x64 Installer cmake-3.31.8-windows-x86_64.msi from: https://cmake.org/download/  
+   IMPORTANT: During install, select “Add CMake to the system PATH for all users” (or current user).
+   
+4. Python 3.12 x64 (official build, not the Microsoft Store version!!!).  
+   Download from: https://www.python.org/downloads/windows/  
+   On the installer’s first page, check “Add python.exe to PATH”.
+
+5. vcpkg (dependency manager).
+   Clone the repo via Windows PowerShell: 
+   
+   git clone https://github.com/microsoft/vcpkg
+   cd vcpkg
+   
+   Then bootstrap it with: 
+     .\bootstrap-vcpkg.bat
+	 
+	# if PowerShell blocks the script, temporarily allow it:
+	Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+   IMPORTANT: vcpkg and the CPlantBox repository must live as siblings in the same
+   workspace! Otherwise build will not work. Example layout:
+   
+   C:\CPlantBox-windows\
+		CPlantBox\          <-- source repo
+		vcpkg\              <-- vcpkg clone
+
+# Note: The build uses the static MSVC runtime (configured in CMake), so you hopefully  
+  dont need to install Visual C++ Redistributable separately. To be tested..
+
+
+
+RECOMMENDED PYTHON SETUP & DEPENDENCIES
+-------------------
+As always, a virtual python environment is recommended:
+	# create & activate a venv in Windows PowerShell
+	python -m venv .venv
+	.venv\Scripts\Activate.ps1
+	
+
+To run code/examples you will need some extra Python packages such as `vtk`, `pandas`, 
+`numpy`, etc. The Python side in windows handles this exactly as with default CPlantBox on Linux:
+
+	# upgrade pip and install needed modules
+	python -m pip install --upgrade pip
+	pip install vtk pandas numpy
+
+	# Note: you can also do this later, the packages do not matter for the install itself. If code fails due to missing package => find pip command to install the package.
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+----------- INSTALLATION --------------
+
+STEP 1: CLONE THE CODE AND vcpkg
+--------------------------------
+Open Windows PowerShell and choose a workspace. Example:
+
+    cd C:\
+    mkdir CPlantBox-windows
+    cd CPlantBox-windows
+
+    git clone https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox
+    git clone https://github.com/microsoft/vcpkg
+
+
+STEP 2: BOOTSTRAP vcpkg AND INSTALL DEPENDENCIES
+-----------------------------------------------
+    cd vcpkg
+    .\bootstrap-vcpkg.bat
+
+    # Install required libraries for x64-windows
+    .\vcpkg install eigen3 tinyxml2 pybind11:x64-windows
+
+    # Note: adjust path below when invoking CMake to point to your vcpkg clone
+
+
+STEP 3: BUILD CPlantBox
+----------------------
+1. Navigate to the CPlantBox repository root and create a clean build directory:
+
+    cd ../CPlantBox
+
+2. Configure the project with CMake. Replace the toolchain path if your vcpkg
+   is located elsewhere:
+
+    cmake -S .. -B . -G "Visual Studio 17 2022" -A x64 `
+      -DCMAKE_TOOLCHAIN_FILE="C:/CPlantBox-windows/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+      -DVCPKG_TARGET_TRIPLET=x64-windows
+	  
+	
+	Convenience for myself:
+	cmake -S .. -B . -G "Visual Studio 17 2022" -A x64 `
+	  -DCMAKE_TOOLCHAIN_FILE="C:/Users/t.selzner/Desktop/Rhizomancer-Project/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+	  -DVCPKG_TARGET_TRIPLET=x64-windows
+
+3. Build the Release configuration:
+
+    cmake --build . --config Release
+
+	If this completes without errors, the Python extension was built.
+
+	# Note: If build fails, and you change something in the CMakeLists, delete and recreate build directory (e.g.):
+	
+    Remove-Item -Recurse -Force -ErrorAction SilentlyContinue build
+    mkdir build
+    cd build
+
+STEP 4: RUN AN EXAMPLE / USE FROM PYTHON
+---------------------------------------
+Set PYTHONPATH so Python can find the compiled extension and helper modules. This is already done in CPlantBox\Tutorial\WINDOWS_EXAMPLES, you can try them.
+
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]   # adjust relative to your location
+    sys.path.insert(0, str(root / "build" / "Release"))  # compiled .pyd
+    sys.path.insert(0, str(root / "src"))                # Python helpers
+
+    import plantbox as pb
+    print("Imported plantbox:", pb)
+
+
+OUTPUT LOCATION
+---------------
+The built Python extension lives in:
+
+    <repo>/build/Release/plantbox.cp312-win_amd64.pyd
+
+Make sure the Python interpreter version (e.g., 3.12 x64) matches the suffix in
+the `.pyd` filename.
+
+TROUBLESHOOTING
+---------------
+* If import `plantbox` fails, verify `PYTHONPATH` includes the `Release` folder
+  containing the `.pyd`, and that you are using the matching Python binary.
+* Ensure you built with `-A x64` and are using 64-bit Python.
+* If dependencies change, delete `build` and rerun the configure/build steps.
+
+
+NOTES
+-----
+* The build uses the static MSVC runtime (configured in CMake), so you hopefully  
+  dont need to install Visual C++ Redistributable separately.
+* PhloemFlux / PiafMunch is disabled by default. Enabling it requires a legacy
+  SUNDIALS/KLU build (not included here, this is very very painful to do with vcpkg).

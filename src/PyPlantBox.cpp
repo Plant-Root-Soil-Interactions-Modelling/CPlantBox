@@ -1,8 +1,10 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
-#include "external/pybind11/include/pybind11/pybind11.h"
-#include "external/pybind11/include/pybind11/stl.h"
-#include "external/pybind11/include/pybind11/functional.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
+#include <pybind11/options.h>
 namespace py = pybind11;
+
 
 /**
  * A Python binding based on pybind11
@@ -28,12 +30,16 @@ namespace py = pybind11;
 #include "Plant.h"
 #include "MappedOrganism.h"
 
-// functional
+
+
+
+// functional:
 #include "Perirhizal.h"
 #include "XylemFlux.h"
 #include "ExudationModel.h"
 #include "Photosynthesis.h"
-#include "PiafMunch/runPM.h"
+//#include "PiafMunch/runPM.h"  Disabled, cannot be built on windows with legacy SUNDIALS version
+
 
 #include "PlantHydraulicParameters.h"
 #include "PlantHydraulicModel.h"
@@ -1137,7 +1143,7 @@ PYBIND11_MODULE(plantbox, m) {
 
 	/*
      * runPM.h
-     */
+    
     py::class_<PhloemFlux, Photosynthesis, std::shared_ptr<PhloemFlux>>(m, "PhloemFlux")
             .def(py::init<std::shared_ptr<CPlantBox::MappedPlant>, std::shared_ptr<PlantHydraulicParameters>, double, double>(),  py::arg("plant"),py::arg("params"),
 			py::arg("psiXylInit"),  py::arg("ciInit") )
@@ -1223,7 +1229,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("kHyd_S_Mesophyll",&PhloemFlux::kHyd_S_Mesophyll)
             .def_readwrite("k_S_Mesophyll",&PhloemFlux::k_S_Mesophyll)
             .def_readwrite("k_mucil_",&PhloemFlux::k_mucil_);
-
+		*/
+	
     py::class_<PlantVisualiser, std::shared_ptr<PlantVisualiser>>(m, "PlantVisualiser")
         .def(py::init<>())
         .def(py::init<std::shared_ptr<MappedPlant>>())

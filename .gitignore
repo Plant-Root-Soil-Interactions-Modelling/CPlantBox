@@ -1,5 +1,6 @@
 # build system clutter
 build-*
+/build/
 Testing
 *.so
 src/CMakeFiles/

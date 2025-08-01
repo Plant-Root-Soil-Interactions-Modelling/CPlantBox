@@ -1,6 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "Perirhizal.h"
-
+#include <algorithm>
 namespace CPlantBox {
 
 /**
@@ -191,8 +191,8 @@ void Perirhizal::handle_excess() {
     double max_val_new = *std::max_element(val_new.begin(), val_new.end());
     if (max_val_new < maxVal) {
         if (maxVal - max_val_new < 1e-20) {
-            std::transform(val_new.begin(), val_new.end(), val_new.begin(),
-                  [*this](double v) { return std::min(v,this->maxVal); });
+			std::transform(val_new.begin(), val_new.end(), val_new.begin(),
+				  [this](double v) { return std::min(v, this->maxVal); });
         } else {
             redistribute_excess();
         }
@@ -203,8 +203,8 @@ void Perirhizal::handle_deficit() {
     double min_val_new = *std::min_element(val_new.begin(), val_new.end());
     if (min_val_new < minVal) {
         if (minVal - min_val_new < 1e-20) {
-            std::transform(val_new.begin(), val_new.end(), val_new.begin(),
-                   [*this](double v) { return std::max(v, this->minVal); });
+			std::transform(val_new.begin(), val_new.end(), val_new.begin(),
+				   [this](double v) { return std::max(v, this->minVal); });
             if(verbose)
             {
                 std::cout<<"Perirhizal::handle_deficit_smalldiff "<<std::endl;

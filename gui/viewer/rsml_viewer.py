@@ -1,5 +1,5 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
-
+sys.path.insert(0, r"C:\Users\t.selzner\Desktop\Rhizomancer-Project\CPB_master_windows\CPlantBox\build\Release")
 import functional.xylem_flux as xylem_flux
 import visualisation.vtk_plot as vp
 import visualisation.vtk_tools as vt
@@ -366,4 +366,16 @@ class App:
 if __name__ == '__main__':
     root = tkinter.Tk()
     app = App(root)
+
+    # Check for command-line arguments
+    if len(sys.argv) > 1:
+        fname_arg = sys.argv[1]
+        if os.path.isfile(fname_arg) and fname_arg.lower().endswith(('.rsml', '.xml')):
+            global fname 
+            fname = fname_arg # Set the global fname variable
+            app.data.open_rsml(fname)
+            app.update_all()
+        else:
+            print(f"Error: File not found or not a valid RSML file: {fname_arg}")
+
     root.mainloop()
