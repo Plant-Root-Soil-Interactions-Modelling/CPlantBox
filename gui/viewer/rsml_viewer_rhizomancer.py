@@ -612,21 +612,28 @@ class MainWindow(QtWidgets.QMainWindow):
     def multiple_suf(self):
         self.render_3d('SUF')
 
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
+def create_rsml_window(rsml_path: str = None):
+    
     win = MainWindow()
-    
-    if len(sys.argv) > 1:
-        arg = sys.argv[1]
-        if os.path.isfile(arg) and arg.lower().endswith(('.rsml', '.xml')):
-            win.data.open_rsml(arg)
-            win.current_file = arg
-            win.update_all()
-            win.render_3d('subType')
-        else:
-            print("Error: File not found or not a valid RSML")
+    if rsml_path:
+        win.data.open_rsml(rsml_path)
+        win.update_all()
+    return win
 
-    win.show() # Show the window after its been populated with data
-    
-    # Start the event loop
+if __name__ == "__main__":
+    import sys
+    from qtpy.QtWidgets import QApplication, QFileDialog
+
+    app = QApplication(sys.argv)
+
+    # Make the RSML path argument optional:
+    if len(sys.argv) < 2:
+        # no file provided => just open the viewer without loading
+        win = create_rsml_window(None)
+    else:
+        # file provided => load it
+        path = sys.argv[1]
+        win = create_rsml_window(path)
+
+    win.show()
     sys.exit(app.exec_())
