@@ -111,9 +111,9 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(cam_group)
 
         # ——— B) Screenshots ———
-        save_group = QtWidgets.QGroupBox("Save / Export")
+        save_group = QtWidgets.QGroupBox("Screenshots")
         sg_layout = QtWidgets.QVBoxLayout(save_group)
-        btn_hires = QtWidgets.QPushButton("High-Res (G)")
+        btn_hires = QtWidgets.QPushButton("High-res (G)")
         btn_hires.clicked.connect(lambda: self._on_screenshot(mag=5))
         btn_quick = QtWidgets.QPushButton("Window-size (S)")
         btn_quick.clicked.connect(lambda: self._on_screenshot(mag=1))
