@@ -1,18 +1,29 @@
-import sys; sys.path.append("../.."); sys.path.append("../../src/")
+import os, sys
+from pathlib import Path
 
+# Add CPlantBox build and src
+root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(root / "build" / "Release"))
+sys.path.insert(0, str(root / "src"))
+
+# General
+import tkinter
+from tkinter import ttk
+import vtk
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+from matplotlib.backend_bases import key_press_handler  # Implement the default Matplotlib key bindings
+
+# CPB
 import functional.xylem_flux as xylem_flux
 import visualisation.vtk_plot as vp
 import visualisation.vtk_tools as vt
 from viewer_data import ViewerDataModel
-import viewer_plots
-import viewer_conductivities
-
-import tkinter
-from tkinter import ttk
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-from matplotlib.backend_bases import key_press_handler  # Implement the default Matplotlib key bindings
-import matplotlib.pyplot as plt
-import numpy as np
+import viewer_plots, viewer_conductivities
 
 """ TODO animation, and optional remesh and RSML (re)write would be nice, writing artifical shoot(?!) """
 """ log file """

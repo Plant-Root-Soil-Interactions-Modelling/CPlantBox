@@ -1,425 +1,531 @@
+import os, sys
 from pathlib import Path
-import sys
 
-# project root = CPlantBox
+from PyQt5 import QtWidgets, QtCore, QtGui
+from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+import vtk
+
+# Add CPlantBox build and src
 root = Path(__file__).resolve().parents[2]
-
-# add the built extension and Python helpers
 sys.path.insert(0, str(root / "build" / "Release"))
 sys.path.insert(0, str(root / "src"))
 
-import plantbox as pb
-print("Imported plantbox:", pb)
+# General
+from PyQt5 import QtWidgets, QtCore, QtGui
+import vtk
+from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
+# CPB
 import functional.xylem_flux as xylem_flux
-import visualisation.vtk_plot as vp
+import visualisation.vtk_plot_rhizomancer as vp
 import visualisation.vtk_tools as vt
 from viewer_data import ViewerDataModel
-import viewer_plots
-import viewer_conductivities
+import viewer_plots, viewer_conductivities
 
-import tkinter
-from tkinter import ttk
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-from matplotlib.backend_bases import key_press_handler  # Implement the default Matplotlib key bindings
-import matplotlib.pyplot as plt
-import numpy as np
-import multiprocessing
-import os
 
-""" TODO animation, and optional remesh and RSML (re)write would be nice, writing artifical shoot(?!) """
-""" log file """
+class MainWindow(QtWidgets.QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.data_properties = {
+        
 
-def run_vtk_plot_process(rsml_path, plot_name):
-    #aims at creating a different subprocess for vtk and tkinter, their concurrance causes trouble in windows
-    data = ViewerDataModel()
-    data.open_rsml(rsml_path)
-
-    if not data.exists():
-        return
-
-    if plot_name == "SUF":
-        print("Calculating SUF using the default scenario...")
-        r = data.xylem_flux
-
-        viewer_conductivities.init_constant_scenario1(r)
-
-        if len(data.base_nodes) > 0:
-            r.neumann_ind = [data.base_nodes[0]]
-            suf = r.get_suf(data.max_ct)
-            data.analyser.addData("SUF", suf)
-        else:
-            print("Error: No base nodes found to calculate SUF.")
-            return
-
-    vp.plot_roots(data.analyser, plot_name)
-
-  
-class App:
-
-    def __init__(self, root):
+            'subType':      {'title': 'Type (-)', 
+                             'format': ticker.StrMethodFormatter('{x:.0f}'), 
+                             'type': 'categorical'}, 
+            'creationTime': {'title': 'Creation time (days)', 
+                             'format': ticker.StrMethodFormatter('{x:.0f}')},
+            'length':       {'title': 'Length (m)', 
+                             'format': ticker.StrMethodFormatter('{x:.3f}')},
+            'SUF':          {'title': 'SUF (-)', 
+                             'format': ticker.StrMethodFormatter('{x:.2e}')}
+        }
+        self.camera_is_set = False
+        self.current_file = None
+        self.setWindowTitle("RSML Viewer by Daniel Leitner")
+        self.resize(1600, 900)
         self.data = ViewerDataModel()
-        self.root = root
-        self.root.wm_title("RSML Viewer")
-        self.root.geometry("850x800")
-        # Menu
-        menu = tkinter.Menu(root)
-        menu_file = tkinter.Menu(menu, tearoff = 0)
-        menu_file.add_command(label = "Open (.rsml)...", command = self.file_open)
-        menu_file.add_command(label = "Save (.rsml)...", command = self.file_save)
-        menu_file.add_command(label = "Save (.vtp)...", command = self.file_save_vtp)
-        menu_file.add_separator()
-        menu_file.add_command(label = "Exit", command = self.file_quit)
-        menu.add_cascade(label = "File", menu = menu_file)
-        menu_edit = tkinter.Menu(menu, tearoff = 0)
-        menu_edit.add_command(label = "Add shoot", command = self.edit_add_shoot)
-        menu_edit.add_command(label = "Add creation time", command = self.edit_add_creation_times)
-        menu.add_cascade(label = "Edit", menu = menu_edit)
-        menu_view = tkinter.Menu(menu, tearoff = 0)
-        menu_view.add_command(label = "Type...", command = self.view_vtk_plot_subtype)
-        menu_view.add_command(label = "Segment length...", command = self.view_vtk_plot_length)
-        menu_view.add_command(label = "Creation time...", command = self.view_vtk_plot_creationtime)
-        menu_view.add_command(label = "SUF...", command = self.view_vtk_plot_suf)
-        menu_view.add_command(label = "Multiple SUF...", command = self.view_vtk_plot_multiple_suf)
-        menu_view.add_command(label = "Animation...", command = self.view_vtk_anim)
-        menu_view.add_separator()
-        menu_view.add_command(label = "About...", command = self.view_about)
-        menu.add_cascade(label = "View", menu = menu_view)
-        self.root.config(menu = menu)
-        # Tabs
-        tabControl = ttk.Notebook(self.root)
-        tab_info = ttk.Frame(tabControl)
-        tab_depth = ttk.Frame(tabControl)
-        tab_development = ttk.Frame(tabControl)
-        tab_suf = ttk.Frame(tabControl)
-        tab_krs = ttk.Frame(tabControl)
-        tabControl.add(tab_info, text = 'Information')
-        tabControl.add(tab_depth, text = 'Root depth  profile')
-        tabControl.add(tab_development, text = 'Root development')
-        tabControl.add(tab_suf, text = 'Hydraulic properties')
-        tabControl.add(tab_krs, text = 'Hydraulic development')
-        tabControl.pack(expand = 1, fill = "both")
-        # tab_info
-        lf_general = ttk.LabelFrame(tab_info, text = 'General')
-        lf_general.grid(column = 0, row = 0, padx = 20, pady = 10)
-        lf_prop = ttk.LabelFrame(tab_info, text = 'Properties (values per root)')
-        lf_prop.grid(column = 0, row = 1, padx = 20, pady = 10)
-        lf_fun = ttk.LabelFrame(tab_info, text = 'Functions (values per node)')
-        lf_fun.grid(column = 0, row = 2, padx = 20, pady = 10)
-        lf_use = ttk.LabelFrame(tab_info, text = 'Using')
-        lf_use.grid(column = 0, row = 3, padx = 20, pady = 10)
-        self.label_general_l = tkinter.StringVar()
-        self.label_general_r = tkinter.StringVar()
-        ttk.Label(lf_general, textvariable = self.label_general_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_general, textvariable = self.label_general_r, anchor = "w", width = 70).grid(column = 1, row = 0)
-        self.label_prop_l = tkinter.StringVar()
-        self.label_prop_r = tkinter.StringVar()
-        ttk.Label(lf_prop, textvariable = self.label_prop_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_prop, textvariable = self.label_prop_r, anchor = "w", width = 70).grid(column = 1, row = 0)
-        self.label_fun_l = tkinter.StringVar()
-        self.label_fun_r = tkinter.StringVar()
-        ttk.Label(lf_fun, textvariable = self.label_fun_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_fun, textvariable = self.label_fun_r, anchor = "w", width = 70).grid(column = 1, row = 0)
-        self.label_use_l = tkinter.StringVar()
-        self.label_use_r = tkinter.StringVar()
-        ttk.Label(lf_use, textvariable = self.label_use_l, anchor = "w", width = 30).grid(column = 0, row = 0)
-        ttk.Label(lf_use, textvariable = self.label_use_r, anchor = "w", width = 70).grid(column = 1, row = 0)
-        # tab_profile
-        self.combo1 = ttk.Combobox(tab_depth, values = [ "Length", "Surface", "Volume"])
-        self.combo1.pack(pady = 10)
-        self.combo1.current(0)
-        self.combo1.bind("<<ComboboxSelected>>", self.update_profile)
-        fig, self.ax = plt.subplots(1, 1, figsize = (7, 7))
-        self.canvas = FigureCanvasTkAgg(fig, master = tab_depth)  # A tk.DrawingArea.
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill = tkinter.BOTH, expand = 1)
-        # tab_development
-        self.combo2 = ttk.Combobox(tab_development, values = [ "Length", "Surface", "Volume"])
-        self.combo2.pack(pady = 10)
-        self.combo2.current(0)
-        self.combo2.bind("<<ComboboxSelected>>", self.update_development)
-        fig2, self.ax2 = plt.subplots(1, 1, figsize = (15, 10))
-        self.canvas2 = FigureCanvasTkAgg(fig2, master = tab_development)  # A tk.DrawingArea.
-        self.canvas2.draw()
-        self.canvas2.get_tk_widget().pack(side = tkinter.TOP, fill = tkinter.BOTH, expand = 1)
-        # hydraulic properties
-        tab_suf_frame = tkinter.Frame(tab_suf)
-        self.combo3 = ttk.Combobox(tab_suf_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
-        self.combo3.pack(side = tkinter.LEFT, pady = 5, padx = 10)
-        self.combo3.current(0)
-        self.combo3.bind("<<ComboboxSelected>>", self.update_hydraulics)
-        button = tkinter.Button(tab_suf_frame, text = "plot conductivities", command = self.plot_conductivities)
-        button.pack(side = tkinter.LEFT, pady = 5, padx = 10)
-        tab_suf_frame.pack(side = tkinter.TOP)
-        fig3, self.ax3 = plt.subplots(1, 1, figsize = (15, 10))
-        self.canvas3 = FigureCanvasTkAgg(fig3, master = tab_suf)  # A tk.DrawingArea.
-        self.canvas3.draw()
-        self.canvas3.get_tk_widget().pack(side = tkinter.BOTTOM, fill = tkinter.BOTH, expand = 1)
-        # hydraulic development
-        tab_krs_frame = tkinter.Frame(tab_krs)
-        self.combo4 = ttk.Combobox(tab_krs_frame, values = [ "Constant scenario 1", "Constant scenario 2", "Dynamic scenario 1", "Dynamic scenario 2"])
-        self.combo4.pack(side = tkinter.LEFT, pady = 5, padx = 10)
-        self.combo4.current(0)
-        self.combo4.bind("<<ComboboxSelected>>", self.update_krs)
-        button2 = tkinter.Button(tab_krs_frame, text = "plot conductivities", command = self.plot_conductivities)
-        button2.pack(side = tkinter.LEFT, pady = 5, padx = 10)
-        tab_krs_frame.pack(side = tkinter.TOP)
-        fig4, self.ax4 = plt.subplots(1, 1, figsize = (15, 10))
-        self.canvas4 = FigureCanvasTkAgg(fig4, master = tab_krs)  # A tk.DrawingArea.
-        self.canvas4.draw()
-        self.canvas4.get_tk_widget().pack(side = tkinter.BOTTOM, fill = tkinter.BOTH, expand = 1)
+        self._create_actions()
+        self._create_menus()
+        self._create_central_widget()
 
-    def update_info(self):
-        """ update info tab """
-        # label_general
-        c = 0  # node counter
-        for i, pl in enumerate(self.data.polylines):
-            # c += 1
-            for p in pl:
-                c += 1
-        lstr = "\nSoftware\nFilename \nNumber of plants (base nodes)\nNumber of base roots (segments)\nNumber of roots\nNumber of nodes\n"
-        lstr += "Bounding box \nUnit (length scale)\nResolution\n"
-        min_str = str(self.data.analyser.getMinBounds())
-        max_str = str(self.data.analyser.getMaxBounds())
-        metadata = self.data.metadata
-        nop = len(self.data.base_nodes)
-        nobr = len(self.data.base_segs)
-        rstr = "\n{:s}\n{:s}\n{:g}\n{:g}\n{:g}\n{:g}\n".format(metadata.software, fname, nop, nobr, len(self.data.polylines), c)
-        rstr += "{:s} - {:s}\n{:s}\n{:s} (dots per {:s})\n".format(min_str, max_str + " (cm)", metadata.unit, str(metadata.resolution), metadata.unit)
-        self.label_general_l.set(lstr)
-        self.label_general_r.set(rstr)
-        # label_prop
-        lstr, rstr = "\n", "\n"
-        for k in self.data.properties.keys():
-            v = np.array(self.data.properties[k])
-            lstr += k + "\n"
-            rstr += "[{:g}, {:g}]".format(np.min(v), np.max(v))
-            if k in metadata.properties:
-                rstr += " (" + metadata.properties[k].unit + ")\n"
-            else:
-                rstr += "\n"
-        self.label_prop_l.set(lstr)
-        self.label_prop_r.set(rstr)
-        # label_fun
-        lstr, rstr = "\n", "\n"
-        for k in self.data.functions.keys():
-            v_ = self.data.functions[k]
-            v = []
-            for vv in v_:
-                v.extend(vv)
-            v = np.array(v)
-            lstr += k + "\n"
-            rstr += "[{:g}, {:g}]".format(np.min(v), np.max(v))
-            if k in metadata.properties:
-                rstr += " (" + metadata.properties[k].unit + ")\n"
-            else:
-                rstr += "\n"
-        self.label_fun_l.set(lstr)
-        self.label_fun_r.set(rstr)
-        # label_using
-        tagnames = self.data.tagnames
-        rstr = "\n"
-        lstr = "\nRadius \nCreation time \nTypes \n"
-        if tagnames[0]:
-            rstr += "from tag '{:s}' within [{:g}, {:g}] cm\n".format(tagnames[0], np.min(self.data.radii), np.max(self.data.radii))
-        else:
-            rstr += "not found (set to 0.1 cm) \n"
-        if tagnames[1]:
-            rstr += "from tag '{:s}' within [{:g}, {:g}] days\n".format(tagnames[1], np.min(self.data.cts), np.max(self.data.cts))
-        else:
-            rstr += "not found\n"
-        if tagnames[2]:
-            rstr += "from tag '{:s}' within [{:g}, {:g}]\n".format(tagnames[2], np.min(self.data.types), np.max(self.data.types))
-        else:
-            rstr += "not found\n"  # , derived from root order
-        self.label_use_l.set(lstr)
-        self.label_use_r.set(rstr)
+    def _create_actions(self):
+        self.openAct = QtWidgets.QAction("Open RSML...", self, triggered=self.open_file)
+        self.saveAct = QtWidgets.QAction("Save RSML...", self, triggered=self.save_file)
+        self.saveVtpAct = QtWidgets.QAction("Save VTP...", self, triggered=self.save_vtp)
+        self.exitAct = QtWidgets.QAction("Exit", self, triggered=self.close)
 
-    def update_profile(self, event):
-        """ updates depth profile plot """
+    def _create_menus(self):
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu("File")
+        fileMenu.addAction(self.openAct)
+        fileMenu.addAction(self.saveAct)
+        fileMenu.addAction(self.saveVtpAct)
+        fileMenu.addSeparator()
+        fileMenu.addAction(self.exitAct)
+
+    def _create_overlay_buttons(self):
+        container = QtWidgets.QWidget(self.vtk_widget)
+        container.setObjectName("buttonContainer")
+        layout = QtWidgets.QHBoxLayout(container)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
+
+        for key, props in self.data_properties.items():
+            button = QtWidgets.QPushButton(props['title'])
+            button.clicked.connect(lambda checked, k=key: self.render_3d(k))
+            layout.addWidget(button)
+
+        layout.addStretch()
+        container.adjustSize()
+
+    def _create_colorbar_widget(self):
+        qt_bg_color = self.palette().color(QtGui.QPalette.Window)
+        self.colorbar_fig = Figure(figsize=(1, 8), facecolor='#f7f7f7')
+        self.colorbar_canvas = FigureCanvas(self.colorbar_fig)
+        self.colorbar_canvas.hide() # hide colorbar until RSML is loaded
+        
+        self.colorbar_canvas.setFixedWidth(220)
+        self.cax = self.colorbar_fig.add_axes([0.25, 0.1, 0.15, 0.8])
+        
+        return self.colorbar_canvas
+
+    def _vtk_to_mpl_colormap(self, vtk_lookup_table):
+        """Converts a vtkLookupTable to a matplotlib colormap."""
+        num_colors = vtk_lookup_table.GetNumberOfTableValues()
+        colors = []
+        for i in range(num_colors):
+            r, g, b, a = vtk_lookup_table.GetTableValue(i)
+            colors.append((r, g, b, a))
+        return mpl.colors.ListedColormap(colors)
+
+    def _update_colorbar(self, lookup_table, data_range, data_key):
+        """Clears and redraws the Matplotlib colorbar."""
+        self.cax.clear()
+
+        props = self.data_properties.get(data_key, {'title': data_key})
+        cmap = self._vtk_to_mpl_colormap(lookup_table)
+
+        if props.get('type') == 'categorical':
+            ticks = np.arange(int(data_range[0]), int(data_range[1]) + 1)
+            boundaries = np.arange(int(data_range[0]) - 0.5, int(data_range[1]) + 1.5, 1)
+            norm = mpl.colors.BoundaryNorm(boundaries, cmap.N)
+        else: 
+            ticks = np.linspace(data_range[0], data_range[1], 5)
+            norm = mpl.colors.Normalize(vmin=data_range[0], vmax=data_range[1])
+
+        cb = mpl.colorbar.ColorbarBase(self.cax,
+                                       cmap=cmap,
+                                       norm=norm,
+                                       orientation='vertical',
+                                       format=props.get('format'))
+        
+        cb.set_ticks(ticks)
+        cb.set_label(props['title'], fontsize=14, labelpad=15)
+        cb.ax.tick_params(labelsize=12)
+
+        self.colorbar_canvas.draw()
+        
+    def _create_central_widget(self):
+            # Main split: left panel (VTK + Colorbar) and right panel (Tabs)
+            central = QtWidgets.QWidget()
+            layout = QtWidgets.QHBoxLayout(central)
+
+            # --- Create the Left Panel ---
+            left_panel = QtWidgets.QWidget()
+            left_layout = QtWidgets.QHBoxLayout(left_panel)
+            left_layout.setContentsMargins(0, 0, 0, 0)
+            left_layout.setSpacing(0)
+            
+            # VTK widget
+            self.vtk_widget = QVTKRenderWindowInteractor()
+            self.vtk_widget.setMinimumWidth(600)
+            self.renderer = vtk.vtkRenderer()
+            self.renderer.SetBackground(0.97, 0.97, 0.97)
+            self.vtk_widget.GetRenderWindow().AddRenderer(self.renderer)
+            self.vtk_widget.Initialize()
+            self.vtk_widget.Start()
+            
+            # Add the VTK widget and the new Colorbar widget to the left panel
+            left_layout.addWidget(self.vtk_widget)
+            left_layout.addWidget(self._create_colorbar_widget())
+
+            # --- Create the Right Panel (Tabs) ---
+            self.tabs = QtWidgets.QTabWidget()
+            self._init_info_tab()
+            self._init_depth_tab()
+            self._init_dev_tab()
+            self._init_suf_tab()
+            self._init_krs_tab()
+
+            # Add the left and right panels to the main layout
+            layout.addWidget(left_panel, stretch=1)
+            layout.addWidget(self.tabs, stretch=1)
+            
+            self.setCentralWidget(central)
+            self.setStyleSheet("#buttonContainer { background-color: #f7f7f7;}")
+            self._create_overlay_buttons()
+
+    def _init_info_tab(self):
+        info = QtWidgets.QWidget()
+        self.tabs.addTab(info, "Information")
+
+        # Outer layout for the tab
+        vbox = QtWidgets.QVBoxLayout(info)
+
+        # --- General group ---
+        grp_general = QtWidgets.QGroupBox("General")
+        grid_gen   = QtWidgets.QGridLayout(grp_general)
+        vbox.addWidget(grp_general)
+
+        # Create the two QLabel columns
+        self.label_general_l = QtWidgets.QLabel()
+        self.label_general_r = QtWidgets.QLabel()
+        # Make left column fixed-width and align top
+        self.label_general_l.setFixedWidth(150)
+        self.label_general_l.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_general_r.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_general_l.setText(
+            "Software\n"
+            "Filename\n"
+            "Number of plants (base nodes)\n"
+            "Number of base roots (segments)\n"
+            "Number of roots\n"
+            "Number of nodes\n"
+            "Bounding box\n"
+            "Unit (length scale)\n"
+            "Resolution\n"
+        )
+        grid_gen.addWidget(self.label_general_l, 0, 0)
+        grid_gen.addWidget(self.label_general_r, 0, 1)
+
+        # --- Properties group ---
+        grp_prop = QtWidgets.QGroupBox("Properties (values per root)")
+        grid_prop = QtWidgets.QGridLayout(grp_prop)
+        vbox.addWidget(grp_prop)
+
+        self.label_prop_l = QtWidgets.QLabel()
+        self.label_prop_r = QtWidgets.QLabel()
+        self.label_prop_l.setFixedWidth(150)
+        self.label_prop_l.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_prop_r.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_prop_l.setText("Property\n")
+        grid_prop.addWidget(self.label_prop_l, 0, 0)
+        grid_prop.addWidget(self.label_prop_r, 0, 1)
+
+        # --- Functions group ---
+        grp_fun = QtWidgets.QGroupBox("Functions (values per node)")
+        grid_fun = QtWidgets.QGridLayout(grp_fun)
+        vbox.addWidget(grp_fun)
+
+        self.label_fun_l = QtWidgets.QLabel()
+        self.label_fun_r = QtWidgets.QLabel()
+        self.label_fun_l.setFixedWidth(150)
+        self.label_fun_l.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_fun_r.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_fun_l.setText("Function\n")
+        grid_fun.addWidget(self.label_fun_l, 0, 0)
+        grid_fun.addWidget(self.label_fun_r, 0, 1)
+
+        # --- Using group ---
+        grp_use = QtWidgets.QGroupBox("Using")
+        grid_use = QtWidgets.QGridLayout(grp_use)
+        vbox.addWidget(grp_use)
+
+        self.label_use_l = QtWidgets.QLabel()
+        self.label_use_r = QtWidgets.QLabel()
+        self.label_use_l.setFixedWidth(150)
+        self.label_use_l.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_use_r.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.label_use_l.setText(
+            "Radius\n"
+            "Creation time\n"
+            "Types\n"
+        )
+        grid_use.addWidget(self.label_use_l, 0, 0)
+        grid_use.addWidget(self.label_use_r, 0, 1)
+
+        # stretch so the info tab expands vertically
+        vbox.addStretch(1)
+
+
+    def _init_depth_tab(self):
+        depth = QtWidgets.QWidget()
+        self.tabs.addTab(depth, "Depth Profile")
+        layout = QtWidgets.QVBoxLayout(depth)
+        self.combo_depth = QtWidgets.QComboBox();
+        self.combo_depth.addItems(["Length","Surface","Volume"])
+        self.combo_depth.currentIndexChanged.connect(self.update_depth)
+        layout.addWidget(self.combo_depth)
+        fig, self.ax_depth = plt.subplots()
+        self.canvas_depth = FigureCanvas(fig)
+        layout.addWidget(self.canvas_depth)
+
+    def _init_dev_tab(self):
+        dev = QtWidgets.QWidget()
+        self.tabs.addTab(dev, "Development")
+        layout = QtWidgets.QVBoxLayout(dev)
+        self.combo_dev = QtWidgets.QComboBox();
+        self.combo_dev.addItems(["Length","Surface","Volume"])
+        self.combo_dev.currentIndexChanged.connect(self.update_dev)
+        layout.addWidget(self.combo_dev)
+        fig, self.ax_dev = plt.subplots()
+        self.canvas_dev = FigureCanvas(fig)
+        layout.addWidget(self.canvas_dev)
+
+    def _init_suf_tab(self):
+        suf = QtWidgets.QWidget()
+        self.tabs.addTab(suf, "Hydraulic Properties")
+        layout = QtWidgets.QVBoxLayout(suf)
+        self.combo_suf = QtWidgets.QComboBox();
+        self.combo_suf.addItems(["Const1","Const2","Dyn1","Dyn2"])
+        self.combo_suf.currentIndexChanged.connect(self.update_suf)
+        layout.addWidget(self.combo_suf)
+        fig, self.ax_suf = plt.subplots()
+        self.canvas_suf = FigureCanvas(fig)
+        layout.addWidget(self.canvas_suf)
+
+    def _init_krs_tab(self):
+        krs = QtWidgets.QWidget()
+        self.tabs.addTab(krs, "Hydraulic Development")
+        layout = QtWidgets.QVBoxLayout(krs)
+        self.combo_krs = QtWidgets.QComboBox();
+        self.combo_krs.addItems(["Const1","Const2","Dyn1","Dyn2"])
+        self.combo_krs.currentIndexChanged.connect(self.update_krs)
+        layout.addWidget(self.combo_krs)
+        fig, self.ax_krs = plt.subplots()
+        self.canvas_krs = FigureCanvas(fig)
+        layout.addWidget(self.canvas_krs)
+
+    def open_file(self):
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open RSML", "", "RSML Files (*.rsml *.xml)")
+        if path:
+            self.camera_is_set = False
+            self.data.open_rsml(path)
+            self.current_file = path
+            self.update_all()
+            self.render_3d('subType')
+
+    def save_file(self):
+        if self.data.exists() and self.current_file:
+            fn, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save RSML", "", "RSML Files (*.rsml)")
+            if fn:
+                pd = vp.segs_to_polydata(self.data.analyser)
+                vt.write_rsml(fn, pd, 0, None, self.data.base_nodes)
+
+    def save_vtp(self):
         if self.data.exists():
-            viewer_plots.plot_depth_profile(self.data.analyser, self.ax, self.combo1.current())
-        self.canvas.draw()
-
-    def update_development(self, event):
-        viewer_plots.plot_rootsystem_development(self.data.analyser, self.ax2, self.combo2.current())
-        self.canvas2.draw()
-
-    def update_hydraulics(self, event):
-        """ updates hydraulic properties plot """
-        if self.data.exists():
-            viewer_plots.plot_suf(self.data, self.ax3, self.combo3.current())
-            self.canvas3.draw()
-
-    def update_krs(self, event):
-        """ updates hydraulic properties plot """
-        if self.data.exists():
-            viewer_plots.plot_krs(self.data, self.ax4, self.combo4.current())
-            self.canvas4.draw()
-
-    def view_vtk_plot(self, name):
-        """ vtk plot coloring name """
-        if self.data.exists():
-            plot_process = multiprocessing.Process(
-                target=run_vtk_plot_process, 
-                args=(fname, name) 
-            )
-            plot_process.start()
-        else:
-            tkinter.messagebox.showwarning("Warning", "Open RSML file first")
+            fn, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save VTP", "", "VTP Files (*.vtp)")
+            if fn:
+                self.data.analyser.write(fn)
 
     def update_all(self):
-        """ updates the view """
         if self.data.exists():
             self.update_info()
-            self.update_profile(None)
-            self.update_development(None)
-            self.update_hydraulics(None)
-            self.update_krs(None)
+            self.update_depth()
+            self.update_dev()
+            self.update_suf()
+            self.update_krs()
 
-    def plot_conductivities(self):
-        """ button """
-        if self.data.exists():
-            j = self.combo3.current()
+    def update_info(self):
+        """ Update the Information tab labels in the PyQt viewer """
+        if getattr(self, 'current_file', None):
+            fname = os.path.basename(self.current_file)
+        else:
+            try:
+                fname = os.path.basename(self.data.filename)
+            except Exception:
+                fname = ''
 
-            new_window = tkinter.Toplevel(self.root) 
-            new_window.wm_title("Root conductivities")
+        # --- GENERAL INFO ---
+        total_nodes = sum(len(pl) for pl in self.data.polylines)
+        meta        = self.data.metadata
+        nop         = len(self.data.base_nodes)
+        nobr        = len(self.data.base_segs)
+        min_bb      = self.data.analyser.getMinBounds()
+        max_bb      = self.data.analyser.getMaxBounds()
+        res_str     = str(meta.resolution)
 
-            r = self.data.xylem_flux
-            if j == 0:
-                viewer_conductivities.init_constant_scenario1(r)
-            elif j == 1:
-                viewer_conductivities.init_constant_scenario2(r)
-            elif j == 2:
-                viewer_conductivities.init_dynamic_scenario1(r)
-            elif j == 3:
-                viewer_conductivities.init_dynamic_scenario2(r)
-            
-            fig = r.plot_conductivities(monocot=False, plot_now=False, axes_ind=[0], lateral_ind=[1, 2, 3])
-            
-            canvas = FigureCanvasTkAgg(fig, master=new_window)
-            canvas.draw()
-            canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        # Left and right text blocks
+        left_gen = (
+            "Software\n"
+            "Filename\n"
+            "Number of plants (base nodes)\n"
+            "Number of base roots (segments)\n"
+            "Number of roots\n"
+            "Number of nodes\n"
+            "Bounding box\n"
+            "Unit (length scale)\n"
+            "Resolution\n"
+        )
+        right_gen = (
+            f"{meta.software}\n"
+            f"{fname}\n"
+            f"{nop:g}\n"
+            f"{nobr:g}\n"
+            f"{len(self.data.polylines):g}\n"
+            f"{total_nodes:g}\n"
+            f"{min_bb} - {max_bb} (cm)\n"
+            f"{meta.unit}\n"
+            f"{res_str} (dots per {meta.unit})\n"
+        )
 
-    def file_open(self):
-        """ menu item: open rsml file """
-        global fname
-        fname = tkinter.filedialog.askopenfilename(title = 'Please select a RSML root system',
-                                                  filetypes = [('Image Files', ['.rsml', '.RSML', '.xml'])])
-        if isinstance(fname, str):
-            if fname:
-                self.data.open_rsml(fname)
-                self.update_all()
+        self.label_general_l.setText(left_gen)
+        self.label_general_r.setText(right_gen)
 
-    def file_save(self):
-        """ menu item: save rsml file (polylines)"""
-        if self.data.exists():
-            fname = tkinter.filedialog.asksaveasfilename(defaultextension = ".rsml")
-            print(fname, type(fname))
-            if isinstance(fname, str):
-                if fname:
-                    pd = vp.segs_to_polydata(self.data.analyser, zoom_factor = 1., param_names = ["subType", "radius", "creationTime"])
-                    vt.write_rsml(fname, pd, 0, None, self.data.base_nodes)
-
-    def file_save_vtp(self):
-        """ menu item: save save vtp file containing segments (not polylines) """
-        if self.data.exists():
-            fname = tkinter.filedialog.asksaveasfilename(defaultextension = ".vtp")
-            print(fname, type(fname))
-            if isinstance(fname, str):
-                if fname:
-                    self.data.analyser.write(fname)  # segment analyser's writer
-
-    def file_quit(self):
-        """ menu item: quits application """
-        self.root.quit()  # stops mainloop
-        self.root.destroy()  # this is necessary on Windows to prevent
-
-    def edit_add_shoot(self):
-        """ adds an artifical shoot """
-        if self.data.exists():
-            bni = self.data.base_nodes
-            if len(bni) > 1:
-                self.data.add_artificial_shoot()
-                self.update_all()
+        # --- PROPERTIES (per root) ---
+        left_prop = ""
+        right_prop = ""
+        for key, vals in self.data.properties.items():
+            arr = np.array(vals)
+            left_prop += key + "\n"
+            if arr.size:
+                mn, mx = arr.min(), arr.max()
+                unit   = getattr(meta.properties.get(key, None), 'unit', '')
+                right_prop += f"[{mn:g}, {mx:g}] {unit}\n"
             else:
-                tkinter.messagebox.showwarning("Warning", "Only a single base node (no roots to connect)")
-        else:
-            tkinter.messagebox.showwarning("Warning", "Open RSML file first")
+                right_prop += "[]\n"
 
-    def edit_add_creation_times(self):
-        """ adds creation times by interpolation """
-        if self.data.exists():
-            if not self.data.tagnames[1]:
-                max_ct = tkinter.simpledialog.askstring("Creation time interpolation", "Final root system age \nin days?")
-                # try:
-                self.data.max_ct = float(max_ct)
-                self.data.add_creation_times()
-                self.update_all()
-                # except:
-                #     tkinter.messagebox.showerror("Error", "Something went wrong")
+        self.label_prop_l.setText(left_prop)
+        self.label_prop_r.setText(right_prop)
+
+        # --- FUNCTIONS (per node) ---
+        left_fun = ""
+        right_fun = ""
+        for key, seqs in self.data.functions.items():
+            flat = np.concatenate(seqs) if seqs else np.array([])
+            left_fun += key + "\n"
+            if flat.size:
+                mn, mx = flat.min(), flat.max()
+                unit   = getattr(meta.properties.get(key, None), 'unit', '')
+                right_fun += f"[{mn:g}, {mx:g}] {unit}\n"
             else:
-                tkinter.messagebox.showwarning("Warning", "Creation times are aready set by tag " + self.data.tagnames[1])
+                right_fun += "[]\n"
+
+        self.label_fun_l.setText(left_fun)
+        self.label_fun_r.setText(right_fun)
+
+        # --- USING tags ---
+        tags     = self.data.tagnames
+        left_use = (
+            "Radius\n"
+            "Creation time\n"
+            "Types\n"
+        )
+        right_use = ""
+        # Radii tag
+        if tags[0] and hasattr(self.data, 'radii'):
+            r = np.array(self.data.radii)
+            right_use += (
+                f"from tag '{tags[0]}' within [{r.min():g}, {r.max():g}] cm\n"
+                if r.size else "no radii data\n"
+            )
         else:
-            tkinter.messagebox.showwarning("Warning", "Open RSML file first")
-        pass
-
-    def view_vtk_plot_subtype(self):
-        """ menu item """
-        self.view_vtk_plot("subType")
-
-    def view_vtk_plot_length(self):
-        """ menu item """
-        self.view_vtk_plot("length")
-
-    def view_vtk_plot_creationtime(self):
-        """ menu item """
-        self.view_vtk_plot("creationTime")
-
-    def view_vtk_plot_multiple_suf(self):
-        """ menu item """
-        r = self.data.xylem_flux
-        if len(self.data.base_segs) == len(self.data.base_nodes):
-            n = len(self.data.base_segs)
-            krs = [None] * n
-            depth = [None] * n
-            for i in range(0, n):
-                r.dirichlet_ind = [ self.data.base_nodes[i] ]  # krs is based on dirichlet boundary condition
-                krs[i], _ = r.get_krs(self.data.max_ct, [self.data.base_segs[i]])
-                print("plot for base segment", self.data.base_segs[i], "krs", krs)  #
-                r.neumann_ind = [self.data.base_nodes[i]]  # suf is based on neumann boundary condititon
-                suf = r.get_suf(self.data.max_ct)
-                self.data.analyser.addData("SUF", suf)
-                self.view_vtk_plot("SUF")
+            right_use += "not found (default)\n"
+        # Creation-time tag
+        if tags[1] and hasattr(self.data, 'cts'):
+            c = np.array(self.data.cts)
+            right_use += (
+                f"from tag '{tags[1]}' within [{c.min():g}, {c.max():g}] days\n"
+                if c.size else "no creation-time data\n"
+            )
         else:
-            tkinter.messagebox.showwarning("Warning", "Only implemented for multiple dicots emerging from different nodes")
+            right_use += "not found\n"
+        # Types tag
+        if tags[2] and hasattr(self.data, 'types'):
+            t = np.array(self.data.types)
+            right_use += (
+                f"from tag '{tags[2]}' within [{t.min():g}, {t.max():g}]\n"
+                if t.size else "no types data\n"
+            )
+        else:
+            right_use += "not found\n"
 
-    def view_vtk_plot_suf(self):
-        """ menu item """
-        self.view_vtk_plot("SUF")
+        self.label_use_l.setText(left_use)
+        self.label_use_r.setText(right_use)
 
-    def view_vtk_anim(self):
-        """ shows animation (todo) """
-        print("na")
 
-    def view_about(self):
-        """ menu item: view about dialog """
-        tkinter.messagebox.showinfo("About", "RSML Viewer \nby Daniel Leitner, 2021 \n\nPart of CPlantBox")
+    def update_depth(self):
+        if self.data.exists():
+            viewer_plots.plot_depth_profile(self.data.analyser, self.ax_depth, self.combo_depth.currentIndex())
+            self.canvas_depth.draw()
 
+    def update_dev(self):
+        if self.data.exists():
+            viewer_plots.plot_rootsystem_development(self.data.analyser, self.ax_dev, self.combo_dev.currentIndex())
+            self.canvas_dev.draw()
+
+    def update_suf(self):
+        if self.data.exists():
+            viewer_conductivities.init_constant_scenario1(self.data.xylem_flux)
+            viewer_plots.plot_suf(self.data, self.ax_suf, self.combo_suf.currentIndex())
+            self.canvas_suf.draw()
+
+    def update_krs(self):
+        if self.data.exists():
+            viewer_plots.plot_krs(self.data, self.ax_krs, self.combo_krs.currentIndex())
+            self.canvas_krs.draw()
+
+    
+    def render_3d(self, name):
+        if not self.data.exists():
+            QtWidgets.QMessageBox.warning(self, "Warning", "Open RSML file first")
+            return
+
+        self.colorbar_canvas.show() # show colorbar when RSML is loaded
+        
+        # If a root actor already exists, remove it
+        if hasattr(self, 'root_actor') and self.root_actor:
+            self.renderer.RemoveActor(self.root_actor)
+
+        # Create the new 3D actor (plot_roots should now only return the actor)
+        self.root_actor, data_range = vp.plot_roots(
+            self.data.analyser, name,
+            render=False, interactiveImage=False
+        )
+        self.renderer.AddActor(self.root_actor)
+
+        # Update the Matplotlib colorbar with info from the new actor
+        mapper = self.root_actor.GetMapper()
+        self._update_colorbar(mapper.GetLookupTable(), data_range, name)
+
+        # Camera logic remains the same
+        if not self.camera_is_set:
+            self.renderer.ResetCamera()
+            cam = self.renderer.GetActiveCamera()
+            cam.ParallelProjectionOn()
+            cam.Azimuth(30)
+            cam.Elevation(60)
+            cam.SetViewUp(0, 0, 1)
+            cam.OrthogonalizeViewUp()
+            self.renderer.ResetCameraClippingRange()
+            self.camera_is_set = True
+
+        self.vtk_widget.GetRenderWindow().Render()
+
+    def multiple_suf(self):
+        self.render_3d('SUF')
 
 if __name__ == '__main__':
-    root = tkinter.Tk()
-    app = App(root)
-
+    app = QtWidgets.QApplication(sys.argv)
+    win = MainWindow()
+    
     if len(sys.argv) > 1:
-        fname_arg = sys.argv[1]
-        if os.path.isfile(fname_arg) and fname_arg.lower().endswith(('.rsml', '.xml')):
-            global fname 
-            fname = fname_arg
-            app.data.open_rsml(fname)
-            app.update_all()
-            app.view_vtk_plot("subType")
+        arg = sys.argv[1]
+        if os.path.isfile(arg) and arg.lower().endswith(('.rsml', '.xml')):
+            win.data.open_rsml(arg)
+            win.current_file = arg
+            win.update_all()
+            win.render_3d('subType')
         else:
-            print(f"Error: File not found or not a valid RSML file: {fname_arg}")
+            print("Error: File not found or not a valid RSML")
 
-    root.mainloop()
+    win.show() # Show the window after its been populated with data
+    
+    # Start the event loop
+    sys.exit(app.exec_())
