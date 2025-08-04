@@ -336,43 +336,51 @@ def render_window(actor, title, scalarBar, bounds, interactiveImage = True):
 
 
 def keypress_callback_(obj, ev, bounds):
-    """ adds the functionality to make a screenshot by pressing 'g',
-    and to change view to axis aligned plots (by 'x', 'y', 'z', 'v') """
+    """Adds screenshot ('g'/'s') and axis‐aligned views ('x','y','z','v')."""
     key = obj.GetKeySym()
+    ren_win = obj.GetRenderWindow()
+    renderer = ren_win.GetRenderers().GetItemAsObject(0)
+
     if key == 'g':
-        renWin = obj.GetRenderWindow()
-        file_name = renWin.GetWindowName()
-        write_jpg(renWin, file_name, magnification = 5)
+        file_name = ren_win.GetWindowName()
+        write_jpg(ren_win, file_name, magnification=5)
         print("saved", file_name + ".jpg")
-    if key == 's':  # for small
-        renWin = obj.GetRenderWindow()
-        file_name = renWin.GetWindowName()
-        write_jpg(renWin, file_name, magnification = 1)
+
+    elif key == 's':
+        file_name = ren_win.GetWindowName()
+        write_jpg(ren_win, file_name, magnification=1)
         print("saved", file_name + ".jpg")
-    if key == 'x' or key == 'y' or key == 'z' or key == 'v':
-        renWin = obj.GetRenderWindow()
-        ren = renWin.GetRenderers().GetItemAsObject(0)
-        camera = ren.GetActiveCamera()
+
+    elif key in ('x', 'y', 'z', 'v'):
+        camera = renderer.GetActiveCamera()
+
         if key == 'x':
             camera.SetPosition([100, 0, 0.5 * (bounds[4] + bounds[5])])
             camera.SetViewUp(0, 0, 1)
             print("y-z plot")
-        if key == 'y':
+
+        elif key == 'y':
             camera.SetPosition([0, 100, 0.5 * (bounds[4] + bounds[5])])
             camera.SetViewUp(0, 0, 1)
             print("x-z plot")
-        if key == 'z':
-            camera.SetPosition([0, 0, 100])  #
+
+        elif key == 'z':
+            camera.SetPosition([0, 0, 100])
             camera.SetViewUp(0, 1, 0)
             print("x-y plot")
-        if key == 'v':
+
+        elif key == 'v':
             camera.SetPosition([100, 0, 0.5 * (bounds[4] + bounds[5])])
             camera.SetViewUp(0, 0, 1)
             camera.Azimuth(30)
             camera.Elevation(30)
             print("oblique plot")
+
         camera.OrthogonalizeViewUp()
-        renWin.Render()
+        renderer.ResetCameraClippingRange()
+        ren_win.Render()
+
+
 
 
 def write_jpg(renWin, fileName, magnification = 5):

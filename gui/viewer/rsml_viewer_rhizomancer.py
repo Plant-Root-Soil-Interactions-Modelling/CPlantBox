@@ -25,6 +25,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import functional.xylem_flux as xylem_flux
 import visualisation.vtk_plot_rhizomancer as vp
 import visualisation.vtk_tools as vt
+from visualisation.vtk_plot_rhizomancer import keypress_callback_
 from viewer_data import ViewerDataModel
 import viewer_plots, viewer_conductivities
 
@@ -32,6 +33,7 @@ import viewer_plots, viewer_conductivities
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+        self.bounds = (0,0,0,0,0,0) 
         self.data_properties = {
         
 
@@ -150,6 +152,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.vtk_widget.GetRenderWindow().AddRenderer(self.renderer)
             self.vtk_widget.Initialize()
             self.vtk_widget.Start()
+
+            self.vtk_widget.AddObserver(
+                "KeyPressEvent",
+                lambda obj, ev: keypress_callback_(obj, ev, self.bounds)
+            )
             
             # Add the VTK widget and the new Colorbar widget to the left panel
             left_layout.addWidget(self.vtk_widget)
