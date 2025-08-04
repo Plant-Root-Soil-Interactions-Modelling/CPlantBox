@@ -55,6 +55,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._create_actions()
         self._create_menus()
         self._create_central_widget()
+        self._create_control_dock()
 
     def _create_actions(self):
         self.openAct = QtWidgets.QAction("Open RSML...", self, triggered=self.open_file)
@@ -70,22 +71,116 @@ class MainWindow(QtWidgets.QMainWindow):
         fileMenu.addAction(self.saveVtpAct)
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAct)
+    
+    def _create_control_dock(self):
+        # Create a fixed, left-side control panel without dock handles
+        dock = QtWidgets.QDockWidget("Controls", self)
+        dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
+        dock.setFeatures(QtWidgets.QDockWidget.NoDockWidgetFeatures)
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
 
-    def _create_overlay_buttons(self):
-        container = QtWidgets.QWidget(self.vtk_widget)
-        container.setObjectName("buttonContainer")
-        layout = QtWidgets.QHBoxLayout(container)
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
+        # Build the control widgets container
+        container = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(12)
 
+        # ——— A) Plot Data Modes ———
+        plot_group = QtWidgets.QGroupBox("Plot Data")
+        pg_layout = QtWidgets.QVBoxLayout(plot_group)
         for key, props in self.data_properties.items():
-            button = QtWidgets.QPushButton(props['title'])
-            button.clicked.connect(lambda checked, k=key: self.render_3d(k))
-            layout.addWidget(button)
+            btn = QtWidgets.QPushButton(props['title'])
+            btn.clicked.connect(lambda checked, k=key: self.render_3d(k))
+            pg_layout.addWidget(btn)
+        layout.addWidget(plot_group)
+        
+        # ——— C) Camera Views ———
+        cam_group = QtWidgets.QGroupBox("Camera Views")
+        cg_layout = QtWidgets.QVBoxLayout(cam_group)
+        for label, slot, tip in [
+            ("X-View (X)", self._on_x_view, "X-axis aligned"),
+            ("Y-View (Y)", self._on_y_view, "Y-axis aligned"),
+            ("Z-View (Z)", self._on_z_view, "Z-axis aligned"),
+            ("Tilted (V)", self._on_tilted_view, "Tilted view (3D)"),
+            ("Center roots (R)", self._on_reset_view, "Fit to roots"),
+        ]:
+            btn = QtWidgets.QPushButton(label)
+            btn.setToolTip(f"{tip} — shortcut: {label[-2]}")
+            btn.clicked.connect(slot)
+            cg_layout.addWidget(btn)
+        layout.addWidget(cam_group)
 
-        layout.addStretch()
-        container.adjustSize()
+        # ——— B) Screenshots ———
+        save_group = QtWidgets.QGroupBox("Save / Export")
+        sg_layout = QtWidgets.QVBoxLayout(save_group)
+        btn_hires = QtWidgets.QPushButton("High-Res (G)")
+        btn_hires.clicked.connect(lambda: self._on_screenshot(mag=5))
+        btn_quick = QtWidgets.QPushButton("Window-size (S)")
+        btn_quick.clicked.connect(lambda: self._on_screenshot(mag=1))
+        sg_layout.addWidget(btn_hires)
+        sg_layout.addWidget(btn_quick)
+        layout.addWidget(save_group)
 
+
+
+        # Fill remaining space
+        layout.addStretch(1)
+
+        # Set the widget and hide the title bar for a clean look
+        dock.setWidget(container)
+        dock.setTitleBarWidget(QtWidgets.QWidget())
+        self.control_dock = dock
+ 
+    def _on_screenshot(self, mag):
+        """Take a VTK+legend JPEG at given magnification."""
+        fn = self.vtk_widget.GetRenderWindow().GetWindowName()
+        vp.write_jpg(
+            self.vtk_widget.GetRenderWindow(),
+            fn,
+            magnification=mag
+        )
+
+    def _on_x_view(self):
+        cam = self.renderer.GetActiveCamera()
+        cam.SetPosition([100, 0, 0.5 * (self.bounds[4] + self.bounds[5])])
+        cam.SetViewUp(0, 0, 1)
+        cam.OrthogonalizeViewUp()
+        self.renderer.ResetCameraClippingRange()
+        self.vtk_widget.GetRenderWindow().Render()
+
+    def _on_y_view(self):
+        cam = self.renderer.GetActiveCamera()
+        cam.SetPosition([0, 100, 0.5 * (self.bounds[4] + self.bounds[5])])
+        cam.SetViewUp(0, 0, 1)
+        cam.OrthogonalizeViewUp()
+        self.renderer.ResetCameraClippingRange()
+        self.vtk_widget.GetRenderWindow().Render()
+
+    def _on_z_view(self):
+        cam = self.renderer.GetActiveCamera()
+        cam.SetPosition([0, 0, 100])
+        cam.SetViewUp(0, 1, 0)
+        cam.OrthogonalizeViewUp()
+        self.renderer.ResetCameraClippingRange()
+        self.vtk_widget.GetRenderWindow().Render()
+
+    def _on_tilted_view(self):
+        cam = self.renderer.GetActiveCamera()
+        cam.SetPosition([100, 0, 0.5 * (self.bounds[4] + self.bounds[5])])
+        cam.SetViewUp(0, 0, 1)
+        cam.Azimuth(30)
+        cam.Elevation(30)
+        cam.OrthogonalizeViewUp()
+        self.renderer.ResetCameraClippingRange()
+        self.vtk_widget.GetRenderWindow().Render()
+
+    def _on_reset_view(self):
+        """Reset the camera to fit the root system bounds."""
+        self.renderer.ResetCamera()
+        self.renderer.ResetCameraClippingRange()
+        self.vtk_widget.GetRenderWindow().Render()
+    
+    
     def _create_colorbar_widget(self):
         qt_bg_color = self.palette().color(QtGui.QPalette.Window)
         self.colorbar_fig = Figure(figsize=(1, 8), facecolor='#f7f7f7')
@@ -176,7 +271,6 @@ class MainWindow(QtWidgets.QMainWindow):
             
             self.setCentralWidget(central)
             self.setStyleSheet("#buttonContainer { background-color: #f7f7f7;}")
-            self._create_overlay_buttons()
 
     def _init_info_tab(self):
         info = QtWidgets.QWidget()
