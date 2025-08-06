@@ -1,0 +1,137 @@
+import os
+import sys
+sys.path.append("../.."); sys.path.append("../../src/")
+sys.path.append("../../modelparameter/functional")
+import plantbox as pb
+from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
+import numpy as np
+import visualisation.vtk_plot as vp # for quick 3d vizualisations
+import matplotlib.pyplot as plt
+from functional.phloem_flux import PhloemFluxPython  
+from functional.PlantHydraulicParameters import PlantHydraulicParameters
+from plant_photosynthesis.wheat_FcVB_Giraud2023adapted import *
+from plant_hydraulics.wheat_Giraud2023adapted import *
+from plant_sucrose.wheat_phloem_Giraud2023adapted import *
+import numpy as np
+import pandas as pd
+from datetime import datetime 
+
+
+""" Parameters and variables """
+plant_age = 7.3 # [day] init simtime
+sim_time = 0.5 # [day]
+dt = 1./24.
+N = int(sim_time/dt)
+depth = 60
+p_mean = -600 # mean soil water potential [cm]
+
+""" Weather data """
+path = "../../modelparameter/functional/climate/"
+weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")  # |\label{6h:Tereno}|
+
+""" plant """
+plant = pb.MappedPlant(seednum = 2) 
+#plant.disableExtraNode()
+path = "../../modelparameter/structural/plant/"
+name = "Triticum_aestivum_test_2021" #"Triticum_aestivum_adapted_2023"
+plant.readParameters(path + name + ".xml")
+
+sdf = pb.SDF_PlantBox(np.inf, np.inf, depth )
+plant.setGeometry(sdf) 
+verbose = False
+plant.initialize(verbose )
+plant.simulate(plant_age, verbose)
+
+""" soil """
+p_bot = p_mean + depth/2
+p_top = p_mean - depth/2
+sx = np.linspace(p_top, p_bot, depth) #soil water potential per voxel
+picker = lambda x,y,z : max(int(np.floor(-z)),-1) 
+plant.setSoilGrid(picker)  
+
+""" Plant functinoal properties """
+params = PlantHydraulicParameters()  # |\label{l74:hydraulic}|
+params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l74:hydraulic_end}|
+hm = PhloemFluxPython(plant, params, psiXylInit = min(sx),ciInit = weatherData['co2'][0]*0.5)
+hm.wilting_point = -10000  # |\label{l74:hydraulic_end}|
+path = '../../modelparameter/functional/'
+hm.read_photosynthesis_parameters(filename = path + "plant_photosynthesis/photosynthesis_parameters2025")  # |\label{6h:read}|
+hm.read_phloem_parameters(filename =path + "plant_sucrose/phloem_parameters2025")  # |\label{6h:read}| 
+
+# list_data = hm.get_phloem_data_list() # option of data that can be obtained from the phloem model
+# hm.write_phloem_parameters(filename= 'phloem_parameters')
+
+time = []
+cumulAssimilation = 0.
+cumulTranspiration = 0.
+
+""" Simulation loop """
+for i in range(N):
+    """ Weather variables """
+    diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(plant_age % 1,unit='d'))
+    line_data = np.where(diffDt == min(diffDt))[0][0]
+    weatherData_ = weatherData.iloc[line_data]  # get the weather data for the current time step
+    time.append(datetime.strptime(weatherData_['time'], '%H:%M:%S'))
+
+    """ Plant growth """
+    plant_age += dt
+    plant.simulate(dt, False)  # |\label{l74:plant}|   
+    # 
+    print(np.array(plant.organTypes)[np.array([54, 75, 86, 97, 108, 109])-1])
+    print(np.array(plant.nodes)[np.array([0, 54, 75, 86, 97, 108, 109])])
+    print(np.array(plant.segments)[np.array([54, 75, 86, 97, 108, 109])-1])
+    orgs = plant.getOrgans(3)
+    for org in orgs:
+        print('id', org.getId())
+        print('getNodes', hm.convert_(org.getNodes())  )
+        print('getNodeIds', org.getNodeIds())
+        
+    # vp.plot_plant(plant, "organType")
+    """ Plant transpiration and photosynthesis """
+    hm.pCO2 = weatherData_['co2']
+    es = hm.get_es(weatherData_['Tair'])
+    ea = es * weatherData_['RH']
+
+    hm.solve(sim_time = plant_age, rsx = sx, cells = True,
+             ea = ea, es = es, PAR = weatherData['PAR'][i] * (24 * 3600) / 1e4, 
+             TairC = weatherData['Tair'][i],
+             verbose = 0)  # |\label{6h:solve}|    
+        
+    cumulAssimilation  += hm.get_net_assimilation()  * dt #  [mol CO2]
+    cumulTranspiration += hm.get_transpiration() * dt # [cm3]
+    
+    """ Plant inner carbon balance """
+    hm.solve_phloem_flow(plant_age, dt,  weatherData['Tair'][i])
+    
+    C_ST = hm.get_phloem_data( data = "sieve tube concentration")
+    # cumulative
+    Q_Rm    = hm.get_phloem_data( data = "maintenance respiration", doSum = True) 
+    Q_Exud  = hm.get_phloem_data( data = "exudation", doSum = True)
+    Q_Gr    = hm.get_phloem_data( data = "growth", doSum = True)
+    Q_out   = Q_Rm + Q_Exud + Q_Gr
+    # last time step
+    Q_Rm_i   = hm.get_phloem_data( data = "maintenance respiration", last = True, doSum = True) 
+    Q_Exud_i = hm.get_phloem_data( data = "exudation", last = True, doSum = True)
+    Q_Gr_i   = hm.get_phloem_data( data = "growth", last = True, doSum = True)
+    Q_out_i  = Q_Rm_i + Q_Exud_i + Q_Gr_i
+                                
+    n = round(float(i) / float(N) * 100.)
+    print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "]")
+    print("\n\n\n\t\tat ", int(np.floor(plant_age)),"d", int((plant_age%1)*24),"h, PAR:",  round(weatherData['PAR'][i]),"mumol m-2 s-1")
+    print("cumulative: transpiration {:5.2e} [cm3]\t assimilation {:5.2e} [mol]".format(cumulTranspiration, cumulAssimilation))
+    print("sucrose concentration in sieve tube (mol ml-1):\n\tmean {:.2e}\tmin  {:5.2e}\tmax  {:5.2e}".format(np.mean(C_ST), min(C_ST), max(C_ST)))     
+    print("aggregated sink repartition at last time step (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}".format(Q_Rm_i/Q_out_i*100, 
+         Q_Gr_i/Q_out_i*100,Q_Exud_i/Q_out_i*100))
+    print("total aggregated sink repartition (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}".format(Q_Rm/Q_out*100, 
+         Q_Gr/Q_out*100, Q_Exud/Q_out*100))    
+    
+""" Plot results """
+fig, axs = plt.subplots(2,2)
+axs[0,0].plot(time, Q_Rm/dt)
+axs[0,0].set(xlabel='day of growth', ylabel='total respiration rate (mol/day)')
+axs[1,0].plot(time, Q_Gr/dt, 'tab:red')
+axs[1,0].set(xlabel='day of growth', ylabel='total growth rate (mol/day)')
+axs[0,1].plot(time, Q_Exud/dt , 'tab:brown')
+axs[0,1].set(xlabel='day of growth', ylabel='total exudation\nrate (mol/day)')
+fig.tight_layout()
+plt.show()

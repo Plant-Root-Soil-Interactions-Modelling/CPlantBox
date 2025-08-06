@@ -62,7 +62,7 @@ path = "../../modelparameter/structural/plant/"
 name = "Triticum_aestivum_adapted_2023"
 pl.readParameters(path + name + ".xml")
 
-sdf = pb.SDF_PlantBox(np.Inf, np.Inf, depth )
+sdf = pb.SDF_PlantBox(np.inf, np.inf, depth )
 pl.setGeometry(sdf) # creates soil space to stop roots from growing out of the soil
 
 
@@ -113,7 +113,11 @@ pl.setSoilGrid(picker)  # maps segment
 
 
 #give initial guess of leaf water potential and internal CO2 partial pressure (to start computation loop)
-r = PhloemFluxPython(pl,psiXylInit = min(sx),ciInit = weatherInit["cs"]*0.5)
+from functional.PlantHydraulicParameters import PlantHydraulicParameters
+params = PlantHydraulicParameters()  # |\label{l74:hydraulic}|
+params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l74:hydraulic_end}|
+
+r = PhloemFluxPython(pl,params,psiXylInit = min(sx),ciInit = weatherInit["cs"]*0.5)
 
 
 # ## 4. set other parameters and initial variable
@@ -152,19 +156,20 @@ while simDuration <= simMax:
     
     Nt = len(r.plant.nodes) 
     weatherX = weather(simDuration) #update weather variables
-    r.Qlight = weatherX["Qlight"] #
-    r = setKrKx_xylem(weatherX["TairC"], weatherX["RH"], r) #update xylem conductivity data
+    #r.Qlight = weatherX["Qlight"] #
+    #r = setKrKx_xylem(weatherX["TairC"], weatherX["RH"], r) #update xylem conductivity data
     
     #compute plant water flow
-    r.solve_photosynthesis(ea_=weatherX["ea"], es_ = weatherX["es"], 
-                           sim_time_ = simDuration, sxx_=sx, cells_ = True,
-                           verbose_ = False, doLog_ = False,TairC_= weatherX["TairC"] )
+    r.solve(sim_time = simDuration, rsx = sx, cells = True,
+             ea = weatherX["ea"], es = weatherX["es"], PAR = weatherX["Qlight"] ,# * (24 * 3600) / 1e4, 
+             TairC = weatherX["TairC"],
+             verbose = 0) 
     
     
     AnSum += np.sum(r.Ag4Phloem)*dt #total cumulative carbon assimilaiton
     errLeuning = sum(r.outputFlux) #should be 0 : no storage of water in the plant
     fluxes = np.array(r.outputFlux)
-    fluxesSoil = r.soilFluxes(simDuration, r.psiXyl, sx, approx=False) #root water flux per soil voxel
+    #fluxesSoil = r.soilFluxes(simDuration, r.psiXyl, sx, approx=False) #root water flux per soil voxel
     
     
     #simulation of phloem flow
