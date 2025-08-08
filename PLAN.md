@@ -161,19 +161,50 @@ Notes: This is our single-command regression check. Keep it green before/after c
 - [ ] Add CMake options to select dependency strategy:
   - `USE_SYSTEM_SUITESPARSE` / `USE_SYSTEM_SUNDIALS` (default OFF for wheels).
   - `BUNDLE_SUITESPARSE` / `BUNDLE_SUNDIALS` to build minimal static libs (AMD/COLAMD/BTF/KLU; SUNDIALS CVODE + required sun*).
-- [ ] Validate redistribution licenses for bundled components.
-- [ ] Ensure link order and symbols resolve without pulling external BLAS/LAPACK.
-- [ ] Verify Linux manylinux compliance (static or vendored non-allowed libs) by auditing built wheels.
+- [ ] Validate redistribution licenses for bundled components. (Moved to Backlog)
+- [x] Ensure link order and symbols resolve without pulling external BLAS/LAPACK.
+  - Details: Corrected SuiteSparse link order earlier and embedded static `CPlantBox` via whole-archive for Linux wheel builds; repaired manylinux wheels import/run without external BLAS/LAPACK.
+- [x] Verify Linux manylinux compliance (static or vendored non-allowed libs) by auditing built wheels.
+  - Details: Built in `manylinux2014_x86_64` container and ran `auditwheel show/repair`. Produced repaired wheels for CPython 3.9–3.12; in-container import+simulate smoke PASS.
 
   Readiness: Yes. Wheels build and run green; structural data packaged; versioning stable.
 
   Additional Phase 4 tasks (added):
-  - [ ] Add a wheel audit step (Ubuntu for now): run `auditwheel show` on built wheels and capture external deps (e.g., `libstdc++`, `libgomp`).
-  - [ ] If OpenMP is used, confirm `libgomp` handling (vendor via `auditwheel repair` or disable OpenMP for wheels if not needed).
-  - [ ] Add license attributions for SUNDIALS/SuiteSparse (and any other vendored code) into the sdist/wheel (`licenses/THIRD_PARTY_NOTICES.txt`).
-  - [ ] Provide `scripts/wheels/audit_linux.sh` to run `auditwheel show` and (optionally) `auditwheel repair` locally.
+  - [x] Build and repair manylinux wheels (x86_64) for CPython 3.9–3.12.
+    - Details: `scripts/wheels/build_manylinux2014.sh` builds with container Pythons, sets CMake Python hints, runs `auditwheel repair`, and smoke-tests each wheel.
+  - [x] Add a wheel audit step (Ubuntu for now): run `auditwheel show` on built wheels and capture external deps (e.g., `libstdc++`, `libgomp`).
+    - Details: `scripts/wheels/audit_linux.sh` added; ad-hoc audits also run during manylinux flow.
+  - [x] If OpenMP is used, confirm `libgomp` handling (vendor via `auditwheel repair` or disable OpenMP for wheels if not needed).
+    - Details: No OpenMP linkage detected in current builds; `libgomp` not present in audit outputs. Keep monitoring if OpenMP is introduced.
   - [ ] Strip and size-audit artifacts; keep the extension self-contained (no RPATH; already stripped on install).
-  - [ ] Document the dependency strategy matrix (bundled vs. system) and defaults in README/PLAN.
+  - [x] Document the dependency strategy matrix (bundled vs. system) and defaults in README/PLAN.
+    - Details: Added CMake switches and defaults below; wheels default to bundled. See matrix and override examples.
+
+  Focus now:
+  - Implement CMake dependency switches (`USE_SYSTEM_*`, `BUNDLE_*`) and wire system-vs-bundled detection.
+  - Add strip and size-audit step for repaired wheels.
+  - Document the dependency strategy (matrix + defaults) in README/PLAN.
+
+  Postponed:
+  - Licensing/attributions (moved to Backlog).
+  - Other platforms (manylinux aarch64, macOS, Windows) – Phase 5+.
+  - Broader docs/CI polish – Phase 5+/7.
+
+  Dependency strategy matrix and switches
+  - Switches (CMake options in `src/CMakeLists.txt`):
+    - `USE_SYSTEM_SUITESPARSE` (OFF by default)
+    - `USE_SYSTEM_SUNDIALS` (OFF by default)
+    - `BUNDLE_SUITESPARSE` (ON by default)
+    - `BUNDLE_SUNDIALS` (ON by default)
+    - For wheel builds (`SKBUILD=ON`), defaults force bundled unless explicitly overridden.
+  - Source build (developer machines):
+    - Default: bundled (vendored static libs). You can opt into system libs:
+      Example: `cmake -S . -B build -DUSE_SYSTEM_SUITESPARSE=ON -DUSE_SYSTEM_SUNDIALS=ON -DBUNDLE_SUITESPARSE=OFF -DBUNDLE_SUNDIALS=OFF`
+  - Wheel build (packaging):
+    - Default: bundled static libs (current tested path). Manylinux wheels are repaired and self-contained.
+  - Notes:
+    - SuiteSparse static link order is enforced (KLU, AMD, COLAMD, BTF, suitesparseconfig).
+    - No OpenMP (`libgomp`) detected in current builds.
 
 ### Phase 5 — Multi-platform wheels (local first)
 
@@ -182,6 +213,21 @@ Notes: This is our single-command regression check. Keep it green before/after c
   - macOS: x86_64 and arm64 (or universal2), set `CMAKE_OSX_DEPLOYMENT_TARGET`.
 - [ ] Use `auditwheel`/`delocate` to finalize binaries; run our headless smoke tests against produced wheels.
 - [ ] Document local build instructions for maintainers.
+
+  Additional Phase 5 tasks (added):
+  - [ ] Linux aarch64: add `scripts/wheels/build_manylinux2014_aarch64.sh` mirroring x86_64 flow (platform `linux/arm64`), run `auditwheel repair`, and smoke-test wheels inside the container.
+  - [ ] macOS builder script: add `scripts/wheels/build_macos.sh` to build wheels for CPython 3.9–3.12 on host, with:
+    - `CMAKE_OSX_DEPLOYMENT_TARGET` (e.g., 11.0+ for arm64; 10.15 or 11.0 for x86_64).
+    - `delocate-wheel` to repair and bundle non-system deps.
+    - Headless smoke after install for each wheel.
+  - [ ] `cibuildwheel` config in `pyproject.toml` (or `cibuildwheel.toml`) with per-platform repair commands:
+    - Linux: `CIBW_REPAIR_WHEEL_COMMAND_LINUX="auditwheel repair -w {dest_dir} {wheel}"`.
+    - macOS: `CIBW_REPAIR_WHEEL_COMMAND_MACOS="delocate-listdeps {wheel}; delocate-wheel -w {dest_dir} {wheel}"`.
+    - Set `CIBW_BUILD` to cp39–cp312; set `CIBW_ARCHS_MACOS="x86_64 arm64"` (or universal2 strategy if feasible).
+  - [ ] macOS toolchain flags: ensure no OpenMP is required by default; if ever enabled, bundle `libomp` via `delocate`.
+  - [ ] RPath policy (macOS): verify `_plantbox` has no unexpected `@rpath` outside system libs after `delocate`.
+  - [ ] Size/strip audit: print repaired wheel sizes and extension `.so`/`.dylib` sizes; set a soft budget and track regressions.
+  - [ ] Top-level helper: `scripts/wheels/build_all_local.sh` that orchestrates Linux (manylinux x86_64/aarch64) and macOS builds and runs smoke tests.
 
 ### Phase 6 — Pybind11 version strategy
 

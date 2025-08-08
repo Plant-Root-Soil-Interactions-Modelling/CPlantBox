@@ -40,6 +40,13 @@ rootsys = os.path.join(pb.data_path(), "structural", "rootsystem", "Anagallis_fe
 rs.readParameters(rootsys, verbose=False)
 rs.initialize(False)
 rs.simulate(2.0, False)
+ext_path = pb._ext.__file__ if hasattr(pb, "_ext") else getattr(pb, "__file__", "?")
+try:
+    ext_size = os.path.getsize(pb._ext.__file__)
+except Exception:
+    ext_size = -1
+print("Extension:", ext_path)
+print("Extension size(bytes):", ext_size)
 print("Wheel import+simulate OK with packaged data")
 PY
   '
