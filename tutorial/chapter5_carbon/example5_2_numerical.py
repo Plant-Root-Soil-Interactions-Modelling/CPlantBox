@@ -32,7 +32,7 @@ p_mean = -600 # mean soil water potential [cm]
 
 """ Weather data """
 path = "../../modelparameter/functional/climate/"
-weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")  # |\label{6h:Tereno}|
+weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")  
 
 """ plant """
 plant = pb.MappedPlant(seednum = 2) 
@@ -55,15 +55,15 @@ picker = lambda x,y,z : max(int(np.floor(-z)),-1)
 plant.setSoilGrid(picker)  
 
 """ Plant functional properties """
-params = PlantHydraulicParameters()  # |\label{l74:hydraulic}|
-params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l74:hydraulic_end}|
-hm = PhloemFluxPython(plant, params, psiXylInit = min(sx),ciInit = weatherData['co2'][0]*0.5)
-hm.wilting_point = -10000  # |\label{l74:hydraulic_end}|
+params = PlantHydraulicParameters()  # |\label{l52:hydraulic}|
+params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l52:hydraulic_end}|
+hm = PhloemFluxPython(plant, params, psiXylInit = min(sx),ciInit = weatherData['co2'][0]*0.5) # |\label{l52:phloempy}|
+hm.wilting_point = -10000
 path = '../../modelparameter/functional/'
-hm.read_photosynthesis_parameters(filename = path + "plant_photosynthesis/photosynthesis_parameters2025")  # |\label{6h:read}|
-hm.read_phloem_parameters(filename =path + "plant_sucrose/phloem_parameters2025")  # |\label{6h:read}| 
+hm.read_photosynthesis_parameters(filename = path + "plant_photosynthesis/photosynthesis_parameters2025")  # |\label{l52:read}|
+hm.read_phloem_parameters(filename =path + "plant_sucrose/phloem_parameters2025")  # |\label{l52:read2}| 
 # list_data = hm.get_phloem_data_list() # option of data that can be obtained from the phloem model
-# hm.write_phloem_parameters(filename= 'phloem_parameters')
+# hm.write_phloem_parameters(filename= 'phloem_parameters')  # |\label{l52:read_end}| 
 
 time = []
 cumulAssimilation = 0.
@@ -73,24 +73,25 @@ Q_Rm_is, Q_Gr_is, Q_Exud_is, Q_Water_is = [], [], [], []
 """ Simulation loop """
 for i in range(N):
     """ Weather variables """
-    weatherData_i = getWeatherData(plant_age)  # get the weather data for the current time step
+    weatherData_i = getWeatherData(plant_age)   # |\label{l52:weather}|
 
     """ Plant growth """
     plant_age += dt
-    plant.simulate(dt, False)  # |\label{l74:plant}|   
+    plant.simulate(dt, False)  # |\label{l52:plant}|   
     
     """ Plant transpiration and photosynthesis """
     hm.pCO2 = weatherData_i['co2']
     es = hm.get_es(weatherData_i['Tair'])
     ea = es * weatherData_i['RH']
 
-    hm.solve(sim_time = plant_age, rsx = sx, cells = True,
-             ea = ea, es = es, PAR = weatherData_i['PAR'] * (24 * 3600) / 1e4, 
+    hm.solve(sim_time = plant_age, rsx = sx, cells = True,  
+             ea = ea, es = es, 
+             PAR = weatherData_i['PAR'] * (24 * 3600) / 1e4, 
              TairC = weatherData_i['Tair'],
-             verbose = 0)  # |\label{6h:solve}|    
+             verbose = 0)  # |\label{l52:solve}|    
     
     """ Plant inner carbon balance """
-    hm.solve_phloem_flow(plant_age, dt,  weatherData_i['Tair'])    
+    hm.solve_phloem_flow(plant_age, dt,  weatherData_i['Tair'])  # |\label{l52:balance}|       
                  
     """ Post processing """                   
     cumulAssimilation  += np.sum(hm.get_net_assimilation())  * dt #  [mol CO2]
