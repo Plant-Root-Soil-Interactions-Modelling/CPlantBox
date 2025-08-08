@@ -60,31 +60,77 @@ Notes: This is our single-command regression check. Keep it green before/after c
 - [x] Remove CPU-specific flags like `-march=native`; keep portable optimization flags.
   - Details: Removed `-march=native` from release flags; kept `-O3` and safe opts.
   - Caveats: Small performance drop versus native builds; acceptable for portable wheels. Consider adding an opt-in CMake toggle later for local dev.
-- [ ] Avoid forcing output directories for libs/modules unless required by wheel build tooling.
-- Notes: Audit pending; no behavior changes yet detected beyond standard pybind11 defaults.
-- [ ] Introduce pytest markers to tag VTK-dependent tests; skip automatically in headless environments.
-- [ ] Add `ruff` (conservative config: E,F,I) and `pre-commit` for python files; document opt-in for devs.
-- [ ] Add `clang-format` config (do not enforce globally yet; document usage for contributors).
+- [x] Avoid forcing output directories for libs/modules unless required by wheel build tooling.
+  - Details: Commented out `LIBRARY_OUTPUT_DIRECTORY` overrides in `src/CMakeLists.txt` for `CPlantBox` and `plantbox`; use CMake defaults for portability.
+  - Caveats: Packaging will manage install locations; local builds still place artifacts under build tree as usual.
+- [x] Introduce pytest markers to tag VTK-dependent tests; skip automatically in headless environments.
+  - Details: Added `pytest.ini` with markers `vtk` and `gui`, and `test/conftest.py` now auto-skips `vtk` tests when VTK is unavailable and `gui` tests when no display is present. Next step (optional) is to annotate specific tests with these markers as needed.
+- [x] Add `ruff` (conservative config: E,F,I) and `pre-commit` for python files; document opt-in for devs.
+  - Details: Added `ruff.toml` and `.pre-commit-config.yaml` with ruff (E,F,I), black (manual), and basic hooks. Devs can `pip install pre-commit && pre-commit install`.
+- [x] Add `clang-format` config (do not enforce globally yet; document usage for contributors).
+  - Details: Added `.clang-format` with a lightweight, non-enforced style.
 - [x] Disable LTO/IPO to avoid toolchain issues in container builds.
   - Details: Set `CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF` in `src/CMakeLists.txt` to resolve `lto-wrapper`/jobs server errors seen under emulation.
   - Caveats: Minor potential link-time optimization loss; acceptable for reliability in cross-arch container builds.
 
   New small hygiene tasks (added):
-  - [ ] Set an explicit minimum CMake version compatible with modern `FindPython` (e.g., `cmake_minimum_required(VERSION 3.18)` or higher) and document it.
-  - [ ] Add a top-level `.dockerignore` to speed Docker builds and avoid copying large artifacts (e.g., `build/`, `__pycache__/`, `.git/`, `tutorial/results/`).
-  - [ ] Make test runs deterministic by default in scripts (export `OMP_NUM_THREADS=1`) and document this for local dev.
-  - [ ] Ensure vendored `external/pybind11` is present and at a known-good tag; add a short note in docs and a friendly check in the build script if missing.
-  - [ ] Add a simple CTest hook that runs the curated pytest subset (`ctest -R smoke`) to make `cmake --build . && ctest` work out-of-the-box.
-  - [ ] Ensure tests do not leave artifacts in the repo; add cleanup and ignore rules.
+  - [x] Set an explicit minimum CMake version compatible with modern `FindPython` (e.g., `cmake_minimum_required(VERSION 3.18)` or higher) and document it.
+    - Details: Updated root `CMakeLists.txt` to `cmake_minimum_required(VERSION 3.18)`.
+    - Caveats: Older CMake versions (<3.18) will now fail fast; aligns with modern Python discovery.
+  - [x] Add a top-level `.dockerignore` to speed Docker builds and avoid copying large artifacts (e.g., `build/`, `__pycache__/`, `.git/`, `tutorial/results/`).
+    - Details: Added `.dockerignore` excluding build outputs, caches, large artifacts, and test outputs.
+    - Caveats: If Docker builds need additional files later, update `.dockerignore` accordingly.
+  - [x] Make test runs deterministic by default in scripts (export `OMP_NUM_THREADS=1`) and document this for local dev.
+    - Details: `scripts/run_ubuntu_tests.sh` and the `CTest` smoke hook set `OMP_NUM_THREADS=1`.
+    - Caveats: Users can override locally; ensures stable timings under CI/emulation.
+  - [ ] Ensure vendored `external/pybind11` is present and at a known-good tag; add a short note in docs and a friendly check in the build script if missing. (Moved to Phase 2)
+  - [x] Add a simple CTest hook that runs the curated pytest subset (`ctest -R smoke`) to make `cmake --build . && ctest` work out-of-the-box.
+    - Details: Root `CMakeLists.txt` defines `smoke_pytest` with `python3 -m pytest -q` on a curated set; sets `PYTHONPATH` and `OMP_NUM_THREADS` via test properties.
+    - Caveats: Requires Python available in PATH; uses the source tree (not installed wheel) for speed.
+  - [x] Ensure tests do not leave artifacts in the repo; add cleanup and ignore rules.
     - Details: Route test-generated files (e.g., `human.xml`, `leaf.xml`, `organ.xml`, `organism.rsml`, `root.xml`, `rs_parameters.xml`, `seed.xml`, `stem.xml`, `test_rootsystem.rsml`) into per-test temp dirs via `tmp_path` and/or chdir fixtures; add autouse teardown to remove legacy outputs; add `.gitignore` patterns as a fallback.
     - Caveats: Some tutorials intentionally write outputs; keep those under `tutorial/results/` (already ignored) and out of repo root.
 
 ### Phase 2 — Introduce modern packaging (pyproject + scikit-build-core)
 
-- [ ] Add `pyproject.toml` using `scikit-build-core` as the build backend.
-- [ ] Configure extension build via CMake without setup.py; verify `pip wheel .` works in the Ubuntu test container.
-- [ ] Keep runtime python deps minimal (e.g., `numpy`), avoid optional heavy ones (`vtk`) in core install.
-- [ ] Prove smoke from fresh venv in-container using the built wheel.
+- [x] Add `pyproject.toml` using `scikit-build-core` as the build backend.
+  - Details: Added minimal `pyproject.toml` with scikit-build-core; CMake/Ninja injected by backend; Release build via tool config.
+  - Caveats: Build is green on Ubuntu container; cross-platform wheels still pending in later phases.
+- [x] Configure extension build via CMake without setup.py; verify `pip wheel .` works in the Ubuntu test container.
+  - Details: Wheel builds and links successfully under `scikit-build-core`. Implemented out-of-source fallbacks for vendored static libs in `src/CMakeLists.txt`, added `-DSKBUILD=ON` to switch `CPlantBox` to STATIC for wheel builds, and fixed SuiteSparse static link order. Produced wheel (~1.7 MB) installs and runs the headless smoke.
+- [x] Keep runtime python deps minimal (e.g., `numpy`), avoid optional heavy ones (`vtk`) in core install.
+  - Details: No runtime deps declared yet; tutorials/tests keep optional packages.
+- [x] Prove smoke from fresh venv in-container using the built wheel.
+  - Details: `scripts/test_wheel_ubuntu.sh` builds the wheel, installs into a temp venv, imports `plantbox`, runs a tiny headless simulation; all green in Ubuntu container.
+
+  Additional Phase 2 tasks (added):
+  - [x] Ensure vendored `external/pybind11` is present and at a known-good tag; document the expected version and a friendly check in the wheel build helper.
+    - Details: Added a fail-fast check in `src/CMakeLists.txt` that errors with guidance if `src/external/pybind11` is missing; submodule is initialized in scripts.
+  - [x] Choose and implement package layout for the Python distribution:
+    - Implemented: Binary module renamed to `_plantbox` with a thin `plantbox/__init__.py` wrapper that re-exports the API.
+    - Caveats: Dev-source testing copies the built `_plantbox*.so` into `plantbox/` for import; installed wheels will place it correctly via install rules.
+  - [x] Add minimal Python package skeleton:
+    - Implemented `plantbox/__init__.py` wrapper.
+    - `py.typed` deferred.
+  - [x] Add CMake install rules for the extension so skbuild can package it correctly (e.g., `install(TARGETS _plantbox ...)`).
+  - [x] Populate project metadata in `pyproject.toml` (name, description, license, classifiers, urls, authors).
+    - Details: Filled authors, classifiers for CPython 3.9–3.12, URLs (homepage/repo/issues/docs), license file, readme.
+  - [x] Decide on versioning strategy:
+    - Chosen: SCM-based via `setuptools_scm` writing `plantbox/_version.py`. Wheels show `0.0.0` when untagged; tagging (e.g., `v2.1`) yields correct versions.
+  - [x] Add a local wheel build helper script (e.g., `scripts/build_wheel.sh`) that builds via `python -m build --wheel` in a clean env/container and prints the artifact path.
+  - [x] Add an install-and-smoke helper (e.g., `scripts/test_built_wheel.sh`) that creates a temp venv, installs the wheel, and runs the headless smoke and curated tests from the installed package.
+  - [x] Ensure ABI-correct naming is handled by skbuild/pybind11 (remove the temporary aliasing step from the Ubuntu test script once wheels are used for testing).
+    - Details: `scripts/run_ubuntu_tests.sh` now builds a wheel and tests the installed package by default; legacy source-tree aliasing removed.
+  - [x] Confirm `pip install -e .` works for developer editable installs with scikit-build-core; document any caveats.
+    - Details: Verified inside Ubuntu container (venv) with a headless import/simulation; works as expected.
+  - [x] Aggregate Ubuntu scripts under a single entry point.
+    - Details: Added `scripts/ubuntu/run_all.sh` to run source-tree smoke and wheel smoke sequentially.
+  - [x] Add a simple release helper to tag and build artifacts.
+    - Details: `scripts/release/release_tag.sh` validates tree, (optionally) runs checks, creates annotated tag (e.g., `v2.1`), optionally pushes, and copies wheels to `release_artifacts/<tag>/ubuntu/`.
+
+  Blocking tasks discovered (new):
+  - [x] Make out-of-source builds find vendored static libs (SUNDIALS/SuiteSparse):
+    - Implemented Option A: `src/CMakeLists.txt` now falls back to `${CMAKE_SOURCE_DIR}/src/external/...` when the build-dir copies don’t exist, and the SuiteSparse static link order was corrected. Also build STATIC for wheels via `-DSKBUILD=ON`. Wheel builds now link cleanly in the Ubuntu container.
 
 ### Phase 3 — Data layout and import stability
 
@@ -92,6 +138,12 @@ Notes: This is our single-command regression check. Keep it green before/after c
 - [ ] Add a helper (e.g., `plantbox.data_path()`) to get the packaged data root.
 - [ ] (Optional but recommended) Rename compiled module to `_plantbox` and add a thin `plantbox/__init__.py` that imports it and exposes helpers (data path, version), de-risking future changes.
 - [ ] Update a small subset of tutorials/tests to use the helper instead of fragile relative paths (without breaking legacy usage where reasonable).
+
+  Additional Phase 3 tasks (new):
+  - [ ] Add a tiny unit test ensuring `plantbox.__version__` exists and follows PEP 440 (dev/local builds allowed).
+  - [ ] Implement and test `plantbox.data_path()` to work both from source tree and installed wheel.
+  - [ ] Wire package data in `pyproject.toml` (scikit-build-core `wheel.package-data`) to include essential `modelparameter/**` subsets; keep size reasonable.
+  - [ ] Document data access pattern migration in tutorials (one or two examples updated first).
 
 ### Phase 4 — External dependency strategy for portable wheels
 

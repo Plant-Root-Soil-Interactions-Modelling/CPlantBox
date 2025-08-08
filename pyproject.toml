@@ -1,0 +1,58 @@
+[build-system]
+requires = [
+  "scikit-build-core>=0.10",
+  "cmake>=3.18",
+  "ninja",
+  "setuptools_scm[toml]>=8",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "cplantbox"
+description = "CPlantBox: Functional-Structural Plant Model (Python bindings)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [ { name = "CPlantBox Developers", email = "" } ]
+classifiers = [
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: C++",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Development Status :: 3 - Alpha",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox"
+Repository = "https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox"
+Issues = "https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/issues"
+Documentation = "https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox#readme"
+
+[tool.scikit-build]
+build-dir = "_skbuild/{wheel_tag}"
+logging.level = "INFO"
+wheel.packages = ["plantbox"]
+
+[tool.scikit-build.cmake]
+args = [
+  "-DCMAKE_BUILD_TYPE=Release",
+  "-DSKBUILD=ON",
+]
+
+#[tool.scikit-build.wheel]
+#packages = ["plantbox"]
+
+[tool.setuptools_scm]
+write_to = "plantbox/_version.py"
+# Optional schemes; defaults are fine. Uncomment to customize:
+# version_scheme = "release-branch-semver"
+# local_scheme = "node-and-date"
+
+

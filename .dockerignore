@@ -1,0 +1,40 @@
+# Git and VCS
+.git
+.gitmodules
+.github
+
+# CMake/build outputs
+build*
+build/
+CMakeFiles/
+*.cmake
+CMakeCache.txt
+Makefile
+Testing/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Notebooks and checkpoints
+.ipynb_checkpoints/
+tutorial/jupyter/.ipynb_checkpoints/
+
+# Large/derived artifacts
+*.vtp
+*.vtk
+*.png
+*.pdf
+*.log
+
+# Results folders
+tutorial/results/
+test/*.xml
+test/*.rsml
+test/*.vtp
+
+# Local envs
+.venv/
+venv/
+env/
+
