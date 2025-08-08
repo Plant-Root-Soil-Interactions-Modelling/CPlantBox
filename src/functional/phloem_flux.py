@@ -23,8 +23,8 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         """
         PhloemFlux.__init__( self,plant_,params, psiXylInit, ciInit)
         PhotosynthesisPython.__init__( self,plant_, params, psiXylInit, ciInit)
-        #self.reset()
-        #self.update_outputs()
+        self.reset()
+        # self.update_outputs()
         
     def reset(self): # TODO: check
         self.Q_Rm      = np.array([])
@@ -57,11 +57,11 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         self.Q_Exud  = np.array(Q_out[(self.Nt*3):(self.Nt*4)]) #sucrose used for exudation
         self.Q_Gr    = np.array(Q_out[(self.Nt*4):(self.Nt*5)]) #sucrose used for growth and growth respiration
         
-        self.Ntbu = len(self.Q_STbu)
-        self.Q_STbu       =   np.concatenate((self.Q_ST, np.full(self.Nt - self.Ntbu, 0.)))
-        self.Q_Rmbu       =   np.concatenate((self.Q_Rm, np.full(self.Nt - self.Ntbu, 0.)))
-        self.Q_Grbu       =   np.concatenate((self.Q_Gr, np.full(self.Nt - self.Ntbu, 0.))) 
-        self.Q_Exudbu     =   np.concatenate((self.Q_Exud, np.full(self.Nt - self.Ntbu, 0.))) 
+        #self.Ntbu = len(self.Q_STbu)
+        self.Q_STbu       =   np.concatenate((self.Q_STbu, np.full(self.Nt - self.Ntbu, 0.)))
+        self.Q_Rmbu       =   np.concatenate((self.Q_Rmbu, np.full(self.Nt - self.Ntbu, 0.)))
+        self.Q_Grbu       =   np.concatenate((self.Q_Grbu, np.full(self.Nt - self.Ntbu, 0.))) 
+        self.Q_Exudbu     =   np.concatenate((self.Q_Exudbu, np.full(self.Nt - self.Ntbu, 0.))) 
             
         self.Q_ST_i        = self.Q_ST      - self.Q_STbu #in the sieve tubes
         self.Q_Rm_i        = self.Q_Rm      - self.Q_Rmbu #for maintenance
@@ -73,6 +73,12 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
         volMeso   = np.array(self.vol_Meso)      #mesophyll volume  
         self.C_ST_np    = np.array(self.C_ST)    
         self.C_meso  = self.Q_meso/volMeso  
+        
+        self.Ntbu = self.Nt
+        self.Q_STbu       =   self.Q_ST.copy()
+        self.Q_Rmbu       =   self.Q_Rm.copy()
+        self.Q_Grbu       =   self.Q_Gr.copy() 
+        self.Q_Exudbu     =   self.Q_Exud.copy()
     
     def update_outputs(self):    
         self.outputs_options = {
@@ -95,7 +101,7 @@ class PhloemFluxPython(PhloemFlux, PhotosynthesisPython):
     def get_phloem_data_list(self): # TODO: complete
         return self.outputs_options.keys()
         
-    def get_phloem_data(self, data, last = False, doSum = True):
+    def get_phloem_data(self, data, last = False, doSum = False):
         self.update_outputs()
         if last:
             outputs = self.outputs_options_last[data]

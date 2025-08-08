@@ -102,7 +102,7 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
         
     def get_transpiration(self):
         """ actual transpiration [cm3 day-1], calculated as the sum of all leaf radial fluxes"""
-        return sum(self.Ev)
+        return self.Ev
 
     def get_net_assimilation(self):
         """ net actual assimilation rate assimilation [mol CO2 d-1] """

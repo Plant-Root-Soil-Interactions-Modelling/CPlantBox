@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${RELEASE_WARNING_OPTS} ${RELEASE_OPTS}")
 set(CMAKE_CXX_FLAGS_DEBUG "-std=c++17 -O0 -ggdb -Wall")
 
 # set default build type to release Release, Debug
-set(CMAKE_BUILD_TYPE Release )
+set(CMAKE_BUILD_TYPE Debug )
 
 # add source directory to the include path
 include_directories(${PROJECT_SOURCE_DIR}/src/structural)
