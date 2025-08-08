@@ -9,6 +9,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "cplantbox"
+version = "2.1.0"
 description = "CPlantBox: Functional-Structural Plant Model (Python bindings)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -27,7 +28,6 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Development Status :: 3 - Alpha",
 ]
-dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox"
@@ -40,10 +40,10 @@ build-dir = "_skbuild/{wheel_tag}"
 logging.level = "INFO"
 wheel.packages = ["plantbox"]
 
-#[tool.scikit-build.metadata]
-#version.provider = "setuptools_scm"
-#version.write_to = "plantbox/_version.py"
-#version.fallback = "2.1.0"
+[tool.scikit-build.metadata]
+version.provider = "setuptools_scm"
+version.write_to = "plantbox/_version.py"
+version.fallback = "2.1.0"
 
 [tool.scikit-build.cmake]
 args = [
