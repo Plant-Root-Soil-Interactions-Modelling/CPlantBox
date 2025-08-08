@@ -1,3 +1,5 @@
+# Disable LTO/IPO to avoid toolchain issues in container builds
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 #
 # 1. Make CPlantBox library
 #
@@ -136,15 +138,13 @@ target_include_directories(
 # 2. Make CPlantBox Pyhthon binding
 #
 
-# find_package(pybind11 REQUIRED) 
-#set(PYBIND11_PYTHON_VERSION 3.7)
-find_package( PythonInterp 3.7 REQUIRED )
-find_package( PythonLibs 3.7 REQUIRED )
+# Python and pybind11 (modern discovery)
+find_package(Python COMPONENTS Interpreter Development.Module Development.Embed REQUIRED)
 add_subdirectory(external/pybind11)
 
 pybind11_add_module(plantbox SHARED 
-			PyPlantBox.cpp   								
-			)
+            PyPlantBox.cpp                                  
+            )
 target_link_libraries(plantbox PUBLIC 
 			CPlantBox)
 			
