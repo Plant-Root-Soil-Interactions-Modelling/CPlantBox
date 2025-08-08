@@ -49,6 +49,12 @@ __pycache__
 Debug/
 *.vtp
 
+# Python build artifacts
+dist/
+_skbuild/
+release_artifacts/
+plantbox/_version.py
+
 # Jupyter notebook
 tutorial/jupyter/.ipynb_checkpoints/
 .ipynb_checkpoints/

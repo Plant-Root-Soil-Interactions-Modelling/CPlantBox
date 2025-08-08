@@ -67,6 +67,25 @@ def _chdir_tmp_and_cleanup(tmp_path, request):
     for name in legacy:
         path = os.path.join(repo_root, name)
         try:
+            # Skip cleanup for files tracked by git
+            import subprocess, sys
+
+            is_tracked = False
+            try:
+                res = subprocess.run(
+                    ["git", "ls-files", "--error-unmatch", path],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                )
+                is_tracked = res.returncode == 0
+            except Exception:
+                # If git is not available, assume untracked
+                is_tracked = False
+
+            if is_tracked:
+                continue
+
             if os.path.isfile(path):
                 os.remove(path)
             elif os.path.isdir(path):
