@@ -17,6 +17,11 @@ import pandas as pd
 from datetime import datetime 
 from matplotlib.dates import DateFormatter, HourLocator
 
+def getWeatherData(sim_time):
+    diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(sim_time % 1,unit='d'))
+    line_data = np.where(diffDt == min(diffDt))[0][0]
+    return weatherData.iloc[line_data]  # get the weather data for the current time step
+
 """ Parameters and variables """
 plant_age = 7.3 # [day] init simtime
 sim_time = 0.5 # [day]
@@ -49,7 +54,7 @@ sx = np.linspace(p_top, p_bot, depth) #soil water potential per voxel
 picker = lambda x,y,z : max(int(np.floor(-z)),-1) 
 plant.setSoilGrid(picker)  
 
-""" Plant functinoal properties """
+""" Plant functional properties """
 params = PlantHydraulicParameters()  # |\label{l74:hydraulic}|
 params.read_parameters("../../modelparameter/functional/plant_hydraulics/wheat_Giraud2023adapted")  # |\label{l74:hydraulic_end}|
 hm = PhloemFluxPython(plant, params, psiXylInit = min(sx),ciInit = weatherData['co2'][0]*0.5)
@@ -68,30 +73,28 @@ Q_Rm_is, Q_Gr_is, Q_Exud_is, Q_Water_is = [], [], [], []
 """ Simulation loop """
 for i in range(N):
     """ Weather variables """
-    diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(plant_age % 1,unit='d'))
-    line_data = np.where(diffDt == min(diffDt))[0][0]
-    weatherData_ = weatherData.iloc[line_data]  # get the weather data for the current time step
-    time.append(datetime.strptime(weatherData_['time'], '%H:%M:%S'))
+    weatherData_i = getWeatherData(plant_age)  # get the weather data for the current time step
 
     """ Plant growth """
     plant_age += dt
     plant.simulate(dt, False)  # |\label{l74:plant}|   
     
     """ Plant transpiration and photosynthesis """
-    hm.pCO2 = weatherData_['co2']
-    es = hm.get_es(weatherData_['Tair'])
-    ea = es * weatherData_['RH']
+    hm.pCO2 = weatherData_i['co2']
+    es = hm.get_es(weatherData_i['Tair'])
+    ea = es * weatherData_i['RH']
 
     hm.solve(sim_time = plant_age, rsx = sx, cells = True,
-             ea = ea, es = es, PAR = weatherData_['PAR'] * (24 * 3600) / 1e4, 
-             TairC = weatherData_['Tair'],
+             ea = ea, es = es, PAR = weatherData_i['PAR'] * (24 * 3600) / 1e4, 
+             TairC = weatherData_i['Tair'],
              verbose = 0)  # |\label{6h:solve}|    
-        
-    cumulAssimilation  += np.sum(hm.get_net_assimilation())  * dt #  [mol CO2]
-    cumulTranspiration += np.sum(hm.get_transpiration()) * dt # [cm3]
     
     """ Plant inner carbon balance """
-    hm.solve_phloem_flow(plant_age, dt,  weatherData_['Tair'])
+    hm.solve_phloem_flow(plant_age, dt,  weatherData_i['Tair'])    
+                 
+    """ Post processing """                   
+    cumulAssimilation  += np.sum(hm.get_net_assimilation())  * dt #  [mol CO2]
+    cumulTranspiration += np.sum(hm.get_transpiration()) * dt # [cm3]
     
     C_ST = hm.get_phloem_data( data = "sieve tube concentration")
     # cumulative
@@ -104,10 +107,10 @@ for i in range(N):
     Q_Exud_i = hm.get_phloem_data( data = "exudation", last = True, doSum = True)
     Q_Gr_i   = hm.get_phloem_data( data = "growth", last = True, doSum = True)
     Q_out_i  = Q_Rm_i + Q_Exud_i + Q_Gr_i
-                                    
+    
     n = round(float(i) / float(N - 1) * 100.)
     print("\n[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "]")
-    print("\t\tat ", int(np.floor(plant_age)),"d", int((plant_age%1)*24),"h, PAR:",  round(weatherData_['PAR']*1e6),"mumol m-2 s-1")
+    print("\t\tat ", int(np.floor(plant_age)),"d", int((plant_age%1)*24),"h, PAR:",  round(weatherData_i['PAR']*1e6),"mumol m-2 s-1")
     print("cumulative: transpiration {:5.2e} [cm3]\tnet assimilation {:5.2e} [mol]".format(cumulTranspiration, cumulAssimilation))
     print("sucrose concentration in sieve tube (mol ml-1):\n\tmean {:.2e}\tmin  {:5.2e}\tmax  {:5.2e}".format(np.mean(C_ST), min(C_ST), max(C_ST)))     
     print("aggregated sink repartition at last time step (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}".format(Q_Rm_i/Q_out_i*100, 
@@ -115,6 +118,7 @@ for i in range(N):
     print("total aggregated sink repartition (%) :\n\tRm   {:5.1f}\tGr   {:5.1f}\tExud {:5.1f}".format(Q_Rm/Q_out*100, 
          Q_Gr/Q_out*100, Q_Exud/Q_out*100))   
     
+    time.append(datetime.strptime(weatherData_i['time'], '%H:%M:%S'))
     Q_Rm_is.append(Q_Rm_i/dt)
     Q_Exud_is.append(Q_Exud_i/dt)
     Q_Gr_is.append(Q_Gr_i/dt)
