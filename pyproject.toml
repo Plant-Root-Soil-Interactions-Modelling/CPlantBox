@@ -40,6 +40,11 @@ build-dir = "_skbuild/{wheel_tag}"
 logging.level = "INFO"
 wheel.packages = ["plantbox"]
 
+[tool.scikit-build.metadata]
+version.provider = "scm"
+version.write_to = "plantbox/_version.py"
+version.fallback = "2.1.0"
+
 [tool.scikit-build.cmake]
 args = [
   "-DCMAKE_BUILD_TYPE=Release",
@@ -51,6 +56,8 @@ args = [
 
 [tool.setuptools_scm]
 write_to = "plantbox/_version.py"
+# Ensure meaningful version when VCS metadata is unavailable (isolated builds)
+fallback_version = "2.1.0"
 # Optional schemes; defaults are fine. Uncomment to customize:
 # version_scheme = "release-branch-semver"
 # local_scheme = "node-and-date"
