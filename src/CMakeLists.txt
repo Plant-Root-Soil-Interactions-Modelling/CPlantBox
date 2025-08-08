@@ -217,8 +217,12 @@ target_include_directories(
 #
 
 # Python and pybind11 (modern discovery)
-# Use Python3 Development.Module for extension modules (no embedding needed)
-find_package(Python3 COMPONENTS Interpreter Development.Module Development.Embed REQUIRED)
+# Prefer Development.Module for wheels; only require Embed outside skbuild builds
+set(_CPB_PY_COMPONENTS Interpreter Development.Module)
+if(NOT SKBUILD)
+  list(APPEND _CPB_PY_COMPONENTS Development.Embed)
+endif()
+find_package(Python3 COMPONENTS ${_CPB_PY_COMPONENTS} REQUIRED)
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/external/pybind11/CMakeLists.txt")
   message(FATAL_ERROR "Vendored pybind11 missing. Run: git submodule update --init --recursive")
 endif()
