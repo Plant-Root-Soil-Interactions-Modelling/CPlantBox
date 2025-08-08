@@ -239,6 +239,11 @@ pybind11_add_module(_plantbox SHARED
 target_link_libraries(_plantbox PUBLIC 
             CPlantBox Python3::Module)
 
+# Ensure static CPlantBox is fully included in the extension on Linux wheel builds
+if(SKBUILD AND UNIX AND NOT APPLE)
+  target_link_libraries(_plantbox PRIVATE "-Wl,--whole-archive" CPlantBox "-Wl,--no-whole-archive")
+endif()
+
 # Install rules to allow packaging via scikit-build-core
 install(TARGETS _plantbox
         LIBRARY DESTINATION plantbox
