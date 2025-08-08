@@ -21,6 +21,10 @@ import timeit
 from datetime import datetime 
 from matplotlib.dates import DateFormatter, HourLocator
 
+def getWeatherData(sim_time):
+    diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(sim_time % 1,unit='d'))
+    line_data = np.where(diffDt == min(diffDt))[0][0]
+    return weatherData.iloc[line_data]  # get the weather data for the current time step
 
 """ Main parameters """  # |\label{l74:param}|
 path = "../../modelparameter/structural/plant/"
@@ -109,9 +113,7 @@ net_flux_solute = np.zeros(np.prod(cell_number))
 
 for i in range(N):  # |\label{l74:loop}|
     """ Weather variables """
-    diffDt = abs(pd.to_timedelta(weatherData['time']) - pd.to_timedelta(plant_age % 1,unit='d'))
-    line_data = np.where(diffDt == min(diffDt))[0][0]
-    weatherData_ = weatherData.iloc[line_data]  # get the weather data for the current time step
+    weatherData_i = getWeatherData(plant_age) 
 
     """ Plant growth """
     plant_age += dt
@@ -119,16 +121,16 @@ for i in range(N):  # |\label{l74:loop}|
     rs.update()
 
     """ Plant transpiration """
-    h_rsi = rs.get_inner_heads(weatherData_)  # inner values of the perirhizal models [cm]
+    h_rsi = rs.get_inner_heads(weatherData_i)  # inner values of the perirhizal models [cm]
     soil_k = np.divide(vg.hydraulic_conductivity(h_rsi, vg_loam), rs.radii)  # [cm3/day/cm] hydraulic conductivity at the root-soil interface, perirhizal model
-    hm.pCO2 = weatherData_['co2']
-    es = hm.get_es(weatherData_['Tair'])
-    ea = es * weatherData_['RH']
+    hm.pCO2 = weatherData_i['co2']
+    es = hm.get_es(weatherData_i['Tair'])
+    ea = es * weatherData_i['RH']
 
     hm.solve(sim_time = plant_age, rsx = h_rsi, cells = False,
             ea = ea, es = es, 
-            PAR = weatherData_['PAR'] * (24 * 3600) / 1e4, # [mol photons m-2 s-1] -> [mol photons cm-2 d-1] 
-            TairC = weatherData_['Tair'])  # |\label{l74:solve}|
+            PAR = weatherData_i['PAR'] * (24 * 3600) / 1e4, # [mol photons m-2 s-1] -> [mol photons cm-2 d-1] 
+            TairC = weatherData_i['Tair'])  # |\label{l74:solve}|
     
     proposed_inner_fluxes_water = hm.radial_fluxes() # [cm3/day] 
     h_xylem = hm.get_water_potential()
@@ -158,12 +160,12 @@ for i in range(N):  # |\label{l74:loop}|
     net_flux_water  = net_fluxes[0] - rs.alldiff1d3dCNW[0] /dt # [cm3/day] per soil cell
     net_flux_solute = net_fluxes[1] - rs.alldiff1d3dCNW[1] /dt # [g/day] per soil cell
 
-    x_.append(datetime.strptime(weatherData_['time'], '%H:%M:%S'))
+    x_.append(datetime.strptime(weatherData_i['time'], '%H:%M:%S'))
     y_.append(float(hm.get_transpiration()))  # |\label{l74:results}|
 
-    n = round(float(i) / float(N) * 100.)  # |\label{l74:progress}|
+    n = round(float(i) / float(N - 1) * 100.)  # |\label{l74:progress}|
     h_soil = s.getSolutionHead()  # pressure head in the soil [cm]
-    h_rsi_soil = np.delete(rs.get_inner_heads(weatherData_),rs.airSegs)  # remove air segments
+    h_rsi_soil = np.delete(rs.get_inner_heads(weatherData_i),rs.airSegs)  # remove air segments
     
     print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm bulk soil, [{:g}, {:g}] cm root-soil interface, [{:g}, {:g}] cm plant xylem at {}"
         .format(np.min(h_soil), np.max(h_soil), np.min(h_rsi_soil), np.max(h_rsi_soil), np.min(h_xylem), np.max(h_xylem), weatherData_['time']))
