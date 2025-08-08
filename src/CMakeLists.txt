@@ -217,7 +217,8 @@ target_include_directories(
 #
 
 # Python and pybind11 (modern discovery)
-find_package(Python COMPONENTS Interpreter Development.Module Development.Embed REQUIRED)
+# Use Python3 Development.Module for extension modules (no embedding needed)
+find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/external/pybind11/CMakeLists.txt")
   message(FATAL_ERROR "Vendored pybind11 missing. Run: git submodule update --init --recursive")
 endif()
@@ -227,7 +228,7 @@ pybind11_add_module(_plantbox SHARED
             PyPlantBox.cpp                                  
             )
 target_link_libraries(_plantbox PUBLIC 
-            CPlantBox)
+            CPlantBox Python3::Module)
 
 # Install rules to allow packaging via scikit-build-core
 install(TARGETS _plantbox

@@ -144,16 +144,17 @@ Notes: This is our single-command regression check. Keep it green before/after c
   - Details: Helper resolves to package data when installed and falls back to repo tree in dev/source mode.
 - [x] Compiled module organization (`_plantbox` + `plantbox/__init__.py`).
   - Details: Completed in Phase 2; wrapper re-exports C++ API and exposes helpers (data path, version).
-- [ ] Update a small subset of tutorials/tests to use the helper instead of fragile relative paths (without breaking legacy usage where reasonable).
+- [x] Update a small subset of tutorials/tests to use the helper instead of fragile relative paths (without breaking legacy usage where reasonable).
+  - Details: Updated `tutorial/chapter2_structure/example_plant.py` and `tutorial/chapter2_structure/example_plant_anim.py` to use `plantbox.data_path()`; wheel smoke test now loads parameters via `data_path()` as well.
 
   Additional Phase 3 tasks (new):
   - [x] Add a tiny unit test ensuring `plantbox.__version__` exists and follows PEP 440 (dev/local builds allowed).
     - Implemented in `test/test_version_and_data.py`.
   - [x] Implement and test `plantbox.data_path()` to work both from source tree and installed wheel.
     - Implemented in `plantbox/__init__.py`; tested in `test/test_version_and_data.py`.
-  - [ ] Curate packaged data subsets; consider switching to `tool.scikit-build` packaging config once stable.
+  - [ ] Curate packaged data subsets; consider switching to `tool.scikit-build` packaging config once stable. (Moved to Backlog)
     - Current: packaging is done via CMake `install(DIRECTORY ...)` during wheel builds (structural subset). Revisit to include only essential files and/or move to TOML-based packaging once stable.
-  - [ ] Document data access pattern migration in tutorials (one or two examples updated first).
+  - [ ] Document data access pattern migration in tutorials (expand beyond the two examples; keep legacy paths working where feasible). (Moved to Backlog)
 
 ### Phase 4 — External dependency strategy for portable wheels
 
@@ -163,6 +164,16 @@ Notes: This is our single-command regression check. Keep it green before/after c
 - [ ] Validate redistribution licenses for bundled components.
 - [ ] Ensure link order and symbols resolve without pulling external BLAS/LAPACK.
 - [ ] Verify Linux manylinux compliance (static or vendored non-allowed libs) by auditing built wheels.
+
+  Readiness: Yes. Wheels build and run green; structural data packaged; versioning stable.
+
+  Additional Phase 4 tasks (added):
+  - [ ] Add a wheel audit step (Ubuntu for now): run `auditwheel show` on built wheels and capture external deps (e.g., `libstdc++`, `libgomp`).
+  - [ ] If OpenMP is used, confirm `libgomp` handling (vendor via `auditwheel repair` or disable OpenMP for wheels if not needed).
+  - [ ] Add license attributions for SUNDIALS/SuiteSparse (and any other vendored code) into the sdist/wheel (`licenses/THIRD_PARTY_NOTICES.txt`).
+  - [ ] Provide `scripts/wheels/audit_linux.sh` to run `auditwheel show` and (optionally) `auditwheel repair` locally.
+  - [ ] Strip and size-audit artifacts; keep the extension self-contained (no RPATH; already stripped on install).
+  - [ ] Document the dependency strategy matrix (bundled vs. system) and defaults in README/PLAN.
 
 ### Phase 5 — Multi-platform wheels (local first)
 
@@ -205,6 +216,14 @@ Notes: This is our single-command regression check. Keep it green before/after c
 
 - 2025-08-08: Added Ubuntu amd64 docker test env + runner; curated headless smoke passing; wrote this plan.
 - 2025-08-08: Phase 2 wheel builds are green; pinned static version `2.1.0` for initial wheels to avoid scikit-build-core experimental metadata provider; wheel artifacts now named `cplantbox-2.1.0-...whl`.
+
+### Backlog (non-blocking)
+
+- Curate packaged data content for wheels; consider TOML-based packaging once stable; ensure wheel size remains reasonable.
+- Expand tutorial/doc migration to use `plantbox.data_path()` beyond the two updated examples; keep legacy paths working where feasible.
+- Optional developer UX: add macOS aggregator `scripts/macos/run_all.sh` and a top-level cross-platform dispatcher.
+- Optional typing: add `py.typed` and improve type hints in the Python shim as we stabilize APIs.
+- Reintroduce SCM-based versioning once scikit-build-core provider is non-experimental or use classic `setuptools_scm` flow; adjust release scripts accordingly.
 
 ### Appendix — Versioning note (why static now, how to reintroduce SCM later)
 
