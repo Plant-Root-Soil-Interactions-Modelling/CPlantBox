@@ -3,7 +3,6 @@ requires = [
   "scikit-build-core>=0.10",
   "cmake>=3.18",
   "ninja",
-  "setuptools_scm[toml]>=8",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -40,10 +39,7 @@ build-dir = "_skbuild/{wheel_tag}"
 logging.level = "INFO"
 wheel.packages = ["plantbox"]
 
-[tool.scikit-build.metadata]
-version.provider = "setuptools_scm"
-version.write_to = "plantbox/_version.py"
-version.fallback = "2.1.0"
+
 
 [tool.scikit-build.cmake]
 args = [
@@ -54,12 +50,6 @@ args = [
 #[tool.scikit-build.wheel]
 #packages = ["plantbox"]
 
-[tool.setuptools_scm]
-write_to = "plantbox/_version.py"
-# Ensure meaningful version when VCS metadata is unavailable (isolated builds)
-fallback_version = "2.1.0"
-# Optional schemes; defaults are fine. Uncomment to customize:
-# version_scheme = "release-branch-semver"
-# local_scheme = "node-and-date"
+
 
 

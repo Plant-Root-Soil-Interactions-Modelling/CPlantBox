@@ -116,7 +116,8 @@ Notes: This is our single-command regression check. Keep it green before/after c
   - [x] Populate project metadata in `pyproject.toml` (name, description, license, classifiers, urls, authors).
     - Details: Filled authors, classifiers for CPython 3.9–3.12, URLs (homepage/repo/issues/docs), license file, readme.
   - [x] Decide on versioning strategy:
-    - Chosen: SCM-based via `setuptools_scm` writing `plantbox/_version.py`. Wheels show `0.0.0` when untagged; tagging (e.g., `v2.1`) yields correct versions.
+    - Chosen (for initial wheels): static version `2.1.0` in `pyproject.toml` with `plantbox/_version.py`.
+    - Rationale: Our attempt to use SCM-based dynamic versioning via scikit-build-core’s metadata provider and `setuptools_scm` caused build failures in the isolated wheel env (provider requires enabling scikit-build-core experimental plugins). To keep builds green and predictable in Docker without extra flags, we pinned a static version for now.
   - [x] Add a local wheel build helper script (e.g., `scripts/build_wheel.sh`) that builds via `python -m build --wheel` in a clean env/container and prints the artifact path.
   - [x] Add an install-and-smoke helper (e.g., `scripts/test_built_wheel.sh`) that creates a temp venv, installs the wheel, and runs the headless smoke and curated tests from the installed package.
   - [x] Ensure ABI-correct naming is handled by skbuild/pybind11 (remove the temporary aliasing step from the Ubuntu test script once wheels are used for testing).
@@ -127,6 +128,8 @@ Notes: This is our single-command regression check. Keep it green before/after c
     - Details: Added `scripts/ubuntu/run_all.sh` to run source-tree smoke and wheel smoke sequentially.
   - [x] Add a simple release helper to tag and build artifacts.
     - Details: `scripts/release/release_tag.sh` validates tree, (optionally) runs checks, creates annotated tag (e.g., `v2.1`), optionally pushes, and copies wheels to `release_artifacts/<tag>/ubuntu/`.
+  - [x] Ensure wheel artifact versions are correct (no `0.0.0`).
+    - Details: Wheels now build and install as `cplantbox-2.1.0-...whl` in the Ubuntu container. We temporarily removed SCM-based dynamic versioning to avoid experimental plugin requirements.
 
   Blocking tasks discovered (new):
   - [x] Make out-of-source builds find vendored static libs (SUNDIALS/SuiteSparse):
@@ -134,15 +137,22 @@ Notes: This is our single-command regression check. Keep it green before/after c
 
 ### Phase 3 — Data layout and import stability
 
-- [ ] Package `modelparameter/**` as package data; ensure installed wheels can access it.
-- [ ] Add a helper (e.g., `plantbox.data_path()`) to get the packaged data root.
-- [ ] (Optional but recommended) Rename compiled module to `_plantbox` and add a thin `plantbox/__init__.py` that imports it and exposes helpers (data path, version), de-risking future changes.
+- [x] Package `modelparameter/**` access for installed wheels.
+  - Details: Structural subset is installed into the wheel via CMake install rules when building with `SKBUILD`. Wheels can load structural plant/rootsystem XMLs out-of-the-box.
+  - Follow-ups: Curate/extend included subsets and keep wheel size reasonable (see below).
+- [x] Add a helper `plantbox.data_path()` to get the packaged data root.
+  - Details: Helper resolves to package data when installed and falls back to repo tree in dev/source mode.
+- [x] Compiled module organization (`_plantbox` + `plantbox/__init__.py`).
+  - Details: Completed in Phase 2; wrapper re-exports C++ API and exposes helpers (data path, version).
 - [ ] Update a small subset of tutorials/tests to use the helper instead of fragile relative paths (without breaking legacy usage where reasonable).
 
   Additional Phase 3 tasks (new):
-  - [ ] Add a tiny unit test ensuring `plantbox.__version__` exists and follows PEP 440 (dev/local builds allowed).
-  - [ ] Implement and test `plantbox.data_path()` to work both from source tree and installed wheel.
-  - [ ] Wire package data in `pyproject.toml` (scikit-build-core `wheel.package-data`) to include essential `modelparameter/**` subsets; keep size reasonable.
+  - [x] Add a tiny unit test ensuring `plantbox.__version__` exists and follows PEP 440 (dev/local builds allowed).
+    - Implemented in `test/test_version_and_data.py`.
+  - [x] Implement and test `plantbox.data_path()` to work both from source tree and installed wheel.
+    - Implemented in `plantbox/__init__.py`; tested in `test/test_version_and_data.py`.
+  - [ ] Curate packaged data subsets; consider switching to `tool.scikit-build` packaging config once stable.
+    - Current: packaging is done via CMake `install(DIRECTORY ...)` during wheel builds (structural subset). Revisit to include only essential files and/or move to TOML-based packaging once stable.
   - [ ] Document data access pattern migration in tutorials (one or two examples updated first).
 
 ### Phase 4 — External dependency strategy for portable wheels
@@ -194,3 +204,19 @@ Notes: This is our single-command regression check. Keep it green before/after c
 ### Notes / Changelog
 
 - 2025-08-08: Added Ubuntu amd64 docker test env + runner; curated headless smoke passing; wrote this plan.
+- 2025-08-08: Phase 2 wheel builds are green; pinned static version `2.1.0` for initial wheels to avoid scikit-build-core experimental metadata provider; wheel artifacts now named `cplantbox-2.1.0-...whl`.
+
+### Appendix — Versioning note (why static now, how to reintroduce SCM later)
+
+- Why static now
+  - scikit-build-core’s metadata “provider” mechanism for dynamic versioning raised: "experimental must be enabled currently to use plugins not provided by scikit-build-core" in the isolated build container.
+  - We want deterministic, frictionless local wheel builds without enabling experimental flags or relying on VCS metadata in the build env.
+  - Therefore, we set `project.version = "2.1.0"` and keep a simple `plantbox/_version.py` so `plantbox.__version__` is stable.
+
+- How to reintroduce SCM later (two options)
+  1) Classic `setuptools_scm` (no scikit-build-core metadata plugin):
+     - In `pyproject.toml`: remove the static `project.version`, set `project.dynamic = ["version"]`, add `setuptools_scm[toml]>=8` to `[build-system].requires`, and configure `[tool.setuptools_scm] write_to = "plantbox/_version.py"`.
+     - Ensure Git tags are available in the build context (avoid shallow/metadata-less clones). Optionally set `SETUPTOOLS_SCM_PRETEND_VERSION` in release scripts for reproducibility.
+  2) scikit-build-core metadata provider (once stable):
+     - Use `[tool.scikit-build.metadata] version.provider = "setuptools_scm"` with the appropriate non-experimental configuration (when available); drop the static version.
+     - Keep our release helper to create annotated tags; dynamic versions derive from tags.

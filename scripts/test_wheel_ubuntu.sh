@@ -33,12 +33,14 @@ docker run --rm -t \
     /tmp/venv/bin/python -m pip install "$WHEEL_PATH"
     cd /tmp
     /tmp/venv/bin/python - <<PY
+import os
 import plantbox as pb
 rs = pb.Plant()
-rs.readParameters("/src/modelparameter/structural/rootsystem/Anagallis_femina_Leitner_2010.xml", verbose=False)
+rootsys = os.path.join(pb.data_path(), "structural", "rootsystem", "Anagallis_femina_Leitner_2010.xml")
+rs.readParameters(rootsys, verbose=False)
 rs.initialize(False)
 rs.simulate(2.0, False)
-print("Wheel import+simulate OK")
+print("Wheel import+simulate OK with packaged data")
 PY
   '
 
