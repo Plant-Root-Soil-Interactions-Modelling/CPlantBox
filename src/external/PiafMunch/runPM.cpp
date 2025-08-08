@@ -222,8 +222,10 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	phloem_ = this->Phloem();
     for(is = 1 ; is < Breakpoint_index.size() ; is ++) { // allows several integration segments in relation to breakpoints (if any -- OK if none)
         SegmentTimes = subvector(OutputTimes, Breakpoint_index(is), Breakpoint_index(is+1))  ; // time segment between 2 breakpoints (Breakpoint_index(1) = 1 ; Breakpoint_index(Breakpoint_index.size()) = 1 + nbv)
-        cout << endl << "starting integration on time segment #" << is << " = [" << SegmentTimes[1] << ", " << SegmentTimes[SegmentTimes.size()] << "] "<< Breakpoint_index.size()<<" "<<SegmentTimes.size()<< endl ;
-         // ***** the following solver configs are ranked from the most efficient (in most tested situations) to the least (in most tested situations). Can change in different situations ! *****
+        if(doTroubleshooting){
+			cout << endl << "starting integration on time segment #" << is << " = [" << SegmentTimes[1] << ", " << SegmentTimes[SegmentTimes.size()] << "] "<< Breakpoint_index.size()<<" "<<SegmentTimes.size()<< endl ;
+        }
+		// ***** the following solver configs are ranked from the most efficient (in most tested situations) to the least (in most tested situations). Can change in different situations ! *****
         //   see  SUNDIALS  documentation  for  cvode  solver options (SPxxxx, xxxx_GS, PREC_xxxx, BAND, etc.)
 		if(doTroubleshooting){cout <<"solver, Y0: "<<solver <<endl;}
 		switch (solver) {
@@ -269,11 +271,12 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
         
     }
     // ********************* OUTPUT *********************************
-    std::cout<<"MEMORY LIBERATIONS"<<std::endl;
+	if(doTroubleshooting){
+		std::cout<<"MEMORY LIBERATIONS"<<std::endl;
+	}
     // MEMORY LIBERATIONS:
     delete [] y_dot;
 	//for python:
-    std::cout<<"fortran to python vector"<<std::endl;
 	this->Q_outv = Y0.toCppVector();//att: now has several outputs
 	
 	this->Q_out_dotv = std::vector<double>(Y0.size(),0);
@@ -289,8 +292,13 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	this->Flv = Input.toCppVector() ;
 	this->r_STv = r_ST.toCppVector() ;
 	this->JW_STv = JW_ST.toCppVector() ;
-    std::cout<<"computeOrgGrowth"<<std::endl;
+	if(doTroubleshooting){
+		std::cout<<"computeOrgGrowth"<<std::endl;
+	}
 	computeOrgGrowth(tf-t0);
+	if(doTroubleshooting){
+		std::cout<<"computeOrgGrowth	DONE"<<std::endl;
+	}
 	if(doTroubleshooting){std::cout.rdbuf(coutbuf);} //reset to standard output again
 	return(1) ;
 	
@@ -305,7 +313,7 @@ void OutputSettings()  {
 	}
 	OutputTimes[nbv + 1] = tf;
 	if(Breakpoint_index[Breakpoint_index.size()]  != OutputTimes.size())  Breakpoint_index.append(Index_vector(1, OutputTimes.size())) ;
-	cout << "Output times :" << endl ; for(i=0 ; i < OutputTimes.size() ; i ++) cout << " " <<  OutputTimes[i+1] ; // if newly inserted extra output time (just after breakpoint) is too close, it may print as the same but actually is not
+	//cout << "Output times :" << endl ; for(i=0 ; i < OutputTimes.size() ; i ++) cout << " " <<  OutputTimes[i+1] ; // if newly inserted extra output time (just after breakpoint) is too close, it may print as the same but actually is not
 	nbv = OutputTimes.size() - 1 ; // at this point,  output times vector truc = OutputTimes ; and Breakpoint_index = {1, [...,] nbv+1}  with  [...,] = extra breakpoints indices (empty if none)
 	
 }
@@ -331,8 +339,10 @@ void PhloemFlux::aux(double t, double * y) {	// launch auxiliary calculations to
 		Y0[j] = y[j] ; 
 		if((j <= Nt)&&(Y0[j] < 0.)){assert(false && "negative C_ST value");}
 	}// update Y0
-	std::cout << "at t = " << t << " : Y0.size() = " << Y0.size();
-	std::cout<<std::endl;
+	if(doTroubleshooting){
+		std::cout << "at t = " << t << " : Y0.size() = " << Y0.size();
+		std::cout<<std::endl;
+	}
 }
 
 
@@ -396,18 +406,19 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 		
 	}
 	
-	for ( std::size_t k=1 ;k <= Nc;k++ ) 
+	for ( std::size_t k=1 ;k <= Nc;k++ ) // seg id. == node.y id
 	{
 			//the PiafMunch Fortran_vector are numbered from 1 (and not from 0)
 			//so we need to account for that...
 			// element 0 contains the vector size i think
-			ot = orgTypes[k-1]; st = subTypes[k-1];
+			ot = orgTypes[k-1]; 
+			st = plant->st2newst[std::make_tuple(ot,subTypes[k-1])];
 			a_seg = Radii[k-1];
 			l = Lengthvec[k-1];
 			I_Upflow[k] = segmentsPlant[k-1].x +1;// +1 to go from C++ numeration to pseudo-Fortran numeration
 			I_Downflow[k] = segmentsPlant[k-1].y +1;
-			
 			nodeID = I_Downflow[k];
+			int nodeID_cpb = segmentsPlant[k-1].y;
 			len_leaf[nodeID] = l;assert((len_leaf[nodeID]>0)&&"len_seg[nodeID] <=0");
 			
 			double Across_ST =  Across_st_f(st,ot);assert((Across_ST>0)&&"Across_ST <=0");
@@ -474,7 +485,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 				std::cout<<"forRmmax "<<nodeID<<" "<< vol_Seg[nodeID]<<" "<<krm1<<" "<<krm2[nodeID]<<" "<<rhoSucrose_f(st,ot)<<" "<<Q_Rmmax[nodeID]<<std::endl;
 			}
 						
-			Q_Grmax[nodeID] = deltaSucOrgNode_.at(k).at(-1)/Gr_Y/dt;
+			Q_Grmax[nodeID] = deltaSucOrgNode_.at(nodeID_cpb).at(-1)/Gr_Y/dt;
 			if(doTroubleshooting){
 				std::cout<<"forGrmax"<<nodeID<<" "<< deltaSucOrgNode_.at(k).at(-1)<<" "<<Q_Grmax[nodeID]<<std::endl;
 			}
@@ -536,19 +547,6 @@ void PhloemFlux::computeOrgGrowth(double t){
 	std::map<int, double> cWGrStem; // + no need for mapped organism to keep cWGr in memory. just has to be in growth function
 	std::map<int, double> cWGrLeaf;
 	
-	//for post processing in python
-	delta_suc_org.resize(nOrg,0.);	
-	delta_ls_org.resize(nOrg,0.);
-	delta_ls_org_i = std::vector<double>(nOrg, 0.);
-	delta_ls_org_max.resize(nOrg,0.);
-	delta_ls_org_imax = std::vector<double>(nOrg, 0.);
-		
-	delta_vol_org.resize(nOrg,0.);
-	delta_vol_org_max.resize(nOrg,0.);
-	delta_vol_node.resize(nNode,0.);
-	delta_vol_node_i = std::vector<double>(nNode, 0.);
-	delta_vol_node_max.resize(nNode,0.);
-	delta_vol_node_imax = std::vector<double>(nNode, 0.);
 	double delta_volOrg;
 	double delta_volOrgmax;
 	int orgID2 = 0;//needed as max(orgID) can be > plant->getOrgans(-1, true).size()
@@ -567,15 +565,16 @@ void PhloemFlux::computeOrgGrowth(double t){
 		delta_volOrg = 0;
 		delta_volOrgmax = 0;
 		std::vector<int> allnodeids = org->getNodeIds();
-		for(std::size_t k=0;k< nodeIds_.size();k++)//take  first node as might carry small laterals
+		// TODO: Y not jsut ocmpute again the growing nodes ID?
+		for(std::size_t k = 0; k < nodeIds_.size(); k++)//take  first node as might carry small laterals
 		{
 			double deltaSucmax_1 = 0;
-			if(deltaSucOrgNode_.at(nodeIds_.at(k)).count(org->getId()) !=0){
-				deltaSucmax_1 = deltaSucOrgNode_.at(nodeIds_.at(k)).at(org->getId());//maxsuc needed for Gr
-				if(doTroubleshooting){std::cout<<"deltaSucmax_1 "<<org->getId()<<" "<<k<<" "<<deltaSucmax_1<<std::endl;}
+			if(deltaSucOrgNode_.at(nodeIds_.at(k)).count(orgID) !=0){
+				deltaSucmax_1 = deltaSucOrgNode_.at(nodeIds_.at(k)).at(orgID);//maxsuc needed for Gr
+				if(doTroubleshooting){std::cout<<"deltaSucmax_1 "<<orgID<<" "<<k<<" "<<deltaSucmax_1<<std::endl;}
 			}
 			double deltaSucmax_ = deltaSucmax_1 /Gr_Y;//max suc needed for Gtot
-			double deltaSuc = min(Q_Growthtot[nodeIds_.at(k) +1] - Q_GrowthtotBU[nodeIds_.at(k) +1], deltaSucmax_);
+			double deltaSuc = std::min(Q_Growthtot[nodeIds_.at(k) +1] - Q_GrowthtotBU[nodeIds_.at(k) +1], deltaSucmax_);
 			if((deltaSucmax_ > Q_Grmax[nodeIds_.at(k) +1]))
 			{
 				std::cout<<"error Q_Grmax "<<k<<" "<<(nodeIds_.at(k)+1)<<" "<<deltaSucmax_<<" "<<Q_Grmax[nodeIds_.at(k) +1]<<std::endl;
@@ -591,15 +590,6 @@ void PhloemFlux::computeOrgGrowth(double t){
 			
 			Q_GrowthtotBU[nodeIds_.at(k) +1] += deltaSuc;//sucrose is spent
 			Q_GrmaxBU[nodeIds_.at(k) +1] += deltaSucmax_;//sucrose is spent
-			
-			delta_vol_node_i.at(nodeIds_.at(k)) += deltaSuc*Gr_Y/rhoSucrose_f(st,ot);
-			delta_vol_node.at(nodeIds_.at(k)) += deltaSuc*Gr_Y/rhoSucrose_f(st,ot);
-			
-			delta_vol_node_imax.at(nodeIds_.at(k)) += deltaSucmax_*Gr_Y/rhoSucrose_f(st,ot);
-			delta_vol_node_max.at(nodeIds_.at(k)) += deltaSucmax_*Gr_Y/rhoSucrose_f(st,ot);
-			
-			delta_suc_org.at(orgID2) += deltaSuc*Gr_Y;
-			
 		}
 		
 		double vol = org->orgVolume(-1, false);
@@ -647,10 +637,6 @@ void PhloemFlux::computeOrgGrowth(double t){
 			std::cout<<(BackUpMaxGrowth[org->getId()]- newl)<<std::endl;
 			throw std::runtime_error("PhloemFlux::computeOrgGrowth: new target length of organ too high");
 		}
-		delta_ls_org.at(orgID2) 	+= orgGr;
-		delta_ls_org_i.at(orgID2)	 = orgGr;
-		delta_ls_org_max.at(orgID2) += delta_lmax;
-		delta_ls_org_imax.at(orgID2) = delta_lmax;
 		orgID2 ++;
 		
 	}
@@ -803,8 +789,8 @@ std::vector<int> PhloemFlux::getGrowingNodes(std::shared_ptr<CPlantBox::Organ> o
 
 void PhloemFlux::computeFpsi()
 {
-	Fpsi = std::vector<double>(Nr,1.); 
-	psi_p_symplasm = std::vector<double>(Nr,1.); 
+	Fpsi = std::vector<double>(Nt,1.); 
+	psi_p_symplasm = std::vector<double>(Nt,1.); 
 	for(std::size_t nodeId = 0; nodeId < psiXyl.size(); nodeId++)
 	{
 		psi_p_symplasm.at(nodeId) =  psiXyl.at(nodeId) - psi_osmo_proto;
@@ -847,33 +833,34 @@ void PhloemFlux::computeFlen(std::shared_ptr<CPlantBox::Organ> org, std::vector<
 	/*water limited deltaSuc per node*/
 std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 {
-	Nr = plant->nodes.size();
 	std::map<int,double> initMap = { { -1,0. } };//-1 : total need per node
-	std::vector<std::map<int,double>> deltaSucOrgNode(Nr, initMap);//, 0.);
+	std::vector<std::map<int,double>> deltaSucOrgNode(Nt, initMap);//, 0.);
 	bool allOrgs = true;
-	auto orgs = plant->getOrgans(-1,allOrgs);//also org with length - Epsilon == 0
-	BackUpMaxGrowth = std::vector<double>(orgs.size(), 0.); //for checking in @see PhloemFlux::computeOrgGrowth
-	Flen = std::vector<double>(Nr,0.); 
+	auto orgs = plant->getOrgans(-1,allOrgs);//also org with length - Epsilon == 0	
+	BackUpMaxGrowth = {};//std::vector<double>(orgs.size(), 0.); //for checking in @see PhloemFlux::computeOrgGrowth
+	Flen = std::vector<double>(Nt,0.); 
 	computeFpsi();
 	for(auto org: orgs)
 	{
+		assert(org != nullptr);
 		double dt = t; //copy
 		if(((org->getAge()+dt)>0)&&(org->isAlive())&&(org->isActive()))
 		{ //organ alive and active at this time step
 			int ot = org->organType(); 
 			int stold = org->getParameter("subType");
 			int st = plant->st2newst[std::make_tuple(ot,stold)];
-			std::vector<int> growingNodesId = getGrowingNodes(org); // localIds			
+			std::vector<int> localGrowingNodesId = getGrowingNodes(org); // localIds			
 			double deltaVol = getMaxVolumicGrowth(org, dt); // cm3				
-			computeFlen(org, growingNodesId);
+			computeFlen(org, localGrowingNodesId);
 			double deltaSucGrowth_tot = 0.;
 			double rhoSucrose_double = rhoSucrose_f(st,ot);
-			for(int nodeId : growingNodesId)
+			for(int localNodeId : localGrowingNodesId)
 			{
+				int nodeId = org->getNodeId(localNodeId);
 				double deltaSucGrowth_per_node = deltaVol * Flen.at(nodeId) * Fpsi.at(nodeId) * rhoSucrose_double;
 				
 				if((deltaSucGrowth_per_node<0.)||(deltaSucGrowth_per_node != deltaSucGrowth_per_node)){
-					//could be error of pressision (if l = Lmax)
+					// could be error of pressision (if l = Lmax)
 					// or that, because of nodal growth and dxMin, org->getEpsilon() <0
 					if(((deltaSucGrowth_per_node>-1e-5)||(deltaVol>0.))
 							&&(deltaSucGrowth_per_node == deltaSucGrowth_per_node)){
@@ -882,8 +869,9 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 						throw std::runtime_error("(deltaSucGrowth_per_node<0.)||(deltaSucGrowth_per_node != deltaSucGrowth_per_node)");
 					}					
 				}				
-				
-				deltaSucOrgNode.at(nodeId).insert(std::pair<int, double>(org->getId(), deltaSucGrowth_per_node));
+				assert(nodeId >= 0 && nodeId < (int)deltaSucOrgNode.size());
+				deltaSucOrgNode.at(nodeId)[org->getId()] = deltaSucGrowth_per_node;
+				//deltaSucOrgNode.at(nodeId).insert(std::pair<int, double>(org->getId(), deltaSucGrowth_per_node));
 				deltaSucOrgNode.at(nodeId).at(-1) += deltaSucGrowth_per_node;								
 				deltaSucGrowth_tot += deltaSucGrowth_per_node;
 			}

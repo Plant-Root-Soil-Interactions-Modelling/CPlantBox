@@ -151,15 +151,6 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	vector<double> vol_STv;//void(*aux)(double,double*),
 	vector<double> r_ST_refv; 
 	vector<double> r_STv; 
-	//length and volume incrase per segment and organs
-	std::vector<double> delta_suc_org;
-	std::vector<double> delta_ls;
-	std::vector<double> delta_ls_org_i;
-	std::vector<double> delta_ls_org;
-	std::vector<double> delta_ls_org_imax;
-	std::vector<double> delta_ls_org_max;
-	std::vector<double> delta_vol_org_i, delta_vol_org, delta_vol_org_imax, delta_vol_org_max;
-	std::vector<double> delta_vol_node_i, delta_vol_node, delta_vol_node_imax, delta_vol_node_max;
 	
 	//all in (mmol Suc d-1)
 	std::vector<double> Agv;//assimilation (mmol Suc d-1)
@@ -178,7 +169,6 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
     std::vector<double> psi_p_symplasm;
 	
 	// intermediate outputs
-	std::size_t Nr;
 	bool do_gf_warning = true; // get a warning in case we have an unexpected growth function (gives warning only once)
 		
 	//		To calibrate	
@@ -275,7 +265,7 @@ class PhloemFlux: public CPlantBox::Photosynthesis, public std::enable_shared_fr
 	//bool hayErrores = false;
 	int errorID = -1;
 	std::size_t neq_coef = 10;//number of variables solved by PiafMunch. n# eq = num nodes * neq_coef
-	std::vector<double> BackUpMaxGrowth;//to check at runtime if growth is correct
+	std::map<int, double> BackUpMaxGrowth;//to check at runtime if growth is correct. is a map because max(orgID) > len(orgs)
 	
 	//retrieve tissue-specific parameters
 	double kr_st_const(  int type, int organType, int si) { return kr_st.at(0).at(0); }  //constant
