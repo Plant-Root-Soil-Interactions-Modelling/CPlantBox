@@ -223,6 +223,11 @@ if(NOT SKBUILD)
   list(APPEND _CPB_PY_COMPONENTS Development.Embed)
 endif()
 find_package(Python3 COMPONENTS ${_CPB_PY_COMPONENTS} REQUIRED)
+# Workaround: some pybind11 tooling expects Python3::Python even for module-only builds.
+# If Embed component is unavailable, provide a dummy INTERFACE target so python3_add_library does not fail.
+if(NOT TARGET Python3::Python)
+  add_library(Python3::Python INTERFACE IMPORTED)
+endif()
 if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/external/pybind11/CMakeLists.txt")
   message(FATAL_ERROR "Vendored pybind11 missing. Run: git submodule update --init --recursive")
 endif()
