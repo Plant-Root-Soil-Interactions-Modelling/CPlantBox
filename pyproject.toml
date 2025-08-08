@@ -40,10 +40,10 @@ build-dir = "_skbuild/{wheel_tag}"
 logging.level = "INFO"
 wheel.packages = ["plantbox"]
 
-[tool.scikit-build.metadata]
-version.provider = "scm"
-version.write_to = "plantbox/_version.py"
-version.fallback = "2.1.0"
+#[tool.scikit-build.metadata]
+#version.provider = "setuptools_scm"
+#version.write_to = "plantbox/_version.py"
+#version.fallback = "2.1.0"
 
 [tool.scikit-build.cmake]
 args = [

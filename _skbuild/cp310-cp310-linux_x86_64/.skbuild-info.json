@@ -1,8 +1,8 @@
 {
   "source_dir": "/src",
   "build_dir": "/src/_skbuild/cp310-cp310-linux_x86_64",
-  "cmake_path": "/tmp/build-env-7oul5na7/lib/python3.10/site-packages/cmake/data/bin/cmake",
-  "skbuild_path": "/tmp/build-env-7oul5na7/lib/python3.10/site-packages/scikit_build_core",
+  "cmake_path": "/tmp/build-env-vhufbs71/lib/python3.10/site-packages/cmake/data/bin/cmake",
+  "skbuild_path": "/tmp/build-env-vhufbs71/lib/python3.10/site-packages/scikit_build_core",
   "skbuild_version": "0.11.5",
-  "python_executable": "/tmp/build-env-7oul5na7/bin/python"
+  "python_executable": "/tmp/build-env-vhufbs71/bin/python"
 }

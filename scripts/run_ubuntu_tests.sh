@@ -26,7 +26,7 @@ docker run --rm -t \
     git submodule update --init --recursive
 
     echo "Attempting wheel build and wheel-based smoke..."
-    if python3 -m pip -q install build && rm -rf dist/ _skbuild/ && python3 -m build --wheel >/dev/null 2>&1; then
+    if python3 -m pip -q install build && rm -rf dist/ _skbuild/ && SETUPTOOLS_SCM_PRETEND_VERSION="$(git describe --tags --abbrev=0 2>/dev/null || echo 2.1.0)" python3 -m build --wheel >/dev/null 2>&1; then
       echo "Wheel built; testing installed package..."
       python3 -m venv /tmp/venv && . /tmp/venv/bin/activate
       python3 -m pip -q install --upgrade pip

@@ -21,6 +21,9 @@ docker run --rm -t \
   "$IMAGE_NAME" bash -lc '
     set -euo pipefail
     python3 -m pip install -U pip build
+    # Determine version from git tag if available; fallback to 2.1.0
+    VERSION="$(git describe --tags --abbrev=0 2>/dev/null || echo 2.1.0)"
+    export SETUPTOOLS_SCM_PRETEND_VERSION="$VERSION"
     rm -rf dist/ _skbuild/
     python3 -m build --wheel
     echo "Built wheel:" && ls -lh dist/*.whl
