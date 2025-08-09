@@ -61,3 +61,6 @@ tutorial/jupyter/.ipynb_checkpoints/
 
 # images
 *.png
+.venv/
+venv/
+env/

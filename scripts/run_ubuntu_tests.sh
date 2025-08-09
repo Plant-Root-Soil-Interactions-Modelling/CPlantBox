@@ -66,6 +66,18 @@ rs.simulate(5.0, False)
 rs.write("results/smoke_example.vtp")
 print("Smoke simulation OK; wrote results/smoke_example.vtp")
 PY
+
+    # Run golden image generation and comparison using the same venv and OSMesa VTK
+    echo "Installing VTK (OSMesa) and pytest into active venv..."
+    python3 -m pip -q install --no-cache-dir vtk
+    python3 -m pip -q install pytest
+    # echo "Generating golden image via tut_1_3_headless.py (headless offscreen)..."
+    # python3 tut_1_3_headless.py
+    cp test/golden/macos/example_plant_headless.png test/golden/example_plant_headless.png
+    echo "Running golden image comparison test..."
+    export PYTHONPATH="/src:/src/src:${PYTHONPATH:-}"
+    OMP_NUM_THREADS=1 python3 -m pytest -q test/test_golden_headless.py
+    rm -rf test/golden/example_plant_headless.png
   '
 
 echo "All tests completed."

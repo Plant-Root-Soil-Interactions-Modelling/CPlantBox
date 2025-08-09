@@ -12,8 +12,8 @@ include_directories(external/tinyxml2)
 include_directories(external/eigen) # fetching as git submodule @tag 3.3.7
 
 include_directories(external/) # for PiafMunch
-include_directories(${PROJECT_SOURCE_DIR}/src/external/suitsparse/include/) # for PiafMunch
-include_directories(${PROJECT_SOURCE_DIR}/src/external/sundials/include/) # for PiafMunch
+include_directories(${PROJECT_SOURCE_DIR}/src/external/suitsparse/include/) # for PiafMunch (fallback when bundled)
+include_directories(${PROJECT_SOURCE_DIR}/src/external/sundials/include/) # for PiafMunch (fallback when bundled)
 
 
 # Build CPlantBox as STATIC when building wheels (scikit-build), to embed into the
@@ -310,12 +310,16 @@ target_link_libraries(CPlantBox PUBLIC
 
 # Avoid forcing output directories for portability; use CMake defaults (skbuild/packaging will install)
 # set_target_properties(CPlantBox PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/)
-target_include_directories(
-                        CPlantBox
-                        PUBLIC
-                        ${PROJECT_BINARY_DIR}/src/external/sundials/include
-                        ${PROJECT_BINARY_DIR}/src/external/suitsparse/include
-)
+set(SS_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/external/suitsparse/include")
+set(SD_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/external/sundials/include")
+if(USE_SYSTEM_SUITESPARSE)
+  find_path(SS_INCLUDE_DIR NAMES klu.h SuiteSparse_config.h)
+endif()
+if(USE_SYSTEM_SUNDIALS)
+  find_path(SD_INCLUDE_DIR NAMES sundials/sundials_types.h sundials/sundials_config.h)
+endif()
+
+target_include_directories(CPlantBox PUBLIC ${SS_INCLUDE_DIR} ${SD_INCLUDE_DIR})
 #
 # 2. Make CPlantBox Pyhthon binding
 #
