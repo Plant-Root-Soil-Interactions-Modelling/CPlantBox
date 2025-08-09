@@ -2,10 +2,11 @@
 Headless rendering helpers and image comparison tools for golden tests.
 """
 
-from typing import Any, Iterable, List, Tuple, cast
+from typing import Any, Iterable, List, cast
 
 import numpy as np
 import vtk  # type: ignore
+from vtk.util import numpy_support as vn  # type: ignore
 
 import plantbox as _pb  # type: ignore
 
@@ -159,13 +160,18 @@ def create_leaf_polygons(plant) -> vtk.vtkPolyData:
 
 def render_headless_png(
     plant,
-    p_name: str,
-    image_path: str,
-    width: int = 1200,
+    p_name: str = "age",
+    image_path: str = "results/example_plant_headless.png",
+    width: int = 1000,
     height: int = 1000,
-    background_rgb: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+    background_rgb=(1.0, 1.0, 1.0),
+    zoom: float = 1.0,
 ) -> None:
+    """Render the given plant off-screen and save a PNG image."""
+    # Build polydata with parameters needed for rendering
     pd = segs_to_polydata(plant, zoom_factor=1.0, param_names=[p_name, "radius", "organType"])  # type: ignore[arg-type]
+
+    # Tube filter uses point-data radius
     pd.GetPointData().SetActiveScalars("radius")
     tube = vtk.vtkTubeFilter()
     tube.SetInputData(pd)
@@ -184,9 +190,11 @@ def render_headless_png(
     mapper.SetLookupTable(lut)
     mapper.Update()
 
+    # Set LUT range from data if available
     cell_arr = tube.GetOutput().GetCellData().GetAbstractArray(p_name)
     if cell_arr is not None:
         rng = cell_arr.GetRange()
+        # Keep organ type range stable if chosen
         if p_name == "organType":
             rng = (2.0, 4.0)
         lut.SetTableRange(rng)
@@ -194,6 +202,7 @@ def render_headless_png(
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
 
+    # Create leaf polygons and a surface actor (solid green)
     leaf_poly = create_leaf_polygons(plant)
     leaf_mapper = vtk.vtkPolyDataMapper()
     leaf_mapper.SetInputData(leaf_poly)
@@ -208,6 +217,14 @@ def render_headless_png(
     renderer.AddActor(actor)
     renderer.AddActor(leaf_actor)
 
+    # Off-screen render window (create before camera setup to account for aspect ratio)
+    ren_win = vtk.vtkRenderWindow()
+    ren_win.SetSize(width, height)
+    ren_win.SetWindowName(p_name)
+    ren_win.AddRenderer(renderer)
+    ren_win.OffScreenRenderingOn()
+
+    # Camera setup (deterministic) with correct aspect
     renderer.ResetCamera()
     camera = renderer.GetActiveCamera()
     bounds = tube.GetOutput().GetBounds()
@@ -221,16 +238,18 @@ def render_headless_png(
     camera.OrthogonalizeViewUp()
     camera.SetClippingRange(1, 1000)
 
-    ren_win = vtk.vtkRenderWindow()
-    ren_win.SetSize(width, height)
-    ren_win.SetWindowName(p_name)
-    ren_win.AddRenderer(renderer)
-    ren_win.OffScreenRenderingOn()
+    # Start from ResetCamera-computed scale (accounts for aspect/orientation), then apply zoom
+    base_scale = camera.GetParallelScale()
+    eff_zoom = float(zoom) if isinstance(zoom, (int, float)) and zoom > 0 else 1.0
+    camera.SetParallelScale(base_scale / eff_zoom)
+
+    # Perform initial render
     ren_win.Render()
 
+    # Capture buffer and save PNG
     w2i = vtk.vtkWindowToImageFilter()
     w2i.SetInput(ren_win)
-    w2i.SetScale(1)
+    w2i.SetScale(1)  # increase for super-sampling
     w2i.SetInputBufferTypeToRGB()
     w2i.ReadFrontBufferOff()
     w2i.Update()
@@ -242,8 +261,11 @@ def render_headless_png(
 
 
 def compare_images_png(path_a: str, path_b: str) -> float:
-    """Return mean absolute difference normalized to [0,1] similarity = 1 - MAD.
-    1.0 means identical images.
+    """Return similarity in [0,1] where 1.0 means identical.
+
+    Ignores pixels that are white in both images (i.e., background). The
+    comparison is the mean absolute difference over remaining pixels, normalized
+    by 255, and mapped to similarity via 1 - MAD.
     """
     reader_a = vtk.vtkPNGReader()
     reader_a.SetFileName(path_a)
@@ -258,28 +280,35 @@ def compare_images_png(path_a: str, path_b: str) -> float:
     if img_a.GetDimensions() != img_b.GetDimensions():
         return 0.0
 
-    diff = vtk.vtkImageMathematics()
-    diff.SetOperationToSubtract()
-    diff.SetInput1Data(img_a)
-    diff.SetInput2Data(img_b)
-    diff.Update()
+    dims = img_a.GetDimensions()  # (width, height, depth)
+    num_components = max(1, img_a.GetNumberOfScalarComponents())
 
-    abs_img = vtk.vtkImageMathematics()
-    abs_img.SetOperationToAbsoluteValue()
-    abs_img.SetInputConnection(diff.GetOutputPort())
-    abs_img.Update()
+    # Convert to numpy arrays (flattened), then reshape to (N, C)
+    a_np = vn.vtk_to_numpy(img_a.GetPointData().GetScalars())
+    b_np = vn.vtk_to_numpy(img_b.GetPointData().GetScalars())
+    if a_np.size != b_np.size:
+        return 0.0
 
-    image_to_float = vtk.vtkImageCast()
-    image_to_float.SetOutputScalarTypeToDouble()
-    image_to_float.SetInputConnection(abs_img.GetOutputPort())
-    image_to_float.Update()
+    total_pixels = dims[0] * dims[1] * max(1, dims[2])
+    if total_pixels * num_components != a_np.size:
+        return 0.0
 
-    stat = vtk.vtkImageAccumulate()
-    stat.SetInputConnection(image_to_float.GetOutputPort())
-    stat.Update()
+    a_np = a_np.reshape((-1, num_components))
+    b_np = b_np.reshape((-1, num_components))
 
-    total = stat.GetOutput().GetPointData().GetScalars().GetTuple1(0)
-    dims = img_a.GetDimensions()
-    num_pix = dims[0] * dims[1] * max(1, img_a.GetNumberOfScalarComponents())
-    mad = total / float(num_pix) / 255.0
-    return float(max(0.0, 1.0 - mad))
+    # Determine white mask (consider RGB channels if available)
+    if num_components >= 3:
+        a_rgb = a_np[:, :3]
+        b_rgb = b_np[:, :3]
+        white_both = np.all((a_rgb == 255) & (b_rgb == 255), axis=1)
+    else:
+        white_both = np.all((a_np == 255) & (b_np == 255), axis=1)
+
+    valid = ~white_both
+    if not np.any(valid):
+        return 1.0
+
+    # Mean absolute difference over valid pixels/components
+    mad = np.mean(np.abs(a_np[valid] - b_np[valid])) / 255.0
+    similarity = float(max(0.0, 1.0 - mad))
+    return similarity
