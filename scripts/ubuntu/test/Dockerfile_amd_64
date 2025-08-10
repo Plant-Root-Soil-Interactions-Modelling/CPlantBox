@@ -1,0 +1,28 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      git \
+      python3 \
+      python3-venv \
+      python3-pip \
+      libxrender1 \
+      libxext6 \
+      libx11-6 \
+      libsm6 \
+      xvfb \
+      xauth \
+      libosmesa6 \
+      libglx-mesa0 \
+      libgl1-mesa-dri \
+      libglu1-mesa \
+      libsuitesparse-dev \
+      libsundials-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN python3 -m pip install -U pip pytest vtk==9.2.6
+
+WORKDIR /src
+
