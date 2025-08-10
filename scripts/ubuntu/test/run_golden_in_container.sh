@@ -22,8 +22,9 @@ export PYTHONUNBUFFERED=1
 export LIBGL_ALWAYS_SOFTWARE=1
 export MESA_LOADER_DRIVER_OVERRIDE=llvmpipe
 export PYTHONPATH=/src/test
+export CPB_GOLDEN_OS=linux
 
 timeout 180s xvfb-run -a -s '-screen 0 1280x1024x24' \
-  python3 scripts/wheels/linux/golden_smoke.py
+  python3 scripts/common/golden_test.py
 
 

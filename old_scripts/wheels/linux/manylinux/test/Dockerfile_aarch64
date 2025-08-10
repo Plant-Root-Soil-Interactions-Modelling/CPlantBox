@@ -1,0 +1,9 @@
+FROM quay.io/pypa/manylinux2014_aarch64
+
+RUN yum -y install mesa-libGLU mesa-libGL-devel mesa-dri-drivers libXrender libXext libSM xorg-x11-server-Xvfb && yum clean all || true
+
+# VTK 9.2.6 may not be available for aarch64; use a newer version
+RUN /opt/python/cp310-cp310/bin/pip install -U pip pytest vtk==9.5.0
+
+WORKDIR /project
+

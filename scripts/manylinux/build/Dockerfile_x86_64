@@ -1,0 +1,17 @@
+FROM quay.io/pypa/manylinux2014_x86_64
+
+# System development libraries for SuiteSparse (KLU, AMD, COLAMD, BTF)
+RUN yum -y install suitesparse-devel curl && yum clean all
+
+# Build and install a static SUNDIALS into /opt/sundials (for system linking)
+RUN /opt/python/cp310-cp310/bin/pip install --no-cache-dir cmake && \
+    export PATH=/opt/python/cp310-cp310/bin:$PATH && \
+    curl -fsSL -o /tmp/sundials.tar.gz https://github.com/LLNL/sundials/releases/download/v6.5.0/sundials-6.5.0.tar.gz && \
+    mkdir -p /tmp/sundials-src && tar -xzf /tmp/sundials.tar.gz -C /tmp/sundials-src --strip-components=1 && \
+    mkdir -p /tmp/sundials-build && cd /tmp/sundials-build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_KLU=ON -DKLU_INCLUDE_DIR=/usr/include/suitesparse -DKLU_LIBRARY=/usr/lib64/libklu.so -DSUNDIALS_INDEX_SIZE=32 -DCMAKE_INSTALL_PREFIX=/opt/sundials /tmp/sundials-src && \
+    cmake --build . -j2 && cmake --install . && \
+    rm -rf /tmp/sundials-src /tmp/sundials-build /tmp/sundials.tar.gz
+
+WORKDIR /project
+

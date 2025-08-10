@@ -1,0 +1,9 @@
+FROM quay.io/pypa/manylinux2014_x86_64
+
+# Add tools for testing headless VTK rendering
+RUN yum -y install mesa-libGLU mesa-libGL-devel mesa-dri-drivers libXrender libXext libSM xorg-x11-server-Xvfb && yum clean all
+
+RUN /opt/python/cp310-cp310/bin/pip install -U pip pytest vtk==9.2.6
+
+WORKDIR /project
+
