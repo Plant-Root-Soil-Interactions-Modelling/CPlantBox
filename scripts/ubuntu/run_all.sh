@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Aggregate Ubuntu platform checks: source-tree smoke and wheel smoke
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "[ubuntu] Running source-tree smoke (dockerized)..."
-./scripts/run_ubuntu_tests.sh
+source "$REPO_ROOT/scripts/common/env.sh"
+source "$REPO_ROOT/scripts/common/logging.sh"
 
-echo "[ubuntu] Running wheel build + smoke (dockerized)..."
-./scripts/test_wheel_ubuntu.sh
+log_info "[ubuntu] Building test image..."
+"$REPO_ROOT/scripts/ubuntu/build_image.sh"
 
-echo "[ubuntu] All Ubuntu checks completed."
+log_info "[ubuntu] Running wheel build + smoke..."
+"$REPO_ROOT/scripts/ubuntu/smoke_wheel.sh"
+
+log_info "[ubuntu] Completed."
 
 

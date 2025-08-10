@@ -28,6 +28,7 @@ This living document tracks our plan to make CPlantBox easy to install via pip o
   - Runner: `scripts/run_ubuntu_tests.sh` uses docker buildx (hardcoded `linux/amd64`) to build and run:
     - Curated pytest subset (headless-safe).
     - A small inline example that simulates and writes a VTP file (no VTK rendering).
+  - Note: This Ubuntu image is a convenience for fast, repeatable local smoke tests. Our Linux distribution target is manylinux wheels (portable across glibc-based distros). As we add manylinux smoke tests, the Ubuntu guardrail may be retired.
 
 ---
 
@@ -167,7 +168,7 @@ Notes: This is our single-command regression check. Keep it green before/after c
 - [x] Verify Linux manylinux compliance (static or vendored non-allowed libs) by auditing built wheels.
   - Details: Built in `manylinux2014_x86_64` container and ran `auditwheel show/repair`. Produced repaired wheels for CPython 3.9–3.12; in-container import+simulate smoke PASS.
 
-  Readiness: Yes. Wheels build and run green; structural data packaged; versioning stable.
+  Readiness: Yes. Linux wheels are built as manylinux-compliant artifacts and run green; structural data packaged; versioning stable.
 
   Additional Phase 4 tasks (added):
   - [x] Build and repair manylinux wheels (x86_64) for CPython 3.9–3.12.
@@ -205,6 +206,158 @@ Notes: This is our single-command regression check. Keep it green before/after c
   - Notes:
     - SuiteSparse static link order is enforced (KLU, AMD, COLAMD, BTF, suitesparseconfig).
     - No OpenMP (`libgomp`) detected in current builds.
+
+### Phase 4.4 — Golden headless tests stabilization
+
+Focus: make the visual regression (golden) test deterministic and portable across headless environments, and ensure it runs reliably for manylinux wheels (using an Ubuntu headless container as execution host when needed).
+
+- [x] Tolerant image similarity metric to handle antialiasing differences
+  - Details: `test/tools_image.py::compare_images_png` now supports:
+    - Ignoring white-on-white background pixels (as before)
+    - Optional 2× block downscaling (`CPB_DOWNSCALE`, default 1)
+    - Small per-channel threshold (`CPB_DIFF_THRESH`, default 10)
+    - Similarity computed as `1 - MAD` over significant differences
+  - Threshold: tests require `similarity >= 0.9` (updated in `test/test_golden_headless.py` and enforced in `scripts/wheels/linux/golden_smoke.py`).
+
+- [x] Standardize render geometry to match golden
+  - Details: width=1000, height=int(1000*2.2), zoom=3.0 in both `test/test_golden_headless.py` and `scripts/wheels/linux/golden_smoke.py`.
+
+- [x] Keep both generated and reference images for inspection
+  - Details: Golden smoke copies `test/golden/linux/example_plant_headless.png` to `test/golden/example_plant_headless.png` and writes `test/golden/generated_by_test.png`; both persist after the run.
+
+- [x] Reliable headless execution environment
+  - Details: Golden run executes inside the Ubuntu headless container under `xvfb-run` with `LIBGL_ALWAYS_SOFTWARE=1` and `vtk==9.2.6` to avoid blank frames.
+  - Script: `scripts/wheels/linux/smoke_on_ubuntu.sh` selects a matching manylinux wheel, installs into a fresh venv, and runs the golden smoke.
+
+- [ ] Optional: line rendering mode to further reduce aliasing
+  - Task: Implement `CPB_HEADLESS_LINE_MODE=1` in `test/tools_image.render_headless_png` (render polyline actors instead of tubes) and enable it in `smoke_on_ubuntu.sh` for golden runs.
+
+- [ ] Golden assets preflight and diagnostics
+  - Task: Add explicit preflight in `golden_smoke.py` to validate golden presence and emit actionable guidance if missing (partial checks exist; improve messages and help hints).
+
+- [ ] Script verbosity control
+  - Task: Gate extra diagnostics behind `CPB_VERBOSE=1` to keep default logs concise, while retaining a detailed mode for debugging.
+
+- [ ] Document env knobs in scripts/README.md
+  - Task: Document `CPB_DOWNSCALE`, `CPB_DIFF_THRESH`, `CPB_HEADLESS_LINE_MODE`, and how to tweak thresholds when investigating golden divergences.
+
+### Phase 4.5 — Tidying up scripts folder
+
+Streamline build/test entry points while keeping the latest Ubuntu golden-flow intact (transitional). We will move existing scripts to `old_scripts/` and construct a clean `scripts/` tree. Do not edit or delete the legacy scripts; they remain for bookkeeping. Linux distribution targets manylinux; Ubuntu-specific runners are for local smoke only and may be retired once manylinux smoke reaches parity.
+
+- [x] Canonicalize Linux guardrail around manylinux (Ubuntu is transitional):
+  - Transitional: `old_scripts/run_ubuntu_tests.sh` remains the reference headless smoke with golden test until a manylinux-based smoke is in place. (kept, unchanged)
+  - New: Added manylinux wheel build and smoke flows and a dedicated Ubuntu-based golden smoke for manylinux wheels:
+    - Build/repair: `scripts/wheels/linux/manylinux_x86_64.sh`, `scripts/wheels/linux/manylinux_aarch64.sh` (build-in-container, `auditwheel repair`, per-interpreter smoke)
+    - Golden smoke runner (uses Ubuntu headless env): `scripts/wheels/linux/smoke_on_ubuntu.sh` (installs a selected manylinux wheel and runs golden under Xvfb)
+  - Note: manylinux in-container headless rendering remains flaky; until parity, the Ubuntu golden smoke is the canonical golden runner for Linux wheels.
+  - [ ] Add a short usage note in `scripts/README.md` explaining the transition from Ubuntu to manylinux guardrails.
+
+- [x] Introduce common helpers for reuse:
+  - Implemented `scripts/common/env.sh` (deterministic env; sets `OMP_NUM_THREADS=1`), `scripts/common/logging.sh` (uniform logs), and `scripts/common/docker.sh` (buildx helpers).
+  - New scripts source these helpers. Legacy scripts are preserved and not modified.
+
+- [x] Ubuntu scripts (transitional; legacy preserved in `old_scripts/`):
+  - `scripts/ubuntu/build_image.sh` builds `docker/Dockerfile.ubuntu-test-env` (linux/amd64 via buildx).
+  - `scripts/ubuntu/smoke_wheel.sh` builds a wheel, installs in a temp venv, runs a minimal simulation and the golden test.
+  - `scripts/ubuntu/run_all.sh` orchestrates the two.
+  - Marked as convenience runners; will be deprecated once manylinux smoke reaches parity.
+
+- [ ] macOS local developer flow (new implementation; legacy preserved in `old_scripts/`):
+  - Implement `scripts/macos/run_all.sh` to orchestrate: editable install smoke → curated pytest subset/golden headless test → build wheels → install & smoke each repaired wheel.
+  - Implement `scripts/macos/build_wheels.sh` as a thin wrapper (initially delegating to logic mirrored from `old_scripts/wheels/build_macos.sh`) with safe defaults and clear artifact output.
+  - Implement `scripts/macos/run_tutorials_headless.sh` to execute a curated list of headless-safe tutorials that use `plantbox.data_path()` and run from arbitrary CWD.
+  - Implement `scripts/macos/dev_editable.sh` anew, based on the legacy logic but adapted to the new helper structure.
+
+- [x] Wheels scripts (new implementation; legacy preserved in `old_scripts/`):
+  - Implemented `scripts/wheels/linux/manylinux_x86_64.sh` and `scripts/wheels/linux/manylinux_aarch64.sh` to build, repair, and smoke-test in PyPA containers.
+  - Kept `old_scripts/wheels/build_manylinux2014*.sh` as historical reference.
+  - Implemented `scripts/wheels/linux/smoke.sh` and `scripts/wheels/linux/smoke_on_ubuntu.sh` to smoke-test repaired wheels; the latter runs the golden reliably in the Ubuntu headless image.
+
+- [x] Golden image test consistency:
+  - New smoke scripts copy and compare the correct golden (`test/golden/linux/example_plant_headless.png` → `test/golden/example_plant_headless.png`) and keep both images for inspection.
+  - [ ] Add/strengthen preflight to verify golden assets exist and print actionable guidance if missing.
+
+- [x] Script UX and docs:
+  - Added `scripts/README.md` with overview and usage for new entry points; will expand with env knobs and guardrail notes.
+  - Standardized `set -euo pipefail` and deterministic behavior (`OMP_NUM_THREADS=1`) in new scripts; `PYTHONPATH` handling fixed in golden smoke to avoid source-vs-wheel import clashes.
+  - [ ] Add `-h/--help` flags across new scripts and expand README with env tuning knobs.
+
+- [ ] Hygiene and safety:
+  - Run `shellcheck` locally on new/changed scripts and fix high-signal warnings.
+  - Ensure `git submodule update --init --recursive` is called where needed in container workflows.
+  - Keep old scripts for reference by adding the `old_` prefix instead of deleting. (done earlier)
+
+Migration to the “ideal” scripts layout (step-by-step)
+
+- [ ] Step 1 — Preserve current state, then create a clean slate:
+  - Rename the current `scripts/` directory to `old_scripts/` (git mv) without changing its contents.
+  - Create a fresh `scripts/` directory with the ideal layout skeleton and placeholders.
+  - Add `scripts/README.md` with a quickstart and a note that legacy flows remain in `old_scripts/`.
+
+- [ ] Step 2 — Create the ideal layout skeleton (empty or minimal scripts that print help):
+
+  Target structure:
+
+  ```
+  scripts/
+    README.md
+    run.sh
+    common/
+      env.sh
+      docker.sh
+      python.sh
+      logging.sh
+    ubuntu/
+      build_image.sh
+      smoke_wheel.sh
+      run_all.sh
+    macos/
+      dev_editable.sh
+      build_wheels.sh
+      run_tutorials_headless.sh
+      run_all.sh
+    wheels/
+      linux/
+        manylinux_x86_64.sh
+        manylinux_aarch64.sh
+        audit.sh
+      macos/
+        build.sh
+        delocate_audit.sh
+      build_all_local.sh
+    release/
+      release_tag.sh
+  ```
+
+- [ ] Step 3 — Port the Ubuntu guardrail into the new layout:
+  - Implement `ubuntu/build_image.sh` and `ubuntu/smoke_wheel.sh` by copying logic from `old_scripts/run_ubuntu_tests.sh` and `old_scripts/test_wheel_ubuntu.sh`, ensuring the golden image test is executed.
+  - Implement `ubuntu/run_all.sh` to orchestrate the two.
+  - Validate parity by running both the new `scripts/ubuntu/run_all.sh` and the legacy `old_scripts/run_ubuntu_tests.sh` and comparing outputs.
+
+- [ ] Step 4 — Port macOS developer and wheel flows:
+  - Implement `macos/dev_editable.sh` using logic from `old_scripts/macos/dev_editable.sh` (keep editable flow minimal and reliable).
+  - Implement `macos/build_wheels.sh` as a wrapper that calls the current macOS wheel build logic (initially from `old_scripts/wheels/build_macos.sh`), then adds repair and smoke.
+  - Add `macos/run_tutorials_headless.sh` with a curated, headless-safe set of examples that use `plantbox.data_path()` and run from arbitrary CWD.
+  - Implement `macos/run_all.sh` to orchestrate editable smoke → curated/golden → wheel build/repair → wheel smoke.
+
+- [ ] Step 5 — Port Linux wheels (manylinux) flows:
+  - Implement `wheels/linux/manylinux_x86_64.sh` and `wheels/linux/manylinux_aarch64.sh` that call into the pypa containers, run `auditwheel repair`, and smoke-test per interpreter.
+  - Keep `old_scripts/wheels/build_manylinux2014*.sh` for historical reference.
+
+- [ ] Step 6 — Common helpers and consistency:
+  - Implement `common/env.sh` (deterministic env, `OMP_NUM_THREADS=1`), `common/docker.sh` (buildx builder ensure/build/run helpers), `common/python.sh` (temp venv helpers, pip install, wheel install+smoke), and `common/logging.sh` (uniform logs, error handling).
+  - Refactor the new scripts to source these helpers; avoid duplication.
+
+- [ ] Step 7 — Wheelhouse layout enforcement and manifests:
+  - Ensure all new wheel scripts write to a normalized structure:
+    - `wheelhouse/linux/manylinux2014_x86_64/` and `wheelhouse/linux/manylinux2014_aarch64/`.
+    - `wheelhouse/macos/arm64/` and `wheelhouse/macos/x86_64/`.
+  - Emit an `index.txt` (manifest) per subdir with build metadata (python tag, deploy target, timestamp, git describe, tool versions).
+
+- [ ] Step 8 — Documentation and references:
+  - Update PLAN and README to reference the new `scripts/` entry points (`run.sh`, `ubuntu/run_all.sh`, `macos/run_all.sh`, `wheels/build_all_local.sh`).
+  - Clearly state that `old_scripts/` is retained for bookkeeping and should not be modified.
 
 ### Phase 5 — Multi-platform wheels (local first)
 

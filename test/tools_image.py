@@ -2,6 +2,7 @@
 Headless rendering helpers and image comparison tools for golden tests.
 """
 
+import os
 from typing import Any, Iterable, List, cast
 
 import numpy as np
@@ -217,12 +218,19 @@ def render_headless_png(
     renderer.AddActor(actor)
     renderer.AddActor(leaf_actor)
 
-    # Off-screen render window (create before camera setup to account for aspect ratio)
+    # Render window (prefer off-screen unless explicitly forced to Xvfb onscreen)
     ren_win = vtk.vtkRenderWindow()
     ren_win.SetSize(width, height)
     ren_win.SetWindowName(p_name)
     ren_win.AddRenderer(renderer)
-    ren_win.OffScreenRenderingOn()
+    ren_win.SetMultiSamples(0)
+    try:
+        ren_win.StereoCapableWindowOff()
+    except Exception:
+        pass
+    renderer.SetUseDepthPeeling(0)
+    if not bool(int(os.environ.get("CPB_FORCE_ONSCREEN_XVFB", "0"))):
+        ren_win.OffScreenRenderingOn()
 
     # Camera setup (deterministic) with correct aspect
     renderer.ResetCamera()
@@ -244,6 +252,7 @@ def render_headless_png(
     camera.SetParallelScale(base_scale / eff_zoom)
 
     # Perform initial render
+    renderer.ResetCameraClippingRange()
     ren_win.Render()
 
     # Capture buffer and save PNG
@@ -263,9 +272,11 @@ def render_headless_png(
 def compare_images_png(path_a: str, path_b: str) -> float:
     """Return similarity in [0,1] where 1.0 means identical.
 
-    Ignores pixels that are white in both images (i.e., background). The
-    comparison is the mean absolute difference over remaining pixels, normalized
-    by 255, and mapped to similarity via 1 - MAD.
+    More robust to antialiasing differences:
+    - Ignores pixels that are white in both images.
+    - Optionally downsamples by 2x blocks (env CPB_DOWNSCALE, default 1).
+    - Applies a small per-channel difference threshold (env CPB_DIFF_THRESH, default 10).
+    - Computes 1 - mean absolute difference over remaining pixels.
     """
     reader_a = vtk.vtkPNGReader()
     reader_a.SetFileName(path_a)
@@ -277,38 +288,56 @@ def compare_images_png(path_a: str, path_b: str) -> float:
     reader_b.Update()
     img_b = reader_b.GetOutput()
 
-    if img_a.GetDimensions() != img_b.GetDimensions():
+    wa, ha, da = img_a.GetDimensions()
+    wb, hb, db = img_b.GetDimensions()
+    if (wa, ha) != (wb, hb):
         return 0.0
 
-    dims = img_a.GetDimensions()  # (width, height, depth)
     num_components = max(1, img_a.GetNumberOfScalarComponents())
 
-    # Convert to numpy arrays (flattened), then reshape to (N, C)
+    # Convert to numpy arrays and reshape to (H, W, C)
     a_np = vn.vtk_to_numpy(img_a.GetPointData().GetScalars())
     b_np = vn.vtk_to_numpy(img_b.GetPointData().GetScalars())
     if a_np.size != b_np.size:
         return 0.0
 
-    total_pixels = dims[0] * dims[1] * max(1, dims[2])
+    total_pixels = wa * ha * max(1, da)
     if total_pixels * num_components != a_np.size:
         return 0.0
 
-    a_np = a_np.reshape((-1, num_components))
-    b_np = b_np.reshape((-1, num_components))
+    a_np = a_np.reshape((ha, wa, num_components)).astype(np.float32)
+    b_np = b_np.reshape((hb, wb, num_components)).astype(np.float32)
+
+    # Optional downscale to reduce aliasing sensitivity
+    down = int(os.environ.get("CPB_DOWNSCALE", "1")) if "os" in globals() else 1
+    for _ in range(max(0, down)):
+        h2 = (a_np.shape[0] // 2) * 2
+        w2 = (a_np.shape[1] // 2) * 2
+        if h2 < 2 or w2 < 2:
+            break
+        a_np = (
+            a_np[:h2:2, :w2:2] + a_np[1:h2:2, :w2:2] + a_np[:h2:2, 1:w2:2] + a_np[1:h2:2, 1:w2:2]
+        ) / 4.0
+        b_np = (
+            b_np[:h2:2, :w2:2] + b_np[1:h2:2, :w2:2] + b_np[:h2:2, 1:w2:2] + b_np[1:h2:2, 1:w2:2]
+        ) / 4.0
 
     # Determine white mask (consider RGB channels if available)
     if num_components >= 3:
-        a_rgb = a_np[:, :3]
-        b_rgb = b_np[:, :3]
-        white_both = np.all((a_rgb == 255) & (b_rgb == 255), axis=1)
+        a_rgb = a_np[:, :, :3]
+        b_rgb = b_np[:, :, :3]
+        white_both = np.all((a_rgb >= 255.0) & (b_rgb >= 255.0), axis=2)
     else:
-        white_both = np.all((a_np == 255) & (b_np == 255), axis=1)
+        white_both = np.all((a_np >= 255.0) & (b_np >= 255.0), axis=2)
 
-    valid = ~white_both
+    diff = np.abs(a_np - b_np)
+    thr = float(os.environ.get("CPB_DIFF_THRESH", "10")) if "os" in globals() else 10.0
+    # Consider a pixel valid if any channel exceeds threshold and not white in both
+    above_thr = np.any(diff > thr, axis=2)
+    valid = above_thr & (~white_both)
     if not np.any(valid):
         return 1.0
 
-    # Mean absolute difference over valid pixels/components
-    mad = np.mean(np.abs(a_np[valid] - b_np[valid])) / 255.0
+    mad = np.mean(diff[valid]) / 255.0
     similarity = float(max(0.0, 1.0 - mad))
     return similarity

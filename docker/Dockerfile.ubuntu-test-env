@@ -19,6 +19,8 @@ RUN apt-get update && \
       libxdmcp6 \
       libosmesa6 \
       libglx-mesa0 \
+      libgl1-mesa-dri \
+      libglu1-mesa \
       xvfb \
       xauth \
       python3-venv \
