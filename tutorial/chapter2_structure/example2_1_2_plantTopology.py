@@ -42,11 +42,11 @@ rrp.successorP      = [[1.0], [1.0]]
 rrp.successorWhere  = [[-1, -2, -3,-4, -5, -7], [7]]
 
 srp = p.getOrganRandomParameter(pb.stem)[1]
-srp.successorOT     = [[pb.stem], [pb.leaf]] 
-srp.successorST     = [[2], [1]] 
+srp.successorOT     = [[pb.root], [pb.leaf]] 
+srp.successorST     = [[4], [1]] 
 srp.successorNo     = [1, 4] 
 srp.successorP      = [[1.0], [1.0]] 
-srp.successorWhere  = [[4, 6, 8], [-3]] #|\label{l2_1:arrayEnd2}|
+srp.successorWhere  = [[0.], [-0.]] #|\label{l2_1:arrayEnd2}|
 
 
 p.initialize(False)
