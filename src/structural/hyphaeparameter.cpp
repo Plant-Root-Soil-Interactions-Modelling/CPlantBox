@@ -26,8 +26,8 @@ std::string HyphaeSpecificParameter::toString() const
  * @return Mean maximal hyphae length of this hyphae type
  */
 double HyphaeSpecificParameter::getMaxLength() const {
-    double l = 0.5 / (order+1); // v*hlt is too long ie tip elongation rate * hyphal lifetime
-    // double l = v * hlt; // mean maximal length of a hyphae
+    // double l = 0.5 / (order+1); // v*hlt is too long ie tip elongation rate * hyphal lifetime
+    double l = v * hlt; // mean maximal length of a hyphae
     return l; 
 }
 
