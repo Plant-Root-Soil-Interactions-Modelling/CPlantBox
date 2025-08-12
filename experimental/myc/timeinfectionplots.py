@@ -16,8 +16,8 @@ mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
-hyphae_parameter.a = 0.01
-hyphae_parameter.v = 1
+# hyphae_parameter.a = 0.01
+hyphae_parameter.vs = 0.01
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
 
@@ -124,71 +124,71 @@ def runsimulation(seed):
 all_obs_primary = []
 all_exp_primary = []
 
-# for seed in range(1, 50):
-#     print(f"Running simulation with seed {seed}")
-#     (time, observed_segment_primary, expected_segment_primary, 
-#      _, _, _, _, _) = runsimulation(seed)
-#     all_obs_primary.append(observed_segment_primary)
-#     all_exp_primary.append(expected_segment_primary)
-
-# # Umwandeln in Arrays
-# obs_array = np.array(all_obs_primary)
-# exp_array = np.array(all_exp_primary)
-
-# # Mittelwert und Streuung
-# mean_obs = np.mean(obs_array, axis=0)
-# std_obs = np.std(obs_array, axis=0)
-# mean_exp = np.mean(exp_array, axis=0)
-# std_exp = np.std(exp_array, axis=0)
-
-# # Plot
-# plt.fill_between(time, mean_obs - std_obs, mean_obs + std_obs, color='blue', alpha=0.2, label="Observed ± SD")
-# plt.plot(time, mean_obs, label="Mean Observed", color='blue')
-# plt.plot(time, mean_exp, label="Mean Expected", color='orange')
-# plt.fill_between(time, mean_exp - std_exp, mean_exp + std_exp, color='orange', alpha=0.2)
-
-# plt.xlabel("Time [days]")
-# plt.ylabel("Newly Infected Length [cm]")
-# plt.title("Observed vs. Expected Infection Lengths")
-# plt.legend()
-# plt.grid(True)
-# plt.show()
-
-#Ergebnis-Speicher vorbereiten
-all_infected = []
-all_noninf = []
-
-# Mehrere Seeds durchlaufen
-for seed in range(1, 20):
+for seed in range(1, 50):
     print(f"Running simulation with seed {seed}")
-    (_, observed_segment_primary, _, 
-     _, _, observed_segment_secondary, 
-     observed_segment_noninf, _) = runsimulation(seed)
+    (time, observed_segment_primary, expected_segment_primary, 
+     _, _, _, _, _) = runsimulation(seed)
+    all_obs_primary.append(observed_segment_primary)
+    all_exp_primary.append(expected_segment_primary)
 
-    infected = np.array(observed_segment_primary) + np.array(observed_segment_secondary)
-    all_infected.append(infected)
-    all_noninf.append(observed_segment_noninf)
+# Umwandeln in Arrays
+obs_array = np.array(all_obs_primary)
+exp_array = np.array(all_exp_primary)
 
-# Arrays erstellen
-infected_array = np.array(all_infected)
-noninf_array = np.array(all_noninf)
-
-# Mittelwert & Standardabweichung
-mean_infected = np.mean(infected_array, axis=0)
-std_infected = np.std(infected_array, axis=0)
-mean_noninf = np.mean(noninf_array, axis=0)
-std_noninf = np.std(noninf_array, axis=0)
+# Mittelwert und Streuung
+mean_obs = np.mean(obs_array, axis=0)
+std_obs = np.std(obs_array, axis=0)
+mean_exp = np.mean(exp_array, axis=0)
+std_exp = np.std(exp_array, axis=0)
 
 # Plot
-plt.fill_between(time, mean_infected - std_infected, mean_infected + std_infected, color='red', alpha=0.2, label="Infected ± SD")
-plt.plot(time, mean_infected, label="Mean Infected", color='red')
-
-plt.fill_between(time, mean_noninf - std_noninf, mean_noninf + std_noninf, color='green', alpha=0.2, label="Non-infected ± SD")
-plt.plot(time, mean_noninf, label="Mean Non-infected", color='green')
+plt.fill_between(time, mean_obs - std_obs, mean_obs + std_obs, color='blue', alpha=0.2, label="Observed ± SD")
+plt.plot(time, mean_obs, label="Mean Observed", color='blue')
+plt.plot(time, mean_exp, label="Mean Expected", color='orange')
+plt.fill_between(time, mean_exp - std_exp, mean_exp + std_exp, color='orange', alpha=0.2)
 
 plt.xlabel("Time [days]")
-plt.ylabel("Segment length [cm]")
-plt.title("Infection Dynamics across Simulations")
+plt.ylabel("Newly Infected Length [cm]")
+plt.title("Observed vs. Expected Infection Lengths")
 plt.legend()
 plt.grid(True)
 plt.show()
+
+#Ergebnis-Speicher vorbereiten
+# all_infected = []
+# all_noninf = []
+
+# # Mehrere Seeds durchlaufen
+# for seed in range(1, 20):
+#     print(f"Running simulation with seed {seed}")
+#     (_, observed_segment_primary, _, 
+#      _, _, observed_segment_secondary, 
+#      observed_segment_noninf, _) = runsimulation(seed)
+
+#     infected = np.array(observed_segment_primary) + np.array(observed_segment_secondary)
+#     all_infected.append(infected)
+#     all_noninf.append(observed_segment_noninf)
+
+# # Arrays erstellen
+# infected_array = np.array(all_infected)
+# noninf_array = np.array(all_noninf)
+
+# # Mittelwert & Standardabweichung
+# mean_infected = np.mean(infected_array, axis=0)
+# std_infected = np.std(infected_array, axis=0)
+# mean_noninf = np.mean(noninf_array, axis=0)
+# std_noninf = np.std(noninf_array, axis=0)
+
+# # Plot
+# plt.fill_between(time, mean_infected - std_infected, mean_infected + std_infected, color='red', alpha=0.2, label="Infected ± SD")
+# plt.plot(time, mean_infected, label="Mean Infected", color='red')
+
+# plt.fill_between(time, mean_noninf - std_noninf, mean_noninf + std_noninf, color='green', alpha=0.2, label="Non-infected ± SD")
+# plt.plot(time, mean_noninf, label="Mean Non-infected", color='green')
+
+# plt.xlabel("Time [days]")
+# plt.ylabel("Segment length [cm]")
+# plt.title("Infection Dynamics across Simulations")
+# plt.legend()
+# plt.grid(True)
+# plt.show()

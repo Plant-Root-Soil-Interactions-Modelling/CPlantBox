@@ -55,5 +55,5 @@ for RSA_id in range(1,len(RSA_ids)+1):
    
     ana.write(name+str(RSA_id)+".vtp", ['kr', 'Kx', 'SUF', 'subType', 'branchID','nodesID'])
     vp.plot_roots(ana, p_name= "subType")
-    raise Exception
+#     raise Exception
 # %%
