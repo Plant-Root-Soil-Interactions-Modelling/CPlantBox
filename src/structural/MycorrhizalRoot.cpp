@@ -202,7 +202,6 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
     // TODO abstand von Hyphen beachten
     auto rrp = getRootRandomParameter(); // param()
     double hed = rrp->hyphalEmergenceDensity;
-    double hes = rrp->hyphalEmergenceDist;
 
     // double cumLength = 0.; // cumulative infected length
     double numberOfHyphae= 0;
@@ -224,7 +223,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
         // int hyphaeperNode =  (int) nodes.size() / new_noh;
         // int uneven = nodes.size() % new_noh;
         dist = nodes.at(currentNode).minus(nodes.at(lastEmergedNode)).length();
-        if (infected.at(currentNode) > 0 && emergedHyphae.at(currentNode)== 0 && dist>hes){ // if the current node is infected and the number of hyphae to be created is reached
+        if (infected.at(currentNode) > 0 && emergedHyphae.at(currentNode)== 0){// && dist>hes){ // if the current node is infected and the number of hyphae to be created is reached
             createHyphae(currentNode);
             numberOfHyphae += 1;
             new_noh -= 1;
