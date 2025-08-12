@@ -70,6 +70,8 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         else {
             lmbd = getRootRandomParameter()->lmbd;
         }
+        if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {lmbd = 0;}//account for minimal age in rate
+        lmbd = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * lmbd; // account for maximal age in rate
         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length();
         if (infected.at(i) == 0 && plant.lock()->rand() < lmbd*cursegLength*dt)
         {
@@ -200,6 +202,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
     // TODO abstand von Hyphen beachten
     auto rrp = getRootRandomParameter(); // param()
     double hed = rrp->hyphalEmergenceDensity;
+    double hes = rrp->hyphalEmergenceDist;
 
     // double cumLength = 0.; // cumulative infected length
     double numberOfHyphae= 0;
@@ -211,52 +214,46 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
     if (hed * getParameter("infectionLength") - numberOfHyphae - new_noh > 0.5) {
         new_noh += 1; // round up if the difference is larger than 0.5
     }
-    std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae <<  ", new noh " << new_noh << std::endl;
+    // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae <<  ", new noh " << new_noh << std::endl;
 
     int currentNode = 1;
+    int lastEmergedNode = 0; // the last node where a hyphae was created
+    double dist = 0; // distance between the first two nodes
     while (new_noh > 0 && currentNode < nodes.size()) // TODO Something not right with amount of hyphae created
     {
         // int hyphaeperNode =  (int) nodes.size() / new_noh;
         // int uneven = nodes.size() % new_noh;
-        if (infected.at(currentNode) > 0 && emergedHyphae.at(currentNode)== 0) { // if the current node is infected and the number of hyphae to be created is reached
+        dist = nodes.at(currentNode).minus(nodes.at(lastEmergedNode)).length();
+        if (infected.at(currentNode) > 0 && emergedHyphae.at(currentNode)== 0 && dist>hes){ // if the current node is infected and the number of hyphae to be created is reached
             createHyphae(currentNode);
             numberOfHyphae += 1;
             new_noh -= 1;
+            lastEmergedNode = currentNode; // update the last emerged node
         }
         currentNode++;
-    } 
-    for (auto l : children)
-    {
-        if (l->organType() != Organism::ot_hyphae) {
-            std::dynamic_pointer_cast<MycorrhizalRoot>(l)->simulateHyphalGrowth();
-        }
     }
-{
-    // std::cout << "MycorrhizalRoot::simulateHyphalGrowth() finished with " << numberOfHyphae << " hyphae created." << std::endl;  
-    // for (size_t i = 1; i < nodes.size(); i++) {
 
-    //     if (infected.at(i) > 0) {
 
-    //         auto v = nodes.at(i).minus(nodes.at(i-1));
-    //         double dx = v.length();
-    //         // std::cout << dx << std::flush <<", ";
-    //         cumLength += dx;
-    //         numberOfHyphae += emergedHyphae.at(i);
-
-    //         int new_noh = int(hed * cumLength - numberOfHyphae);
-	// 		assert("MycorrhizalRoot::simulateHyphalGrowth(): new_noh < 0"&&(new_noh>=0));
-    //         for  (size_t j = 0; j < new_noh; j++) {
-    //             createHyphae(i);
-    //             numberOfHyphae += 1;
-    //         }
+    // for (size_t i = 0; i < nodes.size(); i++)
+    // {
+    //     double length = nodes.at(i).minus(nodes.at(i-1)).length();
+    //     if (length < hes) { // if the distance between the nodes is smaller than the hyphal emergence distance, no hyphae can be created
+    //         continue;
+    //     } else {
+    //         addNode(nodes.at(i), i, nodeCTs.at(i), i, false); // add the node to the organ
+    //         // CAREFUL THIS WILL ADD NODE BUT WITH WRONG INDICES
+    //         infected.push_back(infected.at(i)); // add the infection status of the node
+    //         emergedHyphae.push_back(emergedHyphae.at(i)); // add the number
+    //         infectionTime.push_back(infectionTime.at(i)); // add the infection time of the node
     //     }
+    //     if (infected.at(i) > 0 && emergedHyphae.at(i) == 0 && infectionTime.at(i) + hyphaldelay < age) { // if the current node is infected and the number of hyphae to be created is reached
+    //         createHyphae(i);
+    //         numberOfHyphae += 1;
+    //         new_noh -= 1;
+    //     }
+        
     // }
-
-   // if ((nodes.size()>1) && (cumLength>0)) {
-       // std::cout << "MycorrhizalRoot::hyphalGrowth() " << nodes.size()<< ", " << hed << ", noh " << numberOfHyphae
-           // << ", cum length "<< cumLength << ", actual density " << numberOfHyphae/cumLength <<"\n" <<std::flush;
-   // }
- }
+    
 }
 
 
