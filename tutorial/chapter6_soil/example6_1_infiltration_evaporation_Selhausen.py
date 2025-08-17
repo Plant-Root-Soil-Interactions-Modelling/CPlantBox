@@ -1,8 +1,8 @@
 # This example builds on the infiltration and evaporation problem M2.1 and M2.2 from Schnepf et al. (2023, \url{doi.org/10.1093/insilicoplants/diad005}) and extends the simulation to a multi-layered soill profile at the Field Minirhizotron Facilities Selhausen (\url{https://www.fz-juelich.de/en/ibg/ibg-3/research-groups/modelling-terrestrial-systems/soil-root-systems-and-rhizosphere-processes/field-minirhizotron-facilities}). 
 # The hydraulic properties of the soil profile are taken from Bauer et al. (2011, table 3, \url{https://doi.org/10.1007/s10533-011-9583-1}). 
-# The Richards equations is solved to simulate water infiltration over 2 days into an initially dry soil followed by evaporation over a period of 30 days. Only the vertical water movement is considered. A Neumann boundary condition is set at the upper boundary and a free drainage boundary condition is set at the lower boundary. 
+# The Richards equations is solved to simulate water infiltration over 1 day into an initially dry soil followed by evaporation over 1 day. Only the vertical water movement is considered. A Neumann boundary condition is set at the upper boundary and a free drainage boundary condition is set at the lower boundary. 
 
-# This example solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
+# The code solves the Richards equation with DuMux. The github repository "dumux-rosi" (https://github.com/Plant-Root-Soil-Interactions-Modelling/dumux-rosi.git) needs to be cloned
 # into the same path level as CPlantBox.
 
 # add paths to the folders containing CPlantBox and dumux-rosi
@@ -32,10 +32,10 @@ s = RichardsWrapper(RichardsSPnum())  #
 s.initialize()  #
 s.setTopBC("atmospheric", 0.5, [[0., 1.,1.,2], [10., 10.,-0.1,-0.1]])  #  [cm/day] atmospheric is with surface run-off   |\label{l61ies:top_bc}|
 s.setBotBC("freeDrainage")  # |\label{l61ies:bottom_bc}|
-N = 119*10 # |\label{l61ies:grid}|
+N = 119*10 # use a fine grid resolution of 1 mm per grid point in z direction |\label{l61ies:grid}|
 s.createGrid([-5., -5., -120.], [5., 5., 0.], [1, 1, N])  # [cm] N   |\label{l61ies:grid}|
 # define soil layers |\label{l61ies:layers}|
-layers_ID=[4,4,3,3,2, 2, 1, 1];layers_pos= [-120., -57., -57., -33.,-33,-20,-20,0]
+layers_ID=[4, 4, 3, 3, 2, 2, 1, 1];layers_pos= [-120., -57., -57., -33.,-33,-20,-20,0]
 s.setLayersZ(layers_ID,layers_pos)
 s.setHomogeneousIC(-400.)  # cm pressure head    |\label{l61ies:ic}|
 s.setVGParameters(soil)  # |\label{l61ies:set_vg}|
