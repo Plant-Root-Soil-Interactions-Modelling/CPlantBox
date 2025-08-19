@@ -20,11 +20,12 @@ from richards import RichardsWrapper  # Python part
 
 # Define Mualem van Genuchten parameters for Selhausen soil profile according to Bauer et al. (2011, table 3, \url{https://doi.org/10.1007/s10533-011-9583-1}) |\label{l61ies:genuchten_a}|
 # theta_r (-), theta_s (-), alpha (1/cm), n (-), Ks (cm d-1) 
-l1 = [0.008, 0.389, 0.012, 1.97, 91.68] # 0-20 cm
+l1 = [0.008, 0.389, 0.012, 1.97, 91.68] # 0-20 cm |\label{l61ies:hyprop_s}|
 l2 = [0.008, 0.389, 0.023, 1.23, 63.36] # 20-33 cm
 l3 = [0.008, 0.389, 0.01, 1.1, 10] # 33-57 cm
 l4 = [0.008, 0.389, 0.01, 1.1, 10] # 57-120 cm
-soil = [l1,l2,l3,l4] # Combine the hydraulic conductivity vectors from all soil layers to define soil type for simulation
+# Combine the hydraulic conductivity vectors from all soil layers to define soil type for simulation
+soil = [l1,l2,l3,l4] # |\label{l61ies:hyprop_e}|
 sim_time = 3.05  # 
 dt = 0.05 #720 / (24 * 3600)  # time step [days]   
 
@@ -35,8 +36,9 @@ s.setTopBC("atmospheric", 0.5, [[0., 1.,1.,3.], [10., 10.,-0.1,-0.1]])  #  [cm/d
 s.setBotBC("freeDrainage")  # |\label{l61ies:bottom_bc}|
 N = 119*10 # use a fine grid resolution of 1 mm per grid point in z direction |\label{l61ies:grid}|
 s.createGrid([-5., -5., -120.], [5., 5., 0.], [1, 1, N])  # [cm] N   |\label{l61ies:grid}|
-# define soil layers |\label{l61ies:layers}|
-layers_ID=[4, 4, 3, 3, 2, 2, 1, 1];layers_pos= [-120., -57., -57., -33.,-33,-20,-20,0]
+# define soil layers 
+layers_ID=[4, 4, 3, 3, 2, 2, 1, 1]  # |\label{l61ies:layers_s}|
+layers_pos= [-120., -57., -57., -33.,-33,-20,-20,0] # |\label{l61ies:layers_e}|
 s.setLayersZ(layers_ID,layers_pos)
 s.setHomogeneousIC(-400.)  # cm pressure head    |\label{l61ies:ic}|
 s.setVGParameters(soil)  # |\label{l61ies:set_vg}|
