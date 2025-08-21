@@ -205,7 +205,7 @@ for i in range(0, N):  # |\label{l62:loop_loop}|
     h.append(s.getSolutionHead_())  # [cm]
     w.append(s.getWaterContent())  # [1]
     c.append(s.getSolution_(1))  # [g/L]
-    fw[int(t)] += s.getLowerBoundaryFluxesPerCell(0).sum() # [cm/day] 
+    fw[int(t)] += s.getLowerBoundaryFluxesPerCell(0).sum() # [cm/day]  # |\label{l62:BCfluxes}| 
 
 print("domain water volume", s.getWaterVolume(), "cm3  = ", s.getWaterVolume() / 1000., "l")  # |\label{l62:results}|
 print("water content to water volume", np.sum(w[-1]) * area * 1, "cm3")
