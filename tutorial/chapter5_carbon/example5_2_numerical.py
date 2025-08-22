@@ -36,7 +36,6 @@ weatherData = pd.read_csv(path + 'Selhausen_weather_data.txt', delimiter = "\t")
 
 """ plant """
 plant = pb.MappedPlant(seednum = 2) 
-#plant.disableExtraNode()
 path = "../../modelparameter/structural/plant/"
 name = "Triticum_aestivum_test_2021" #"Triticum_aestivum_adapted_2023"
 plant.readParameters(path + name + ".xml")
