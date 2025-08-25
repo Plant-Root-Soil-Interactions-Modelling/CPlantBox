@@ -940,6 +940,7 @@ PYBIND11_MODULE(plantbox, m) {
 			.def("plant", &MappedPlant::plant)
 			.def("getSegmentIds",&MappedPlant::getSegmentIds)
 			.def("disableExtraNode",&MappedPlant::disableExtraNode)
+            .def("enableExtraNode",&MappedPlant::enableExtraNode)
 			.def_readwrite("leafBladeSurface",  &MappedPlant::leafBladeSurface)
 			.def_readwrite("bladeLength",  &MappedPlant::bladeLength)
 			.def("getNodeIds",&MappedPlant::getNodeIds);
