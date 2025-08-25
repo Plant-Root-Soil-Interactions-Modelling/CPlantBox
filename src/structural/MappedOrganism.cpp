@@ -591,9 +591,9 @@ std::vector<double> MappedSegments::getEffectiveRadii() {
  */
 void MappedPlant::initialize_(bool verbose, bool lengthBased) {
 
-    reset(); // just in case (Plant::reset()) (carefull, MappedPlant cannot reset, yet)
+    reset(); // just in case (Plant::reset()) (careful, MappedPlant cannot reset, yet)
 	auto stemP = getOrganRandomParameter(Organism::ot_stem);
-	bool plantBox = stemP.size()>0;
+	bool plantBox = stemP.size()>1; // prototype + a real parameter definition
 	if (plantBox) {
 		disableExtraNode(); // no meed for additional node to create the artificial stem 
 	}
