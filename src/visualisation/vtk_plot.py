@@ -55,7 +55,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
 
     globalIdx_y = []
-    leaves = plant.getOrgans(ot = pb.leaf)  # <--------- TODO DL: will only work for Plant, not for MappedSegments
+    leaves = plant.getOrgans(ot = pb.leaf)  # <--------- TODO DL: will only work for Plant, not for MappedSegments (with no plant attached)
     for l in leaves:
         globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
     globalIdx_y = np.array(globalIdx_y)
