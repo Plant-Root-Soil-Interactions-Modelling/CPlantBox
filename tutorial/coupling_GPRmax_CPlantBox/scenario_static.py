@@ -71,6 +71,11 @@ def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting
             wc = np.array(s.getWaterContent())
             wc = np.reshape(wc, (cell_number[2],cell_number[1],cell_number[0]))
             wc = np.swapaxes(wc,0,2)
+            
+            #get SWP
+            hs = s.getSolutionHead() 
+            hs = np.reshape(hs, (cell_number[2],cell_number[1],cell_number[0]))
+            hs = np.swapaxes(hs,0,2)
 
             #get root params
             ana = pb.SegmentAnalyser(plant.mappedSegments())
@@ -108,6 +113,7 @@ def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting
             x_stitch = int(np.round((target/res)/np.shape(wc)[0]))
             y_stitch = int(np.round((target/res)/np.shape(wc)[1]))
             wc_stitch = np.tile(wc, (x_stitch, y_stitch, 1))
+            hs_stitch = np.tile(hs, (x_stitch, y_stitch, 1))
             frac_stitch = np.tile(frac, (x_stitch, y_stitch, 1))
             rootvol_stitch = np.tile(rootvol, (x_stitch, y_stitch, 1))
             
@@ -118,9 +124,9 @@ def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting
                 rootvol_stitch = rootvol_stitch[:int(target/res),:int(target/res), :int(target/res)]
             
             if save_npz: 
-                write_npz(name, t, wc, frac, rootvol, wc_stitch, frac_stitch, rootvol_stitch)
+                write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch)
             if save_vtr: 
-                write_vtr(name, t, target, X, Y, Z, wc_root, wc, rootvol, wc_stitch, rootvol_stitch, plant, res) 
+                write_vtr(name, t, target, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res) 
                 
                 
             #here, you could put in a function called e.g. write_gpr_input(), where the simulation results are written to permittivities and written in a gpr input file 
@@ -137,26 +143,26 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.soil == 'hydrus_loam': 
-        wc_ini = 0.3   # -
-    elif args.soil == 'hydrus_clay': 
-        wc_ini = 0.35  # -
-    elif args.soil == 'hydrus_sandyloam': 
-        wc_ini = 0.2   # -
-        
+    initial = -200 #cm #initial can be 'initial water content (-)' or initial soil water potential (cm)'- the model recognizes if it is the one or the other                          
     trans = 0.5 #cm/day
+    infiltration = False #scenario with infiltration only
+    evaporation = True #scenario with evaporation only                                 
     rs_age = 70 #d
-    sim_time = 7.5  # day
+    sim_time = 14.5  # day
     out_time = np.arange(0.5, sim_time,1) #additionally, the first time step is always saved (--> corresponds to root system with static swc)
     save_npz = False
     save_vtr = True
     
     name = args.plant + "_" + args.res + "_resolution_" + args.soil+'_age'+str(rs_age)
+    if infiltration: 
+        name = name+'_inf'
+    elif evaporation: 
+        name = name+'_evap'        
     print()
     print(name, "\n")
     
 
-    inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res = set_scenario(args.plant, args.res, args.soil, wc_ini, trans, rs_age)
+    inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res = set_scenario(args.plant, args.res, args.soil, initial, trans, rs_age, infiltration, evaporation)
 
     simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target, res, cell_number, cellvol, X, Y, Z, wc_root, save_npz, save_vtr)
     
