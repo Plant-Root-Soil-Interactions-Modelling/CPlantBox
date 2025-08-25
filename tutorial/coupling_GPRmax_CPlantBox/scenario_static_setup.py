@@ -62,7 +62,7 @@ def wheat_(res:float):
     cell_number = [int(15/res), int(3/res), int(150/res)] 
     return min_b, max_b, cell_number
     
-def set_scenario(plant_, res, soil_, wc_ini, trans_, rs_age):
+def set_scenario(plant_, res, soil_, initial_, trans_, rs_age, inf_:bool, evap_:bool):
     """ 
     Sets up a Scenario     
     
@@ -76,11 +76,14 @@ def set_scenario(plant_, res, soil_, wc_ini, trans_, rs_age):
     assert plant_ == "maize" or plant_ == "wheat", "plant should be 'maize', or 'wheat'"
     assert res == "high" or res == "low", "resolution should be high or low"
     assert soil_ in ["hydrus_loam", "hydrus_clay", "hydrus_sand", "hydrus_sandyloam"], "soil should be 'hydrus_loam', 'hydrus_clay', 'hydrus_sand' or 'hydrus_sandyloam' "
+    assert (inf_ == False and evap_ == True) or (inf_ == True and evap_ == False) or (inf_ == False and evap_ == False), 'Infiltration must be false if evaporation is true or the other way round'
 
     # Hidden parameters
     wilting_point = -15000  # cm
     target = 150 #cm, length of target domain for gpr max in x, y, z
     wc_root = 0.8 #mean root water content (-)
+    inf = 0.1 #cm/d - excess water that does no infiltrate is treated as runoff, i.e. is not accounted for 
+    evap = -0.1 #cm/d
 
     # Numeric parameters
     random_seed = 1  # random seed
@@ -108,7 +111,10 @@ def set_scenario(plant_, res, soil_, wc_ini, trans_, rs_age):
     
     
     trans = (max_b[0] - min_b[0]) * (max_b[1] - min_b[1]) * trans_  # cm3 / day
-    initial = theta2H(soil,wc_ini)  # cm
+    if initial_<0: #SWP
+        initial = initial_
+    elif 0<initial_<1: #wc
+        initial = theta2H(soil,initial_)  # cm
     print('Initial soil water potential = ', str(initial), ' cm')
     
     """ Initialize macroscopic soil model """
@@ -116,8 +122,13 @@ def set_scenario(plant_, res, soil_, wc_ini, trans_, rs_age):
     s.initialize()
     s.createGrid(min_b, max_b, cell_number, periodic = True)  # [cm]
     s.setHomogeneousIC(initial, False)  # [cm] constant total potential
-    s.setTopBC("noFlux") #for later: atmospheric, net infiltration 
-    s.setBotBC("noFlux") #for later: free drainage
+    if inf_ == True: 
+        s.setTopBC("atmospheric", 0.5, [[0, 1e10], [inf, inf]]) #infiltration 
+    elif evap_ == True: 
+        s.setTopBC("atmospheric", 0.5, [[0, 1e10], [evap, evap]]) #evaporation
+    else: 
+        s.setTopBC("noFlux")
+    s.setBotBC("freeDrainage") #before: no flux
     s.setVGParameters([soil])
     s.setParameter("Soil.SourceSlope", "1000") 
     s.initializeProblem()
@@ -168,7 +179,7 @@ def set_scenario(plant_, res, soil_, wc_ini, trans_, rs_age):
     
     return inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res_
     
-def write_npz(name, t, wc, frac, rootvol, wc_stitch, frac_stitch, rootvol_stitch): 
+def write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch): 
     
     cell_number = [np.shape(wc)[0],np.shape(wc)[1],np.shape(wc)[2]]
     cell_number_stitch = [np.shape(wc_stitch)[0],np.shape(wc_stitch)[1],np.shape(wc_stitch)[2]]
@@ -177,10 +188,10 @@ def write_npz(name, t, wc, frac, rootvol, wc_stitch, frac_stitch, rootvol_stitch
     if not os.path.exists('results/'+directory):
         os.makedirs('results/'+directory)
     
-    np.savez('results/'+directory+'/'+name+'_day'+str(int(t)), wc, frac, rootvol, cell_number)
-    np.savez('results/'+directory+'/'+name+'_stitched_day'+str(int(t)), wc_stitch, frac_stitch, rootvol_stitch, cell_number_stitch)
+    np.savez('results/'+directory+'/'+name+'_day'+str(int(t)), wc, hs, frac, rootvol, cell_number)
+    np.savez('results/'+directory+'/'+name+'_stitched_day'+str(int(t)), wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, cell_number_stitch)
     
-def write_vtr(name, t, target, X, Y, Z, wc_root, wc, rootvol, wc_stitch, rootvol_stitch, plant, res): 
+def write_vtr(name, t, target, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res): 
 
     X_stitch = np.linspace(-target/2, target/2, int(target/res))
     Y_stitch = np.linspace(-target/2, target/2, int(target/res))
@@ -197,12 +208,5 @@ def write_vtr(name, t, target, X, Y, Z, wc_root, wc, rootvol, wc_stitch, rootvol
         os.makedirs('results/'+directory)
     
     plant.write('results/'+directory+'/'+name+'.vtp')
-    
-    gridToVTK('results/'+directory+'/'+name+'_wc_day'+str(int(t)), X, Y, Z, pointData = {"Water content":wc})
-    gridToVTK('results/'+directory+'/'+name+'_rootvol_day'+str(int(t)), X, Y, Z, pointData = {"Root volume":rootvol})
-    gridToVTK('results/'+directory+'/'+name+'_wc_root_soil_day'+str(int(t)), X, Y, Z, pointData = {"water content root and soil":wc_root_soil})
-    
-    
-    gridToVTK('results/'+directory+'/'+name+'_wc_stitch_day'+str(int(t)), X_stitch, Y_stitch, Z_stitch, pointData = {"Water content":wc_stitch})
-    gridToVTK('results/'+directory+'/'+name+'_rootvol_stitch_day'+str(int(t)), X_stitch, Y_stitch, Z_stitch, pointData = {"Root volume":rootvol_stitch})
-    gridToVTK('results/'+directory+'/'+name+'_wc_root_soil_stitch_day'+str(int(t)), X_stitch, Y_stitch, Z_stitch, pointData = {"water content root and soil":wc_root_soil_stitch})
+    gridToVTK('results/'+directory+'/'+name+'_day'+str(int(t)), X, Y, Z, pointData = {"Water content":wc, "Soil water potential":hs, "Root volume":rootvol,"water content root and soil":wc_root_soil })
+    gridToVTK('results/'+directory+'/'+name+'_stitch_day_'+str(int(t)), X_stitch, Y_stitch, Z_stitch, pointData = {"Water content":wc_stitch,"Soil water potential":hs_stitch,"Root volume":rootvol_stitch, "water content root and soil":wc_root_soil_stitch})
