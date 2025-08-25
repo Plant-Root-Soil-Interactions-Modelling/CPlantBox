@@ -31,7 +31,7 @@ public:
     MappedSegments(std::vector<Vector3d> nodes, std::vector<Vector2i> segs, std::vector<double> radii); ///< for constant kr, and kx
 
     virtual ~MappedSegments() { }
-	
+
 	std::map<int,double> sumSegFluxes(const std::vector<double>& segFluxes); ///< sums segment fluxes over soil cells,  soilFluxes = sumSegFluxes(segFluxes), [cm3/day]
     std::vector<double> splitSoilFluxes(const std::vector<double>& soilFluxes, int type = 0) const; ///< splits soil fluxes (per cell) into segment fluxes
 
@@ -125,6 +125,7 @@ public:
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 
     void disableExtraNode() { extraNode = false; }
+    void enableExtraNode() { extraNode = true; } // extra collar node for collar BC easier
 
     // I made all initializer functions virtual and having only the verbose as argument to avoid confusion, stochasity can be set by Organism::setStochastic
     void initializeLB(bool verbose = true) override { initialize_(verbose,  true); }; ///< overridden, length based initialization
