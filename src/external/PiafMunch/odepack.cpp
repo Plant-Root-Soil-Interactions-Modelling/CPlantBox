@@ -295,7 +295,8 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 			  if (flag == CV_ROOT_RETURN) {
 				 flagr = CVodeGetRootInfo(cvode_mem, rootsfound);
 				   if (check_flag(&flagr, "CVodeGetRootInfo", 1)) { _LogMessage(" Erreur CVodeGetRootInfo") ;
-						strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output() ; return i ;
+						//strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; 
+						Update_Output() ; return i ;
 				   }
 				 for (j = 0 ; j < nrootfns ; j++) {
 					 if (rootsfound[j] == 1) {
@@ -309,7 +310,8 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 				   if (flag != CV_SUCCESS) {
 				  //    if (check_flag(&flag, "CVode", 1)) break ; // routine a  reprendre...
 					   (void)sprintf(message, "error-flag CVode = %d", flag) ; _LogMessage(message) ;
-						strftime(message, 50, "%H:-%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output(true) ;
+						//strftime(message, 50, "%H:-%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; 
+						Update_Output(true) ;
 					   return i ;
 				  }
 			  }
@@ -363,7 +365,8 @@ int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_ve
 	delete[] Var_primitive_sav ;
   }
 //  _strtime_s(message, 100); cout << "at " << message << " :  exiting solver" << endl ; Update_Output() ;
-   strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output() ;
+   //strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; 
+   Update_Output() ;
 	return 0 ;
 }
 
@@ -411,7 +414,11 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 	/* Call CVodeSVtolerances to specify the scalar relative tolerance
 	* and vector absolute tolerances */
 	flag = CVodeSVtolerances(cvode_mem, rtol[1], abstol);
-	if (check_flag(&flag, "CVodeSVtolerances", 1)) return(1);
+	if (check_flag(&flag, "CVodeSVtolerances", 1))
+	{
+		std::cout<<"check_flag(&flag, CVodeSVtolerances, 1) "<< flag <<std::endl;
+		return(1);
+	}
 
 	if (STALD) {                // algorithme de detection/correction de stabilite aux ordres > 2 (integration par methode BDF)
 		flag = CVodeSetStabLimDet(cvode_mem, SUNTRUE);    // FALSE par defaut
@@ -478,7 +485,8 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 			  if (flag == CV_ROOT_RETURN) {
 				 flagr = CVodeGetRootInfo(cvode_mem, rootsfound);
 				   if (check_flag(&flagr, "CVodeGetRootInfo", 1)) { _LogMessage(" Erreur CVodeGetRootInfo") ;
-		       			strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output() ; return i ;
+		       			//strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; 
+						Update_Output() ; return i ;
 				   }
 				 for (j = 0 ; j < nrootfns ; j++) {
 					 if (rootsfound[j] == 1) {
@@ -494,7 +502,8 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 				  if (flag != CV_SUCCESS) {
 				  //    if (check_flag(&flag, "CVode", 1)) break ; // routine a  reprendre...
 					   (void)sprintf(message, "error-flag CVode = %d", flag) ; _LogMessage(message) ;
-					   	strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output() ;
+					   	//strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; 
+						Update_Output() ;
 					   return i ;
 				  }
 			  }
@@ -547,7 +556,8 @@ int cvode_spils(void(*f)(double, double*, double*), Fortran_vector &y, Fortran_v
 	delete[] Var_primitive_sav ;
   }
 //  _strtime_s(message, 100); cout << "at " << message << " :  exiting solver" << endl ; Update_Output();
-	strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; Update_Output();
+	// strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl ; 
+	Update_Output();
 
 	return 0 ;
 }
@@ -649,7 +659,8 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 					flagr = ERKStepGetRootInfo(arkode_mem, rootsfound);
 					if (check_flag(&flagr, "ERKStepGetRootInfo", 1)) {
 						_LogMessage(" Erreur ERKStepGetRootInfo");
-				        strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; Update_Output(); return i;
+				        //strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; 
+						Update_Output(); return i;
 					}
 					for (j = 0; j < nrootfns; j++) {
 						if (rootsfound[j] == 1) {
@@ -663,7 +674,8 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 					if (flag != ARK_SUCCESS) {
 						//    if (check_flag(&flag, "CVode", 1)) break ; // routine a  reprendre...
 						(void)sprintf(message, "error-flag Arkode = %d", flag); _LogMessage(message);
-						strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; Update_Output(true);
+						//strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; 
+						Update_Output(true);
 						return i;
 					}
 				}
@@ -706,7 +718,8 @@ int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector
 		delete[] Var_primitive_sav;
 	}
 //	_strtime_s(message, 100); cout << "at " << message << " :  exiting solver" << endl; Update_Output();
-	strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; Update_Output();
+	//strftime(message, 50, "%H:%M:%S", localtime(&current)) ; cout <<  "at " << message << " :  exiting solver" << endl; 
+	Update_Output();
 	return 0;
 }
 

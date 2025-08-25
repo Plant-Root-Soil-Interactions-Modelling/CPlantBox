@@ -102,23 +102,23 @@ class PhotosynthesisPython(Photosynthesis, HydraulicModel_Meunier):
         
     def get_transpiration(self):
         """ actual transpiration [cm3 day-1], calculated as the sum of all leaf radial fluxes"""
-        return sum(self.Ev)
+        return self.Ev
 
     def get_net_assimilation(self):
         """ net actual assimilation rate assimilation [mol CO2 d-1] """
-        leafBlade = self.get_leafBlade_area(pb.leaf)
+        leafBlade = self.get_leafBlade_area(pb.leaf) * 2.
         An = self.get_net_assimilation_perleafBladeArea()
         return An * leafBlade
     
     def get_Vc(self):
         """ gross carboxilation-limited assimilation rate [mol CO2 d-1]"""
-        leafBlade = self.get_leafBlade_area(pb.leaf)
+        leafBlade = self.get_leafBlade_area(pb.leaf) * 2.
         Vc = self.get_Vc_perleafBladeArea()
         return Vc * leafBlade
         
     def get_Vj(self):
         """ gross electron transport-limited assimilation rate [mol CO2 d-1] """
-        leafBlade = self.get_leafBlade_area(pb.leaf)
+        leafBlade = self.get_leafBlade_area(pb.leaf) * 2.
         Vj = self.get_Vj_perleafBladeArea()
         return Vj * leafBlade
         

@@ -53,7 +53,7 @@ model.R = 16.7  # Retardation factor, (-)
 model.k = 1.42  # Citrate decomposition rate  (d^-1)
 model.l = 5  # Citrate depositon length behind the root tip (cm)   # |\label{l5_2_exudation:paramend}|
 
-# #
+# 
 # Numerical parameter
 #
 model.type = pb.IntegrationType.mls;  # mps, mps_straight, mls # |\label{l5_2_exudation:numparamstart}|

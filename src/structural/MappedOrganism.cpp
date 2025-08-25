@@ -592,6 +592,11 @@ std::vector<double> MappedSegments::getEffectiveRadii() {
 void MappedPlant::initialize_(bool verbose, bool lengthBased) {
 
     reset(); // just in case (Plant::reset()) (carefull, MappedPlant cannot reset, yet)
+	auto stemP = getOrganRandomParameter(Organism::ot_stem);
+	bool plantBox = stemP.size()>0;
+	if (plantBox) {
+		disableExtraNode(); // no meed for additional node to create the artificial stem 
+	}
 	if (lengthBased){
 	    if(verbose) {
 	        std::cout << "MappedPlant::initializeLB \n" << std::flush;
@@ -603,7 +608,6 @@ void MappedPlant::initialize_(bool verbose, bool lengthBased) {
         }
 	    Plant::initializeDB(verbose); // initializes plant
 	}
-
 	if (extraNode) { // inserts a special seed segment (for root system only hydraulic simualtions)
         auto initial_nodes = this->getNodes();
         auto initial_ncts = this->getNodeCTs();
@@ -664,9 +668,9 @@ void MappedPlant::simulate(double dt, bool verbose)
 	Plant::simulate(dt,  verbose);
 
 	auto uni = this->getUpdatedNodeIndices(); // move nodes
-    for (int& i : uni) { // shift
-        i += shift;
-    }
+	for (int& i : uni) { // shift
+		i += shift;
+	}
 	auto unodes = this->getUpdatedNodes();
 	auto uncts = this->getUpdatedNodeCTs();
 	assert(uni.size()==unodes.size() && "updated node indices and number of nodes must be equal");
