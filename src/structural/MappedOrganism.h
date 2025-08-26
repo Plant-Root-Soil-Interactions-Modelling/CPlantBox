@@ -124,8 +124,8 @@ public:
     std::shared_ptr<MappedSegments> mappedSegments() { return std::make_shared<MappedSegments>(*this); }  // up-cast for Python binding
     std::shared_ptr<Plant> plant() { return std::make_shared<Plant>(*this); }; // up-cast for Python binding
 
-    void disableExtraNode() { extraNode = false; }
-    void enableExtraNode() { extraNode = true; } // extra collar node for collar BC easier
+    void disableExtraNode() { extraNode = 0; }
+    void enableExtraNode() { extraNode = 1; } // extra collar node for collar BC easier
 
     // I made all initializer functions virtual and having only the verbose as argument to avoid confusion, stochasity can be set by Organism::setStochastic
     void initializeLB(bool verbose = true) override { initialize_(verbose,  true); }; ///< overridden, length based initialization
@@ -155,7 +155,7 @@ public:
 
  protected:
 
-    bool extraNode = true; // how to turn on and off again...
+    int extraNode = -1; // -1 .. choose automatic, 0.. False, 1.. True
 
 	bool rootHairs = true; // todo: determine from parameters, and set within constructor
 
