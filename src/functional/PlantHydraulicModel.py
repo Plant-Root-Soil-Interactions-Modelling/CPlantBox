@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import plantbox as pb
 from plantbox import PlantHydraulicModel as PlantHydraulicModelCPP
 from structural.MappedOrganism import MappedPlantPython
+from functional.Perirhizal import PerirhizalPython as Perirhizal
 
 import rsml.rsml_reader as rsml
 
@@ -225,6 +226,26 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         krs = t_act / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[0])
         return krs , t_act
 
+    def get_soil_rootsystem_conductance(self, sim_time, h_bs, h_sr, sp):  # Vanderborgth et al. (2023), Eqn (12)
+        """ The soil root system conductance per soil layer [day-1]
+        
+        sim_time             simulation time in days
+        h_bs           bulk soil matric potential
+        h_sr           matric potential at the soil root interface   
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)           
+        """
+        krs, _ = self.get_krs(sim_time)  # [cm2/day]
+        area = (self.ms.maxBound.x - self.ms.minBound.x) * (self.ms.maxBound.y - self.ms.minBound.y)  # [cm2]
+        # print("area", area)  #
+        krs = krs / area  # [day-1]
+        peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
+        k_phriz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
+        # print("k_phriz", np.nanmin(k_phriz), np.nanmax(k_phriz))
+        suf_ = self.get_suf(sim_time)  # [1]
+        suf = peri.aggregate(suf_)  # [1]
+        # print("suf", np.min(suf), np.max(suf), np.sum(suf))
+        return np.divide(krs * k_phriz, suf * krs + k_phriz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
+
     def get_suf(self, sim_time):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
@@ -241,6 +262,7 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         return heff[0]
 
     def test_unmapped(self):
+        """ test for unmapped segments """
         pass_ = True
         segs = self.get_segments()
         types = self.ms.subTypes
@@ -303,8 +325,8 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         for seg_id, cell_id in map.items():
             # if seg_id < 5:
             #     print("seg_id", seg_id, "cell_id", cell_id)
-            if (cell_id < 0)&(types[seg_id] == int(pb.root)):
-                print("Warning: root segment ", seg_id, "is not mapped (out of the soil domain), this could cause problems with coupling!", 
+            if (cell_id < 0) & (types[seg_id] == int(pb.root)):
+                print("Warning: root segment ", seg_id, "is not mapped (out of the soil domain), this could cause problems with coupling!",
                 nodes[segments[seg_id][0]], nodes[segments[seg_id][1]])
         print()
 

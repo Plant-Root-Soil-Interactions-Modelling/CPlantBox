@@ -45,12 +45,13 @@ s.setHomogeneousIC(initial, True)  # [cm] total potential
 s.setTopBC("noFlux")
 s.setBotBC("noFlux")
 s.setVGParameters([loam])
-s.setParameter("Soil.SourceSlope", "500")  # |\label{l72c:regularisation}|
+s.setParameter("Soil.SourceSlope", "100")  # |\label{l72c:regularisation}|
 s.initializeProblem()
 s.setCriticalPressure(wilting_point)  # |\label{l72c:soil_end}|
 
 """ Initialize xylem model """
 plant = pb.MappedPlant()  # |\label{l72c:soil_plant}|
+plant.enableExtraNode()
 plant.readParameters(path + name + ".xml")
 sdf = pb.SDF_PlantBox(np.inf, np.inf, max_b[2] - min_b[2] - 0.5)  # |\label{l72c:domain}|
 plant.setGeometry(sdf)  # |\label{l72c:soil_plant_end}|
@@ -77,7 +78,7 @@ N = round(sim_time / dt)
 
 for i in range(0, N):  # |\label{l72c:loop}|
 
-    plant.simulate(dt)  # |\label{l72c:plant}|
+    # plant.simulate(dt)  # |\label{l72c:plant}|
     hs = s.getSolutionHead()  # |\label{l72c:hs}|
     hx = hm.solve(rs_age + t, -trans * sinusoidal(t), hs, cells = True)  # |\label{l72c:hx}|
 
@@ -95,6 +96,7 @@ for i in range(0, N):  # |\label{l72c:loop}|
     if i % 10 == 0:  # |\label{l72c:write}|
         vp.write_soil("results/example72_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
         vp.write_plant("results/example72_{:06d}".format(i // 10), hm.ms.plant())  # |\label{l72c:write_end}|
+        # vp.plot_roots_and_soil(hm.ms.mappedSegments(), "matric potential", hx, s, True, np.array(min_b), np.array(max_b), cell_number) # BETTER output
 
     t += dt  # [day]
 
