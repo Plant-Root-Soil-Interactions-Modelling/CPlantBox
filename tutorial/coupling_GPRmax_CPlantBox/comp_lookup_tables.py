@@ -20,8 +20,11 @@ l1 = [0.008, 0.389, 0.012, 1.97, 91.68] # 0−20 cm
 l2 = [0.008, 0.389, 0.023, 1.23, 63.36] # 20−33 cm
 l3 = [0.008, 0.389, 0.01, 1.1, 10] # 33−150 cm
 
-soils = [hydrus_clay, hydrus_sand, hydrus_sandyloam]
-soils_ = ['hydrus_clay', 'hydrus_sand', 'hydrus_sandyloam']
+# soils = [hydrus_clay, hydrus_sand, hydrus_sandyloam]
+# soils_ = ['hydrus_clay', 'hydrus_sand', 'hydrus_sandyloam']
+
+soils = [hydrus_sandyloam, hydrus_loam]
+soils_ = ['hydrus_sandyloam', 'hydrus_loam']
 
 for i in range(0, len(soils)): 
     filename = soils_[i]
