@@ -39,7 +39,7 @@ cell_number = [1, 1, 50]  # ~[4*4*1] cm3
 
 path = "../../modelparameter/structural/rootsystem/"
 name = "Zeamays_synMRI_modified"  #"Anagallis_femina_Leitner_2010"  # Zea_mays_1_Leitner_2010, Zeamays_synMRI.xml  <<<<-------
-trans = 25  # cm3 /day (sinusoidal) = mL/day
+trans = 250  # cm3 /day (sinusoidal) = mL/day
 wilting_point = -15000  # cm
 rs_age = 21  # root system initial age [day]
 
