@@ -18,7 +18,7 @@ simtime = 70  # simulate from day 1 to 70
 dt = 1
 
 architectures = [  # |\label{l42:architecture}|
-    "Heliantus_Pagès_2013",
+    "Heliantus_Pages_2013",
     "Glycine_max_Moraes2020_opt2",
     "Brassica_oleracea_Vansteenkiste_2014",
     "Zea_mays_1_Leitner_2010"
