@@ -4,7 +4,7 @@ from visualisation.vtk_tools import *
 import time
 import numpy as np
 import vtk
-# from IPython.display import Image, display
+from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -1069,7 +1069,10 @@ def plot_roots_and_container(root_system, sdf, p_name = "subType", title = "Root
 
     # Render in a single window
     if render:
-        render_window(all_actors, title, root_cbar, mesh_bounds, interactive).Start()
+        ren = render_window(all_actors, title, root_cbar, mesh_bounds, interactive)
+        if interactive:
+            ren.Start()
+
     else:
         return all_actors, [root_cbar, mesh_cbar], mesh_bounds
 
