@@ -80,7 +80,7 @@ public:
     std::vector<double> distanceTip;// save the distance between root segment and root tip (for location-dependent kr)
     std::vector<double> exchangeZoneCoefs;
 
-    Vector3d minBound;
+    Vector3d minBound; // grid bounds
     Vector3d maxBound;
     Vector3d resolution; // cells
     bool cutAtGrid = false;

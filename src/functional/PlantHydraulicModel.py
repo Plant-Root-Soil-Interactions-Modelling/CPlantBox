@@ -239,12 +239,12 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         # print("area", area)  #
         krs = krs / area  # [day-1]
         peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
-        k_phriz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
-        # print("k_phriz", np.nanmin(k_phriz), np.nanmax(k_phriz))
+        k_prhiz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
+        # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
         suf_ = self.get_suf(sim_time)  # [1]
         suf = peri.aggregate(suf_)  # [1]
         # print("suf", np.min(suf), np.max(suf), np.sum(suf))
-        return np.divide(krs * k_phriz, suf * krs + k_phriz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
+        return np.divide(krs * k_prhiz, suf * krs + k_prhiz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
 
     def get_suf(self, sim_time):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """

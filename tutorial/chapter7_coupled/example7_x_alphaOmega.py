@@ -93,7 +93,7 @@ h_sr = np.ones(h_bs.shape) * wilting_point
 # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
 # plt.plot(k_prhiz, np.linspace(-50, 0, 50))
 # plt.show()
-#
+# #
 # suf_ = hm.get_suf(sim_time)  # test 2
 # suf = peri.aggregate(suf_)
 # print("suf", np.min(suf), np.max(suf), np.sum(suf))
@@ -105,7 +105,7 @@ h_sr = np.ones(h_bs.shape) * wilting_point
 # print("k_srs", np.nanmin(k_srs), np.nanmax(k_srs))
 # plt.plot(k_srs, np.linspace(-50, 0, 50))
 # plt.show()
-# dd
+# # dd
 
 """ Numerical solution """
 start_time = timeit.default_timer()
@@ -116,15 +116,15 @@ area = (plant.maxBound.x - plant.minBound.x) * (plant.maxBound.y - plant.minBoun
 
 for i in range(0, N):  # |\label{l7xa:loop}|
 
-    h_sb = s.getSolutionHead()
-    h_sb = plant.matric2total(h_sb)
+    h_bs = s.getSolutionHead()
+    h_bs = np.array(plant.matric2total(h_bs))
 
     # Alpha: root system averaged stress factor
     krs, _ = hm.get_krs(sim_time)  # [cm2/day] (could be precomputed for static case)
     krs = krs / area
     k_srs = hm.get_soil_rootsystem_conductance(sim_time, h_bs, wilting_point, sp)
     h_bs_diff = h_bs - np.ones(h_bs.shape) * wilting_point
-    alpha = np.divide(np.multiply(k_srs, h_bs_diff), -krs * wilting_point)  # [1]
+    alpha = np.multiply(k_srs, h_bs_diff) / (-krs * wilting_point)  # [1]
     # print(alpha)
     # print("alpha", np.nanmin(alpha), np.nanmax(alpha))
 
@@ -146,11 +146,11 @@ for i in range(0, N):  # |\label{l7xa:loop}|
     print("omega_c", omega_c)
     print("omega / omega_c", omega / omega_c)
 
-    # Sink, unstressed
+    # Sink, stressed
     q_s = alphaSUF * tp / omega_c
     # print("q_s", np.nansum(q_s), np.nanmin(q_s), np.nanmax(q_s))
 
-    # Sink, stressed
+    # Sink, unstressed
     denumerator = np.multiply(h_bs_diff, np.nansum(np.divide(alphaSUF, h_bs_diff)))
     print("denumerator", np.nansum(denumerator), np.nanmin(denumerator), np.nanmax(denumerator))
     print("- term: ", np.nansum(np.divide(alphaSUF, denumerator) * (omega / omega_c - 1) * tp))
@@ -175,7 +175,7 @@ for i in range(0, N):  # |\label{l7xa:loop}|
 
     n = round(float(i) / float(N) * 100.)  # |\label{l7xa:progress}|
     print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], potential {:g}, actual {:g}; [{:g}, {:g}] cm soil at {:g} days"
-            .format(tp * area, np.nansum(q) * area, np.min(h_sb), np.max(h_sb), s.simTime))
+            .format(tp * area, np.nansum(q) * area, np.min(h_bs), np.max(h_bs), s.simTime))
 
     if i % 10 == 0:  # |\label{l7xa:write}|
         vp.write_soil("results/example72_{:06d}".format(i // 10), s, min_b, max_b, cell_number)
