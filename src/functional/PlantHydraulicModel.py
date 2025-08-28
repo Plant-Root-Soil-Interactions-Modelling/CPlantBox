@@ -226,26 +226,6 @@ class PlantHydraulicModel(PlantHydraulicModelCPP):
         krs = t_act / (-500 - 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) - rx[0])
         return krs , t_act
 
-    def get_soil_rootsystem_conductance(self, sim_time, h_bs, h_sr, sp):  # Vanderborgth et al. (2023), Eqn (12)
-        """ The soil root system conductance per soil layer [day-1]
-        
-        sim_time             simulation time in days
-        h_bs           bulk soil matric potential
-        h_sr           matric potential at the soil root interface   
-        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)           
-        """
-        krs, _ = self.get_krs(sim_time)  # [cm2/day]
-        area = (self.ms.maxBound.x - self.ms.minBound.x) * (self.ms.maxBound.y - self.ms.minBound.y)  # [cm2]
-        # print("area", area)  #
-        krs = krs / area  # [day-1]
-        peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
-        k_prhiz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
-        # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
-        suf_ = self.get_suf(sim_time)  # [1]
-        suf = peri.aggregate(suf_)  # [1]
-        # print("suf", np.min(suf), np.max(suf), np.sum(suf))
-        return np.divide(krs * k_prhiz, suf * krs + k_prhiz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
-
     def get_suf(self, sim_time):
         """ Standard uptake fraction (SUF) [1] per root segment, should add up to 1 """
         n = self.ms.getNumberOfMappedSegments()
@@ -736,6 +716,28 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
         return (self.krs * self.get_heff_(rsx) - (-t_act)) / self.krs
+
+    def get_soil_rootsystem_conductance(self, sim_time, h_bs, h_sr, sp):  # Vanderborgth et al. (2023), Eqn (12)
+        """ The soil root system conductance per soil layer [day-1]
+        
+        sim_time             simulation time in days
+        h_bs           bulk soil matric potential
+        h_sr           matric potential at the soil root interface   
+        sp             soil parameter: van Genuchten parameter set (type vg.Parameters)           
+        """
+        # krs, _ = self.get_krs(sim_time)  # [cm2/day]
+        krs = self.krs
+        area = (self.ms.maxBound.x - self.ms.minBound.x) * (self.ms.maxBound.y - self.ms.minBound.y)  # [cm2]
+        # print("area", area)  #
+        krs = krs / area  # [day-1]
+        peri = Perirhizal(self.ms)  # helper class, wrap mappedSegments
+        k_prhiz = peri.perirhizal_conductance_per_layer(h_bs, h_sr, sp)  # [day-1], Vanderborght et al. 2023, Eqn (6)
+        # print("k_prhiz", np.nanmin(k_prhiz), np.nanmax(k_prhiz))
+        # suf_ = self.get_suf(sim_time)  # [1]
+        suf_ = self.suf
+        suf = peri.aggregate(suf_[0,:])  # [1]
+        # print("suf", np.min(suf), np.max(suf), np.sum(suf))
+        return np.divide(krs * k_prhiz, suf * krs + k_prhiz)  # [day-1], see Vanderborgth et al. (2023), Eqn (12)
 
     def get_krs_(self, sim_time):
         """ calculatets root system conductivity [cm2/day] at simulation time @param sim_time [day] """
