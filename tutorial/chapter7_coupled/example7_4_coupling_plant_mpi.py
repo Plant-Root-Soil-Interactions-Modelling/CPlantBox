@@ -55,7 +55,7 @@ weatherData = pd.read_csv(pathWeather + 'Selhausen_weather_data.txt', delimiter 
 """ Bulk soil """
 min_b = [-4., -4., -24.]
 max_b = [4., 4., 0.]
-cell_number = [4 , 4, 12]  # [1] spatial resolution
+cell_number = [4, 4, 12]  # [1] spatial resolution
 hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96] 
 vg_loam = vg.Parameters(hydrus_loam)  
 initial = -600  # cm
@@ -71,6 +71,7 @@ def setSoilParams(s):
     s.setParameter("Flux.UpwindWeight", "1")
     s.setVGParameters([hydrus_loam])
     s.wilting_point = -10000 # cm
+    s.eps_regularization = 1e-10
 
 s = RichardsWrapper(RichardsNCSP()) 
 s.initialize()
@@ -85,6 +86,7 @@ helpful.setDefault(s) # other input parameters for the solver
 setSoilParams(s)
 s.initializeProblem()
 s.setCriticalPressure(s.wilting_point)  
+s.setRegularisation(s.eps_regularization, s.eps_regularization) # needs to be low when using sand parameters. 
 
 """ Initialize plant model """
 plant = pb.MappedPlant(1) 
@@ -116,6 +118,7 @@ def setSoilParamsCyl(s):
     s.setInnerBC_solute(8) # Michaelis Menten uptake
     s.setParameter("RootSystem.Uptake.Vmax", s.dumux_str(RS_Uptake_Vmax))   # active uptake parameters
     s.setParameter("RootSystem.Uptake.Km", s.dumux_str(RS_Uptake_km))
+            
 
 rs.setSoilParam = setSoilParamsCyl # |\label{l74:perirhizal_models_end}| 
 
@@ -127,6 +130,7 @@ net_flux_solute = np.zeros(np.prod(cell_number))
 proposed_outer_fluxes_water =  None
 proposed_outer_fluxes_solute = None
 proposed_inner_fluxes_water = None 
+h_xylem = None
 
 for i in range(N):  # |\label{l74:loop_start}|
     """ Weather variables """
@@ -142,6 +146,7 @@ for i in range(N):  # |\label{l74:loop_start}|
     hm.pCO2 = weatherData_i['co2']
     es = hm.get_es(weatherData_i['Tair'])
     ea = es * weatherData_i['RH']
+    
     if rank == 0:
         hm.solve(sim_time = plant_age, rsx = h_rsi, cells = False,
                 ea = ea, es = es, 
@@ -150,10 +155,11 @@ for i in range(N):  # |\label{l74:loop_start}|
         
         proposed_inner_fluxes_water = hm.radial_fluxes() # [cm3/day] 
         h_xylem = hm.get_water_potential() # |\label{l74:plant_transpi_end}| 
+        
             
     """ Perirhizal zone models """ # |\label{l74:perirhizal_start}| 
-    proposed_outer_fluxes_water  = rs.splitSoilVals(soilVals = net_flux_water,  compId = 0, dt = dt)
-    proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals = net_flux_solute, compId = 1, dt = dt)         
+    proposed_outer_fluxes_water  = rs.splitSoilVals(soilVals = net_flux_water,  compId = 0, dt = dt) 
+    proposed_outer_fluxes_solute = rs.splitSoilVals(soilVals = net_flux_solute, compId = 1, dt = dt)   
     
     rs.solve(dt, proposed_inner_fluxes_water,  # inner BC water
                  proposed_outer_fluxes_water,  # outer BC water
@@ -163,20 +169,19 @@ for i in range(N):  # |\label{l74:loop_start}|
     realisedInnerFlows_water = rs.getRealisedInnerFluxes(0)
     realisedInnerFlows_solute = rs.getRealisedInnerFluxes(1)
     
-    soil_source_water  = comm.bcast(rs.sumSeg(realisedInnerFlows_water), root = 0) # [cm3/day]  per soil cell 
+    soil_source_water  = comm.bcast(rs.sumSeg(realisedInnerFlows_water), root = 0) # [cm3/day]  per soil cell
     soil_source_solute = comm.bcast(rs.sumSeg(realisedInnerFlows_solute), root = 0) # [g/day]  per soil cell
 
     s.setSource(soil_source_water.copy() , 0) # [cm3/day], in richards.py
     s.setSource(soil_source_solute.copy(), 1) # [g/day], in richards.py
 
-    s.solve(dt)  # |\label{l74:soil_model_end}|
-
+    s.solve(dt, saveInnerFluxes_ = True)  # |\label{l74:soil_model_end}|
     
     """ Post processing """
     rs.check1d3dDiff() # |\label{l74:1d3d_diff_start}|
    
     # inter-cell exchange
-    net_fluxes = - np.array([s.getFlowsPerCell(nc)  for nc in range(s.numComp)]) # < 0 means leave the cell, > 0 means enter the cell
+    net_fluxes = -np.array([s.getFlowsPerCell(nc)  for nc in range(s.numComp)]) # < 0 means leave the cell, > 0 means enter the cell
     
     if rank == 0:
         net_flux_water  = net_fluxes[0] - rs.alldiff1d3dCNW[0] /dt # [cm3/day] per soil cell
@@ -193,16 +198,18 @@ for i in range(N):  # |\label{l74:loop_start}|
         n = round(float(i) / float(N - 1) * 100.)  
         print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm bulk soil, [{:g}, {:g}] cm root-soil interface, [{:g}, {:g}] cm plant xylem at {}"
             .format(np.min(h_soil), np.max(h_soil), np.min(h_rsi_soil), np.max(h_rsi_soil), np.min(h_xylem), np.max(h_xylem), weatherData_i['time']))  # |\label{l74:info}|
-
+        print('error',rs.maxdiff1d3dCNW_abs, rs.maxdiff1d3dCNW_rel)
 
 if rank == 0:
     print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s") 
 
-    """ VTK visualisation """  
-    vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s,
-                            False, np.array(min_b), np.array(max_b), cell_number, name,
-                            sol_ind = 1)
+""" VTK visualisation """  
+h_xylem = comm.bcast(h_xylem, root = 0) 
+vp.plot_plant_and_soil(hm.ms, "xylem pressure head (cm)", h_xylem, s,
+                        False, np.array(min_b), np.array(max_b), cell_number, name,
+                        sol_ind = 1)
 
+if rank == 0:
     """ Transpiration over time """
     fig, ax1 = plt.subplots()
     ax1.plot(x_, np.array(y_), 'g')  # actual transpiration

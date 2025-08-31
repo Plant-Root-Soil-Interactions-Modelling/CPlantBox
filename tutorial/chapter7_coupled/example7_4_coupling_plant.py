@@ -54,7 +54,7 @@ weatherData = pd.read_csv(pathWeather + 'Selhausen_weather_data.txt', delimiter 
 """ Bulk soil """
 min_b = [-4., -4., -24.]
 max_b = [4., 4., 0.]
-cell_number = [4 , 4, 12]  # [1] spatial resolution
+cell_number = [4,4,12]  # [1] spatial resolution
 hydrus_loam = [0.078, 0.43, 0.036, 1.56, 24.96] 
 vg_loam = vg.Parameters(hydrus_loam)  
 initial = -600  # cm
@@ -70,6 +70,7 @@ def setSoilParams(s):
     s.setParameter("Flux.UpwindWeight", "1")
     s.setVGParameters([hydrus_loam])
     s.wilting_point = -10000 # cm
+    s.eps_regularization = 1e-10
 
 s = RichardsWrapper(RichardsNCSP()) 
 s.initialize()
@@ -84,6 +85,8 @@ helpful.setDefault(s) # other input parameters for the solver
 setSoilParams(s)
 s.initializeProblem()
 s.setCriticalPressure(s.wilting_point)  
+s.setRegularisation(s.eps_regularization, s.eps_regularization) # needs to be low when using sand parameters. 
+
 
 """ Initialize plant model """
 plant = pb.MappedPlant(1) 
@@ -161,14 +164,14 @@ for i in range(N):  # |\label{l74:loop_start}|
     s.setSource(soil_source_water , 0) # [cm3/day], in richards.py
     s.setSource(soil_source_solute, 1) # [g/day], in richards.py
 
-    s.solve(dt)  # |\label{l74:soil_model_end}|
+    s.solve(dt, saveInnerFluxes_ = True)  # |\label{l74:soil_model_end}|
 
     
     """ Post processing """
     rs.check1d3dDiff() # |\label{l74:1d3d_diff_start}|
    
     # intracell exchange
-    net_fluxes = - np.array([s.getFluxesPerCell(nc)  for nc in range(s.numComp)]) # < 0 means leave the cell, > 0 means enter the cell
+    net_fluxes = - np.array([s.getFlowsPerCell(nc)  for nc in range(s.numComp)]) # < 0 means leave the cell, > 0 means enter the cell
     net_flux_water  = net_fluxes[0] - rs.alldiff1d3dCNW[0] /dt # [cm3/day] per soil cell
     net_flux_solute = net_fluxes[1] - rs.alldiff1d3dCNW[1] /dt # [g/day] per soil cell # |\label{l74:1d3d_diff_end}|
 
@@ -181,6 +184,7 @@ for i in range(N):  # |\label{l74:loop_start}|
     
     print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm bulk soil, [{:g}, {:g}] cm root-soil interface, [{:g}, {:g}] cm plant xylem at {}"
         .format(np.min(h_soil), np.max(h_soil), np.min(h_rsi_soil), np.max(h_rsi_soil), np.min(h_xylem), np.max(h_xylem), weatherData_i['time']))  # |\label{l74:info}|
+    print('error',rs.maxdiff1d3dCNW_abs, rs.maxdiff1d3dCNW_rel)
 
 
 
