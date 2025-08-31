@@ -594,8 +594,10 @@ void MappedPlant::initialize_(bool verbose, bool lengthBased) {
     reset(); // just in case (Plant::reset()) (careful, MappedPlant cannot reset, yet)
 	auto stemP = getOrganRandomParameter(Organism::ot_stem);
 	bool plantBox = stemP.size()>1; // prototype + a real parameter definition
-	if (plantBox) {
-		disableExtraNode(); // no meed for additional node to create the artificial stem 
+	if ((extraNode == -1) && (plantBox)) {
+		disableExtraNode(); // no meed for additional node to create the artificial stem
+	} else {
+	    enableExtraNode();
 	}
 	if (lengthBased){
 	    if(verbose) {
@@ -608,7 +610,7 @@ void MappedPlant::initialize_(bool verbose, bool lengthBased) {
         }
 	    Plant::initializeDB(verbose); // initializes plant
 	}
-	if (extraNode) { // inserts a special seed segment (for root system only hydraulic simualtions)
+	if (extraNode==1) { // inserts a special seed segment (for root system only hydraulic simualtions)
         auto initial_nodes = this->getNodes();
         auto initial_ncts = this->getNodeCTs();
         auto n0 = initial_nodes.at(0);
@@ -659,7 +661,7 @@ void MappedPlant::mapSubTypes(){
  */
 void MappedPlant::simulate(double dt, bool verbose)
 {
-    size_t shift = extraNode;
+    size_t shift = (extraNode == 1);
 
 	if (soil_index==nullptr) {
 		throw std::invalid_argument("MappedPlant::simulate():soil was not set, use MappedPlant::simulate::setSoilGrid" );
@@ -819,7 +821,7 @@ void MappedPlant::simulate(double dt, bool verbose)
  * see @XylemFlux::kr_RootExchangeZonePerType()
  **/
 void MappedPlant::calcExchangeZoneCoefs() { //
-    size_t shift = extraNode;
+    size_t shift = (extraNode==1);
 	exchangeZoneCoefs.resize(segments.size(), -1.0);
 	distanceTip.resize(segments.size(), -1.0);
 	distanceTip.at(0) = 0.;

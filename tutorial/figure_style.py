@@ -1,5 +1,16 @@
 """
-Defines font sizes and suitable figure sizes 2:1, 1:2, 4:3, 3:4, 1:1 (square)
+Defines font sizes and suitable figure sizes; 
+ideally, matplotlib figures should have the same text sizes throughout the book   
+
+2:1, 
+1:2, 
+4:3, 
+3:4, 
+1:1 (square)
+1:1 (small)
+1:1 (med)
+1:1 (large)
+
 """
 import matplotlib.pyplot as plt
 

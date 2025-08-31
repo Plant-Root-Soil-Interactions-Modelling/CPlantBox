@@ -5,7 +5,8 @@ import time
 import numpy as np
 import vtk
 from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
-# from IPython.display import Image, display
+from IPython.display import Image, display
+
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -55,7 +56,7 @@ def plot_plant(plant, p_name, render = True, interactiveImage = True):
     leaf_polys = vtk.vtkCellArray()  # describing the leaf surface area
 
     globalIdx_y = []
-    leaves = plant.getOrgans(ot = pb.leaf)  # <--------- TODO DL: will only work for Plant, not for MappedSegments
+    leaves = plant.getOrgans(ot = pb.leaf)  # <--------- TODO DL: will only work for Plant, not for MappedSegments (with no plant attached)
     for l in leaves:
         globalIdx_y = globalIdx_y + create_leaf_(l, leaf_points, leaf_polys)
     globalIdx_y = np.array(globalIdx_y)
@@ -1081,7 +1082,10 @@ def plot_roots_and_container(root_system, sdf, p_name = "subType", title = "Root
 
     # Render in a single window
     if render:
-        render_window(all_actors, title, root_cbar, mesh_bounds, interactive).Start()
+        ren = render_window(all_actors, title, root_cbar, mesh_bounds, interactive)
+        if interactive:
+            ren.Start()
+
     else:
         return all_actors, [root_cbar, mesh_cbar], mesh_bounds
 
