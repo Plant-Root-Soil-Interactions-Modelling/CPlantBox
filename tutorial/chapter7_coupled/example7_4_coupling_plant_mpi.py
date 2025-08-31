@@ -198,7 +198,7 @@ for i in range(N):  # |\label{l74:loop_start}|
         n = round(float(i) / float(N - 1) * 100.)  
         print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], [{:g}, {:g}] cm bulk soil, [{:g}, {:g}] cm root-soil interface, [{:g}, {:g}] cm plant xylem at {}"
             .format(np.min(h_soil), np.max(h_soil), np.min(h_rsi_soil), np.max(h_rsi_soil), np.min(h_xylem), np.max(h_xylem), weatherData_i['time']))  # |\label{l74:info}|
-        print('error',rs.maxdiff1d3dCNW_abs, rs.maxdiff1d3dCNW_rel)
+
 
 if rank == 0:
     print ("Coupled benchmark solved in ", timeit.default_timer() - start_time, " s") 
