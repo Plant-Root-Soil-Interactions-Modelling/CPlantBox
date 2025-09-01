@@ -737,7 +737,6 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
             write_vtp(path + filename + ".vtp", pd)
             write_vtu(path + filename + ".vtu", soil_grid)
 
-
 def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "", interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
@@ -770,6 +769,36 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
     if filename:
         path = "results/"
         write_vtp(path + filename + ".vtp", pd)
+        write_vtu(path + filename + ".vtu", soil_grid)
+
+def plot_soil(s, pname_mesh, min_b, max_b, cell_number, solutes = [], filename:str = "", interactiveImage = True):
+    """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
+        @param filename      filename without extension 
+        @parma s             soil model (e.g. Richards, RichardsNC)
+        @parma min_b         minimum of bounding box
+        @parma max_b         maximum of bounding box
+        @parma cell_number   resolution of soil grid
+        @parma solutes       (optionally) names of solutes, list of str (e.g. in case of RichardsNC)
+    """
+    soil_grid = uniform_grid(np.array(min_b), np.array(max_b), np.array(cell_number))
+    soil_water_content = vtk_data(np.array(s.getWaterContent()))
+    soil_water_content.SetName("water content")
+    soil_grid.GetCellData().AddArray(soil_water_content)
+    soil_pressure = vtk_data(np.array(s.getSolutionHead()))
+    soil_pressure.SetName("pressure head")  # in macroscopic soil
+    soil_grid.GetCellData().AddArray(soil_pressure)
+    for i, s_ in enumerate(solutes):
+        d = vtk_data(np.array(s.getSolution(i + 1)))
+        d.SetName(s_)  # in macroscopic soil
+        soil_grid.GetCellData().AddArray(d)
+        
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)        
+    ren = render_window(meshActors, filename, [meshCBar], soil_grid.GetBounds(), interactiveImage)
+    if interactiveImage:
+        ren.Start()
+        
+    if filename:
+        path = "results/"
         write_vtu(path + filename + ".vtu", soil_grid)
 
 
