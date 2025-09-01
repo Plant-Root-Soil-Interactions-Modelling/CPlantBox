@@ -48,6 +48,23 @@ def plot_retention_curve(param, label_ = ""):
     plt.ylabel("- matric potential [cm]")
     plt.yscale('log')
 
+def plot_hydraulic_conductivity(param, label_ = ""):
+    """ plots the matric flux potential"""
+    y_ = np.logspace(1., 4., 100)
+    x_ = hydraulic_conductivity(-y_, param)
+    plt.plot(y_, x_, label = label_)
+    plt.ylabel("hydraulic_conductivity [cm/day]")
+    plt.xlabel("- matric potential [cm]")
+    plt.xscale('log')
+    
+def plot_matric_flux_potential(param, label_ = ""):
+    """ plots the matric flux potential"""
+    y_ = np.logspace(1., 4., 100)
+    x_ =[ matric_flux_potential(-y__, param) for y__ in y_]
+    plt.plot(y_, x_, label = label_)
+    plt.ylabel("matric flux potential [cm2/day]")
+    plt.xlabel("- matric potential [cm]")
+    plt.xscale('log')
 
 def pressure_head(theta, sp):
     """ returns pressure head at a given volumetric water content according to the van genuchten model """
