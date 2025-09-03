@@ -148,7 +148,7 @@ void MycorrhizalPlant::initCallbacks() {
         inf_->fmin = 0;
         inf_->slope = 0;
         // std::cout<< inf_->sdf->toString() << std::endl;
-        rp->f_inf = inf_; // set new one
+        // rp->f_inf = inf_; // set new one
     }
 
     // Create tropisms and growth functions per random hyphae parameter

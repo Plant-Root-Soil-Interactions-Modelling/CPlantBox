@@ -63,9 +63,11 @@ def runsimulation(seed):
     infs = mycp.getNodeInfections(2)
     temp_ana = pb.SegmentAnalyser(mycp)
     # Segmentbasierte Infektionslängen
+    seg_len_ = []
     primary_seg = secondary_seg = noninf_seg = 0
     for i in range(1, len(infs)):
         seg_len = temp_ana.getSegmentLength(i - 1)
+        seg_len_.append(seg_len)
         if infs[i] == 1:
             primary_seg += seg_len
         elif infs[i] == 2:
@@ -88,7 +90,6 @@ def runsimulation(seed):
         infs = mycp.getNodeInfections(2)
         temp_ana = pb.SegmentAnalyser(mycp)
 
-        seg_len_ = []
         primary_seg = secondary_seg = noninf_seg = 0
         for i in range(1, len(infs)):
             seg_len = temp_ana.getSegmentLength(i - 1)
@@ -100,7 +101,7 @@ def runsimulation(seed):
             elif infs[i] == 0:
                 noninf_seg += seg_len
         
-        dx = np.median(seg_len_) 
+        dx = np.mean(seg_len_) 
         # print("dx", dx)
         
         observed_segment_primary.append(primary_seg)
@@ -119,29 +120,39 @@ def runsimulation(seed):
         expected_segment_primary.append(expected_segment_primary[-1] + delta_expected_segment)
     return (time, observed_segment_primary, expected_segment_primary, 
             observed_segment_new_primary, expected_segment_new_primary,
-            observed_segment_secondary, observed_segment_noninf, observed_segment_total)
+            observed_segment_secondary, observed_segment_noninf, observed_segment_total,seg_len_)
 
 all_obs_primary = []
 all_exp_primary = []
+all_seg_len = []
 
-for seed in range(1, 50):
+for seed in range(1, 20):
     print(f"Running simulation with seed {seed}")
     (time, observed_segment_primary, expected_segment_primary, 
-     _, _, _, _, _) = runsimulation(seed)
+     _, _, _, _, _,total_seg) = runsimulation(seed)
     all_obs_primary.append(observed_segment_primary)
     all_exp_primary.append(expected_segment_primary)
+    all_seg_len.append(total_seg)
 
 # Umwandeln in Arrays
 obs_array = np.array(all_obs_primary)
 exp_array = np.array(all_exp_primary)
+seg_array = np.array(all_seg_len)
 
 # Mittelwert und Streuung
 mean_obs = np.mean(obs_array, axis=0)
 std_obs = np.std(obs_array, axis=0)
 mean_exp = np.mean(exp_array, axis=0)
 std_exp = np.std(exp_array, axis=0)
+mean_segs = np.mean(seg_array.flatten(),axis=0)
+median_segs = np.median(seg_array.flatten(),axis=0)
+
+print("Mean segment length:", mean_segs)
+print("Median segment length:", median_segs)
+
 
 # Plot
+plt.figure()
 plt.fill_between(time, mean_obs - std_obs, mean_obs + std_obs, color='blue', alpha=0.2, label="Observed ± SD")
 plt.plot(time, mean_obs, label="Mean Observed", color='blue')
 plt.plot(time, mean_exp, label="Mean Expected", color='orange')

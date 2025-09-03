@@ -7,6 +7,14 @@ mycp = pb.MycorrhizalPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
+
+animation = False
+local = True
+infbox = pb.SDF_PlantBox(4, 4, 4)
+# infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
+for i in range(1,5):
+    infbox = pb.SDF_Union(infbox, pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, - i * 10)))
+
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
@@ -21,22 +29,17 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     rp.hyphalEmergenceDensity = 2;
-    rp.hyphalEmergenceDist = 0.5;  # distance between hyphal emergence points
-
-infbox = pb.SDF_PlantBox(10, 10, 5)
-infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
-local = False
-animation = False
-for i in range(0, len(root)):
     if local:
-        root[i].f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
-    root[i].dx = 1.0
+        rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
+    rp.dx = 0.1
+    # rp.hyphalEmergenceDist = 0.5;  # distance between hyphal emergence points
+
 
 mycp.initialize(True)
 # print(mycp.toString())
 # mycp.writeParameters(name + "_parameters.xml", 'plant', True)
 
-simtime = 20
+simtime = 10
 fps = 30
 anim_time = 10
 N = fps * anim_time
