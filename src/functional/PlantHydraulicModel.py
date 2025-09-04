@@ -709,14 +709,11 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def update(self, sim_time):
         """ call before solve(), get_collar_potential(), and get_Heff() """
-        print("update")
         self.ci = self.collar_index()  # segment index of the collar segment
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
         self.krs, _ = self.get_krs_(sim_time)
-        print("update, krs", self.krs)
         self.suf = np.transpose(self.get_suf_())
-        print("update, sum suf", np.sum(self.suf), self.suf.shape)
 
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
@@ -774,7 +771,6 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_heff_(self, rsx):
         """ effective total potential [cm] using cached suf """
-        print('get_heff_, rsx.shape',rsx.shape, 'self.suf.shape', self.suf.shape)
         heff = self.suf.dot(self.ms.matric2total(rsx))
         # print("get_heff_()", heff[0], heff.shape)
         return heff[0]
