@@ -619,7 +619,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @return [cm] root matric potential per root system node  
         """
         self.update(sim_time)
-        print('suf', self.suf.shape)
+        #print('suf', self.suf.shape)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
         collar = self.get_collar_potential(t_act, rsx)
