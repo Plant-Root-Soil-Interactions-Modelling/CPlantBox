@@ -48,18 +48,18 @@ def soil_vg_(name:str):
     table_name = "table_{:s}".format(name)  # name for 4D look up table ########################
     return soil[name], table_name
     
-def maize_(res:float):
+def maize_(res:float,soil_depth):
     """ parameters for maize simulation """
-    min_b = [-75/2, -15/2, -150.] #[cm]
+    min_b = [-75/2, -15/2, soil_depth] #[cm]
     max_b = [75/2, 15/2, 0.]  #[cm]
-    cell_number = [int(75/res), int(15/res), int(150/res)]
+    cell_number = [int(75/res), int(15/res), int(soil_depth*-1/res)]
     return min_b, max_b, cell_number
     
-def wheat_(res:float):
+def wheat_(res:float,soil_depth):
     """ parameters for wehat simulation """
-    min_b = [-15/2, -3/2, -150.] #[cm]
+    min_b = [-15/2, -3/2, soil_depth] #[cm]
     max_b = [15/2, 3/2, 0.]  #[cm]
-    cell_number = [int(15/res), int(3/res), int(150/res)] 
+    cell_number = [int(15/res), int(3/res), int(soil_depth*-1/res)] 
     return min_b, max_b, cell_number
     
 def set_scenario(plant_, res, soil_, initial_, trans_, rs_age, inf_:bool, evap_:bool):
@@ -81,6 +81,7 @@ def set_scenario(plant_, res, soil_, initial_, trans_, rs_age, inf_:bool, evap_:
     # Hidden parameters
     wilting_point = -15000  # cm
     target = 150 #cm, length of target domain for gpr max in x, y, z
+    soil_depth = -150 
     wc_root = 0.8 #mean root water content (-)
     inf = 0.1 #cm/d - excess water that does no infiltrate is treated as runoff, i.e. is not accounted for 
     evap = -0.1 #cm/d
@@ -95,11 +96,11 @@ def set_scenario(plant_, res, soil_, initial_, trans_, rs_age, inf_:bool, evap_:
 
     soil, table_name = soil_vg_(soil_)
     if plant_ == "maize":
-        min_b, max_b, cell_number = maize_(res_)
+        min_b, max_b, cell_number = maize_(res_,soil_depth)
         param_name = "Zeamays_synMRI_modified.xml"
         rh_params = 'couvreur2012'
     elif plant_ == "wheat":
-        min_b, max_b, cell_number = wheat_(res_)
+        min_b, max_b, cell_number = wheat_(res_,soil_depth)
         param_name = "wheat_Morandage.xml"
         rh_params = 'wheat_Giraud2023adapted'
 
@@ -177,10 +178,10 @@ def set_scenario(plant_, res, soil_, initial_, trans_, rs_age, inf_:bool, evap_:
     rho_ = np.divide(outer_r, np.array(inner_r))  
   
     
-    return inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res_
+    return inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res_ , soil_depth
     
-def write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch): 
-    
+def write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target, soil_depth): 
+    print(name,t)
     cell_number = [np.shape(wc)[0],np.shape(wc)[1],np.shape(wc)[2]]
     cell_number_stitch = [np.shape(wc_stitch)[0],np.shape(wc_stitch)[1],np.shape(wc_stitch)[2]]
     

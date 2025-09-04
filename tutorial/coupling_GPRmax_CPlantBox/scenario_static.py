@@ -12,7 +12,7 @@ import multiprocessing as mp
 def seg2cell(j): 
     return plant.seg2cell[j]
 
-def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target, res, cell_number, cellvol, X, Y, Z, wc_root, save_npz:bool, save_vtr:bool):
+def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target, res, cell_number, cellvol, X, Y, Z, wc_root,soil_depth, save_npz:bool, save_vtr:bool):
     
     
     """ Numerical solution """
@@ -124,7 +124,7 @@ def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting
                 rootvol_stitch = rootvol_stitch[:int(target/res),:int(target/res), :int(target/res)]
             
             if save_npz: 
-                write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch)
+                write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target, soil_depth)
             if save_vtr: 
                 write_vtr(name, t, target, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res) 
                 
@@ -150,8 +150,8 @@ if __name__ == "__main__":
     rs_age = 70 #d
     sim_time = 14.5  # day
     out_time = np.arange(0.5, sim_time,1) #additionally, the first time step is always saved (--> corresponds to root system with static swc)
-    save_npz = False
-    save_vtr = True
+    save_npz = True
+    save_vtr = False
     
     name = args.plant + "_" + args.res + "_resolution_" + args.soil+'_age'+str(rs_age)
     if infiltration: 
@@ -162,9 +162,9 @@ if __name__ == "__main__":
     print(name, "\n")
     
 
-    inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res = set_scenario(args.plant, args.res, args.soil, initial, trans, rs_age, infiltration, evaporation)
+    inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res , soil_depth = set_scenario(args.plant, args.res, args.soil, initial, trans, rs_age, infiltration, evaporation)
 
-    simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target, res, cell_number, cellvol, X, Y, Z, wc_root, save_npz, save_vtr)
+    simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target, res, cell_number, cellvol, X, Y, Z, wc_root, soil_depth, save_npz, save_vtr)
     
     
     
