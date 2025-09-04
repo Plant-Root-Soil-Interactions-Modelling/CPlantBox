@@ -321,7 +321,7 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
     (no convenient sparse cholesky implementation in scipy)
     """
 
-    def __init__(self, ms, params, cached = True):
+    def __init__(self, ms, params, cached = False):
         """ 
             @param ms is of type MappedSegments (or specializations), or a string containing a rsml filename
             @param params hydraulic conductivities described by PlantHydraulicParameters
@@ -432,6 +432,10 @@ class HydraulicModel_Meunier(PlantHydraulicModel):
 
         return x
 
+    def get_transpiration(self, sim_time, rx, rsx, cells = False, soil_k = []):
+        """ actual transpiration [cm3 day-1], calculated as the sum of all radial fluxes"""
+        return np.sum(self.radial_fluxes(sim_time, rx, rsx, cells, soil_k))
+        
     def radial_fluxes(self, sim_time, rx, rsx, cells = False, soil_k = []):
         """ returns the exact radial fluxes per segment (calls base class)
             @param sim_time [day]       needed for age dependent conductivities (age = sim_time - segment creation time)        
@@ -615,6 +619,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
             @return [cm] root matric potential per root system node  
         """
         self.update(sim_time)
+        print('suf', self.suf.shape)
         if cells:
             rsx = self.get_hs(rsx)  # matric potential per root segment
         collar = self.get_collar_potential(t_act, rsx)
@@ -704,14 +709,14 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def update(self, sim_time):
         """ call before solve(), get_collar_potential(), and get_Heff() """
-        # print("update")
+        print("update")
         self.ci = self.collar_index()  # segment index of the collar segment
         A_d, self.Kr, self.kx0 = self.doussan_system_matrix(sim_time)
         self.A_d_splu = LA.splu(A_d)
         self.krs, _ = self.get_krs_(sim_time)
-        # print("update, krs", self.krs)
+        print("update, krs", self.krs)
         self.suf = np.transpose(self.get_suf_())
-        # print("update, sum suf", np.sum(self.suf))
+        print("update, sum suf", np.sum(self.suf), self.suf.shape)
 
     def get_collar_potential(self, t_act, rsx):
         """ collar potential for an actual transpiration (call update() before) """
@@ -769,6 +774,7 @@ class HydraulicModel_Doussan(PlantHydraulicModel):
 
     def get_heff_(self, rsx):
         """ effective total potential [cm] using cached suf """
+        print('get_heff_, rsx.shape',rsx.shape, 'self.suf.shape', self.suf.shape)
         heff = self.suf.dot(self.ms.matric2total(rsx))
         # print("get_heff_()", heff[0], heff.shape)
         return heff[0]
