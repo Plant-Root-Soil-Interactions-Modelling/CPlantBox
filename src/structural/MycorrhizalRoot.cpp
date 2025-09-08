@@ -125,52 +125,6 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
             // addNode()
         }
     }
-{
-    // std::cout << getRootRandomParameter()->f_inf->getValue(Vector3d(0,0,-10),shared_from_this()) << std::endl;
-// if (getRootRandomParameter()->infradius > 0) // check if localized infection should be applied
-// {
-//     for (size_t i = 1; i <nodes.size(); i++)
-//     {
-//         double p = getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()); // get rate of infection based on node position
-//         if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {p = 0;}//account for minimal age in rate
-//         p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
-//         double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
-        
-//         // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i);
-//         infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength);
-//         // infTime = age - nodeCTs.at(i);
-            
-//         // std::cout << infTime << std::endl;
-//         // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p))
-//         if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0)
-//         {                        
-//             // std::cout << "infected at " << i << std::endl;
-//             setInfection(i,1,infTime);
-//         }
-//     }
-// } else { //if this is not a loclized infection use equal probability everywhere
-//     for (size_t i=1; i<nodes.size(); i++) {
-//         double p = getRootRandomParameter()->p; // get rate of infection based on node position
-//         if (age - nodeCTs.at(i) < getRootRandomParameter() ->minAge) {p = 0;}//account for minimal age in rate
-//             p = (1 - (age- nodeCTs.at(i))/getRootRandomParameter()->maxAge) * p; // account for maximal age in rate
-//             double cursegLength = (nodes.at(i).minus(nodes.at(i-1))).length(); // get the length of the current segment
-        
-//             // infTime = plant.lock()->rand()*(age - nodeCTs.at(i)) + nodeCTs.at(i); // Variante 1
-//             infTime = log(plant.lock()->rand())/(log(1-p)*cursegLength); // Variante 2
-//             // infTime = age - nodeCTs.at(i); // Variante 3
-                
-//             // if (infected.at(i) == 0 && plant.lock()->rand() < prob(infTime,cursegLength,p)) // if condition Variante 1 & 3
-//             if (infected.at(i) == 0 && infTime <= age && infTime > nodeCTs.at(i) && p != 0) // if condition Variante 2
-//             {                         // für varianten 1 & 2
-//                 // std::cout << "infected at " << i << std::endl;
-//                 setInfection(i,1,infTime);
-//             }
-//             // { // für variante 3
-//             //     setInfection(i,1,age);
-//             // }
-//     }
-// }
-    }
 }
 
 void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
