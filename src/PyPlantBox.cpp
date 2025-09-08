@@ -619,7 +619,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("vi", &MycorrhizalRootRandomParameter::vi)
             .def_readwrite("vis", &MycorrhizalRootRandomParameter::vis)
             .def_readwrite("maxInfection", &MycorrhizalRootRandomParameter::maxInfection)
-        //     .def_readwrite("infradius", &MycorrhizalRootRandomParameter::infradius)
+            .def_readwrite("highresolution", &MycorrhizalRootRandomParameter::highresolution)
+            .def_readwrite("dx_inf", &MycorrhizalRootRandomParameter::dx_inf)
             .def_readwrite("f_inf", &MycorrhizalRootRandomParameter::f_inf)
             .def_readwrite("hyphalEmergenceDensity", &MycorrhizalRootRandomParameter::hyphalEmergenceDensity);
      py::class_<MycorrhizalRootSpecificParameter, RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<MycorrhizalRootSpecificParameter>>(m, "MycorrhizalRootSpecificParameter")
@@ -840,6 +841,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("getNodeInfection", &MycorrhizalRoot::getNodeInfection)
             .def("getRootRandomParameter", &MycorrhizalRoot::getRootRandomParameter)
             .def("getNodeInfectionTime", &MycorrhizalRoot::getNodeInfectionTime)
+        //     .def("insertInfectedNode", &MycorrhizalRoot::insertInfectedNode, py::arg("i"))
             .def("setInfection", &MycorrhizalRoot::setInfection, py::arg("i"), py::arg("infection"), py::arg("t"));
     /**
      * Hyphae.h

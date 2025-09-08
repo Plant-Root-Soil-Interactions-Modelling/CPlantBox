@@ -44,8 +44,10 @@ namespace CPlantBox {
         double vi = 0.13;          ///< speed of internal infection [cm / day]
         double vis = 0.;           ///< Standard deviation of speed of internal infection [cm / day]
         double maxInfection = 1;   ///< Percentage of maximal infection
-        // double infradius = 1;     ///< Radius of the localized inoculum
-        double hyphalDelay = 0.;
+        
+        double hyphalDelay = 0.;      ///< Dummy delay time before hyphal emergence after infection [day] there is none.
+        double highresolution = 1; ///< If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity
+        double dx_inf = 0.1;       ///< Segment length for infected root segments only in high resolution case [cm]
 
         double hyphalEmergenceDensity = 0; //< [1 / cm]
 

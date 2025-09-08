@@ -37,12 +37,56 @@ MycorrhizalRoot::MycorrhizalRoot(std::shared_ptr<Organism> rs, int type,  double
     // std::cout<< "infected size " << infected.size() << std::endl;
     // std::cout<< "nodes size " << nodes.size() << std::endl;
 }
-
+/**
+ * Adds a node to the root.
+ *
+ * For simplicity nodes can not be deleted, roots can only become deactivated or die
+ *
+ * @param n        new node
+ * @param id       global node index
+ * @param t        exact creation time of the node
+ * @param index	   position were new node is to be added
+ * @param shift	   do we need to shift the nodes? (i.e., is the new node inserted between existing nodes because of internodal growth?)
+ */
 void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool shift) {
-    Organ::addNode(n, id,  t,  index, shift);
-    infected.push_back(0);
-    emergedHyphae.push_back(0);
-    infectionTime.push_back(-1);
+    if (!shift)
+    {
+        Organ::addNode(n, id,  t,  index, shift);
+        infected.push_back(0);
+        emergedHyphae.push_back(0);
+        infectionTime.push_back(-1);
+    } 
+    else {
+    //     // insert node in the middle between two nodes i-1 and i
+    // double newx = (nodes.at(i).x + nodes.at(i-1).x)/2;
+    // double newy = (nodes.at(i).y + nodes.at(i-1).y)/2;
+    // double newz = (nodes.at(i).z + nodes.at(i-1).z)/2;
+    // //
+    // // insert node id
+    // nodeIds.insert(nodeIds.begin()+i, nodes.size()+1); // TODO  this needs to be fixed 
+    // // insert time 
+    // nodeCTs.insert(nodeCTs.begin()+i, (nodeCTs.at(i-1)+nodeCTs.at(i))*0.5);
+    // // insert infection status
+    // infected.insert(infected.begin()+i, infected.at(i-1));
+    // // insert number of emerged hyphae
+    // emergedHyphae.insert(emergedHyphae.begin()+i, 0);
+    // // insert infection time (calculated based on distance between the two nodes and infection time of the previous node )
+    // double newTime = infectionTime.at(i-1) + (nodes.at(i).minus(nodes.at(i-1)).length())/getRootRandomParameter()->vi/2;
+    // infectionTime.insert(infectionTime.begin()+i, newTime);
+        nodes.insert(nodes.begin()+index-1, n);
+        nodeIds.push_back(id);
+        nodeCTs.insert(nodeCTs.begin()+index-1, t);
+        infected.insert(infected.begin()+index-1, infected.at(index-1));
+        emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
+        infectionTime.insert(infectionTime.begin()+index-1, t);
+
+        for(auto kid : children){//if carries children after the added node, update their "parent node index"
+
+			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
+				kid->moveOrigin(kid->parentNI + 1);
+				}
+		}
+    }
     // std::cout<< "infected size " << infected.size() << std::endl;
     // std::cout<< "nodes size " << nodes.size() << std::endl;
 }
@@ -78,6 +122,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         {
             // insert node here if segment too long and set all nodes to be infected
             setInfection(i,1,age);
+            // addNode()
         }
     }
 {
@@ -150,6 +195,11 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                     cursegLength = abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());
                     infectionLength += cursegLength;
                     infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
+
+                    while (cursegLength > getRootRandomParameter() ->dx_inf) {
+
+                        cursegLength -= abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());;
+                    }
                     if (infectionLength > max_length_infection) {break;}
 
                     if (infected.at(basalnode) == 0 && infTime <= age)
@@ -201,19 +251,15 @@ void MycorrhizalRoot::simulatePrimaryInfection(double dt) {
     primaryInfection(dt,false);
 }
 
-void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
-    // TODO abhängig von Hyphen bereits an einer Node vorhanden
-    // TODO abstand von Hyphen beachten
-    bool highresolution = false;
-
-    if (highresolution) {
+void MycorrhizalRoot::simulateHyphalGrowth() {
+    if (getRootRandomParameter()->highresolution >= 1) { // Version where at every node there is one hypha created
         for (size_t i = 1; i < nodes.size(); i++) {
             if (infected.at(i) > 0 && emergedHyphae.at(i) == 0){ // if the current node is infected and the number of hyphae to be created is reached
                 createHyphae(i);
                 emergedHyphae.at(i) += 1; // increase the number of hyphae at this node
             }
         }
-    } else {
+    } else { // Version where a set number of hypha are created based on hyphal emergence density and root segment length
         auto rrp = getRootRandomParameter(); // param()
         double hed = rrp->hyphalEmergenceDensity;
 
@@ -230,46 +276,22 @@ void MycorrhizalRoot::simulateHyphalGrowth() { // TODO hyphal emergence
         // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae <<  ", new noh " << new_noh << std::endl;
 
         int currentNode = 1;
-        int lastEmergedNode = 0; // the last node where a hyphae was created
-        double dist = 0; // distance between the first two nodes
-        while (new_noh > 0 && currentNode < nodes.size()) // TODO Something not right with amount of hyphae created
+
+        while (new_noh > 0 && currentNode < nodes.size()) 
         {
-            // int hyphaeperNode =  (int) nodes.size() / new_noh;
-            // int uneven = nodes.size() % new_noh;
-            dist = nodes.at(currentNode).minus(nodes.at(lastEmergedNode)).length();
+
             if (infected.at(currentNode) > 0 && emergedHyphae.at(currentNode)== 0){// && dist>hes){ // if the current node is infected and the number of hyphae to be created is reached
                 createHyphae(currentNode);
                 numberOfHyphae += 1;
                 new_noh -= 1;
-                lastEmergedNode = currentNode; // update the last emerged node
+                // lastEmergedNode = currentNode; // update the last emerged node
             }
             currentNode++;
+            if (currentNode >= nodes.size() && new_noh > 0) {
+                currentNode = 1; // reset to the first node if the end of the nodes vector is reached
+            }
         }
     }
-
-    
-    
-
-
-    // for (size_t i = 0; i < nodes.size(); i++)
-    // {
-    //     double length = nodes.at(i).minus(nodes.at(i-1)).length();
-    //     if (length < hes) { // if the distance between the nodes is smaller than the hyphal emergence distance, no hyphae can be created
-    //         continue;
-    //     } else {
-    //         addNode(nodes.at(i), i, nodeCTs.at(i), i, false); // add the node to the organ
-    //         // CAREFUL THIS WILL ADD NODE BUT WITH WRONG INDICES
-    //         infected.push_back(infected.at(i)); // add the infection status of the node
-    //         emergedHyphae.push_back(emergedHyphae.at(i)); // add the number
-    //         infectionTime.push_back(infectionTime.at(i)); // add the infection time of the node
-    //     }
-    //     if (infected.at(i) > 0 && emergedHyphae.at(i) == 0 && infectionTime.at(i) + hyphaldelay < age) { // if the current node is infected and the number of hyphae to be created is reached
-    //         createHyphae(i);
-    //         numberOfHyphae += 1;
-    //         new_noh -= 1;
-    //     }
-        
-    // }
     
 }
 
@@ -472,4 +494,16 @@ double MycorrhizalRoot::prob(double t, double segLength, double p)
     return 1 - pow(1-p,t*segLength);
 }
 
+void MycorrhizalRoot::insertInfectedNode(int i) // TODO
+{
+    // insert node in the middle between two nodes i-1 and i
+    double newx = (nodes.at(i).x + nodes.at(i-1).x)/2;
+    double newy = (nodes.at(i).y + nodes.at(i-1).y)/2;
+    double newz = (nodes.at(i).z + nodes.at(i-1).z)/2;
+    //
+    Vector3d newNode = Vector3d(newx,newy,newz);
+    addNode(newNode, nodes.size()+1, (nodeCTs.at(i-1)+nodeCTs.at(i))*0.5, i, true);
+    infected.at(i) = infected.at(i-1);
+    infectionTime.at(i) = infectionTime.at(i-1) + (nodes.at(i).minus(nodes.at(i-1)).length())/getRootRandomParameter()->vi/2;
+}
 }

@@ -12,6 +12,9 @@ void MycorrhizalRootRandomParameter::bindParameters(){
     bindParameter("maxAge", &maxAge, "Maximal infection age of a root segment [day]");
     bindParameter("vi", &vi, "Rate of internal infection [cm / day]", &vis);
     bindParameter("maxInfection", &maxInfection, "Percentage of maximal infection");
+    bindParameter("hyphalEmergenceDensity", &hyphalEmergenceDensity, "Density of hyphal emergence along root [1/cm]");
+    bindParameter("highresolution", &highresolution, "If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity");
+    bindParameter("dx_inf", &dx_inf, "Segment length for infected root segments only in high resolution case [cm]");
 
     // TODO
 }
