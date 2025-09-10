@@ -189,8 +189,8 @@ def write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch,
     if not os.path.exists('results/'+directory):
         os.makedirs('results/'+directory)
     
-    np.savez('results/'+directory+'/'+name+'_day'+str(int(t)), wc, hs, frac, rootvol, cell_number)
-    np.savez('results/'+directory+'/'+name+'_stitched_day'+str(int(t)), wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, cell_number_stitch)
+    # np.savez('results/'+directory+'/'+name+'_day'+str(int(t)), wc, hs, frac, rootvol, cell_number)
+    np.savez('results/'+directory+'/'+name+'_stitched_day'+str(int(t)), wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, cell_number_stitch, target, soil_depth)
     
 def write_vtr(name, t, target, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res): 
 
