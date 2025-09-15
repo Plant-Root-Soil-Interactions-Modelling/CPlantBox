@@ -80,7 +80,8 @@ def set_scenario(plant_, res, soil_, initial_, trans_, rs_age, inf_:bool, evap_:
 
     # Hidden parameters
     wilting_point = -15000  # cm
-    target = 150 #cm, length of target domain for gpr max in x, y, z
+    target_x = 150 #cm, length of target domain for gpr max in x
+    target_y = 100 #cm, length of target domain for gpr max in y
     soil_depth = -150 
     wc_root = 0.8 #mean root water content (-)
     inf = 0.1 #cm/d - excess water that does no infiltrate is treated as runoff, i.e. is not accounted for 
@@ -178,9 +179,9 @@ def set_scenario(plant_, res, soil_, initial_, trans_, rs_age, inf_:bool, evap_:
     rho_ = np.divide(outer_r, np.array(inner_r))  
   
     
-    return inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res_ , soil_depth
+    return inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target_x,target_y, cell_number, cellvol, X, Y, Z, wc_root, res_ , soil_depth
     
-def write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target, soil_depth): 
+def write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target_x,target_y, soil_depth): 
     print(name,t)
     cell_number = [np.shape(wc)[0],np.shape(wc)[1],np.shape(wc)[2]]
     cell_number_stitch = [np.shape(wc_stitch)[0],np.shape(wc_stitch)[1],np.shape(wc_stitch)[2]]
@@ -190,13 +191,13 @@ def write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch,
         os.makedirs('results/'+directory)
     
     # np.savez('results/'+directory+'/'+name+'_day'+str(int(t)), wc, hs, frac, rootvol, cell_number)
-    np.savez('results/'+directory+'/'+name+'_stitched_day'+str(int(t)), wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, cell_number_stitch, target, soil_depth)
+    np.savez('results/'+directory+'/'+name+'_stitched_day'+str(int(t)), wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, cell_number_stitch, target_x,target_y, soil_depth)
     
-def write_vtr(name, t, target, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res): 
+def write_vtr(name, t, target_x, target_y, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res): 
 
-    X_stitch = np.linspace(-target/2, target/2, int(target/res))
-    Y_stitch = np.linspace(-target/2, target/2, int(target/res))
-    Z_stitch = np.linspace(-target, 0, int(target/res))
+    X_stitch = np.linspace(-target_x/2, target_x/2, int(target_x/res))
+    Y_stitch = np.linspace(-target_y/2, target_y/2, int(target_y/res))
+    Z_stitch = np.linspace(-soil_depth, 0, int(soil_depth/res))
     
     wc_root_soil = wc+wc_root*rootvol
     wc_root_soil_stitch = wc_stitch+wc_root*rootvol_stitch

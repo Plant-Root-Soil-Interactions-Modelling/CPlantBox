@@ -12,7 +12,7 @@ import multiprocessing as mp
 def seg2cell(j): 
     return plant.seg2cell[j]
 
-def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target, res, cell_number, cellvol, X, Y, Z, wc_root,soil_depth, save_npz:bool, save_vtr:bool):
+def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target_x, target_y, res, cell_number, cellvol, X, Y, Z, wc_root,soil_depth, save_npz:bool, save_vtr:bool):
     
     
     """ Numerical solution """
@@ -110,23 +110,23 @@ def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting
             rootvol = np.swapaxes(rootvol,0,2)
 
             #stitch the single plant domain to the target domain
-            x_stitch = int(np.round((target/res)/np.shape(wc)[0]))
-            y_stitch = int(np.round((target/res)/np.shape(wc)[1]))
+            x_stitch = int(np.round((target_x/res)/np.shape(wc)[0]))
+            y_stitch = int(np.round((target_y/res)/np.shape(wc)[1]))
             wc_stitch = np.tile(wc, (x_stitch, y_stitch, 1))
             hs_stitch = np.tile(hs, (x_stitch, y_stitch, 1))
             frac_stitch = np.tile(frac, (x_stitch, y_stitch, 1))
             rootvol_stitch = np.tile(rootvol, (x_stitch, y_stitch, 1))
             
             #check if stitched domain has the correct size and crop it if not
-            if np.shape(wc_stitch)[0]>(target/res) or np.shape(wc_stitch)[1]>(target/res) or np.shape(wc_stitch)[2]>(target/res): 
-                wc_stitch = wc_stitch[:int(target/res),:int(target/res), :int(target/res)]
-                frac_stitch = frac_stitch[:int(target/res),:int(target/res), :int(target/res)]
-                rootvol_stitch = rootvol_stitch[:int(target/res),:int(target/res), :int(target/res)]
+            if np.shape(wc_stitch)[0]>(target_x/res) or np.shape(wc_stitch)[1]>(target_y/res) or np.shape(wc_stitch)[2]>(soil_depth/res): 
+                wc_stitch = wc_stitch[:int(target_x/res),:int(target_y/res), :int(soil_depth/res)]
+                frac_stitch = frac_stitch[:int(target_x/res),:int(target_y/res), :int(soil_depth/res)]
+                rootvol_stitch = rootvol_stitch[:int(target_x/res),:int(target_y/res), :int(soil_depth/res)]
             
             if save_npz: 
-                write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target, soil_depth)
+                write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target_x,target_y, soil_depth)
             if save_vtr: 
-                write_vtr(name, t, target, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res) 
+                write_vtr(name, t, target_x,target_y, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res) 
                 
                 
             #here, you could put in a function called e.g. write_gpr_input(), where the simulation results are written to permittivities and written in a gpr input file 
@@ -162,9 +162,9 @@ if __name__ == "__main__":
     print(name, "\n")
     
 
-    inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target, cell_number, cellvol, X, Y, Z, wc_root, res , soil_depth = set_scenario(args.plant, args.res, args.soil, initial, trans, rs_age, infiltration, evaporation)
+    inner_r, rho_, wilting_point, soil, s, peri, hm, plant, target_x,target_y, cell_number, cellvol, X, Y, Z, wc_root, res , soil_depth = set_scenario(args.plant, args.res, args.soil, initial, trans, rs_age, infiltration, evaporation)
 
-    simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target, res, cell_number, cellvol, X, Y, Z, wc_root, soil_depth, save_npz, save_vtr)
+    simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting_point, soil, s, peri, hm, plant, target_x,target_y, res, cell_number, cellvol, X, Y, Z, wc_root, soil_depth, save_npz, save_vtr)
     
     
     
