@@ -110,18 +110,19 @@ def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting
             rootvol = np.swapaxes(rootvol,0,2)
 
             #stitch the single plant domain to the target domain
-            x_stitch = int(np.round((target_x/res)/np.shape(wc)[0]))
-            y_stitch = int(np.round((target_y/res)/np.shape(wc)[1]))
+            x_stitch = int(np.ceil((target_x/res)/np.shape(wc)[0]))
+            y_stitch = int(np.ceil((target_y/res)/np.shape(wc)[1]))
             wc_stitch = np.tile(wc, (x_stitch, y_stitch, 1))
             hs_stitch = np.tile(hs, (x_stitch, y_stitch, 1))
             frac_stitch = np.tile(frac, (x_stitch, y_stitch, 1))
             rootvol_stitch = np.tile(rootvol, (x_stitch, y_stitch, 1))
             
             #check if stitched domain has the correct size and crop it if not
-            if np.shape(wc_stitch)[0]>(target_x/res) or np.shape(wc_stitch)[1]>(target_y/res) or np.shape(wc_stitch)[2]>(soil_depth/res): 
-                wc_stitch = wc_stitch[:int(target_x/res),:int(target_y/res), :int(soil_depth/res)]
-                frac_stitch = frac_stitch[:int(target_x/res),:int(target_y/res), :int(soil_depth/res)]
-                rootvol_stitch = rootvol_stitch[:int(target_x/res),:int(target_y/res), :int(soil_depth/res)]
+            if np.shape(wc_stitch)[0]>(target_x/res) or np.shape(wc_stitch)[1]>(target_y/res) or np.shape(wc_stitch)[2]>(-soil_depth/res): 
+                wc_stitch = wc_stitch[:int(target_x/res),:int(target_y/res), :int(-soil_depth/res)]
+                hs_stitch = hs_stitch[:int(target_x/res),:int(target_y/res), :int(-soil_depth/res)]
+                frac_stitch = frac_stitch[:int(target_x/res),:int(target_y/res), :int(-soil_depth/res)]
+                rootvol_stitch = rootvol_stitch[:int(target_x/res),:int(target_y/res), :int(-soil_depth/res)]
             
             if save_npz: 
                 write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target_x,target_y, soil_depth)
@@ -146,8 +147,8 @@ if __name__ == "__main__":
     initial = -200 #cm #initial can be 'initial water content (-)' or initial soil water potential (cm)'- the model recognizes if it is the one or the other                          
     trans = 0.5 #cm/day
     infiltration = False #scenario with infiltration only
-    evaporation = True #scenario with evaporation only                                 
-    rs_age = 70 #d
+    evaporation = False #scenario with evaporation only                                 
+    rs_age = 15 #d
     sim_time = 14.5  # day
     out_time = np.arange(0.5, sim_time,1) #additionally, the first time step is always saved (--> corresponds to root system with static swc)
     save_npz = True
