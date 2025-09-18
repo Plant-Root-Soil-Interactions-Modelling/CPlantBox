@@ -26,13 +26,14 @@ def load_cplantbox_input(file):
     model_inputs = file.split("_")
     file_name_t = file.split("/")
     file_name = file_name_t[-1]
-    grid_res = model_inputs[-8]
+    grid_res = model_inputs[-7]
     soil_type = "_".join(model_inputs[10:12])  # 'hydrus_loam'
     gprMax_name_temp = file.split("/")
     gprMax_name = gprMax_name_temp[-1]
     npzfile = np.load(file+ '.npz')
-    print(npzfile['arr_0'])
+
     swc = np.transpose(npzfile['arr_0'], (1, 2, 0))  # soil water content
+    print(swc.shape)
     swc = np.round(swc, 2)
     swp = np.transpose(npzfile['arr_1'], (1, 2, 0))
     rv = np.transpose(npzfile['arr_2'], (1, 2, 0))  # root volume
@@ -40,8 +41,6 @@ def load_cplantbox_input(file):
     cn = npzfile['arr_4']  # cell number
     domain_x = npzfile['arr_5']  # 'target' from simulation
     domain_y = npzfile['arr_6']  # 'target' from simulation
-    #domain_x = 1.75
-    #domain_y = 1.0
     soil_height = (npzfile['arr_7']/-100)
     thetas = 0.43
     indices_rvf = np.where(rvf > 0)  # find indices of cells where roots are present
@@ -117,14 +116,15 @@ def write_gprmax_input_file(file, swc, rvf, soil_height, thetas, indices_rvf, do
         #fid.write(f"#excitation_file: {name_sw_file} slinear extrapolate\n")
         fid.write(f"#waveform: ricker 1 {c_f:10f} my_ricker\n")
         #fid.write(f"#hertzian_dipole: z {tx_x:4.3f} {soil_height:4.3f} {rx_pos:4.3f} {pulse_name} \n")
-        fid.write(f"#hertzian_dipole: z {tx_pos+PML:4.3f} {domain_x/2:4.3f}  {h_air+rx_steps:4.3f} my_ricker\n")
-        fid.write(f"#rx: {tx_pos+PML+rx_pos:4.3f} {domain_x/2:4.3f} {h_air+0.2:4.3f}\n")
+        fid.write(f"#hertzian_dipole: z {tx_pos+PML:4.3f} {d_y/2:4.3f}  {h_air+rx_steps:4.3f} my_ricker\n") # Tx position
+        fid.write(f"#rx: {tx_pos+PML+rx_pos:4.3f} {d_y/2:4.3f} {h_air+0.2:4.3f}\n")
         fid.write(f"#src_steps: 0 0 {rx_steps}  \n")
         fid.write(f"#rx_steps: 0 0 {rx_steps} \n")
         fid.write("\n")
-        fid.write(f"#box: 0 0 0 {domain_x:4.3f} {domain_y:4.3f} {h_air:4.3f} half_space  n\n")
+        #fid.write(f"#box: 0 0 0 {d_x:4.3f} {d_y:4.3f} {h_air:4.3f} half_space  n\n")
         # Add Boxes for SWC layers
         root_x, root_y, root_z = eps_ss.shape
+        print(eps_ss.shape)
         start_x, start_y, start_z = 0, 0, 0
         for z in range(root_z):
             for y in range(root_y):
@@ -134,15 +134,18 @@ def write_gprmax_input_file(file, swc, rvf, soil_height, thetas, indices_rvf, do
                     if match.size > 0:
                         idx = int(match[0]) + 1
                         root_soil_field = f'root_soil_{idx}'
-                        x0 = start_x + x*grid_size
-                        y0 = start_y + y*grid_size
-                        z0 = start_z + z*grid_size
+                        # x0 = start_x + x*grid_size
+                        # y0 = start_y + y*grid_size
+                        # z0 = start_z + z*grid_size
+                        x0 = x*grid_size
+                        y0 = y*grid_size
+                        z0 = z*grid_size
                         fid.write(f"#box: {x0:4.3f} {y0:4.3f} {z0+h_air:4.3f} {x0+grid_size:4.3f} {y0+grid_size:4.3f} {z0+grid_size+h_air:4.3f} {root_soil_field}  n\n")
         fid.write("\n")
     print('gprMax input file gprmax_' + file + '.in is written')
 
 if __name__ == "__main__":
-    outputfolder = 'results/npz_maize_high_resolution_hydrus_loam_age70_evap'
+    outputfolder = 'results/npz_maize_high_resolution_hydrus_loam_age15'
     out_files = os.listdir(outputfolder)
     for file in out_files:
         file_path = outputfolder + '/' + (file.split('.')[0])
