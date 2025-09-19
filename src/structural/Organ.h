@@ -49,6 +49,7 @@ public:
     /* development */
     virtual void simulate(double dt, bool verbose = false); ///< grow for a time span of @param dt
 
+
     /* tree */
     void setOrganism(std::shared_ptr<Organism> p) { plant = p; } ///< sets the organism of which the organ is part of
     std::shared_ptr<Organism> getOrganism() const { return plant.lock(); } ///< parent organism
