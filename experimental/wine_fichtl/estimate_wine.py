@@ -2,7 +2,7 @@
 specialized scipt for the wine rsml data 
 """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
-
+sys.path.append("../../gui/estimate/")
 import visualisation.vtk_plot as vp
 from estimate_data import EstimateDataModel
 import estimate_plots as ep
@@ -27,8 +27,9 @@ colors = prop_cycle.by_key()['color']
 pick path and files 
 """
 
-file_path = "RSML_Fichtl_11:23"
-file_names = ["B-08.rsml", "D-25.rsml"]  # , "E-39.rsml", D-25.rsml # repetitions of same genotype
+file_path = "../../modelparameter/structural/rootsystem"# "RSML_Fichtl_11:23"
+file_names = ["B-23_Fichtl.rsml"]#["B-08.rsml", "D-25.rsml"]  # , "E-39.rsml", D-25.rsml # repetitions of same genotype
+
 """
 RSMLs:
 Type 1: the initially planted roots
@@ -71,8 +72,10 @@ for i in range(2, 4):
     data.estimate_zones_(indices)  #  creates lb, ln, la, radius a, inseriton angle theta; e.g. writes single values into self.estimates[i][(j, "la")], where j is the root index
     data.aggregate_parameters_(indices, target_type = i)  # aggregates the individual root parameters (mean, sd) into data.parameters (list of RootRandomParameters) at index target_type
 
-print("\n")
-print(data.parameters[2])  # lb, ln, la, radius a, inseriton angle theta is set # TODO theta should be regarding z axis (for type 2), should work if we detach it
+print()
+print("****************************************")
+print(data.parameters[1])  # lb, ln, la, radius a, inseriton angle theta is set
+print("****************************************")
 
 """ 
     find elongation rates for Type 3

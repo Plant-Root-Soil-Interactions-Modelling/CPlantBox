@@ -18,6 +18,26 @@ r.kx_f(age, type)
 """
 
 
+def convert_axial(kx):
+    """ converts axial conductivity with units of [m4 s-1 MPa-1] to [cm3 / day] """
+    rho = 1000  # [kg/m3]
+    g = 9.81  # [m s-2]
+    rho_g = rho * g  # [kg m-2 s-2] = [Pa m-1]
+    kx_ = kx * rho_g  # m4 s-1 1e-6 Pa-1 * Pa m-1 = m3 s-1 1.e-6 = cm3 s-1
+    kx_ = kx_ * 60.*60.*24  #  cm3 s-1 = 60*60*24 cm3 /day
+    return kx_
+
+
+def convert_radial(kr):
+    """ converts radia conductivity with units of [m s-1 MPa-1] to [1 / day] """
+    rho = 1000  # [kg/m3]
+    g = 9.81  # [m s-2]
+    rho_g = rho * g  # [kg m-2 s-2] = [Pa m-1]
+    kr_ = kr * rho_g  # m s-1 1e-6 Pa-1 * Pa m-1 = s-1 1.e-6 = s-1 1.e-6
+    kr_ = kr_ * 60.*60.*24 * 1.e-6  # s-1 = 60*60*24 /day
+    return kr_
+
+
 def init_conductivities(r, age_dependent:bool = False):
     """ call to initialize age dependent or independent conductivities, 
     initializes functions kr(age, type) and kx(age, type) """

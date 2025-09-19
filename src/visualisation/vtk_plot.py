@@ -676,11 +676,11 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
         ren = render_window(meshActors, filename, [meshCBar, rootCBar], pd.GetBounds(), interactiveImage)
         if interactiveImage:
             ren.Start()
-
         if filename:
             path = "results/"
             write_vtp(path + filename + ".vtp", pd)
             write_vtu(path + filename + ".vtu", soil_grid)
+
 
 
 def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_number, filename:str = "", sol_ind = 0, interactiveImage = True):

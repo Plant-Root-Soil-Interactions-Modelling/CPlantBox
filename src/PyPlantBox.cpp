@@ -591,7 +591,7 @@ PYBIND11_MODULE(plantbox, m) {
 
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())
-            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double>())
+            .def(py::init<int , double, double, const std::vector<double>&, double, double, double, double, bool>()) // <---------------------------------------------------
             .def_readwrite("lb", &RootSpecificParameter::lb)
             .def_readwrite("la", &RootSpecificParameter::la)
             .def_readwrite("ln", &RootSpecificParameter::ln)
@@ -599,7 +599,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("a", &RootSpecificParameter::a)
             .def_readwrite("theta", &RootSpecificParameter::theta)
             .def_readwrite("rlt", &RootSpecificParameter::rlt)
-			.def("getK",&RootSpecificParameter::getK)
+            .def_readwrite("laterals", &RootSpecificParameter::laterals)
+            .def("getK",&RootSpecificParameter::getK)
             .def("nob", &RootSpecificParameter::nob);
     /*
      * seedparameter.h
@@ -784,6 +785,11 @@ PYBIND11_MODULE(plantbox, m) {
             .def("calcAge", &Root::calcAge)
             .def("getRootRandomParameter", &Root::getRootRandomParameter)
             .def("param", &Root::param);
+    py::class_<StaticRoot, Root, std::shared_ptr<StaticRoot>>(m, "StaticRoot")
+            .def(py::init<int, std::shared_ptr<OrganSpecificParameter>, double, int>())
+            .def("initializeLaterals", &StaticRoot::initializeLaterals)
+            .def("addLateral", &StaticRoot::addLateral);
+
     /**
      * Seed.h
      */
