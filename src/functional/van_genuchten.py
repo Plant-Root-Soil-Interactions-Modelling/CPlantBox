@@ -39,8 +39,45 @@ class Parameters:
         return (i for i in [self.theta_R, self.theta_S, self.alpha, self.n, self.Ksat])
 
 
+def plot_retention_curve(param, label_ = ""):
+    """ plots the retention curve """
+    y_ = np.logspace(1., 4., 100)
+    x_ = water_content(-y_, param)
+    plt.plot(x_, y_, label = label_)
+    plt.xlabel("water content [1]")
+    plt.ylabel("- matric potential [cm]")
+    plt.yscale('log')
+
+def plot_hydraulic_conductivity(param, label_ = ""):
+    """ plots the matric flux potential"""
+    y_ = np.logspace(1., 4., 100)
+    x_ = hydraulic_conductivity(-y_, param)
+    plt.plot(y_, x_, label = label_)
+    plt.ylabel("hydraulic_conductivity [cm/day]")
+    plt.xlabel("- matric potential [cm]")
+    plt.xscale('log')
+    
+def plot_matric_flux_potential(param, label_ = ""):
+    """ plots the matric flux potential"""
+    y_ = np.logspace(1., 4., 100)
+    x_ =[ matric_flux_potential(-y__, param) for y__ in y_]
+    plt.plot(y_, x_, label = label_)
+    plt.ylabel("matric flux potential [cm2/day]")
+    plt.xlabel("- matric potential [cm]")
+    plt.xscale('log')
+
 def pressure_head(theta, sp):
     """ returns pressure head at a given volumetric water content according to the van genuchten model """
+    try:
+        if isinstance(theta, (type(list()), type(np.array([])))):
+            assert (theta > sp.theta_R).all()
+            assert (theta <= sp.theta_S).all()
+        else:
+            assert theta > sp.theta_R
+            assert theta <= sp.theta_S
+    except:
+        print('theta <= sp.theta_R or theta > sp.theta_S', theta, sp.theta_R, sp.theta_S)
+        raise Exception
     theta = np.minimum(theta, sp.theta_S)  # saturated water conent is the maximum
     return -pow(pow((sp.theta_S - sp.theta_R) / (theta - sp.theta_R), (1. / sp.m)) - 1., 1. / sp.n) / sp.alpha
 
@@ -64,6 +101,16 @@ def water_diffusivity(TH, theta_i, theta_sur, sp):
 
 def water_content(h, sp):
     """ returns the volumetric water content [1] at a given matric potential [cm] according to the VanGenuchten model (Eqn 21) """
+    try:
+        if isinstance(h, (type(list()), type(np.array([])))):
+            assert (h <= 0).all()
+            assert (h > -np.inf).all()
+        else:
+            assert h <= 0
+            assert h > -np.inf
+    except:
+        print('water_content, sp out of range', h)
+        raise Exception
     return sp.theta_R + (sp.theta_S - sp.theta_R) / pow(1. + pow(sp.alpha * abs(h), sp.n), sp.m)
 
 
@@ -84,7 +131,7 @@ def hydraulic_conductivity(h, sp):
 
 def matric_flux_potential(h, sp):
     """ returns the matric flux potential [cm2/day] for a matric potential [cm]"""
-    hmin = -1.e6
+    hmin = -16000
     K = lambda h: hydraulic_conductivity(h, sp)  # integrand
     MFP, _ = integrate.quad(K, hmin, h)
     return MFP
@@ -92,7 +139,7 @@ def matric_flux_potential(h, sp):
 
 def matric_potential_mfp(mfp, sp):
     """ returns the matric potential [cm] from the matric flux potential [cm2/day]"""
-    hmin = -1.e6
+    hmin = -16000  # needed to make hmin larger or else brent did not find a solution
     mfp_ = lambda psi: matric_flux_potential(psi, sp) - mfp
     h = optimize.brentq(mfp_, hmin, 0)
     return h
@@ -107,7 +154,7 @@ fast_imfp = {}
     call create_mfp_lookup first, once for each soil parameter @param sp"""
 
 
-def create_mfp_lookup(sp, wilting_point = -15000, n = 15001):
+def create_mfp_lookup(sp, wilting_point = -16000, n = 16001):
     """ initializes the look up tables for soil parameter to use fast_mfp, and fast_imfp """
     print("initializing look up tables")
     global fast_mfp

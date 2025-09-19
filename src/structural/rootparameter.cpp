@@ -55,13 +55,14 @@ RootRandomParameter::RootRandomParameter(std::shared_ptr<Organism> plant) :Organ
  */
 std::shared_ptr<OrganRandomParameter> RootRandomParameter::copy(std::shared_ptr<Organism> p)
 {
-    // std::cout << "RootRandomParameter::copy\n"<< std::flush;
+    // std::cout << "RootRandomParameter::copy() into plant "<< (p->plantId) <<  "\n"<< std::flush;
     auto r = std::make_shared<RootRandomParameter>(*this); // copy constructor breaks class introspection
+    r->plant = std::weak_ptr<Organism>(); // necessary?
     r->plant = p;
     r->bindParameters(); // fix class introspection
     r->f_tf = f_tf->copy(p); // copy call back function classes
     r->f_gf = f_gf->copy();
-    r->f_se = f_se->copy();
+    r->f_se = f_se; // for carbon limited grow we want the same reference
     r->f_sa = f_sa->copy();
     r->f_sbp = f_sbp->copy();
     return r;
@@ -161,13 +162,17 @@ double RootRandomParameter::snap(double x)
  */
 double RootRandomParameter::nobs() const
 {
-    double nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
-    if (la>0) {
-        nobs -= (las/la - lns/ln)*la/ln;
-    }
-    if (lb>0) {
-        nobs -= (lbs/lb - lns/ln)*lb/ln;
-    }
+	double nobs = 0;
+	if(ln >0)
+	{
+		nobs = (lmaxs/lmax - lns/ln)*lmax/ln; // error propagation
+		if (la>0) {
+			nobs -= (las/la - lns/ln)*la/ln;
+		}
+		if (lb>0) {
+			nobs -= (lbs/lb - lns/ln)*lb/ln;
+		}
+	}
     return std::max(nobs,0.);
 }
 
@@ -209,7 +214,7 @@ void RootRandomParameter::read(std::istream & cin)
     cin.getline(ch,256);
     std::string s; // dummy
     cin >> s >> subType >> s >> name >> s >> lb >> lbs >> s >> la >> las >> s >> ln >> lns >> s >> lmax >> lmaxs;
-    cin >> s >> r >> rs >> s >> a >> as >> s >> colorR >> colorG >> colorB >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
+    cin >> s >> r >> rs >> s >> a >> as >> s >> tropismT >> tropismN >> tropismS >> s >> dx;
     int n;
     cin  >> s >> n;
     successorST.clear();
@@ -242,8 +247,7 @@ void RootRandomParameter::write(std::ostream & cout) const {
     cout << "# Root type parameter for " << name << "\n";
     cout << "type\t" << subType << "\n" << "name\t" << name << "\n" << "lb\t"<< lb <<"\t"<< lbs << "\n" << "la\t"<< la <<"\t"<< las << "\n"
         << "ln\t" << ln << "\t" << lns << "\n" << "lmax\t"<< lmax <<"\t"<< lmaxs << "\n" << "r\t"<< r <<"\t"<< rs << "\n" <<
-        "a\t" << a << "\t" << as << "\n" << "color\t"<< colorR <<"\t"<< colorG << "\t" << colorB << "\n"
-        << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successorST.size() << "\t";
+        "a\t" << a << "\t" << as << "\n" << "tropism\t"<< tropismT <<"\t"<< tropismN << "\t" << tropismS << "\n" << "dx\t" << dx << "\n" << "successor\t" << successorST.size() << "\t";
     for (size_t i=0; i<successorST.size(); i++) {
         for (int j=0; i<successorST.at(i).size(); j++) {
 				cout << successorST.at(i).at(j) << "\t";
@@ -270,9 +274,6 @@ void RootRandomParameter::bindParameters()
     bindParameter("ln", &ln, "Inter-lateral distance [cm]", &lns);
     bindParameter("lmax", &lmax, "Maximal root length [cm]", &lmaxs);
     bindParameter("r", &r, "Initial growth rate [cm day-1]", &rs);
-    bindParameter("colorR", &colorR, "Root color, red component [0.-1.]");
-    bindParameter("colorG", &colorG, "Root color, green component [0.-1.]");
-    bindParameter("colorB", &colorB, "Root color, blue component [0.-1.]");
     bindParameter("tropismT", &tropismT, "Type of root tropism (plagio = 0, gravi = 1, exo = 2, hydro, chemo = 3)");
     bindParameter("tropismN", &tropismN, "Number of trials of root tropism");
     bindParameter("tropismS", &tropismS, "Mean value of expected change of root tropism [1/cm]");
@@ -282,6 +283,10 @@ void RootRandomParameter::bindParameters()
     // NEW
     bindParameter("lnk", &lnk, "Slope of inter-lateral distances [1]");
     bindParameter("ldelay", &ldelay, "Lateral root emergence delay [day]", &ldelays);
+    // HAIR
+    bindParameter("hairsElongation", &hairsElongation, "Zone behind the tip without root hairs  [cm]");
+    bindParameter("hairsZone", &hairsZone, "Length of the root hair zone [cm]");
+    bindParameter("hairsLength", &hairsLength, "Root hair length [cm]");
 }
 
 } // end namespace CPlantBox

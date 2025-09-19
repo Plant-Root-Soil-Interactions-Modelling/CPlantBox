@@ -23,7 +23,7 @@ namespace CPlantBox {
  */
 Root::Root(int id, std::shared_ptr<const OrganSpecificParameter> param, bool alive, bool active, double age, double length,
     Vector3d partialIHeading_, int pni, bool moved, int oldNON)
-        :Organ(id, param, alive, active, age, length, partialIHeading_,pni, moved,  oldNON )
+     :Organ(id, param, alive, active, age, length, partialIHeading_,pni, moved,  oldNON )
 {
     insertionAngle = this->param()->theta;
 }
@@ -52,25 +52,25 @@ Root::Root(std::shared_ptr<Organism> plant_, int subType,  double delay, std::sh
         theta*=scale;
     }
     insertionAngle = theta;
-    this->partialIHeading = Vector3d::rotAB(theta,beta);
+	this->partialIHeading = Vector3d::rotAB(theta,beta);
 
-    if(!(parent->organType()==Organism::ot_seed))
-    {
-        double creationTime= parent->getNodeCT(pni)+delay;//default
-        if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
-        {
-            addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
+	if(!(parent->organType()==Organism::ot_seed))
+	{
+			double creationTime= parent->getNodeCT(pni)+delay;//default
+		if (!parent->hasRelCoord())  // the first node of the base roots must be created in RootSystem::initialize()
+		{
+			addNode(parent->getNode(pni), parent->getNodeId(pni), creationTime);
 
-        }else{
-            if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
-                //if lateral of stem, initial creation time:
-                //time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
-                // @see stem::leafGrow
-                creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
-            }
-            addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
-        }
-    }
+		}else{
+			if ((parent->organType()==Organism::ot_stem)&&(parent->getNumberOfChildren()>0)) {
+			//if lateral of stem, initial creation time:
+			//time when stem reached end of basal zone (==CT of parent node of first lateral) + delay
+			// @see stem::leafGrow
+			creationTime = parent->getChild(0)->getParameter("creationTime") + delay;
+		}
+			addNode(Vector3d(0.,0.,0.), parent->getNodeId(pni), creationTime);
+		}
+	}
 }
 
 /**
@@ -100,7 +100,6 @@ std::shared_ptr<Organ> Root::copy(std::shared_ptr<Organism> rs)
  */
 void Root::simulate(double dt, bool verbose)
 {
-    // std::cout << "\nstart" << getId() <<  std::flush;
     firstCall = true;
     moved = false;
     oldNumberOfNodes = nodes.size();
@@ -120,7 +119,7 @@ void Root::simulate(double dt, bool verbose)
         if ((age>0) && (age-dt<=0)) { // the root emerges in this time step
             double P = getRootRandomParameter()->f_sbp->getValue(nodes.back(),shared_from_this());
             if (P<1.) { // P==1 means the lateral emerges with probability 1 (default case)
-                double p = 1.-std::pow((1.-P), dt); //probability of emergence in this time step
+                double p = 1.-(1.-P*dt); //probability of emergence in this time step
                 if (plant.lock()->rand()>p) { // not rand()<p
                     age -= dt; // the root does not emerge in this time step
                 }
@@ -128,14 +127,13 @@ void Root::simulate(double dt, bool verbose)
         }
 
         if (age>0) { // unborn  roots have no children
-
             // children first (lateral roots grow even if base root is inactive)
             for (auto l:children) {
                 l->simulate(dt,verbose);
             }
 
-            if (active) {
 
+            if (active) {
                 // length increment
                 double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
                 double dt_; // time step
@@ -152,7 +150,6 @@ void Root::simulate(double dt, bool verbose)
                 double dl = std::max(scale*e, 0.);//  length increment = calculated length + increment from last time step too small to be added
                 length = getLength();
                 this->epsilonDx = 0.; // now it is "spent" on targetlength (no need for -this->epsilonDx in the following)
-
                 // create geometry
                 if (p.laterals ) { // root has children
                     /* basal zone */
@@ -212,6 +209,7 @@ void Root::simulate(double dt, bool verbose)
                         length+=dl; // - this->epsilonDx;
                     }
                 } else { // no laterals
+
                     if (dl>0) {
                         createSegments(dl,dt_,verbose);
                         length+=dl; //- this->epsilonDx;
@@ -283,6 +281,8 @@ double Root::getParameter(std::string name) const
     if (name=="la") { return param()->la; } // apical zone [cm]
     if (name=="r"){ return param()->r; }  // initial growth rate [cm day-1]
     if (name=="theta") { return insertionAngle; } // angle between root and parent root [rad]
+    if (name=="theta_deg") { return insertionAngle/M_PI*180.; } // angle between root and parent root [°]
+
     if (name=="rlt") { return param()->rlt; } // root life time [day]
     // specific parameters member functions
     if (name=="nob") { return param()->nob(); } // number of lateral emergence nodes/branching points

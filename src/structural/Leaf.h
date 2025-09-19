@@ -15,7 +15,7 @@ class Plant;
 /**
  * Leaf
  *
- * Describes a single leaf, by a vector of nodes representing the leaf.
+ * Describes a single leaf, by a vector of nodes representing the leaf
  * The method simulate() creates new nodes of this leaf, and lateral leafs in the leaf's branching zone.
  *
  */

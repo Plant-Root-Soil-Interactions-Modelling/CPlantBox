@@ -18,7 +18,7 @@ def sinusoidal(t):
 
 
 def sinusoidal2(t, dt):
-    """ sinusoidal functgion from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
+    """ sinusoidal function from 6:00 - 18:00, 0 otherwise (integral over one day is 1)"""
     return np.maximum(0., np.pi * (np.cos(2 * np.pi * (t - 0.5)) + np.cos(2 * np.pi * ((t + dt) - 0.5))) / 2)
 
 
@@ -53,6 +53,7 @@ class XylemFluxPython(XylemFlux):
         self.Km = 10.67 * 62 * 1.e-6  # kg/m3
         self.CMin = 4.4 * 62 * 1.e-6  # kg/m3
         self.Exu = 1.e-2  # data Eva Oburger kg /(m2 day)
+        self.plant = rs
 
     def solute_fluxes(self, c):
         """ concentrations @param c [kg/m3], returns [g/day]
@@ -276,7 +277,7 @@ class XylemFluxPython(XylemFlux):
                 numleaf = indices.index(seg_ind)
                 if self.pg[0] != 0:
                     p_s = self.pg[numleaf]
-        kr = self.kr_f(age, st, ot, seg_ind)  # c++ conductivity call back functions
+        kr = self.kr_f(age, st, ot, seg_ind, cells)  # c++ conductivity call back functions
         kr = min(kr, ksoil)
         kx = self.kx_f(age, st, ot, seg_ind)
         if a * kr > 1.e-16:
@@ -298,6 +299,7 @@ class XylemFluxPython(XylemFlux):
         """ returns the exact transpirational flux of the xylem model solution @param rx
             @see axial_flux        
         """
+        self.collar_index_ = self.collar_index()
         return self.axial_flux(self.collar_index_, sim_time, rx, sxx, k_soil, cells, ij = True)
 
     def axial_fluxes(self, sim_time, rx, sxx, k_soil = [], cells = True):
@@ -410,11 +412,11 @@ class XylemFluxPython(XylemFlux):
         tipleaves = tipleaves - np.ones(tipleaves.shape, dtype = np.int64)  # segIndx = seg.y -1
         return tiproots, tipstems, tipleaves
 
-    def get_suf(self, sim_time, approx = False, organType_ = 2):
+    def get_suf(self, sim_time, approx = False, organType_ = None):
         """ calculates the standard uptake fraction [1] at simulation time @param sim_time [day]
             (suf is constant for age independent conductivities) 
-            for the root system  (organType_=2)
-            the shoot (organType_=4)
+            for the root system  (organType_=2 or organType_=None)
+            the shoot (organType_=4, @see get_krs(plant = True)) 
         """
         segs = self.rs.segments
         nodes = self.rs.nodes
@@ -425,26 +427,36 @@ class XylemFluxPython(XylemFlux):
                 p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
             else:
                 p_s[i] = self.airPressure - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
-        if(4 in organType):  # we have a whole plant
+        if(pb.leaf in organType):  # we have a whole plant
             rx = self.solve_neumann(sim_time, 0, p_s, cells = False)
-            # transpiration == leaf radial flux. adapt sign to get positive SUF
+            # transpiration == sum(leaf radial flux) == sum(root radial flux)
         else:
             transpiration = -1.e5
-            rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment), high number to recuce spurious fluxes
-        # print("rx", np.min(rx), np.max(rx), np.mean(rx))
-        fluxes = self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
+            rx = self.solve_neumann(sim_time, transpiration , p_s, cells = False)  # False: matric potential not given per cell (but per segment)
 
-        if(4 in organType):
-            transpiration = sum(np.array(fluxes)[organType == 4]) * (-1 * (organType_ == 2) + 1 * (organType_ == 4))
-        # print("fluxes ", np.min(fluxes) / -1.e5, np.max(fluxes) / -1.e5, np.mean(fluxes) / -1.e5)
+        fluxes = np.array(self.segFluxes(sim_time, rx, p_s, approx = approx, cells = False))  # cm3/day, simTime,  rx,  sx,  approx, cells
+
+        if(pb.leaf in organType):
+            if organType_ == pb.leaf:  # we want the suf for the leaves, only usefull when computing get_krs() for plants
+                transpiration = sum(np.array(fluxes)[organType == pb.leaf])
+            else:  # we want the suf for the roots
+                transpiration = -sum(np.array(fluxes)[organType == pb.leaf])
+
+        if not (organType_ is None):  # we want the suf for only specific orgran types
+            fluxes = fluxes[organType == organType_]
+        else:
+            fluxes[organType == pb.leaf] = np.nan
+
         if transpiration != 0:
-            return np.array(fluxes)[organType == organType_] / transpiration  # [1]
+            return fluxes / transpiration  # [1]
+
         else:
             return np.full(len(np.array(fluxes)[organType == organType_]), 0.)
 
     def get_mean_suf_depth(self, sim_time):
         """  mean depth [cm] of water uptake based suf """
         suf = self.get_suf(sim_time)
+        suf[np.isnan(suf)] = 0  # to get the mean in spite of the nan
         segs = self.rs.segments
         nodes = self.rs.nodes
         z_ = 0
@@ -475,11 +487,13 @@ class XylemFluxPython(XylemFlux):
         nodes = self.rs.nodes
         p_s = np.zeros((len(segs),))
         organType = self.get_organ_types()
+        subType = self.get_subtypes()
         for i, s in enumerate(segs):
             if (organType[i] == 2):
                 p_s[i] = -500 - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
             else:
                 p_s[i] = self.airPressure - 0.5 * (nodes[s.x].z + nodes[s.y].z)  # constant total potential (hydraulic equilibrium)
+
         if plant:
             rx = self.solve_neumann(sim_time, 0., p_s, cells = False)
             fluxes = self.segFluxes(sim_time, rx, p_s, approx = False, cells = False)  # cm3/day, simTime,  rx,  sx,  approx, cells
@@ -518,27 +532,32 @@ class XylemFluxPython(XylemFlux):
             # Hcollar =  rx[self.dirichlet_ind[0] + 0.5 * (nodes[segs[0].x].z + nodes[segs[0].y].z) # matric -> total potential
             return krs , jc
 
-    def get_eswp(self, sim_time, p_s, cells = True, organType_ = 2):
-        """ calculates the equivalent soil water potential [cm] (organType_ = 2)
-        or air water potential (organType_ = 4)
+    def get_eswp(self, sim_time, p_s, cells = True, organType_ = None):
+        """ calculates the equivalent soil water potential [cm] (organType_ = 2 or organType_ = None)
+        or air water potential (organType_ = 4) (@see get_krs(plant = True))
         at simulation time @param sim_time [day] for 
         the potential @param p_s [cm] given per cell """
         organType = self.get_organ_types()
-        segs = np.array(self.rs.segments)[organType == organType_]
+
+        segs = self.get_segments()
         nodes = self.rs.nodes
         seg2cell = self.rs.seg2cell
         suf = self.get_suf(sim_time, organType_ = organType_)
+        if not (organType_ is None):
+            segs = segs[organType == organType_]  # only happens/useful when using get_krs() for plants
+        else:
+            suf[np.isnan(suf)] = 0  # to get the mean in spite of the nan
         eswp = 0.
         for i, s in enumerate(segs):
             if cells:
-                eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
+                eswp += suf[i] * (p_s[seg2cell[i]] + 0.5 * (nodes[s[0]].z + nodes[s[1]].z))  # matric potential to total potential
             else:
-                eswp += suf[i] * (p_s[i] + 0.5 * (nodes[s.x].z + nodes[s.y].z))  # matric potential to total potential
+                eswp += suf[i] * (p_s[i] + 0.5 * (nodes[s[0]].z + nodes[s[1]].z))  # matric potential to total potential
         return eswp
 
-    def kr_f(self, age, st, ot = 2 , seg_ind = 0):
+    def kr_f(self, age, st, ot = 2 , seg_ind = 0, cells = False):
         """ root radial conductivity [1 day-1] for backwards compatibility """
-        return self.kr_f_cpp(seg_ind, age, st, ot)  # kr_f_cpp is XylemFlux::kr_f
+        return self.kr_f_cpp(seg_ind, age, st, ot, cells)  # kr_f_cpp is XylemFlux::kr_f
 
     def kx_f(self, age, st, ot = 2, seg_ind = 0):
         """ root axial conductivity [cm3 day-1]  for backwards compatibility """
@@ -557,15 +576,17 @@ class XylemFluxPython(XylemFlux):
         # 1 check if segment index is node index-1
         segments = self.get_segments()
         nodes = self.get_nodes()
+        types = self.rs.subTypes
         for i, s_ in enumerate(segments):
             if i != s_[1] - 1:
-                raise "Segment indices are mixed up"
-        print(len(segments), "segments")
+                raise "Error: Segment indices are mixed up!"
+        print(len(nodes), "nodes:")
+        for i in range(0, min(5, len(nodes))):
+            print("Node", i, nodes[i])
+        print(len(segments), "segments:")
         # 1b check if there are multiple basal roots (TODO)
-        print("Segment 0", segments[0])
-        print("Segment 1", segments[1])
-        print("Segment 2", segments[2])
-        print("....")
+        for i in range(0, min(5, len(segments))):
+            print("Segment", i, segments[i], "subType", types[i])
         ci = self.collar_index()
         self.collar_index_ = ci
         print("Collar segment index", ci)
@@ -576,7 +597,7 @@ class XylemFluxPython(XylemFlux):
                 if first:
                     first = False
                 else:
-                    print("warning multiple segments emerge from collar node (always node index 0)", ci, s)
+                    print("Warning: multiple segments emerge from collar node (always node index 0)", ci, s)
         # 2 check for very small segments
         seg_length = self.rs.segLength()
         c = 0
@@ -586,7 +607,6 @@ class XylemFluxPython(XylemFlux):
                 c += 1
         print(c, "segments with length < 1.e-5 cm")
         # 3 check for type range, index should start at 0
-        types = self.rs.subTypes
         if np.min(types) > 0:
             print("Warning: types start with index", np.min(types), "> 0 !")
         print("{:g} different root types from {:g} to {:g}".format(np.max(types) - np.min(types) + 1, np.min(types), np.max(types)))

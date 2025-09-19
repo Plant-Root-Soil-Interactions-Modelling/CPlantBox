@@ -1,4 +1,8 @@
-"""plant example"""
+"""
+growing plant example, use of AnimateRoots 
+
+TODO we could add how to create avi form png (e.g. on linux), and remove files again
+"""
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
@@ -89,7 +93,7 @@ for p in plant.getOrganRandomParameter(pb.root):
 # Initialize
 plant.initialize()
 
-dt = 0.1
+dt = 1
 N = 400
 min_ = np.array([-20, -20, -50])
 max_ = np.array([20, 20, 30.])

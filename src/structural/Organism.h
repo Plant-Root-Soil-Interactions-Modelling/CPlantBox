@@ -23,7 +23,6 @@ class Seed;
 /**
  * Organism
  *
- * Base class of Plant or RootSystem
  *
  * Manages the OrganRandomParameters
  * Offers an interface for the simulation loop (initialize, simulate, ...)
@@ -55,7 +54,7 @@ public:
 	std::shared_ptr<Seed> getSeed(); ///< the plant seed
 
     /* organ parameter management */
-    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int otype, int subType) const; ///< returns the respective the type parameter
+    std::shared_ptr<OrganRandomParameter> getOrganRandomParameter(int ot, int subType) const; ///< returns the respective the type parameter
     std::vector<std::shared_ptr<OrganRandomParameter>> getOrganRandomParameter(int ot) const; ///< returns all type parameters of an organ type (e.g. root)
     void setOrganRandomParameter(std::shared_ptr<OrganRandomParameter> p); ///< sets an organ type parameter, subType and organType defined within p
     int getParameterSubType(int organtype, std::string str) const; ///< returns the parameter sub type index of name @param str
@@ -101,7 +100,7 @@ public:
     /* io */
     virtual std::string toString() const; ///< quick info for debugging
     virtual void initializeReader() { } ///< initializes parameter reader
-    virtual void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = true); ///< reads all organ type parameters from a xml file
+    virtual void readParameters(std::string name, std::string  basetag = "plant", bool fromFile = true, bool verbose = false); ///< reads all organ type parameters from a xml file
     virtual void writeParameters(std::string name, std::string basetag = "plant", bool comments = true) const; ///< write all organ type parameters into a xml file
     virtual void write(std::string name) const; /// writes simulation results (type is determined from file extension in name)
     virtual void writeVTP(int otype, std::ostream & os) const;
@@ -119,19 +118,19 @@ public:
     void setMinDx(double dx) { minDx = dx; } ///< Minimum segment size, smaller segments will be skipped
     double getMinDx() { return minDx; } ///< Minimum segment size, smaller segments will be skipped
 
-    /* random number generator */
     virtual void setSeed(unsigned int seed); ///< sets the seed of the organisms random number generator
     unsigned int getSeedVal(){return seed_val;}
 
-    virtual double rand() { if(stochastic) {return UD(gen); } else {return 0.5; } }  ///< uniformly distributed random number [0, 1[
-    virtual double randn() { if(stochastic) {return ND(gen); } else {return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
+   virtual double rand() { if (stochastic) { return UD(gen); } else { return 0.5; } }  ///< uniformly distributed random number [0, 1[
+    virtual double randn() { if (stochastic) { return ND(gen); } else { return 0.0; } }  ///< normally distributed random number [-3, 3] in 99.73% of cases
+	unsigned int  getSeedVal(){ return seed_val; }
+	void setStochastic(bool stochastic_) { stochastic = stochastic_; }
+	bool getStochastic(){ return stochastic; }
+	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
+	virtual bool hasRelCoord(){ return false; } ///< overriden by @Plant::hasRelCoord()
+	int getDelayDefinition(int ot_lat);
 
-	void setStochastic(bool stochastic_){stochastic = stochastic_;}
-	bool getStochastic(){return stochastic;}
-
-//	virtual bool hasRelCoord() {return false;} ///< overriden by @Plant::hasRelCoord()
-
-    std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the organism
+    int plantId; // unique plant id (for debugging copy)
 
 protected:
 
@@ -158,7 +157,7 @@ protected:
     std::mt19937 gen;
     std::uniform_real_distribution<double> UD;
     std::normal_distribution<double> ND;
-	bool stochastic = true;///<  wether to implement stochasticity
+	bool stochastic = true;///<  Whether to implement stochasticity
 
 };
 

@@ -7,8 +7,7 @@ include_directories(functional)
 include_directories(visualisation)
 
 include_directories(external/tinyxml2)
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-link_libraries (Eigen3::Eigen)
+include_directories(external/eigen) # fetching as git submodule @tag 3.3.7
 
 include_directories(external/) # for PiafMunch
 include_directories(${PROJECT_SOURCE_DIR}/src/external/suitsparse/include/) # for PiafMunch

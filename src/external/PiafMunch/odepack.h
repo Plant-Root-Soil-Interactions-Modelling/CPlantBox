@@ -74,15 +74,15 @@
 //void(*aux)(double,double*, shared_ptr<PhloemFlux>),
 												  
 int cvode_direct(void(*f)(double,double*,double*), Fortran_vector& y, Fortran_vector &T, void(*aux)(double,double*), Fortran_vector& atol, Fortran_vector& rtol,
-			  int solver = DENSE, int nbVar_dot = 0, Fortran_vector** Var_primitive = NULL, Fortran_vector** Var_dot = NULL, bool verbose = true, bool STALD = true,
+			  int solver = DENSE, int nbVar_dot = 0, Fortran_vector** Var_primitive = NULL, Fortran_vector** Var_dot = NULL, bool verbose = false, bool STALD = true,
 			  void(*rootfind)(double, double*, double*) = NULL, int nrootfns = 0, int mu = 1, int ml = 1);
 
 int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vector &T, void(*aux)(double,double*), Fortran_vector& atol, Fortran_vector& rtol,
 			int solver = SPGMR, int GSType = MODIFIED_GS, int prectype = PREC_NONE, int nbVar_dot = 0, Fortran_vector** Var_primitive = NULL, Fortran_vector** Var_dot = NULL,
-			bool verbose = true, bool STALD = true, void(*rootfind)(double,double*,double*) = NULL, int nrootfns = 0, int mu = 1, int ml = 1, int maxl = 5);
+			bool verbose = false, bool STALD = true, void(*rootfind)(double,double*,double*) = NULL, int nrootfns = 0, int mu = 1, int ml = 1, int maxl = 5);
 
 int arkode(void(*f)(double, double*, double*), Fortran_vector& y, Fortran_vector &T, void(*aux)(double, double*), Fortran_vector& atol, Fortran_vector& rtol,
-	int nbVar_dot=0, Fortran_vector** Var_primitive=NULL, Fortran_vector** Var_dot=NULL, bool verbose=true, void(*rootfind)(double, double*, double*)=NULL, int nrootfns=0);
+	int nbVar_dot=0, Fortran_vector** Var_primitive=NULL, Fortran_vector** Var_dot=NULL, bool verbose=false, void(*rootfind)(double, double*, double*)=NULL, int nrootfns=0);
 
 /*
 int cvode_spils(void(*f)(double,double*,double*), Fortran_vector &y, Fortran_vector &T, void(*aux)(double,double*), Fortran_vector& atol, Fortran_vector& rtol,

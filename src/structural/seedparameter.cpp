@@ -20,7 +20,7 @@ std::string SeedSpecificParameter::toString() const
     str << "firstB\t" << firstB << std::endl << "delayB\t" << delayB << std::endl << "maxB\t" << maxB << std::endl;
     str << "nC\t" << nC << std::endl << "firstSB\t" << firstSB << std::endl << "delaySB\t" << delaySB << std::endl;
     str << "delayRC\t" << delayRC << std::endl << "nz\t" << nz << std::endl << "maxTil\t" << maxTil << std::endl;
-	str << "firstTi\t" << firstTi << std::endl << "delayTi\t" << delayTi << std::endl<< "maxTil\t" << maxTil << std::endl;
+	str << "firstTi\t" << firstTil << std::endl << "delayTi\t" << delayTil << std::endl<< "maxTil\t" << maxTil << std::endl;
     str << "simtime\t" << simtime << std::endl;
     return str.str();
 }
@@ -72,8 +72,8 @@ std::shared_ptr<OrganSpecificParameter> SeedRandomParameter::realize()
     double nz_ = std::max(nz , 0.);
 
     double st = std::max(simtime + p->randn()*simtimes, 0.);
-	double fTi = std::max(firstTi + p->randn()*firstTis, 0.);
-    double dTi = std::max(delayTi + p->randn()*delayTis, 0.);
+	double fTi = std::max(firstTil + p->randn()*firstTils, 0.);
+    double dTi = std::max(delayTil + p->randn()*delayTils, 0.);
     int maxtil = std::max(maxTil + p->randn()*maxTils, 0.);
     return std::make_shared<SeedSpecificParameter>(subType, sP, fB, dB, mB, nC_, fSB, dSB,dRC, nz_, maxtil, st,fTi, dTi);
 }
@@ -121,11 +121,12 @@ void SeedRandomParameter::bindParameters()
     bindParameter("delaySB", &delaySB, "Time delay between the shoot borne roots [day]", &delaySBs);
     bindParameter("delayRC", &delayRC, "Delay between the root crowns [day]", &delayRCs);
     bindParameter("nz", &nz, "Distance between the root crowns along the shoot [cm]", &nzs );
-	bindParameter("firstTi", &firstTi, "Emergence of first tiller [day]", &firstTis);
-    bindParameter("delayTi", &delayTi, "Time delay between the tillers [day]", &delayTis);
-    bindParameter("maxTi", &maxTil, "Maximal number of tillers [1]", &maxTils);
+	bindParameter("firstTil", &firstTil, "Emergence of first tiller [day]", &firstTils);
+    bindParameter("delayTil", &delayTil, "Time delay between the tillers [day]", &delayTils);
+    bindParameter("maxTil", &maxTil, "Maximal number of tillers [1]", &maxTils);
     bindParameter("simulationTime", &simtime, "Recommended final simulation time  [day]", &simtimes );
-	bindParameter("delayDefinition", &delayDefinition, "method implemented to evaluate lateral growth delay (0: distance based, 1: delay based defined by parent organ)");
+	bindParameter("delayDefinition", &delayDefinition, "method implemented to evaluate root lateral growth delay (0: distance based, 1: delay based defined by parent organ)");
+	bindParameter("delayDefinitionShoot", &delayDefinitionShoot, "method implemented to evaluate shoot lateral growth delay (0: distance based, 1: delay based defined by parent organ)");
 }
 
 } // namespace

@@ -7,174 +7,277 @@
 namespace CPlantBox {
 
 /**
+ * Constructor
+ */
+PlantHydraulicParameters::PlantHydraulicParameters() {
+
+    std::vector<int> organTypes = { Organism::ot_root, Organism::ot_stem, Organism::ot_leaf };
+    for (int ot : organTypes) {
+        std::vector<double> v0 = {0.};
+        std::vector<double> v1 = {1.};
+        std::vector<double> v1e_4= {1.e-4};
+
+        // all ages are set to 0.
+        std::vector<std::vector<double>> ages;
+        ages.resize(maxSubTypes);
+        std::fill(ages.begin(), ages.end(), v0);
+        kr_ages[ot] = ages;
+        kx_ages[ot] = ages;
+
+        // kr is set to 1.e-4 for roots, 0. for stem, and 0. for leaf
+        std::vector<std::vector<double>> values;
+        values.resize(maxSubTypes);
+        if (ot == Organism::ot_root) {
+            std::fill(values.begin(), values.end(), v1e_4);
+        }
+        if (ot == Organism::ot_stem) {
+            std::fill(values.begin(), values.end(), v0);
+        }
+        if (ot == Organism::ot_leaf) {
+            std::fill(values.begin(), values.end(), v0);
+        }
+        kr_values[ot] = values;
+
+        // kx is set to 1.e-4 for roots, 1. for stem, and 1. for leaf
+        if (ot == Organism::ot_root) {
+            std::fill(values.begin(), values.end(), v1e_4);
+        }
+        if (ot == Organism::ot_stem) {
+            std::fill(values.begin(), values.end(), v1);
+        }
+        if (ot == Organism::ot_leaf) {
+            std::fill(values.begin(), values.end(), v1);
+        }
+        kx_values[ot] = values;
+    }
+}
+
+/**
+ *  Constructor passing MappedSegments
+ */
+PlantHydraulicParameters::PlantHydraulicParameters(std::shared_ptr<CPlantBox::MappedSegments> ms_)
+: PlantHydraulicParameters() {
+    ms = ms_;
+}
+
+/**
+ *  Sets the call back function according to krMode and kxMode. This is called by the Python JSON Reader,
+ *  otherwise krMode and kxMode is set automatically by the setter methods.
+ *
+ *  krMode is const, perSegment, age, or distance
+ *  kxMode is const, perSegment, age, or distance
+ */
+void PlantHydraulicParameters::setMode(std::string krMode, std::string kxMode) {
+    this->krMode = krMode;
+    this->kxMode = kxMode;
+    if (krMode == "const") {
+        kr_f  = std::bind(&PlantHydraulicParameters::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+    if (kxMode == "const") {
+        kx_f  = std::bind(&PlantHydraulicParameters::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+    if (krMode == "per segment") {
+        kr_f = std::bind(&PlantHydraulicParameters::kr_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+    if (kxMode == "per segment") {
+        kx_f = std::bind(&PlantHydraulicParameters::kx_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+    if (krMode == "age dependent") {
+        kr_f = std::bind(&PlantHydraulicParameters::kr_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+    if (kxMode == "age dependent") {
+        kx_f = std::bind(&PlantHydraulicParameters::kx_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+    if (krMode == "distance dependent") {
+        kr_f = std::bind(&PlantHydraulicParameters::kr_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+    if (kxMode == "distance dependent") {
+        kx_f = std::bind(&PlantHydraulicParameters::kx_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    }
+}
+
+/**
+ * Returns the radial conductivity kr of roots below ground or leaves aboveground, otherwise returns 0 (ms must be set)
+ */
+double PlantHydraulicParameters::kr_f_wrapped(int si, double age, int subType, int organType, bool cells) const
+{
+    int cellIndex = ms->seg2cell.at(si);
+    if (cells&&(((cellIndex>=0)&&(organType !=Organism::ot_root))||((cellIndex < 0)&&(organType == Organism::ot_root)))) {
+        return 0.;
+    } else {
+        return kr_f(si, age, subType, organType);
+    }
+}
+
+/**
+ * Sets the radial conductivity in [1 day-1] for a subType and organType
+ *
+ * @param v             kr per subType and organType [cm-1]
+ * @param subType       organ sub type
+ * @param organType     organ type (default is root)
+ * @param kr_length     exchange zone in root, where kr > 0 [cm from root tip], default = -1.0, i.e., no kr_length
+ */
+void PlantHydraulicParameters::setKrConst(double v, int subType, int organType, double kr_length) {
+    kr_values.at(organType).at(subType).at(0) = v;
+    if (kr_length > 0.){
+        ms->kr_length = kr_length; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
+        ms->calcExchangeZoneCoefs();    //computes coefficient used by XylemFlux::kr_RootExchangeZonePerType
+        kr_f  = std::bind(&PlantHydraulicParameters::kr_RootExchangeZonePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+        krMode = "constExchangeZone";
+    } else {
+        kr_f  = std::bind(&PlantHydraulicParameters::kr_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+        krMode = "const";
+    }
+}
+
+/**
+ * For roots the radial conductivity is multiplied by an exchange zone coefficient (that is calculated within MappedPlant per Segment)
+ */
+double PlantHydraulicParameters::kr_RootExchangeZonePerType(int si,double age, int subType, int organType) {
+    if (organType == Organism::ot_root){
+        double coef = ms->exchangeZoneCoefs.at(si);//% of segment length in the root exchange zone, see MappedPlant::simulate
+        return coef * kr_values.at(organType).at(subType).at(0);
+    }
+    return kr_values.at(organType).at(subType).at(0);
+}
+
+/**
+ * Sets the axial conductivity in [cm3 day-1] for a subType and organType
+ *
+ * @param v             kx per subType and organType [cm3/day]
+ * @param subType       organ sub type
+ * @param organType     organ type (default is root)
+ */
+void PlantHydraulicParameters::setKxConst(double v, int subType, int organType) {
+    kx_values.at(organType).at(subType).at(0) = v;
+    kx_f  = std::bind(&PlantHydraulicParameters::kx_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    kxMode = "const";
+}
+
+/**
+ *  Sets the radial conductivity [day-1] in an age dependent way, organ type and sub-type dependent
+ *
+ * The value is linearly interpolated between the sampling points given by age, and values dependent  on age,
+ * Extrapolation of the last value is used if age lies outside the domain defined by the sampling points.
+ *
+ * @param age           age values
+ * @param v             kx values
+ * @param subType       organ sub type
+ * @param organType     organ type (default is root)
+ */
+void PlantHydraulicParameters::setKrAgeDependent(std::vector<double> age, std::vector<double> values, int subType, int organType) {
+    kr_ages.at(organType).at(subType) = age;
+    kr_values.at(organType).at(subType) = values;
+    kr_f = std::bind(&PlantHydraulicParameters::kr_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    krMode = "age dependent";
+}
+
+/**
+ *  Sets the axial conductivity [cm3 day-1] in an age dependent way, organ type and sub-type dependent
+ *
+ * The value is linearly interpolated between the sampling points given by age, and values dependent  on age,
+ * Extrapolation of the last value is used if age lies outside the domain defined by the sampling points.  *
+ * @param age              age values
+ * @param v                kx values
+ * @param subType       organ sub type
+ * @param organType     organ type (default is root)
+ */
+void PlantHydraulicParameters::setKxAgeDependent(std::vector<double> age, std::vector<double> values, int subType, int organType) {
+    kx_ages.at(organType).at(subType) = age;
+    kx_values.at(organType).at(subType) = values;
+    kx_f = std::bind(&PlantHydraulicParameters::kx_age, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    kxMode = "age dependent";
+}
+
+/**
+ *  Sets the radial conductivity [day-1] in an age dependent way, organ type and sub-type dependent
+ *
+ * The value is linearly interpolated between the sampling points given by age, and values dependent  on age,
+ * Extrapolation of the last value is used if age lies outside the domain defined by the sampling points.
+ *
+ * @param age           age values
+ * @param v             kx values
+ * @param subType       organ sub type
+ * @param organType     organ type (default is root)
+ */
+void PlantHydraulicParameters::setKrDistanceDependent(std::vector<double> distance, std::vector<double> values, int subType, int organType) {
+    kr_ages.at(organType).at(subType) = distance;
+    kr_values.at(organType).at(subType) = values;
+    kr_f = std::bind(&PlantHydraulicParameters::kr_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    krMode = "distance dependent";
+}
+
+/**
+ * Radial conductivity per distance (distance is obtained from MappedPlant via the segment index) for roots,
+ * constant values for other organs
+ */
+double PlantHydraulicParameters::kr_distance(int si, double age, int subType, int organType) {
+    if (organType == Organism::ot_root){
+        double distFromTip = ms->distanceTip.at(si);
+        return Function::interp1(distFromTip, kr_ages.at(organType).at(subType), kr_values.at(organType).at(subType));
+    } else {
+        return kr_values.at(organType).at(subType).at(0);
+    }
+}
+
+/**
+ *  Sets the axial conductivity [cm3 day-1] in an age dependent way, organ type and sub-type dependent
+ *
+ * The value is linearly interpolated between the sampling points given by age, and values dependent  on age,
+ * Extrapolation of the last value is used if age lies outside the domain defined by the sampling points.  *
+ * @param age              age values
+ * @param v                kx values
+ * @param subType       organ sub type
+ * @param organType     organ type (default is root)
+ */
+void PlantHydraulicParameters::setKxDistanceDependent(std::vector<double> distance, std::vector<double> values, int subType, int organType) {
+    kx_ages.at(organType).at(subType) = distance;
+    kx_values.at(organType).at(subType) = values;
+    kx_f = std::bind(&PlantHydraulicParameters::kx_distance, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+    kxMode = "distance dependent";
+}
+
+/**
+ * Axial conductivity per distance (distance is obtained from MappedPlant via the segment index) for roots,
+ * constant values for other organs
+ */
+double PlantHydraulicParameters::kx_distance(int si, double age, int subType, int organType) {
+    if (organType == Organism::ot_root){
+        double distFromTip = ms->distanceTip.at(si);
+        return Function::interp1(distFromTip, kx_ages.at(organType).at(subType), kx_values.at(organType).at(subType));
+    } else {
+        return kx_values.at(organType).at(subType).at(0);
+    }
+}
+
+/**
  * Sets the radial conductivity conductivity [1 day-1] per segment (e.g. constant value per segment)
  */
 void PlantHydraulicParameters::setKrValues(std::vector<double> values) {
-    kr.clear();
-    kr_t.clear();
-    kr.push_back(values);
+    krValues = values;
     kr_f = std::bind(&PlantHydraulicParameters::kr_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    std::cout << "Kr is given per segment\n";
+    krMode = "per segment";
 }
 
 /**
  * Sets the axial conductivity [cm3 day-1] per segment (e.g. constant value per segment)
  */
 void PlantHydraulicParameters::setKxValues(std::vector<double> values) {
-    kx.clear();
-    kx_t.clear();
-    kx.push_back(values);
+    kxValues = values;
     kx_f = std::bind(&PlantHydraulicParameters::kx_valuePerSegment, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-    std::cout << "Kx is given per segment\n";
+    kxMode = "per segment";
 }
 
 /**
- *  Sets the radial conductivity in [1 day-1] in case of organType or subType specific Kr, or age dependent
- *
- * @param values 		kr per organType and subType or per age [cm-1]
- * @param age 			ages if kr is per age, empty vector otherwise
- * @param kr_length_ 	exchange zone in root, where kr > 0 [cm from root tip], default = -1.0, i.e., no kr_length
+ * Returns radial conductivities per segment (TODO numleaf is ingored) [1 day-1]
  */
-void PlantHydraulicParameters::setKr(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age, double kr_length_) {
-    kr = values;
-    kr_t = age;
-    if (age.size()==0) {
-        if (values.size()==1) {
-            if (values[0].size()==1) {
-                kr_f = std::bind(&PlantHydraulicParameters::kr_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kr is constant " << values[0][0] << " 1 day-1 \n";
-            } else {
-                kr_f  = std::bind(&PlantHydraulicParameters::kr_perSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kr is constant per subtype, subtype 0 = " << values[0][0] << " 1 day-1 \n";
-            }
-        } else {
-            if (values[0].size()==1) {
-                kr_f = std::bind(&PlantHydraulicParameters::kr_perOrganType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kr is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
-            } else {
-				if(kr_length_ > 0.){
-					std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<" cm from root tip"<<std::endl;
-//					rs->kr_length = kr_length_; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
-//					rs->calcExchangeZoneCoefs();	//computes coefficient used by XylemFlux::kr_RootExchangeZonePerType
-					kr_f  = std::bind(&PlantHydraulicParameters::kr_RootExchangeZonePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-				} else {
-					kr_f  = std::bind(&PlantHydraulicParameters::kr_perSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-				}
-                std::cout << "Kr is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " 1 day-1 \n";
-            }
-        }
-    } else {
-        kr_f  = std::bind(&PlantHydraulicParameters::kr_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kr is equal for all organs and age dependent\n";
-    }
-}
-
-/**
- *  Sets the axial conductivity in [cm3 day-1] in case of organType or subType specific Kr, xor age dependent
- *
- * @param values        kx per organType and subType xor per age [cm-1]
- * @param age           ages if kx per age
- */
-void PlantHydraulicParameters::setKx(std::vector<std::vector<double>> values, std::vector<std::vector<double>> age) {
-    kx = values;
-    kx_t = age;
-    if (age.size()==0) {
-        if (values.size()==1) {
-            if (values[0].size()==1) {
-                kx_f = std::bind(&PlantHydraulicParameters::kx_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant " << values[0][0] << " cm3 day-1 \n";
-            } else {
-                kx_f  = std::bind(&PlantHydraulicParameters::kx_perSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per subtype, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
-            }
-        } else {
-            if (values[0].size()==1) {
-                kx_f = std::bind(&PlantHydraulicParameters::kx_perOrganType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
-            } else {
-                kx_f  = std::bind(&PlantHydraulicParameters::kx_perSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-                std::cout << "Kx is constant per subtype of organ type, for root, subtype 0 = " << values[0][0] << " cm3 day-1 \n";
-            }
-        }
-    } else {
-        kx_f  = std::bind(&PlantHydraulicParameters::kx_table, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kx is equal for all organs and age dependent\n";
-    }
-}
-
-/**
- *  Sets the radial conductivity in [1 day-1] age, organ type and sub-type dependent
- *
- *	@param values 			kr values for age (its linearly interpolated between these values) for each organ type and each sub-type
- *	@param age 				ages for the given values for each organ type and for each sub type
- */
-void PlantHydraulicParameters::setKrTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
-    krs = values;
-    krs_t = age;
-    if (age[0].size()==1) {
-        kr_f = std::bind(&PlantHydraulicParameters::kr_tablePerOrganType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kr is age dependent per organ type\n";
-    }
-    else{
-        kr_f = std::bind(&PlantHydraulicParameters::kr_tablePerSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kr is age dependent per organ type and sub type\n";
-    }
-}
-
-/**
- *  Sets the axial conductivity in [cm3 day-1] age, organ type and sub-type dependent
- *
- *	@param values 			kx values for age (its linearly interpolated between these values) for each organ type and each sub type
- *	@param age 				ages for the given values for each organ type and for each sub-type
- */
-void PlantHydraulicParameters::setKxTables(std::vector<std::vector<std::vector<double>>> values, std::vector<std::vector<std::vector<double>>> age) {
-    kxs= values;
-    kxs_t = age;
-    if (age[0].size()==1) {
-        kx_f = std::bind(&PlantHydraulicParameters::kx_tablePerOrganType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kx is age dependent per organ type\n";
-    }
-    else {
-        kx_f = std::bind(&PlantHydraulicParameters::kx_tablePerSubType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-        std::cout << "Kx is age dependent per organ type and sub type\n";
-    }
-}
-
-/**
- * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
- */
-std::vector<double> PlantHydraulicParameters::getEffKr(std::shared_ptr<MappedSegments> rs, double simtime) const {
-    std::vector<double> kr = std::vector<double>(rs->segments.size());
-    for (int si = 0; si<rs->segments.size(); si++) {
-        int i = rs->segments[si].x;
-        int j = rs->segments[si].y;
-        Vector3d n1 = rs->nodes[i];
-        Vector3d n2 = rs->nodes[j];
-        double l = (n2.minus(n1)).length();
-        double a = rs->radii[si];
-        int organType = rs->organTypes[si];
-        double age = simtime - rs->nodeCTs[j];
-        int subType = rs->subTypes[si];
-        try {
-            kr[si] = 2.*M_PI *a*l*kr_f(si, age, subType, organType);
-        } catch(...) {
-            std::cout << "\n XylemFlux::segFluxes: radial conductivities failed" << std::flush;
-            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
-        }
-    }
-    return kr;
-}
-
-/**
- * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored)
- */
-std::vector<double> PlantHydraulicParameters::getKr(std::shared_ptr<MappedSegments> rs, double simtime) const {
-    std::vector<double> kr = std::vector<double>(rs->segments.size());
-    for (int si = 0; si<rs->segments.size(); si++) {
-        int j = rs->segments[si].y;
-        int organType = rs->organTypes[si];
-        double age = simtime - rs->nodeCTs[j];
-        int subType = rs->subTypes[si];
+std::vector<double> PlantHydraulicParameters::getKr(double simtime) {
+    std::vector<double> kr = std::vector<double>(ms->segments.size());
+    for (int si = 0; si<ms->segments.size(); si++) {
+        int j = ms->segments[si].y;
+        int organType = ms->organTypes[si];
+        double age = simtime - ms->nodeCTs[j];
+        int subType = ms->subTypes[si];
         try {
             kr[si] = kr_f(si, age, subType, organType);
         } catch(...) {
@@ -185,17 +288,41 @@ std::vector<double> PlantHydraulicParameters::getKr(std::shared_ptr<MappedSegmen
     return kr;
 }
 
+/**
+ * Returns radial conductivities per segment multiplied by segment surface for a specific simulation time (TODO numleaf is ingored) [cm2 day-1]
+ */
+std::vector<double> PlantHydraulicParameters::getEffKr(double simtime) {
+    std::vector<double> kr = std::vector<double>(ms->segments.size());
+    for (int si = 0; si<ms->segments.size(); si++) {
+        int i = ms->segments[si].x;
+        int j = ms->segments[si].y;
+        Vector3d n1 = ms->nodes[i];
+        Vector3d n2 = ms->nodes[j];
+        double l = (n2.minus(n1)).length();
+        double a = ms->getEffectiveRadius(si); ////// hair_zone_length, hair_eff_length
+        int organType = ms->organTypes[si];
+        double age = simtime - ms->nodeCTs[j];
+        int subType = ms->subTypes[si];
+        try {
+            kr[si] = 2.*M_PI *a*l*kr_f(si, age, subType, organType);
+        } catch(...) {
+            std::cout << "\n PlantHydraulicParameters::getEffKr: radial conductivities failed" << std::flush;
+            std::cout  << "\n organ type "<<organType<< " subtype " << subType <<std::flush;
+        }
+    }
+    return kr;
+}
 
 /**
- * Returns axial conductivities per segment for a specific simulation time
+ * Returns axial conductivities per segment for a specific simulation time [cm3 day-1]
  */
-std::vector<double> PlantHydraulicParameters::getKx(std::shared_ptr<MappedSegments> rs, double simtime) const {
-    std::vector<double> kx = std::vector<double>(rs->segments.size());
-    for (int si = 0; si<rs->segments.size(); si++) {
-        int j = rs->segments[si].y;
-        int organType = rs->organTypes[si];
-        double age = simtime - rs->nodeCTs[j];
-        int subType = rs->subTypes[si];
+std::vector<double> PlantHydraulicParameters::getKx(double simtime) {
+    std::vector<double> kx = std::vector<double>(ms->segments.size());
+    for (int si = 0; si<ms->segments.size(); si++) {
+        int j = ms->segments[si].y;
+        int organType = ms->organTypes[si];
+        double age = simtime - ms->nodeCTs.at(j);
+        int subType = ms->subTypes[si];
         try {
             kx[si] = kx_f(si, age, subType, organType);
         } catch(...) {
@@ -207,23 +334,38 @@ std::vector<double> PlantHydraulicParameters::getKx(std::shared_ptr<MappedSegmen
 }
 
 /**
- * Returns soil matric potential per segment, for a given soil sx connected gy the mapper rs->seg2cell
+ * Returns outer water potential [cm] overloaded by @see Photosynthesis::getPsiOut
+ * @param cells         sx per cell (true), or segments (false)
+ * @param si            segment index
+ * @param sx_        [cm] soil matric potential for each cell
  */
-std::vector<double> PlantHydraulicParameters::getHs(std::shared_ptr<MappedSegments> rs, const std::vector<double>& sx) const {
-    std::vector<double> hs = std::vector<double>(rs->segments.size());
-    for (int si = 0; si<rs->segments.size(); si++) {
-        int cellIndex = rs->seg2cell[si];
+double PlantHydraulicParameters::getPsiOut(bool cells, int si, const std::vector<double>& sx_, bool verbose) const
+{
+    int organType = ms->organTypes.at(si);
+    double psi_s;
+    if (cells) { // soil matric potential given per cell
+        int cellIndex = ms->seg2cell.at(si);
         if (cellIndex>=0) {
-            if(sx.size()>1) {
-                hs[si] = sx.at(cellIndex);
+            if((organType ==Organism::ot_leaf) && verbose){ //add a runtime error?
+                std::cout<<"PlantHydraulicParameters::getPsiOut: Leaf segment n#"<<si<<" below ground. OrganType: ";
+                std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
+            }
+            if(sx_.size()>1) {
+                psi_s = sx_.at(cellIndex);
             } else {
-                hs[si] = sx.at(0);
+                psi_s = sx_.at(0);
             }
         } else {
-            hs[si] = psi_air;
+            if((organType == Organism::ot_root) && verbose) { //add a runtime error?
+                std::cout<<"PlantHydraulicParameters::getPsiOut: Root segment n#"<<si<<" aboveground. OrganType: ";
+                std::cout<<organType<<" cell Index: "<<cellIndex<<std::endl;
+            }
+            psi_s = psi_air;
         }
+    } else {
+        psi_s = sx_.at(si); // j-1 = segIdx = s.y-1
     }
-    return hs;
+    return psi_s;
 }
 
 

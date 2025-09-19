@@ -16,6 +16,7 @@ class Organism;
 class MappedSegments;
 class XylemFlux;
 class PlantHydraulicParameters;
+class PlantHydraulicModel;
 
 /**
  * Meshfree analysis of the root system based on signed distance functions.
@@ -41,7 +42,7 @@ public:
     void addAge(double simtime);  // "age"
     void addConductivities(const XylemFlux& xylem, double simtime, double kr_max = 1.e6, double kx_max = 1.e6); // "kr", "kx"
     void addHydraulicConductivities(const PlantHydraulicParameters& xylem, double simtime, double kr_max = 1.e6, double kx_max = 1.e6); // "kr", "kx"
-    void addFluxes(const XylemFlux& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime); // "axial_flux", "radial_flux"
+    void addFluxes(const PlantHydraulicModel& rs, const std::vector<double>& rx, const std::vector<double>& sx, double simTime); // "axial_flux", "radial_flux"
     void addCellIds(const MappedSegments& plant); // "cell_id"
 
     // reduce number of segments
@@ -67,10 +68,10 @@ public:
     // rather specialized things we want to know
     void mapPeriodic(double xx, double yy); /// maps into a periodic domain, splits up intersecting segments
     void map2D(); ///< maps the 3d coordinates to the x-z plan (sqrt(x2+y2), 0., z)
-    std::vector<std::shared_ptr<Organ>> getOrgans() const; ///< segment origins
+    std::vector<std::shared_ptr<Organ>> getOrgans(int ot = -1) const; ///< segment origins
     int getNumberOfOrgans() const; ///< number of different organs
     SegmentAnalyser foto(const Vector3d& pos, const Matrix3d& ons, double height) const; ///< takes a picture TODO unfinished, untested
-    SegmentAnalyser cut(const SDF_HalfPlane& plane) const; ///< returns the segments intersecting with a plane (e.g. for trenches)
+    SegmentAnalyser cut(const SignedDistanceFunction& plane) const; ///< returns the segments intersecting with a plane (e.g. for trenches)
 
 
     // User data for export or distributions
@@ -88,7 +89,7 @@ public:
     std::vector<Vector3d> nodes; ///< nodes
     std::vector<Vector2i> segments; ///< connectivity of the nodes
     std::vector<std::weak_ptr<Organ>> segO; ///< to look up things
-    std::map<std::string, std::vector<double>> data; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.
+    std::map<std::string, std::vector<double>> data; ///< user data attached to the segments (for vtp file), e.g. flux, pressure, etc.	
 
 protected:
 

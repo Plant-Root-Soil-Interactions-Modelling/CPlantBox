@@ -39,8 +39,8 @@
     <parameter name="theta" value="0" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="2" percentage="0.80000000000000004"/>
-    <parameter name="successor" number="1" type="3" percentage="0.20000000000000001"/>
+    <parameter name="successor" number="0" type="2" percentage="0.8"/>
+    <parameter name="successor" number="1" type="3" percentage="0.2"/>
 </organ>
 
 <organ type="root" name="lateral1" subType="2">
@@ -217,7 +217,7 @@
     <parameter name="theta" value="0.25" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="3" percentage="2"/>
+    <parameter name="successor" number="0" type="3" numLat="2" percentage="1"/>
 </organ>
 
 <organ type="stem" name="2ndbranch" subType="3">
@@ -242,7 +242,7 @@
     <parameter name="theta" value="0.25" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="4" percentage="2"/>
+    <parameter name="successor" number="0" type="4" numLat="2" percentage="1"/>
 </organ>
 
 <organ type="stem" name="otherbranch1" subType="4">
@@ -267,7 +267,7 @@
     <parameter name="theta" value="1.75" dev="0"/>
     <parameter name="rlt" value="1000000000" dev="0"/>
     <parameter name="gf" value="1"/>
-    <parameter name="successor" number="0" type="5" percentage="2"/>
+    <parameter name="successor" number="0" type="5" numLat="2" percentage="1"/>
 </organ>
 
 <organ type="stem" name="otherbranch2" subType="5">

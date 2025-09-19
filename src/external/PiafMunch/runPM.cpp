@@ -41,7 +41,7 @@ extern int N1R ; // Organ type # 1R : 'root tip' ; has imposed soil water potent
 extern int Nt, Nc, N[] ; // Nt = total number of nodes, Nc = total number of internode connections [= (1*N[1] + 2*N[2] + 3*N[3] + ... + 8*N[8]) / 2]
 extern Index_vector i_[] ; // i_[o = 0..8][k = 1..No] = id# of kth node in (1-based list)  list of all nodes of conn.ord. co(o). For o=0: No=N1L ; o=1: No=N1R ; o=2..8: No=N[o] :
 extern Index_vector &RootEnds, &LeafEnds ; // (= i_[1] and i_[0], resp.) : label which nodes are network ends = nodes of co=1 , which are either 'leaf' or 'root' ends :
-extern vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# du noeud amont (resp. aval) : jf = JF(i,i2) > 0 si I_Upflow[(abs(jf)]==i, i.e. si I_Downflow[(abs(jf)]==i2
+extern std::vector<int> I_Upflow, I_Downflow ; // I_Upflow(resp.I_Downflow)[jf=1..Nc] = id# du noeud amont (resp. aval) : jf = JF(i,i2) > 0 si I_Upflow[(abs(jf)]==i, i.e. si I_Downflow[(abs(jf)]==i2
 extern Fortran_vector kML						; // kinetic parameter / Michaelis - phloem loading					(mmol / ml)
 extern Fortran_vector vMU					; // kinetic parameter / phloem unloading								(mmol /h)
 //extern Fortran_vector	isTip ,Ag,  Lmax_org, Rmax_org, krm1, krm2 , StructC, exud_k; 
@@ -75,16 +75,16 @@ string AllNodeVariablesNamesQList[] = {
 	"P_ST_dot (MPa / h)", "P_Sympl_dot (MPa / h)", "Q_Rm_dot (mmol eq. Glu / h)", "Q_ST_dot (mmol / h)", "Q_Mesophyll_dot (mmol / h)", "Input (mmol / h)", "Transpirat (ml / h)", "PsiSoil (MPa)",
 // Tracer-specific add-ins :
 	"TracerQ_RespMaint (MBq)", "TracerQ_RespMaintSyn (MBq / h)", "TracerC_ST (MBq / ml)", "TracerC_Sympl (MBq / ml)", "TracerJS_PhlMb (MBq / h)", "TracerQ_Mesophyll (MBq)", "Q_RespMaintmax (MBq)", "TracerRespMaint (MBq / h)",
-	"TracerInput (MBq / h)", "TracerJS_Sympl (MBq / h)", "TracerJS_ParMb (MBq / h)", "Q_Exudationmax (MBq)", "Q_Growthtotmax (MBq)", "TracerC_PhlApo (MBq / ml)",
+	"TracerInput (MBq / h)", "TracerJS_Sympl (MBq / h)", "TracerJS_ParMb (MBq / h)", "Q_S_Mesophyll (MBq)", "Q_Growthtotmax (MBq)", "TracerC_PhlApo (MBq / ml)",
 	"TracerC_ParApo (MBq / ml)", "TracerJS_Apo (MBq / h)", "TracerC_SymplUpflow (MBq / ml)", "TracerC_ApoUpflow (MBq / ml)"
 } ;
 int NumAllConnVariablesNames = 5 ; // 5 internode connector flux variables :
 string AllConnVariablesNamesQList[] = { "C_Upflow (mmol / ml)", "JS_ST (mmol / h)", "JW_ST (ml / h)", "JW_Xyl (ml / h)", "TracerJS_ST (MBq / h)" } ;
 
-extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_out ;		  // components of vector y as used in diff. system f()...
-extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_out_dot ; //... and its derivatives.  ;
-extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_Exudationmax, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
-extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_Exudmax_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
+extern double *Q_ST, *Q_Mesophyll, *Q_RespMaint, *Q_Exudation, *Q_Growthtot, *Q_S_ST, *Q_Mucil ;		  // components of vector y as used in diff. system f()...
+extern double *Q_ST_dot, *Q_Mesophyll_dot, *Q_Rm_dot, *Q_Exud_dot, *Q_Gtot_dot, *Q_S_ST_dot, *Q_Mucil_dot ; //... and its derivatives.  ;
+extern double *Q_RespMaintmax, *TracerQ_Mesophyll, *TracerQ_RespMaint, *Q_S_Mesophyll, *Q_Growthtotmax ;		  // components of vector y as used in diff. system f()...
+extern double *Q_Rmmax_dot, *TracerQ_Mesophyll_dot, *TracerQ_Rm_dot, *Q_S_Mesophyll_dot, *Q_Gtotmax_dot ; //... and its derivatives.  ;
 extern double *vol_Sympl, *vol_Sympl_dot ;
 extern Fortran_vector Psi_Xyl, JW_ST, JS_ST, C_Sympl, C_ST, C_amont, JS_Sympl, JS_Apo, JS_ParMb, JS_PhlMb, Psi_Sympl, C_PhlApo, C_ParApo, P_ST, Absorb, RespMaint ;
 extern Fortran_vector JW_Trsv, JW_Xyl, JW_PhlMb, JW_ParMb, JW_Apo, JW_Sympl, P_Sympl, Psi_ST, P_Xyl, Psi_PhlApo, Psi_ParApo, P_PhlApo, P_ParApo ;
@@ -118,8 +118,8 @@ Fortran_matrix JW_ST_t, JS_ST_t, C_Sympl_t, C_ST_t, JS_Sympl_t, JS_Apo_t, JS_Par
 Fortran_matrix JW_Trsv_t, JW_Xyl_t, JW_PhlMb_t, JW_ParMb_t, JW_Apo_t, JW_Sympl_t, P_Sympl_t, Psi_ST_t, P_Xyl_t, Psi_PhlApo_t, Psi_ParApo_t, P_PhlApo_t, P_ParApo_t ;
 Fortran_matrix PsiSoil_t, Transpirat_t, Input_t, Q_RespMaintSyn_t, P_ST_dot_t, P_Sympl_dot_t, C_SymplUpflow_t, C_ApoUpflow_t, C_amont_t ;
 // tracer-specific add-ins :
-Fortran_matrix Q_RespMaintmax_t, TracerQ_Mesophyll_t, TracerQ_RespMaint_t, Q_Exudationmax_t, Q_Growthtotmax_t ;		  // components of vector y as used in diff. system f()...
-// Fortran_matrix Q_Rmmax_dot_t, TracerQ_Mesophyll_dot_t, TracerQ_Rm_dot_t, Q_Exudmax_dot_t, Q_Gtotmax_dot_t ;		  // components of vector y as used in diff. system f()...
+Fortran_matrix Q_RespMaintmax_t, TracerQ_Mesophyll_t, TracerQ_RespMaint_t, Q_S_Mesophyll_t, Q_Growthtotmax_t ;		  // components of vector y as used in diff. system f()...
+// Fortran_matrix Q_Rmmax_dot_t, TracerQ_Mesophyll_dot_t, TracerQ_Rm_dot_t, Q_S_Mesophyll_dot_t, Q_Gtotmax_dot_t ;		  // components of vector y as used in diff. system f()...
 Fortran_matrix TracerJS_ST_t, TracerC_Sympl_t, TracerC_ST_t, TracerJS_Sympl_t, TracerJS_Apo_t, TracerJS_ParMb_t, TracerJS_PhlMb_t, TracerC_PhlApo_t, TracerC_ParApo_t, TracerC_SymplUpflow_t, TracerC_ApoUpflow_t ;
 Fortran_matrix TracerPhotSynth_t, TracerQ_RespMaintSyn_t, TracerInput_t, TracerRespMaint_t ;
 // Fortran_matrix TracerRatioSympl_t, TracerRatioQ_RespMaint_t ;
@@ -132,7 +132,7 @@ Fortran_matrix* AllNodeMatricesRefsQList[] = {
 	&P_ST_dot_t, &P_Sympl_dot_t, &Q_Rm_dot_t, &Q_ST_dot_t, &Q_Mesophyll_dot_t, &Input_t, &Transpirat_t, &PsiSoil_t,
 	// tracer-specific add-ons :
 	&TracerQ_RespMaint_t, &TracerQ_RespMaintSyn_t, &TracerC_ST_t, &TracerC_Sympl_t, &TracerJS_PhlMb_t, &TracerQ_Mesophyll_t, &Q_RespMaintmax_t, &TracerRespMaint_t,
-	&TracerInput_t, &TracerJS_Sympl_t, &TracerJS_ParMb_t, &Q_Exudationmax_t, &Q_Growthtotmax_t, &TracerC_PhlApo_t,
+	&TracerInput_t, &TracerJS_Sympl_t, &TracerJS_ParMb_t, &Q_S_Mesophyll_t, &Q_Growthtotmax_t, &TracerC_PhlApo_t,
 	&TracerC_ParApo_t, &TracerJS_Apo_t, &TracerC_SymplUpflow_t, &TracerC_ApoUpflow_t
 };
 Fortran_matrix* AllConnMatricesRefsQList[] = {&C_amont_t, &JS_ST_t,  &JW_ST_t, &JW_Xyl_t, &TracerJS_ST_t} ;
@@ -150,7 +150,7 @@ Fortran_vector OutputTimes, SegmentTimes, truc ; // will be vector of, resp.: al
 extern int resistance_changed ;
 extern int jf, i, j ; double x ; bool to_store(true) ; FILE* file = NULL ; extern string S ;
 int nl = 0 ; // # of current line in matrices currently under construction in aux() -- one for each element SegmentTimes[nl] of time vector SegmentTimes
-extern vector<int> k_ ; // k_[i = 1 : Nt] = index of node #i in list i_[o(i)]   where o(i) = 0 for LeafEnds (k_[i] = - k then) ; o(i) = co(i) else  -- for the moment, filled only for (o = 0 or 1)   --   k_[i] = 0 else
+extern std::vector<int> k_ ; // k_[i = 1 : Nt] = index of node #i in list i_[o(i)]   where o(i) = 0 for LeafEnds (k_[i] = - k then) ; o(i) = co(i) else  -- for the moment, filled only for (o = 0 or 1)   --   k_[i] = 0 else
 
 // Selected nodes/connectors and variables for plotting or saving output :
 int nsp, nvp, nss, nvs, fsp, fvp, fss, fvs, rsp(0), lsp(0), xsp ;
@@ -200,7 +200,7 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	OutputSettings() ; // sets up file and graph outputs, including possible breakpoint- and/or extra-output- times as stated above
 
     // *************** SOLVING THE DIFFERENTIAL EQUATION SYSTEM ************************************* :
-    int neq = Y0.size() ;							// number of differential eq. = problem size (= 8*Nt apres ajouts FAD)
+    std::size_t neq = Y0.size() ;							// number of differential eq. = problem size (= 8*Nt apres ajouts FAD)
     if(doTroubleshooting){cout<<"neq "<<neq<<" "<<Nc<<" "<<Nt<<endl;}
 	
 	assert((Nt == (neq/neq_coef))&&"Wrong seg and node number");
@@ -222,8 +222,10 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	phloem_ = this->Phloem();
     for(is = 1 ; is < Breakpoint_index.size() ; is ++) { // allows several integration segments in relation to breakpoints (if any -- OK if none)
         SegmentTimes = subvector(OutputTimes, Breakpoint_index(is), Breakpoint_index(is+1))  ; // time segment between 2 breakpoints (Breakpoint_index(1) = 1 ; Breakpoint_index(Breakpoint_index.size()) = 1 + nbv)
-        cout << endl << "starting integration on time segment #" << is << " = [" << SegmentTimes[1] << ", " << SegmentTimes[SegmentTimes.size()] << "] "<< Breakpoint_index.size()<<" "<<SegmentTimes.size()<< endl ;
-         // ***** the following solver configs are ranked from the most efficient (in most tested situations) to the least (in most tested situations). Can change in different situations ! *****
+        if(doTroubleshooting){
+			cout << endl << "starting integration on time segment #" << is << " = [" << SegmentTimes[1] << ", " << SegmentTimes[SegmentTimes.size()] << "] "<< Breakpoint_index.size()<<" "<<SegmentTimes.size()<< endl ;
+        }
+		// ***** the following solver configs are ranked from the most efficient (in most tested situations) to the least (in most tested situations). Can change in different situations ! *****
         //   see  SUNDIALS  documentation  for  cvode  solver options (SPxxxx, xxxx_GS, PREC_xxxx, BAND, etc.)
 		if(doTroubleshooting){cout <<"solver, Y0: "<<solver <<endl;}
 		switch (solver) {
@@ -269,11 +271,12 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
         
     }
     // ********************* OUTPUT *********************************
-    std::cout<<"MEMORY LIBERATIONS"<<std::endl;
+	if(doTroubleshooting){
+		std::cout<<"MEMORY LIBERATIONS"<<std::endl;
+	}
     // MEMORY LIBERATIONS:
     delete [] y_dot;
 	//for python:
-    std::cout<<"fortran to python vector"<<std::endl;
 	this->Q_outv = Y0.toCppVector();//att: now has several outputs
 	
 	this->Q_out_dotv = std::vector<double>(Y0.size(),0);
@@ -289,8 +292,13 @@ int PhloemFlux::startPM(double StartTime, double EndTime, int OutputStep,double 
 	this->Flv = Input.toCppVector() ;
 	this->r_STv = r_ST.toCppVector() ;
 	this->JW_STv = JW_ST.toCppVector() ;
-    std::cout<<"computeOrgGrowth"<<std::endl;
+	if(doTroubleshooting){
+		std::cout<<"computeOrgGrowth"<<std::endl;
+	}
 	computeOrgGrowth(tf-t0);
+	if(doTroubleshooting){
+		std::cout<<"computeOrgGrowth	DONE"<<std::endl;
+	}
 	if(doTroubleshooting){std::cout.rdbuf(coutbuf);} //reset to standard output again
 	return(1) ;
 	
@@ -305,7 +313,7 @@ void OutputSettings()  {
 	}
 	OutputTimes[nbv + 1] = tf;
 	if(Breakpoint_index[Breakpoint_index.size()]  != OutputTimes.size())  Breakpoint_index.append(Index_vector(1, OutputTimes.size())) ;
-	cout << "Output times :" << endl ; for(i=0 ; i < OutputTimes.size() ; i ++) cout << " " <<  OutputTimes[i+1] ; // if newly inserted extra output time (just after breakpoint) is too close, it may print as the same but actually is not
+	//cout << "Output times :" << endl ; for(i=0 ; i < OutputTimes.size() ; i ++) cout << " " <<  OutputTimes[i+1] ; // if newly inserted extra output time (just after breakpoint) is too close, it may print as the same but actually is not
 	nbv = OutputTimes.size() - 1 ; // at this point,  output times vector truc = OutputTimes ; and Breakpoint_index = {1, [...,] nbv+1}  with  [...,] = extra breakpoints indices (empty if none)
 	
 }
@@ -316,7 +324,7 @@ void PhloemFlux::aux(double t, double * y) {	// launch auxiliary calculations to
 	f(t, y, y_dot) ;			// Update all variables from Y as returned by solver
 	if(nbv > 1)
 	{
-		for (int it = 1 ; it <= Nt  ; it++){
+		for (std::size_t it = 1 ; it <= Nt  ; it++){
 			if(Q_ST[j]<0.)
 			{
 				std::cout<< "at t = " << t << " : Y0.size() = " << Y0.size()<<std::endl;
@@ -331,8 +339,10 @@ void PhloemFlux::aux(double t, double * y) {	// launch auxiliary calculations to
 		Y0[j] = y[j] ; 
 		if((j <= Nt)&&(Y0[j] < 0.)){assert(false && "negative C_ST value");}
 	}// update Y0
-	std::cout << "at t = " << t << " : Y0.size() = " << Y0.size();
-	std::cout<<std::endl;
+	if(doTroubleshooting){
+		std::cout << "at t = " << t << " : Y0.size() = " << Y0.size();
+		std::cout<<std::endl;
+	}
 }
 
 
@@ -345,7 +355,7 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	assert((Nc == (Nt -1))&&"Wrong seg and node number");
 	atol_= Fortran_vector(Nt*neq_coef, atol_double);//1e-017
 	r_ST_ref = Fortran_vector(Nc)	; 
-	I_Upflow = I_Downflow = vector<int>(Nc +1) ;
+	I_Upflow = I_Downflow = std::vector<int>(Nc +1) ;
 	vector<int> orgTypes = plant->organTypes;//per seg
 	vector<int> subTypes = plant->subTypes;
 	vector<double> Radii = plant->radii;
@@ -364,13 +374,14 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 	vol_Seg=Fortran_vector(Nt, 0.);//for postprocessing	
 	exud_k=Fortran_vector(Nt, 0.);
 	krm2=Fortran_vector(Nt, 0.);
+	Csoil_node.resize(Nt,0.);
 	deltaSucOrgNode_ = waterLimitedGrowth(dt);//water limited growth
 	if(doTroubleshooting){cout<<"initializePM_new "<<Nc<<" "<<Nt<<endl;}
 	int nodeID;
 	double StructSucrose;//double deltaStructSucrose;
 	double cmH2O_to_hPa = 0.980638	;//cm to hPa
 	double krm1;
-	
+	k_mucil_.resize(Nt , 0.);
 	if(psiXyl4Phloem.size() == Nt){Psi_Xyl = Fortran_vector(psiXyl4Phloem,cmH2O_to_hPa); //computed by xylem object
 	}else{Psi_Xyl = Fortran_vector(Nt, 0.);}
 	
@@ -395,15 +406,19 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 		
 	}
 	
-	for ( int k=1 ;k <= Nc;k++ ) 
+	for ( std::size_t k=1 ;k <= Nc;k++ ) // seg id. == node.y id
 	{
-			ot = orgTypes[k-1]; st = subTypes[k-1];
+			//the PiafMunch Fortran_vector are numbered from 1 (and not from 0)
+			//so we need to account for that...
+			// element 0 contains the vector size i think
+			ot = orgTypes[k-1]; 
+			st = plant->st2newst[std::make_tuple(ot,subTypes[k-1])];
 			a_seg = Radii[k-1];
 			l = Lengthvec[k-1];
-			I_Upflow[k] = segmentsPlant[k-1].x +1;
+			I_Upflow[k] = segmentsPlant[k-1].x +1;// +1 to go from C++ numeration to pseudo-Fortran numeration
 			I_Downflow[k] = segmentsPlant[k-1].y +1;
-			
 			nodeID = I_Downflow[k];
+			int nodeID_cpb = segmentsPlant[k-1].y;
 			len_leaf[nodeID] = l;assert((len_leaf[nodeID]>0)&&"len_seg[nodeID] <=0");
 			
 			double Across_ST =  Across_st_f(st,ot);assert((Across_ST>0)&&"Across_ST <=0");
@@ -424,8 +439,20 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			//Exudation
 			exud_k[nodeID] =kr_st_f(st,ot, k-1);
 			Q_Exudmax[nodeID ]=0;
-			if(ot==2){
+			if((ot==2)&&(this->plant->seg2cell[k-1] >=0)){//root segment belowground
 				Q_Exudmax[nodeID ] =   2 * M_PI * a_seg * l*exud_k[nodeID] ;
+				if (exud_k[nodeID] > 0.)
+				{
+					// k_mucil is a std::vecto not a fotran vector
+					k_mucil_[segmentsPlant[k-1].y ] = k_mucil;
+				}
+				if(Csoil_seg.size() > 0.)
+				{
+					// Csoil_node is a std::vecto not a fotran vector
+					Csoil_node.at(segmentsPlant[k-1].y ) = Csoil_seg.at(k -1);					
+				}else{
+					Csoil_node.at(segmentsPlant[k-1].y ) = CsoilDefault;
+				}
 			}
 			if(doTroubleshooting){std::cout<<"QexudMax "<<Q_Exudmax[nodeID ]<<std::endl;}
 			
@@ -457,11 +484,8 @@ void PhloemFlux::initializePM_(double dt, double TairK){
 			if(doTroubleshooting){
 				std::cout<<"forRmmax "<<nodeID<<" "<< vol_Seg[nodeID]<<" "<<krm1<<" "<<krm2[nodeID]<<" "<<rhoSucrose_f(st,ot)<<" "<<Q_Rmmax[nodeID]<<std::endl;
 			}
-			
-			//Gr, growth and growth respiration
-			//deltaStructSucrose =  ;//total sucrose rate needed for growth on that node
-			
-			Q_Grmax[nodeID] = deltaSucOrgNode_.at(k).at(-1)/Gr_Y/dt;
+						
+			Q_Grmax[nodeID] = deltaSucOrgNode_.at(nodeID_cpb).at(-1)/Gr_Y/dt;
 			if(doTroubleshooting){
 				std::cout<<"forGrmax"<<nodeID<<" "<< deltaSucOrgNode_.at(k).at(-1)<<" "<<Q_Grmax[nodeID]<<std::endl;
 			}
@@ -516,7 +540,6 @@ void rootfind(double t, double* y, double* g) {return ; } // required but not us
 
 void PhloemFlux::computeOrgGrowth(double t){
 	
-	if(doTroubleshooting){std::cout<<"PhloemFlux::computeOrgGrowth_start"<<std::endl;}
 	int nNode = plant->getNumberOfNodes();
 	auto orgs = plant->getOrgans(-1, true); //get all organs, even small ones
 	int nOrg = orgs.size();
@@ -524,23 +547,9 @@ void PhloemFlux::computeOrgGrowth(double t){
 	std::map<int, double> cWGrStem; // + no need for mapped organism to keep cWGr in memory. just has to be in growth function
 	std::map<int, double> cWGrLeaf;
 	
-	//for post processing in python
-	delta_suc_org.resize(nOrg,0.);	
-	delta_ls_org.resize(nOrg,0.);
-	delta_ls_org_i = std::vector<double>(nOrg, 0.);
-	delta_ls_org_max.resize(nOrg,0.);
-	delta_ls_org_imax = std::vector<double>(nOrg, 0.);
-		
-	delta_vol_org.resize(nOrg,0.);
-	delta_vol_org_max.resize(nOrg,0.);
-	delta_vol_node.resize(nNode,0.);
-	delta_vol_node_i = std::vector<double>(nNode, 0.);
-	delta_vol_node_max.resize(nNode,0.);
-	delta_vol_node_imax = std::vector<double>(nNode, 0.);
 	double delta_volOrg;
 	double delta_volOrgmax;
 	int orgID2 = 0;//needed as max(orgID) can be > plant->getOrgans(-1, true).size()
-	Q_GrUnbornv_i = std::vector<double>(nNode, 0.);
 	for(auto org: orgs){
 		int orgID = org->getId();
 		std::vector<int> nodeIds_;
@@ -548,7 +557,6 @@ void PhloemFlux::computeOrgGrowth(double t){
 		int stold = org->getParameter("subType");
 		int st = plant->st2newst[std::make_tuple(ot,stold)];
 		int nNodes = org->getNumberOfNodes();
-		if(doTroubleshooting){std::cout<<"org "<<orgID<<" "<<st<<" "<<ot<<" "<<nNodes<<std::endl;}
 		
 		if(ot == 2){
 			nodeIds_.push_back(org->getNodeId(nNodes-1));			
@@ -557,15 +565,16 @@ void PhloemFlux::computeOrgGrowth(double t){
 		delta_volOrg = 0;
 		delta_volOrgmax = 0;
 		std::vector<int> allnodeids = org->getNodeIds();
-		for(int k=0;k< nodeIds_.size();k++)//take  first node as might carry small laterals
+		// TODO: Y not jsut ocmpute again the growing nodes ID?
+		for(std::size_t k = 0; k < nodeIds_.size(); k++)//take  first node as might carry small laterals
 		{
 			double deltaSucmax_1 = 0;
-			if(deltaSucOrgNode_.at(nodeIds_.at(k)).count(org->getId()) !=0){
-				deltaSucmax_1 = deltaSucOrgNode_.at(nodeIds_.at(k)).at(org->getId());//maxsuc needed for Gr
-				if(doTroubleshooting){std::cout<<"deltaSucmax_1 "<<org->getId()<<" "<<k<<" "<<deltaSucmax_1<<std::endl;}
+			if(deltaSucOrgNode_.at(nodeIds_.at(k)).count(orgID) !=0){
+				deltaSucmax_1 = deltaSucOrgNode_.at(nodeIds_.at(k)).at(orgID);//maxsuc needed for Gr
+				if(doTroubleshooting){std::cout<<"deltaSucmax_1 "<<orgID<<" "<<k<<" "<<deltaSucmax_1<<std::endl;}
 			}
 			double deltaSucmax_ = deltaSucmax_1 /Gr_Y;//max suc needed for Gtot
-			double deltaSuc = min(Q_Growthtot[nodeIds_.at(k) +1] - Q_GrowthtotBU[nodeIds_.at(k) +1], deltaSucmax_);
+			double deltaSuc = std::min(Q_Growthtot[nodeIds_.at(k) +1] - Q_GrowthtotBU[nodeIds_.at(k) +1], deltaSucmax_);
 			if((deltaSucmax_ > Q_Grmax[nodeIds_.at(k) +1]))
 			{
 				std::cout<<"error Q_Grmax "<<k<<" "<<(nodeIds_.at(k)+1)<<" "<<deltaSucmax_<<" "<<Q_Grmax[nodeIds_.at(k) +1]<<std::endl;
@@ -581,25 +590,6 @@ void PhloemFlux::computeOrgGrowth(double t){
 			
 			Q_GrowthtotBU[nodeIds_.at(k) +1] += deltaSuc;//sucrose is spent
 			Q_GrmaxBU[nodeIds_.at(k) +1] += deltaSucmax_;//sucrose is spent
-			
-			delta_vol_node_i.at(nodeIds_.at(k)) += deltaSuc*Gr_Y/rhoSucrose_f(st,ot);
-			delta_vol_node.at(nodeIds_.at(k)) += deltaSuc*Gr_Y/rhoSucrose_f(st,ot);
-			
-			delta_vol_node_imax.at(nodeIds_.at(k)) += deltaSucmax_*Gr_Y/rhoSucrose_f(st,ot);
-			delta_vol_node_max.at(nodeIds_.at(k)) += deltaSucmax_*Gr_Y/rhoSucrose_f(st,ot);
-			
-			delta_suc_org.at(orgID2) += deltaSuc*Gr_Y;
-			if(doTroubleshooting){
-				if(org->getNodeIds().size() == 1)
-				{
-					Q_GrUnbornv_i.at(org->getNodeIds().at(0)) += deltaSuc;
-					std::cout<<"Q_GrUnbornv_i for org "<<org->getId()<<" on node "<<org->getNodeIds().at(0)<<" deltasuc "<<deltaSuc<<std::endl;
-					std::cout<<"unborn id "<<orgID<<" or "<<orgID2<<std::endl;
-					std::cout<<"unborn age "<<org->getAge()<<" "<<t<<" "<<org->isAlive()<<" "<<org->isActive()<<std::endl;
-					std::cout<<"compute suc "<<Q_GrowthtotBU[nodeIds_.at(k) +1]<<" "<<Q_Growthtot[nodeIds_.at(k) +1]<<std::endl;
-				}
-			}
-			
 		}
 		
 		double vol = org->orgVolume(-1, false);
@@ -626,10 +616,6 @@ void PhloemFlux::computeOrgGrowth(double t){
 		}
 		double orgGr = newl - l_;
 		double delta_lmax = newl_max - l_;
-		if(doTroubleshooting){
-			std::cout<<"deltavolorg "<<delta_volOrg<<" "<<delta_volOrgmax<<std::endl;
-			std::cout<<"vol increase "<<vol<<" "<<l_<<" "<<newl<<" "<<newl_max<<" "<<orgGr<<" "<<delta_lmax<<std::endl;
-		}
 		
 		if((orgGr < 0.)&&(orgGr > -1e-10)){orgGr=0.;}
 			assert((orgGr >= 0.) &&"negative orgGr");
@@ -645,16 +631,12 @@ void PhloemFlux::computeOrgGrowth(double t){
 		if(ot == 4){
 			cWGrLeaf.insert(std::pair<int, double>(orgID,orgGr));
 		}
-		if((BackUpMaxGrowth[orgID2] - newl)< -1e-10)
+		if((BackUpMaxGrowth[org->getId()] - newl)< -1e-10)
 		{
-			std::cout <<ot<<" "<<st<<" "<<orgID<<" "<<orgID2<<" "<<newl<<" "<<BackUpMaxGrowth[orgID2] <<" ";
-			std::cout<<(BackUpMaxGrowth[orgID2]- newl)<<std::endl;
+			std::cout <<ot<<" "<<st<<" "<<orgID<<" "<<orgID2<<" "<<newl<<" "<<BackUpMaxGrowth[org->getId()] <<" ";
+			std::cout<<(BackUpMaxGrowth[org->getId()]- newl)<<std::endl;
 			throw std::runtime_error("PhloemFlux::computeOrgGrowth: new target length of organ too high");
 		}
-		delta_ls_org.at(orgID2) 	+= orgGr;
-		delta_ls_org_i.at(orgID2)	 = orgGr;
-		delta_ls_org_max.at(orgID2) += delta_lmax;
-		delta_ls_org_imax.at(orgID2) = delta_lmax;
 		orgID2 ++;
 		
 	}
@@ -668,442 +650,236 @@ void PhloemFlux::computeOrgGrowth(double t){
 	for (auto orp : plant->getOrganRandomParameter(4)) {
 		if(orp!= NULL) {orp->f_gf->CW_Gr = cWGrLeaf;}
 	}
-	if(doTroubleshooting){
-		std::cout<<"cWGrRoot "<<std::endl;
-		for(auto it = cWGrRoot.cbegin(); it != cWGrRoot.cend(); ++it)
-		{
-			std::cout << it->first << " " << it->second<< "\n";
-		}
-		std::cout<<"cWGrStem "<<std::endl;
-		for(auto it = cWGrStem.cbegin(); it != cWGrStem.cend(); ++it)
-		{
-			std::cout << it->first << " " << it->second << "\n";
-		}
-		std::cout<<"cWGrLeaf "<<std::endl;
-		for(auto it = cWGrLeaf.cbegin(); it != cWGrLeaf.cend(); ++it)
-		{
-			std::cout << it->first << " " << it->second<< "\n";
-		}
-	}
-	for(int u = 0; u < Q_GrUnbornv_i.size();u++)
-	{
-		if((Q_GrmaxUnbornv_i.at(u)-Q_GrUnbornv_i.at(u)) < -1e-10 )
-		{
-			std::cout<<std::endl;std::cout<<"sucsink unborn on node"<<std::endl;
-			for(int u_ = 0; u_ < Q_GrUnbornv_i.size();u_++)
-			{
-				std::cout<<Q_GrUnbornv_i.at(u_)<<" ";
-			}
-			std::cout<<std::endl;std::cout<<"sucsink max unborn on node "<<std::endl;
-			for(int u_ = 0; u_ < Q_GrmaxUnbornv_i.size();u_++)
-			{
-				std::cout<<Q_GrmaxUnbornv_i.at(u_)<<" ";
-			}
-			std::cout<<std::endl;std::cout<<"sucsink unborn per org"<<std::endl;
-			for(int u_ = 0; u_ < BackUpMaxGrowth.size();u_++)
-			{
-				std::cout<<BackUpMaxGrowth.at(u_)<<" ";
-			}
-			std::cout<<std::endl;std::cout<<"get id"<<std::endl;
-			for(int u_ = 0; u_ < orgs.size();u_++)
-			{
-				std::cout<<orgs.at(u_)->getId()<<" ";
-			}
-			std::cout<<std::endl;std::cout<<"num of nodes"<<std::endl;
-			for(int u_ = 0; u_ < orgs.size();u_++)
-			{
-				std::cout<<orgs.at(u_)->getNumberOfNodes()<<" ";
-			}
-			std::cout<<std::endl;std::cout<<"global init ID"<<std::endl;
-			for(int u_ = 0; u_ < orgs.size();u_++)
-			{
-				std::cout<<orgs.at(u_)->getNodeId(0)<<" ";
-			}
-			std::cout<<std::endl;std::cout<<"global init ID"<<std::endl;
-			for(int u_ = 0; u_ < orgs.size();u_++)
-			{
-				std::cout<<orgs.at(u_)->getNodeId(0)<<" ";
-			}
-			std::cout<<std::endl;std::cout<<"getage"<<std::endl;
-			for(int u_ = 0; u_ < orgs.size();u_++)
-			{
-				std::cout<<orgs.at(u_)->getAge()<<" ";
-			}
-			std::cout<<std::endl;
-			std::cout<<u<<" "<<Q_GrUnbornv_i.at(u)<<" "<<Q_GrmaxUnbornv_i.at(u)<<std::endl;
-			auto org = orgs.at(u);
-			std::cout<<org->organType()<<" "<<org->getParameter("subType")<<" "<<org->getParent()->getId()<<std::endl;
-			std::cout<<org->parentNI<<" "<<org->getId()<<" "<<org->getNumberOfNodes()<<" "<<org->getAge()<<std::endl;
-			
-			throw runtime_error("PhloemFlux::computeOrgGrowth: Q_GrUnbornv_i.at(u) > Q_GrmaxUnbornv_i.at(u)");
-		}
-	}
-	if(doTroubleshooting){std::cout<<"PhloemFlux::computeOrgGrowth_end"<<std::endl;}
 }
 
+double PhloemFlux::adaptDt(std::shared_ptr<CPlantBox::Organ> org, double dt)
+{
+	double age = org->getAge();
+	int ot = org->organType(); 
+	double orgLT = org->getParameter("rlt");
+	
+	if (age+dt>orgLT) { // root life time
+		dt=orgLT-age; // remaining life span
+	}
+	
+	//no probabilistic branching models and no other scaling via getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
+	if(ot == CPlantBox::Organism::ot_stem){
+		
+		double delayNGStart = org->getParameter("delayNGStart");
+		double delayNGEnd = org->getParameter("delayNGEnd");
+		
+		if((age+dt) > delayNGStart){//simulation ends after start of growth pause
+			if((age+dt)  < delayNGEnd){dt = 0;//during growth pause
+			}else{
+				double beforePause = 0.; double afterPause =0.;
+				if(age < delayNGStart){
+					beforePause = std::min(dt,delayNGStart - age); //reaches start of growth pause and then stopes
+				}
+				if((age+dt)  > delayNGEnd){
+					afterPause = std::min(dt, std::max(age +dt  - delayNGEnd, 0.)); //part of the simulation after end of pause
+				}
+				dt = beforePause + afterPause;//part of growth pause during simulation				
+			}
+		}
+	}
+	if(dt < 0){
+		throw std::runtime_error("PhloemFlux::waterLimitedGrowth: dt <0");
+	}
+	return dt;
+	
+}
+
+void PhloemFlux::assertUsedCReserves(std::shared_ptr<CPlantBox::Organ> org)
+{
+	if((!((org->getOrganRandomParameter()->f_gf->CW_Gr.empty()) || 
+					(org->getOrganRandomParameter()->f_gf->CW_Gr.count(org->getId()) ==0) ||
+					(org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<0.)))&&
+					org->isActive()&&useCWGr)
+	{
+		std::cout<<org->getId()<<" "<<org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<<std::endl;
+		std::cout<<org->calcLength(1)<<" "<< org->organType() <<" "<<org->getAge()<<std::endl;
+		throw std::runtime_error("PhloemFlux::waterLimitedGrowth: sucrose for growth has not been used at last time step");
+	}
+}
+
+double PhloemFlux::getMaxVolumicGrowth(std::shared_ptr<CPlantBox::Organ> org, double t)
+{
+	int ot = org->organType(); 
+	int st = plant->st2newst[std::make_tuple(ot,org->getParameter("subType"))];
+	double rmax = Rmax_st_f(st,ot);
+	double Linit = org->getLength(false);//theoretical length 
+			
+	if(org->getParameter("gf") != 3)
+	{
+		std::cout<<"PhloemFlux::waterLimitedGrowth: organ(s) do(es) not use carbon-limited growth"<<std::endl;
+		do_gf_warning = false;
+	}
+	
+	auto f_gf =  plant->createGrowthFunction(1);
+	double age_ = f_gf->getAge(Linit, rmax, org->getParameter("k"), org->shared_from_this());			
+	assertUsedCReserves(org);			
+	double dt = adaptDt(org, t);				
+	//	params to compute growth
+	double LinitTemp = f_gf->getLength(age_ , rmax, org->getParameter("k"), org->shared_from_this());
+	double targetlength = f_gf->getLength(age_ + dt , rmax, org->getParameter("k"), org->shared_from_this());
+	double e = std::max(0.,targetlength-LinitTemp);// unimpeded elongation in time step dt
+	
+	if((e + org->getLength(false))> org->getParameter("k") + 1e-10){
+		std::cout<<"PhloemFlux::getMaxLengthGrowth: target length too high "<<e<<" "<<dt<<" "<<Linit;
+		std::cout<<" "<<org->getParameter("k")<<" "<<org->getId()<<std::endl;
+		assert(false);
+	}
+	BackUpMaxGrowth[org->getId()] = Linit + e; // to compare with final growth length in @see PhloemFlux::computeOrgGrowth
+	double deltavol = std::max(0.,org->orgVolume(Linit + e, false) - org->orgVolume(Linit, false));//volume from theoretical length
+	return deltavol;
+}
+
+/*
+	//roots grow at their tip
+	//leaves grow in their groth zones
+	//stems grow at each phytomere nodes
+*/
+
+std::vector<int> PhloemFlux::getGrowingNodes(std::shared_ptr<CPlantBox::Organ> org)
+{
+	int ot = org->organType(); 
+	int nNodes = org->getNumberOfNodes();
+	std::vector<int> nodeLocalIds;
+
+	if ((nNodes==1)||(ot == 2)) { //organ not represented because below dx limit or is root
+		nodeLocalIds.push_back(nNodes - 1);
+	}else{
+		if(ot == 4)//only for nodes in the leaf growth zone
+		{
+			for(int k = 0; k < nNodes; k++)
+			{
+				nodeLocalIds.push_back(k);
+				if(org->getLength(k) > this->leafGrowthZone)
+				{
+					break;
+				}
+			}
+		}
+		if(ot == 3)
+		{
+			int nn1 = 0;
+			if((StemGrowthPerPhytomer)&&(org->getNumberOfChildren() > 0))
+			{
+				// only for nodes in the growing phytomers. Phytomer ends each time we have a lateral.
+				auto stemParams = std::static_pointer_cast<CPlantBox::Stem>(org)->param();
+				bool foundPhytoIdx = false;
+				int PhytoIdx = 0; // to remember PhytoIdx outside of loop
+				for(; ((PhytoIdx < stemParams->ln.size())&(!foundPhytoIdx));PhytoIdx++)
+				{
+					double maxPhytoLen = stemParams->ln.at(PhytoIdx);
+					double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->parentNI) - org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI);
+					foundPhytoIdx = (maxPhytoLen - currentPhytoLen > 1e-10);//first still growing phytomere
+					if(maxPhytoLen - currentPhytoLen < -1e-10){throw std::runtime_error("maxPhytoLen - currentPhytoLen < -1e10;");}
+					
+				}
+				assert((nn1 < nNodes)&&"nn1 > nNodes");
+			}
+			for (int i = nn1; i < nNodes; ++i) {
+				nodeLocalIds.push_back(i);
+			}
+		}
+	}
+	return nodeLocalIds;
+}
+
+void PhloemFlux::computeFpsi()
+{
+	Fpsi = std::vector<double>(Nt,1.); 
+	psi_p_symplasm = std::vector<double>(Nt,1.); 
+	for(std::size_t nodeId = 0; nodeId < psiXyl.size(); nodeId++)
+	{
+		psi_p_symplasm.at(nodeId) =  psiXyl.at(nodeId) - psi_osmo_proto;
+		if(-psi_osmo_proto - psiMin>1e-5){
+			Fpsi.at(nodeId) = std::max((std::max(psi_p_symplasm.at(nodeId), psiMin) - psiMin)/(-psi_osmo_proto - psiMin),0.);
+		}else{Fpsi.at(nodeId) = 0.;}
+		
+		if((Fpsi.at(nodeId) > (1+1e-6))||(Fpsi.at(nodeId) < -1e-6))
+		{
+			throw std::runtime_error("Fpsi < 0 or Fpsi > 1");
+		}
+	}
+}
+
+void PhloemFlux::computeFlen(std::shared_ptr<CPlantBox::Organ> org, std::vector<int> growingNodesId)
+{
+	double Flen_tot = 0.;
+	if (growingNodesId.size() == 1)
+	{
+		Flen.at(org->getNodeId(growingNodesId.at(0))) = 1.;
+	}else{
+		double L_n0 = org->getLength(growingNodesId.at(0)); 
+		double L_growth_length = org->getLength(growingNodesId.at(growingNodesId.size() - 1)) - L_n0;
+		for(std::size_t k = 1; k < growingNodesId.size(); k++)//int nodeId : growingNodesId)
+		{
+			int nodeGlobalId = org->getNodeId(growingNodesId.at(k));
+			auto nodei = plant->nodes.at(org->getNodeId(growingNodesId.at(k - 1)));
+			auto nodej = plant->nodes.at(nodeGlobalId);
+			double Lseg = nodej.minus(nodei).length();
+			Flen.at(nodeGlobalId) = (Lseg/L_growth_length);
+			Flen_tot += Flen.at(nodeGlobalId);
+		}
+		if((std::abs(Flen_tot - 1.)>1e-10)||(std::abs(Flen_tot - 1.)<-1e-10))
+		{
+			throw std::runtime_error("PhloemFlux::computeFlen: (Flen_tot != 1.)&&wrong tot Flen");
+		}
+	}
+}
 
 	/*water limited deltaSuc per node*/
 std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
 {
-	
-	if(doTroubleshooting){std::cout<<"PhloemFlux::waterLimitedGrowth_start"<<std::endl;}
-	int Nr = plant->nodes.size();
 	std::map<int,double> initMap = { { -1,0. } };//-1 : total need per node
-	std::vector<std::map<int,double>> deltaSucOrgNode(Nr, initMap);//, 0.);
+	std::vector<std::map<int,double>> deltaSucOrgNode(Nt, initMap);//, 0.);
 	bool allOrgs = true;
-	auto orgs = plant->getOrgans(-1,allOrgs);//also org with length - Epsilon == 0
-	//double Flen;//reduction factors
-	BackUpMaxGrowth = std::vector<double>(orgs.size(),0.); //for checking in @PhloemFlux::computeOrgGrowth
-	Q_GrmaxUnbornv_i = std::vector<double>(Nr,0.); 
-	Fpsi = std::vector<double>(Nr,0.); //for post processing
-	Flen = std::vector<double>(Nr,0.); //for post processing
-	GrowthZone = std::vector<int>(Nr,0); //for post processing
-	GrowthZoneLat = std::vector<int>(Nr,0); //for post processing
-    psi_p_symplasm = std::vector<double>(Nr,0.); //for post processing		  
-	int orgID2 = 0;
+	auto orgs = plant->getOrgans(-1,allOrgs);//also org with length - Epsilon == 0	
+	BackUpMaxGrowth = {};//std::vector<double>(orgs.size(), 0.); //for checking in @see PhloemFlux::computeOrgGrowth
+	Flen = std::vector<double>(Nt,0.); 
+	computeFpsi();
 	for(auto org: orgs)
 	{
-		double dt = t;
+		assert(org != nullptr);
+		double dt = t; //copy
 		if(((org->getAge()+dt)>0)&&(org->isAlive())&&(org->isActive()))
-		{
-		//organ alive and active at this time step
-			
-			double age = org->getAge();
+		{ //organ alive and active at this time step
 			int ot = org->organType(); 
 			int stold = org->getParameter("subType");
 			int st = plant->st2newst[std::make_tuple(ot,stold)];
-			double orgLT = org->getParameter("rlt");
-			double Linit = org->getLength(false);//theoretical length 
-			double Linit_realized = org->getLength(true);//realized length
-			double rmax = Rmax_st_f(st,ot);
-			int f_gf_ind = org->getParameter("gf");//-1;//what is the growth dynamic?
-			//auto orp = org->getOrganism->getOrganRandomParameter(ot).at(stold)
-			//if(orp!= NULL) {orp->f_gf->CW_Gr = cWGrRoot;}	
-			if(f_gf_ind != 3)//(f_gf_ind != 3)
+			std::vector<int> localGrowingNodesId = getGrowingNodes(org); // localIds			
+			double deltaVol = getMaxVolumicGrowth(org, dt); // cm3				
+			computeFlen(org, localGrowingNodesId);
+			double deltaSucGrowth_tot = 0.;
+			double rhoSucrose_double = rhoSucrose_f(st,ot);
+			for(int localNodeId : localGrowingNodesId)
 			{
-				std::cout<<"org id "<<org->getId()<<" ot "<<ot<<" st "<<st<<" Linit "<<Linit<<" numNodes ";
-				std::cout<<org->getNumberOfNodes()<<" "<<rmax<<" f_gf_ind "<<f_gf_ind<<std::endl;
-				assert((f_gf_ind == 3)&&"PhloemFlux::waterLimitedGrowth: organ does not use carbon-limited growth");
-			}
-			f_gf_ind = 1; // take negative exponential growth dynamic [f_gf_ind == 1] to compute max growth 
-			auto f_gf =  plant->createGrowthFunction(f_gf_ind);
-			double age_ = f_gf->getAge(Linit, rmax, org->getParameter("k"), org->shared_from_this());
-			
-			
-			if((!((org->getOrganRandomParameter()->f_gf->CW_Gr.empty()) || 
-					(org->getOrganRandomParameter()->f_gf->CW_Gr.count(org->getId()) ==0) ||
-					(org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<0.)))&&
-					org->isActive()&&useCWGr)
-			{
-				std::cout<<org->getId()<<" "<<org->getOrganRandomParameter()->f_gf->CW_Gr.find(org->getId())->second<<std::endl;
-				std::cout<<org->calcLength(1)<<" "<< ot <<" "<<org->getAge()<<std::endl;
-				throw std::runtime_error("PhloemFlux::waterLimitedGrowth: sucrose for growth has not been used at last time step");
-			}
-			
-			
-			if(doTroubleshooting){
-				std::cout<<"start new org "<<org->getId()<<" "<<org->parentNI<<" "<<age<<" "<<ot<<" "<<org->getParameter("subType")<<" ";
-				std::cout<<orgLT<<" "<<org->getLength(true)<<" "<<Linit;
-				std::cout<<" "<<age_<<" "<<t<<" "<<dt<<std::endl;} 
+				int nodeId = org->getNodeId(localNodeId);
+				double deltaSucGrowth_per_node = deltaVol * Flen.at(nodeId) * Fpsi.at(nodeId) * rhoSucrose_double;
 				
-			if (age+dt>orgLT) { // root life time
-				dt=orgLT-age; // remaining life span
-			}
-			if(doTroubleshooting){std::cout<<"new dt "<<dt<<std::endl;} 
-			
-			//no probabilistic branching models and no other scaling via getRootRandomParameter()->f_se->getValue(nodes.back(), shared_from_this());
-			if(ot == CPlantBox::Organism::ot_stem){
-				
-				double delayNGStart = org->getParameter("delayNGStart");
-				double delayNGEnd = org->getParameter("delayNGEnd");
-				if(doTroubleshooting){std::cout<<"stem: "<<delayNGStart<<" "<< delayNGEnd <<std::endl;} 
-				if((age+dt) > delayNGStart){//simulation ends after start of growth pause
-					if((age+dt)  < delayNGEnd){dt = 0;//during growth pause
-					}else{
-						double beforePause = 0.; double afterPause =0.;
-						if(age < delayNGStart){
-							beforePause = std::min(dt,delayNGStart - age); //reaches start of growth pause and then stopes
-						}
-						if((age+dt)  > delayNGEnd){
-							afterPause = std::min(dt, std::max(age +dt  - delayNGEnd, 0.)); //part of the simulation after end of pause
-						}
-						dt = beforePause + afterPause;//part of growth pause during simulation
-							if(doTroubleshooting){std::cout<<"part of growth pause during simulation: "<<beforePause <<" "<< afterPause <<std::endl;} 
-						
-					}
-				}
-				if(doTroubleshooting){std::cout<<"stemeffect of growth pause: "<<dt <<std::endl;} 
-			}
-			if(dt < 0){
-				std::cout<<dt<<" "<<org->getId()<<" "<<age<<" "<<ot<<" "<<org->getParameter("subType")<<" ";
-				std::cout<<orgLT<<" "<<org->getLength(true)<<" "<<Linit;
-				std::cout<<" "<<age_<<" "<<t<<" "<<dt<<std::endl;
-				if(ot == CPlantBox::Organism::ot_stem){
-					std::cout<<"delay: "<<org->getParameter("delayNGStart")<<" "<< org->getParameter("delayNGEnd") <<std::endl;
-				}
-				throw std::runtime_error("PhloemFlux::waterLimitedGrowth: dt <0");
-			}
-			//	params to compute growth
-			double LinitTemp = f_gf->getLength(age_ , rmax, org->getParameter("k"), org->shared_from_this());
-			double targetlength = f_gf->getLength(age_ +dt , rmax, org->getParameter("k"), org->shared_from_this());
-			
-			double e = std::max(0.,targetlength-LinitTemp);// unimpeded elongation in time step dt
-			BackUpMaxGrowth[orgID2] = Linit + e;
-			std::vector<int> nodeIds_;// = org->getNodeIds();
-			if(doTroubleshooting){std::cout<<"rmax: "<<rmax<<" "<<1<<std::endl;} 
-			if((e + Linit)> org->getParameter("k") + 1e-10){
-				std::cout<<"Photosynthesis::rmaxSeg: target length too high "<<e<<" "<<dt<<" "<<Linit;
-				std::cout<<" "<<org->getParameter("k")<<" "<<org->getId()<<std::endl;
-				assert(false);
-			}
-			//delta_length to delta_vol
-			double deltavol = std::max(0.,org->orgVolume(Linit + e, false) - org->orgVolume(Linit, false));//volume from theoretical length
-			
-			int nNodes = org->getNumberOfNodes();
-            double L_growth_area = 0;
-			if ((nNodes==1)||(ot == 2)) {//organ not represented because below dx limit or is root
-				nodeIds_.push_back(-1); //because count start at 1 => for normal organs, dón t count 1st node
-				nodeIds_.push_back(org->getNodeId(nNodes-1));	//globalID of parent node for small organs or tip of root
-								
-			}else{
-                int nn1 = 0;
-                int nnEnd = 0;
-                if(ot == 4)//only for nodes in the leaf growth zone
-                {
-                    //put always at least the first 2 nodes
-                    nodeIds_.push_back(org->getNodeId(0));nodeIds_.push_back(org->getNodeId(1));
-                    nnEnd = 1;
-                    for(int k=2;((k< org->getNodeIds().size())&&(org->getLength(k) <= this->leafGrowthZone));k++)
-                    {
-                        nodeIds_.push_back(org->getNodeId(k));
-                        nnEnd = k;
-                    }
-                    
-                    if(doTroubleshooting){
-                        std::cout<<"4growth areaLEAF "<<nn1<<" "<<nnEnd<<" "<< org->getNodeIds().size()<<std::endl;
-                        std::cout<<org->getLength(nnEnd) <<" "<< org->getLength(nn1)<<" "<<L_growth_area<<std::endl;
-                        std::cout<<"leafGrowthZone "<<leafGrowthZone<<std::endl;
-                        std::cout<<"nodeIds_.size() "<<nodeIds_.size()<<std::endl;
-
-                        for(int k=0;k< nodeIds_.size();k++){std::cout<<nodeIds_[k]<<" ";}
-                        std::cout<<std::endl;
-                    }
-                }
-                if(ot == 3)//only for nodes in the growing phytomeres
-                {
-                    nnEnd = org->getNodeIds().size()-1;
-                    if((StemGrowthPerPhytomer)&&(org->getNumberOfChildren() > 0))
-                    {
-                        
-                        
-                        auto stemParams = std::static_pointer_cast<CPlantBox::Stem>(org)->param();
-                        int PhytoIdx = 0; bool foundPhytoIdx = false;
-                       if(doTroubleshooting){
-                                 std::cout<<"let's search for phytoID" <<std::endl;
-                       }
-                        for(;((PhytoIdx < stemParams->ln.size())&(!foundPhytoIdx));PhytoIdx++)
-                        {
-                            double maxPhytoLen = stemParams->ln.at(PhytoIdx);
-                            double currentPhytoLen = org->getLength(org->getChild(PhytoIdx+1)->parentNI) - org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI);
-                            if(doTroubleshooting){
-                                std::cout<<"at "<<PhytoIdx<<" phytomer lengths max" <<maxPhytoLen<<" current "<< currentPhytoLen <<" at kids "<< org->getLength(org->getChild(PhytoIdx+1)->parentNI)<<" "<< org->getLength(org->getChild(std::max(0,PhytoIdx))->parentNI) <<std::endl;
-                            }
-                            foundPhytoIdx = (maxPhytoLen - currentPhytoLen > 1e-10);//first still growing phytomere
-                            if(doTroubleshooting){
-                                std::cout<<"(maxPhytoLen - currentPhytoLen > 1e-10) "<<(maxPhytoLen - currentPhytoLen < 1e-10)<<std::endl;
-                            }
-                            if(maxPhytoLen - currentPhytoLen < -1e-10){throw std::runtime_error("maxPhytoLen - currentPhytoLen < -1e10;");}
-                            
-                        }
-                        nn1 = org->getChild(std::max(0,PhytoIdx-1))->parentNI;
-                        if(doTroubleshooting){
-                                std::cout<<"retained phytoID "<<std::max(0,PhytoIdx-1) <<" "<< nn1<<std::endl;
-                            }
-                        
-                        auto allIDs = org->getNodeIds();
-                        nodeIds_.insert(nodeIds_.end(), std::begin(allIDs)+ nn1 ,std::end(allIDs) ); 
-                        if(doTroubleshooting){
-                            std::cout<<"stem parameters "<<org->getParameter("nodalGrowth")<<" "<< PhytoIdx <<std::endl;
-                            std::cout<<"phytomer lengths max" <<std::endl;
-                            for(int k=0;k< stemParams->ln.size();k++){std::cout<<stemParams->ln.at(k)<<" ";}std::cout<<std::endl;
-                            std::cout<<"phytomer lengths real" <<std::endl;
-                            for(int k=0;k< stemParams->ln.size();k++){std::cout<<org->getLength(org->getChild(k)->parentNI) - org->getLength(org->getChild(std::max(0,k))->parentNI)<<" ";}std::cout<<std::endl;
-                            std::cout<<"pnis" <<std::endl;
-                            for(int k=0;k< stemParams->ln.size();k++){std::cout<<org->getChild(k)->parentNI<<" ";}
-                            std::cout<<std::endl;
-                        }
-                        
-
-                    }else{
-                        nodeIds_ = org->getNodeIds();//to adapt
-                    }
-                     if(doTroubleshooting){
-                         
-                    std::cout<<"4growth areaSTEM "<<nn1<<" "<<nnEnd<<" "<< org->getNodeIds().size()<<std::endl;
-                    std::cout <<"lengthtot "<<org->getLength(nnEnd) <<" lengthAtlim "<< org->getLength(nn1)<<std::endl;
-                    std::cout<<" lengthAfterlim "<< org->getLength(std::min(nn1+1,nnEnd))<<" Length_th "<<Linit<<std::endl;
-                    std::cout<<"nodeIds_.size() "<<nodeIds_.size()<<std::endl;
-
-                    for(int k=0;k< nodeIds_.size();k++){std::cout<<nodeIds_[k]<<" ";}
-                    std::cout<<"seg lengths "<<nodeIds_.size()<<std::endl;
-
-                    for(int k=0;k< nodeIds_.size();k++){std::cout<<" ("<<org->getLength(k)<<"-"<<org->getLength(k) - org->getLength(std::max(0,k-1))<<"); ";}
-                    std::cout<<std::endl;
-                }
-                }
-                try{
-                    L_growth_area = org->getLength(nnEnd) - org->getLength(nn1);
-                }catch(...){
-                    std::cout<<"error for L_growth_area = org->getLength(nnEnd) - org->getLength(nn1);"<<std::endl;
-                    std::cout<<nn1<<" "<<nnEnd<<" "<< org->getNodeIds().size()<<std::endl;
-                    throw std::runtime_error("error for L_growth_area = org->getLength(nnEnd) - org->getLength(nn1);");
-                }
-                if(doTroubleshooting){
-                std::cout<<"4growth area "<<nn1<<" "<<nnEnd<<" "<< org->getNodeIds().size()<<std::endl;
-                std::cout<<org->getLength(nnEnd) <<" "<< org->getLength(nn1)<<" "<<L_growth_area<<std::endl;
-                }
-            
-            }
-			double Flen_tot = 0.;
-			double deltaVol_tot = 0.;
-			
-			if(doTroubleshooting){
-				std::cout<<"Linit_realized"<<Linit_realized<<" "<<targetlength<<" "<<org->orgVolume(targetlength, false) ;
-				std::cout<<" "<< org->orgVolume(Linit, false)<<" "<<deltavol<<" "<<nNodes<<" "<<org->getEpsilon()<<std::endl;
-				std::cout<<"nodeIds_.size() "<<nodeIds_.size()<<std::endl;
-			
-				for(int k=0;k< nodeIds_.size();k++){std::cout<<nodeIds_[k]<<" ";}
-				std::cout<<std::endl;
-			}
-			for(int k=1;k< nodeIds_.size();k++)//don't take  first node
-			{
-				int nodeId = nodeIds_.at(k);
-				int nodeId_h = -1;
-				double Lseg = 0.;
-                if (nNodes==1)
-                {
-                    GrowthZoneLat.at(nodeId) += 1;
-                }else{
-                    GrowthZone.at(nodeId) += 1;
-                }
-				
-				bool isRootTip = ((ot==2)&&(k==(nodeIds_.size()-1)));
-				if((nNodes==1)||isRootTip){Flen.at(nodeId) = 1.;
-					if(doTroubleshooting){
-						std::cout<<"		root or short organ "<<nodeId<<" "<<org->parentNI<<std::endl;
-					}
-				}else{
-					
-					nodeId_h = nodeIds_.at(k-1);
-					auto nodei = plant->nodes.at(nodeId_h);
-					auto nodej = plant->nodes.at(nodeId);
-					//double length2 = nodej.minus(nodei).length();
-					//Lseg = org->getLength(k) - org->getLength(k-1);//getLength uses local node ID
-                    Lseg = nodej.minus(nodei).length();
-					Flen.at(nodeId) = (Lseg/L_growth_area) * double(ot != 2) ;
-					if(doTroubleshooting){
-						std::cout<<"		long stem or leaf "<<nodeId<<" "<<nodeId_h<<" "<<Lseg<<std::endl;
-					}
-				}//att! for this division we need the realized length, not the theoretical one
-				
-				if(psiXyl.size()>0){
-					if(doTroubleshooting){
-						std::cout<<"do Fpdi "<<psiXyl.size()<<" "<<nodeId<<" "<<psiXyl.at(nodeId)<<" "<<psi_osmo_proto<<" "<<psiMin <<std::endl;
-					}
-					psi_p_symplasm.at(nodeId) =  psiXyl.at(nodeId) - psi_osmo_proto;
-                    if(-psi_osmo_proto - psiMin>1e-5){
-                        Fpsi.at(nodeId) = std::max((std::max(psi_p_symplasm.at(nodeId), psiMin) - psiMin)/(-psi_osmo_proto - psiMin),0.);
-                    }else{Fpsi.at(nodeId) = 0.;}
-                    //}
-                    if(doTroubleshooting)
-                    {
-                        std::cout<<"4Fpsi "<<psi_p_symplasm.at(nodeId)<<" "<<psi_osmo_proto<<Fpsi.at(nodeId)<<std::endl;
-                    }
-					if((Fpsi.at(nodeId) >(1+1e-6))||(Fpsi.at(nodeId) < -1e-6))
-                    {
-                        throw std::runtime_error("Fpsi < 0 or Fpsi > 1");
-                    }
-				}else{Fpsi.at(nodeId) = 1.;psi_p_symplasm.at(nodeId) = 1.;}
-				double deltavolSeg = deltavol * Flen.at(nodeId) * Fpsi.at(nodeId);
-				if((deltavolSeg<0.)||(deltavolSeg != deltavolSeg)){
-					//could be error of pressision (if l = Lmax)
+				if((deltaSucGrowth_per_node<0.)||(deltaSucGrowth_per_node != deltaSucGrowth_per_node)){
+					// could be error of pressision (if l = Lmax)
 					// or that, because of nodal growth and dxMin, org->getEpsilon() <0
-					if(((deltavolSeg>-1e-5)||(targetlength>0.))
-							&&(deltavolSeg == deltavolSeg)){
-						deltavolSeg=0.;	//within margin of error
+					if(((deltaSucGrowth_per_node>-1e-5)||(deltaVol>0.))
+							&&(deltaSucGrowth_per_node == deltaSucGrowth_per_node)){
+						deltaSucGrowth_per_node=0.;	//within margin of error
 					}else{
-						std::cout<<org->getId()<<" t:"<<dt<<" ot:"<<ot<<" Li:"<<Linit<<" Le:"<<targetlength<<std::endl;
-						std::cout<<"		k "<<k<<" "<<" id:"<<nodeId<<" Flen:"<<Flen.at(nodeId) <<" Fpsi:"<< Fpsi.at(nodeId);
-						std::cout<<" Rtip:"<<isRootTip<<" Lseg:"<<Lseg<<" rorg"<<e<<" "<<deltavolSeg;
-						std::cout<<" "<<e<<" "<<(targetlength-Linit)<<std::endl;
-						std::cout<<"coucou"<<std::endl;
-						throw std::runtime_error("(deltavolSeg<0.)||(deltavolSeg != deltavolSeg)");
-					}
-					
-					
-				}
-				double deltaSucTemp =deltavolSeg * rhoSucrose_f(st,ot);
-				deltaSucOrgNode.at(nodeId).insert(std::pair<int, double>(org->getId(), deltaSucTemp));
-				deltaSucOrgNode.at(nodeId).at(-1) += deltaSucTemp;
-				if(nNodes==1){
-					Q_GrmaxUnbornv_i.at(nodeId) += deltaSucTemp/Gr_Y;
-				}//count need of unborn organs separatly for post processing 
-				Flen_tot += Flen.at(nodeId);
-				deltaVol_tot += deltavolSeg;
-				if(doTroubleshooting){
-					std::cout<<"		k "<<k<<" "<<" id:"<<nodeId<<" idh:"<<nodeId_h<<" Flen:"<<Flen.at(nodeId) <<" Fpsi:"<< Fpsi.at(nodeId);
-					std::cout<<" Rtip:"<<isRootTip<<" Lseg:"<<Lseg<<" "<<deltavolSeg<<std::endl;
-					
-						std::cout<<"		"<<org->getId()<<" ot:"<<ot<<" Li:"<<Linit<<" Le:"<<targetlength;
-						std::cout<<" rorg "<<e<<" "<<deltavol<<" "<<(targetlength-Linit)<<std::endl;
-						std::cout<<"		"<<org->getLength(true)<<" "<<org->getEpsilon()<<std::endl;
-				}
+						throw std::runtime_error("(deltaSucGrowth_per_node<0.)||(deltaSucGrowth_per_node != deltaSucGrowth_per_node)");
+					}					
+				}				
+				assert(nodeId >= 0 && nodeId < (int)deltaSucOrgNode.size());
+				deltaSucOrgNode.at(nodeId)[org->getId()] = deltaSucGrowth_per_node;
+				//deltaSucOrgNode.at(nodeId).insert(std::pair<int, double>(org->getId(), deltaSucGrowth_per_node));
+				deltaSucOrgNode.at(nodeId).at(-1) += deltaSucGrowth_per_node;								
+				deltaSucGrowth_tot += deltaSucGrowth_per_node;
 			}
-			if(doTroubleshooting){
-				std::cout<<"Flen_tot "<<Flen_tot<<" "<<(Flen_tot == 1.)<<std::endl;
-				std::cout<<"Flen_tot "<<( 1. - Flen_tot )<<std::endl;
-				// std::cout<<"Flen_tot "<<(Flen_tot < 1.)<<" "<<(Flen_tot > 1.)<<std::endl;
-				// std::cout<<"Flen_tot "<<(Flen_tot <= 1.)<<" "<<(Flen_tot >= 1.)<<std::endl;
-			}
-			if((std::abs(Flen_tot - 1.)>1e-10)||(std::abs(Flen_tot - 1.)<-1e-10))
-            {
-				std::cout<<"Flen_tot "<<Flen_tot<<" "<<(Flen_tot == 1.)<<std::endl;
-				std::cout<<"Flen_tot "<<( 1. - Flen_tot )<<std::endl;
-                throw std::runtime_error("(Flen_tot != 1.)&&wrong tot Flen");
-            }
-			if(doTroubleshooting){
-				std::cout<<"vol_tot "<<deltaVol_tot<<" "<<deltavol<<" "<<(deltaVol_tot -deltavol)<<std::endl;
-			}
-			assert(((deltaVol_tot -deltavol)<1e-10)&&"deltavol_tot too high");//deltaVol_tot <=deltavol
+			assert(((deltaSucGrowth_tot * rhoSucrose_double - deltaVol)<1e-10)&&"deltaSucGrowth_tot too high");//deltaSucGrowth_tot * rhoSucrose_double <= deltaVol
 		}else{
-			BackUpMaxGrowth[orgID2] =org->getLength(false);
-			if(doTroubleshooting){
-				std::cout<<"skip organ "<<org->getId()<<" "<<orgID2<<" "<<org->getAge();
-				std::cout<<" "<<org->isAlive()<<" "<<org->isActive()<<" "<<org->getNumberOfNodes()<<std::endl;
-			}
+			BackUpMaxGrowth[org->getId()] = org->getLength(false);
 		}
-		orgID2 += 1;
-	}
-		
-	if(doTroubleshooting){std::cout<<"PhloemFlux::waterLimitedGrowth_end"<<std::endl;}
-	
-    for (int u = 0; u< deltaSucOrgNode.size();u++) {
-		double totSucNeed1 = 0;
-		double totSucNeed2 = 0;
-		
-		for (auto const &pair: deltaSucOrgNode.at(u)) {
-			if(pair.first == -1){totSucNeed1 =pair.second;
-			}else{totSucNeed2 += pair.second;}
-		}
-		if((std::abs(totSucNeed1 - totSucNeed2)>1e-10))
-		{
-			for (auto const &pair: deltaSucOrgNode.at(u)) {
-				std::cout << "{" << pair.first << ": " << pair.second << "}\n";
-			}
-			throw runtime_error("PhloemFlux::waterLimitedGrowth: wrong values in deltaSucOrgNode map");
-		}
-    }
-	
+	}	
 	return deltaSucOrgNode;
 }
 
@@ -1116,157 +892,227 @@ std::vector<std::map<int,double>> PhloemFlux::waterLimitedGrowth(double t)
  * @param kr_length_ 	exchange zone in root, where kr > 0 [cm from root tip], default = -1.0, i.e., no kr_length
  */
 //type/subtype dependent
-void PhloemFlux::setKr_st(std::vector<std::vector<double>> values, double kr_length_) {
+void PhloemFlux::setKr_st(std::vector<std::vector<double>> values, double kr_length_, bool verbose) {
     kr_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			kr_st_f = std::bind(&PhloemFlux::kr_st_const, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-			std::cout << "Kr_st is constant " << values[0][0] << " 1 day-1 \n";
+            if (verbose)
+            {
+                std::cout << "Kr_st is constant " << values[0][0] << " 1 day-1 \n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			kr_st_f = std::bind(&PhloemFlux::kr_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
-			std::cout << "Kr_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kr_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " 1 day-1 \n";
+            }
 		} else {
-			std::cout << "Exchange zone in roots: kr_st > 0 until "<< kr_length_<<"cm from root tip "<<(kr_length_ > 0)<<" "<<(kr_length_ > 0.)<<std::endl;
+			if (verbose)
+            {
+                std::cout << "Exchange zone in roots: kr_st > 0 until "<< kr_length_<<"cm from root tip "<<(kr_length_ > 0)<<" "<<(kr_length_ > 0.)<<std::endl;
+            }
 			if(kr_length_ > 0.){
-				std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
+				if (verbose)
+            {
+                std::cout << "Exchange zone in roots: kr > 0 until "<< kr_length_<<"cm from root tip"<<std::endl;
+                }
 				plant->kr_length = kr_length_; //in MappedPlant. define distance to root tipe where kr > 0 as cannot compute distance from age in case of carbon-limited growth
 				plant->calcExchangeZoneCoefs();	
 				kr_st_f  = std::bind(&PhloemFlux::kr_st_RootExchangeZonePerType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			}else{
 				kr_st_f  = std::bind(&PhloemFlux::kr_st_perType, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 			}
-			std::cout << "Kr_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " 1 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kr_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " 1 day-1 \n";
+            }
 		}
 	}
     
 }	
 // type/subtype dependent
-void PhloemFlux::setKx_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setKx_st(std::vector<std::vector<double>> values, bool verbose) {
     kx_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			kx_st_f = std::bind(&PhloemFlux::kx_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Kx_st is constant " << values[0][0] << " cm3 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kx_st is constant " << values[0][0] << " cm3 day-1 \n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			kx_st_f = std::bind(&PhloemFlux::kx_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Kx_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kx_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm3 day-1 \n";
+            }
 		} else {
 			kx_st_f  = std::bind(&PhloemFlux::kx_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Kx_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm3 day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Kx_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm3 day-1 \n";
+            }
 		}
 	}
 }	
 
 
 //type/subtype dependent
-void PhloemFlux::setAcross_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setAcross_st(std::vector<std::vector<double>> values, bool verbose) {
     Across_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			Across_st_f = std::bind(&PhloemFlux::Across_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Across_st is constant " << values[0][0] << " cm2\n";
+			if (verbose)
+            {
+                std::cout << "Across_st is constant " << values[0][0] << " cm2\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			Across_st_f = std::bind(&PhloemFlux::Across_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Across_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 \n";
+			if (verbose)
+            {
+                std::cout << "Across_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm2 \n";
+            }
 		} else {
 			Across_st_f  = std::bind(&PhloemFlux::Across_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Across_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm2 \n";
+			if (verbose)
+            {
+                std::cout << "Across_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm2 \n";
+            }
 		}
 	}
 }	
 
 
 //type/subtype dependent ==> to compute Rhat Fhat
-void PhloemFlux::setPerimeter_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setPerimeter_st(std::vector<std::vector<double>> values, bool verbose) {
     Perimeter_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			Perimeter_st_f = std::bind(&PhloemFlux::Perimeter_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Perimeter_st is constant " << values[0][0] << " cm\n";
+			if (verbose)
+            {
+                std::cout << "Perimeter_st is constant " << values[0][0] << " cm\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			Perimeter_st_f = std::bind(&PhloemFlux::Perimeter_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Perimeter_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm\n";
+			if (verbose)
+            {
+                std::cout << "Perimeter_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm\n";
+            }
 		} else {
 			Perimeter_st_f  = std::bind(&PhloemFlux::Perimeter_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Perimeter_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm\n";
+			if (verbose)
+            {
+                std::cout << "Perimeter_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm\n";
+            }
 		}
 	}
 }	
 
 // type/subtype dependent
-void PhloemFlux::setRmax_st(std::vector<std::vector<double>> values) {
+void PhloemFlux::setRmax_st(std::vector<std::vector<double>> values, bool verbose) {
     Rmax_st = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			Rmax_st_f = std::bind(&PhloemFlux::Rmax_st_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Rmax_st is constant " << values[0][0] << " cm day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Rmax_st is constant " << values[0][0] << " cm day-1 \n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			Rmax_st_f = std::bind(&PhloemFlux::Rmax_st_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Rmax_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Rmax_st is constant per organ type, organ type 2 (root) = " << values[0][0] << " cm day-1 \n";
+            }
 		} else {
 			Rmax_st_f  = std::bind(&PhloemFlux::Rmax_st_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "Rmax_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm day-1 \n";
+			if (verbose)
+            {
+                std::cout << "Rmax_st is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " cm day-1 \n";
+            }
 		}
 	}
 }	
 
 
 //either age or type/subtype dependent
-void PhloemFlux::setRhoSucrose(std::vector<std::vector<double>> values) {
+void PhloemFlux::setRhoSucrose(std::vector<std::vector<double>> values, bool verbose) {
     rhoSucrose = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			rhoSucrose_f = std::bind(&PhloemFlux::rhoSucrose_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "rhoSucrose is constant " << values[0][0] << " mmol cm-3\n";
+			if (verbose)
+            {
+                std::cout << "rhoSucrose is constant " << values[0][0] << " mmol cm-3\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			rhoSucrose_f = std::bind(&PhloemFlux::rhoSucrose_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "rhoSucrose is constant per organ type, organ type 2 (root) = " << values[0][0] << " mmol cm-3\n";
+			if (verbose)
+            {
+                std::cout << "rhoSucrose is constant per organ type, organ type 2 (root) = " << values[0][0] << " mmol cm-3\n";}
 		} else {
 			rhoSucrose_f  = std::bind(&PhloemFlux::rhoSucrose_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "rhoSucrose is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " mmol cm-3\n";
+			if (verbose)
+            {
+                std::cout << "rhoSucrose is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << " mmol cm-3\n";}
 		}
 	}
 }	
 
 
 //either age or type/subtype dependent
-void PhloemFlux::setKrm1(std::vector<std::vector<double>> values) {
+void PhloemFlux::setKrm1(std::vector<std::vector<double>> values, bool verbose) {
     krm1v = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			krm1_f = std::bind(&PhloemFlux::krm1_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant " << values[0][0] << " -\n";
+			if (verbose)
+            {
+                std::cout << "krm1 is constant " << values[0][0] << " -\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
 			krm1_f = std::bind(&PhloemFlux::krm1_perOrgType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
+			if (verbose)
+            {
+                std::cout << "krm1 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
+            }
 		} else {
 			krm1_f  = std::bind(&PhloemFlux::krm1_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm1 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+			if (verbose)
+            {
+                std::cout << "krm1 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+            }
 		}
 	}
 }	
 
 //either age or type/subtype dependent
-void PhloemFlux::setKrm2(std::vector<std::vector<double>> values) {
+void PhloemFlux::setKrm2(std::vector<std::vector<double>> values, bool verbose) {
     krm2v = values;
 	if (values.size()==1) {
 		if (values[0].size()==1) {
 			krm2_f = std::bind(&PhloemFlux::krm2_const, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm2 is constant " << values[0][0] << " -\n";
+			if (verbose)
+            {
+                std::cout << "krm2 is constant " << values[0][0] << " -\n";
+            }
 		} 
 	} else {
 		if (values[0].size()==1) {
@@ -1274,7 +1120,10 @@ void PhloemFlux::setKrm2(std::vector<std::vector<double>> values) {
 			std::cout << "krm2 is constant per organ type, organ type 2 (root) = " << values[0][0] << " -\n";
 		} else {
 			krm2_f  = std::bind(&PhloemFlux::krm2_perType, this, std::placeholders::_1, std::placeholders::_2);
-			std::cout << "krm2 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+			if (verbose)
+            {
+                std::cout << "krm2 is constant per subtype of organ type, for root, subtype 1 = " << values[0].at(1) << "-\n";
+            }
 		}
 	}
 }	

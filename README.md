@@ -1,61 +1,85 @@
+<img src="Logo_long_white.png" alt="drawing" width="400"/>
 
+# Introduction
 
-# Hi, I am CPlantBox
-[![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
+CPlantBox is a functional-structural plant model that is built in a modular way that can be used at several levels of complexity. CPlantBox describes the geometry of plants by their individual organs, such as roots, stems, and leaves, which evolve over time. It can model functional aspects such as water and carbon dynamics within the plant, and provides gerneral tools to build plant soil-interaction models. To solve partial differential equations CPlantBox can use the finite volume solver DuMu<sup>x</sup> and offers simplified Python interfaces in the repository _dumux-rosi_.   
 
-## For simulations in https://doi.org/10.1101/810507 please use branch isp
+# Installation
 
-[![DOI](https://zenodo.org/badge/95107851.svg)](https://zenodo.org/badge/latestdoi/95107851) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/xiaoranzhou/cpb-binder/master)
-## I can :
-1. Create multiple plant structure
-2. Coupling with PiafMunch, and make carbon and water flow inside of the plant.
-
-
-## Try me 1 click
-
-The most convenient way is to use google colab, which is a Linux virtual machine with jupyter notebook interface.
-You can click the link to follow the guide there, just to click some buttons and you will be able to create plants
-[here is the link to use it](http://b.cplantbox.com).
-
-## or build local
-### windows
-CPlantBox is currently not available on windows. 
-Some pointers to setup a linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
-
-### semi-automated CPlantBox (with dumux-rosi) installation via python script (recommended)
-
-If you have  and, you can set up CPlantBox (with or without the dumux-rosi extension) via an install script.\
-This installation method requires ubuntu >= 20.04 and python >= 3.7.\
-For CPlantBox <ins>__without__</ins> the dumux-rosi extension, download the python file "installCPlantBox.py".\
-Run
+## Linux - with Python script
+This installation method requires Ubuntu >= 20.04 and Python >= 3.7. For CPlantBox without _dumux-rosi_, download the Python file "installCPlantBox.py", and run it:
 ```bash
+sudo apt-get update
+sudo apt-get upgrade
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installCPlantBox.py
 python3 installCPlantBox.py
 ```
-It will create a "CPB" folder and install inside the dependencies necessary to run CPlantBox.\
-For CPlantBox <ins>__with__</ins> the dumux-rosi extension, download the python file "installDumuxRosi_Ubuntu.py" (based on the dumux installation file).\
-run
+For CPlantBox with _dumux-rosi_, download and run the Python file "installDumuxRosi_Ubuntu.py" (the file is based on the DuMu$^x$ installation file).
 ```bash
+sudo apt-get update
+sudo apt-get upgrade
+[ ! -d 'cpbenv' ] && python3 -m venv cpbenv &&  source cpbenv/bin/activate ||  source cpbenv/bin/activate
+wget https://raw.githubusercontent.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/master/installDumuxRosi_Ubuntu.py
 python3 installDumuxRosi_Ubuntu.py
 ```
-This will create a "DUMUX" folder and install inside the dependencies necessary to run dumux-rosi.
-This script might work on other linux OS but has not been tested.
-
-### manual linux installation 
-Clone the repository by running:
+The script will install DuMu<sup>x</sup> and CPlantBox, and CPlantBox is setup within the virtual environment 'cpbenv'. 
+Activate the 'cpbenv' environment when using CPlantBox:
 ```bash
-git clone --depth 1 -b stable_v2.1 https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+source cpbenv/bin/activate
 ```
-Run CMake which configures the CPlantBox libraries by 
+The scripts might work on other Linux OS but has not been tested.
+
+## Linux - with conda environment
+
+This installation method uses ```conda``` to setup the building environment for CPlantBox. It'll pull the packages from the ```conda-forge``` channel to avoid licensing restrictions from default channels. For more info on conda restrictions, check this [article](https://www.fz-juelich.de/en/rse/the_latest/the-anaconda-is-squeezing-us)
+
+1. Clone the repository:
+
+```bash
+git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+```
+
+2. Create the conda environment and build CPlantBox:
+
+```bash
+cd CPlantBox
+conda env create -f environment.yml
+conda activate cpb
+git submodule update --init --recursive
+cmake .
+make
+```
+
+3. Test the installation by running a tutorial example, e.g.:
+
+```bash
+cd tutorial/examples/
+python example1a_small.py
+```
+
+## Linux - manual installation 
+Clone the repository by running
+```bash
+git clone --depth 1 -b master https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git
+```
+and use CMake to configure and compile the CPlantBox libraries 
 ```bash
 cmake . && make
 ```
-in the root folder, and run some Python tutorial examples (see tutorial/latex/PlantBox_RootSytem), e.g
+To test the installation run a tutorial example, e.g
 ```bash
 cd tutorial/examples/python
 python3 example1a.py
 ```
+Dependecies are listed in the requirements.txt file.
 
-The dependecies are listed in the requirements.txt file.
+## Windows
+CPlantBox is currently not available on windows. Some pointers to setup a Linux environment on windows are given on the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/Help-for-windows-users).
+
+## Installation on the JSC agrocluster
+Please refer to the [wiki](https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox/wiki/CPlantBox-on-the-J%C3%BClich-Supercomputer-cluster)
+
 # Folder sructure
 
 `/modelparameter`		Plant parameter files\
@@ -66,17 +90,27 @@ The dependecies are listed in the requirements.txt file.
 
 # Code documentation
 
-Create the documentation by running doxygen in the folder 
-$ doxygen doxy_config
+Create the documentation by running doxygen in the docs/ folder 
+```bash
+doxygen doxy_config
+```
+The documentation will be created in this folder. Compile doc/latex/refman.tex to generate the full doxygen documentation in doc/latex/refman.pdf. Additionally, collaboration diagrams give an overview of the code in folder /docs.
 
-The documentation will be located in the folder /doc. Compile doc/latex/refman.tex to generate the full doxygen documentation in doc/latex/refman.pdf.
+# Online resources
 
-Collaboration diagrams give an overview of the code in folder /docs.
+## WebApps
 
-# Examples
-Simulation videos availabe in Youtube Channel https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q
+The official [CPlantBox webapp](https://cplantbox.fz-juelich.de) helps to demonstrate the impact of various CPlantBox parameters and to analyse and explore the resulting 3D plant geometry.  
 
-[![Plant Simulations -- 8K resolution](https://media.giphy.com/media/LmBztw7mNwluJPJ3cU/giphy.gif)](https://www.youtube.com/watch?v=jNbvjW-WFvk "CPlantBox Simulations -- 8K resolution")
+Another [web application](http://cplantbox.com) was designed to conduct simulations and visualize the dynamics of plant growth. The source code is avialable at [github-xiaoranzhou](https://github.com/xiaoranzhou/cpb).
+
+## Jupyter notebooks
+1. [Structure definition and analysis](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F1_cplantbox.ipynb)
+2. [Water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/workshop_1111?labpath=tutorial%2Fjupyter%2Fworkshop_11_11_2024%2F2_water_flux.ipynb)
+
+## Videos
+Simulation videos availabe in [Youtube channel](https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q).
+
 
 
 
