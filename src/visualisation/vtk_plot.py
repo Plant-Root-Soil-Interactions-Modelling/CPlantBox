@@ -5,8 +5,7 @@ import time
 import numpy as np
 import vtk
 from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank(); max_rank = comm.Get_size()
-from IPython.display import Image, display
-
+# from IPython.display import Image, display
 
 """
 VTK Plot, by Daniel Leitner (refurbished 06/2020)
@@ -641,7 +640,7 @@ def plot_plant_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
     pHead = np.array(s.getSolutionHead())
     if sol_ind > 0:
         solute = np.array(s.getSolution(sol_ind))
-        
+
     if rank == 0:
         if isinstance(rs, pb.SegmentAnalyser):
             ana = rs
@@ -737,6 +736,7 @@ def plot_roots_and_soil(rs, pname:str, rp, s, periodic:bool, min_b, max_b, cell_
             write_vtp(path + filename + ".vtp", pd)
             write_vtu(path + filename + ".vtu", soil_grid)
 
+
 def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1, yy = 1, filename:str = "", interactiveImage = True):
     """ Plots soil slices and roots, additionally saves both grids as files
     @param rs            some Organism (e.g. RootSystem, MappedRootSystem, ...) or MappedSegments
@@ -771,6 +771,7 @@ def plot_roots_and_mesh(rs, pname_root, mesh, pname_mesh, periodic:bool, xx = 1,
         write_vtp(path + filename + ".vtp", pd)
         write_vtu(path + filename + ".vtu", soil_grid)
 
+
 def plot_soil(s, pname_mesh, min_b, max_b, cell_number, solutes = [], filename:str = "", interactiveImage = True):
     """ Writes results of a macroscopic soil model (e.g. Richards, RichardsNC) as vtu file
         @param filename      filename without extension 
@@ -791,12 +792,12 @@ def plot_soil(s, pname_mesh, min_b, max_b, cell_number, solutes = [], filename:s
         d = vtk_data(np.array(s.getSolution(i + 1)))
         d.SetName(s_)  # in macroscopic soil
         soil_grid.GetCellData().AddArray(d)
-        
-    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)        
+
+    meshActors, meshCBar = plot_mesh_cuts(soil_grid, pname_mesh, 7, "", False)
     ren = render_window(meshActors, filename, [meshCBar], soil_grid.GetBounds(), interactiveImage)
     if interactiveImage:
         ren.Start()
-        
+
     if filename:
         path = "results/"
         write_vtu(path + filename + ".vtu", soil_grid)
