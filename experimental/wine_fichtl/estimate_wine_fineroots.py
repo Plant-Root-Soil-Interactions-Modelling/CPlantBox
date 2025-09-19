@@ -2,7 +2,7 @@
 Specialized scipt for the wine fine root rsml data to obtain fine root parametrs and subType=2 inter-node distances 
 """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
-
+sys.path.append("../../gui/estimate/")
 import plantbox as pb
 
 import visualisation.vtk_plot as vp

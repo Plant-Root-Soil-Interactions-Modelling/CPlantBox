@@ -2,7 +2,7 @@
 specialized scipt for the wine rsml data 
 """
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
-
+sys.path.append("../../gui/estimate/")
 import visualisation.vtk_plot as vp
 from estimate_data import EstimateDataModel
 import estimate_plots as ep
@@ -27,8 +27,8 @@ colors = prop_cycle.by_key()['color']
 pick path and files 
 """
 
-file_path = "RSML_Fichtl_11:23"
-file_names = ["B-08.rsml", "D-25.rsml"]  # , "E-39.rsml", D-25.rsml # repetitions of same genotype
+file_path = "../../modelparameter/structural/rootsystem"# "RSML_Fichtl_11:23"
+file_names = ["B-23_Fichtl.rsml"]#["B-08.rsml", "D-25.rsml"]  # , "E-39.rsml", D-25.rsml # repetitions of same genotype
 
 """
 RSMLs:
