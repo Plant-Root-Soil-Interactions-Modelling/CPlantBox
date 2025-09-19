@@ -112,3 +112,30 @@ subprocess.run(["python3", "-m", "pip", "install", "--no-cache-dir", "mpi4py", "
 
 show_message("(1/2) Step completed. All prerequistes found.")
 
+#################################################################
+#################################################################
+# # (2/2) Clone modules
+#################################################################
+#################################################################
+# make a new folder containing everything
+# os.makedirs("./CPB", exist_ok=True)
+# os.chdir("CPB")
+
+# CPlantBox
+if not os.path.exists("CPlantBox"):
+    subprocess.run(['git', 'clone', '--depth', '1', '-b', 'master', 'https://github.com/Plant-Root-Soil-Interactions-Modelling/CPlantBox.git'])
+else:
+    print("-- Skip cloning CPlantBox because the folder already exists.")
+os.chdir("CPlantBox")
+
+subprocess.run(['git', 'submodule', 'update', '--recursive', '--init'])
+subprocess.run(['cmake', '.'])
+subprocess.run(['make'])
+os.chdir("..")
+
+show_message("(2/2) Step completed. Succesfully configured and built CPlantBox.")
+
+show_message("to test installation, run \n cd CPlantBox/tutorial/examples/ \n python3 example1a_small.py")
+
+show_message("CPlantBox is currently at stable branch, use \n $git switch master \n to obtain the latest version, use cmake . & make to recompile")
+

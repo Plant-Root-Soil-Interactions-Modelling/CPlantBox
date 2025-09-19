@@ -144,7 +144,6 @@ void Root::simulate(double dt, bool verbose)
                     dt_=dt;
                 }
 
-
                 double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
 
                 double e = targetlength-length; // unimpeded elongation in time step dt
