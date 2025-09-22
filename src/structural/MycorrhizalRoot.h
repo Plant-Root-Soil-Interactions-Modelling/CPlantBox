@@ -56,10 +56,6 @@ protected:
     void primaryInfection(double dt, bool silence);
     void secondaryInfection(bool silence, double dt);
 
-    void insertInfectedNode(int i);
-
-
-
 };
 
 }
