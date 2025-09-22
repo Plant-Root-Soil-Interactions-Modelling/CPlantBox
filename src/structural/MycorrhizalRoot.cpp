@@ -104,7 +104,18 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         {
             // insert node here if segment too long and set all nodes to be infected
             setInfection(i,1,age);
-            // addNode()
+            if (cursegLength > getRootRandomParameter() ->dx_inf) {
+                int newNodesNumber = int(cursegLength / getRootRandomParameter() ->dx_inf);
+                for (size_t j = 0; j < newNodesNumber; j++)
+                {
+                    double newx = (nodes.at(i).x + nodes.at(i-1).x)/newNodesNumber*(j+1);
+                    double newy = (nodes.at(i).y + nodes.at(i-1).y)/newNodesNumber*(j+1);
+                    double newz = (nodes.at(i).z + nodes.at(i-1).z)/newNodesNumber*(j+1);
+                    Vector3d newNode = Vector3d(newx,newy,newz);
+                    std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
+                //     addNode(newNode, nodes.size()+1, nodeCTs.at(i), i, true); // TODO rethink about that global ID stuff
+                }   
+            }
         }
     }
 }
@@ -142,6 +153,19 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                     {
                         // insert node here if segment too long and set all nodes to be infected
                         setInfection(basalnode,2,infTime);
+                        if (cursegLength > getRootRandomParameter() ->dx_inf) {
+                            int newNodesNumber = int(cursegLength / getRootRandomParameter() ->dx_inf);
+                            for (size_t j = 0; j < newNodesNumber; j++)
+                            {
+                                double newx = (nodes.at(i).x + nodes.at(i-1).x)/newNodesNumber*(j+1);
+                                double newy = (nodes.at(i).y + nodes.at(i-1).y)/newNodesNumber*(j+1);
+                                double newz = (nodes.at(i).z + nodes.at(i-1).z)/newNodesNumber*(j+1);
+                                Vector3d newNode = Vector3d(newx,newy,newz);
+                                std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
+                                // TODO add proper distance and thus infection time!!!
+                            //     addNode(newNode, nodes.size()+1, nodeCTs.at(i), i, true); // TODO rethink about that global ID stuff
+                            }   
+                        }
                         // std::cout<< "secondary infection from " << i << " to " << basalnode << std::endl;
                         if(basalnode==0 && std::dynamic_pointer_cast<MycorrhizalRoot>(getParent()))
                         {
@@ -429,16 +453,4 @@ double MycorrhizalRoot::prob(double t, double segLength, double p)
     return 1 - pow(1-p,t*segLength);
 }
 
-void MycorrhizalRoot::insertInfectedNode(int i) // TODO
-{
-    // TODO make loop such that length is tested again!!!
-    // insert node in the middle between two nodes i-1 and i
-    double newx = (nodes.at(i).x + nodes.at(i-1).x)/2;
-    double newy = (nodes.at(i).y + nodes.at(i-1).y)/2;
-    double newz = (nodes.at(i).z + nodes.at(i-1).z)/2;
-    //
-    Vector3d newNode = Vector3d(newx,newy,newz);
-    std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
-    addNode(newNode, nodes.size()+1, (nodeCTs.at(i-1)+nodeCTs.at(i))*0.5, i, true); // TODO rethink about that global ID stuff
-}
 }
