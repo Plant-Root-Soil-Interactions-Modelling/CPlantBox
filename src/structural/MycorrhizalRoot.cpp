@@ -57,34 +57,16 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
         infectionTime.push_back(-1);
     } 
     else {
-    //     // insert node in the middle between two nodes i-1 and i
-    // double newx = (nodes.at(i).x + nodes.at(i-1).x)/2;
-    // double newy = (nodes.at(i).y + nodes.at(i-1).y)/2;
-    // double newz = (nodes.at(i).z + nodes.at(i-1).z)/2;
-    // //
-    // // insert node id
-    // nodeIds.insert(nodeIds.begin()+i, nodes.size()+1); // TODO  this needs to be fixed 
-    // // insert time 
-    // nodeCTs.insert(nodeCTs.begin()+i, (nodeCTs.at(i-1)+nodeCTs.at(i))*0.5);
-    // // insert infection status
-    // infected.insert(infected.begin()+i, infected.at(i-1));
-    // // insert number of emerged hyphae
-    // emergedHyphae.insert(emergedHyphae.begin()+i, 0);
-    // // insert infection time (calculated based on distance between the two nodes and infection time of the previous node )
-    // double newTime = infectionTime.at(i-1) + (nodes.at(i).minus(nodes.at(i-1)).length())/getRootRandomParameter()->vi/2;
-    // infectionTime.insert(infectionTime.begin()+i, newTime);
-        nodes.insert(nodes.begin()+index-1, n);
-        nodeIds.push_back(id);
-        nodeCTs.insert(nodeCTs.begin()+index-1, t);
+        Organ::addNode(n, id,  t,  index, shift);
         infected.insert(infected.begin()+index-1, infected.at(index-1));
         emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
-        infectionTime.insert(infectionTime.begin()+index-1, t);
+        infectionTime.insert(infectionTime.begin()+index-1, infectionTime.at(index-1));
 
         for(auto kid : children){//if carries children after the added node, update their "parent node index"
 
 			if((kid->parentNI >= index-1 )&&(kid->parentNI > 0)){
 				kid->moveOrigin(kid->parentNI + 1);
-				}
+			}
 		}
     }
     // std::cout<< "infected size " << infected.size() << std::endl;
@@ -230,7 +212,6 @@ void MycorrhizalRoot::simulateHyphalGrowth() {
         // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae <<  ", new noh " << new_noh << std::endl;
 
         int currentNode = 1;
-
         while (new_noh > 0 && currentNode < nodes.size()) 
         {
 
@@ -311,7 +292,7 @@ double MycorrhizalRoot::getParameter(std::string name) const {
             if (infected.at(i)==1)
             {
                 primaryInfectedLength += nodes.at(i).minus(nodes.at(i-1)).length();
-                }
+            }
         }
         return primaryInfectedLength;
     }
@@ -450,14 +431,14 @@ double MycorrhizalRoot::prob(double t, double segLength, double p)
 
 void MycorrhizalRoot::insertInfectedNode(int i) // TODO
 {
+    // TODO make loop such that length is tested again!!!
     // insert node in the middle between two nodes i-1 and i
     double newx = (nodes.at(i).x + nodes.at(i-1).x)/2;
     double newy = (nodes.at(i).y + nodes.at(i-1).y)/2;
     double newz = (nodes.at(i).z + nodes.at(i-1).z)/2;
     //
     Vector3d newNode = Vector3d(newx,newy,newz);
-    addNode(newNode, nodes.size()+1, (nodeCTs.at(i-1)+nodeCTs.at(i))*0.5, i, true);
-    infected.at(i) = infected.at(i-1);
-    infectionTime.at(i) = infectionTime.at(i-1) + (nodes.at(i).minus(nodes.at(i-1)).length())/getRootRandomParameter()->vi/2;
+    std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
+    addNode(newNode, nodes.size()+1, (nodeCTs.at(i-1)+nodeCTs.at(i))*0.5, i, true); // TODO rethink about that global ID stuff
 }
 }
