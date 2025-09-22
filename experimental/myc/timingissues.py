@@ -43,7 +43,7 @@ simtime = 10            # Gesamtdauer (Tage)
 fpd = 25                # Schritte pro Tag
 N = simtime * fpd       # Gesamtanzahl Schritte
 dt = simtime / N        # Schrittweite in Tagen
-time = np.linspace(0, simtime, N)
+timespan = np.linspace(0, simtime, N)
 ratio = False            # Set to True for ratio plots, False for absolute values
 
 
@@ -51,13 +51,13 @@ def runsimulation(seed):
     mycp.setSeed(seed)
     mycp.initialize(True)
 
-    for t in range(0, len(time)):
+    for t in range(0, len(timespan)):
         mycp.simulate(dt, False)
         
     return ()
 
 start = t.time()
-for seed in range(0, 50):
+for seed in range(1, 51):
     print(f"Running simulation with seed {seed}")
     runsimulation(seed)
 end = t.time()
