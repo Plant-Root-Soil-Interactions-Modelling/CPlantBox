@@ -1,6 +1,7 @@
 import sys; sys.path.append("../.."); sys.path.append("../../src/")
 
 import plantbox as pb
+import math
 import visualisation.vtk_plot as vp
 
 mycp = pb.MycorrhizalPlant()
@@ -9,7 +10,7 @@ name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
 
 animation = False
-local = True
+local = False
 infbox = pb.SDF_PlantBox(4, 4, 4)
 # infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 for i in range(1,5):
@@ -20,8 +21,6 @@ mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
 hyphae_parameter.subType = 1
 hyphae_parameter.a = 0.01
-# hyphae_parameter.b = 0.1
-# hyphae_parameter.v = 1
 hyphae_parameter.dx = 0.01
 mycp.setOrganRandomParameter(hyphae_parameter)
 # print(hyphae_parameter)
@@ -52,10 +51,10 @@ if not local:
     filename = filename + "_dispersed"
 else:
     filename = filename + "_local"
-roots = mycp.getOrganRandomParameter(pb.root)
-# print(root[1]) # check that AMF random params got updated from the xml file
+
+
 if animation:
-    for i in range(0, N):
+    for i in range(1, N):
         mycp.simulate(dt, False)
         # mycp.simulateHyphalGrowth(dt)
         ana = pb.SegmentAnalyser(mycp)
