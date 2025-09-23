@@ -110,9 +110,9 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
                 int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                 for (size_t j = 0; j < newNodesNumber; j++)
                 {
-                    double newx = (nodes.at(i).x + nodes.at(i-1).x)/newNodesNumber*(j+1);
-                    double newy = (nodes.at(i).y + nodes.at(i-1).y)/newNodesNumber*(j+1);
-                    double newz = (nodes.at(i).z + nodes.at(i-1).z)/newNodesNumber*(j+1);
+                    double newx = nodes.at(i-1).x + (nodes.at(i).x - nodes.at(i-1).x) *(j+1)/(newNodesNumber +1) ;
+                    double newy = nodes.at(i-1).y + (nodes.at(i).y - nodes.at(i-1).y) *(j+1)/(newNodesNumber +1);
+                    double newz = nodes.at(i-1).z + (nodes.at(i).z - nodes.at(i-1).z) *(j+1)/(newNodesNumber +1);
                     Vector3d newNode = Vector3d(newx,newy,newz);
                     //std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
                     addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(i), i, true); // TODO rethink about that global ID stuff

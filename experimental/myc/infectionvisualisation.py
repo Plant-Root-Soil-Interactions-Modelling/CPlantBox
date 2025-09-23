@@ -3,6 +3,7 @@ import sys; sys.path.append("../.."); sys.path.append("../../src/")
 import plantbox as pb
 import math
 import visualisation.vtk_plot as vp
+import numpy as np
 
 mycp = pb.MycorrhizalPlant(1)
 path = "../../modelparameter/structural/rootsystem/"
@@ -30,7 +31,7 @@ for rp in root:
     rp.hyphalEmergenceDensity = 2;
     if local:
         rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
-    rp.dx = 0.21
+    rp.dx = 0.2
     # rp.hyphalEmergenceDist = 0.5;  # distance between hyphal emergence points
 
 
@@ -69,13 +70,14 @@ else:
         mycp.simulate(dt, False)
         # mycp.simulateHyphalGrowth(dt)
     
-
+    print('done')
+    
     ana = pb.SegmentAnalyser(mycp)
     ana.addData("infection", mycp.getNodeInfections(2))
     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
-    vp.plot_roots(ana, "infection")
+    vp.plot_roots(ana, "organType")
     # vp.plot_roots(ana, "infectionTime")
     # vp.plot_plant(mycp, "organType")
-    ana.write(filename + ".vtp", ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
+    ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",
 
