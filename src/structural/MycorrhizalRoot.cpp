@@ -1,12 +1,11 @@
 #include "MycorrhizalRoot.h"
-#include "mycorrhizalrootparameter.h"
 #include "Root.h"
 #include "Stem.h"
 #include "Leaf.h"
 #include "Organ.h"
 #include "Organism.h"
-#include "Hyphae.h"
 
+#include "Hyphae.h"
 #include "math.h"
 
 namespace CPlantBox {

@@ -4,9 +4,9 @@
 #include "Plant.h"
 #include "MycorrhizalRoot.h"
 #include "soil.h"
-#include "sdf_rs.h"
-#include "sdf.h"
-#include "Hyphae.h"
+//#include "sdf_rs.h"
+//#include "sdf.h"
+//#include "Hyphae.h"
 
 namespace CPlantBox {
     class MycorrhizalPlant :public Plant {

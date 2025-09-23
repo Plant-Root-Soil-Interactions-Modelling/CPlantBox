@@ -2,12 +2,12 @@
 #include "Organ.h"
 #include "Organism.h"
 #include "MycorrhizalPlant.h"
-#include "MycorrhizalRoot.h"
+//#include "MycorrhizalRoot.h"
 #include "mycorrhizalrootparameter.h"
 #include "hyphaeparameter.h"
 #include "sdf.h"
 // #include "sdf_rs.h"
-#include "soil.h"
+//#include "soil.h"
 
 #include <functional>
 
