@@ -4,7 +4,7 @@ import plantbox as pb
 import math
 import visualisation.vtk_plot as vp
 
-mycp = pb.MycorrhizalPlant()
+mycp = pb.MycorrhizalPlant(1)
 path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
@@ -30,7 +30,7 @@ for rp in root:
     rp.hyphalEmergenceDensity = 2;
     if local:
         rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
-    rp.dx = 0.1
+    rp.dx = 0.21
     # rp.hyphalEmergenceDist = 0.5;  # distance between hyphal emergence points
 
 
@@ -65,6 +65,7 @@ if animation:
 
 else:
     for i in range(0, N):
+        print('step',i, '/',N)
         mycp.simulate(dt, False)
         # mycp.simulateHyphalGrowth(dt)
     

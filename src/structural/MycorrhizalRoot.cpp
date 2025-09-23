@@ -56,7 +56,10 @@ void MycorrhizalRoot::addNode(Vector3d n, int id, double t, size_t index, bool s
         infectionTime.push_back(-1);
     } 
     else {
-        Organ::addNode(n, id,  t,  index, shift);
+        //Organ::addNode(n, id,  t,  index, shift);
+		nodes.insert(nodes.begin() + index-1, n);//add the node at index
+		nodeIds.push_back(id);
+		nodeCTs.insert(nodeCTs.begin() + index-1, t);
         infected.insert(infected.begin()+index-1, infected.at(index-1));
         emergedHyphae.insert(emergedHyphae.begin()+index-1, 0);
         infectionTime.insert(infectionTime.begin()+index-1, infectionTime.at(index-1));
@@ -104,14 +107,14 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
             // insert node here if segment too long and set all nodes to be infected
             setInfection(i,1,age);
             if (cursegLength > getRootRandomParameter() ->dx_inf) {
-                int newNodesNumber = int(cursegLength / getRootRandomParameter() ->dx_inf);
+                int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                 for (size_t j = 0; j < newNodesNumber; j++)
                 {
                     double newx = (nodes.at(i).x + nodes.at(i-1).x)/newNodesNumber*(j+1);
                     double newy = (nodes.at(i).y + nodes.at(i-1).y)/newNodesNumber*(j+1);
                     double newz = (nodes.at(i).z + nodes.at(i-1).z)/newNodesNumber*(j+1);
                     Vector3d newNode = Vector3d(newx,newy,newz);
-                    std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
+                    //std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
                     addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(i), i, true); // TODO rethink about that global ID stuff
                 }   
             }
