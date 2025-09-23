@@ -13,6 +13,7 @@
 #include "mymath.h"
 #include "SegmentAnalyser.h"
 #include "Root.h"
+#include "Hyphae.h"
 
 namespace CPlantBox {
 
@@ -31,6 +32,8 @@ public:
     SDF_RootSystem(const Root& r, double dx = 0.5);
 
     SDF_RootSystem(const Organism& plant, double dx = 0.5);
+
+    SDF_RootSystem(const Hyphae& h, double dx = 0.5);
 
     SDF_RootSystem(std::vector<Vector3d> nodes, const std::vector<Vector2i> segments, std::vector<double> radii, double dx = 0.5);
 
@@ -67,6 +70,21 @@ SDF_RootSystem::SDF_RootSystem(const Root& r, double dx): dx_(dx) {
   for (size_t i=1; i<n; i++) {
       segments_[i-1] = Vector2i(i-1,i);
       radii_[i-1] = r.param()->a;
+  }
+  buildTree();
+}
+
+SDF_RootSystem::SDF_RootSystem(const Hyphae& h, double dx): dx_(dx) {
+  size_t n = h.getNumberOfNodes();
+  nodes_.resize(n);
+  segments_.resize(n-1);
+  radii_.resize(n-1);
+  for (size_t i=0; i<n; i++) {
+      nodes_[i] = h.getNode(i);
+  }
+  for (size_t i=1; i<n; i++) {
+      segments_[i-1] = Vector2i(i-1,i);
+      radii_[i-1] = h.param()->a;
   }
   buildTree();
 }

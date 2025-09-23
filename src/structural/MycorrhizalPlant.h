@@ -4,6 +4,9 @@
 #include "Plant.h"
 #include "MycorrhizalRoot.h"
 #include "soil.h"
+#include "sdf_rs.h"
+#include "sdf.h"
+#include "Hyphae.h"
 
 namespace CPlantBox {
     class MycorrhizalPlant :public Plant {
@@ -29,7 +32,11 @@ namespace CPlantBox {
 
         // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
         void initCallbacks() override;
-        // void addTree(); AABB tree
+//         void addTree(); // AABB tree
+
+//         std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
+//         std::vector<Vector3d> tip;
+//         std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
     };
 }
 
