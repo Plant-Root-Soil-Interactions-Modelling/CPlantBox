@@ -9,6 +9,19 @@ import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import matplotlib.colors
+from matplotlib import gridspec
+import re
+
+
+mpl.rcParams['mathtext.default'] = 'regular'
+mpl.rcParams.update({'font.size': 20})
+
+left  = 0.02  # the left side of the subplots of the figure
+right = 0.93    # the right side of the subplots of the figure
+bottom = 0.1   # the bottom of the subplots of the figure
+top = 0.95      # the top of the subplots of the figure
+wspace = 0.3   # the amount of width reserved for blank space between subplots
+hspace = 0.3   # the amount of height reserved for white space between subplots
 
 @dataclass
 class PlantParameters:
@@ -19,6 +32,7 @@ class PlantParameters:
     rh_params: str
 def load_cplantbox_input(file_path: str) -> tuple:
     model_inputs = file_path.split("_")
+    rs_age = int(re.findall(r'\d+',model_inputs[-3])[0])
     soil_type = "_".join(model_inputs[10:12])  # 'hydrus_loam'
     gprMax_name = file_path.split("/")[-1]
     npzfile = np.load(file_path + '.npz')
@@ -43,7 +57,7 @@ def load_cplantbox_input(file_path: str) -> tuple:
     else:
         raise ValueError("Invalid resolution")
 
-    return swc, rvf, soil_depth, thetas, domain_x, domain_y, res_value, gprMax_name, plant_
+    return swc, rvf, soil_depth, thetas, domain_x, domain_y, res_value, gprMax_name, plant_, rs_age
 
 def get_plant_parameters(plant_: str, res: float, soil_depth: float) -> PlantParameters:
     if plant_ == "maize":
@@ -74,73 +88,76 @@ def calculate_eps_soil_4p(swc, rvf, phi, eps_s, eps_w, eps_r):
     eps_ss = (((1 - phi) * np.sqrt(eps_s) + swc * np.sqrt(eps_w) + (phi - swc - rvf) * 1 + rvf * np.sqrt(eps_r)) ** 2)
     return eps_ss
 
-def plotting_cplantbox_output(swc, rvf, soil_depth, thetas, domain_x, domain_y, res, eps_ss, param_name, min_b, max_b):
+def plotting_cplantbox_output(swc, rvf, soil_depth, thetas, domain_x, domain_y, res, eps_ss, param_name, min_b, max_b, rs_age):
     fig = plt.figure(figsize=plt.figaspect(0.5))
+    gs = gridspec.GridSpec(nrows=2, ncols=4)
+
     """ resimulate root system """
     path = "../../modelparameter/structural/rootsystem/"
     rs = pb.MappedPlant()
-
-    rs.readParameters(path + param_name + ".xml")
-    sdf = pb.SDF_PlantBox(0.99 * (max_b[0] - min_b[0]), 0.99 * (max_b[1] - min_b[1]), max_b[2] - min_b[2])
-    rs.setGeometry(sdf)
+    rs.readParameters(path + param_name)
     rs.setSeed(1)
-    rs.initialize()
-    rs.simulate(rs_age, False)
-    for i in range(0, sim_time):
-        rs.simulate(i)
+    rs.initialize(True)
+    rs.simulate(rs_age, True)
     ana = pb.SegmentAnalyser(rs.mappedSegments())
     segs = ana.segments
     nodes = ana.nodes
     radius = ana.getParameter("radius")
 
-    ax1 = fig.add_subplot(1, 4, 1)
-    cmap = cm.seismic
+
+    cmap = cm.jet_r
+    
+    ax1 = fig.add_subplot(gs[0,0])
     norm = matplotlib.colors.Normalize(vmin=np.min(radius), vmax=np.max(radius))
     fc = cmap(norm(radius))
     for k, s in enumerate(segs):
         s1 = segs[k]
         n1, n2 = nodes[s1.x], nodes[s1.y]
         ax1.plot([n1.x, n2.x], [n1.z, n2.z], color = fc[k,:])
-    m = cm.ScalarMappable(cmap=plt.cm.seismic)
+    norm = plt.Normalize(vmin=np.min(radius), vmax=np.max(radius))
+    m = cm.ScalarMappable(cmap=cmap, norm=norm)
     m.set_array([])
-    plt.colorbar(m, ax = ax1, label = 'Radius (cm)')
+    plt.colorbar(m, ax = ax1, label = 'Radius (cm)', shrink = 0.3)
     ax1.set_aspect('equal')
+    pos = ax1.get_position()
+    new_pos = [pos.x0, pos.y0-0.5, pos.width, pos.height]
+    ax1.set_position(new_pos)
     ax1.axis('off')
 
-
-    ax2 = fig.add_subplot(1, 4, 2)
+    ax2 = fig.add_subplot(gs[0:,1])
     swc_ = swc[:,int(domain_y/2),:]
     colors = plt.cm.jet_r(swc_)
     norm = plt.Normalize(vmin=np.min(swc_), vmax=np.max(swc_))
-    ax2.imshow(np.rot90(swc_), cmap='seismic_r', norm=norm, aspect=1) 
-    m = plt.cm.ScalarMappable(cmap=plt.cm.jet_r, norm=norm)
+    ax2.imshow(np.rot90(swc_), cmap=cmap, norm=norm, aspect=1) 
+    m = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     m.set_array([])
-    plt.colorbar(m, ax=ax2, label='Soil water content (-)')
+    plt.colorbar(m, ax=ax2, label='Soil water content (-)', shrink = 0.3)
     ax2.set_title("$\\theta$ (-)")
     ax2.axis('off')
 
-    ax3 = fig.add_subplot(1, 4, 3)
+    ax3 = fig.add_subplot(gs[0:,2])
     rwc_ = rvf[:,int(domain_y/2),:]
     colors = plt.cm.jet_r(rwc_)
     norm = plt.Normalize(vmin=np.min(rwc_), vmax=np.max(rwc_))
-    ax3.imshow(rwc_, cmap='seismic_r', norm=norm, aspect=1) 
-    m = plt.cm.ScalarMappable(cmap=plt.cm.jet_r, norm=norm)
+    ax3.imshow(np.rot90(rwc_), cmap=cmap, norm=norm, aspect=1) 
+    m = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     m.set_array([])
-    plt.colorbar(m, ax=ax3, label='Root volume fraction (-)')
+    plt.colorbar(m, ax=ax3, label='Root volume fraction (-)', shrink = 0.3)
     ax3.set_title("RVF")
     ax3.axis('off')
 
-    ax4 = fig.add_subplot(1, 3, 3)
+    ax4 = fig.add_subplot(gs[0:,3])
     eps_ss_ = eps_ss[:,int(domain_y/2),:]
     colors = plt.cm.jet_r(eps_ss_)
     norm = plt.Normalize(vmin=np.min(eps_ss_), vmax=np.max(eps_ss_))
-    ax4.imshow(eps_ss_, cmap='jet_r', norm=norm, aspect=1) 
-    m = plt.cm.ScalarMappable(cmap=plt.cm.jet_r, norm=norm)
+    ax4.imshow(np.rot90(eps_ss_), cmap=cmap, norm=norm, aspect=1) 
+    m = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     m.set_array([])
-    plt.colorbar(m, ax=ax4, label='SWC 4-phase')
+    plt.colorbar(m, ax=ax4, label='SWC 4-phase', shrink = 0.3)
     ax4.set_title("$\\epsilon_{4phase}$ (-)")
     ax4.axis('off')
-
+    
+    plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
     plt.show()
 
 
@@ -149,8 +166,8 @@ if __name__ == "__main__":
     out_files = os.listdir(outputfolder)
     for file in out_files:
         file_path = outputfolder + '/' + (file.split('.')[0])
-        swc, rvf, soil_depth, thetas, domain_x, domain_y, res, gprMax_name, plant_ = load_cplantbox_input(file_path)
+        swc, rvf, soil_depth, thetas, domain_x, domain_y, res, gprMax_name, plant_, rs_age = load_cplantbox_input(file_path)
         min_b, max_b, cell_number,param_name = get_plant_parameters(plant_, res, soil_depth)
         eps_w, eps_s, phi, eps_r, cond_s, cond_r = get_soil_inputparameters()
         eps_ss = calculate_eps_soil_4p(swc, rvf, phi, eps_s, eps_w, eps_r)
-        plotting_cplantbox_output(swc, rvf, soil_depth, thetas, domain_x, domain_y, res, eps_ss, param_name,min_b, max_b)
+        plotting_cplantbox_output(swc, rvf, soil_depth, thetas, domain_x, domain_y, res, eps_ss, param_name,min_b, max_b, rs_age)
