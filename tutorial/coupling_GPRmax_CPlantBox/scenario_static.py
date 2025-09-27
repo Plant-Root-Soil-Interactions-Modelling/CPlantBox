@@ -147,8 +147,8 @@ if __name__ == "__main__":
     initial = -200 #cm #initial can be 'initial water content (-)' or initial soil water potential (cm)'- the model recognizes if it is the one or the other                          
     trans = 0.5 #cm/day
     infiltration = False #scenario with infiltration only
-    evaporation = False #scenario with evaporation only                                 
-    rs_age = 15 #d
+    evaporation = True #scenario with evaporation only                                 
+    rs_age = 70 #d
     sim_time = 14.5  # day
     out_time = np.arange(0.5, sim_time,1) #additionally, the first time step is always saved (--> corresponds to root system with static swc)
     save_npz = True
