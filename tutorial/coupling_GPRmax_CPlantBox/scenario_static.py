@@ -152,7 +152,7 @@ if __name__ == "__main__":
     sim_time = 14.5  # day
     out_time = np.arange(0.5, sim_time,1) #additionally, the first time step is always saved (--> corresponds to root system with static swc)
     save_npz = True
-    save_vtr = False
+    save_vtr = True
     
     name = args.plant + "_" + args.res + "_resolution_" + args.soil+'_age'+str(rs_age)
     if infiltration: 
