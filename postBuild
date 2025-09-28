@@ -1,2 +1,11 @@
+#!/bin/bash
+set -e
+
+echo "Compiling CPlantBox in Binder..."
+
+# Make sure we are at the repo root
+cd /home/jovyan
+
+# Run CMake and make in-place (in-source build)
 cmake .
-make
+make 
