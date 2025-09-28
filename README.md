@@ -110,7 +110,7 @@ Direct links to notebooks from the summer school of 2025:
 2. [Water flow in CPlantBox](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/ss2025?urlpath=%2Fdoc%2Ftree%2Ftutorial%2Fjupyter%2Fsummer_school_2025%2F2_root_hydraulics.ipynb)
 3. [Online repository](https://mybinder.org/v2/gh/Plant-Root-Soil-Interactions-Modelling/CPlantBox/ss2025_binder)
 
-For the third repository, you need to go the folder `CPlantBox/tutorial/jupyter/summer_school_2025` to access the notebooks.
+For the third repository, you need to go the folder `dumux/CPlantBox/tutorial/jupyter/summer_school_2025` to access the notebooks.
 
 ## Videos
 Simulation videos availabe in [Youtube channel](https://www.youtube.com/channel/UCPK-pFfpK94jiamgwHxX32Q).
