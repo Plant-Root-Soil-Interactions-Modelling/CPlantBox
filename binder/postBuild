@@ -1,5 +1,4 @@
 #!/bin/bash
 cd /home/joyvan
 
-cmake .
-make
+python3 installDumuxRosi_Ubuntu.py
