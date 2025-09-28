@@ -1,2 +1,11 @@
-cmake .
-make
+#!/bin/bash
+set -e
+
+echo "Compiling CPlantBox in Binder..."
+
+# Create a separate build directory
+mkdir -p build
+cd build
+
+# Configure the project from repo root
+cmake .. 
