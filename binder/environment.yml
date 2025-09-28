@@ -21,6 +21,3 @@ dependencies:
       - ipython
       - ipykernel
       - pytest
-      - dash
-      - dash_bootstrap_components
-      - dash_vtk
