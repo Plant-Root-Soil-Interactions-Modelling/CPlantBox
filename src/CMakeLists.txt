@@ -16,7 +16,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/external/suitsparse/include/) # fo
 include_directories(${PROJECT_SOURCE_DIR}/src/external/sundials/include/) # for PiafMunch
 
 
-add_library(CPlantBox STATIC
+add_library(CPlantBox SHARED
             structural/organparameter.cpp
             structural/rootparameter.cpp
 			structural/seedparameter.cpp
@@ -64,45 +64,45 @@ add_library(CPlantBox STATIC
 )
 
 
-add_library(libklu STATIC IMPORTED)
+add_library(libklu SHARED IMPORTED)
 set_property(TARGET libklu PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/suitsparse/lib/libklu.a)
-add_library(libamd STATIC IMPORTED)
+add_library(libamd SHARED IMPORTED)
 set_property(TARGET libamd PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/suitsparse/lib/libamd.a)
-add_library(libbtf STATIC IMPORTED)
+add_library(libbtf SHARED IMPORTED)
 set_property(TARGET libbtf PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/suitsparse/lib/libbtf.a)
-add_library(libcolamd STATIC IMPORTED)
+add_library(libcolamd SHARED IMPORTED)
 set_property(TARGET libcolamd PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/suitsparse/lib/libcolamd.a)
-add_library(suitesparseconfig STATIC IMPORTED)
+add_library(suitesparseconfig SHARED IMPORTED)
 set_property(TARGET suitesparseconfig PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/suitsparse/lib/libsuitesparseconfig.a)
-add_library(arkode STATIC IMPORTED)
+add_library(arkode SHARED IMPORTED)
 set_target_properties(arkode PROPERTIES IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_arkode.a)
-add_library(sundials_cvode STATIC IMPORTED)
+add_library(sundials_cvode SHARED IMPORTED)
 set_property(TARGET sundials_cvode PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_cvode.a)
-add_library(sundials_nvecserial STATIC IMPORTED)
+add_library(sundials_nvecserial SHARED IMPORTED)
 set_property(TARGET sundials_nvecserial PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_nvecserial.a)
-add_library(sundials_sunlinsolband STATIC IMPORTED)
+add_library(sundials_sunlinsolband SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsolband PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsolband.a)
-add_library(sundials_sunlinsoldense STATIC IMPORTED)
+add_library(sundials_sunlinsoldense SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsoldense PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsoldense.a)
-add_library(sundials_sunlinsolklu STATIC IMPORTED)
+add_library(sundials_sunlinsolklu SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsolklu PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsolklu.a)
-add_library(sundials_sunlinsolpcg STATIC IMPORTED)
+add_library(sundials_sunlinsolpcg SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsolpcg PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsolpcg.a)
-add_library(sundials_sunlinsolspbcgs STATIC IMPORTED)
+add_library(sundials_sunlinsolspbcgs SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsolspbcgs PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsolspbcgs.a)
-add_library(sundials_sunlinsolspfgmr STATIC IMPORTED)
+add_library(sundials_sunlinsolspfgmr SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsolspfgmr PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsolspfgmr.a)
-add_library(sundials_sunlinsolspgmr STATIC IMPORTED)
+add_library(sundials_sunlinsolspgmr SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsolspgmr PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsolspgmr.a)
-add_library(sundials_sunlinsolsptfqmr STATIC IMPORTED)
+add_library(sundials_sunlinsolsptfqmr SHARED IMPORTED)
 set_property(TARGET sundials_sunlinsolsptfqmr PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunlinsolsptfqmr.a)
-add_library(sundials_sunmatrixband STATIC IMPORTED)
+add_library(sundials_sunmatrixband SHARED IMPORTED)
 set_property(TARGET sundials_sunmatrixband PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunmatrixband.a)
-add_library(sundials_sunmatrixdense STATIC IMPORTED)
+add_library(sundials_sunmatrixdense SHARED IMPORTED)
 set_property(TARGET sundials_sunmatrixdense PROPERTY IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunmatrixdense.a)
-add_library(sundials_sunmatrixsparse STATIC IMPORTED)
+add_library(sundials_sunmatrixsparse SHARED IMPORTED)
 set_target_properties(sundials_sunmatrixsparse PROPERTIES IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunmatrixsparse.a)
-add_library(sundials_sunnonlinsolnewton STATIC IMPORTED)
+add_library(sundials_sunnonlinsolnewton SHARED IMPORTED)
 set_target_properties(sundials_sunnonlinsolnewton PROPERTIES IMPORTED_LOCATION ${PROJECT_BINARY_DIR}/src/external/sundials/lib/libsundials_sunnonlinsolnewton.a)
 target_link_libraries(CPlantBox 
 						sundials_sunnonlinsolnewton 
@@ -141,8 +141,11 @@ target_include_directories(
 # find_package(pybind11 REQUIRED) 
 #set(PYBIND11_PYTHON_VERSION 3.7)
 add_subdirectory(external/pybind11)
+set(PYBIND11_PYTHON_VERSION 3.11)
+find_package( PythonInterp 3.11 REQUIRED )
+find_package( PythonLibs 3.11 REQUIRED )
 
-pybind11_add_module(plantbox STATIC 
+pybind11_add_module(plantbox SHARED 
 			PyPlantBox.cpp   								
 			)
 target_link_libraries(plantbox PUBLIC 
