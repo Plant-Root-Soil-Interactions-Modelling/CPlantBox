@@ -725,7 +725,7 @@ void MappedPlant::simulate(double dt, bool verbose)
 	for (auto& so : newsegO) {
 		int segIdx = newsegs[c].y-1;
 
-		radii.at(segIdx) = so->param()->a;
+		radii.at(segIdx) = so->getRadius(c);
 		organTypes.at(segIdx) = so->organType();
 		subTypes.at(segIdx) = so->param()->subType; //  st2newst[std::make_tuple(organTypes[segIdx],so->param()->subType)];//new st
 		this->segO.at(segIdx) = so; // useful when creating SegmentAnalyser from a mappedSegment

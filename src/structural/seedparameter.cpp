@@ -113,6 +113,8 @@ void SeedRandomParameter::bindParameters()
     bindParameter("seedPos.x", &seedPos.x, "X-Coordinate of seed position [cm]", &seedPoss.x);
     bindParameter("seedPos.y", &seedPos.y, "Y-Coordinate of seed position [cm]", &seedPoss.y);
     bindParameter("seedPos.z", &seedPos.z, "Z-Coordinate of seed position [cm]", &seedPoss.z);
+    bindParameter("Lmax_unsuberized", &Lmax_unsuberized, "length threshold for unsuberized to suberized [cm]");
+    bindParameter("Lmax_suberized", &Lmax_suberized, "length threshold for suberized to lignified [cm]");
     bindParameter("firstB", &firstB, "Emergence of first basal root [day]", &firstBs);
     bindParameter("delayB", &delayB, "Time delay between the basal roots [day]", &delayBs);
     bindParameter("maxB", &maxB, "Maximal number of basal roots [1]", &maxBs);

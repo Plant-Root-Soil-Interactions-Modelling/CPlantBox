@@ -47,8 +47,17 @@ public:
     std::shared_ptr<RootRandomParameter> getRootRandomParameter() const;  ///< root type parameter of this root
     std::shared_ptr<const RootSpecificParameter> param() const; ///< root parameter
 
-    double insertionAngle = 0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
-
+    double orgVolume(double length_ = -1.,  bool realized = false) const override;//organ volume for current or for a specific length
+	double orgSurface(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
+	
+	double getRadius(int local_segIndex) const override;
+	//std::vector<double> getRadii() const override {return segRadii;}
+	//void updateRadii();
+	void survivalTest() override;
+	
+	double insertionAngle = 0.; ///< differs to (const) theta, if angle is scaled by soil properties with RootRandomParameter::f_sa TODO some better idea?
+//protected:
+    //std::vector<double> segRadii; ///< node creation times [days]
 };
 
 /**

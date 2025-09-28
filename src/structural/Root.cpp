@@ -1,5 +1,6 @@
 // -*- mode: C++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 #include "Root.h"
+#include "Plant.h"
 #include <numeric>
 
 namespace CPlantBox {
@@ -132,9 +133,10 @@ void Root::simulate(double dt, bool verbose)
                 l->simulate(dt,verbose);
             }
 
-
+				
             if (active) {
-                // length increment
+
+                // length increment, moved outside of 'if(active)' because needed for lateral creation out of existing linking nodes
                 double age_ = calcAge(length); // root age as if grown unimpeded (lower than real age)
                 double dt_; // time step
                 if (age<dt) { // the root emerged in this time step, adjust time step
@@ -142,7 +144,6 @@ void Root::simulate(double dt, bool verbose)
                 } else {
                     dt_=dt;
                 }
-
                 double targetlength = calcLength(age_+dt_)+ this->epsilonDx;
 
                 double e = targetlength-length; // unimpeded elongation in time step dt
@@ -218,9 +219,12 @@ void Root::simulate(double dt, bool verbose)
             } // if active
             active = getLength(false)<=(p.getK()*(1 - 1e-11)); // become inactive, if final length is nearly reached
         }
+		//updateRadii(); // radial growth only if the roots are alive. not needed=>age increase only if roots are alive
     } // if alive
-    // std::cout << "end" << getId() << "\n" << std::flush;
 }
+
+
+
 
 /**
  * Analytical length of the single root at a given age
@@ -232,6 +236,113 @@ double Root::calcLength(double age)
 {
     assert(age >= 0 && "Root::calcLength() negative root age");
     return getRootRandomParameter()->f_gf->getLength(age,param()->r,param()->getK(), shared_from_this());
+}
+
+
+/**
+ * Needed for carbon-limited growth: to know sucrose necessary for length increase
+ * Overwritten by @Leaf::orgVolume
+ * @param length   length for which volume is calculated. if length = -1, use current organ length
+ * @param realized for length = -1: use current theoratical or realized length
+ * @return Volume for specific or current length. Overriden for @Leaf::orgVolume
+ */
+double Root::orgVolume(double length_,  bool realized) const
+{
+	double vol = 0.;
+	if((!realized)||(length_ >= 0.))
+	{
+		throw std::runtime_error("Organ::orgVolume: should be updated for time dependent radii");
+	}
+    if(length_ == -1){
+		//length_ = getLength(realized);
+		for(int seg_indx = 1; seg_indx < getNumberOfSegments(); seg_indx ++)
+		{
+			double l = nodes.at(seg_indx).minus(nodes.at(seg_indx - 1)).length();
+			double r = getRadius(seg_indx);
+			vol += M_PI * l * r * r;//cylinder
+		}
+	}
+    return vol;
+};
+
+double Root::orgSurface(double length_,  bool realized) const
+{
+	double surf = 0.;
+	if((!realized)||(length_ >= 0.))
+	{
+		throw std::runtime_error("Organ::orgVolume: should be updated for time dependent radii");
+	}
+    if(length_ == -1){
+		//length_ = getLength(realized);
+		for(int seg_indx = 1; seg_indx < getNumberOfSegments(); seg_indx ++)
+		{
+			double l = nodes.at(seg_indx).minus(nodes.at(seg_indx - 1)).length();
+			double r = getRadius(seg_indx);
+			surf += 2 * M_PI * (l + r);//cylinder
+		}
+	}
+    return surf;
+};
+
+
+double Root::getRadius(int local_segIndex) const
+{
+	//if(segRadii.size()<=local_segIndex)
+	//	{
+			int nodeIndx = local_segIndex + 1; // local node_y index == local seg_indx + 1
+		double age_seg = std::max(getPlant()->getSimTime() - nodeCTs.at(nodeIndx), 0.);
+		return param()->a + param()->a_gr * age_seg; 
+	//		}else{
+	//int nodeIndx = local_segIndex + 1; // local node_y index == local seg_indx + 1
+	//double age = std::max(std::max(nodeCTs.at() - age, 0.);
+	//return segRadii.at(local_segIndex);//param()->a + param()->a_gr * age; // from google drive, subimage B
+	//		}
+};
+
+// void Root::updateRadii() // Y use this? could instead update dynamically with getRadius
+// {
+	// for (int local_segIndex = 0; local_segIndex < getNumberOfSegments(); local_segIndex++)
+	// {
+		// int nodeIndx = local_segIndex + 1; // local node_y index == local seg_indx + 1
+		// double age = std::max(nodeCTs.at(nodeIndx) - age, 0.);
+		// if(segRadii.size()<=local_segIndex)
+		// {
+			// segRadii.push_back(param()->a + param()->a_gr * age);
+		// }else{
+			// segRadii.at(local_segIndex) = param()->a + param()->a_gr * age; // from google drive, subimage B
+		// }
+	// }
+// }
+
+/**
+ *
+ *
+ * die directly if (a) a fine root, or (b) a long-lived root but not suberised (?)
+ *
+ */
+void Root::survivalTest() 
+{
+	if (isAlive())
+	{
+		int is_fine_root = getParameter("is_fine_root");
+		bool not_lignified = getParameter("length_th") < getPlant()->getSeed()->getParameter("Lmax_suberized");
+		if(is_fine_root || not_lignified)
+		{
+			alive = false; // this root is dead
+		}else{
+			double rlt_winter = getParameter("rlt_winter");
+			if(getParameter("age") >= rlt_winter)
+			{
+				alive = false;
+			}
+		}
+	}
+	
+    for(size_t i=0; i<children.size(); i++){
+		if(children[i]->organType() == 2){ //if root
+			children[i]->survivalTest();//even if parent does not have relCoordinate, the laterals might
+		}
+    }
 }
 
 /**
@@ -304,8 +415,8 @@ double Root::getParameter(std::string name) const
         return std::sqrt(sq_sum / v.size() - mean * mean);
     }
     if (name=="rootLength") { return getLength(true); } // root length [cm], same as length, but a SegmentAnalyser::getParameter call would give the segment length
-    if (name=="volume") { return param()->a*param()->a*M_PI*getLength(true); } // root volume [cm^3]
-    if (name=="surface") { return 2*param()->a*M_PI*getLength(true); } // root surface [cm^2]
+    if (name=="volume") { return orgVolume(-1, false); } // root volume [cm^3]
+    if (name=="surface") { return orgSurface(-1, false); } // root surface [cm^2]
     return Organ::getParameter(name); // pass to base class
 }
 

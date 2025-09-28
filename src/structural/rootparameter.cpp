@@ -127,13 +127,15 @@ std::shared_ptr<OrganSpecificParameter> RootRandomParameter::realize()
             }
         }
     }
-
+	double p_survive = plant.lock()->rand();
+	double rlt_winter = lambda_survive * (std::pow(-std::log(p_survive),1/k_survive));
     double r_ = std::max(r + p->randn()*rs, 0.); // initial elongation
     double a_ = std::max(a + p->randn()*as, 0.01); // radius
+    double a_gr_ = std::max(a_gr + p->randn()*a_grs, 0.); // secondary growth rate
     double theta_ = std::max(theta + p->randn()*thetas, 0.); // initial elongation
     double rlt_ = std::max(rlt + p->randn()*rlts, 0.); // root life time
 
-    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hasLaterals);
+    return std::make_shared<RootSpecificParameter>(subType,lb_,la_,ln_,r_,a_,theta_,rlt_, hasLaterals, a_gr_, rlt_winter);
 }
 
 /**
@@ -283,6 +285,9 @@ void RootRandomParameter::bindParameters()
     // NEW
     bindParameter("lnk", &lnk, "Slope of inter-lateral distances [1]");
     bindParameter("ldelay", &ldelay, "Lateral root emergence delay [day]", &ldelays);
+    bindParameter("is_fine_root", &is_fine_root, "Fine [1] or long-lived [0] root?");
+    bindParameter("k_survive", &k_survive, "Parameter for the Root::survivalTest() function");
+    bindParameter("lambda_survive", &lambda_survive,"Parameter for the Root::survivalTest() function");
     // HAIR
     bindParameter("hairsElongation", &hairsElongation, "Zone behind the tip without root hairs  [cm]");
     bindParameter("hairsZone", &hairsZone, "Length of the root hair zone [cm]");

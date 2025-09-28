@@ -375,6 +375,16 @@ double Organ::getParameter(std::string name) const {
     return this->getOrganRandomParameter()->getParameter(name); // ask the random parameter
 }
 
+
+
+// virtual std::vector<double> Organ::getRadii() const
+// {
+	 // std::vector<double> radii(getNumberOfSegments(), getParameter("radius")); 
+	 // return radii;
+// }
+
+
+
 /**
  * Writes the organs RSML root tag, if it has more than one node.
  *
@@ -750,8 +760,10 @@ void Organ::createLateral(double dt, bool verbose)
             for(int nn = 0; nn < numlats; nn++)
             {
 
-                const Vector3d& pos = Vector3d();
-                int p_id = rp->getLateralType(pos, i);//if probabilistic branching
+                const Vector3d& pos = nodes[nodes.size() - 1]; // att: won t work for organ with relative coordinates
+                double delay = getLatGrowthDelay();// forDelay*multiplyDelay
+				double creation_time = nodeCTs[nodes.size() - 1] + delay;
+                int p_id = rp->getLateralType(pos, i, creation_time);//if probabilistic branching
 
                 if(p_id >=0)
                 {
@@ -761,9 +773,9 @@ void Organ::createLateral(double dt, bool verbose)
                         ot = rp->successorOT.at(i).at(p_id);
                     }else{ot = getParameter("organType");}//default
 
+					
                     int st = rp->successorST.at(i).at(p_id);
-
-                    double delay = getLatGrowthDelay(ot, st, dt);// forDelay*multiplyDelay
+					delay = getLatGrowthDelay(ot, st, dt, delay);// forDelay*multiplyDelay
                     double growth_dt = getLatInitialGrowth(dt);
 
 
@@ -839,10 +851,9 @@ double Organ::getLatInitialGrowth(double dt)
  *  @param dt       time step recieved by parent organ [day]
  *  @return emergence delay to send to lateral after creation
  */
-double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //override for stems
+double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growthDelay) //override for stems
 {
     auto rp = getOrganRandomParameter(); // rename
-    double growthDelay; //store necessary variables to define lateral growth delay
     int delayDefinition = getOrganism()->getDelayDefinition(ot_lat);
 
     assert(delayDefinition >= 0);
@@ -872,13 +883,23 @@ double Organ::getLatGrowthDelay(int ot_lat, int st_lat, double dt) const //overr
           growthDelay = std::max(latRp->ldelay + plant.lock()->randn()*latRp->ldelays, 0.);
           break;
       }
-      default:
+    }
+    return growthDelay;
+}
+double Organ::getLatGrowthDelay() const //override for stems
+{
+    auto rp = getOrganRandomParameter(); // rename
+    double growthDelay = 0.; //store necessary variables to define lateral growth delay
+    int delayDefinition = getOrganism()->getDelayDefinition(rp->organType);
+
+    assert(delayDefinition >= 0);
+
+    switch(delayDefinition){
+      case Organism::dd_time_lat_rand:
       {
-          std::cout<<"delayDefinition "<<delayDefinition<<" "<<Organism::dd_distance<<" ";
-          std::cout<< Organism::dd_time_lat<<" "<< Organism::dd_time_self<<std::endl<<std::flush;
-          std::cout<<"				"<<(delayDefinition==Organism::dd_distance)<<" ";
-          std::cout<<(delayDefinition== Organism::dd_time_lat)<<" "<< (delayDefinition==Organism::dd_time_self)<<std::endl<<std::flush;
-          throw std::runtime_error("Delay definition type (delayDefinition) not recognised");
+		  // same as dd_time_lat, only use rand() rather than randn
+          growthDelay = std::max(rp->ldelay + plant.lock()->rand()*rp->ldelays, 0.);
+          break;
       }
     }
     return growthDelay;

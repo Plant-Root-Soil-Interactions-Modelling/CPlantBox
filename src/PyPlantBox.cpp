@@ -371,6 +371,7 @@ PYBIND11_MODULE(plantbox, m) {
             .def("initialize", &Organism::initialize, py::arg("verbose") = true)
             .def("simulate", &Organism::simulate, py::arg("dt"), py::arg("verbose") = false) //default
             .def("getSimTime", &Organism::getSimTime)
+            .def("survivalTest", &Organism::survivalTest)
 
             .def("getOrgans", &Organism::getOrgans, py::arg("ot") = -1, py::arg("allOrgs")=false) // default
             .def("getParameter", &Organism::getParameter, py::arg("name"), py::arg("ot") = -1, py::arg("organs") = std::vector<std::shared_ptr<Organ>>(0)) // default
@@ -587,7 +588,8 @@ PYBIND11_MODULE(plantbox, m) {
             .def_readwrite("f_sbp", &RootRandomParameter::f_sbp)
 			.def_readwrite("hairsElongation", &RootRandomParameter::hairsElongation)
 			.def_readwrite("hairsZone", &RootRandomParameter::hairsZone)
-			.def_readwrite("hairsLength", &RootRandomParameter::hairsLength);
+			.def_readwrite("hairsLength", &RootRandomParameter::hairsLength)
+            .def_readwrite("a_gr", &RootRandomParameter::a_gr);
 
     py::class_<RootSpecificParameter, OrganSpecificParameter, std::shared_ptr<RootSpecificParameter>>(m, "RootSpecificParameter")
             .def(py::init<>())

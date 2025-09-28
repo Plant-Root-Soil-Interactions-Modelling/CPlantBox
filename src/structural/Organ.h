@@ -115,7 +115,14 @@ public:
 	bool hasRelCoord() const; //check if organ has relative coordinates
 	/* for carbon-limited growth (know future (or past) volume (or length))*/
 	virtual double orgVolume(double length_ = -1.,  bool realized = false) const;//organ volume for current or for a specific length
-	virtual double orgVolume2Length(double volume_){return volume_/(M_PI * getParameter("radius")* getParameter("radius"));}	//organ length for specific volume
+	virtual double orgVolume2Length(double volume_){
+			throw std::runtime_error("Organ::orgVolume2Length: should be updated for time dependent radii");
+		return volume_/(M_PI * getParameter("radius")* getParameter("radius"));
+		}	//organ length for specific volume
+		
+	virtual double getRadius(int local_segIndex) const {return getParameter("a");};
+	//virtual std::vector<double> getRadii() const;
+	virtual void survivalTest() {};
 
 protected:
 
@@ -126,7 +133,8 @@ protected:
 	virtual Vector3d getIncrement(const Vector3d& p, double sdx, int n = -1); ///< called by createSegments, to determine growth direction. overriden by @see Leaf::getIncrement()
     void createSegments(double l, double dt, bool silence, int PhytoIdx = -1 ); ///< creates segments of length l, called by Root::simulate()
     virtual double getLatInitialGrowth(double dt);
-	virtual double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const;
+	double getLatGrowthDelay(int ot_lat, int st_lat, double dt, double growthDelay);
+	double getLatGrowthDelay() const;
 	bool getApplyHere(int i) const;
 	/* up and down the organ tree */
     std::weak_ptr<Organism> plant; ///< the plant of which this organ is part of

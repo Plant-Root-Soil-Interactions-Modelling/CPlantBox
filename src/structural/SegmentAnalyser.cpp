@@ -56,13 +56,12 @@ SegmentAnalyser::SegmentAnalyser(const Organism& plant)
     data["creationTime"] = segCTs;
     auto sego = plant.getSegmentOrigins();
     segO = std::vector<std::weak_ptr<Organ>>(segments.size());
-    auto radii = std::vector<double>(segments.size());
+    auto radii = plant.getRadii();
     auto subType = std::vector<double>(segments.size());
     auto id = std::vector<double>(segments.size());
     auto organType = std::vector<double>(segments.size());
     for (size_t i=0; i<segments.size(); i++) {
         segO[i] = sego[i]; // convert shared_ptr to weak_ptr
-        radii[i] = segO[i].lock()->getParameter("radius");
         subType[i] = segO[i].lock()->getParameter("subType");
         id[i] = segO[i].lock()->getParameter("id");
         organType[i] = segO[i].lock()->getParameter("organType"); // = 2

@@ -26,8 +26,8 @@ public:
 
     RootSpecificParameter(): RootSpecificParameter(-1, 0., 0., std::vector<double>(0), 0., 0., 0., 0.) { } ///< Default constructor
     RootSpecificParameter(int type, double lb, double la, const std::vector<double>& ln, double r, double a,
-    		double theta, double rlt, bool laterals = false):
-        OrganSpecificParameter(type, a),  lb(lb), la(la), ln(ln), r(r), theta(theta), rlt(rlt), laterals(laterals) { }; ///< Constructor setting all parameters
+    		double theta, double rlt, bool laterals = false, double a_growth = 0., double rlt_winter = 1e9):
+        OrganSpecificParameter(type, a),  lb(lb), la(la), ln(ln), r(r), theta(theta), rlt(rlt), laterals(laterals), a_gr(a_growth), rlt_winter(rlt_winter) { }; ///< Constructor setting all parameters
 
     /*
      * RootBox parameters per single root
@@ -40,8 +40,10 @@ public:
     double rlt;             ///< Root life time [day]
 
     bool laterals = false;
+    double a_gr;            ///< Secondary growth rate [cm day-1]
     int nob() const { return ln.size()+ laterals; } ///< return the maximal number of lateral branching nodes [1]
     double getK() const; ///< Returns the exact maximal root length of this realization [cm]
+	double rlt_winter = 1.e9;
 
     std::string toString() const override; ///< for debugging
 
@@ -89,6 +91,8 @@ public:
     double lmaxs = 0.;      ///< Standard deviation of maximal root length [cm]
     double r = 1;           ///< Initial growth rate [cm day-1]
     double rs = 0.;         ///< Standard deviation initial growth rate [cm day-1]
+    double a_gr = 0.;        ///< Secondary growth rate [cm day-1]
+    double a_grs = 0.;      ///< Standard deviation Secondary growth rate [cm day-1]
     int tropismT = 1;       ///< Root tropism parameter (Type)
     double tropismN = 1.;   ///< Root tropism parameter (number of trials)
     double tropismS = 0.2;  ///< Root tropism parameter (mean value of expected changeg) [1/cm]
@@ -100,6 +104,9 @@ public:
 
     // new
     double lnk = 0.;        ///< Slope of inter-lateral distances [1]
+	int is_fine_root = 0; // fine [1] or long-lived [0] root? maybe better way to define that.
+	double k_survive = 1.88;
+	double lambda_survive = 7.53;
 
     // root hair
     double hairsElongation = 0.; // zone behind the tip without root hairs [cm]

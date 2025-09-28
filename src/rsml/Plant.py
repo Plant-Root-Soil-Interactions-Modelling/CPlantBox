@@ -185,10 +185,10 @@ if __name__ == '__main__':
 
     plant = PlantPython()
 
-    # path = "../../modelparameter/structural/rootsystem/"
-    # name = "Glycine_max_Moraes2020"
-    # plant.readParameters(path + name + ".xml")
-    plant.readParameters("wine.xml")
+    path = "../../modelparameter/structural/rootsystem/"
+    name = "wine_Fichtl" #"Glycine_max_Moraes2020"
+    plant.readParameters(path + name + ".xml")
+    # plant.readParameters("wine.xml")
     # plant.setOrganRandomParameter(SeedRandomParameter(plant))
 
     p2 = plant.getOrganRandomParameter(2, 2)
@@ -200,8 +200,9 @@ if __name__ == '__main__':
     p2.tropismT = 1  #  1 gravi, 2 exo
     p2.tropismS = 0.2
     p2.tropismN = 0.5  # 0.05
+    p2.a_gr = p2.a/60.
 
-    plant.initialize_static("B-23.rsml", [0, 1])  # 0 is shoot, 1 are static roots
+    plant.initialize_static(path + "B-23_Fichtl.rsml", [0, 1])  # 0 is shoot, 1 are static roots
 
     print()
     laterals, tip_laterals = plant.analyse_laterals([0, 1], [2, 3])  # for debugging
@@ -211,6 +212,14 @@ if __name__ == '__main__':
     plant.initialize_static_laterals()
 
     plant.simulate(125., True)
+    ana = pb.SegmentAnalyser(plant) 
+    rad = np.array(ana.getParameter('radius'))
+    cts = np.array(ana.getParameter('creationTime'))
+    st = np.array(ana.getParameter('subType'))
+    ot = np.array(ana.getParameter('organType'))
+    print(rad[(st == 2)&(ot == 2)])
+    print(cts[(st == 2)&(ot == 2)])
+
 
     vp.plot_roots(plant, "subType")
 

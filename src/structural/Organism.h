@@ -37,7 +37,7 @@ class Organism : public std::enable_shared_from_this<Organism> {
 public:
 
 	//0: distance based, 1: delay-based carried by the parent for all lateral, 2: delay-based carried by each lateral type
-	enum DelayDefinition { dd_distance = 0, dd_time_lat = 1, dd_time_self = 2}; ///< definition of the growth delay
+	enum DelayDefinition { dd_distance = 0, dd_time_lat = 1, dd_time_self = 2, dd_time_lat_rand = 4}; ///< definition of the growth delay
     enum OrganTypes { ot_organ = 0, ot_seed = 1, ot_root = 2, ot_stem = 3, ot_leaf = 4 }; ///< coarse organ classification
     static std::vector<std::string> organTypeNames; ///< names of the organ types
     static int instances; ///< the number of instances of this or derived classes
@@ -85,6 +85,7 @@ public:
     virtual std::vector<double> getSegmentCTs(int ot=-1) const; ///< line creation times, corresponding to Organism::getSegments
 	virtual std::vector<int> getSegmentIds(int ot=-1) const; ///< line segment indices, corresponding to Organism::getSegments
     virtual std::vector<std::shared_ptr<Organ>> getSegmentOrigins(int ot=-1) const; ///< points to the organ which contains the segment, corresponding to Organism::getSegments
+	std::vector<double> getRadii() const;
 
     /* last time step */
     int getNumberOfNewNodes() const { return getNumberOfNodes()- oldNumberOfNodes; } ///< The number of new nodes created in the previous time step (same number as new segments)
@@ -128,6 +129,7 @@ public:
 	std::vector<std::shared_ptr<Organ>> baseOrgans;  ///< base organs of the orgnism
 	virtual bool hasRelCoord(){ return false; } ///< overriden by @Plant::hasRelCoord()
 	int getDelayDefinition(int ot_lat);
+	void survivalTest();
 
     int plantId; // unique plant id (for debugging copy)
 

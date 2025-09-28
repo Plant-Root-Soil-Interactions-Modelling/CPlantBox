@@ -36,7 +36,7 @@ public:
     void simulate(double dt, bool silence = false) override; ///< stem growth for a time span of \param dt
 	void internodalGrowth(double dl,double dt, bool silence = false); ///< internodal growth of \param dl [cm]
 	double getLatInitialGrowth(double dt) override;
-	double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const override;
+	double getLatGrowthDelay(int ot_lat, int st_lat, double dt) const;
 	Vector3d getNode(int i) const override { return nodes.at(i); } ///< i-th node of the organ
 	void addNode(Vector3d n, int id, double t, size_t index, bool shift) override; //< adds a node to the root
 

@@ -1,0 +1,12 @@
+<rsml>
+    <metadata>
+        <version>1</version>
+        <unit>cm</unit>
+        <resolution>1</resolution>
+        <last-modified>24-9-2025</last-modified>
+        <software>OrganicBox</software>
+    </metadata>
+    <scene>
+        <plant/>
+    </scene>
+</rsml>

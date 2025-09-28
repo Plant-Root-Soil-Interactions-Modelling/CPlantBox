@@ -179,6 +179,19 @@ void Organism::simulate(double dt, bool verbose)
     simtime+=dt;
 }
 
+
+void Organism::survivalTest()
+{
+	auto s = getSeed();
+	for (int i = 0; i< s->getNumberOfChildren();i++) {
+		auto child = s->getChild(i);
+		if(child->organType() == 2){ //if root
+			child->survivalTest();
+		}
+
+    }
+}
+
 /**
  * Creates a sequential list of organs. Considers only organs with more than 1 node.
  *
@@ -408,6 +421,22 @@ std::vector<std::shared_ptr<Organ>> Organism::getSegmentOrigins(int ot) const
     }
     return segs;
     }
+	
+	
+
+std::vector<double> Organism::getRadii() const
+{
+    auto organs = this->getOrgans();
+    std::vector<double> radii;//(this->getNumberOfSegments());
+	radii.reserve(this->getNumberOfSegments());
+    for (const auto& o : organs) {
+        auto s = o->getSegments();
+        for (size_t i=0; i<s.size(); i++) { // loop over all new nodes
+            radii.push_back(o->getRadius(i));
+        }
+    }
+    return radii;
+}
 
 /**
  * @return the indices of the nodes that were moved during the last time step,

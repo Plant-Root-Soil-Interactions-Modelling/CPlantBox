@@ -69,7 +69,7 @@ public:
     virtual tinyxml2::XMLElement* writeXML(tinyxml2::XMLDocument& doc, bool comments = true) const; ///< writes a organ root parameter set
     void writeXML(std::string name) const; ///< writes a organ root parameter set
 
-	int getLateralType(const Vector3d& pos, int ruleId); ///< Choose (dice) lateral type based on stem parameter set
+	int getLateralType(const Vector3d& pos, int ruleId, double creation_time = 0.); ///< Choose (dice) lateral type based on stem parameter set
 
 	virtual void bindParameters(); ///<sets up class introspection
     void bindParameter(std::string name, int* i, std::string descr = "", double* dev = nullptr); ///< binds integer to parameter name
@@ -89,6 +89,7 @@ public:
     std::vector<std::vector<int> > successorOT = std::vector<std::vector<int>>(0, std::vector<int> (0, 0)); ///< Lateral types [1]
     std::vector<std::vector<int> > successorST = std::vector<std::vector<int>>(0, std::vector<int> (0, 0)); ///< Lateral types [1]
     std::vector<std::vector<double>> successorP = std::vector<std::vector<double>>(0, std::vector<double> (0, 0)); ///< Probabilities of lateral type to emerge (sum of values == 1) [1]
+    std::vector<double> successorP_age = std::vector<double> (0, 0); ///< age when to switch to next successorPTable_value vector
     std::vector<int>  successorNo = std::vector<int>(0); ///< Lateral types [1]
 
     std::weak_ptr<Organism> plant;
@@ -110,9 +111,12 @@ protected:
     std::vector<double> string2vector(const char* xmlInput, double defaultVal);
 
     template <class IntOrDouble>
-    void cpb_queryStringAttribute(std::vector<std::string> keyNames,IntOrDouble defaultVal,int sizeVector,
+    void cpb_queryStringAttribute(std::vector<std::string> keyNames,
+								IntOrDouble defaultVal,
+								int sizeVector,
                                     bool replaceByDefault,
-                                    std::vector<IntOrDouble> & vToFill, tinyxml2::XMLElement* key);
+                                    std::vector<std::vector<IntOrDouble>> & vToFill, 
+									tinyxml2::XMLElement* key, int& ruleId);
 
 
 };
