@@ -44,12 +44,11 @@ namespace CPlantBox {
         double vi = 0.13;          ///< speed of internal infection [cm / day]
         double vis = 0.;           ///< Standard deviation of speed of internal infection [cm / day]
         double maxInfection = 1;   ///< Percentage of maximal infection
-        
         double hyphalDelay = 0.;      ///< Dummy delay time before hyphal emergence after infection [day] there is none.
         double highresolution = 1; ///< If true, a hypha is created at every infected node, otherwise hyphae are created based on hyphalEmergenceDensity
         double dx_inf = 0.1;       ///< Segment length for infected root segments only in high resolution case [cm]
 
-        double hyphalEmergenceDensity = 0; //< [1 / cm]
+        double hyphalEmergenceDensity = 1; //< [1 / cm]
 
         std::shared_ptr<SoilLookUp> f_inf = std::make_shared<SoilLookUp>();    
 		void readXML(tinyxml2::XMLElement* element, bool verbose) override; ///< reads a single sub type organ parameter set

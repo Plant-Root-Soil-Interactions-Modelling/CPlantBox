@@ -90,6 +90,7 @@ std::shared_ptr<Organ> MycorrhizalRoot::copy(std::shared_ptr<Organism> rs)
 
 void MycorrhizalRoot::primaryInfection(double dt, bool silence){
     double lmbd;
+    double highres = getRootRandomParameter()->highresolution;
     for (size_t i = 1; i < nodes.size(); i++){
         if (getRootRandomParameter()->f_inf->getValue(nodes.at(i), shared_from_this()) != 1.)
         {
@@ -106,7 +107,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
         {
             // insert node here if segment too long and set all nodes to be infected
             setInfection(i,1,age);
-            if (cursegLength > getRootRandomParameter() ->dx_inf) {
+            if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
                 int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                 for (size_t j = 0; j < newNodesNumber; j++)
                 {
@@ -115,7 +116,7 @@ void MycorrhizalRoot::primaryInfection(double dt, bool silence){
                     double newz = nodes.at(i-1).z + (nodes.at(i).z - nodes.at(i-1).z) *(j+1)/(newNodesNumber +1);
                     Vector3d newNode = Vector3d(newx,newy,newz);
                     //std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
-                    addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(i), i, true); // TODO rethink about that global ID stuff
+                    addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(i), i, true);
                 }   
             }
         }
@@ -128,6 +129,8 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
 
     double infTime;
 
+    double highres = getRootRandomParameter()->highresolution;
+
     for (size_t i = 0; i < nodes.size(); ++i)
     {
         if (infected.at(i) == 1 || infected.at(i)== 3)
@@ -138,34 +141,31 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                 int basalnode = i-1;
                 double cursegLength;
                 // std::cout << infectionLength << std::endl;
-                while (basalnode >= 0)
+                while (basalnode > 0)
                 {
                     // std::cout << "basalnode " << basalnode << std::endl;
                     cursegLength = abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());
                     infectionLength += cursegLength;
                     infTime = infectionTime.at(oldNode) + cursegLength/getRootRandomParameter()->vi;
 
-                    while (cursegLength > getRootRandomParameter() ->dx_inf) {
-
-                        cursegLength -= abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());;
-                    }
                     if (infectionLength > max_length_infection) {break;}
 
                     if (infected.at(basalnode) == 0 && infTime <= age)
                     {
                         // insert node here if segment too long and set all nodes to be infected
                         setInfection(basalnode,2,infTime);
-                        if (cursegLength > getRootRandomParameter() ->dx_inf) {
-                            int newNodesNumber = int(cursegLength / getRootRandomParameter() ->dx_inf);
+                        if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
+                            int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
                             for (size_t j = 0; j < newNodesNumber; j++)
                             {
-                                double newx = (nodes.at(i).x + nodes.at(i-1).x)/newNodesNumber*(j+1);
-                                double newy = (nodes.at(i).y + nodes.at(i-1).y)/newNodesNumber*(j+1);
-                                double newz = (nodes.at(i).z + nodes.at(i-1).z)/newNodesNumber*(j+1);
+                                double newx = nodes.at(oldNode).x + (nodes.at(basalnode).x - nodes.at(oldNode).x) *(j+1)/(newNodesNumber +1);
+                                double newy = nodes.at(oldNode).y + (nodes.at(basalnode).y - nodes.at(oldNode).y) *(j+1)/(newNodesNumber +1);
+                                double newz = nodes.at(oldNode).z + (nodes.at(basalnode).z - nodes.at(oldNode).z) *(j+1)/(newNodesNumber +1);
                                 Vector3d newNode = Vector3d(newx,newy,newz);
-                                std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
-                                // TODO add proper distance and thus infection time!!!
-                            //     addNode(newNode, nodes.size()+1, nodeCTs.at(i), i, true); // TODO rethink about that global ID stuff
+                                // infTime = infectionTime.at(oldNode) + abs(nodes.at(oldNode).minus(newNode).length())/getRootRandomParameter()->vi;
+                                // std::cout << "inserting node at index " << basalnode << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
+                                addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(basalnode), basalnode, true);
+                                // infectionTime.at(basalnode) = infTime;
                             }   
                         }
                         // std::cout<< "secondary infection from " << i << " to " << basalnode << std::endl;
@@ -196,8 +196,20 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                 {
                     // insert node here if segment too long and set all nodes to be infected
                     setInfection(apicalnode,2,infTime);
-                    // std::cout<< "secondary infection from " << i << " to " << apicalnode << std::endl;
-                }
+                    if (highres >= 1. && cursegLength > getRootRandomParameter() ->dx_inf) {
+                            int newNodesNumber = std::max( int(cursegLength / getRootRandomParameter() ->dx_inf) - 1, 0);
+                            for (size_t j = 0; j < newNodesNumber; j++)
+                            {
+                                double newx = nodes.at(oldNode).x + (nodes.at(apicalnode).x - nodes.at(oldNode).x) *(j+1)/(newNodesNumber +1);
+                                double newy = nodes.at(oldNode).y + (nodes.at(apicalnode).y - nodes.at(oldNode).y) *(j+1)/(newNodesNumber +1);
+                                double newz = nodes.at(oldNode).z + (nodes.at(apicalnode).z - nodes.at(oldNode).z) *(j+1)/(newNodesNumber +1);
+                                Vector3d newNode = Vector3d(newx,newy,newz);
+                                infTime = infectionTime.at(oldNode) + abs(nodes.at(oldNode).minus(newNode).length())/getRootRandomParameter()->vi;
+                                //std::cout << "inserting node at index " << i << " at position " << newNode.toString() << "\n" << "Current node size: " << nodes.size() << std::endl;
+                                addNode(newNode,plant.lock()->getNodeIndex(), nodeCTs.at(apicalnode), apicalnode, true);
+                            }   
+                    }
+                }    
                 oldNode = apicalnode;
                 apicalnode++;
             }
@@ -221,7 +233,7 @@ void MycorrhizalRoot::simulateHyphalGrowth() {
                 emergedHyphae.at(i) += 1; // increase the number of hyphae at this node
             }
         }
-    } else { // Version where a set number of hypha are created based on hyphal emergence density and root segment length
+    } else { // Version where a set number of hyphae are created based on hyphal emergence density and root segment length
         auto rrp = getRootRandomParameter(); // param()
         double hed = rrp->hyphalEmergenceDensity;
 
@@ -231,17 +243,18 @@ void MycorrhizalRoot::simulateHyphalGrowth() {
         for (size_t i = 0; i < nodes.size(); i++) {
             numberOfHyphae += emergedHyphae.at(i);
         }
-        int new_noh = int(hed * getParameter("infectionLength") - numberOfHyphae); 
+
+        int new_noh = int(hed * getParameter("infectionLength") - numberOfHyphae); // account for rounding errors
         if (hed * getParameter("infectionLength") - numberOfHyphae - new_noh > 0.5) {
             new_noh += 1; // round up if the difference is larger than 0.5
         }
+        double new_total_noh = numberOfHyphae + new_noh;
         // std::cout << "MycorrhizalRoot::simulateHyphalGrowth(): " << "Hyphal Emergence density " << hed << ", infectionLength:" << getParameter("infectionLength") << ", noh " << numberOfHyphae <<  ", new noh " << new_noh << std::endl;
 
         int currentNode = 1;
-        while (new_noh > 0 && currentNode < nodes.size()) 
+        while (new_noh > 0 && numberOfHyphae < new_total_noh) 
         {
-
-            if (infected.at(currentNode) > 0 && emergedHyphae.at(currentNode)== 0){// && dist>hes){ // if the current node is infected and the number of hyphae to be created is reached
+            if (infected.at(currentNode) > 0){ // if the current node is infected and the number of hyphae to be created is reached
                 createHyphae(currentNode);
                 numberOfHyphae += 1;
                 new_noh -= 1;

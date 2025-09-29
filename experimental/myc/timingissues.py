@@ -6,7 +6,7 @@ import visualisation.vtk_plot as vp
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-import time as t
+import time
 
 # input("Only run this script if secondary infection is disabled.\nPress Enter to continue...")
 mycp = pb.MycorrhizalPlant()
@@ -24,18 +24,10 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 1;
+    # rp.hyphalEmergenceDensity = 1
+    rp.highresolution = 1
 
-infbox = pb.SDF_PlantBox(3, 3, 3)
-infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 local = False
-for i in range(0, len(root)):
-    if local:
-        root[i].f_inf = pb.SoilLookUpSDF(infbox, 1, 0.0, 0.1)
-        print("ATTENTION: The infection radius is not 0, the infection will be local")
-    root[i].dx = 0.05
-    
-
 
 
 # --- Simulationseinstellungen ---
@@ -48,17 +40,29 @@ ratio = False            # Set to True for ratio plots, False for absolute value
 
 
 def runsimulation(seed):
+    start = time.perf_counter()
     mycp.setSeed(seed)
     mycp.initialize(True)
 
     for t in range(0, len(timespan)):
         mycp.simulate(dt, False)
-        
-    return ()
+    end = time.perf_counter()
+    return (end - start)
 
-start = t.time()
-for seed in range(1, 51):
-    print(f"Running simulation with seed {seed}")
-    runsimulation(seed)
-end = t.time()
-print(f"Total simulation time for {seed} runs: {end - start:.2f} seconds")
+runtimes = []
+seed = 10
+
+for runs in range(1,101):
+    runtimes.append(runsimulation(seed))
+
+# print(f"Total simulation time for {seed} runs: {end - start:.2f} seconds")
+plt.hist(runtimes, bins=20, edgecolor='black')
+plt.title('Runtime Distribution of Simulation')
+plt.xlabel('Runtime (Seconds)')
+plt.ylabel('Number of Runs')
+plt.show()
+
+# Statistik
+print(f"Average Run: {sum(runtimes)/len(runtimes):.6f} Sekunden")
+print(f"Fastest Run: {min(runtimes):.6f} Sekunden")
+print(f"Slowest Run: {max(runtimes):.6f} Sekunden")
