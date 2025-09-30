@@ -127,7 +127,7 @@ def simulate_sra(name, sim_time, out_time, inner_r, rho_, rs_age, trans, wilting
             if save_npz: 
                 write_npz(name, t, wc, hs, frac, rootvol, wc_stitch, hs_stitch, frac_stitch, rootvol_stitch, target_x,target_y, soil_depth)
             if save_vtr: 
-                write_vtr(name, t, target_x,target_y, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res) 
+                write_vtr(name, t, target_x,target_y, X, Y, Z, wc_root, wc, hs, rootvol, wc_stitch, hs_stitch, rootvol_stitch, plant, res, soil_depth) 
                 
                 
             #here, you could put in a function called e.g. write_gpr_input(), where the simulation results are written to permittivities and written in a gpr input file 
