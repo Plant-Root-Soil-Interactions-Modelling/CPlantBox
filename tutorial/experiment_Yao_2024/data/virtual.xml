@@ -54,7 +54,7 @@
         <!--Initial growth rate [cm day-1]-->
         <parameter name="rlt" value="1e+09"/>
         <!--Root life time [day]-->
-        <parameter name="theta" value="1.5" dev="0.5"/>
+        <parameter name="theta" value="1.5" dev="0."></parameter>
         <!--Angle between root and parent root [rad]-->
         <parameter name="tropismN" value="5"/>
         <!--Number of trials of root tropism-->
