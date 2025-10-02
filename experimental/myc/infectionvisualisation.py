@@ -11,7 +11,7 @@ name = "Glycine_max"
 # name = "Heliantus_Pagès_2013"
 
 animation = False
-local = False
+local = True
 infbox = pb.SDF_PlantBox(4, 4, 4)
 # infbox = pb.SDF_RotateTranslate(infbox, 0, 0, pb.Vector3d(0, 0, -10))
 for i in range(1,5):
@@ -28,7 +28,8 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
-    rp.hyphalEmergenceDensity = 2;
+    rp.hyphalEmergenceDensity = 2
+    rp.highresolution = 1
     if local:
         rp.f_inf = pb.SoilLookUpSDF(infbox, 0.99, 0.0, 0.1)
     rp.dx = 0.2
@@ -76,7 +77,7 @@ else:
     ana.addData("infection", mycp.getNodeInfections(2))
     ana.addData("infectionTime", mycp.getNodeInfectionTime(2))
     pd = vp.segs_to_polydata(ana, 1., ["radius", "subType", "creationTime", "length", "infection", "infectionTime","organType"])
-    vp.plot_roots(ana, "organType")
+    vp.plot_roots(ana, "infection")
     # vp.plot_roots(ana, "infectionTime")
     # vp.plot_plant(mycp, "organType")
     ana.write(filename + ".vtp", ["radius", "subType", "creationTime","organType"])# "infection", "infectionTime",

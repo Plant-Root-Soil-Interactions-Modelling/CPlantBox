@@ -141,8 +141,7 @@ void MycorrhizalRoot::secondaryInfection(bool silence, double dt){
                 int basalnode = i-1;
                 double cursegLength;
                 // std::cout << infectionLength << std::endl;
-                while (basalnode > 0)
-                {
+                while(basalnode > 0) {
                     // std::cout << "basalnode " << basalnode << std::endl;
                     cursegLength = abs(nodes.at(oldNode).minus(nodes.at(basalnode)).length());
                     infectionLength += cursegLength;

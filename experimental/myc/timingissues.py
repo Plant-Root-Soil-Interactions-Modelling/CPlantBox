@@ -12,7 +12,6 @@ import time
 mycp = pb.MycorrhizalPlant()
 path = "../../modelparameter/structural/rootsystem/"
 name = "Glycine_max"
-# name = "Heliantus_Pagès_2013"
 mycp.readParameters(path + name + ".xml", fromFile = True, verbose = True)
 
 hyphae_parameter = pb.HyphaeRandomParameter(mycp)
@@ -25,7 +24,8 @@ mycp.setOrganRandomParameter(hyphae_parameter)
 root = mycp.getOrganRandomParameter(pb.root)
 for rp in root:
     # rp.hyphalEmergenceDensity = 1
-    rp.highresolution = 1
+    # rp.dx = rp.dx_inf
+    rp.highresolution = 0
 
 local = False
 
@@ -54,15 +54,16 @@ seed = 10
 
 for runs in range(1,101):
     runtimes.append(runsimulation(seed))
-
-# print(f"Total simulation time for {seed} runs: {end - start:.2f} seconds")
-plt.hist(runtimes, bins=20, edgecolor='black')
-plt.title('Runtime Distribution of Simulation')
-plt.xlabel('Runtime (Seconds)')
-plt.ylabel('Number of Runs')
-plt.show()
-
 # Statistik
-print(f"Average Run: {sum(runtimes)/len(runtimes):.6f} Sekunden")
-print(f"Fastest Run: {min(runtimes):.6f} Sekunden")
-print(f"Slowest Run: {max(runtimes):.6f} Sekunden")
+mean = np.mean(runtimes)
+std = np.std(runtimes, ddof=1)
+
+print(f"Mean: {mean:.2f}")
+print(f"Standard deviation: {std:.2f}")
+
+# Histogramm
+plt.hist(runtimes, bins=15, edgecolor="black")
+plt.xlabel("Runtime")
+plt.ylabel("Frequency")
+plt.title("Distribution of Simulation Runtimes")
+plt.show()
