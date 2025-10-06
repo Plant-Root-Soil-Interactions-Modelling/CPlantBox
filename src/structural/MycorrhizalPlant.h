@@ -32,11 +32,6 @@ namespace CPlantBox {
 
         // void setInfectionSoil(std::shared_ptr<Soil> soil); //?? set a soil here
         void initCallbacks() override;
-        void addTree(); // AABB tree
-
-        std::vector<double> stopTime; // time when root stopped growing, 0 if it has not
-        std::vector<Vector3d> tip;
-        std::vector<SDF_RootSystem> sdfs; // direction from tip towards root base
     };
 }
 
