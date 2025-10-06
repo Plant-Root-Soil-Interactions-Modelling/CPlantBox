@@ -638,8 +638,11 @@ PYBIND11_MODULE(plantbox, m) {
              .def_readwrite("v", &HyphaeRandomParameter::v)
              .def_readwrite("vs", &HyphaeRandomParameter::vs)
              .def_readwrite("b", &HyphaeRandomParameter::b)
+             .def_readwrite("bs", &HyphaeRandomParameter::bs)
              .def_readwrite("hlt", &HyphaeRandomParameter::hlt)
-             .def_readwrite("theta", &HyphaeRandomParameter::theta); // TODO add bs, etc.
+             .def_readwrite("hlts", &HyphaeRandomParameter::hlts)
+             .def_readwrite("theta", &HyphaeRandomParameter::theta)
+             .def_readwrite("thetas", &HyphaeRandomParameter::thetas); 
      py::class_<HyphaeSpecificParameter, OrganSpecificParameter, std::shared_ptr<HyphaeSpecificParameter>>(m, "HyphaeSpecificParameter")
              .def(py::init<>())
              .def(py::init<int , double, double,  double, double, double>())
